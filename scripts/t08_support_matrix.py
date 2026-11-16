@@ -158,8 +158,8 @@ def code_facts() -> dict[str, Any]:
     """What the enumerated axes are compared with (T08.A20)."""
     from openflowsheet.adapters import variants
     from openflowsheet.application.operations import OPERATIONS
-    from openflowsheet.application.policies import APPLICATION_POLICIES
     from openflowsheet.application.revision_binding import MODEL_BUILDERS, SELECTABLE_BASES
+    from openflowsheet.orchestrator.policies import APPLICATION_POLICIES
     from openflowsheet.thermo.syn001 import Syn001Provider
     from openflowsheet.units import CONVERSION_ROWS
 

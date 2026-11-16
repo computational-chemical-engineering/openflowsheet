@@ -40,12 +40,6 @@ from openflowsheet.application.jobs.executor import COMPUTE_LOCK
 from openflowsheet.application.jobs.model import lifecycle_warnings
 from openflowsheet.application.jobs.runner import SOLVE_STAGES
 from openflowsheet.application.local import LocalApplication
-from openflowsheet.application.policies import (
-    APPLICATION_POLICIES,
-    DEFAULT_POLICY_ID,
-    T06_REVISION_V2,
-    resolve_policy,
-)
 from openflowsheet.application.revision_run import Route, run_revision_session, select_route
 from openflowsheet.application.types import (
     Budgets,
@@ -58,6 +52,12 @@ from openflowsheet.application.types import (
     SolveBody,
 )
 from openflowsheet.canonical import directory_hash, file_sha256
+from openflowsheet.orchestrator.policies import (
+    APPLICATION_POLICIES,
+    DEFAULT_POLICY_ID,
+    T06_REVISION_V2,
+    resolve_policy,
+)
 from openflowsheet.run.bundle import read_artifact, read_manifest, verify_bundle
 from openflowsheet.run.manifest import policy_sha256
 from openflowsheet.schema_check import schema_errors

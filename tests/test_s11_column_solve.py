@@ -33,7 +33,6 @@ from test_s10c_blocks import REAL
 from test_s10c_columns import deviations, root, worst
 from test_t05_w11_cases import case_document
 
-from openflowsheet.application.policies import T04_W12, T06_REVISION_V2, T08_PTC_V1
 from openflowsheet.application.revision_binding import (
     SELECTABLE_BASES,
     RevisionBinding,
@@ -50,6 +49,7 @@ from openflowsheet.models.syn001.column_solve import ColumnSolution, product_col
 from openflowsheet.orchestrator.execution import ExecutionPlan
 from openflowsheet.orchestrator.executor import PlanResult, execute_plan
 from openflowsheet.orchestrator.homotopy import continuation_parameter
+from openflowsheet.orchestrator.policies import T04_W12, T06_REVISION_V2, T08_PTC_V1
 from openflowsheet.orchestrator.revision import plan_revision
 from openflowsheet.orchestrator.trace import SolvePolicy
 from openflowsheet.thermo.wilson_ig_v2 import WilsonIdealGasProviderV2

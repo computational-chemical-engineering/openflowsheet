@@ -61,12 +61,12 @@ from openflowsheet.application.coupled_run import (
 )
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.operations import dispatch
-from openflowsheet.application.policies import resolve_policy
 from openflowsheet.application.revision_run import Route, bind_route
 from openflowsheet.application.types import ReplayPolicy
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.orchestrator.execution import PlanRefusal
 from openflowsheet.orchestrator.executor import execute_plan
+from openflowsheet.orchestrator.policies import resolve_policy
 from openflowsheet.orchestrator.revision import plan_revision
 from openflowsheet.orchestrator.trace import Trace
 from openflowsheet.run.bundle import read_artifact, read_manifest, write_bundle

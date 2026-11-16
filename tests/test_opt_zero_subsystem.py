@@ -20,11 +20,11 @@ import numpy as np
 import numpy.typing as npt
 import pytest
 
-from openflowsheet.application.policies import DEFAULT_POLICY_ID, resolve_policy
 from openflowsheet.application.revision_routes import REVISION_ROUTES
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.orchestrator import region as region_module
 from openflowsheet.orchestrator import region_attempts
+from openflowsheet.orchestrator.policies import DEFAULT_POLICY_ID, resolve_policy
 from openflowsheet.studies.nlp import revision_host
 from openflowsheet.studies.nlp.host import CertifiedPoint, HeldSystem, ZeroSubsystem
 from openflowsheet.studies.nlp.revision_host import (

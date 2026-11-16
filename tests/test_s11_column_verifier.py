@@ -27,7 +27,6 @@ from s11_column_support import (
     committed_case,
 )
 
-from openflowsheet.application.policies import T06_REVISION_V2
 from openflowsheet.application.revision_binding import RevisionBinding, bind_revision_flowsheet
 from openflowsheet.compile.casadi_backend import compile_problem
 from openflowsheet.compile.reference import state_vector
@@ -38,6 +37,7 @@ from openflowsheet.models.syn001.cascade_solve import S01_DEFAULT_V1
 from openflowsheet.models.syn001.column import ColumnSpec
 from openflowsheet.orchestrator.execution import ExecutionPlan
 from openflowsheet.orchestrator.executor import execute_plan
+from openflowsheet.orchestrator.policies import T06_REVISION_V2
 from openflowsheet.orchestrator.revision import plan_revision
 from openflowsheet.orchestrator.splits import STAGED_MODELS, lifted_splits, split_owners
 from openflowsheet.verify import CheckResult

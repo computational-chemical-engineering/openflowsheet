@@ -31,11 +31,11 @@ from test_s11_thermal_binding import (
 )
 from test_s11_thermal_verifier import CONTEXT, evaluated_state, verifier_checks
 
-from openflowsheet.application.policies import T04_W12, T06_REVISION_V2
 from openflowsheet.application.revision_binding import RevisionBinding, bind_revision_flowsheet
 from openflowsheet.models.revision_flowsheet import parse_revision
 from openflowsheet.models.thermal.kernel import Sat, phase_properties, saturation
 from openflowsheet.orchestrator.executor import PlanResult, execute_plan
+from openflowsheet.orchestrator.policies import T04_W12, T06_REVISION_V2
 from openflowsheet.orchestrator.revision import plan_revision
 from openflowsheet.orchestrator.splits import DORMANCY_RULES, DormancyRule
 from openflowsheet.orchestrator.trace import SolvePolicy

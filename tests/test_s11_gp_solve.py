@@ -36,7 +36,6 @@ from s11_gp_support import (
 from wit_support import spy
 
 from openflowsheet.application.binding import Unbound
-from openflowsheet.application.policies import T06_REVISION_V2
 from openflowsheet.application.revision_binding import bind_revision_flowsheet
 from openflowsheet.compile.casadi_backend import compile_problem
 from openflowsheet.compiled import EvaluationContext
@@ -57,6 +56,7 @@ from openflowsheet.models.syn001.tp_state import tp_state
 from openflowsheet.models.syn001.valve import Valve
 from openflowsheet.models.thermal.machines import ThermalMachine
 from openflowsheet.orchestrator.executor import execute_plan
+from openflowsheet.orchestrator.policies import T06_REVISION_V2
 from openflowsheet.thermo import FlashRequest, PropertyProvider, PropertyRequest, StreamState
 from openflowsheet.thermo.syn001 import Syn001Provider
 from openflowsheet.verify.certificate import BoundDeclaration, fresh_provider, verify_revision

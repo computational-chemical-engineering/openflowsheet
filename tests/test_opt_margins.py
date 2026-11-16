@@ -23,11 +23,11 @@ from typing import Any
 import pytest
 from s11_gp_support import gp_c3
 
-from openflowsheet.application.policies import DEFAULT_POLICY_ID, resolve_policy
 from openflowsheet.application.revision_routes import REVISION_ROUTES
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models.syn001 import gamma_phi
 from openflowsheet.orchestrator import region as region_module
+from openflowsheet.orchestrator.policies import DEFAULT_POLICY_ID, resolve_policy
 from openflowsheet.orchestrator.revision import instances_of
 from openflowsheet.orchestrator.splits import region_splits
 from openflowsheet.studies.nlp import revision as revision_module

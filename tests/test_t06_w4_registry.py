@@ -23,7 +23,7 @@ from test_t02_region import POLICY as T02_EO
 from test_t04_edge3 import NONE, case_policy
 from test_t05_coupled import POLICY as POLICY_W13
 
-from openflowsheet.application.policies import T04_W12
+from openflowsheet.orchestrator.policies import T04_W12
 from openflowsheet.orchestrator.trace import SolvePolicy
 from openflowsheet.run.manifest import policy_sha256
 

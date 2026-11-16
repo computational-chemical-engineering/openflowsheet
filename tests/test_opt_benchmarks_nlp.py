@@ -14,9 +14,9 @@ from typing import Any
 
 import pytest
 
-from openflowsheet.application.policies import DEFAULT_POLICY_ID, resolve_policy
 from openflowsheet.application.revision_routes import REVISION_ROUTES
 from openflowsheet.canonical import canonical_json, document_sha256
+from openflowsheet.orchestrator.policies import DEFAULT_POLICY_ID, resolve_policy
 from openflowsheet.schema_check import schema_errors
 from openflowsheet.studies.nlp.revision import (
     MANIFEST,

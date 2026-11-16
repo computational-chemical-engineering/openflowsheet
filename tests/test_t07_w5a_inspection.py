@@ -29,7 +29,6 @@ from t07_jobs_support import commit, lifecycle_violations
 from openflowsheet.application.authz import grant
 from openflowsheet.application.contract import ApplicationError
 from openflowsheet.application.local import LocalApplication
-from openflowsheet.application.policies import APPLICATION_POLICIES
 from openflowsheet.application.revision_binding import MODEL_BUILDERS, MODEL_SIGNATURES
 from openflowsheet.application.store import STORE_SCHEMA
 from openflowsheet.application.types import (
@@ -41,6 +40,7 @@ from openflowsheet.application.types import (
     SolveBody,
 )
 from openflowsheet.canonical import document_sha256, file_sha256
+from openflowsheet.orchestrator.policies import APPLICATION_POLICIES
 from openflowsheet.run.bundle import ARTIFACT_DIR, MANIFEST_NAME
 from openflowsheet.run.manifest import policy_sha256
 

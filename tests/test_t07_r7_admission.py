@@ -49,7 +49,6 @@ from openflowsheet.application.binding import (
 )
 from openflowsheet.application.contract import ApplicationError
 from openflowsheet.application.local import LocalApplication
-from openflowsheet.application.policies import DEFAULT_POLICY_ID, T04_W12, resolve_policy
 from openflowsheet.application.revision_binding import RevisionBinding, bind_revision_flowsheet
 from openflowsheet.application.revision_run import (
     NoRoute,
@@ -63,6 +62,7 @@ from openflowsheet.application.revision_run import (
 )
 from openflowsheet.application.types import JobRequest
 from openflowsheet.application.validation import structural_refusal, validate
+from openflowsheet.orchestrator.policies import DEFAULT_POLICY_ID, T04_W12, resolve_policy
 from openflowsheet.orchestrator.revision import plan_revision
 from openflowsheet.verify.certificate import CheckPolicy
 

@@ -44,7 +44,6 @@ from openflowsheet.application.coupled_run import (
     iterate_differences,
     record_differences,
 )
-from openflowsheet.application.policies import T06_REVISION_V2
 from openflowsheet.application.revision_run import (
     Route,
     _constants_for_shape,
@@ -56,6 +55,7 @@ from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models.c1.reactor import C1Reactor
 from openflowsheet.orchestrator import coupling
 from openflowsheet.orchestrator.execution import declaration_identity
+from openflowsheet.orchestrator.policies import T06_REVISION_V2
 from openflowsheet.run import session
 from openflowsheet.run.bundle import read_artifact, read_manifest
 from openflowsheet.run.compare import CURRENT_POLICY_ID

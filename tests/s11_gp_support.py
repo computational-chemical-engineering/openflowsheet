@@ -22,7 +22,6 @@ from m02_c1_support import connection, quantity, revision, specification
 from semantic_roles import role_of
 from test_s11_thermal_binding import dimensionless
 
-from openflowsheet.application.policies import T06_REVISION_V2
 from openflowsheet.application.revision_binding import (
     RevisionBinding,
     bind_revision_flowsheet,
@@ -30,6 +29,7 @@ from openflowsheet.application.revision_binding import (
 from openflowsheet.models.revision_flowsheet import WILSON_BASIS, WILSON_RECORDS
 from openflowsheet.orchestrator.execution import ExecutionPlan
 from openflowsheet.orchestrator.executor import PlanResult, execute_plan
+from openflowsheet.orchestrator.policies import T06_REVISION_V2
 from openflowsheet.orchestrator.revision import plan_revision
 from openflowsheet.orchestrator.trace import SolvePolicy
 from openflowsheet.verify import CheckResult, gamma_phi_units

@@ -27,10 +27,10 @@ from typing import Any, Final
 import m05_synthetic as synthetic
 
 from openflowsheet.application.coupled_run import at_coupling
-from openflowsheet.application.policies import APPLICATION_POLICIES
 from openflowsheet.application.revision_binding import RevisionBinding, bind_revision_flowsheet
 from openflowsheet.models.c1.reactor import C1Reactor
 from openflowsheet.orchestrator.executor import execute_plan
+from openflowsheet.orchestrator.policies import APPLICATION_POLICIES
 from openflowsheet.orchestrator.revision import plan_revision
 from openflowsheet.thermo.pr_c1 import COMPONENTS
 

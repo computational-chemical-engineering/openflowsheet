@@ -29,7 +29,6 @@ from t07_corpus import CORPUS
 from t07_v17_c1_documents import c1_document
 
 from openflowsheet.application.binding import HINT_LIMIT, Unbound
-from openflowsheet.application.policies import DEFAULT_POLICY_ID, resolve_policy
 from openflowsheet.application.revision_binding import (
     MODEL_BUILDERS,
     MODEL_SIGNATURES,
@@ -51,6 +50,7 @@ from openflowsheet.models.revision_flowsheet import (
     parse_revision,
     pin_specifications,
 )
+from openflowsheet.orchestrator.policies import DEFAULT_POLICY_ID, resolve_policy
 from openflowsheet.verify.certificate import CheckPolicy
 
 Document = dict[str, Any]

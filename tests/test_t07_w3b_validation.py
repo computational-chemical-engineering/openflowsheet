@@ -41,7 +41,6 @@ from openflowsheet.application.binding import (
     legacy_admission,
     legacy_answers,
 )
-from openflowsheet.application.policies import resolve_policy
 from openflowsheet.application.revision_binding import RevisionBinding, bind_revision_flowsheet
 from openflowsheet.application.revision_run import NoRoute, Route, legacy_plan, select_route
 from openflowsheet.application.revisions import Revision
@@ -58,6 +57,7 @@ from openflowsheet.application.validation import (
 )
 from openflowsheet.graph.analysis import analyse
 from openflowsheet.orchestrator.execution import ExecutionPlan, declaration_identity
+from openflowsheet.orchestrator.policies import resolve_policy
 from openflowsheet.orchestrator.revision import plan_revision
 from openflowsheet.schema_check import schema_errors
 

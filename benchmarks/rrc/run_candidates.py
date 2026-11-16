@@ -57,7 +57,6 @@ ROOT: Final = HERE.parents[1]
 sys.path[:0] = [str(ROOT / "src")]
 
 from openflowsheet.application.local import LocalApplication  # noqa: E402
-from openflowsheet.application.policies import RRC_REVISION_V1, T06_REVISION_V2  # noqa: E402
 from openflowsheet.application.revision_binding import (  # noqa: E402
     RevisionBinding,
     bind_revision_flowsheet,
@@ -70,6 +69,7 @@ from openflowsheet.numerics.scaling import Scaling  # noqa: E402
 from openflowsheet.orchestrator import executor, revision  # noqa: E402
 from openflowsheet.orchestrator.execution import ExecutionPlan  # noqa: E402
 from openflowsheet.orchestrator.executor import PlanResult, StepResult, execute_plan  # noqa: E402
+from openflowsheet.orchestrator.policies import RRC_REVISION_V1, T06_REVISION_V2  # noqa: E402
 from openflowsheet.orchestrator.recovery import eo_recovery_due, solver_outcomes  # noqa: E402
 from openflowsheet.orchestrator.revision_continuation import (  # noqa: E402
     RevisionContinuationCandidate,

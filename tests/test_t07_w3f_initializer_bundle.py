@@ -27,7 +27,6 @@ from t07_corpus import CORPUS
 from test_k04_schemas import errors_for
 
 import openflowsheet.application.revision_run as revision_run
-from openflowsheet.application.policies import DEFAULT_POLICY_ID, resolve_policy
 from openflowsheet.application.revision_run import (
     Route,
     RunUnsupportedError,
@@ -38,6 +37,7 @@ from openflowsheet.application.revision_run import (
 )
 from openflowsheet.canonical import canonical_json
 from openflowsheet.orchestrator.executor import StepResult
+from openflowsheet.orchestrator.policies import DEFAULT_POLICY_ID, resolve_policy
 from openflowsheet.orchestrator.trace import Counters, Trace
 from openflowsheet.run.bundle import read_artifact, verify_bundle
 from openflowsheet.run.identity import r0_projection

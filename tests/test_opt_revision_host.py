@@ -27,7 +27,6 @@ import pytest
 from t05_w12_support import Feed, Outlet, duty_pin, mini_revision, unit_instance
 
 from openflowsheet.application import revision_routes
-from openflowsheet.application.policies import DEFAULT_POLICY_ID, resolve_policy
 from openflowsheet.application.revision_routes import REVISION_ROUTES
 from openflowsheet.application.revision_run import (
     Route,
@@ -38,6 +37,7 @@ from openflowsheet.application.revision_run import (
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.orchestrator import region as region_module
 from openflowsheet.orchestrator import region_attempts, region_phase, region_screen
+from openflowsheet.orchestrator.policies import DEFAULT_POLICY_ID, resolve_policy
 from openflowsheet.orchestrator.region import _admissible
 from openflowsheet.orchestrator.revision import instances_of
 from openflowsheet.orchestrator.splits import region_splits

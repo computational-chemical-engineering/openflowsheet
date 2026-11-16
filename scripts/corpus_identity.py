@@ -236,14 +236,14 @@ def solve(
         if code != 0:
             raise RuntimeError(f"k05 {name}: solve exited {code}")
         return
-    from openflowsheet.application.policies import (  # noqa: PLC0415
-        DEFAULT_POLICY_ID,
-        resolve_policy,
-    )
     from openflowsheet.application.revision_run import (  # noqa: PLC0415
         Route,
         run_revision_session,
         select_route,
+    )
+    from openflowsheet.orchestrator.policies import (  # noqa: PLC0415
+        DEFAULT_POLICY_ID,
+        resolve_policy,
     )
     from openflowsheet.verify.certificate import CheckPolicy  # noqa: PLC0415
 

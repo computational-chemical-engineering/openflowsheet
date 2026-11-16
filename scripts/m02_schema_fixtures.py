@@ -234,9 +234,9 @@ def coupling_documents() -> dict[str, Any]:
     from openflowsheet.adapters.experiments.runner import ExperimentRunner
     from openflowsheet.adapters.experiments.store import ExperimentStore
     from openflowsheet.application.coupled_run import LiveExperiments
-    from openflowsheet.application.policies import T06_REVISION_V2
     from openflowsheet.application.revision_run import Route, run_revision_session, select_route
     from openflowsheet.compiled import EvaluationContext
+    from openflowsheet.orchestrator.policies import T06_REVISION_V2
     from openflowsheet.run.bundle import read_artifact
     from openflowsheet.thermo.pr_c1 import PrC1Provider
     from openflowsheet.verify.certificate import CheckPolicy

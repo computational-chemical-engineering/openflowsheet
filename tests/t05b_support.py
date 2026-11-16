@@ -21,12 +21,12 @@ from conftest import load_yaml
 from t05_w12_support import connection_pin, duty_pin, planned_step, unit_instance
 from test_t05_w11_cases import case_document
 
-from openflowsheet.application.policies import T05B_V2
 from openflowsheet.application.revision_binding import RevisionBinding
 from openflowsheet.compile.casadi_backend import compile_problem
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.orchestrator import revision as revision_module
 from openflowsheet.orchestrator.mass import residence_time
+from openflowsheet.orchestrator.policies import T05B_V2
 from openflowsheet.orchestrator.region import RegionResult, solve_region
 from openflowsheet.orchestrator.splits import (
     closure_types,

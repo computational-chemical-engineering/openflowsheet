@@ -18,7 +18,6 @@ from test_t07_w3b_validation import ALREADY_READY, MOVED_TO_READY
 import openflowsheet.application.admission as admission_module
 from openflowsheet.application.admission import SolveAdmission, admit_budgets, admit_solve
 from openflowsheet.application.binding import Unbound
-from openflowsheet.application.policies import ROUTE_DEFAULT_POLICY
 from openflowsheet.application.revision_run import (
     NoRoute,
     Route,
@@ -28,6 +27,7 @@ from openflowsheet.application.revision_run import (
 from openflowsheet.application.types import ApiError, Budgets, Limits, SolveBody
 from openflowsheet.application.validation import structural_refusal, validate
 from openflowsheet.orchestrator.execution import ExecutionPlan
+from openflowsheet.orchestrator.policies import ROUTE_DEFAULT_POLICY
 from openflowsheet.orchestrator.revision import plan_revision
 from openflowsheet.run.manifest import policy_sha256
 from openflowsheet.schema_check import schema_errors
@@ -340,7 +340,7 @@ def test_inspect_structure_reports_the_formulation_solve_uses(name: str) -> None
 
 
 def _default_policy(route: Route) -> Any:
-    from openflowsheet.application.policies import resolve_policy
+    from openflowsheet.orchestrator.policies import resolve_policy
 
     return resolve_policy("default", route.solve_path)
 

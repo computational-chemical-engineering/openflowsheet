@@ -27,9 +27,9 @@ from typing import Any
 
 import pytest
 
-from openflowsheet.application.policies import DEFAULT_POLICY_ID, resolve_policy
 from openflowsheet.application.revision_routes import REVISION_ROUTES
 from openflowsheet.canonical import canonical_json
+from openflowsheet.orchestrator.policies import DEFAULT_POLICY_ID, resolve_policy
 from openflowsheet.studies.nlp.replay import MANIFEST, replay_optimization
 from openflowsheet.studies.nlp.revision import OptimizationOutcome, optimize_revision
 from openflowsheet.verify.certificate import CheckPolicy

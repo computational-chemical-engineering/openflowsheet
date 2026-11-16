@@ -57,12 +57,6 @@ from test_t05b_release_opening import affine
 
 from benchmarks.t08.ptc_r1 import compare
 from openflowsheet.application.binding import Binding, bind_revision_or_reason
-from openflowsheet.application.policies import (
-    APPLICATION_POLICIES,
-    DEFAULT_POLICY_ID,
-    T08_PTC_V1,
-    resolve_policy,
-)
 from openflowsheet.application.revision_binding import (
     MODEL_BUILDERS,
     RevisionBinding,
@@ -80,6 +74,12 @@ from openflowsheet.orchestrator.execution import (
     eo_capability,
 )
 from openflowsheet.orchestrator.executor import execute_plan
+from openflowsheet.orchestrator.policies import (
+    APPLICATION_POLICIES,
+    DEFAULT_POLICY_ID,
+    T08_PTC_V1,
+    resolve_policy,
+)
 from openflowsheet.orchestrator.region import RegionResult
 from openflowsheet.orchestrator.revision import plan_revision
 from openflowsheet.orchestrator.trace import Trace

@@ -23,8 +23,8 @@ from t07_jobs_support import commit
 
 from openflowsheet.application.contract import ApplicationError
 from openflowsheet.application.local import LocalApplication
-from openflowsheet.application.policies import APPLICATION_POLICIES, REGISTERED_POLICY_IDS
 from openflowsheet.application.types import JobRequest
+from openflowsheet.orchestrator.policies import APPLICATION_POLICIES, REGISTERED_POLICY_IDS
 from openflowsheet.schema_check import schema_errors
 
 REGISTRY = REPO_ROOT / "benchmarks" / "registry.yaml"

@@ -17,7 +17,6 @@ import pytest
 from test_s01_cascade_wo1 import REFERENCE, UNIT, _spec
 
 import openflowsheet.models.syn001.cascade_solve as solve_module
-from openflowsheet.application.policies import T05B_V2
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models.syn001 import ENERGY_TOLERANCE, FLOW_TOLERANCE
 from openflowsheet.models.syn001.cascade import (
@@ -48,6 +47,7 @@ from openflowsheet.models.syn001.cascade_solve import (
 )
 from openflowsheet.models.syn001.ph_kernel import ph_state
 from openflowsheet.numerics.scaling import REGISTERED_NOMINALS
+from openflowsheet.orchestrator.policies import T05B_V2
 from openflowsheet.orchestrator.trace import Trace
 from openflowsheet.thermo.syn001 import Syn001Provider
 
