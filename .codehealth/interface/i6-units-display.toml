@@ -1,0 +1,30 @@
+# ADR 0076 I-6 (W4 run 2, brief S19-W4-2): openflowsheet.units stops re-exporting
+# display-conversion-v1; its one home is openflowsheet.units.display. `codehealth gate
+# --mode interface` reads this plan from the plan commit.
+id = "i6-units-display"
+approved_by = "Frank Peters, 2026-11-14, ADR 0076 accepted (Decision Desk ofs-adr0076-accept)"
+reason = """ADR 0076 I-6 (amends ADR 0075): openflowsheet.units no longer re-exports \
+display-conversion-v1; its one home is openflowsheet.units.display, where the definitions moved \
+earlier. src importers were retargeted in refactor mode (edf13038), tests outside the gate \
+(5de20a56), and test_a7 now asserts the names live in units.display (0504058b), so an AST \
+inventory finds no import of a display name through openflowsheet.units. The step deletes the \
+re-export block at the end of units/__init__.py and the 8 names' __all__ entries (no alias, no \
+__getattr__, no __all__ entry survives). Expected codehealth arch --depth 4 (measured by a \
+simulation of the step at this base): base 4 violations / 4 cycles / 14 cycle edges, after \
+4 / 3 / 12 (the cycle openflowsheet.units <-> openflowsheet.units.display goes with its 2 \
+edges). No layer-config change (rule 6: none)."""
+removed = [
+    "src/openflowsheet/units/__init__.py:DISPLAY_CONVERSION_ID",
+    "src/openflowsheet/units/__init__.py:DISPLAY_KINDS",
+    "src/openflowsheet/units/__init__.py:DISPLAY_ROWS",
+    "src/openflowsheet/units/__init__.py:DisplayUnits",
+    "src/openflowsheet/units/__init__.py:DisplayUnitsError",
+    "src/openflowsheet/units/__init__.py:display_item",
+    "src/openflowsheet/units/__init__.py:parse_display_units",
+    "src/openflowsheet/units/__init__.py:text_unit",
+]
+renamed = {}
+changed = []
+added = []
+new_files = []
+callers = []
