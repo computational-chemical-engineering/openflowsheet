@@ -1491,3 +1491,6 @@
   a609de45->574621df layer config, dbb304a3->5227e2ba, cf66884c->fb99f834 plan I-14, 8292d7e2->ffed4051 I-14,
   45e742b7->0fe4c01b, 2b40c2f2->eed97251. Enqueued fresh: 201 w4r9-i9-iface-3, 202 w4r10-i14-iface-3. Job 196 SKIPPED.
   Review briefs S19-R-W4-9a/9b updated to the new shas and jobs.
+- **2026-11-16 22:36, job 199 PASS (g5r9-revfix, 174045f1 `_RowFloor`, step 256 accepted-neutral, 12.0 -> 12.0,
+  15/15). G5 run 9 closed:** helper wp/S19-g5g-mc (worktree s19-g5g-mc) = 174045f1 + wp/S19 8071cd4c as 94224851;
+  merge-check job 203 (g5r9-mc). Job 196 SKIPPED (pre-fix195 I-14). ALERTs standing.
