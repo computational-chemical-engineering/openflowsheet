@@ -1307,3 +1307,13 @@
   DECISION: no new lane until W4 run 9 is enqueued. Alternative: launch G5 run 9 now. Reason: the f70d7dc re-pin needs
   a queue-idle window and W4 is on the blocking path; a G5 lane would keep the queue busy. Reversible by: launching
   G5 run 9 (brief to write) at any time.
+- **2026-11-16, cce-code-health ec5aaea (code_health; 391 tests): under `no_implicit_reexport`, public_api scans every
+  .py in the working tree for a file that takes a `renamed`/`retargeted` name through its old module (from-import,
+  aliased or not, relative resolved; `<a>.N` with `a` bound to the old module); exempt: the old module, the step's
+  TOUCHED caller files (not the plan's caller globs, deliberately), string patch targets. I-9: 1240 files, ~1 s, 0
+  hits. This replaces guard (a) of the f70d7dc entry: the flag is sound without mypy over tests.** Lane rebuilt
+  again (still never enqueued): 651cc8d0 flag commit (comment names ec5aaea), 1e0eb6ce, 75e424be plan I-5b, ecf46789
+  I-5b, 8671bbdf, caccb2ad plan I-9, 1e0d6bee I-9, 1c8037be layer config; final tree = wp/S19-w4r9-orig + the 4
+  config lines. Re-pin 6529f47 -> ec5aaea at the next queue-idle window, then enqueue: `--snapshot --head`, I-5b base
+  75e424be head ecf46789, I-9 base caccb2ad head 1e0d6bee, layer config 1c8037be (gated with the I-9 row's "after"
+  as before), labels w4r9-*.
