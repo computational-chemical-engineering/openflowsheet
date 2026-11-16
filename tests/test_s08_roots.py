@@ -32,10 +32,10 @@ from openflowsheet.models.syn001.cascade_spec import (
     stage_temperature_id,
     vapor_id,
 )
-from openflowsheet.models.syn001.column import ColumnSpec
 from openflowsheet.models.syn001.column_blocks import BLOCK_ENDPOINT_ID, candidates
 from openflowsheet.models.syn001.column_endpoint import PRESOLVE_ID
 from openflowsheet.models.syn001.column_solve import REENTRY_OUTCOMES, ColumnSolution, solve_column
+from openflowsheet.models.syn001.column_spec import ColumnSpec
 from openflowsheet.orchestrator.region_result import RegionResult
 
 REFERENCE_PATH = REPO_ROOT / "docs" / "derivations" / "scripts" / "s08_reference.json"

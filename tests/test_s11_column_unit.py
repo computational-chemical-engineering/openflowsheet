@@ -24,9 +24,9 @@ from openflowsheet.application.revision_binding import RevisionBinding, bind_rev
 from openflowsheet.models import SpecificationError, UnitEvaluation
 from openflowsheet.models.revision_flowsheet import InstanceView, RevisionError
 from openflowsheet.models.syn001.cascade_solve import DECLARATION_CONTEXT
-from openflowsheet.models.syn001.column import ColumnSpec
 from openflowsheet.models.syn001.column_acceptance import products
 from openflowsheet.models.syn001.column_solve import ColumnSolution, solve_column
+from openflowsheet.models.syn001.column_spec import ColumnSpec
 from openflowsheet.models.syn001.column_unit import ColumnUnit
 from openflowsheet.thermo import StreamState
 

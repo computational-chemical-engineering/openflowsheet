@@ -23,7 +23,7 @@ from openflowsheet.application.column_binding import build_column
 from openflowsheet.application.revision_binding import _COLUMN
 from openflowsheet.models.revision_flowsheet import WILSON_RECORDS
 from openflowsheet.models.syn001.cascade_spec import BOTTOM, TOP
-from openflowsheet.models.syn001.column import CONDENSER, MODEL_ID, REBOILER, ColumnSpec
+from openflowsheet.models.syn001.column_spec import CONDENSER, MODEL_ID, REBOILER, ColumnSpec
 from openflowsheet.models.syn001.column_unit import END_PARAMETERS
 from openflowsheet.units import dimension_of
 from openflowsheet.verify import column, unit_checks

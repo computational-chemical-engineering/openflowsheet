@@ -38,18 +38,7 @@ from openflowsheet.models.syn001.cascade_spec import (
     vapor_id,
     vapor_total_id,
 )
-from openflowsheet.models.syn001.column import (
-    ColumnSpec,
-    EndSpecification,
-    _initial_state,
-    declared_rows,
-    distillate_id,
-    distillate_total_id,
-    profile_initial,
-    reflux_fraction_id,
-    reflux_id,
-    validate,
-)
+from openflowsheet.models.syn001.column import _initial_state, profile_initial
 from openflowsheet.models.syn001.column_acceptance import (
     acceptance_failures,
     regimes_of,
@@ -67,11 +56,21 @@ from openflowsheet.models.syn001.column_endpoint import (
     BubblePointEndpoint,
     bubble_point_endpoint,
 )
+from openflowsheet.models.syn001.column_rows import declared_rows
 from openflowsheet.models.syn001.column_solve import (
     TWO_PHASE_SATURATION_TOLERANCE,
     ColumnSolution,
     solve_column,
 )
+from openflowsheet.models.syn001.column_spec import (
+    ColumnSpec,
+    EndSpecification,
+    distillate_id,
+    distillate_total_id,
+    reflux_fraction_id,
+    reflux_id,
+)
+from openflowsheet.models.syn001.column_validation import validate
 from openflowsheet.models.syn001.gamma_phi_blocks import GammaPhiLnKBlock, probe_flows
 from openflowsheet.models.syn001.saturation_band import band_temperature
 from openflowsheet.numerics.solve_record import Trace

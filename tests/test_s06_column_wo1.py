@@ -37,26 +37,28 @@ from openflowsheet.models.syn001.cascade_spec import (
     vapor_id,
     vapor_total_id,
 )
-from openflowsheet.models.syn001.column import (
-    MULTIPLE_STEADY_STATES_WARNING,
+from openflowsheet.models.syn001.column_acceptance import spec_values
+from openflowsheet.models.syn001.column_rows import declared_rows
+from openflowsheet.models.syn001.column_solve import solve_column
+from openflowsheet.models.syn001.column_spec import (
     NOT_OFFERED,
     ColumnSpec,
     EndSpecification,
-    column_warnings,
-    declared_rows,
     distillate_id,
     distillate_total_id,
     purity_flow_id,
-    purity_reference,
     purity_reference_parameter,
     reflux_id,
-    saturation_temperature,
     slot_column,
+)
+from openflowsheet.models.syn001.column_validation import (
+    MULTIPLE_STEADY_STATES_WARNING,
+    column_warnings,
+    purity_reference,
+    saturation_temperature,
     stage_band,
     validate,
 )
-from openflowsheet.models.syn001.column_acceptance import spec_values
-from openflowsheet.models.syn001.column_solve import solve_column
 from openflowsheet.thermo import FlashRequest, PropertyRequest
 from openflowsheet.thermo.syn001 import Syn001Provider
 

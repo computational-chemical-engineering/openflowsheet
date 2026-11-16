@@ -37,7 +37,7 @@ from openflowsheet.models.syn001.cascade_spec import (
     stage_temperature_id,
     vapor_total_id,
 )
-from openflowsheet.models.syn001.column import ColumnSpec, distillate_total_id, profile_initial
+from openflowsheet.models.syn001.column import profile_initial
 from openflowsheet.models.syn001.column_compile import compile_column, slots
 from openflowsheet.models.syn001.column_endpoint import (
     MAX_SWEEPS,
@@ -52,6 +52,7 @@ from openflowsheet.models.syn001.column_solve import (
     continuation,
     solve_column,
 )
+from openflowsheet.models.syn001.column_spec import ColumnSpec, distillate_total_id
 from openflowsheet.numerics.scaling import Scaling
 from openflowsheet.orchestrator.recovery import (
     EO_CORE_FAILURES,

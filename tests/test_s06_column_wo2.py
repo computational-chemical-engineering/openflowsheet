@@ -47,19 +47,7 @@ from openflowsheet.models.syn001.cascade_spec import (
     vapor_id,
     vapor_total_id,
 )
-from openflowsheet.models.syn001.column import (
-    ColumnSpec,
-    _inflow,
-    _inlet_columns,
-    distillate_id,
-    distillate_total_id,
-    product_flow_id,
-    product_total_id,
-    profile_initial,
-    purity_flow_id,
-    reflux_fraction_id,
-    reflux_id,
-)
+from openflowsheet.models.syn001.column import _inflow, _inlet_columns, profile_initial
 from openflowsheet.models.syn001.column_acceptance import (
     QUOTIENT_SLACK,
     acceptance_failures,
@@ -81,6 +69,16 @@ from openflowsheet.models.syn001.column_solve import (
     continuation,
     solve_column,
     solve_target,
+)
+from openflowsheet.models.syn001.column_spec import (
+    ColumnSpec,
+    distillate_id,
+    distillate_total_id,
+    product_flow_id,
+    product_total_id,
+    purity_flow_id,
+    reflux_fraction_id,
+    reflux_id,
 )
 from openflowsheet.numerics.scaling import REGISTERED_NOMINALS
 from openflowsheet.orchestrator.region_result import RegionAttempt, RegionResult

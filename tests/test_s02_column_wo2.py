@@ -40,20 +40,7 @@ from openflowsheet.models.syn001.cascade_spec import (
     vapor_id,
     vapor_total_id,
 )
-from openflowsheet.models.syn001.column import (
-    ColumnSpec,
-    _inflow,
-    _inlet_columns,
-    declared_rows,
-    distillate_id,
-    distillate_total_id,
-    label_source,
-    profile_initial,
-    reflux_fraction_id,
-    reflux_id,
-    regime_form,
-    validate,
-)
+from openflowsheet.models.syn001.column import _inflow, _inlet_columns, profile_initial, regime_form
 from openflowsheet.models.syn001.column_acceptance import (
     acceptance_failures,
     overall_closure,
@@ -63,6 +50,7 @@ from openflowsheet.models.syn001.column_acceptance import (
 )
 from openflowsheet.models.syn001.column_compile import compile_column, presolve_rows, slots
 from openflowsheet.models.syn001.column_endpoint import PRESOLVE_ID
+from openflowsheet.models.syn001.column_rows import declared_rows
 from openflowsheet.models.syn001.column_solve import (
     DECLARATION_CONTEXT,
     FD_COLUMN_SCALE,
@@ -72,6 +60,15 @@ from openflowsheet.models.syn001.column_solve import (
     solve_column,
     solve_target,
 )
+from openflowsheet.models.syn001.column_spec import (
+    ColumnSpec,
+    distillate_id,
+    distillate_total_id,
+    label_source,
+    reflux_fraction_id,
+    reflux_id,
+)
+from openflowsheet.models.syn001.column_validation import validate
 from openflowsheet.numerics.scaling import (
     REGISTERED_NOMINALS,
     ScaleUnavailableError,

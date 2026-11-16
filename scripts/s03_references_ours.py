@@ -45,7 +45,8 @@ from openflowsheet.models.syn001.cascade_spec import (
     stage_temperature_id,
     vapor_total_id,
 )
-from openflowsheet.models.syn001.column import (
+from openflowsheet.models.syn001.column_solve import S02_TARGET_POLICY, solve_column
+from openflowsheet.models.syn001.column_spec import (
     CONDENSER,
     REBOILER,
     ColumnSpec,
@@ -53,7 +54,6 @@ from openflowsheet.models.syn001.column import (
     product_flow_id,
     reflux_fraction_id,
 )
-from openflowsheet.models.syn001.column_solve import S02_TARGET_POLICY, solve_column
 from openflowsheet.thermo.syn001 import Syn001Provider
 
 ROOT = Path(__file__).resolve().parent.parent

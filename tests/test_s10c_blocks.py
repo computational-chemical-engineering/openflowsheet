@@ -35,12 +35,9 @@ from openflowsheet.models.syn001.cascade_spec import (
     stage_temperature_id,
     vapor_total_id,
 )
-from openflowsheet.models.syn001.column import (
-    ColumnSpec,
-    EndSpecification,
-    declared_rows,
-    regime_form,
-)
+from openflowsheet.models.syn001.column import regime_form
+from openflowsheet.models.syn001.column_rows import declared_rows
+from openflowsheet.models.syn001.column_spec import ColumnSpec, EndSpecification
 from openflowsheet.models.syn001.gamma_phi_blocks import (
     GammaPhiLnKBlock,
     MixtureEnthalpyFlowBlock,

@@ -13,13 +13,12 @@ from test_s02_column_wo1 import PROVIDER, REFERENCE, SPECS, _variant
 from test_s02_column_wo2b import R2, solved
 
 from openflowsheet.models.syn001.cascade_failure import CascadeFailure
-from openflowsheet.models.syn001.column import (
+from openflowsheet.models.syn001.column_solve import ColumnSolution, solve_column
+from openflowsheet.models.syn001.column_spec import ColumnSpec, EndSpecification
+from openflowsheet.models.syn001.column_validation import (
     MULTIPLE_STEADY_STATES_WARNING,
-    ColumnSpec,
-    EndSpecification,
     column_warnings,
 )
-from openflowsheet.models.syn001.column_solve import ColumnSolution, solve_column
 
 WARNING = ("multiple_steady_states_possible(duty_only)",)
 

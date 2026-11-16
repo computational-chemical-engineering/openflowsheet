@@ -34,7 +34,7 @@ from openflowsheet.models import flow_id
 from openflowsheet.models.revision_flowsheet import parse_revision
 from openflowsheet.models.syn001.cascade_solve import S01_DEFAULT_V1
 from openflowsheet.models.syn001.cascade_spec import stage_duty_id, stage_temperature_id
-from openflowsheet.models.syn001.column import ColumnSpec
+from openflowsheet.models.syn001.column_spec import ColumnSpec
 from openflowsheet.orchestrator.execution import ExecutionPlan
 from openflowsheet.orchestrator.executor import execute_plan
 from openflowsheet.orchestrator.policies import T06_REVISION_V2

@@ -37,7 +37,7 @@ from openflowsheet.models.syn001.cascade_spec import (
     vapor_id,
     vapor_total_id,
 )
-from openflowsheet.models.syn001.column import ColumnSpec, EndSpecification, profile_initial
+from openflowsheet.models.syn001.column import profile_initial
 from openflowsheet.models.syn001.column_blocks import (
     BLOCK_ENDPOINT_ID,
     BlockEndpoint,
@@ -49,6 +49,7 @@ from openflowsheet.models.syn001.column_blocks import (
 from openflowsheet.models.syn001.column_compile import compile_column, lifted_splits, slots
 from openflowsheet.models.syn001.column_endpoint import BubblePointEndpoint, bubble_point_endpoint
 from openflowsheet.models.syn001.column_solve import REENTRY_OUTCOMES, ColumnSolution, solve_column
+from openflowsheet.models.syn001.column_spec import ColumnSpec, EndSpecification
 from openflowsheet.orchestrator.roots import branch_found
 from openflowsheet.thermo.syn001 import C_P
 

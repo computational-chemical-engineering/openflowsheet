@@ -27,8 +27,8 @@ from openflowsheet.models.syn001.cascade import property_method_refusal
 from openflowsheet.models.syn001.cascade import validate as cascade_validate
 from openflowsheet.models.syn001.cascade_failure import CascadeFailure
 from openflowsheet.models.syn001.cascade_solve import solve_cascade
-from openflowsheet.models.syn001.column import validate
 from openflowsheet.models.syn001.column_solve import ColumnSolution, solve_column
+from openflowsheet.models.syn001.column_validation import validate
 from openflowsheet.thermo import (
     FlashRequest,
     PropertyCapabilities,
