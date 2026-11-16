@@ -65,7 +65,8 @@ def _split_checks(
     A flowing split judged temperature-degenerate (`distance` is its `δ`; T05b spec §9.1) has
     instead `phase_admissibility.<U>.<S>.saturation` (value `δ`, kind temperature) in place of its
     branch's bubble, dew or closure check, and `independent_split.<U>.<S>` `not_applicable`
-    (`temperature_degenerate`): its fresh flash cannot recompute what the state carries.
+    (`temperature_degenerate`): its fresh flash cannot recompute what the state carries
+    (`_degenerate_split_checks`, returned before the split is read).
 
     An `unresolved` two-phase split (ADR 0013 D3; K04-F9 spec §5.3) keeps its branch's own
     admissibility check — it is not degenerate — and has `independent_split.<U>.<S>`
@@ -76,23 +77,7 @@ def _split_checks(
     checks: list[CheckResult] = []
 
     if distance is not None:
-        return [
-            evaluated(
-                id=f"phase_admissibility.{name}.saturation",
-                category="phase_admissibility",
-                subject=subject,
-                value=distance,
-                tolerance=tolerances["temperature"],
-                reference=KIND_REFERENCE["temperature"],
-                independence_qualification=note,
-            ),
-            dormant(
-                id=f"independent_split.{name}",
-                category="independent_split",
-                subject=subject,
-                reason="temperature_degenerate",
-            ),
-        ]
+        return _degenerate_split_checks(name, subject, distance, tolerances, note)
 
     vapor = tuple(state[column] for column in split.vapor)
     liquid = tuple(state[column] for column in split.liquid)
@@ -190,6 +175,32 @@ def _split_checks(
             )
         )
     return checks
+
+
+def _degenerate_split_checks(
+    name: str, subject: str, distance: float, tolerances: Mapping[str, float], note: str
+) -> list[CheckResult]:
+    """T05b spec §9.1's two checks of the temperature-degenerate split `name` (`<U>.<S>`) whose
+    feed is `distance` (`δ`) from its band: `phase_admissibility.<U>.<S>.saturation`, judged at
+    the temperature kind's tolerance of `tolerances` and qualified by `note`, then
+    `independent_split.<U>.<S>` `not_applicable` (`temperature_degenerate`)."""
+    return [
+        evaluated(
+            id=f"phase_admissibility.{name}.saturation",
+            category="phase_admissibility",
+            subject=subject,
+            value=distance,
+            tolerance=tolerances["temperature"],
+            reference=KIND_REFERENCE["temperature"],
+            independence_qualification=note,
+        ),
+        dormant(
+            id=f"independent_split.{name}",
+            category="independent_split",
+            subject=subject,
+            reason="temperature_degenerate",
+        ),
+    ]
 
 
 def _declared_phase(
