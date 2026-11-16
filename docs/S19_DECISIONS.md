@@ -657,3 +657,12 @@
   directly before the src retarget; src gate base = that commit. Sent to the W4 run 5 engineer mid-run (second
   rebuild, tip of this attempt tagged `s19-w4-r5a`). Brief lesson: a fix "in commit X" means a separate outside-gate
   commit next to X when X is a gated src step and the fix touches tests.
+- **2026-11-16, G5 run 5 delivered (opus-engineer, 144k tokens; lane wp/S19-g5c from 62fdf722).** Steps 8a086d1f
+  (`_issue` parameter object `_WitnessColumns` per R-W3-G5-4, 14.7 -> 11.8), 2e86e892 (`verify_revision`
+  extract-phase, 13.7 -> 8.3; pure non-raising work now runs before `revision_phase_branch`), 3551c828
+  (`_revision_values` loop-body-extract, 9.0 -> 0), 8bf68291 (`_guard`, 8.0 -> 1.0); certificate.py debt 54.2 ->
+  30.1, health 6.4 -> 8.4; jobs 88, 90, 91, 92. For the review: `_require_planned_aliases` has a verbatim twin inline
+  in `verify_bound` (merging drops literals, playbook rule 15); `verify_revision`'s docstring does not name it (rule
+  7, a review-fix docstring candidate); lifting the revision reading is blocked by lazy-import timing (rule 10).
+  Queue: jobs 60-72 (W4 rebuild attempt r5a) descend from failed step 164 and will be SKIPPED; 57 and 59 (stale I-1
+  side chains, superseded by 74) left to finish.
