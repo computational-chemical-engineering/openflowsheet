@@ -26,9 +26,13 @@ from dataclasses import replace
 
 from openflowsheet.compile.spec import ProblemSpec
 from openflowsheet.graph.blocks import BlockTriangularForm, block_triangular_form
-from openflowsheet.graph.certificates import certify
+from openflowsheet.graph.certificates import CertifiedRedundancy, certify
 from openflowsheet.graph.dof import unit_degrees_of_freedom
-from openflowsheet.graph.matching import canonical_matching, dulmage_mendelsohn
+from openflowsheet.graph.matching import (
+    DulmageMendelsohn,
+    canonical_matching,
+    dulmage_mendelsohn,
+)
 from openflowsheet.graph.process import ProcessGraph
 from openflowsheet.graph.report import (
     Finding,
@@ -97,7 +101,7 @@ def analyse_declaration(
     *,
     specification_ids: Mapping[str, str] | None = None,
 ) -> StructuralReport:
-    """§8.1's rule on an already-traced declaration."""
+    """§8.1's rule on an already-traced declaration. The finding itself is `_finding`'s."""
     names = dict(specification_ids or {})
     incidence = declaration.incidence()
     rows, columns = list(declaration.row_ids), list(declaration.column_ids)
@@ -124,25 +128,9 @@ def analyse_declaration(
         if name is not None and name not in candidate_specifications:
             candidate_specifications.append(name)
 
-    finding: Finding
-    implicated_objects: tuple[str, ...] = tuple(implicated)
-    if redundancy.conflicts:
-        finding = "SPECIFICATION_CONFLICT"
-        conflicting = redundancy.conflicts[0]
-        implicated_objects = (conflicting.row_id, *(name for name, _ in conflicting.equals))
-        over_specified = ()
-    elif dm_kept.deficit > 0:
-        finding = "STRUCTURAL_UNDER_SPECIFICATION"
-        implicated_objects = dm_kept.under_cols
-        over_specified = ()
-    elif dm_kept.excess > 0:
-        finding = "STRUCTURAL_OVER_SPECIFICATION"
-        if not implicated_objects:
-            implicated_objects = tuple(candidate_specifications) or dm_kept.over_rows
-    else:
-        finding = "STRUCTURALLY_CLOSED"
-        implicated_objects = ()
-        over_specified = ()
+    finding, implicated_objects, over_specified = _finding(
+        redundancy, dm_kept, implicated, candidate_specifications, over_specified
+    )
 
     form: BlockTriangularForm | None = None
     tear: TearAnalysis | None = None
@@ -206,6 +194,44 @@ def analyse_declaration(
         unsupported=tuple(absent),
         provenance=dict(_PROVENANCE),
     )
+
+
+def _finding(
+    redundancy: CertifiedRedundancy,
+    dm_kept: DulmageMendelsohn,
+    implicated: tuple[str, ...],
+    candidate_specifications: list[str],
+    over_specified: tuple[str, ...],
+) -> tuple[Finding, tuple[str, ...], tuple[str, ...]]:
+    """§8.1's finding, in the order the module docstring gives, with what the report names.
+
+    Returns the finding, the implicated objects and the over-specified units. A conflict names
+    its first conflicting row and the specifications it equals; an under-specification names the
+    under-determined columns of `dm_kept`; an over-specification keeps `implicated`, or else
+    names the candidate specifications, or else the over-determined rows of `dm_kept`; a closed
+    declaration names nothing. Only an over-specification keeps `over_specified`; every other
+    finding reports no over-specified unit.
+    """
+    finding: Finding
+    implicated_objects: tuple[str, ...] = tuple(implicated)
+    if redundancy.conflicts:
+        finding = "SPECIFICATION_CONFLICT"
+        conflicting = redundancy.conflicts[0]
+        implicated_objects = (conflicting.row_id, *(name for name, _ in conflicting.equals))
+        over_specified = ()
+    elif dm_kept.deficit > 0:
+        finding = "STRUCTURAL_UNDER_SPECIFICATION"
+        implicated_objects = dm_kept.under_cols
+        over_specified = ()
+    elif dm_kept.excess > 0:
+        finding = "STRUCTURAL_OVER_SPECIFICATION"
+        if not implicated_objects:
+            implicated_objects = tuple(candidate_specifications) or dm_kept.over_rows
+    else:
+        finding = "STRUCTURALLY_CLOSED"
+        implicated_objects = ()
+        over_specified = ()
+    return finding, implicated_objects, over_specified
 
 
 def with_rows_removed(spec: ProblemSpec, row_ids: frozenset[str]) -> ProblemSpec:
