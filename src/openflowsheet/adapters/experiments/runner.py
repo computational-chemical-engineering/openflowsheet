@@ -190,6 +190,17 @@ def _frozen(failure: Execution) -> Execution:
     return dataclasses.replace(failure, message=message, timing={"wall_s": 0.0})
 
 
+@dataclass(frozen=True)
+class _AttemptId:
+    """Which attempt record `ExperimentRunner._document` builds: the experiment key, the attempt's
+    number under it, and the number of the attempt that produced the stored result it repeats
+    (`None` when no result is stored)."""
+
+    key: str
+    number: int
+    repeat_of: int | None
+
+
 class ExperimentRunner:
     """Runs experiments into one project's records, for one job (or none)."""
 
@@ -404,7 +415,7 @@ class ExperimentRunner:
     ) -> dict[str, Any]:
         number = self.records.next_attempt(key)
         repeat_of = None if existing is None else int(existing["produced_by"]["attempt"])
-        attempt = self._document(key, number, failure, None, 0.0, repeat_of, None)
+        attempt = self._document(_AttemptId(key, number, repeat_of), failure, None, 0.0, None)
         self.records.write_attempt(attempt, self.job_id)
         return attempt
 
@@ -432,6 +443,7 @@ class ExperimentRunner:
         number = self.records.next_attempt(key)
         directory = self.records.attempt_directory(key, number)
         repeat_of = None if existing is None else int(existing["produced_by"]["attempt"])
+        attempt_id = _AttemptId(key, number, repeat_of)
         provider = _Counting(self.provider)
         boundary = Boundary(
             provider=provider,
@@ -475,7 +487,7 @@ class ExperimentRunner:
                 )
                 tube = seen[0][0] if seen else None
                 attempt = self._document(
-                    key, number, cancelled, tube, time.perf_counter() - started, repeat_of, None
+                    attempt_id, cancelled, tube, time.perf_counter() - started, None
                 )
                 self.records.write_attempt(attempt, self.job_id)
         wall = time.perf_counter() - started
@@ -487,7 +499,7 @@ class ExperimentRunner:
         equal: bool | None = None
         if existing is not None and execution.status in DETERMINISTIC:
             equal = not _differing(self._producing(existing), self._execution(execution, tube))
-        attempt = self._document(key, number, execution, tube, wall, repeat_of, equal)
+        attempt = self._document(attempt_id, execution, tube, wall, equal)
         self.records.write_attempt(attempt, self.job_id)
         return attempt, envelope, provider.calls
 
@@ -509,17 +521,17 @@ class ExperimentRunner:
 
     def _document(
         self,
-        key: str,
-        number: int,
+        attempt_id: _AttemptId,
         execution: Execution,
         tube: TubeInlet | None,
         wall_s: float,
-        repeat_of: int | None,
         equal: bool | None,
     ) -> dict[str, Any]:
         body = self._execution(execution, tube)
         if body["logs"] is not None:
-            directory = execution.directory or self.records.attempt_directory(key, number)
+            directory = execution.directory or self.records.attempt_directory(
+                attempt_id.key, attempt_id.number
+            )
             body["logs"]["relpaths"] = {
                 name: self.records.relpath(directory / path)
                 for name, path in body["logs"]["relpaths"].items()
@@ -532,11 +544,11 @@ class ExperimentRunner:
         }
         return {
             "schema_version": ATTEMPT_VERSION,
-            "experiment_key": key,
-            "attempt": number,
+            "experiment_key": attempt_id.key,
+            "attempt": attempt_id.number,
             "job_id": self.job_id,
             "execution": body,
-            "repeat_of": repeat_of,
+            "repeat_of": attempt_id.repeat_of,
             "repeat_bitwise_equal": equal,
         }
 
