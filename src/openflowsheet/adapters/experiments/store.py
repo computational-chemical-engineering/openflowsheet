@@ -177,14 +177,7 @@ class ExperimentStore:
         path.parent.mkdir(parents=True, exist_ok=True)
         handle = os.open(path, os.O_RDWR | os.O_CREAT, 0o644)
         try:
-            while True:
-                try:
-                    fcntl.flock(handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
-                    break
-                except BlockingIOError:
-                    if check is not None:
-                        check()
-                    time.sleep(LOCK_POLL_S)
+            _acquire_lock(handle, check)
             yield
         finally:
             os.close(handle)  # closing the descriptor releases the lock
@@ -286,3 +279,16 @@ class ExperimentStore:
             size_bytes=path.stat().st_size,
             parent_artifact_id=parent,
         )
+
+
+def _acquire_lock(handle: int, check: Callable[[], None] | None) -> None:
+    """Take the exclusive lock on the open descriptor `handle`, trying without blocking every
+    `LOCK_POLL_S` seconds; between tries `check`, if given, is called and may raise."""
+    while True:
+        try:
+            fcntl.flock(handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            return
+        except BlockingIOError:
+            if check is not None:
+                check()
+            time.sleep(LOCK_POLL_S)

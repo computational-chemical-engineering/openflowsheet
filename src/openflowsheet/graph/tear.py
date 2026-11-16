@@ -136,7 +136,8 @@ class TearAnalysis:
 def _strongly_connected(units: Sequence[str], edges: Sequence[tuple[str, str]]) -> list[list[str]]:
     """Kosaraju on the unit digraph, in declaration order. Small graphs; clarity over speed.
 
-    `_finishing_order` is the first pass; the second walks `backward` in reverse finishing order.
+    `_finishing_order` is the first pass; the second walks `backward` in reverse finishing order,
+    one `_assign_component` from each unit no earlier component took.
     """
     forward: dict[str, list[str]] = {unit: [] for unit in units}
     backward: dict[str, list[str]] = {unit: [] for unit in units}
@@ -152,16 +153,7 @@ def _strongly_connected(units: Sequence[str], edges: Sequence[tuple[str, str]]) 
     for unit in reversed(order):
         if unit in assigned:
             continue
-        component: list[str] = []
-        stack = [unit]
-        assigned.add(unit)
-        while stack:
-            node = stack.pop()
-            component.append(node)
-            for previous in backward[node]:
-                if previous not in assigned:
-                    assigned.add(previous)
-                    stack.append(previous)
+        component = _assign_component(unit, backward, assigned)
         components.append(sorted(component, key=units.index))
     return components
 
@@ -193,19 +185,48 @@ def _finishing_order(units: Sequence[str], forward: Mapping[str, list[str]]) -> 
     return order
 
 
+def _assign_component(
+    unit: str, backward: Mapping[str, list[str]], assigned: set[str]
+) -> list[str]:
+    """Kosaraju's second pass from the unassigned `unit`: `unit` and every unit it reaches on
+    `backward` that no earlier component took, in visit order. Adds each to `assigned`, the
+    pass's working state."""
+    component: list[str] = []
+    stack = [unit]
+    assigned.add(unit)
+    while stack:
+        node = stack.pop()
+        component.append(node)
+        for previous in backward[node]:
+            if previous not in assigned:
+                assigned.add(previous)
+                stack.append(previous)
+    return component
+
+
 def _boundary_distances(graph: ProcessGraph) -> dict[str, int]:
-    """Material edges from a boundary unit, breadth first. Unreachable units are absent."""
+    """Material edges from a boundary unit, breadth first, one `_record_next_layer` at a time.
+    Unreachable units are absent."""
     distance: dict[str, int] = {unit: 0 for unit in graph.boundary_units()}
     frontier = list(distance)
     while frontier:
-        following: list[str] = []
-        for unit in frontier:
-            for connection in graph.connections:
-                if connection.producer == unit and connection.consumer not in distance:
-                    distance[connection.consumer] = distance[unit] + 1
-                    following.append(connection.consumer)
-        frontier = following
+        frontier = _record_next_layer(graph, frontier, distance)
     return distance
+
+
+def _record_next_layer(
+    graph: ProcessGraph, frontier: list[str], distance: dict[str, int]
+) -> list[str]:
+    """One breadth-first layer: the units first reached from `frontier` by a material edge, in
+    frontier then connection order. Records each one's distance in `distance`, the search's
+    working state."""
+    following: list[str] = []
+    for unit in frontier:
+        for connection in graph.connections:
+            if connection.producer == unit and connection.consumer not in distance:
+                distance[connection.consumer] = distance[unit] + 1
+                following.append(connection.consumer)
+    return following
 
 
 def analyse_tear(
