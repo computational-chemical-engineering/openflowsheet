@@ -21,7 +21,7 @@ import numpy.typing as npt
 
 from openflowsheet.compile.reference import state_vector
 from openflowsheet.compile.spec import ProblemSpec
-from openflowsheet.compiled import CompiledProblem, EvaluationContext
+from openflowsheet.compiled import CompiledProblem, EvaluationContext, JacobianResult
 from openflowsheet.models import duty_id, flow_id, pressure_id, temperature_id
 from openflowsheet.models.syn001 import (
     FLOW_TOLERANCE,
@@ -1172,10 +1172,7 @@ def derivative_witness(
     if jacobian.status != "ok":
         raise VerifierError(f"the witness could not read the Jacobian: {jacobian.status}")
 
-    exact: dict[tuple[int, int], float] = {}
-    for column in range(len(jacobian.col_ids)):
-        for offset in range(jacobian.indptr[column], jacobian.indptr[column + 1]):
-            exact[(int(jacobian.indices[offset]), column)] = float(jacobian.data[offset])
+    exact = _exact_entries(jacobian)
 
     declared = frozenset(components)
     row_ids = jacobian.row_ids
@@ -1185,28 +1182,20 @@ def derivative_witness(
             continue
         step = FD_RELATIVE_STEP * scaling.column[name]
         column_scale = scaling.column[name]
+        forward = name in one_sided
         # Central (x + h, x - h), or on Z the forward five-point stencil (x + k h, k = 0..4).
-        offsets = _FORWARD_OFFSETS if name in one_sided else _CENTRAL_OFFSETS
+        offsets = _FORWARD_OFFSETS if forward else _CENTRAL_OFFSETS
         points, refusal = _stencil(compiled, context, base, column, step, offsets)
         on, off = 0.0, 0.0
         if refusal is None:
-            scaled = []
-            for row, row_id in enumerate(row_ids):
-                if name in one_sided:
-                    difference = (
-                        -25.0 * points[0][row]
-                        + 48.0 * points[1][row]
-                        - 36.0 * points[2][row]
-                        + 16.0 * points[3][row]
-                        - 3.0 * points[4][row]
-                    ) / (12.0 * step)
-                else:
-                    difference = (points[0][row] - points[1][row]) / (2.0 * step)
-                scaled.append(difference * column_scale / scaling.row[row_id])
+            scaled = [
+                _stencil_difference(points, row, step, forward) * column_scale / scaling.row[row_id]
+                for row, row_id in enumerate(row_ids)
+            ]
             on, off = _discrepancies(scaled, column, column_scale, exact, row_ids, scaling.row)
         # §4.8.3 (a): a class-5 component column with x_j > 0 whose central result is not a pass.
         if (
-            name not in one_sided
+            not forward
             and component_column(name, declared)
             and base[column] > 0.0
             and (refusal is not None or on > DERIVATIVE_TOLERANCE or off > DERIVATIVE_TOLERANCE)
@@ -1229,16 +1218,7 @@ def derivative_witness(
                     escalation.scaled, column, column_scale, exact, row_ids, scaling.row
                 )
         if refusal is not None:
-            reason = f"witness_stencil_{refusal}({name})"
-            return [
-                unsupported(
-                    id=f"derivative_witness.{which}",
-                    category="derivative_witness",
-                    subject="target_jacobian",
-                    reason=reason,
-                )
-                for which in ("on_pattern", "off_pattern")
-            ]
+            return _witness_unsupported(f"witness_stencil_{refusal}({name})")
         worst_on = max(worst_on, on)
         worst_off = max(worst_off, off)
 
@@ -1259,6 +1239,47 @@ def derivative_witness(
             tolerance=DERIVATIVE_TOLERANCE,
             reference=1.0,
         ),
+    ]
+
+
+def _exact_entries(jacobian: JacobianResult) -> dict[tuple[int, int], float]:
+    """§4.8's AD entries J_ij of `jacobian`'s CSC arrays, keyed by `(row, column)`: the pattern
+    the witness compares on, every other entry being off-pattern."""
+    exact: dict[tuple[int, int], float] = {}
+    for column in range(len(jacobian.col_ids)):
+        for offset in range(jacobian.indptr[column], jacobian.indptr[column + 1]):
+            exact[(int(jacobian.indices[offset]), column)] = float(jacobian.data[offset])
+    return exact
+
+
+def _stencil_difference(
+    points: Sequence[Sequence[float]], row: int, step: float, forward: bool
+) -> float:
+    """The registered stencil's difference quotient in `row`, from `_stencil`'s `points`:
+    central (F(x + h) - F(x - h)) / (2 h), or with `forward` (Z, R-831) the forward five-point
+    (-25 F0 + 48 F1 - 36 F2 + 16 F3 - 3 F4) / (12 h)."""
+    if forward:
+        return (
+            -25.0 * points[0][row]
+            + 48.0 * points[1][row]
+            - 36.0 * points[2][row]
+            + 16.0 * points[3][row]
+            - 3.0 * points[4][row]
+        ) / (12.0 * step)
+    return (points[0][row] - points[1][row]) / (2.0 * step)
+
+
+def _witness_unsupported(reason: str) -> list[CheckResult]:
+    """Both witness checks `unsupported` with `reason` (T06 spec §8.2; ADR 0014 D5): a stencil
+    point the compiled function cannot evaluate."""
+    return [
+        unsupported(
+            id=f"derivative_witness.{which}",
+            category="derivative_witness",
+            subject="target_jacobian",
+            reason=reason,
+        )
+        for which in ("on_pattern", "off_pattern")
     ]
 
 
