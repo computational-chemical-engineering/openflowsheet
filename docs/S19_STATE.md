@@ -56,7 +56,7 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 
 ## Next actions (2026-11-16 22:40; self-reset)
 
-Runner pid 2642417. Results consumed up to 188; start `$Q wait --since 188` in the background first. R-W4-9a done: merge, no fixes (23:10). Serial repeat headser2 PID 3980694 (session 916d464e scratchpad, log headser2.log): compare with 1061/801/100, S19_DECISIONS "R-W4-9a reported".
+Runner pid 2642417. Results consumed up to 189; start `$Q wait --since 189` in the background first. R-W4-9a done: merge, no fixes (23:10). Job 202 PASS (step 258); R-W4-9b running (fable, launched 23:25; on a reset, re-launch from its brief). Serial repeat headser2 PID 3980694 (session 916d464e scratchpad, log headser2.log): compare with 1061/801/100, S19_DECISIONS "R-W4-9a reported".
 Lanes at most 2 agents until Thu 19 Nov 13:00. ALERTs persist (proposal 2 with Frank). Merge-checks run on a helper
 branch `wp/S19-<lane>-mc` = lane tip + wp/S19 tip merged in; the merge into wp/S19 takes the helper (`git merge --no-ff
 -F <file> wp/S19-<lane>-mc`), after checking wp/S19 changed only docs/S19_* since the helper's merge. `enqueue

@@ -1524,3 +1524,6 @@
   wrong; park rule 4 for the design lane with both numbers, I-10/I-12 wait.
 - **2026-11-16 23:15, job 203 PASS (g5r9-mc, old helper 94224851, 7/7, debt 23.0 -> 12.0; informative only, no G5
   finding).** The merge waits for job 204 (g5r9-mc2). ALERTs standing (proposal 2 with Frank).
+- **2026-11-16 23:25, job 202 PASS (w4r10-i14-iface-3, ffed4051, step 258 accepted, interface, 17/17). R-W4-9b
+  launched (`reviewer`, model fable, brief S19-R-W4-9b.md with R-W4-9a note 1 appended).** After it: fixes, helper
+  wp/S19-w4-mc (lane tip + wp/S19 tip), merge-check, merge. G6 run 7 brief waits for 9b (agent slots, queue load).
