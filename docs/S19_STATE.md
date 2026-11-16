@@ -52,39 +52,44 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 - Held until the scale probe reports: G1 (orchestrator/, numerics/). Open: ptc.py 6.8 (P3, P4).
 - G-END (below) stays the end criterion for the whole repository.
 
-## Next actions (2026-11-16, ~11:20)
+## Next actions (2026-11-16, ~13:45)
 
-**Map window closed (G-MAP 3 map accepted, MB moved to c3c5793e); runner restarted (pid 1923489).** cce-code-health
-re-pinned to 1f7df37 (imports out of clone detection). `gate_report.py` at every chain-result wake (skill loop step 3);
-expected once lanes carry the new MB: selected tests tier ~150-250 s. Results consumed up to 104; next `$Q wait --since
-104`. No agent running. Lanes at most 2 until Thu 19 Nov 13:00. Tool notes: a re-gate whose base moved cannot use
-`--rerun-of` (log by hand, steps 168, 179); the literal check excludes docstrings; the runner SKIPs any job whose lane
-contains a failed step, at run time; `codehealth scan --json X` writes to X (never a source path).
-1. **G5 run 5**: merged into wp/S19 (bbcaad2d). 2. **G5 run 7**: merged into wp/S19 (2644ea96).
-3. **G5 run 6b** (wp/S19-g5d at 3cdb0d50, steps 188, 190, 192, 193 PASS; R-W3-G5-6 item 1 settled as a playbook rule-6
-   exception, item 2 tests pass): job 119 = merge-check on helper branch wp/S19-g5d-mc (ce9e9d30 = 3cdb0d50 + wp/S19
-   6400b95b; job 119 env error, re-run as job 120). PASS -> `git -C .claude/worktrees/s19-g5d merge --ff-only wp/S19-g5d-mc`, merge wp/S19-g5d into wp/S19
-   (merge commit, `-F <file>`), log, remove worktree s19-g5d-mc and branch wp/S19-g5d-mc.
-4. **W4** (wp/S19-w4): job 118 = step 197 re-gated unchanged on 1f7df37 (`--rerun-of 86`). PASS -> re-enqueue 87, 89,
-   93, 98, 99 with their done-JSON args (`queue/done/<label>.json`: worktree, base, head, mode, plan, target, recipe,
-   reason; `--snapshot --head`; label suffix `-r2`). When all PASS: the layer-config commit (config.toml
-   application-layers line 162 `application.policies` stale; repo-layers adoption comment lines 173-176, 178, 179, 181
-   stale, 177 (A11) and 180 (A14) live, count "(12)" at 172), then R-W4-1 (brief `S19-R-W4-1.md`, extend to the lane
-   tip: runs 2-6, rulings STOP 1/2/3, test_x04 a7, MODEL_ID ruling, run 4's outside-gate module-attribute retargets),
-   merge-check, merge. Tell session code_health when W4 is merged (its v0.2.0 tag waits). Worktrees s19-w4-rg54, -rg54b
-   removable.
-5. G5 then has left: checks.py `derivative_witness` 16.2, compare.py (health 7.4), split_checks 21.0, table
-   `revision_checks` (W4 routing); pr_c1 6.7 / gamma_phi_units 6.4 twins wait for the W4 verify parameter object.
-   Type-only `LiftedSplit` imports via orchestrator.region remain in checks.py:58 and gamma_phi_units.py:80 (W4 I-2
-   may cover them; check at the W4 merge). Design-lane question for the G5 close: split_checks.py component order
-   (:218 vs :259, `_phase_enthalpy` :538/:576), S19_DECISIONS R-W3-G5-7.
+Runner pid 1923489 (running since 09:51Z). Results consumed up to 119; next `$Q wait --since 119`. No agent running.
+Lanes at most 2 until Thu 19 Nov 13:00. Gate report ALERTs (selected ~850 s, ratio 0.66, wait ~71 min) persist after
+the map rebuild: cause measured at job 123 (selection widens 1220 nodes to 199 whole files, S16 B-11); action recorded
+in S19_DECISIONS (a tools-lane design item, design-lane judged; no extra lanes meanwhile). Tool notes: the queue's
+`--rerun-of` must name the run-log step, not the job (job 118 logged by hand as step 199 with `--rerun-of 197
+--result accepted-neutral --head`); a GATE-ERROR marks its head failed in the runner's memory, so re-gate it from a
+second worktree path (job 121) or after a runner restart.
+1. **G5 run 6b**: merged into wp/S19 (8e19c77a).
+2. **W4** (wp/S19-w4, tip 92153233): every step gated PASS through job 129 (steps 199, 204, 205, 207, 209, 211);
+   layer-config commit 92153233 done (arch 4 violations / 3 cycles / 12 edges; repo-layers live: A11, A14;
+   application-layers: revision_run -> validation, types -> contract). Next: extend review brief
+   `S19-R-W4-1.md` to the lane tip and run R-W4-1 (one `reviewer`, Opus; `model: fable` only if a ruling is hard).
+   The brief's run 1 shas: d1f2ff38, edf13038, 5d09ace0 are on the lane; 24f2fc86 is NOT (the lane was rebuilt:
+   run 1's I-5/I-3 tail is now 4a4b08f0..59c076bd). Lane commits after run 1: `git log --no-merges 5d09ace0..92153233`
+   (~50 lane commits, plus docs commits from wp/S19 merges). Cover runs 2-6, rulings STOP 1/2/3 (R-W4-STOP3, ADR 0076
+   addendum, R-1042), test_x04 a7, the surrogate MODEL_ID ruling, run 4's outside-gate module-attribute retargets
+   (grep S19_DECISIONS for each). Then merge-check (W4 lane merged with the wp/S19 tip on a helper branch, `--mode
+   merge-check`), merge into wp/S19, tell session `code_health` (its v0.2.0 tag waits). Worktrees s19-w4-rg54,
+   -rg54b removable.
+3. **G5 run 8** (wp/S19-g5f, steps 201, 208 accepted; job 134 = step 3 `decide_mode` running): when 134 passes, review
+   R-W3-G5-8 (S2; brief to write from S19-R-W3-common.md; reviewer points in S19_DECISIONS "G5 run 8 delivered"),
+   then merge-check, merge.
+4. **G6 run 4** (wp/S19-g6b, steps 200, 202, 203, 206, 210 accepted; jobs 135, 136 = steps 6, 7 render.py): when both
+   pass, review R-W3-G6-4 (certificates.py S2; points in S19_DECISIONS "G6 run 4 delivered"), merge-check, merge.
+5. G5 then has left: compare.py (7.4), split_checks 21.0 (design-lane question R-W3-G5-7: component order :218 vs
+   :259, `_phase_enthalpy` :538/:576), table `revision_checks` (W4 routing), pr_c1 6.7 / gamma_phi_units 6.4 twins
+   (W4 verify parameter object), `replay` 5.3, `closure_check` 5.0 (public parameters). Type-only `LiftedSplit`
+   imports in checks.py and gamma_phi_units.py: check at the W4 merge.
 6. Then W4 items I-4, I-9, I-14 (A11 ruling), I-10, I-11, I-13, I-12a-d, I-19; cycles and violations to 0.
    `wp/S19-g3` and `wp/SP` wait.
 7. Open for Frank (not blocking): confirm R-1042 / option (C) for the T06 self-hash at W4 close; STOP 1 alternative
-   (tool change); a cce-code-health fix for empty `{files}` (needs a push) and for `log --rerun-of` with a moved
-   base; the verify twins ADR 0076 addendum. Docs-pass leftovers as before plus region.py:71, models.lifted
-   docstring, run 4's evidence-manifest scripts (k04, t04, t05, t05b, s02, s10c), scripts/corpus_identity.py import
-   lines, docs/interfaces-frozen.md:90, verify/column.py:103 report string and test_s08_item6.py:90.
+   (tool change); cce-code-health fixes (empty `{files}`; `log --rerun-of` with a moved base; queue `--rerun-of` job
+   vs step; GATE-ERROR not to block a same-head re-gate); the verify twins ADR 0076 addendum; the selection-widening
+   design item. Docs-pass leftovers as before plus region.py:71, models.lifted docstring, run 4's evidence-manifest
+   scripts (k04, t04, t05, t05b, s02, s10c), scripts/corpus_identity.py import lines, docs/interfaces-frozen.md:90,
+   verify/column.py:103 report string and test_s08_item6.py:90.
 
 ## Gates (pass numbers fixed after A1, before step 1)
 

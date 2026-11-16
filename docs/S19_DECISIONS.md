@@ -806,3 +806,89 @@
 - **2026-11-16, G-MAP 3 (map at c3c5793e, quiet build): 20483 tests (20370 passed, 109 skipped, 4 failed), pytest exit 1, 3473 s, 25.7 MB.** Failed = the B-6 set (m04_wo9 a25, a29; x02_wo4 g4e x2), so the unsure set is those four only; s09 a20 and both t07 budget tests passed. Criterion "no unsure test in a file over ~60 s": MISS (test_m04_wo9_synthetic_loop.py ~77 s in the profile under load; x02_wo4 unmeasured). DECISION: accept the map and move MB 736f70db -> c3c5793e. The B-6 failures are deterministic in every map since S16, so a re-run cannot cure them, and the unsure set is a strict subset of the old map's (which also held s09 and the t07 files). Alternative: re-run the build (same four failures expected). Reversible by: MB back to 736f70db (its map is kept). Lanes branch from or merge the wp/S19 tip to use it; queued W4 jobs keep MB 736f70db from their own state file.
 - **2026-11-16, runner restarted (pid 1923489).** Job 118: W4 step 197 re-gated unchanged on 1f7df37 (`--rerun-of 86`, snapshot ee5eb4d8..0dc0558e). Jobs 87, 89, 93, 98, 99 are re-enqueued after 118 passes (the runner skips a lane with a failed step). Job 119: G5 run 6b merge-check, helper branch wp/S19-g5d-mc rebuilt on 3cdb0d50 with wp/S19 6400b95b merged (ce9e9d30; the old helper at 3e1c7f62 deleted). PASS -> fast-forward wp/S19-g5d to ce9e9d30, merge into wp/S19.
 - **2026-11-16, job 119 GATE-ERROR rc=2 (run 6b merge-check): environment.** The gate's base checkout `.git/codehealth/base-6400b95b…` was prunable (its gitdir link gone), so `scripts/codehealth_frozen.py` found no `benchmarks/f0/corpus.json`. Pruned (`git worktree prune`), removed the directory, re-enqueued unchanged as job 120 (merge-check takes no `--rerun-of`). Cause not determined (possibly a concurrent base checkout or cleanup); watch for a repeat.
+- **2026-11-16, job 120 SKIPPED ("built on the failed step ce9e9d30"): the runner keeps the heads of failed snapshot
+  jobs per worktree in memory, and job 119's GATE-ERROR counts as failed, so a re-gate of the same head from the same
+  worktree is skipped for the runner's lifetime.** DECISION: re-enqueue from a second worktree path (detached
+  `.claude/worktrees/s19-g5d-mc2` at ce9e9d30) as job 121, rather than kill the runner during job 118 (W4 step 197
+  re-gate). Alternative: restart the runner after 118. Reversible by: nothing to revert (bookkeeping only). Tool note
+  for the next tools lane: an environment GATE-ERROR should not mark a head failed, or a re-enqueue of the same head
+  should clear it; a PASS should clear its head.
+- **2026-11-16, G5 run 8 and G6 run 4 briefed and started (opus-engineer x2, base 209ed607 = wp/S19 tip, MB
+  c3c5793e).** G5 run 8 (`S19-W3-G5-8.md`, wp/S19-g5f): verify/checks.py `derivative_witness` 16.2, `escalate_column`
+  8.0, then run/replay.py `decide_mode` 8.0; S2, at most 4 steps. G6 run 4 (`S19-W3-G6-4.md`, wp/S19-g6b):
+  registry `_add_package` 19.5, launcher `launch` 14.8, graph/certificates `certify` 23.0 (S2), messages/render.py
+  (health 7.0). Both avoid W4's import lines and units/__init__.py. Scan at ce9e9d30 (wp/S19 + run 6b): repo debt
+  4892.1, health 8.05, brain 26. S19-W3-common.md now names cce-code-health 1f7df37.
+- **2026-11-16, job 118 PASS (W4 step 197 re-gated unchanged on cce-code-health 1f7df37, ee5eb4d8..0dc0558e, 15/15,
+  354.7 -> 354.7); the runner's log failed ("--rerun-of 86: the last step for this tree and base is 197": `--rerun-of`
+  takes the run-log step, not the queue job).** Logged by hand as step 199 (accepted-neutral, `--rerun-of 197 --head
+  0dc0558e`). Re-enqueued the five skipped W4 jobs unchanged as snapshots, labels `-r2`: 125 (batch D interface),
+  126 (I-8e src), 127 (I-8e interface), 128 (I-8f src), 129 (I-8f interface). Tool note: the queue's `--rerun-of`
+  should take or map to the run-log step. Report: ALERTs selected 1008 s > 300 s, ratio 0.78 > 0.4, wait median
+  100 min > 15 min (the share ALERT cleared); the W4 jobs still carry ref-base 736f70db; action unchanged.
+- **2026-11-16, G5 run 8 delivered (opus-engineer, Opus): wp/S19-g5f, base 209ed607, 3 steps queued (123 g5r8-1,
+  132 g5r8-2, 134 g5r8-3).** d8e21d1a `derivative_witness` 16.2 -> 1.0 (loop-body-extract, frozen `_WitnessFrame`,
+  `_ColumnWitness`); ce638e4c `escalate_column` 8.0 -> 3.0 (rest is its 8 public parameters, W4); d6769618
+  `decide_mode` 8.0 -> 0. checks.py 36.7 -> 17.5 (health 7.1 -> 8.4), replay.py 15.3 -> 7.3 (8.7 -> 9.2). For the
+  reviewer (R-W3-G5-8): step 1 reads `scaling.column`/`.row` once per frame instead of per column, and moves the
+  `escalations[name]` write after a pure `_discrepancies` call; step 2 evaluates the `all(<=)` test when a level is
+  barred (pure float comparison, result unused then). Left: `_identity()` order in `decide_mode` (Environment(**)
+  may raise), `replay` 5.3, `closure_check` 5.0 (public parameters, W4).
+- **2026-11-16, G6 run 4 delivered (opus-engineer, Opus): wp/S19-g6b, base 209ed607, 7 steps queued (122, 124, 130,
+  131, 133, 135, 136; labels g6r4-1..7), all extract-phase.** `_add_package` 19.5 -> 0 (`_package_descriptors` 7.0
+  -> 4.0 by `_message_catalogue`); `launch` 14.8 -> 10.0 (`_exit_failure`; rest is public parameters and the
+  `ended` closure; a `**extra` helper was dropped: the tool counts `**kwargs` as 3 parameters, many_args); `certify`
+  23.0 -> 0 in 2 steps (`_copy_coefficients`, `_certified_kind`; S2); `_by_type` 8.0 -> 4.0, `_from_entry` 5.0 ->
+  2.0. Files: registry 22.5 -> 7.0 (9.0 -> 9.3), launcher 15.8 -> 11.0 (8.8), certificates 23.0 -> 0 (9.5 -> 10.0),
+  render 24.0 -> 17.0 (7.0 -> 7.5). Local scans; repo 4991.5 -> 4941.2. Reviewer (R-W3-G6-4) before merge:
+  certificates.py S2; step 3 reads `exit_code`/`signal_number` from values captured at the old point.
+- **2026-11-16, job 121 PASS (G5 run 6b merge-check, full suite, 6400b95b..ce9e9d30, 15/15, 127.4 -> 28.0). Merged
+  wp/S19-g5d into wp/S19 (8e19c77a)** after fast-forwarding it to ce9e9d30; wp/S19 gained only docs since 6400b95b.
+  Removed worktrees s19-g5d-mc, s19-g5d-mc2, s19-g5d and branch wp/S19-g5d-mc. No gate report: a merge-check is not a
+  chain result.
+- **2026-11-16, job 122 PASS (G6 run 4 step 1, efa7c787, step 200 accepted, 22.5 -> 10.0, 16/16).** First gate on
+  the new MB c3c5793e: tests tier selected 3752 tests (135 files), wall 704 s; registry/__init__.py is imported almost
+  everywhere, so this is not the expected 150-250 s case. Report: ALERTs selected median 991 s > 300 s, ratio 0.77,
+  wait median 100 min; action unchanged until more new-MB gates land.
+- **2026-11-16, job 123 PASS (G5 run 8 step 1, d8e21d1a, step 201 accepted, 36.7 -> 22.5, 16/16).** Second gate on
+  MB c3c5793e: tests tier selected 199 files, 5078 passed, wall 699 s. Report: ALERTs selected median 970 s > 300 s,
+  ratio 0.75 > 0.4, wait median 97 min > 15 min. The map rebuild (the ALERTs' recorded action) is done and the
+  ALERTs persist, so the cause is not the map's age. Measured on d8e21d1a (`select --base c3c5793e --since 209ed607
+  --import-time-by-file`): 1220 node ids (`--nodes`) widen to 199 whole files (5078 tests), a 4x widening that is
+  deliberate (S16 B-11: module-scoped fixtures and order-dependent files; docs/test-impact.md:75-77).
+  DECISION: ALERT action -> a tools-lane design item, not a gate change now: narrow the widening to the files that
+  need it (a recorded list of files with module-scoped fixtures or order dependence, everything else by node id),
+  judged by a design-lane pass before any change, because selection soundness is at stake. Until then no extra
+  lanes are added to the queue (its wait, not engineer time, limits throughput). Alternative: `--nodes` everywhere
+  (unsound per B-11). Reversible by: nothing changed yet.
+- **2026-11-16, job 124 PASS (G6 run 4 step 2, df706f79, step 202 accepted, 10.0 -> 7.0, 16/16).** Report: ALERTs
+  as at job 123 (widening; action recorded there).
+- **2026-11-16, job 130 PASS (G6 run 4 step 3, 201baec8, `launch`, step 203 accepted, 15.8 -> 11.0, 16/16).**
+  Report: ALERTs as at job 123.
+- **2026-11-16, job 125 PASS (W4 run 5b, batch D interface, 5356e0d4..7cd01494, step 204 accepted, 11.0 -> 11.0,
+  17/17).** Report: ALERTs as at job 123.
+- **2026-11-16, job 126 PASS (W4 run 5b, I-8e src, 2998c6fd..fb10af23, step 205 accepted-neutral, 11.0 -> 11.0,
+  15/15).** Report: ALERTs as at job 123.
+- **2026-11-16, job 131 PASS (G6 run 4 step 4, 85784bd8, `certify` -> `_copy_coefficients`, step 206 accepted,
+  23.0 -> 7.0, 16/16).** Report: ALERTs as at job 123.
+- **2026-11-16, job 127 PASS (W4 run 5b, I-8e interface, 69d0a17d..ad40c05d, step 207 accepted, 27.1 -> 27.1,
+  17/17).** Report: ALERTs as at job 123.
+- **2026-11-16, job 132 PASS (G5 run 8 step 2, ce638e4c, `escalate_column`, step 208 accepted, 22.5 -> 17.5,
+  16/16).** Report: ALERTs as at job 123.
+- **2026-11-16, job 128 PASS (W4 run 6, I-8f src, ad40c05d..f9dec891, step 209 accepted-neutral, 192.4 -> 192.4,
+  15/15).** Report: ALERTs as at job 123.
+- **2026-11-16, job 133 PASS (G6 run 4 step 5, b1792fdb, `certify` -> `_certified_kind`, step 210 accepted,
+  7.0 -> 0, 16/16).** Report: ALERTs as at job 123.
+- **2026-11-16, job 129 PASS (W4 run 6, I-8f interface, eb6af70f..f33bcf8b, step 211 accepted, 35.1 -> 35.1,
+  17/17): every W4 step re-gated PASS.** Layer-config commit 92153233 on wp/S19-w4: application-layers drops the
+  stale `application.policies` entry (it matched no module, arch WARNING gone); the repo-layers adoption comment
+  lists the two live entries only (A11 messages.catalogue -> registry, A14 run.session -> application.binding),
+  measured with `codehealth arch --depth 4` at the tip: 4 violations, 3 cycles, 12 edges, unchanged by the commit
+  (it is config comments and one stale entry; the merge-check gates it). Next: R-W4-1 extended to the lane tip.
+  Self-reset here (context ~100k).
+- **2026-11-16, job 134 PASS (G5 run 8 step 3, d6769618, `decide_mode`, step 212 accepted, 15.3 -> 7.3, 16/16):
+  G5 run 8 all gated.** Report: ALERTs as at job 123 (selected 789 s, ratio 0.62, wait median 71 min; widening,
+  action recorded there). R-W4-1 split in two (span ~70 commits): briefs `S19-R-W4-1a.md` (I-5, I-3, I-6, I-1, I-2,
+  I-7; supersedes `S19-R-W4-1.md`, whose run-1 shas changed in the gate-152 rebuild) and `S19-R-W4-1b.md` (I-8 A-F,
+  layer config). Launched: R-W4-1a and R-W3-G5-8 (`S19-R-W3-G5-8.md`), both `reviewer` on Opus; R-W4-1b next free
+  slot, then R-W3-G6-4 after jobs 135-136.
