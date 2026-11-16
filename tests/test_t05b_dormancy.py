@@ -57,13 +57,14 @@ from test_t05_w11_cases import case_document
 
 from openflowsheet.application.revision_binding import RevisionBinding
 from openflowsheet.graph.trace import trace_declaration
+from openflowsheet.models.lifted import DormancyForm
 from openflowsheet.models.revision_flowsheet import parse_revision
 from openflowsheet.models.syn001 import TEMPERATURE_TOLERANCE
 from openflowsheet.numerics.solve_record import SolvePolicy, Trace
 from openflowsheet.orchestrator.execution import ExecutionPlan, declaration_identity
 from openflowsheet.orchestrator.executor import PlanResult, execute_plan
 from openflowsheet.orchestrator.recovery import eo_recovery_due, solver_outcomes
-from openflowsheet.orchestrator.region import DormancyForm, RegionResult
+from openflowsheet.orchestrator.region import RegionResult
 from openflowsheet.orchestrator.revision import instances_of, plan_revision
 from openflowsheet.orchestrator.splits import (
     DORMANCY_RULES,

@@ -25,10 +25,11 @@ from test_t05_w11_cases import case_document
 
 import openflowsheet.orchestrator.executor as executor_module
 from openflowsheet.compile.casadi_backend import compile_problem
+from openflowsheet.models.lifted import LiftedSplit
 from openflowsheet.numerics.solve_record import Trace
 from openflowsheet.orchestrator.executor import execute_plan
 from openflowsheet.orchestrator.mass import residence_time
-from openflowsheet.orchestrator.region import LiftedSplit, solve_region
+from openflowsheet.orchestrator.region import solve_region
 from openflowsheet.orchestrator.revision import (
     InitialStateFailure,
     initial_state,

@@ -2676,7 +2676,7 @@ def _a26(runs: Runs, ref: Mapping[str, Any]) -> tuple[bool, Any, Any]:
     (`test_t05_coupled.BRANCH_FOUND`, spec A26's literal) in declaration order."""
     from dataclasses import fields as dataclass_fields
 
-    from openflowsheet.orchestrator.region import LiftedSplit
+    from openflowsheet.models.lifted import LiftedSplit
     from openflowsheet.orchestrator.revision import instances_of
     from openflowsheet.orchestrator.splits import lifted_splits
 

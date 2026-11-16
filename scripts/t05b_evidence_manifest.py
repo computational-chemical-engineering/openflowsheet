@@ -119,6 +119,7 @@ from t05b_support import DORMANT_NON_LIFTED_CASES, Biased, Jump, number
 
 import openflowsheet.verify.certificate as p5_certificate_module
 from openflowsheet.canonical import canonical_json, file_sha256
+from openflowsheet.models.lifted import DormancyForm
 from openflowsheet.models.revision_flowsheet import parse_revision
 from openflowsheet.models.syn001 import TEMPERATURE_TOLERANCE
 from openflowsheet.models.syn001.admission import admitted_enthalpy
@@ -138,7 +139,6 @@ from openflowsheet.orchestrator.execution import ExecutionPlan
 from openflowsheet.orchestrator.executor import execute_plan
 from openflowsheet.orchestrator.region import (
     TP_REGIME,
-    DormancyForm,
     RegionResult,
     _band_regime,
     _contract_kernel,

@@ -49,17 +49,13 @@ from test_t05_coupled import POLICY as POLICY_V1
 
 from openflowsheet.application.revision_binding import RevisionBinding
 from openflowsheet.graph.trace import Declaration, trace_declaration
+from openflowsheet.models.lifted import ZeroFlowForm
 from openflowsheet.models.syn001 import TEMPERATURE_TOLERANCE
 from openflowsheet.numerics.solve_record import SolvePolicy
 from openflowsheet.orchestrator import splits as splits_module
 from openflowsheet.orchestrator.execution import ExecutionPlan, declaration_identity
 from openflowsheet.orchestrator.executor import PlanResult, execute_plan
-from openflowsheet.orchestrator.region import (
-    RegionResult,
-    ZeroFlowForm,
-    _attempt_screen,
-    _contract_kernel,
-)
+from openflowsheet.orchestrator.region import RegionResult, _attempt_screen, _contract_kernel
 from openflowsheet.orchestrator.revision import instances_of, plan_revision
 from openflowsheet.orchestrator.splits import (
     SPLIT_RULES,

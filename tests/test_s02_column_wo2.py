@@ -24,6 +24,7 @@ import openflowsheet.orchestrator.region_attempts as region_attempts
 from openflowsheet.compile.reference import row_values
 from openflowsheet.compile.spec import ProblemSpec
 from openflowsheet.graph.trace import trace_declaration
+from openflowsheet.models.lifted_tolerance import KIND_TOLERANCE
 from openflowsheet.models.syn001 import FLOW_TOLERANCE
 from openflowsheet.models.syn001.cascade import (
     declared_problem,
@@ -77,7 +78,7 @@ from openflowsheet.numerics.scaling import (
     Scaling,
 )
 from openflowsheet.numerics.solve_record import Trace
-from openflowsheet.orchestrator.region import KIND_TOLERANCE, RegionResult
+from openflowsheet.orchestrator.region import RegionResult
 from openflowsheet.orchestrator.roots import same_root
 from openflowsheet.orchestrator.splits import check_agreement
 
@@ -507,7 +508,7 @@ def test_a17_phi_is_dimensionless_with_scale_one() -> None:
     """A17: M2's `phi` is `dimensionless`; `Scaling.from_spec` builds for M2 and V-M2's two
     sets with `column[phi] == 1.0` and every other entry its kind's nominal; the kind is in
     neither tolerance table."""
-    from openflowsheet.orchestrator.region import KIND_TOLERANCE as REGION_TOLERANCE
+    from openflowsheet.models.lifted_tolerance import KIND_TOLERANCE as REGION_TOLERANCE
 
     for spec in (
         SPECS["M2"],

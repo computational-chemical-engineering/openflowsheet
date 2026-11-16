@@ -60,12 +60,11 @@ from t05b_support import (
     solve_from_v2,
 )
 
+from openflowsheet.models.lifted import DormancyForm, LiftedSplit
 from openflowsheet.numerics.solve_record import Trace
 from openflowsheet.orchestrator import region as region_module
 from openflowsheet.orchestrator import region_problem
 from openflowsheet.orchestrator.region import (
-    DormancyForm,
-    LiftedSplit,
     RegionResult,
     _contract_kernel,
     _items,

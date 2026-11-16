@@ -29,6 +29,7 @@ from openflowsheet.compile.spec import ProblemSpec
 from openflowsheet.compiled import CompiledProblem, EvaluationContext
 from openflowsheet.graph.analysis import analyse
 from openflowsheet.graph.trace import trace_declaration
+from openflowsheet.models.lifted_tolerance import EQUILIBRIUM_TOLERANCE
 from openflowsheet.models.syn001.flowsheet import Syn001Flowsheet
 from openflowsheet.numerics.solve_record import RecyclePolicy, SolvePolicy
 from openflowsheet.orchestrator.execution import (
@@ -36,12 +37,7 @@ from openflowsheet.orchestrator.execution import (
     build_execution_plan,
     declaration_identity,
 )
-from openflowsheet.orchestrator.region import (
-    EQUILIBRIUM_TOLERANCE,
-    RegionResult,
-    solve_region,
-    syn001_lifted_splits,
-)
+from openflowsheet.orchestrator.region import RegionResult, solve_region, syn001_lifted_splits
 from openflowsheet.orchestrator.tear import INITIALIZER_ID, Syn001TearProblem, solve_tear
 from openflowsheet.thermo.syn001 import Syn001Provider
 

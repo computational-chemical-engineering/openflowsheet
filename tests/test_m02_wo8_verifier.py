@@ -27,13 +27,13 @@ from test_t05_table_independence import violations
 
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models.c1.phase import classify
+from openflowsheet.models.lifted import LiftedSplit
 from openflowsheet.models.revision_flowsheet import (
     SYN001_BASIS,
     RevisionError,
     component_basis,
     parse_revision,
 )
-from openflowsheet.orchestrator.region import LiftedSplit
 from openflowsheet.orchestrator.revision import instances_of
 from openflowsheet.orchestrator.splits import lifted_splits
 from openflowsheet.thermo import FlashRequest, StreamState

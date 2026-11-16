@@ -41,10 +41,9 @@ from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.revision_routes import ApplicationRevisionRoutes
 from openflowsheet.application.revision_run import registered_case, registered_flowsheet
 from openflowsheet.compiled import EvaluationContext
-from openflowsheet.models.lifted import AdmissibilityRefusal
+from openflowsheet.models.lifted import AdmissibilityRefusal, LiftedSplit
 from openflowsheet.numerics.solve_record import SolvePolicy
 from openflowsheet.orchestrator.region import (
-    LiftedSplit,
     _LiftedOps,
     _reference_k_values,
     _screen,

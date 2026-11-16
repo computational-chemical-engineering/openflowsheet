@@ -35,6 +35,7 @@ from openflowsheet.compiled import EvaluationContext
 from openflowsheet.graph.analysis import analyse
 from openflowsheet.graph.trace import trace_declaration
 from openflowsheet.models import Wiring, flow_id, pressure_id, temperature_id
+from openflowsheet.models.lifted_tolerance import KIND_TOLERANCE
 from openflowsheet.models.syn001 import MOLAR_FLOW
 from openflowsheet.models.syn001.flowsheet import Syn001Flowsheet
 from openflowsheet.numerics.ptc import PtcProblem, pseudo_step_direction, row_signs
@@ -57,7 +58,6 @@ from openflowsheet.orchestrator.mass import (
     syn001_residence_time,
 )
 from openflowsheet.orchestrator.region import (
-    KIND_TOLERANCE,
     RegionResult,
     region_ptc_problem,
     solve_region,

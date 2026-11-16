@@ -23,6 +23,7 @@ from test_s06_column_wo1 import J_CASES, U_SETS
 import openflowsheet.models.syn001.cascade_solve as cascade_solve_module
 import openflowsheet.models.syn001.column_blocks as blocks_module
 from openflowsheet.compile.reference import row_values
+from openflowsheet.models.lifted_tolerance import KIND_TOLERANCE
 from openflowsheet.models.syn001 import ENERGY_TOLERANCE
 from openflowsheet.models.syn001.cascade import (
     CascadeFailure,
@@ -55,7 +56,6 @@ from openflowsheet.models.syn001.column_solve import (
     solve_column,
 )
 from openflowsheet.models.syn001.saturation_band import BandError, BandTemperature
-from openflowsheet.orchestrator.region import KIND_TOLERANCE
 from openflowsheet.orchestrator.roots import branch_found
 from openflowsheet.thermo.syn001 import C_P
 

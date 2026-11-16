@@ -29,6 +29,7 @@ import openflowsheet.models.syn001.column_endpoint as endpoint_module
 import openflowsheet.models.syn001.column_solve as solve_module
 import openflowsheet.orchestrator.region_attempts as region_attempts
 from openflowsheet.compile.reference import row_values
+from openflowsheet.models.lifted_tolerance import KIND_TOLERANCE
 from openflowsheet.models.syn001.cascade import (
     CascadeFailure,
     liquid_total_id,
@@ -57,7 +58,7 @@ from openflowsheet.orchestrator.recovery import (
     eo_recovery_due,
     solver_outcomes,
 )
-from openflowsheet.orchestrator.region import KIND_TOLERANCE, SolveOutcome
+from openflowsheet.orchestrator.region import SolveOutcome
 from openflowsheet.orchestrator.roots import same_root
 
 #: §18.6 A05: the endpoints the generator registers — M1–M4 and the six regular variant sets

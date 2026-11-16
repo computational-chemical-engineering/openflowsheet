@@ -24,6 +24,7 @@ import openflowsheet.models.syn001.column_endpoint as column_endpoint
 import openflowsheet.models.syn001.column_rows as column_rows_module
 import openflowsheet.models.syn001.column_solve as column_solve
 from openflowsheet.compile.reference import row_values
+from openflowsheet.models.lifted_tolerance import KIND_TOLERANCE
 from openflowsheet.models.syn001 import ENERGY_TOLERANCE
 from openflowsheet.models.syn001.cascade import (
     CascadeFailure,
@@ -73,7 +74,6 @@ from openflowsheet.models.syn001.column_solve import (
 from openflowsheet.models.syn001.gamma_phi_blocks import GammaPhiLnKBlock, probe_flows
 from openflowsheet.models.syn001.saturation_band import band_temperature
 from openflowsheet.numerics.solve_record import Trace
-from openflowsheet.orchestrator.region import KIND_TOLERANCE
 from openflowsheet.orchestrator.roots import branch_found
 from openflowsheet.thermo import StreamState
 
