@@ -642,3 +642,7 @@
   SOLVER_ENTRIES imports to {numerics.linear}; no Frank. Full text and falsifiers:
   `<git-common-dir>/codehealth/briefs/S19-R-W4-STOP3-ruling.md`. W4 run 5 (rebuild, brief `S19-W4-5.md`,
   opus-engineer) launched.
+- **2026-11-16, G5 run 4 merged into wp/S19 (62fdf722).** Job 48 merge-check PASS at 3fdead1e (15/15, full suite),
+  job 51 (review-fix docstrings 846a705f) PASS no-gain (step 163). Worktrees s19-g5, s19-g5b removed. G5 run 5
+  briefed (`S19-W3-G5-5.md`, lane wp/S19-g5c from 62fdf722: `_issue` parameter object per R-W3-G5-4, then
+  verify_revision, _revision_values, _guard), opus-engineer launched alongside W4 run 5 (2 lanes).
