@@ -6,7 +6,9 @@ table forms. `CATALOGUE` is the lazy process singleton: the core is read on firs
 may `register()` its own namespaced document until the first lookup, and the first lookup freezes
 the key set (§4.11). Its first lookup runs the before-freeze hook the registry installed at its
 import (ADR 0060 D8, ADR 0076 I-14): it builds the extension registry, which registers every
-installed extension's document, so they are present whatever the call order.
+installed extension's document, so in a process that has imported the registry they are present
+whatever the call order. A process that never imports it (`messages.render` alone) freezes the core
+catalogue alone (ADR 0076 FQ-B).
 Codes are stable: a key is never removed or renamed, only deprecated.
 
 Neither the format id nor the content digest enters any identity, hash or explanation (§3.2).
