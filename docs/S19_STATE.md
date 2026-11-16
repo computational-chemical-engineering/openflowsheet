@@ -54,7 +54,7 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 
 ## Next actions (2026-11-16, ~07:30)
 
-**Map rebuild (G-MAP 3) when the queue drains, before new lane work is gated; then move MB** (S19_DECISIONS, gate speed). `gate_report.py` at every chain-result wake (skill loop step 3). Gate queue: runner pid 1056796. Results consumed up to 76; next: `$Q wait --since 76`. No agent running (self-reset
+**Map rebuild (G-MAP 3) when the queue drains, before new lane work is gated; then move MB** (S19_DECISIONS, gate speed). `gate_report.py` at every chain-result wake (skill loop step 3). Expected after the rebuild: selected tests tier ~150-250 s; open gate-speed options (xdist group for t07_v17; merge-check-only cadence, design lane) in S19_DECISIONS, gate profile. Gate queue: runner pid 1056796. Results consumed up to 76; next: `$Q wait --since 76`. No agent running (self-reset
 2026-11-16 ~07:30). Lanes at most 2 until Thu 19 Nov 13:00. Review briefs `S19-R-W3-G5-6.md` (updated to run 6b's
 shas) ready. Tool note: a re-gate whose base moved cannot use `--rerun-of`; log by hand with a plain `codehealth log
 --head SHA --result accepted-neutral --reason ...` from the lane worktree (steps 168, 179). The gate's literal check
