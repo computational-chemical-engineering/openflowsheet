@@ -1437,3 +1437,15 @@
   rebase cannot match by design; enqueue such re-runs as fresh steps. ALERTs standing.
 - **2026-11-16 22:05, job 193 PASS (g5r9-4, bfe9e545, step 252 accepted, 8.0 -> 7.0, 16/16). G5 run 9 fully gated;
   review R-W3-G5-9 launched (reviewer, Opus, brief S19-R-W3-G5-9.md).** ALERTs standing.
+- **2026-11-16 22:15, R-W3-G5-9 (reviewer, Opus, 90k tokens): behaviour unchanged in all 4 steps; verdict: do not
+  merge 24f772cc (step 2), merge 55be9616, 7338568e, bfe9e545 after fix 2.** Step 2 is playbook.md:130 exactly (lifts
+  the dict branch of a structural-recursion walker, leaves the list branch, creates mutual recursion; v1 frozen by ADR
+  0025 D1.4, gain is nesting credit only; S17 rejected the same pattern in b29aea3c): revert alone (applies cleanly).
+  Step 1 kept (v2 was already mutually recursive through `_variables`/`_phase_branch_flow`; the branch is the §5
+  key-rule concept with its own `_ComparedObject`). Step 4 ruling: a real parameter object (data clump returned by
+  `_sibling_floor`/`_kind_floor`), but a bare tuple: replace by `_RowFloor` NamedTuple (compare.py:321, 681, 702, 726,
+  902, 928, 930; docstring at 708 to name `(floor, None)`). Note: object nesting now costs 2 frames per level in v2
+  (RecursionError only at pathological depth; accepted). Consequence: compare.py debt ends at 12.0 - 1.0 = about 11,
+  file below health 9.0. DECISION: one sonnet-implementer (brief S19-W3-G5-9-fix.md) commits the revert (mode revert,
+  label g5r9-revert2) and `_RowFloor` (no-gain, g5r9-revfix), both enqueued; then helper merge-check and merge.
+  Alternative: opus-engineer. Reason: both fixes fully specified with line anchors.
