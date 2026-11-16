@@ -175,46 +175,62 @@ def certify(
     uncertified: list[str] = []
 
     for kind, tolerance in CERTIFIABLE_KINDS.items():
-        forest = _Forest()
-        forest.add(CONST)
-        for row_id in considered:
-            row = declaration.rows[row_id]
-            if row.kind != kind:
-                continue
-            over = _copy_coefficients(row, kind, declaration.column_kinds)
-            if over is None:
-                uncertified.append(row_id)
-                continue
-
-            positive = next((name for name, value in over.items() if value > 0.0), CONST)
-            negative = next((name for name, value in over.items() if value < 0.0), CONST)
-            forest.add(positive)
-            forest.add(negative)
-
-            if not forest.connected(positive, negative):
-                forest.link(positive, negative, row_id)
-                continue
-
-            equals = forest.path(positive, negative)
-            mismatch = row.constant(declaration.parameters) - sum(
-                sign * declaration.rows[name].constant(declaration.parameters)
-                for name, sign in equals
-            )
-            certificates.append(
-                Certificate(
-                    row_id=row_id,
-                    equals=equals,
-                    constant_mismatch=mismatch,
-                    tolerance=tolerance,
-                    kind=kind,
-                )
-            )
+        kind_certificates, kind_uncertified = _certified_kind(
+            declaration, considered, kind, tolerance
+        )
+        certificates.extend(kind_certificates)
+        uncertified.extend(kind_uncertified)
 
     order = {row_id: index for index, row_id in enumerate(considered)}
     return CertifiedRedundancy(
         certificates=tuple(sorted(certificates, key=lambda entry: order[entry.row_id])),
         uncertified_affine_rows=tuple(sorted(set(uncertified), key=lambda name: order[name])),
     )
+
+
+def _certified_kind(
+    declaration: Declaration, considered: Sequence[str], kind: QuantityKind, tolerance: float
+) -> tuple[list[Certificate], list[str]]:
+    """§8.2 for one certifiable `kind` over the `considered` rows of `declaration`, on a forest
+    of its own: the certificates (with `tolerance`) of the rows of `kind` that close a cycle,
+    and the rows of `kind` that are not copies (`_copy_coefficients`), each in `considered`
+    order."""
+    certificates: list[Certificate] = []
+    uncertified: list[str] = []
+    forest = _Forest()
+    forest.add(CONST)
+    for row_id in considered:
+        row = declaration.rows[row_id]
+        if row.kind != kind:
+            continue
+        over = _copy_coefficients(row, kind, declaration.column_kinds)
+        if over is None:
+            uncertified.append(row_id)
+            continue
+
+        positive = next((name for name, value in over.items() if value > 0.0), CONST)
+        negative = next((name for name, value in over.items() if value < 0.0), CONST)
+        forest.add(positive)
+        forest.add(negative)
+
+        if not forest.connected(positive, negative):
+            forest.link(positive, negative, row_id)
+            continue
+
+        equals = forest.path(positive, negative)
+        mismatch = row.constant(declaration.parameters) - sum(
+            sign * declaration.rows[name].constant(declaration.parameters) for name, sign in equals
+        )
+        certificates.append(
+            Certificate(
+                row_id=row_id,
+                equals=equals,
+                constant_mismatch=mismatch,
+                tolerance=tolerance,
+                kind=kind,
+            )
+        )
+    return certificates, uncertified
 
 
 def _copy_coefficients(
