@@ -834,3 +834,11 @@
   `escalations[name]` write after a pure `_discrepancies` call; step 2 evaluates the `all(<=)` test when a level is
   barred (pure float comparison, result unused then). Left: `_identity()` order in `decide_mode` (Environment(**)
   may raise), `replay` 5.3, `closure_check` 5.0 (public parameters, W4).
+- **2026-11-16, G6 run 4 delivered (opus-engineer, Opus): wp/S19-g6b, base 209ed607, 7 steps queued (122, 124, 130,
+  131, 133, 135, 136; labels g6r4-1..7), all extract-phase.** `_add_package` 19.5 -> 0 (`_package_descriptors` 7.0
+  -> 4.0 by `_message_catalogue`); `launch` 14.8 -> 10.0 (`_exit_failure`; rest is public parameters and the
+  `ended` closure; a `**extra` helper was dropped: the tool counts `**kwargs` as 3 parameters, many_args); `certify`
+  23.0 -> 0 in 2 steps (`_copy_coefficients`, `_certified_kind`; S2); `_by_type` 8.0 -> 4.0, `_from_entry` 5.0 ->
+  2.0. Files: registry 22.5 -> 7.0 (9.0 -> 9.3), launcher 15.8 -> 11.0 (8.8), certificates 23.0 -> 0 (9.5 -> 10.0),
+  render 24.0 -> 17.0 (7.0 -> 7.5). Local scans; repo 4991.5 -> 4941.2. Reviewer (R-W3-G6-4) before merge:
+  certificates.py S2; step 3 reads `exit_code`/`signal_number` from values captured at the old point.
