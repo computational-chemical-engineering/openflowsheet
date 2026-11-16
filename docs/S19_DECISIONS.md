@@ -846,3 +846,7 @@
   wp/S19-g5d into wp/S19 (8e19c77a)** after fast-forwarding it to ce9e9d30; wp/S19 gained only docs since 6400b95b.
   Removed worktrees s19-g5d-mc, s19-g5d-mc2, s19-g5d and branch wp/S19-g5d-mc. No gate report: a merge-check is not a
   chain result.
+- **2026-11-16, job 122 PASS (G6 run 4 step 1, efa7c787, step 200 accepted, 22.5 -> 10.0, 16/16).** First gate on
+  the new MB c3c5793e: tests tier selected 3752 tests (135 files), wall 704 s; registry/__init__.py is imported almost
+  everywhere, so this is not the expected 150-250 s case. Report: ALERTs selected median 991 s > 300 s, ratio 0.77,
+  wait median 100 min; action unchanged until more new-MB gates land.
