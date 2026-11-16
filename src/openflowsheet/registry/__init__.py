@@ -449,7 +449,7 @@ class Registry:
     ) -> _PackageDescriptors | Coded:
         """D7's per-descriptor checks of `package`'s `descriptors` in document order: schema, id
         prefix (`namespace`), uniqueness, tokens, self-hash and (for `message_entries`) the
-        catalogue, loaded and checked by the registry's catalogue check. The descriptors that
+        catalogue (`_message_catalogue`). The descriptors that
         passed, or the first problem as the package's quarantine reason; nothing is registered
         here."""
         registered: list[Registered] = []
@@ -477,16 +477,30 @@ class Registry:
                     "self_hash_unavailable", {"id": str(descriptor["id"]), "path": error.path}
                 )
             if descriptor["kind"] == "message_entries":
-                try:
-                    catalogue = self._messages.load(descriptor["payload"]["catalogue"])
-                except Exception:  # noqa: BLE001 (a missing or unparsable resource quarantines)
-                    return _extension_invalid(package.entry_point, where + "/payload/catalogue")
-                if self._messages.problem(catalogue, namespace) is not None:
-                    return _extension_invalid(package.entry_point, where + "/payload/catalogue")
-                assert isinstance(catalogue, Mapping)
+                catalogue = self._message_catalogue(
+                    descriptor, where, package.entry_point, namespace
+                )
+                if isinstance(catalogue, Coded):
+                    return catalogue
                 catalogues[(descriptor["id"], key[2])] = (namespace, catalogue)
                 codes.update(str(item["code"]) for item in catalogue["entries"])
         return _PackageDescriptors(registered, catalogues, codes)
+
+    def _message_catalogue(
+        self, descriptor: Mapping[str, Any], where: str, entry_point: str, namespace: str
+    ) -> Mapping[str, Any] | Coded:
+        """D7: the catalogue document a `message_entries` descriptor at `where` names, loaded and
+        checked by MSG's rules for `namespace`; or `extension_invalid` for the extension package
+        at `entry_point`, pointing at the payload's `catalogue`, when the resource is missing or
+        unparsable (any exception of the load) or the document fails the check."""
+        try:
+            catalogue = self._messages.load(descriptor["payload"]["catalogue"])
+        except Exception:  # noqa: BLE001 (a missing or unparsable resource quarantines)
+            return _extension_invalid(entry_point, where + "/payload/catalogue")
+        if self._messages.problem(catalogue, namespace) is not None:
+            return _extension_invalid(entry_point, where + "/payload/catalogue")
+        assert isinstance(catalogue, Mapping)
+        return catalogue
 
     def register(self, entry: Registered) -> None:
         """Add one registered descriptor; (kind, id, version) is unique. Raises
