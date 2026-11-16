@@ -318,7 +318,7 @@ def differences(
             raise TypeError(f"{V1_POLICY_ID} compares no declared kinds (ADR 0025 D5)")
         return _differences_v1(emitted, committed, path, floor)
     if policy_id == CURRENT_POLICY_ID:
-        return _differences_v2(emitted, committed, path, floor, None, variable_kinds)
+        return _differences_v2(emitted, committed, path, _RowFloor(floor, None), variable_kinds)
     raise ValueError(
         f"unknown numerical policy {policy_id!r}; this build knows {sorted(KNOWN_POLICY_IDS)}"
     )
@@ -655,59 +655,51 @@ def _variables(
         elif name not in emitted:
             found.append(f"{where}.{name}: present in the committed document only")
         else:
-            kind = kinds.get(name)
-            floor = KIND_FLOOR.get(kind) if kind is not None else None
-            source = (
-                f"tau_kind of {kind}, ADR 0025 D5"
-                if floor is not None
-                else (
-                    f"{kind} registers no tau_kind, relative only, ADR 0025 D5"
-                    if kind is not None
-                    else "no declared kind, relative only, ADR 0025 D5"
-                )
-            )
+            row_floor = _kind_floor(kinds.get(name))
             found += _differences_v2(
-                emitted[name],
-                committed[name],
-                f"{where}.{name}",
-                floor if floor is not None else NO_FLOOR,
-                source,
-                None,
+                emitted[name], committed[name], f"{where}.{name}", row_floor, None
             )
     return found
+
+
+def _kind_floor(kind: str | None) -> _RowFloor:
+    """Row 11, D5.1: the floor a variable of declared kind `kind` (None when it declares none)
+    is compared under, and its source: `τ_kind` of the kind when it registers one, else
+    `NO_FLOOR` (relative only)."""
+    floor = KIND_FLOOR.get(kind) if kind is not None else None
+    source = (
+        f"tau_kind of {kind}, ADR 0025 D5"
+        if floor is not None
+        else (
+            f"{kind} registers no tau_kind, relative only, ADR 0025 D5"
+            if kind is not None
+            else "no declared kind, relative only, ADR 0025 D5"
+        )
+    )
+    return _RowFloor(floor if floor is not None else NO_FLOOR, source)
 
 
 def _differences_v2(
     emitted: Any,
     committed: Any,
     path: str,
-    floor: float | None,
-    source: str | None,
+    row_floor: _RowFloor,
     kinds: Mapping[str, str] | None,
 ) -> list[str]:
     """`T08-numerical-policy-v2`: ADR 0025 §5's rows, in order.
 
-    An object's keys go to `_key_rule` first (present on one side only, then rows 1 to 8, 11
-    and 12); a key no rule takes is compared as a child, under `_sibling_floor`'s floor.
+    `row_floor` is the floor a float leaf is compared under and its source, as its row gave
+    them (`_RowFloor(None, None)` when none did).
+
+    An object goes to `_object_differences` (its keys by rule, else as children); a list is
+    compared entry by entry; a float leaf goes to `_float_leaf` (rows 9 to 14); every other
+    leaf is compared exactly (row 15).
     """
     found: list[str] = []
     where = path or "<root>"
 
     if isinstance(committed, dict):
-        if not isinstance(emitted, dict):
-            return [f"{where}: expected an object, got {type(emitted).__name__}"]
-        solution_state = path == "" and committed.get("schema_version") == SOLUTION_STATE_SCHEMA
-        compared = _ComparedObject(where, path, emitted, committed, solution_state, kinds)
-        for key in sorted(set(committed) | set(emitted)):
-            ruled = _key_rule(compared, key)
-            if ruled is not None:
-                found += ruled
-                continue
-            child_floor, child_source = _sibling_floor(where, key, committed)
-            found += _differences_v2(
-                emitted[key], committed[key], f"{where}.{key}", child_floor, child_source, None
-            )
-        return found
+        return _object_differences(emitted, committed, where, path, kinds)
 
     if isinstance(committed, list):
         if not isinstance(emitted, list):
@@ -715,12 +707,12 @@ def _differences_v2(
         if len(emitted) != len(committed):
             return [f"{where}: {len(emitted)} entries against {len(committed)}"]
         for index, (left, right) in enumerate(zip(emitted, committed, strict=True)):
-            found += _differences_v2(left, right, f"{where}[{index}]", None, None, None)
+            found += _differences_v2(left, right, f"{where}[{index}]", _RowFloor(None, None), None)
         return found
 
     # Rows 9–14: a float, under the floor its row gives, else its registered one, else none.
     if isinstance(committed, float) or isinstance(emitted, float):
-        return _float_leaf(emitted, committed, where, floor, source)
+        return _float_leaf(emitted, committed, where, *row_floor)
 
     # Row 15: every other leaf, exactly.
     if emitted != committed:
@@ -728,10 +720,48 @@ def _differences_v2(
     return found
 
 
+def _object_differences(
+    emitted: Any,
+    committed: dict[str, Any],
+    where: str,
+    path: str,
+    kinds: Mapping[str, str] | None,
+) -> list[str]:
+    """v2 on an object at `where` (`path` "" at the root): an emitted side that is not an object
+    is one difference; else each key, in sorted order, goes to `_key_rule` first (present on
+    one side only, then rows 1 to 8, 11 and 12), and a key no rule takes is compared as a
+    child, under `_sibling_floor`'s floor. `kinds` reaches row 11 only.
+    """
+    if not isinstance(emitted, dict):
+        return [f"{where}: expected an object, got {type(emitted).__name__}"]
+    solution_state = path == "" and committed.get("schema_version") == SOLUTION_STATE_SCHEMA
+    compared = _ComparedObject(where, path, emitted, committed, solution_state, kinds)
+    found: list[str] = []
+    for key in sorted(set(committed) | set(emitted)):
+        ruled = _key_rule(compared, key)
+        if ruled is not None:
+            found += ruled
+            continue
+        child_row_floor = _sibling_floor(where, key, committed)
+        found += _differences_v2(
+            emitted[key], committed[key], f"{where}.{key}", child_row_floor, None
+        )
+    return found
+
+
+class _RowFloor(NamedTuple):
+    """The floor a float leaf is compared against and the field it was read from.
+    `differences()` passes `_RowFloor(floor, None)`, a caller's floor with no source, which
+    `_float_leaf` cites as `""`; `_RowFloor(None, None)` means no floor."""
+
+    floor: float | None
+    source: str | None
+
+
 class _ComparedObject(NamedTuple):
-    """An object `_differences_v2` compares key by key: where it sits (`path` "" at the root),
-    both sides, whether it is a root solution state (row 11), and the declared kinds row 11
-    reads."""
+    """An object `_object_differences` compares key by key: where it sits (`path` "" at the
+    root), both sides, whether it is a root solution state (row 11), and the declared kinds row
+    11 reads."""
 
     where: str
     path: str
@@ -743,7 +773,7 @@ class _ComparedObject(NamedTuple):
 
 def _key_rule(compared: _ComparedObject, key: str) -> list[str] | None:
     """v2 on the key `key` of the object `compared`: the differences its own rule finds, or
-    None when no rule applies and `_differences_v2` compares its value as a child.
+    None when no rule applies and `_object_differences` compares its value as a child.
 
     The rules, tried in order, the first match deciding: present on one side only, then rows 1
     to 8, 11 and 12 of ADR 0025 §5. `_key_rule_v1` is v1's twin.
@@ -862,19 +892,17 @@ def _solution_variables(
     return _variables(f"{where}.variables", mine, theirs, kinds)
 
 
-def _sibling_floor(
-    where: str, key: str, committed: Mapping[str, Any]
-) -> tuple[float | None, str | None]:
+def _sibling_floor(where: str, key: str, committed: Mapping[str, Any]) -> _RowFloor:
     """Rows 9 and 10: a floor read from the committed object's own sibling, or none."""
     kind = committed.get("kind")
     in_limitation = isinstance(kind, str) and _LIMITATION_ENTRY.search(where) is not None
     sibling = LIMITATION_FLOORS.get(str(kind), {}).get(key) if in_limitation else None
     if sibling is not None and _real(committed.get(sibling)):
-        return abs(float(committed[sibling])), f"its sibling {sibling}, ADR 0025 D3"
+        return _RowFloor(abs(float(committed[sibling])), f"its sibling {sibling}, ADR 0025 D3")
     sibling = V2_SELF_FLOORED.get(key)
     if sibling is not None and isinstance(committed.get(sibling), int | float):
-        return abs(float(committed[sibling])), f"its sibling {sibling}, ADR 0007 D2.2"
-    return None, None
+        return _RowFloor(abs(float(committed[sibling])), f"its sibling {sibling}, ADR 0007 D2.2")
+    return _RowFloor(None, None)
 
 
 def _phase_branch_flow(where: str, emitted: Any, committed: Any) -> list[str]:
@@ -888,9 +916,11 @@ def _phase_branch_flow(where: str, emitted: Any, committed: Any) -> list[str]:
             return [f"{where}: {len(emitted)} entries against {len(committed)}"]
         found: list[str] = []
         for index, (left, right) in enumerate(zip(emitted, committed, strict=True)):
-            found += _differences_v2(left, right, f"{where}[{index}]", floor, source, None)
+            found += _differences_v2(
+                left, right, f"{where}[{index}]", _RowFloor(floor, source), None
+            )
         return found
-    return _differences_v2(emitted, committed, where, floor, source, None)
+    return _differences_v2(emitted, committed, where, _RowFloor(floor, source), None)
 
 
 def _float_leaf(

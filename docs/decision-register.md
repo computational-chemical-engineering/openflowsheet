@@ -19910,3 +19910,26 @@ retargeted in W5 together with the planned `registry_sha256` change. Non-hashed 
 **Rejected alternatives, and why.**
 - *Leave the four added files on the old path after S19:* a permanent re-export path, against ADR 0076 rule 1 (no shims).
 - *Retarget them in W4:* changes `registry_sha256` twice; W5 is the one planned change.
+
+## R-1044: S19's I-9 error vocabulary takes `validate_document` from `schema_check` (new step I-5b; 2026-11-16)
+
+| | |
+| --- | --- |
+| Date | 2026-11-16 |
+| Decided by | design lane (`architect`, Fable 5.2, ruling A-I9) on a STOP of the W4 run 8 engineer |
+| Normative text | ADR 0076 (Addenda 2026-11-16 A-I9 under I-5, I-9 and I-12a; migration row I-5b; recommended order and hard constraints) |
+| Evidence | `docs/briefs/S19-A-I9-ruling.md` (sections 5 and 7: `codehealth arch --depth 4` on a scratch export of `wp/S19-w4` 486b6dbb); `docs/S19_DECISIONS.md`, "W4 run 8 reported" |
+| Affected packages | S19 (W4 runs 9 onward: I-5b, I-9, I-12a) |
+
+**Decision.** `DocumentSchemaError`, `validate_document` and the private `_raise_first` move from
+`application/types.py` to `openflowsheet.schema_check` as a pure move (step I-5b, before I-9). `ApiError.from_document`
+stays a classmethod and imports `validate_document` from `schema_check`; `application.errors` imports no application
+module at run time and keeps its place directly below `application.types`. Expected arch after I-9: 3 / 3 / 12 ->
+2 / 2 / 10 (measured on the scratch export). I-12a's `documents.py` list loses the two names.
+
+**Rejected alternatives, and why.**
+- *I-9 as written:* errors would import `types` upward: a new `errors -> types` violation and an `errors <-> types`
+  cycle (measured 3 / 3 / 12, no gain), against the row's "removes cycle 8".
+- *A function-level import, errors above types, moving `from_document`, creating `documents.py` early, or putting the
+  names in errors.py:* each hides or moves the edge instead of removing it, or splits one concept; reasons in the
+  ruling, section 2.

@@ -303,25 +303,13 @@ def _by_type(typed: _Typed, catalogue: Catalogue) -> str:
     if typed.type in ELEMENT_TYPES:
         return f"'{_raw(value)}'"
     if typed.type == "quantity":
-        display = typed.display
-        if display is not None and display["value"] is not None:
-            # ADR 0075 D7.2, D7.7: a converted quantity, in MSG's format and the unit's text
-            # spelling; out of range shows SI.
-            return f"{format_number(display['value'])} {text_unit(display['unit'])}"
-        quantity = _quantity(value)
-        if quantity is not None:
-            return f"{format_number(quantity[0])} {quantity[1]}"
-        return _number_text(value)
+        return _quantity_text(typed)
     if typed.type == "number":
         return _number_text(value)
     if typed.type == "enum":
-        phrase = (
-            None if typed.vocabulary is None else catalogue.phrase(typed.vocabulary, str(value))
-        )
-        return phrase if phrase is not None else _raw(value)
+        return _enum_text(typed, catalogue)
     if typed.type == "list":
-        items = value if isinstance(value, list | tuple) else [value]
-        return ", ".join(_raw(item) for item in items)
+        return _list_text(value)
     if typed.type == "display_unit":
         # ADR 0075 D7.7 (X04 D-21): a display unit in human text takes its text spelling; the
         # param keeps the D2 spelling (`degF`), and `!raw` gives it.
@@ -329,11 +317,41 @@ def _by_type(typed: _Typed, catalogue: Catalogue) -> str:
     return _raw(value)
 
 
+def _quantity_text(typed: _Typed) -> str:
+    """§4.2.4's `quantity` rule: the converted display value in its unit's text spelling when
+    there is one, else the value read as a quantity, else `_number_text`."""
+    display = typed.display
+    if display is not None and display["value"] is not None:
+        # ADR 0075 D7.2, D7.7: a converted quantity, in MSG's format and the unit's text
+        # spelling; out of range shows SI.
+        return f"{format_number(display['value'])} {text_unit(display['unit'])}"
+    quantity = _quantity(typed.value)
+    if quantity is not None:
+        return f"{format_number(quantity[0])} {quantity[1]}"
+    return _number_text(typed.value)
+
+
 def _number_text(value: object) -> str:
     """§4.2.4's `number` rule, also a `quantity`'s when it reads as no quantity: `value` as a
     number in §4.5's format, or `_raw` when it is no number."""
     number = _number(value)
     return format_number(number) if number is not None else _raw(value)
+
+
+def _enum_text(typed: _Typed, catalogue: Catalogue) -> str:
+    """§4.2.4's `enum` rule: the vocabulary's phrase for the value, or `_raw` when the param
+    names no vocabulary or the vocabulary has no phrase for it."""
+    phrase = (
+        None if typed.vocabulary is None else catalogue.phrase(typed.vocabulary, str(typed.value))
+    )
+    return phrase if phrase is not None else _raw(typed.value)
+
+
+def _list_text(value: object) -> str:
+    """§4.2.4's `list` rule: the items' `_raw` texts joined by `, `; a value that is not a list
+    or tuple is one item."""
+    items = value if isinstance(value, list | tuple) else [value]
+    return ", ".join(_raw(item) for item in items)
 
 
 def _render(nodes: tuple[template.Node, ...], scope: _Scope) -> str:
@@ -379,17 +397,12 @@ def _matches(
 def _field(
     entry: Entry, name: str, scope: _Scope, outer: Sequence[str], *, strict: bool, machine: str
 ) -> str | None:
-    """`name` of `entry`: the first matching variant that defines it, then the base (§4.2.2).
-    An empty rendering counts as not supplied. A candidate that fails is a defect: `strict`
-    raises it, the audit records it, and the next candidate is tried; `RenderError` when every
-    candidate fails."""
-    candidates = [
-        str(variant[name])
-        for variant in entry.variants
-        if name in variant and _matches(variant["when"], scope.params, scope.context.surface, outer)
-    ]
-    if name in entry.document:
-        candidates.append(str(entry.document[name]))
+    """`name` of `entry`: the first of `_field_candidates` (each matching variant that defines
+    it, then the base; §4.2.2) that renders non-empty. A candidate that fails is a defect:
+    `strict` raises it, the audit records it, and the next candidate is tried. `None` when there
+    is no candidate, or when every candidate renders empty and none failed; the first failure, a
+    `RenderError`, when no candidate renders non-empty and one failed."""
+    candidates = _field_candidates(entry, name, scope, outer)
     if not candidates:
         return None
     error: RenderError | None = None
@@ -408,6 +421,19 @@ def _field(
     if error is not None:
         raise error
     return None
+
+
+def _field_candidates(entry: Entry, name: str, scope: _Scope, outer: Sequence[str]) -> list[str]:
+    """§4.2.2: the templates that may supply `name` of `entry`, in the order they are tried: each
+    variant that defines it and whose `when` matches, in declaration order, then the base's."""
+    candidates = [
+        str(variant[name])
+        for variant in entry.variants
+        if name in variant and _matches(variant["when"], scope.params, scope.context.surface, outer)
+    ]
+    if name in entry.document:
+        candidates.append(str(entry.document[name]))
+    return candidates
 
 
 def _kind(entry: Entry, scope: _Scope, outer: Sequence[str]) -> str:

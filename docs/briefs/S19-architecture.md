@@ -312,7 +312,8 @@ kernels `tp_state, ph_kernel, gamma_phi, saturation_band, equilibrium_form, admi
 `assessment/{blocks,program,linearization}.py`, `assessment/lca/inventory.py`.
 Tier S2, certificates and replay identity: `verify/**`, `graph/certificates.py`, `studies/surrogate/conformal.py`,
 `run/**`, `canonical.py`, `serialize.py`, `registry/{selfhash,snapshot,legacy}.py`, `thermo/cache.py` (exact keys),
-`studies/nlp/replay.py`, `studies/trust_region/trf_state.py`, `application/revision_run.py`, A11, A15, I-10.
+`studies/nlp/replay.py`, `studies/trust_region/trf_state.py`, `application/revision_run.py`,
+`application/run_session.py` (I-4 moved `run/session.py` here; R-W4-8), A11, A15, I-10.
 Cadence: S1 function-level steps, a `reviewer` pass every 3 accepted steps and before any step that changes the
 control flow of a brain function in numerics or region is followed by another step on the same function; S2 every 4;
 splits and leaf moves in S1/S2 every 4 (they are `ast.dump`-gated); all other files every 8 (S17's cadence). Design-lane

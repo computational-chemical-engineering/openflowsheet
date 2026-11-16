@@ -31,11 +31,60 @@ RELEASE_0_3_0_COMMIT = "b8f47a044ea5ee2a89230ff95bd6a934f541f615"
 TERMINAL_REPORT: list[str] = []
 
 
+#: Under pytest-xdist the fixtures below run in the workers and the terminal summary on the
+#: controller: each worker hands its counts, report lines and audit findings over in
+#: `config.workeroutput`, and the controller sums them in `_XdistForwarding.pytest_testnodedown`.
+#: `None` without xdist.
+FORWARDED: dict[str, Any] | None = None
+MSG_COUNT_PREFIXES = ("MSG WO-6:", "MSG WO-5a:")
+
+
+def _msg_run_results_line(seen: int, failed: int) -> str:
+    return (
+        f"MSG WO-6: {seen} run results checked, {failed} with a "
+        "failure; failure non-null iff a failure_bundle output in every one"
+    )
+
+
+def _msg_bundles_line(scanned: int) -> str:
+    return f"MSG WO-5a: {scanned} bundles scanned; no sidecar key in any written document"
+
+
+class _XdistForwarding:
+    """The controller's xdist hook, registered only where xdist is loaded (the hook is unknown
+    to pluggy without it)."""
+
+    def pytest_testnodedown(self, node: Any, error: Any) -> None:
+        """Sum the counts and collect the lines a worker forwarded."""
+        global FORWARDED
+        if FORWARDED is None:
+            FORWARDED = {"results": [0, 0], "bundles": 0, "report": [], "findings": []}
+        output = getattr(node, "workeroutput", None)
+        if not output or "msg_results" not in output:
+            return  # a worker that crashed forwards nothing
+        FORWARDED["results"][0] += output["msg_results"][0]
+        FORWARDED["results"][1] += output["msg_results"][1]
+        FORWARDED["bundles"] += output["msg_bundles"]
+        FORWARDED["report"] += output["msg_report"]
+        FORWARDED["findings"] += output["msg_findings"]
+
+
 def pytest_terminal_summary(terminalreporter: Any) -> None:
     """Print `TERMINAL_REPORT`'s lines at the end of the run, then MSG-G3's findings."""
-    for line in TERMINAL_REPORT:
+    lines = list(TERMINAL_REPORT)
+    findings = _msg_audit_findings()
+    if FORWARDED is not None:
+        lines += [
+            _msg_run_results_line(*FORWARDED["results"]),
+            _msg_bundles_line(FORWARDED["bundles"]),
+        ]
+        lines += FORWARDED["report"]
+        findings += FORWARDED["findings"]
+        lines = list(dict.fromkeys(lines))
+        findings = sorted(set(findings))
+    for line in lines:
         terminalreporter.write_line(line)
-    for line in _msg_audit_findings():
+    for line in findings:
         terminalreporter.write_line(line, red=True)
 
 
@@ -62,6 +111,8 @@ def pytest_configure(config: Any) -> None:
     from openflowsheet.messages import audit
 
     audit.enable()
+    if config.pluginmanager.hasplugin("xdist"):
+        config.pluginmanager.register(_XdistForwarding(), "msg-xdist-forwarding")
 
 
 def _msg_audit_findings() -> list[str]:
@@ -79,8 +130,17 @@ def _msg_audit_findings() -> list[str]:
 
 def pytest_sessionfinish(session: Any, exitstatus: int) -> None:
     """MSG-G3: a code without an entry, or a rendering defect, fails the session."""
-    if _msg_audit_findings() and exitstatus == 0:
+    forwarded = FORWARDED["findings"] if FORWARDED is not None else []
+    if (_msg_audit_findings() or forwarded) and exitstatus == 0:
         session.exitstatus = pytest.ExitCode.TESTS_FAILED
+    workeroutput = getattr(session.config, "workeroutput", None)
+    if workeroutput is not None:  # an xdist worker: forward to the controller
+        workeroutput["msg_results"] = list(RUN_RESULTS_SEEN)
+        workeroutput["msg_bundles"] = BUNDLES_SCANNED[0]
+        workeroutput["msg_report"] = [
+            line for line in TERMINAL_REPORT if not line.startswith(MSG_COUNT_PREFIXES)
+        ]
+        workeroutput["msg_findings"] = _msg_audit_findings()
 
 
 # -- MSG WO-6 (design note §4.8): the converse of `RunResult.failure`'s invariant --------------
@@ -109,10 +169,7 @@ def _msg_failure_iff_failure_bundle() -> Any:
     with pytest.MonkeyPatch.context() as monkeypatch:
         monkeypatch.setattr(LocalApplication, "_run_result", checked)
         yield
-    TERMINAL_REPORT.append(
-        f"MSG WO-6: {RUN_RESULTS_SEEN[0]} run results checked, {RUN_RESULTS_SEEN[1]} with a "
-        "failure; failure non-null iff a failure_bundle output in every one"
-    )
+    TERMINAL_REPORT.append(_msg_run_results_line(*RUN_RESULTS_SEEN))
 
 
 #: MSG §4.6: bundles the suite wrote, scanned for the sidecar's keys.
@@ -142,9 +199,7 @@ def _msg_sidecar_in_no_bundle() -> Any:
         monkeypatch.setattr(revision_run, "write_bundle", scanned)
         monkeypatch.setattr(session, "write_bundle", scanned)
         yield
-    TERMINAL_REPORT.append(
-        f"MSG WO-5a: {BUNDLES_SCANNED[0]} bundles scanned; no sidecar key in any written document"
-    )
+    TERMINAL_REPORT.append(_msg_bundles_line(BUNDLES_SCANNED[0]))
 
 
 def _git_ok(*arguments: str) -> bool:

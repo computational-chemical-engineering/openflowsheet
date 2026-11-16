@@ -1179,3 +1179,364 @@
   1126 s; f0, mcp_digest). Merged wp/S19-w4-mc into wp/S19 (8cdd71d8); helper removed; wp/S19-w4 fast-forwarded to
   8cdd71d8.** `codehealth arch --depth 4` at 8cdd71d8: 4 violations, 3 cycles, 12 cycle edges, 3989 imports. G6 jobs
   149 (step 229, 5.0 -> 2.0) and 150 (step 230, 10.0 -> 3.0) PASS.
+- **2026-11-16, cce-code-health 04a01f8 (session code_health; not urgent):** complexipy pinned ==8.3.0 inside the tool (ours is already pinned in requirements-codehealth.txt), JSON meta.backends, `__all__` left out of clone detection (dup_lines may drop at base and head alike). DECISION: re-pin at the next queue-idle milestone window (as 846a065), not mid-lane. Alternative: never (nothing in S19 needs it). Reversible by: re-pinning 846a065.
+- **2026-11-16, cce-code-health 6ab9fd1 (code_health; holds 04a01f8): tier placeholder `{files:GLOB[,GLOB]}`.** The re-pin target becomes 6ab9fd1; with it the ruff tier's POSIX filter (36ea9c2d) is replaced by `set -- {files:*.py,*.pyi}`.
+- **2026-11-16, cce-code-health 6529f47 (code_health):** `literals` in refactor/restructure mode allows a string literal's count to drop when every scope that reached it at base still reaches it at head (directly or through a referenced function); the allowed drops are listed in the check detail; deleting one copy of a duplicated check still fails; interface plans stay exact. Also f527252: docstrings out of clone detection. DECISION: re-pin target 6529f47 at the next queue-idle window; from then on each reviewer brief asks the reviewer to rule on every listed allowed drop (the rule is a relaxation, so a human-readable list replaces the hard fail). Alternative: stay on 6ab9fd1 and keep the strict rule. Reversible by: re-pinning 6ab9fd1.
+- **2026-11-16, W4 run 8 reported (opus-engineer, 189k tokens; over the cap). wp/S19-w4 ce7f9b76..486b6dbb, 11
+  commits.** 3b: 498fa21d plan `i3b-policies-all` (`added = [policies.py:__all__]`), 2cde3944 step (job 174 PASS,
+  step 233). anderson: c2d1e41d merge.py:28 -> solve_record (job 175 PASS, step 235; no outside-gate importer through
+  anderson), fb3f6a00 plan `i8h-anderson-recyclepolicy`, 3a2fec6e step (job 176 PASS, step 237). I-4: 84a290f9
+  test_m02_wo14.py:59 normalization (outside), 10adfc3d plan `i4-run-session`, be115b6a step (`git mv` 100%, 4 lazy src
+  imports, 11 tests, 4 scripts, run/bundle.py docstring; job 177), 9810abf6 layer config (application-layers gains
+  `application.run_session` above `application.binding`; repo-layers loses `run.session` and its A14 line; config
+  --check 0) KEPT by the orchestrator (it is the ADR I-4 row's "after"), a9e36ea0 two test docstrings (outside).
+  I-9: only 486b6dbb, the MSG caller-module probe test (outside, before the step; 3/3 at its base). Arch 4/3/12 ->
+  3/3/12 after I-4 (run.session -> application.binding gone, as the row expects); imports 3989. Engineer's full
+  suite at be115b6a: 1 failed, t07_v17_reference f6 386 s > 300 s under load ~33 (alone 224 s; the known
+  load-dependent budget test). MSG WO-5a/WO-6 counts read 0 at base and head under xdist (controller sees no
+  bundles): rule 4's equality to be read from the gate's report.
+  **STOP (I-9):** `ApiError.from_document` calls `validate_document` (application/types.py:255, defined :185); ADR
+  puts `application.errors` directly below `application.types` (and below I-12a's documents.py, which receives
+  validate_document, ADR :193-194), so errors would import upward: a new errors -> types violation and a
+  types <-> errors cycle, against the row's "removes cycle 8". Engineer's proposal: move DocumentSchemaError,
+  validate_document and _raise_first to openflowsheet.schema_check (their dependencies _validator, _pointer live
+  there, I-5's home); pure move, no new edge; changes I-12a's documents.py list. Design-lane ruling needed
+  (architect; brief `S19-A-I9-home.md`). W4 run 9 waits for it; G5/G6 lanes do not.
+- **2026-11-16 ~19:00, gate report before the self-reset:** gates 35: step 32 (selected 22, full suite 10), merge-check 3; failed 0;steps: 33 attempts, 32 accepted, debt removed 111.5; 5.5 attempts/h;ALERT selected share 69% < 75% of step gates;ALERT selected gates take 665 s > 300 s (tests tier);ALERT selected/full time ratio 0.52 > 0.4: selection saves little;ALERT queue wait median 42 min > 15 min; (ALERT causes as before: import-time fallbacks of W4 steps; proposal 2 with Frank).
+- **2026-11-16, job 155 (G6 run 5 review fix, no-gain) PASS, step 238 accepted-neutral.** Helper wp/S19-g6c-mc
+  (worktree s19-g6c-mc) = lane 72ef6454 + wp/S19 0f453303 merged in, bf36afb7 (clean; runner.py auto-merged, the only
+  overlap; lane does not touch S19_DECISIONS); merge-check enqueued as job 178 (g6r5-mc). A-I9 ruling launched
+  (architect, Fable; brief S19-A-I9-home.md). R-W4-8 review brief written (S19-R-W4-8.md), runs when 177 passes.
+  Gate report: ALERT selected share 66% < 75% of step gates; ALERT selected gates take 660 s > 300 s (tests tier);
+  ALERT selected/full time ratio 0.50 > 0.4: selection saves little; ALERT queue wait median 50 min > 15 min (causes
+  as before: import-time fallbacks of W4 steps, 10 of 11 full-suite causes collection-time code; proposal 2 with Frank).
+- **2026-11-16, A-I9 ruling (architect, Fable 5.2, 136k tokens; 05150df1, `docs/briefs/S19-A-I9-ruling.md`):** the
+  engineer's proposal accepted as new step I-5b (DocumentSchemaError, validate_document, _raise_first ->
+  openflowsheet.schema_check, pure move, before I-9); errors.py imports validate_document from schema_check, no
+  application module at run time; errors stays directly below types. Measured on a scratch export of 486b6dbb: I-5b
+  3/3/12 unchanged, I-9 then 2/2/10 (I-9 as written: 3/3/12 with errors -> types violation and errors <-> types
+  cycle, confirming the STOP). Recorded as ADR 0076 addenda and register R-1044 (f5ef28f8). Open defaults (none
+  blocking): `__module__` change and audit caller change are STOPs only if a test pins them; validate_inline stays on
+  I-12a's list; schema_check private names unchanged through I-12a. W4 run 9 launched (opus-engineer, brief
+  S19-W4-9.md: I-5b, I-9, then I-14 if context allows), on wp/S19-w4 from 486b6dbb, steps chained after job 177.
+- **2026-11-16, job 177 (W4 run 8 I-4 interface, be115b6a) PASS, step 239 accepted.** Review R-W4-8 launched
+  (reviewer, brief S19-R-W4-8.md, range ce7f9b76..486b6dbb). Gate report: ALERT selected share 65% < 75% of step
+  gates; ALERT selected gates take 609 s > 300 s (tests tier); ALERT selected/full time ratio 0.45 > 0.4: selection
+  saves little; ALERT queue wait median 51 min > 15 min (causes as before; proposal 2 with Frank).
+- **2026-11-16, review R-W4-8 (reviewer, Opus, 113k tokens): merge after fixes.** All commits OK on Q1-Q5 (policies
+  `__all__` exactly the 14 bindings, no `import *` anywhere; one RecyclePolicy object, no importer through anderson;
+  I-4 a 100% move, 4 lazy imports stay lazy, 3 patch targets live at run_session, no hashed string names the old
+  path; 9810abf6 matches the I-4 row). Fixes: (1) ADR rule 4's MSG WO-5a/WO-6 counts read 0 under xdist at every
+  step (counters live in workers, the controller prints; also true of other TERMINAL_REPORT lines and MSG-G3's audit
+  findings): evidence missing, not met; the merge of run 8 waits for it. Brief S19-MSG-xdist.md (sonnet-implementer):
+  forward counts and lines from workers (commit A), MSG-G3 under xdist only if no hidden findings (commit B), then
+  measure N at 10adfc3d and be115b6a. (2) run/bundle.py:214-215 docstring: fixed on helper wp/S19-w4r8-mc (worktree
+  s19-w4r8-mc, from 486b6dbb, so run 9's tree is untouched) as c7d21f2e, gating no-gain as job 179. (3) tier S2
+  gains application/run_session.py (6bdc88b6). Notes: anderson.RecyclePolicy survives as a plain binding (mypy blocks
+  src/benchmarks only); the i4 plan's reason says "two" patch targets, lists three.
+- **2026-11-16, job 178 (g6r5-mc, merge-check of helper bf36afb7) PASS (full suite, behaviour only; debt 83.0 ->
+  14.5).** G6 run 5 merged into wp/S19 as a9221827 (no conflict); worktrees s19-g6c and s19-g6c-mc removed. Gate
+  report: ALERT selected share 63% < 75% of step gates; ALERT selected gates take 558 s > 300 s (tests tier); ALERT
+  selected/full time ratio 0.42 > 0.4: selection saves little; ALERT queue wait median 46 min > 15 min (causes as
+  before; proposal 2 with Frank). Next G6 brief: rescan wp/S19 for the G6 scope.
+- **2026-11-16, job 179 (w4r8-revfix, R-W4-8 fix 2, c7d21f2e) PASS, step 240 accepted-neutral.** Queue idle after it:
+  re-pin window. **cce-code-health 846a065 -> 6529f47** (holds 04a01f8 complexipy 8.3.0 pin and `__all__` out of
+  duplication, 6ab9fd1 `{files:GLOB}`, f527252 docstrings out of clone detection, 6529f47 `literals` scope rule;
+  not 9095836, benchmark tiers, not needed). `.venv-codehealth` reinstalled from requirements-codehealth.txt,
+  direct_url commit 6529f476; complexipy 8.3.0; `config --check` 0 problems; arch on wp/S19 unchanged 4/3/12, 3989
+  imports. Runner not restarted (gate_queue.py unchanged; the tool is called per gate). Duplication numbers may drop
+  at base and head alike (docstrings, `__all__`): gates compare like with like; the trend TSV and G-END scans read
+  the new tool from here. Reviewers rule on the `literals` drops the check detail lists. The ruff tier keeps its
+  POSIX filter (36ea9c2d); switching it to `set -- {files:*.py,*.pyi}` is left for a config commit at a lane-free
+  moment (both forms select the same files). DECISION: keep the filter now. Alternative: switch now. Reversible by:
+  one config line.
+- **2026-11-16, W4 run 9 reported (opus-engineer, 224k tokens; over the cap). wp/S19-w4 486b6dbb..dbcae2a5, 7
+  commits, NOTHING enqueued.** 52bfc2af test retarget outside (test_opt_request.py:94 `_pointer` read from
+  schema_check, same object); a3d307a0 plan `i5b-document-validation` + 1bb5a274 I-5b step; 4151f00f test retarget
+  outside (test_t07_w6a_http `ALLOWED_APPLICATION` gains `application.errors`; falsifier: a forbidden import in
+  bindings/http.py fails the test); b4185c3e plan `i9-errors` + 55dad047 I-9 step (12 src callers, tests, 5 scripts,
+  benchmarks/t07/v17/reference.py) + dbcae2a5 layer config (errors directly below types; `types -> contract`
+  adoption line goes). Ruling gates: G1 (a) 3/3/12 base and head, (b) moved blocks diff empty (20 lines, in the step
+  message), (c) no `_validator`/`_pointer` in application, (d) 0 importers through application.types (13 at base),
+  (e) patch_noop 265, 0 flagged; G2 (a)/(b) 2/2/10 exactly section 5's, none names errors/types/contract, (c) the only
+  application import in errors.py is under TYPE_CHECKING, (d) MSG probe 3/3 base and head; I-9 moved blocks identical
+  (186 lines). mypy 378 files, ruff clean; touched tests 1552 passed. Imports 3989 -> 3991 -> 3998; files 315.
+  Ruling 10.1/10.4: no test pins `__module__` or the caller module. I-14 not started.
+  **STOP (tool): the gate's static checks refuse both plans** (re-run by the orchestrator at 6529f47: same):
+  public_api `still_bound` counts the plain import the old module keeps because it uses the name (types.py:31, :50);
+  callers: test_t07_w5a_operations.py and _projection.py "binary caller file may not change" (strict UTF-8, no NUL,
+  literal U+FFFD: a tool defect); test_opt_request.py:500 "replace beyond the plan" (import inside a subprocess
+  program string). The I-5b restructure fallback is refused too (schema_check.py is not new).
+  DECISION: ask session code_health for (1) `still_bound` exempting an unaliased `from <target> import N` in a
+  non-`__init__` module with N not in `__all__`, (2) binary = strict UTF-8 failure or NUL, (3, optional) plan-matching
+  import rewrites inside string literals; re-pin, then enqueue the run 9 chain unchanged. Alternative: split I-9 by
+  the I-5 pattern (restructure + no-gain retargets), which still leaves I-5b blocked. Reversible by: the split, which
+  is mechanical from the committed end state. 4151f00f ACCEPTED (an allowlist entry for the new home of names
+  bindings/http already imported; not a relaxation; the reviewer checks it). G6 run 6 launched (opus-engineer, brief
+  S19-W3-G6-6.md, branch wp/S19-g6d).
+- **2026-11-16, cce-code-health f70d7dc (code_health; pushed, 379 tests): the three W4 run 9 fixes.** (1) opt-in
+  `[gate] no_implicit_reexport = true`: an old module may keep an unaliased `from <new home> import N` that its own
+  code reads (still a shim: `__init__.py`, N in `__all__` or a non-literal `__all__`, any aliased or other-source
+  import of N, a star import, no read of N); (2) binary caller = strict UTF-8 failure or NUL; (3) imports inside a
+  multi-line Python string normalised like code. code_health verified I-5b (1bb5a274 on a3d307a0) and I-9 (55dad047
+  on b4185c3e) pass with the flag, public_api still fails without it. Its reviewer's soundness condition: a type
+  checker with no-implicit-reexport over every importer. Ours covers src and benchmarks only; `mypy
+  --no-implicit-reexport tests scripts` measured 299 such hits (121 on openflowsheet modules, many legitimate patch
+  targets), so it cannot be the guard. DECISION: set the flag, and guard by (a) a repo-wide importer inventory per
+  rename step (AST from-import and module-attribute forms plus a `git grep` for string-embedded imports) recorded in
+  the log, and (b) a request to code_health (sent) to make public_api fail under the flag when any tracked .py file
+  takes a renamed N through the old module (patch-target strings, the old module and the plan's callers exempt).
+  Alternative: wait for (b) before enqueueing. Reversible by: dropping the config line and re-gating.
+  Inventory at the I-9 head (dbcae2a5): 0 importers of the 11 renamed names through application.types, .contract or
+  .validation in src, tests, scripts, benchmarks, examples; string grep 0.
+  Lane rewritten (run 9 commits were never enqueued; backup branch wp/S19-w4r9-orig = dbcae2a5): f3fb74f2 config
+  flag after 486b6dbb, then dc256e26 (was 52bfc2af), 205c10fa plan (a3d307a0), 7a52250e I-5b (1bb5a274), efdadbe5
+  (4151f00f), 22194102 plan (b4185c3e), afc33aa5 I-9 (55dad047), ad0feaa3 layer config (dbcae2a5); final tree =
+  backup + the 4 config lines. Enqueue after the re-pin to f70d7dc (or its successor with (b)) at a queue-idle window.
+- **2026-11-16, G6 run 6 reported (opus-engineer, 132k tokens). wp/S19-g6d (BASE f2987b62), 5 extract steps, jobs
+  180-184:** 44f044f1 units `_check_bounds` (24.0 -> 19.0), 842d3986 `convert_input_value` D2 arithmetic (-> 17.0),
+  77ae7025 `check_quantity` kind check (-> 14.0; units 7.4 -> 9.4), aa10c1d6 render `_field` candidates (17.0 ->
+  14.0), 048a390b render `_by_type` families (-> 10.0; render 7.5 -> 8.5). Local repo debt 4746.1 -> 4729.1. Notes:
+  77ae7025's message says cognitive 16 -> 11, the scan says 12 (fix in a later docs commit); step 5 lifts only
+  multi-statement families (one-expression rungs stay inline): reviewer to confirm the "every family or none" reading.
+  Not taken, with reasons: units rest is `convert_input_value`'s nine public parameters (x3 overloads); render's
+  `_candidate_chain` ladder (when-not row), `_derived_elements` trial raised debt, `_from_entry` parameters;
+  launcher `launch` finally-cleanup (needs an import-line change during W4, writes `progress.terminated` against
+  rule 6, gain 1.6 < 2: reconsider after W4); store.py's 21 duplicated lines are the R-237 `ArtifactSink` Protocol
+  and its list implementation (an interface question, not W3). Review R-W3-G6-6 after jobs 180-184.
+  DECISION: no new lane until W4 run 9 is enqueued. Alternative: launch G5 run 9 now. Reason: the f70d7dc re-pin needs
+  a queue-idle window and W4 is on the blocking path; a G5 lane would keep the queue busy. Reversible by: launching
+  G5 run 9 (brief to write) at any time.
+- **2026-11-16, cce-code-health ec5aaea (code_health; 391 tests): under `no_implicit_reexport`, public_api scans every
+  .py in the working tree for a file that takes a `renamed`/`retargeted` name through its old module (from-import,
+  aliased or not, relative resolved; `<a>.N` with `a` bound to the old module); exempt: the old module, the step's
+  TOUCHED caller files (not the plan's caller globs, deliberately), string patch targets. I-9: 1240 files, ~1 s, 0
+  hits. This replaces guard (a) of the f70d7dc entry: the flag is sound without mypy over tests.** Lane rebuilt
+  again (still never enqueued): 651cc8d0 flag commit (comment names ec5aaea), 1e0eb6ce, 75e424be plan I-5b, ecf46789
+  I-5b, 8671bbdf, caccb2ad plan I-9, 1e0d6bee I-9, 1c8037be layer config; final tree = wp/S19-w4r9-orig + the 4
+  config lines. Re-pin 6529f47 -> ec5aaea at the next queue-idle window, then enqueue: `--snapshot --head`, I-5b base
+  75e424be head ecf46789, I-9 base caccb2ad head 1e0d6bee, layer config 1c8037be (gated with the I-9 row's "after"
+  as before), labels w4r9-*.
+- **2026-11-16, job 180 (g6r6-1, 44f044f1) PASS, step 241 accepted (24.0 -> 19.0).** Gate report: ALERT selected
+  share 56% < 75% of step gates; ALERT selected gates take 465 s > 300 s (tests tier); ALERT queue wait median 27 min >
+  15 min (causes as before; proposal 2 with Frank). The selected/full ratio ALERT cleared.
+- **2026-11-16, MSG counters under xdist (sonnet-implementer, 86k tokens): A 7af4b2f4, B e0e8cbf0 on wp/S19
+  (tests/conftest.py only).** Workers forward the counts, the other TERMINAL_REPORT lines and the MSG-G3 audit findings
+  at sessionfinish; the controller sums them in `pytest_testnodedown` (a class registered only when xdist is loaded);
+  B fails the controller on forwarded findings. (a) `-p no:xdist` on test_k05_replay, test_t08_adr0025,
+  test_t08_kinetic_cstr: output identical to the old conftest (43 bundles, 6 run results, 1 with a failure); (b) `-n
+  2` same N; (c) ruff clean; mypy's conftest.py:183 `run.session does not explicitly export write_bundle` predates the
+  change. Forwarded audit findings in three full runs: none (so B closes the hole without a failure).
+  **(d) Rule 4 at I-4, full suite `-n 4` (20280 passed both): base 10adfc3d 964 run results (125 with a failure), 1228
+  bundles; head be115b6a 878 (101), 1370. Not equal.** A third run at the wp/S19 tip: 803 (100), 1175. Hypothesis:
+  the counts are not deterministic under xdist (distribution-dependent caching or reuse within a worker), not an I-4
+  effect. Falsifier running: base 10adfc3d re-run with the same script (`scratchpad/base2`). If base2 = 964/1228, the
+  step changed them and the cause is a finding for W4 run 8; if not, rule 4 needs a deterministic form (serial run,
+  or counts per test file) and that is a ruling. The tip run's 2 failures in test_rel_rc_local came from HEAD moving
+  during the run: 26/26 pass at the tip now.
+- **2026-11-16, job 181 PASS (G6 run 6 step 2, 842d3986, step 242 accepted, 19.0 -> 17.0, 16/16).** Report 19:54:
+  "ALERT selected share 52% < 75% of step gates", "ALERT selected gates take 451 s > 300 s (tests tier)", "ALERT queue
+  wait median 36 min > 15 min" (standing; proposal 2 with Frank). Brief `S19-W3-G5-9.md` written (compare.py,
+  certificate.py, column.py; branch wp/S19-g5g), held until W4 run 9 is enqueued.
+- **2026-11-16 ~20:10, rule 4 falsifier: base2 (10adfc3d + conftest A, `-n 4`, 20280 passed) 963 run results (124
+  with a failure), 1231 bundles; base 964 (125) / 1228.** The counts are not deterministic under xdist (spread 1/3 at
+  one commit), so ADR 0076 rule 4's "must equal" cannot be read off an xdist run. The spread at one commit is far
+  below head be115b6a's gap (878 (101) / 1370) and the tip's (803 (100) / 1175), so noise alone does not settle I-4
+  either. DECISION: measure rule 4 in a deterministic form before asking the design lane: full suite serial
+  (`-p no:xdist`, same deselects, no `--ignore`) at base 10adfc3d+A (worktree scratchpad base2) and head be115b6a+A
+  (worktree `<this session's scratchpad>/headser`), script `serial.sh`, logs `baseser.log`, `headser.log` (this
+  session's scratchpad 165c72bf...), PIDs in `*.pid`. Alternative: a design-lane ruling now on xdist counts. Reason:
+  the ruling needs the serial numbers anyway; compute is free. Equal serial counts: I-4 meets rule 4 in serial form,
+  run 8 merges, and the ADR text change (serial or per-file form) goes to the R-W4-9 review batch. Unequal: the I-4
+  gap is real, a finding for a fresh engineer (patch targets of write_bundle / _run_result after the move).
+- **2026-11-16, job 182 PASS (G6 run 6 step 3, 77ae7025, step 243 accepted, 17.0 -> 14.0, 16/16).** ALERTs as at job
+  181 (selected share 52%, selected 451 s, wait median 37 min; standing, proposal 2 with Frank).
+- **2026-11-16, job 183 PASS (G6 run 6 step 4, aa10c1d6, step 244 accepted, 17.0 -> 14.0, 16/16).** ALERTs: selected
+  share 54%, selected 465 s, wait median 39 min (standing, proposal 2 with Frank). Queue: only 184 left.
+- **2026-11-16 ~20:50, job 184 PASS (G6 run 6 step 5, 048a390b, step 245 accepted, 14.0 -> 10.0, 16/16).** G6 run 6
+  fully gated. ALERTs: selected share 54%, selected 465 s, wait median 45 min (standing, proposal 2 with Frank).
+  Queue idle: **cce-code-health ec5aaea** pinned and installed (e0ef865c; direct_url ec5aaea6, `config --check` OK on
+  s19 and s19-w4). **W4 run 9 enqueued:** jobs 185 w4r9-i5b-iface (75e424be..ecf46789), 186 w4r9-i9-iface
+  (caccb2ad..1e0d6bee), `--snapshot`; 1c8037be layer config outside the gate. Launched: reviewer R-W3-G6-6 (Opus,
+  `S19-R-W3-G6-6.md`) and G5 run 9 (opus-engineer, `S19-W3-G5-9.md`, wp/S19-g5g from e0ef865c). W4 run 10 waits for a
+  free agent slot.
+- **2026-11-16, R-W3-G6-6 (reviewer, Opus, 89k tokens): merge after fixes.** All five steps behaviour-identical
+  (units: same Fraction operations and association, problem order, None handling; render: candidate order, texts per
+  type); no literal drops listed. Step 5's "every family or none" reading correct (every rung with a body lifted;
+  one-expression rungs stay). Leftovers agreed: launcher `launch` after W4; store.py duplication = R-237 (ADR).
+  77ae7025's message says cognitive 16 -> 11, the scan says 12 (recorded here; the gated hash stays). Fix 1 (`_field`
+  docstring: None and RenderError returns) and note 2 (`_check_bounds`: the non-object early return) applied by the
+  orchestrator in 0dd145b0, job 187 (no-gain). Helper wp/S19-g6d-mc (worktree s19-g6d-mc) = 0dd145b0 + wp/S19
+  135c78f8 (19f2ff53), merge-check job 188.
+- **2026-11-16, W4 run 10 launched (opus-engineer, brief `S19-W4-10.md`): I-14, I-11, then I-13, on wp/S19-w4 from
+  1c8037be.** DECISION: I-10 and I-12a-d wait until rule 4 has a deterministic form (the serial runs). Alternative:
+  include them and judge rule 4 later. Reason: their gate would carry a rule 4 count that cannot be judged now.
+- **2026-11-16 ~21:30, W4 run 10 reported (opus-engineer, ~125k tokens; stopped after I-14 to stay under the cap).
+  wp/S19-w4 1c8037be..619e0011:** 1cc1271e test outside before (test_s19_i14_freeze_order.py B1-B3, conftest registry
+  import, Q2 default; 10/10 at base); 3185ea65 plan `I-14.toml` (`added`: set_before_freeze, set_audit_probe,
+  yaml_load per ruling 2.7; `new_files` yaml_io.py); 672a1edf step (the ruling's 8 src files), **job 191**
+  w4r10-i14-iface; 674d7de6 tests after (A1-A4); 619e0011 layer config (repo-layers adoption line
+  `messages.catalogue -> registry` goes). Gates: G1 arch 2/2/10 (3998 imports) -> 1/1/4 (4002), the ruling's delta;
+  G2 10/10 base and head; G4 patch_noop 265, 0 flagged; G5 F0 PASS, registry_builtin clean, CATALOGUE.sha256 000dba96,
+  MCP digest e2c44b6b, registry snapshot equal base/head; G20 passes; G6 A1-A4 pass at head (A1, A2, A4 fail at base).
+  G7: contract.py:70 lookup kept, no fourth installer (Q3 default). Engineer choices (for the review): (1) registry
+  binds the catalogue as `_catalogue` (ruling 2.2 fallback, Q5: a plain `from openflowsheet.messages import catalogue`
+  in an `__init__` counts as a public re-export), so registry :792 reads `_catalogue.register`; (2) B2 pins the
+  measured line `"  Details: not_found: probe"`. I-11 not started (importers of transactions: tests k06_application:33,
+  t07_transactions:26, t07_types:31, t07_w3b_validation:47, scripts/k06_evidence_manifest.py:35; no src importer).
+  DECISION: the next W4 engineer run (I-11, I-13) waits for one review R-W4-9 over runs 9 and 10 (I-5b, I-9, the flag
+  651cc8d0, 8671bbdf, I-14; Fable model for I-14's initialization order), launched when jobs 185, 186, 191 pass.
+  Alternative: launch I-11 now. Reason: three unreviewed W4 runs on one lane; a reject would rebuild everything above.
+- **2026-11-16, job 185 FAIL (w4r9-i5b-iface, ecf46789, step 246 gate-fail, 14/15, tests): one collection error,
+  tests/test_e01_a_links.py:16 imports `_validator` from application.types, which I-5b empties (full suite fallback,
+  20374 passed, 1 error).** A real failure with a known cause (the engineer ran touched tests only; the tool's
+  importer scan covers planned names, not a private name moving with them). No bisect needed: at 1e0eb6ce types
+  imports `_validator` from schema_check, so the retarget passes at the base (the 1e0eb6ce pattern). Job 186 SKIPPED,
+  191 will be. DECISION: a sonnet-implementer (brief `S19-W4-9-fix185.md`) adds the test commit after 1e0eb6ce,
+  rebases 75e424be..619e0011 onto it (backup wp/S19-w4r10-orig), re-enqueues I-5b (`--rerun-of 185`), I-9, I-14.
+  Alternative: a fresh opus-engineer. Reason: fully specified one-line change plus a rebase; the orchestrator does not
+  edit lane code. ALERTs: selected share 56%, selected 465 s, wait median 39 min (standing).
+- **2026-11-16, fix185 done (sonnet-implementer): X = 634c1195 (test_e01_a_links.py:16 reads `_validator` from
+  schema_check; 4 passed at X and at the new I-5b step), chain rebased cleanly onto X, tip 2b40c2f2 (backup
+  wp/S19-w4r10-orig = 619e0011; diff = that one line).** Map: 75e424be->4f7e5a57 plan I-5b, ecf46789->50779e18 I-5b,
+  8671bbdf->a953ca84, caccb2ad->84e74e1d plan I-9, 1e0d6bee->1f5c2c6b I-9, 1c8037be->a609de45 layer config,
+  1cc1271e->dbb304a3, 3185ea65->cf66884c plan I-14, 672a1edf->8292d7e2 I-14, 674d7de6->45e742b7, 619e0011->2b40c2f2.
+  Enqueued: 194 w4r9-i5b-iface-2 (rerun of 185), 195 w4r9-i9-iface-2, 196 w4r10-i14-iface-2.
+- **2026-11-16 ~21:50, G5 run 9 reported (opus-engineer, 147k tokens). wp/S19-g5g from 135c78f8, tip bfe9e545, all on
+  run/compare.py:** 55be9616 `_differences_v2` -> `_object_differences` (23.0 -> 17.0), 24f772cc `_differences_v1` ->
+  `_object_differences_v1` (v1 twin; 17.0 -> 12.0), 7338568e `_variables` -> `_kind_floor` (12.0 -> 8.0), bfe9e545
+  `_differences_v2` `floor`+`source` -> one pair `row_floor` (parameter-object, 8.0 -> 7.0, gain exactly 1.0: borderline,
+  it lifts the file 8.9 -> 9.1; revert alone leaves 8.9). Jobs 189, 190, 192, 193. compare.py health 7.4 -> 9.1; repo
+  debt 4746.1 -> 4730.1. Every step: mypy 377 files clean, ruff clean, F0 PASS, patch_noop 0/265, compare tests
+  (t08_adr0025, t02_identity, k05_replay, v1 schema, m02_wo10_coupled) pass; no string literal changed. Not taken:
+  `_key_rule` (5.0, a 12-rung first-match ladder, one helper per ADR 0025 §5 row; playbook "when not"). certificate.py
+  and column.py untouched (S2 cap). Review R-W3-G5-9 when 189-193 pass (rule on step 4's bare tuple).
+- **2026-11-16 21:25, resume after self-reset: review briefs written** (`<git-common-dir>/codehealth/briefs/`):
+  S19-R-W4-9a.md (reviewer, Opus: 651cc8d0 flag, I-5b, I-9, tests, layer config; 486b6dbb..a609de45),
+  S19-R-W4-9b.md (reviewer on `model: fable`: I-14, a609de45..2b40c2f2; initialization order), S19-R-W3-G5-9.md
+  (reviewer, Opus; rules on step 4's bare tuple). DECISION: R-W4-9 split into 9a and 9b. Alternative: one review on
+  Fable over both runs. Reason: only I-14 needs the Fable ruling (initialization order); I-5b/I-9 are pure moves.
+  Reversible by: one combined brief. Launch order (2 agents at a time): G5-9 when 189-193 pass, 9a and 9b when
+  194-196 pass. Job 191 (pre-rebase I-14 chain) will be SKIPPED, superseded by 196. Serial rule-4 runs at ~55% (21:16).
+- **2026-11-16 21:23, job 187 PASS (g6r6-revfix, 0dd145b0, no-gain, step 247 accepted-neutral, 24.0 -> 24.0, 15/15).**
+  Report: ALERT selected share 54% < 75%; ALERT selected gates take 465 s > 300 s; ALERT queue wait median 37 min >
+  15 min (standing; proposal 2 with Frank). G6 run 6 merges when merge-check 188 passes.
+- **2026-11-16 21:37, job 189 PASS (g5r9-1, 55be9616, step 248 accepted, 23.0 -> 17.0, 16/16).** ALERTs standing.
+- **2026-11-16 21:42, job 188 PASS (g6r6-mc merge-check, 19f2ff53, full suite, 7/7). G6 run 6 merged into wp/S19 as
+  18f934f6** (via helper wp/S19-g6d-mc; wp/S19 had changed only docs/S19_* since the helper's base 135c78f8).
+  Worktrees s19-g6d and s19-g6d-mc removed (clean); branches kept. ALERTs standing. Next G6 run: not briefed; G6 left
+  per the targets file after the next scan (DECISION: brief G6 run 7 at the next wake with no review pending, from a
+  scan of the wp/S19 tip; alternative: brief now; reason: 2-agent cap, three reviews queued first).
+- **2026-11-16 21:44, job 191 SKIPPED (pre-rebase I-14, superseded by 196); job 190 PASS (g5r9-2, 24f772cc, step 249
+  accepted, 17.0 -> 12.0, 16/16).** ALERTs standing.
+- **2026-11-16 21:54, job 192 PASS (g5r9-3, 7338568e, step 250 accepted, 12.0 -> 8.0, 16/16).** ALERTs standing.
+- **2026-11-16 22:04, job 194 PASS (w4r9-i5b-iface-2, 50779e18, interface, 17/17) with LOG-ERROR: `--rerun-of 185:
+  campaign s19 has no step for this tree and base`** (the fix185 rebase changed base and tree, so 185's step 246 does
+  not match). Logged by hand without `--rerun-of`, same command otherwise (`--head 50779e18`): run-log step 251
+  accepted, 63.2 -> 63.2. Step 246 stays gate-fail for the pre-rebase ecf46789. Tool note: `--rerun-of` across a
+  rebase cannot match by design; enqueue such re-runs as fresh steps. ALERTs standing.
+- **2026-11-16 22:05, job 193 PASS (g5r9-4, bfe9e545, step 252 accepted, 8.0 -> 7.0, 16/16). G5 run 9 fully gated;
+  review R-W3-G5-9 launched (reviewer, Opus, brief S19-R-W3-G5-9.md).** ALERTs standing.
+- **2026-11-16 22:15, R-W3-G5-9 (reviewer, Opus, 90k tokens): behaviour unchanged in all 4 steps; verdict: do not
+  merge 24f772cc (step 2), merge 55be9616, 7338568e, bfe9e545 after fix 2.** Step 2 is playbook.md:130 exactly (lifts
+  the dict branch of a structural-recursion walker, leaves the list branch, creates mutual recursion; v1 frozen by ADR
+  0025 D1.4, gain is nesting credit only; S17 rejected the same pattern in b29aea3c): revert alone (applies cleanly).
+  Step 1 kept (v2 was already mutually recursive through `_variables`/`_phase_branch_flow`; the branch is the §5
+  key-rule concept with its own `_ComparedObject`). Step 4 ruling: a real parameter object (data clump returned by
+  `_sibling_floor`/`_kind_floor`), but a bare tuple: replace by `_RowFloor` NamedTuple (compare.py:321, 681, 702, 726,
+  902, 928, 930; docstring at 708 to name `(floor, None)`). Note: object nesting now costs 2 frames per level in v2
+  (RecursionError only at pathological depth; accepted). Consequence: compare.py debt ends at 12.0 - 1.0 = about 11,
+  file below health 9.0. DECISION: one sonnet-implementer (brief S19-W3-G5-9-fix.md) commits the revert (mode revert,
+  label g5r9-revert2) and `_RowFloor` (no-gain, g5r9-revfix), both enqueued; then helper merge-check and merge.
+  Alternative: opus-engineer. Reason: both fixes fully specified with line anchors.
+- **2026-11-16 22:20, job 197 FAIL (g5r9-revert2, 620d6c02, step 253 gate-fail, 10/11, check `revert`: "worktree
+  differs from the exact revert").** Orchestrator brief error: in mode revert the queue's `--base` is the REJECTED
+  commit (gate.sh `--revert <sha>`, gate base HEAD~1), and the brief gave the lane tip bfe9e545, so the gate checked
+  an exact revert of bfe9e545. The commit itself is right. Re-enqueued unchanged as 198 g5r9-revert2-b (`--base
+  24f772cc --head 620d6c02 --rerun-of 197`); brief S19-W3-G5-9-fix.md corrected. Jobs enqueued after a failure are
+  not skipped (gate_queue.py skipped()), so the implementer's `_RowFloor` job on 620d6c02 gates normally.
+- **2026-11-16 22:25, G5 run 9 fixes done (sonnet-implementer): 620d6c02 revert of 24f772cc (job 197 FAIL on the
+  brief's base, re-gated as 198), 174045f1 `_RowFloor` NamedTuple (job 199 g5r9-revfix, no-gain).** Local: mypy 377
+  clean, ruff clean, 100 compare tests passed, F0 PASS (M1-M9 all equal). `_RowFloor` at the `differences()` call, the
+  list-entry `(None, None)`, both `_phase_branch_flow` sites; `_kind_floor`/`_sibling_floor` return it; unpacking
+  `_float_leaf(..., *row_floor)` kept. After 198 and 199 PASS: helper wp/S19-g5g-mc (174045f1 + wp/S19 tip),
+  merge-check, merge.
+- **2026-11-16 22:23, job 198 PASS (g5r9-revert2-b, 620d6c02, revert of 24f772cc exact, 16/16) with LOG-ERROR:
+  `--rerun-of 197: the last step for this tree and base is 253`.** The queue's `--rerun-of` is passed to `codehealth
+  log --rerun-of STEP`, so it takes the RUN-LOG STEP number, not the queue job number (the same mistake behind job
+  194's LOG-ERROR, where 185's step was 246, though that one also crossed a rebase). Logged by hand with `--rerun-of
+  253`: step 254 review-reject (`_differences_v1` 0.0 -> 5.0, compare.py 7.0 -> 12.0, as the reviewer predicted).
+  Rule for every orchestrator and engineer: `enqueue --rerun-of <step N from the failed result line>`.
+- **2026-11-16 22:24, rule 4 serial runs done (item 1; "rule 4 falsifier: base2"). Serial full suites (`-p no:xdist`,
+  both wall-time budget tests deselected) at base 10adfc3d+A and head be115b6a+A: EQUAL.** Both: `MSG WO-5a: 1061
+  bundles scanned`, `MSG WO-6: 801 run results checked, 100 with a failure`, 20375 passed, 107 skipped, 222
+  deselected, 3 xfailed, EXIT 0 (7918 s and 7914 s). R-W4-8 fix 1 (evidence for I-4) is met in the serial form. Worktrees
+  base2 and headser removed (only the commit-A conftest overlay, on wp/S19 as 7af4b2f4). Consequences:
+  (a) W4 run 8 merges: helper wp/S19-w4r8-mc gains wp/S19 c37ca884 as 9cb029ed; merge-check job 200 (w4r8-mc).
+  (b) Rule 4 serial-form text added as question 6 of R-W4-9a (S19-R-W4-9a.md) for the design-lane ruling.
+  (c) I-10 and I-12a-d may be briefed (after R-W4-9); each of their steps needs serial counts at base and head.
+- **2026-11-16 22:26, job 195 FAIL (w4r9-i9-iface-2, 1f5c2c6b, step 255 gate-fail, 14/15, tests; full-suite
+  fallback, 2 failed, 20376 passed): test_t07_w6b_mcp.py::test_g14_the_bindings_import_only_the_contract[http.py]
+  and [mcp.py], "imports outside §11.6 (2): ['openflowsheet.application.errors']".** Known cause: a953ca84 widened
+  `ALLOWED_APPLICATION` in test_t07_w6a_http.py but not its twin `ALLOWED_PROJECT_MODULES` in test_t07_w6b_mcp.py:77
+  (the only other copy; grep of tests and scripts). Not a bisect case. DECISION: sonnet-implementer (brief
+  S19-W4-9-fix195.md) adds the twin's line on a953ca84 (passes at the base: an allowed module not yet imported),
+  rebases 84e74e1d..2b40c2f2 onto it (backup wp/S19-w4r10-orig2), and enqueues I-9 and I-14 as fresh steps (no
+  `--rerun-of` across a rebase). Job 196 will be SKIPPED. R-W4-9a/9b shas change by the rebase; the briefs are
+  updated from the implementer's map before launch. Alternative: opus-engineer. Reason: the fix185 pattern, one
+  line. ALERTs standing.
+- **2026-11-16 22:30, fix195 done (sonnet-implementer, 53k tokens): X = 024ecc4d on a953ca84 (test_t07_w6b_mcp.py:79
+  gains "errors"; 41 passed at X and at the new I-9 step), rebase clean, tip eed97251 (backup wp/S19-w4r10-orig2 =
+  2b40c2f2; diff = that one line, checked).** Map: 84e74e1d->7c0b2202 plan I-9, 1f5c2c6b->3f7540a9 I-9,
+  a609de45->574621df layer config, dbb304a3->5227e2ba, cf66884c->fb99f834 plan I-14, 8292d7e2->ffed4051 I-14,
+  45e742b7->0fe4c01b, 2b40c2f2->eed97251. Enqueued fresh: 201 w4r9-i9-iface-3, 202 w4r10-i14-iface-3. Job 196 SKIPPED.
+  Review briefs S19-R-W4-9a/9b updated to the new shas and jobs.
+- **2026-11-16 22:36, job 199 PASS (g5r9-revfix, 174045f1 `_RowFloor`, step 256 accepted-neutral, 12.0 -> 12.0,
+  15/15). G5 run 9 closed:** helper wp/S19-g5g-mc (worktree s19-g5g-mc) = 174045f1 + wp/S19 8071cd4c as 94224851;
+  merge-check job 203 (g5r9-mc). Job 196 SKIPPED (pre-fix195 I-14). ALERTs standing.
+- **2026-11-16 22:50, job 200 PASS (w4r8-mc merge-check, 9cb029ed, full suite, 7/7, debt 200.8 -> 200.8). W4 run 8
+  merged into wp/S19 as cb1106c0** (`git merge --no-ff -F`, helper wp/S19-w4r8-mc; wp/S19 changed only docs/S19_*
+  since c37ca884). Worktree s19-w4r8-mc removed. Gate report (6 h): "ALERT selected share 60% < 75% of step gates",
+  "ALERT selected gates take 555 s > 300 s (tests tier)", "ALERT queue wait median 32 min > 15 min": standing, proposal
+  2 with Frank. Pending: 201 (I-9), 202 (I-14), 203 (g5r9-mc).
+- **2026-11-16 22:55, G5 run 9 merge-check redone on a 2nd helper.** Job 203 (helper 94224851, wp/S19 8071cd4c) was
+  already running when W4 run 8 merged; wp/S19 then gained code (run/session.py -> application/run_session.py), and
+  G5 also touches run/, so 203's PASS would not cover the merge. New helper wp/S19-g5g-mc2 (worktree s19-g5g-mc2) =
+  174045f1 + wp/S19 e6cd0017 as 3a676c0f (clean merge); job 204 g5r9-mc2. The merge takes 204's helper; 203 stays
+  informative (a FAIL there is a G5 finding). Alternative: wait for 203, then re-check (one queue round later).
+- **2026-11-16 23:05, job 201 PASS (w4r9-i9-iface-3, 3f7540a9, step 257 accepted, interface, 17/17). R-W4-9a
+  launched (`reviewer`, Opus, brief S19-R-W4-9a.md, range 486b6dbb..574621df) before job 202:** its range ends before
+  I-14, so an I-14 fix cannot change what it reads. Alternative: wait for 202 (the state's wording). R-W4-9b waits
+  for job 202.
+- **2026-11-16 23:10, R-W4-9a reported (`reviewer`, Opus, 153k tokens): merge; all 10 commits accepted, no fixes.**
+  Q1 no shim (bindings in types.py:31,52,55,57 unaliased and read by the module); Q2 pure moves; Q3 identity inert
+  (schemas/api-error.schema.json:5 frozen text, left); Q4 patch targets clean; Q5 no widening.
+  Note 1 (record): cli.py:58 imports errors, so importing application.cli no longer loads types/jobs.model/units.display;
+  types.py:31 loads messages.audit eagerly (harmless); passed to R-W4-9b as the starting fact for initialization order.
+  Note 2 (record, gated objects not amended): stale shas in 50779e18 and 3f7540a9 messages and in i9-errors.toml.
+  Note 3 (open, design): no_implicit_reexport guards only within a step; tests/scripts can re-import moved names through
+  old modules later (mypy strict covers src and benchmarks only). DECISION: I-19 re-runs the ec5aaea importer scan over
+  every name W4 moved. Alternative: a standing check now. Reversible by: adding the check earlier.
+  Q6 amend: ADR 0076 rule 4 amended in place as a dated paragraph (serial form, PYTHONHASHSEED=0, all counts equal).
+  Falsifier per the reviewer (one repeat at one commit): serial re-run at be115b6a+A (conftest of 7af4b2f4), same
+  conditions as headser (no fixed seed), worktree `scratchpad/headser2` of session 916d464e, PID 3980694, log
+  `headser2.log`, started 23:09. Equal to 1061/801/100: determinism confirmed directly. Unequal: the amendment is
+  wrong; park rule 4 for the design lane with both numbers, I-10/I-12 wait.
+- **2026-11-16 23:15, job 203 PASS (g5r9-mc, old helper 94224851, 7/7, debt 23.0 -> 12.0; informative only, no G5
+  finding).** The merge waits for job 204 (g5r9-mc2). ALERTs standing (proposal 2 with Frank).
+- **2026-11-16 23:25, job 202 PASS (w4r10-i14-iface-3, ffed4051, step 258 accepted, interface, 17/17). R-W4-9b
+  launched (`reviewer`, model fable, brief S19-R-W4-9b.md with R-W4-9a note 1 appended).** After it: fixes, helper
+  wp/S19-w4-mc (lane tip + wp/S19 tip), merge-check, merge. G6 run 7 brief waits for 9b (agent slots, queue load).
+- **2026-11-16 23:40, R-W4-9b reported (`reviewer`, fable, 131k tokens): merge after one docstring fix; no code fix.**
+  Commits 5227e2ba, fb99f834, 0fe4c01b, eed97251 accept; ffed4051 accept with fix 1. Initialization order unchanged for
+  the freeze relative to registry construction at every entry point (CLI, HTTP, MCP, errors, worker, conftest); hook
+  installed once (registry/__init__.py:857); an exception in it propagates before `_load()`; messages.render alone
+  freezes the core alone (FQ-B). Observable difference: importing jobs.worker loads registry and numpy before setpgid
+  and the redirect (worker.py:59), so worker.py:14-16 was false; forced kill unaffected (executor.py:108-110).
+  DECISION: keep the import (FQ-B), correct the docstring. Alternative: drop :59 (`_run` reaches errors via
+  runner.py:102 after the redirect), needs an ADR amendment and B1's worker case. Reversible by: a later step removing
+  :59. Fix 2: catalogue.py:8-10 core-alone case. Note 3 (record): ffed4051's G7 and this log's "contract.py:70" are
+  stale; at head contract.py imports nothing from messages. Not verified by the reviewer: rendered-text identity (rests
+  on G5 and B2); CLI child re-import of `__main__` inferred. B1 lacks bindings http/mcp (covered via http.py:61,
+  mcp.py:52). Fixes 1+2 committed by the orchestrator as f8173c9f (docstrings only, ruff clean); job 205
+  w4r10-revfix (no-gain). Then helper wp/S19-w4-mc on the wp/S19 tip after G5 run 9 merges (job 204), merge-check.
