@@ -30,7 +30,7 @@ from openflowsheet.canonical import document_sha256, state_sha256
 from openflowsheet.compile.casadi_backend import compile_problem
 from openflowsheet.compile.reference import state_vector
 from openflowsheet.compile.spec import ProblemSpec
-from openflowsheet.compiled import CompiledProblem, EvaluationContext
+from openflowsheet.compiled import CompiledProblem, CompiledProblemMetadata, EvaluationContext
 from openflowsheet.models.syn001.flowsheet import STREAMS, Syn001Flowsheet
 from openflowsheet.numerics.scaling import Scaling
 from openflowsheet.orchestrator.rank import (
@@ -123,10 +123,11 @@ def _guard(
     this declaration at this state.
 
     The solve's identity is read from its root fingerprint and from its `SolvePlan` (the result's,
-    or the region plan the caller holds); `x_final` from `state=`, else `final_state`, else
-    `state`. Refusals are `VerifierError`s with an R0 message: `declaration_unidentified`,
-    `declaration_mismatch(<field>)`, `state_mismatch(full_state_sha256)`. Only the hash
-    comparison is skipped under `state=` (K04 §9's injections)."""
+    or the region plan the caller holds) and compared by `_require_claimed_identity`; `x_final`
+    from `state=`, else `final_state`, else `state`. Refusals are `VerifierError`s with an R0
+    message: `declaration_unidentified`, `declaration_mismatch(<field>)`,
+    `state_mismatch(full_state_sha256)`. Only the hash comparison is skipped under `state=`
+    (K04 §9's injections)."""
     source = _last_solve(result)
     fingerprint = getattr(source, "root_fingerprint", None)
     own_plan = getattr(source, "plan", None)
@@ -136,16 +137,7 @@ def _guard(
     if fingerprint is None and own_plan is None:
         raise VerifierError("declaration_unidentified")
     plans = [plan for plan in (own_plan, solve_plan) if plan is not None]
-    metadata = compiled.metadata
-    claimed: list[tuple[str, str]] = []
-    if fingerprint is not None:
-        claimed.append((fingerprint["model_version"], fingerprint["constants_sha256"]))
-    claimed += [(plan.model_version, plan.constants_sha256) for plan in plans]
-    for model_version, constants in claimed:
-        if model_version != metadata.model_version:
-            raise VerifierError("declaration_mismatch(model_version)")
-        if constants != metadata.constants_sha256:
-            raise VerifierError("declaration_mismatch(constants_sha256)")
+    _require_claimed_identity(fingerprint, plans, compiled.metadata)
     # §4.8 item 1: the first differing of `model_version`, `constants_sha256` and `revision`.
     if not revision_matches:
         raise VerifierError("declaration_mismatch(revision)")
@@ -167,6 +159,26 @@ def _guard(
         "row_ids": list(tear_plan.tear_row_ids) if tear_plan is not None else [],
     }
     return _Solved(source, final_state, tear)
+
+
+def _require_claimed_identity(
+    fingerprint: Mapping[str, Any] | None,
+    plans: Sequence[Any],
+    metadata: CompiledProblemMetadata,
+) -> None:
+    """T04 §4.8 item 1 (ADR 0010 D9.2): every `(model_version, constants_sha256)` the solve
+    claims, its root `fingerprint`'s first and then each of `plans`' in order, is the compiled
+    declaration's (`metadata`). The first claim that differs raises `VerifierError`
+    `declaration_mismatch(model_version)`, else `declaration_mismatch(constants_sha256)`."""
+    claimed: list[tuple[str, str]] = []
+    if fingerprint is not None:
+        claimed.append((fingerprint["model_version"], fingerprint["constants_sha256"]))
+    claimed += [(plan.model_version, plan.constants_sha256) for plan in plans]
+    for model_version, constants in claimed:
+        if model_version != metadata.model_version:
+            raise VerifierError("declaration_mismatch(model_version)")
+        if constants != metadata.constants_sha256:
+            raise VerifierError("declaration_mismatch(constants_sha256)")
 
 
 def verify(
