@@ -1,0 +1,22 @@
+# ADR 0076 I-3, item 3b (W4 run 8, brief S19-W4-8; R-W4-1b): orchestrator/policies.py, the home
+# I-3 gave the solve policies, gains an `__all__` naming its 14 public names.
+# `codehealth gate --mode interface` reads this plan from the plan commit.
+id = "i3b-policies-all"
+approved_by = "Frank Peters, 2026-11-14, ADR 0076 accepted (Decision Desk ofs-adr0076-accept)"
+reason = """ADR 0076 I-3 moved application/policies.py to orchestrator/policies.py as a whole module; \
+the module has had no __all__, so its three imports (SolvePolicy, INITIALIZER_ID, \
+WARM_START_SOURCE) read as part of its API. The step gives it a literal __all__ of the 14 names it \
+defines: APPLICATION_POLICIES, DEFAULT_POLICY_ID, INNER_ROUTE, REGISTERED_POLICY_IDS, \
+ROUTE_DEFAULT_POLICY, RRC_REVISION_V1, T04_W12, T05B_V2, T06_REVISION_V1, T06_REVISION_V2, \
+T08_PTC_V1, T08_WARM_V1, SolvePath, resolve_policy. Every one is bound in the module at head; \
+cce-code-health 846a065 does not count them as added public names. No definition, value or \
+import changes. An AST inventory of src, tests, scripts, benchmarks and examples (from-imports at \
+any depth, module-alias attribute reads) finds no importer of any other name through \
+orchestrator.policies. Expected codehealth arch --depth 4 (measured at this base and on the step \
+applied to it): base 4 violations / 3 cycles / 12 cycle edges, after 4 / 3 / 12 (imports 3989 -> \
+3989). Layer config: none."""
+removed = []
+renamed = {}
+changed = []
+added = ["src/openflowsheet/orchestrator/policies.py:__all__"]
+new_files = []
