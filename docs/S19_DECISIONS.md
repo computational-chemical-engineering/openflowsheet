@@ -1098,3 +1098,7 @@
   design), so forbid and scope flagged those files; the previous state file's "base 34474d67" was wrong, the engineer
   had enqueued base b41fa802. Re-enqueued all four with the engineer's bases (jobs 165-168, plain, no `--rerun-of`:
   log refuses a moved base, as jobs 73 and 77). b41fa802's tests are covered by the lane's full-suite merge-check.
+- **2026-11-16, jobs 165-168 SKIPPED on job 161's failed head:** the runner's failed list skipped every later job
+  built on 3cc1be0a, including deliberate re-gates (the procedure's environment-failure re-run would hit the same).
+  Fix: a failure records the queue's last seq; only jobs enqueued at or before it are skipped. Pending jobs held
+  (`queue/held/`) until G6 job 147 ends, then the runner restarts on the fix and W4 run 7 is re-enqueued.

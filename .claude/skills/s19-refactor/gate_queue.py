@@ -262,7 +262,8 @@ class Runner:
         self.lock = threading.Lock()
         self.threads: dict[str, threading.Thread] = {}  # worktree -> its job's thread
         self.gates: dict[str, subprocess.Popen] = {}
-        self.failed: dict[str, list[str]] = {}  # worktree -> heads of its failed snapshot jobs
+        # worktree -> (head of a failed snapshot job, the last seq enqueued when it failed)
+        self.failed: dict[str, list[tuple[str, int]]] = {}
         self.stopping = False
 
     def say(self, line: str) -> None:
@@ -417,17 +418,21 @@ class Runner:
         if job["mode"] == "merge-check":
             return
         if job.get("snapshot") or job.get("detached"):
+            seq_file = QUEUE / "seq"
+            last = int(seq_file.read_text()) if seq_file.exists() else job["seq"]
             with self.lock:
-                self.failed.setdefault(job["worktree"], []).append(job["head"])
+                self.failed.setdefault(job["worktree"], []).append((job["head"], last))
 
     def skipped(self, job: dict) -> str | None:
-        """The failed commit a pending snapshot job is built on, if any."""
+        """The failed commit a pending snapshot job is built on, if any. Only jobs enqueued before
+        the failure are skipped: one enqueued after it is a deliberate re-gate (2026-11-16: jobs
+        165-168, re-enqueued on corrected bases, were skipped on job 161's failed head)."""
         if not (job.get("snapshot") or job.get("detached")):
             return None
         with self.lock:
             heads = list(self.failed.get(job["worktree"], []))
-        for head in heads:
-            if is_ancestor(head, job["head"], COMMON.parent):
+        for head, last in heads:
+            if job["seq"] <= last and is_ancestor(head, job["head"], COMMON.parent):
                 return head
         return None
 
