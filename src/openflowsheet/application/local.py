@@ -142,7 +142,7 @@ from openflowsheet.application.types import (
     _replay_report_build,
     validate_document,
 )
-from openflowsheet.application.validation import Task, ValidationReport
+from openflowsheet.application.validation_report import Task, ValidationReport
 from openflowsheet.canonical import canonical_json, document_sha256, first_noncanonical
 from openflowsheet.orchestrator.policies import APPLICATION_POLICIES, DEFAULT_POLICY_ID
 from openflowsheet.registry import default_registry

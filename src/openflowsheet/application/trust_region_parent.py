@@ -49,7 +49,7 @@ from openflowsheet.models.c1.reactor import C1Reactor
 from openflowsheet.numerics.solve_record import SolvePolicy
 from openflowsheet.orchestrator.coupling import UnitInlet
 from openflowsheet.orchestrator.policies import T06_REVISION_V2
-from openflowsheet.verify.certificate import CheckPolicy
+from openflowsheet.verify.verdict import CheckPolicy
 
 __all__ = ["C1_PARENT_SERVICES", "C1ParentServices", "pinned_at"]
 

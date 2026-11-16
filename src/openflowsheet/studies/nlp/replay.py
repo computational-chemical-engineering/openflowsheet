@@ -439,7 +439,7 @@ def _recomputed_chain(
     )
     from openflowsheet.studies.nlp.revision_host import RevisionNlpHost
     from openflowsheet.studies.nlp.verification import verify_candidate
-    from openflowsheet.verify.certificate import CheckPolicy
+    from openflowsheet.verify.verdict import CheckPolicy
 
     manifest = _read(directory, MANIFEST)
     report = _read(directory, REPORT)

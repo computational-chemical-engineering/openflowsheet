@@ -32,7 +32,7 @@ from openflowsheet.models.syn001.equilibrium_form import composition_dependent
 from openflowsheet.models.syn001.saturation_band import band_temperature
 from openflowsheet.numerics.solve_record import fraction_string
 from openflowsheet.orchestrator.homotopy import HomotopyRecord
-from openflowsheet.orchestrator.region import RegionResult
+from openflowsheet.orchestrator.region_result import RegionResult
 from openflowsheet.thermo import PropertyProvider
 
 #: Spec §18.2's registered easy endpoint, the target's `initializer_source`.

@@ -88,8 +88,8 @@ from openflowsheet.studies.trust_region.study import (
     project_c1,
 )
 from openflowsheet.studies.trust_region.truths import ParentExperimentTruth
-from openflowsheet.verify.certificate import CheckPolicy
 from openflowsheet.verify.checks import VerifierError, stream_of
+from openflowsheet.verify.verdict import CheckPolicy
 
 if TYPE_CHECKING:
     from openflowsheet.studies.trust_region.projection import Projection

@@ -51,7 +51,8 @@ from openflowsheet.models.lifted import AdmissibilityRefusal, LiftedSplit
 from openflowsheet.models.revision_flowsheet import RevisionFlowsheet, si_unit
 from openflowsheet.numerics.scaling import REGISTERED_NOMINALS, Scaling
 from openflowsheet.numerics.solve_record import SolvePolicy
-from openflowsheet.orchestrator.region import RegionResult, admissibility_value
+from openflowsheet.orchestrator.region_phase import admissibility_value
+from openflowsheet.orchestrator.region_result import RegionResult
 from openflowsheet.orchestrator.revision import instances_of
 from openflowsheet.orchestrator.splits import region_splits
 from openflowsheet.run.manifest import started_now
@@ -85,8 +86,8 @@ from openflowsheet.studies.sensitivity import (
     StudyParameter,
     evaluate_sensitivity,
 )
-from openflowsheet.verify.certificate import CheckPolicy
 from openflowsheet.verify.checks import VerifierError
+from openflowsheet.verify.verdict import CheckPolicy
 
 ROUTE: Literal["revision_eo"] = "revision_eo"
 

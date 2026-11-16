@@ -53,20 +53,14 @@ from openflowsheet.compile.casadi_backend import compile_problem
 from openflowsheet.compile.reference import state_vector
 from openflowsheet.models.lifted import LiftedSplit, Regime
 from openflowsheet.studies.nlp.phase import PhaseRow
-from openflowsheet.verify.certificate import (
-    BoundDeclaration,
-    CheckPolicy,
-    SolutionCertificate,
-    _staged_splits,
-    fresh_provider,
-    grade,
-)
+from openflowsheet.verify.certificate import BoundDeclaration, _staged_splits, fresh_provider
 from openflowsheet.verify.regularity import (
     RegularityEvidence,
     TargetAssembly,
     assemble_target,
     screen,
 )
+from openflowsheet.verify.verdict import CheckPolicy, SolutionCertificate, grade
 from openflowsheet.verify.zero_flow import ZeroFlowSplit
 
 Basis = Literal["certificate", "phase_boundary_form"]

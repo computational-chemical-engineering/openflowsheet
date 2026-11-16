@@ -22,8 +22,9 @@ from openflowsheet.orchestrator.tear import Syn001TearProblem, solve_tear
 from openflowsheet.run.bundle import write_bundle
 from openflowsheet.run.identity import r0_projection, r0_sha256
 from openflowsheet.run.manifest import RunManifest, environment, policy_sha256, started_now
-from openflowsheet.verify.certificate import CheckPolicy, verify
+from openflowsheet.verify.certificate import verify
 from openflowsheet.verify.failure import bundle_for
+from openflowsheet.verify.verdict import CheckPolicy
 
 
 def run_session(

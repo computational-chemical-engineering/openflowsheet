@@ -88,7 +88,8 @@ from openflowsheet.orchestrator.recovery import (
     recovered_provenance,
     solver_outcomes,
 )
-from openflowsheet.orchestrator.region import RecoveryStart, RegionResult, solve_region
+from openflowsheet.orchestrator.region import solve_region
+from openflowsheet.orchestrator.region_result import RecoveryStart, RegionResult
 from openflowsheet.thermo import Phase, PropertyProvider, StreamState
 
 #: Spec §7.3's registered pre-solve.

@@ -97,7 +97,7 @@ from openflowsheet.orchestrator.execution import (
 )
 from openflowsheet.orchestrator.executor import PlanResult, execute_plan
 from openflowsheet.orchestrator.policies import SolvePath
-from openflowsheet.orchestrator.region import RegionResult
+from openflowsheet.orchestrator.region_result import RegionResult
 from openflowsheet.orchestrator.revision import plan_revision
 from openflowsheet.orchestrator.revision_continuation import RevisionContinuationRefusal
 from openflowsheet.orchestrator.warm_start import (
@@ -113,12 +113,7 @@ from openflowsheet.run.identity import r0_projection, r0_sha256
 from openflowsheet.run.manifest import RunManifest, environment, policy_sha256, started_now
 from openflowsheet.run.replay import ReplayReport, Rerun, decide_mode, replay
 from openflowsheet.thermo.pr_c1 import PrC1Provider
-from openflowsheet.verify.certificate import (
-    CheckPolicy,
-    SolutionCertificate,
-    verify_bound,
-    verify_revision,
-)
+from openflowsheet.verify.certificate import verify_bound, verify_revision
 from openflowsheet.verify.failure import (
     FailureBundle,
     coupling_bundle,
@@ -127,6 +122,7 @@ from openflowsheet.verify.failure import (
     refusal_bundle,
     region_bundle,
 )
+from openflowsheet.verify.verdict import CheckPolicy, SolutionCertificate
 
 __all__ = [
     "SOLVE_PATHS",

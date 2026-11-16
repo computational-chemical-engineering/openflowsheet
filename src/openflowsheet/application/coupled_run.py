@@ -80,7 +80,7 @@ from openflowsheet.run import solution_state
 from openflowsheet.run.compare import KIND_FLOOR, differences, floored_difference
 from openflowsheet.thermo import StreamState
 from openflowsheet.verify import CheckResult, Limitation
-from openflowsheet.verify.certificate import ExternalEvidence
+from openflowsheet.verify.verdict import ExternalEvidence
 
 if TYPE_CHECKING:
     from openflowsheet.adapters.experiments.runner import ExperimentOutcome

@@ -87,7 +87,7 @@ from openflowsheet.studies.nlp.request import (
 )
 from openflowsheet.studies.nlp.revision_host import ROUTE, DecisionMap, RevisionNlpHost
 from openflowsheet.studies.nlp.verification import CandidateVerification
-from openflowsheet.verify.certificate import CheckPolicy
+from openflowsheet.verify.verdict import CheckPolicy
 
 OPTIMIZATION_FORMAT: Final = "openflowsheet-optimization-v1"
 #: §4.8's record members, by path relative to the record directory.

@@ -46,7 +46,7 @@ from openflowsheet.compile.spec import ProblemSpec
 from openflowsheet.models import SpecificationError
 from openflowsheet.models.syn001.flowsheet import Syn001Flowsheet
 from openflowsheet.numerics.solve_record import SolvePolicy
-from openflowsheet.orchestrator.region import AttemptSystem
+from openflowsheet.orchestrator.region_result import AttemptSystem
 from openflowsheet.orchestrator.tear import Syn001TearProblem
 from openflowsheet.studies.sensitivity import (
     Mode,
@@ -62,7 +62,7 @@ from openflowsheet.studies.syn001 import (
     syn001_sensitivity,
     with_pinned,
 )
-from openflowsheet.verify.certificate import CheckPolicy, SolutionCertificate
+from openflowsheet.verify.verdict import CheckPolicy, SolutionCertificate
 
 HostKind = Literal["syn001-tear", "revision-eo"]
 

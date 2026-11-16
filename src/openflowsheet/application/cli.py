@@ -176,7 +176,7 @@ def command_optimize(arguments: argparse.Namespace) -> int:
     from openflowsheet.studies.nlp.request import request_problems
     from openflowsheet.studies.nlp.revision import optimize_revision
     from openflowsheet.studies.nlp.revision_host import ROUTE
-    from openflowsheet.verify.certificate import CheckPolicy
+    from openflowsheet.verify.verdict import CheckPolicy
 
     document = _load(Path(arguments.revision))
     request = _load(Path(arguments.request))

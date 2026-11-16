@@ -31,7 +31,7 @@ from openflowsheet.application.revision_run import (
 from openflowsheet.numerics.solve_record import SolvePolicy
 from openflowsheet.orchestrator.policies import DEFAULT_POLICY_ID, SolvePath
 from openflowsheet.orchestrator.warm_start import WarmStartCandidate
-from openflowsheet.verify.certificate import CheckPolicy
+from openflowsheet.verify.verdict import CheckPolicy
 
 __all__ = ["REVISION_ROUTES", "ApplicationRevisionRoutes"]
 
