@@ -886,3 +886,9 @@
   measured with `codehealth arch --depth 4` at the tip: 4 violations, 3 cycles, 12 edges, unchanged by the commit
   (it is config comments and one stale entry; the merge-check gates it). Next: R-W4-1 extended to the lane tip.
   Self-reset here (context ~100k).
+- **2026-11-16, job 134 PASS (G5 run 8 step 3, d6769618, `decide_mode`, step 212 accepted, 15.3 -> 7.3, 16/16):
+  G5 run 8 all gated.** Report: ALERTs as at job 123 (selected 789 s, ratio 0.62, wait median 71 min; widening,
+  action recorded there). R-W4-1 split in two (span ~70 commits): briefs `S19-R-W4-1a.md` (I-5, I-3, I-6, I-1, I-2,
+  I-7; supersedes `S19-R-W4-1.md`, whose run-1 shas changed in the gate-152 rebuild) and `S19-R-W4-1b.md` (I-8 A-F,
+  layer config). Launched: R-W4-1a and R-W3-G5-8 (`S19-R-W3-G5-8.md`), both `reviewer` on Opus; R-W4-1b next free
+  slot, then R-W3-G6-4 after jobs 135-136.
