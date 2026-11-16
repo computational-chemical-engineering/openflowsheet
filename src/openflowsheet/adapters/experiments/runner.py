@@ -191,6 +191,18 @@ def _frozen(failure: Execution) -> Execution:
 
 
 @dataclass(frozen=True)
+class _Experiment:
+    """What `ExperimentRunner._attempt` evaluates: the variant and its backend, at `run`'s inlet,
+    components and tube count."""
+
+    variant: Variant
+    backend: Backend
+    inlet: StreamState
+    components: Sequence[str]
+    n_tubes: float
+
+
+@dataclass(frozen=True)
 class _AttemptId:
     """Which attempt record `ExperimentRunner._document` builds: the experiment key, the attempt's
     number under it, and the number of the attempt that produced the stored result it repeats
@@ -322,17 +334,10 @@ class ExperimentRunner:
                 return ExperimentOutcome(
                     request, existing, existing["envelope"], True, tuple(written)
                 )
+            experiment = _Experiment(variant, backend, inlet, components, n_tubes)
             while True:
                 attempt, envelope, calls = self._attempt(
-                    variant,
-                    backend,
-                    request,
-                    inlet,
-                    components,
-                    n_tubes,
-                    check,
-                    existing,
-                    self._start_bytes(start),
+                    experiment, request, check, existing, self._start_bytes(start)
                 )
                 written.append(attempt)
                 status = attempt["execution"]["status"]
@@ -428,12 +433,8 @@ class ExperimentRunner:
 
     def _attempt(
         self,
-        variant: Variant,
-        backend: Backend,
+        experiment: _Experiment,
         request: Mapping[str, Any],
-        inlet: StreamState,
-        components: Sequence[str],
-        n_tubes: float,
         check: Callable[[], None] | None,
         existing: Mapping[str, Any] | None,
         start: bytes | None = None,
@@ -445,13 +446,14 @@ class ExperimentRunner:
         repeat_of = None if existing is None else int(existing["produced_by"]["attempt"])
         attempt_id = _AttemptId(key, number, repeat_of)
         provider = _Counting(self.provider)
+        backend = experiment.backend
         boundary = Boundary(
             provider=provider,
-            n_tubes=n_tubes,
-            identity=backend.identity(n_tubes),
-            sweep_ratio=variant.sweep_ratio,
-            discretization_estimate=variant.accuracy["discretization_estimate"],
-            hard_domain=hard_domain(variant),
+            n_tubes=experiment.n_tubes,
+            identity=backend.identity(experiment.n_tubes),
+            sweep_ratio=experiment.variant.sweep_ratio,
+            discretization_estimate=experiment.variant.accuracy["discretization_estimate"],
+            hard_domain=hard_domain(experiment.variant),
         )
         progress = LaunchProgress()
         seen: list[tuple[TubeInlet, Execution]] = []
@@ -468,7 +470,9 @@ class ExperimentRunner:
         started = time.perf_counter()
         interrupted = True
         try:
-            envelope = boundary.evaluate(inlet, components, evaluation, self.context)
+            envelope = boundary.evaluate(
+                experiment.inlet, experiment.components, evaluation, self.context
+            )
             interrupted = False
         except Exception:
             interrupted = False
