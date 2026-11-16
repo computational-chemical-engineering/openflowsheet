@@ -1334,3 +1334,7 @@
   step changed them and the cause is a finding for W4 run 8; if not, rule 4 needs a deterministic form (serial run,
   or counts per test file) and that is a ruling. The tip run's 2 failures in test_rel_rc_local came from HEAD moving
   during the run: 26/26 pass at the tip now.
+- **2026-11-16, job 181 PASS (G6 run 6 step 2, 842d3986, step 242 accepted, 19.0 -> 17.0, 16/16).** Report 19:54:
+  "ALERT selected share 52% < 75% of step gates", "ALERT selected gates take 451 s > 300 s (tests tier)", "ALERT queue
+  wait median 36 min > 15 min" (standing; proposal 2 with Frank). Brief `S19-W3-G5-9.md` written (compare.py,
+  certificate.py, column.py; branch wp/S19-g5g), held until W4 run 9 is enqueued.
