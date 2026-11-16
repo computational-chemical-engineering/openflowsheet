@@ -994,3 +994,5 @@
 - **2026-11-16, job 138 PASS (G5 run 8 merge-check at 2465d02d, full suite, 15/15, 52.0 -> 24.8). Merged wp/S19-g5f
   into wp/S19 (e9d5f386).** wp/S19 gained docs and skill files only since the merge-check base 708ce244. Worktree
   s19-g5f removed; branch kept (merged into wp/S19, not main).
+- **2026-11-16, job 141 PASS (g6r4-revfix 6d81db7b, step 217 accepted-neutral, 35.0 -> 35.0, 15/15).** G6 run 4
+  merges on job 142 (merge-check) PASS.
