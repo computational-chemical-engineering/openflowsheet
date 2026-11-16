@@ -318,7 +318,7 @@ def differences(
             raise TypeError(f"{V1_POLICY_ID} compares no declared kinds (ADR 0025 D5)")
         return _differences_v1(emitted, committed, path, floor)
     if policy_id == CURRENT_POLICY_ID:
-        return _differences_v2(emitted, committed, path, floor, None, variable_kinds)
+        return _differences_v2(emitted, committed, path, (floor, None), variable_kinds)
     raise ValueError(
         f"unknown numerical policy {policy_id!r}; this build knows {sorted(KNOWN_POLICY_IDS)}"
     )
@@ -671,14 +671,9 @@ def _variables(
         elif name not in emitted:
             found.append(f"{where}.{name}: present in the committed document only")
         else:
-            floor, source = _kind_floor(kinds.get(name))
+            row_floor = _kind_floor(kinds.get(name))
             found += _differences_v2(
-                emitted[name],
-                committed[name],
-                f"{where}.{name}",
-                floor,
-                source,
-                None,
+                emitted[name], committed[name], f"{where}.{name}", row_floor, None
             )
     return found
 
@@ -704,11 +699,13 @@ def _differences_v2(
     emitted: Any,
     committed: Any,
     path: str,
-    floor: float | None,
-    source: str | None,
+    row_floor: tuple[float | None, str | None],
     kinds: Mapping[str, str] | None,
 ) -> list[str]:
     """`T08-numerical-policy-v2`: ADR 0025 §5's rows, in order.
+
+    `row_floor` is the floor a float leaf is compared under and its source, as its row gave
+    them (`(None, None)` when none did).
 
     An object goes to `_object_differences` (its keys by rule, else as children); a list is
     compared entry by entry; a float leaf goes to `_float_leaf` (rows 9 to 14); every other
@@ -726,12 +723,12 @@ def _differences_v2(
         if len(emitted) != len(committed):
             return [f"{where}: {len(emitted)} entries against {len(committed)}"]
         for index, (left, right) in enumerate(zip(emitted, committed, strict=True)):
-            found += _differences_v2(left, right, f"{where}[{index}]", None, None, None)
+            found += _differences_v2(left, right, f"{where}[{index}]", (None, None), None)
         return found
 
     # Rows 9–14: a float, under the floor its row gives, else its registered one, else none.
     if isinstance(committed, float) or isinstance(emitted, float):
-        return _float_leaf(emitted, committed, where, floor, source)
+        return _float_leaf(emitted, committed, where, *row_floor)
 
     # Row 15: every other leaf, exactly.
     if emitted != committed:
@@ -761,9 +758,9 @@ def _object_differences(
         if ruled is not None:
             found += ruled
             continue
-        child_floor, child_source = _sibling_floor(where, key, committed)
+        child_row_floor = _sibling_floor(where, key, committed)
         found += _differences_v2(
-            emitted[key], committed[key], f"{where}.{key}", child_floor, child_source, None
+            emitted[key], committed[key], f"{where}.{key}", child_row_floor, None
         )
     return found
 
@@ -928,9 +925,9 @@ def _phase_branch_flow(where: str, emitted: Any, committed: Any) -> list[str]:
             return [f"{where}: {len(emitted)} entries against {len(committed)}"]
         found: list[str] = []
         for index, (left, right) in enumerate(zip(emitted, committed, strict=True)):
-            found += _differences_v2(left, right, f"{where}[{index}]", floor, source, None)
+            found += _differences_v2(left, right, f"{where}[{index}]", (floor, source), None)
         return found
-    return _differences_v2(emitted, committed, where, floor, source, None)
+    return _differences_v2(emitted, committed, where, (floor, source), None)
 
 
 def _float_leaf(
