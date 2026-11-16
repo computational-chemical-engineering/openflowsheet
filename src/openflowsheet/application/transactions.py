@@ -21,8 +21,9 @@ the old answer, which is what K06's key-only lookup did.
 **Atomic grouping.** A `ChangeSet` applies whole or not at all, so a draft is never left half
 edited by a failure in the middle.
 
-**T07.** The transaction core — `apply_edits` and `semantic_diff` in `revision_edits` (S17 R2,
-re-exported here), persistence and the ledger in `LocalApplication.commit_change` — is shared:
+**T07.** The transaction core — `apply_edits` and `semantic_diff` in `revision_edits` (S17 R2;
+import them from there, ADR 0076 I-8), persistence and the ledger in
+`LocalApplication.commit_change` — is shared:
 K06's `Application` below is a thin façade over an in-memory `LocalApplication`, and `Edit`,
 `ChangeSet`, `SemanticDiff` and `TransactionResult` are the contract's own types, re-exported
 from here.
@@ -33,13 +34,6 @@ from __future__ import annotations
 from dataclasses import replace
 from typing import TYPE_CHECKING
 
-from openflowsheet.application.revision_edits import ELEMENT_MEMBERS as ELEMENT_MEMBERS
-from openflowsheet.application.revision_edits import EditPathError as EditPathError
-from openflowsheet.application.revision_edits import apply_edits as apply_edits
-from openflowsheet.application.revision_edits import element_diff as element_diff
-from openflowsheet.application.revision_edits import json_pointer as json_pointer
-from openflowsheet.application.revision_edits import revision_diff as revision_diff
-from openflowsheet.application.revision_edits import semantic_diff as semantic_diff
 from openflowsheet.application.revisions import (
     Revision,
     RevisionError,
@@ -61,21 +55,14 @@ if TYPE_CHECKING:
 Operation = EditOperation
 
 __all__ = [
-    "ELEMENT_MEMBERS",
     "Application",
     "ChangeSet",
     "DiffElement",
     "Edit",
-    "EditPathError",
     "Operation",
     "RevisionStoreView",
     "SemanticDiff",
     "TransactionResult",
-    "apply_edits",
-    "element_diff",
-    "json_pointer",
-    "revision_diff",
-    "semantic_diff",
 ]
 
 
