@@ -52,33 +52,34 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 - Held until the scale probe reports: G1 (orchestrator/, numerics/). Open: ptc.py 6.8 (P3, P4).
 - G-END (below) stays the end criterion for the whole repository.
 
-## Next actions (2026-11-16, at the self-reset, ~04:00)
+## Next actions (2026-11-16, ~05:00)
 
-Gate queue: runner pid 1056796 (restarted, `queue/runner.pid`). Results consumed up to 37; next: `$Q wait --since 37`.
-Running/queued: 48 (G5 merge-check), 49 (I-3 iface side chain), 51 (G5 review-fix docstrings, re-enqueued), 57 (I-1
-iface side chain). W4 jobs withdrawn to `queue/withdrawn/` pending the lane rebuild. No agent running.
-1. **W4 ruling first:** launch `reviewer` with `model: fable`, brief `<git-common-dir>/codehealth/briefs/S19-R-W4-STOP3.md`
-   (T06 generator self-hash after I-1; experiment isolation test_m02). If it says Frank must approve: Decision Desk
-   request via hub, and park W4 (G5 and others continue). Else brief a fresh `opus-engineer` (write `S19-W4-5.md`):
-   rebuild `wp/S19-w4` with each fix in its causing commit (S19_DECISIONS "W4 lane repair by rebuild"), tag the old
-   tip `s19-w4-pre-stop3`, merge wp/S19 in (0064d0ae ruff guard), re-enqueue every gated range of runs 1-4 (list:
-   `queue/withdrawn/` and done jobs 21-24 stay valid only if their shas survive), then I-8's column_solve and column.
-   Deletion-only interface steps after the merge carry the guard; before it they need a side chain (S19_DECISIONS
-   "ruff tier guard").
-2. **G5 run 4:** when 48 (merge-check) and 51 PASS: merge `wp/S19-g5b` into wp/S19 (merge commit, `-F` file), log.
-   Next G5 run: certificate.py `_issue` witness parameter object (ruling in S19_DECISIONS R-W3-G5-4), then
-   `verify_revision`, `_revision_values`, `_guard`.
-3. After the W4 rebuild's jobs PASS: orchestrator layer-config commit on the lane (config.toml application-layers
-   line 162 `application.policies` stale; repo-layers adoption comment lines 173-176, 178, 179, 181 stale, 177 (A11) and
-   180 (A14) live, count "(12)" at 172), then R-W4-1 (brief `S19-R-W4-1.md`, extend to the lane tip: runs 2-4, rulings
-   STOP 1/2/3, test_x04 a7, the MODEL_ID ruling; the module-attribute retargets in run 4's outside-gate commits),
-   merge-check, merge.
-4. Open for Frank (not blocking): STOP 1 alternative (tool change), a cce-code-health fix for empty `{files}` (needs a
-   push), the verify twins ADR 0076 addendum. Docs-pass leftovers as before plus region.py:71, models.lifted
-   docstring, run 4's evidence-manifest scripts (k04, t04, t05, t05b, s02, s10c) and scripts/corpus_identity.py
-   import lines, docs/interfaces-frozen.md:90.
-5. Then W4 items I-4, I-9, I-14 (A11 ruling), I-10, I-11, I-13, I-12a-d, I-19; G5's remaining files; cycles and
-   violations to 0. `wp/S19-g3` and `wp/SP` wait. Lanes at most 2 until Thu 19 Nov 13:00.
+Gate queue: runner pid 1056796. Results consumed up to 55; next: `$Q wait --since 55` (a wait may be running).
+Agents running: W4 run 6 (brief `S19-W4-6.md`, I-8 batch F `column`, lane wp/S19-w4 from ad40c05d) and G5 run 6
+(brief `S19-W3-G5-6.md`, run/identity.py r0_projection then compare._differences_v2, lane wp/S19-g5d from 14f4fa35).
+Lanes at most 2 until Thu 19 Nov 13:00.
+1. **W4:** STOP 3 ruled (R-W4-STOP3, Fable: Q1 option C, Q2 option a; ADR 0076 addendum + R-1042 on wp/S19
+   274fb926); lane rebuilt (W4 run 5, S19_DECISIONS). Queued: 50, 52 (I-5, I-6 iface, re-enqueued from withdrawn),
+   73-87 (rebuild 5b), 89, 93 (batch E column_solve). When all PASS and run 6 reports: orchestrator layer-config
+   commit (config.toml application-layers line 162 `application.policies` stale; repo-layers adoption comment lines
+   173-176, 178, 179, 181 stale, 177 (A11) and 180 (A14) live, count "(12)" at 172), then R-W4-1 (brief
+   `S19-R-W4-1.md`, extend to the lane tip: runs 2-6, rulings STOP 1/2/3, test_x04 a7, MODEL_ID ruling, run 4's
+   outside-gate module-attribute retargets), merge-check, merge into wp/S19. A job FAIL: read failed checks; env
+   failure re-enqueue `--rerun-of`; real failure to a fresh engineer. Side-chain re-gates cannot carry `--rerun-of`:
+   log by hand in the side-chain worktree (as step 165). Worktrees s19-w4-rg54, -rg54b removable once no job uses them.
+2. **G5 run 5** (wp/S19-g5c, certificate.py 54.2 -> 30.1): jobs 88, 90, 91, 92. When PASS: reviewer (S2, brief
+   `S19-R-W3-common.md` + a short `S19-R-W3-G5-5.md`; points: twin `_require_planned_aliases` in `verify_bound`,
+   step 2's reorder before `revision_phase_branch`), docstring fix (verify_revision docstring names
+   `_require_planned_aliases`, rule 7) gated no-gain, merge-check, merge.
+3. **G5 run 6** on report: as 2. Then G5 leftovers: verify/projection.py `project` 29.7, split_checks, table
+   `revision_checks` 21.4; pr_c1/gamma_phi_units twins wait for the W4 verify parameter object.
+4. Then W4 items I-4, I-9, I-14 (A11 ruling), I-10, I-11, I-13, I-12a-d, I-19; cycles and violations to 0.
+   `wp/S19-g3` and `wp/SP` wait.
+5. Open for Frank (not blocking): confirm R-1042 / option (C) for the T06 self-hash at W4 close; STOP 1 alternative
+   (tool change); a cce-code-health fix for empty `{files}` (needs a push); the verify twins ADR 0076 addendum.
+   Docs-pass leftovers as before plus region.py:71, models.lifted docstring, run 4's evidence-manifest scripts (k04,
+   t04, t05, t05b, s02, s10c), scripts/corpus_identity.py import lines, docs/interfaces-frozen.md:90,
+   verify/column.py:103 report string and test_s08_item6.py:90 (batch E leftovers).
 
 ## Gates (pass numbers fixed after A1, before step 1)
 
