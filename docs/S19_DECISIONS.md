@@ -1429,3 +1429,4 @@
   scan of the wp/S19 tip; alternative: brief now; reason: 2-agent cap, three reviews queued first).
 - **2026-11-16 21:44, job 191 SKIPPED (pre-rebase I-14, superseded by 196); job 190 PASS (g5r9-2, 24f772cc, step 249
   accepted, 17.0 -> 12.0, 16/16).** ALERTs standing.
+- **2026-11-16 21:54, job 192 PASS (g5r9-3, 7338568e, step 250 accepted, 12.0 -> 8.0, 16/16).** ALERTs standing.
