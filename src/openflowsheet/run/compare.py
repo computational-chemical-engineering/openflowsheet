@@ -327,17 +327,21 @@ def differences(
 def _differences_v1(
     emitted: Any, committed: Any, path: str = "", floor: float | None = None
 ) -> list[str]:
-    """`K04-numerical-policy-v1`'s comparison, as at `814e151` (ADR 0025 D1.4, A12).
-
-    An object goes to `_object_differences_v1` (its keys by rule, else as children); a list is
-    compared entry by entry; a float leaf goes to `_float_leaf_v1`; every other leaf is
-    compared exactly.
-    """
+    """`K04-numerical-policy-v1`'s comparison, as at `814e151` (ADR 0025 D1.4, A12)."""
     found: list[str] = []
     where = path or "<root>"
 
     if isinstance(committed, dict):
-        return _object_differences_v1(emitted, committed, where, path)
+        if not isinstance(emitted, dict):
+            return [f"{where}: expected an object, got {type(emitted).__name__}"]
+        for key in sorted(set(committed) | set(emitted)):
+            ruled = _key_rule_v1(where, key, path, emitted, committed)
+            if ruled is not None:
+                found += ruled
+                continue
+            floor = _self_floor_v1(key, committed)
+            found += _differences_v1(emitted[key], committed[key], f"{where}.{key}", floor=floor)
+        return found
 
     if isinstance(committed, list):
         if not isinstance(emitted, list):
@@ -356,31 +360,11 @@ def _differences_v1(
     return found
 
 
-def _object_differences_v1(
-    emitted: Any, committed: dict[str, Any], where: str, path: str
-) -> list[str]:
-    """v1 on an object at `where` (`path` "" at the root): an emitted side that is not an object
-    is one difference; else each key, in sorted order, goes to `_key_rule_v1` first, and a key
-    no rule takes is compared as a child under `_self_floor_v1`'s floor.
-    """
-    if not isinstance(emitted, dict):
-        return [f"{where}: expected an object, got {type(emitted).__name__}"]
-    found: list[str] = []
-    for key in sorted(set(committed) | set(emitted)):
-        ruled = _key_rule_v1(where, key, path, emitted, committed)
-        if ruled is not None:
-            found += ruled
-            continue
-        child_floor = _self_floor_v1(key, committed)
-        found += _differences_v1(emitted[key], committed[key], f"{where}.{key}", floor=child_floor)
-    return found
-
-
 def _key_rule_v1(
     where: str, key: str, path: str, emitted: dict[str, Any], committed: dict[str, Any]
 ) -> list[str] | None:
     """v1 on the key `key` of the object at `where`: the differences its own rule finds, or
-    None when no rule applies and `_object_differences_v1` compares its value as a child.
+    None when no rule applies and `_differences_v1` compares its value as a child.
 
     The rules, tried in order, the first match deciding: present on one side only;
     root-anchored provenance (`path` is ""); an unreproducible count; a float digest; a
