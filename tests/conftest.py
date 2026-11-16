@@ -127,7 +127,8 @@ def _msg_audit_findings() -> list[str]:
 
 def pytest_sessionfinish(session: Any, exitstatus: int) -> None:
     """MSG-G3: a code without an entry, or a rendering defect, fails the session."""
-    if _msg_audit_findings() and exitstatus == 0:
+    forwarded = FORWARDED["findings"] if FORWARDED is not None else []
+    if (_msg_audit_findings() or forwarded) and exitstatus == 0:
         session.exitstatus = pytest.ExitCode.TESTS_FAILED
     workeroutput = getattr(session.config, "workeroutput", None)
     if workeroutput is not None:  # an xdist worker: forward to the controller
