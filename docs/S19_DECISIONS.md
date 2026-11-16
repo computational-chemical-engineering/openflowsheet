@@ -1093,3 +1093,8 @@
   on a helper branch with the wp/S19 tip merged in (as G5 run 6b). No re-run of the proof: the first real
   merge-check on such a base is the proof (expect PASS).
 - **2026-11-16 ~16:35, gate report (after job 146):** 29 gates, 0 failed; 24 of 26 steps accepted, debt removed 111.5. ALERTs unchanged: tests tier 724 s > 300 s; selected/full 0.57 > 0.4; queue wait median 31 min > 15 min (cause at job 123; proposal 2 with Frank).
+- **2026-11-16, job 161 (W4 run 7 refusal src, base 34474d67) FAIL forbid, scope (logged step 222 gate-fail); 162-164
+  SKIPPED.** Cause: the base. 34474d67 takes in b41fa802 (test, script and benchmark retargets, outside the gate by
+  design), so forbid and scope flagged those files; the previous state file's "base 34474d67" was wrong, the engineer
+  had enqueued base b41fa802. Re-enqueued all four with the engineer's bases (jobs 165-168, plain, no `--rerun-of`:
+  log refuses a moved base, as jobs 73 and 77). b41fa802's tests are covered by the lane's full-suite merge-check.
