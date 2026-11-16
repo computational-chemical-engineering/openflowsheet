@@ -867,3 +867,5 @@
   Report: ALERTs as at job 123.
 - **2026-11-16, job 125 PASS (W4 run 5b, batch D interface, 5356e0d4..7cd01494, step 204 accepted, 11.0 -> 11.0,
   17/17).** Report: ALERTs as at job 123.
+- **2026-11-16, job 126 PASS (W4 run 5b, I-8e src, 2998c6fd..fb10af23, step 205 accepted-neutral, 11.0 -> 11.0,
+  15/15).** Report: ALERTs as at job 123.
