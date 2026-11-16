@@ -705,3 +705,9 @@
   (7), program (1; I-7's frozen-contributor exception), sizing (15; `__init__` excluded): next W4 run, after R-W4-1.
   DECISION: no new W4 work on the lane until R-W4-1 and the lane's merge (the review span is already runs 2-6).
   Alternative: keep adding I-8 batches. Reversible by: briefing W4 run 7 now.
+- **2026-11-16, G5 run 7 delivered (opus-engineer; lane wp/S19-g5e from cd756adb).** ac17ce56 (`project` 29.7 ->
+  6.0, five guards kept in order, six private helpers; projection.py health 8.5 -> 9.8), c95eadac (`_split_checks`
+  9.6 -> 8.0: under the ~2-point rule, taken as one named early return (T05b 9.1); the reviewer may reject),
+  49a0db77 (`degeneracy` 6.0 -> 3.0, `_product_streams`; `InstanceView` under TYPE_CHECKING). split_checks.py 25.6 ->
+  21.0 (health 7.2). Jobs 100-102. No 4th step (remaining cuts need > 5 parameters or a cross-phase parameter object);
+  `_declared_phase`/`_phase_enthalpy` twins kept (rule 15).
