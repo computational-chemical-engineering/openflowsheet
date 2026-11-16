@@ -376,6 +376,14 @@ the migration table below.
    retargets, the engineer runs a liveness check once: replace the fake with one that raises, and the test must fail.
    Record it in the build-decisions log. The full-suite terminal report's "MSG WO-5a: N bundles scanned" and "MSG
    WO-6: N run results checked" must equal the base run's N at every step of I-4, I-10, I-12.
+   *Amendment (2026-11-16, review R-W4-9a Q6; evidence S19_DECISIONS "rule 4 falsifier: base2" and "rule 4 serial
+   runs done"):* under xdist these counts depend on worker scheduling (963/1231 and 964/1228 at one commit), so the
+   N of the sentence above is read from a serial full suite (`-p no:xdist`, `PYTHONHASHSEED=0`, exactly the two named
+   wall-time tests deselected: t07_v17_reference f6 and t07_conformance budget_of_the_scenario_runs) at the step's
+   parent and at the step. The bundles, run results, with-a-failure, passed, skipped, xfailed and deselected counts
+   must all be equal; a run with a different selection is not evidence. On a mismatch, per-file counts locate the
+   loss. A step's head run may serve as the next step's base. I-4 was measured this way without the fixed hash seed
+   (1061 / 801 / 100 at base and head).
 5. **Doc sweeps change living docs only:** README, `docs/interfaces-frozen.md`, `docs/code-health.md`, guides,
    `CLAUDE.md`, `.claude/**/*.md`, examples. Records stay as written: `docs/adr/**`, `docs/design-history/**`,
    `docs/design/**`, `docs/briefs/**`, `evidence/**`, build-decision logs, `*_DECISIONS.md`, measurement and analysis

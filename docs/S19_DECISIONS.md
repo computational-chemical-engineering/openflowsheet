@@ -1508,3 +1508,17 @@
   launched (`reviewer`, Opus, brief S19-R-W4-9a.md, range 486b6dbb..574621df) before job 202:** its range ends before
   I-14, so an I-14 fix cannot change what it reads. Alternative: wait for 202 (the state's wording). R-W4-9b waits
   for job 202.
+- **2026-11-16 23:10, R-W4-9a reported (`reviewer`, Opus, 153k tokens): merge; all 10 commits accepted, no fixes.**
+  Q1 no shim (bindings in types.py:31,52,55,57 unaliased and read by the module); Q2 pure moves; Q3 identity inert
+  (schemas/api-error.schema.json:5 frozen text, left); Q4 patch targets clean; Q5 no widening.
+  Note 1 (record): cli.py:58 imports errors, so importing application.cli no longer loads types/jobs.model/units.display;
+  types.py:31 loads messages.audit eagerly (harmless); passed to R-W4-9b as the starting fact for initialization order.
+  Note 2 (record, gated objects not amended): stale shas in 50779e18 and 3f7540a9 messages and in i9-errors.toml.
+  Note 3 (open, design): no_implicit_reexport guards only within a step; tests/scripts can re-import moved names through
+  old modules later (mypy strict covers src and benchmarks only). DECISION: I-19 re-runs the ec5aaea importer scan over
+  every name W4 moved. Alternative: a standing check now. Reversible by: adding the check earlier.
+  Q6 amend: ADR 0076 rule 4 amended in place as a dated paragraph (serial form, PYTHONHASHSEED=0, all counts equal).
+  Falsifier per the reviewer (one repeat at one commit): serial re-run at be115b6a+A (conftest of 7af4b2f4), same
+  conditions as headser (no fixed seed), worktree `scratchpad/headser2` of session 916d464e, PID 3980694, log
+  `headser2.log`, started 23:09. Equal to 1061/801/100: determinism confirmed directly. Unequal: the amendment is
+  wrong; park rule 4 for the design lane with both numbers, I-10/I-12 wait.
