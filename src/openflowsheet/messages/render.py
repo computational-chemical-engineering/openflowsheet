@@ -311,11 +311,9 @@ def _by_type(typed: _Typed, catalogue: Catalogue) -> str:
         quantity = _quantity(value)
         if quantity is not None:
             return f"{format_number(quantity[0])} {quantity[1]}"
-        number = _number(value)
-        return format_number(number) if number is not None else _raw(value)
+        return _number_text(value)
     if typed.type == "number":
-        number = _number(value)
-        return format_number(number) if number is not None else _raw(value)
+        return _number_text(value)
     if typed.type == "enum":
         phrase = (
             None if typed.vocabulary is None else catalogue.phrase(typed.vocabulary, str(value))
@@ -329,6 +327,13 @@ def _by_type(typed: _Typed, catalogue: Catalogue) -> str:
         # param keeps the D2 spelling (`degF`), and `!raw` gives it.
         return text_unit(_raw(value))
     return _raw(value)
+
+
+def _number_text(value: object) -> str:
+    """§4.2.4's `number` rule, also a `quantity`'s when it reads as no quantity: `value` as a
+    number in §4.5's format, or `_raw` when it is no number."""
+    number = _number(value)
+    return format_number(number) if number is not None else _raw(value)
 
 
 def _render(nodes: tuple[template.Node, ...], scope: _Scope) -> str:
