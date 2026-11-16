@@ -52,36 +52,40 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 - Held until the scale probe reports: G1 (orchestrator/, numerics/). Open: ptc.py 6.8 (P3, P4).
 - G-END (below) stays the end criterion for the whole repository.
 
-## Next actions (2026-11-16, ~20:30)
+## Next actions (2026-11-16, ~19:45; self-reset)
 
-Runner pid 2642417 (cce-code-health 6529f47; merge-check = `gate.sh --behaviour-only`). Results consumed up to 164;
-`$Q wait --since 164` was running. Scan of wp/S19 at 5fa99307: 314 files, debt 4746.1, health 8.08, brain 26, file
-smells 58. Lanes at most 2 agents until Thu 19 Nov 13:00. ALERTs persist (proposal 2 with Frank). Merge-checks run on
-a helper branch `wp/S19-<lane>-mc` = lane tip + the wp/S19 tip merged in (S19_DECISIONS union-merged with
-`git merge-file --union` if both touch it).
-Done this session: A-I9 ruled (I-5b new step; ADR addenda + R-1044, f5ef28f8); G6 run 5 merged (a9221827); R-W4-8
-review: merge after fixes (fix 3 done 6bdc88b6).
-1. **W4 run 9 running** (opus-engineer, brief `S19-W4-9.md`: I-5b, I-9 (arch -> 2/2/10), then I-14 if context
-   allows) on wp/S19-w4 from 486b6dbb, labels `w4r9-*`. On its report: log, reviewer per cadence (I-9 touches the
-   error vocabulary: S1/S2? use template S19-R-W4-8.md).
-2. **MSG xdist fix running** (sonnet-implementer, brief `S19-MSG-xdist.md`): commit A on wp/S19 tests/conftest.py
-   (counts and TERMINAL_REPORT lines forwarded from xdist workers), commit B (MSG-G3 findings fail the controller)
-   only if no hidden findings, then N for WO-5a/WO-6 at 10adfc3d and be115b6a. Equal N = R-W4-8 fix 1 met. Hidden
-   findings = report, decide (gate hole).
-3. **W4 run 8 merge** waits for 2: helper wp/S19-w4r8-mc (worktree s19-w4r8-mc) = 486b6dbb + c7d21f2e (R-W4-8 fix 2,
-   bundle.py docstring, job 179 no-gain). After 179 PASS and fix 1 met: merge wp/S19 into the helper, enqueue
-   merge-check (`--mode merge-check --label w4r8-mc`), PASS -> merge helper into wp/S19, then wp/S19-w4 (run 9)
-   merges wp/S19 or its later helper carries it.
-4. **G6 run 6** brief written (`S19-W3-G6-6.md`: units/__init__.py 7.4, messages/render.py 7.5, launcher.py 8.8,
-   store.py 8.6; branch wp/S19-g6d from the wp/S19 tip): launch opus-engineer when an agent slot frees.
-5. **G5 next**: run/compare.py 7.4 (`_differences_v2`, `_differences_v1`, `_key_rule`), verify/ files below 9
-   (gamma_phi_units 6.4, pr_c1 6.7, split_checks 7.2, table 7.5, column 7.6, checks 8.4, certificate 8.4; S2 tier,
-   cadence 4; duplication among verify twins: the verify twins ADR 0076 addendum is open with Frank). Write brief
-   S19-W3-G5-9.md after G6 run 6 launches.
-6. Re-pinned to 6529f47 (S19_DECISIONS, job 179 entry); ruff tier `{files:GLOB}` switch left.
-7. Open for Frank (not blocking): as before (R-1042 option C; STOP 1 alternative; tool fixes; verify twins addendum;
-   selection-widening; proposal 2 for the ALERTs). Design lane: NaN derivative-witness pass (R-W3-G5-8). Docs-pass
-   leftovers as listed in S19_DECISIONS.
+Runner pid 2642417 (cce-code-health 6529f47 installed; merge-check = `gate.sh --behaviour-only`). Results consumed up
+to 166; start `$Q wait --since 166` in the background first. No agent running. Lanes at most 2 agents until Thu 19 Nov
+13:00. ALERTs persist (proposal 2 with Frank). Merge-checks run on a helper branch `wp/S19-<lane>-mc` = lane tip +
+wp/S19 tip merged in. S19_DECISIONS holds the detail of every item below (grep the quoted words).
+1. **Rule 4 falsifier running (detached bash, not an agent):** base 10adfc3d + conftest patch A re-run with
+   `/tmp/claude-1000/-home-eajfpeters-Code-OpenFlowsheet/0e0821aa-6e8e-4c6b-9a00-f781aa0ef7c7/scratchpad/run.sh` into `/tmp/claude-1000/-home-eajfpeters-Code-OpenFlowsheet/0e0821aa-6e8e-4c6b-9a00-f781aa0ef7c7/scratchpad/base2.log` (worktree `/tmp/claude-1000/-home-eajfpeters-Code-OpenFlowsheet/0e0821aa-6e8e-4c6b-9a00-f781aa0ef7c7/scratchpad/base2`; ends with "EXIT n"; ~1 h from 19:40). Read only
+   `grep -n "MSG WO\|EXIT\|passed" /tmp/claude-1000/-home-eajfpeters-Code-OpenFlowsheet/0e0821aa-6e8e-4c6b-9a00-f781aa0ef7c7/scratchpad/base2.log | tail -4`. Earlier: base 964 run results (125 failure) / 1228
+   bundles, head be115b6a 878 (101) / 1370, tip 803 / 1175 ("rule 4 counts differ"). base2 = 964/1228 -> the I-4 step
+   changed the counts: a finding for W4 run 8 (fresh engineer to find the cause). base2 differs -> the counts are not
+   deterministic under xdist: rule 4 needs a deterministic form (design-lane ruling; ADR 0076 rule 4 text). Then remove
+   worktree `/tmp/claude-1000/-home-eajfpeters-Code-OpenFlowsheet/0e0821aa-6e8e-4c6b-9a00-f781aa0ef7c7/scratchpad/base2`.
+2. **Re-pin cce-code-health 6529f47 -> ec5aaea6b54ffcb31b245d21d1c5b3e73e643f12** at the first queue-idle moment
+   (G6 run 6 jobs 181-184 drain first): edit requirements-codehealth.txt, `.venv-codehealth/bin/pip install -q -r
+   requirements-codehealth.txt`, check direct_url, `codehealth config --check`, commit, log ("cce-code-health ec5aaea").
+   Then **enqueue W4 run 9** on worktree s19-w4 (chain in S19_DECISIONS "W4 run 9 chain rebuilt"): `--snapshot`, I-5b
+   `--base 75e424be --head ecf46789 --mode interface --plan .codehealth/interface/i5b-document-validation.toml`
+   (label w4r9-i5b-iface), I-9 `--base caccb2ad --head 1e0d6bee --mode interface --plan
+   .codehealth/interface/i9-errors.toml` (w4r9-i9-iface); 1c8037be layer config stays outside the gate as 9810abf6
+   did. Flag commit 651cc8d0 is before both. Backup branch wp/S19-w4r9-orig.
+3. **W4 run 8 merge** waits for item 1 (R-W4-8 fix 1). Fixes 2 (c7d21f2e, job 179 PASS) and 3 done. Helper
+   wp/S19-w4r8-mc (worktree s19-w4r8-mc) = 486b6dbb + c7d21f2e; then merge wp/S19 into it, merge-check, merge. Run 9
+   (wp/S19-w4 after 486b6dbb) merges after run 8, with its own review (R-W4-9: I-5b, I-9, the flag, 8671bbdf).
+4. **G6 run 6** (wp/S19-g6d, base f2987b62, jobs 180 PASS, 181-184 gating): when 184 is in, review R-W3-G6-6
+   (brief written: `S19-R-W3-G6-6.md`), fixes, helper merge-check, merge.
+5. **New lanes held** until run 9 is enqueued (DECISION in S19_DECISIONS "G6 run 6 reported"). Then G5 run 9 (write
+   `S19-W3-G5-9.md`: run/compare.py 7.4; verify/ below 9: gamma_phi_units 6.4, pr_c1 6.7, split_checks 7.2, table 7.5,
+   column 7.6, checks 8.4, certificate 8.4; S2 tier, cadence 4) and W4 run 10 (I-14 per the A11 ruling, then I-10,
+   I-11, I-15?, I-13, I-12a-d, I-19; I-12a's list per R-1044).
+6. Open for Frank (not blocking): R-1042 option C; STOP 1 alternative; tool items; verify twins addendum;
+   selection-widening; proposal 2 for the ALERTs. Design lane: NaN derivative-witness pass (R-W3-G5-8). Docs-pass
+   leftovers in S19_DECISIONS (add: 77ae7025 message says cognitive 16 -> 11, scan 12; i4 plan reason "two" -> three;
+   ruff tier `{files:*.py,*.pyi}` switch).
 
 ## Gates (pass numbers fixed after A1, before step 1)
 
