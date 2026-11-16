@@ -12,8 +12,8 @@ reads an event whose kind it does not know through its common members only — `
 `sequence`, `kind`, `ends_job`, `recorded_at` — keeping the rest as an opaque `payload`, so an
 unknown event that ends the job is still seen to end it.
 
-`Edit`, `ChangeSet`, `SemanticDiff` and `TransactionResult` are defined here once and re-exported
-from K06's `transactions.py`, whose imports keep working; the transaction core that produces them
+`Edit`, `ChangeSet`, `SemanticDiff` and `TransactionResult` are defined here once (K06's
+`transactions.py` facade is gone, ADR 0076 I-11); the transaction core that produces them
 (`apply_edits`, `semantic_diff`) lives in `revision_edits` (W2b; S17 R2).
 """
 

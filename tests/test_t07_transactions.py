@@ -23,7 +23,6 @@ import t07_store_support as support
 import yaml
 from conftest import REPO_ROOT
 
-from openflowsheet.application import transactions, types
 from openflowsheet.application.authz import grant
 from openflowsheet.application.errors import ApplicationError
 from openflowsheet.application.local import LocalApplication
@@ -106,8 +105,6 @@ def refusals(application: LocalApplication) -> list[tuple[str, str]]:
 
 
 def test_the_transaction_types_have_one_definition_and_the_old_imports_work() -> None:
-    for name in ("Edit", "ChangeSet", "SemanticDiff", "TransactionResult"):
-        assert getattr(transactions, name) is getattr(types, name), name
     change_set = ChangeSet(
         edits=(Edit("set", ("title",), "x"),),
         expected_revision="r1",
