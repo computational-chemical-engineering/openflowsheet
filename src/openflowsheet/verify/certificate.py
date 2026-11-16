@@ -670,9 +670,7 @@ def _revision_values(
     for name, entry in entries.items():
         role = entry.get("role")
         if role == "free":
-            for column in targets.get(name, ()):
-                if column in binding.freed.values():
-                    freed[column] = name
+            freed.update(_freed_columns(binding, targets.get(name, ()), name))
             continue
         if role != "fixed":
             continue
@@ -683,6 +681,13 @@ def _revision_values(
     if split_fraction is None:
         raise VerifierError("the revision declares no split fraction; §4.3 cannot be judged")
     return values, freed, split_fraction
+
+
+def _freed_columns(binding: Any, columns: Sequence[str], entry_id: str) -> dict[str, str]:
+    """The target `columns` of the revision's `role: free` entry `entry_id` that the binding
+    freed (`binding.freed`), each mapped to `entry_id`, in `columns`' order; a repeated column
+    is one entry."""
+    return {column: entry_id for column in columns if column in binding.freed.values()}
 
 
 class BoundDeclaration:
