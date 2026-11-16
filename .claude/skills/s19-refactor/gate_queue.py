@@ -19,9 +19,11 @@ State in <git-common-dir>/codehealth/queue/: pending/, running/, done/<label>.js
       descends from the failed commit are finished as SKIPPED, not gated: the first failing step
       of a chain is the one reported FAIL.
   enqueue --worktree W --base SHA --mode merge-check --label L [--head SHA] [--snapshot]
-      The check before a lane merges: the full suite (S19_GATE_FULL=1, read by the tests tier),
-      F0 and the MCP digest over base..head, no gain check, nothing written to the run log. It
-      closes the holes of the step-relative selection (docs/test-impact.md).
+      The check before a lane merges (gate.sh --behaviour-only, `codehealth gate --behaviour-only`):
+      the base's behaviour tiers over base..head with the full suite (S19_GATE_FULL=1, read by the
+      tests tier), F0 and the MCP digest; no static checks, debt reported not gated, nothing
+      written to the run log. It closes the holes of the step-relative selection
+      (docs/test-impact.md) and gates interface lanes as one range.
   run [--detach] [--log-out JSONL]
       The runner: FIFO, at most SLOTS jobs at a time, one job per worktree at a time. It refuses a
       job whose worktree HEAD or tree changed since enqueue, runs gate.sh in the worktree, then
@@ -214,8 +216,8 @@ def gate_command(job: dict) -> list[str]:
         return ["bash", str(GATE), base, label]
     if mode in PLAN_MODES:
         return ["bash", str(GATE), f"--{mode}", base, job["plan"], label]
-    if mode == "merge-check":  # behaviour tiers over base..head, the tests tier on the full suite
-        return ["bash", str(GATE), "--no-gain", base, label]
+    if mode == "merge-check":  # behaviour tiers over base..head, the full suite, no static checks
+        return ["bash", str(GATE), "--behaviour-only", base, label]
     return ["bash", str(GATE), f"--{mode}", base, label]
 
 
