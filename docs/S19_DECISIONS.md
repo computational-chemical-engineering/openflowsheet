@@ -1179,3 +1179,4 @@
   1126 s; f0, mcp_digest). Merged wp/S19-w4-mc into wp/S19 (8cdd71d8); helper removed; wp/S19-w4 fast-forwarded to
   8cdd71d8.** `codehealth arch --depth 4` at 8cdd71d8: 4 violations, 3 cycles, 12 cycle edges, 3989 imports. G6 jobs
   149 (step 229, 5.0 -> 2.0) and 150 (step 230, 10.0 -> 3.0) PASS.
+- **2026-11-16, cce-code-health 04a01f8 (session code_health; not urgent):** complexipy pinned ==8.3.0 inside the tool (ours is already pinned in requirements-codehealth.txt), JSON meta.backends, `__all__` left out of clone detection (dup_lines may drop at base and head alike). DECISION: re-pin at the next queue-idle milestone window (as 846a065), not mid-lane. Alternative: never (nothing in S19 needs it). Reversible by: re-pinning 846a065.
