@@ -1360,3 +1360,14 @@
   (caccb2ad..1e0d6bee), `--snapshot`; 1c8037be layer config outside the gate. Launched: reviewer R-W3-G6-6 (Opus,
   `S19-R-W3-G6-6.md`) and G5 run 9 (opus-engineer, `S19-W3-G5-9.md`, wp/S19-g5g from e0ef865c). W4 run 10 waits for a
   free agent slot.
+- **2026-11-16, R-W3-G6-6 (reviewer, Opus, 89k tokens): merge after fixes.** All five steps behaviour-identical
+  (units: same Fraction operations and association, problem order, None handling; render: candidate order, texts per
+  type); no literal drops listed. Step 5's "every family or none" reading correct (every rung with a body lifted;
+  one-expression rungs stay). Leftovers agreed: launcher `launch` after W4; store.py duplication = R-237 (ADR).
+  77ae7025's message says cognitive 16 -> 11, the scan says 12 (recorded here; the gated hash stays). Fix 1 (`_field`
+  docstring: None and RenderError returns) and note 2 (`_check_bounds`: the non-object early return) applied by the
+  orchestrator in 0dd145b0, job 187 (no-gain). Helper wp/S19-g6d-mc (worktree s19-g6d-mc) = 0dd145b0 + wp/S19
+  135c78f8 (19f2ff53), merge-check job 188.
+- **2026-11-16, W4 run 10 launched (opus-engineer, brief `S19-W4-10.md`): I-14, I-11, then I-13, on wp/S19-w4 from
+  1c8037be.** DECISION: I-10 and I-12a-d wait until rule 4 has a deterministic form (the serial runs). Alternative:
+  include them and judge rule 4 later. Reason: their gate would carry a rule 4 count that cannot be judged now.

@@ -55,7 +55,7 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 ## Next actions (2026-11-16, ~20:15)
 
 Runner pid 2642417 (cce-code-health 6529f47 installed; merge-check = `gate.sh --behaviour-only`). Results consumed up
-to 170; start `$Q wait --since 170` in the background first. Agents: R-W3-G6-6, G5 run 9. Lanes at most 2 agents until Thu 19 Nov
+to 170; start `$Q wait --since 170` in the background first. Agents: G5 run 9, W4 run 10. Lanes at most 2 agents until Thu 19 Nov
 13:00. ALERTs persist (proposal 2 with Frank). Merge-checks run on a helper branch `wp/S19-<lane>-mc` = lane tip +
 wp/S19 tip merged in. S19_DECISIONS holds the detail of every item below (grep the quoted words).
 1. **Rule 4 serial runs (detached, not agents; S19_DECISIONS "rule 4 falsifier: base2"):** xdist counts are not
@@ -69,11 +69,12 @@ wp/S19 tip merged in. S19_DECISIONS holds the detail of every item below (grep t
 3. **W4 run 8 merge** waits for item 1 (R-W4-8 fix 1). Fixes 2 (c7d21f2e, job 179 PASS) and 3 done. Helper
    wp/S19-w4r8-mc (worktree s19-w4r8-mc) = 486b6dbb + c7d21f2e; then merge wp/S19 into it, merge-check, merge. Run 9
    (wp/S19-w4 after 486b6dbb) merges after run 8, with its own review (R-W4-9: I-5b, I-9, the flag, 8671bbdf).
-4. **G6 run 6** (wp/S19-g6d, base f2987b62, jobs 180-184 all PASS): reviewer R-W3-G6-6 running (Opus); then
-   fixes, helper merge-check, merge.
+4. **G6 run 6**: R-W3-G6-6 merge after fixes; fix 0dd145b0 job 187 (no-gain); helper wp/S19-g6d-mc (worktree
+   s19-g6d-mc, 19f2ff53) merge-check job 188. Both PASS: merge wp/S19-g6d into wp/S19 (`git merge -F`), remove
+   worktrees s19-g6d, s19-g6d-mc.
 5. **G5 run 9 running** (opus-engineer, wp/S19-g5g from e0ef865c; brief
    `S19-W3-G5-9.md`: run/compare.py 7.4; verify/ below 9: gamma_phi_units 6.4, pr_c1 6.7, split_checks 7.2, table 7.5,
-   compare.py, certificate.py, column.py; S2 tier, cadence 4). W4 run 10 next free slot (brief to write: I-14 per the A11 ruling, then I-10,
+   compare.py, certificate.py, column.py; S2 tier, cadence 4). W4 run 10 running (opus-engineer, brief `S19-W4-10.md`: I-14, I-11, I-13; I-10 and I-12 wait for rule 4; was: I-14 per the A11 ruling, then I-10,
    I-11, I-15?, I-13, I-12a-d, I-19; I-12a's list per R-1044).
 6. Open for Frank (not blocking): R-1042 option C; STOP 1 alternative; tool items; verify twins addendum;
    selection-widening; proposal 2 for the ALERTs. Design lane: NaN derivative-witness pass (R-W3-G5-8). Docs-pass
