@@ -216,19 +216,16 @@ def _check_reached_variants(
 def lint_entry(
     entry: Entry, catalogue: Catalogue = CATALOGUE, released: Collection[str] | None = None
 ) -> list[str]:
-    """Every MSG-G4 violation of one entry, as `"<code>: <problem>"`."""
+    """Every MSG-G4 violation of one entry, as `"<code>: <problem>"`.
+
+    A complete entry is also checked by `_check_examples` (only when nothing else failed so far)
+    and by `_check_jargon`.
+    """
     problems = _check_templates(entry, catalogue) + _check_references(entry, catalogue, released)
     if entry.complete:
         if not problems:
             problems += _check_examples(entry, catalogue)
-        for name, index, text in entry.templates():
-            if name not in ("summary", "context"):
-                continue
-            where = name if index is None else f"variants[{index}].{name}"
-            try:
-                problems += [f"{where}: jargon: {found}" for found in jargon(text)]
-            except template.TemplateError:
-                pass  # reported above
+        problems += _check_jargon(entry)
     for where, text in _texts(entry):
         lowered = text.lower()
         problems += [
@@ -237,6 +234,21 @@ def lint_entry(
             if phrase in lowered
         ]
     return [f"{entry.code}: {problem}" for problem in problems]
+
+
+def _check_jargon(entry: Entry) -> list[str]:
+    """The summary and context templates of `entry`, top level then each variant's, use no
+    jargon. A template that does not parse is skipped: `_check_templates` reports it."""
+    problems: list[str] = []
+    for name, index, text in entry.templates():
+        if name not in ("summary", "context"):
+            continue
+        where = name if index is None else f"variants[{index}].{name}"
+        try:
+            problems += [f"{where}: jargon: {found}" for found in jargon(text)]
+        except template.TemplateError:
+            pass  # reported by _check_templates
+    return problems
 
 
 def lint(catalogue: Catalogue = CATALOGUE, released: Collection[str] | None = None) -> list[str]:
