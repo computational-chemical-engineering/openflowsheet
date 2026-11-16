@@ -60,10 +60,7 @@ shas) ready. Tool note: a re-gate whose base moved cannot use `--rerun-of`; log 
 --head SHA --result accepted-neutral --reason ...` from the lane worktree (steps 168, 179). The gate's literal check
 excludes docstrings.
 1. **G5 run 5**: merged into wp/S19 (bbcaad2d, 2026-11-16; jobs 103, 104 PASS).
-2. **G5 run 7** (wp/S19-g5e): reviewed (R-W3-G5-7, fix 3b13e7fe), wp/S19 merged in (0dc5f187). Jobs 109 (revfix) and
-   110 (merge-check). Both PASS -> merge as 1. If run 5 merged first, the merge-check base is stale but the lanes are
-   disjoint (certificate.py vs projection.py/split_checks.py); merge without a new merge-check only if wp/S19 gained
-   docs plus the other lane alone, and say so in the log.
+2. **G5 run 7**: merged into wp/S19 (2644ea96, 2026-11-16; jobs 109, 110 PASS).
 3. **G5 run 6b** (wp/S19-g5d rebuilt on 14f4fa35; old tip wip/S19-g5d-r1): jobs 105-108. All PASS -> reviewer
    (Opus, brief `S19-R-W3-G5-6.md`) -> fixes -> merge wp/S19 into the lane -> merge-check -> merge.
 4. **W4** (wp/S19-w4): queued jobs 80-87, 89, 93, 98, 99 (75-79 PASS: steps 175, 176, 179 by hand, 182, 183). No new
