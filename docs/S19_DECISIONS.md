@@ -1043,3 +1043,49 @@
   `codehealth arch --depth 4` at 7ffa7901: 4 violations, 3 cycles, 12 cycle edges (CB 14 / 10 / 79). Session
   code_health told (its v0.2.0 waits on this merge) and asked for an interface-lane merge-check mode. W4 run 7 next
   (brief `S19-W4-7.md`), lane fast-forwarded to the wp/S19 tip.
+
+- **2026-11-16, W4 run 7: pre-rebuild sha map (R-W4-1a note 8).** Every sha cited in a W4 plan reason
+  (`.codehealth/interface/*.toml`, `.codehealth/restructure/*.toml`) or in a W4 commit message (first-parent of
+  7ffa7901^2 after 5d09ace0) that is reachable only from the local tags `s19-w4-pre-fix` / `s19-w4-pre-stop3`, with
+  its rebuilt commit on wp/S19 found by `git patch-id --stable` over 5d09ace0..34474d67 (three by subject, noted).
+  Two pre-rebuild copies of one patch map to one commit (74abd520/3bbdd571, b02bd8a9/40ca795c). Tags stay local.
+
+  | pre-rebuild | rebuilt | cited in (citing commits on wp/S19, plan files) |
+  |---|---|---|
+  | ffcb0a53 | 4a4b08f0 (by subject; patch-id differs: same files and line counts, context changed by the rebuild) | 6f85454c interface/i5-schema-check |
+  | 07535927 | 068f78f9 | 6f85454c interface/i5-schema-check |
+  | 0ef51cc8 | c68b1fd0 | 3b8d43db 6f85454c interface/i5-schema-check |
+  | 60ad7681 | 3b8d43db | 6f85454c |
+  | 97d4833f | 8993799c | 391eddae ca859cf5 restructure/move-route-policies |
+  | 4cb5241c | ca859cf5 | 391eddae |
+  | 2f4f8101 | 391eddae | 59c076bd interface/i3-route-policies |
+  | d63b1967 | 2a3e4591 | 59c076bd interface/i3-route-policies |
+  | 24c3eec2 | c7517f72 | 59c076bd c8ba6356 interface/i3-route-policies |
+  | c60ca172 | c8ba6356 | 59c076bd |
+  | 0504058b | f57a3db9 | c63e01cd interface/i6-units-display |
+  | 3ff204c0 | c63e01cd | f1fa0170 |
+  | b77c3105 | 72ba4f74 | interface/i1-solve-record |
+  | 9ed07112 | 4b706fce (by subject; patch-id differs: the rebuilt commit also carries pyproject.toml and tests/(test_)t08_rename_substitution.py, R-W4-STOP3) | interface/i1-solve-record |
+  | 0066dfda | 3fd5bfb1 | 6dca95b8 interface/i1-solve-record |
+  | b02bd8a9 | 04fd26de | 809babce |
+  | 74abd520 | 809babce | 9ce92c74 |
+  | 7b3a4c99 | 66a4d2cd | interface/i7-tolerances-linearization |
+  | 40ca795c | 04fd26de | 145725ae interface/i2-lifted-vocabulary |
+  | 354e73ad | 9ce92c74 | interface/i2-lifted-vocabulary |
+  | 3bbdd571 | 809babce | 145725ae 9e467cca |
+  | 8ae387f1 | 4b706fce (as 9ed07112: the same pre-rebuild commit on the other tag) | 4b706fce |
+  | 38f55cff | 9af42472 | interface/i7-tolerances-linearization |
+  | b2380d3a | 9e467cca | interface/i2-lifted-vocabulary |
+  | d250ba4c | 145725ae | 0e49da0f interface/i2-lifted-vocabulary |
+  | a3cefbf0 | 0e49da0f | 89908c34 |
+  | e29b15d7 | 89908c34 | a99c305a |
+  | 372a0809 | a99c305a | 10f734bb |
+  | 1836c838 | 54f25b7a | interface/i8a-leaf-reexports |
+  | 3c7a5502 | cef1b019 | interface/i8a-leaf-reexports |
+  | a1da21d4 | 5035420b | dc3f3da4 |
+  | 75233089 | 962c6fb6 | interface/i8b-split-reexports |
+  | 6a637a62 | e7a9c65b | interface/i8b-split-reexports |
+  | 781bb747 | 900f9a5b | interface/i8c-table-binding-reexports |
+  | fcb94ee6 | ee29de4f | interface/i8c-table-binding-reexports |
+  | 028a596c | 0dc0558e | interface/i8d-cascade-reexports |
+  | 353b3edd | 68dc81b5 | interface/i8d-cascade-reexports |
