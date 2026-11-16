@@ -1672,3 +1672,8 @@
   correction: `_declared_default` has a test importer, test_t07_r7_admission.py:44). DECISION: adopt the reviewer's
   two open defaults (`c1_reactor_surrogate_of` in scope; the four distinct names). Alternative: an architect ruling.
   Reversible by: a new register entry before I-13 merges.
+- **2026-11-17, R-W4-11 fix 1 done: eb71978d (`sonnet-implementer`, 51k tokens; script only, 2+/1-; `build()` returns 6
+  artifacts with local.py and revision_edits.py; no test imports the script).** Helper wp/S19-w4-mc (re-pointed; the
+  old one was merged in 68a9597a), worktree s19-w4-mc = eb71978d + wp/S19 5ac6ddb9 as 97553d85; merge-check job 215
+  w4r11-mc. **W4 run 12 launched** (`opus-engineer`, Opus, brief S19-W4-12.md: I-13 per R-1045, lane wp/S19-w4 from
+  eb71978d).
