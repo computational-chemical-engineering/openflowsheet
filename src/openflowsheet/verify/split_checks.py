@@ -181,10 +181,11 @@ def _split_checks(
 def _degenerate_split_checks(
     name: str, subject: str, distance: float, tolerances: Mapping[str, float], note: str
 ) -> list[CheckResult]:
-    """T05b spec §9.1's two checks of the temperature-degenerate split `name` (`<U>.<S>`) whose
-    feed is `distance` (`δ`) from its band: `phase_admissibility.<U>.<S>.saturation`, judged at
-    the temperature kind's tolerance of `tolerances` and qualified by `note`, then
-    `independent_split.<U>.<S>` `not_applicable` (`temperature_degenerate`)."""
+    """T05b spec §9.1's two checks of the temperature-degenerate split `name` (`<U>.<S>`), both on
+    `subject`: `phase_admissibility.<U>.<S>.saturation` with value `distance` (its feed's `δ` at
+    the split's `(T, P)`, spec §4.4), judged at the temperature kind's tolerance of `tolerances`
+    and qualified by `note`, then `independent_split.<U>.<S>` `not_applicable`
+    (`temperature_degenerate`)."""
     return [
         evaluated(
             id=f"phase_admissibility.{name}.saturation",
