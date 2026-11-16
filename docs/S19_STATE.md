@@ -52,41 +52,36 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 - Held until the scale probe reports: G1 (orchestrator/, numerics/). Open: ptc.py 6.8 (P3, P4).
 - G-END (below) stays the end criterion for the whole repository.
 
-## Next actions (2026-11-16, ~19:00; self-reset)
+## Next actions (2026-11-16, ~20:30)
 
-Runner pid 2642417 (078fa7ed skip fix; cce-code-health 846a065; merge-check = `gate.sh --behaviour-only`, proven by
-job 173; ruff tier *.py only, 36ea9c2d). W4 run 7 merged (8cdd71d8; arch 4/3/12). Results consumed up to 161.
-Running gates: 155 (G6 run 5 review fix), 177 (W4 run 8 I-4 interface). Pending: none. No agent running. Lanes at
-most 2 until Thu 19 Nov 13:00. ALERTs persist (proposal 2 with Frank). The tool gates from merge-base(base, HEAD)
-with that base's tiers: run every merge-check on a helper branch `wp/S19-<lane>-mc` = lane tip + the wp/S19 tip
-merged in (S19_DECISIONS union-merged with `git merge-file --union`; check line count = ours + theirs - base); it
-also tests the combined tree.
-1. **Launch the I-9 design ruling first** (`architect`, Fable per memory "Fable for hard rulings"; brief
-   `<git-common-dir>/codehealth/briefs/S19-A-I9-home.md`; it commits `docs/briefs/S19-A-I9-ruling.md` on wp/S19).
-   Then `$Q wait --since 161` in the background.
-2. **G6 run 5** (wp/S19-g6c, ..72ef6454): steps 218-221, 223, 226, 229-232, 234, 236 accepted; 155 (review fix,
-   no-gain) gating. Review R-W3-G6-5 done. When 155 passes: helper `wp/S19-g6c-mc` (lane touches 7 .py files only),
-   `$Q enqueue --worktree <helper wt> --base <wp/S19 tip> --head <helper HEAD> --snapshot --mode merge-check --label
-   g6r5-mc`; PASS -> merge the helper into wp/S19 (`git merge --no-ff -F <file>`), log, remove worktree s19-g6c and the
-   helper.
-3. **W4 run 8** (wp/S19-w4 ce7f9b76..486b6dbb; S19_DECISIONS "W4 run 8 reported"): steps 233, 235, 237 accepted; 177
-   (I-4) gating. Layer config 9810abf6 kept. When 177 passes: reviewer R-W4-8 (template `S19-R-W4-7.md`; cover 3b,
-   anderson, I-4 incl. 9810abf6 and the outside-gate commits 84a290f9, a9e36ea0, 486b6dbb; check the MSG WO-5a/WO-6
-   counts in job 177's gate report, the engineer could not read them under xdist); then helper merge-check and
-   merge. W4 run 9 waits for the I-9 ruling: I-9 per the ruling, then I-14; later I-10, I-11, I-15?, I-13, I-12a-d,
-   I-19 (ADR order :393; with the R-W4-7 inventory: sizing `__init__` non-core aliases removed by plan,
-   region.py:130-145 private aliases).
-4. Next G6 brief after run 5: rescan wp/S19 (G6 outside registry-hashed thermo is small: store.py 8.6, render.py
-   7.5, units/__init__.py 7.4); G5: compare.py 7.4, `replay` 5.3, W4-dependent targets.
-5. Re-pin cce-code-health 846a065 -> 6529f47 (holds 6ab9fd1, 04a01f8, f527252 docstrings out of clone detection; `literals` lets a count drop when every base scope still reaches it: reviewers check the listed drops; adds `{files:GLOB}`: switch the ruff tier to `set -- {files:*.py,*.pyi}`) at the next queue-idle window (S19_DECISIONS; not urgent).
-6. Open for Frank (not blocking): R-1042 / option (C) for the T06 self-hash at W4 close; STOP 1 alternative (tool
-   change); cce-code-health fixes (empty `{files}`; `log --rerun-of` with a moved base; queue `--rerun-of` job vs
-   step; GATE-ERROR not to block a same-head re-gate); the verify twins ADR 0076 addendum; the selection-widening
-   design item. Design lane (progress.md): the NaN derivative-witness pass (R-W3-G5-8). Recorded, left: the
-   surrogate unit's identity is unregistered (R-W4-1b Q4). Docs-pass leftovers as before plus region.py:71,
-   models.lifted docstring, run 4's evidence-manifest scripts (k04, t04, t05, t05b, s02, s10c),
-   scripts/corpus_identity.py import lines, docs/interfaces-frozen.md:90, verify/column.py:103 report string and
-   test_s08_item6.py:90; the next T05b manifest shows a new spec sha256 (8993799c, expected).
+Runner pid 2642417 (cce-code-health 846a065; merge-check = `gate.sh --behaviour-only`). Results consumed up to 164;
+`$Q wait --since 164` was running. Scan of wp/S19 at 5fa99307: 314 files, debt 4746.1, health 8.08, brain 26, file
+smells 58. Lanes at most 2 agents until Thu 19 Nov 13:00. ALERTs persist (proposal 2 with Frank). Merge-checks run on
+a helper branch `wp/S19-<lane>-mc` = lane tip + the wp/S19 tip merged in (S19_DECISIONS union-merged with
+`git merge-file --union` if both touch it).
+Done this session: A-I9 ruled (I-5b new step; ADR addenda + R-1044, f5ef28f8); G6 run 5 merged (a9221827); R-W4-8
+review: merge after fixes (fix 3 done 6bdc88b6).
+1. **W4 run 9 running** (opus-engineer, brief `S19-W4-9.md`: I-5b, I-9 (arch -> 2/2/10), then I-14 if context
+   allows) on wp/S19-w4 from 486b6dbb, labels `w4r9-*`. On its report: log, reviewer per cadence (I-9 touches the
+   error vocabulary: S1/S2? use template S19-R-W4-8.md).
+2. **MSG xdist fix running** (sonnet-implementer, brief `S19-MSG-xdist.md`): commit A on wp/S19 tests/conftest.py
+   (counts and TERMINAL_REPORT lines forwarded from xdist workers), commit B (MSG-G3 findings fail the controller)
+   only if no hidden findings, then N for WO-5a/WO-6 at 10adfc3d and be115b6a. Equal N = R-W4-8 fix 1 met. Hidden
+   findings = report, decide (gate hole).
+3. **W4 run 8 merge** waits for 2: helper wp/S19-w4r8-mc (worktree s19-w4r8-mc) = 486b6dbb + c7d21f2e (R-W4-8 fix 2,
+   bundle.py docstring, job 179 no-gain). After 179 PASS and fix 1 met: merge wp/S19 into the helper, enqueue
+   merge-check (`--mode merge-check --label w4r8-mc`), PASS -> merge helper into wp/S19, then wp/S19-w4 (run 9)
+   merges wp/S19 or its later helper carries it.
+4. **G6 run 6** brief written (`S19-W3-G6-6.md`: units/__init__.py 7.4, messages/render.py 7.5, launcher.py 8.8,
+   store.py 8.6; branch wp/S19-g6d from the wp/S19 tip): launch opus-engineer when an agent slot frees.
+5. **G5 next**: run/compare.py 7.4 (`_differences_v2`, `_differences_v1`, `_key_rule`), verify/ files below 9
+   (gamma_phi_units 6.4, pr_c1 6.7, split_checks 7.2, table 7.5, column 7.6, checks 8.4, certificate 8.4; S2 tier,
+   cadence 4; duplication among verify twins: the verify twins ADR 0076 addendum is open with Frank). Write brief
+   S19-W3-G5-9.md after G6 run 6 launches.
+6. Re-pin cce-code-health 846a065 -> 6529f47 at the next queue-idle window (not urgent).
+7. Open for Frank (not blocking): as before (R-1042 option C; STOP 1 alternative; tool fixes; verify twins addendum;
+   selection-widening; proposal 2 for the ALERTs). Design lane: NaN derivative-witness pass (R-W3-G5-8). Docs-pass
+   leftovers as listed in S19_DECISIONS.
 
 ## Gates (pass numbers fixed after A1, before step 1)
 
