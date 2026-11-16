@@ -1174,3 +1174,8 @@
   (d) cosmetic: scripts/t02_identity.py:39-40 binds RecyclePolicy twice; policies.py:32 short unreflowed line.
   Merge-check job 173 (helper wp/S19-w4-mc = W4 tip + wp/S19 f16d72f5, dd2fd2ee; S19_DECISIONS union-merged, 1159 =
   1091 + 1113 - 1045 lines) queued.
+- **2026-11-16, job 173 PASS (W4 run 7 merge-check, first `gate --behaviour-only` run: f16d72f5..dd2fd2ee, 7/7;
+  ruff passed on a range with .md/.json files, so 36ea9c2d works; full suite 20375 passed / 107 skipped / 3 xfailed,
+  1126 s; f0, mcp_digest). Merged wp/S19-w4-mc into wp/S19 (8cdd71d8); helper removed; wp/S19-w4 fast-forwarded to
+  8cdd71d8.** `codehealth arch --depth 4` at 8cdd71d8: 4 violations, 3 cycles, 12 cycle edges, 3989 imports. G6 jobs
+  149 (step 229, 5.0 -> 2.0) and 150 (step 230, 10.0 -> 3.0) PASS.
