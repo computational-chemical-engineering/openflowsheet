@@ -749,3 +749,7 @@
   105-108. Correction: brief 6b said to count docstrings; the gate's `_string_literals` (cce_code_health/gate.py)
   excludes them, and the engineer rightly used the gate's function. Review brief `S19-R-W3-G5-6.md` updated to the
   new shas, with a point on the one mutating helper.
+- **2026-11-16, job 101 PASS (G5 run 7 step 2, c95eadac `_split_checks`, step 181 accepted, split_checks.py 25.6 -> 24.0, 16/16; the gain-rule question stays with R-W3-G5-7).**
+- **2026-11-16, job 78 PASS (W4 run 5b, I-2 iface 0e49da0f..89908c34, interface mode, step 182 accepted, 17/17).**
+- **2026-11-16, job 79 PASS (W4 run 5b, I-7 iface a99c305a..10f734bb, interface mode, step 183 accepted, 17/17).**
+- **2026-11-16, job 102 PASS (G5 run 7 step 3, 49a0db77 `degeneracy`, step 184 accepted, split_checks.py 24.0 -> 21.0, 16/16).** G5 run 7 fully gated (jobs 100-102); reviewer R-W3-G5-7 launched (Opus, brief `S19-R-W3-G5-7.md`).
