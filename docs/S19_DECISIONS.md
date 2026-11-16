@@ -1576,3 +1576,41 @@
   merged into wp/S19 as 68a9597a** (wp/S19 had changed only docs/S19_* since 76db456d). Worktree s19-w4-mc removed
   (clean); branch kept. **W4 run 11 launched** (`opus-engineer`, Opus, brief S19-W4-11.md: I-11, I-13; lane
   wp/S19-w4 fast-forwards to 68a9597a). Agents running: G5 run 10, W4 run 11 (cap 2).
+- **2026-11-17, job 207 PASS (g5r10-1, 205a80a1, step 260 accepted, 30.1 -> 25.4, 16/16).**
+- **2026-11-17, G5 run 10 reported (opus-engineer, Opus). wp/S19-g5h (BASE 5b2f2886), 4 steps, jobs 207-210 (S2 cap):**
+  205a80a1 certificate `_issue` parameter object `_Checked` (15 -> 11 parameters; 11.8 -> 7.5; file 30.1 -> 25.4),
+  3a864127 `_issue` grading/limitations -> `_graded` (-> 6.0; file 23.9), db3bd5b3 column `_end_check` -> `_reflux`
+  (4.0 -> 1.0; file 11.0 -> 8.0; scratch spy: both branches run, 20 partial / 11 total condenser), b3c346c0
+  `admissibility` standalone-state -> `_standalone_state` (3.0 -> 0; file 5.0). Health certificate 8.4 -> 8.7 (aim 9.0
+  missed), column 7.6 -> 9.1; compare.py untouched; repo debt 4718.1 -> 4705.9. Not taken: `verify_revision` check-set
+  lift (lazy imports of verify.zero_flow/surrogate, rule 10); compare `_key_rule` (one-call rungs per ADR 0025 §5,
+  playbook "leave the ladder"); column `_stages_of` (regex ladder). Next: reviewer R-W3-G5-10 after jobs 208-210.
+- **2026-11-17, job 211 FAIL (w4r11-i11-1, I-11 step 2025815b on plan 0f14a6d0, run-log step 261 gate-fail, 11/12,
+  `literals`): removed ' against ', ' already exists with different content (', '); a revision is immutable and a
+  change is a new revision', 'no revision ', 'put_revision', 'replayed', 'revision '.** Cause: the plan deletes
+  application/transactions.py (FQ-C) without `literals_removed`. git grep at base/head: three texts lived only in the
+  facade (the "already exists" and "immutable" messages, 'put_revision'); the others keep copies elsewhere in src.
+  DECISION: declare the seven in the plan (`literals_removed`, file transactions.py), rebuild plan/step/layer-config,
+  enqueue fresh. Alternative: keep the texts alive somewhere (no caller; against FQ-C). Fix brief
+  S19-W4-11-fix211.md, `sonnet-implementer` (Sonnet). The running engineer was messaged first but ended at ~192k
+  without acting; no follow-up to it (agent-budget rule).
+- **2026-11-17, W4 run 11 reported (opus-engineer, Opus, ~192k tokens incl. the ignored resume). Lane fast-forwarded
+  to cacd0fef (arch 1/1/4, 316 files, 4002 imports).** I-11: 1efad3ce tests and scripts/k06_evidence_manifest.py
+  ported to `LocalApplication.in_memory()` (test_k06_application :154 now records its run as a solve job and expects
+  `run-<job_id>`; script output = base except `invalidations` run-job-000001 and new key `recorded_run`), ae098feb
+  importers retargeted to application.types, 0f14a6d0 plan, 2025815b step (`_conforms` under TYPE_CHECKING in
+  local.py; mypy falsifier at local.py:2391; patch_noop 265/0; arch 1/1/4 -> 1/1/4, files 316 -> 315, imports 4002 ->
+  3995), fe742b07 layer config (also drops the forbid rule's `to` entry; arch warnings 0). For review: two test names
+  still say "facade" (one cited in evidence/T07); forbid `to` entry dropped though the ADR row names only
+  application-layers; ported fixtures commit via `commit_revision` only (no `put_revision` audit row). Leftovers
+  (docs pass): scripts/k06_evidence_manifest.py:361 still hashes the deleted file, `build()` now raises;
+  scripts/s16_recall.py:70 stale mutant (since S17 R2); docs/roadmap/00-core-inventory.md:505, ADR 0019 pointer.
+  **STOP I-13: the ADR row ("pin readers and thermal signatures") does not settle which names.** Cross-module private
+  imports: model_builders.py:17 (35 names), revision_binding.py:47 (23), thermal_binding.py:34 (9), incl. signature
+  constants, hint builders, `_expand`, `_COOLPROP`, `_WILSON`, `_named_first`; no public name given for `_CONTEXT`
+  (revision_binding.py:118; test_m04_wo7_surrogate_unit.py:319), `_COLUMN` (tests/s11_column_support.py:23), `_columns`
+  (test_t07_r6_hints.py:42), `_declared_default` (binding.py:1266). Engineer's default: every cross-module private name
+  drops its underscore; the design lane names the four. Settled part: `column_owners`, `defect_result` (executor.py:69;
+  test_t07_w4e:35), `basis_refusal` (test_s11_routing.py:31). DECISION: I-13 scope goes to the design lane in the
+  R-W4-11 review (fable: frozen-interface naming), batched with the I-11 review questions; I-13 waits. Alternative:
+  the engineer's default now. Reversible by: running the default.
