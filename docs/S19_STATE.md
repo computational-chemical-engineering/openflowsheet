@@ -60,7 +60,7 @@ G5 run 6 (wp/S19-g5d, jobs 94-97), G5 run 7 (wp/S19-g5e, jobs 100-102). Each G5 
 `S19-R-W3-common.md` plus a short per-run brief naming the decisions entry "G5 run N delivered") -> docstring fixes
 gated no-gain -> merge-check -> merge. Merge order note: W4's f9dec891 and G5 run 5 both edit
 verify/certificate.py (W4: lazy import line :559); resolve at the second merge, import line only.
-Lanes at most 2 until Thu 19 Nov 13:00.
+Lanes at most 2 until Thu 19 Nov 13:00. Review briefs `S19-R-W3-G5-5.md`, `-6.md`, `-7.md` drafted (2026-11-16 04:20).
 1. **W4:** STOP 3 ruled (R-W4-STOP3, Fable: Q1 option C, Q2 option a; ADR 0076 addendum + R-1042 on wp/S19
    274fb926); lane rebuilt (W4 run 5, S19_DECISIONS). Queued: 50, 52 (I-5, I-6 iface, re-enqueued from withdrawn),
    73-87 (rebuild 5b; 73, 74 PASS as steps 168, 169), 89, 93 (batch E column_solve), 98, 99 (run 6, batch F
