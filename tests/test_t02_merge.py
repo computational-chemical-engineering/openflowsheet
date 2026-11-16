@@ -17,10 +17,9 @@ import numpy.typing as npt
 import pytest
 import yaml
 
-from openflowsheet.numerics.anderson import RecyclePolicy
 from openflowsheet.numerics.newton import Evaluation, NewtonResult, Problem, solve_newton
 from openflowsheet.numerics.scaling import Scaling
-from openflowsheet.numerics.solve_record import Counters, SolvePolicy, Trace
+from openflowsheet.numerics.solve_record import Counters, RecyclePolicy, SolvePolicy, Trace
 from openflowsheet.orchestrator.merge import ConvergeResult, converge_with_merge
 from openflowsheet.verify.failure import bundle_for
 

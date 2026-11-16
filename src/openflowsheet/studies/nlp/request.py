@@ -106,7 +106,7 @@ Sense = Literal["minimize", "maximize"]
 
 @cache
 def _request_validator() -> Draft202012Validator:
-    """The request schema's validator, built as `application.types.schema_errors` builds it: the
+    """The request schema's validator, built as `schema_check.schema_errors` builds it: the
     published schemas registered by `$id` in file-name order, the request schema by `$ref` to its
     `$id`. `studies` never imports `application` (M04's rule), so the reading is repeated here;
     `test_opt_request` holds the two to the same errors."""
@@ -129,7 +129,7 @@ def _pointer(path: Sequence[str | int]) -> str:
 
 def _schema_errors(request: Any) -> list[str]:
     """Every error of `request` against the request schema, as `<pointer>: <message>` in pointer
-    order (`application.types.schema_errors`'s form)."""
+    order (`schema_check.schema_errors`'s form)."""
     found = sorted(_request_validator().iter_errors(request), key=lambda e: list(e.absolute_path))
     return [f"{_pointer(list(error.absolute_path))}: {error.message}" for error in found]
 

@@ -57,12 +57,8 @@ import test_t02_recycle as recycle_fixtures  # noqa: E402
 import test_t02_region as region_fixtures  # noqa: E402
 
 from openflowsheet.canonical import file_sha256  # noqa: E402
-from openflowsheet.numerics.anderson import (  # noqa: E402
-    RecyclePolicy,
-    RecycleResult,
-    solve_recycle,
-)
-from openflowsheet.numerics.solve_record import Trace  # noqa: E402
+from openflowsheet.numerics.anderson import RecycleResult, solve_recycle  # noqa: E402
+from openflowsheet.numerics.solve_record import RecyclePolicy, Trace  # noqa: E402
 
 REFERENCE = ROOT / "benchmarks" / "t02" / "reference_values.yaml"
 P01 = ROOT / "benchmarks" / "syn001" / "reference_values.yaml"

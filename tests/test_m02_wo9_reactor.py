@@ -40,13 +40,10 @@ from test_schemas_p01 import validator_for
 from openflowsheet.adapters import variants
 from openflowsheet.adapters.experiments.runner import ExperimentRunner
 from openflowsheet.adapters.experiments.store import ExperimentStore, ListArtifactSink
+from openflowsheet.application.binding_common import Unbound
 from openflowsheet.application.model_builders import MODEL_BUILDERS
 from openflowsheet.application.model_signatures import MODEL_BASES, MODEL_SIGNATURES
-from openflowsheet.application.revision_binding import (
-    RevisionBinding,
-    Unbound,
-    bind_revision_flowsheet,
-)
+from openflowsheet.application.revision_binding import RevisionBinding, bind_revision_flowsheet
 from openflowsheet.compile.casadi_backend import compile_problem
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models.c1 import NU

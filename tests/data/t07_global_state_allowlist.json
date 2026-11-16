@@ -34,14 +34,14 @@
       "line": "@cache",
       "patterns": ["cache"],
       "occurrences": 2,
-      "justification": "The published schemas, their registry and validators, and (W6b) `published_schemas`, the producer and J5 consumer readings by $id, all built from the packaged schema files, which are immutable for the process's life; the cached documents are never mutated (the consumer variants are new documents; the job one deep-copies)."
+      "justification": "`_event_common_validator`, the event-common schema's validator over the published registry, and (W6b) `published_schemas`, the producer and J5 consumer readings by $id, both built from the packaged schema files, which are immutable for the process's life; the cached documents are never mutated (the consumer variants are new documents; the job one deep-copies)."
     },
     {
       "file": "schema_check.py",
       "line": "@cache",
       "patterns": ["cache"],
       "occurrences": 3,
-      "justification": "The published schemas, their registry and validators, and (W6b) `published_schemas`, the producer and J5 consumer readings by $id, all built from the packaged schema files, which are immutable for the process's life; the cached documents are never mutated (the consumer variants are new documents; the job one deep-copies)."
+      "justification": "`_published`, `_registry` and `_validator`: the published schemas, their registry and validators, all built from the packaged schema files, which are immutable for the process's life; the cached documents are never mutated (the consumer variants are new documents; the job one deep-copies)."
     },
     {
       "file": "application/bindings/mcp.py",

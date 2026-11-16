@@ -26,7 +26,7 @@ from typing import TYPE_CHECKING, Any, Final
 
 from openflowsheet import __version__
 from openflowsheet.assessment.cost import uncertainty as aace
-from openflowsheet.assessment.linearization import Linearization, Refusal, _feasibility_tolerance
+from openflowsheet.assessment.linearization import Linearization, Refusal, feasibility_tolerance
 from openflowsheet.assessment.quantities import classify
 from openflowsheet.compile.casadi_backend import TwinEvaluationError, TwinMatrix
 
@@ -256,7 +256,7 @@ def _checked_values(
     except TwinEvaluationError as error:
         return Refusal("ASSESSMENT_EVALUATION_FAILED", "", str(error))
     assert isinstance(evaluated, Mapping)
-    tau = _feasibility_tolerance()
+    tau = feasibility_tolerance()
     violated = [
         n for n in program.admissibility_ids if evaluated[n] < -tau and n not in program.domain_rows
     ]

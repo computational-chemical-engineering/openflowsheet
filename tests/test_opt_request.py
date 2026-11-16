@@ -78,7 +78,7 @@ def test_g18_the_schema_is_a_draft_2020_12_schema_and_registered() -> None:
 
 def test_the_request_reader_reports_the_application_schema_errors_bytewise() -> None:
     """OPT review M2: `studies` reads the request schema itself (it never imports `application`);
-    its errors are `application.types.schema_errors`'s, text and order, on every fixture and on
+    its errors are `schema_check.schema_errors`'s, text and order, on every fixture and on
     ill-formed documents, and its pointers carry the same RFC 6901 escapes."""
     documents: list[Any] = [
         json.loads(path.read_bytes()) for path in sorted(FIXTURES.rglob("*.json"))

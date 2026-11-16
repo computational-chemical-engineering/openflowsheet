@@ -51,7 +51,8 @@ from openflowsheet.assessment.cost.sets import (
     parse_set,
     resolve,
 )
-from openflowsheet.assessment.program import Limitation, Refusal
+from openflowsheet.assessment.linearization import Refusal
+from openflowsheet.assessment.program import Limitation
 from openflowsheet.compile.reference import FloatAlgebra
 
 F = FloatAlgebra()

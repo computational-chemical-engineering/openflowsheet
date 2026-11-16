@@ -62,9 +62,9 @@ from openflowsheet.application.revision_binding import RevisionBinding, bind_rev
 from openflowsheet.application.revision_run import Route, legacy_plan, select_route, solve_route
 from openflowsheet.canonical import document_sha256
 from openflowsheet.numerics import newton
-from openflowsheet.numerics.anderson import RecyclePolicy, solve_recycle
+from openflowsheet.numerics.anderson import solve_recycle
 from openflowsheet.numerics.newton import Evaluation, Problem, solve_newton
-from openflowsheet.numerics.solve_record import Trace
+from openflowsheet.numerics.solve_record import RecyclePolicy, Trace
 from openflowsheet.orchestrator import region_phase, region_screen
 from openflowsheet.orchestrator.execution import (
     ExecutionPlan,

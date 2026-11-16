@@ -36,7 +36,7 @@ ROOT: Final = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
 
 FIXTURE_DIR: Final = ROOT / "tests" / "fixtures" / "schemas"
-#: Each fixture directory's schema reference, as `application.types.schema_errors` takes it.
+#: Each fixture directory's schema reference, as `schema_check.schema_errors` takes it.
 REFERENCES: Final[Mapping[str, str]] = {
     "model_variant": "model-variant.schema.json",
     "experiment_request": "experiment.schema.json#/$defs/request",

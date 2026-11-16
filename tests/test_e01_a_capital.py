@@ -105,7 +105,7 @@ from openflowsheet.assessment.cost.uncertainty import (  # noqa: E402
     rss,
     worst_case,
 )
-from openflowsheet.assessment.program import Refusal  # noqa: E402
+from openflowsheet.assessment.linearization import Refusal  # noqa: E402
 
 WPU11 = "bls-ppi-wpu11-annual-v1"
 TARGET = TargetBasis("USD", 2024, {"USD": WPU11})

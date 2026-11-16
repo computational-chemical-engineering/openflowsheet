@@ -61,7 +61,7 @@ def test_w18_the_policy_schema_refuses_every_other_value(value: object) -> None:
 
 def test_w18_no_committed_fixture_names_the_new_value() -> None:
     """C2: no registered fixture or case document carries the value; the policies that select it
-    are built in code (`openflowsheet.application.policies`) and named by id and hash."""
+    are built in code (`openflowsheet.orchestrator.policies`) and named by id and hash."""
     carrying = [
         path
         for root in ("tests/fixtures", "benchmarks")

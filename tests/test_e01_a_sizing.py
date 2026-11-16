@@ -26,12 +26,8 @@ from openflowsheet.assessment.blocks import (
     VolumetricFlowBlock,
     volume_available,
 )
-from openflowsheet.assessment.program import (
-    AssessmentProgram,
-    BuildContext,
-    ContributionPlan,
-    Refusal,
-)
+from openflowsheet.assessment.linearization import Refusal
+from openflowsheet.assessment.program import AssessmentProgram, BuildContext, ContributionPlan
 from openflowsheet.assessment.sizing import FAMILIES, SizedItem, family_of, plan_sizing
 from openflowsheet.assessment.sizing.families import actual_trays, underwood
 from openflowsheet.assessment.spec import load_assessment

@@ -129,15 +129,15 @@ from openflowsheet.orchestrator.phase_contract import (
 )
 from openflowsheet.orchestrator.region_attempts import _homotopy as _homotopy
 from openflowsheet.orchestrator.region_attempts import _ptc_attempt
-from openflowsheet.orchestrator.region_phase import ClosureMemo as ClosureMemo
-from openflowsheet.orchestrator.region_phase import _admissible as _admissible
-from openflowsheet.orchestrator.region_phase import _band_regime as _band_regime
 from openflowsheet.orchestrator.region_phase import (
+    ClosureMemo,
     _branch,
     _dormant_feed,
     _form,
     _zero_flow_answer,
 )
+from openflowsheet.orchestrator.region_phase import _admissible as _admissible
+from openflowsheet.orchestrator.region_phase import _band_regime as _band_regime
 from openflowsheet.orchestrator.region_phase import _contract_kernel as _contract_kernel
 from openflowsheet.orchestrator.region_phase import _dropped as _dropped
 from openflowsheet.orchestrator.region_phase import _kernel as _kernel

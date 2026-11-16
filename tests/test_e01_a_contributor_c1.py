@@ -28,7 +28,8 @@ from test_e01_a_contributor import (
 from openflowsheet.assessment.cost.contributor import CostContributor
 from openflowsheet.assessment.cost.index import load_series
 from openflowsheet.assessment.lca.section import LcaContributor
-from openflowsheet.assessment.program import AssessmentProgram, Refusal
+from openflowsheet.assessment.linearization import Refusal
+from openflowsheet.assessment.program import AssessmentProgram
 from openflowsheet.assessment.regimes import Regime
 from openflowsheet.assessment.spec import load_assessment
 from openflowsheet.assessment.views import view_of

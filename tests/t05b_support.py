@@ -52,7 +52,8 @@ REF: dict[str, Any] = load_yaml(REPO_ROOT / "benchmarks" / "t05b" / "reference_v
 
 #: Spec §6.6: the policy every T05b case runs, `T05-W13` with the second phase-contract literal.
 #: The one construction of v2 outside `test_t05b_literal.py` (B06 checks both) is
-#: `openflowsheet.application.policies.T05B_V2`, where T07 W3a moved it (W0 flag E6).
+#: `openflowsheet.orchestrator.policies.T05B_V2`, where T07 W3a moved it (W0 flag E6; ADR 0076
+#: I-3 moved the module).
 POLICY_V2: SolvePolicy = T05B_V2
 
 Document = dict[str, Any]

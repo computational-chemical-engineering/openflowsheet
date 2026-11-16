@@ -21,7 +21,7 @@ from t07_jobs_support import commit
 
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.operations import dispatch
-from openflowsheet.application.transactions import element_diff, revision_diff, semantic_diff
+from openflowsheet.application.revision_edits import element_diff, revision_diff, semantic_diff
 from openflowsheet.application.types import Change, DiffElement, Edit
 from openflowsheet.canonical import canonical_json
 from openflowsheet.schema_check import schema_errors

@@ -11,10 +11,10 @@ identically (R-015) — the policy fixtures byte for byte here, the rest by
 
 v2's rules are W6's (§6.2–§6.5) and W7's (§7); the T05b cases run them under the policy
 `T05b-v2` (`t05b_support.POLICY_V2`, spec §6.6), a registered construction of v2 outside this
-file — in `openflowsheet.application.policies.T05B_V2` since T07 W3a moved it into `src` (W0 flag
-E6). The other is S01's registered `s01-default-v1` (S01 spec §4, §7; R-505), in
-`openflowsheet.models.syn001.cascade_solve.S01_DEFAULT_V1` (S01 WO-5; a design-lane question in
-`docs/S01_DECISIONS.md`).
+file — in `openflowsheet.orchestrator.policies.T05B_V2` since T07 W3a moved it into `src` (W0
+flag E6; ADR 0076 I-3 moved the module). The other is S01's registered `s01-default-v1` (S01
+spec §4, §7; R-505), in `openflowsheet.models.syn001.cascade_solve.S01_DEFAULT_V1` (S01 WO-5; a
+design-lane question in `docs/S01_DECISIONS.md`).
 """
 
 from __future__ import annotations

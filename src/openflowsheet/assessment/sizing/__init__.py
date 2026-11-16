@@ -36,7 +36,8 @@ from openflowsheet.assessment.blocks import saturated_volume_available as satura
 from openflowsheet.assessment.blocks import volume_available as volume_available
 from openflowsheet.assessment.blocks import volumetric_block_id as volumetric_block_id
 from openflowsheet.assessment.defaults import default as default
-from openflowsheet.assessment.program import BuildContext, FunctionalBuilder, Refusal
+from openflowsheet.assessment.linearization import Refusal
+from openflowsheet.assessment.program import BuildContext, FunctionalBuilder
 from openflowsheet.assessment.program import ContributionPlan as ContributionPlan
 from openflowsheet.assessment.program import Limitation as Limitation
 from openflowsheet.assessment.program import OutputDef as OutputDef
