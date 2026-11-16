@@ -177,8 +177,7 @@ order = [
 name = "repo-layers"
 # S19 design note section 1. Package = layer; module entries where a package straddles a layer.
 # Recorded at adoption (12), each with the step that removes it (section 4, table 4.1). Removed by W4
-# (A4, A5, A6, A12, A13, A14, A15, B3); still open at the W4 lane tip (1):
-#   messages.catalogue -> registry                                     A11 (freeze hook; ruling S19-A11-ruling.md)
+# (A4, A5, A6, A11, A12, A13, A14, A15, B3); none is open at the W4 lane tip.
 order = [
     "openflowsheet.application",
     "openflowsheet.studies",
