@@ -651,3 +651,9 @@
   chain's base differs from 59c076bd's), so `codehealth log` ran in the side-chain worktree without it. Evidence for
   59c076bd's interface diff: step 165 plus the lane's merge-check. Tool note: a side-chain re-gate cannot carry
   `--rerun-of`; job 57 (I-1) will hit the same and is logged the same way. Worktree s19-w4-rg161 removed.
+- **2026-11-16, gate 164 FAIL (job 58, w4r5 rebuilt I-1 src retarget d75149f9): forbid, scope on
+  tests/test_m02_experiment_body_isolation.py only.** The rebuild folded the Q2 test change into the src step; a
+  refactor step may touch src only. Fix (ruling's alternative): the test change as its own outside-gate commit
+  directly before the src retarget; src gate base = that commit. Sent to the W4 run 5 engineer mid-run (second
+  rebuild, tip of this attempt tagged `s19-w4-r5a`). Brief lesson: a fix "in commit X" means a separate outside-gate
+  commit next to X when X is a gated src step and the fix touches tests.
