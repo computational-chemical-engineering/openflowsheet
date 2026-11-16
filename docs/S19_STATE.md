@@ -36,6 +36,9 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
   G2 run 1 reviewed (R-W3-G2-1, fixes in G2 run 2). Each run: reviewer, then merge into `wp/S19`.
 - A11/I-14 ruled (`docs/briefs/S19-A11-ruling.md`): runs in W4 after I-9. B8-executor skipped; B7 in W5.
 
+- Gate tooling (2026-11-16): queue modes interface and merge-check, `--snapshot`/`--head`, step-relative test
+  selection (wp/S19-tools2, 37307ab0). G6 runs 2+3 reviewed (merge); W4 run 1: arch 6/4/14 -> 4/4/14.
+
 - Open (R-W3-G1N-1): numerics/ptc.py health 6.8 after P1 (closing method's 9 parameters); P2 to P4 must end >= 7.0,
   else a miss and P1 is reverted.
 
@@ -49,22 +52,30 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 - Held until the scale probe reports: G1 (orchestrator/, numerics/). Open: ptc.py 6.8 (P3, P4).
 - G-END (below) stays the end criterion for the whole repository.
 
-## Next actions (2026-11-16, at the self-reset)
+## Next actions (2026-11-16, ~01:30)
 
-All lanes merged into `wp/S19` except: `wp/S19-g6` run 2 (4 accepted steps 8e4b2db7..eccacaab, unreviewed; step 4
-684c9f2a and drafted patch scripts s5, s6, s7b, s8 in `<git-common-dir>/codehealth/drafts/g6-run2/`, each taking the
-worktree path as its argument), `wp/S19-g3` (de77fa37 run_study RC step,
-unreviewed; G3 trails; drafts in `<git-common-dir>/codehealth/drafts/g3-run2/`), `wp/SP` (S18 evidence).
-1. Start the gate runner (`gate_queue.py run --detach`; results.log has 3 proof lines: `wait --since 3`).
-2. Lane 1, G6 (blocking): reviewer for g6 run 2 (S19-R-W3-G6-2, to write), then a run that re-gates 684c9f2a, applies
-   the drafts (render.py, lint.py to >= 7.0) and fixes `compile/casadi_backend.py:567` structural_pattern
-   (hoist equation_ids; prove bitwise identical pattern and record a before/after time at the 1e4 probe).
-3. Lane 2, W4 (blocking): brief from ADR 0076 (`docs/adr/0076-S19-interface-redesign.md`, its item order; I-15 done;
-   A11/I-14 ruling `docs/briefs/S19-A11-ruling.md` runs after I-9).
-4. Then G5 run 4 (verify remaining: gamma_phi_units, pr_c1, certificate/checks with W4 I-2) and the cycles and
-   violations (`codehealth arch --depth 4`: 6 / 4 at c64ee32e).
-5. OpenFlowsheet-check builds `--since` selection, chain gating, merge-check on `wp/S19-tools2`; review and merge it.
-6. Lanes: at most 2 until Thu 19 Nov 13:00. Merge into `main` after the blocking set (Decision Desk card).
+Gate queue: runner restarted at the tools2 code (37307ab0). `wait --since 7` was the last count consumed.
+Running/queued: 7 `g6-mc1` (merge-check of wp/S19-g6 at 21345f7a over ba124ab8), 8-14 `w4r1-*` (W4 run 1).
+Agents: W4 run 2 engineer (`S19-W4-2.md`: I-6 finish with the a7 test ruling, I-1, I-2, I-7) on `wp/S19-w4` from
+35d46182; it enqueues `w4r2-*` snapshot jobs as it goes.
+1. g6-mc1 PASS -> merge `wp/S19-g6` into `wp/S19` (merge commit; review R-W3-G6-2 passed, 3 notes fixed). Then
+   G6 is left with: `registry/__init__.py`, `graph/analysis.py`, `compile/spec.py` (gain >= 5) and the `thermo/`
+   providers (W5). Brief G6 run 4 only if the gain list is real (`codehealth scan` on those files).
+2. Jobs 8-14 PASS -> layer config commit on wp/S19-w4 (application-layers loses `application.policies`
+   (config.toml:159); adoption lines `run.bundle -> application.policies` (:176) and `assessment.spec ->
+   application.types` (:175) go), then reviewer R-W4-1 (brief written: `S19-R-W4-1.md`). A SKIPPED or FAIL: a fresh
+   engineer bisects.
+3. W4 run 2 report -> its layer config, reviewer R-W4-2 (cover runs 1 and 2 together if run 1's review has not
+   started), merge-check, merge into wp/S19. Then W4 run 3: I-8 (union of restructure plans), I-4, I-9, I-14 (after
+   I-9), I-10, I-11, I-13, I-12a-d, I-19 (ADR order; A11/I-14 ruling `docs/briefs/S19-A11-ruling.md` after I-9).
+4. G5 run 4 (verify remaining: gamma_phi_units, pr_c1, certificate/checks with W4 I-2), then the cycles and
+   violations left (`codehealth arch --depth 4`).
+5. Docs-pass leftovers (W4 run 1): studies/nlp/request.py:109,132 docstrings name application.types.schema_errors;
+   run/bundle.py:214 lazy-import docstring stale; benchmarks/registry.yaml:1738,1748,1756 name
+   `process_runtime.application.policies` in `constructed_by`.
+6. `wp/S19-g3` (de77fa37, unreviewed, trails) and `wp/SP` (S18 evidence) wait. Lanes at most 2 until Thu 19 Nov
+   13:00. Merge into `main` after the blocking set (Decision Desk card). Every lane merge needs a merge-check PASS;
+   lanes branch from the wp/S19 tip (they must contain MB).
 
 ## Gates (pass numbers fixed after A1, before step 1)
 
