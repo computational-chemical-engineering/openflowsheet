@@ -1,0 +1,41 @@
+# ADR 0076 I-8, batch A (W4 run 4, brief S19-W4-4; form of S19_DECISIONS 2026-11-16 STOP 1): five old
+# modules stop re-exporting the names that the restructure plans move-schema-check,
+# split-binding-common, leaf-kind-tolerance, leaf-band-types and leaf-surrogate-records gave a new
+# home, and surrogate/reactor.py stops re-exporting MODEL_ID (S19_DECISIONS 2026-11-16 MODEL_ID
+# ruling). `codehealth gate --mode interface` reads this plan from the plan commit.
+id = "i8a-leaf-reexports"
+approved_by = "Frank Peters, 2026-11-14, ADR 0076 accepted (Decision Desk ofs-adr0076-accept)"
+reason = """ADR 0076 I-8: every module created by an S19 restructure step is the only path for the \
+names it holds; the normative list is the union of the committed restructure plans' new_public \
+names. src importers were retargeted in refactor mode (1836c838) and tests, scripts and benchmarks \
+outside the gate (3c7a5502), so an AST inventory (from-imports at any depth, module-alias attribute \
+reads, setattr patches, dotted strings; living docs by grep) finds no use of these names through the \
+old modules. No frozen M9 module imports any of them through an old path. The step drops: in \
+application/types.py (no __all__) the alias SCHEMA_BASE (plain import stays: types uses it) and \
+SCHEMA_DIR (import goes); in application/binding.py the aliases Unbound, refusal_code (plain imports \
+stay) and HINT_LIMIT (import goes), and the __all__ entries Unbound, refusal_code; in \
+verify/checks.py (no __all__) the aliases KIND_TOLERANCE, PRESSURE_TOLERANCE (plain imports stay) \
+and EQUILIBRIUM_TOLERANCE (import goes); in models/syn001/saturation_band.py the aliases \
+MAX_TEMPERATURE_EVALUATIONS, BandError, BandTemperature (plain imports stay) and Position (import \
+goes), and the __all__ entries MAX_TEMPERATURE_EVALUATIONS, BandError, BandTemperature; in \
+studies/surrogate/study.py the aliases CentreEvidence, CentreStatus, Observation, \
+SurrogateEvaluation (plain imports stay), MODEL_ID and ObservationStatus (imports go), and the \
+__all__ entries MODEL_ID, CentreEvidence, Observation, SurrogateEvaluation; in \
+studies/surrogate/reactor.py the __all__ entry MODEL_ID (reactor keeps its plain import from \
+studies.surrogate.records: it uses MODEL_ID and exposes it through its method). cce-code-health \
+counts imports as API only in __init__.py, so the dropped aliases are invisible to the public-API \
+tier and the four __all__ lists are the listed changes (STOP 1 ruling). Expected codehealth arch \
+--depth 4 (measured at this base and by a simulation of the step): base 4 violations / 3 cycles / \
+12 cycle edges, after 4 / 3 / 12 (imports 4123 -> 4108; no layer edge goes: each old module still \
+imports its home for its own use, or the edge was not a violation). Layer config: none."""
+removed = []
+renamed = {}
+changed = [
+    "src/openflowsheet/application/binding.py:__all__",
+    "src/openflowsheet/models/syn001/saturation_band.py:__all__",
+    "src/openflowsheet/studies/surrogate/study.py:__all__",
+    "src/openflowsheet/studies/surrogate/reactor.py:__all__",
+]
+added = []
+new_files = []
+callers = []
