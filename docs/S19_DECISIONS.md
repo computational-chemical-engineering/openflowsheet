@@ -1396,3 +1396,9 @@
   rebases 75e424be..619e0011 onto it (backup wp/S19-w4r10-orig), re-enqueues I-5b (`--rerun-of 185`), I-9, I-14.
   Alternative: a fresh opus-engineer. Reason: fully specified one-line change plus a rebase; the orchestrator does not
   edit lane code. ALERTs: selected share 56%, selected 465 s, wait median 39 min (standing).
+- **2026-11-16, fix185 done (sonnet-implementer): X = 634c1195 (test_e01_a_links.py:16 reads `_validator` from
+  schema_check; 4 passed at X and at the new I-5b step), chain rebased cleanly onto X, tip 2b40c2f2 (backup
+  wp/S19-w4r10-orig = 619e0011; diff = that one line).** Map: 75e424be->4f7e5a57 plan I-5b, ecf46789->50779e18 I-5b,
+  8671bbdf->a953ca84, caccb2ad->84e74e1d plan I-9, 1e0d6bee->1f5c2c6b I-9, 1c8037be->a609de45 layer config,
+  1cc1271e->dbb304a3, 3185ea65->cf66884c plan I-14, 672a1edf->8292d7e2 I-14, 674d7de6->45e742b7, 619e0011->2b40c2f2.
+  Enqueued: 194 w4r9-i5b-iface-2 (rerun of 185), 195 w4r9-i9-iface-2, 196 w4r10-i14-iface-2.
