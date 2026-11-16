@@ -850,3 +850,14 @@
   the new MB c3c5793e: tests tier selected 3752 tests (135 files), wall 704 s; registry/__init__.py is imported almost
   everywhere, so this is not the expected 150-250 s case. Report: ALERTs selected median 991 s > 300 s, ratio 0.77,
   wait median 100 min; action unchanged until more new-MB gates land.
+- **2026-11-16, job 123 PASS (G5 run 8 step 1, d8e21d1a, step 201 accepted, 36.7 -> 22.5, 16/16).** Second gate on
+  MB c3c5793e: tests tier selected 199 files, 5078 passed, wall 699 s. Report: ALERTs selected median 970 s > 300 s,
+  ratio 0.75 > 0.4, wait median 97 min > 15 min. The map rebuild (the ALERTs' recorded action) is done and the
+  ALERTs persist, so the cause is not the map's age. Measured on d8e21d1a (`select --base c3c5793e --since 209ed607
+  --import-time-by-file`): 1220 node ids (`--nodes`) widen to 199 whole files (5078 tests), a 4x widening that is
+  deliberate (S16 B-11: module-scoped fixtures and order-dependent files; docs/test-impact.md:75-77).
+  DECISION: ALERT action -> a tools-lane design item, not a gate change now: narrow the widening to the files that
+  need it (a recorded list of files with module-scoped fixtures or order dependence, everything else by node id),
+  judged by a design-lane pass before any change, because selection soundness is at stake. Until then no extra
+  lanes are added to the queue (its wait, not engineer time, limits throughput). Alternative: `--nodes` everywhere
+  (unsound per B-11). Reversible by: nothing changed yet.
