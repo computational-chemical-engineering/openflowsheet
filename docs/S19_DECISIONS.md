@@ -736,3 +736,16 @@
   later: the same type-only import stands in checks.py:58 and gamma_phi_units.py:80 (existing debt). Optional note
   not taken: `_issue`'s `witness` clause omits `components` and the limitation reason. Job 103 (no-gain) queued;
   wp/S19 (docs only since 62fdf722) merged into the lane; merge-check queued.
+- **2026-11-16, job 77 PASS (W4 run 5b, I-2 revert 9e467cca..145725ae, 15/15), logged by hand as step 179**
+  (accepted-neutral, `--head 145725ae`, from s19-w4): `--rerun-of 162` refused, the base moved (as job 73). Note for
+  the G5 run 5 merge: W4's I-2 also moves the verifier's type-only `LiftedSplit` imports to `models.lifted`; 718d896a
+  does the same in certificate.py, so the two agree (resolve to the `models.lifted` line).
+- **2026-11-16, job 100 PASS (G5 run 7 step 1, ac17ce56 `project`, step 180 accepted, 29.7 -> 6.0, 16/16).**
+- **2026-11-16, G5 run 6b delivered (opus-engineer, Opus, 89k tokens; lane wp/S19-g5d rebuilt on 14f4fa35, old tip
+  `wip/S19-g5d-r1` = a9f6499c).** 11d21d5a (step 1 reworked: `_add_warm_start_r0(projection, warm_start) -> None`, the
+  old block moved verbatim, writes in the original order), 3d1688a8, 9bbae106, 3cdb0d50 (steps 2-4 cherry-picked
+  without conflicts). Every step: the gate's literal multiset equal, mypy, ruff, patch_noop 0 of 265, touched tests
+  pass, F0 PASS on steps 1 and 3; repo debt 5043.9 -> 4944.5, brain functions 27 -> 26 (as the first take). Jobs
+  105-108. Correction: brief 6b said to count docstrings; the gate's `_string_literals` (cce_code_health/gate.py)
+  excludes them, and the engineer rightly used the gate's function. Review brief `S19-R-W3-G5-6.md` updated to the
+  new shas, with a point on the one mutating helper.
