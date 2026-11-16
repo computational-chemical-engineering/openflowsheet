@@ -205,6 +205,22 @@ def _limitation_problem(document: Mapping[str, Any], codes: frozenset[str]) -> s
     return None
 
 
+def _extension_invalid(entry_point: str, pointer: str) -> Coded:
+    """D7's quarantine reason for an extension package whose problem is at `pointer`."""
+    return Coded("extension_invalid", {"entry_point": entry_point, "pointer": pointer})
+
+
+@dataclass(frozen=True)
+class _PackageDescriptors:
+    """One package's descriptors that passed D7's per-descriptor checks, not yet registered:
+    their registered form, their message catalogues keyed as `Registry._catalogues` is, and
+    the codes those catalogues declare."""
+
+    registered: list[Registered]
+    catalogues: dict[tuple[str, tuple[int, int, int]], tuple[str, Mapping[str, Any]]]
+    codes: set[str]
+
+
 _logger = logging.getLogger(__name__)
 
 #: The registry's per-thread build state: the depth of `Registry.build` calls running on this
@@ -370,10 +386,12 @@ class Registry:
             )
 
     def _add_package(self, package: ExtensionPackage, attestations: frozenset[Attestation]) -> None:
-        """Register a package whole or quarantine it with its first problem (D7): per descriptor
-        in document order its schema, id prefix, uniqueness, tokens, self-hash and (for
-        `message_entries`) catalogue; then each descriptor's limitation codes, which may name
-        the codes of any of the package's catalogues."""
+        """Register a package whole or quarantine it with its first problem (D7): its schema and
+        namespace; per descriptor in document order its schema, id prefix, uniqueness, tokens,
+        self-hash and (for `message_entries`) catalogue (`_package_descriptors`); then each
+        descriptor's limitation codes, which may name the codes of any of the package's
+        catalogues. Raises `RegistryBuildError(namespace_conflict)` when a descriptor is
+        already registered."""
 
         def quarantine(reason: Coded) -> None:
             self._quarantined.append(
@@ -383,9 +401,7 @@ class Registry:
             )
 
         def invalid(pointer: str) -> None:
-            quarantine(
-                Coded("extension_invalid", {"entry_point": package.entry_point, "pointer": pointer})
-            )
+            quarantine(_extension_invalid(package.entry_point, pointer))
 
         document = package.document
         pointer = schema_problem(document, "/$defs/package")
@@ -402,56 +418,75 @@ class Registry:
             package.import_root,
             False,
         )
-        registered: list[Registered] = []
-        catalogues: dict[tuple[str, tuple[int, int, int]], tuple[str, Mapping[str, Any]]] = {}
-        codes: set[str] = set()
-        seen: set[tuple[str, str, tuple[int, int, int]]] = set()
-        for index, descriptor in enumerate(document["descriptors"]):
-            where = f"/descriptors/{index}"
-            found = descriptor_problem(descriptor)
-            if found is not None:
-                return invalid(where + found)
-            if not str(descriptor["id"]).startswith(namespace + "."):
-                return invalid(where + "/id")
-            key = (descriptor["kind"], descriptor["id"], version_key(descriptor["version"]))
-            if key in seen:
-                return invalid(where)
-            seen.add(key)
-            problem = _token_problem(normalise(descriptor), source, namespace)
-            if problem is not None:
-                return quarantine(problem)
-            try:
-                registered.append(_registered(descriptor, source, attestations))
-            except SelfHashUnavailableError as error:
-                return quarantine(
-                    Coded(
-                        "self_hash_unavailable", {"id": str(descriptor["id"]), "path": error.path}
-                    )
-                )
-            if descriptor["kind"] == "message_entries":
-                try:
-                    catalogue = self._messages.load(descriptor["payload"]["catalogue"])
-                except Exception:  # noqa: BLE001 (a missing or unparsable resource quarantines)
-                    return invalid(where + "/payload/catalogue")
-                if self._messages.problem(catalogue, namespace) is not None:
-                    return invalid(where + "/payload/catalogue")
-                assert isinstance(catalogue, Mapping)
-                catalogues[(descriptor["id"], key[2])] = (namespace, catalogue)
-                codes.update(str(item["code"]) for item in catalogue["entries"])
+        checked = self._package_descriptors(
+            document["descriptors"], package, namespace, source, attestations
+        )
+        if isinstance(checked, Coded):
+            return quarantine(checked)
         for index, descriptor in enumerate(document["descriptors"]):
             if descriptor["limitations"]:
-                allowed = self._messages.core_codes() | codes
+                allowed = self._messages.core_codes() | checked.codes
                 found = _limitation_problem(descriptor, allowed)
                 if found is not None:
                     return invalid(f"/descriptors/{index}{found}")
+        registered = checked.registered
         clashes = [e for e in registered if (e.kind, e.id, version_key(e.version)) in self._entries]
         if clashes:
             # Discovery quarantines both packages of a namespace before they reach this (D7).
             raise RegistryBuildError(Coded("namespace_conflict", {"namespace": namespace}))
         for entry in registered:
             self.register(entry)
-        self._catalogues.update(catalogues)
+        self._catalogues.update(checked.catalogues)
         return None
+
+    def _package_descriptors(
+        self,
+        descriptors: Sequence[Mapping[str, Any]],
+        package: ExtensionPackage,
+        namespace: str,
+        source: Source,
+        attestations: frozenset[Attestation],
+    ) -> _PackageDescriptors | Coded:
+        """D7's per-descriptor checks of `package`'s `descriptors` in document order: schema, id
+        prefix (`namespace`), uniqueness, tokens, self-hash and (for `message_entries`) the
+        catalogue, loaded and checked by the registry's catalogue check. The descriptors that
+        passed, or the first problem as the package's quarantine reason; nothing is registered
+        here."""
+        registered: list[Registered] = []
+        catalogues: dict[tuple[str, tuple[int, int, int]], tuple[str, Mapping[str, Any]]] = {}
+        codes: set[str] = set()
+        seen: set[tuple[str, str, tuple[int, int, int]]] = set()
+        for index, descriptor in enumerate(descriptors):
+            where = f"/descriptors/{index}"
+            found = descriptor_problem(descriptor)
+            if found is not None:
+                return _extension_invalid(package.entry_point, where + found)
+            if not str(descriptor["id"]).startswith(namespace + "."):
+                return _extension_invalid(package.entry_point, where + "/id")
+            key = (descriptor["kind"], descriptor["id"], version_key(descriptor["version"]))
+            if key in seen:
+                return _extension_invalid(package.entry_point, where)
+            seen.add(key)
+            problem = _token_problem(normalise(descriptor), source, namespace)
+            if problem is not None:
+                return problem
+            try:
+                registered.append(_registered(descriptor, source, attestations))
+            except SelfHashUnavailableError as error:
+                return Coded(
+                    "self_hash_unavailable", {"id": str(descriptor["id"]), "path": error.path}
+                )
+            if descriptor["kind"] == "message_entries":
+                try:
+                    catalogue = self._messages.load(descriptor["payload"]["catalogue"])
+                except Exception:  # noqa: BLE001 (a missing or unparsable resource quarantines)
+                    return _extension_invalid(package.entry_point, where + "/payload/catalogue")
+                if self._messages.problem(catalogue, namespace) is not None:
+                    return _extension_invalid(package.entry_point, where + "/payload/catalogue")
+                assert isinstance(catalogue, Mapping)
+                catalogues[(descriptor["id"], key[2])] = (namespace, catalogue)
+                codes.update(str(item["code"]) for item in catalogue["entries"])
+        return _PackageDescriptors(registered, catalogues, codes)
 
     def register(self, entry: Registered) -> None:
         """Add one registered descriptor; (kind, id, version) is unique. Raises
