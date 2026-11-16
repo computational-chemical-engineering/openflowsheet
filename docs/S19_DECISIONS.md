@@ -1349,3 +1349,5 @@
   the ruling needs the serial numbers anyway; compute is free. Equal serial counts: I-4 meets rule 4 in serial form,
   run 8 merges, and the ADR text change (serial or per-file form) goes to the R-W4-9 review batch. Unequal: the I-4
   gap is real, a finding for a fresh engineer (patch targets of write_bundle / _run_result after the move).
+- **2026-11-16, job 182 PASS (G6 run 6 step 3, 77ae7025, step 243 accepted, 17.0 -> 14.0, 16/16).** ALERTs as at job
+  181 (selected share 52%, selected 451 s, wait median 37 min; standing, proposal 2 with Frank).
