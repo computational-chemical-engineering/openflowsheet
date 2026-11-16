@@ -1,6 +1,6 @@
 """The V-tolerances of candidate verification (M03 spec §8.5, §8.3): one registered table.
 
-`studies.nlp.verification` applies them (V2, V3, V5) and re-exports them; the assessment program
+`studies.nlp.verification` applies them (V2, V3, V5); the assessment program
 reads `TAU_FEAS` here for its admissibility rows. A leaf: it imports nothing from the package,
 so code below `studies` may import it.
 """

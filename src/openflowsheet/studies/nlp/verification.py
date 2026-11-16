@@ -70,13 +70,15 @@ from openflowsheet.studies.nlp.host import (
     as_host,
 )
 from openflowsheet.studies.nlp.phase import CLOSURE_IDENTITY, PHASE_PREFIX, PhaseRows
-from openflowsheet.studies.nlp.tolerances import TAU_ACTIVE as TAU_ACTIVE
-from openflowsheet.studies.nlp.tolerances import TAU_FEAS as TAU_FEAS
-from openflowsheet.studies.nlp.tolerances import TAU_GROSS as TAU_GROSS
-from openflowsheet.studies.nlp.tolerances import TAU_KKT as TAU_KKT
-from openflowsheet.studies.nlp.tolerances import TAU_LICQ as TAU_LICQ
-from openflowsheet.studies.nlp.tolerances import TAU_SIGN as TAU_SIGN
-from openflowsheet.studies.nlp.tolerances import TAU_VERTEX_MULTIPLIER as TAU_VERTEX_MULTIPLIER
+from openflowsheet.studies.nlp.tolerances import (
+    TAU_ACTIVE,
+    TAU_FEAS,
+    TAU_GROSS,
+    TAU_KKT,
+    TAU_LICQ,
+    TAU_SIGN,
+    TAU_VERTEX_MULTIPLIER,
+)
 from openflowsheet.studies.sensitivity import (
     TAU_REGIME,
     OutputFunctional,
