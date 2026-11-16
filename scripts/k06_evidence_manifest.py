@@ -358,7 +358,8 @@ def build(commit: str, gate_stdout: Path) -> dict[str, Any]:
                 "Immutable content-addressed revisions.",
             ),
             ("src/openflowsheet/application/validation.py", "Task validation, §4.3."),
-            ("src/openflowsheet/application/transactions.py", "Local transactions, §11."),
+            ("src/openflowsheet/application/local.py", "LocalApplication.commit_change, §11."),
+            ("src/openflowsheet/application/revision_edits.py", "apply_edits, semantic_diff, §11."),
             ("src/openflowsheet/application/cli.py", "The CLI, D15 and G06."),
             ("scripts/v0_0_gate.py", "The v0.0 gate summary."),
         )
