@@ -1455,3 +1455,9 @@
   an exact revert of bfe9e545. The commit itself is right. Re-enqueued unchanged as 198 g5r9-revert2-b (`--base
   24f772cc --head 620d6c02 --rerun-of 197`); brief S19-W3-G5-9-fix.md corrected. Jobs enqueued after a failure are
   not skipped (gate_queue.py skipped()), so the implementer's `_RowFloor` job on 620d6c02 gates normally.
+- **2026-11-16 22:25, G5 run 9 fixes done (sonnet-implementer): 620d6c02 revert of 24f772cc (job 197 FAIL on the
+  brief's base, re-gated as 198), 174045f1 `_RowFloor` NamedTuple (job 199 g5r9-revfix, no-gain).** Local: mypy 377
+  clean, ruff clean, 100 compare tests passed, F0 PASS (M1-M9 all equal). `_RowFloor` at the `differences()` call, the
+  list-entry `(None, None)`, both `_phase_branch_flow` sites; `_kind_floor`/`_sibling_floor` return it; unpacking
+  `_float_leaf(..., *row_floor)` kept. After 198 and 199 PASS: helper wp/S19-g5g-mc (174045f1 + wp/S19 tip),
+  merge-check, merge.
