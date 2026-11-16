@@ -52,29 +52,35 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 - Held until the scale probe reports: G1 (orchestrator/, numerics/). Open: ptc.py 6.8 (P3, P4).
 - G-END (below) stays the end criterion for the whole repository.
 
-## Next actions (2026-11-16, ~15:20)
+## Next actions (2026-11-16, ~15:50; self-reset)
 
-Runner pid 1923489. Results consumed up to 130; a `wait --since 130 --idle .../s19-g6c` runs (one wake when G6 run
-5's chain is gated). Lanes at most 2 until Thu 19 Nov 13:00. Gate report ALERTs persist (cause at job 123;
-proposal 2, a step-cadence exclusion of end-to-end files, is with Frank via session OpenFlowsheet-check with this
-session's three conditions; `--durations=25` in the tests tier since c3e1b1ba, `gate_report.py --heavy N`).
-Merged today: G5 run 8 (e9d5f386), G6 run 4 (6de773c6), W4 runs 1-6 (7ffa7901; arch 4 / 3 / 12), tools4.
-Interface-lane merge-check: `.claude/skills/s19-refactor/merge_tiers.sh BASE HEAD LABEL` (the queue's merge-check is
-refactor mode; S19_DECISIONS 13:41); code_health asked for a tool mode.
-1. **G6 run 5** (wp/S19-g6c, bd694a82..72ef6454): steps 218, 219 accepted; jobs 145-154 (steps 3-12) and 155
-   (review fix 72ef6454, no-gain) in the queue. Review R-W3-G6-5 done (merge after fixes; fix is 72ef6454). When the
-   chain passes: merge wp/S19 into the lane? (only if wp/S19 gained code it shares; else not), enqueue
-   `--mode merge-check --snapshot --worktree .../s19-g6c --base <wp/S19 tip> --label g6r5-mc`; on PASS merge, log,
-   remove worktree s19-g6c.
-2. **W4 run 7** running (opus-engineer, wp/S19-w4 from 34474d67, brief `S19-W4-7.md`). On its report: reviewer per
-   cadence, then merge via merge_tiers.sh. Then the W4 items after I-8 (I-4, I-9, I-14, I-10, I-11, I-13, I-12a-d,
-   I-19, in the ADR's recommended order).
-3. Next G6 work after run 5: what remains in G6 outside the registry-hashed thermo providers is small
-   (store.py 8.6, render.py 7.5, units/__init__.py 7.4 after W4); G5 has W4-dependent targets, compare.py 7.4,
-   `replay` 5.3. Rescan wp/S19 before briefing.
-4. Self-reset when W4 run 7 has reported and no agent runs.
-4b. At the next queue-idle window: re-pin cce-code-health to 1304e31 (`--behaviour-only`), wire it into gate.sh and
-   the queue's merge-check, retire merge_tiers.sh (S19_DECISIONS, 1304e31 entry).
+Runner pid 1923489 (OLD code: its failed list skips every W4 descendant of 4d250386). Results consumed up to 135
+(156-159 SKIPPED). No agent running. Lanes at most 2 until Thu 19 Nov 13:00. ALERTs persist (cause at job 123;
+proposal 2 with Frank via session OpenFlowsheet-check). Merged today: G5 run 8 (e9d5f386), G6 run 4 (6de773c6),
+W4 runs 1-6 (7ffa7901; arch 4/3/12), tools4. Interface-lane merge-check: `merge_tiers.sh BASE HEAD LABEL` until the
+re-pin below.
+1. **Runner restart + re-pin window (first).** Wait for the running G6 run 5 gate to finish (`$Q wait --since 135`),
+   then `kill $(cat <queue>/runner.pid)` (a running gate is INTERRUPTED: re-enqueue it unchanged). With no gate
+   running: re-pin cce-code-health 1f7df37 -> 1304e31 (as the 1f7df37 re-pin, S19_DECISIONS ~line 805:
+   `.venv-codehealth` reinstall, check direct_url), add `gate.sh --behaviour-only <base> [label]` (`codehealth gate
+   --behaviour-only --mode refactor --base B --cadence campaign`, S19_GATE_FULL=1 exported), make gate_queue.py's
+   merge-check call it, prove it on a merged lane (e.g. base 6de773c6 head aa2de578, expect PASS), delete
+   merge_tiers.sh. Restart `$Q run --detach` (new code: merge-check failures no longer skip). Re-enqueue W4 run 7's
+   four steps with `--snapshot --worktree .../s19-w4`: 3cc1be0a base 34474d67 no-gain (label w4r7-refusal-src-r2),
+   6534c277 base 3cc1be0a no-gain, 1d4d88ca base 6534c277 no-gain, ae3afc36 base 43a5cc53 interface `--plan
+   .codehealth/interface/i8g-transactions-reexports.toml` (check the plan file name in 43a5cc53; targets, recipes and
+   reasons from `queue/done/w4r7-*.json`).
+2. **G6 run 5** (wp/S19-g6c, bd694a82..72ef6454): steps 218-220 accepted; 146-155 in the queue (155 = review fix,
+   no-gain). Review R-W3-G6-5 done (merge after fixes = 72ef6454). When the chain passes: merge-check (`--mode
+   merge-check --snapshot --worktree .../s19-g6c --base <wp/S19 tip> --label g6r5-mc`); PASS -> merge, log, remove
+   worktree s19-g6c.
+3. **W4 run 7** (wp/S19-w4 34474d67..bf921d8c, reported, S19_DECISIONS): after its gates pass, `reviewer`
+   (R-W4-7; brief from S19-R-W4-1b-style briefs in `<git-common-dir>/codehealth/briefs/`), then merge-check
+   (behaviour-only after the re-pin) and merge (S19_DECISIONS append conflict: keep both sides). Then the W4 items
+   after I-8 (I-4, I-9, I-14, I-10, I-11, I-13, I-12a-d, I-19, ADR order), item 3b when code_health's tool change
+   for an added `__all__` lands, and anderson.py `__all__` `RecyclePolicy` (STOP 1, `changed`).
+4. Next G6 brief after run 5: rescan wp/S19 (G6 outside registry-hashed thermo is small: store.py 8.6, render.py
+   7.5, units/__init__.py 7.4); G5: compare.py 7.4, `replay` 5.3, W4-dependent targets.
 5. Open for Frank (not blocking): R-1042 / option (C) for the T06 self-hash at W4 close; STOP 1 alternative (tool
    change); cce-code-health fixes (empty `{files}`; `log --rerun-of` with a moved base; queue `--rerun-of` job vs
    step; GATE-ERROR not to block a same-head re-gate); the verify twins ADR 0076 addendum; the selection-widening
