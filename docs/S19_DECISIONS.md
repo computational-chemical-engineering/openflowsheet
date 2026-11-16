@@ -1031,3 +1031,10 @@
   complete entry with a failing example, jargon in a variant summary and an infeasibility claim); a lock-contention
   test for `ExperimentStore.locked` (`BlockingIOError` branch).
 - **2026-11-16, job 143 PASS (g6r5-1 58f1aecb, step 218 accepted, 15.0 -> 0).** Gate report ALERTs: ALERT selected gates take 743 s > 300 s (tests tier);ALERT selected/full time ratio 0.58 > 0.4: selection saves little;ALERT queue wait median 38 min > 15 min; (cause as at job 123; proposal 2 with Frank).
+- **2026-11-16, job 142 PASS (G6 run 4 merge-check at af68ba31, full suite, 15/15, 85.3 -> 35.0). Merged wp/S19-g6b
+  into wp/S19 (6de773c6).** Since the base 18386009 wp/S19 gained G5 run 8 (refactor only), tooling and docs: no
+  shared file. Worktree s19-g6b removed.
+- **2026-11-16, G6 run 5 review fix 72ef6454 (sonnet-implementer, 54k tokens):** the three renames; ruff, mypy, 1257
+  tests of the importers passed; job 155 (g6r5-revfix, no-gain).
+- **2026-11-16, wp/S19 (6de773c6) merged into wp/S19-w4 (aa2de578, clean); merge_tiers w4-mt2 on it started.** On
+  PASS: W4 merges into wp/S19.
