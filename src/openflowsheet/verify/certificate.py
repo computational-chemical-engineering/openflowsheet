@@ -75,6 +75,7 @@ from openflowsheet.verify.verdict import statements_for as statements_for
 
 if TYPE_CHECKING:
     from openflowsheet.models.revision_flowsheet import ComponentBasis
+    from openflowsheet.thermo import PropertyCapabilities
     from openflowsheet.verify.regularity import RegularityEvidence
     from openflowsheet.verify.zero_flow import ZeroFlowSplit
 
@@ -1062,45 +1063,66 @@ def _issue(
             dict(item) for item in getattr(solved.source, "branch_provenance", ()) or ()
         ),
         root_fingerprint=getattr(solved.source, "root_fingerprint", None),
-        transformations={
-            "scales": {"column": dict(target.scaling.column), "row": dict(target.scaling.row)},
-            "eliminated_rows": [
-                row.as_document() for row in target.partition.elimination.eliminated
-            ],
-            "tear": dict(solved.tear),
-            # ADR 0010 D9.4: what the binding removed, freed and promoted; empty when nominal.
-            "declaration": {key: _plain(value) for key, value in declaration.items()},
-            # ADR 0013 D5: where the fresh-flash categories were judged, and why. R0, no float.
-            "projection": projection.as_document(),
-        },
-        derivative_provenance={
-            "path": "assembled_schur",
-            "pattern_provenance": identity.get("pattern_provenance", "declared-by-compiler"),
-            # `None` when the witness did not run (T06 spec §8.2): a 0.0 would read as a pass.
-            "witness_max_diff": max(
-                (
-                    c.value
-                    for c in checks
-                    if c.category == "derivative_witness" and c.value is not None
-                ),
-                default=None,
-            ),
-            # M02 design note §4.4: an external unit's map has no derivative (ADR 0034 D4).
-            **({} if external is None else {"external_map": dict(external.derivatives)}),
-        },
-        independence_qualifications=tuple(
-            {
-                "check_id": check.id,
-                "provider_id": capabilities.provider_id,
-                "implementation_sha256": capabilities.implementation_sha256,
-                "data_sha256": capabilities.data_sha256,
-                "reference_convention": capabilities.reference_convention,
-            }
-            for check in checks
-            if check.independence_qualification is not None
-        ),
+        transformations=_transformations(target, solved, declaration, projection),
+        derivative_provenance=_derivative_provenance(identity, checks, external),
+        independence_qualifications=_independence_qualifications(checks, capabilities),
         limitations=tuple(limitations),
         statements=statements_for(provider),
+    )
+
+
+def _transformations(
+    target: Any, solved: _Solved, declaration: Mapping[str, Any], projection: Projection
+) -> dict[str, Any]:
+    """The certificate's `transformations` record: `target`'s scales and eliminated rows, the
+    solve's tear, the binding's `declaration` and where the fresh-flash categories were judged
+    (`projection`)."""
+    return {
+        "scales": {"column": dict(target.scaling.column), "row": dict(target.scaling.row)},
+        "eliminated_rows": [row.as_document() for row in target.partition.elimination.eliminated],
+        "tear": dict(solved.tear),
+        # ADR 0010 D9.4: what the binding removed, freed and promoted; empty when nominal.
+        "declaration": {key: _plain(value) for key, value in declaration.items()},
+        # ADR 0013 D5: where the fresh-flash categories were judged, and why. R0, no float.
+        "projection": projection.as_document(),
+    }
+
+
+def _derivative_provenance(
+    identity: Mapping[str, Any], checks: Sequence[CheckResult], external: ExternalEvidence | None
+) -> dict[str, Any]:
+    """The certificate's `derivative_provenance` record: the assembled-Schur path, the screen's
+    pattern provenance (`identity`), the largest derivative-witness value in `checks`, and an
+    `external` unit's derivative map when there is one."""
+    return {
+        "path": "assembled_schur",
+        "pattern_provenance": identity.get("pattern_provenance", "declared-by-compiler"),
+        # `None` when the witness did not run (T06 spec §8.2): a 0.0 would read as a pass.
+        "witness_max_diff": max(
+            (c.value for c in checks if c.category == "derivative_witness" and c.value is not None),
+            default=None,
+        ),
+        # M02 design note §4.4: an external unit's map has no derivative (ADR 0034 D4).
+        **({} if external is None else {"external_map": dict(external.derivatives)}),
+    }
+
+
+def _independence_qualifications(
+    checks: Sequence[CheckResult], capabilities: PropertyCapabilities
+) -> tuple[dict[str, str], ...]:
+    """The certificate's `independence_qualifications`: for each check of `checks` that carries
+    an independence qualification, in check order, the fresh provider it ran on (`capabilities`,
+    M02 design note §14.2 B15)."""
+    return tuple(
+        {
+            "check_id": check.id,
+            "provider_id": capabilities.provider_id,
+            "implementation_sha256": capabilities.implementation_sha256,
+            "data_sha256": capabilities.data_sha256,
+            "reference_convention": capabilities.reference_convention,
+        }
+        for check in checks
+        if check.independence_qualification is not None
     )
 
 
