@@ -359,15 +359,7 @@ def admissibility(unit: _Unit, components: Sequence[str]) -> list[CheckResult]:
     structure = _structure(unit, components)
     spec = _judged_spec(unit, structure, components)
     name = structure.unit_id
-    # The standalone declaration (no flowsheet links) at the judged state, its pinned inlet
-    # columns `<U>.inlet.<name>.*` read from the inlet streams: the standalone acceptance.
-    state = dict(unit.state)
-    for inlet in structure.inlets:
-        column = inlet_stream(name, inlet.name)
-        for c in components:
-            state[flow_id(column, c)] = unit.state[flow_id(inlet.stream, c)]
-        state[temperature_id(column)] = unit.state[temperature_id(inlet.stream)]
-        state[pressure_id(column)] = unit.state[pressure_id(inlet.stream)]
+    state = _standalone_state(unit, structure, components)
     declared = declared_problem(declared_rows(spec, provider, context))
     equilibrium = spec.equilibrium_stages()
     regimes = {stage: _regime(state, name, stage) for stage in equilibrium}
@@ -410,6 +402,24 @@ def admissibility(unit: _Unit, components: Sequence[str]) -> list[CheckResult]:
         for stage in equilibrium:
             checks.append(_stability(unit, provider, context, name, stage, components, note))
     return checks
+
+
+def _standalone_state(
+    unit: _Unit, structure: ColumnStructure, components: Sequence[str]
+) -> dict[str, float]:
+    """The state of the standalone declaration (no flowsheet links) at the judged state: a copy
+    of `unit.state` with the pinned inlet columns `<U>.inlet.<name>.*` read from the inlet
+    streams, for the standalone acceptance. Inlets in `structure.inlets` order; a column two
+    inlets share takes the later inlet's values."""
+    name = structure.unit_id
+    state = dict(unit.state)
+    for inlet in structure.inlets:
+        column = inlet_stream(name, inlet.name)
+        for c in components:
+            state[flow_id(column, c)] = unit.state[flow_id(inlet.stream, c)]
+        state[temperature_id(column)] = unit.state[temperature_id(inlet.stream)]
+        state[pressure_id(column)] = unit.state[pressure_id(inlet.stream)]
+    return state
 
 
 def _stability(
