@@ -1071,3 +1071,4 @@
   the old code and list until restarted: the next session stops it at a gate boundary, re-enqueues the interrupted
   job and 156-159 (`--rerun-of` not needed: skipped jobs were never logged), re-pins cce-code-health to 1304e31 in
   the same idle window (entry above), and restarts the runner.
+- **2026-11-16 ~15:50, gate report before the self-reset:** 28 gates, 0 failed; 23 of 25 steps accepted, debt removed 105.5. ALERTs unchanged (cause at job 123; proposal 2 with Frank): "selected gates take 724 s > 300 s (tests tier)", "selected/full time ratio 0.56 > 0.4", "queue wait median 31 min > 15 min".
