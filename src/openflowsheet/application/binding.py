@@ -45,7 +45,7 @@ from openflowsheet.models.revision_flowsheet import (
 from openflowsheet.units import UnitConversion, read_number
 
 if TYPE_CHECKING:
-    from openflowsheet.application.revision_binding import SurrogateResolver
+    from openflowsheet.application.model_builders import SurrogateResolver
 
 __all__ = [
     "Binding",
@@ -932,7 +932,7 @@ def _instance_contracts(document: Mapping[str, Any], components: Sequence[str]) 
     SYN-001's problem instead. The views are the document's with `specifications` emptied: the
     roles this binder reads (`free`) are what the revision binder refuses, and pins are not part
     of the contract."""
-    from openflowsheet.application.revision_binding import MODEL_SIGNATURES, instance_contract
+    from openflowsheet.application.model_signatures import MODEL_SIGNATURES, instance_contract
     from openflowsheet.models.revision_flowsheet import parse_revision
 
     try:

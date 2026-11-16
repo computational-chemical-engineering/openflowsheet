@@ -53,7 +53,7 @@ from openflowsheet.orchestrator.revision_continuation import (
 from openflowsheet.orchestrator.warm_start import intact
 
 if TYPE_CHECKING:
-    from openflowsheet.application.revision_binding import SurrogateResolver
+    from openflowsheet.application.model_builders import SurrogateResolver
     from openflowsheet.application.store import ProjectStore
 
 __all__ = [

@@ -37,7 +37,7 @@ from openflowsheet.canonical import first_noncanonical
 if TYPE_CHECKING:
     from openflowsheet.application.binding_common import Unbound
     from openflowsheet.application.contract import ApplicationError
-    from openflowsheet.application.revision_binding import SurrogateResolver
+    from openflowsheet.application.model_builders import SurrogateResolver
     from openflowsheet.graph.process import ProcessGraph
     from openflowsheet.graph.trace import Declaration
     from openflowsheet.models.revision_flowsheet import RevisionError

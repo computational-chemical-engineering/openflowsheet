@@ -63,14 +63,13 @@ from typing import Any, Final, Literal
 from openflowsheet.adapters import variants
 from openflowsheet.adapters.variants import Variant
 from openflowsheet.application.binding_common import Unbound
-from openflowsheet.application.revision_binding import (
+from openflowsheet.application.model_builders import (
     MODEL_BUILDERS,
-    MODEL_SIGNATURES,
-    RevisionBinding,
     SurrogateResolver,
-    bind_revision_flowsheet,
     resolve_surrogate,
 )
+from openflowsheet.application.model_signatures import MODEL_SIGNATURES
+from openflowsheet.application.revision_binding import RevisionBinding, bind_revision_flowsheet
 from openflowsheet.canonical import canonical_json
 from openflowsheet.orchestrator.execution import EO_CAPABLE_METHODS
 from openflowsheet.studies.surrogate.manifest import derived_verdict

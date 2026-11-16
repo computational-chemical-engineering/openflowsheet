@@ -68,11 +68,8 @@ from openflowsheet.application.coupled_run import (
     solve_coupled,
     unused_coupling_start,
 )
-from openflowsheet.application.revision_binding import (
-    RevisionBinding,
-    SurrogateResolver,
-    bind_revision_flowsheet,
-)
+from openflowsheet.application.model_builders import SurrogateResolver
+from openflowsheet.application.revision_binding import RevisionBinding, bind_revision_flowsheet
 from openflowsheet.application.revision_continuation import (
     ContinuationSource,
     continues_revisions,

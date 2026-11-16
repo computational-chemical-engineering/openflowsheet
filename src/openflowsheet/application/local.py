@@ -64,6 +64,13 @@ from openflowsheet.application.contract import ApplicationError, Page, Projectio
 from openflowsheet.application.jobs.executor import InlineExecutor, ProcessExecutor
 from openflowsheet.application.jobs.model import JOB_STATUSES, TERMINAL_STATUSES, JobStatus
 from openflowsheet.application.jobs.runner import RunContext, bundle_rows, record_rows
+from openflowsheet.application.model_builders import MODEL_BUILDERS, SurrogateResolver
+from openflowsheet.application.model_signatures import (
+    MODEL_SIGNATURES,
+    ModelSignature,
+    PinColumn,
+    pin_encodings,
+)
 from openflowsheet.application.projection import (
     DEFAULT_DEPTH,
     DEFAULT_PAGE,
@@ -75,14 +82,6 @@ from openflowsheet.application.replacement import (
     ReplacementReport,
     check_replacements,
     unpromoted_surrogates,
-)
-from openflowsheet.application.revision_binding import (
-    MODEL_BUILDERS,
-    MODEL_SIGNATURES,
-    ModelSignature,
-    PinColumn,
-    SurrogateResolver,
-    pin_encodings,
 )
 from openflowsheet.application.revision_edits import (
     EditPathError,

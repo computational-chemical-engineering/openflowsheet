@@ -46,7 +46,7 @@ from openflowsheet.thermo import (
 )
 from openflowsheet.units.display import DisplayUnits, display_item
 from openflowsheet.verify import column
-from openflowsheet.verify.table import (
+from openflowsheet.verify.flowsheet_rows import (
     EXTERNAL_DUTY_MODELS,
     FEED_MODELS,
     PRODUCT_MODELS,

@@ -106,7 +106,8 @@ from openflowsheet.application.jobs.model import (
     Interruption,
     TerminalStatus,
 )
-from openflowsheet.application.revision_binding import RevisionBinding, SurrogateResolver
+from openflowsheet.application.model_builders import SurrogateResolver
+from openflowsheet.application.revision_binding import RevisionBinding
 from openflowsheet.application.revision_continuation import (
     ContinuationSource,
     continues_revisions,
