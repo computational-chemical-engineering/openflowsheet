@@ -38,17 +38,18 @@ from openflowsheet.models.syn001.cascade_spec import (
     vapor_total_id,
 )
 from openflowsheet.models.syn001.column import ColumnSpec, distillate_total_id, profile_initial
-from openflowsheet.models.syn001.column_solve import (
-    DECLARATION_CONTEXT,
+from openflowsheet.models.syn001.column_compile import compile_column, slots
+from openflowsheet.models.syn001.column_endpoint import (
     MAX_SWEEPS,
     PRESOLVE_ID,
     SWEEP_TOLERANCE,
     BubblePointEndpoint,
-    ColumnSolution,
     bubble_point_endpoint,
-    compile_column,
+)
+from openflowsheet.models.syn001.column_solve import (
+    DECLARATION_CONTEXT,
+    ColumnSolution,
     continuation,
-    slots,
     solve_column,
 )
 from openflowsheet.numerics.scaling import Scaling

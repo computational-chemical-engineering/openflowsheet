@@ -143,8 +143,8 @@ class Recorder:
         }
 
     def install(self) -> Callable[[], None]:
-        sweep_flows = column_solve.sweep_flows
-        relaxed = column_solve.relaxed_compositions
+        sweep_flows = column_endpoint.sweep_flows
+        relaxed = column_endpoint.relaxed_compositions
         newton = region.solve_newton
         bound_step = newton_module._bound_aware_step
 

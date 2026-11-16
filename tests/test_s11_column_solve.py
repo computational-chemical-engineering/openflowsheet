@@ -45,7 +45,8 @@ from openflowsheet.models.revision_flowsheet import WILSON_BASIS, WILSON_RECORDS
 from openflowsheet.models.syn001.cascade_solve import S01_DEFAULT_V1
 from openflowsheet.models.syn001.cascade_spec import stage_duty_id, stage_temperature_id
 from openflowsheet.models.syn001.column import ColumnSpec
-from openflowsheet.models.syn001.column_solve import ColumnSolution, product_columns, solve_column
+from openflowsheet.models.syn001.column_acceptance import product_columns
+from openflowsheet.models.syn001.column_solve import ColumnSolution, solve_column
 from openflowsheet.numerics.solve_record import SolvePolicy
 from openflowsheet.orchestrator.execution import ExecutionPlan
 from openflowsheet.orchestrator.executor import PlanResult, execute_plan

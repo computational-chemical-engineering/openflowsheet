@@ -37,7 +37,7 @@ from openflowsheet.models.syn001.column import (
     recovery_flow_id,
     slot_row_id,
 )
-from openflowsheet.models.syn001.column_solve import (
+from openflowsheet.models.syn001.column_compile import (
     closure_types,
     lifted_splits,
     split_temperatures,

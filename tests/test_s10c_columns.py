@@ -22,7 +22,6 @@ from test_s10c_blocks import CONTEXT, REAL, REFERENCE, UNIT, M1Block, column_spe
 
 import openflowsheet.models.syn001.column_endpoint as column_endpoint
 import openflowsheet.models.syn001.column_rows as column_rows_module
-import openflowsheet.models.syn001.column_solve as column_solve
 from openflowsheet.compile.reference import row_values
 from openflowsheet.models.lifted_tolerance import KIND_TOLERANCE
 from openflowsheet.models.syn001 import ENERGY_TOLERANCE
@@ -51,24 +50,26 @@ from openflowsheet.models.syn001.column import (
     reflux_id,
     validate,
 )
+from openflowsheet.models.syn001.column_acceptance import (
+    acceptance_failures,
+    regimes_of,
+    saturation_errors,
+)
 from openflowsheet.models.syn001.column_blocks import (
     BlockEndpoint,
     block_endpoint,
     block_signature,
     candidates,
 )
-from openflowsheet.models.syn001.column_solve import (
+from openflowsheet.models.syn001.column_compile import compile_column, lifted_splits, slots
+from openflowsheet.models.syn001.column_endpoint import (
     PRESOLVE_ID,
-    TWO_PHASE_SATURATION_TOLERANCE,
     BubblePointEndpoint,
-    ColumnSolution,
-    acceptance_failures,
     bubble_point_endpoint,
-    compile_column,
-    lifted_splits,
-    regimes_of,
-    saturation_errors,
-    slots,
+)
+from openflowsheet.models.syn001.column_solve import (
+    TWO_PHASE_SATURATION_TOLERANCE,
+    ColumnSolution,
     solve_column,
 )
 from openflowsheet.models.syn001.gamma_phi_blocks import GammaPhiLnKBlock, probe_flows
@@ -386,7 +387,7 @@ def test_stage_b_opening_on_a_wilson_specification() -> None:
     assert not isinstance(initial, CascadeFailure), initial
     found = block_endpoint(spec, REAL, initial, (0, 10))
     assert isinstance(found, BlockEndpoint), found
-    assert 1 <= found.sweeps and found.last_delta <= column_solve.SWEEP_TOLERANCE
+    assert 1 <= found.sweeps and found.last_delta <= column_endpoint.SWEEP_TOLERANCE
     signature = block_signature(spec, (0, 10))
     assert found.signature == signature
     stages = spec.equilibrium_stages()

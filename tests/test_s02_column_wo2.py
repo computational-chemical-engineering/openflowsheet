@@ -54,23 +54,23 @@ from openflowsheet.models.syn001.column import (
     regime_form,
     validate,
 )
+from openflowsheet.models.syn001.column_acceptance import (
+    acceptance_failures,
+    overall_closure,
+    products,
+    singular_pairs,
+    spec_values,
+)
+from openflowsheet.models.syn001.column_compile import compile_column, presolve_rows, slots
+from openflowsheet.models.syn001.column_endpoint import PRESOLVE_ID
 from openflowsheet.models.syn001.column_solve import (
     DECLARATION_CONTEXT,
     FD_COLUMN_SCALE,
-    PRESOLVE_ID,
     S02_TARGET_POLICY,
     ColumnSolution,
-    acceptance_failures,
-    compile_column,
     continuation,
-    overall_closure,
-    presolve_rows,
-    products,
-    singular_pairs,
-    slots,
     solve_column,
     solve_target,
-    spec_values,
 )
 from openflowsheet.numerics.scaling import (
     REGISTERED_NOMINALS,
@@ -599,7 +599,7 @@ def test_a18_m1_stage_1_zero_flow_label_residual() -> None:
     and the label row's residual is `T_1 − T_feed`, one IEEE subtraction."""
     from openflowsheet.models import temperature_id
     from openflowsheet.models.syn001.cascade_spec import inlet_stream
-    from openflowsheet.models.syn001.column_solve import system_residuals
+    from openflowsheet.models.syn001.column_acceptance import system_residuals
 
     spec = SPECS["M1"]
     state = dict(profile_initial(spec, PROVIDER, DECLARATION_CONTEXT).state)  # type: ignore[union-attr]

@@ -60,24 +60,27 @@ from openflowsheet.models.syn001.column import (
     reflux_fraction_id,
     reflux_id,
 )
-from openflowsheet.models.syn001.column_solve import (
+from openflowsheet.models.syn001.column_acceptance import (
+    QUOTIENT_SLACK,
+    acceptance_failures,
+    overall_closure,
+    spec_values,
+    target_bound,
+)
+from openflowsheet.models.syn001.column_compile import (
     CONTINUED_KIND,
+    compile_column,
+    slots,
+    stage_unit,
+)
+from openflowsheet.models.syn001.column_endpoint import BubblePointEndpoint, bubble_point_endpoint
+from openflowsheet.models.syn001.column_solve import (
     DECLARATION_CONTEXT,
     FD_COLUMN_SCALE,
-    QUOTIENT_SLACK,
-    BubblePointEndpoint,
     ColumnSolution,
-    acceptance_failures,
-    bubble_point_endpoint,
-    compile_column,
     continuation,
-    overall_closure,
-    slots,
     solve_column,
     solve_target,
-    spec_values,
-    stage_unit,
-    target_bound,
 )
 from openflowsheet.numerics.scaling import REGISTERED_NOMINALS
 from openflowsheet.orchestrator.region_result import RegionAttempt, RegionResult

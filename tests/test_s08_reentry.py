@@ -36,20 +36,24 @@ from openflowsheet.models.syn001.cascade_failure import CascadeFailure
 from openflowsheet.models.syn001.cascade_solve import DECLARATION_CONTEXT, AcceptanceDefectError
 from openflowsheet.models.syn001.cascade_spec import liquid_id, stage_temperature_id, vapor_id
 from openflowsheet.models.syn001.column import profile_initial
-from openflowsheet.models.syn001.column_blocks import BLOCK_ENDPOINT_ID, BlockEndpoint
-from openflowsheet.models.syn001.column_solve import (
-    NEAR_TRIVIAL_SPLIT,
-    PRESOLVE_ID,
-    REENTRY_OUTCOMES,
-    BlockReentry,
-    BubblePointEndpoint,
-    ColumnSolution,
+from openflowsheet.models.syn001.column_acceptance import (
     acceptance_failures,
-    bubble_point_endpoint,
-    compile_column,
-    reentry_trigger,
     regimes_of,
     saturation_errors,
+)
+from openflowsheet.models.syn001.column_blocks import BLOCK_ENDPOINT_ID, BlockEndpoint
+from openflowsheet.models.syn001.column_compile import compile_column
+from openflowsheet.models.syn001.column_endpoint import (
+    PRESOLVE_ID,
+    BubblePointEndpoint,
+    bubble_point_endpoint,
+)
+from openflowsheet.models.syn001.column_solve import (
+    NEAR_TRIVIAL_SPLIT,
+    REENTRY_OUTCOMES,
+    BlockReentry,
+    ColumnSolution,
+    reentry_trigger,
     solve_column,
 )
 from openflowsheet.orchestrator.region_result import RegionResult

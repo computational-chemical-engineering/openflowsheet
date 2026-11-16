@@ -23,7 +23,7 @@ from openflowsheet.application.binding_common import Unbound
 from openflowsheet.application.revision_binding import RevisionBinding, bind_revision_flowsheet
 from openflowsheet.models.lifted import StagedSplits
 from openflowsheet.models.syn001.cascade_solve import S01_DEFAULT_V1
-from openflowsheet.models.syn001.column_solve import stage_unit
+from openflowsheet.models.syn001.column_compile import stage_unit
 from openflowsheet.models.syn001.column_unit import (
     ColumnStructure,
     column_staged_splits,

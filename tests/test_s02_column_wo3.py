@@ -26,14 +26,9 @@ from openflowsheet.models.syn001.cascade_spec import (
     vapor_total_id,
 )
 from openflowsheet.models.syn001.column import ColumnSpec, _inflow, regime_form
-from openflowsheet.models.syn001.column_solve import (
-    FD_COLUMN_SCALE,
-    ColumnSolution,
-    acceptance_failures,
-    compile_column,
-    solve_column,
-    stage_unit,
-)
+from openflowsheet.models.syn001.column_acceptance import acceptance_failures
+from openflowsheet.models.syn001.column_compile import compile_column, stage_unit
+from openflowsheet.models.syn001.column_solve import FD_COLUMN_SCALE, ColumnSolution, solve_column
 from openflowsheet.numerics.scaling import REGISTERED_NOMINALS
 from openflowsheet.orchestrator.region_result import RegionResult
 from openflowsheet.thermo.syn001 import C_P, h_liquid, h_vapor

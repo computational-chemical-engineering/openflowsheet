@@ -55,7 +55,8 @@ from openflowsheet.models.syn001.column import (
     stage_band,
     validate,
 )
-from openflowsheet.models.syn001.column_solve import solve_column, spec_values
+from openflowsheet.models.syn001.column_acceptance import spec_values
+from openflowsheet.models.syn001.column_solve import solve_column
 from openflowsheet.thermo import FlashRequest, PropertyRequest
 from openflowsheet.thermo.syn001 import Syn001Provider
 

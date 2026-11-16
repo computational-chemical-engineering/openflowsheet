@@ -42,11 +42,10 @@ from openflowsheet.models.syn001.cascade_spec import (
     vapor_id,
 )
 from openflowsheet.models.syn001.column import ColumnSpec
+from openflowsheet.models.syn001.column_acceptance import acceptance_failures, saturation_errors
 from openflowsheet.models.syn001.column_solve import (
     TWO_PHASE_SATURATION_TOLERANCE,
     ColumnSolution,
-    acceptance_failures,
-    saturation_errors,
     solve_column,
 )
 
