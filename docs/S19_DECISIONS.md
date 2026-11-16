@@ -875,3 +875,5 @@
   17/17).** Report: ALERTs as at job 123.
 - **2026-11-16, job 132 PASS (G5 run 8 step 2, ce638e4c, `escalate_column`, step 208 accepted, 22.5 -> 17.5,
   16/16).** Report: ALERTs as at job 123.
+- **2026-11-16, job 128 PASS (W4 run 6, I-8f src, ad40c05d..f9dec891, step 209 accepted-neutral, 192.4 -> 192.4,
+  15/15).** Report: ALERTs as at job 123.
