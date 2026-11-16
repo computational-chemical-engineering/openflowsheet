@@ -725,3 +725,14 @@
   no declared literal drop, so as in S17 the step is reworked: fresh opus-engineer, brief `S19-W3-G5-6b.md` (rework
   step 1 to an equal literal multiset without dead code, rebuild the lane, check every step's literal multiset
   locally, re-enqueue as g5r6b-1..4; old tip kept as `wip/S19-g5d-r1`).
+- **2026-11-16, R-W3-G5-5 (reviewer, Opus, 90k tokens): merge after fixes.** All four steps behaviour-neutral; the
+  2e86e892 reorder is pure on every path (no raise, mutation or lazy import moved; same frozenset insertion order);
+  `_require_planned_aliases` twin in `verify_bound` kept (rule 15; a later merge is behaviour-neutral, blocked only by
+  the literal gate). Fixes applied by the orchestrator in 718d896a: (1) `verify_revision` docstring names
+  `_require_planned_aliases` and `_revision_witness` (rule 7); (2) the TYPE_CHECKING import of `LiftedSplit` from
+  `models.lifted` (its definition), not `orchestrator.region` (forbidden by `verifier-not-through-the-solver`; the gate
+  does not see type-only imports, config.toml:114). DECISION: the orchestrator took fix 2 (type-only import, no
+  runtime code) instead of a fresh engineer. Alternative: an engineer. Reversible by reverting 718d896a. Note for
+  later: the same type-only import stands in checks.py:58 and gamma_phi_units.py:80 (existing debt). Optional note
+  not taken: `_issue`'s `witness` clause omits `components` and the limitation reason. Job 103 (no-gain) queued;
+  wp/S19 (docs only since 62fdf722) merged into the lane; merge-check queued.
