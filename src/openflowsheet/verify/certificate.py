@@ -74,8 +74,8 @@ from openflowsheet.verify.verdict import run_checks as run_checks
 from openflowsheet.verify.verdict import statements_for as statements_for
 
 if TYPE_CHECKING:
+    from openflowsheet.models.lifted import LiftedSplit
     from openflowsheet.models.revision_flowsheet import ComponentBasis, RevisionView
-    from openflowsheet.orchestrator.region import LiftedSplit
     from openflowsheet.thermo import PropertyCapabilities
     from openflowsheet.verify.regularity import RegularityEvidence
     from openflowsheet.verify.zero_flow import ZeroFlowSplit
@@ -389,8 +389,10 @@ def verify_revision(
     """K04 on a **revision-built** flowsheet (T05 design note §4.2): the binding's declaration,
     judged by the table of `verify.table` against the revision's own values.
 
-    The guard, the residual rows, the alias certificates and everything after the check set
-    (`_issue`) are the ones `verify_bound` runs; only the check set in between is the table's. The
+    The guard, the residual rows, the alias certificates (`_require_planned_aliases`) and
+    everything after the check set (`_issue`) are the ones `verify_bound` runs; only the check
+    set in between is the table's, and the derivative witness's columns are classified on the
+    revision (`_revision_witness`). The
     table reads the revision through `parse_revision` (ids, pins, parameters) and a fresh
     provider, never the binding's flowsheet or units (R-016). `binding` is an
     `application.revision_binding.RevisionBinding`; `revision` must be the document it was bound
