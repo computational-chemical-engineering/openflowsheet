@@ -1223,3 +1223,14 @@
   (reviewer, brief S19-R-W4-8.md, range ce7f9b76..486b6dbb). Gate report: ALERT selected share 65% < 75% of step
   gates; ALERT selected gates take 609 s > 300 s (tests tier); ALERT selected/full time ratio 0.45 > 0.4: selection
   saves little; ALERT queue wait median 51 min > 15 min (causes as before; proposal 2 with Frank).
+- **2026-11-16, review R-W4-8 (reviewer, Opus, 113k tokens): merge after fixes.** All commits OK on Q1-Q5 (policies
+  `__all__` exactly the 14 bindings, no `import *` anywhere; one RecyclePolicy object, no importer through anderson;
+  I-4 a 100% move, 4 lazy imports stay lazy, 3 patch targets live at run_session, no hashed string names the old
+  path; 9810abf6 matches the I-4 row). Fixes: (1) ADR rule 4's MSG WO-5a/WO-6 counts read 0 under xdist at every
+  step (counters live in workers, the controller prints; also true of other TERMINAL_REPORT lines and MSG-G3's audit
+  findings): evidence missing, not met; the merge of run 8 waits for it. Brief S19-MSG-xdist.md (sonnet-implementer):
+  forward counts and lines from workers (commit A), MSG-G3 under xdist only if no hidden findings (commit B), then
+  measure N at 10adfc3d and be115b6a. (2) run/bundle.py:214-215 docstring: fixed on helper wp/S19-w4r8-mc (worktree
+  s19-w4r8-mc, from 486b6dbb, so run 9's tree is untouched) as c7d21f2e, gating no-gain as job 179. (3) tier S2
+  gains application/run_session.py (6bdc88b6). Notes: anderson.RecyclePolicy survives as a plain binding (mypy blocks
+  src/benchmarks only); the i4 plan's reason says "two" patch targets, lists three.
