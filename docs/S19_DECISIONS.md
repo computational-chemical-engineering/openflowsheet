@@ -1234,3 +1234,8 @@
   s19-w4r8-mc, from 486b6dbb, so run 9's tree is untouched) as c7d21f2e, gating no-gain as job 179. (3) tier S2
   gains application/run_session.py (6bdc88b6). Notes: anderson.RecyclePolicy survives as a plain binding (mypy blocks
   src/benchmarks only); the i4 plan's reason says "two" patch targets, lists three.
+- **2026-11-16, job 178 (g6r5-mc, merge-check of helper bf36afb7) PASS (full suite, behaviour only; debt 83.0 ->
+  14.5).** G6 run 5 merged into wp/S19 as a9221827 (no conflict); worktrees s19-g6c and s19-g6c-mc removed. Gate
+  report: ALERT selected share 63% < 75% of step gates; ALERT selected gates take 558 s > 300 s (tests tier); ALERT
+  selected/full time ratio 0.42 > 0.4: selection saves little; ALERT queue wait median 46 min > 15 min (causes as
+  before; proposal 2 with Frank). Next G6 brief: rescan wp/S19 for the G6 scope.
