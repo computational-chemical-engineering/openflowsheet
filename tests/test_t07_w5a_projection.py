@@ -20,7 +20,8 @@ from typing import Any
 import pytest
 from t07_corpus import CORPUS
 
-from openflowsheet.application.contract import ApplicationError, Projection
+from openflowsheet.application.contract import Projection
+from openflowsheet.application.errors import ApplicationError
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.projection import (
     DEFAULT_DEPTH,

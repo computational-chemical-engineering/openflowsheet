@@ -47,7 +47,7 @@ from openflowsheet.application.binding import (
     revision_probe,
 )
 from openflowsheet.application.binding_common import Unbound
-from openflowsheet.application.contract import ApplicationError
+from openflowsheet.application.errors import ApplicationError
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.revision_binding import RevisionBinding, bind_revision_flowsheet
 from openflowsheet.application.revision_run import (

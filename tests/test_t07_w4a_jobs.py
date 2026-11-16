@@ -35,7 +35,7 @@ from t07_jobs_support import (
 
 import openflowsheet.application.revision_run as revision_run
 from openflowsheet.application.authz import grant
-from openflowsheet.application.contract import ApplicationError
+from openflowsheet.application.errors import ApplicationError
 from openflowsheet.application.jobs.executor import COMPUTE_LOCK
 from openflowsheet.application.jobs.model import lifecycle_warnings
 from openflowsheet.application.jobs.runner import SOLVE_STAGES

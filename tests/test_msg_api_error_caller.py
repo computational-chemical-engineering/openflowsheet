@@ -16,7 +16,7 @@ from typing import Any
 
 import pytest
 
-from openflowsheet.application.contract import ApplicationError, api_error
+from openflowsheet.application.errors import ApplicationError, api_error
 from openflowsheet.messages import audit
 from openflowsheet.messages.catalogue import CATALOGUE
 

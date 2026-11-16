@@ -48,7 +48,7 @@ from urllib.parse import quote
 
 from benchmarks.t06 import ensemble
 from benchmarks.t07.v17 import export, fixtures, scorer
-from openflowsheet.application.contract import ApplicationError
+from openflowsheet.application.errors import ApplicationError
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.operations import OPERATIONS, dispatch
 from openflowsheet.canonical import canonical_json

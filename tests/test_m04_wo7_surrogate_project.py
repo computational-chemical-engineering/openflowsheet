@@ -20,7 +20,7 @@ from conftest import REPO_ROOT
 from t07_jobs_support import lifecycle_violations, response_schema_violations
 from test_m04_study_job import attempts, body, read, submit
 
-from openflowsheet.application.contract import ApplicationError
+from openflowsheet.application.errors import ApplicationError
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.revisions import Revision
 from openflowsheet.application.types import LOCAL_OWNER_PRINCIPAL, Change, Edit

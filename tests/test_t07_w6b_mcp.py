@@ -55,9 +55,9 @@ from openflowsheet.application.authz import revoke
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.operations import OPERATIONS
 from openflowsheet.application.types import (
-    DocumentSchemaError,
     validate_inline,
 )
+from openflowsheet.schema_check import DocumentSchemaError
 
 NOMINAL = "SYN-001-nominal"
 BINDINGS = REPO_ROOT / "src" / "openflowsheet" / "application" / "bindings"
@@ -76,7 +76,7 @@ MCP_ROWS: dict[str, str] = {
 #: library, which §11.3 names for running calls off it.
 ALLOWED_PROJECT_MODULES = {
     f"openflowsheet.application.{name}"
-    for name in ("contract", "types", "operations", "projection")
+    for name in ("contract", "errors", "types", "operations", "projection")
 }
 ALLOWED_THIRD_PARTY = {"mcp", "anyio", "starlette", "uvicorn"}
 #: M06 §5.2: the web shell's server builds on the HTTP binding and reads the packaged files

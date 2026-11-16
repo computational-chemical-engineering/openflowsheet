@@ -13,7 +13,7 @@ from typing import Any
 import pytest
 from jsonschema import ValidationError
 
-from openflowsheet.application.types import _validator
+from openflowsheet.schema_check import _validator
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT / "scripts"))

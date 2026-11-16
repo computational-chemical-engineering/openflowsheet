@@ -33,12 +33,8 @@ from t07_corpus import CORPUS
 from t07_jobs_support import commit, lifecycle_violations
 
 from openflowsheet.application.authz import OPERATION_RIGHTS, grant
-from openflowsheet.application.contract import (
-    Application,
-    ApplicationError,
-    Inspection,
-    JobControl,
-)
+from openflowsheet.application.contract import Application, Inspection, JobControl
+from openflowsheet.application.errors import ApplicationError
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.operations import (
     OPERATIONS,

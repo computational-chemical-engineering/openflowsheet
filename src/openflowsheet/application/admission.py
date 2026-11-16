@@ -58,11 +58,11 @@ from pathlib import Path
 from typing import Any, Final
 
 from openflowsheet.adapters import variants
+from openflowsheet.application.errors import ApiError
 from openflowsheet.application.model_builders import SurrogateResolver
 from openflowsheet.application.revision_run import Route, select_route
 from openflowsheet.application.store import ProjectStore
 from openflowsheet.application.types import (
-    ApiError,
     Budgets,
     ExperimentBody,
     Limits,

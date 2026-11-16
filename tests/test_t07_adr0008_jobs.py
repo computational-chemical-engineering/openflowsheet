@@ -44,14 +44,13 @@ from openflowsheet.application.jobs.model import (
     check_lifecycle,
 )
 from openflowsheet.application.types import (
-    DocumentSchemaError,
     Job,
     JobEvent,
     JobRequest,
     ReproduceBody,
     SolveBody,
 )
-from openflowsheet.schema_check import schema_errors
+from openflowsheet.schema_check import DocumentSchemaError, schema_errors
 
 JOB_REQUEST = "job.schema.json#/$defs/job_request"
 FIXTURES = REPO_ROOT / "tests" / "fixtures" / "schemas"

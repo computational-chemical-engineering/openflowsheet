@@ -29,7 +29,7 @@ from openflowsheet.adapters import variants
 from openflowsheet.application import capabilities
 from openflowsheet.application.binding_common import Unbound
 from openflowsheet.application.cli import API_EXIT_CODES, main
-from openflowsheet.application.contract import ApplicationError
+from openflowsheet.application.errors import ApplicationError
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.model_signatures import MODEL_BASES
 from openflowsheet.application.operations import dispatch

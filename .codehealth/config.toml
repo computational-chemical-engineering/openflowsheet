@@ -24,6 +24,10 @@ frozen = [
 forbid = ["tests/*", "benchmarks/*", "requirements*", "pyproject.toml", "evidence/*", "schemas/*"]
 literals = true
 public_api = true
+# ADR 0076 STOP 1 form (S19_DECISIONS, W4 run 9): an old module may keep an unaliased import of a renamed
+# name from its new home when its own code reads it; public_api then scans every .py file for an importer that
+# still takes the name through the old module (cce-code-health ec5aaea).
+no_implicit_reexport = true
 
 [gate.env]
 PYTHONHASHSEED = "0"
@@ -104,14 +108,14 @@ cmd = 'V="${OPENFLOWSHEET_VENV:-$(dirname "$(git rev-parse --path-format=absolut
 # order states the target architecture: the violations recorded at adoption are the ones the
 # planned splits remove (S17 R1 to R5).
 # Violations recorded at adoption (11), each with the step that removed it (plan review, S17).
-# R1 to R5 are done; the two pairs marked `stay` are the ones still reported (codehealth arch):
+# R1 to R5 are done; the pair marked `stay` is the one still reported (codehealth arch):
 #   types -> validation, store -> validation, authz -> validation       R1 split-validation-report
 #   local -> transactions, revision_continuation -> transactions        R2 split-revision-edits
 #   column_binding -> revision_binding, thermal_binding -> revision_binding   R3 split-revision-binding
 #   revision_binding -> binding                                          R4 split-binding-common
 #   jobs.worker -> jobs.executor                                         R5 (move _defect, refactor mode)
-#   types -> contract, revision_run -> validation                        stay: interface package (D19 items D3, D4)
-# A violation is keyed by module pair: the two that stay absorb any new import between the same pair.
+#   revision_run -> validation                                           stay: interface package (D19 item D4)
+# A violation is keyed by module pair: the one that stays absorbs any new import between the same pair.
 roots = ["src"]
 type_checking = false
 cycle_depth = 4
@@ -161,6 +165,7 @@ order = [
     "openflowsheet.application.projection",
     "openflowsheet.application.contract",
     "openflowsheet.application.types",
+    "openflowsheet.application.errors",
     # foundation
     "openflowsheet.application.revisions",
     "openflowsheet.application.jobs.interrupt",
@@ -172,8 +177,7 @@ order = [
 name = "repo-layers"
 # S19 design note section 1. Package = layer; module entries where a package straddles a layer.
 # Recorded at adoption (12), each with the step that removes it (section 4, table 4.1). Removed by W4
-# (A4, A5, A6, A12, A13, A14, A15, B3); still open at the W4 lane tip (1):
-#   messages.catalogue -> registry                                     A11 (freeze hook; ruling S19-A11-ruling.md)
+# (A4, A5, A6, A11, A12, A13, A14, A15, B3); none is open at the W4 lane tip.
 order = [
     "openflowsheet.application",
     "openflowsheet.studies",

@@ -14,7 +14,7 @@ from pathlib import Path
 import pytest
 from test_opt_request import UNAVAILABLE, _fixture, _th_r1
 
-from openflowsheet.application.contract import ApplicationError
+from openflowsheet.application.errors import ApplicationError
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.types import JobRequest, OptimizeBody
 from openflowsheet.studies.nlp import closure

@@ -1,0 +1,27 @@
+# ADR 0076 I-5b (addendum R-1044, ruling docs/briefs/S19-A-I9-ruling.md; W4 run 9, brief S19-W4-9):
+# DocumentSchemaError, validate_document and the private _raise_first move from application/types.py
+# to openflowsheet/schema_check.py, a pure move before I-9.
+# `codehealth gate --mode interface` reads this plan from the plan commit.
+id = "i5b-document-validation"
+approved_by = "Frank Peters, 2026-11-14, ADR 0076 accepted (Decision Desk ofs-adr0076-accept); I-5b by the A-I9 ruling, R-1044"
+reason = """ADR 0076 I-5b: DocumentSchemaError (class, types.py:128-135 at 486b6dbb), validate_document \
+(:185-187) and _raise_first (:190-194) are the raise-first form of schema_errors over the same \
+cached _validator, order and _pointer, so they move to the foundation module schema_check.py \
+(the class directly below SCHEMA_BASE, validate_document after schema_errors, _raise_first after \
+it), text and docstrings byte-identical, no rename, no signature change; schema_check.py gains no \
+import and one docstring sentence. types.py keeps plain imports of the three names (its own \
+from_document methods use them; no X as X alias) and drops _pointer and _validator from its \
+schema_check import. Callers follow in the step: src application/cli.py:789 (lazy, \
+DocumentSchemaError), application/local.py:116, :142, application/operations.py:66; tests \
+t07_jobs_support.py, test_t07_adr0008_jobs.py, test_t07_adr0008_mcp.py, test_t07_authz.py, \
+test_t07_types.py, test_t07_w1f_followup.py, test_t07_w6b_mcp.py, test_x04_messages.py (import \
+lines only, isort order). No patch target names the three; no script, benchmark or example imports \
+them. Expected codehealth arch --depth 4 (measured at this base and on the step applied to it): \
+3 violations / 3 cycles / 12 cycle edges at base and after (imports 3989 -> 3991: the new import \
+statements local -> schema_check and cli -> schema_check). Layer config: none."""
+removed = []
+renamed = {"src/openflowsheet/application/types.py:DocumentSchemaError" = "src/openflowsheet/schema_check.py:DocumentSchemaError", "src/openflowsheet/application/types.py:validate_document" = "src/openflowsheet/schema_check.py:validate_document"}
+changed = []
+added = []
+new_files = []
+callers = ["tests/**"]

@@ -35,7 +35,7 @@ from t07_v17_c1_documents import c1_document, schema_conformant
 
 import openflowsheet.application.jobs.runner as runner_module
 from benchmarks.t07.v17 import fixtures
-from openflowsheet.application.contract import ApplicationError
+from openflowsheet.application.errors import ApplicationError
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.revision_run import NoRoute, RunUnsupportedError, select_route
 from openflowsheet.application.types import Change, JobRequest

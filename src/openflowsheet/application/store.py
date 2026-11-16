@@ -34,10 +34,10 @@ from pathlib import Path
 from typing import Any, Final, Literal
 
 from openflowsheet._files import atomic_write_bytes as atomic_write_bytes  # re-export, R-237
+from openflowsheet.application.errors import ApiError
 from openflowsheet.application.revisions import Revision, content_hash
 from openflowsheet.application.types import (
     LOCAL_OWNER_PRINCIPAL,
-    ApiError,
     ArtifactRef,
     AuditRecord,
     EffectiveBudgets,

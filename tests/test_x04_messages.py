@@ -32,11 +32,11 @@ from t07_transport_support import (
 )
 
 from openflowsheet.application.authz import grant, set_ambient_pressure
-from openflowsheet.application.contract import ApplicationError
+from openflowsheet.application.errors import ApiError, ApplicationError
 from openflowsheet.application.local import LocalApplication, _displayed
 from openflowsheet.application.operations import OPERATIONS, dispatch, project_response
 from openflowsheet.application.store import StoreError
-from openflowsheet.application.types import ApiError, Change, DocumentSchemaError, JobResult
+from openflowsheet.application.types import Change, JobResult
 from openflowsheet.canonical import canonical_json
 from openflowsheet.messages.catalogue import CATALOGUE
 from openflowsheet.messages.diagnostic import Diagnostic
@@ -50,7 +50,7 @@ from openflowsheet.messages.render import (
     render_error,
     render_failure,
 )
-from openflowsheet.schema_check import schema_errors
+from openflowsheet.schema_check import DocumentSchemaError, schema_errors
 from openflowsheet.units.display import (
     DISPLAY_KINDS,
     DisplayUnits,

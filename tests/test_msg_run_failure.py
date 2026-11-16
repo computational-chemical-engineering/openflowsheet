@@ -27,17 +27,11 @@ from conftest import REPO_ROOT
 from test_msg_surfaces import _c01
 
 from openflowsheet.application import cli
-from openflowsheet.application.contract import ApplicationError
+from openflowsheet.application.errors import ApiError, ApplicationError, SolveFailedError
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.operations import dispatch
 from openflowsheet.application.store import DATABASE_NAME
-from openflowsheet.application.types import (
-    ApiError,
-    Change,
-    RunFailure,
-    RunResult,
-    SolveFailedError,
-)
+from openflowsheet.application.types import Change, RunFailure, RunResult
 from openflowsheet.messages.render import render_failure
 from openflowsheet.schema_check import schema_errors
 
