@@ -52,26 +52,23 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 - Held until the scale probe reports: G1 (orchestrator/, numerics/). Open: ptc.py 6.8 (P3, P4).
 - G-END (below) stays the end criterion for the whole repository.
 
-## Next actions (2026-11-16, ~16:35)
+## Next actions (2026-11-16, ~17:55)
 
-Runner pid 2642417 (078fa7ed: skips only jobs enqueued before a failure; cce-code-health 846a065, merge-check =
-`gate.sh --behaviour-only`, merge_tiers.sh gone; ruff tier filters to *.py at 36ea9c2d). Results consumed up to 146
-(job 147 PASS, step 223). Queue: G6 148-155, W4 run 7 169-172 (bases as the engineer enqueued; job 161 on base
-34474d67 failed scope/forbid, logged step 222 gate-fail). No agent running. Lanes at most 2 until Thu 19 Nov
-13:00. ALERTs persist (cause at job 123; proposal 2 with Frank via session OpenFlowsheet-check). The tool gates from
-merge-base(base, HEAD) with the tiers of that base: a lane's merge-check sees 36ea9c2d only if the lane contains
-it, so merge the wp/S19 tip into the lane (or a helper `-mc` branch) before its merge-check when it touches non-.py
-files.
-1. Wait: `$Q wait --since 146` in the background, one wake per result.
-2. **G6 run 5** (wp/S19-g6c, bd694a82..72ef6454): steps 218-220 accepted; 146-155 in the queue (155 = review fix,
-   no-gain). Review R-W3-G6-5 done (merge after fixes = 72ef6454). When the chain passes: merge-check (`--mode
-   merge-check --snapshot --worktree .../s19-g6c --base <wp/S19 tip> --label g6r5-mc`); PASS -> merge, log, remove
-   worktree s19-g6c.
-3. **W4 run 7** (wp/S19-w4 34474d67..bf921d8c, reported, S19_DECISIONS): after its gates pass, `reviewer`
-   (R-W4-7; brief from S19-R-W4-1b-style briefs in `<git-common-dir>/codehealth/briefs/`), then merge-check
-   (behaviour-only after the re-pin) and merge (S19_DECISIONS append conflict: keep both sides). Then the W4 items
-   after I-8 (I-4, I-9, I-14, I-10, I-11, I-13, I-12a-d, I-19, ADR order), item 3b when code_health's tool change
-   for an added `__all__` lands, and anderson.py `__all__` `RecyclePolicy` (STOP 1, `changed`).
+Runner pid 2642417 (078fa7ed skip fix; cce-code-health 846a065; merge-check = `gate.sh --behaviour-only`, proven by
+job 173; ruff tier *.py only, 36ea9c2d). W4 run 7 merged (8cdd71d8; arch 4/3/12). Results consumed up to 154.
+Agent running: W4 run 8 engineer (opus-engineer, brief `S19-W4-8.md`: item 3b policies `__all__`, anderson
+`RecyclePolicy` + merge.py:28, I-4, I-9; lane wp/S19-w4 from ce7f9b76; labels `w4r8-*`). Lanes at most 2 until Thu
+19 Nov 13:00. ALERTs persist (proposal 2 with Frank). The tool gates from merge-base(base, HEAD) with that base's
+tiers: merge the wp/S19 tip into a lane (or a helper `-mc` branch, union-merge S19_DECISIONS) before its
+merge-check.
+1. Wait: `$Q wait --since 154` in the background, one wake per result.
+2. **G6 run 5** (wp/S19-g6c, ..72ef6454): steps 218-221, 223, 226, 229, 230 accepted; 151-155 queued (155 = review
+   fix, no-gain). Review R-W3-G6-5 done (merge after fixes = 72ef6454). When the chain passes: merge-check
+   (`--mode merge-check --snapshot --worktree .../s19-g6c --base <wp/S19 tip> --label g6r5-mc`); PASS -> merge, log,
+   remove worktree s19-g6c.
+3. **W4 run 8**: on its report, gates as they come; reviewer R-W4-8 (template `S19-R-W4-7.md`); merge-check on a
+   helper; merge. Then W4: I-14 (after I-9), I-10, I-11, I-13, I-12a-d, I-19 (with the R-W4-7 inventory: sizing
+   `__init__` non-core aliases removed by plan, region.py:130-145 private aliases).
 4. Next G6 brief after run 5: rescan wp/S19 (G6 outside registry-hashed thermo is small: store.py 8.6, render.py
    7.5, units/__init__.py 7.4); G5: compare.py 7.4, `replay` 5.3, W4-dependent targets.
 5. Open for Frank (not blocking): R-1042 / option (C) for the T06 self-hash at W4 close; STOP 1 alternative (tool
