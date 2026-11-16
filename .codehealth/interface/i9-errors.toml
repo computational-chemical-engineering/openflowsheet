@@ -1,0 +1,34 @@
+# ADR 0076 I-9 (with the A-I9 addendum, R-1044; ruling docs/briefs/S19-A-I9-ruling.md section 3;
+# W4 run 9, brief S19-W4-9): one error vocabulary in the new module application/errors.py.
+# `codehealth gate --mode interface` reads this plan from the plan commit.
+id = "i9-errors"
+approved_by = "Frank Peters, 2026-11-14, ADR 0076 accepted (Decision Desk ofs-adr0076-accept); A-I9 addendum R-1044"
+reason = """ADR 0076 I-9: ApiErrorCode, API_ERROR_HTTP_STATUS, ApiError, SolveFailedError (types.py), \
+ApplicationError, api_error and its private _observe (contract.py), task_unsupported, \
+nlp_solver_unavailable, optimization_request_missing (validation.py) move to the new module \
+application/errors.py, text and docstrings verbatim; the three constructors lose only their lazy \
+'from openflowsheet.application.contract import api_error' line (api_error is now in the same \
+module, so it adds no frame; their audited caller becomes application.errors, ruling 10.4). \
+ApiError.from_document imports validate_document from openflowsheet.schema_check (I-5b). errors.py \
+imports no openflowsheet.application module at run time (RunResult under TYPE_CHECKING only); its \
+run-time imports are sys, messages.audit, schema_check and, at function level as before, \
+messages.render and messages.text. types.py imports ApiError, ApplicationError and \
+SolveFailedError from errors at top level (its own code uses them; the function-level contract \
+import of raise_for_outcome goes with the cycle it served); contract.py no longer imports sys, \
+messages.audit or application.types at run time; validation.py imports nlp_solver_unavailable and \
+optimization_request_missing at function level in _validate_optimization, where it raises them. \
+Callers follow: src admission, bindings/http (and its docstring), bindings/mcp, capabilities, \
+cli, jobs/executor, jobs/runner, local, operations, projection, store, stream_table_format; tests, \
+scripts and benchmarks/t07/v17/reference.py (import lines only). The binding import rule \
+(test_t07_w6a_http ALLOWED_APPLICATION) gained application.errors outside the gate before this \
+plan (3d16fccc). Expected codehealth arch --depth 4 (measured at this base and on the step applied \
+to it): 3 violations / 3 cycles / 12 cycle edges -> 2 / 2 / 10 (the contract <-> types cycle and \
+its 2 edges go; imports 3991 -> 3998, files 314 -> 315). Layer config after the step (separate \
+commit): application-layers gains openflowsheet.application.errors directly below \
+openflowsheet.application.types; the types -> contract adoption line goes."""
+removed = []
+renamed = {"src/openflowsheet/application/types.py:ApiErrorCode" = "src/openflowsheet/application/errors.py:ApiErrorCode", "src/openflowsheet/application/types.py:API_ERROR_HTTP_STATUS" = "src/openflowsheet/application/errors.py:API_ERROR_HTTP_STATUS", "src/openflowsheet/application/types.py:ApiError" = "src/openflowsheet/application/errors.py:ApiError", "src/openflowsheet/application/types.py:SolveFailedError" = "src/openflowsheet/application/errors.py:SolveFailedError", "src/openflowsheet/application/contract.py:ApplicationError" = "src/openflowsheet/application/errors.py:ApplicationError", "src/openflowsheet/application/contract.py:api_error" = "src/openflowsheet/application/errors.py:api_error", "src/openflowsheet/application/validation.py:task_unsupported" = "src/openflowsheet/application/errors.py:task_unsupported", "src/openflowsheet/application/validation.py:nlp_solver_unavailable" = "src/openflowsheet/application/errors.py:nlp_solver_unavailable", "src/openflowsheet/application/validation.py:optimization_request_missing" = "src/openflowsheet/application/errors.py:optimization_request_missing"}
+changed = []
+added = []
+new_files = ["src/openflowsheet/application/errors.py"]
+callers = ["tests/**", "scripts/**", "benchmarks/**"]
