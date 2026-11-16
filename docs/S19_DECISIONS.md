@@ -671,3 +671,13 @@
   generator hash 7f426aa9 vs c2718343, t08_rename_substitution.py:56/:204, test_t06_w6_generator, test_t06_w30_holdout,
   test_t08_rename_substitution:66). No other failure. Evidence for the I-1 interface diff is job 74 (rebuilt side
   chain rg54c). Worktree s19-w4-rg54 can go once nothing queued uses it.
+- **2026-11-16, W4 run 5 delivered (opus-engineer, 188k tokens; over the cap).** Rebuild 5b: Q2 test as its own
+  outside-gate commit 3d45c5db before the src retarget 72ba4f74 (diff byte-identical to f60c8faa); Q1 in 4b706fce
+  (was 8ae387f1; one hunk @@ -73 +73 @@; raw d03247b6, I-1 undone 509b01fb, both undone 7f426aa9 = published; isort
+  variant c2718343 fails 7); I-1 iface e0acbfbb (diff identical to 08e0133e); wp/S19 274fb926 merged as 2998c6fd
+  (no conflicts); falsifiers all fail as required; gate-162 set + interrupt + kill_chain 204 passed. Tags
+  s19-w4-pre-stop3 (09080db6), s19-w4-r5a (e4fc8fbe). I-8 batch E (column_solve): outside-gate retarget 77c40b2c,
+  step ad40c05d (36 `__all__` entries dropped, 5 frozen kept); leftovers verify/column.py:103 report string,
+  test_s08_item6.py:90. Arch 4/3/12, imports 4048 -> 4011. Jobs 73-87, 89, 93; 58-72 SKIPPED. Jobs 50 (I-5 iface
+  6f85454c) and 52 (I-6 iface e4f18a7a) never had a result and kept their shas: moved back from `withdrawn/` to
+  `pending/` by the orchestrator. Left in I-8: column (48 names, 41 src users).
