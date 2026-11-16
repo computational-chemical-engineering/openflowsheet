@@ -1540,3 +1540,7 @@
   on G5 and B2); CLI child re-import of `__main__` inferred. B1 lacks bindings http/mcp (covered via http.py:61,
   mcp.py:52). Fixes 1+2 committed by the orchestrator as f8173c9f (docstrings only, ruff clean); job 205
   w4r10-revfix (no-gain). Then helper wp/S19-w4-mc on the wp/S19 tip after G5 run 9 merges (job 204), merge-check.
+- **2026-11-16 23:50, job 204 PASS (g5r9-mc2, 3a676c0f, full suite, 7/7, debt 23.0 -> 12.0). G5 run 9 merged into
+  wp/S19 as 76db456d** (helper wp/S19-g5g-mc2; wp/S19 changed only docs since e6cd0017). Worktrees s19-g5g,
+  s19-g5g-mc, s19-g5g-mc2 removed. W4 runs 9+10 helper wp/S19-w4-mc (worktree s19-w4-mc) = f8173c9f + wp/S19 76db456d
+  as 08be63e6 (clean; tests/conftest.py auto-merged); merge-check job 206 (w4r10-mc) behind job 205 (no-gain).

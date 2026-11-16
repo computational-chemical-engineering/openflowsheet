@@ -56,23 +56,21 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 
 ## Next actions (2026-11-16 22:40; self-reset)
 
-Runner pid 2642417. Results consumed up to 189; start `$Q wait --since 189` in the background first. R-W4-9a done: merge, no fixes (23:10). Job 202 PASS (step 258); R-W4-9b done (merge after docstring fix; fix f8173c9f, job 205 no-gain). No agent running. Serial repeat headser2 PID 3980694 (session 916d464e scratchpad, log headser2.log): compare with 1061/801/100, S19_DECISIONS "R-W4-9a reported".
+Runner pid 2642417. Results consumed up to 190; start `$Q wait --since 190` in the background first. R-W4-9a done: merge, no fixes (23:10). Job 202 PASS (step 258); R-W4-9b done (merge after docstring fix; fix f8173c9f, job 205 no-gain). No agent running. Serial repeat headser2 PID 3980694 (session 916d464e scratchpad, log headser2.log): compare with 1061/801/100, S19_DECISIONS "R-W4-9a reported".
 Lanes at most 2 agents until Thu 19 Nov 13:00. ALERTs persist (proposal 2 with Frank). Merge-checks run on a helper
 branch `wp/S19-<lane>-mc` = lane tip + wp/S19 tip merged in; the merge into wp/S19 takes the helper (`git merge --no-ff
 -F <file> wp/S19-<lane>-mc`), after checking wp/S19 changed only docs/S19_* since the helper's merge. `enqueue
 --rerun-of` takes the RUN-LOG STEP number (from the failed result line), never the job number, and never across a
 rebase (enqueue fresh). Mode revert: `--base` is the rejected commit. Detail in S19_DECISIONS (grep quoted words).
 1. **W4 run 8 merged** into wp/S19 as cb1106c0 (job 200 PASS, 2026-11-16 22:50); worktree s19-w4r8-mc removed.
-2. **W4 runs 9+10 (lane wp/S19-w4, tip eed97251 after "fix195 done"):** I-5b job 194 PASS (step 251, logged by hand);
+2. **W4 runs 9+10: reviews done; fix f8173c9f job 205 (no-gain); merge-check job 206 on helper wp/S19-w4-mc 08be63e6
+   (worktree s19-w4-mc). Both PASS: merge the helper, remove worktree s19-w4-mc. History** (lane wp/S19-w4, tip eed97251 after "fix195 done"):** I-5b job 194 PASS (step 251, logged by hand);
    jobs 201 I-9 (3f7540a9), 202 I-14 (ffed4051). Both PASS: launch R-W4-9a (`reviewer`, brief
    `<git-common-dir>/codehealth/briefs/S19-R-W4-9a.md`, includes Q6: ADR rule 4 serial-form text) and R-W4-9b
    (`reviewer` with `model: fable`, brief S19-R-W4-9b.md, I-14 initialization order). Briefs carry the current shas.
    Then fixes, helper wp/S19-w4-mc, merge-check, merge. Then W4 run 11: I-11, I-13 (S19-W4-10.md minus I-14), then
    I-10 and I-12a-d (unblocked; each step needs serial-suite MSG counts at base and head, ~2.2 h per suite).
-3. **G5 run 9 (lane wp/S19-g5g, tip 174045f1; "R-W3-G5-9"):** step 2 reverted (620d6c02, step 254), `_RowFloor`
-   174045f1 (step 256). Merge-check job 204 (g5r9-mc2) on helper wp/S19-g5g-mc2 3a676c0f (worktree s19-g5g-mc2, has W4 run 8);
-   job 203 (old helper 94224851, pre-W4-run-8) informative only. 204 PASS: merge wp/S19-g5g-mc2, remove worktrees
-   s19-g5g, s19-g5g-mc, s19-g5g-mc2. Then G5 run 10 (brief from S19-W3-G5-9.md): certificate.py `_issue`
+3. **G5 run 9 merged** as 76db456d (job 204). Next G5 run 10 (brief from S19-W3-G5-9.md): certificate.py `_issue`
    (11.8, 15 parameters; grouping as R-W3-G5-4), `verify_revision` (8.3), column.py `_end_check` (4.0).
 4. **G6 run 7:** G6 run 6 merged (18f934f6). Brief from a scan of the wp/S19 tip over the G6 scope (thermo/, graph/,
    messages/, units/, adapters/, registry/, compile/), when an agent slot is free after the W4 reviews.
