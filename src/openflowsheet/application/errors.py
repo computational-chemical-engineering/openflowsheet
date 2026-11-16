@@ -15,6 +15,8 @@ from collections.abc import Mapping
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, Final, Literal, Self
 
+# ADR 0076 I-14: importing the registry installs the catalogue's before-freeze hook.
+import openflowsheet.registry  # noqa: F401
 from openflowsheet.messages import audit
 from openflowsheet.schema_check import validate_document
 

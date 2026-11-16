@@ -55,6 +55,9 @@ from multiprocessing.synchronize import Event
 from pathlib import Path
 from typing import TYPE_CHECKING, Final
 
+# ADR 0076 I-14: importing the registry installs the catalogue's before-freeze hook.
+import openflowsheet.registry  # noqa: F401
+
 if TYPE_CHECKING:
     from openflowsheet.application.jobs.interrupt import CancelReason
 
