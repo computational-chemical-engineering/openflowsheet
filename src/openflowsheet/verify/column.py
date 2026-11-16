@@ -251,10 +251,7 @@ def _end_check(
             "specification", end, _total(unit, product, components) - target, "molar_flow"
         )
     if kind == "reflux_ratio":
-        if structure.condenser == "total":
-            reflux = sum(state[reflux_id(name, c)] for c in components)
-        else:
-            reflux = state[liquid_total_id(name, 1)]
+        reflux = _reflux(state, structure, components)
         value = reflux - target * _total(unit, product, components)
         return unit.check("specification", end, value, "molar_flow")
     if kind == "boilup_ratio":
@@ -277,6 +274,18 @@ def _end_check(
         # §4.8: a recovery is undefined without its component in the feed; never a pass.
         return replace(check, result="fail", reason=f"recovery_feed_not_positive({component})")
     raise VerifierError(f"specification_kind_unknown({name}.{end}.{kind})")
+
+
+def _reflux(
+    state: Mapping[str, float], structure: ColumnStructure, components: Sequence[str]
+) -> float:
+    """The reflux a `reflux_ratio` specification is judged on, read from `state`: a total
+    condenser's reflux stream summed over `components` (in their order), else stage 1's liquid
+    total."""
+    name = structure.unit_id
+    if structure.condenser == "total":
+        return sum(state[reflux_id(name, c)] for c in components)
+    return state[liquid_total_id(name, 1)]
 
 
 # -- the stage items ----------------------------------------------------------------------------
