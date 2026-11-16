@@ -863,3 +863,5 @@
   (unsound per B-11). Reversible by: nothing changed yet.
 - **2026-11-16, job 124 PASS (G6 run 4 step 2, df706f79, step 202 accepted, 10.0 -> 7.0, 16/16).** Report: ALERTs
   as at job 123 (widening; action recorded there).
+- **2026-11-16, job 130 PASS (G6 run 4 step 3, 201baec8, `launch`, step 203 accepted, 15.8 -> 11.0, 16/16).**
+  Report: ALERTs as at job 123.
