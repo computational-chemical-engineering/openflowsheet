@@ -1006,3 +1006,15 @@
   arguments, the verdict is pytest's exit code. Takes effect for gates whose base contains this commit. Proposal 2
   (a step-cadence exclusion of end-to-end reference files) changes what a step gate proves: put to Frank by that
   session; not adopted here.
+- **2026-11-16, G6 run 5 reported (opus-engineer, 185k tokens; over the 150k cap).** wp/S19-g6c bd694a82..c252d508,
+  12 steps, jobs 143-154 queued: spec.py 15.0/9.0 -> 0/10.0; analysis.py 15.3/9.0 -> 2.3/9.5; blocks.py 13.0/8.5 ->
+  0/10.0; tear.py 11.0/8.0 -> 2.0/9.5; lint.py 10.0/8.5 -> 3.0/9.0; experiments/runner.py 11.7/7.9 -> 3.2/9.1;
+  store.py 7.0/8.1 -> 4.0/8.6; repo debt 4864.9 -> 4796.4 (engineer's scan). Engineer notes: 69c3d900's message
+  wrongly says two tests pin the lint finding order (they assert `== []`); 4e8cde81's message says nesting 4 -> 1
+  (it is 2); the `BlockingIOError` branch of `_acquire_lock` may be unreached by local tests. Left for W4 interface:
+  `ExperimentRunner.__init__`/`run` six public parameters; `ArtifactSink.record` (Protocol, R-237) seven keywords.
+  Review R-W3-G6-5 (reviewer, brief `S19-R-W3-G6-5.md`) launched in parallel with the gates.
+- **2026-11-16, wp/S19-tools4 merged (c42e524d):** gate_report.py `--heavy N` (session OpenFlowsheet-check),
+  reviewed and run by the orchestrator. Proposal 2 (step-cadence exclusion of end-to-end files) is with Frank, with
+  this session's three conditions (excluded files stated per gate; merge_tiers.sh named for interface lanes;
+  test_doc_examples.py kept at step cadence for --mode interface).
