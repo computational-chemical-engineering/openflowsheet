@@ -18,6 +18,7 @@ from typing import Any
 
 import pytest
 
+from openflowsheet import units
 from openflowsheet.units import CONVERSION_ROWS, convert_input_value
 from openflowsheet.units import display as display_module
 from openflowsheet.units.display import (
@@ -334,6 +335,23 @@ def test_a7_display_names_live_in_units_display() -> None:
         value = getattr(display_module, name)
         if isinstance(value, type) or callable(value):
             assert value.__module__ == display_module.__name__
+
+
+def test_a7_display_names_not_reexported_from_units() -> None:
+    """ADR 0076 I-6: `openflowsheet.units` no longer re-exports display-conversion-v1; none of
+    its 8 names is in `units.__all__` or an attribute of `units`."""
+    for name in (
+        "DISPLAY_CONVERSION_ID",
+        "DISPLAY_KINDS",
+        "DISPLAY_ROWS",
+        "DisplayUnits",
+        "DisplayUnitsError",
+        "display_item",
+        "parse_display_units",
+        "text_unit",
+    ):
+        assert name not in units.__all__
+        assert not hasattr(units, name)
 
 
 def test_d7_7_text_spelling_maps_degc_and_degf_only() -> None:
