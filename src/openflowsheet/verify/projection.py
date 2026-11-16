@@ -123,11 +123,61 @@ def project(
     `domain` the provider's declared `T` and `P` ranges; and `tolerances` the routing
     tolerances ρ, one per kind (`checks.routing_tolerances`), which guards 1 and 5 read;
     `components` the order guard 4 reads a stream's flows in (the revision's view's, M02 design
-    note §14.2 B15 item 1; SYN-001's by default)."""
-    # 1. The certified rows pass under ρ (precondition 1), re-judged from their values: a check's
-    #    own `result` is judged at the policy's τ, which may be tighter (ADR 0013 A2).
+    note §14.2 B15 item 1; SYN-001's by default).
+
+    The guards run in order, the first that fails naming the refusal: `_residuals_pass` (1),
+    the screen's status (2), `_newton_step` and its finiteness (3), the flows' signs and
+    `_streams_inside_domain` (4), and `_fresh_checks` (5); `_projected_and_discarded` applies
+    the step between 3 and 4. Raises `VerifierError` when a residual check is neither a row nor
+    a label (`_residuals_pass`), or when `matrix` does not have one column per column the
+    projection steps (`_screened_columns`)."""
+    # 1. The certified rows pass under ρ (precondition 1).
+    if not _residuals_pass(target.spec, residual, zero_flow, tolerances):
+        return _refused(state, "residual_not_passed")
+    # 2. The screen found the matrix regular.
+    if regularity_status != "NO_RANK_LOSS_DETECTED":
+        return _refused(state, f"regularity_{regularity_status}")
+
+    columns = _screened_columns(target.spec, zero_flow, matrix)
+
+    # 3. One Newton step with the screen's factorization (defensive after 2).
+    step = _newton_step(matrix, scaled_residual)
+    if step is None:
+        return _refused(state, "linear_solve_failed")
+    if not bool(np.all(np.isfinite(step))):
+        return _refused(state, "linear_solve_failed")
+
+    projected, discarded = _projected_and_discarded(target, state, columns, step)
+
+    # 4. Nonnegative flows, flowing streams inside the provider's domain.
+    if any(is_flow_column(name) and value < 0.0 for name, value in projected.items()):
+        return _refused(state, "projection_outside_domain", discarded)
+    if not _streams_inside_domain(projected, streams, domain, components):
+        return _refused(state, "projection_outside_domain", discarded)
+
+    # 5. Every compiled row and label, evaluated afresh at x̃, passes under ρ.
+    rows = _fresh_checks(target, projected, zero_flow, tolerances)
+    if rows is None:
+        return _refused(state, "projection_rows_not_passed", discarded)
+    if not all(check.result == "pass" for check in rows):
+        return _refused(state, "projection_rows_not_passed", discarded)
+
+    return Projection(state=projected, judged_at="projection", reason="", discarded=discarded)
+
+
+def _residuals_pass(
+    spec: Any,
+    residual: Sequence[CheckResult],
+    zero_flow: Sequence[ZeroFlowSplit],
+    tolerances: Mapping[str, float],
+) -> bool:
+    """Guard 1: whether every residual check of `residual` passes under ρ, re-judged from its
+    value: a check's own `result` is judged at the policy's τ, which may be tighter (ADR 0013
+    A2). A row reads ρ of its kind in `spec.row_kinds`, a zero-flow label (`zero_flow`) the
+    temperature kind's. False at the first check whose value is None or outside ρ; raises
+    `VerifierError` at a check that is neither a row nor a label."""
     labels = {split.label[0] for split in zero_flow if split.label is not None}
-    row_kinds = target.spec.row_kinds
+    row_kinds = spec.row_kinds
     for check in residual:
         if check.category != "residual":
             continue
@@ -138,28 +188,50 @@ def project(
         else:
             raise VerifierError(f"residual check {check.id!r} is neither a row nor a label")
         if check.value is None or not abs(check.value) <= tolerances[kind]:
-            return _refused(state, "residual_not_passed")
-    # 2. The screen found the matrix regular.
-    if regularity_status != "NO_RANK_LOSS_DETECTED":
-        return _refused(state, f"regularity_{regularity_status}")
+            return False
+    return True
 
+
+def _screened_columns(
+    spec: Any, zero_flow: Sequence[ZeroFlowSplit], matrix: sp.csc_matrix
+) -> list[str]:
+    """The screened matrix's columns: `spec.variable_ids` minus those `zero_flow` removed, in
+    that order. Raises `VerifierError` when their count is not the matrix's column count."""
     removed = {column for split in zero_flow for column in split.columns}
-    columns = [name for name in target.spec.variable_ids if name not in removed]
+    columns = [name for name in spec.variable_ids if name not in removed]
     if len(columns) != matrix.shape[1]:
         raise VerifierError(
             f"the projection's columns ({len(columns)}) are not the screened matrix's "
             f"({matrix.shape[1]})"
         )
+    return columns
 
-    # 3. One Newton step with the screen's factorization (defensive after 2).
+
+def _newton_step(
+    matrix: sp.csc_matrix, scaled_residual: npt.NDArray[np.float64]
+) -> npt.NDArray[np.float64] | None:
+    """Guard 3's step: the scaled Newton step `δ̂` solving `Ĵ δ̂ = −F̂` with the screen's
+    factorization (`numerics.linear.factorize`), finite or not. None when the factorization or
+    the solve raises `RuntimeError` or `ValueError`."""
     try:
         factorization = factorize(sp.csc_matrix(matrix))
-        step = -factorization.solve(np.asarray(scaled_residual, dtype=np.float64))
+        step: npt.NDArray[np.float64] = -factorization.solve(
+            np.asarray(scaled_residual, dtype=np.float64)
+        )
     except (RuntimeError, ValueError):
-        return _refused(state, "linear_solve_failed")
-    if not bool(np.all(np.isfinite(step))):
-        return _refused(state, "linear_solve_failed")
+        return None
+    return step
 
+
+def _projected_and_discarded(
+    target: Any,
+    state: Mapping[str, float],
+    columns: Sequence[str],
+    step: npt.NDArray[np.float64],
+) -> tuple[dict[str, float], float]:
+    """`x̃ = x_final + S_x · δ̂` over `columns` (`target.scaling.column`), every other entry of
+    `state` carried as is, and the largest `|S_x δ̂|` discarded at an exactly-zero molar-flow
+    column (`target.spec.variable_kinds`), where `x̃` keeps the zero (spec §5.1)."""
     kinds = target.spec.variable_kinds
     projected: dict[str, float] = {name: float(value) for name, value in state.items()}
     discarded = 0.0
@@ -170,10 +242,18 @@ def project(
             discarded = max(discarded, abs(delta))
             continue
         projected[name] = float(state[name]) + delta
+    return projected, discarded
 
-    # 4. Nonnegative flows, flowing streams inside the provider's domain.
-    if any(is_flow_column(name) and value < 0.0 for name, value in projected.items()):
-        return _refused(state, "projection_outside_domain", discarded)
+
+def _streams_inside_domain(
+    projected: Mapping[str, float],
+    streams: Sequence[str],
+    domain: Mapping[str, tuple[float, float]],
+    components: Sequence[str],
+) -> bool:
+    """Guard 4's domain half: whether every flowing (not dormant) stream of `streams` at
+    `projected`, its flows read in the order `components`, has its `(T, P)` inside `domain`'s
+    `T` and `P` ranges."""
     low_t, high_t = domain["T"]
     low_p, high_p = domain["P"]
     for stream in streams:
@@ -181,10 +261,20 @@ def project(
         if carried.is_dormant:
             continue
         if not (low_t <= carried.temperature <= high_t and low_p <= carried.pressure <= high_p):
-            return _refused(state, "projection_outside_domain", discarded)
+            return False
+    return True
 
-    # 5. Every compiled row and label, evaluated afresh at x̃, passes under ρ. A row the compiled
-    #    problem cannot evaluate there does not pass.
+
+def _fresh_checks(
+    target: Any,
+    projected: Mapping[str, float],
+    zero_flow: Sequence[ZeroFlowSplit],
+    tolerances: Mapping[str, float],
+) -> list[CheckResult] | None:
+    """Guard 5's checks: every compiled row of `target`, then every zero-flow label of
+    `zero_flow`, evaluated afresh at `projected` and judged under ρ (`tolerances`). None when
+    the compiled problem cannot evaluate a row there (`residual_checks` raises
+    `VerifierError`); the labels are then not evaluated."""
     try:
         rows, _ = residual_checks(
             target.compiled,
@@ -195,9 +285,6 @@ def project(
             tolerances,
         )
     except VerifierError:
-        return _refused(state, "projection_rows_not_passed", discarded)
+        return None
     rows += label_checks(zero_flow, projected, tolerances)
-    if not all(check.result == "pass" for check in rows):
-        return _refused(state, "projection_rows_not_passed", discarded)
-
-    return Projection(state=projected, judged_at="projection", reason="", discarded=discarded)
+    return rows
