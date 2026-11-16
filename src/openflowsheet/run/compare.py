@@ -42,7 +42,7 @@ from __future__ import annotations
 import math
 import re
 from collections.abc import Mapping
-from typing import Any, Final
+from typing import Any, Final, NamedTuple
 
 from openflowsheet.resources import packaged
 from openflowsheet.run.solution_state import SCHEMA_VERSION as SOLUTION_STATE_SCHEMA
@@ -679,7 +679,11 @@ def _differences_v2(
     source: str | None,
     kinds: Mapping[str, str] | None,
 ) -> list[str]:
-    """`T08-numerical-policy-v2`: ADR 0025 §5's rows, in order."""
+    """`T08-numerical-policy-v2`: ADR 0025 §5's rows, in order.
+
+    An object's keys go to `_key_rule` first (present on one side only, then rows 1 to 8, 11
+    and 12); a key no rule takes is compared as a child, under `_sibling_floor`'s floor.
+    """
     found: list[str] = []
     where = path or "<root>"
 
@@ -687,51 +691,16 @@ def _differences_v2(
         if not isinstance(emitted, dict):
             return [f"{where}: expected an object, got {type(emitted).__name__}"]
         solution_state = path == "" and committed.get("schema_version") == SOLUTION_STATE_SCHEMA
+        compared = _ComparedObject(where, path, emitted, committed, solution_state, kinds)
         for key in sorted(set(committed) | set(emitted)):
-            if key not in committed:
-                found.append(f"{where}.{key}: present in the emitted document only")
+            ruled = _key_rule(compared, key)
+            if ruled is not None:
+                found += ruled
                 continue
-            if key not in emitted:
-                found.append(f"{where}.{key}: present in the committed document only")
-                continue
-            mine, theirs = emitted[key], committed[key]
-            # Row 1: root-anchored provenance.
-            if path == "" and (key in PROVENANCE_SUBTREES or key in VOLATILE_FIELDS):
-                found += _provenance(where, key, mine, theirs)
-            # Row 2: counts.
-            elif key in V2_UNREPRODUCIBLE_COUNTS:
-                found += _count(where, key, mine)
-            # Row 3: post-pivoting diagnostics.
-            elif key in POST_PIVOTING_FLOATS:
-                found += _post_pivoting(where, key, emitted, theirs)
-            # Row 4: float digests.
-            elif _is_float_digest_v2(key):
-                found += _float_digest(where, key, mine, theirs)
-            # Row 5: the certificate id, by how it was built.
-            elif key == "certificate_id":
-                difference = _certificate_id(where, emitted, committed)
-                if difference:
-                    found.append(difference)
-            # Row 6: a comparability window's selector.
-            elif key in V2_WINDOW_SELECTORS:
-                found += _window_selector(where, key, mine)
-            # Row 7: outside its window, a windowed float is compared for shape.
-            elif key in V2_COMPARABILITY_WINDOW and not _inside_window(key, committed):
-                found += _windowed_shape(where, key, mine, theirs)
-            # Row 8: text with floats in it.
-            elif key in TEXT_KEYS and isinstance(mine, str) and isinstance(theirs, str):
-                found += _text(f"{where}.{key}", mine, theirs)
-            # Row 11: a solution state's variables, by declared kind.
-            elif solution_state and key == "variables" and isinstance(theirs, dict):
-                found += _solution_variables(where, mine, theirs, kinds)
-            # Row 12: phase-branch flows.
-            elif key in PHASE_BRANCH_FLOWS and _PHASE_BRANCH_ENTRY.match(where):
-                found += _phase_branch_flow(f"{where}.{key}", mine, theirs)
-            else:
-                child_floor, child_source = _sibling_floor(where, key, committed)
-                found += _differences_v2(
-                    mine, theirs, f"{where}.{key}", child_floor, child_source, None
-                )
+            child_floor, child_source = _sibling_floor(where, key, committed)
+            found += _differences_v2(
+                emitted[key], committed[key], f"{where}.{key}", child_floor, child_source, None
+            )
         return found
 
     if isinstance(committed, list):
@@ -751,6 +720,66 @@ def _differences_v2(
     if emitted != committed:
         found.append(f"{where}: {emitted!r} against {committed!r}")
     return found
+
+
+class _ComparedObject(NamedTuple):
+    """An object `_differences_v2` compares key by key: where it sits (`path` "" at the root),
+    both sides, whether it is a root solution state (row 11), and the declared kinds row 11
+    reads."""
+
+    where: str
+    path: str
+    emitted: dict[str, Any]
+    committed: dict[str, Any]
+    solution_state: bool
+    kinds: Mapping[str, str] | None
+
+
+def _key_rule(compared: _ComparedObject, key: str) -> list[str] | None:
+    """v2 on the key `key` of the object `compared`: the differences its own rule finds, or
+    None when no rule applies and `_differences_v2` compares its value as a child.
+
+    The rules, tried in order, the first match deciding: present on one side only, then rows 1
+    to 8, 11 and 12 of ADR 0025 §5. `_key_rule_v1` is v1's twin.
+    """
+    where, path, emitted, committed, solution_state, kinds = compared
+    if key not in committed:
+        return [f"{where}.{key}: present in the emitted document only"]
+    if key not in emitted:
+        return [f"{where}.{key}: present in the committed document only"]
+    mine, theirs = emitted[key], committed[key]
+    # Row 1: root-anchored provenance.
+    if path == "" and (key in PROVENANCE_SUBTREES or key in VOLATILE_FIELDS):
+        return _provenance(where, key, mine, theirs)
+    # Row 2: counts.
+    if key in V2_UNREPRODUCIBLE_COUNTS:
+        return _count(where, key, mine)
+    # Row 3: post-pivoting diagnostics.
+    if key in POST_PIVOTING_FLOATS:
+        return _post_pivoting(where, key, emitted, theirs)
+    # Row 4: float digests.
+    if _is_float_digest_v2(key):
+        return _float_digest(where, key, mine, theirs)
+    # Row 5: the certificate id, by how it was built.
+    if key == "certificate_id":
+        difference = _certificate_id(where, emitted, committed)
+        return [difference] if difference else []
+    # Row 6: a comparability window's selector.
+    if key in V2_WINDOW_SELECTORS:
+        return _window_selector(where, key, mine)
+    # Row 7: outside its window, a windowed float is compared for shape.
+    if key in V2_COMPARABILITY_WINDOW and not _inside_window(key, committed):
+        return _windowed_shape(where, key, mine, theirs)
+    # Row 8: text with floats in it.
+    if key in TEXT_KEYS and isinstance(mine, str) and isinstance(theirs, str):
+        return _text(f"{where}.{key}", mine, theirs)
+    # Row 11: a solution state's variables, by declared kind.
+    if solution_state and key == "variables" and isinstance(theirs, dict):
+        return _solution_variables(where, mine, theirs, kinds)
+    # Row 12: phase-branch flows.
+    if key in PHASE_BRANCH_FLOWS and _PHASE_BRANCH_ENTRY.match(where):
+        return _phase_branch_flow(f"{where}.{key}", mine, theirs)
+    return None
 
 
 def _provenance(where: str, key: str, mine: Any, theirs: Any) -> list[str]:
