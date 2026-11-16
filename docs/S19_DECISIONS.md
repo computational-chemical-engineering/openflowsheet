@@ -861,3 +861,5 @@
   judged by a design-lane pass before any change, because selection soundness is at stake. Until then no extra
   lanes are added to the queue (its wait, not engineer time, limits throughput). Alternative: `--nodes` everywhere
   (unsound per B-11). Reversible by: nothing changed yet.
+- **2026-11-16, job 124 PASS (G6 run 4 step 2, df706f79, step 202 accepted, 10.0 -> 7.0, 16/16).** Report: ALERTs
+  as at job 123 (widening; action recorded there).
