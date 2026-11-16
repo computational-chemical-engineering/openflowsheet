@@ -165,7 +165,8 @@ def block_triangular_form(
 
     `matching` is `column -> row` and must cover every row exactly once; a system that is not
     perfectly matched has no block-triangular form and this refuses rather than producing one for
-    part of it.
+    part of it. The blocks and their edges are `_condensation`'s; their order is
+    `_canonical_order`'s.
     """
     order = {row_id: index for index, row_id in enumerate(row_ids)}
     column_of = {row: column for column, row in matching.items()}
@@ -186,6 +187,33 @@ def block_triangular_form(
         for row_id in row_ids
     }
 
+    grouped, raw_edges = _condensation(row_ids, dependencies, order)
+
+    placed = _canonical_order(raw_edges, grouped, order)
+
+    position = {old: new for new, old in enumerate(placed)}
+    blocks = tuple(
+        Block(
+            rows=tuple(grouped[old]),
+            cols=tuple(column_of[row_id] for row_id in grouped[old]),
+            depends_on=tuple(sorted(position[target] for target in raw_edges[old])),
+        )
+        for old in placed
+    )
+    return BlockTriangularForm(blocks=blocks)
+
+
+def _condensation(
+    row_ids: Sequence[str],
+    dependencies: Mapping[str, frozenset[str]],
+    order: Mapping[str, int],
+) -> tuple[list[list[str]], dict[int, frozenset[int]]]:
+    """The condensation of the row dependency digraph: its blocks and the edges between them.
+
+    The blocks are `_components`' strongly connected components in the order they close, each
+    one's rows sorted by declaration index (`order`); a block's edges are the other blocks its
+    rows depend on, keyed by the block's index in that list.
+    """
     components = _components(list(row_ids), dependencies)
     membership: dict[str, int] = {}
     grouped: list[list[str]] = []
@@ -204,19 +232,7 @@ def block_triangular_form(
         )
         for index, rows in enumerate(grouped)
     }
-
-    placed = _canonical_order(raw_edges, grouped, order)
-
-    position = {old: new for new, old in enumerate(placed)}
-    blocks = tuple(
-        Block(
-            rows=tuple(grouped[old]),
-            cols=tuple(column_of[row_id] for row_id in grouped[old]),
-            depends_on=tuple(sorted(position[target] for target in raw_edges[old])),
-        )
-        for old in placed
-    )
-    return BlockTriangularForm(blocks=blocks)
+    return grouped, raw_edges
 
 
 def _canonical_order(
