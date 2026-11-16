@@ -55,7 +55,7 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 ## Next actions (2026-11-16, ~20:15)
 
 Runner pid 2642417 (cce-code-health 6529f47 installed; merge-check = `gate.sh --behaviour-only`). Results consumed up
-to 170; start `$Q wait --since 170` in the background first. Agents: G5 run 9, W4 run 10. Lanes at most 2 agents until Thu 19 Nov
+to 170; start `$Q wait --since 170` in the background first. Agents: G5 run 9. Lanes at most 2 agents until Thu 19 Nov
 13:00. ALERTs persist (proposal 2 with Frank). Merge-checks run on a helper branch `wp/S19-<lane>-mc` = lane tip +
 wp/S19 tip merged in. S19_DECISIONS holds the detail of every item below (grep the quoted words).
 1. **Rule 4 serial runs (detached, not agents; S19_DECISIONS "rule 4 falsifier: base2"):** xdist counts are not
@@ -74,7 +74,7 @@ wp/S19 tip merged in. S19_DECISIONS holds the detail of every item below (grep t
    worktrees s19-g6d, s19-g6d-mc.
 5. **G5 run 9 running** (opus-engineer, wp/S19-g5g from e0ef865c; brief
    `S19-W3-G5-9.md`: run/compare.py 7.4; verify/ below 9: gamma_phi_units 6.4, pr_c1 6.7, split_checks 7.2, table 7.5,
-   compare.py, certificate.py, column.py; S2 tier, cadence 4). W4 run 10 running (opus-engineer, brief `S19-W4-10.md`: I-14, I-11, I-13; I-10 and I-12 wait for rule 4; was: I-14 per the A11 ruling, then I-10,
+   compare.py, certificate.py, column.py; S2 tier, cadence 4). W4 run 10 done: I-14 job 191 (lane tip 619e0011); next a review R-W4-9 over runs 9+10 (Fable for I-14) when jobs 185, 186, 191 pass, then W4 run 11 (I-11, I-13; brief = S19-W4-10.md minus I-14). I-10 and I-12 wait for rule 4; was: I-14 per the A11 ruling, then I-10,
    I-11, I-15?, I-13, I-12a-d, I-19; I-12a's list per R-1044).
 6. Open for Frank (not blocking): R-1042 option C; STOP 1 alternative; tool items; verify twins addendum;
    selection-widening; proposal 2 for the ALERTs. Design lane: NaN derivative-witness pass (R-W3-G5-8). Docs-pass

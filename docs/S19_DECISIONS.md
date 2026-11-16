@@ -1371,3 +1371,19 @@
 - **2026-11-16, W4 run 10 launched (opus-engineer, brief `S19-W4-10.md`): I-14, I-11, then I-13, on wp/S19-w4 from
   1c8037be.** DECISION: I-10 and I-12a-d wait until rule 4 has a deterministic form (the serial runs). Alternative:
   include them and judge rule 4 later. Reason: their gate would carry a rule 4 count that cannot be judged now.
+- **2026-11-16 ~21:30, W4 run 10 reported (opus-engineer, ~125k tokens; stopped after I-14 to stay under the cap).
+  wp/S19-w4 1c8037be..619e0011:** 1cc1271e test outside before (test_s19_i14_freeze_order.py B1-B3, conftest registry
+  import, Q2 default; 10/10 at base); 3185ea65 plan `I-14.toml` (`added`: set_before_freeze, set_audit_probe,
+  yaml_load per ruling 2.7; `new_files` yaml_io.py); 672a1edf step (the ruling's 8 src files), **job 191**
+  w4r10-i14-iface; 674d7de6 tests after (A1-A4); 619e0011 layer config (repo-layers adoption line
+  `messages.catalogue -> registry` goes). Gates: G1 arch 2/2/10 (3998 imports) -> 1/1/4 (4002), the ruling's delta;
+  G2 10/10 base and head; G4 patch_noop 265, 0 flagged; G5 F0 PASS, registry_builtin clean, CATALOGUE.sha256 000dba96,
+  MCP digest e2c44b6b, registry snapshot equal base/head; G20 passes; G6 A1-A4 pass at head (A1, A2, A4 fail at base).
+  G7: contract.py:70 lookup kept, no fourth installer (Q3 default). Engineer choices (for the review): (1) registry
+  binds the catalogue as `_catalogue` (ruling 2.2 fallback, Q5: a plain `from openflowsheet.messages import catalogue`
+  in an `__init__` counts as a public re-export), so registry :792 reads `_catalogue.register`; (2) B2 pins the
+  measured line `"  Details: not_found: probe"`. I-11 not started (importers of transactions: tests k06_application:33,
+  t07_transactions:26, t07_types:31, t07_w3b_validation:47, scripts/k06_evidence_manifest.py:35; no src importer).
+  DECISION: the next W4 engineer run (I-11, I-13) waits for one review R-W4-9 over runs 9 and 10 (I-5b, I-9, the flag
+  651cc8d0, 8671bbdf, I-14; Fable model for I-14's initialization order), launched when jobs 185, 186, 191 pass.
+  Alternative: launch I-11 now. Reason: three unreviewed W4 runs on one lane; a reject would rebuild everything above.
