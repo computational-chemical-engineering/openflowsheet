@@ -974,3 +974,8 @@
   DECISION: the orchestrator made the def move itself (a pure move, top-level AST multiset equal, checked by script)
   rather than brief an engineer. Alternative: a fresh engineer for one move; rejected (cost far above the change).
   Reversible by: reverting 6d81db7b's launcher hunk. wp/S19 merged into the lane (af68ba31); merge-check job 142.
+- **2026-11-16 13:40, job 139 PASS (w4-revfix-1b, step 216 accepted-neutral, debt 114.8 -> 114.8).** W4 now waits on
+  merge-check 140 only. G6 run 5 brief written (`S19-W3-G6-5.md`, BASE to fill after the G6 run 4 merge). Gate report
+  (6 h): 32 gates, 0 failed, 28 of 30 steps accepted, debt removed 176.9. ALERTs unchanged from job 123 (cause and
+  action recorded there): "selected gates take 753 s > 300 s (tests tier)", "selected/full time ratio 0.59 > 0.4:
+  selection saves little", "queue wait median 69 min > 15 min".
