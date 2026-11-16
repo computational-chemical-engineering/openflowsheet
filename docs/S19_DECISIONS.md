@@ -1103,3 +1103,10 @@
   Fix: a failure records the queue's last seq; only jobs enqueued at or before it are skipped. Pending jobs held
   (`queue/held/`) until G6 job 147 ends, then the runner restarts on the fix and W4 run 7 is re-enqueued.
 - **2026-11-16 ~15:50Z, job 147 PASS (step 223); runner restarted (pid 2642417, 078fa7ed) with no gate running; G6 148-155 restored; W4 run 7 re-enqueued as jobs 169-172.**
+- **2026-11-16, job 169 PASS (W4 run 7 refusal src, b41fa802..3cc1be0a, 15/15), step 224 accepted-neutral (logged by
+  the runner; no LOG-ERROR after step 222's gate-fail on the same head).** Gate report: 28 gates, 0 failed; 25 of 26
+  steps accepted, debt removed 118.5. ALERTs: "selected share 72% < 75% of step gates" (new: 7 of 25 step gates ran
+  the full suite, all "collection-time code"; job 169 is an import-line retarget, which the selector must treat as
+  import-time code, so W4 steps fall back by nature; no action beyond proposal 2); "selected gates take 703 s > 300 s
+  (tests tier)"; "selected/full time ratio 0.54 > 0.4"; "queue wait median 25 min > 15 min" (cause at job 123;
+  proposal 2 with Frank).
