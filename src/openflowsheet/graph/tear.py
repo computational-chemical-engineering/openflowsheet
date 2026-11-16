@@ -205,16 +205,18 @@ def _assign_component(
 
 
 def _boundary_distances(graph: ProcessGraph) -> dict[str, int]:
-    """Material edges from a boundary unit, breadth first, one `_next_layer` at a time.
+    """Material edges from a boundary unit, breadth first, one `_record_next_layer` at a time.
     Unreachable units are absent."""
     distance: dict[str, int] = {unit: 0 for unit in graph.boundary_units()}
     frontier = list(distance)
     while frontier:
-        frontier = _next_layer(graph, frontier, distance)
+        frontier = _record_next_layer(graph, frontier, distance)
     return distance
 
 
-def _next_layer(graph: ProcessGraph, frontier: list[str], distance: dict[str, int]) -> list[str]:
+def _record_next_layer(
+    graph: ProcessGraph, frontier: list[str], distance: dict[str, int]
+) -> list[str]:
     """One breadth-first layer: the units first reached from `frontier` by a material edge, in
     frontier then connection order. Records each one's distance in `distance`, the search's
     working state."""

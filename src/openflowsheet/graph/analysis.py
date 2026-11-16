@@ -103,7 +103,8 @@ def analyse_declaration(
 ) -> StructuralReport:
     """§8.1's rule on an already-traced declaration.
 
-    The candidate specifications are `_candidate_specifications`'s; the finding is `_finding`'s.
+    The candidate specifications are `_candidate_specifications`'s; the finding is
+    `_finding_and_objects`'s.
     """
     names = dict(specification_ids or {})
     incidence = declaration.incidence()
@@ -127,7 +128,7 @@ def analyse_declaration(
     )
     candidate_specifications = _candidate_specifications(candidate_rows, names)
 
-    finding, implicated_objects, over_specified = _finding(
+    finding, implicated_objects, over_specified = _finding_and_objects(
         redundancy, dm_kept, implicated, candidate_specifications, over_specified
     )
 
@@ -210,7 +211,7 @@ def _candidate_specifications(
     return candidate_specifications
 
 
-def _finding(
+def _finding_and_objects(
     redundancy: CertifiedRedundancy,
     dm_kept: DulmageMendelsohn,
     implicated: tuple[str, ...],

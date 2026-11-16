@@ -313,7 +313,7 @@ class ExperimentRunner:
         with self.records.locked(key, check):
             existing = self.records.result(key)
             self.records.write_request(request, self.job_id)  # once; byte-equal if present
-            written = self._handshake_attempts(key, first, failed, environment, existing)
+            written = self._write_handshake_attempts(key, first, failed, environment, existing)
             if environment.failure is not None:
                 failure = environment.failure
                 envelope = refused("error", f"external_{failure.status}", failure.message)
@@ -406,7 +406,7 @@ class ExperimentRunner:
                 self._handshakes[variant.sha256] = (environment, tuple(found))
                 return environment, tuple(found), True
 
-    def _handshake_attempts(
+    def _write_handshake_attempts(
         self,
         key: str,
         first: bool,
