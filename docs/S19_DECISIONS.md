@@ -541,3 +541,45 @@
   was superseded by an accepted ADR. W4 run 2 (`S19-W4-2.md`, base 35d46182 = run 1 + merge of wp/S19): I-6, I-1,
   I-2, I-7. Layer config after jobs 8-14 pass: application-layers loses `application.policies`; adoption lines
   `run.bundle -> application.policies` and `assessment.spec -> application.types` go.
+- **2026-11-16, G6 merged into wp/S19 (ebcf513a).** Merge-check g6-mc1: full suite (`--full`) 20371 passed, 107
+  skipped, 3 xfailed; 15/15 checks. arch at ebcf513a 6/4/14 (W4 not yet merged); repo scan debt 5094.9, health 8.01,
+  brain 27. G5 run 4 briefed (`S19-W3-G5-4.md`, lane wp/S19-g5b).
+- **2026-11-16, W4 gate 152 FAIL (w4r1-i5-move, mypy) and the lane rebuilt.** The A12 move left `SCHEMA_BASE`
+  imported without alias in application/types.py; operations.py:61 imports it from there (strict mypy: no
+  implicit re-export). The engineer ran mypy on touched files only. Fixed in the move commit itself (types.py
+  re-exports `SCHEMA_BASE as SCHEMA_BASE`, as SCHEMA_DIR); full mypy clean at it; the private lane rebased with
+  merges kept (old tip tagged `s19-w4-pre-fix`; new tip 38f55cff differs from it only in that import). Shas changed:
+  move ffcb0a53 -> 4a4b08f0, I-5 iface 805575a9 -> 6f85454c, I-3 iface 24f2fc86 -> 59c076bd, lane merge 35d46182 ->
+  f6764f52. Jobs 9-20 (12 SKIPPED behind 152) re-enqueued as 21-31. Lesson for briefs: run the full mypy (the gate's
+  tier) before enqueueing a move.
+- **DECISION 2026-11-16, STOP 1 of W4 run 2 (re-exports outside `__init__.py`).** cce-code-health counts imports as
+  public API only in `__init__.py` (gate.py:289), so an interface plan cannot list `removed` for a re-export in
+  region.py, verification.py, program.py or types.py. Ruling: ADR 0076 rule 1's own test is "no alias, no
+  `__getattr__`, no `__all__` entry". A step that drops such re-exports lists `changed = ["<file>:__all__"]` where
+  the module has `__all__` (region.py, program.py), and nothing for an alias in a module without one (types.py,
+  verification.py); a module may keep a plain import of a name its own code uses. The plan's reason names every
+  dropped alias, the step's message quotes the grep that finds no importer of the old path, and the reviewer checks
+  both. I-5's interface step (6f85454c) is gated no-gain for that reason (job 31). Alternative: tool change (c), an
+  `X as X` import counts as API in any module, with a re-pin; rejected for now because it changes every lane's
+  public-API tier mid-campaign. Reversible by: re-gating those steps after a tool change.
+- **DECISION 2026-11-16, STOP 2 of W4 run 2 (R-016 table rule, test_t05_table_independence).** ADR 0076 I-2 moves
+  `LiftedSplit` to models.lifted and states that the verifier imports it there. Authorised (migration rule 3, test
+  commit before the plan): the rule admits `LiftedSplit` from `openflowsheet.models.lifted` inside `TYPE_CHECKING`
+  only, and the orchestrator allowance (`ALLOWED_ORCHESTRATOR_NAMES`) goes, so any orchestrator import becomes a
+  violation (stricter). Falsifiers quoted in the commit: a runtime `from openflowsheet.models.lifted import
+  LiftedSplit` and a TYPE_CHECKING orchestrator import each fail. The design-lane reviewer reads it.
+- **2026-11-16, W4 run 3 (opus-engineer, 152k tokens).** I-2 and I-7 done on `wp/S19-w4` (tip 517355e1), I-8 not
+  started (cap). b2380d3a R-016 test commit (STOP 2; its own head red for the four verifier modules, green at the
+  next commit), d250ba4c revert of 3bbdd571 (job 36, no-gain), a3cefbf0 + e29b15d7 plan and step
+  `i2-lifted-vocabulary` (job 37; region.py `__all__` loses ClosureType, DormancyForm, LiftedSplit, Regime,
+  VapourOnlyForm, ZeroFlowForm; rank.py `PRESSURE_TOLERANCE` was an `X as X` re-export), 372a0809 + 517355e1 plan and
+  step `i7-tolerances-linearization` (job 38). Arch 4/3/12 unchanged by both (imports 4129 -> 4113). Frozen exception:
+  StagedSplits via orchestrator.region (column_unit.py:90). Full mypy, ruff, patch_noop 0/265 clean before enqueue.
+  Gates: jobs 21 (I-5 move, step 154) and 32-33 (G5 run 4 steps 1-2, debt 84.7 -> 47.7) PASS.
+- **DECISION 2026-11-16, surrogate reactor `MODEL_ID` (W4 run 3 finding).** studies/surrogate/reactor.py:112 lists
+  `MODEL_ID` in `__all__` after importing it from study (:102); the only reader through reactor is
+  test_m04_wo7_surrogate_unit.py (`sr.MODEL_ID`). Ruling under STOP 1: an ordinary re-export; I-8 retargets reactor.py
+  and the test to `studies.surrogate.records` and drops it from reactor's `__all__` (`changed`). Alternative: keep it
+  as reactor's own API (a unit module naming its model id); rejected, reactor exposes it through its method (:374).
+  Reversible by: re-adding the `__all__` entry. W4 run 4 briefed (`S19-W4-4.md`: I-8 only, smallest module first);
+  run 3's I-8 scripts saved to `<git-common-dir>/codehealth/drafts/w4-i8/`.
