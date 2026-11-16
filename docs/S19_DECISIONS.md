@@ -1631,3 +1631,8 @@
   from `LocalApplication.get_revision` (local.py:1911) instead of `RevisionError "no revision ..."`; the facade `put`
   immutability refusal and its `put_revision` audit row have no successor (engineer did not STOP; revert f98f54aa if
   the review does). I-13 not started (STOP above).
+- **2026-11-17, review briefs written: S19-R-W4-11.md (I-11 + the I-13 scope ruling) and S19-R-W3-G5-10.md.** DECISION:
+  R-W4-11 runs on Opus, not fable: ADR 0076 lines 188-191 and 426 already list the removed `put` refusal, its audit
+  row and the read successors, and lines 255-260 fix I-13's principle; what is left is the scope list and four names.
+  Alternative: fable. Reversible by: a fable re-review if the Opus ruling is contested. Each launches when its steps
+  pass (W4: job 212; G5: jobs 208-210).

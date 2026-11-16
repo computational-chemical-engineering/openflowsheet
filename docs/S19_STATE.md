@@ -57,7 +57,7 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 ## Next actions (2026-11-16 23:50, after the self-reset)
 
 Runner pid 2642417. Results consumed up to 194 (`$Q wait --since 194` runs in the background). Agent running: the W4 run 11 engineer (resumed by message;
-rebuilt I-11 as 869d96be/685bb448/fff4ead2 with literals_removed; its enqueue pending).
+plan f98f54aa, step 79c88b0e, layer config 139afd37).
 Lanes at most 2 agents until Thu 19 Nov 13:00. ALERTs persist (proposal 2 with Frank). Merge-checks run on a helper
 branch `wp/S19-<lane>-mc` = lane tip + wp/S19 tip merged in; the merge into wp/S19 takes the helper (`git merge --no-ff
 -F <file> wp/S19-<lane>-mc`), after checking wp/S19 changed only docs/S19_* since the helper's merge. `enqueue
@@ -66,12 +66,12 @@ rebase (enqueue fresh). Mode revert: `--base` is the rejected commit. Detail in 
 1. **W4 runs 9+10 merged** into wp/S19 as 68a9597a (job 206 PASS); worktree s19-w4-mc removed.
 2. **W4 run 11** reported (S19_DECISIONS "W4 run 11 reported"): I-11 done but job 211 FAIL (`literals`; plan lacked
    `literals_removed`). Fixed by the resumed engineer (869d96be plan, 685bb448 step, fff4ead2; backup
-   wp/S19-w4r11-job211); fix211 superseded. On PASS: reviewer R-W4-11 (model fable),
+   wp/S19-w4r11-job211); fix211 superseded. On PASS: reviewer R-W4-11 (Opus; brief S19-R-W4-11.md written),
    which also rules I-13's name scope (STOP; engineer's default and the four unnamed names in S19_DECISIONS) and the
    three I-11 review points; then merge-check helper wp/S19-w4-mc, merge. Then I-13 per ruling, I-10 and I-12a-d
    (serial MSG counts at base and head per amended rule 4, ~2.2 h per suite).
 3. **G5 run 10** reported (4 steps, jobs 207 PASS, 208-210 gating; S19_DECISIONS "G5 run 10 reported"). After jobs
-   208-210: `reviewer` R-W3-G5-10 (S2 tier, Opus), fixes, helper merge-check, merge.
+   208-210: `reviewer` R-W3-G5-10 (S2 tier, Opus; brief written), fixes, helper merge-check, merge.
 4. **G6:** W3 part done (S19_DECISIONS "G6 run 7 not briefed"); launcher `launch` after W4. Frozen thermo files: W5.
 5. **Rule 4 falsifier:** serial repeat headser2 relaunched (first attempt had a bad conftest overlay), PID 4036764, log
    `/tmp/claude-1000/-home-eajfpeters-Code-OpenFlowsheet/916d464e-9c10-46af-b355-083a80943fd2/scratchpad/headser2.log`
