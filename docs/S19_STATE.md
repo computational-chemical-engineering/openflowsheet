@@ -56,14 +56,14 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 
 **Map window closed (G-MAP 3 map accepted, MB moved to c3c5793e); runner restarted (pid 1923489).** cce-code-health
 re-pinned to 1f7df37 (imports out of clone detection). `gate_report.py` at every chain-result wake (skill loop step 3);
-expected once lanes carry the new MB: selected tests tier ~150-250 s. Results consumed up to 103; next `$Q wait --since
-103`. No agent running. Lanes at most 2 until Thu 19 Nov 13:00. Tool notes: a re-gate whose base moved cannot use
+expected once lanes carry the new MB: selected tests tier ~150-250 s. Results consumed up to 104; next `$Q wait --since
+104`. No agent running. Lanes at most 2 until Thu 19 Nov 13:00. Tool notes: a re-gate whose base moved cannot use
 `--rerun-of` (log by hand, steps 168, 179); the literal check excludes docstrings; the runner SKIPs any job whose lane
 contains a failed step, at run time; `codehealth scan --json X` writes to X (never a source path).
 1. **G5 run 5**: merged into wp/S19 (bbcaad2d). 2. **G5 run 7**: merged into wp/S19 (2644ea96).
 3. **G5 run 6b** (wp/S19-g5d at 3cdb0d50, steps 188, 190, 192, 193 PASS; R-W3-G5-6 item 1 settled as a playbook rule-6
    exception, item 2 tests pass): job 119 = merge-check on helper branch wp/S19-g5d-mc (ce9e9d30 = 3cdb0d50 + wp/S19
-   6400b95b). PASS -> `git -C .claude/worktrees/s19-g5d merge --ff-only wp/S19-g5d-mc`, merge wp/S19-g5d into wp/S19
+   6400b95b; job 119 env error, re-run as job 120). PASS -> `git -C .claude/worktrees/s19-g5d merge --ff-only wp/S19-g5d-mc`, merge wp/S19-g5d into wp/S19
    (merge commit, `-F <file>`), log, remove worktree s19-g5d-mc and branch wp/S19-g5d-mc.
 4. **W4** (wp/S19-w4): job 118 = step 197 re-gated unchanged on 1f7df37 (`--rerun-of 86`). PASS -> re-enqueue 87, 89,
    93, 98, 99 with their done-JSON args (`queue/done/<label>.json`: worktree, base, head, mode, plan, target, recipe,
