@@ -50,7 +50,6 @@ from openflowsheet.numerics.solve_record import (
 __all__ = [
     "AccelerationEvent",
     "RecycleOutcome",
-    "RecyclePolicy",
     "RecycleResult",
     "RestartEvent",
     "solve_recycle",

@@ -5,7 +5,7 @@ D8's coupled replay digests.
   `w`, sorted, that is not the `unit_id` of a `C1Reactor` of the binding — another unit's id or no
   unit's — and changes nothing; the binding's own reactor ids are accepted, and the values reach
   the rebuilt unit as passed (no coercion).
-- D7 (R-307): R3 iff the run's provider is in `run.session.EXTERNAL_PROVIDERS` (empty today),
+- D7 (R-307): R3 iff the run's provider is in `run_session.EXTERNAL_PROVIDERS` (empty today),
   never from provenance text: SYN-001 → R1; a C1 `revision_eo` run → R1; the stand-in coupled run
   → R1; a provider whose provenance says "external" and which is not in the set → R1 (and R3 once
   registered). The synthetic out-of-process coupled run → R3 is
@@ -33,6 +33,7 @@ import numpy as np
 import pytest
 from conftest import REPO_ROOT
 
+import openflowsheet.application.run_session as session
 from openflowsheet.adapters.experiments.runner import ExperimentRunner
 from openflowsheet.adapters.experiments.store import ExperimentStore, ListArtifactSink
 from openflowsheet.application.coupled_run import (
@@ -51,15 +52,14 @@ from openflowsheet.application.revision_run import (
     run_revision_session,
     select_route,
 )
+from openflowsheet.application.run_session import EXTERNAL_PROVIDERS, _reproducibility_class
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models.c1.reactor import C1Reactor
 from openflowsheet.orchestrator import coupling
 from openflowsheet.orchestrator.execution import declaration_identity
 from openflowsheet.orchestrator.policies import T06_REVISION_V2
-from openflowsheet.run import session
 from openflowsheet.run.bundle import read_artifact, read_manifest
 from openflowsheet.run.compare import CURRENT_POLICY_ID
-from openflowsheet.run.session import EXTERNAL_PROVIDERS, _reproducibility_class
 from openflowsheet.thermo.pr_c1 import PrC1Provider
 from openflowsheet.thermo.syn001 import Syn001Provider
 from openflowsheet.verify.verdict import CheckPolicy

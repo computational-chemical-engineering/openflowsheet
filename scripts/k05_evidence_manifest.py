@@ -27,11 +27,11 @@ sys.path.insert(0, str(ROOT / "scripts"))
 from k03_schema_fixtures import POLICY, flowsheet  # noqa: E402
 from k05_structural_identity import identity  # noqa: E402
 
+from openflowsheet.application.run_session import run_session  # noqa: E402
 from openflowsheet.canonical import file_sha256  # noqa: E402
 from openflowsheet.run.bundle import ARTIFACT_DIR, read_artifact, verify_bundle  # noqa: E402
 from openflowsheet.run.manifest import NON_STRUCTURAL, THREAD_VARIABLES  # noqa: E402
 from openflowsheet.run.replay import Rerun, decide_mode, replay  # noqa: E402
-from openflowsheet.run.session import run_session  # noqa: E402
 
 
 def _pin_threads() -> None:
