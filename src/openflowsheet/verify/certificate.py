@@ -74,7 +74,8 @@ from openflowsheet.verify.verdict import run_checks as run_checks
 from openflowsheet.verify.verdict import statements_for as statements_for
 
 if TYPE_CHECKING:
-    from openflowsheet.models.revision_flowsheet import ComponentBasis
+    from openflowsheet.models.revision_flowsheet import ComponentBasis, RevisionView
+    from openflowsheet.orchestrator.region import LiftedSplit
     from openflowsheet.thermo import PropertyCapabilities
     from openflowsheet.verify.regularity import RegularityEvidence
     from openflowsheet.verify.zero_flow import ZeroFlowSplit
@@ -429,15 +430,7 @@ def verify_revision(
     target = BoundDeclaration(
         binding.spec, compiled, final_state, pressure_domain=fresh.describe().domain["P"]
     )
-    if solve_plan is not None:
-        found = [alias_document(row) for row in target.partition.elimination.eliminated]
-        planned = [alias_document(row) for row in solve_plan.eliminated_rows]
-        if found != planned:
-            raise VerifierError(
-                "the certified aliases of the declaration at x_final are not the region plan's: "
-                f"{[row['row_id'] for row in found]} against "
-                f"{[row['row_id'] for row in planned]}"
-            )
+    _require_planned_aliases(target, solve_plan)
 
     try:
         view = parse_revision(revision)
@@ -512,14 +505,7 @@ def verify_revision(
     bounds = [k for k, check in enumerate(table) if check.category == "bounds_and_domain"]
     at = bounds[-1] + 1 if bounds else len(table)
     checks += [*table[:at], *surrogate_checks, *table[at:]]
-    classes = witness_classes(
-        target.spec.variable_ids,
-        final_state,
-        view.components,
-        basis=basis,
-        streams=view.streams,
-        splits=splits,
-    )
+    witness = _revision_witness(target, final_state, view, basis, splits)
     return _issue(
         target,
         result,
@@ -535,26 +521,25 @@ def verify_revision(
         screened=screened,
         projection=projection,
         provider=fresh,
-        witness=_WitnessColumns(
-            # K04 §4.8.2 (amendment WIT, ADR 0073): not differenced, and listed — §14.2 B17
-            # *Consequence* as narrowed by §14.3 C2 (R-281), a `pr-c1-v1` revision's stream
-            # component-flow columns exactly 0.0 (class 1), and a dormant lifted liquid side on
-            # a Wilson basis (class 2, A2); differenced one-sided — S11 rulings item 2's (R-831)
-            # Z (class 3) and a dormant lifted vapour side on a Wilson basis (class 4, A1).
-            unstenciled=frozenset(name for name, k in classes.items() if k in (1, 2)),
-            one_sided=frozenset(name for name, k in classes.items() if k in (3, 4)),
-            components=view.components,
-            # ADR 0073 D5 as amended: classes 1 and 2 never share a basis, so the reason
-            # follows it.
-            skipped_reason=(
-                "wilson_dormant_liquid_columns"
-                if basis in ONE_SIDED_BASES
-                else "pr_c1_zero_flow_columns"
-            ),
-        ),
+        witness=witness,
         appended=surrogate_limitations,
         external=external,
     )
+
+
+def _require_planned_aliases(target: BoundDeclaration, solve_plan: Any) -> None:
+    """§4.8 item 3: the certified aliases of `target`'s declaration at `x_final` are the ones the
+    region's `SolvePlan` eliminated, compared as `alias_document`s in order; else a
+    `VerifierError` naming both row lists. Nothing to compare when `solve_plan` is `None`."""
+    if solve_plan is not None:
+        found = [alias_document(row) for row in target.partition.elimination.eliminated]
+        planned = [alias_document(row) for row in solve_plan.eliminated_rows]
+        if found != planned:
+            raise VerifierError(
+                "the certified aliases of the declaration at x_final are not the region plan's: "
+                f"{[row['row_id'] for row in found]} against "
+                f"{[row['row_id'] for row in planned]}"
+            )
 
 
 def _staged_splits(view: Any) -> dict[str, Any]:
@@ -574,6 +559,43 @@ def _staged_splits(view: Any) -> dict[str, Any]:
         structure = column_structure(instance, view.components)
         staged[instance.unit_id] = column_staged_splits(structure)
     return staged
+
+
+def _revision_witness(
+    target: BoundDeclaration,
+    final_state: Mapping[str, float],
+    view: RevisionView,
+    basis: str,
+    splits: Sequence[LiftedSplit],
+) -> _WitnessColumns:
+    """K04 §4.8.2 (amendment WIT, ADR 0073): the columns of `target`'s declaration the
+    derivative witness does not difference or differences one-sided, by `witness_classes` at
+    `final_state` over `view`'s components and streams and the lifted `splits` on the fresh
+    provider's `basis`, and the reason its partial-witness limitation records."""
+    classes = witness_classes(
+        target.spec.variable_ids,
+        final_state,
+        view.components,
+        basis=basis,
+        streams=view.streams,
+        splits=splits,
+    )
+    return _WitnessColumns(
+        # Not differenced, and listed — §14.2 B17 *Consequence* as narrowed by §14.3 C2 (R-281),
+        # a `pr-c1-v1` revision's stream component-flow columns exactly 0.0 (class 1), and a
+        # dormant lifted liquid side on a Wilson basis (class 2, A2); differenced one-sided —
+        # S11 rulings item 2's (R-831) Z (class 3) and a dormant lifted vapour side on a Wilson
+        # basis (class 4, A1).
+        unstenciled=frozenset(name for name, k in classes.items() if k in (1, 2)),
+        one_sided=frozenset(name for name, k in classes.items() if k in (3, 4)),
+        components=view.components,
+        # ADR 0073 D5 as amended: classes 1 and 2 never share a basis, so the reason follows it.
+        skipped_reason=(
+            "wilson_dormant_liquid_columns"
+            if basis in ONE_SIDED_BASES
+            else "pr_c1_zero_flow_columns"
+        ),
+    )
 
 
 def alias_document(row: Any) -> dict[str, Any]:
