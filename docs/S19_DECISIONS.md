@@ -753,3 +753,15 @@
 - **2026-11-16, job 78 PASS (W4 run 5b, I-2 iface 0e49da0f..89908c34, interface mode, step 182 accepted, 17/17).**
 - **2026-11-16, job 79 PASS (W4 run 5b, I-7 iface a99c305a..10f734bb, interface mode, step 183 accepted, 17/17).**
 - **2026-11-16, job 102 PASS (G5 run 7 step 3, 49a0db77 `degeneracy`, step 184 accepted, split_checks.py 24.0 -> 21.0, 16/16).** G5 run 7 fully gated (jobs 100-102); reviewer R-W3-G5-7 launched (Opus, brief `S19-R-W3-G5-7.md`).
+- **2026-11-16, R-W3-G5-7 (reviewer, Opus, 90k tokens): merge after fixes.** ac17ce56 OK (five refusals in order with
+  the same texts; nothing computed ahead of a refusal that was not before; the `target.spec` read moved ahead of the
+  comprehensions, a field read, stated in the commit); c95eadac accepted under the gain rule (1.6 points; a whole
+  early return of a spec-named unit, T05b §9.1); 49a0db77 OK (`InstanceView` has no runtime use). Fix applied by the
+  orchestrator in 3b13e7fe: `_degenerate_split_checks` docstring (δ is the spec §4.4 saturation distance
+  max(|T - T_b|, |T - T_d|), checked against T05b spec line 108; both checks on `subject`); job 109 (no-gain).
+  Twins `_declared_phase`/`_phase_enthalpy` kept (different requests and dormant handling; a merge needs a
+  behaviour-level commit with its own test). **Open (pre-existing, outside the diff, before any twin merge):**
+  split_checks.py:218 reads `stream_of(state, stream)` in SYN-001 order but zips with `view.components` (:259), and
+  `_phase_enthalpy` (flows at :538/:576 in SYN-001 order) zips with `provider.describe().components`; both are right
+  only while those orders equal `COMPONENTS`. A design-lane question (component-order invariant), listed for the G5
+  close.
