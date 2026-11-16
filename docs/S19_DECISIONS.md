@@ -1527,3 +1527,16 @@
 - **2026-11-16 23:25, job 202 PASS (w4r10-i14-iface-3, ffed4051, step 258 accepted, interface, 17/17). R-W4-9b
   launched (`reviewer`, model fable, brief S19-R-W4-9b.md with R-W4-9a note 1 appended).** After it: fixes, helper
   wp/S19-w4-mc (lane tip + wp/S19 tip), merge-check, merge. G6 run 7 brief waits for 9b (agent slots, queue load).
+- **2026-11-16 23:40, R-W4-9b reported (`reviewer`, fable, 131k tokens): merge after one docstring fix; no code fix.**
+  Commits 5227e2ba, fb99f834, 0fe4c01b, eed97251 accept; ffed4051 accept with fix 1. Initialization order unchanged for
+  the freeze relative to registry construction at every entry point (CLI, HTTP, MCP, errors, worker, conftest); hook
+  installed once (registry/__init__.py:857); an exception in it propagates before `_load()`; messages.render alone
+  freezes the core alone (FQ-B). Observable difference: importing jobs.worker loads registry and numpy before setpgid
+  and the redirect (worker.py:59), so worker.py:14-16 was false; forced kill unaffected (executor.py:108-110).
+  DECISION: keep the import (FQ-B), correct the docstring. Alternative: drop :59 (`_run` reaches errors via
+  runner.py:102 after the redirect), needs an ADR amendment and B1's worker case. Reversible by: a later step removing
+  :59. Fix 2: catalogue.py:8-10 core-alone case. Note 3 (record): ffed4051's G7 and this log's "contract.py:70" are
+  stale; at head contract.py imports nothing from messages. Not verified by the reviewer: rendered-text identity (rests
+  on G5 and B2); CLI child re-import of `__main__` inferred. B1 lacks bindings http/mcp (covered via http.py:61,
+  mcp.py:52). Fixes 1+2 committed by the orchestrator as f8173c9f (docstrings only, ruff clean); job 205
+  w4r10-revfix (no-gain). Then helper wp/S19-w4-mc on the wp/S19 tip after G5 run 9 merges (job 204), merge-check.
