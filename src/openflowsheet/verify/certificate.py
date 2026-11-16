@@ -1012,7 +1012,7 @@ class _WitnessColumns:
 @dataclass(frozen=True)
 class _Checked:
     """The check set a caller of `_issue` judged at `x_final` (T05 design note §4.2), with the
-    evidence it was judged with."""
+    evidence it was judged with and the caller's own limitations."""
 
     #: The caller's check set; `_issue` extends this list in place.
     checks: list[CheckResult]
@@ -1046,8 +1046,9 @@ def _issue(
     """§4.8, §7 and §8 after the check set: the derivative witness, the grade and the certificate
     (T05 design note §4.2). Shared by `_certify` (SYN-001's check set) and `verify_revision` (the
     table's); `checked` is the caller's check set at `final_state` with its residual state hash,
-    regularity screen and projection, `phase_branch` the caller's record of the branch, and
-    `witness` the columns the derivative witness does not difference or differences one-sided."""
+    regularity screen, projection and own limitations, `phase_branch` the caller's record of the
+    branch, and `witness` the columns the derivative witness does not difference or differences
+    one-sided."""
     from openflowsheet.verify.checks import derivative_witness
     from openflowsheet.verify.regularity import solution_error_bound
 
