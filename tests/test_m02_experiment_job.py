@@ -28,7 +28,7 @@ from t07_process_support import set_executor, wait_ended
 
 from openflowsheet.adapters import variants
 from openflowsheet.adapters.experiments.store import ExperimentStore
-from openflowsheet.application.contract import ApplicationError
+from openflowsheet.application.errors import ApplicationError
 from openflowsheet.application.jobs.executor import ProcessExecutor
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.operations import dispatch

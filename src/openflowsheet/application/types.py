@@ -28,6 +28,7 @@ from typing import TYPE_CHECKING, Any, Final, Literal, Self, get_args
 
 from jsonschema import Draft202012Validator
 
+from openflowsheet.application.errors import ApiError, ApplicationError, SolveFailedError
 from openflowsheet.application.jobs.model import (
     ARTIFACT_KINDS,
     ENDS_JOB,
@@ -65,42 +66,6 @@ if TYPE_CHECKING:
 #: `solve_body.policy_id`.
 DEFAULT_SOLVE_POLICY_ID: Final[str] = "default"
 
-ApiErrorCode = Literal[
-    "invalid_request",
-    "document_not_canonical",
-    "unauthenticated",
-    "forbidden",
-    "not_found",
-    "idempotency_key_reused",
-    "not_ready",
-    "revision_not_ready",
-    "revision_unsupported",
-    "verification_weakening_refused",
-    "budget_exceeds_ceiling",
-    "limit_exceeded",
-    "unsupported",
-    "internal_error",
-    # ADR 0035 D3 (M02 design note §6.2): a promotion whose replacement check failed.
-    "model_replacement_incompatible",
-]
-#: §5.8's HTTP status of each code.
-API_ERROR_HTTP_STATUS: Final[Mapping[str, int]] = {
-    "invalid_request": 422,
-    "document_not_canonical": 422,
-    "unauthenticated": 401,
-    "forbidden": 403,
-    "not_found": 404,
-    "idempotency_key_reused": 409,
-    "not_ready": 409,
-    "revision_not_ready": 422,
-    "revision_unsupported": 422,
-    "verification_weakening_refused": 422,
-    "budget_exceeds_ceiling": 422,
-    "limit_exceeded": 429,
-    "unsupported": 501,
-    "internal_error": 500,
-    "model_replacement_incompatible": 422,
-}
 #: Blueprint §11.3's six rights (ADR 0019 D4).
 Right = Literal["read", "draft", "execute", "install", "policy", "publish"]
 RIGHTS: Final[tuple[str, ...]] = get_args(Right)
@@ -186,62 +151,6 @@ def _checked[T](
 
 
 # ================================================================================ ApiError §5.8
-
-
-@dataclass(frozen=True)
-class ApiError:
-    """§5.8: the one error shape. Domain outcomes are results, never an `ApiError`."""
-
-    code: ApiErrorCode
-    message: str
-    retryable: bool
-    detail: Mapping[str, Any] = field(default_factory=dict)
-
-    @property
-    def http_status(self) -> int:
-        return API_ERROR_HTTP_STATUS[self.code]
-
-    @property
-    def explanation(self) -> dict[str, Any]:
-        """MSG §3.3: the explanation document a transport attaches as `detail.explanation` —
-        the one this error carries when it was projected, else rendered now (surface null).
-        A property, never a field: it is not in `as_document()` and is stored nowhere (I2)."""
-        carried = self.detail.get("explanation")
-        if isinstance(carried, Mapping):
-            return dict(carried)
-        return self.render_explanation()
-
-    def render_explanation(self, surface: Literal["python", "cli"] | None = None) -> dict[str, Any]:
-        """The explanation rendered from the machine document (any carried one ignored)."""
-        from openflowsheet.messages.render import RenderContext, render_error
-
-        detail = {name: value for name, value in self.detail.items() if name != "explanation"}
-        return render_error(
-            {"code": self.code, "message": self.message, "detail": detail},
-            context=RenderContext(surface=surface),
-        )
-
-    def as_document(self) -> dict[str, Any]:
-        return {
-            "code": self.code,
-            "message": self.message,
-            "detail": dict(self.detail),
-            "retryable": self.retryable,
-        }
-
-    @classmethod
-    def from_document(cls, document: Mapping[str, Any]) -> Self:
-        validate_document("api-error.schema.json", document)
-        return cls._build(document)
-
-    @classmethod
-    def _build(cls, document: Mapping[str, Any]) -> Self:
-        return cls(
-            code=document["code"],
-            message=document["message"],
-            retryable=document["retryable"],
-            detail=dict(document["detail"]),
-        )
 
 
 def _error_document(error: ApiError | None) -> dict[str, Any] | None:
@@ -1239,36 +1148,6 @@ class RunFailure:
         )
 
 
-class SolveFailedError(Exception):
-    """MSG §3.4: `RunResult.raise_for_outcome` on a run that did not end converged. Not an
-    `ApplicationError`: a domain outcome is not an `ApiError`. `result` is the run result; the
-    text is the failure's layered text (or, for a job that ended without a failure bundle, its
-    status's)."""
-
-    def __init__(self, result: RunResult) -> None:
-        failure = result.failure
-        machine = (
-            f"{failure.outcome}: {failure.message or failure.outcome}"
-            if failure is not None
-            else f"{result.job_status}: job {result.job_id}"
-        )
-        super().__init__(machine)
-        self.result = result
-
-    def __str__(self) -> str:
-        failure = self.result.failure
-        if failure is not None:
-            return str(failure)
-        from openflowsheet.messages.render import RenderContext, render_code
-        from openflowsheet.messages.text import format_text
-
-        explanation = render_code(
-            self.result.job_status,
-            context=RenderContext(surface="python", job_id=self.result.job_id),
-        )
-        return format_text(explanation, str(self.args[0]))
-
-
 def _failure_document(failure: RunFailure | None) -> dict[str, Any] | None:
     return failure.as_document() if failure is not None else None
 
@@ -1319,8 +1198,6 @@ class RunResult:
         or a job that did not complete, raises `SolveFailedError`. Verification is separate: a
         converged run whose certificate is not `VERIFIED` does not raise."""
         if self.error is not None:
-            from openflowsheet.application.contract import ApplicationError
-
             raise ApplicationError(self.error)
         if self.failure is not None or self.job_status != "completed":
             raise SolveFailedError(self)

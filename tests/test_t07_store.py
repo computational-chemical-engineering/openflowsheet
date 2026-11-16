@@ -21,7 +21,7 @@ from typing import Any
 import pytest
 import t07_store_support as support
 
-from openflowsheet.application.contract import ApplicationError
+from openflowsheet.application.errors import ApplicationError
 from openflowsheet.application.jobs.model import check_lifecycle
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.revisions import Revision

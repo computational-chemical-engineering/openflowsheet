@@ -225,7 +225,7 @@ def test_a_view_of_another_document_is_refused(solved: Solved) -> None:
                 view["sha256"] = "0" * 64
             return view
 
-        from openflowsheet.application.contract import ApplicationError
+        from openflowsheet.application.errors import ApplicationError
 
         with pytest.raises(ApplicationError) as refused:
             stream_table_format.assemble(fetch, depth=1)

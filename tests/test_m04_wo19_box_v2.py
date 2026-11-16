@@ -34,8 +34,8 @@ from openflowsheet.adapters import variants
 from openflowsheet.adapters.experiments.runner import ExperimentRunner
 from openflowsheet.adapters.experiments.store import ExperimentStore, ListArtifactSink
 from openflowsheet.application.admission import admit_surrogate_study
+from openflowsheet.application.errors import ApiError
 from openflowsheet.application.types import (
-    ApiError,
     Budgets,
     Limits,
     SurrogateStudyBody,

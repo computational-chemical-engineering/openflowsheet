@@ -33,7 +33,7 @@ from t07_transport_support import (
 
 from openflowsheet.application import stream_table
 from openflowsheet.application.authz import grant
-from openflowsheet.application.contract import ApplicationError
+from openflowsheet.application.errors import ApplicationError
 from openflowsheet.application.local import STREAM_TABLE_DEPTH, LocalApplication
 from openflowsheet.application.projection import MAX_DEPTH
 from openflowsheet.application.types import Change

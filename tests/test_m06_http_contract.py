@@ -36,9 +36,10 @@ from conftest import REPO_ROOT
 from test_m06_fixtures_valid import KIND_SCHEMA, NO_RECORD_SCHEMA, _check_record
 from test_m06_static_scan import UI_OPERATIONS
 
+from openflowsheet.application.errors import ApiError
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.operations import OPERATIONS
-from openflowsheet.application.types import ApiError, validate_inline
+from openflowsheet.application.types import validate_inline
 from openflowsheet.schema_check import schema_errors
 
 if TYPE_CHECKING:

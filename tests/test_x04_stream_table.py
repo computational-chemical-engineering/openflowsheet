@@ -43,7 +43,7 @@ from t07_transport_support import (
 from openflowsheet.application import cli, stream_table, stream_table_format
 from openflowsheet.application.authz import grant, set_ambient_pressure
 from openflowsheet.application.cli import API_EXIT_CODES
-from openflowsheet.application.contract import ApplicationError
+from openflowsheet.application.errors import ApplicationError
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.operations import OPERATIONS, dispatch
 from openflowsheet.application.store import DATABASE_NAME

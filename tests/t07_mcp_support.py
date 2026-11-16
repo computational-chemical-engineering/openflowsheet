@@ -18,7 +18,7 @@ from typing import Any
 from conftest import REPO_ROOT
 
 from openflowsheet.application.authz import grant
-from openflowsheet.application.contract import ApplicationError
+from openflowsheet.application.errors import ApplicationError
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.operations import dispatch
 from openflowsheet.application.types import CapabilityReference

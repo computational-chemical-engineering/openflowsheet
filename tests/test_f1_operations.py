@@ -38,7 +38,7 @@ from t07_transport_support import (
 from openflowsheet.application import capabilities
 from openflowsheet.application.authz import grant
 from openflowsheet.application.cli import API_EXIT_CODES, main
-from openflowsheet.application.contract import ApplicationError
+from openflowsheet.application.errors import ApplicationError
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.operations import dispatch
 from openflowsheet.application.types import Limits

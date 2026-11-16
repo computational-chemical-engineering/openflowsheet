@@ -140,7 +140,7 @@ def step_t07(out: Path) -> int:
 def step_corpus(out: Path) -> int:
     """C01 and C02 write their bundles under `out/<case>/`; C03's machine refusal goes to
     `out/c03.json`."""
-    from openflowsheet.application.contract import ApplicationError
+    from openflowsheet.application.errors import ApplicationError
     from openflowsheet.application.local import LocalApplication
     from openflowsheet.application.types import Change
 

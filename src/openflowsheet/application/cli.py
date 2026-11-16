@@ -55,13 +55,13 @@ from collections.abc import Mapping
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Final, get_args
 
-from openflowsheet.application.types import ApiErrorCode
+from openflowsheet.application.errors import ApiErrorCode
 from openflowsheet.application.validation import validate
 from openflowsheet.registry import default_registry
 
 if TYPE_CHECKING:
+    from openflowsheet.application.errors import ApiError
     from openflowsheet.application.local import LocalApplication
-    from openflowsheet.application.types import ApiError
     from openflowsheet.units.display import DisplayUnits
 
 #: §11.5: an `ApiError`'s exit code, 2–16 in §5.8's table order (`ApiErrorCode`'s order). 0 is a
@@ -88,7 +88,7 @@ def command_validate(arguments: argparse.Namespace) -> int:
     request (`invalid_request`, `/optimization`) — is printed as `api` prints a typed error
     document, and the command exits its §5.8 code.
     """
-    from openflowsheet.application.contract import ApplicationError
+    from openflowsheet.application.errors import ApplicationError
 
     request = None if arguments.request is None else _load(Path(arguments.request))
     try:
@@ -170,7 +170,7 @@ def command_optimize(arguments: argparse.Namespace) -> int:
     (`NLP_SOLVER_UNAVAILABLE`), and Pyomo and cyipopt are never imported. Exit 0 iff the report
     is `KKT_POINT_VERIFIED`, as `solve` exits 0 iff its run is `VERIFIED`.
     """
-    from openflowsheet.application.contract import api_error
+    from openflowsheet.application.errors import api_error
     from openflowsheet.application.revision_routes import REVISION_ROUTES
     from openflowsheet.orchestrator.policies import DEFAULT_POLICY_ID, resolve_policy
     from openflowsheet.studies.nlp.request import request_problems
@@ -506,7 +506,7 @@ def _request_text(arguments: argparse.Namespace) -> str:
 def command_api(arguments: argparse.Namespace) -> int:
     """§11.5: one operation of `OPERATIONS` through `dispatch`, as `LOCAL_OWNER`."""
     from openflowsheet.application.authz import PolicyRefusedError
-    from openflowsheet.application.contract import ApplicationError
+    from openflowsheet.application.errors import ApplicationError
     from openflowsheet.application.local import LocalApplication
     from openflowsheet.application.operations import OPERATIONS, dispatch
     from openflowsheet.application.store import StoreError
@@ -572,9 +572,8 @@ def _request(application: LocalApplication, name: str, text: str) -> Any:
     are audited (§10.7). A non-canonical *value* is `dispatch`'s to refuse (§12.5)."""
     import yaml
 
-    from openflowsheet.application.contract import ApplicationError
+    from openflowsheet.application.errors import ApiError, ApplicationError
     from openflowsheet.application.operations import OPERATIONS, dispatch, project_error
-    from openflowsheet.application.types import ApiError
     from openflowsheet.canonical import load_document
 
     operation = OPERATIONS.get(name)
@@ -689,7 +688,7 @@ def command_explain(arguments: argparse.Namespace) -> int:
     `message_entry` document with `--json`), exit 0; an unknown code is `not_found` with
     `{code, suggestions}`: its layered text on stderr (with `--json`, the projected `ApiError`
     document on stdout too), exit 6."""
-    from openflowsheet.application.contract import api_error
+    from openflowsheet.application.errors import api_error
     from openflowsheet.messages.render import entry_document, suggestions
     from openflowsheet.messages.text import format_entry
 
@@ -712,7 +711,7 @@ def _registry_operation(name: str, request: Mapping[str, Any]) -> int:
     `request`, through `dispatch` on a throw-away in-memory application, so the document is the
     operation's on every transport. Neither operation reads the project, so none is named. The
     response as canonical JSON on stdout, exit 0; a refusal as `api` prints it."""
-    from openflowsheet.application.contract import ApplicationError
+    from openflowsheet.application.errors import ApplicationError
     from openflowsheet.application.local import LocalApplication
     from openflowsheet.application.operations import dispatch
 
@@ -769,7 +768,7 @@ STREAM_FORMATS: Final[tuple[str, ...]] = ("text", "json", "csv")
 def _stream_table_refusal(code: str, message: str, detail: Mapping[str, Any]) -> ApiError:
     """A `StreamTableError` of a bundle directory as the `ApiError` it maps to (§6.1's codes); the
     detail members a directory cannot give (`null`, D1-14) are left out."""
-    from openflowsheet.application.contract import api_error
+    from openflowsheet.application.errors import api_error
 
     given = {key: value for key, value in detail.items() if value is not None}
     if code == "not_found":
@@ -784,7 +783,7 @@ def _bundle_display_units(text: str) -> DisplayUnits | ApiError:
     pressure (a directory has no project; X04 decision D-8), or its refusal as the `ApiError`
     `get_stream_table` raises for it (ADR 0075 D9). The request schema's bound on the member
     (1 to 1024 characters) comes first and refuses as `dispatch` does (X04 review S4)."""
-    from openflowsheet.application.contract import api_error
+    from openflowsheet.application.errors import api_error
     from openflowsheet.application.operations import OPERATIONS
     from openflowsheet.application.types import validate_inline
     from openflowsheet.schema_check import DocumentSchemaError
@@ -818,7 +817,7 @@ def command_streams(arguments: argparse.Namespace) -> int:
     directory has none)."""
     from openflowsheet.application import stream_table, stream_table_format
     from openflowsheet.application.authz import PolicyRefusedError
-    from openflowsheet.application.contract import ApplicationError
+    from openflowsheet.application.errors import ApplicationError
     from openflowsheet.application.local import LocalApplication
     from openflowsheet.application.operations import dispatch
     from openflowsheet.application.store import StoreError

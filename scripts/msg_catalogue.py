@@ -157,8 +157,8 @@ def vocabularies() -> dict[str, set[str]]:
     _modules()
     import t08_support_matrix  # noqa: PLC0415
 
+    from openflowsheet.application.errors import ApiErrorCode  # noqa: PLC0415
     from openflowsheet.application.jobs.model import ENDING_REASONS, JobStatus  # noqa: PLC0415
-    from openflowsheet.application.types import ApiErrorCode  # noqa: PLC0415
     from openflowsheet.application.validation_report import ValidationStatus  # noqa: PLC0415
     from openflowsheet.verify import RegularityStatus, VerificationStatus  # noqa: PLC0415
     from openflowsheet.verify.failure import TAXONOMY  # noqa: PLC0415

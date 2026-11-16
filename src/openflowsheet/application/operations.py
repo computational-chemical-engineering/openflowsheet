@@ -43,14 +43,8 @@ from dataclasses import dataclass
 from functools import cache
 from typing import Any, Final, Literal, Protocol
 
-from openflowsheet.application.contract import (
-    Application,
-    ApplicationError,
-    Inspection,
-    JobControl,
-    Page,
-    api_error,
-)
+from openflowsheet.application.contract import Application, Inspection, JobControl, Page
+from openflowsheet.application.errors import ApiError, ApiErrorCode, ApplicationError, api_error
 from openflowsheet.application.projection import (
     MAX_DEPTH,
     MAX_PAGE,
@@ -59,8 +53,6 @@ from openflowsheet.application.projection import (
     bound_text,
 )
 from openflowsheet.application.types import (
-    ApiError,
-    ApiErrorCode,
     AuditRecord,
     Change,
     Job,

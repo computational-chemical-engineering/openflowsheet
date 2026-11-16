@@ -24,7 +24,7 @@ from t07_corpus import A02_FILES, CORPUS
 
 from openflowsheet import schema_check
 from openflowsheet.application import validation
-from openflowsheet.application.contract import ApplicationError
+from openflowsheet.application.errors import ApplicationError
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.revision_routes import REVISION_ROUTES
 from openflowsheet.canonical import canonical_json, document_sha256
@@ -501,7 +501,7 @@ _NO_NLP_IMPORT = """
 import json, sys
 sys.path.insert(0, sys.argv[1])
 from openflowsheet.application import validation
-from openflowsheet.application.contract import ApplicationError
+from openflowsheet.application.errors import ApplicationError
 from openflowsheet.application.revision_routes import REVISION_ROUTES
 from openflowsheet.studies.nlp.closure import SolverAvailability
 from openflowsheet.studies.nlp.request import static_readiness

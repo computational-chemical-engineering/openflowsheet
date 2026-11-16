@@ -23,7 +23,7 @@ from typing import Any
 from t07_jobs_support import PATIENCE_S
 
 from openflowsheet.application.authz import read_policy
-from openflowsheet.application.contract import ApplicationError
+from openflowsheet.application.errors import ApplicationError
 from openflowsheet.application.jobs.executor import ProcessExecutor
 from openflowsheet.application.jobs.model import TERMINAL_STATUSES
 from openflowsheet.application.jobs.worker import PAUSED_FILE

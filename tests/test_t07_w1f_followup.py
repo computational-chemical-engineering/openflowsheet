@@ -17,10 +17,10 @@ import pytest
 from conftest import REPO_ROOT, load_json
 from t07_support import JOB_ID, ref
 
+from openflowsheet.application.errors import ApiError
 from openflowsheet.application.jobs.model import ARTIFACT_FILE_NAMES, ARTIFACT_KINDS
 from openflowsheet.application.types import (
     DEFAULT_SOLVE_POLICY_ID,
-    ApiError,
     Budgets,
     JobRequest,
     JobResult,
