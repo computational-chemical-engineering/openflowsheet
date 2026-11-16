@@ -38,7 +38,7 @@ from dataclasses import dataclass
 from typing import Final
 
 from openflowsheet.compile.spec import QuantityKind
-from openflowsheet.graph.trace import Declaration
+from openflowsheet.graph.trace import Declaration, TracedRow
 
 __all__ = [
     "CERTIFIABLE_KINDS",
@@ -181,27 +181,8 @@ def certify(
             row = declaration.rows[row_id]
             if row.kind != kind:
                 continue
-            if row.coefficients is None:
-                uncertified.append(row_id)
-                continue
-            over = {
-                name: value
-                for name, value in row.coefficients.items()
-                if declaration.column_kinds.get(name) == kind
-            }
-            if len(over) != len(row.coefficients) or not over:
-                uncertified.append(row_id)
-                continue
-            if len(over) > 2 or any(abs(value) != 1.0 for value in over.values()):
-                uncertified.append(row_id)
-                continue
-            # A *copy* is a difference. `P1 - P2` and `P1 - s` are copies; `P1 + P2 - s` is a
-            # sum, and treating it as an edge between `P1` and the constant node certifies it as
-            # equal to `P1 - s`, which is false at every state. The Fable review of T01 measured
-            # exactly that (M4) and it was wrong in three places at once: here, the specification's
-            # §8.2 wording, and the reference generator. Requiring the two coefficients to cancel
-            # is what makes the telescoping argument true.
-            if len(over) == 2 and sum(over.values()) != 0.0:
+            over = _copy_coefficients(row, kind, declaration.column_kinds)
+            if over is None:
                 uncertified.append(row_id)
                 continue
 
@@ -234,3 +215,29 @@ def certify(
         certificates=tuple(sorted(certificates, key=lambda entry: order[entry.row_id])),
         uncertified_affine_rows=tuple(sorted(set(uncertified), key=lambda name: order[name])),
     )
+
+
+def _copy_coefficients(
+    row: TracedRow, kind: QuantityKind, column_kinds: Mapping[str, QuantityKind]
+) -> dict[str, float] | None:
+    """§8.2's admission of one affine `row` of `kind`: its coefficients when the row is a copy,
+    every column of `kind` (by `column_kinds`) with one or two coefficients of magnitude one
+    that cancel when there are two; `None` for a row without coefficients or any other row."""
+    if row.coefficients is None:
+        return None
+    over = {
+        name: value for name, value in row.coefficients.items() if column_kinds.get(name) == kind
+    }
+    if len(over) != len(row.coefficients) or not over:
+        return None
+    if len(over) > 2 or any(abs(value) != 1.0 for value in over.values()):
+        return None
+    # A *copy* is a difference. `P1 - P2` and `P1 - s` are copies; `P1 + P2 - s` is a
+    # sum, and treating it as an edge between `P1` and the constant node certifies it as
+    # equal to `P1 - s`, which is false at every state. The Fable review of T01 measured
+    # exactly that (M4) and it was wrong in three places at once: here, the specification's
+    # §8.2 wording, and the reference generator. Requiring the two coefficients to cancel
+    # is what makes the telescoping argument true.
+    if len(over) == 2 and sum(over.values()) != 0.0:
+        return None
+    return over
