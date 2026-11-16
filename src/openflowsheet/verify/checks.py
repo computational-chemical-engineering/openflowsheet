@@ -1072,18 +1072,10 @@ def escalate_column(
         current = _central4_estimate(points, h, column_scale, row_scales)
         admissible.append(True)
         barred.append(level_barred)
-        if previous is None:
-            gaps.append(None)
-        else:
-            differences = [abs(now - before) for now, before in zip(current, previous, strict=True)]
-            gaps.append(max(differences, default=0.0))
-            # `all(<=)` rather than `max <=`, so that a NaN row never resolves a column.
-            if (
-                not level_barred
-                and not previous_barred
-                and all(difference <= RESOLUTION_TOLERANCE for difference in differences)
-            ):
-                return Escalation(tuple(admissible), tuple(gaps), tuple(barred), k, current)
+        gap, agreed = _level_gap(current, previous)
+        gaps.append(gap)
+        if not level_barred and not previous_barred and agreed:
+            return Escalation(tuple(admissible), tuple(gaps), tuple(barred), k, current)
         previous = current
         previous_barred = level_barred
     return Escalation(tuple(admissible), tuple(gaps), tuple(barred), None, None)
@@ -1113,6 +1105,21 @@ def _central4_estimate(
             accumulated += weight * values[row]
         estimate.append(accumulated / (12.0 * h) * column_scale / row_scale)
     return tuple(estimate)
+
+
+def _level_gap(
+    current: tuple[float, ...], previous: tuple[float, ...] | None
+) -> tuple[float | None, bool]:
+    """§4.8.3 (b): an admissible level's e_k, the largest row difference between its estimate
+    `current` and the previous level's `previous`, and whether every row's difference is within
+    `RESOLUTION_TOLERANCE`; `(None, False)` when `previous` is None (k = 0, or level k - 1 was
+    inadmissible). `all(<=)` rather than `max <=`, so that a NaN row never resolves a column."""
+    if previous is None:
+        return None, False
+    differences = [abs(now - before) for now, before in zip(current, previous, strict=True)]
+    return max(differences, default=0.0), all(
+        difference <= RESOLUTION_TOLERANCE for difference in differences
+    )
 
 
 def _discrepancies(
@@ -1186,6 +1193,9 @@ def derivative_witness(
     exactly, a refusal included. A column whose central result passes is computed exactly as
     before, so no witness that passes changes. Nothing is recorded (§4.8.3 (g)); `escalations`,
     when given, receives each escalated column's `Escalation` for a test or a diagnosis.
+
+    Each differenced column, in column order, is `_column_witness`'s; the first column whose
+    result keeps a refusal ends the witness with both checks `unsupported`.
     """
     from openflowsheet.compile.reference import state_vector
 
@@ -1202,52 +1212,20 @@ def derivative_witness(
     exact = _exact_entries(jacobian)
 
     declared = frozenset(components)
-    row_ids = jacobian.row_ids
+    frame = _WitnessFrame(
+        compiled, context, base, exact, jacobian.row_ids, scaling.column, scaling.row, declared
+    )
     worst_on, worst_off = 0.0, 0.0
     for column, name in enumerate(jacobian.col_ids):
         if name in unstenciled:
             continue
-        step = FD_RELATIVE_STEP * scaling.column[name]
-        column_scale = scaling.column[name]
-        forward = name in one_sided
-        # Central (x + h, x - h), or on Z the forward five-point stencil (x + k h, k = 0..4).
-        offsets = _FORWARD_OFFSETS if forward else _CENTRAL_OFFSETS
-        points, refusal = _stencil(compiled, context, base, column, step, offsets)
-        on, off = 0.0, 0.0
-        if refusal is None:
-            scaled = [
-                _stencil_difference(points, row, step, forward) * column_scale / scaling.row[row_id]
-                for row, row_id in enumerate(row_ids)
-            ]
-            on, off = _discrepancies(scaled, column, column_scale, exact, row_ids, scaling.row)
-        # §4.8.3 (a): a class-5 component column with x_j > 0 whose central result is not a pass.
-        if (
-            not forward
-            and component_column(name, declared)
-            and base[column] > 0.0
-            and (refusal is not None or on > DERIVATIVE_TOLERANCE or off > DERIVATIVE_TOLERANCE)
-        ):
-            escalation = escalate_column(
-                compiled,
-                context,
-                base,
-                column,
-                step,
-                column_scale,
-                [scaling.row[row_id] for row_id in row_ids],
-                registered=points if refusal is None else None,
-            )
-            if escalations is not None:
-                escalations[name] = escalation
-            if escalation.scaled is not None:
-                refusal = None
-                on, off = _discrepancies(
-                    escalation.scaled, column, column_scale, exact, row_ids, scaling.row
-                )
-        if refusal is not None:
-            return _witness_unsupported(f"witness_stencil_{refusal}({name})")
-        worst_on = max(worst_on, on)
-        worst_off = max(worst_off, off)
+        found = _column_witness(frame, column, name, name in one_sided)
+        if escalations is not None and found.escalation is not None:
+            escalations[name] = found.escalation
+        if found.refusal is not None:
+            return _witness_unsupported(f"witness_stencil_{found.refusal}({name})")
+        worst_on = max(worst_on, found.on)
+        worst_off = max(worst_off, found.off)
 
     return [
         evaluated(
@@ -1280,6 +1258,88 @@ def _exact_entries(jacobian: JacobianResult) -> dict[tuple[int, int], float]:
     return exact
 
 
+@dataclass(frozen=True)
+class _WitnessFrame:
+    """What `derivative_witness` fixes before its first column: the compiled function and its
+    context, the base point x, the AD entries J_ij (`_exact_entries`), the row ids, the registered
+    scales S_x and S_F by id (`scaling.column`, `scaling.row`), and the declared components."""
+
+    compiled: object
+    context: object
+    base: npt.NDArray[np.float64]
+    exact: Mapping[tuple[int, int], float]
+    row_ids: Sequence[str]
+    scaling_column: Mapping[str, float]
+    scaling_row: Mapping[str, float]
+    declared: frozenset[str]
+
+
+@dataclass(frozen=True)
+class _ColumnWitness:
+    """One differenced column's part of §4.8: its on-pattern and off-pattern maxima (both 0.0 when
+    `refusal` is set), the status of the stencil point that refused (None when the column
+    evaluated), and its §4.8.3 `Escalation` (None when none was triggered)."""
+
+    on: float
+    off: float
+    refusal: str | None
+    escalation: Escalation | None
+
+
+def _column_witness(frame: _WitnessFrame, column: int, name: str, forward: bool) -> _ColumnWitness:
+    """§4.8 for column `name` (index `column`) of `frame`: the registered stencil at
+    h = `FD_RELATIVE_STEP` S_x, central, or with `forward` (Z) the forward five-point one, and the
+    column's two maxima in the scaled form. §4.8.3 (a): a central component column with x_j > 0
+    whose result is not a pass (`_not_a_pass`) is re-differenced by `escalate_column`; a resolved
+    estimate replaces the maxima and clears the refusal, an unresolved one keeps the registered
+    result, a refusal included."""
+    step = FD_RELATIVE_STEP * frame.scaling_column[name]
+    column_scale = frame.scaling_column[name]
+    # Central (x + h, x - h), or on Z the forward five-point stencil (x + k h, k = 0..4).
+    offsets = _FORWARD_OFFSETS if forward else _CENTRAL_OFFSETS
+    points, refusal = _stencil(frame.compiled, frame.context, frame.base, column, step, offsets)
+    on, off = 0.0, 0.0
+    if refusal is None:
+        scaled = [
+            _stencil_difference(points, row, step, forward)
+            * column_scale
+            / frame.scaling_row[row_id]
+            for row, row_id in enumerate(frame.row_ids)
+        ]
+        on, off = _discrepancies(
+            scaled, column, column_scale, frame.exact, frame.row_ids, frame.scaling_row
+        )
+    # §4.8.3 (a): a class-5 component column with x_j > 0 whose central result is not a pass.
+    if (
+        not forward
+        and component_column(name, frame.declared)
+        and frame.base[column] > 0.0
+        and _not_a_pass(refusal, on, off)
+    ):
+        escalation = escalate_column(
+            frame.compiled,
+            frame.context,
+            frame.base,
+            column,
+            step,
+            column_scale,
+            [frame.scaling_row[row_id] for row_id in frame.row_ids],
+            registered=points if refusal is None else None,
+        )
+        if escalation.scaled is not None:
+            refusal = None
+            on, off = _discrepancies(
+                escalation.scaled,
+                column,
+                column_scale,
+                frame.exact,
+                frame.row_ids,
+                frame.scaling_row,
+            )
+        return _ColumnWitness(on, off, refusal, escalation)
+    return _ColumnWitness(on, off, refusal, None)
+
+
 def _stencil_difference(
     points: Sequence[Sequence[float]], row: int, step: float, forward: bool
 ) -> float:
@@ -1295,6 +1355,12 @@ def _stencil_difference(
             - 3.0 * points[4][row]
         ) / (12.0 * step)
     return (points[0][row] - points[1][row]) / (2.0 * step)
+
+
+def _not_a_pass(refusal: str | None, on: float, off: float) -> bool:
+    """§4.8.3 (a): whether a column's central result is not a pass: a refused point (`refusal`),
+    or either maximum above `DERIVATIVE_TOLERANCE`."""
+    return refusal is not None or on > DERIVATIVE_TOLERANCE or off > DERIVATIVE_TOLERANCE
 
 
 def _witness_unsupported(reason: str) -> list[CheckResult]:

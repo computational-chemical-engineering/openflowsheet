@@ -938,3 +938,96 @@
   records it): expected, not drift.
 - **2026-11-16, job 137 PASS (G5 run 8 review-fix docstring 95d29ba1, step 214 accepted-neutral, 17.5 -> 17.5,
   15/15).** Report: ALERTs as at job 123. Merge-check job 138 next.
+- **2026-11-16, R-W4-1b (reviewer, Opus, 198k tokens; I-8 A-F, 92153233): merge after fixes, no commit rejected.**
+  Import-stripped ASTs equal on every touched file; 310 src and 666 outside-src retargeted from-imports resolve to
+  the same object; 68 setattr/patch targets all live (no silent no-op); kept names = exactly column_unit's imports
+  (cascade 9 + `_TOKEN`, column 18, column_solve 5); lazy imports stay in scope, no new cycle; STOP 1 form 6/6;
+  92153233 OK. Fixes: (1) region.py:132 `ClosureMemo as ClosureMemo` (PEP 695 alias missed by split-region's
+  `new_public`), test_t05b_band_screen.py:41-42 imports it through region; (2) test_m02_wo9_reactor.py:45 imports
+  `Unbound` through revision_binding: both to W4 run 7. (3) Docstrings claiming removed re-exports
+  (revision_binding.py:27, certificate.py:3-4, cascade.py:11, column.py:13 incomplete): applied by the orchestrator,
+  cd2b9f43, job 139 no-gain. Notes: kept private aliases in cascade/column_solve and `band_temperature` (I-13, I-19);
+  benchmarks/l01/retake.py:90 duplicate `# noqa` (run 7); config.toml:105-111 comment lists S17 edges R1-R5 removed
+  (run 7). Q4: reactor.py `_artifact_hash` keys nothing registered (M9 scans models/ only; corpus_identity.py:670),
+  so "F0 at the merge" checks nothing there; the surrogate unit's identity is unregistered, a pre-existing gap:
+  recorded, left (not S19 scope). Out of scope found: SolveOutcome via region (test_s02_column_wo2b.py:63),
+  LiftedSplit via orchestrator.splits (test_t06_w6_a85.py:34), RecyclePolicy via numerics.anderson (8 scripts):
+  W4 run 7. The 33 column_unit bindings I-8 kept are covered by ADR 0076:33-34 ("any further frozen import ...
+  listed at the W5 base"); no amendment now.
+- **2026-11-16, job 136 PASS (G6 run 4 step 7, d2e627b1, `_from_entry`, step 215 accepted, 20.0 -> 17.0, 16/16): G6
+  run 4 all gated.** R-W3-G6-4 launched (`S19-R-W3-G6-4.md`, reviewer, Opus).
+- **2026-11-16, W4 merge-check prepared.** wp/S19 (3c2c2d33) merged into wp/S19-w4 as 4d250386: one conflict,
+  verify/split_checks.py TYPE_CHECKING block (W4: `LiftedSplit` from models.lifted; wp/S19 G5: `InstanceView` added,
+  `LiftedSplit` from orchestrator.region): both imports kept, LiftedSplit from its home. Full mypy clean (377 files),
+  wp/S19's changed tests collect. Merge-check job 140 (after the no-gain 139). Then merge W4 into wp/S19 and brief
+  W4 run 7: R-W4-1a fixes 1 (non-hashed `Refusal` importers), 2-4, 6, 8, 9; R-W4-1b fixes 1-2 and its out-of-scope
+  list; the sizing/transactions/program I-8 leftovers.
+- **2026-11-16, R-W3-G6-4 (reviewer, Opus, 90k tokens): merge after fixes, no step rejected.** Step 3: `exit_code`
+  and `signal_number` are the locals bound at launcher.py:276 after the reap, nothing rebinds them, no poll/wait
+  moved, ladder order and five texts byte-identical. Steps 4-5 (S2): arithmetic verbatim, same rows appended in the
+  same order, kinds in `CERTIFIABLE_KINDS` order. Steps 1-2: D7 check order and first-failure-wins unchanged,
+  nothing registered in the helpers. Steps 6-7: rendered text byte-identical. Fixes applied by the orchestrator in
+  6d81db7b (job 141 no-gain): `certify` docstring names `_certified_kind`/`_copy_coefficients` (rule 7);
+  `_from_entry` docstring: default action applies to any entry without one; `_outcome_line`: defect recorded only
+  when an auditor is set; registry/__init__.py:452 line wrap; launcher `_exit_failure` moved after `_read_result`,
+  before `_last_line` (rule 5).
+  DECISION: the orchestrator made the def move itself (a pure move, top-level AST multiset equal, checked by script)
+  rather than brief an engineer. Alternative: a fresh engineer for one move; rejected (cost far above the change).
+  Reversible by: reverting 6d81db7b's launcher hunk. wp/S19 merged into the lane (af68ba31); merge-check job 142.
+- **2026-11-16 13:40, job 139 PASS (w4-revfix-1b, step 216 accepted-neutral, debt 114.8 -> 114.8).** W4 now waits on
+  merge-check 140 only. G6 run 5 brief written (`S19-W3-G6-5.md`, BASE to fill after the G6 run 4 merge). Gate report
+  (6 h): 32 gates, 0 failed, 28 of 30 steps accepted, debt removed 176.9. ALERTs unchanged from job 123 (cause and
+  action recorded there): "selected gates take 753 s > 300 s (tests tier)", "selected/full time ratio 0.59 > 0.4:
+  selection saves little", "queue wait median 69 min > 15 min".
+- **2026-11-16 13:41, job 140 FAIL (w4-mc, merge-check 3c2c2d33..4d250386): forbid, scope, literals, public_api; 6/10,
+  20 s, no test ran.** A merge-check runs `gate.sh --no-gain` = refactor mode, so an interface lane's range fails by
+  construction: the lane commits its own `.codehealth/` plans and config (forbid and scope hard-code `.codehealth/*`),
+  removes names (literals, public_api) and edits 263 test files and pyproject.toml (callers, forbid). Every step passed
+  these under its own plan. `--cadence campaign` still forbids `.codehealth/*`; a combined plan would fail the callers
+  rule. Not a code failure.
+  DECISION: W4 merge-check -> `.claude/skills/s19-refactor/merge_tiers.sh BASE HEAD LABEL`: the head config's
+  behaviour tiers run directly (ruff on the lane's src files, mypy, the full suite with gate.sh's environment and
+  deselects, f0, mcp_digest) under gate.sh's two-slot lock, one summary line. Alternative: a combined interface plan
+  (fails callers), or wait for a cce-code-health interface-lane merge-check (owner session code_health, whose v0.2.0
+  waits on this merge). Reversible by: a proper merge-check once the tool has one. Run w4-mt1 on 4d250386 started now;
+  after the G5 run 8 and G6 run 4 merges, wp/S19 is merged into the lane and merge_tiers.sh re-run on that merge.
+- **2026-11-16, job 138 PASS (G5 run 8 merge-check at 2465d02d, full suite, 15/15, 52.0 -> 24.8). Merged wp/S19-g5f
+  into wp/S19 (e9d5f386).** wp/S19 gained docs and skill files only since the merge-check base 708ce244. Worktree
+  s19-g5f removed; branch kept (merged into wp/S19, not main).
+- **2026-11-16, job 141 PASS (g6r4-revfix 6d81db7b, step 217 accepted-neutral, 35.0 -> 35.0, 15/15).** G6 run 4
+  merges on job 142 (merge-check) PASS.
+- **2026-11-16 14:08, merge_tiers w4-mt1 PASS (3c2c2d33..4d250386, 1453 s).** ruff 0, mypy 0 (42 s), full suite
+  20375 passed, 107 skipped, 3 xfailed (1352 s), F0 PASS M1-M9 (43 s), mcp_digest 40 passed. Log
+  `runs/s19-gates/20261116T134343-w4-mt1.tiers.log`. W4's own merge-check evidence; it merges after wp/S19 (with
+  G5 run 8 and, after job 142, G6 run 4) is merged into the lane and merge_tiers passes on that merge: wp/S19 gained
+  code since 3c2c2d33 that W4's import retargets could break without a shared file.
+- **2026-11-16, config: the tests tier passes `--durations=25` to pytest** (proposal 1 of session OpenFlowsheet-check's
+  14:17 gate-report reading). Diagnostics only: test_impact.py's selection reads only `--deselect` from the extra
+  arguments, the verdict is pytest's exit code. Takes effect for gates whose base contains this commit. Proposal 2
+  (a step-cadence exclusion of end-to-end reference files) changes what a step gate proves: put to Frank by that
+  session; not adopted here.
+- **2026-11-16, G6 run 5 reported (opus-engineer, 185k tokens; over the 150k cap).** wp/S19-g6c bd694a82..c252d508,
+  12 steps, jobs 143-154 queued: spec.py 15.0/9.0 -> 0/10.0; analysis.py 15.3/9.0 -> 2.3/9.5; blocks.py 13.0/8.5 ->
+  0/10.0; tear.py 11.0/8.0 -> 2.0/9.5; lint.py 10.0/8.5 -> 3.0/9.0; experiments/runner.py 11.7/7.9 -> 3.2/9.1;
+  store.py 7.0/8.1 -> 4.0/8.6; repo debt 4864.9 -> 4796.4 (engineer's scan). Engineer notes: 69c3d900's message
+  wrongly says two tests pin the lint finding order (they assert `== []`); 4e8cde81's message says nesting 4 -> 1
+  (it is 2); the `BlockingIOError` branch of `_acquire_lock` may be unreached by local tests. Left for W4 interface:
+  `ExperimentRunner.__init__`/`run` six public parameters; `ArtifactSink.record` (Protocol, R-237) seven keywords.
+  Review R-W3-G6-5 (reviewer, brief `S19-R-W3-G6-5.md`) launched in parallel with the gates.
+- **2026-11-16, wp/S19-tools4 merged (c42e524d):** gate_report.py `--heavy N` (session OpenFlowsheet-check),
+  reviewed and run by the orchestrator. Proposal 2 (step-cadence exclusion of end-to-end files) is with Frank, with
+  this session's three conditions (excluded files stated per gate; merge_tiers.sh named for interface lanes;
+  test_doc_examples.py kept at step cadence for --mode interface).
+- **2026-11-16, review R-W3-G6-5 (reviewer, Opus, 109k tokens): merge after fixes.** All twelve steps preserve
+  behaviour (order, texts, side-effect order; no arithmetic moved). Fixes: renames, steps 2 (`_finding` ->
+  `_finding_and_objects`, analysis.py:213), 7 (`_next_layer` -> `_record_next_layer`, tear.py:217; rule 6 exception
+  needs the name to say it writes), 11 (`_handshake_attempts` -> `_write_handshake_attempts`, runner.py:409): one
+  commit by sonnet-implementer, enqueued no-gain as g6r5-revfix. Log corrections (history not rewritten):
+  step 8 (69c3d900): its message's claim that test_x04_messages and test_msg_corpus compare the finding lists is
+  false (they assert `== []`, test_x04_messages.py:633, test_msg_corpus.py:429); the order is unchanged by
+  construction (reviewer). Step 12 (c252d508): its `Codehealth-Recipe: loop-body-extract` trailer is wrong; the whole
+  loop moved (the accepted form of 65fdadb0). Step 5 (4e8cde81): its message's nesting "4 -> 1" is 2 (engineer).
+  Test-only follow-ups, not merge conditions (build lane, trailing): a test pinning `lint_entry`'s finding order (one
+  complete entry with a failing example, jargon in a variant summary and an infeasibility claim); a lock-contention
+  test for `ExperimentStore.locked` (`BlockingIOError` branch).
+- **2026-11-16, job 143 PASS (g6r5-1 58f1aecb, step 218 accepted, 15.0 -> 0).** Gate report ALERTs: ALERT selected gates take 743 s > 300 s (tests tier);ALERT selected/full time ratio 0.58 > 0.4: selection saves little;ALERT queue wait median 38 min > 15 min; (cause as at job 123; proposal 2 with Frank).
