@@ -1351,3 +1351,5 @@
   gap is real, a finding for a fresh engineer (patch targets of write_bundle / _run_result after the move).
 - **2026-11-16, job 182 PASS (G6 run 6 step 3, 77ae7025, step 243 accepted, 17.0 -> 14.0, 16/16).** ALERTs as at job
   181 (selected share 52%, selected 451 s, wait median 37 min; standing, proposal 2 with Frank).
+- **2026-11-16, job 183 PASS (G6 run 6 step 4, aa10c1d6, step 244 accepted, 17.0 -> 14.0, 16/16).** ALERTs: selected
+  share 54%, selected 465 s, wait median 39 min (standing, proposal 2 with Frank). Queue: only 184 left.
