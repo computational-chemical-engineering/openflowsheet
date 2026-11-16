@@ -1,0 +1,35 @@
+# ADR 0076 I-11 (S17 D1, FQ-C decided 2026-11-14: delete) (W4 run 11, brief S19-W4-11): the K06
+# facade module application/transactions.py is deleted; LocalApplication is checked against the
+# plan §2.1 `Application` by mypy through local.py's private `_conforms` under TYPE_CHECKING.
+# `codehealth gate --mode interface` reads this plan from the plan commit.
+id = "i11-k06-facade"
+approved_by = "Frank Peters, 2026-11-14, ADR 0076 accepted (Decision Desk ofs-adr0076-accept); FQ-C decided by Frank 2026-11-14 (delete)"
+reason = """ADR 0076 I-11: the module application/transactions.py is removed with everything it \
+bound: K06's facade `Application`, `RevisionStoreView`, the alias `Operation` (the public \
+`Operation` is operations.Operation only) and its re-exports of application.types names \
+(ChangeSet, DiffElement, Edit, SemanticDiff, TransactionResult). Successors per the ADR: \
+`Application()` -> `LocalApplication.in_memory()`; `commit(ChangeSet)` -> \
+`LocalApplication.commit_change(change, expected_revision, idempotency_key)`; `RevisionStoreView` \
+-> the store and LocalApplication's read operations; `record_run` and its in-memory side table \
+have no successor (ADR 0035 D4: invalidations come from jobs in the store). No src module imports \
+transactions. Before this plan, outside the gate: the facade tests and \
+scripts/k06_evidence_manifest.py were ported to LocalApplication (1efad3ce) and the re-export \
+importers retargeted to application.types (ae098feb). The step: transactions.py deleted; \
+local.py gains `if TYPE_CHECKING:` importing contract.Application and the private \
+`def _conforms(app: LocalApplication) -> Application: return app` (no public name added); \
+types.py's docstring stops saying transactions re-exports its names. callers: \
+tests/test_t07_transactions.py, whose two statements naming the removed module are deleted \
+(the import `from openflowsheet.application import transactions, types` and the identity loop \
+`for name in (...): assert getattr(transactions, name) is getattr(types, name)`); the rest of \
+that test (ChangeSet round trip) stays. Expected codehealth arch --depth 4 (measured at this base \
+and on the step applied to it): 1 violation / 1 cycle / 4 cycle edges -> 1 / 1 / 4 (transactions \
+was neither a violation nor on a cycle), files 316 -> 315, imports 4002 -> 3995. Layer config \
+after the step (separate commit): application-layers and transports-through-operations lose \
+openflowsheet.application.transactions (the tool warns that the entry matches no module) and \
+their adoption lines naming it go."""
+removed = ["src/openflowsheet/application/transactions.py"]
+renamed = {}
+changed = []
+added = []
+new_files = []
+callers = ["tests/test_t07_transactions.py"]
