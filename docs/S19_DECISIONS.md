@@ -873,3 +873,5 @@
   23.0 -> 7.0, 16/16).** Report: ALERTs as at job 123.
 - **2026-11-16, job 127 PASS (W4 run 5b, I-8e interface, 69d0a17d..ad40c05d, step 207 accepted, 27.1 -> 27.1,
   17/17).** Report: ALERTs as at job 123.
+- **2026-11-16, job 132 PASS (G5 run 8 step 2, ce638e4c, `escalate_column`, step 208 accepted, 22.5 -> 17.5,
+  16/16).** Report: ALERTs as at job 123.
