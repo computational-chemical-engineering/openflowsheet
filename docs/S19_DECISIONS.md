@@ -718,3 +718,10 @@
 - **2026-11-16, job 91 PASS (G5 run 5 step 3, 3551c828 `_freed_columns`, step 174 accepted, certificate.py 46.1 -> 37.1, 16/16).**
 - **2026-11-16, job 75 PASS (W4 rebuild 5b, I-2 src e0acbfbb..809babce, step 175 accepted-neutral, 15/15).**
 - **2026-11-16, job 76 PASS (W4 rebuild 5b, I-7 src 9ce92c74..66a4d2cd, step 176 accepted-neutral, 15/15).**
+- **2026-11-16, job 92 PASS (G5 run 5 step 4, 8bf68291 `_guard`, step 177 accepted, certificate.py 37.1 -> 30.1, 16/16).** G5 run 5 fully gated; reviewer R-W3-G5-5 launched (Opus, brief `S19-R-W3-G5-5.md`).
+- **2026-11-16, job 94 FAIL (G5 run 6 step 1, 54e688fd `r0_projection`, step 178 gate-fail): static check `literals`,
+  `removed 'warm_start' x2`** (the `projection["warm_start"]["coupling"/"external"]` writes became one assignment of a
+  locally built dict; behaviour unchanged; debt 76.4 -> 12.0, tests tier not run). Jobs 95-97 SKIPPED. Step mode has
+  no declared literal drop, so as in S17 the step is reworked: fresh opus-engineer, brief `S19-W3-G5-6b.md` (rework
+  step 1 to an equal literal multiset without dead code, rebuild the lane, check every step's literal multiset
+  locally, re-enqueue as g5r6b-1..4; old tip kept as `wip/S19-g5d-r1`).
