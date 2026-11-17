@@ -28,7 +28,16 @@ A private name whose callers sit in another module becomes public in its home (A
 code)` (InspectionService, the contract operation `dispatch` calls for a request refused before it
 reaches a method); the latter calls the former with `request_sha256=None`.
 
-## Upward edges under the ADR's lists (R1: STOP, not chosen)
+## Upward edges under the ADR's lists (R1)
+
+Run 17 stopped on E1 to E3 (R1). The orchestrator's ruling of 2026-11-17 (brief S19-W4-18; the
+reviewer confirms or overturns it at the I-12d review) decides each by the ADR's own rule: "a method
+whose family is not listed goes where its only callers are; callers in two services, the lower one";
+a listed home that would make a service call one above it yields to that rule. E1 to E3 now stand in
+the table with basis "R1 ruling 2026-11-17": `_job` -> ArtifactService `job`; `_decode_cursor`,
+`_encode_cursor` -> RevisionService (`decode_cursor`, module-level `encode_cursor`); `_check_request`
+-> RevisionService. Run 17's reading B of "cursor helpers" stands, so E4 does not arise. Any other
+upward edge found later is still a STOP.
 
 | edge | file:line at 617099ef | caller home | callee home (ADR) |
 |---|---|---|---|
@@ -40,7 +49,9 @@ reaches a method); the latter calls the former with `request_sha256=None`.
 Reading A ("cursor helpers" = every `*cursor*` helper plus `_check_limit` and `_check_sequence`)
 adds E4; reading B (the job-list cursor of §11.4) does not, and under B `_check_limit` and the
 audit cursor go to InspectionService by rule 4. E1 to E3 stand under either reading. No core
-member calls a service. Steps 1 (ServiceCore, InspectionService) touch none of E1 to E3.
+member calls a service. Steps 1 (ServiceCore, InspectionService) touch none of E1 to E3. With the
+ruling, no service calls one above it: `job` (store, core) and `check_request` (`rejected`, core) call
+nothing above their new homes, and the cursor pair calls only the core.
 
 ## Table
 
@@ -97,7 +108,7 @@ member calls a service. Steps 1 (ServiceCore, InspectionService) touch none of E
 | 1021 | `_surrogate_study_admission` | validation | `validation_service.ValidationService._surrogate_study_admission` | ADR `_admit*` | `_admit` |
 | 1043 | `_optimize_admission` | validation | `validation_service.ValidationService._optimize_admission` | ADR `_admit*` | `_admit` |
 | 1056 | `_reproduce_admission` | validation | `validation_service.ValidationService._reproduce_admission` | ADR `_admit*` | `_admit` |
-| 1073 | `_job` | job | `job_service.JobService.job` (public: crosses modules) | ADR range `_submit .. _import_bundle` | `_replayed_job`, `_result`, `_submit`, `cancel_job`, `get_job`, `get_stream_table` |
+| 1073 | `_job` | artifact | `artifact_service.ArtifactService.job` (public: crosses modules) | R1 ruling 2026-11-17 (E1: callers in job+artifact, the lower) | `_replayed_job`, `_result`, `_submit`, `cancel_job`, `get_job`, `get_stream_table` |
 | 1079 | `_wait` | job | `job_service.JobService._wait` | ADR range `_submit .. _import_bundle` | `_wait_until_ended`, `wait_job` |
 | 1092 | `_wait_until_ended` | job | `job_service.JobService._wait_until_ended` | ADR range `_submit .. _import_bundle` | `reproduce`, `solve` |
 | 1100 | `_result` | job | `job_service.JobService._result` | ADR range `_submit .. _import_bundle` | `get_job_result`, `reproduce`, `solve` |
@@ -109,7 +120,7 @@ member calls a service. Steps 1 (ServiceCore, InspectionService) touch none of E
 | 1294 | `_import_bundle` | job | `job_service.JobService._import_bundle` | ADR range `_submit .. _import_bundle` | `reproduce` |
 | 1347 | `_check_limit` | inspection | `inspection_service.InspectionService.check_limit` (public: crosses modules) | callers in inspection+revision+job, the lower | `list_audit`, `list_capabilities`, `list_job_events`, `list_jobs`, `list_revisions` |
 | 1356 | `_check_sequence` | job | `job_service.JobService._check_sequence` | ADR 'cursor helpers' (reading B) | `list_job_events`, `wait_job` |
-| 1369 | `_decode_cursor` | job | `job_service.JobService.decode_cursor` (public: crosses modules) | ADR 'cursor helpers' (reading B) | `list_jobs`, `list_revisions` |
+| 1369 | `_decode_cursor` | revision | `revision_service.RevisionService.decode_cursor` (public: crosses modules) | R1 ruling 2026-11-17 (E2: callers in job+revision, the lower) | `list_jobs`, `list_revisions` |
 | 1392 | `_refuse_error` | core | `service_core.ServiceCore.refuse_error` (public: crosses modules) | ADR core list | `_admit`, `_check_view`, `_project`, `_submit`, `check_admission`, `list_capabilities` |
 | 1401 | `preview_change` | revision | `revision_service.RevisionService.preview_change` | ADR family list | - |
 | 1427 | `get_project` | inspection | `inspection_service.InspectionService.get_project` | ADR family list | - |
@@ -133,7 +144,7 @@ member calls a service. Steps 1 (ServiceCore, InspectionService) touch none of E
 | 1962 | `_run_outcome` | artifact | `artifact_service.ArtifactService._run_outcome` | only caller | `_missing_member`, `get_stream_table` |
 | 1973 | `_check_view` | revision | `revision_service.RevisionService.check_view` (public: crosses modules) | callers in revision+artifact+validation, the lower | `get_artifact`, `get_revision`, `get_stream_table`, `inspect_structure` |
 | 1982 | `_project` | revision | `revision_service.RevisionService.project` (public: crosses modules) | callers in revision+artifact+validation, the lower | `get_artifact`, `get_revision`, `get_stream_table`, `inspect_structure` |
-| 2008 | `_check_request` | validation | `validation_service.ValidationService.check_request` (public: crosses modules) | ADR family list | `commit_change`, `preview_change` |
+| 2008 | `_check_request` | revision | `revision_service.RevisionService._check_request` | R1 ruling 2026-11-17 (E3: only callers in revision) | `commit_change`, `preview_change` |
 | 2030 | `_prepare` | revision | `revision_service.RevisionService._prepare` | ADR family list | `commit_change`, `preview_change` |
 | 2133 | `_check_promotion` | revision | `revision_service.RevisionService._check_promotion` | ADR family list | `_prepare` |
 | 2172 | `_store_replacements` | revision | `revision_service.RevisionService._store_replacements` | ADR family list | `commit_change` |
@@ -151,5 +162,5 @@ member calls a service. Steps 1 (ServiceCore, InspectionService) touch none of E
 | 2355 | `_unique_members` | artifact | `artifact_service._unique_members` | only caller | `_file_document` |
 | 2362 | `_file_document` | artifact | `artifact_service._file_document` | only caller | `get_artifact` |
 | 2379 | `_encode_audit_cursor` | inspection | `inspection_service._encode_audit_cursor` | only caller | `list_audit` |
-| 2386 | `_encode_cursor` | job | `job_service.encode_cursor` (public: crosses modules) | ADR 'cursor helpers' (reading B) | `list_jobs`, `list_revisions` |
+| 2386 | `_encode_cursor` | revision | `revision_service.encode_cursor` (public: crosses modules) | R1 ruling 2026-11-17 (E2: callers in job+revision, the lower) | `list_jobs`, `list_revisions` |
 | 2394 | `_conforms` (under `TYPE_CHECKING`) | facade | stays | checks the facade against `contract.Application` | - |
