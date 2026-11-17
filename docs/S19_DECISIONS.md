@@ -2041,3 +2041,9 @@
   "ALERT selected gates take 744 s > 300 s (tests tier)"
   "ALERT selected/full time ratio 0.68 > 0.4: selection saves little"
   (standing).
+- **2026-11-17 08:05, serial pair i12a EQUAL (rule 4):** i12a-base 0ca3c762 and i12a-head 0c96257c rc=0, MSG WO-5a 1061, WO-6 801 (100), 20392 passed, 107 skipped, 222 deselected, 3 xfailed. Worktrees removed. Left for the w4r13 merge: i12c-head. i12d1 pair running.
+- **2026-11-17 08:05, job 238 PASS (w4r18-i12d-2, I-12d step 2 RevisionService 3b72357b, step 282 accepted, 17/17, debt 18.6 -> 18.6).** Gate report (6 h):
+  "ALERT selected share 33% < 75% of step gates"
+  "ALERT selected gates take 744 s > 300 s (tests tier)"
+  "ALERT selected/full time ratio 0.68 > 0.4: selection saves little"
+  (standing).
