@@ -2158,3 +2158,5 @@
   deselected selects nothing (test_impact.py:706, :751), so it cannot drag its ~300 s file into a gate; the B-6 miss
   is as in G-MAP 3 and 4. Alternative: a second build (~1 h) hoping f6 lands under 300 s. Reversible by: setting MB
   back to 1720cc98 in S19_STATE. The f6 budget is still judged alone on wp/S19 before the phase merge into main.
+- 2026-11-17 13:18, runner restarted (PID 1474880); map5 worktree removed; wp/S19-w4 fast-forwarded to 0d826601.
+  W4 run 20 (I-19 part 1: inventory, retargets, removal) launched: opus-engineer, Opus, brief S19-W4-20.md.
