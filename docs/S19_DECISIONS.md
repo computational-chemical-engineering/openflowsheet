@@ -2008,3 +2008,6 @@
   on the helper tree; the lane changes only import lines in jobs/ and serving.py; E01B_DECISIONS:459 records the same
   test failing on timing under load. Re-enqueued unchanged as job 236 (w4r13-mc2). Serial i12a-head and i12c-head
   run this test serially as well.
+- **2026-11-17 06:35, serial pair i10-head vs i12b-head EQUAL (rule 4):** i12b-head f917c724 rc=0, the same MSG
+  WO-5a (1061) and WO-6 (801, 100) lines and 20392 passed, 107 skipped, 222 deselected, 3 xfailed (6409 s). Worktree
+  removed. Left: i12a pair (started 06:07), i12c-head (started 06:22).
