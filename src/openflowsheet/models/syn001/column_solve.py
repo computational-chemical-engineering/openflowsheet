@@ -51,7 +51,6 @@ from openflowsheet.models.syn001.cascade_solve import (
     run_region,
 )
 from openflowsheet.models.syn001.cascade_solve import FD_COLUMN_SCALE as CASCADE_FD_SCALE
-from openflowsheet.models.syn001.cascade_solve import saturation_pairs as saturation_pairs
 from openflowsheet.models.syn001.cascade_spec import CascadeSpec
 from openflowsheet.models.syn001.column import ProfileInitial, profile_initial
 from openflowsheet.models.syn001.column_acceptance import (
