@@ -1728,3 +1728,14 @@
   from `changed`: P c2df0d96 (on eb71978d), S1 a741872b (job 223 w4r12-i13-5, interface), T 595ea240, S2 a652a744
   (job 224 w4r12-i13-6, no-gain); backup wp/S19-w4r12-job219 = a39da84c; diff vs backup: thermal_binding.py (4) and
   the plan (2). mypy 378 clean; 266 thermal_binding tests passed.**
+- **2026-11-17, G5 run 11 reported (opus-engineer, Opus, ~177k tokens). wp/S19-g5i (BASE 640bbd63), 3 steps, jobs
+  218, 222, 225:** 0d90dad9 split_checks `_split_checks` admissibility -> `_split_admissibility` with NamedTuple
+  `_SplitAt` (name, subject, vapor, liquid, T, P; name/subject before the temperature-degenerate return, the four
+  state reads after it, same order) (8.0 -> 4.2; file 21.0 -> 17.2, 7.2 -> 8.2); 1147a6f2 `degeneracy` ->
+  `_owned_streams` (3.0 -> 2.0, exactly the 1.0 threshold, removes the file's `complex` smell; file 16.2, 8.7);
+  c5507eac checks `admissibility_checks` -> `_s3_independent_split_checks` (1.4 -> 0; file 17.5 -> 16.1, 8.4 -> 8.7).
+  Repo debt 4705.9 -> 4699.7, health 8.11 -> 8.13. Literal multisets unchanged; patch_noop 0/265; tests 621 / 880
+  passed. Not taken: `closure_check`, `escalate_column` (public signatures), `_declared_port_checks` and
+  `_split_checks`' remaining 4.0 (fixed by `table.revision_checks` calls, off limits), `_phase_enthalpy` (pinned by
+  test_st_core.py:993), `material_checks` (one line over, a balance table: trimming it would be gaming). checks.py
+  stops at 8.7 (aim 9.0 missed). For the reviewer: `_SplitAt` (step 1 reverts alone if rejected); step 2's 1.0 gain.
