@@ -71,10 +71,11 @@ duplication (twin merge: addendum for Frank); certificate, checks, split_checks 
 `_project`, rule 10; many_args at its cap); render 8.5 (ladder, judged); store 8.6 (R-237 interface); compare 8.6
 (frozen v1); thermo/ frozen files (W5).
 **Next (four desk cards signed A and VERIFIED, 2026-11-17 ~20:10):**
-1. Merge wp/S19 into main (ofs-s19-w3w4-merge-main): evidence engineer running (brief S19-EV-W3W4.md, lane
-   wp/S19-ev from 4f9f2c3d; manifest `implemented`, budget tests alone, F0, harvest rows). Then: fast-forward or merge
-   wp/S19-ev into wp/S19, push wp/S19, CI green on both legs (`gh run list --branch wp/S19`), manifest -> `tested`
-   commit, merge commit into main, F0 on main, push main, write `executed` on the card, tell hub. Then rebuild the map.
+1. Merge wp/S19 into main (ofs-s19-w3w4-merge-main): evidence manifest `implemented` merged (ed0f04ae). CI
+   44158387592 on ed0f04ae FAILED (K05 state hash off the reference platform, both legs); test fix b716feb7, pushed
+   with d500fb07. **Waiting: CI 44173756567 on d500fb07** (background watch; if it ended unseen, `gh run view
+   44173756567`). Green on both legs -> manifest -> `tested` commit (cite the run), merge commit into main, F0 on
+   main, push main, write `executed` on the card, tell hub. Red -> stop, record, diagnose. Then rebuild the map.
 2. WITNF (ofs-s19-oq1b-nan-witness-early): brief WITNF-engineer.md ready (fill BASE_SHA_HERE with main after step 1),
    then `reviewer` (design lane), CI, merge into main, `executed` on both NaN cards.
 3. 0.5 (ofs-s19-start-05): starts after step 1; Frank's roadmap ADR 0057 (X07a, X01, F3, F2, F8, X06). Write
