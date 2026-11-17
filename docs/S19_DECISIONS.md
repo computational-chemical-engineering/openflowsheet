@@ -2241,3 +2241,14 @@
   parameter question judged only) and G5 run 12 (`opus-engineer`, Opus, brief S19-W3-G5-12.md, lane wp/S19-g5j:
   table.py `revision_checks`, then certificate.py).** The design batch (R-W3-G5-7 component order, R-W3-G5-8 NaN
   witness) takes the first free slot.
+- **2026-11-17, G6 run 7 reported (opus-engineer, Opus, 88k tokens). wp/S19-g6e (BASE fb04cd10), 1 step, job 258:**
+  2ce4c5fe launcher `launch` `finally` block -> `_reap_and_record` (extract-phase; side effects in the old order:
+  `progress.terminated` while the child runs, `_terminate`, stdin close, `progress.wall_s`, exit code and signal; no
+  import line changed); `launch` 10.0 -> 8.2, launcher.py 11.0 -> 9.2, health 8.8 -> 9.3; repo 4699.2 -> 4697.4.
+  Parameter judgment: no ADR proposal (the seven keyword options are four concerns, each caller a different subset:
+  worker.py:199, backends.py:365 and :456, `clock` tests only; bundling them is rejected in S19_RULES). G6's
+  non-frozen W3 part is done after this merges (render.py, store.py R-237 and the frozen thermo files stay as recorded).
+  DECISION: G6 run 7's one step is reviewed together with G5 run 12 by one `reviewer` (the rule-6 reading of the
+  `progress` writes is the question for it), not by its own reviewer. Alternative: a separate reviewer now.
+  Reversible by: briefing R-W3-G6-7 alone. **Design batch 1 launched (`specifier`, Opus, brief S19-D-batch1.md).**
+  Agents running: G5 run 12, design batch 1 (cap 2).
