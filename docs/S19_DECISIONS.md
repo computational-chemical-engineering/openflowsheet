@@ -2330,3 +2330,7 @@
   ofs-s19-oq1b-nan-witness-early (NaN-witness refusal on main right after the merge; supersedes the timing of
   ofs-s19-oq1-nan-witness). Order of execution: evidence and merge, then the NaN-witness package, then 0.5 and the
   trailing lane. Evidence work order: opus-engineer, brief S19-EV-W3W4.md, lane wp/S19-ev from this commit.
+- **2026-11-17, DECISION: the NaN-witness change is work package `WITNF` (branch wp/WITNF, evidence/WITNF/),
+  build-lane implementation of the design-lane ruling with a `reviewer` pass.** Alternative: fold it into S19's
+  manifest. Reason: it is a behaviour change, and S19's evidence claims bitwise identity. Reversible by: renaming
+  before the first commit. Brief WITNF-engineer.md written; launches after the main merge.

@@ -70,10 +70,16 @@ What stays below 9.0 there, each with its owner: verify twins gamma_phi_units 6.
 duplication (twin merge: addendum for Frank); certificate, checks, split_checks 8.7 (public signatures, test-pinned
 `_project`, rule 10; many_args at its cap); render 8.5 (ladder, judged); store 8.6 (R-237 interface); compare 8.6
 (frozen v1); thermo/ frozen files (W5).
-**Next: waits for Frank** (desk cards ofs-s19-start-05, ofs-s19-w3w4-merge-main, ofs-s19-trailing-order, ofs-s19-oq1b-nan-witness-early; verify each
-signed card with decision_desk_verify.py before acting). 0.5 (roadmap ADR 0057) is his to start. Trailing S19 work, in his order: W5 (frozen
-modules, thermo/), G1 (held for the scale probe), G2/G3/G4, the 232 pre-S19 doc breaks, the Q2 change after S19 closes.
-A merge of wp/S19 into main needs a Decision Desk card (evidence manifest, f6 alone, CI both legs, F0).
+**Next (four desk cards signed A and VERIFIED, 2026-11-17 ~20:10):**
+1. Merge wp/S19 into main (ofs-s19-w3w4-merge-main): evidence engineer running (brief S19-EV-W3W4.md, lane
+   wp/S19-ev from 4f9f2c3d; manifest `implemented`, budget tests alone, F0, harvest rows). Then: fast-forward or merge
+   wp/S19-ev into wp/S19, push wp/S19, CI green on both legs (`gh run list --branch wp/S19`), manifest -> `tested`
+   commit, merge commit into main, F0 on main, push main, write `executed` on the card, tell hub. Then rebuild the map.
+2. WITNF (ofs-s19-oq1b-nan-witness-early): brief WITNF-engineer.md ready (fill BASE_SHA_HERE with main after step 1),
+   then `reviewer` (design lane), CI, merge into main, `executed` on both NaN cards.
+3. 0.5 (ofs-s19-start-05): starts after step 1; Frank's roadmap ADR 0057 (X07a, X01, F3, F2, F8, X06). Write
+   `executed` when the first 0.5 package is started.
+4. Trailing S19 at one lane (ofs-s19-trailing-order): G3, G4, G2 (non-legacy), W5, G1 after the scale probe, docs.
 **Open for Frank (not blocking):** proposal 2 (selection widening; selected gates ~600 s vs 300 s); R-1042 option C;
 STOP 1 alternative; verify twins addendum; thermo/ below 7.0 only in W5; optional forbid rule cli/serving -> services;
 merge of wp/S19 into main (main = 218e7a73 shows health 7.7).
