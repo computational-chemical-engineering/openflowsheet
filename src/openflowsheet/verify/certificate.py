@@ -516,15 +516,15 @@ def verify_revision(
     witness = _revision_witness(target, final_state, view, basis, splits)
     return _issue(
         _Subject(target, result, solved, final_state),
-        checked=_Checked(checks, digest, screened, projection, surrogate_limitations),
+        checked=_Checked(
+            checks, digest, screened, projection, surrogate_limitations, fresh, external
+        ),
         policy=resolved,
         declaration=NOMINAL_DECLARATION,
         phase_branch=revision_phase_branch(
             final_state, view.streams, splits, components=view.components
         ),
-        provider=fresh,
         witness=witness,
-        external=external,
     )
 
 
@@ -1027,6 +1027,11 @@ class _Checked:
     projection: Projection
     #: The caller's own limitations, recorded after the grade's (M04 spec §8.6: a surrogate's).
     appended: Sequence[Limitation] = ()
+    #: The fresh provider the checks ran on (M02 design note §14.2 B15); `None` for SYN-001's.
+    provider: PropertyProvider | None = None
+    #: A coupled run's evidence about its external units, whose checks are judged with the check
+    #: set (M02 design note §4.4); `None` when the run has none.
+    external: ExternalEvidence | None = None
 
 
 def _issue(
@@ -1036,21 +1041,21 @@ def _issue(
     policy: CheckPolicy,
     declaration: Mapping[str, Any],
     phase_branch: Mapping[str, Any],
-    provider: PropertyProvider | None = None,
     witness: _WitnessColumns,
-    external: ExternalEvidence | None = None,
 ) -> SolutionCertificate:
     """§4.8, §7 and §8 after the check set: the derivative witness, the grade and the certificate
     (T05 design note §4.2). Shared by `_certify` (SYN-001's check set) and `verify_revision` (the
     table's); `subject` is what the certificate is about, `checked` the caller's check set at
-    its `final_state` with its residual state hash, regularity screen, projection and own
-    limitations, `phase_branch` the caller's record of the branch, and `witness` the columns the
-    derivative witness does not difference or differences one-sided."""
+    its `final_state` with its residual state hash, regularity screen, projection, own
+    limitations, fresh provider and external evidence, `phase_branch` the caller's record of the
+    branch, and `witness` the columns the derivative witness does not difference or differences
+    one-sided."""
     from openflowsheet.verify.checks import derivative_witness
     from openflowsheet.verify.regularity import solution_error_bound
 
     target, result, solved, final_state = subject
     checks, digest, screened = checked.checks, checked.digest, checked.screened
+    external = checked.external
     resolved = policy
     plan = getattr(result, "plan", None)
     plan_id = getattr(plan, "plan_id", "")
@@ -1076,9 +1081,10 @@ def _issue(
     if bound is None:
         bound = solution_error_bound(matrix, scaled_residual)
 
-    status, limitations = _graded(target, checked, resolved, witness, external)
+    status, limitations = _graded(target, checked, resolved, witness)
     # M02 design note §14.2 B15: the fresh provider the checks ran on, which the independence
     # qualifications and the statements name; SYN-001's unless given.
+    provider = checked.provider
     if provider is None:
         provider = Syn001Provider()
     capabilities = provider.describe()
@@ -1120,12 +1126,11 @@ def _graded(
     checked: _Checked,
     policy: CheckPolicy,
     witness: _WitnessColumns,
-    external: ExternalEvidence | None,
 ) -> tuple[VerificationStatus, list[Limitation]]:
     """§8.1's verdict on `checked`'s check set, the derivative witness's checks included, with
     its limitations: `grade`'s under `policy` and the screen's regularity, then
     `derivative_witness_partial` when `witness` left a column of `target`'s declaration
-    undifferenced, `external`'s, and the caller's own (`checked.appended`)."""
+    undifferenced, `checked.external`'s, and the caller's own (`checked.appended`)."""
     from openflowsheet.verify.checks import witness_skipped_columns
 
     regularity = checked.screened.regularity
@@ -1149,8 +1154,8 @@ def _graded(
                 {"columns": skipped, "reason": witness.skipped_reason},
             )
         )
-    if external is not None:
-        limitations += external.limitations
+    if checked.external is not None:
+        limitations += checked.external.limitations
     # The caller's own limitations after the grade's (M04 spec §8.6: a surrogate's).
     limitations.extend(checked.appended)
     return status, limitations
