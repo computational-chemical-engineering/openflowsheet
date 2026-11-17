@@ -157,6 +157,7 @@ order = [
     # persistence
     "openflowsheet.application.authz",
     "openflowsheet.application.store",
+    "openflowsheet.application.store_records",
     # edit algebra and binder vocabulary (S17 R2, R4)
     "openflowsheet.application.revision_edits",
     "openflowsheet.application.binding_common",
