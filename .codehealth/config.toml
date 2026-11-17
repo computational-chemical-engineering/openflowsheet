@@ -267,6 +267,9 @@ to = [
     "openflowsheet.application.model_signatures",
     "openflowsheet.application.revision_edits",
     "openflowsheet.application.binding_common",
+    "openflowsheet.application.structure_inspection",
+    "openflowsheet.application.store_records",
+    "openflowsheet.application.revision_replay",
 ]
 reason = "bindings/__init__.py: each binding reads operations.OPERATIONS, goes through operations.dispatch and adds nothing (T07 design note 11.6)"
 
@@ -287,8 +290,14 @@ from = [
     "openflowsheet.application.thermal_binding",
     "openflowsheet.application.model_builders",
     "openflowsheet.application.model_signatures",
+    "openflowsheet.application.structure_inspection",
+    "openflowsheet.application.revision_replay",
 ]
-to = ["openflowsheet.application.store", "openflowsheet.application.authz"]
+to = [
+    "openflowsheet.application.store",
+    "openflowsheet.application.store_records",
+    "openflowsheet.application.authz",
+]
 reason = "the revision engine computes; persistence and authorization belong to the services above it (no engine module imports them at run time today; revision_continuation.py:57 is under TYPE_CHECKING) (S17 plan review)"
 
 [docs]
