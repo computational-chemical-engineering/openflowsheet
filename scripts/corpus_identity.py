@@ -472,7 +472,7 @@ def m6_sample_entries(requests: Mapping[str, Sequence[dict[str, Any]]]) -> dict[
 def m7(bundles: Path = V030_BUNDLES) -> dict[str, dict[str, Any]]:
     """Each bundle re-run and compared as RC step 5 (`bundles-replay`) does, keyed `<set>/<name>`.
     A directory the index does not name, or an entry with no directory, is its own key."""
-    from openflowsheet.application.revision_run import reproduce_bundle  # noqa: PLC0415
+    from openflowsheet.application.revision_replay import reproduce_bundle  # noqa: PLC0415
 
     index = json.loads((bundles / "index.json").read_text(encoding="utf-8"))
     entries = {entry["directory"]: f"{entry['set']}/{entry['name']}" for entry in index["entries"]}

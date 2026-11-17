@@ -60,12 +60,8 @@ from openflowsheet.adapters import variants
 from openflowsheet.adapters.experiments.runner import CacheMode, ExperimentRunner
 from openflowsheet.adapters.experiments.store import ExperimentStore, ListArtifactSink
 from openflowsheet.application.coupled_run import LiveExperiments, answer_of, final_constants
-from openflowsheet.application.revision_run import (
-    Route,
-    reproduce_bundle,
-    run_revision_session,
-    select_route,
-)
+from openflowsheet.application.revision_replay import reproduce_bundle
+from openflowsheet.application.revision_run import Route, run_revision_session, select_route
 from openflowsheet.canonical import document_sha256, file_sha256
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models.c1 import COMPONENTS

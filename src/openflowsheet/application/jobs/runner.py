@@ -123,13 +123,13 @@ from openflowsheet.application.revision_continuation import (
     continues_revisions,
     find_source,
 )
+from openflowsheet.application.revision_replay import reproduce_bundle
 from openflowsheet.application.revision_routes import REVISION_ROUTES
 from openflowsheet.application.revision_run import (
     Route,
     RunUnsupportedError,
     SolutionStateMismatchError,
     bind_route,
-    reproduce_bundle,
     run_revision_session,
     select_route,
 )

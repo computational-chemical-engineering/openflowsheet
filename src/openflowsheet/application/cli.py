@@ -136,7 +136,7 @@ def _check_line(check_id: str) -> str | None:
 
 def command_solve(arguments: argparse.Namespace) -> int:
     """Solve a registered SYN-001 case, verify it, and write a replay bundle."""
-    from openflowsheet.application.revision_run import registered_case, registered_flowsheet
+    from openflowsheet.application.revision_replay import registered_case, registered_flowsheet
     from openflowsheet.application.run_session import run_session
 
     case = registered_case(arguments.case)
@@ -327,7 +327,7 @@ def command_replay(arguments: argparse.Namespace) -> int:
     elif arguments.rerun:
         import tempfile
 
-        from openflowsheet.application.revision_run import reproduce_bundle
+        from openflowsheet.application.revision_replay import reproduce_bundle
 
         with tempfile.TemporaryDirectory() as scratch:
             report = reproduce_bundle(

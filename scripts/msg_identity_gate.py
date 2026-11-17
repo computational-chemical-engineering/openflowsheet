@@ -177,7 +177,7 @@ def step_corpus(out: Path) -> int:
 
 
 def step_replay(bundles: Path, out: Path) -> int:
-    from openflowsheet.application.revision_run import reproduce_bundle
+    from openflowsheet.application.revision_replay import reproduce_bundle
 
     rows: dict[str, Any] = {}
     with tempfile.TemporaryDirectory() as scratch:

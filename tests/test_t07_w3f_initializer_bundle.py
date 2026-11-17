@@ -27,10 +27,10 @@ from t07_corpus import CORPUS
 from test_k04_schemas import errors_for
 
 import openflowsheet.application.revision_run as revision_run
+from openflowsheet.application.revision_replay import reproduce_bundle
 from openflowsheet.application.revision_run import (
     Route,
     RunUnsupportedError,
-    reproduce_bundle,
     run_revision_session,
     select_route,
     solve_route,
