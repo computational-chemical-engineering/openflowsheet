@@ -2117,3 +2117,8 @@
   removed (not in the plan)"), a995d571 step (`_rejected`, 6 call sites, module docstring), 5cc529e7 placement row;
   job 243 (interface). Trial static checks ok, debt 14.9 -> 14.9; patch_noop 0 of 265; 1014 passed in 40 touched test
   files. Queue: 241 (step 5 behaviour) running, 242 (F2/F3 no-gain), 243 pending.
+- **2026-11-17 09:50, job 241 PASS (w4r19-i12d-5-behav, I-12d step 5 9697b223, merge-check mode, 7/7, full suite): interface gate not applicable (ADR 0076 Q-F5 fallback), recorded as such, not as an interface pass.** Gate report (6 h):
+  "ALERT selected share 11% < 75% of step gates"
+  "ALERT selected gates take 689 s > 300 s (tests tier)"
+  "ALERT selected/full time ratio 0.63 > 0.4: selection saves little"
+  (standing; remedy: MB after the I-12d merge).

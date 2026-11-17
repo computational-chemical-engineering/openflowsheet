@@ -61,7 +61,7 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 steps 1-4 PASS (jobs 237, 238, 240, 239), step 5 JobService 9697b223 under the ADR Q-F5 fallback (job 241, merge-check
 mode, "interface gate not applicable"); review R-W4-I12d: merge after fixes, all fixes done: F2/F3 1e319312 (job
 242), item 7 8b70f2fd (outside gate), F1 a995d571 (job 243). No agent running.
-**On resume:** (a) `$Q wait --since 226` in the background (jobs 241, 242, 243). A FAIL: read the failed checks;
+**On resume:** (a) `$Q wait --since 227` in the background (jobs 242, 243; job 241 PASS, 7/7). A FAIL: read the failed checks;
 environment -> re-enqueue unchanged; real -> fresh engineer. (b) Serial (rule 4), logs
 `<git-common-dir>/codehealth/runs/serial/i12d*.log`, worktrees `<scratchpad 78ab96ef>/ser-i12d*` (remove after):
 running i12d1-base 17cada5f (PID 891621), i12d1-head 394effe6 (891622), i12d2-head 3b72357b (917851), i12d4-head
