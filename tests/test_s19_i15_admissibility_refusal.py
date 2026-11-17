@@ -395,16 +395,31 @@ F0_REFERENCE_PLATFORM = json.loads(
 )["reference_platform"]
 
 
+#: The solve-event fields ADR 0007 (Context 2) measured identical across x86-64 and aarch64.
+PORTABLE_EVENT_FIELDS = ("kind", "attempt", "iteration", "outcome", "signature")
+
+
+def _portable_events(events: list[dict[str, Any]]) -> list[tuple[Any, ...]]:
+    return [
+        tuple(json.dumps(event.get(name)) for name in PORTABLE_EVENT_FIELDS) for event in events
+    ]
+
+
+def _bundle_artifact(case: str, name: str) -> Any:
+    return json.loads((F0_BUNDLES / "k05" / case / "artifacts" / name).read_text(encoding="utf-8"))
+
+
 @functools.cache
-def _k05_solve(case: str) -> tuple[Any, Any]:
+def _k05_solve(case: str) -> tuple[Any, Any, Any]:
     """The K05 case solved again as F0 solves it (`run_session`'s `solve_tear` under its default
-    policy): the flowsheet and the solve result, once per case for the two tests below."""
+    policy): the flowsheet, the solve result and its trace, once per case for the two tests
+    below."""
     registered = registered_case(case)
     assert registered is not None, case
     flowsheet = registered_flowsheet(registered)
     policy = SolvePolicy(policy_id="SYN-001-K03", residual_tolerances={}, scales={})
-    result, _ = solve_tear(flowsheet, policy=policy)
-    return flowsheet, result
+    result, trace = solve_tear(flowsheet, policy=policy)
+    return flowsheet, result, trace
 
 
 @pytest.mark.parametrize("case", K05_CASES)
@@ -419,22 +434,22 @@ def test_the_k05_state_is_the_bundles_on_the_reference_platform(case: str) -> No
             f"F0's state hashes are judged on {F0_REFERENCE_PLATFORM}, this host is {here}: "
             "a converged state's floats are not promised bitwise across platforms (ADR 0007)"
         )
-    _, result = _k05_solve(case)
-    certificate = json.loads(
-        (F0_BUNDLES / "k05" / case / "artifacts" / "solution-certificate.json").read_text(
-            encoding="utf-8"
-        )
-    )
+    _, result, _ = _k05_solve(case)
+    certificate = _bundle_artifact(case, "solution-certificate.json")
     assert result.checkpoint is not None
     assert result.checkpoint.full_state_sha256 == certificate["target_state_sha256"]
 
 
 @pytest.mark.parametrize("case", K05_CASES)
 def test_the_k05_k_values_are_the_verifier_k_values(case: str) -> None:
-    """The K05 runs reach the ideal-K test through `orchestrator/tear.py`'s lifted splits. At the
+    """The K05 runs reach the ideal-K test through `orchestrator/tear.py`'s lifted splits. On every
+    host the re-solve takes the bundle's path (its solve events' portable fields, ADR 0007 Context
+    2), so a drift of F0's solve from this one is seen off the reference platform too. At the
     state the case converges to on this host (the bundle's on the reference platform, above), K is
     bitwise equal at every lifted split's `(T, P)`."""
-    flowsheet, result = _k05_solve(case)
+    flowsheet, result, trace = _k05_solve(case)
+    found_events = _portable_events([event.as_document() for event in trace.events])
+    assert found_events == _portable_events(_bundle_artifact(case, "solve-events.json"))
     state = result.final_state
     assert state is not None
     provider = Syn001Provider()
