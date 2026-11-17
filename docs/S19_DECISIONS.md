@@ -1904,3 +1904,11 @@
   revision_run.py 1057 -> 717, revision_replay.py 365, 455 touched tests pass. Leftovers: revision_run.py module
   docstring still describes reproduce_bundle (docstring step later); `engine-not-persistence` forbid and
   store_records (review batch); docs anchors into authz.py, runner.py drifted (warnings).
+- **2026-11-17 04:45, cce-code-health cf15245 (session code_health; includes d23326b): the I-12c refusal 2 was a
+  defect.** public_api looked the old name up in its public-API map, which skips private names, so a moved private
+  name was never "gone" and the message said "still bound". Now a renamed entry for a private name in a touched module
+  is checked on bindings only (bound in the old module at base, unbound there at head under the shim rules incl.
+  no_implicit_reexport, newly bound in the new module; record api "private"). Refusal 1 (no entry) is correct: the
+  I-12c plan needs `revision_run.py:_constants_for_shape = revision_replay.py:_constants_for_shape`. 416 tool tests.
+  DECISION: the re-pin target is cf15245 (not d23326b), at the idle window after job 230. Then I-12a (S19-W4-15) and
+  I-12c resume (WIP d32f150c, ff5882f6 + the renamed entry + layer config), one lane run each, serially (same worktree).

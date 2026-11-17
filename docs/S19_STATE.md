@@ -61,8 +61,8 @@ Runner RUNNING (pid 300275; MB = 1720cc98). Results consumed through 228 (`$Q wa
 job 230 (I-12b step f917c724); serial runs i10-base (7599f205, PID 370532), i10-head (0e71c61a, PID 370533),
 i12b-head (f917c724, PID 436120; i10-head is its base), logs `<git-common-dir>/codehealth/runs/serial/*.log`,
 worktrees `<scratchpad 5222beaa>/ser-*` (remove after). No agent. Lane wp/S19-w4 tip 9d52dde2. I-12a: re-pin
-cce-code-health d23326b at the next queue-idle window, then brief S19-W4-15. I-12c: WIP on wp/S19-w4-i12c-wip,
-waits for code_health's answer on the private-rename refusal (asked 04:38; S19_DECISIONS 04:40).
+cce-code-health cf15245 (S19_DECISIONS 04:45) at the next queue-idle window, then brief S19-W4-15. I-12c: WIP on wp/S19-w4-i12c-wip,
+unblocked by cf15245 (add the private renamed entry), after I-12a.
 Lanes at most 2 agents until Thu 19 Nov 13:00. ALERTs standing (proposal 2 with Frank).
 Merge-checks run on a helper `wp/S19-<lane>-mc` = lane tip + wp/S19 tip merged in; merge the helper (`git merge
 --no-ff -F <file>`) only if wp/S19 changed ONLY docs since the helper's wp/S19 merge, else refresh and re-run (job 215).
