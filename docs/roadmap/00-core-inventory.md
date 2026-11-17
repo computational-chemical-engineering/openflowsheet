@@ -823,7 +823,7 @@ Lines of Python (`find ... -name "*.py" | xargs cat | wc -l`, excluding `__pycac
 (Subpackage sum is 117,064; root files are 1,237.)
 
 Sub-totals for the big ones: `application/revision_binding.py` 2131; `application/local.py` 1864;
-`application/types.py` 1694; `application/store.py` 1268; `application/revision_run.py` 1254;
+the former application types module 1694 (split and removed by S19, ADR 0076 I-12a); `application/store.py` 1268; `application/revision_run.py` 1254;
 `orchestrator/region.py` 2794; `models/syn001/column.py` 2080; `thermo/_coolprop_heos_fluids.py` 4919 (data table);
 `verify/certificate.py` 1435.
 

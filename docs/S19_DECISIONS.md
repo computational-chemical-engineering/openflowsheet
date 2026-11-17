@@ -2224,3 +2224,9 @@
   W4 docs gate = 0 broken references introduced by S19; pre-S19 ones trail behind 0.5 (gate row W4-DOCS in
   S19_STATE). Left for the gate: the five S19-introduced references in .claude/skills/s19-refactor/SKILL.md (paths
   outside the repository) must stop resolving as broken repo paths. `executed` written on each card when done.
+- **2026-11-17 15:45, I-19 merged into wp/S19 (a758cbbe; helper 30bf2e1b, merge-check job 257 PASS 7/7 after job 256
+  failed ruff on i19_scan.py, fixed e10162b1 with byte-identical output in every mode). W4 done.** 26d343f6 [docs]
+  records per ofs-s19-w4-docs-records; 00-core-inventory.md:826 census names the former types module without a path.
+  W4-DOCS: 0 broken references introduced by S19 (tip vs CB under the new config; 232 pre-S19 trailing). End-of-W4
+  import check: MOVED-SCAN 0; non-W5 old-path reads 4 (test_s08b_saturation.py:57 at the delegation site, review
+  5(b); region_attempts.solve_ptc x3, review item 6), all names the module uses itself. arch 0/0/0.
