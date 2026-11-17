@@ -143,6 +143,7 @@ order = [
     "openflowsheet.application.structure_inspection",
     "openflowsheet.application.validation",
     "openflowsheet.application.revision_routes",
+    "openflowsheet.application.revision_replay",
     "openflowsheet.application.revision_run",
     "openflowsheet.application.revision_continuation",
     "openflowsheet.application.structure_index",
