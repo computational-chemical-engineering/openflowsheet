@@ -65,8 +65,7 @@ from openflowsheet.application.jobs.interrupt import (
     interruptible,
 )
 from openflowsheet.application.jobs.model import TERMINAL_STATUSES
-from openflowsheet.application.jobs.runner import RunContext, WorkerResult, execute
-from openflowsheet.application.jobs.runner import _defect as _defect
+from openflowsheet.application.jobs.runner import RunContext, WorkerResult, defect_result, execute
 from openflowsheet.application.store import JOBS_DIR, ArtifactRow
 from openflowsheet.application.types import ExecutorSettings, Job, JobEnding
 from openflowsheet.canonical import file_sha256
@@ -203,7 +202,7 @@ class InlineExecutor:
                 result = execute(context, job, check=check, cancel=token.set)
         except Exception as error:  # a defect of the runner or the store, never of a solve
             _LOG.exception("job %s: the runner raised", job_id)
-            result = _defect(error)
+            result = defect_result(error)
         finally:
             with self._tokens_lock:
                 self._tokens.pop(job_id, None)

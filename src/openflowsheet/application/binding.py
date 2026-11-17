@@ -29,7 +29,7 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field, replace
 from typing import TYPE_CHECKING, Any, Final
 
-from openflowsheet.application.binding_common import Unbound, _column_owners, refusal_code
+from openflowsheet.application.binding_common import Unbound, column_owners, refusal_code
 from openflowsheet.canonical import document_sha256, first_noncanonical
 from openflowsheet.compile.spec import EquationSpec, ProblemSpec
 from openflowsheet.compiled import EvaluationContext
@@ -246,7 +246,7 @@ def structural_inputs(flowsheet: Any) -> tuple[ProblemSpec, ProcessGraph, dict[s
             for stream, source, target in sorted(set(edges))
         ),
         instance_ids={unit: unit for unit in WIRING},
-        column_owners=_column_owners(
+        column_owners=column_owners(
             spec.variable_ids, {stream: source for stream, source, _ in edges}, tuple(WIRING)
         ),
     )
@@ -633,7 +633,7 @@ def bind_revision_or_reason(document: Mapping[str, Any]) -> Binding | Unbound:
     # the assembled column set, so the graph gains it once the flowsheet exists.
     graph = replace(
         graph,
-        column_owners=_column_owners(
+        column_owners=column_owners(
             spec.variable_ids,
             {stream: source for stream, source, _ in wiring_edges},
             tuple(WIRING),

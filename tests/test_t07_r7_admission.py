@@ -41,7 +41,6 @@ from t07_r7_documents import mutated
 import openflowsheet.application.revision_binding as revision_binding_module
 from openflowsheet.application.binding import (
     Binding,
-    _declared_default,
     bind_revision_or_reason,
     legacy_admission,
     revision_probe,
@@ -62,6 +61,7 @@ from openflowsheet.application.revision_run import (
 )
 from openflowsheet.application.types import JobRequest
 from openflowsheet.application.validation import structural_refusal, validate
+from openflowsheet.models.syn001.flowsheet import HEATER_TEMPERATURE
 from openflowsheet.orchestrator.policies import DEFAULT_POLICY_ID, T04_W12, resolve_policy
 from openflowsheet.orchestrator.revision import plan_revision
 from openflowsheet.verify.verdict import CheckPolicy
@@ -126,8 +126,9 @@ def test_g_r7_4_every_admitted_revision_frees_a_coordinate_and_plans_a_solve(nam
 def test_g_r7_4_a_free_specification_without_a_value_starts_at_the_declared_default(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """`SYN-001-A02-360-no-guess`: the probe reads the guess at `_declared_default("S3.T")`, in K,
-    with no `bounds` — the start the legacy binder assembled with."""
+    """`SYN-001-A02-360-no-guess`: the probe reads the guess at the flowsheet class's declared
+    default for `S3.T` (`HEATER_TEMPERATURE`), in K, with no `bounds` — the start the legacy
+    binder assembled with."""
     document = CORPUS["SYN-001-A02-360-no-guess"]()
     _, legacy = _bound(document)
     seen: list[dict[str, Any]] = []
@@ -141,9 +142,7 @@ def test_g_r7_4_a_free_specification_without_a_value_starts_at_the_declared_defa
     assert revision_probe(document, legacy)[0] is None
     assert len(seen) == 2
     (guess,) = [e for e in seen[0]["specifications"] if e["id"] == "GUESS-heater-outlet-T"]
-    default = _declared_default("S3.T")
-    assert default is not None
-    assert (guess["role"], guess["value"], guess["unit"]) == ("fixed", default, "K")
+    assert (guess["role"], guess["value"], guess["unit"]) == ("fixed", HEATER_TEMPERATURE, "K")
     assert "bounds" not in guess
     assert TARGET not in {e["id"] for e in seen[1]["specifications"]}
     # The caller's document is not touched.

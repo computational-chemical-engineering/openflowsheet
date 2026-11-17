@@ -43,7 +43,7 @@ memory).
    clause helper, citing its clause id and listed in the caller's docstring). (review 2: ee653caa, 0fd8079b; review
    3: 0843250a, 26b58c96) The step that extracts a caller's first clause or phase helper also lists it in the
    caller's docstring, writing that docstring if the caller has none (review 7: b92b807b). `_<clause>_refusal` names a check returning `Unbound | None`; a function that always builds an
-   Unbound takes another suffix. (review 5: 140ce084; `_basis_refusal` predates the rule and is imported by
+   Unbound takes another suffix. (review 5: 140ce084; `basis_refusal` (public since I-13, R-1045) predates the rule and is imported by
    tests/test_s11_routing.py)
    Clause helpers returning `Failure | None` may be chained `return a() or b() or ...` when the failure type is a
    frozen dataclass without `__bool__`/`__len__` and a test pins its truthiness (S19 R-W3-G2-1, R-W3-G2-3:

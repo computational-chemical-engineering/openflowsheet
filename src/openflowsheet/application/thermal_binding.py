@@ -32,19 +32,19 @@ from collections.abc import Callable, Mapping, Sequence
 from typing import Final
 
 from openflowsheet.application.model_signatures import (
-    _THERMAL_FLASH,
-    _THERMAL_HEATER,
-    _THERMAL_MACHINES,
-    _THERMAL_MIXER,
-    _THERMAL_VALVE,
     MODEL_BASES,
+    THERMAL_FLASH,
+    THERMAL_HEATER,
+    THERMAL_MACHINES,
+    THERMAL_MIXER,
+    THERMAL_VALVE,
     Builder,
     Configuration,
     ModelSignature,
-    _column,
-    _missing_choice_hint,
-    _pin,
-    _pinned,
+    missing_choice_hint,
+    pin_column,
+    pin_value,
+    pinned,
 )
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models import Port, SpecificationError, UnitModel
@@ -139,7 +139,7 @@ def _construct(build: Callable[[], UnitModel]) -> UnitModel:
 
 # -- thermal.heater ------------------------------------------------------------------------------
 
-_HEATER: Final = _THERMAL_HEATER
+_HEATER: Final = THERMAL_HEATER
 
 
 def _heater(
@@ -154,14 +154,14 @@ def _heater(
     parameters = _parameters(view, (), (_PRESSURE_DROP, OUTLET_VAPOR_FRACTION))
     streams, forms = _wired(view, signature.ports)
     choice = signature.choice("specification")
-    options = {_column(view, option): option for option in choice.options}
+    options = {pin_column(view, option): option for option in choice.options}
     pinned = [column for column in options if column in view.pins]
     given = len(pinned) + (OUTLET_VAPOR_FRACTION in parameters)
     if given == 0:
         raise RevisionError(
             "incomplete",
             f"specification_missing({view.unit_id}.{choice.name})",
-            _missing_choice_hint(view, signature, choice)
+            missing_choice_hint(view, signature, choice)
             + f"; or give the parameter {OUTLET_VAPOR_FRACTION} (a vapor_liquid outlet)",
         )
     if given > 1:
@@ -169,7 +169,7 @@ def _heater(
     if pinned:
         option = options[pinned[0]]
         name = option.name
-        value = _pin(view, pinned[0])
+        value = pin_value(view, pinned[0])
     else:
         name = OUTLET_VAPOR_FRACTION
         value = parameters[OUTLET_VAPOR_FRACTION]
@@ -191,7 +191,7 @@ def _heater(
 
 # -- thermal.valve -------------------------------------------------------------------------------
 
-_VALVE: Final = _THERMAL_VALVE
+_VALVE: Final = THERMAL_VALVE
 
 
 def _valve(
@@ -210,7 +210,7 @@ def _valve(
             context=context,
             streams=streams,
             forms=forms,
-            outlet_pressure=_pinned(view, signature, "outlet_pressure"),
+            outlet_pressure=pinned(view, signature, "outlet_pressure"),
         )
     )
     return unit, _port_forms(streams, forms)
@@ -218,7 +218,7 @@ def _valve(
 
 # -- thermal.mixer -------------------------------------------------------------------------------
 
-_MIXER: Final = _THERMAL_MIXER
+_MIXER: Final = THERMAL_MIXER
 
 
 def _mixer(
@@ -241,7 +241,7 @@ def _mixer(
 
 # -- thermal.flash -------------------------------------------------------------------------------
 
-_FLASH: Final = _THERMAL_FLASH
+_FLASH: Final = THERMAL_FLASH
 
 
 def _flash(
@@ -262,7 +262,7 @@ def _flash(
             context=context,
             streams=streams,
             forms=forms,
-            duty=_pinned(view, signature, "duty"),
+            duty=pinned(view, signature, "duty"),
             pressure_drop=parameters[_PRESSURE_DROP],
         )
     )
@@ -271,7 +271,7 @@ def _flash(
 
 # -- thermal.pump, thermal.compressor, thermal.turbine -------------------------------------------
 
-_MACHINES: Final[Mapping[str, ModelSignature]] = _THERMAL_MACHINES
+_MACHINES: Final[Mapping[str, ModelSignature]] = THERMAL_MACHINES
 
 #: §4.4: an additive-vapour (Wilson) machine has no γ–φ two-phase PS closure.
 _WILSON_PORT_HINT: Final = machines.WILSON_PORT_HINT
@@ -307,7 +307,7 @@ def _machine(
             context=context,
             streams=streams,
             forms=forms,
-            outlet_pressure=_pinned(view, signature, "outlet_pressure"),
+            outlet_pressure=pinned(view, signature, "outlet_pressure"),
             efficiency=parameters[_EFFICIENCY],
         )
     )
