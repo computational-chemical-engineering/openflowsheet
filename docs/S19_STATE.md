@@ -56,72 +56,32 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 - Held until the scale probe reports: G1 (orchestrator/, numerics/). Open: ptc.py 6.8 (P3, P4).
 - G-END (below) stays the end criterion for the whole repository.
 
-## Next actions (2026-11-17 09:45, self-reset)
+## Next actions (2026-11-17 15:50, self-reset after W4)
 
-**Position:** W4 runs 13-16 merged (e61b23f2). I-12d complete on lane `wp/S19-w4` (worktree s19-w4, tip 5cc529e7):
-steps 1-4 PASS (jobs 237, 238, 240, 239), step 5 JobService 9697b223 under the ADR Q-F5 fallback (job 241, merge-check
-mode, "interface gate not applicable"); review R-W4-I12d: merge after fixes, all fixes done: F2/F3 1e319312 (job
-242), item 7 8b70f2fd (outside gate), F1 a995d571 (job 243). No agent running.
-**Update 15:45: W4 done.** I-19 merged (a758cbbe, merge-check job 257); arch 0/0/0 (4100 imports); W4-DOCS PASS;
-i19_scan: moved-name importers 0, non-W5 old-path reads 4, all review-sanctioned. Next: per the order, G5 leftovers
-and G6 launcher (blocking set), then 0.5 is Frank's to start; W5 and the trailing items wait.
-**Update 15:05 (done):** run 20 gates PASS (250-254); review R-W4-I19a running (reviewer, Opus); run 21 docs running
-(sonnet-implementer, brief S19-W4-21.md) on the same lane; DECISION-REQUEST to hub on the W4-end docs criterion
-(S19_DECISIONS 15:05). After the review: fixes, ADR errata (dated paragraph), merge-check, merge.
-**Update 14:25 (partly done):** W4 run 20 (I-19 part 1) reported, lane tip 91af908f; gates re-enqueued as jobs 250-254 (job 245
-GATE-ERROR: STOP 1 steps go no-gain). On all PASS: review R-W4-I19a (reviewer, Opus; brief
-`<git-common-dir>/codehealth/briefs/S19-R-W4-I19a.md`), fixes, merge-check, merge. Then run 21 (living docs, ADR
-errata incl. FQ-A = 36 bindings, refusals.yaml:1378). No agent running.
-**Update 13:15 (done):** G-MAP 5 accepted, MB = 14c6d414, runner restarted; I-19 run 20 launched (see S19_DECISIONS).
-**Update 12:12 (done):** I-12d merged (7fbfcd33), all serial pairs EQUAL, arch 0/0/0. G-MAP 5 map build running at the
-wp/S19 tip with the runner stopped (log and PID in S19_DECISIONS 12:12). On the result: judge G-MAP 5, set MB,
-restart the runner, fast-forward wp/S19-w4 to the tip, fill TIP_AT_LAUNCH in S19-W4-20.md, launch I-19 run 20
-(opus-engineer). The 10:40 update below is done.
-**Update 10:40 (done):** jobs 242, 243 PASS; serial i12d1 pair EQUAL; i12d2/i12d4 heads still running, i12d3/i12d5 heads
-running (PIDs 1223888, 1223889). Merge-check job 244 (helper wp/S19-w4-mc 52618696 = 5cc529e7 + wp/S19 ec95e062,
-worktree s19-w4-mc) queued: on PASS and all serial pairs EQUAL, merge the helper (if wp/S19 changed only docs since
-ec95e062). Items (a) and (c) below are otherwise superseded.
-**On resume:** (a) `$Q wait --since 227` in the background (jobs 242, 243; job 241 PASS, 7/7). A FAIL: read the failed checks;
-environment -> re-enqueue unchanged; real -> fresh engineer. (b) Serial (rule 4), logs
-`<git-common-dir>/codehealth/runs/serial/i12d*.log`, worktrees `<scratchpad 78ab96ef>/ser-i12d*` (remove after):
-running i12d1-base 17cada5f (PID 891621), i12d1-head 394effe6 (891622), i12d2-head 3b72357b (917851), i12d4-head
-50cbb3ed (917852); i12d3-head 622dc3b2 and i12d5-head 9697b223 chained after the i12d1 pair (chain PID 1093753 died; restarted
-09:42 as PID 1151652, log `runs/serial/i12d35-chain.log`; their PIDs in their logs' first lines). Wait with a background `while kill -0` loop on the live PIDs. Compare: i12d1-base
-vs i12d1-head; i12d1-head vs i12d2-head; i12d2-head vs i12d4-head; i12d4-head vs i12d3-head (step 3 sits on
-f632c97b, after step 4); i12d3-head vs i12d5-head. Equal = MSG WO-5a, WO-6 lines and passed, skipped, deselected,
-xfailed (20392 / 107 / 222 / 3 at the W4 run 13-16 heads). F1 (a995d571) is a private rename inside one class: no
-serial pair (DECISION, alternative: one more suite). (c) All PASS and EQUAL: helper wp/S19-w4-mc = 5cc529e7 + wp/S19
-tip, merge-check, merge (message: I-12d steps 1-5, Q-F5 fallback for step 5, R1 and StreamTableQuery rulings,
-review R-W4-I12d and fixes, jobs 237-243 + merge-check, serial counts), remove the helper and ser-i12d* worktrees.
-(d) Then MB to the wp/S19 tip (map build with the queue held; G-MAP criteria; the ALERT remedy), lanes fast-forward,
-then I-19: run 20 brief drafted (`<git-common-dir>/codehealth/briefs/S19-W4-20.md`: inventory, retargets,
-removal; replace TIP_AT_LAUNCH, engineer opus-engineer); run 21 (living docs, ADR errata, refusals.yaml:1378) to draft
-from the I-19 list in S19_DECISIONS (grep "I-19 list gains", "I-19"); W4 is then done.
-Runner pid 475743 (cce-code-health cf15245; MB = 1720cc98). Lanes at most 2 agents until Thu 19 Nov 13:00.
-ALERTs standing (proposal 2 with Frank; selected share fell to 45%).
-Merge-checks run on a helper `wp/S19-<lane>-mc` = lane tip + wp/S19 tip merged in; merge the helper (`git merge
---no-ff -F <file>`) only if wp/S19 changed ONLY docs since the helper's wp/S19 merge, else refresh and re-run.
-A no-gain step must touch only scan scope (job 233: a docs-site line failed `scope`; docs-site goes in its own
-commit outside the gate). `enqueue --rerun-of` takes the RUN-LOG STEP number. Test runs in a worktree with the repo
-`.venv`: `PYTHONPATH=<worktree>/src`, no `-n`.
-1. **G-MAP 4: done** (accepted as G-MAP 3; fold fix 0d91ac4b; S19_DECISIONS 03:40). After a reset: `$Q wait --since 212`
-   in the background if no result past 212 is consumed.
-2. **I-13: merged** (d63dcd7a, merge-check job 228; S19_DECISIONS 04:00).
-3. **W4 runs 13/14:** I-10 enqueued (job 229; arch 0/0/0). On job 229 PASS and serial counts EQUAL: review per
-   cadence (R-W4-13 with run 14's steps, batch the forbid-list question), then merge-check and merge. Then I-12a
-   (after the tool fix), I-12d, I-19.
-4. **G5:** W3 part done (G5 run 11 merged 1720cc98). Left: verify twins gamma_phi_units 6.4 / pr_c1 6.7 (W4 twin merge;
-   addendum for Frank), table.py `revision_checks` (W4 routing), R-W3-G5-7 component-order question (design lane at
-   the G5 close), checks.py / split_checks.py / certificate.py 8.7, the S3 ladder twin (checks.py:757-794 vs
-   split_checks.py:184-227; rule 15, waits for a behaviour-level change).
-5. **G6:** W3 part done; launcher `launch` after W4. Frozen thermo files: W5. **Rule 4:** confirmed (falsifier EQUAL).
-6. Open for Frank (not blocking): R-1042 option C; STOP 1 alternative; tool items; verify twins addendum;
-   selection-widening; proposal 2 for the ALERTs; thermo/ below 7.0 reachable only in W5 (S19_DECISIONS "G6 run 7 not
-   briefed"). Design lane: NaN derivative-witness pass (R-W3-G5-8); I-19 importer scan over every W4-moved name
-   (R-W4-9a note 3; add docs/design/T07-jobs-and-bindings.md:775, :3735 `_defect`); R-W3-G5-7 component order. Docs pass: revision_edits.py:8 stale `transactions` re-export claim; S19_DECISIONS "R-W4-11 reported" notes (k06 store block x3,
-   test names with "facade" and `_and_the_old_imports_work`, s16_recall.py:70, roadmap :505, ADR 0019 pointer) and the
-   earlier leftovers (77ae7025 cognitive, i4 plan reason, ruff tier switch).
-- Tip scan 640bbd63: repo debt 4705.9, health 8.11, brain 26 (G5 run 11 local: 4699.7, 8.13).
+**Position:** W4 DONE on wp/S19 (I-12d merged 7fbfcd33, I-19 merged a758cbbe; W4-DOCS PASS; arch 0/0/0, 4100
+imports). MB = 14c6d414 (G-MAP 5). Runner PID 1474880 (queue idle, results up to 257). No agent, no serial run, no
+background job of this session. Lane wp/S19-w4 is merged; fast-forward it before reuse. Decision Desk cards
+ofs-s19-w4-docs-records / -scope executed. Repo at the merge: debt 4699.2, health 8.23, brain 26 (scan 7fbfcd33).
+Status card: row "OpenFlowsheet wp/S19" added by hub (Frank asked why main's 7.7 does not move: main = 218e7a73).
+**Next (the blocking set for 0.5, Frank's order of 2026-11-15, confirmed 2026-11-17 "keeping the sequence is fine"):**
+1. G6 leftover: `launcher.py` `launch` (8.8; agreed after W4 in R-W3-G6-6). Brief an engineer (opus-engineer), lane from
+   the wp/S19 tip; S19_DECISIONS 2026-11-16 23:45 has the context.
+2. G5 leftovers now that W4 routing is done: table.py `revision_checks` (21.4, "W4 routing"), checks.py /
+   split_checks.py / certificate.py 8.7 (grep S19_DECISIONS "G5 run 11", "R-W3-G5"). Not the verify twins
+   (gamma_phi_units / pr_c1: addendum for Frank) and not the S3 ladder twin (waits for a behaviour change).
+3. Design lane, batched (one pass): R-W3-G5-7 component order; R-W3-G5-8 NaN derivative-witness pass.
+4. Then report to Frank that the blocking set is done; 0.5 (roadmap ADR 0057) is his to start. W5, G1 (held for the
+   scale probe), G2/G3/G4 and the 232 pre-S19 doc breaks trail.
+**Open for Frank (not blocking):** proposal 2 (narrow the selection widening; gates now ~600-650 s selected vs 300 s
+target, Frank asked 2026-11-17); R-1042 option C; STOP 1 alternative; verify twins addendum; selection-widening;
+thermo/ below 7.0 only in W5; optional forbid rule cli/serving -> services.
+**Notes:** STOP 1 steps (empty plan, no `__all__` touched) are enqueued no-gain, not interface (job 245). New tooling
+scripts must pass ruff before a merge-check (job 256). Merge-checks run on a helper `wp/S19-<lane>-mc` = lane tip +
+wp/S19 tip; merge it (`git merge --no-ff -F <file>`) only if wp/S19 changed only docs since. A no-gain step touches
+only scan scope. `enqueue` needs `--target --recipe --model` for every mode; `--rerun-of` takes the RUN-LOG STEP.
+Test runs in a worktree: repo `.venv`, `PYTHONPATH=<worktree>/src`, no `-n`. Lanes at most 2 agents until Thu 19 Nov
+13:00. ALERTs standing (proposal 2).
+- Tip scan 7fbfcd33: repo debt 4699.2, health 8.23, brain 26, file smells 53.
 
 ## Gates (pass numbers fixed after A1, before step 1)
 
