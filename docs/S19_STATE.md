@@ -9,7 +9,7 @@ Frank, 2026-11-14: "My purpose now is to refactor the code such that code health
 move on with the development to the future. This is the goal. Do what it takes." Scope: all of `src/openflowsheet`.
 Behaviour stays bitwise identical; outward interfaces may change through ADR 0076 (no shims at the end). S18 waits.
 
-## Position (2026-11-14; updated 2026-11-16)
+## Position (2026-11-14; updated 2026-11-17)
 
 - `CB` = `d90b498f8759b739361016cca7858f71bc647ccc` (main after the S17 merge): the debt baseline.
 - Baseline (trial scan, scope `src/openflowsheet/*`): 282 files, 100136 NLOC, debt 6370.9, health 7.3, brain
@@ -40,6 +40,7 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
   selection (wp/S19-tools2, 37307ab0). G6 runs 2+3 reviewed (merge); W4 run 1: arch 6/4/14 -> 4/4/14.
 
 - G6 run 6 merged into wp/S19 (18f934f6, 2026-11-16 21:42); G6's W3 part done (frozen thermo: W5).
+- 2026-11-17: I-11 merged (6668be04), G5 run 11 merged (1720cc98); I-13 reviewed, fixes done, merge pending.
 
 - Open (R-W3-G1N-1): numerics/ptc.py health 6.8 after P1 (closing method's 9 parameters); P2 to P4 must end >= 7.0,
   else a miss and P1 is reverted.
@@ -54,37 +55,43 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 - Held until the scale probe reports: G1 (orchestrator/, numerics/). Open: ptc.py 6.8 (P3, P4).
 - G-END (below) stays the end criterion for the whole repository.
 
-## Next actions (2026-11-17 ~01:30, self-reset)
+## Next actions (2026-11-17 ~02:50, self-reset)
 
-Runner pid 2642417. Results consumed up to 207 (01:35); start `$Q wait --since 207` in the background first. No agent running.
-Queue: running 218 (g5r11-1), 221 (w4r11-mc2); pending 222 (g5r11-2), 223 (w4r12-i13-5), 224 (w4r12-i13-6),
-225 (g5r11-3). Lanes at most 2 agents until Thu 19 Nov 13:00. ALERTs standing (proposal 2 with Frank). Merge-checks
-run on a helper `wp/S19-<lane>-mc` = lane tip + wp/S19 tip merged in; merge the helper (`git merge --no-ff -F <file>`)
-only if wp/S19 changed ONLY docs since the helper's wp/S19 merge, else refresh the helper and re-run (job 215 lesson).
-`enqueue --rerun-of` takes the RUN-LOG STEP number, never across a rebase (enqueue fresh). Briefs that rebuild a lane
-chain: check ListAgents first (fix211 lesson); rename scripts must skip names an importer defines itself (job 219).
-1. **I-11 (W4 run 11): merged into wp/S19 as 6668be04 (job 221 PASS, 2026-11-17 01:35).**
-2. **I-13 (W4 run 12, R-1045)**: lane wp/S19-w4 eb71978d..a652a744 (plan c2df0d96, interface a741872b **job 223**,
-   tests 595ea240, refactor a652a744 **job 224**); jobs 216 and 219 failed `public_api` on plan omissions, fixed
-   (S19_DECISIONS "fix216", "fix219"). On both PASS: `reviewer` R-W4-12 (Opus; write the brief from S19-R-W4-11.md:
-   the 48 renames per R-1045, the collision renames, `_x = x` removal, executor.py:69 re-export, the `__all__` choice).
-   Fold in as review fixes: tests/test_s11_thermal_verifier.py:30 `_CONTEXT` -> test-built EvaluationContext through
-   the public builder entry (decided; outside the gate, a fresh engineer); docstrings binding_common.py:4
-   (`_column_owners`) and column_binding.py:5 (`_COLUMN`) (orchestrator, gated no-gain). Then helper merge-check,
-   merge. After I-13: I-10 and I-12a-d (serial MSG counts at base and head per amended rule 4, ~2.2 h per suite;
-   wait for item 5's verdict).
-3. **G5 run 11** (lane wp/S19-g5i, base 640bbd63): jobs 218, 222, 225. On all PASS: launch `reviewer` with brief
-   `<git-common-dir>/codehealth/briefs/S19-R-W3-G5-11.md` (written), fixes, helper merge-check, merge. After it G5's
-   W3 part is done except: verify twins gamma_phi_units 6.4 / pr_c1 6.7 (W4 twin merge; addendum for Frank),
-   table.py `revision_checks` (W4 routing), R-W3-G5-7 component-order question (design lane at the G5 close),
-   checks.py 8.7 / split_checks.py 8.7 / certificate.py 8.7 (remaining debt on public or fixed signatures).
-4. **G6:** W3 part done (S19_DECISIONS "G6 run 7 not briefed"); launcher `launch` after W4. Frozen thermo files: W5.
-5. **Rule 4 falsifier: EQUAL** (1061/801/100, 20375 passed; S19_DECISIONS 01:40). I-10 and I-12a-d may proceed in
-   serial form after I-13.
+Runner STOPPED for G-MAP 4 (killed 02:17, `RUNNER stop` in runner.log). Results consumed up to 212. No agent running.
+Pending: 227 (w4r12-revfix). Lanes at most 2 agents until Thu 19 Nov 13:00. ALERTs standing (proposal 2 with Frank).
+Merge-checks run on a helper `wp/S19-<lane>-mc` = lane tip + wp/S19 tip merged in; merge the helper (`git merge
+--no-ff -F <file>`) only if wp/S19 changed ONLY docs since the helper's wp/S19 merge, else refresh and re-run (job 215).
+`enqueue --rerun-of` takes the RUN-LOG STEP number, never across a rebase. Briefs that rebuild a lane chain: check
+ListAgents first; rename scripts must skip names an importer defines itself (job 219). Test runs in a worktree with the
+repo `.venv`: `PYTHONPATH=<worktree>/src`, no `-n` (no xdist there).
+1. **G-MAP 4 build** at 1720cc98 (the wp/S19 tip after G5 run 11), a `run_in_background` shell of the previous
+   context: its notice prints `MAPBUILD rc=<rc> wall=<s>` and the log tail; full log
+   `/tmp/claude-1000/-home-eajfpeters-Code-OpenFlowsheet/0997dfd2-4fd3-413d-974f-9285e78b8634/scratchpad/map4.log`,
+   worktree `.../scratchpad/map4` (detached). Started 02:22, ~1 h quiet. If no notice arrives, check
+   `pgrep -f "[t]est_impact.py build"`. Judge as G-MAP 3 (rc 0 or 1; >= 20356 tests; failures a subset of the B-6
+   set m04_wo9 a25, a29, x02_wo4 g4e x2; no unsure test in a file over ~60 s, else re-run), fill the G-MAP 4 row,
+   set the `MB` line to 1720cc987263268a1178bca870ab0497c8303583 (only on PASS or an accepted miss as G-MAP 3), commit,
+   `git worktree remove` map4, then restart the runner: `$Q run --detach`, and `$Q wait --since 212` in the background.
+2. **I-13 (W4 run 12)**: R-W4-12 merge after fixes, both done (S19_DECISIONS 02:35, 02:45): lane wp/S19-w4
+   eb71978d..e4c28e19. On job 227 PASS: helper wp/S19-w4-mc (worktree s19-w4-mc) = e4c28e19 + wp/S19 tip, `$Q enqueue
+   --snapshot --worktree <helper> --base <wp/S19 tip> --mode merge-check --label w4r12-mc`; on PASS merge (message:
+   I-13, R-1045, R-W4-12, jobs 223, 224, 227, the merge-check job), remove the helper worktree and branch. The lane
+   worktree s19-w4 stays (W4 continues); fast-forward or re-branch it from the wp/S19 tip for the next run (it must
+   contain MB).
+3. **Next W4 run (13): I-10 and I-12a-d**, not yet briefed (brief file S19-W4-13.md; pattern S19-W4-12.md and
+   S19-W3-common.md; ADR 0076 rows; rule 4 amended: serial MSG counts at base and head, `-p no:xdist`, both wall-time
+   budget tests deselected, PYTHONHASHSEED=0, all counts equal to 1061/801/100-style lines, ~2.2 h per suite; see
+   S19_DECISIONS 22:24 and 01:40 entries for the serial command, `serial.sh` in session 916d464e's scratchpad). Brief
+   after I-13 merges; branch the lane from the wp/S19 tip.
+4. **G5:** W3 part done (G5 run 11 merged 1720cc98). Left: verify twins gamma_phi_units 6.4 / pr_c1 6.7 (W4 twin merge;
+   addendum for Frank), table.py `revision_checks` (W4 routing), R-W3-G5-7 component-order question (design lane at
+   the G5 close), checks.py / split_checks.py / certificate.py 8.7, the S3 ladder twin (checks.py:757-794 vs
+   split_checks.py:184-227; rule 15, waits for a behaviour-level change).
+5. **G6:** W3 part done; launcher `launch` after W4. Frozen thermo files: W5. **Rule 4:** confirmed (falsifier EQUAL).
 6. Open for Frank (not blocking): R-1042 option C; STOP 1 alternative; tool items; verify twins addendum;
    selection-widening; proposal 2 for the ALERTs; thermo/ below 7.0 reachable only in W5 (S19_DECISIONS "G6 run 7 not
    briefed"). Design lane: NaN derivative-witness pass (R-W3-G5-8); I-19 importer scan over every W4-moved name
-   (R-W4-9a note 3); R-W3-G5-7 component order. Docs pass: S19_DECISIONS "R-W4-11 reported" notes (k06 store block x3,
+   (R-W4-9a note 3; add docs/design/T07-jobs-and-bindings.md:775, :3735 `_defect`); R-W3-G5-7 component order. Docs pass: revision_edits.py:8 stale `transactions` re-export claim; S19_DECISIONS "R-W4-11 reported" notes (k06 store block x3,
    test names with "facade" and `_and_the_old_imports_work`, s16_recall.py:70, roadmap :505, ADR 0019 pointer) and the
    earlier leftovers (77ae7025 cognitive, i4 plan reason, ruff tier switch).
 - Tip scan 640bbd63: repo debt 4705.9, health 8.11, brain 26 (G5 run 11 local: 4699.7, 8.13).
@@ -97,6 +104,7 @@ chain: check ListAgents first (fix211 lesson); rename scripts must skip names an
 | G-MAP 2 | the map at 736f70db (2026-11-15) | as G-MAP | PASS: 20461 tests, 12810 s (under load), 25.6 MB; 7 failed: the B-6 set (m04_wo9 a25, a29; x02_wo4 g4e x2), two wall-time budget tests under load (t07_v17_reference f6, t07_conformance budget_of_the_scenario_runs), s09 a20[s03_reference.py] (its hung subprocess killed, S19_DECISIONS) |
 | G-SELF | before step 1 | `gate --self-test --mutate` on a numeric literal outside application/ that tests read: tests tier exit 1 (failures, not 2 or 124) and F0 detects it; unmutated, all tiers pass | run 1 (newton.py:776, 3d3eebe3) FAIL: unmutated tests tier exit 1, only test_t07_v17_reference f6 (wall 333 s > 300 s budget) under two concurrent lane gates; gate.sh now takes a clone-wide lock (a1059f16); run 2 (same literal, a1059f16) PASS: unmutated 20253 passed, 1044 s; mutated tests exit 1 (499 failed, 6 errors, 865 s), f0 detected, mcp_digest missed (as in S17) |
 | G-MAP 3 | the map at the wp/S19 tip when the queue drains (2026-11-16) | as G-MAP, built without `--deselect`; no unsure test in a file that costs more than about 60 s (else re-run the build) | MISS on the unsure-file criterion, map accepted (c3c5793e): 20483 tests, 3473 s quiet, 25.7 MB; 4 failed = the B-6 set (m04_wo9 a25, a29; x02_wo4 g4e x2), deterministic since S16, so a re-run cannot cure them; test_m04_wo9_synthetic_loop.py ~77 s (profile under load) > 60 s, x02_wo4 unmeasured. s09 and both t07 budget tests passed (out of the unsure set). |
+| G-MAP 4 | the map at 1720cc98 (2026-11-17) | as G-MAP 3 | building |
 | G-STEP | every step | gate exit 0; refactor: touched files' debt strictly lower; restructure: the plan's arch numbers (table 4.1) met exactly | run log |
 | G-REVIEW | S1 files every 3 accepted steps, S2 and S1/S2 splits every 4, others every 8 (design note 5) | fresh `reviewer`; rejects reverted and logged | |
 | G-END | campaign end, at the merged tip | repo scan (scope `src/openflowsheet/*`): debt <= 1900; health >= 9.0 (binding); brain functions 0; no file below health 7.0; no `huge_file`; `codehealth arch`: 0 cycles at depth 4, 0 violations on every rule; F0 and MCP digest identical; full suite and CI green on both legs | |

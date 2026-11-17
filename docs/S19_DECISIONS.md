@@ -1809,3 +1809,9 @@
   until the runner restarts after G-MAP 4); a392c711 playbook.md:46 basis_refusal (tooling, outside the gate).
   Fix 1 (`sonnet-implementer`, outside the gate): test_s11_thermal_verifier.py builds its own EvaluationContext.
   Then: helper wp/S19-w4-mc (lane + wp/S19 tip), merge-check, merge.
+- **2026-11-17 02:45, R-W4-12 fix 1 done (`sonnet-implementer`, 54k tokens): e4c28e19** test_s11_thermal_verifier
+  builds `CONTEXT = EvaluationContext(model_version="revision-structural", constants_sha256="0" * 64,
+  phase_signature=None)` (value-equal to revision_binding.py:115; diff checked); 15 passed. Brief lessons: the repo
+  `.venv` has no xdist (no `-n`), and it imports `openflowsheet` from the main checkout's src, so a worktree test run
+  needs `PYTHONPATH=<worktree>/src`. Lane wp/S19-w4 tip e4c28e19 (fix 2 932023a0 gated as job 227, a392c711 playbook,
+  e4c28e19 test).
