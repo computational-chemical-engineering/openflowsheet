@@ -1868,3 +1868,6 @@
   and `engine-not-persistence` `from` (the ADR row names only application-layers; one config line each);
   (2) I-19 living-docs list gains T07-jobs-and-bindings.md:3967, :4126, M04-build-decisions.md:53,
   M06-web-shell.md:713 (`revision_run.route_structure`), M02-build-decisions.md:26 (`application.store.ArtifactTableSink`).
+- **2026-11-17 04:20, correction:** the I-10 serial runs' PIDs are 370532 (i10-base) and 370533 (i10-head), not
+  370529/370530 (those were `setsid`, which forked). `serial.sh` writes its own PID in each log's first line; read it
+  there.
