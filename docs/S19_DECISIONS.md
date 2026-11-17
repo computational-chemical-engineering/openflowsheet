@@ -2367,3 +2367,14 @@
   the card did not cover. So: main goes back to 218e7a73 (= origin/main) after F0, the card stays unexecuted, and a new
   DECISION-REQUEST goes to hub (merge 9649de4c or its successor into main), with the design-lane review of b716feb7
   (reviewer, running) and F0 on the merge result attached.
+
+## 2026-11-17 review of b716feb7 (reviewer, Opus): ACCEPT WITH FIXES; fix 4bef2608; F0 PASS on the merge result
+
+- Legitimate alignment, not a relaxed check (ADR 0007 Context 2; corpus_identity M4; Q-S7). One fix: off the reference
+  platform nothing tied the re-solve to F0's path -> 4bef2608 compares the solve events' portable fields (kind, attempt,
+  iteration, outcome, signature) with the bundle's on every host (equal on all five K05 cases, 4 to 8 events).
+- Notes kept: (a) if the workstation CPU leaves `ref-x86-64`'s `cpu_models`, the hash test and F0 M4 both stop judging
+  silently; watch the skip count on workstation runs. (b) F0 pins BLAS threads to 1, pytest does not; harmless here.
+- F0 on the local merge d79a2312 (wp/S19 9649de4c into main): PASS, M1 50/50, M2 61/61, M3 61/61, M4 61/61, M5 61/61,
+  M6 85/85, M7 52/52, M8 105/105, M9 35/35. Local main then reset to 218e7a73 (= origin/main); nothing pushed to main.
+- Next: push wp/S19, CI on the tip, then a new desk card for the merge (the signed card stays unexecuted).
