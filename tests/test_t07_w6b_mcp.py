@@ -77,7 +77,6 @@ ALLOWED_PROJECT_MODULES = {
     for name in (
         "contract",
         "errors",
-        "types",
         "documents",
         "transaction_types",
         "job_requests",

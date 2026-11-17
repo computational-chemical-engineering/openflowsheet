@@ -2,7 +2,7 @@
 
 - `surrogate-manifest.schema.json` and `model-evidence.schema.json` are draft 2020-12 schemas
   published under the project's base, by `$id`, beside the others (this branch has no
-  `schemas/registry.json`; the published set is `application.types.published_schemas()` and the
+  `schemas/registry.json`; the published set is `application.documents.published_schemas()` and the
   packaged count, `tests/test_t08_w4_package_data.py`).
 - One valid fixture each, emitted from M04.A19's run (and the `surrogate_study` body and answer from
   a stand-in job), and one invalid each with a required member removed
