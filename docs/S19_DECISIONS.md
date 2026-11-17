@@ -2233,3 +2233,11 @@
 - 2026-11-17 15:55, gate report before the self-reset (6 h): 11 gates, 0 failed; selected share 6/8 (ALERT cleared
   after G-MAP 5). ALERT selected gates take 643 s > 300 s (tests tier). ALERT selected/full time ratio 0.56 > 0.4:
   selection saves little. Standing (proposal 2 with Frank). Self-reset at the W4 milestone.
+- **2026-11-17 ~16:10, resume after self-reset; scan of wp/S19 fb04cd10: repo debt 4699.2, health 8.23, brain 26.**
+  G5/G6 non-frozen files below 9.0: verify/table.py 7.5 (`revision_checks` 21.4; the `_Routing` fix deferred "to W4"
+  had no ADR item, so it is G5 work), certificate.py 8.7, checks.py 8.7, split_checks.py 8.7, launcher.py 8.8,
+  render.py 8.5, store.py 8.6 (R-237), compare.py 8.6 (frozen v1 / ladder), verify/__init__ 8.8, flowsheet_rows 8.8.
+  **Launched (cap 2): G6 run 7 (`opus-engineer`, Opus, brief S19-W3-G6-7.md, lane wp/S19-g6e: launcher `launch`,
+  parameter question judged only) and G5 run 12 (`opus-engineer`, Opus, brief S19-W3-G5-12.md, lane wp/S19-g5j:
+  table.py `revision_checks`, then certificate.py).** The design batch (R-W3-G5-7 component order, R-W3-G5-8 NaN
+  witness) takes the first free slot.
