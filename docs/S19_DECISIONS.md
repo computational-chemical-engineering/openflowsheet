@@ -2268,3 +2268,6 @@
   Q2.A1 to A6, F0), because S19 is bitwise identical by Frank's rule. Alternative: inside S19 (identical on every
   registered certificate). Reversible by: Frank choosing "inside S19" on the desk card. OQ-2 (Q1 hygiene): at the next
   touch of split_checks.py (default). Sent to hub as a DECISION-REQUEST.
+- **2026-11-17, hub filed Decision Desk card `ofs-s19-oq1-nan-witness` (rec A, hub agrees).** Actions: A "land the S19
+  design batch 1 Q2 change (NaN witness refusal) after S19", B "... inside S19". OQ-2 noted on the card as defaulted.
+  Default A stands until a signed card is verified.
