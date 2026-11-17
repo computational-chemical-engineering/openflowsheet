@@ -47,6 +47,7 @@ from openflowsheet.thermo.syn001 import Syn001Provider
 from openflowsheet.verify import (
     CheckResult,
     Limitation,
+    VerificationStatus,
     unsupported,
 )
 from openflowsheet.verify.checks import (
@@ -524,18 +525,14 @@ def verify_revision(
         result,
         solved,
         final_state,
-        checks=checks,
-        digest=digest,
+        checked=_Checked(checks, digest, screened, projection, surrogate_limitations),
         policy=resolved,
         declaration=NOMINAL_DECLARATION,
         phase_branch=revision_phase_branch(
             final_state, view.streams, splits, components=view.components
         ),
-        screened=screened,
-        projection=projection,
         provider=fresh,
         witness=witness,
-        appended=surrogate_limitations,
         external=external,
     )
 
@@ -895,13 +892,10 @@ def _certify(
         result,
         solved,
         final_state,
-        checks=checks,
-        digest=digest,
+        checked=_Checked(checks, digest, screened, projection),
         policy=policy,
         declaration=declaration,
         phase_branch=_phase_branch(final_state),
-        screened=screened,
-        projection=projection,
         witness=_WitnessColumns(components=COMPONENTS),
     )
 
@@ -1015,35 +1009,50 @@ class _WitnessColumns:
     skipped_reason: str = "pr_c1_zero_flow_columns"
 
 
+@dataclass(frozen=True)
+class _Checked:
+    """The check set a caller of `_issue` judged at `x_final` (T05 design note §4.2), with the
+    evidence it was judged with and the caller's own limitations."""
+
+    #: The caller's check set; `_issue` extends this list in place.
+    checks: list[CheckResult]
+    #: The residual state hash of the caller's residual checks.
+    digest: str
+    #: The regularity screen the caller ran at `x_final` before its fresh-flash categories (ADR
+    #: 0013 D1), on the zero-flow form of its `ZERO_FLOW` splits (T05b spec §9.3; none for
+    #: SYN-001).
+    screened: _Screened
+    #: Where those categories were judged, recorded as `transformations.projection` (K04-F9 spec
+    #: §5.5).
+    projection: Projection
+    #: The caller's own limitations, recorded after the grade's (M04 spec §8.6: a surrogate's).
+    appended: Sequence[Limitation] = ()
+
+
 def _issue(
     target: Any,
     result: Any,
     solved: _Solved,
     final_state: Mapping[str, float],
     *,
-    checks: list[CheckResult],
-    digest: str,
+    checked: _Checked,
     policy: CheckPolicy,
     declaration: Mapping[str, Any],
     phase_branch: Mapping[str, Any],
-    screened: _Screened,
-    projection: Projection,
     provider: PropertyProvider | None = None,
     witness: _WitnessColumns,
-    appended: Sequence[Limitation] = (),
     external: ExternalEvidence | None = None,
 ) -> SolutionCertificate:
     """§4.8, §7 and §8 after the check set: the derivative witness, the grade and the certificate
     (T05 design note §4.2). Shared by `_certify` (SYN-001's check set) and `verify_revision` (the
-    table's); `checks` and `digest` are the caller's check set and its residual state hash,
-    `phase_branch` the caller's record of the branch, `screened` the regularity screen the caller
-    ran at `final_state` before its fresh-flash categories (ADR 0013 D1), on the zero-flow form of
-    its `ZERO_FLOW` splits (T05b spec §9.3; none for SYN-001), and `projection` where those
-    categories were judged, recorded as `transformations.projection` (K04-F9 spec §5.5), and
-    `witness` the columns the derivative witness does not difference or differences one-sided."""
-    from openflowsheet.verify.checks import derivative_witness, witness_skipped_columns
+    table's); `checked` is the caller's check set at `final_state` with its residual state hash,
+    regularity screen, projection and own limitations, `phase_branch` the caller's record of the
+    branch, and `witness` the columns the derivative witness does not difference or differences
+    one-sided."""
+    from openflowsheet.verify.checks import derivative_witness
     from openflowsheet.verify.regularity import solution_error_bound
 
+    checks, digest, screened = checked.checks, checked.digest, checked.screened
     resolved = policy
     plan = getattr(result, "plan", None)
     plan_id = getattr(plan, "plan_id", "")
@@ -1069,30 +1078,7 @@ def _issue(
     if bound is None:
         bound = solution_error_bound(matrix, scaled_residual)
 
-    derivative_ok = all(
-        check.result == "pass" for check in checks if check.category == "derivative_witness"
-    )
-    status, limitations = grade(
-        checks,
-        policy=resolved,
-        regularity_status=regularity.status,
-        regularity_reason=regularity.ill_conditioned_reason,
-        derivative_ok=derivative_ok,
-    )
-    # M02 design note §14.3 C2 (R-281): the columns the witness did not difference, recorded
-    # where a reader enumerates what was not established; nothing when none was skipped.
-    skipped = witness_skipped_columns(target.spec.variable_ids, witness.unstenciled)
-    if skipped:
-        limitations.append(
-            Limitation(
-                "derivative_witness_partial",
-                {"columns": skipped, "reason": witness.skipped_reason},
-            )
-        )
-    if external is not None:
-        limitations += external.limitations
-    # The caller's own limitations after the grade's (M04 spec §8.6: a surrogate's).
-    limitations.extend(appended)
+    status, limitations = _graded(target, checked, resolved, witness, external)
     # M02 design note §14.2 B15: the fresh provider the checks ran on, which the independence
     # qualifications and the statements name; SYN-001's unless given.
     if provider is None:
@@ -1123,12 +1109,53 @@ def _issue(
             dict(item) for item in getattr(solved.source, "branch_provenance", ()) or ()
         ),
         root_fingerprint=getattr(solved.source, "root_fingerprint", None),
-        transformations=_transformations(target, solved, declaration, projection),
+        transformations=_transformations(target, solved, declaration, checked.projection),
         derivative_provenance=_derivative_provenance(identity, checks, external),
         independence_qualifications=_independence_qualifications(checks, capabilities),
         limitations=tuple(limitations),
         statements=statements_for(provider),
     )
+
+
+def _graded(
+    target: Any,
+    checked: _Checked,
+    policy: CheckPolicy,
+    witness: _WitnessColumns,
+    external: ExternalEvidence | None,
+) -> tuple[VerificationStatus, list[Limitation]]:
+    """§8.1's verdict on `checked`'s check set, the derivative witness's checks included, with
+    its limitations: `grade`'s under `policy` and the screen's regularity, then
+    `derivative_witness_partial` when `witness` left a column of `target`'s declaration
+    undifferenced, `external`'s, and the caller's own (`checked.appended`)."""
+    from openflowsheet.verify.checks import witness_skipped_columns
+
+    regularity = checked.screened.regularity
+    derivative_ok = all(
+        check.result == "pass" for check in checked.checks if check.category == "derivative_witness"
+    )
+    status, limitations = grade(
+        checked.checks,
+        policy=policy,
+        regularity_status=regularity.status,
+        regularity_reason=regularity.ill_conditioned_reason,
+        derivative_ok=derivative_ok,
+    )
+    # M02 design note §14.3 C2 (R-281): the columns the witness did not difference, recorded
+    # where a reader enumerates what was not established; nothing when none was skipped.
+    skipped = witness_skipped_columns(target.spec.variable_ids, witness.unstenciled)
+    if skipped:
+        limitations.append(
+            Limitation(
+                "derivative_witness_partial",
+                {"columns": skipped, "reason": witness.skipped_reason},
+            )
+        )
+    if external is not None:
+        limitations += external.limitations
+    # The caller's own limitations after the grade's (M04 spec §8.6: a surrogate's).
+    limitations.extend(checked.appended)
+    return status, limitations
 
 
 def _transformations(
