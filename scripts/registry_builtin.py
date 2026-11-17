@@ -345,13 +345,14 @@ def _signatures() -> list[dict[str, Any]]:
     `MODEL_SIGNATURES` entry, sorted by model id, into its own result type. Not through an
     application, whose construction builds the process registry from the tables written here
     (W2-7); `tests/test_f1_legacy_builtins.py` holds this equal to `list_models()`."""
-    from openflowsheet.application import local
+    from openflowsheet.application import inspection_service
     from openflowsheet.application.inspection_types import ModelRegistryView
     from openflowsheet.application.model_signatures import MODEL_SIGNATURES
 
     view = ModelRegistryView(
         models=tuple(
-            local._model_view(MODEL_SIGNATURES[model_id]) for model_id in sorted(MODEL_SIGNATURES)
+            inspection_service._model_view(MODEL_SIGNATURES[model_id])
+            for model_id in sorted(MODEL_SIGNATURES)
         )
     )
     models: list[dict[str, Any]] = view.as_document()["models"]
