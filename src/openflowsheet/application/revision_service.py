@@ -3,8 +3,8 @@ revisions' reads (ADR 0076 I-12d, above `InspectionService`).
 
 `LocalApplication` delegates `commit_change`, `preview_change`, `list_revisions`, `get_revision` and
 `diff_revisions` here; their contract documentation is the facade's. The stored-revision read
-(`revision`), the projection checks (`check_view`, `project`), the rejected result (`rejected`) and
-the list cursor (`decode_cursor`, `encode_cursor`) are shared with the services above.
+(`revision`), the projection checks (`check_view`, `project`) and the
+list cursor (`decode_cursor`, `encode_cursor`) are shared with the services above.
 """
 
 from __future__ import annotations
@@ -138,7 +138,7 @@ class RevisionService:
             return self._replayed(prior, request_sha256, idempotency_key)
         if actual != expected_revision:
             return _conflict(expected_revision, actual, idempotency_key)
-        return self.rejected(
+        return self._rejected(
             operation,
             idempotency_key,
             "invalid_request",
@@ -271,7 +271,7 @@ class RevisionService:
         """Q29 first (a non-canonical value is `rejected`), then the ChangeSet schema (raised)."""
         pointer = first_noncanonical(request)
         if pointer is not None:
-            return self.rejected(
+            return self._rejected(
                 operation,
                 idempotency_key,
                 "document_not_canonical",
@@ -351,11 +351,11 @@ class RevisionService:
                 revision_id = _assigned_revision_id(store, connection)
         if refusal is not None:
             code, message, detail = refusal
-            return self.rejected(operation, idempotency_key, code, message, **detail)
+            return self._rejected(operation, idempotency_key, code, message, **detail)
         try:
             built = apply_edits(start, change.edits)
         except EditPathError as error:
-            return self.rejected(
+            return self._rejected(
                 operation,
                 idempotency_key,
                 "invalid_request",
@@ -405,7 +405,7 @@ class RevisionService:
         incompatible = [report for report in reports if not report.compatible]
         if incompatible:
             report = incompatible[0]
-            return self.rejected(
+            return self._rejected(
                 operation,
                 idempotency_key,
                 "model_replacement_incompatible",
@@ -418,7 +418,7 @@ class RevisionService:
         if unpromoted:
             instance_id, why = unpromoted[0]
             reason = f"surrogate_not_promoted({instance_id})"
-            return self.rejected(
+            return self._rejected(
                 operation,
                 idempotency_key,
                 "model_replacement_incompatible",
@@ -472,7 +472,7 @@ class RevisionService:
             )
         return replace(TransactionResult._build(prior.result), status="replayed")
 
-    def rejected(
+    def _rejected(
         self,
         operation: str,
         idempotency_key: str,
