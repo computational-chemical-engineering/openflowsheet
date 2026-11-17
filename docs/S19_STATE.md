@@ -61,8 +61,8 @@ Runner RUNNING (pid 475743, cce-code-health cf15245; MB = 1720cc98). Results con
 serial runs i10-base (7599f205, PID 370532), i10-head (0e71c61a, PID 370533),
 i12b-head (f917c724, PID 436120; i10-head is its base), logs `<git-common-dir>/codehealth/runs/serial/*.log`,
 worktrees `<scratchpad 5222beaa>/ser-*` (remove after). i12a-base (0ca3c762) and i12a-head (0c96257c) chained to
-start after the i10 pair (chain PID 517667). Gating: job 231 (I-12a). Agent: W4 run 16 engineer (I-12c resume,
-S19-W4-16.md) from lane tip 0be48459. Then: review R-W4-13 over I-10, I-12b, I-12a, I-12c (batched questions in
+start after the i10 pair (chain PID 517667). i12c-head (918d4e59) chained after i12b-head (PID 551916). Gating: jobs 231 (I-12a), 232 (I-12c).
+Agent: reviewer R-W4-13 (brief S19-R-W4-13.md), lane tip 93cec9a3. Then: review R-W4-13 over I-10, I-12b, I-12a, I-12c (batched questions in
 S19_DECISIONS 04:15, 04:40, 05:15), merge-check, merge; then I-12d, I-19.
 Lanes at most 2 agents until Thu 19 Nov 13:00. ALERTs standing (proposal 2 with Frank).
 Merge-checks run on a helper `wp/S19-<lane>-mc` = lane tip + wp/S19 tip merged in; merge the helper (`git merge

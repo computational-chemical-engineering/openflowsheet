@@ -1937,3 +1937,16 @@
   no test definition or parameter (orchestrator diff: list literals and the plan only). DECISION: i12a-base at
   0ca3c762, i12a-head at 0c96257c, chained detached (PID 517667) to start when the i10 pair ends (load). Run 16
   (I-12c resume, S19-W4-16.md) launched on the lane from 0be48459.
+- **2026-11-17 05:35, W4 run 16 reported (opus-engineer, ~108k tokens): I-12c delivered, job 232 (w4r16-i12c-1,
+  interface step 918d4e59 on plan e3c6fadb), no STOP.** e3c6fadb = run 14's d32f150c + the private renamed entry
+  `_constants_for_shape` (no other moved private name is imported or patched elsewhere: grep); 918d4e59 = ff5882f6
+  cherry-picked without conflict; 93cec9a3 layer config. AST: every top-level statement verbatim from revision_run at
+  0be48459 except the `no_stage` rename and the module-qualified `revision_run.run_revision_session` call. Trial gate
+  (static, cf15245) 11/11 ok; debt 87.7 -> 87.7; arch 0/0/0 (323 files, 4083 imports); revision_run.py 1057 -> 717,
+  revision_replay.py 365; patch_noop 265, 0 flagged; liveness test_t08_w2_cli_rerun.py:56 and test_t08_adr0025.py:648
+  live, :57 not exercised (dead at the base too); 500 touched tests pass. Branch wp/S19-w4-i12c-wip deleted.
+  Leftovers: revision_run.py module docstring, studies/nlp/host.py:294 docstring, forbid lists (review).
+  Serial: i12a-head (0c96257c) serves as i12c's base (0c96257c..e3c6fadb: .codehealth/, list literals and one
+  docstring line in tests; no test definition or parameter); i12c-head at 918d4e59 chained after i12b-head (chain
+  PID 551916). Review R-W4-13 (reviewer, Opus; brief S19-R-W4-13.md) launched over a2896f97..93cec9a3 while jobs 231,
+  232 gate.
