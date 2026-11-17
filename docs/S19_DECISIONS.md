@@ -1724,3 +1724,7 @@
   `_VALVE` in the interface step (keep `THERMAL_VALVE` on the right), drop BUILDERS from `changed` if it is then
   unchanged, rebuild, enqueue fresh (w4r12-i13-5, -6). Fix brief S19-W4-12-fix219.md, `sonnet-implementer`.
   Lesson for briefs: a token rename across importers must skip names the importer defines itself.
+- **2026-11-17, fix219 done (`sonnet-implementer`): BUILDERS unchanged after restoring `_VALVE`, so the plan drops it
+  from `changed`: P c2df0d96 (on eb71978d), S1 a741872b (job 223 w4r12-i13-5, interface), T 595ea240, S2 a652a744
+  (job 224 w4r12-i13-6, no-gain); backup wp/S19-w4r12-job219 = a39da84c; diff vs backup: thermal_binding.py (4) and
+  the plan (2). mypy 378 clean; 266 thermal_binding tests passed.**
