@@ -2252,3 +2252,6 @@
   `progress` writes is the question for it), not by its own reviewer. Alternative: a separate reviewer now.
   Reversible by: briefing R-W3-G6-7 alone. **Design batch 1 launched (`specifier`, Opus, brief S19-D-batch1.md).**
   Agents running: G5 run 12, design batch 1 (cap 2).
+- **2026-11-17, job 258 PASS (g6r7-1, 2ce4c5fe, step 293 accepted, debt 11.0 -> 9.2, 16/16).** Gate report (6 h, 11
+  gates, 0 failed): "ALERT selected gates take 639 s > 300 s (tests tier)", "ALERT selected/full time ratio 0.56 >
+  0.4: selection saves little" (standing; proposal 2 with Frank). G6 run 7 waits for the joint review with G5 run 12.
