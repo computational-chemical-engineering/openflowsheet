@@ -2273,3 +2273,12 @@
   Default A stands until a signed card is verified.
 - **2026-11-17, job 259 PASS (g5r12-1, 50e19804, step 294 accepted, table.py debt 21.4 -> 10.1, 16/16).** Gate
   report: the two standing ALERTs (selected time, selected/full ratio; proposal 2).
+- **2026-11-17, G5 run 12 reported (opus-engineer, Opus, 212k tokens, over the 150k cap). wp/S19-g5j (BASE fb04cd10),
+  4 steps, jobs 259-262:** 50e19804 table `revision_checks` admissibility per form with `_Judging` (21.4 -> 10.1);
+  51ed53df per-instance double read -> `_instance_rows` (-> 3.0, params only); 672cc673 certificate `_Subject` for
+  `_certify`/`_issue`; a06cc5d6 `_Checked` + provider, external. table.py 21.4 -> 3.0, health 7.5 -> 8.8;
+  certificate.py 23.9 -> 15.6, health 8.7 (aim 9.0 missed: many_args at its cap with six functions above 5 params;
+  verify_bound, verify_revision public, `_project` pinned by tests/t05b_support.py:777); repo 4699.2 -> 4672.5.
+  Not taken: a SYN-001 check-set inputs object (gain 1.0), verify_revision (rule 10). table.py duplication with the
+  gamma_phi_units twin 59 -> 42 lines (twin merge waits for Frank). Review brief S19-R-W3-G5-12.md (joint with G6
+  run 7); reviewer launches when jobs 260-262 pass.
