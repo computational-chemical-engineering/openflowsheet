@@ -287,8 +287,9 @@ def _stream_enthalpies(
 
 
 class _Judging(NamedTuple):
-    """Where and with what revision_checks judges the fresh-flash categories (ADR 0013 D1), in
-    the order the admissibility checks take them."""
+    """What revision_checks judges with (ADR 0013 D1): the fresh-flash point `at`, the fresh
+    provider and context, the tolerances and the two qualification notes; the first five in the
+    order the admissibility checks take them."""
 
     #: The point judged (`judged_at`, or `state` when it is `None`).
     at: Mapping[str, float]
