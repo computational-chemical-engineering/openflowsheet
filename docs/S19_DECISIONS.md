@@ -1716,3 +1716,11 @@
 - **2026-11-17, job 215 PASS (w4r11-mc, helper 97553d85, full suite, 7/7, 24.6 -> 24.6); not merged: wp/S19 gained
   G5 run 10's code (verify/certificate.py, column.py; merge 640bbd63) after the helper's base 5ac6ddb9.** Helper
   refreshed with wp/S19 38b94728 as 2490c525; merge-check 2 job 221 (w4r11-mc2). Merge on its PASS.
+- **2026-11-17, job 219 FAIL (w4r12-i13-3, 78f4e2d2 on plan 00cc473f, run-log step 268, 11/12, `public_api`); job 220
+  SKIPPED.** "thermal_binding.py: VALVE added (not in the plan)" and SIGNATURES changed: the engineer's rename also
+  renamed thermal_binding's own alias `_VALVE: Final = _THERMAL_VALVE` (not model_signatures' `_VALVE`) to `VALVE`
+  (lines 194, 203, 334, 340). An AST scan of every touched src file at 00cc473f..78f4e2d2 found no other unplanned
+  public name (same-file renames of private names are consistent, hence behaviour-neutral). DECISION: restore
+  `_VALVE` in the interface step (keep `THERMAL_VALVE` on the right), drop BUILDERS from `changed` if it is then
+  unchanged, rebuild, enqueue fresh (w4r12-i13-5, -6). Fix brief S19-W4-12-fix219.md, `sonnet-implementer`.
+  Lesson for briefs: a token rename across importers must skip names the importer defines itself.
