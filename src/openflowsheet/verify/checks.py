@@ -742,6 +742,8 @@ def admissibility_checks(
     The registered case is the trivial root: S3 forced all-liquid at the once-through variant
     has `sum x_i K_i(350 K) = 1.07 > 1`, which says a liquid at that composition and temperature
     would boil. A branch that cannot exist is the one thing a residual cannot report.
+
+    The independent split of S3 follows (`_s3_independent_split_checks`).
     """
     note = qualification(provider)
     checks: list[CheckResult] = []
@@ -792,20 +794,36 @@ def admissibility_checks(
                 )
             )
 
-    # The independent split: flash S3 from its own (n, T, P) and compare, rather than believing
-    # the lifted variables. At the trivial root this differs by 0.304 mol/s, ten million times
-    # the tolerance.
+    checks += _s3_independent_split_checks(provider, state, context, vapor, note)
+    return checks
+
+
+def _s3_independent_split_checks(
+    provider: PropertyProvider,
+    state: Mapping[str, float],
+    context: EvaluationContext,
+    vapor: tuple[float, ...],
+    note: str,
+) -> list[CheckResult]:
+    """§4.7's independent split of S3: flash S3 from its own `(n, T, P)` in `state` and compare,
+    rather than believing the lifted variables (at the trivial root they differ by 0.304 mol/s,
+    ten million times the tolerance). `independent_split.S3` `not_applicable` when S3 is dormant;
+    else the lifted total vapour flow read from `state`, then each component's of `vapor` (the
+    lifted vapour flows in `COMPONENTS` order), against the flash's at `FLOW_TOLERANCE`,
+    qualified by `note`. Raises `VerifierError` when the verifier's own split does not return
+    `ok` with a vapour."""
+    independent: list[CheckResult] = []
     carried = stream_of(state, "S3")
     if carried.is_dormant:
-        checks.append(
+        independent.append(
             dormant(id="independent_split.S3", category="independent_split", subject="S3")
         )
-        return checks
+        return independent
 
     flashed = provider.flash(FlashRequest(state=carried), context)
     if flashed.status != "ok" or flashed.vapor is None:
         raise VerifierError(f"the verifier's own split returned {flashed.status}")
-    checks.append(
+    independent.append(
         evaluated(
             id="independent_split.S3.total",
             category="independent_split",
@@ -817,7 +835,7 @@ def admissibility_checks(
         )
     )
     for index, component in enumerate(COMPONENTS):
-        checks.append(
+        independent.append(
             evaluated(
                 id=f"independent_split.S3.{component}",
                 category="independent_split",
@@ -828,7 +846,7 @@ def admissibility_checks(
                 independence_qualification=note,
             )
         )
-    return checks
+    return independent
 
 
 # ---------------------------------------------------------------- 4.8 the derivative witness
