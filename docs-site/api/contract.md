@@ -1,6 +1,6 @@
 # Errors and pages
 
-::: openflowsheet.application.contract.ApplicationError
+::: openflowsheet.application.errors.ApplicationError
 
 ::: openflowsheet.application.errors.ApiError
 
