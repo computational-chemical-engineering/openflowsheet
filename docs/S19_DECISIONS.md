@@ -2136,3 +2136,6 @@
 - 2026-11-17 10:35, job 243 (w4i12d-f1-1, F1 a995d571) PASS, run-log step 286 accepted, 17/17. All I-12d jobs
   237-243 PASS. Serial i12d1-base (17cada5f) vs i12d1-head (394effe6): EQUAL (MSG WO-5a 1061, WO-6 801/100;
   20392 passed, 107 skipped, 222 deselected, 3 xfailed; both rc 0). i12d3-head and i12d5-head started by the chain.
+- 2026-11-17 10:50, serial i12d2-head (3b72357b) and i12d4-head (50cbb3ed): rc 0, the same MSG and count lines as
+  the i12d1 pair (1061; 801/100; 20392/107/222/3). Pairs i12d1-head vs i12d2-head and i12d2-head vs i12d4-head
+  EQUAL. Left: i12d4-head vs i12d3-head, i12d3-head vs i12d5-head (running, PIDs 1223888, 1223889).
