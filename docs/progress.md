@@ -364,12 +364,13 @@ genuinely structural, and guessing that before measuring it is how the wrong lin
 
 **No package is `BLOCKED`.**
 
-**Design-lane item (found in S19 review R-W3-G5-8, 2026-11-16; pre-existing, behaviour unchanged by S19):**
-`verify/checks.py` `_discrepancies` folds with `max(0.0, nan) == 0.0`, so a derivative-witness stencil column whose
-residual evaluation reports status `ok` but contains a NaN entry gives on/off discrepancy 0.0, passes the witness and
-never escalates (T06 spec §4.8.3). Open fact: can `compiled.residual` return `ok` with a NaN? If yes, this is a
-silent pass in a certificate check. Owner: design lane (`specifier`), after S19's blocking set. Evidence:
-`docs/S19_DECISIONS.md` "R-W3-G5-8".
+**Design-lane item (S19 reviews R-W3-G5-7 and R-W3-G5-8; ruled 2026-11-17 in `docs/briefs/S19-D-batch1-ruling.md`):** Q1 component order: guaranteed by construction, no bug; pinned by
+`tests/test_s19_component_order.py` (Q1.A1, Q1.A2); hygiene of four `split_checks.py` sites at the next touch (OQ-2).
+Q2 NaN in the derivative witness: no registered path returns `ok` with a non-finite entry (CasADi backend refuses),
+but the witness cannot exclude it (no finiteness contract on `CompiledProblem`; overflow from finite values; five
+falsifiers fail today). Ruling: a non-finite term becomes `unsupported` with `witness_stencil_non_finite(<col>)`.
+Open for Frank (OQ-1): land it inside S19 or after; default after S19 closes, as one commit with the K04 §4.8
+amendment, tests Q2.A1 to A6 and F0.
 
 ADR 0008 registers four open questions with recommended defaults, all applied. **Q1 is closed:**
 Frank confirmed on 2026-09-16 that the SYN-001 heater is a holdup unit, so the registered

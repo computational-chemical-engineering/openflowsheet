@@ -2255,3 +2255,16 @@
 - **2026-11-17, job 258 PASS (g6r7-1, 2ce4c5fe, step 293 accepted, debt 11.0 -> 9.2, 16/16).** Gate report (6 h, 11
   gates, 0 failed): "ALERT selected gates take 639 s > 300 s (tests tier)", "ALERT selected/full time ratio 0.56 >
   0.4: selection saves little" (standing; proposal 2 with Frank). G6 run 7 waits for the joint review with G5 run 12.
+- **2026-11-17, design batch 1 reported (`specifier`, Opus, 153k tokens): ruling c29e1cf1
+  (`docs/briefs/S19-D-batch1-ruling.md`).** Q1 (R-W3-G5-7 component order): finding (a), the order is guaranteed by
+  construction (split_checks runs only on the SYN branch, table.py:152/:234/:245; only "syn001" maps to SYN,
+  forms.py:55-59; the view's order is the basis', revision_flowsheet.py:432/:472-473; the fresh provider refuses a
+  mismatch, certificate.py:370-374); the one untested link, `checks.COMPONENTS`, is pinned now by
+  `tests/test_s19_component_order.py` (Q1.A1, Q1.A2 negative control; 2 passed, ruff and full mypy clean; written by
+  the orchestrator, test-only). Q2 (R-W3-G5-8 NaN witness): no registered path, but not excluded at the witness; on
+  WIT's double an injected NaN passes silently (on-pattern, off-pattern, AD entry) and an overflow gives `fail` with
+  inf, which serialises to null (K04 A30). Ruling: refusal `witness_stencil_non_finite(<col>)`, `unsupported`.
+  DECISION (OQ-1): the Q2 change lands after S19 closes, as one behaviour-level commit (code, K04 §4.8 amendment,
+  Q2.A1 to A6, F0), because S19 is bitwise identical by Frank's rule. Alternative: inside S19 (identical on every
+  registered certificate). Reversible by: Frank choosing "inside S19" on the desk card. OQ-2 (Q1 hygiene): at the next
+  touch of split_checks.py (default). Sent to hub as a DECISION-REQUEST.
