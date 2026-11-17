@@ -2334,3 +2334,14 @@
   build-lane implementation of the design-lane ruling with a `reviewer` pass.** Alternative: fold it into S19's
   manifest. Reason: it is a behaviour change, and S19's evidence claims bitwise identity. Reversible by: renaming
   before the first commit. Brief WITNF-engineer.md written; launches after the main merge.
+- **2026-11-17, evidence engineer reported (opus-engineer, Opus, 135k tokens): manifest at 4f9f2c3d committed as
+  1ae6fb3f (wp/S19-ev), status implemented; 12 checks (G-MAP 3/4/5 fail as recorded, the rest pass); f6 101.42 s
+  alone (budget 300 s), t07_conformance budget 28.40 s alone (120 s); F0 PASS all nine sets; MCP digest 40 passed;
+  scan 4670.7 / 8.24 / brain 26; arch 0/0; harvest 11 rows (class P), HARVEST_SIZE (97, 1126, 146); envelope tests
+  1378 passed, 19 skipped.** Merged into wp/S19 as ed0f04ae and pushed (git push needed `-c
+  credential.helper='!gh auth git-credential'`: the https remote has no helper configured). CI run 44158387592.
+  **Finding:** the previous wp/S19 CI run 43773007283 (d122b86a, 2026-11-16) FAILED on both legs with one test:
+  `tests/test_s19_i15_admissibility_refusal.py:410` (the re-solve's `full_state_sha256` != the F0 bundle's
+  `target_state_sha256`: '4242572aa15a...' vs '8dc637985b0d...'); 20353 passed. Not recorded at the time. If 44158387592
+  fails the same way, the merge waits for a fix (the assertion compares a CI-machine solve bitwise with a workstation
+  bundle).
