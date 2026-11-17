@@ -61,7 +61,8 @@ def _split_checks(
     unresolved: bool = False,
 ) -> list[CheckResult]:
     """K04 §4.7 on one lifted split, read from the state at the split's `(T, P)`: K03 §8.2's
-    admissibility, then a fresh flash of the split's feed compared with the split.
+    admissibility (`_split_admissibility`), then a fresh flash of the split's feed compared with
+    the split.
 
     A flowing split judged temperature-degenerate (`distance` is its `δ`; T05b spec §9.1) has
     instead `phase_admissibility.<U>.<S>.saturation` (value `δ`, kind temperature) in place of its
@@ -75,63 +76,24 @@ def _split_checks(
     flash's vapour flow by at least a tenth of the tolerance it would be judged at."""
     name = f"{split.unit}.{split.stream}"
     subject = split.stream
-    checks: list[CheckResult] = []
 
     if distance is not None:
         return _degenerate_split_checks(name, subject, distance, tolerances, note)
 
-    vapor = tuple(state[column] for column in split.vapor)
-    liquid = tuple(state[column] for column in split.liquid)
-    temperature = state[split.temperature]
-    pressure = state[split.pressure]
-    total_vapor, total_liquid = sum(vapor), sum(liquid)
-
-    if total_vapor + total_liquid == 0.0:
-        checks.append(
-            dormant(
-                id=f"phase_admissibility.{name}", category="phase_admissibility", subject=subject
-            )
-        )
-    else:
-        constants = k_values(provider, temperature, pressure, context)
-        if total_vapor == 0.0:
-            checks.append(
-                _one_sided(
-                    id=f"phase_admissibility.{name}.bubble",
-                    subject=subject,
-                    value=sum(x * k for x, k in zip(_fractions(liquid), constants, strict=True)),
-                    note=note,
-                )
-            )
-        elif total_liquid == 0.0:
-            checks.append(
-                _one_sided(
-                    id=f"phase_admissibility.{name}.dew",
-                    subject=subject,
-                    value=sum(y / k for y, k in zip(_fractions(vapor), constants, strict=True)),
-                    note=note,
-                )
-            )
-        else:
-            checks.append(
-                closure_check(
-                    id=f"phase_admissibility.{name}.closure",
-                    subject=subject,
-                    provider=provider,
-                    vapor=vapor,
-                    liquid=liquid,
-                    temperature=temperature,
-                    pressure=pressure,
-                    context=context,
-                    tolerance=tolerances["temperature"],
-                    note=note,
-                )
-            )
+    at = _SplitAt(
+        name,
+        subject,
+        vapor=tuple(state[column] for column in split.vapor),
+        liquid=tuple(state[column] for column in split.liquid),
+        temperature=state[split.temperature],
+        pressure=state[split.pressure],
+    )
+    checks = [_split_admissibility(at, provider, context, tolerances, note)]
 
     carried = StreamState(
         n=tuple(state[column] for column in split.feed),
-        temperature=temperature,
-        pressure=pressure,
+        temperature=at.temperature,
+        pressure=at.pressure,
     )
     if carried.is_dormant:
         checks.append(
@@ -169,7 +131,7 @@ def _split_checks(
                 id=f"independent_split.{name}.{component}",
                 category="independent_split",
                 subject=subject,
-                value=vapor[index] - flashed.vapor.n[index],
+                value=at.vapor[index] - flashed.vapor.n[index],
                 tolerance=tolerances["molar_flow"],
                 reference=KIND_REFERENCE["molar_flow"],
                 independence_qualification=note,
@@ -203,6 +165,66 @@ def _degenerate_split_checks(
             reason="temperature_degenerate",
         ),
     ]
+
+
+class _SplitAt(NamedTuple):
+    """A lifted split as `_split_checks` reads it from the state, at the split's own `(T, P)`."""
+
+    #: `<U>.<S>`, the middle of its check ids.
+    name: str
+    #: `S`, the split's stream: the subject of its checks.
+    subject: str
+    #: Its vapour and liquid flows, in the order of the split's own columns.
+    vapor: tuple[float, ...]
+    liquid: tuple[float, ...]
+    temperature: float
+    pressure: float
+
+
+def _split_admissibility(
+    at: _SplitAt,
+    provider: PropertyProvider,
+    context: EvaluationContext,
+    tolerances: Mapping[str, float],
+    note: str,
+) -> CheckResult:
+    """K03 §8.2's admissibility of the split read `at` (K04 §4.7): `phase_admissibility.<U>.<S>`
+    `not_applicable` when both phases are empty; else, from `k_values` at the split's `(T, P)`,
+    the bubble test of an all-liquid split, the dew test of an all-vapour one, or the two-phase
+    closure (`closure_check`, at the temperature kind's tolerance of `tolerances`), each qualified
+    by `note`."""
+    total_vapor, total_liquid = sum(at.vapor), sum(at.liquid)
+    if total_vapor + total_liquid == 0.0:
+        return dormant(
+            id=f"phase_admissibility.{at.name}", category="phase_admissibility", subject=at.subject
+        )
+    constants = k_values(provider, at.temperature, at.pressure, context)
+    if total_vapor == 0.0:
+        return _one_sided(
+            id=f"phase_admissibility.{at.name}.bubble",
+            subject=at.subject,
+            value=sum(x * k for x, k in zip(_fractions(at.liquid), constants, strict=True)),
+            note=note,
+        )
+    if total_liquid == 0.0:
+        return _one_sided(
+            id=f"phase_admissibility.{at.name}.dew",
+            subject=at.subject,
+            value=sum(y / k for y, k in zip(_fractions(at.vapor), constants, strict=True)),
+            note=note,
+        )
+    return closure_check(
+        id=f"phase_admissibility.{at.name}.closure",
+        subject=at.subject,
+        provider=provider,
+        vapor=at.vapor,
+        liquid=at.liquid,
+        temperature=at.temperature,
+        pressure=at.pressure,
+        context=context,
+        tolerance=tolerances["temperature"],
+        note=note,
+    )
 
 
 def _declared_phase(
