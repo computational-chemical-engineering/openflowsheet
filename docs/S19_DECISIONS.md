@@ -1885,3 +1885,22 @@
   Job 230 (w4r14-i12b-1) started at once, so no idle window yet; the runner has no pause and a stop aborts running
   gates, so the d23326b re-pin waits for running = 0 and pending = 0 (run 15 shares the lane worktree with run 14 and
   starts after it anyway). I-10 merge waits for the serial counts and review R-W4-13 (with run 14's steps).
+- **2026-11-17 04:40, W4 run 14 reported (opus-engineer, ~216k tokens).** I-12b done: plan c0ccbdb8, interface step
+  f917c724 (job 230, w4r14-i12b-1), layer config 9d52dde2 (`store_records` directly below `store`) outside the gate;
+  store.py 1062 -> 966 NLOC, store_records.py 114; arch 0/0/0 before and after; patch_noop 265, 0 flagged (no patch
+  on a moved name). Engineer DECISION: `_blob`, `_load`, `EVIDENCE_OPERATIONS` stay in store.py (only user
+  ProjectStore; the ADR's helper rule), although the ADR's I-12b list names `_blob`, `_load` for store_records: for
+  review R-W4-13. Note: `coded_store_error`'s MSG caller module is now store_records (kept only for uncatalogued codes).
+  Serial: i10-head (0e71c61a) serves as i12b's base (diff 0e71c61a..c0ccbdb8 is .codehealth/ only, which no test
+  reads: test_s16_test_impact TOOLING_PREFIXES premise test); i12b-head at f917c724 started (PID 436120).
+  **I-12c STOP (tool refusal)**, work kept on `wp/S19-w4-i12c-wip` (plan d32f150c, step ff5882f6; lane reset to
+  9d52dde2): test_m02_wo14.py:48/:306 import the private `_constants_for_shape`; callers refuse without a renamed
+  entry, public_api refuses the entry ("_constants_for_shape is still bound in .../revision_run.py"), though at
+  ff5882f6 revision_run.py binds no such name (orchestrator git grep). Asked session code_health 04:38 whether that
+  is a defect. Default if the tool is right by design: a test commit outside the gate before the step. Engineer
+  DECISIONs: `_no_stage` (both halves) -> public `no_stage` in revision_run; reproduce_bundle reads
+  `revision_run.run_revision_session` through a module import (keeps test_t08_w2_cli_rerun.py:61 live; liveness :61
+  and test_t08_adr0025.py:652 live, :62 `rerun_registered` dead at base and step alike: review item). I-12c: 
+  revision_run.py 1057 -> 717, revision_replay.py 365, 455 touched tests pass. Leftovers: revision_run.py module
+  docstring still describes reproduce_bundle (docstring step later); `engine-not-persistence` forbid and
+  store_records (review batch); docs anchors into authz.py, runner.py drifted (warnings).
