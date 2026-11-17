@@ -11,7 +11,8 @@ getattr), a dotted string "openflowsheet.<module>.N", or a factory reference
 `{"module": "...", "attribute": "N"}`.
 
 Classes of an added re-export:
-  w5            an importer is a frozen M9 module, a registry-hashed file (assessment/cost, lca) or a
+  w5            an importer is a frozen M9 module, a registry-hashed file (in a built-in
+                descriptor's implementation set: frozen M9 plus assessment/cost, lca) or a
                 factory reference, the form of the registry table (scripts/registry_builtin.py and the
                 test that mirrors it; ADR 0076 FQ-A; W5 retargets them)
   retarget      importers through the old path outside the exceptions: retarget, then remove
@@ -46,7 +47,7 @@ ROOT = Path(__file__).resolve().parents[3]
 PKG = "src/openflowsheet/"
 SCAN_DIRS = ("src", "tests", "scripts", "benchmarks", "examples")
 S19_BASE = "d90b498f"  # S19's CB: a commit at or before it is S17's
-HASHED = ("src/openflowsheet/assessment/cost/", "src/openflowsheet/assessment/lca/")
+BUILTIN = "src/openflowsheet/registry/builtin"  # descriptors whose implementation sets registry_sha256 hashes
 EXEMPT_INIT = "openflowsheet.assessment.sizing"
 PATCH_KINDS = ("setattr", "assign", "string")
 DOTTED = re.compile(r"^openflowsheet(\.[A-Za-z_]\w*)+$")
@@ -396,6 +397,11 @@ def main() -> int:
             check=True,
         ).stdout.split()
     )
+    hashed = {
+        "src/" + p
+        for f in sorted((ROOT / BUILTIN).glob("*.json"))
+        for p in re.findall(r'"(openflowsheet/[^"]+\.py)"', f.read_text(encoding="utf-8"))
+    }
     hits, unbound = importers(head)
     rows = []
     counts: dict[str, int] = defaultdict(int)
@@ -415,7 +421,7 @@ def main() -> int:
             # a patch (setattr, assignment, dotted string) of a name the module reads is a live patch point
             live = [i for i in allhits if i[2] in PATCH_KINDS and m.uses(name)]
             imp = [i for i in allhits if i not in live]
-            exc = [i for i in imp if i[0] in frozen or i[0].startswith(HASHED) or i[2] == "factory"]
+            exc = [i for i in imp if i[0] in frozen or i[0] in hashed or i[2] == "factory"]
             marker = [
                 k
                 for k, v in (("alias", b["alias"]), ("__all__", name in m.all), ("noqa", b["noqa"]))

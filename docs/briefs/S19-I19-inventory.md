@@ -82,6 +82,17 @@ tests/test_t07_w5a_inspection.py:130 (a live patch: revision_binding reads the n
   source-reading test injects to prove the R-016 rule rejects it, not an import: test data, unchanged. region keeps
   `_kernel` as a plain import (it reads it), so the text stays valid Python.
 
+## Position after W4 run 20 (a2ddefcc)
+
+`I19-SCAN re-exports added since 1fd6826b: 1616 (exempt 15, own-use 1563, retarget 2, w5 36); old-path importers 47
+(W5 exception users 44, others 3); unbound takes 6`. Done: 4866b61e (tests and scripts retargeted outside the gate),
+then four interface steps in the STOP 1 form, each a plan commit and a step: i19a (syn001 cascade, column,
+column_solve: 12 names, src importers retargeted in the step), i19b (region: 27 private aliases), i19c (verify.table:
+15), i19d (sizing `__init__`: 35, listed under `removed`); a5b8895e (src docstrings, no-gain) and a2ddefcc (scripts
+outside the gate) for the stale references. Left: the 36 W5 bindings; `column_solve.saturation_pairs` (the
+test_s08b_saturation.py:57 assertion); the two live-patch reads of `region_attempts.solve_ptc` (own use, no binding to
+remove); run 21's living docs and refusals.yaml:1378. The rows below are the measurement at 0d826601.
+
 ## Rows
 
 ### W5 exceptions (FQ-A): a frozen M9 module, a registry-hashed file or the registry factory takes the name through the old path (36)
