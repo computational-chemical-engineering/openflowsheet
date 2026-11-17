@@ -129,6 +129,7 @@ order = [
     # LocalApplication (K06's facade above it is gone, ADR 0076 I-11)
     "openflowsheet.application.local",
     # LocalApplication's services (ADR 0076 I-12d), top to bottom, the core last
+    "openflowsheet.application.job_service",
     "openflowsheet.application.validation_service",
     "openflowsheet.application.artifact_service",
     "openflowsheet.application.revision_service",
@@ -276,6 +277,7 @@ to = [
     "openflowsheet.application.structure_inspection",
     "openflowsheet.application.store_records",
     "openflowsheet.application.revision_replay",
+    "openflowsheet.application.job_service",
     "openflowsheet.application.validation_service",
     "openflowsheet.application.artifact_service",
     "openflowsheet.application.revision_service",
