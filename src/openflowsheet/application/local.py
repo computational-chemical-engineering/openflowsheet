@@ -36,10 +36,14 @@ from dataclasses import replace
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Final, Literal, NoReturn, Self
 
-from openflowsheet.application import stream_table
 from openflowsheet.application.admission import (
     active_jobs_refusal,
     resolve_policies,
+)
+from openflowsheet.application.artifact_service import (
+    STREAM_TABLE_DEPTH,
+    ArtifactService,
+    StreamTableQuery,
 )
 from openflowsheet.application.authz import (
     PolicyFile,
@@ -97,7 +101,6 @@ from openflowsheet.application.store import (
 )
 from openflowsheet.application.store_records import (
     ActiveJobLimitError,
-    ArtifactRow,
     AuditEntry,
     IdempotencyKeyReusedError,
     LedgerRow,
@@ -107,14 +110,14 @@ from openflowsheet.application.store_records import (
 from openflowsheet.application.transaction_types import Change, SemanticDiff, TransactionResult
 from openflowsheet.application.validation_report import Task, ValidationReport
 from openflowsheet.application.validation_service import ValidationService
-from openflowsheet.canonical import document_sha256, first_noncanonical
+from openflowsheet.canonical import first_noncanonical
 from openflowsheet.registry import default_registry
 from openflowsheet.run.bundle import MANIFEST_NAME
 from openflowsheet.run.replay import ReplayReport
 from openflowsheet.schema_check import DocumentSchemaError, validate_document
 from openflowsheet.studies.nlp.replay import MANIFEST as OPTIMIZATION_MANIFEST
 from openflowsheet.studies.nlp.replay import is_optimization_record
-from openflowsheet.units.display import DisplayUnits, DisplayUnitsError, parse_display_units
+from openflowsheet.units.display import DisplayUnits
 
 Executor = Literal["inline", "process"]
 #: §4.2: `wait_job` polls the store this often.
@@ -122,11 +125,6 @@ WAIT_POLL_S: Final[float] = 0.1
 #: §11.4: page sizes — job lists as arrays (default 50, at most 200), events (100, at most 500).
 MAX_JOB_PAGE: Final[int] = 200
 MAX_EVENT_PAGE: Final[int] = 500
-#: MSG §3.4 (FB-03b): a `not_found` on a bundle member lists at most this many member names.
-MAX_LISTED_MEMBERS: Final[int] = 64
-#: ST note §6.1: `get_stream_table`'s default depth, `MAX_DEPTH`, so that a stream's phases
-#: arrive whole (the other views keep `DEFAULT_DEPTH`).
-STREAM_TABLE_DEPTH: Final[int] = 12
 
 
 class LocalApplication:
@@ -162,6 +160,7 @@ class LocalApplication:
         self._core = core
         self._inspection = InspectionService(core)
         self._revisions = RevisionService(core, self._inspection)
+        self._artifacts = ArtifactService(core, self._revisions)
         self._validation = ValidationService(core, self._revisions)
 
     # ------------------------------------------------------------------------- construction
@@ -512,7 +511,7 @@ class LocalApplication:
     def get_job(self, job_id: str) -> Job:
         """§4.2: any job of the project (`read` covers every principal's jobs)."""
         self._core.authorize("get_job")
-        return self._job(job_id, "get_job")
+        return self._artifacts.job(job_id, "get_job")
 
     def list_jobs(
         self, *, status: JobStatus | None = None, cursor: str | None = None, limit: int = 50
@@ -579,7 +578,7 @@ class LocalApplication:
         checkpoint; an ended one is returned as it is. Idempotent."""
         operation = "cancel_job"
         caller = self._core.authorize(operation, target_principal=self.principal_id)
-        job = self._job(job_id, operation)
+        job = self._artifacts.job(job_id, operation)
         caller = self._core.authorize(operation, target_principal=job.principal_id)
         outcome = self._core.store.request_cancel(
             job_id,
@@ -596,7 +595,7 @@ class LocalApplication:
         status, recorded = outcome
         if recorded and status == "running":
             self._core.executor.signal_cancel(job_id)
-        return self._job(job_id, operation)
+        return self._artifacts.job(job_id, operation)
 
     def get_job_result(self, job_id: str, *, display_units: str | None = None) -> JobResult:
         """§4.2 as amended by R4: `{operation, run_result, replay_report, error}` of an ended
@@ -606,21 +605,12 @@ class LocalApplication:
         the result without it."""
         self._core.authorize("get_job_result")
         units = (
-            None if display_units is None else self._display_units(display_units, "get_job_result")
+            None
+            if display_units is None
+            else self._artifacts.display_units(display_units, "get_job_result")
         )
         result = self._result(job_id, "get_job_result", display_units=units)
         return result if units is None else _displayed(result, units)
-
-    def _display_units(self, text: str, operation: str) -> DisplayUnits:
-        """ADR 0075 D5, D9: `text` resolved against the declared ambient; a refusal is audited.
-        An `invalid_request` points at `/display_units`; an `unsupported` carries its message
-        head as `reason` (the code with its kind and unit, X04 decision D-5), which MSG reads."""
-        try:
-            return parse_display_units(text, self._core.policy.current().ambient_pressure)
-        except DisplayUnitsError as error:
-            pointer = error.pointer
-            detail = {"pointer": pointer} if pointer is not None else {"reason": error.message}
-            self._core.refuse(error.api_error, error.message, operation=operation, **detail)
 
     # ------------------------------------------------------------------------- the job steps
 
@@ -674,14 +664,14 @@ class LocalApplication:
             self._core.refuse_error(refused, operation, request_sha256)
         if not replayed:
             self._core.executor.run(self._core.context(), job.job_id)
-            job = self._job(job.job_id, operation)
+            job = self._artifacts.job(job.job_id, operation)
         return SubmitResult(job=job, replayed=replayed)
 
     def _replayed_job(self, prior: LedgerRow, request_sha256: str, operation: str) -> SubmitResult:
         """§7: the existing job, as it is now; a different request under the key is refused."""
         if prior.request_sha256 != request_sha256:
             self._refuse_key_reused(prior.request_sha256, request_sha256, operation)
-        return SubmitResult(job=self._job(str(prior.result), operation), replayed=True)
+        return SubmitResult(job=self._artifacts.job(str(prior.result), operation), replayed=True)
 
     def _refuse_key_reused(self, original: str, request_sha256: str, operation: str) -> NoReturn:
         self._core.refuse(
@@ -692,12 +682,6 @@ class LocalApplication:
             request_sha256=request_sha256,
             original_request_sha256=original,
         )
-
-    def _job(self, job_id: str, operation: str) -> Job:
-        job = self._core.store.get_job(job_id)
-        if job is None:
-            self._core.refuse("not_found", "no such job", operation=operation, job_id=job_id)
-        return job
 
     def _wait(self, job_id: str, after_sequence: int, timeout_s: float, operation: str) -> JobWait:
         deadline = time.monotonic() + timeout_s
@@ -723,7 +707,7 @@ class LocalApplication:
     def _result(
         self, job_id: str, operation: str, *, display_units: DisplayUnits | None = None
     ) -> JobResult:
-        job = self._job(job_id, operation)
+        job = self._artifacts.job(job_id, operation)
         if job.status not in TERMINAL_STATUSES:
             self._core.refuse(
                 "not_ready",
@@ -763,7 +747,7 @@ class LocalApplication:
             optimization = None
             for output in job.outputs:
                 if output.kind == "optimization_report":
-                    optimization = json.loads(self._artifact_path(output).read_bytes())
+                    optimization = json.loads(self._artifacts.artifact_path(output).read_bytes())
             return JobResult(
                 operation="optimize",
                 run_result=None,
@@ -774,7 +758,9 @@ class LocalApplication:
         report = None
         for output in job.outputs:
             if output.kind == "replay_report":
-                report = _replay_report_build(json.loads(self._artifact_path(output).read_bytes()))
+                report = _replay_report_build(
+                    json.loads(self._artifacts.artifact_path(output).read_bytes())
+                )
         return JobResult(
             operation="reproduce", run_result=None, replay_report=report, error=job.error
         )
@@ -787,7 +773,7 @@ class LocalApplication:
         chosen = results[-1] if results else (attempts[-1] if attempts else None)
         if chosen is None:
             return None
-        answer: dict[str, Any] = json.loads(self._artifact_path(chosen).read_bytes())
+        answer: dict[str, Any] = json.loads(self._artifacts.artifact_path(chosen).read_bytes())
         return answer
 
     def _run_result(self, job: Job, *, display_units: DisplayUnits | None = None) -> RunResult:
@@ -843,7 +829,7 @@ class LocalApplication:
             return None
         bundle: Mapping[str, Any] = {}
         try:
-            loaded = json.loads(self._artifact_path(output).read_bytes())
+            loaded = json.loads(self._artifacts.artifact_path(output).read_bytes())
             if isinstance(loaded, Mapping):
                 bundle = loaded
         except (OSError, ValueError, AssertionError):
@@ -908,11 +894,6 @@ class LocalApplication:
             "verification_status": None,
             "structural_sha256": None,
         }
-
-    def _artifact_path(self, output: Any) -> Path:
-        row = self._core.store.artifact(output.artifact_id)
-        assert row is not None, output.artifact_id
-        return self.files_root / row.relpath
 
     def _import_bundle(self, source: Path, operation: str) -> str:
         """§4.2 `reproduce`'s import: copy the regular files of `source` (no symlink followed)
@@ -1084,40 +1065,8 @@ class LocalApplication:
         Projection
             The value at `pointer`, with the artifact's SHA-256 and whether it was truncated.
         """
-        operation = "get_artifact"
-        self._core.authorize(operation)
-        self._revisions.check_view(operation, pointer, depth, cursor, limit)
-        row = self._artifact_row(artifact_id, operation)
-        if row.kind == "replay_bundle":
-            members = self._core.store.artifact_children(row.artifact_id)
-            # An optimisation record's manifest is its `optimization-manifest.json` (§4.9).
-            manifest = [
-                member
-                for member in members
-                if member.name in (MANIFEST_NAME, OPTIMIZATION_MANIFEST)
-            ]
-            manifest_path = (
-                self.files_root / manifest[0].relpath
-                if manifest
-                else self.files_root / row.relpath / MANIFEST_NAME
-            )
-            document: Any = {
-                "manifest": _file_document(manifest_path),
-                "files": [
-                    {
-                        "name": member.name,
-                        "kind": member.kind,
-                        "artifact_id": member.artifact_id,
-                        "sha256": member.sha256,
-                        "size_bytes": member.size_bytes,
-                    }
-                    for member in members
-                ],
-            }
-        else:
-            document = _file_document(self.files_root / row.relpath)
-        return self._revisions.project(
-            operation, document, artifact_id, row.sha256, pointer, depth, cursor, limit
+        return self._artifacts.get_artifact(
+            artifact_id, pointer=pointer, depth=depth, cursor=cursor, limit=limit
         )
 
     def get_stream_table(
@@ -1166,72 +1115,15 @@ class LocalApplication:
             the bundle's members are inconsistent; `invalid_request` or `unsupported` for a
             `display_units` refused by ADR 0075 D9.
         """
-        operation = "get_stream_table"
-        self._core.authorize(operation)
-        self._revisions.check_view(operation, pointer, depth, cursor, limit)
-        units = None if display_units is None else self._display_units(display_units, operation)
-        job = self._job(job_id, operation)
-        if job.status not in TERMINAL_STATUSES:
-            self._core.refuse(
-                "not_ready",
-                f"job {job_id} is {job.status}; its stream table exists once it has ended",
-                operation=operation,
-                retryable=True,
-                job_id=job_id,
-                status=job.status,
-            )
-        bundle = next((o for o in job.outputs if o.kind == "replay_bundle"), None)
-        if bundle is None:
-            self._core.refuse(
-                "not_found",
-                f"job {job_id} has no replay bundle",
-                operation=operation,
-                output="replay_bundle",
-                **self._run_outcome(job_id),
-            )
-        row = self._artifact_row(bundle.artifact_id, operation)
-        try:
-            document = stream_table.from_bundle(
-                self.files_root / row.relpath,
-                source={"job_id": job_id, "bundle_id": row.artifact_id},
-            )
-        except stream_table.StreamTableError as error:
-            if error.code == "not_found":
-                member = error.detail.get("member")
-                self._core.refuse(
-                    "not_found",
-                    f"bundle {row.artifact_id} has no {member}",
-                    operation=operation,
-                    **{
-                        **self._run_outcome(job_id),
-                        "bundle_id": row.artifact_id,
-                        "member": member,
-                        **self._missing_member(f"{row.artifact_id}/{member}"),
-                    },
-                )
-            if error.code == "unsupported":
-                self._core.refuse(
-                    "unsupported", error.message, operation=operation, job_id=job_id, **error.detail
-                )
-            self._core.refuse(
-                "internal_error",
-                error.message,
-                operation=operation,
-                job_id=job_id,
-                bundle_id=row.artifact_id,
-                **error.detail,
-            )
-        if units is not None:
-            document = stream_table.displayed(document, units)
-        return self._revisions.project(
-            operation,
-            document,
-            f"stream-table:{job_id}",
-            document_sha256(document),
-            pointer,
-            depth,
-            cursor,
-            limit,
+        return self._artifacts.get_stream_table(
+            job_id,
+            StreamTableQuery(
+                pointer=pointer,
+                depth=depth,
+                cursor=cursor,
+                limit=limit,
+                display_units=display_units,
+            ),
         )
 
     def list_audit(
@@ -1308,74 +1200,12 @@ class LocalApplication:
         bytes
             The file's bytes as stored.
         """
-        operation = "artifact_bytes"
-        self._core.authorize(operation)
-        row = self._artifact_row(artifact_id, operation)
-        if row.kind == "replay_bundle":
-            self._core.refuse(
-                "unsupported",
-                "a replay bundle is a directory; export its members, `<bundle id>/<file>`, one by "
-                "one",
-                operation=operation,
-                artifact_id=artifact_id,
-            )
-        return (self.files_root / row.relpath).read_bytes()
+        return self._artifacts.artifact_bytes(artifact_id)
 
     def audit_refusal(self, operation: str, code: ApiErrorCode) -> None:
         """§10.7 for a request refused before it reached a method — by `operations.dispatch`,
         for its canonical form, its schema or a reserved key."""
         self._inspection.audit_refusal(operation, code)
-
-    def _artifact_row(self, artifact_id: str, operation: str) -> ArtifactRow:
-        row = self._core.store.artifact(artifact_id) if isinstance(artifact_id, str) else None
-        if row is None:
-            self._core.refuse(
-                "not_found",
-                "no such artifact",
-                operation=operation,
-                artifact_id=artifact_id,
-                **self._missing_member(artifact_id),
-            )
-        return row
-
-    def _missing_member(self, artifact_id: object) -> dict[str, Any]:
-        """MSG §3.4 (FB-03b): for a missing `<bundle id>/<member>` of a bundle with registered
-        members, what the bundle does hold — `bundle_id`, `member`, `members` (sorted file
-        names, at most `MAX_LISTED_MEMBERS`; `members_total` when cut) and, for a job's bundle
-        (`<job_id>:bundle`, `<job_id>:rerun`), `job_id` and the run's `run_outcome` when the job
-        recorded one.
-        Added detail members only: the message and the existing members are unchanged (I1)."""
-        if not isinstance(artifact_id, str):
-            return {}
-        bundle_id, slash, member = artifact_id.rpartition("/")
-        if not slash or not bundle_id or not member:
-            return {}
-        members = sorted(row.name for row in self._core.store.artifact_children(bundle_id))
-        if not members:
-            return {}
-        found: dict[str, Any] = {
-            "bundle_id": bundle_id,
-            "member": member,
-            "members": members[:MAX_LISTED_MEMBERS],
-        }
-        if len(members) > MAX_LISTED_MEMBERS:
-            # Review S5 (D3-4): a cut list says so, with the full count.
-            found["members_total"] = len(members)
-        job_id, colon, suffix = bundle_id.rpartition(":")
-        if colon and suffix in ("bundle", "rerun") and self._core.store.get_job(job_id) is not None:
-            found.update(self._run_outcome(job_id))
-        return found
-
-    def _run_outcome(self, job_id: str) -> dict[str, Any]:
-        """`job_id` and, when the job recorded one, its run's `run_outcome` (the members
-        `_missing_member` gives a job's bundle)."""
-        found: dict[str, Any] = {"job_id": job_id}
-        worker = self._core.store.worker_result(job_id)
-        run = worker.get("run") if isinstance(worker, Mapping) else None
-        outcome = run.get("outcome") if isinstance(run, Mapping) else None
-        if isinstance(outcome, str):
-            found["run_outcome"] = outcome
-        return found
 
     # --------------------------------------------------------------- the transaction steps
 
@@ -1414,30 +1244,6 @@ def _unproduced(job: Job) -> ApiError:
         retryable=reason == "server_shutdown",
         detail={"job_id": job.job_id, "status": job.status, "reason": reason},
     )
-
-
-def _unique_members(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
-    names = [name for name, _ in pairs]
-    if len(set(names)) != len(names):
-        raise ValueError("duplicate key")
-    return dict(pairs)
-
-
-def _file_document(path: Path) -> Any:
-    """An artifact file as a document for `get_artifact`: its JSON when it holds a canonical JSON
-    document — a `.json` name, a strict parse with no repeated key, every number canonical —
-    else its text as a list of lines (a log, or an imported file that is not what its name says),
-    decoded as UTF-8 with U+FFFD for what is not."""
-    raw = path.read_bytes()
-    if path.suffix == ".json":
-        try:
-            document = json.loads(raw, object_pairs_hook=_unique_members)
-        except (ValueError, RecursionError):
-            pass
-        else:
-            if first_noncanonical(document) is None:
-                return document
-    return raw.decode("utf-8", errors="replace").splitlines()
 
 
 if TYPE_CHECKING:

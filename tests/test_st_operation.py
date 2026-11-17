@@ -32,9 +32,10 @@ from t07_transport_support import (
 )
 
 from openflowsheet.application import stream_table
+from openflowsheet.application.artifact_service import STREAM_TABLE_DEPTH
 from openflowsheet.application.authz import grant
 from openflowsheet.application.errors import ApplicationError
-from openflowsheet.application.local import STREAM_TABLE_DEPTH, LocalApplication
+from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.projection import MAX_DEPTH
 from openflowsheet.application.transaction_types import Change
 from openflowsheet.canonical import document_sha256
