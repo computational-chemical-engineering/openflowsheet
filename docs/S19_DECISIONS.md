@@ -2074,3 +2074,6 @@
   "ALERT selected gates take 717 s > 300 s (tests tier)"
   "ALERT selected/full time ratio 0.66 > 0.4: selection saves little"
   (standing).
+  ALERT action: the share fell 62% -> 22% because each I-12d step adds modules the MB 1720cc98 map does not know
+  (selection falls back to the full suite; S19_RULES "Test map hygiene"). Remedy: MB to the wp/S19 tip right after the
+  I-12d merge (queue held for the build), before I-19. Not during run 19 (its steps need the queue).
