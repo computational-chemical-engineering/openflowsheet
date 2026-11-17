@@ -2126,3 +2126,9 @@
 - 2026-11-17 09:42 (resume after self-reset): serial chain PID 1093753 (i12d3-head, i12d5-head after the i12d1 pair)
   found dead with the i12d1 pair still running; restarted detached as PID 1151652 (log
   `<git-common-dir>/codehealth/runs/serial/i12d35-chain.log`), same worktrees and labels. Jobs 242 running, 243 queued.
+
+- 2026-11-17 10:02, job 242 (w4i12d-revfix, F2/F3 1e319312) PASS, run-log step 285 accepted-neutral, 15/15. Gate
+  report (6 h): 13 gates, 1 failed; full-suite causes 9 new or deleted file.
+  ALERT selected share 10% < 75% of step gates. ALERT selected gates take 689 s > 300 s (tests tier). ALERT
+  selected/full time ratio 0.62 > 0.4: selection saves little. Cause as at bf05de04 (the new I-12d modules are
+  unknown to the map); remedy unchanged: MB rebuild right after the I-12d merge, before I-19 run 20. Job 243 next.
