@@ -2182,3 +2182,9 @@
   DECISION: column_solve's `saturation_pairs` alias stays for now; whether test_s08b_saturation.py:57 ("moved, not
   copied", S08b WO-3, pre-S17) may assert the single definition another way goes to the I-19 reviewer. Alternative:
   change the assertion now. Reversible by: a later step dropping the alias.
+- 2026-11-17 14:45, run 20 gates all PASS: 250 (i19a, step 287), 251 (i19b, 288), 252 (i19c, 289) no-gain 15/15;
+  253 (i19d interface, step 290 accepted, 17/17); 254 (a5b8895e, 291) no-gain. Gate report (6 h): 11 gates, 0
+  failed. ALERT selected share 56% < 75% of step gates. ALERT selected gates take 647 s > 300 s (tests tier). ALERT
+  selected/full time ratio 0.52 > 0.4: selection saves little. Share up from 10% after G-MAP 5 (the window still holds
+  pre-map gates); import-only steps on widely imported modules select large sets. Standing (proposal 2 with Frank);
+  no action. Review R-W4-I19a launched (reviewer, Opus).
