@@ -2188,7 +2188,7 @@
   selected/full time ratio 0.52 > 0.4: selection saves little. Share up from 10% after G-MAP 5 (the window still holds
   pre-map gates); import-only steps on widely imported modules select large sets. Standing (proposal 2 with Frank);
   no action. Review R-W4-I19a launched (reviewer, Opus).
-- **2026-11-17 15:05, W4-end docs criterion: DECISION-REQUEST to hub (card ofs-s19-w4-docs-criterion).** codehealth
+- **2026-11-17 15:05, W4-end docs criterion: DECISION-REQUEST to hub (cards ofs-s19-w4-docs-records (Q1), ofs-s19-w4-docs-scope (Q2); hub recommends A on both; verify each against the action text on its card).** codehealth
   docs at 91af908f: repo config 545 broken in living docs (441 unique; 372 at CB d90b498f, 69 new). The [docs]
   records list misses ADR rule 5's docs/design/** and measurement/analysis reports; with them (trial config
   `<git-common-dir>/codehealth/briefs/S19-W4-21-docs-config.toml`): 324 (268 unique; 232 pre-S19, 36 S19). The
