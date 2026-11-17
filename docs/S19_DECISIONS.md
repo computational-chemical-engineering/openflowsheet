@@ -2188,3 +2188,13 @@
   selected/full time ratio 0.52 > 0.4: selection saves little. Share up from 10% after G-MAP 5 (the window still holds
   pre-map gates); import-only steps on widely imported modules select large sets. Standing (proposal 2 with Frank);
   no action. Review R-W4-I19a launched (reviewer, Opus).
+- **2026-11-17 15:05, W4-end docs criterion: DECISION-REQUEST to hub (card ofs-s19-w4-docs-criterion).** codehealth
+  docs at 91af908f: repo config 545 broken in living docs (441 unique; 372 at CB d90b498f, 69 new). The [docs]
+  records list misses ADR rule 5's docs/design/** and measurement/analysis reports; with them (trial config
+  `<git-common-dir>/codehealth/briefs/S19-W4-21-docs-config.toml`): 324 (268 unique; 232 pre-S19, 36 S19). The
+  blueprint (13, SHA-pinned) is living under both. Q1 align records with rule 5 (rec. yes); Q2 "no broken reference"
+  absolute or "none introduced by S19" (rec. the latter, pre-S19 rot trailing). Not done without Frank: it lowers a
+  gate count. Default: run 21 (sonnet-implementer, brief S19-W4-21.md, list S19-W4-21-list.md, 38 entries) fixes the
+  S19-introduced breaks in rule-5 living docs and the refusals.yaml:1378 comment; config unchanged; W4 docs item open.
+  ADR 0076 errata (I-12b, I-12d R1 with the ServiceCore alternative, store.py, FQ-A = 36) by the orchestrator after
+  the review, as a dated paragraph.
