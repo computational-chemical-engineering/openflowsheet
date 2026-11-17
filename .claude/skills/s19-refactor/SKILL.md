@@ -11,8 +11,9 @@ Position, numbers and rules live in files, not here. A fresh session reads, in o
    actions, the gate table with G-END numbers.
 2. `docs/S19_RULES.md`: standing rules every worker gets (Frank's words verbatim, retarget and source-reading rules).
 3. `docs/S19_DECISIONS.md`: append-only log; `grep` it, never read it whole.
-4. Briefs and plans: `<git-common-dir>/codehealth/briefs/` (`S19-W3-common.md` binds every engineer,
-   `S19-R-W3-common.md` every reviewer, `S19-W3-targets.md` the targets); `docs/briefs/S19-G1-plan.md` (G1 recipe
+4. Briefs and plans: `<git-common-dir>/codehealth/briefs/` (`<git-common-dir>/codehealth/briefs/S19-W3-common.md` binds every
+   engineer, `<git-common-dir>/codehealth/briefs/S19-R-W3-common.md` every reviewer,
+   `<git-common-dir>/codehealth/briefs/S19-W3-targets.md` the targets); `docs/briefs/S19-G1-plan.md` (G1 recipe
    `closures-to-class`, RC1 to RC7); `.codehealth/playbook.md` (rules for new code).
 5. Running work: `python3 .claude/skills/s19-refactor/gate_queue.py status`, `git worktree list`, the lane branches
    `wp/S19-g*`; drafted but ungated work in `<git-common-dir>/codehealth/drafts/`.
@@ -38,7 +39,7 @@ Position, numbers and rules live in files, not here. A fresh session reads, in o
    `Q=python3 .claude/skills/s19-refactor/gate_queue.py`; `$Q run --detach` (PID and log in
    `<git-common-dir>/codehealth/queue/`, stop with `kill $(cat <queue>/runner.pid)`), `$Q status`, `$Q wait --since N`
    (prints new result lines and `COUNT n`; `--idle <worktree>`: one wake per delivered chain), `$Q enqueue ...`
-   (engineers; see `S19-W3-common.md`). Since 37307ab0 (wp/S19-tools2): engineers enqueue each step with
+   (engineers; see `<git-common-dir>/codehealth/briefs/S19-W3-common.md`). Since 37307ab0 (wp/S19-tools2): engineers enqueue each step with
    `--snapshot` (`--head SHA` implies it) and carry on; a failed snapshot step marks the later steps of its lane
    SKIPPED; modes include `interface` (W4, `--plan`) and `merge-check`. The tests tier selects step-relative
    (`--since {base} --import-time-by-file`), which has holes only the full suite closes. A lane must contain `MB`
@@ -72,7 +73,7 @@ and end the turn. The new context starts from this file.
 ## Merging a phase into main
 
 Evidence manifest `tested`, the wall-time budget tests alone on `wp/S19` (f6 and t07_conformance budget_of_the_scenario_runs, no gate running),
-CI green on both legs, a Decision Desk card signed by Frank and verified with `decision_desk_verify.py` (CLAUDE.md
+CI green on both legs, a Decision Desk card signed by Frank and verified with `~/.claude/tools/decision_desk_verify.py` (CLAUDE.md
 "Decision Desk sign-offs"), merge commit, F0 on `main`, push, write `executed` on the card.
 
 ## Waits for Frank
