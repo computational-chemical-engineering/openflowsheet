@@ -1,0 +1,28 @@
+# ADR 0076 I-19, step b (W4 run 20, brief S19-W4-20; form of S19_DECISIONS 2026-11-16 STOP 1):
+# orchestrator/region.py stops re-exporting the S19 B1 private names of its split modules.
+# `codehealth gate --mode interface` reads this plan from the plan commit.
+id = "i19b-region-private-aliases"
+approved_by = "Frank Peters, 2026-11-14, ADR 0076 accepted (Decision Desk ofs-adr0076-accept)"
+reason = """ADR 0076 I-19: every re-export added by S17 or S19 goes (inventory \
+docs/briefs/S19-I19-inventory.md, item (b)). The importers through orchestrator.region (tests \
+test_m02_wo8_g7.py, test_m02_wo8_region.py, test_t03_contract.py, the test_t05b files and others; \
+scripts t03_evidence_manifest.py, t05b_evidence_manifest.py:140, :3559) were retargeted outside the \
+gate (4866b61e); no src module imports these names through region. The step drops 27 `X as X` \
+aliases: _KernelAnswer, _admissible, _band_regime, _ph_closure, _pin, _pr_c1, _reference_k_values, \
+_split_enthalpy (region_phase), _build_screen, _screen (region_screen), _rederive, _reset_outlet, \
+_trigger_dormant, _units_and_items_disjoint (region_problem) and ph_state (models.syn001.ph_kernel), \
+whose imports go (region does not read them), and _KernelRefusedError, _contract_kernel, _dropped, \
+_kernel, _pinned (region_phase), _LiftedOps, _items, _opening_order, _region_problem, _settle \
+(region_problem), _attempt_screen (region_screen), _homotopy (region_attempts), which stay plain \
+imports (region reads them; the live patches on region's _kernel, _homotopy, _region_problem, \
+_contract_kernel keep their target). None is in region's __all__ and cce-code-health counts imports \
+as API only in __init__.py, so the plan lists no change (STOP 1 ruling). Kept: StagedSplits (FQ-A, \
+frozen column_unit.py:90). Expected codehealth arch --depth 4 (measured at this base and on the step \
+applied to it): base 0 violations / 0 cycles / 0 cycle edges, after 0 / 0 / 0 (imports 4177 -> \
+4151). Layer config: none."""
+removed = []
+renamed = {}
+changed = []
+added = []
+new_files = []
+callers = []
