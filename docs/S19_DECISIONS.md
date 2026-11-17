@@ -2230,3 +2230,6 @@
   W4-DOCS: 0 broken references introduced by S19 (tip vs CB under the new config; 232 pre-S19 trailing). End-of-W4
   import check: MOVED-SCAN 0; non-W5 old-path reads 4 (test_s08b_saturation.py:57 at the delegation site, review
   5(b); region_attempts.solve_ptc x3, review item 6), all names the module uses itself. arch 0/0/0.
+- 2026-11-17 15:55, gate report before the self-reset (6 h): 11 gates, 0 failed; selected share 6/8 (ALERT cleared
+  after G-MAP 5). ALERT selected gates take 643 s > 300 s (tests tier). ALERT selected/full time ratio 0.56 > 0.4:
+  selection saves little. Standing (proposal 2 with Frank). Self-reset at the W4 milestone.
