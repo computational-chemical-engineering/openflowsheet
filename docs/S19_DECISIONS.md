@@ -2233,3 +2233,76 @@
 - 2026-11-17 15:55, gate report before the self-reset (6 h): 11 gates, 0 failed; selected share 6/8 (ALERT cleared
   after G-MAP 5). ALERT selected gates take 643 s > 300 s (tests tier). ALERT selected/full time ratio 0.56 > 0.4:
   selection saves little. Standing (proposal 2 with Frank). Self-reset at the W4 milestone.
+- **2026-11-17 ~16:10, resume after self-reset; scan of wp/S19 fb04cd10: repo debt 4699.2, health 8.23, brain 26.**
+  G5/G6 non-frozen files below 9.0: verify/table.py 7.5 (`revision_checks` 21.4; the `_Routing` fix deferred "to W4"
+  had no ADR item, so it is G5 work), certificate.py 8.7, checks.py 8.7, split_checks.py 8.7, launcher.py 8.8,
+  render.py 8.5, store.py 8.6 (R-237), compare.py 8.6 (frozen v1 / ladder), verify/__init__ 8.8, flowsheet_rows 8.8.
+  **Launched (cap 2): G6 run 7 (`opus-engineer`, Opus, brief S19-W3-G6-7.md, lane wp/S19-g6e: launcher `launch`,
+  parameter question judged only) and G5 run 12 (`opus-engineer`, Opus, brief S19-W3-G5-12.md, lane wp/S19-g5j:
+  table.py `revision_checks`, then certificate.py).** The design batch (R-W3-G5-7 component order, R-W3-G5-8 NaN
+  witness) takes the first free slot.
+- **2026-11-17, G6 run 7 reported (opus-engineer, Opus, 88k tokens). wp/S19-g6e (BASE fb04cd10), 1 step, job 258:**
+  2ce4c5fe launcher `launch` `finally` block -> `_reap_and_record` (extract-phase; side effects in the old order:
+  `progress.terminated` while the child runs, `_terminate`, stdin close, `progress.wall_s`, exit code and signal; no
+  import line changed); `launch` 10.0 -> 8.2, launcher.py 11.0 -> 9.2, health 8.8 -> 9.3; repo 4699.2 -> 4697.4.
+  Parameter judgment: no ADR proposal (the seven keyword options are four concerns, each caller a different subset:
+  worker.py:199, backends.py:365 and :456, `clock` tests only; bundling them is rejected in S19_RULES). G6's
+  non-frozen W3 part is done after this merges (render.py, store.py R-237 and the frozen thermo files stay as recorded).
+  DECISION: G6 run 7's one step is reviewed together with G5 run 12 by one `reviewer` (the rule-6 reading of the
+  `progress` writes is the question for it), not by its own reviewer. Alternative: a separate reviewer now.
+  Reversible by: briefing R-W3-G6-7 alone. **Design batch 1 launched (`specifier`, Opus, brief S19-D-batch1.md).**
+  Agents running: G5 run 12, design batch 1 (cap 2).
+- **2026-11-17, job 258 PASS (g6r7-1, 2ce4c5fe, step 293 accepted, debt 11.0 -> 9.2, 16/16).** Gate report (6 h, 11
+  gates, 0 failed): "ALERT selected gates take 639 s > 300 s (tests tier)", "ALERT selected/full time ratio 0.56 >
+  0.4: selection saves little" (standing; proposal 2 with Frank). G6 run 7 waits for the joint review with G5 run 12.
+- **2026-11-17, design batch 1 reported (`specifier`, Opus, 153k tokens): ruling c29e1cf1
+  (`docs/briefs/S19-D-batch1-ruling.md`).** Q1 (R-W3-G5-7 component order): finding (a), the order is guaranteed by
+  construction (split_checks runs only on the SYN branch, table.py:152/:234/:245; only "syn001" maps to SYN,
+  forms.py:55-59; the view's order is the basis', revision_flowsheet.py:432/:472-473; the fresh provider refuses a
+  mismatch, certificate.py:370-374); the one untested link, `checks.COMPONENTS`, is pinned now by
+  `tests/test_s19_component_order.py` (Q1.A1, Q1.A2 negative control; 2 passed, ruff and full mypy clean; written by
+  the orchestrator, test-only). Q2 (R-W3-G5-8 NaN witness): no registered path, but not excluded at the witness; on
+  WIT's double an injected NaN passes silently (on-pattern, off-pattern, AD entry) and an overflow gives `fail` with
+  inf, which serialises to null (K04 A30). Ruling: refusal `witness_stencil_non_finite(<col>)`, `unsupported`.
+  DECISION (OQ-1): the Q2 change lands after S19 closes, as one behaviour-level commit (code, K04 §4.8 amendment,
+  Q2.A1 to A6, F0), because S19 is bitwise identical by Frank's rule. Alternative: inside S19 (identical on every
+  registered certificate). Reversible by: Frank choosing "inside S19" on the desk card. OQ-2 (Q1 hygiene): at the next
+  touch of split_checks.py (default). Sent to hub as a DECISION-REQUEST.
+- **2026-11-17, hub filed Decision Desk card `ofs-s19-oq1-nan-witness` (rec A, hub agrees).** Actions: A "land the S19
+  design batch 1 Q2 change (NaN witness refusal) after S19", B "... inside S19". OQ-2 noted on the card as defaulted.
+  Default A stands until a signed card is verified.
+- **2026-11-17, job 259 PASS (g5r12-1, 50e19804, step 294 accepted, table.py debt 21.4 -> 10.1, 16/16).** Gate
+  report: the two standing ALERTs (selected time, selected/full ratio; proposal 2).
+- **2026-11-17, G5 run 12 reported (opus-engineer, Opus, 212k tokens, over the 150k cap). wp/S19-g5j (BASE fb04cd10),
+  4 steps, jobs 259-262:** 50e19804 table `revision_checks` admissibility per form with `_Judging` (21.4 -> 10.1);
+  51ed53df per-instance double read -> `_instance_rows` (-> 3.0, params only); 672cc673 certificate `_Subject` for
+  `_certify`/`_issue`; a06cc5d6 `_Checked` + provider, external. table.py 21.4 -> 3.0, health 7.5 -> 8.8;
+  certificate.py 23.9 -> 15.6, health 8.7 (aim 9.0 missed: many_args at its cap with six functions above 5 params;
+  verify_bound, verify_revision public, `_project` pinned by tests/t05b_support.py:777); repo 4699.2 -> 4672.5.
+  Not taken: a SYN-001 check-set inputs object (gain 1.0), verify_revision (rule 10). table.py duplication with the
+  gamma_phi_units twin 59 -> 42 lines (twin merge waits for Frank). Review brief S19-R-W3-G5-12.md (joint with G6
+  run 7); reviewer launches when jobs 260-262 pass.
+- **2026-11-17, card `ofs-s19-oq1-nan-witness` signed by Frank: A (after S19).** `decision_desk_verify.py`: "VERIFIED
+  ofs-s19-oq1-nan-witness: chose A After S19 closes; action: land the S19 design batch 1 Q2 change (NaN witness
+  refusal) after S19; ... signed 2026-11-17T15:55:07.874Z key 032ee0a5ae620a90". The action runs after S19 closes;
+  `executed` is written on the card then (docs/progress.md carries it).
+- **2026-11-17, job 260 PASS (g5r12-2, 51ed53df, step 295 accepted, 10.1 -> 3.0, 16/16).** DECISION: launch the
+  joint reviewer R-W3-G5-12 now, with jobs 261-262 still gating. Alternative: wait for both. Reason: the reviewer reads
+  diffs only and saves about 25 min; a failed gate goes to a fresh engineer either way. Reversible by: nothing to undo
+  (a failed step's review is discarded). Reviewer launched (`reviewer`, Opus, S19-R-W3-G5-12.md).
+- **2026-11-17, R-W3-G5-12 reported (`reviewer`, Opus, 96k tokens): Part A (G5 run 12) merge after fix 1; Part B (G6
+  run 7) merge.** A: step 1 helpers keep calls, arguments and order (envelope rows first, `admissibility +
+  own_admissibility` last); `_Judging` real, disjoint from `_Routing`; step 2's hoist of `bounds_checks` pure (Unit
+  construction cannot raise or touch the provider), result order unchanged; steps 3-4 `_Subject` and widened `_Checked`
+  real, argument evaluation order unchanged; no float expression touched; R-016 clean; lazy imports at the same point.
+  `reaction_note` kept in `_Judging` (reviewer: a note "with what", set where `note` is; prefer `judging.reaction_note`
+  over the positional unpack at the next touch). Fix 1 (`_Judging` docstring) applied by the orchestrator as 604755d7,
+  job 263 (no-gain). B: cleanup order identical including on an exception or KeyboardInterrupt; arguments bound before
+  the `try`. **Rule 6 precedent (record): a helper that writes `LaunchProgress` fields is accepted, because
+  `LaunchProgress` is the attempt's filled-as-it-runs record read after an interrupt (launcher.py:118) and the write of
+  `terminated` must precede `_terminate`; `_await_exit` was the first instance.** Notes kept for a later touch:
+  `_stream_enthalpies` could take `judging`; `_issue`'s `checks +=` mutates the list held by the frozen `_Checked`
+  (pre-existing). Not examined by the reviewer: whether a test drives `judged_at != state` on the revision path.
+  DECISION: one merge-check for both lanes (helper = wp/S19 tip + wp/S19-g6e + wp/S19-g5j after job 263), not two.
+  Alternative: G6 now, G5 after. Reason: one full suite instead of two. Reversible by: merging the lanes separately.
+- **2026-11-17, job 261 PASS (g5r12-3, 672cc673, step 296 accepted, certificate.py 23.9 -> 17.6, 16/16).**
