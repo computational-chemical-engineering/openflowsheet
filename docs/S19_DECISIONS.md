@@ -2069,3 +2069,8 @@
   and i12d4-head 50cbb3ed started 08:21 (bases: i12d1-head, i12d2-head; the commits between are scripts, tests,
   config and plans, as for i12b); i12d1 pair running. Run 19 (brief S19-W4-19.md) launched. Docs pass: 8 docs
   anchors into local.py drifted.
+- **2026-11-17 08:35, job 239 PASS (w4r18-i12d-4, I-12d step 4 ValidationService 50cbb3ed, step 283 accepted, 17/17, debt 3.7 -> 3.7).** Gate report (6 h):
+  "ALERT selected share 22% < 75% of step gates"
+  "ALERT selected gates take 717 s > 300 s (tests tier)"
+  "ALERT selected/full time ratio 0.66 > 0.4: selection saves little"
+  (standing).
