@@ -61,7 +61,11 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 steps 1-4 PASS (jobs 237, 238, 240, 239), step 5 JobService 9697b223 under the ADR Q-F5 fallback (job 241, merge-check
 mode, "interface gate not applicable"); review R-W4-I12d: merge after fixes, all fixes done: F2/F3 1e319312 (job
 242), item 7 8b70f2fd (outside gate), F1 a995d571 (job 243). No agent running.
-**Update 10:40:** jobs 242, 243 PASS; serial i12d1 pair EQUAL; i12d2/i12d4 heads still running, i12d3/i12d5 heads
+**Update 12:12:** I-12d merged (7fbfcd33), all serial pairs EQUAL, arch 0/0/0. G-MAP 5 map build running at the
+wp/S19 tip with the runner stopped (log and PID in S19_DECISIONS 12:12). On the result: judge G-MAP 5, set MB,
+restart the runner, fast-forward wp/S19-w4 to the tip, fill TIP_AT_LAUNCH in S19-W4-20.md, launch I-19 run 20
+(opus-engineer). The 10:40 update below is done.
+**Update 10:40 (done):** jobs 242, 243 PASS; serial i12d1 pair EQUAL; i12d2/i12d4 heads still running, i12d3/i12d5 heads
 running (PIDs 1223888, 1223889). Merge-check job 244 (helper wp/S19-w4-mc 52618696 = 5cc529e7 + wp/S19 ec95e062,
 worktree s19-w4-mc) queued: on PASS and all serial pairs EQUAL, merge the helper (if wp/S19 changed only docs since
 ec95e062). Items (a) and (c) below are otherwise superseded.
@@ -116,6 +120,7 @@ commit outside the gate). `enqueue --rerun-of` takes the RUN-LOG STEP number. Te
 | G-SELF | before step 1 | `gate --self-test --mutate` on a numeric literal outside application/ that tests read: tests tier exit 1 (failures, not 2 or 124) and F0 detects it; unmutated, all tiers pass | run 1 (newton.py:776, 3d3eebe3) FAIL: unmutated tests tier exit 1, only test_t07_v17_reference f6 (wall 333 s > 300 s budget) under two concurrent lane gates; gate.sh now takes a clone-wide lock (a1059f16); run 2 (same literal, a1059f16) PASS: unmutated 20253 passed, 1044 s; mutated tests exit 1 (499 failed, 6 errors, 865 s), f0 detected, mcp_digest missed (as in S17) |
 | G-MAP 3 | the map at the wp/S19 tip when the queue drains (2026-11-16) | as G-MAP, built without `--deselect`; no unsure test in a file that costs more than about 60 s (else re-run the build) | MISS on the unsure-file criterion, map accepted (c3c5793e): 20483 tests, 3473 s quiet, 25.7 MB; 4 failed = the B-6 set (m04_wo9 a25, a29; x02_wo4 g4e x2), deterministic since S16, so a re-run cannot cure them; test_m04_wo9_synthetic_loop.py ~77 s (profile under load) > 60 s, x02_wo4 unmeasured. s09 and both t07 budget tests passed (out of the unsure set). |
 | G-MAP 4 | the map at 1720cc98 (2026-11-17) | as G-MAP 3 | MISS on the unsure-file criterion as G-MAP 3, map accepted (1720cc98): 20503 tests (20390 passed, 109 skipped, 4 failed = the B-6 set), pytest exit 1, 3988 s quiet, 25.8 MB. The build's fold crashed on one empty coverage file (1 of 646, a killed subprocess); fold fixed to skip only an all-empty file, the finished run refolded (S19_DECISIONS 2026-11-17 03:40) |
+| G-MAP 5 | the map at the wp/S19 tip after the I-12d merge (2026-11-17) | as G-MAP 3 (failures a subset of the B-6 set; at least 20503 tests) | |
 | G-STEP | every step | gate exit 0; refactor: touched files' debt strictly lower; restructure: the plan's arch numbers (table 4.1) met exactly | run log |
 | G-REVIEW | S1 files every 3 accepted steps, S2 and S1/S2 splits every 4, others every 8 (design note 5) | fresh `reviewer`; rejects reverted and logged | |
 | G-END | campaign end, at the merged tip | repo scan (scope `src/openflowsheet/*`): debt <= 1900; health >= 9.0 (binding); brain functions 0; no file below health 7.0; no `huge_file`; `codehealth arch`: 0 cycles at depth 4, 0 violations on every rule; F0 and MCP digest identical; full suite and CI green on both legs | |

@@ -2142,3 +2142,10 @@
 - 2026-11-17 11:00, merge-check job 244 (w4i12d-mc, helper wp/S19-w4-mc 52618696 = 5cc529e7 + ec95e062) PASS, 7/7,
   full suite, debt 28.6 -> 28.1. Gate report ALERTs unchanged (selection share, selected time, ratio; cause and
   remedy as at 10:02). Merge waits for the i12d3/i12d5 serial pairs only; wp/S19 has changed only docs since ec95e062.
+- **2026-11-17 12:10, I-12d merged into wp/S19 (7fbfcd33, helper wp/S19-w4-mc 52618696).** Serial i12d3-head
+  (622dc3b2) and i12d5-head (9697b223) rc 0, 20392/107/222/3, MSG 1061; 801/100: pairs i12d4/i12d3 and i12d3/i12d5
+  EQUAL, so all five I-12d pairs EQUAL. arch at 7fbfcd33: 329 files, 0 violations, 0 cycles at depth 4. Helper
+  branch and worktree removed; ser-i12d* worktrees removed. W4 left: I-19 (run 20 brief S19-W4-20.md).
+- **2026-11-17 12:12, G-MAP 5 build at the wp/S19 tip (milestone, queue empty).** Remedy for the standing ALERTs
+  (the I-12d modules unknown to map 1720cc98). Criteria as G-MAP 3, written in S19_STATE before the run. Runner
+  475743 stopped; restart with `$Q run --detach` after the build.
