@@ -1750,3 +1750,9 @@
   wp/S19 as 6668be04** (wp/S19 changed only docs since 38b94728, checked). Worktree s19-w4-mc and branch
   wp/S19-w4-mc removed. W4 run 12 (I-13, lane eb71978d..a652a744) waits for jobs 223, 224; its merge-check helper
   will merge wp/S19 at or after 6668be04.
+- **2026-11-17 01:40, rule 4 falsifier (serial repeat headser2 at be115b6a+A, no fixed seed, PID 4036764): EQUAL.**
+  `MSG WO-5a: 1061 bundles scanned`, `MSG WO-6: 801 run results checked, 100 with a failure`, 20375 passed, 107
+  skipped, 222 deselected, 3 xfailed, EXIT 0, 7132 s; identical to headser and base2 (22:24 entry). Determinism of the
+  MSG counts confirmed directly; the rule 4 amendment (serial form) stands, and I-10 and I-12a-d may proceed with serial
+  MSG counts at base and head (~2.2 h per suite) after I-13. Worktree headser2 removed (only the 7af4b2f4 overlay);
+  logs kept in session 916d464e's scratchpad.
