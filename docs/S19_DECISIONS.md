@@ -1739,3 +1739,6 @@
   `_split_checks`' remaining 4.0 (fixed by `table.revision_checks` calls, off limits), `_phase_enthalpy` (pinned by
   test_st_core.py:993), `material_checks` (one line over, a balance table: trimming it would be gaming). checks.py
   stops at 8.7 (aim 9.0 missed). For the reviewer: `_SplitAt` (step 1 reverts alone if rejected); step 2's 1.0 gain.
+- **2026-11-17 ~01:30, self-reset (no agent running).** Gate report: "ALERT selected share 58% < 75% of step gates",
+  "ALERT selected gates take 582 s > 300 s (tests tier)", "ALERT selected/full time ratio 0.46 > 0.4: selection saves
+  little" (standing; proposal 2 with Frank). Queue: 218, 221 running; 222-225 pending. headser2 at ~93%.
