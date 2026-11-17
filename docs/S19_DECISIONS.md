@@ -2320,3 +2320,6 @@
   merge into main; rec A), ofs-s19-w3w4-merge-main (prepare evidence and merge wp/S19 into main; rec A), and
   ofs-s19-trailing-order (S19 beside 0.5 at one lane, order G3, G4, G2, W5, G1, docs; NaN-witness change right after
   the main merge under a fresh card; rec A). Nothing proceeds on them until a signed card is verified.
+- **2026-11-17, hub filed the three cards (rec A each, hub agrees); amending request sent: ofs-s19-oq1b-nan-witness-early**
+  (land the NaN-witness refusal on main right after the wp/S19 merge into main, as its own package with a design-lane
+  review; rec A; B keeps the signed "after G-END").

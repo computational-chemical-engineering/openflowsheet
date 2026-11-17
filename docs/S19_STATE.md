@@ -70,7 +70,7 @@ What stays below 9.0 there, each with its owner: verify twins gamma_phi_units 6.
 duplication (twin merge: addendum for Frank); certificate, checks, split_checks 8.7 (public signatures, test-pinned
 `_project`, rule 10; many_args at its cap); render 8.5 (ladder, judged); store 8.6 (R-237 interface); compare 8.6
 (frozen v1); thermo/ frozen files (W5).
-**Next: waits for Frank** (desk cards ofs-s19-start-05, ofs-s19-w3w4-merge-main, ofs-s19-trailing-order; verify each
+**Next: waits for Frank** (desk cards ofs-s19-start-05, ofs-s19-w3w4-merge-main, ofs-s19-trailing-order, ofs-s19-oq1b-nan-witness-early; verify each
 signed card with decision_desk_verify.py before acting). 0.5 (roadmap ADR 0057) is his to start. Trailing S19 work, in his order: W5 (frozen
 modules, thermo/), G1 (held for the scale probe), G2/G3/G4, the 232 pre-S19 doc breaks, the Q2 change after S19 closes.
 A merge of wp/S19 into main needs a Decision Desk card (evidence manifest, f6 alone, CI both legs, F0).
