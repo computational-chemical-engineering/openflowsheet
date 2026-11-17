@@ -2160,3 +2160,25 @@
   back to 1720cc98 in S19_STATE. The f6 budget is still judged alone on wp/S19 before the phase merge into main.
 - 2026-11-17 13:18, runner restarted (PID 1474880); map5 worktree removed; wp/S19-w4 fast-forwarded to 0d826601.
   W4 run 20 (I-19 part 1: inventory, retargets, removal) launched: opus-engineer, Opus, brief S19-W4-20.md.
+- **2026-11-17 14:15, W4 run 20 reported (opus-engineer, Opus, ~265k tokens; I-19 part 1).** Lane tip 91af908f.
+  Inventory 3761ac0b/7ef9e241/91af908f (docs/briefs/S19-I19-inventory.md, i19_scan.py; 1690 added re-exports: 1543
+  plain imports in use, 55 retarget, 41 removal only, 36 W5, 15 exempt; 189 old-path importers, 44 of them W5 users;
+  the tool's importer scan over every W4-moved name: 0 hits, falsifier 1). 4866b61e retargets 36 tests + 2 scripts
+  (outside the gate). Steps: i19a syn001 afc644b5 (plan a2158c85, 12 dropped), i19b region 9a80484f (b9779d4a, 27),
+  i19c verify.table 8b90dd02 (5c3ab8fa, 15), i19d sizing __init__ e944f842 (f67dc607, 35 under `removed`);
+  a5b8895e docstrings (no-gain), a2ddefcc scripts (outside). arch 0/0/0 throughout, imports 4190 -> 4101;
+  patch_noop 265/0; MSG 253/0. Importers left 47 = 44 W5 + test_s08b_saturation.py:57 + test_t08_ptc_r1_diagnostic.py:54,
+  :56 (a live name in region_attempts, nothing to remove).
+  Job 245 (i19a) GATE-ERROR "the plan lists no change": plans a-c are empty (STOP 1 form, no `__all__` touched,
+  verified: no `__all__` line in any of the three diffs), and STOP 1 gates such steps no-gain (I-5, job 31), not
+  interface; jobs 246-249 SKIPPED behind it. Re-enqueued: 250 (a), 251 (b), 252 (c) no-gain; 253 (d) interface;
+  254 (a5b8895e) no-gain. Note for the next brief: STOP 1 steps go as no-gain.
+  **STOP ruling (orchestrator):** FQ-A W5 exceptions are 36 bindings, not the 4 measured in I-19's text: the 32
+  further are all frozen column_unit.py imports at the ADR's own sites (:47 cascade 9 more, :59 column 18, :79
+  column_solve 5), which ADR 0076 lines 33-34 anticipate ("any further frozen import of a name an I-8 split moves,
+  listed at the W5 base") and W4 runs 4-6 kept. DECISION: the 36 are the FQ-A list (the inventory is the record);
+  ADR 0076 I-19 erratum in run 21. Alternative: a specifier ruling. Reversible by: W5 recomputing the list. Not
+  numerics or identity: nothing frozen changes.
+  DECISION: column_solve's `saturation_pairs` alias stays for now; whether test_s08b_saturation.py:57 ("moved, not
+  copied", S08b WO-3, pre-S17) may assert the single definition another way goes to the I-19 reviewer. Alternative:
+  change the assertion now. Reversible by: a later step dropping the alias.
