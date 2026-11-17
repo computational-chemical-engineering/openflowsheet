@@ -57,28 +57,22 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 
 ## Next actions (2026-11-17 ~02:50, self-reset)
 
-Runner STOPPED for G-MAP 4 (killed 02:17, `RUNNER stop` in runner.log). Results consumed up to 212. No agent running.
-Pending: 227 (w4r12-revfix). Lanes at most 2 agents until Thu 19 Nov 13:00. ALERTs standing (proposal 2 with Frank).
+Runner RUNNING (pid 300275, restarted 03:45 after G-MAP 4; MB = 1720cc98). Results consumed up to 212; job 227
+(w4r12-revfix) gating. No agent running. Lanes at most 2 agents until Thu 19 Nov 13:00. ALERTs standing (proposal 2 with Frank).
 Merge-checks run on a helper `wp/S19-<lane>-mc` = lane tip + wp/S19 tip merged in; merge the helper (`git merge
 --no-ff -F <file>`) only if wp/S19 changed ONLY docs since the helper's wp/S19 merge, else refresh and re-run (job 215).
 `enqueue --rerun-of` takes the RUN-LOG STEP number, never across a rebase. Briefs that rebuild a lane chain: check
 ListAgents first; rename scripts must skip names an importer defines itself (job 219). Test runs in a worktree with the
 repo `.venv`: `PYTHONPATH=<worktree>/src`, no `-n` (no xdist there).
-1. **G-MAP 4 build** at 1720cc98 (the wp/S19 tip after G5 run 11), a `run_in_background` shell of the previous
-   context: its notice prints `MAPBUILD rc=<rc> wall=<s>` and the log tail; full log
-   `/tmp/claude-1000/-home-eajfpeters-Code-OpenFlowsheet/0997dfd2-4fd3-413d-974f-9285e78b8634/scratchpad/map4.log`,
-   worktree `.../scratchpad/map4` (detached). Started 02:22, ~1 h quiet. If no notice arrives, check
-   `pgrep -f "[t]est_impact.py build"`. Judge as G-MAP 3 (rc 0 or 1; >= 20356 tests; failures a subset of the B-6
-   set m04_wo9 a25, a29, x02_wo4 g4e x2; no unsure test in a file over ~60 s, else re-run), fill the G-MAP 4 row,
-   set the `MB` line to 1720cc987263268a1178bca870ab0497c8303583 (only on PASS or an accepted miss as G-MAP 3), commit,
-   `git worktree remove` map4, then restart the runner: `$Q run --detach`, and `$Q wait --since 212` in the background.
+1. **G-MAP 4: done** (accepted as G-MAP 3; fold fix 0d91ac4b; S19_DECISIONS 03:40). After a reset: `$Q wait --since 212`
+   in the background if no result past 212 is consumed.
 2. **I-13 (W4 run 12)**: R-W4-12 merge after fixes, both done (S19_DECISIONS 02:35, 02:45): lane wp/S19-w4
    eb71978d..e4c28e19. On job 227 PASS: helper wp/S19-w4-mc (worktree s19-w4-mc) = e4c28e19 + wp/S19 tip, `$Q enqueue
    --snapshot --worktree <helper> --base <wp/S19 tip> --mode merge-check --label w4r12-mc`; on PASS merge (message:
    I-13, R-1045, R-W4-12, jobs 223, 224, 227, the merge-check job), remove the helper worktree and branch. The lane
    worktree s19-w4 stays (W4 continues); fast-forward or re-branch it from the wp/S19 tip for the next run (it must
    contain MB).
-3. **Next W4 run (13): I-10 and I-12a-d**, not yet briefed (brief file S19-W4-13.md; pattern S19-W4-12.md and
+3. **Next W4 run (13): I-10, I-12a (I-12b if room)**, brief DRAFTED (S19-W4-13.md; launch prompt names the wp/S19 tip; serial runs by the orchestrator with `serial.sh`; drafted from pattern S19-W4-12.md and
    S19-W3-common.md; ADR 0076 rows; rule 4 amended: serial MSG counts at base and head, `-p no:xdist`, both wall-time
    budget tests deselected, PYTHONHASHSEED=0, all counts equal to 1061/801/100-style lines, ~2.2 h per suite; see
    S19_DECISIONS 22:24 and 01:40 entries for the serial command, `serial.sh` in session 916d464e's scratchpad). Brief
