@@ -2345,3 +2345,15 @@
   `target_state_sha256`: '4242572aa15a...' vs '8dc637985b0d...'); 20353 passed. Not recorded at the time. If 44158387592
   fails the same way, the merge waits for a fix (the assertion compares a CI-machine solve bitwise with a workstation
   bundle).
+
+## 2026-11-17 CI 44158387592 (ed0f04ae) FAILED on both legs: K05 state hash; fixed in b716feb7
+
+- Same test as 43773007283: x86-64 (check and default-install) reach '4242572aa15a...', aarch64 '11d3fa5ebeaf...' and
+  'cc151a9a1936...', against the workstation's bundle hashes; every other test passed (20396 / 20365 passed). The
+  `codehealth` job also reports failure; it is `continue-on-error` (informational) and does not block.
+- **DECISION:** the test asserted a cross-platform bitwise promise the repository does not make (F0 judges M4 on
+  `reference_platform` only, ADR 0007, blueprint 8.3, precedent Q-S7 in `tests/test_k05_schemas.py`) -> the hash claim
+  becomes its own test, skipped off `benchmarks/f0/corpus.json`'s `reference_platform` with its reason; the K claim runs
+  on every host. Alternative: re-record per-platform hashes (rejected: F0 records on the reference platform only).
+  Reversible by: reverting b716feb7. Test-only; for the next design-lane reviewer pass (the WITNF reviewer) to confirm.
+- Merge into main (card ofs-s19-w3w4-merge-main) waits for a green CI on b716feb7's successor.
