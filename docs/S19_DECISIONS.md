@@ -2282,3 +2282,7 @@
   Not taken: a SYN-001 check-set inputs object (gain 1.0), verify_revision (rule 10). table.py duplication with the
   gamma_phi_units twin 59 -> 42 lines (twin merge waits for Frank). Review brief S19-R-W3-G5-12.md (joint with G6
   run 7); reviewer launches when jobs 260-262 pass.
+- **2026-11-17, card `ofs-s19-oq1-nan-witness` signed by Frank: A (after S19).** `decision_desk_verify.py`: "VERIFIED
+  ofs-s19-oq1-nan-witness: chose A After S19 closes; action: land the S19 design batch 1 Q2 change (NaN witness
+  refusal) after S19; ... signed 2026-11-17T15:55:07.874Z key 032ee0a5ae620a90". The action runs after S19 closes;
+  `executed` is written on the card then (docs/progress.md carries it).
