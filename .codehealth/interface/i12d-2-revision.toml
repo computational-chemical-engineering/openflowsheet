@@ -1,0 +1,31 @@
+# ADR 0076 I-12d step 2 of 5 (W4 run 18, brief S19-W4-18): RevisionService out of application/local.py;
+# LocalApplication delegates. Placement: .codehealth/interface/s19-i12d-placement.md (E1 to E3 by the
+# R1 ruling of 2026-11-17, eecaf471). `codehealth gate --mode interface` reads this plan from the plan commit.
+id = "i12d-2-revision"
+approved_by = "Frank Peters, 2026-11-14, ADR 0076 accepted (Decision Desk ofs-adr0076-accept)"
+reason = """ADR 0076 I-12d, step 2 (orchestrator DECISION, brief S19-W4-17: one interface step per \
+service, upward from InspectionService). New module application/revision_service.py: \
+RevisionService(core, inspection) with commit_change, preview_change, list_revisions, get_revision, \
+diff_revisions, the private _check_request (R1 ruling E3), _prepare, _check_promotion, \
+_store_replacements, _replayed, and revision, check_view, project, rejected, decode_cursor (were \
+_revision, _check_view, _project, _rejected, _decode_cursor: called from the services above, so public \
+in the lowest by the ADR rule; decode_cursor by the R1 ruling E2), and the module-level \
+REPLACEMENTS_DIR, _Prepared, _with_report_hashes, _conflict, _assigned_revision_id and encode_cursor \
+(was _encode_cursor, R1 ruling E2). Statements move unchanged except the receiver (self._x( -> \
+self._core.x( for the core members, self._store -> self._core.store, self.files_root -> \
+self._core.files_root, self._x( -> self.x( for the renamed members); checked by AST comparison of \
+every function of local.py at the base. LocalApplication keeps every public method name and \
+signature (the five revision methods become one-line delegations with their docstrings); the facade \
+methods of the services not yet moved call self._revisions.revision, check_view, project and \
+decode_cursor and revision_service.encode_cursor; OPERATIONS untouched. Callers follow: \
+tests/test_t08_w2_unsupported.py patches apply_edits where _prepare now reads it (revision_service; \
+local.py no longer imports it; renamed entry on the binding, Q-F5). No string literal is added or \
+removed. Expected codehealth arch --depth 4 (measured on the step applied to this base): 0 / 0 / 0 -> \
+0 / 0 / 0 (imports 4115 -> 4135, files 325 -> 326). Layer config after the step (separate commit): \
+application-layers gains application.revision_service directly above application.inspection_service."""
+removed = []
+renamed = {"src/openflowsheet/application/local.py:REPLACEMENTS_DIR" = "src/openflowsheet/application/revision_service.py:REPLACEMENTS_DIR", "src/openflowsheet/application/local.py:apply_edits" = "src/openflowsheet/application/revision_service.py:apply_edits"}
+changed = []
+added = ["src/openflowsheet/application/revision_service.py:RevisionService", "src/openflowsheet/application/revision_service.py:encode_cursor"]
+new_files = ["src/openflowsheet/application/revision_service.py"]
+callers = ["tests/test_t08_w2_unsupported.py"]

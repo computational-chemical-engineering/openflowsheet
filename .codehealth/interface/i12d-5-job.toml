@@ -1,0 +1,33 @@
+# ADR 0076 I-12d step 5 of 5 (W4 run 19, brief S19-W4-19): JobService out of application/local.py;
+# LocalApplication delegates. Placement: .codehealth/interface/s19-i12d-placement.md (eecaf471, 5ea2a339).
+# `codehealth gate --mode interface` reads this plan from the plan commit.
+id = "i12d-5-job"
+approved_by = "Frank Peters, 2026-11-14, ADR 0076 accepted (Decision Desk ofs-adr0076-accept)"
+reason = """ADR 0076 I-12d, step 5, the last (orchestrator DECISION, brief S19-W4-17: one interface \
+step per service, upward from InspectionService). New module application/job_service.py: \
+JobService(core, inspection, revisions, artifacts, validation) with solve, reproduce, submit_job, \
+get_job, list_jobs, list_job_events, wait_job, cancel_job, get_job_result, the private _submit, \
+_replayed_job, _refuse_key_reused, _wait, _wait_until_ended, _result, _experiment_answer, \
+_run_result, _run_failure, _resolution, _import_bundle, _check_sequence, and the module-level \
+WAIT_POLL_S, MAX_JOB_PAGE, MAX_EVENT_PAGE, _displayed, _explained and _unproduced. Statements move \
+unchanged except the receiver (self.principal_id -> self._core.principal_id, self.files_root -> \
+self._core.files_root, self.owner_instance -> self._core.owner_instance: the facade's attribute and \
+the core's are the same value, set together in __init__ and kept by acting_as); calls to the lower \
+services keep their text (self._inspection, self._revisions, self._artifacts, self._validation are \
+JobService's own references to the facade's services); checked by AST comparison of every function \
+of local.py at the base. LocalApplication keeps every public method name and signature (the nine job \
+methods become one-line delegations with their docstrings); OPERATIONS untouched. Callers follow: \
+tests/conftest.py patches JobService._run_result, where the job results are now built (class-member \
+patch, Q-F5); tests/test_t07_w4e_error_mapping.py imports _unproduced and tests/test_x04_messages.py imports \
+_displayed from their home; benchmarks/t07/v17/fixtures.py calls the import step as \
+app._jobs._import_bundle (was app._import_bundle, a private facade member). No string \
+literal is added or removed. Expected codehealth arch --depth 4 (measured on the step applied to \
+this base): 0 / 0 / 0 -> 0 / 0 / 0 (imports 4168 -> 4190, files 328 -> 329). Layer config after the \
+step (separate commit): application-layers gains application.job_service directly below \
+application.local, above application.validation_service."""
+removed = []
+renamed = {"src/openflowsheet/application/local.py:WAIT_POLL_S" = "src/openflowsheet/application/job_service.py:WAIT_POLL_S", "src/openflowsheet/application/local.py:MAX_JOB_PAGE" = "src/openflowsheet/application/job_service.py:MAX_JOB_PAGE", "src/openflowsheet/application/local.py:MAX_EVENT_PAGE" = "src/openflowsheet/application/job_service.py:MAX_EVENT_PAGE", "src/openflowsheet/application/local.py:_unproduced" = "src/openflowsheet/application/job_service.py:_unproduced", "src/openflowsheet/application/local.py:_displayed" = "src/openflowsheet/application/job_service.py:_displayed"}
+changed = []
+added = ["src/openflowsheet/application/job_service.py:JobService"]
+new_files = ["src/openflowsheet/application/job_service.py"]
+callers = ["tests/conftest.py", "tests/test_t07_w4e_error_mapping.py", "tests/test_x04_messages.py", "benchmarks/t07/v17/fixtures.py"]

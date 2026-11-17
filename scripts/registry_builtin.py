@@ -19,7 +19,7 @@ Two digests are written beside them and held by `--check`:
 Each prints one summary line and exits 0 only on success. `--check` also builds a registry from
 the committed tables, so a table the registry would refuse fails it. `--write` never builds the
 process registry, so it runs with a stale or missing table (signatures come from the binder's
-tables through `local._model_view`, the function `list_models` maps them with).
+tables through `inspection_service._model_view`, the function `list_models` maps them with).
 
 The table holds D6's 39 legacy descriptors: the connection definition `nTP-v1`, the 7 legacy
 property methods and the 31 legacy units. What the generator reads:
@@ -341,17 +341,19 @@ def methods() -> list[dict[str, Any]]:
 
 
 def _signatures() -> list[dict[str, Any]]:
-    """`list_models`' entries: the operation's own mapping (`local._model_view`) of each
-    `MODEL_SIGNATURES` entry, sorted by model id, into its own result type. Not through an
-    application, whose construction builds the process registry from the tables written here
-    (W2-7); `tests/test_f1_legacy_builtins.py` holds this equal to `list_models()`."""
-    from openflowsheet.application import local
+    """`list_models`' entries: the operation's own mapping
+    (`inspection_service._model_view`) of each `MODEL_SIGNATURES` entry, sorted by model id,
+    into its own result type. Not through an application, whose construction builds the process
+    registry from the tables written here (W2-7); `tests/test_f1_legacy_builtins.py` holds this
+    equal to `list_models()`."""
+    from openflowsheet.application import inspection_service
     from openflowsheet.application.inspection_types import ModelRegistryView
     from openflowsheet.application.model_signatures import MODEL_SIGNATURES
 
     view = ModelRegistryView(
         models=tuple(
-            local._model_view(MODEL_SIGNATURES[model_id]) for model_id in sorted(MODEL_SIGNATURES)
+            inspection_service._model_view(MODEL_SIGNATURES[model_id])
+            for model_id in sorted(MODEL_SIGNATURES)
         )
     )
     models: list[dict[str, Any]] = view.as_document()["models"]

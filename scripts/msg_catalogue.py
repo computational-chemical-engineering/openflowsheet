@@ -45,6 +45,10 @@ _CODE_SHAPED: Final = re.compile(r"^[A-Za-z][A-Za-z0-9]*(?:_[A-Za-z0-9]+)+$")
 _CODE_CALLS: Final = frozenset(
     {"api_error", "_refuse", "Failure", "RunUnsupportedError", "Coded"}  # Coded: ADR 0060
 )
+#: Methods, matched as attribute calls only, whose code is one of their first two positional args:
+#: `ServiceCore.refuse` (ADR 0076 I-12d; was `LocalApplication._refuse`). A bare `refuse(...)` is a
+#: local helper elsewhere (studies/nlp/revision_host.py) and stays outside the scan.
+_CODE_METHODS: Final = frozenset({"refuse"})
 
 
 def _modules() -> None:
@@ -82,14 +86,17 @@ def scan_source(text: str) -> Iterator[tuple[str, int]]:
     for node in ast.walk(tree):
         if isinstance(node, ast.Call):
             name = _name(node.func)
-            if name in _CODE_CALLS:
+            coded = name in _CODE_CALLS or (
+                isinstance(node.func, ast.Attribute) and name in _CODE_METHODS
+            )
+            if coded:
                 for argument in node.args[:2]:
                     value = _string(argument)
                     if value is not None and _CODE_SHAPED.match(value):
                         yield value, node.lineno
                         break
             for keyword in node.keywords:
-                if keyword.arg == "code" and name in (*_CODE_CALLS, "StoreError"):
+                if keyword.arg == "code" and (coded or name == "StoreError"):
                     value = _string(keyword.value)
                     if value is not None:
                         yield value, node.lineno

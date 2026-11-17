@@ -24,44 +24,26 @@ first (§9.3): queued jobs end `cancelled(server_shutdown)` and running ones are
 
 from __future__ import annotations
 
-import base64
-import binascii
 import copy
-import hashlib
-import json
-import math
 import os
-import shutil
-import sqlite3
-import tempfile
-import time
 import uuid
 from collections.abc import Mapping, Sequence
-from dataclasses import dataclass, replace
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Final, Literal, NoReturn, Self, get_args
+from typing import TYPE_CHECKING, Any, Literal, Self
 
-from openflowsheet.application import capabilities, stream_table, validation
-from openflowsheet.application.admission import (
-    active_jobs_refusal,
-    admit_experiment,
-    admit_optimize,
-    admit_reproduce,
-    admit_solve,
-    admit_surrogate_study,
-    resolve_policies,
-    stored_surrogate_manifests,
-    surrogate_resolver,
+from openflowsheet.application.artifact_service import (
+    STREAM_TABLE_DEPTH,
+    ArtifactService,
+    StreamTableQuery,
 )
 from openflowsheet.application.authz import (
-    LOCAL_OWNER,
     PolicyFile,
     StaticPolicy,
     authenticate,
-    authorize,
 )
 from openflowsheet.application.contract import Page, Projection
-from openflowsheet.application.errors import ApiError, ApiErrorCode, ApplicationError, api_error
+from openflowsheet.application.errors import ApiErrorCode, api_error
+from openflowsheet.application.inspection_service import InspectionService
 from openflowsheet.application.inspection_types import (
     AdmissionReport,
     AuditOrder,
@@ -72,36 +54,20 @@ from openflowsheet.application.inspection_types import (
     ModelRegistryView,
     ProjectSummary,
     RevisionSummary,
-    ServerInfo,
     SubmitResult,
 )
 from openflowsheet.application.job_records import (
-    EffectiveBudgets,
     Job,
     JobEvent,
     JobResult,
-    RunFailure,
     RunResult,
-    _replay_report_build,
 )
 from openflowsheet.application.job_requests import (
-    ExperimentBody,
     JobRequest,
-    OptimizeBody,
-    ReproduceBody,
-    SolveBody,
-    SurrogateStudyBody,
 )
+from openflowsheet.application.job_service import JobService
 from openflowsheet.application.jobs.executor import InlineExecutor, ProcessExecutor
-from openflowsheet.application.jobs.model import JOB_STATUSES, TERMINAL_STATUSES, JobStatus
-from openflowsheet.application.jobs.runner import RunContext, bundle_rows, record_rows
-from openflowsheet.application.model_builders import MODEL_BUILDERS, SurrogateResolver
-from openflowsheet.application.model_signatures import (
-    MODEL_SIGNATURES,
-    ModelSignature,
-    PinColumn,
-    pin_encodings,
-)
+from openflowsheet.application.jobs.model import JobStatus
 from openflowsheet.application.policy_types import (
     CapabilityReference,
     ExecutorSettings,
@@ -111,66 +77,23 @@ from openflowsheet.application.policy_types import (
 from openflowsheet.application.projection import (
     DEFAULT_DEPTH,
     DEFAULT_PAGE,
-    MAX_PAGE,
-    check_view_arguments,
-    project,
 )
-from openflowsheet.application.replacement import (
-    ReplacementReport,
-    check_replacements,
-    unpromoted_surrogates,
-)
-from openflowsheet.application.revision_edits import (
-    EditPathError,
-    apply_edits,
-    revision_diff,
-    semantic_diff,
-)
-from openflowsheet.application.revision_run import Route, select_route
-from openflowsheet.application.revisions import Revision
+from openflowsheet.application.revision_service import RevisionService
+from openflowsheet.application.service_core import ServiceCore
 from openflowsheet.application.store import (
-    IMPORTS_DIR,
-    STORE_SCHEMA,
     ProjectStore,
-    atomic_write_bytes,
 )
 from openflowsheet.application.store_records import (
-    ActiveJobLimitError,
-    ArtifactRow,
-    AuditEntry,
-    IdempotencyKeyReusedError,
-    LedgerRow,
     StoreError,
     coded_store_error,
 )
-from openflowsheet.application.structure_inspection import route_structure
 from openflowsheet.application.transaction_types import Change, SemanticDiff, TransactionResult
 from openflowsheet.application.validation_report import Task, ValidationReport
-from openflowsheet.canonical import canonical_json, document_sha256, first_noncanonical
-from openflowsheet.orchestrator.policies import APPLICATION_POLICIES, DEFAULT_POLICY_ID
+from openflowsheet.application.validation_service import ValidationService
 from openflowsheet.registry import default_registry
-from openflowsheet.run.bundle import MANIFEST_NAME
 from openflowsheet.run.replay import ReplayReport
-from openflowsheet.schema_check import DocumentSchemaError, validate_document
-from openflowsheet.studies.nlp.replay import MANIFEST as OPTIMIZATION_MANIFEST
-from openflowsheet.studies.nlp.replay import is_optimization_record
-from openflowsheet.units.display import DisplayUnits, DisplayUnitsError, parse_display_units
 
 Executor = Literal["inline", "process"]
-TASKS: tuple[str, ...] = get_args(Task)
-#: §4.2: `wait_job` polls the store this often.
-WAIT_POLL_S: Final[float] = 0.1
-#: §11.4: page sizes — job lists as arrays (default 50, at most 200), events (100, at most 500).
-MAX_JOB_PAGE: Final[int] = 200
-#: ADR 0019 Amendment 3 (A3.3): `list_audit`'s orders, and its `operation` filter's length bound.
-AUDIT_ORDERS: Final[tuple[str, ...]] = ("ascending", "descending")
-_AUDIT_OPERATION_LIMIT: Final[int] = 128
-MAX_EVENT_PAGE: Final[int] = 500
-#: MSG §3.4 (FB-03b): a `not_found` on a bundle member lists at most this many member names.
-MAX_LISTED_MEMBERS: Final[int] = 64
-#: ST note §6.1: `get_stream_table`'s default depth, `MAX_DEPTH`, so that a stream's phases
-#: arrive whole (the other views keep `DEFAULT_DEPTH`).
-STREAM_TABLE_DEPTH: Final[int] = 12
 
 
 class LocalApplication:
@@ -195,15 +118,22 @@ class LocalApplication:
         policy: PolicyFile | StaticPolicy,
         capability: CapabilityReference | None,
     ) -> None:
-        self._store = store
-        self._policy = policy
-        self._capability = capability
         self.owner_instance = owner_instance
         self.recovered: tuple[str, ...] = ()
-        self._executor: InlineExecutor | ProcessExecutor = InlineExecutor()
-        #: An in-memory project's files (bundles, imports) live in a directory of its own,
-        #: removed on `close`.
-        self._scratch: tempfile.TemporaryDirectory[str] | None = None
+        self._bind(
+            ServiceCore(store, owner_instance=owner_instance, policy=policy, capability=capability)
+        )
+
+    def _bind(self, core: ServiceCore) -> None:
+        """The services over `core` (`__init__`; `authenticated`, with a core of its own)."""
+        self._core = core
+        self._inspection = InspectionService(core)
+        self._revisions = RevisionService(core, self._inspection)
+        self._artifacts = ArtifactService(core, self._revisions)
+        self._validation = ValidationService(core, self._revisions)
+        self._jobs = JobService(
+            core, self._inspection, self._revisions, self._artifacts, self._validation
+        )
 
     # ------------------------------------------------------------------------- construction
 
@@ -327,11 +257,11 @@ class LocalApplication:
         application.recovered = tuple(store.recover(own_instance=owner_instance))
         if process is not None:
             try:
-                process.start(application._context(), policy.current().executor)
+                process.start(application._core.context(), policy.current().executor)
             except BaseException:
                 application.close()
                 raise
-            application._executor = process
+            application._core.executor = process
         return application
 
     @classmethod
@@ -358,23 +288,19 @@ class LocalApplication:
 
         The result shares this owner's store, policy, executor and owner lock (§9.3): a job it
         accepts is this owner's to run. Only the caller's capability differs, and it is resolved
-        against the current policy on every call, like any other (`_caller`), so a revocation
-        takes effect on the next call. The result is never closed; its owner is.
+        against the current policy on every call, like any other (`ServiceCore.caller`), so a
+        revocation takes effect on the next call. The result is never closed; its owner is.
         """
-        capability = authenticate(self._policy.current(), token)
+        capability = authenticate(self._core.policy.current(), token)
         if capability is None:
             return None
         view = copy.copy(self)
-        view._capability = capability
+        view._bind(self._core.acting_as(capability))
         return view
 
     def close(self) -> None:
         """Shut the executor down (§9.3), then release the store and the owner lock."""
-        self._executor.shutdown()
-        self._store.close()
-        if self._scratch is not None:
-            self._scratch.cleanup()
-            self._scratch = None
+        self._core.close()
 
     def __enter__(self) -> Self:
         return self
@@ -386,119 +312,35 @@ class LocalApplication:
 
     @property
     def store(self) -> ProjectStore:
-        return self._store
+        return self._core.store
 
     @property
     def project_id(self) -> str:
-        return self._store.project_id
+        return self._core.project_id
 
     @property
     def principal_id(self) -> str:
-        return (self._capability or LOCAL_OWNER).principal_id
+        return self._core.principal_id
 
     @property
     def capability_id(self) -> str:
-        return (self._capability or LOCAL_OWNER).capability_id
+        return self._core.capability_id
 
     @property
     def policy(self) -> ProjectPolicy:
         """The project policy in force now (hot-reloaded)."""
-        return self._policy.current()
+        return self._core.policy.current()
 
     @property
     def executor(self) -> InlineExecutor | ProcessExecutor:
         """The executor this owner runs its jobs on (its test hooks are Python-only)."""
-        return self._executor
+        return self._core.executor
 
     @property
     def files_root(self) -> Path:
         """The directory `jobs/` and `imports/` live under: the project's, or an in-memory
         project's scratch directory."""
-        if self._store.directory is not None:
-            return self._store.directory
-        if self._scratch is None:
-            self._scratch = tempfile.TemporaryDirectory(prefix="openflowsheet-")
-        return Path(self._scratch.name)
-
-    def _surrogates(self) -> SurrogateResolver:
-        """The binder's SurrogateManifest resolver over this project's artifacts (M04 spec §8.2).
-        Lazy: the store and `files_root` are read only when a revision binds a surrogate."""
-
-        def resolve(sha256: str) -> Mapping[str, Any] | None:
-            return surrogate_resolver(self._store, self.files_root)(sha256)
-
-        return resolve
-
-    def _context(self) -> RunContext:
-        return RunContext(
-            store=self._store, root=self.files_root, owner_instance=self.owner_instance
-        )
-
-    # ---------------------------------------------------------------------- authorization
-
-    def _caller(self, operation: str) -> CapabilityReference:
-        """The caller's capability as the current policy states it; 401 if it is gone."""
-        if self._capability is None:
-            return LOCAL_OWNER
-        for capability in self._policy.current().capabilities:
-            if (
-                capability.capability_id == self._capability.capability_id
-                and capability.token_sha256 == self._capability.token_sha256
-                and capability.token_sha256 is not None
-            ):
-                return capability
-        return self._refuse(
-            "unauthenticated",
-            "this capability is not in the project policy (revoked or never granted)",
-            operation=operation,
-        )
-
-    def _authorize(
-        self,
-        operation: str,
-        *,
-        target_principal: str | None = None,
-        request_sha256: str | None = None,
-    ) -> CapabilityReference:
-        """§10.1 for this call; a refusal is audited and raised."""
-        caller = self._caller(operation)
-        decision = authorize(caller, operation, target_principal)
-        if not decision.allowed:
-            assert decision.code is not None
-            self._refuse(
-                decision.code,
-                decision.message,
-                operation=operation,
-                request_sha256=request_sha256,
-                required=list(decision.required),
-            )
-        return caller
-
-    def _refuse(
-        self,
-        code: ApiErrorCode,
-        message: str,
-        /,
-        *,
-        operation: str,
-        request_sha256: str | None = None,
-        **detail: Any,
-    ) -> NoReturn:
-        """§10.7: audit a refusal of `operation`, then raise it."""
-        self._audit_refusal(operation, code, request_sha256)
-        raise api_error(code, message, **detail)
-
-    def _audit_refusal(self, operation: str, code: str, request_sha256: str | None) -> None:
-        self._store.record_audit(
-            AuditEntry(
-                principal_id=self.principal_id,
-                capability_id=self.capability_id,
-                operation=operation,
-                outcome="refused",
-                code=code,
-                request_sha256=request_sha256,
-            )
-        )
+        return self._core.files_root
 
     # -------------------------------------------------------------------- Application (frozen)
 
@@ -530,49 +372,7 @@ class LocalApplication:
             `invalid_request` (also the missing `optimization`), `unsupported`
             (`nlp_solver_unavailable`, before the revision is read) or `not_found`.
         """
-        self._authorize("validate")
-        if task not in TASKS:
-            self._refuse(
-                "invalid_request",
-                f"task is one of {list(TASKS)}",
-                operation="validate",
-                pointer="/task",
-            )
-        if task == "optimization":
-            # OPT design §4.11 (ADR 0071 D8, lifting R-129 and U05's refusal): the solver probe
-            # first, at U05's place, before the revision is read; then the request.
-            from openflowsheet.studies.nlp.closure import audited_solver
-
-            availability = audited_solver()
-            if not availability.available:
-                self._refuse(
-                    "unsupported",
-                    "nlp_solver_unavailable",
-                    operation="validate",
-                    pointer="/task",
-                )
-            if optimization is None:
-                self._refuse(
-                    "invalid_request",
-                    "task optimization needs an optimization request",
-                    operation="validate",
-                    pointer="/optimization",
-                )
-        with self._store.reading() as connection:
-            revision = self._store.get_revision(connection, revision_id)
-        if revision is None:
-            self._refuse(
-                "not_found", "no such revision", operation="validate", revision_id=revision_id
-            )
-        if task != "optimization":
-            return validation.validate(revision.as_document(), task, surrogates=self._surrogates())
-        return validation.validate(
-            revision.as_document(),
-            task,
-            surrogates=self._surrogates(),
-            optimization=optimization,
-            solver_probe=lambda: availability,
-        )
+        return self._validation.validate(revision_id, task, optimization)
 
     def commit_change(
         self, change: Change, expected_revision: str | None, idempotency_key: str
@@ -608,91 +408,7 @@ class LocalApplication:
             A refusal, for example `forbidden`, `document_not_canonical` or
             `idempotency_key_reused` (the key with a different request).
         """
-        operation = "commit_change"
-        caller = self._authorize(operation)
-        request = change.as_change_set(expected_revision, idempotency_key)
-        rejected = self._check_request(request, operation, idempotency_key)
-        if rejected is not None:
-            return rejected
-        request_sha256 = document_sha256(request)
-        principal_id = caller.principal_id
-        store = self._store
-
-        with store.reading() as connection:
-            prior = store.ledger_lookup(connection, principal_id, operation, idempotency_key)
-            head = store.head(connection)
-        if prior is not None:
-            return self._replayed(prior, request_sha256, idempotency_key)
-        if expected_revision != head:
-            return _conflict(expected_revision, head, idempotency_key)
-
-        prepared = self._prepare(change, expected_revision, idempotency_key, operation)
-        if isinstance(prepared, TransactionResult):
-            return prepared
-
-        revision = prepared.revision
-        result: TransactionResult | None = None
-        with store.writing() as connection:
-            prior = store.ledger_lookup(connection, principal_id, operation, idempotency_key)
-            actual = store.head(connection)
-            taken = store.get_revision(connection, revision.revision_id) is not None
-            if prior is None and actual == expected_revision and not taken:
-                store.commit_revision(
-                    connection,
-                    revision,
-                    principal_id=principal_id,
-                    capability_id=caller.capability_id,
-                    policy_sha256=self._policy.current().policy_sha256,
-                )
-                # ADR 0035 D3: a promotion's reports, stored and registered with the revision.
-                self._store_replacements(connection, revision.revision_id, prepared.replacements)
-                invalidations = (
-                    tuple(store.evidence_for_revision(connection, expected_revision))
-                    if expected_revision is not None
-                    else ()
-                )
-                result = TransactionResult(
-                    status="committed",
-                    revision_id=revision.revision_id,
-                    validation=prepared.report,
-                    diff=prepared.diff,
-                    invalidations=invalidations,
-                    idempotency_key=idempotency_key,
-                )
-                store.ledger_insert(
-                    connection,
-                    principal_id,
-                    operation,
-                    idempotency_key,
-                    request_sha256,
-                    result.as_document(),
-                )
-                store.audit(
-                    connection,
-                    AuditEntry(
-                        principal_id=principal_id,
-                        capability_id=caller.capability_id,
-                        operation=operation,
-                        outcome="allowed",
-                        request_sha256=request_sha256,
-                        effect=f"revision:{revision.revision_id}",
-                    ),
-                )
-        if result is not None:
-            return result
-        # Another writer got in between the snapshot and the lock; say which way it moved.
-        if prior is not None:
-            return self._replayed(prior, request_sha256, idempotency_key)
-        if actual != expected_revision:
-            return _conflict(expected_revision, actual, idempotency_key)
-        return self._rejected(
-            operation,
-            idempotency_key,
-            "invalid_request",
-            f"revision id {revision.revision_id!r} is taken; a revision is never replaced",
-            pointer="/new_revision_id",
-            reason="revision_id_taken",
-        )
+        return self._revisions.commit_change(change, expected_revision, idempotency_key)
 
     def solve(self, revision_id: str, policy_id: str) -> RunResult:
         """§4.2: `submit_job` with a fresh `auto:` key, `wait_job` until it ends (no time-out),
@@ -719,39 +435,14 @@ class LocalApplication:
             A refusal at submission, for example `revision_not_ready`, `not_found` (an unknown
             policy) or `unsupported` (a registered policy that is not offered).
         """
-        caller = self._authorize("solve")
-        request = JobRequest(
-            operation="solve",
-            idempotency_key=f"auto:{uuid.uuid4().hex}",
-            body=SolveBody(revision_id=revision_id, policy_id=policy_id),
-        )
-        job_id = self._submit(request, caller, "solve").job.job_id
-        self._wait_until_ended(job_id, "solve")
-        result = self._result(job_id, "solve")
-        assert result.run_result is not None
-        return result.run_result
+        return self._jobs.solve(revision_id, policy_id)
 
     def reproduce(self, bundle_path: str | os.PathLike[str], policy: ReplayPolicy) -> ReplayReport:
         """§4.2: import the bundle at `bundle_path` (its regular files, no symlink followed) as
         `import-<ordinal>:bundle`, submit `reproduce` with a fresh `auto:` key, wait, and return
         the report. Needs `execute`. A job that ends without a report raises its error, or, when
         it has none (`cancelled`, `timed_out`), `not_ready` (§5.8 as amended by ruling round 4)."""
-        operation = "reproduce"
-        caller = self._authorize(operation)
-        if not isinstance(policy, ReplayPolicy):
-            self._refuse("invalid_request", "policy is a ReplayPolicy", operation=operation)
-        artifact_id = self._import_bundle(Path(bundle_path), operation)
-        request = JobRequest(
-            operation="reproduce",
-            idempotency_key=f"auto:{uuid.uuid4().hex}",
-            body=ReproduceBody(bundle_artifact_id=artifact_id, rerun=policy.rerun),
-        )
-        job_id = self._submit(request, caller, operation).job.job_id
-        job = self._wait_until_ended(job_id, operation)
-        result = self._result(job_id, operation)
-        if result.replay_report is not None:
-            return result.replay_report
-        raise ApplicationError(result.error if result.error is not None else _unproduced(job))
+        return self._jobs.reproduce(bundle_path, policy)
 
     # ---------------------------------------------------------------------- JobControl (§4.1)
 
@@ -761,49 +452,24 @@ class LocalApplication:
         transaction); hand it to the executor. Returns the job as the executor leaves it —
         ended inline, queued or running under the process executor — or, same key, same request,
         the existing one with `replayed = true`."""
-        caller = self._authorize("submit_job")
-        return self._submit(request, caller, "submit_job")
+        return self._jobs.submit_job(request)
 
     def get_job(self, job_id: str) -> Job:
         """§4.2: any job of the project (`read` covers every principal's jobs)."""
-        self._authorize("get_job")
-        return self._job(job_id, "get_job")
+        return self._jobs.get_job(job_id)
 
     def list_jobs(
         self, *, status: JobStatus | None = None, cursor: str | None = None, limit: int = 50
     ) -> Page[Job]:
         """§4.2, §11.4: the project's jobs in acceptance order, by ordinal cursor."""
-        operation = "list_jobs"
-        self._authorize(operation)
-        if status is not None and status not in JOB_STATUSES:
-            self._refuse(
-                "invalid_request",
-                f"status is one of {list(JOB_STATUSES)}",
-                operation=operation,
-                pointer="/status",
-            )
-        self._check_limit(limit, MAX_JOB_PAGE, operation)
-        after = self._decode_cursor(cursor, operation)
-        rows, more = self._store.list_jobs(status=status, after_ordinal=after, limit=limit)
-        next_cursor = _encode_cursor(rows[-1][0]) if more else None
-        return Page(items=tuple(job for _, job in rows), next_cursor=next_cursor)
+        return self._jobs.list_jobs(status=status, cursor=cursor, limit=limit)
 
     def list_job_events(
         self, job_id: str, *, after_sequence: int = -1, limit: int = 100
     ) -> Page[JobEvent]:
         """§4.2, §11.4: a job's events after `after_sequence`; the next cursor is the last
         sequence returned, to pass back as `after_sequence`."""
-        operation = "list_job_events"
-        self._authorize(operation)
-        self._check_limit(limit, MAX_EVENT_PAGE, operation)
-        self._check_sequence(after_sequence, operation)
-        found = self._store.job_events_after(job_id, after_sequence, limit + 1)
-        if found is None:
-            self._refuse("not_found", "no such job", operation=operation, job_id=job_id)
-        events = found[1]
-        more = len(events) > limit
-        events = events[:limit]
-        return Page(items=tuple(events), next_cursor=str(events[-1].sequence) if more else None)
+        return self._jobs.list_job_events(job_id, after_sequence=after_sequence, limit=limit)
 
     def wait_job(
         self, job_id: str, *, after_sequence: int = -1, timeout_s: float = 20.0
@@ -811,47 +477,13 @@ class LocalApplication:
         """§4.2: return once the job has events after `after_sequence` (a cancellation request
         among them), once it has ended, or at `timeout_s` (in-process, `math.inf` waits for
         either); polls every 0.1 s. At most 100 events."""
-        operation = "wait_job"
-        self._authorize(operation)
-        self._check_sequence(after_sequence, operation)
-        if (
-            isinstance(timeout_s, bool)
-            or not isinstance(timeout_s, int | float)
-            or math.isnan(timeout_s)
-            or timeout_s < 0
-        ):
-            self._refuse(
-                "invalid_request",
-                "timeout_s is a number >= 0",
-                operation=operation,
-                pointer="/timeout_s",
-            )
-        return self._wait(job_id, after_sequence, float(timeout_s), operation)
+        return self._jobs.wait_job(job_id, after_sequence=after_sequence, timeout_s=timeout_s)
 
     def cancel_job(self, job_id: str) -> Job:
         """§4.2: needs `execute`, and `policy` as well for another principal's job. A queued job
         ends `cancelled` at once; a running one is flagged and signalled, and stops at its next
         checkpoint; an ended one is returned as it is. Idempotent."""
-        operation = "cancel_job"
-        caller = self._authorize(operation, target_principal=self.principal_id)
-        job = self._job(job_id, operation)
-        caller = self._authorize(operation, target_principal=job.principal_id)
-        outcome = self._store.request_cancel(
-            job_id,
-            AuditEntry(
-                principal_id=caller.principal_id,
-                capability_id=caller.capability_id,
-                operation=operation,
-                outcome="allowed",
-                request_sha256=job.request_sha256,
-                effect=f"cancel:{job_id}",
-            ),
-        )
-        assert outcome is not None
-        status, recorded = outcome
-        if recorded and status == "running":
-            self._executor.signal_cancel(job_id)
-        return self._job(job_id, operation)
+        return self._jobs.cancel_job(job_id)
 
     def get_job_result(self, job_id: str, *, display_units: str | None = None) -> JobResult:
         """§4.2 as amended by R4: `{operation, run_result, replay_report, error}` of an ended
@@ -859,542 +491,7 @@ class LocalApplication:
         is a display preference, resolved against the project's declared ambient pressure: the
         result echoes it and every explanation it holds is rendered under it; its SI content is
         the result without it."""
-        self._authorize("get_job_result")
-        units = (
-            None if display_units is None else self._display_units(display_units, "get_job_result")
-        )
-        result = self._result(job_id, "get_job_result", display_units=units)
-        return result if units is None else _displayed(result, units)
-
-    def _display_units(self, text: str, operation: str) -> DisplayUnits:
-        """ADR 0075 D5, D9: `text` resolved against the declared ambient; a refusal is audited.
-        An `invalid_request` points at `/display_units`; an `unsupported` carries its message
-        head as `reason` (the code with its kind and unit, X04 decision D-5), which MSG reads."""
-        try:
-            return parse_display_units(text, self._policy.current().ambient_pressure)
-        except DisplayUnitsError as error:
-            pointer = error.pointer
-            detail = {"pointer": pointer} if pointer is not None else {"reason": error.message}
-            self._refuse(error.api_error, error.message, operation=operation, **detail)
-
-    # ------------------------------------------------------------------------- the job steps
-
-    def _submit(
-        self, request: JobRequest, caller: CapabilityReference, operation: str
-    ) -> SubmitResult:
-        document = request.as_document()
-        # As `dispatch` orders them (§4.3): a non-canonical value is named as such, not as a
-        # schema error.
-        pointer = first_noncanonical(document)
-        if pointer is not None:
-            self._refuse(
-                "document_not_canonical",
-                "a value has no canonical JSON form (NaN, an infinity, an integer beyond 2^53 that "
-                "is not a binary64's canonical spelling, or not JSON at all)",
-                operation=operation,
-                pointer=pointer,
-            )
-        try:
-            validate_document("job.schema.json#/$defs/job_request", document)
-        except DocumentSchemaError as error:
-            self._refuse(
-                "invalid_request", error.message, operation=operation, pointer=error.pointer
-            )
-        request_sha256 = request.request_sha256
-        store = self._store
-        with store.reading() as connection:
-            prior = store.ledger_lookup(
-                connection, caller.principal_id, "submit_job", request.idempotency_key
-            )
-        if prior is not None:
-            return self._replayed_job(prior, request_sha256, operation)
-        budgets = self._admit(request, caller, operation, request_sha256)
-        try:
-            job, replayed = store.accept_job(
-                request,
-                principal_id=caller.principal_id,
-                capability_id=caller.capability_id,
-                # §5.5: the project-policy document hash at acceptance.
-                policy_sha256=self._policy.current().policy_sha256,
-                owner_instance=self.owner_instance,
-                effective_budgets=budgets,
-                max_active_jobs=caller.limits.max_active_jobs,
-            )
-        except IdempotencyKeyReusedError as error:
-            self._refuse_key_reused(error.original_request_sha256, request_sha256, operation)
-        except ActiveJobLimitError as error:
-            # Admission's early count raced another submission (T07 review S4).
-            refused = active_jobs_refusal(caller.limits, error.active_jobs)
-            assert refused is not None
-            self._refuse_error(refused, operation, request_sha256)
-        if not replayed:
-            self._executor.run(self._context(), job.job_id)
-            job = self._job(job.job_id, operation)
-        return SubmitResult(job=job, replayed=replayed)
-
-    def _replayed_job(self, prior: LedgerRow, request_sha256: str, operation: str) -> SubmitResult:
-        """§7: the existing job, as it is now; a different request under the key is refused."""
-        if prior.request_sha256 != request_sha256:
-            self._refuse_key_reused(prior.request_sha256, request_sha256, operation)
-        return SubmitResult(job=self._job(str(prior.result), operation), replayed=True)
-
-    def _refuse_key_reused(self, original: str, request_sha256: str, operation: str) -> NoReturn:
-        self._refuse(
-            "idempotency_key_reused",
-            "this idempotency key was used with a different job request; use a new key for a "
-            "new job",
-            operation=operation,
-            request_sha256=request_sha256,
-            original_request_sha256=original,
-        )
-
-    def _admit(
-        self,
-        request: JobRequest,
-        caller: CapabilityReference,
-        operation: str,
-        request_sha256: str,
-    ) -> EffectiveBudgets:
-        """§5.3's semantic admission; a refusal creates no job and no ledger row, and is
-        audited. The effective budgets the job will run under.
-
-        One admission per job family: `_solve_admission`, `_experiment_admission`,
-        `_surrogate_study_admission`, `_optimize_admission` and `_reproduce_admission`. Raised: the
-        family's refusal (`_refuse_error`)."""
-        active = self._store.active_job_count(caller.principal_id)
-        body = request.body
-        budgets: EffectiveBudgets | ApiError
-        if isinstance(body, SolveBody):
-            budgets = self._solve_admission(body, request, caller, active)
-        elif isinstance(body, ExperimentBody):
-            budgets = self._experiment_admission(body, request, caller, active)
-        elif isinstance(body, SurrogateStudyBody):
-            budgets = self._surrogate_study_admission(body, request, caller, active)
-        elif isinstance(body, OptimizeBody):
-            budgets = self._optimize_admission(body, request, caller, active)
-        else:
-            budgets = self._reproduce_admission(body, request, caller, active)
-        if isinstance(budgets, ApiError):
-            self._refuse_error(budgets, operation, request_sha256)
-        return budgets
-
-    def _solve_admission(
-        self, body: SolveBody, request: JobRequest, caller: CapabilityReference, active: int
-    ) -> EffectiveBudgets | ApiError:
-        """`admit_solve` on the revision and the declared warm-start source as the store is at
-        admission: the solve's budgets, or the refusal."""
-        store = self._store
-        declared = body.warm_start.job_id if body.warm_start is not None else None
-        with store.reading() as connection:
-            revision = store.get_revision(connection, body.revision_id)
-            # ADR 0070 A1: the declared source, as the store is at admission.
-            source = store.solution_of_job(connection, declared) if declared is not None else None
-        admission = admit_solve(
-            body.revision_id,
-            revision.as_document() if revision is not None else None,
-            body,
-            budgets=request.budgets,
-            limits=caller.limits,
-            active_jobs=active,
-            surrogates=self._surrogates(),
-            warm_source_found=source is not None,
-        )
-        if isinstance(admission, ApiError):
-            return admission
-        return EffectiveBudgets(
-            wall_time_s=admission.wall_time_s,
-            max_property_calls=admission.policy.max_property_calls,
-        )
-
-    def _experiment_admission(
-        self, body: ExperimentBody, request: JobRequest, caller: CapabilityReference, active: int
-    ) -> EffectiveBudgets | ApiError:
-        """`admit_experiment`: the experiment's budgets, or the refusal."""
-        admitted = admit_experiment(
-            body, budgets=request.budgets, limits=caller.limits, active_jobs=active
-        )
-        if isinstance(admitted, ApiError):
-            return admitted
-        # R-233: an experiment's property calls are its own, never a solve's budget.
-        return EffectiveBudgets(wall_time_s=admitted[1], max_property_calls=None)
-
-    def _surrogate_study_admission(
-        self,
-        body: SurrogateStudyBody,
-        request: JobRequest,
-        caller: CapabilityReference,
-        active: int,
-    ) -> EffectiveBudgets | ApiError:
-        """`admit_surrogate_study` against the stored surrogate manifests: the study's budgets,
-        or the refusal."""
-        store = self._store
-        study = admit_surrogate_study(
-            body,
-            budgets=request.budgets,
-            limits=caller.limits,
-            active_jobs=active,
-            manifests=lambda: stored_surrogate_manifests(store, self.files_root),
-        )
-        if isinstance(study, ApiError):
-            return study
-        # R-233 again: a study's experiments are experiments; their calls are their own.
-        return EffectiveBudgets(wall_time_s=study, max_property_calls=None)
-
-    def _optimize_admission(
-        self, body: OptimizeBody, request: JobRequest, caller: CapabilityReference, active: int
-    ) -> EffectiveBudgets | ApiError:
-        """`admit_optimize`: the optimization's budgets, or the refusal."""
-        optimize = admit_optimize(
-            body, budgets=request.budgets, limits=caller.limits, active_jobs=active
-        )
-        if isinstance(optimize, ApiError):
-            return optimize
-        # OPT §4.10: the property-call budget is each production solve's (its policy's), as
-        # requested; the policies resolve in the job.
-        return EffectiveBudgets(wall_time_s=optimize, max_property_calls=body.max_property_calls)
-
-    def _reproduce_admission(
-        self, body: ReproduceBody, request: JobRequest, caller: CapabilityReference, active: int
-    ) -> EffectiveBudgets | ApiError:
-        """`admit_reproduce` on the kind of the archive the body names: the rerun's budgets, or
-        the refusal."""
-        archive = self._store.artifact(body.bundle_artifact_id)
-        wall_time_s = admit_reproduce(
-            archive.kind if archive is not None else None,
-            body,
-            budgets=request.budgets,
-            limits=caller.limits,
-            active_jobs=active,
-        )
-        if isinstance(wall_time_s, ApiError):
-            return wall_time_s
-        return EffectiveBudgets(wall_time_s=wall_time_s, max_property_calls=None)
-
-    def _job(self, job_id: str, operation: str) -> Job:
-        job = self._store.get_job(job_id)
-        if job is None:
-            self._refuse("not_found", "no such job", operation=operation, job_id=job_id)
-        return job
-
-    def _wait(self, job_id: str, after_sequence: int, timeout_s: float, operation: str) -> JobWait:
-        deadline = time.monotonic() + timeout_s
-        while True:
-            found = self._store.job_events_after(job_id, after_sequence, 100)
-            if found is None:
-                self._refuse("not_found", "no such job", operation=operation, job_id=job_id)
-            job, events = found
-            ended = job.status in TERMINAL_STATUSES
-            remaining = deadline - time.monotonic()
-            if events or ended or remaining <= 0:
-                return JobWait(job=job, events=tuple(events), ended=ended)
-            time.sleep(min(WAIT_POLL_S, remaining))
-
-    def _wait_until_ended(self, job_id: str, operation: str) -> Job:
-        after = -1
-        while True:
-            waited = self._wait(job_id, after, math.inf, operation)
-            if waited.ended:
-                return waited.job
-            after = waited.events[-1].sequence
-
-    def _result(
-        self, job_id: str, operation: str, *, display_units: DisplayUnits | None = None
-    ) -> JobResult:
-        job = self._job(job_id, operation)
-        if job.status not in TERMINAL_STATUSES:
-            self._refuse(
-                "not_ready",
-                f"job {job_id} is {job.status}; its result exists once it has ended",
-                operation=operation,
-                retryable=True,
-                job_id=job_id,
-                status=job.status,
-            )
-        if job.operation == "solve":
-            return JobResult(
-                operation="solve",
-                run_result=self._run_result(job, display_units=display_units),
-                replay_report=None,
-                error=job.error,
-            )
-        if job.operation == "experiment":
-            return JobResult(
-                operation="experiment",
-                run_result=None,
-                replay_report=None,
-                error=job.error,
-                experiment=self._experiment_answer(job),
-            )
-        if job.operation == "surrogate_study":
-            worker = self._store.worker_result(job.job_id)
-            study = worker.get("study") if isinstance(worker, Mapping) else None
-            return JobResult(
-                operation="surrogate_study",
-                run_result=None,
-                replay_report=None,
-                error=job.error,
-                surrogate_study=study,
-            )
-        if job.operation == "optimize":
-            # OPT §4.10: the answer is the report the job output, absent when it ended without.
-            optimization = None
-            for output in job.outputs:
-                if output.kind == "optimization_report":
-                    optimization = json.loads(self._artifact_path(output).read_bytes())
-            return JobResult(
-                operation="optimize",
-                run_result=None,
-                replay_report=None,
-                error=job.error,
-                optimization=optimization,
-            )
-        report = None
-        for output in job.outputs:
-            if output.kind == "replay_report":
-                report = _replay_report_build(json.loads(self._artifact_path(output).read_bytes()))
-        return JobResult(
-            operation="reproduce", run_result=None, replay_report=report, error=job.error
-        )
-
-    def _experiment_answer(self, job: Job) -> dict[str, Any] | None:
-        """ADR 0033 D9: the experiment's `result` when the job output one (its own, a cache hit's
-        row or the producing row), else its last `attempt`; `None` when it output neither."""
-        results = [output for output in job.outputs if output.kind == "experiment_result"]
-        attempts = [output for output in job.outputs if output.kind == "experiment_attempt"]
-        chosen = results[-1] if results else (attempts[-1] if attempts else None)
-        if chosen is None:
-            return None
-        answer: dict[str, Any] = json.loads(self._artifact_path(chosen).read_bytes())
-        return answer
-
-    def _run_result(self, job: Job, *, display_units: DisplayUnits | None = None) -> RunResult:
-        """§5.7, read from what the job produced: the resolution and run facts its runner
-        recorded (`worker_result.run`) and its outputs; a job that never resolved its request
-        (cancelled while queued) has its resolution re-derived — a pure function of the stored
-        revision and the registries — and no run facts."""
-        body = job.request.body
-        assert isinstance(body, SolveBody)
-        with self._store.reading() as connection:
-            revision = self._store.get_revision(connection, body.revision_id)
-        assert revision is not None
-        worker = self._store.worker_result(job.job_id)
-        run = worker.get("run") if isinstance(worker, Mapping) else None
-        if run is None:
-            run = self._resolution(revision, body)
-        return RunResult(
-            job_id=job.job_id,
-            run_id=run["run_id"],
-            revision_id=body.revision_id,
-            revision_content_sha256=revision.content_hash,
-            policy_id=run["policy_id"],
-            policy_sha256=run["policy_sha256"],
-            check_policy_sha256=run["check_policy_sha256"],
-            job_status=job.status,  # type: ignore[arg-type]
-            outcome=run["outcome"],
-            verification_status=run["verification_status"],
-            structural_sha256=run["structural_sha256"],
-            outputs=job.outputs,
-            error=job.error,
-            solve_path=run["solve_path"],
-            failure=self._run_failure(job, revision, run, display_units=display_units),
-        )
-
-    def _run_failure(
-        self,
-        job: Job,
-        revision: Revision,
-        run: Mapping[str, Any],
-        *,
-        display_units: DisplayUnits | None = None,
-    ) -> RunFailure | None:
-        """ADR 0058 D5 (MSG §3.4, §4.8): the failure, derived on read from the stored
-        `failure-bundle.json`, the run's `diagnosis` when the runner recorded one, and the
-        revision document — so a job a 0.3 store holds gets one too (without numbers). A bundle
-        that cannot be read or parsed gives the failure of the outcome alone. Never raises.
-        The explanation is rendered under `display_units` (ADR 0075 D7.4); `params` stay SI."""
-        from openflowsheet.messages.render import RenderContext, explain_failure
-        from openflowsheet.verify.failure import TAXONOMY
-
-        output = next((o for o in job.outputs if o.kind == "failure_bundle"), None)
-        if output is None:
-            return None
-        bundle: Mapping[str, Any] = {}
-        try:
-            loaded = json.loads(self._artifact_path(output).read_bytes())
-            if isinstance(loaded, Mapping):
-                bundle = loaded
-        except (OSError, ValueError, AssertionError):
-            bundle = {}
-        outcome = bundle.get("outcome")
-        if not isinstance(outcome, str):
-            bundle, outcome = {}, str(run.get("outcome") or "")
-        observations = bundle.get("observations")
-        message = observations.get("message") if isinstance(observations, Mapping) else None
-        message = message if isinstance(message, str) else None
-        taxonomy = bundle.get("taxonomy")
-        # The sidecar explains the bundle's message; without the bundle it has nothing to match.
-        diagnosis = run.get("diagnosis") if bundle else None
-        explanation, params = explain_failure(
-            outcome=outcome,
-            message=message,
-            diagnosis=diagnosis if isinstance(diagnosis, Mapping) else None,
-            context=RenderContext(
-                revision=revision.document,
-                revision_id=revision.revision_id,
-                job_id=job.job_id,
-                bundle_id=output.artifact_id.rpartition("/")[0] or None,
-                display_units=display_units,
-            ),
-        )
-        return RunFailure(
-            outcome=outcome,
-            taxonomy=taxonomy if isinstance(taxonomy, str) else TAXONOMY.get(outcome, ""),
-            message=message,
-            code=str(explanation["code"]),
-            chain=tuple(str(code) for code in explanation["chain"]),
-            implicated=tuple(str(s) for s in bundle.get("implicated_sources") or ()),
-            suggested_actions=tuple(
-                str(entry["action"])
-                for entry in bundle.get("suggested_actions") or ()
-                if isinstance(entry, Mapping) and "action" in entry
-            ),
-            failure_bundle=output.artifact_id,
-            params=params,
-            explanation=explanation,
-        )
-
-    def _resolution(self, revision: Revision, body: SolveBody) -> dict[str, Any]:
-        from openflowsheet.run.manifest import policy_sha256
-
-        route = select_route(revision.as_document(), surrogates=self._surrogates())
-        resolved = resolve_policies(route, body) if isinstance(route, Route) else None
-        if not isinstance(route, Route) or not isinstance(resolved, tuple):
-            raise api_error(
-                "internal_error",
-                "an admitted solve's request no longer resolves",
-                job_revision=body.revision_id,
-            )
-        policy, check_policy = resolved
-        return {
-            "solve_path": route.solve_path,
-            "policy_id": policy.policy_id,
-            "policy_sha256": policy_sha256(policy),
-            "check_policy_sha256": check_policy.sha256,
-            "run_id": None,
-            "outcome": None,
-            "verification_status": None,
-            "structural_sha256": None,
-        }
-
-    def _artifact_path(self, output: Any) -> Path:
-        row = self._store.artifact(output.artifact_id)
-        assert row is not None, output.artifact_id
-        return self.files_root / row.relpath
-
-    def _import_bundle(self, source: Path, operation: str) -> str:
-        """§4.2 `reproduce`'s import: copy the regular files of `source` (no symlink followed)
-        into `imports/<ordinal>/` and register the copy and its known members. An optimisation
-        record (OPT design §4.9: no `manifest.json`, an `optimization-manifest.json` naming its
-        format) is imported the same way and registered by `record_rows`."""
-        if not source.is_dir():
-            self._refuse(
-                "not_found",
-                "no bundle directory at this path",
-                operation=operation,
-                pointer="/bundle_path",
-            )
-        manifest = source / MANIFEST_NAME
-        record = (
-            not manifest.exists()
-            and not (source / OPTIMIZATION_MANIFEST).is_symlink()
-            and is_optimization_record(source)
-        )
-        if not record and (manifest.is_symlink() or not manifest.is_file()):
-            self._refuse(
-                "invalid_request",
-                f"not a replay bundle: no {MANIFEST_NAME}",
-                operation=operation,
-                pointer="/bundle_path",
-            )
-        imports = self.files_root / IMPORTS_DIR
-        imports.mkdir(parents=True, exist_ok=True)
-        ordinal = len(list(imports.iterdir())) + 1
-        while True:
-            target = imports / f"{ordinal:06d}"
-            try:
-                target.mkdir()
-                break
-            except FileExistsError:
-                ordinal += 1
-        for directory, _, names in os.walk(source, followlinks=False):
-            for name in sorted(names):
-                path = Path(directory) / name
-                if path.is_symlink() or not path.is_file():
-                    continue
-                destination = target / path.relative_to(source)
-                destination.parent.mkdir(parents=True, exist_ok=True)
-                shutil.copyfile(path, destination)
-        bundle_id = f"import-{ordinal:06d}:bundle"
-        bundle, members = (
-            record_rows(self.files_root, target, bundle_id, None)
-            if record
-            else bundle_rows(self.files_root, target, bundle_id, None, producer=False)
-        )
-        with self._store.writing() as connection:
-            self._store.register_artifacts(connection, [bundle, *members])
-        return bundle.artifact_id
-
-    def _check_limit(self, limit: int, maximum: int, operation: str) -> None:
-        if isinstance(limit, bool) or not isinstance(limit, int) or not 1 <= limit <= maximum:
-            self._refuse(
-                "invalid_request",
-                f"limit is an integer from 1 to {maximum}",
-                operation=operation,
-                pointer="/limit",
-            )
-
-    def _check_sequence(self, after_sequence: int, operation: str) -> None:
-        if (
-            isinstance(after_sequence, bool)
-            or not isinstance(after_sequence, int)
-            or after_sequence < -1
-        ):
-            self._refuse(
-                "invalid_request",
-                "after_sequence is an integer >= -1",
-                operation=operation,
-                pointer="/after_sequence",
-            )
-
-    def _decode_cursor(self, cursor: str | None, operation: str) -> int:
-        if cursor is None:
-            return 0
-        try:
-            decoded = json.loads(base64.urlsafe_b64decode(cursor + "=" * (-len(cursor) % 4)))
-        except (ValueError, TypeError, binascii.Error):
-            decoded = None
-        ordinal = decoded.get("ordinal") if isinstance(decoded, dict) else None
-        if (
-            not isinstance(decoded, dict)
-            or set(decoded) != {"ordinal"}
-            or isinstance(ordinal, bool)
-            or not isinstance(ordinal, int)
-            or ordinal < 0
-        ):
-            self._refuse(
-                "invalid_request",
-                "cursor is not one this list issued",
-                operation=operation,
-                pointer="/cursor",
-            )
-        return int(ordinal)
-
-    def _refuse_error(
-        self, error: ApiError, operation: str, request_sha256: str | None
-    ) -> NoReturn:
-        """§10.7: audit a typed refusal, then raise it as it is."""
-        self._audit_refusal(operation, error.code, request_sha256)
-        raise ApplicationError(error)
+        return self._jobs.get_job_result(job_id, display_units=display_units)
 
     # ----------------------------------------------------------------- Inspection (W2b part)
 
@@ -1404,59 +501,14 @@ class LocalApplication:
         The validation report names the id the commit would assign, so a preview and the commit
         that follows it with nothing in between report the same thing.
         """
-        operation = "preview_change"
-        self._authorize(operation)
-        # The key is `commit_change`'s, not the preview's; a placeholder satisfies the schema.
-        rejected = self._check_request(
-            change.as_change_set(expected_revision, "preview"), operation, ""
-        )
-        if rejected is not None:
-            return rejected
-        prepared = self._prepare(change, expected_revision, "", operation)
-        if isinstance(prepared, TransactionResult):
-            return prepared
-        return TransactionResult(
-            status="previewed",
-            revision_id=None,
-            validation=prepared.report,
-            diff=prepared.diff,
-        )
+        return self._revisions.preview_change(change, expected_revision)
 
     # ------------------------------------------------------------ Inspection (W5a, §4.2, §11.4)
 
     def get_project(self) -> ProjectSummary:
         """§4.2: the project, its head and counts, its solve policies, and the caller as its
         credential makes it. `read`."""
-        from openflowsheet import __version__
-        from openflowsheet.run.manifest import policy_sha256
-
-        caller = self._authorize("get_project")
-        store = self._store
-        with store.reading() as connection:
-            head = store.head(connection)
-            revision_count = store.revision_count(connection)
-            # Every status is named; a status a newer producer wrote is kept, not dropped (J5).
-            job_counts = {status: 0 for status in JOB_STATUSES} | store.job_counts(connection)
-        return ProjectSummary(
-            project_id=self.project_id,
-            head=head,
-            revision_count=revision_count,
-            job_counts=job_counts,
-            solve_policies=tuple(
-                (policy_id, policy_sha256(policy))
-                for policy_id, policy in sorted(APPLICATION_POLICIES.items())
-            ),
-            default_policy_id=DEFAULT_POLICY_ID,
-            principal_id=caller.principal_id,
-            capability_id=caller.capability_id,
-            rights=caller.rights,
-            limits=caller.limits,
-            # No commit is read at run time: the server runs no subprocess for it.
-            server=ServerInfo(
-                package_version=__version__, git_commit=None, store_schema=STORE_SCHEMA
-            ),
-            ambient_pressure=self._policy.current().ambient_pressure,
-        )
+        return self._inspection.get_project()
 
     def list_models(self) -> ModelRegistryView:
         """§4.2: each model id in `MODEL_BUILDERS` with its declarative `ModelSignature`; nothing
@@ -1468,24 +520,13 @@ class LocalApplication:
             Every model with its ports, required parameters, pins and one-of specifications, and
             for each pin the specification targets that can fix it.
         """
-        self._authorize("list_models")
-        return ModelRegistryView(
-            models=tuple(
-                _model_view(MODEL_SIGNATURES[model_id]) for model_id in sorted(MODEL_BUILDERS)
-            )
-        )
+        return self._inspection.list_models()
 
     def list_revisions(
         self, *, cursor: str | None = None, limit: int = 50
     ) -> Page[RevisionSummary]:
         """§4.2, §11.4: the project's revisions in commit order, by ordinal cursor. `read`."""
-        operation = "list_revisions"
-        self._authorize(operation)
-        self._check_limit(limit, MAX_PAGE, operation)
-        after = self._decode_cursor(cursor, operation)
-        rows, more = self._store.list_revisions(after_ordinal=after, limit=limit)
-        next_cursor = _encode_cursor(rows[-1][0]) if more else None
-        return Page(items=tuple(summary for _, summary in rows), next_cursor=next_cursor)
+        return self._revisions.list_revisions(cursor=cursor, limit=limit)
 
     def get_revision(
         self,
@@ -1498,19 +539,8 @@ class LocalApplication:
     ) -> Projection:
         """§11.4: the stored revision's document — `Revision.as_document()`, as `validate` reads
         it and a bundle's `revision.json` holds it — projected. `read`."""
-        operation = "get_revision"
-        self._authorize(operation)
-        self._check_view(operation, pointer, depth, cursor, limit)
-        document = self._revision(revision_id, operation).as_document()
-        return self._project(
-            operation,
-            document,
-            revision_id,
-            document_sha256(document),
-            pointer,
-            depth,
-            cursor,
-            limit,
+        return self._revisions.get_revision(
+            revision_id, pointer=pointer, depth=depth, cursor=cursor, limit=limit
         )
 
     def diff_revisions(self, from_revision: str, to_revision: str) -> SemanticDiff:
@@ -1518,11 +548,7 @@ class LocalApplication:
         descriptive members excluded) from one stored revision to another, with its
         `elements` (ADR 0019 Amendment 3, A3.2: the items of `instances`, `connections` and
         `specifications` that differ, paired by id). `read`."""
-        operation = "diff_revisions"
-        self._authorize(operation)
-        before = self._revision(from_revision, operation)
-        after = self._revision(to_revision, operation)
-        return revision_diff(before.document, after.document)
+        return self._revisions.diff_revisions(from_revision, to_revision)
 
     def inspect_structure(
         self,
@@ -1536,20 +562,8 @@ class LocalApplication:
         """§4.2 as amended by R1.5: the structural report of the formulation `solve` would use,
         naming its `solve_path`, or `{"not_run_reason": …}` when no route binds the revision —
         `structure_inspection.route_structure`, projected. `read`."""
-        operation = "inspect_structure"
-        self._authorize(operation)
-        self._check_view(operation, pointer, depth, cursor, limit)
-        revision = self._revision(revision_id, operation)
-        document = route_structure(revision.as_document(), surrogates=self._surrogates())
-        return self._project(
-            operation,
-            document,
-            revision_id,
-            document_sha256(document),
-            pointer,
-            depth,
-            cursor,
-            limit,
+        return self._validation.inspect_structure(
+            revision_id, pointer=pointer, depth=depth, cursor=cursor, limit=limit
         )
 
     def get_artifact(
@@ -1583,40 +597,8 @@ class LocalApplication:
         Projection
             The value at `pointer`, with the artifact's SHA-256 and whether it was truncated.
         """
-        operation = "get_artifact"
-        self._authorize(operation)
-        self._check_view(operation, pointer, depth, cursor, limit)
-        row = self._artifact_row(artifact_id, operation)
-        if row.kind == "replay_bundle":
-            members = self._store.artifact_children(row.artifact_id)
-            # An optimisation record's manifest is its `optimization-manifest.json` (§4.9).
-            manifest = [
-                member
-                for member in members
-                if member.name in (MANIFEST_NAME, OPTIMIZATION_MANIFEST)
-            ]
-            manifest_path = (
-                self.files_root / manifest[0].relpath
-                if manifest
-                else self.files_root / row.relpath / MANIFEST_NAME
-            )
-            document: Any = {
-                "manifest": _file_document(manifest_path),
-                "files": [
-                    {
-                        "name": member.name,
-                        "kind": member.kind,
-                        "artifact_id": member.artifact_id,
-                        "sha256": member.sha256,
-                        "size_bytes": member.size_bytes,
-                    }
-                    for member in members
-                ],
-            }
-        else:
-            document = _file_document(self.files_root / row.relpath)
-        return self._project(
-            operation, document, artifact_id, row.sha256, pointer, depth, cursor, limit
+        return self._artifacts.get_artifact(
+            artifact_id, pointer=pointer, depth=depth, cursor=cursor, limit=limit
         )
 
     def get_stream_table(
@@ -1665,72 +647,15 @@ class LocalApplication:
             the bundle's members are inconsistent; `invalid_request` or `unsupported` for a
             `display_units` refused by ADR 0075 D9.
         """
-        operation = "get_stream_table"
-        self._authorize(operation)
-        self._check_view(operation, pointer, depth, cursor, limit)
-        units = None if display_units is None else self._display_units(display_units, operation)
-        job = self._job(job_id, operation)
-        if job.status not in TERMINAL_STATUSES:
-            self._refuse(
-                "not_ready",
-                f"job {job_id} is {job.status}; its stream table exists once it has ended",
-                operation=operation,
-                retryable=True,
-                job_id=job_id,
-                status=job.status,
-            )
-        bundle = next((o for o in job.outputs if o.kind == "replay_bundle"), None)
-        if bundle is None:
-            self._refuse(
-                "not_found",
-                f"job {job_id} has no replay bundle",
-                operation=operation,
-                output="replay_bundle",
-                **self._run_outcome(job_id),
-            )
-        row = self._artifact_row(bundle.artifact_id, operation)
-        try:
-            document = stream_table.from_bundle(
-                self.files_root / row.relpath,
-                source={"job_id": job_id, "bundle_id": row.artifact_id},
-            )
-        except stream_table.StreamTableError as error:
-            if error.code == "not_found":
-                member = error.detail.get("member")
-                self._refuse(
-                    "not_found",
-                    f"bundle {row.artifact_id} has no {member}",
-                    operation=operation,
-                    **{
-                        **self._run_outcome(job_id),
-                        "bundle_id": row.artifact_id,
-                        "member": member,
-                        **self._missing_member(f"{row.artifact_id}/{member}"),
-                    },
-                )
-            if error.code == "unsupported":
-                self._refuse(
-                    "unsupported", error.message, operation=operation, job_id=job_id, **error.detail
-                )
-            self._refuse(
-                "internal_error",
-                error.message,
-                operation=operation,
-                job_id=job_id,
-                bundle_id=row.artifact_id,
-                **error.detail,
-            )
-        if units is not None:
-            document = stream_table.displayed(document, units)
-        return self._project(
-            operation,
-            document,
-            f"stream-table:{job_id}",
-            document_sha256(document),
-            pointer,
-            depth,
-            cursor,
-            limit,
+        return self._artifacts.get_stream_table(
+            job_id,
+            StreamTableQuery(
+                pointer=pointer,
+                depth=depth,
+                cursor=cursor,
+                limit=limit,
+                display_units=display_units,
+            ),
         )
 
     def list_audit(
@@ -1747,61 +672,20 @@ class LocalApplication:
         `allowed` row with the ledger's idempotency key. `read`; another principal's rows, or all
         principals' (`principal_id` omitted), need `policy` as well (`cancel_job`'s rule). The
         cursor is `{order, seq}`; one issued for the other order is refused at `/cursor`."""
-        name = "list_audit"
-        self._authorize(name, target_principal=principal_id)
-        if principal_id is not None and not isinstance(principal_id, str):
-            self._refuse(
-                "invalid_request", "principal_id is an id", operation=name, pointer="/principal_id"
-            )
-        if operation is not None and (
-            not isinstance(operation, str) or not 1 <= len(operation) <= _AUDIT_OPERATION_LIMIT
-        ):
-            self._refuse(
-                "invalid_request",
-                f"operation is a string of 1 to {_AUDIT_OPERATION_LIMIT} characters",
-                operation=name,
-                pointer="/operation",
-            )
-        if order not in AUDIT_ORDERS:
-            self._refuse(
-                "invalid_request",
-                f"order is one of {list(AUDIT_ORDERS)}",
-                operation=name,
-                pointer="/order",
-            )
-        self._check_limit(limit, MAX_PAGE, name)
-        after = self._decode_audit_cursor(cursor, order, name)
-        rows, more = self._store.list_audit(
+        return self._inspection.list_audit(
             principal_id=principal_id,
             operation=operation,
-            descending=order == "descending",
-            after_seq=after,
+            order=order,
+            cursor=cursor,
             limit=limit,
         )
-        next_cursor = _encode_audit_cursor(order, rows[-1].seq) if more else None
-        return Page(items=tuple(rows), next_cursor=next_cursor)
 
     def explain(self, code: str) -> MessageEntry:
         """ADR 0058 D7 (MSG §3.5, §4.9): the message-catalogue entry `code` — its display
         templates, params, gap, see-also, rendered examples, docs URL and the catalogue's digest.
         `read`; it reads no project state. An unknown code is refused `not_found` with
         `detail {code, suggestions}`: up to five keys within edit distance 3, case-insensitively."""
-        from openflowsheet.messages.render import entry_document, suggestions  # noqa: PLC0415
-
-        name = "explain"
-        self._authorize(name)
-        if not isinstance(code, str):
-            self._refuse("invalid_request", "code is a string", operation=name, pointer="/code")
-        document = entry_document(code)
-        if document is None:
-            self._refuse(
-                "not_found",
-                "no such message code",
-                operation=name,
-                code=code,
-                suggestions=suggestions(code),
-            )
-        return MessageEntry.from_document(document)
+        return self._inspection.explain(code)
 
     def list_capabilities(
         self,
@@ -1816,15 +700,9 @@ class LocalApplication:
         or several) whose id starts with `id_prefix`. `read`; it reads the registry, not the
         project. A cursor this list did not issue is refused `invalid_request`, as is any argument
         the operation's request schema refuses (rule C1; F1 review SF-1)."""
-        name = "list_capabilities"
-        self._authorize(name)
-        self._check_limit(limit, MAX_PAGE, name)
-        try:
-            return capabilities.capability_page(
-                default_registry(), kind=kind, id_prefix=id_prefix, cursor=cursor, limit=limit
-            )
-        except ApplicationError as refused:
-            self._refuse_error(refused.error, name, None)
+        return self._inspection.list_capabilities(
+            kind=kind, id_prefix=id_prefix, cursor=cursor, limit=limit
+        )
 
     def check_admission(
         self,
@@ -1838,45 +716,7 @@ class LocalApplication:
         project. An unknown id is `not_found` with `detail.suggestions`. The draft form
         (`revision`, a schema_version 1 document) takes one pair per unit instance on the
         property method its component set selects and `nTP-v1`."""
-        name = "check_admission"
-        self._authorize(name)
-        try:
-            return capabilities.admission_report(default_registry(), pair=pair, revision=revision)
-        except ApplicationError as refused:
-            self._refuse_error(refused.error, name, None)
-
-    def _decode_audit_cursor(self, cursor: str | None, order: str, operation: str) -> int | None:
-        """`list_audit`'s cursor, `{order, seq}`, as the `seq` to continue after; `None` for the
-        first page. A cursor of the other order, or one this list did not issue, is refused."""
-        if cursor is None:
-            return None
-        try:
-            decoded = json.loads(base64.urlsafe_b64decode(cursor + "=" * (-len(cursor) % 4)))
-        except (ValueError, TypeError, binascii.Error):
-            decoded = None
-        seq = decoded.get("seq") if isinstance(decoded, dict) else None
-        if (
-            not isinstance(decoded, dict)
-            or set(decoded) != {"order", "seq"}
-            or decoded["order"] not in AUDIT_ORDERS
-            or isinstance(seq, bool)
-            or not isinstance(seq, int)
-            or seq < 0
-        ):
-            self._refuse(
-                "invalid_request",
-                "cursor is not one this list issued",
-                operation=operation,
-                pointer="/cursor",
-            )
-        if decoded["order"] != order:
-            self._refuse(
-                "invalid_request",
-                f"cursor was issued for order {decoded['order']!r}, not {order!r}",
-                operation=operation,
-                pointer="/cursor",
-            )
-        return int(seq)
+        return self._validation.check_admission(pair=pair, revision=revision)
 
     def artifact_bytes(self, artifact_id: str) -> bytes:
         """§4.3, §10.4: an artifact file's bytes exactly as stored — the raw export (Python, CLI,
@@ -1892,502 +732,12 @@ class LocalApplication:
         bytes
             The file's bytes as stored.
         """
-        operation = "artifact_bytes"
-        self._authorize(operation)
-        row = self._artifact_row(artifact_id, operation)
-        if row.kind == "replay_bundle":
-            self._refuse(
-                "unsupported",
-                "a replay bundle is a directory; export its members, `<bundle id>/<file>`, one by "
-                "one",
-                operation=operation,
-                artifact_id=artifact_id,
-            )
-        return (self.files_root / row.relpath).read_bytes()
+        return self._artifacts.artifact_bytes(artifact_id)
 
     def audit_refusal(self, operation: str, code: ApiErrorCode) -> None:
         """§10.7 for a request refused before it reached a method — by `operations.dispatch`,
         for its canonical form, its schema or a reserved key."""
-        self._audit_refusal(operation, code, None)
-
-    def _revision(self, revision_id: str, operation: str) -> Revision:
-        with self._store.reading() as connection:
-            revision = self._store.get_revision(connection, revision_id)
-        if revision is None:
-            self._refuse(
-                "not_found", "no such revision", operation=operation, revision_id=revision_id
-            )
-        return revision
-
-    def _artifact_row(self, artifact_id: str, operation: str) -> ArtifactRow:
-        row = self._store.artifact(artifact_id) if isinstance(artifact_id, str) else None
-        if row is None:
-            self._refuse(
-                "not_found",
-                "no such artifact",
-                operation=operation,
-                artifact_id=artifact_id,
-                **self._missing_member(artifact_id),
-            )
-        return row
-
-    def _missing_member(self, artifact_id: object) -> dict[str, Any]:
-        """MSG §3.4 (FB-03b): for a missing `<bundle id>/<member>` of a bundle with registered
-        members, what the bundle does hold — `bundle_id`, `member`, `members` (sorted file
-        names, at most `MAX_LISTED_MEMBERS`; `members_total` when cut) and, for a job's bundle
-        (`<job_id>:bundle`, `<job_id>:rerun`), `job_id` and the run's `run_outcome` when the job
-        recorded one.
-        Added detail members only: the message and the existing members are unchanged (I1)."""
-        if not isinstance(artifact_id, str):
-            return {}
-        bundle_id, slash, member = artifact_id.rpartition("/")
-        if not slash or not bundle_id or not member:
-            return {}
-        members = sorted(row.name for row in self._store.artifact_children(bundle_id))
-        if not members:
-            return {}
-        found: dict[str, Any] = {
-            "bundle_id": bundle_id,
-            "member": member,
-            "members": members[:MAX_LISTED_MEMBERS],
-        }
-        if len(members) > MAX_LISTED_MEMBERS:
-            # Review S5 (D3-4): a cut list says so, with the full count.
-            found["members_total"] = len(members)
-        job_id, colon, suffix = bundle_id.rpartition(":")
-        if colon and suffix in ("bundle", "rerun") and self._store.get_job(job_id) is not None:
-            found.update(self._run_outcome(job_id))
-        return found
-
-    def _run_outcome(self, job_id: str) -> dict[str, Any]:
-        """`job_id` and, when the job recorded one, its run's `run_outcome` (the members
-        `_missing_member` gives a job's bundle)."""
-        found: dict[str, Any] = {"job_id": job_id}
-        worker = self._store.worker_result(job_id)
-        run = worker.get("run") if isinstance(worker, Mapping) else None
-        outcome = run.get("outcome") if isinstance(run, Mapping) else None
-        if isinstance(outcome, str):
-            found["run_outcome"] = outcome
-        return found
-
-    def _check_view(
-        self, operation: str, pointer: object, depth: object, cursor: object, limit: object
-    ) -> None:
-        """§11.4's argument rules, before any document is read or built."""
-        try:
-            check_view_arguments(pointer, depth, cursor, limit)
-        except ApplicationError as refused:
-            self._refuse_error(refused.error, operation, None)
-
-    def _project(
-        self,
-        operation: str,
-        document: Any,
-        subject_id: str,
-        sha256: str,
-        pointer: str,
-        depth: int,
-        cursor: str | None,
-        limit: int,
-    ) -> Projection:
-        try:
-            return project(
-                document,
-                subject_id=subject_id,
-                sha256=sha256,
-                pointer=pointer,
-                depth=depth,
-                cursor=cursor,
-                limit=limit,
-            )
-        except ApplicationError as refused:
-            self._refuse_error(refused.error, operation, None)
-
-    # --------------------------------------------------------------- the transaction steps
-
-    def _check_request(
-        self, request: dict[str, Any], operation: str, idempotency_key: str
-    ) -> TransactionResult | None:
-        """Q29 first (a non-canonical value is `rejected`), then the ChangeSet schema (raised)."""
-        pointer = first_noncanonical(request)
-        if pointer is not None:
-            return self._rejected(
-                operation,
-                idempotency_key,
-                "document_not_canonical",
-                "a value has no canonical JSON form (NaN, an infinity, an integer beyond 2^53 that "
-                "is not a binary64's canonical spelling, or not JSON at all)",
-                pointer=pointer,
-            )
-        try:
-            validate_document("change-set.schema.json", request)
-        except DocumentSchemaError as error:
-            self._refuse(
-                "invalid_request", error.message, operation=operation, pointer=error.pointer
-            )
-        return None
-
-    def _prepare(
-        self,
-        change: Change,
-        expected_revision: str | None,
-        idempotency_key: str,
-        operation: str,
-    ) -> _Prepared | TransactionResult:
-        """Steps 4–6 from one snapshot: the new document, its validation and its diff.
-
-        Raised: an optimization task (U05). Rejected: an expected or restore revision that does not
-        exist, a new revision id that is taken, an edit path that does not resolve, and a
-        promotion `_check_promotion` refuses."""
-        if change.task == "optimization":
-            # U05 (T08 review 2, Ruling 1), as `validate` refuses it: no optimization formulation
-            # is checked in v0.1. Audited, before the snapshot is read or anything is built.
-            self._refuse(
-                "unsupported",
-                "task_unsupported(optimization)",
-                operation=operation,
-                pointer="/task",
-            )
-        store = self._store
-        # A refusal is audited, and the audit writes; it is issued after the snapshot closes. An
-        # in-memory store is one connection, where a write inside the open read would nest a
-        # transaction (T07 review M2).
-        refusal: tuple[ApiErrorCode, str, dict[str, Any]] | None = None
-        revision_id = ""
-        with store.reading() as connection:
-            expected: Mapping[str, Any] = {}
-            if expected_revision is not None:
-                found = store.get_revision(connection, expected_revision)
-                if found is None:
-                    refusal = (
-                        "not_found",
-                        "the expected revision does not exist",
-                        {"pointer": "/expected_revision"},
-                    )
-                else:
-                    expected = found.document
-            start = expected
-            if refusal is None and change.restore_from is not None:
-                restored = store.get_revision(connection, change.restore_from)
-                if restored is None:
-                    refusal = (
-                        "not_found",
-                        "the revision to restore from does not exist",
-                        {"pointer": "/restore_from"},
-                    )
-                else:
-                    start = restored.document
-            if refusal is None and change.new_revision_id is not None:
-                if store.get_revision(connection, change.new_revision_id) is not None:
-                    refusal = (
-                        "invalid_request",
-                        f"revision id {change.new_revision_id!r} is taken; a revision is never "
-                        "replaced",
-                        {"pointer": "/new_revision_id", "reason": "revision_id_taken"},
-                    )
-                else:
-                    revision_id = change.new_revision_id
-            elif refusal is None:
-                revision_id = _assigned_revision_id(store, connection)
-        if refusal is not None:
-            code, message, detail = refusal
-            return self._rejected(operation, idempotency_key, code, message, **detail)
-        try:
-            built = apply_edits(start, change.edits)
-        except EditPathError as error:
-            return self._rejected(
-                operation,
-                idempotency_key,
-                "invalid_request",
-                str(error),
-                pointer=f"/edits/{error.edit_index}/path",
-                reason="edit_path_invalid",
-                edit_index=error.edit_index,
-                document_pointer=error.pointer,
-            )
-        # What is validated is exactly what is stored: the canonical document, read back.
-        document = json.loads(canonical_json(built))
-        # ADR 0035 D2–D3 (M02 design note §6.2): a change of a variant-backed model reference is a
-        # promotion (M04 spec §8.3: or a surrogate-backed one, judged with the project's
-        # resolver), checked before anything is validated (`_check_promotion`). A compatible one
-        # writes each report's SHA-256 into the provenance (outside the content hash), so the
-        # preview and the commit name the same document.
-        reports = check_replacements(expected, document, surrogates=self._surrogates())
-        rejected = self._check_promotion(expected, document, reports, operation, idempotency_key)
-        if rejected is not None:
-            return rejected
-        if reports:
-            document = json.loads(canonical_json(_with_report_hashes(document, reports)))
-        revision = Revision(
-            revision_id=revision_id, document=document, parent_revision=expected_revision
-        )
-        return _Prepared(
-            revision=revision,
-            report=validation.validate(
-                revision.as_document(), change.task, surrogates=self._surrogates()
-            ),
-            diff=semantic_diff(expected, document),
-            replacements=reports,
-        )
-
-    def _check_promotion(
-        self,
-        expected: Mapping[str, Any],
-        document: Mapping[str, Any],
-        reports: tuple[ReplacementReport, ...],
-        operation: str,
-        idempotency_key: str,
-    ) -> TransactionResult | None:
-        """ADR 0035 D2–D3 and M04 spec §20 A3.1: a change's promotions, judged (`rejected`,
-        audited): the first incompatible replacement of `reports` (any failed facet rejects it,
-        with its report), then the first surrogate of `document` that no replacement judged and
-        that is not promoted against `expected`; `None` when there is neither."""
-        incompatible = [report for report in reports if not report.compatible]
-        if incompatible:
-            report = incompatible[0]
-            return self._rejected(
-                operation,
-                idempotency_key,
-                "model_replacement_incompatible",
-                f"model_replacement_incompatible({report.instance_id}: {', '.join(report.failed)})",
-                report=report.as_document(),
-            )
-        # M04 spec §20 A3.1 (R-360): a surrogate that no replacement judged — added, renamed, in
-        # the first revision — enters only with a PROMOTABLE re-derived verdict.
-        unpromoted = unpromoted_surrogates(expected, document, surrogates=self._surrogates())
-        if unpromoted:
-            instance_id, why = unpromoted[0]
-            reason = f"surrogate_not_promoted({instance_id})"
-            return self._rejected(
-                operation,
-                idempotency_key,
-                "model_replacement_incompatible",
-                f"model_replacement_incompatible({reason}: {why})",
-                reason=reason,
-                instance_id=instance_id,
-                cause=why,
-            )
-        return None
-
-    def _store_replacements(
-        self,
-        connection: sqlite3.Connection,
-        revision_id: str,
-        reports: tuple[ReplacementReport, ...],
-    ) -> None:
-        """ADR 0035 D3: each report as an artifact (kind `model_replacement_report`, no job),
-        its bytes the canonical document whose SHA-256 the revision's provenance names."""
-        for report in reports:
-            data = canonical_json(report.as_document())
-            relpath = f"{REPLACEMENTS_DIR}/{revision_id}/{report.instance_id}.json"
-            (self.files_root / relpath).parent.mkdir(parents=True, exist_ok=True)
-            atomic_write_bytes(self.files_root / relpath, data)
-            self._store.register_artifacts(
-                connection,
-                [
-                    ArtifactRow(
-                        artifact_id=f"{revision_id}:model_replacement:{report.instance_id}",
-                        job_id=None,
-                        kind="model_replacement_report",
-                        name=f"model-replacement-{report.instance_id}.json",
-                        sha256=hashlib.sha256(data).hexdigest(),
-                        size_bytes=len(data),
-                        relpath=relpath,
-                    )
-                ],
-            )
-
-    def _replayed(
-        self, prior: LedgerRow, request_sha256: str, idempotency_key: str
-    ) -> TransactionResult:
-        """§7: the original result, `replayed`; a different request under the key is refused."""
-        if prior.request_sha256 != request_sha256:
-            self._refuse(
-                "idempotency_key_reused",
-                "this idempotency key was used with a different change set; use a new key for a "
-                "new change",
-                operation="commit_change",
-                request_sha256=request_sha256,
-                original_request_sha256=prior.request_sha256,
-            )
-        return replace(TransactionResult._build(prior.result), status="replayed")
-
-    def _rejected(
-        self,
-        operation: str,
-        idempotency_key: str,
-        code: ApiErrorCode,
-        message: str,
-        **detail: Any,
-    ) -> TransactionResult:
-        """A `rejected` domain result, audited as a refusal (§10.7)."""
-        self._audit_refusal(operation, code, None)
-        return TransactionResult(
-            status="rejected",
-            revision_id=None,
-            validation=None,
-            diff=None,
-            idempotency_key=idempotency_key,
-            error=ApiError(code=code, message=message, retryable=False, detail=detail),
-        )
-
-
-@dataclass(frozen=True)
-class _Prepared:
-    revision: Revision
-    report: ValidationReport
-    diff: SemanticDiff
-    #: ADR 0035: the compatible promotions this change makes (empty for any other change).
-    replacements: tuple[ReplacementReport, ...] = ()
-
-
-#: ADR 0035 D3: where a promotion's reports live under the files root.
-REPLACEMENTS_DIR: Final = "replacements"
-
-
-def _with_report_hashes(
-    document: Mapping[str, Any], reports: tuple[ReplacementReport, ...]
-) -> dict[str, Any]:
-    """`document` with `provenance.artifact_hashes["model_replacement:<instance>"]` = each
-    report's SHA-256 (ADR 0035 D3; outside the content hash, ADR 0002 D4). A document without a
-    provenance object is returned as it is: its validation reports the missing member."""
-    provenance = document.get("provenance")
-    if not isinstance(provenance, Mapping):
-        return dict(document)
-    hashes = dict(provenance.get("artifact_hashes") or {})
-    for report in reports:
-        hashes[f"model_replacement:{report.instance_id}"] = document_sha256(report.as_document())
-    return {**document, "provenance": {**provenance, "artifact_hashes": hashes}}
-
-
-def _displayed(result: JobResult, units: DisplayUnits) -> JobResult:
-    """ADR 0075 D7.4: `result` with its `error` documents (the root's and the run result's)
-    explained under `units` and the preference echoed. `project_response` keeps an explanation
-    an error already carries (`operations.explained_detail`), so this rendering is the one sent."""
-    run_result = result.run_result
-    if run_result is not None:
-        run_result = replace(run_result, error=_explained(run_result.error, units))
-    return replace(
-        result, run_result=run_result, error=_explained(result.error, units), display_units=units
-    )
-
-
-def _explained(error: ApiError | None, units: DisplayUnits) -> ApiError | None:
-    from openflowsheet.messages.render import RenderContext, render_error
-
-    if error is None:
-        return None
-    explanation = render_error(error.as_document(), context=RenderContext(display_units=units))
-    return replace(error, detail={**error.detail, "explanation": explanation})
-
-
-def _unproduced(job: Job) -> ApiError:
-    """§5.8 as amended by ruling round 4 (W4a-Q3): `not_ready` for a result an ended job never
-    produced — a `cancelled` or `timed_out` job with neither a report nor an error. `detail.reason`
-    is the ending's reason. A new job may succeed unchanged (`retryable`) only after a
-    `server_shutdown`: a timed-out job would time out again, and a cancel was someone's decision."""
-    assert job.ending is not None
-    reason = job.ending.reason
-    return ApiError(
-        code="not_ready",
-        message=f"job {job.job_id} ended {job.status} ({reason}) without a replay report",
-        retryable=reason == "server_shutdown",
-        detail={"job_id": job.job_id, "status": job.status, "reason": reason},
-    )
-
-
-def _conflict(expected: str | None, actual: str | None, idempotency_key: str) -> TransactionResult:
-    return TransactionResult(
-        status="conflict",
-        revision_id=None,
-        validation=None,
-        diff=None,
-        conflict={"expected": expected, "actual": actual},
-        idempotency_key=idempotency_key,
-    )
-
-
-def _assigned_revision_id(store: ProjectStore, connection: sqlite3.Connection) -> str:
-    """§5.2: `rev-<ordinal:06d>`, stepping past an id a caller already took by name."""
-    ordinal = store.next_revision_ordinal(connection)
-    while store.get_revision(connection, f"rev-{ordinal:06d}") is not None:
-        ordinal += 1
-    return f"rev-{ordinal:06d}"
-
-
-def _model_view(signature: ModelSignature) -> dict[str, Any]:
-    """§4.2 `list_models`: one signature as a document — ports (name, direction, multiplicity,
-    kind), required and zero-only parameters, the pinned columns always read, and the one-of
-    choices of pinned columns; each pin and option with the `specifications` that pin it, its
-    `pin_encodings` (ruling round 6, B2 item 4; ADR 0019 Amendment 2)."""
-
-    def pin(column: PinColumn) -> dict[str, Any]:
-        return {
-            "name": column.name,
-            "quantity": column.quantity,
-            "port": column.port,
-            "specifications": [
-                encoding.as_document() for encoding in pin_encodings(signature, column)
-            ],
-        }
-
-    return {
-        "model_id": signature.model_id,
-        "ports": [
-            {
-                "name": port.name,
-                "direction": port.direction,
-                "multiplicity": port.multiplicity,
-                "kind": port.kind,
-            }
-            for port in signature.ports
-        ],
-        "required": list(signature.required),
-        "zero": list(signature.zero),
-        "pins": [pin(column) for column in signature.pins],
-        "choices": [
-            {"name": choice.name, "options": [pin(option) for option in choice.options]}
-            for choice in signature.choices
-        ],
-    }
-
-
-def _unique_members(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
-    names = [name for name, _ in pairs]
-    if len(set(names)) != len(names):
-        raise ValueError("duplicate key")
-    return dict(pairs)
-
-
-def _file_document(path: Path) -> Any:
-    """An artifact file as a document for `get_artifact`: its JSON when it holds a canonical JSON
-    document — a `.json` name, a strict parse with no repeated key, every number canonical —
-    else its text as a list of lines (a log, or an imported file that is not what its name says),
-    decoded as UTF-8 with U+FFFD for what is not."""
-    raw = path.read_bytes()
-    if path.suffix == ".json":
-        try:
-            document = json.loads(raw, object_pairs_hook=_unique_members)
-        except (ValueError, RecursionError):
-            pass
-        else:
-            if first_noncanonical(document) is None:
-                return document
-    return raw.decode("utf-8", errors="replace").splitlines()
-
-
-def _encode_audit_cursor(order: str, seq: int) -> str:
-    """ADR 0019 Amendment 3 (A3.3): `list_audit`'s cursor, `base64url(canonical_json({"order":
-    o, "seq": s}))` unpadded, `s` the `seq` of the last row returned."""
-    encoded = base64.urlsafe_b64encode(canonical_json({"order": order, "seq": seq}))
-    return encoded.decode("ascii").rstrip("=")
-
-
-def _encode_cursor(ordinal: int) -> str:
-    """§11.4: a list's cursor, `base64url(canonical_json({"ordinal": k}))` unpadded, `k` the
-    ordinal of the last item returned."""
-    encoded = base64.urlsafe_b64encode(canonical_json({"ordinal": ordinal}))
-    return encoded.decode("ascii").rstrip("=")
+        self._inspection.audit_refusal(operation, code)
 
 
 if TYPE_CHECKING:

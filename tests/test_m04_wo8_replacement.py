@@ -2,7 +2,7 @@
 check level, on `C1-LOOP-M02-v1` with its reactor bound to the synthetic smooth parent.
 
 `check_replacement` is called with a resolver over the study manifests, as a project's commit
-passes its own (`LocalApplication._surrogates`). The manifests are A19's (the committed fixture,
+passes its own (`ServiceCore.surrogates`). The manifests are A19's (the committed fixture,
 smooth parent, prefix plan, PROMOTABLE), and A17's, A18's and the stand-in's prefix study, each run
 here in process (`run_study`, < 2 s each; `tests/test_m04_study.py` pins their numbers). The project
 and transaction level (commit, invalidation, preview, rollback reuse) is WO-9's.

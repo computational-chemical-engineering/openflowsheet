@@ -54,6 +54,8 @@ BODY_READERS = (
     "openflowsheet.application.jobs",
     "openflowsheet.application.operations",
     "openflowsheet.application.local",
+    "openflowsheet.application.job_service",
+    "openflowsheet.application.validation_service",
     "openflowsheet.application.bindings",
     "openflowsheet.application.cli",
     "openflowsheet.adapters.experiments",

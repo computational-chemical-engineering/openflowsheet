@@ -32,11 +32,12 @@ import openflowsheet.application.revision_run as revision_run
 from openflowsheet.application.authz import grant
 from openflowsheet.application.errors import ApiError, ApiErrorCode, ApplicationError
 from openflowsheet.application.job_records import Job, JobEnding
+from openflowsheet.application.job_service import _unproduced
 from openflowsheet.application.jobs import runner
 from openflowsheet.application.jobs.executor import ProcessExecutor
 from openflowsheet.application.jobs.runner import defect_result
 from openflowsheet.application.jobs.worker import PAUSE_AT_STAGE_VARIABLE
-from openflowsheet.application.local import LocalApplication, _unproduced
+from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.policy_types import Limits, ReplayPolicy
 from openflowsheet.schema_check import schema_errors
 from openflowsheet.verify.checks import VerifierError

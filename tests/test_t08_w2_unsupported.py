@@ -135,7 +135,7 @@ def test_u05_a_change_for_optimization_is_refused_audited(
     """U05 on the change path: `commit_change` and `preview_change` with `task="optimization"`
     refuse at the top of `_prepare` with `validate`'s audited `unsupported`,
     `task_unsupported(optimization)`, before any document is built, and write no revision."""
-    from openflowsheet.application import local
+    from openflowsheet.application import revision_service
     from openflowsheet.application.transaction_types import Change, Edit
 
     document = CORPUS["SYN-001-nominal"]()
@@ -147,7 +147,7 @@ def test_u05_a_change_for_optimization_is_refused_audited(
         def no_build(*_: object, **__: object) -> None:
             raise AssertionError("a document was built")
 
-        monkeypatch.setattr(local, "apply_edits", no_build)
+        monkeypatch.setattr(revision_service, "apply_edits", no_build)
         change = Change(edits=(Edit("set", ("description",), "x"),), task="optimization")
         with pytest.raises(ApplicationError) as refused:
             if operation == "commit_change":

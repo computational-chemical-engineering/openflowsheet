@@ -1,0 +1,26 @@
+# ADR 0076 I-12d step 4 of 5 (W4 run 18, brief S19-W4-18): ValidationService out of application/local.py;
+# LocalApplication delegates. Placement: .codehealth/interface/s19-i12d-placement.md (eecaf471).
+# `codehealth gate --mode interface` reads this plan from the plan commit.
+id = "i12d-4-validation"
+approved_by = "Frank Peters, 2026-11-14, ADR 0076 accepted (Decision Desk ofs-adr0076-accept)"
+reason = """ADR 0076 I-12d, step 4 (orchestrator DECISION, brief S19-W4-17: one interface step per \
+service, upward from InspectionService; step 3, ArtifactService, waits on a debt-check STOP, and \
+ValidationService calls nothing of it). New module application/validation_service.py: \
+ValidationService(core, revisions) with validate, check_admission, inspect_structure, admit (was \
+_admit: called from the job service above, so public by the ADR rule) and the private \
+_solve_admission, _experiment_admission, _surrogate_study_admission, _optimize_admission, \
+_reproduce_admission, and the module-level TASKS. Statements move unchanged except the receiver \
+(self._x( -> self._core.x( for the core members, self.files_root -> self._core.files_root, \
+self._admit( -> self.admit(); checked by AST comparison of every function of local.py at the base. \
+LocalApplication keeps every public method name and signature (the three validation methods become \
+one-line delegations with their docstrings); the facade's _submit calls self._validation.admit; \
+OPERATIONS untouched. No caller outside src. No string literal is added or removed. Expected \
+codehealth arch --depth 4 (measured on the step applied to this base): 0 / 0 / 0 -> 0 / 0 / 0 \
+(imports 4135 -> 4151, files 326 -> 327). Layer config after the step (separate commit): \
+application-layers gains application.validation_service directly above application.revision_service."""
+removed = []
+renamed = {"src/openflowsheet/application/local.py:TASKS" = "src/openflowsheet/application/validation_service.py:TASKS"}
+changed = []
+added = ["src/openflowsheet/application/validation_service.py:ValidationService"]
+new_files = ["src/openflowsheet/application/validation_service.py"]
+callers = []

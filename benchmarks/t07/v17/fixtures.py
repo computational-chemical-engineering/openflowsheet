@@ -608,9 +608,9 @@ def _import_without_rerun(app: LocalApplication, bundle: Path, step: Mapping[str
     with one difference: the job's idempotency key is registered, not `reproduce`'s fresh
     `auto:<uuid>`. The key is inside `request_sha256`, which the §4.3 digest holds, so a random
     key would make the three repetitions' digests differ (FX-10). The import itself is
-    `reproduce`'s own (`LocalApplication._import_bundle`); the job is an ordinary `submit_job`."""
+    `reproduce`'s own (`JobService._import_bundle`); the job is an ordinary `submit_job`."""
     policy = ReplayPolicy(rerun=False)
-    artifact_id = app._import_bundle(bundle, "reproduce")
+    artifact_id = app._jobs._import_bundle(bundle, "reproduce")
     submitted = app.submit_job(
         JobRequest.from_document(
             {
