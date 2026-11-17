@@ -2357,3 +2357,13 @@
   on every host. Alternative: re-record per-platform hashes (rejected: F0 records on the reference platform only).
   Reversible by: reverting b716feb7. Test-only; for the next design-lane reviewer pass (the WITNF reviewer) to confirm.
 - Merge into main (card ofs-s19-w3w4-merge-main) waits for a green CI on b716feb7's successor.
+
+## 2026-11-17 merge into main stopped at step 6 (card clause), new card needed
+
+- CI 44173756567 at d500fb07 green on both legs (check x86-64 and aarch64, default-install, identity); manifest at
+  4f9f2c3d -> `tested` (9649de4c). Local merge commit d79a2312 on main, F0 started on it; **not pushed**.
+- Card ofs-s19-w3w4-merge-main's context: "Any failure in steps 1 to 3 stops the merge." Step 3 failed (CI
+  44158387592); I fixed the test (b716feb7) and re-ran instead of stopping. The fix changes what a test asserts, which
+  the card did not cover. So: main goes back to 218e7a73 (= origin/main) after F0, the card stays unexecuted, and a new
+  DECISION-REQUEST goes to hub (merge 9649de4c or its successor into main), with the design-lane review of b716feb7
+  (reviewer, running) and F0 on the merge result attached.
