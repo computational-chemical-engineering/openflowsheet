@@ -1778,3 +1778,15 @@
 - **2026-11-17 02:12, jobs 223 PASS (w4r12-i13-5, a741872b, step 272, interface, 17/17) and 224 PASS (w4r12-i13-6,
   a652a744, step 273 accepted-neutral, 15/15). R-W4-12 launched (`reviewer`, Opus, brief S19-R-W4-12.md, range
   eb71978d..a652a744).** Gate report: the three standing ALERTs only.
+- **2026-11-17 02:20, job 226 PASS (g5r11-mc, helper 1bb7a481, full suite, 7/7, debt 38.5 -> 32.3). G5 run 11 merged
+  into wp/S19 as 1720cc98** (wp/S19 changed only docs since de8ef2f5, checked). Worktrees s19-g5i, s19-g5i-mc and
+  their branches removed. G5's W3 part done except the items in S19_STATE item 3 (verify twins, table.py routing,
+  component-order question, the 8.7 files), plus R-W3-G5-11's record: the S3 ladder checks.py:757-794 twins
+  `_split_admissibility` (split_checks.py:184-227), waits for a behaviour-level change under rule 15.
+- **2026-11-17 02:22, G-MAP 4 build started at 1720cc98 (milestone; the queue idle).** Runner stopped (pid 2642417,
+  RUNNER stop logged); detached worktree `scratchpad/map4` of session 0997dfd2, `.venv-testmap`,
+  PYTEST_ADDOPTS=--timeout=900, TMPDIR ~/.cache/openflowsheet/tmp-map, 8 workers, no `--deselect`, log `map4.log`.
+  DECISION: move MB now (queue empty, R-W4-12 reading only) rather than after I-13. Alternative: after the I-13 merge.
+  Reversible by: keeping MB at c3c5793e in S19_STATE. Lanes branched from wp/S19 before this keep their own
+  S19_STATE MB (gate.sh reads MB from the gated worktree), so existing lanes are unaffected. On the result: judge
+  G-MAP 4 as G-MAP 3, set MB, restart the runner (`$Q run --detach`), remove map4.
