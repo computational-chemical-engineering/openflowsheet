@@ -2198,3 +2198,11 @@
   S19-introduced breaks in rule-5 living docs and the refusals.yaml:1378 comment; config unchanged; W4 docs item open.
   ADR 0076 errata (I-12b, I-12d R1 with the ServiceCore alternative, store.py, FQ-A = 36) by the orchestrator after
   the review, as a dated paragraph.
+- 2026-11-17 15:20, W4 run 21 reported (sonnet-implementer, Sonnet, ~94k tokens): b2c45059 living-doc anchors in 11
+  files (derivations, roadmap, T01_STATE, USER_FEEDBACK; no record touched), 14a474a8 refusals.yaml:1378 comment ->
+  model_signatures.py (outside the gate; parsed catalogue hash equal, PYTHONHASHSEED=0). codehealth docs with the
+  rule-5 trial config: 324 -> 292 broken in living docs; all 33 non-SKILL entries gone. Several CB anchors were
+  already stale; re-anchored by the named symbol (spot-checked: S01-spec region.py:216 = solve_region;
+  solve_record.py:546-551 = HomotopyPolicy defaults). T08-build-first-spec.md:156 now names a file without a line.
+  Left: the five SKILL.md out-of-repo paths; 00-core-inventory.md:826 (historical size census of the split
+  application/types.py, a note for the docs-scope ruling).
