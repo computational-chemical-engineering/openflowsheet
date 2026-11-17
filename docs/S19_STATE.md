@@ -56,7 +56,7 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 
 ## Next actions (2026-11-16 23:50, after the self-reset)
 
-Runner pid 2642417. Results consumed up to 203 (`$Q wait --since 203` next; jobs 219, 220 I-13 and 221 I-11 mc2 queued). Agents running: W4 run 12 (I-13), G5 run 11.
+Runner pid 2642417. Results consumed up to 203 (`$Q wait --since 203` next; jobs 219, 220 I-13 and 221 I-11 mc2 queued). Agent running: G5 run 11. W4 run 12 (I-13) delivered; rebuilt after job 216 (plan 00cc473f).
 Lanes at most 2 agents until Thu 19 Nov 13:00. ALERTs persist (proposal 2 with Frank). Merge-checks run on a helper
 branch `wp/S19-<lane>-mc` = lane tip + wp/S19 tip merged in; the merge into wp/S19 takes the helper (`git merge --no-ff
 -F <file> wp/S19-<lane>-mc`), after checking wp/S19 changed only docs/S19_* since the helper's merge. `enqueue
