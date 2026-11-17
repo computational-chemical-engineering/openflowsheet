@@ -1879,3 +1879,9 @@
   the runner, `requirements-codehealth.txt` -> d23326b, `.venv-codehealth/bin/python -m pip install --force-reinstall
   --no-deps -r requirements-codehealth.txt`, check direct_url commit, commit, restart the runner. Then brief
   S19-W4-15 (I-12a). Pending jobs of run 14 gate under d23326b (the fix only widens text-caller acceptance).
+- **2026-11-17 04:30, job 229 PASS (w4r13-i10-1, I-10 interface step 0e71c61a, step 275 accepted, 17/17).** Gate
+  report (6 h): "ALERT selected share 71% < 75% of step gates", "ALERT selected gates take 715 s > 300 s (tests
+  tier)", "ALERT selected/full time ratio 0.60 > 0.4: selection saves little" (standing; proposal 2 with Frank).
+  Job 230 (w4r14-i12b-1) started at once, so no idle window yet; the runner has no pause and a stop aborts running
+  gates, so the d23326b re-pin waits for running = 0 and pending = 0 (run 15 shares the lane worktree with run 14 and
+  starts after it anyway). I-10 merge waits for the serial counts and review R-W4-13 (with run 14's steps).
