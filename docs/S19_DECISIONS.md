@@ -1986,3 +1986,8 @@
   interface step per service (ServiceCore + InspectionService, then Revision, Artifact, Validation, Job), each
   leaving LocalApplication working. Alternative: one 77-method step. Reversible by: squashing the steps before merge.
   Launch after the w4r13 merge.
+- **2026-11-17 06:00, job 233 FAIL scope (w4r13-revfix, step 279 gate-fail, 9/10):** "out of scope:
+  docs-site/api/contract.md" (a no-gain step may touch only the scan scope). Not an environment failure; my commit
+  mixed a docs-site line into a gated step. ed13249a split on the lane (nothing built on it): 1c5ae346 (revision_run.py
+  and host.py docstrings) enqueued as job 234 (w4r13-revfix2, no-gain), 617099ef (docs-site/api/contract.md, docs only,
+  outside the gate). Tree at 617099ef identical to ed13249a. Lane tip for the merge-check: 617099ef.
