@@ -61,7 +61,14 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 steps 1-4 PASS (jobs 237, 238, 240, 239), step 5 JobService 9697b223 under the ADR Q-F5 fallback (job 241, merge-check
 mode, "interface gate not applicable"); review R-W4-I12d: merge after fixes, all fixes done: F2/F3 1e319312 (job
 242), item 7 8b70f2fd (outside gate), F1 a995d571 (job 243). No agent running.
-**Update 13:15:** G-MAP 5 accepted, MB = 14c6d414, runner restarted; I-19 run 20 launched (see S19_DECISIONS).
+**Update 15:05:** run 20 gates PASS (250-254); review R-W4-I19a running (reviewer, Opus); run 21 docs running
+(sonnet-implementer, brief S19-W4-21.md) on the same lane; DECISION-REQUEST to hub on the W4-end docs criterion
+(S19_DECISIONS 15:05). After the review: fixes, ADR errata (dated paragraph), merge-check, merge.
+**Update 14:25 (partly done):** W4 run 20 (I-19 part 1) reported, lane tip 91af908f; gates re-enqueued as jobs 250-254 (job 245
+GATE-ERROR: STOP 1 steps go no-gain). On all PASS: review R-W4-I19a (reviewer, Opus; brief
+`<git-common-dir>/codehealth/briefs/S19-R-W4-I19a.md`), fixes, merge-check, merge. Then run 21 (living docs, ADR
+errata incl. FQ-A = 36 bindings, refusals.yaml:1378). No agent running.
+**Update 13:15 (done):** G-MAP 5 accepted, MB = 14c6d414, runner restarted; I-19 run 20 launched (see S19_DECISIONS).
 **Update 12:12 (done):** I-12d merged (7fbfcd33), all serial pairs EQUAL, arch 0/0/0. G-MAP 5 map build running at the
 wp/S19 tip with the runner stopped (log and PID in S19_DECISIONS 12:12). On the result: judge G-MAP 5, set MB,
 restart the runner, fast-forward wp/S19-w4 to the tip, fill TIP_AT_LAUNCH in S19-W4-20.md, launch I-19 run 20
