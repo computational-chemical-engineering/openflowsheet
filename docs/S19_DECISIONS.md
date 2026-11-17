@@ -1709,3 +1709,7 @@
   plan/step/tests/refactor, enqueue fresh (labels w4r12-i13-3, -4). Fix brief S19-W4-12-fix216.md,
   `sonnet-implementer` (W4 run 12 engineer has ended; no other agent on the lane). I-11's merge-check helper
   (97553d85 on eb71978d) is unaffected.
+- **2026-11-17, fix216 done (`sonnet-implementer`): I-13 rebuilt on plan 00cc473f (`changed` = the five constants),
+  78f4e2d2 interface step (job 219 w4r12-i13-3), 1e7e9036 tests, a39da84c refactor step (job 220 w4r12-i13-4,
+  no-gain); backup wp/S19-w4r12-job216 = fa93d0b7; diff vs backup = the plan toml only.** A first attempt committed
+  `changed = []` (staged checkout); caught and amended before any enqueue.
