@@ -223,7 +223,7 @@ def failed(tmp_path_factory: pytest.TempPathFactory) -> Failed:
 def _members(failed: Failed) -> list[str]:
     """The bundle's file names on disk, independent of the store's member query."""
     with LocalApplication.open(failed.project) as app:
-        row = app._store.artifact(failed.bundle_id)
+        row = app.store.artifact(failed.bundle_id)
         assert row is not None
         directory = app.files_root / row.relpath
     return sorted(path.name for path in directory.rglob("*") if path.is_file())
