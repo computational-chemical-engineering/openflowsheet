@@ -1991,3 +1991,9 @@
   mixed a docs-site line into a gated step. ed13249a split on the lane (nothing built on it): 1c5ae346 (revision_run.py
   and host.py docstrings) enqueued as job 234 (w4r13-revfix2, no-gain), 617099ef (docs-site/api/contract.md, docs only,
   outside the gate). Tree at 617099ef identical to ed13249a. Lane tip for the merge-check: 617099ef.
+- **2026-11-17 06:20, job 234 PASS (w4r13-revfix2, 1c5ae346, step 280 accepted-neutral, 15/15, debt 40.6 -> 40.6).**
+  Gate report (6 h):
+  "ALERT selected share 62% < 75% of step gates"
+  "ALERT selected gates take 717 s > 300 s (tests tier)"
+  "ALERT selected/full time ratio 0.66 > 0.4: selection saves little"
+  (standing; proposal 2 with Frank). W4 lane gates done; waiting on the serial counts.
