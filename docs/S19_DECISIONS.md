@@ -1672,3 +1672,44 @@
   correction: `_declared_default` has a test importer, test_t07_r7_admission.py:44). DECISION: adopt the reviewer's
   two open defaults (`c1_reactor_surrogate_of` in scope; the four distinct names). Alternative: an architect ruling.
   Reversible by: a new register entry before I-13 merges.
+- **2026-11-17, R-W4-11 fix 1 done: eb71978d (`sonnet-implementer`, 51k tokens; script only, 2+/1-; `build()` returns 6
+  artifacts with local.py and revision_edits.py; no test imports the script).** Helper wp/S19-w4-mc (re-pointed; the
+  old one was merged in 68a9597a), worktree s19-w4-mc = eb71978d + wp/S19 5ac6ddb9 as 97553d85; merge-check job 215
+  w4r11-mc. **W4 run 12 launched** (`opus-engineer`, Opus, brief S19-W4-12.md: I-13 per R-1045, lane wp/S19-w4 from
+  eb71978d).
+- **2026-11-17, job 213 PASS (g5r10-revfix, 5f4d221a, step 266 accepted-neutral, 15/15).** ALERTs standing; merge waits for job 214.
+- **2026-11-17, job 214 PASS (g5r10-mc, helper 6656a326, full suite, 7/7, debt 41.1 -> 28.9). G5 run 10 merged into wp/S19** (wp/S19 changed only docs since cda029b0: S19_STATE, S19_DECISIONS, decision-register R-1045). Worktree s19-g5h-mc removed; branches kept.
+- **2026-11-17, scan of wp/S19 640bbd63: repo debt 4705.9, health 8.11, brain 26.** G5 (verify/, run/) below 9.0:
+  verify/gamma_phi_units.py 6.4 and verify/pr_c1.py 6.7 (the verify twins: W4 twin merge per R-W3-G5-3; not yet an
+  ADR 0076 item, "verify twins addendum" open for Frank), split_checks.py 7.2, table.py 7.5 (`revision_checks` 21.4:
+  routing deferred to W4, R-W3-G5-3), checks.py 8.4, compare.py 8.6 (v1 frozen; `_key_rule` a ladder),
+  certificate.py 8.7 (`verify_revision` lazy-import timing), flowsheet_rows.py 8.8, verify/__init__.py 8.8.
+  **G5 run 11 launched** (`opus-engineer`, Opus, brief S19-W3-G5-11.md, lane wp/S19-g5i: split_checks.py without the
+  R-W3-G5-7 component-order readings or the twin merge, then checks.py). After it, G5's W3 part leaves only the W4/
+  design items above. Agents running: W4 run 12, G5 run 11 (cap 2).
+- **2026-11-17, W4 run 12 reported (opus-engineer, Opus, ~172k tokens). I-13 per R-1045, lane eb71978d..fa93d0b7:**
+  b55fb808 plan i13-builder-kit (48 `added`, no literal changes); b0adabc5 interface step, job 216 (w4r12-i13-1):
+  44 model_signatures names public (collision renames pin_value, port_stream, pin_column, pin_columns; COLUMN),
+  column_owners, defect_result, basis_refusal, c1_reactor_surrogate_of; private names still bound `_x = x`; src
+  importers on the public names; 483eb1ad tests retargeted outside the gate (188 passed); fa93d0b7 refactor step,
+  job 217 (no-gain): 48 private bindings and four `X as X` re-exports gone (revision_binding.py:46, :78, :79 and
+  jobs/executor.py:69 `_defect`). Checks: R-1045 counts confirmed (44 names, 67 sites); symtable collision probe 0
+  (plain forms give exactly R-1045's six scopes); AST constant multiset equal in every touched src file; patch_noop
+  265/0; mypy 378 files, ruff clean; 649 passed at both steps; arch 1/1/4, imports 3995 -> 3991. Engineer decision:
+  `defect_result`, `basis_refusal` not added to `__all__` (those lists already omit other public names; reversible by
+  a plan entry). **STOP:** tests/test_s11_thermal_verifier.py:30 imports `_CONTEXT` from revision_binding (not in
+  R-1045's list). DECISION: same treatment as test_m04 (a test-built EvaluationContext through the public builder
+  entry), as an R-W4-12 review fix outside the gate. Alternative: a public `CONTEXT`. Reversible by: a register entry.
+  Leftovers (docstrings): binding_common.py:4 names `_column_owners`, column_binding.py:5 names `_COLUMN`: review-fix
+  docstrings. Engineer scripts in `<git-common-dir>/codehealth/drafts/w4-i13/`.
+- **2026-11-17, job 216 FAIL (w4r12-i13-1, I-13 interface b0adabc5 on plan b55fb808, run-log step 267, 11/12,
+  `public_api`); job 217 SKIPPED.** Five public constants' defining expressions now name the public builder-kit names
+  (values unchanged), "not in the plan's changed": model_builders.py:MODEL_BUILDERS, model_signatures.py:MODEL_BASES,
+  MODEL_SIGNATURES, S11_BASES, thermal_binding.py:BUILDERS. DECISION: declare them in the plan's `changed`, rebuild
+  plan/step/tests/refactor, enqueue fresh (labels w4r12-i13-3, -4). Fix brief S19-W4-12-fix216.md,
+  `sonnet-implementer` (W4 run 12 engineer has ended; no other agent on the lane). I-11's merge-check helper
+  (97553d85 on eb71978d) is unaffected.
+- **2026-11-17, fix216 done (`sonnet-implementer`): I-13 rebuilt on plan 00cc473f (`changed` = the five constants),
+  78f4e2d2 interface step (job 219 w4r12-i13-3), 1e7e9036 tests, a39da84c refactor step (job 220 w4r12-i13-4,
+  no-gain); backup wp/S19-w4r12-job216 = fa93d0b7; diff vs backup = the plan toml only.** A first attempt committed
+  `changed = []` (staged checkout); caught and amended before any enqueue.
