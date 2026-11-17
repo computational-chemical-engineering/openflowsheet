@@ -2011,3 +2011,8 @@
 - **2026-11-17 06:35, serial pair i10-head vs i12b-head EQUAL (rule 4):** i12b-head f917c724 rc=0, the same MSG
   WO-5a (1061) and WO-6 (801, 100) lines and 20392 passed, 107 skipped, 222 deselected, 3 xfailed (6409 s). Worktree
   removed. Left: i12a pair (started 06:07), i12c-head (started 06:22).
+- **2026-11-17 06:45, job 236 PASS (w4r13-mc2, merge-check b735b7be, 7/7, full suite).** Gate report (6 h):
+  "ALERT selected share 58% < 75% of step gates"
+  "ALERT selected gates take 806 s > 300 s (tests tier)"
+  "ALERT selected/full time ratio 0.74 > 0.4: selection saves little"
+  (standing). Merge waits for the i12a and i12c serial pairs. I-12d run 17 (brief S19-W4-17.md, lane tip 617099ef) launched now: it only appends to the lane; if a serial pair differs, the lane fix lands before its commits are merged.
