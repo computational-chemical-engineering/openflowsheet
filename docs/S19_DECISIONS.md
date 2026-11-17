@@ -1679,3 +1679,86 @@
   eb71978d).
 - **2026-11-17, job 213 PASS (g5r10-revfix, 5f4d221a, step 266 accepted-neutral, 15/15).** ALERTs standing; merge waits for job 214.
 - **2026-11-17, job 214 PASS (g5r10-mc, helper 6656a326, full suite, 7/7, debt 41.1 -> 28.9). G5 run 10 merged into wp/S19** (wp/S19 changed only docs since cda029b0: S19_STATE, S19_DECISIONS, decision-register R-1045). Worktree s19-g5h-mc removed; branches kept.
+- **2026-11-17, scan of wp/S19 640bbd63: repo debt 4705.9, health 8.11, brain 26.** G5 (verify/, run/) below 9.0:
+  verify/gamma_phi_units.py 6.4 and verify/pr_c1.py 6.7 (the verify twins: W4 twin merge per R-W3-G5-3; not yet an
+  ADR 0076 item, "verify twins addendum" open for Frank), split_checks.py 7.2, table.py 7.5 (`revision_checks` 21.4:
+  routing deferred to W4, R-W3-G5-3), checks.py 8.4, compare.py 8.6 (v1 frozen; `_key_rule` a ladder),
+  certificate.py 8.7 (`verify_revision` lazy-import timing), flowsheet_rows.py 8.8, verify/__init__.py 8.8.
+  **G5 run 11 launched** (`opus-engineer`, Opus, brief S19-W3-G5-11.md, lane wp/S19-g5i: split_checks.py without the
+  R-W3-G5-7 component-order readings or the twin merge, then checks.py). After it, G5's W3 part leaves only the W4/
+  design items above. Agents running: W4 run 12, G5 run 11 (cap 2).
+- **2026-11-17, W4 run 12 reported (opus-engineer, Opus, ~172k tokens). I-13 per R-1045, lane eb71978d..fa93d0b7:**
+  b55fb808 plan i13-builder-kit (48 `added`, no literal changes); b0adabc5 interface step, job 216 (w4r12-i13-1):
+  44 model_signatures names public (collision renames pin_value, port_stream, pin_column, pin_columns; COLUMN),
+  column_owners, defect_result, basis_refusal, c1_reactor_surrogate_of; private names still bound `_x = x`; src
+  importers on the public names; 483eb1ad tests retargeted outside the gate (188 passed); fa93d0b7 refactor step,
+  job 217 (no-gain): 48 private bindings and four `X as X` re-exports gone (revision_binding.py:46, :78, :79 and
+  jobs/executor.py:69 `_defect`). Checks: R-1045 counts confirmed (44 names, 67 sites); symtable collision probe 0
+  (plain forms give exactly R-1045's six scopes); AST constant multiset equal in every touched src file; patch_noop
+  265/0; mypy 378 files, ruff clean; 649 passed at both steps; arch 1/1/4, imports 3995 -> 3991. Engineer decision:
+  `defect_result`, `basis_refusal` not added to `__all__` (those lists already omit other public names; reversible by
+  a plan entry). **STOP:** tests/test_s11_thermal_verifier.py:30 imports `_CONTEXT` from revision_binding (not in
+  R-1045's list). DECISION: same treatment as test_m04 (a test-built EvaluationContext through the public builder
+  entry), as an R-W4-12 review fix outside the gate. Alternative: a public `CONTEXT`. Reversible by: a register entry.
+  Leftovers (docstrings): binding_common.py:4 names `_column_owners`, column_binding.py:5 names `_COLUMN`: review-fix
+  docstrings. Engineer scripts in `<git-common-dir>/codehealth/drafts/w4-i13/`.
+- **2026-11-17, job 216 FAIL (w4r12-i13-1, I-13 interface b0adabc5 on plan b55fb808, run-log step 267, 11/12,
+  `public_api`); job 217 SKIPPED.** Five public constants' defining expressions now name the public builder-kit names
+  (values unchanged), "not in the plan's changed": model_builders.py:MODEL_BUILDERS, model_signatures.py:MODEL_BASES,
+  MODEL_SIGNATURES, S11_BASES, thermal_binding.py:BUILDERS. DECISION: declare them in the plan's `changed`, rebuild
+  plan/step/tests/refactor, enqueue fresh (labels w4r12-i13-3, -4). Fix brief S19-W4-12-fix216.md,
+  `sonnet-implementer` (W4 run 12 engineer has ended; no other agent on the lane). I-11's merge-check helper
+  (97553d85 on eb71978d) is unaffected.
+- **2026-11-17, fix216 done (`sonnet-implementer`): I-13 rebuilt on plan 00cc473f (`changed` = the five constants),
+  78f4e2d2 interface step (job 219 w4r12-i13-3), 1e7e9036 tests, a39da84c refactor step (job 220 w4r12-i13-4,
+  no-gain); backup wp/S19-w4r12-job216 = fa93d0b7; diff vs backup = the plan toml only.** A first attempt committed
+  `changed = []` (staged checkout); caught and amended before any enqueue.
+- **2026-11-17, job 215 PASS (w4r11-mc, helper 97553d85, full suite, 7/7, 24.6 -> 24.6); not merged: wp/S19 gained
+  G5 run 10's code (verify/certificate.py, column.py; merge 640bbd63) after the helper's base 5ac6ddb9.** Helper
+  refreshed with wp/S19 38b94728 as 2490c525; merge-check 2 job 221 (w4r11-mc2). Merge on its PASS.
+- **2026-11-17, job 219 FAIL (w4r12-i13-3, 78f4e2d2 on plan 00cc473f, run-log step 268, 11/12, `public_api`); job 220
+  SKIPPED.** "thermal_binding.py: VALVE added (not in the plan)" and SIGNATURES changed: the engineer's rename also
+  renamed thermal_binding's own alias `_VALVE: Final = _THERMAL_VALVE` (not model_signatures' `_VALVE`) to `VALVE`
+  (lines 194, 203, 334, 340). An AST scan of every touched src file at 00cc473f..78f4e2d2 found no other unplanned
+  public name (same-file renames of private names are consistent, hence behaviour-neutral). DECISION: restore
+  `_VALVE` in the interface step (keep `THERMAL_VALVE` on the right), drop BUILDERS from `changed` if it is then
+  unchanged, rebuild, enqueue fresh (w4r12-i13-5, -6). Fix brief S19-W4-12-fix219.md, `sonnet-implementer`.
+  Lesson for briefs: a token rename across importers must skip names the importer defines itself.
+- **2026-11-17, fix219 done (`sonnet-implementer`): BUILDERS unchanged after restoring `_VALVE`, so the plan drops it
+  from `changed`: P c2df0d96 (on eb71978d), S1 a741872b (job 223 w4r12-i13-5, interface), T 595ea240, S2 a652a744
+  (job 224 w4r12-i13-6, no-gain); backup wp/S19-w4r12-job219 = a39da84c; diff vs backup: thermal_binding.py (4) and
+  the plan (2). mypy 378 clean; 266 thermal_binding tests passed.**
+- **2026-11-17, G5 run 11 reported (opus-engineer, Opus, ~177k tokens). wp/S19-g5i (BASE 640bbd63), 3 steps, jobs
+  218, 222, 225:** 0d90dad9 split_checks `_split_checks` admissibility -> `_split_admissibility` with NamedTuple
+  `_SplitAt` (name, subject, vapor, liquid, T, P; name/subject before the temperature-degenerate return, the four
+  state reads after it, same order) (8.0 -> 4.2; file 21.0 -> 17.2, 7.2 -> 8.2); 1147a6f2 `degeneracy` ->
+  `_owned_streams` (3.0 -> 2.0, exactly the 1.0 threshold, removes the file's `complex` smell; file 16.2, 8.7);
+  c5507eac checks `admissibility_checks` -> `_s3_independent_split_checks` (1.4 -> 0; file 17.5 -> 16.1, 8.4 -> 8.7).
+  Repo debt 4705.9 -> 4699.7, health 8.11 -> 8.13. Literal multisets unchanged; patch_noop 0/265; tests 621 / 880
+  passed. Not taken: `closure_check`, `escalate_column` (public signatures), `_declared_port_checks` and
+  `_split_checks`' remaining 4.0 (fixed by `table.revision_checks` calls, off limits), `_phase_enthalpy` (pinned by
+  test_st_core.py:993), `material_checks` (one line over, a balance table: trimming it would be gaming). checks.py
+  stops at 8.7 (aim 9.0 missed). For the reviewer: `_SplitAt` (step 1 reverts alone if rejected); step 2's 1.0 gain.
+- **2026-11-17 ~01:30, self-reset (no agent running).** Gate report: "ALERT selected share 58% < 75% of step gates",
+  "ALERT selected gates take 582 s > 300 s (tests tier)", "ALERT selected/full time ratio 0.46 > 0.4: selection saves
+  little" (standing; proposal 2 with Frank). Queue: 218, 221 running; 222-225 pending. headser2 at ~93%.
+- **2026-11-17 01:25, resume after self-reset; job 218 PASS (g5r11-1, 0d90dad9, step 269 accepted, debt 21.0 -> 17.2,
+  16/16).** G5 run 11 review waits for 222 and 225. Gate report (6 h): 32 gates, 2 failed; "ALERT selected share 60% <
+  75% of step gates", "ALERT selected gates take 594 s > 300 s (tests tier)", "ALERT selected/full time ratio 0.47 >
+  0.4: selection saves little": standing (proposal 2 with Frank), no new kind. headser2 (PID 4036764) still running.
+- **2026-11-17 01:35, job 221 PASS (w4r11-mc2, helper 2490c525, full suite, 7/7, debt 24.6 -> 24.6). I-11 merged into
+  wp/S19 as 6668be04** (wp/S19 changed only docs since 38b94728, checked). Worktree s19-w4-mc and branch
+  wp/S19-w4-mc removed. W4 run 12 (I-13, lane eb71978d..a652a744) waits for jobs 223, 224; its merge-check helper
+  will merge wp/S19 at or after 6668be04.
+- **2026-11-17 01:40, rule 4 falsifier (serial repeat headser2 at be115b6a+A, no fixed seed, PID 4036764): EQUAL.**
+  `MSG WO-5a: 1061 bundles scanned`, `MSG WO-6: 801 run results checked, 100 with a failure`, 20375 passed, 107
+  skipped, 222 deselected, 3 xfailed, EXIT 0, 7132 s; identical to headser and base2 (22:24 entry). Determinism of the
+  MSG counts confirmed directly; the rule 4 amendment (serial form) stands, and I-10 and I-12a-d may proceed with serial
+  MSG counts at base and head (~2.2 h per suite) after I-13. Worktree headser2 removed (only the 7af4b2f4 overlay);
+  logs kept in session 916d464e's scratchpad.
+- **2026-11-17 01:40, job 222 PASS (g5r11-2, 1147a6f2, step 270 accepted, debt 17.2 -> 16.2, 16/16).** G5 run 11 review
+  waits for job 225. Gate report: the three standing ALERTs only (proposal 2 with Frank).
+- **2026-11-17 01:55, job 225 PASS (g5r11-3, c5507eac, step 271 accepted, debt 17.5 -> 16.1, 16/16). G5 run 11 all
+  gated; R-W3-G5-11 launched (`reviewer`, Opus, brief S19-R-W3-G5-11.md, range 640bbd63..c5507eac).** Gate report:
+  the three standing ALERTs only. Note: the I-13 engineer (a0f1e181) was still finishing at the 01:20 self-reset
+  although the state said no agent ran; it ended cleanly (lane clean at a652a744, its handback already consumed).
