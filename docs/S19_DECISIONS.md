@@ -2271,3 +2271,5 @@
 - **2026-11-17, hub filed Decision Desk card `ofs-s19-oq1-nan-witness` (rec A, hub agrees).** Actions: A "land the S19
   design batch 1 Q2 change (NaN witness refusal) after S19", B "... inside S19". OQ-2 noted on the card as defaulted.
   Default A stands until a signed card is verified.
+- **2026-11-17, job 259 PASS (g5r12-1, 50e19804, step 294 accepted, table.py debt 21.4 -> 10.1, 16/16).** Gate
+  report: the two standing ALERTs (selected time, selected/full ratio; proposal 2).
