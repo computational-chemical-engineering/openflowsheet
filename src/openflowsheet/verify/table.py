@@ -61,23 +61,8 @@ from openflowsheet.verify.split_checks import (
     _split_checks,
     degeneracy,
 )
-from openflowsheet.verify.split_checks import _phase_enthalpy as _phase_enthalpy
 from openflowsheet.verify.table_kit import REACTION_DATUM_NOTE, ModelChecks, Unit
 from openflowsheet.verify.unit_checks import MODEL_CHECKS
-from openflowsheet.verify.unit_checks import _c1_flash_material as _c1_flash_material
-from openflowsheet.verify.unit_checks import _c1_reactor_material as _c1_reactor_material
-from openflowsheet.verify.unit_checks import _feed_specification as _feed_specification
-from openflowsheet.verify.unit_checks import _flash_energy as _flash_energy
-from openflowsheet.verify.unit_checks import _flash_specification as _flash_specification
-from openflowsheet.verify.unit_checks import _heater_energy as _heater_energy
-from openflowsheet.verify.unit_checks import _heater_specification as _heater_specification
-from openflowsheet.verify.unit_checks import _mixer_energy as _mixer_energy
-from openflowsheet.verify.unit_checks import _mixer_material as _mixer_material
-from openflowsheet.verify.unit_checks import _pump_material as _pump_material
-from openflowsheet.verify.unit_checks import _reactor_energy as _reactor_energy
-from openflowsheet.verify.unit_checks import _splitter_energy as _splitter_energy
-from openflowsheet.verify.unit_checks import _splitter_material as _splitter_material
-from openflowsheet.verify.unit_checks import _splitter_specification as _splitter_specification
 
 if TYPE_CHECKING:
     from openflowsheet.models.lifted import LiftedSplit
