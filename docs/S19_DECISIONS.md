@@ -2095,3 +2095,20 @@
   moves and `app.<attr>.<member>` caller retargets in the interface plan). Reversible by: re-gating 9697b223 in
   interface mode once the tool follows. Serial i12d3-head 622dc3b2, i12d5-head 9697b223 chained after the i12d1 pair
   (chain PID 1093753). Review R-W4-I12d (reviewer, Opus; brief S19-R-W4-I12d.md) launched over 617099ef..fc293d3e.
+- **2026-11-17 09:50, review R-W4-I12d (reviewer, Opus, ~162k tokens) over 617099ef..fc293d3e: merge after fixes.**
+  (1) Pure moves OK (AST end to end: 96 old defs, 78 identical, 18 differ only in receivers, `query.` reads, service
+  signatures without defaults; facade public methods AST-equal signatures and docstrings, one statement each;
+  lifecycle only beyond). (2) Construction OK: `acting_as` shallow-copies the core, the view shares store, policy,
+  executor, owner_instance, `_scratch` as before; services stateless, read `core.executor` at call time; side-effect
+  order in open, close, authenticated unchanged. (3a) R1 E1-E3 CONFIRMED (the layer invariant beats the family
+  lists; I-19 ADR erratum; note: ServiceCore a more natural home for `job`, record as considered). (3b)
+  StreamTableQuery CONFIRMED (no validation moves; one request; note: the real concept is the (pointer, depth,
+  cursor, limit) view quadruple of check_view/project). (4) engineer choices agreed. (5) forbid lists correct
+  (optional: forbid cli, serving -> services). (6) step 5 against plan f13e2e95 OK (caller edits are imports or patch
+  points only; `app._jobs._import_bundle` accepted, note for I-19). Fixes: F1 revision_service.py:474 `rejected` back
+  to `_rejected` (all 6 callers inside RevisionService); F2 local.py:496, :744 empty section headers; F3 service class
+  docstrings; item 7 registry_builtin.py:22, :344, test_m04_wo8_replacement.py:5. Done (orchestrator): 1e319312 F2,
+  F3 (job 242, no-gain); 8b70f2fd item 7 (scripts, tests; outside the gate; registry_builtin --check clean). F1 to a
+  fresh engineer (sonnet-implementer, brief S19-W4-I12d-F1.md). I-19 list gains: the R1 erratum (with the ServiceCore
+  alternative), `app._jobs._import_bundle` in tests and v17 fixtures, eight drifted living-doc anchors,
+  T07-jobs-and-bindings.md:4135. Open for Frank (not blocking): the optional forbid rule cli/serving -> services.
