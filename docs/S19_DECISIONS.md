@@ -2051,3 +2051,21 @@
   count lines (6556 s); it ran test_m06_browser_smoke serially without a failure (job 235's failure: load). All four
   W4 run 13-16 pairs EQUAL. wp/S19 changed only docs/S19_DECISIONS.md since cd621e12: helper wp/S19-w4-mc (b735b7be,
   merge-check job 236 PASS) merged.
+- **2026-11-17 08:25, W4 run 18 reported (opus-engineer, Opus, ~216k tokens):** e3598e60 msg_catalogue recognises
+  `refuse` as an attribute call only (DECISION: a bare-name match counted revision_host.py's local `refuse` helper,
+  562 vs 558 sites at 617099ef; with attribute calls only: 253 codes, 558 sites, per-code counts identical at
+  617099ef and 394effe6, where the old recogniser gave 524); eecaf471 placement table (R1 ruling homes); step 2
+  RevisionService edb81d96/3b72357b job 238 PASS, layer 18386138; f5bba00a BODY_READERS += validation_service
+  (DECISION: one step earlier than briefed; falsifier fails as it should); step 4 ValidationService 6f0874a4/50cbb3ed
+  job 239, layer f632c97b. local.py NLOC 1549 -> 1130 -> 965; revision_service 456, validation_service 205; arch
+  0/0/0; patch_noop 0 of 265; AST receiver substitutions only; mypy, ruff clean. DECISION (engineer): facade attributes
+  `_revisions`, `_validation`, `_artifacts`, `_jobs`. STOP step 3 (ArtifactService): trial gate "FAIL debt 0.0 s 3.7 ->
+  4.7": get_stream_table's six parameters counted on facade and service. Parked in codehealth/tmp-w4r18/.
+  DECISION (orchestrator): ArtifactService.get_stream_table(job_id, query) with a frozen `StreamTableQuery` (pointer,
+  depth, cursor, limit, display_units; no defaults); facade signature and defaults unchanged, one-line delegation.
+  One request built in one call, read by one consumer (playbook parameter-object when-not row does not apply).
+  Rejected: a plan field allowing a debt rise (weakens the gate). Alternative: architect ruling. Reversible by: a
+  later step restoring explicit parameters. The I-12d reviewer confirms or overturns. Serial: i12d2-head 3b72357b
+  and i12d4-head 50cbb3ed started 08:21 (bases: i12d1-head, i12d2-head; the commits between are scripts, tests,
+  config and plans, as for i12b); i12d1 pair running. Run 19 (brief S19-W4-19.md) launched. Docs pass: 8 docs
+  anchors into local.py drifted.
