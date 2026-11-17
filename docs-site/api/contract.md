@@ -2,9 +2,9 @@
 
 ::: openflowsheet.application.contract.ApplicationError
 
-::: openflowsheet.application.types.ApiError
+::: openflowsheet.application.errors.ApiError
 
-::: openflowsheet.application.types.SolveFailedError
+::: openflowsheet.application.errors.SolveFailedError
 
 ::: openflowsheet.application.contract.Page
 

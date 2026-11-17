@@ -639,7 +639,7 @@ def test_a36_the_codes_have_complete_entries_and_lint_clean() -> None:
 def test_a32_every_other_request_schema_refuses_display_units() -> None:
     from jsonschema import Draft202012Validator
 
-    from openflowsheet.application.types import _registry
+    from openflowsheet.schema_check import _registry
 
     registry = _registry(False)
     open_to = set()
