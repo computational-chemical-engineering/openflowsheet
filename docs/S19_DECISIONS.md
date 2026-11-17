@@ -1742,3 +1742,7 @@
 - **2026-11-17 ~01:30, self-reset (no agent running).** Gate report: "ALERT selected share 58% < 75% of step gates",
   "ALERT selected gates take 582 s > 300 s (tests tier)", "ALERT selected/full time ratio 0.46 > 0.4: selection saves
   little" (standing; proposal 2 with Frank). Queue: 218, 221 running; 222-225 pending. headser2 at ~93%.
+- **2026-11-17 01:25, resume after self-reset; job 218 PASS (g5r11-1, 0d90dad9, step 269 accepted, debt 21.0 -> 17.2,
+  16/16).** G5 run 11 review waits for 222 and 225. Gate report (6 h): 32 gates, 2 failed; "ALERT selected share 60% <
+  75% of step gates", "ALERT selected gates take 594 s > 300 s (tests tier)", "ALERT selected/full time ratio 0.47 >
+  0.4: selection saves little": standing (proposal 2 with Frank), no new kind. headser2 (PID 4036764) still running.
