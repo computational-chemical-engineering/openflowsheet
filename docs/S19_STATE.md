@@ -40,7 +40,7 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
   selection (wp/S19-tools2, 37307ab0). G6 runs 2+3 reviewed (merge); W4 run 1: arch 6/4/14 -> 4/4/14.
 
 - G6 run 6 merged into wp/S19 (18f934f6, 2026-11-16 21:42); G6's W3 part done (frozen thermo: W5).
-- 2026-11-17: I-11 merged (6668be04), G5 run 11 merged (1720cc98), I-13 merged (d63dcd7a), W4 runs 13-16 merged (e61b23f2). I-12d running.
+- 2026-11-17: I-11 merged (6668be04), G5 run 11 merged (1720cc98), I-13 merged (d63dcd7a), W4 runs 13-16 merged (e61b23f2). I-12d done on the lane, gating (jobs 241-243).
 
 - Open (R-W3-G1N-1): numerics/ptc.py health 6.8 after P1 (closing method's 9 parameters); P2 to P4 must end >= 7.0,
   else a miss and P1 is reverted.
@@ -55,18 +55,26 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 - Held until the scale probe reports: G1 (orchestrator/, numerics/). Open: ptc.py 6.8 (P3, P4).
 - G-END (below) stays the end criterion for the whole repository.
 
-## Next actions (2026-11-17 08:25)
+## Next actions (2026-11-17 09:45, self-reset)
 
-**Position:** W4 runs 13-16 (I-10, I-12b, I-12a, I-12c) merged into wp/S19 (e61b23f2; merge-check job 236; all four
-serial pairs EQUAL). I-12d running on lane `wp/S19-w4` (worktree s19-w4): run 17 (step 1 ServiceCore +
-InspectionService, 394effe6, job 237 PASS), run 18 (brief S19-W4-18.md; R1 ruling E1-E3 in S19_DECISIONS 07:10;
-step 2 RevisionService 3b72357b job 238 PASS; steps 3-5 Artifact, Validation, Job in progress).
-**On resume:** (a) `$Q wait --since 224` in the background unless a later result is consumed. (b) Serial pair
-i12d1-base (17cada5f) / i12d1-head (394effe6), logs `<git-common-dir>/codehealth/runs/serial/i12d1-*.log`, worktrees
-`<scratchpad 78ab96ef>/ser-i12d1-*`; serial pairs for each later I-12d step (parent, step) after it, at most two
-suites at once while load > 16. (c) When run 18 reports: brief run 19 for what is left of I-12d, else the I-12d
-review (reviewer; R1 ruling E1-E3, the forbid-list additions of 64fc4d4c, msg_catalogue `refuse`), then helper
-merge-check and merge as for w4r13. (d) Then MB to the wp/S19 tip (map build, queue held), then I-19.
+**Position:** W4 runs 13-16 merged (e61b23f2). I-12d complete on lane `wp/S19-w4` (worktree s19-w4, tip 5cc529e7):
+steps 1-4 PASS (jobs 237, 238, 240, 239), step 5 JobService 9697b223 under the ADR Q-F5 fallback (job 241, merge-check
+mode, "interface gate not applicable"); review R-W4-I12d: merge after fixes, all fixes done: F2/F3 1e319312 (job
+242), item 7 8b70f2fd (outside gate), F1 a995d571 (job 243). No agent running.
+**On resume:** (a) `$Q wait --since 226` in the background (jobs 241, 242, 243). A FAIL: read the failed checks;
+environment -> re-enqueue unchanged; real -> fresh engineer. (b) Serial (rule 4), logs
+`<git-common-dir>/codehealth/runs/serial/i12d*.log`, worktrees `<scratchpad 78ab96ef>/ser-i12d*` (remove after):
+running i12d1-base 17cada5f (PID 891621), i12d1-head 394effe6 (891622), i12d2-head 3b72357b (917851), i12d4-head
+50cbb3ed (917852); i12d3-head 622dc3b2 and i12d5-head 9697b223 chained after the i12d1 pair (chain PID 1093753; their
+PIDs in their logs' first lines). Wait with a background `while kill -0` loop on the live PIDs. Compare: i12d1-base
+vs i12d1-head; i12d1-head vs i12d2-head; i12d2-head vs i12d4-head; i12d4-head vs i12d3-head (step 3 sits on
+f632c97b, after step 4); i12d3-head vs i12d5-head. Equal = MSG WO-5a, WO-6 lines and passed, skipped, deselected,
+xfailed (20392 / 107 / 222 / 3 at the W4 run 13-16 heads). F1 (a995d571) is a private rename inside one class: no
+serial pair (DECISION, alternative: one more suite). (c) All PASS and EQUAL: helper wp/S19-w4-mc = 5cc529e7 + wp/S19
+tip, merge-check, merge (message: I-12d steps 1-5, Q-F5 fallback for step 5, R1 and StreamTableQuery rulings,
+review R-W4-I12d and fixes, jobs 237-243 + merge-check, serial counts), remove the helper and ser-i12d* worktrees.
+(d) Then MB to the wp/S19 tip (map build with the queue held; G-MAP criteria; the ALERT remedy), lanes fast-forward,
+then brief I-19 (the I-19 list in S19_DECISIONS: grep "I-19 list gains", "I-19"); W4 is then done.
 Runner pid 475743 (cce-code-health cf15245; MB = 1720cc98). Lanes at most 2 agents until Thu 19 Nov 13:00.
 ALERTs standing (proposal 2 with Frank; selected share fell to 45%).
 Merge-checks run on a helper `wp/S19-<lane>-mc` = lane tip + wp/S19 tip merged in; merge the helper (`git merge

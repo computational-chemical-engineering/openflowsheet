@@ -2112,3 +2112,8 @@
   fresh engineer (sonnet-implementer, brief S19-W4-I12d-F1.md). I-19 list gains: the R1 erratum (with the ServiceCore
   alternative), `app._jobs._import_bundle` in tests and v17 fixtures, eight drifted living-doc anchors,
   T07-jobs-and-bindings.md:4135. Open for Frank (not blocking): the optional forbid rule cli/serving -> services.
+- **2026-11-17 09:40, F1 reported (sonnet-implementer, Sonnet, ~77k tokens):** 21bd0085 plan (`removed`
+  RevisionService.rejected; the tool refused the `renamed` form: "RevisionService._rejected is not new", "rejected
+  removed (not in the plan)"), a995d571 step (`_rejected`, 6 call sites, module docstring), 5cc529e7 placement row;
+  job 243 (interface). Trial static checks ok, debt 14.9 -> 14.9; patch_noop 0 of 265; 1014 passed in 40 touched test
+  files. Queue: 241 (step 5 behaviour) running, 242 (F2/F3 no-gain), 243 pending.
