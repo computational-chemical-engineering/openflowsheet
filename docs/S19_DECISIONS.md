@@ -1917,3 +1917,23 @@
   requirements-codehealth.txt, `.venv-codehealth` force-reinstalled, direct_url commit cf152455 (0.2.1.dev19), on the
   tool's origin/main; runner restarted. Lane wp/S19-w4 tip 9d52dde2 (I-10 and I-12b gated). Next: run 15 = I-12a
   (S19-W4-15.md), then run 16 = I-12c resume, serially on the lane worktree.
+- **2026-11-17 05:15, W4 run 15 reported (opus-engineer, ~199k tokens): I-12a delivered, job 231 (w4r15-i12a-1,
+  interface step 0c96257c), no STOP.** Chain after 9d52dde2: 0ca3c762 (outside the gate, before: two references to
+  names types.py only imported: test_x04_messages.py:642 `_registry` from schema_check; docs-site/api/contract.md:5,
+  :7 -> errors.ApiError, errors.SolveFailedError), 7e844e9b (lists gain the six modules; G20 `@cache` (2) entry ->
+  documents.py; G20 fails at this commit alone, as d1f2ff38 for I-5), 31eadc43 plan i12a-types-split (66 renamed, 6
+  new_files, 121 callers: 16 src, 94 py, 11 text), 0c96257c step (types.py deleted; moved statements AST-identical
+  after the four public renames), aaee84b9 (lists drop `types`), 0be48459 layer config. Arch: 0/0 at 9d52dde2 and
+  after, the "types matches no module" warning gone. patch_noop 265, 0 flagged; no liveness check due. Touched tests
+  2208 passed, 2 skipped, 3 xfailed. NLOC documents 60, transaction_types 222, job_requests 255, job_records 478,
+  policy_types 160, inspection_types 258 (types.py was 1392). Engineer DECISION: the four private-to-public names
+  also in `added` (tool refused them as "added (not in the plan)" with renamed alone; the ADR row names only renamed,
+  new_files, callers): review item. Leftovers: docs-site/api/contract.md:3 `contract.ApplicationError` (stale since
+  I-9?), docs-site page still api/types.md; I-19 list in the engineer's report (schema_check.py:8 docstring,
+  t07_global_state_allowlist.json:72, schemas/README.md:179, api-error.schema.json description, USER_FEEDBACK.md:16,
+  E01-design.md:1361, M06-web-shell.md:724, MSG-messages.md:233, :246, T07 (2), roadmap 00-core-inventory (7), T08
+  release spec (2), F1-design-followup (2), t07-measurements).
+  Serial: base 0ca3c762 instead of the step's parent 31eadc43 (G20 fails there by design); 0ca3c762..31eadc43 changes
+  no test definition or parameter (orchestrator diff: list literals and the plan only). DECISION: i12a-base at
+  0ca3c762, i12a-head at 0c96257c, chained detached (PID 517667) to start when the i10 pair ends (load). Run 16
+  (I-12c resume, S19-W4-16.md) launched on the lane from 0be48459.
