@@ -1687,3 +1687,18 @@
   **G5 run 11 launched** (`opus-engineer`, Opus, brief S19-W3-G5-11.md, lane wp/S19-g5i: split_checks.py without the
   R-W3-G5-7 component-order readings or the twin merge, then checks.py). After it, G5's W3 part leaves only the W4/
   design items above. Agents running: W4 run 12, G5 run 11 (cap 2).
+- **2026-11-17, W4 run 12 reported (opus-engineer, Opus, ~172k tokens). I-13 per R-1045, lane eb71978d..fa93d0b7:**
+  b55fb808 plan i13-builder-kit (48 `added`, no literal changes); b0adabc5 interface step, job 216 (w4r12-i13-1):
+  44 model_signatures names public (collision renames pin_value, port_stream, pin_column, pin_columns; COLUMN),
+  column_owners, defect_result, basis_refusal, c1_reactor_surrogate_of; private names still bound `_x = x`; src
+  importers on the public names; 483eb1ad tests retargeted outside the gate (188 passed); fa93d0b7 refactor step,
+  job 217 (no-gain): 48 private bindings and four `X as X` re-exports gone (revision_binding.py:46, :78, :79 and
+  jobs/executor.py:69 `_defect`). Checks: R-1045 counts confirmed (44 names, 67 sites); symtable collision probe 0
+  (plain forms give exactly R-1045's six scopes); AST constant multiset equal in every touched src file; patch_noop
+  265/0; mypy 378 files, ruff clean; 649 passed at both steps; arch 1/1/4, imports 3995 -> 3991. Engineer decision:
+  `defect_result`, `basis_refusal` not added to `__all__` (those lists already omit other public names; reversible by
+  a plan entry). **STOP:** tests/test_s11_thermal_verifier.py:30 imports `_CONTEXT` from revision_binding (not in
+  R-1045's list). DECISION: same treatment as test_m04 (a test-built EvaluationContext through the public builder
+  entry), as an R-W4-12 review fix outside the gate. Alternative: a public `CONTEXT`. Reversible by: a register entry.
+  Leftovers (docstrings): binding_common.py:4 names `_column_owners`, column_binding.py:5 names `_COLUMN`: review-fix
+  docstrings. Engineer scripts in `<git-common-dir>/codehealth/drafts/w4-i13/`.
