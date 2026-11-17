@@ -8,9 +8,9 @@ single phase. There is no condenser, reboiler or reflux (S01 spec §1; those are
 specification object, the declarations and the cascade's ids, `cascade_rows` the §2 declared rows
 built from `models.rows` and `cascade_init` the §6 analytic initializer `s01-kremser-cmo-v1`; this
 module holds the §5 refusals, the per-stage regime forms of §4.2 and the §4.6 closed-form answer
-for an all-dormant cascade. It re-exports the names the frozen `column_unit` imports through it
-(ADR 0076 I-8) and a few names outside I-8's move sets (I-13, I-19). Compiling, the isothermal
-pre-solve and the `solve_region` call are WO-2's.
+for an all-dormant cascade. It keeps re-exporting the names the frozen `column_unit` imports
+through it until W5 (ADR 0076 I-8, I-19). Compiling, the isothermal pre-solve and the
+`solve_region` call are WO-2's.
 
 **Every stage is one lifted split, PH-type** (S01 spec §4.1): its mixed inflow `m_j` is lifted
 (DECISION 3), so `feed = m_j`, and its energy row fixes `T_j`. Equilibrium is written

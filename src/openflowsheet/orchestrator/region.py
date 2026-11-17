@@ -68,7 +68,7 @@ the PTC and homotopy attempts (`region_ptc_problem`, `_ptc_attempt`, `_homotopy`
 `orchestrator.region_attempts`; the phase-policy kernel (the kernel, the PH closure, the
 admissibility screens and their refusals) in `orchestrator.region_phase`; the Newton problem over
 lifted splits (labels, the opening fixed point, dormancy outlets, `_LiftedOps`) in
-`orchestrator.region_problem`. `region` re-exports what its callers and tests read there.
+`orchestrator.region_problem`. Callers and tests import those names from their modules.
 """
 
 from __future__ import annotations
