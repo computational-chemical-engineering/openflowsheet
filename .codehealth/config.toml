@@ -108,13 +108,12 @@ cmd = 'V="${OPENFLOWSHEET_VENV:-$(dirname "$(git rev-parse --path-format=absolut
 # order states the target architecture: the violations recorded at adoption are the ones the
 # planned splits remove (S17 R1 to R5).
 # Violations recorded at adoption (11), each with the step that removed it (plan review, S17).
-# R1 to R5 are done; the pair marked `stay` is the one still reported (codehealth arch). R2's two
-# (local, revision_continuation -> transactions) left the list with that module (ADR 0076 I-11):
+# All are done. R2's two (local, revision_continuation -> transactions) left the list with that
+# module (ADR 0076 I-11); revision_run -> validation (D19 item D4) went with ADR 0076 I-10:
 #   types -> validation, store -> validation, authz -> validation       R1 split-validation-report
 #   column_binding -> revision_binding, thermal_binding -> revision_binding   R3 split-revision-binding
 #   revision_binding -> binding                                          R4 split-binding-common
 #   jobs.worker -> jobs.executor                                         R5 (move _defect, refactor mode)
-#   revision_run -> validation                                           stay: interface package (D19 item D4)
 # A violation is keyed by module pair: the one that stays absorbs any new import between the same pair.
 roots = ["src"]
 type_checking = false
@@ -141,6 +140,7 @@ order = [
     # revision engine: validator, routes and runs, binders
     "openflowsheet.application.replacement",
     "openflowsheet.application.trust_region_parent",
+    "openflowsheet.application.structure_inspection",
     "openflowsheet.application.validation",
     "openflowsheet.application.revision_routes",
     "openflowsheet.application.revision_run",
