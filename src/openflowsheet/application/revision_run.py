@@ -1,4 +1,4 @@
-"""Revision-built runs through the contract: route, solve, verify, bundle, rerun (T07 §12).
+"""Revision-built runs through the contract: route, solve, verify, bundle (T07 §12).
 
 T07 design note §12.1–§12.3 as amended by ruling round 1 (R2), ADR 0020 D4. A stored revision
 solves on one of two **routes**, `revision_eo` | `legacy_eo`, chosen by `select_route` as a pure
@@ -16,16 +16,16 @@ function of the document (R2.2's table):
   EO initializer's registered refusal, `initializer_bundle(step, run.trace)` (ruling round 3, Q1).
 
 The tear path (`run_session`, `Syn001Flowsheet`) stays the CLI's registered-case path and is not
-reachable through `solve`; its registered-case construction lives here (§12.3), and the CLI
-delegates to it.
+reachable through `solve`; its registered-case construction lives in `revision_replay` (§12.3),
+and the CLI delegates to it.
 
 `run_revision_session` writes a bundle `run_session`-shaped plus `execution-plan.json`,
 `revision.json`, `solve-policy.json`, `check-policy.json` and `solve-path.json`, and, beside a
 certificate only, `solution-state.json` (ruling round 2), under the frozen `RunManifest`
-unchanged. `reproduce_bundle` reruns a bundle along **its recorded route** — it never
-re-routes — after the archived policy documents recompute to the manifest's hashes, and compares
-through `run.replay`. These are plain functions: the job runner (W4) calls them, maps their typed
-refusals to `ApiError`s and registers their outputs as artifacts.
+unchanged. `revision_replay.reproduce_bundle` reruns a bundle along **its recorded route** — it
+never re-routes — after the archived policy documents recompute to the manifest's hashes, and
+compares through `run.replay`. These are plain functions: the job runner (W4) calls them, maps
+their typed refusals to `ApiError`s and registers their outputs as artifacts.
 
 **What ends typed without a bundle** (§12.3): a `VerifierError` (the verifier refused to judge;
 the job ends `failed(verifier_refused)`), a solve whose record has no registered mapping to a
