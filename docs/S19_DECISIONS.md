@@ -1762,3 +1762,16 @@
   gated; R-W3-G5-11 launched (`reviewer`, Opus, brief S19-R-W3-G5-11.md, range 640bbd63..c5507eac).** Gate report:
   the three standing ALERTs only. Note: the I-13 engineer (a0f1e181) was still finishing at the 01:20 self-reset
   although the state said no agent ran; it ended cleanly (lane clean at a652a744, its handback already consumed).
+- **2026-11-17 02:05, R-W3-G5-11 reported (`reviewer`, Opus, 86k tokens): merge, no fixes.** Step 1 (0d90dad9) keep:
+  the four state reads stay after the degenerate return (split_checks.py:79) in the old order (keyword arguments left
+  to right); `tolerances["temperature"]` still read only in the closure rung; `_SplitAt` is a real parameter object
+  (built once, immutable, two consumers, the same six values the S3 ladder reads; R-W3-G5-4 standard). Note: part of
+  the file health rise 7.2 -> 8.2 is dilution of 46 duplicated lines under 10 % of nloc, not de-duplication. Step 2
+  (1147a6f2) OK: the cognitive drop 16 -> 13 is nesting credit (branch moved, not removed), accepted under the gain
+  rule as c95eadac was (the helper names a 9.2 concept); 1.0 is the floor, no further step under 2 points on
+  `degeneracy`; optional `stream: str` parameter. Step 3 (c5507eac) OK: the S3 phase runs after the ladder as before,
+  same list and order, same `VerifierError` text. No import moved; `verifier-not-through-the-solver` intact; the
+  R-W3-G5-7 component-order readings untouched. Record: checks.py:757-794 (S3 ladder) is a visible twin of
+  `_split_admissibility` (split_checks.py:184-227); merging drops literal ids, so under rule 15 it waits for a
+  behaviour-level change, host checks.py. Helper wp/S19-g5i-mc (worktree s19-g5i-mc) = c5507eac + wp/S19 de8ef2f5 as
+  1bb7a481; merge-check job 226 (g5r11-mc).
