@@ -20,7 +20,7 @@ from __future__ import annotations
 
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Final
+from typing import TYPE_CHECKING, Any, Final, NamedTuple
 
 import numpy as np
 import numpy.typing as npt
@@ -217,10 +217,7 @@ def verify(
         phase_signature=None,
     )
     return _certify(
-        tear,
-        result,
-        solved,
-        final_state,
+        _Subject(tear, result, solved, final_state),
         context=context,
         specifications=specification_checks(flowsheet, final_state, resolved.tolerances),
         split_fraction=flowsheet.split_fraction,
@@ -293,10 +290,7 @@ def verify_bound(
         tolerances=resolved.tolerances,
     )
     return _certify(
-        target,
-        result,
-        solved,
-        final_state,
+        _Subject(target, result, solved, final_state),
         context=context,
         specifications=specifications,
         split_fraction=split_fraction,
@@ -521,10 +515,7 @@ def verify_revision(
     checks += [*table[:at], *surrogate_checks, *table[at:]]
     witness = _revision_witness(target, final_state, view, basis, splits)
     return _issue(
-        target,
-        result,
-        solved,
-        final_state,
+        _Subject(target, result, solved, final_state),
         checked=_Checked(checks, digest, screened, projection, surrogate_limitations),
         policy=resolved,
         declaration=NOMINAL_DECLARATION,
@@ -838,11 +829,22 @@ def _absent(
     )
 
 
+class _Subject(NamedTuple):
+    """What a certificate is issued about (T04 §4.8 items 1–2): `target`'s declaration at
+    `final_state`, for the solve `result` the entry point was handed, as the guard resolved it."""
+
+    #: The declaration judged: SYN-001's tear problem or a `BoundDeclaration`.
+    target: Any
+    #: The solve result the entry point was handed.
+    result: Any
+    #: The guard's resolution of `result`.
+    solved: _Solved
+    #: `x_final`: `solved.final_state`, never `None` here.
+    final_state: Mapping[str, float]
+
+
 def _certify(
-    target: Any,
-    result: Any,
-    solved: _Solved,
-    final_state: Mapping[str, float],
+    subject: _Subject,
     *,
     context: EvaluationContext,
     specifications: Sequence[CheckResult],
@@ -850,8 +852,9 @@ def _certify(
     policy: CheckPolicy,
     declaration: Mapping[str, Any],
 ) -> SolutionCertificate:
-    """§4, §7 and §8 on `target`'s declaration at `final_state`: the one engine both entry points
-    share. The regularity screen runs before the fresh-flash categories (ADR 0013 D1)."""
+    """§4, §7 and §8 on `subject`'s declaration at its `final_state`: the one engine both entry
+    points share. The regularity screen runs before the fresh-flash categories (ADR 0013 D1)."""
+    target, final_state = subject.target, subject.final_state
     fresh = Syn001Provider()
     rows, digest = residual_checks(
         target.compiled,
@@ -888,10 +891,7 @@ def _certify(
         projection,
     )
     return _issue(
-        target,
-        result,
-        solved,
-        final_state,
+        subject,
         checked=_Checked(checks, digest, screened, projection),
         policy=policy,
         declaration=declaration,
@@ -1030,10 +1030,7 @@ class _Checked:
 
 
 def _issue(
-    target: Any,
-    result: Any,
-    solved: _Solved,
-    final_state: Mapping[str, float],
+    subject: _Subject,
     *,
     checked: _Checked,
     policy: CheckPolicy,
@@ -1045,13 +1042,14 @@ def _issue(
 ) -> SolutionCertificate:
     """§4.8, §7 and §8 after the check set: the derivative witness, the grade and the certificate
     (T05 design note §4.2). Shared by `_certify` (SYN-001's check set) and `verify_revision` (the
-    table's); `checked` is the caller's check set at `final_state` with its residual state hash,
-    regularity screen, projection and own limitations, `phase_branch` the caller's record of the
-    branch, and `witness` the columns the derivative witness does not difference or differences
-    one-sided."""
+    table's); `subject` is what the certificate is about, `checked` the caller's check set at
+    its `final_state` with its residual state hash, regularity screen, projection and own
+    limitations, `phase_branch` the caller's record of the branch, and `witness` the columns the
+    derivative witness does not difference or differences one-sided."""
     from openflowsheet.verify.checks import derivative_witness
     from openflowsheet.verify.regularity import solution_error_bound
 
+    target, result, solved, final_state = subject
     checks, digest, screened = checked.checks, checked.digest, checked.screened
     resolved = policy
     plan = getattr(result, "plan", None)
