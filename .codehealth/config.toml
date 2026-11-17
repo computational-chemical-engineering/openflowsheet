@@ -164,8 +164,13 @@ order = [
     # contract vocabulary
     "openflowsheet.application.projection",
     "openflowsheet.application.contract",
-    "openflowsheet.application.types",
+    "openflowsheet.application.inspection_types",
+    "openflowsheet.application.job_records",
+    "openflowsheet.application.job_requests",
+    "openflowsheet.application.policy_types",
+    "openflowsheet.application.transaction_types",
     "openflowsheet.application.errors",
+    "openflowsheet.application.documents",
     # foundation
     "openflowsheet.application.revisions",
     "openflowsheet.application.jobs.interrupt",
