@@ -2286,3 +2286,7 @@
   ofs-s19-oq1-nan-witness: chose A After S19 closes; action: land the S19 design batch 1 Q2 change (NaN witness
   refusal) after S19; ... signed 2026-11-17T15:55:07.874Z key 032ee0a5ae620a90". The action runs after S19 closes;
   `executed` is written on the card then (docs/progress.md carries it).
+- **2026-11-17, job 260 PASS (g5r12-2, 51ed53df, step 295 accepted, 10.1 -> 3.0, 16/16).** DECISION: launch the
+  joint reviewer R-W3-G5-12 now, with jobs 261-262 still gating. Alternative: wait for both. Reason: the reviewer reads
+  diffs only and saves about 25 min; a failed gate goes to a fresh engineer either way. Reversible by: nothing to undo
+  (a failed step's review is discarded). Reviewer launched (`reviewer`, Opus, S19-R-W3-G5-12.md).
