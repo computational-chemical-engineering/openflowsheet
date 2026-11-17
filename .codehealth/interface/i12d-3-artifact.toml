@@ -1,0 +1,34 @@
+# ADR 0076 I-12d step 3 of 5 (W4 run 19, brief S19-W4-19): ArtifactService out of application/local.py;
+# LocalApplication delegates. Placement: .codehealth/interface/s19-i12d-placement.md (E1 by the R1
+# ruling of 2026-11-17, eecaf471). `codehealth gate --mode interface` reads this plan from the plan commit.
+id = "i12d-3-artifact"
+approved_by = "Frank Peters, 2026-11-14, ADR 0076 accepted (Decision Desk ofs-adr0076-accept)"
+reason = """ADR 0076 I-12d, step 3 (orchestrator DECISION, brief S19-W4-17: one interface step per \
+service, upward from InspectionService). New module application/artifact_service.py: \
+ArtifactService(core, revisions) with get_artifact, artifact_bytes, get_stream_table, the private \
+_artifact_row, _missing_member, _run_outcome, and display_units, artifact_path, job (were \
+_display_units, _artifact_path, _job: called from the job service above, so public in the lowest by \
+the ADR rule; job by the R1 ruling E1), and the module-level MAX_LISTED_MEMBERS, STREAM_TABLE_DEPTH, \
+_unique_members and _file_document. get_stream_table takes (job_id, query): the frozen \
+dataclass StreamTableQuery (pointer, depth, cursor, limit, display_units; no defaults, no \
+__post_init__), defined in artifact_service.py, and its body reads query.<field> where it read the \
+parameter (orchestrator ruling of 2026-11-17 on run 18's debt refusal, brief S19-W4-19). Statements move unchanged except the receiver (self._x( -> \
+self._core.x( for the core members, self.files_root -> self._core.files_root, self._x( -> self.x( for \
+the renamed members, query.<field> in get_stream_table); checked by AST comparison of every function of local.py at the base. \
+LocalApplication keeps every public method name and signature (the three artifact methods become \
+one-line delegations with their docstrings; get_stream_table's body builds the StreamTableQuery \
+from its keyword arguments; its default depth reads \
+artifact_service.STREAM_TABLE_DEPTH); the facade methods of the services not yet moved call \
+self._artifacts.job, display_units and artifact_path; OPERATIONS untouched. Callers follow: \
+tests/test_msg_surfaces.py patches MAX_LISTED_MEMBERS where _missing_member now reads it \
+(artifact_service; Q-F5) and tests/test_st_operation.py imports STREAM_TABLE_DEPTH from its home. No \
+string literal is added or removed. Expected codehealth arch --depth 4 (measured on the step applied \
+to this base): 0 / 0 / 0 -> 0 / 0 / 0 (imports 4151 -> 4168, files 327 -> 328). Layer config after \
+the step (separate commit): application-layers gains application.artifact_service between \
+application.validation_service and application.revision_service."""
+removed = []
+renamed = {"src/openflowsheet/application/local.py:MAX_LISTED_MEMBERS" = "src/openflowsheet/application/artifact_service.py:MAX_LISTED_MEMBERS", "src/openflowsheet/application/local.py:STREAM_TABLE_DEPTH" = "src/openflowsheet/application/artifact_service.py:STREAM_TABLE_DEPTH"}
+changed = []
+added = ["src/openflowsheet/application/artifact_service.py:ArtifactService", "src/openflowsheet/application/artifact_service.py:StreamTableQuery"]
+new_files = ["src/openflowsheet/application/artifact_service.py"]
+callers = ["tests/test_msg_surfaces.py", "tests/test_st_operation.py"]
