@@ -2036,3 +2036,8 @@
   name `local._model_view`; BODY_READERS at the JobService step. Serial pair i12d1-base 17cada5f / i12d1-head
   394effe6 chained after the i12a pair (load 17-21 on 16 cores; chain PID 784080, worktrees in scratchpad 78ab96ef).
   Run 18 (brief S19-W4-18.md) launched.
+- **2026-11-17 07:27, job 237 PASS (w4r17-i12d-1, I-12d step 1 394effe6, step 281 accepted, 17/17, debt 28.6 -> 28.6).** Gate report (6 h):
+  "ALERT selected share 45% < 75% of step gates"
+  "ALERT selected gates take 744 s > 300 s (tests tier)"
+  "ALERT selected/full time ratio 0.68 > 0.4: selection saves little"
+  (standing).
