@@ -1815,3 +1815,18 @@
   `.venv` has no xdist (no `-n`), and it imports `openflowsheet` from the main checkout's src, so a worktree test run
   needs `PYTHONPATH=<worktree>/src`. Lane wp/S19-w4 tip e4c28e19 (fix 2 932023a0 gated as job 227, a392c711 playbook,
   e4c28e19 test).
+- **2026-11-17 03:40, G-MAP 4 (map at 1720cc98): build rc 1 on a crash in `_fold` after a complete pytest run
+  (`TypeError: cannot unpack non-iterable NoneType`, scripts/test_impact.py:804).** Cause: one coverage file of 646
+  (`.coverage.SMM-TR09.pid251886.*`, 53 KB) has its tables but no row in any of them (coverage_schema, meta, file,
+  context, line_bits, arc, tracer: all 0), the trace of a subprocess killed before coverage wrote. Pytest itself:
+  4 failed (the B-6 set: m04_wo9 a25, a29; x02_wo4 g4e x2), 20295 passed, 107 skipped, 3 xfailed in 3892 s, then the
+  serial file 95 passed in 96 s. DECISION: `_fold` skips a coverage file without a schema row only if meta, file,
+  context and line_bits are all empty (else the build fails, "coverage data without a schema version"); the finished
+  run refolded with the fixed `_fold` (scratchpad script, build's post-run code verbatim; the tool is unchanged
+  between 1720cc98 and the fix), no rebuild. Map: 20503 tests (20390 passed, 109 skipped, 4 failed), exit 1, 3988 s,
+  25.8 MB. Unsure set = the B-6 four only, as G-MAP 3: same MISS on the unsure-file criterion, accepted on the same
+  grounds; MB c3c5793e -> 1720cc98. Note: the killed subprocess's lines were never recorded (a selection hole of the
+  same kind any SIGKILLed child leaves; the merge-check's full suite closes it). Alternative: rebuild (~66 min, queue
+  held). Reversible by: MB back to c3c5793e (its map is kept). Also: `serial.sh` committed in the skill (f108189a,
+  rule 4 serial runs, PYTHONHASHSEED=0) and brief S19-W4-13.md drafted (I-10, I-12a, I-12b if room; I-12c, I-12d later
+  runs, for the 150k cap).

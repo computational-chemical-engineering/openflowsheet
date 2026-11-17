@@ -801,7 +801,19 @@ def _fold(run: Path, root: Path, data: MapData) -> None:
     prefix = str(root) + "/"
     for path in sorted((run / "cov").glob(".coverage*")):
         with sqlite3.connect(path) as db:
-            (version,) = db.execute("SELECT version FROM coverage_schema").fetchone()
+            row = db.execute("SELECT version FROM coverage_schema").fetchone()
+            if row is None:
+                # A process killed after coverage created its tables but before it wrote any row
+                # (G-MAP 4, 2026-11-17: one such file in 646). Empty means no lines lost; anything
+                # else is a damaged file and the build fails.
+                if any(
+                    db.execute(f"SELECT 1 FROM {table} LIMIT 1").fetchone()
+                    for table in ("meta", "file", "context", "line_bits")
+                ):
+                    raise SystemExit(f"{path}: coverage data without a schema version")
+                print(f"TESTMAP skipped an empty coverage file {path.name}", file=sys.stderr)
+                continue
+            (version,) = row
             if int(version) != 7:
                 raise SystemExit(f"{path}: coverage schema {version}, this tool reads 7")
             contexts = dict(db.execute("SELECT id, context FROM context"))
