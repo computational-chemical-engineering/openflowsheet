@@ -1702,3 +1702,10 @@
   entry), as an R-W4-12 review fix outside the gate. Alternative: a public `CONTEXT`. Reversible by: a register entry.
   Leftovers (docstrings): binding_common.py:4 names `_column_owners`, column_binding.py:5 names `_COLUMN`: review-fix
   docstrings. Engineer scripts in `<git-common-dir>/codehealth/drafts/w4-i13/`.
+- **2026-11-17, job 216 FAIL (w4r12-i13-1, I-13 interface b0adabc5 on plan b55fb808, run-log step 267, 11/12,
+  `public_api`); job 217 SKIPPED.** Five public constants' defining expressions now name the public builder-kit names
+  (values unchanged), "not in the plan's changed": model_builders.py:MODEL_BUILDERS, model_signatures.py:MODEL_BASES,
+  MODEL_SIGNATURES, S11_BASES, thermal_binding.py:BUILDERS. DECISION: declare them in the plan's `changed`, rebuild
+  plan/step/tests/refactor, enqueue fresh (labels w4r12-i13-3, -4). Fix brief S19-W4-12-fix216.md,
+  `sonnet-implementer` (W4 run 12 engineer has ended; no other agent on the lane). I-11's merge-check helper
+  (97553d85 on eb71978d) is unaffected.
