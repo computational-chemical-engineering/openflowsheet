@@ -2306,3 +2306,7 @@
   DECISION: one merge-check for both lanes (helper = wp/S19 tip + wp/S19-g6e + wp/S19-g5j after job 263), not two.
   Alternative: G6 now, G5 after. Reason: one full suite instead of two. Reversible by: merging the lanes separately.
 - **2026-11-17, job 261 PASS (g5r12-3, 672cc673, step 296 accepted, certificate.py 23.9 -> 17.6, 16/16).**
+- **2026-11-17, jobs 262 PASS (g5r12-4, a06cc5d6, step 297 accepted, 17.6 -> 15.6, 16/16) and 263 PASS (g5r12-revfix,
+  604755d7, step 298 accepted-neutral, 15/15).** Helper wp/S19-g5j-mc (worktree s19-g5j-mc) = 604755d7 + wp/S19
+  aebdcc58 (a7899ba0) + wp/S19-g6e 2ce4c5fe = 4ea795f2; ruff clean; merge-check job 264 (g5r12-g6r7-mc, full suite).
+  Gate report (6 h, 13 gates, 0 failed): the two standing ALERTs (600 s selected; ratio 0.62).
