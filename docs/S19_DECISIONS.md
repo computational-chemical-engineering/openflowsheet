@@ -1830,3 +1830,9 @@
   held). Reversible by: MB back to c3c5793e (its map is kept). Also: `serial.sh` committed in the skill (f108189a,
   rule 4 serial runs, PYTHONHASHSEED=0) and brief S19-W4-13.md drafted (I-10, I-12a, I-12b if room; I-12c, I-12d later
   runs, for the 150k cap).
+- **2026-11-17 03:50, job 227 PASS (w4r12-revfix, step 274 accepted-neutral, 15/15).** Gate report (6 h):
+  "ALERT selected share 73% < 75% of step gates", "ALERT selected gates take 640 s > 300 s (tests tier)",
+  "ALERT selected/full time ratio 0.53 > 0.4: selection saves little" (standing; proposal 2 with Frank; the queue
+  wait ALERT is gone: median 8 min). Helper wp/S19-w4-mc (worktree s19-w4-mc) = e4c28e19 + wp/S19 abe73e24 as
+  41124b28; merge-check job 228 (w4r12-mc). wp/S19 changed code since the last lane merge (test_impact.py fold fix,
+  0d91ac4b), so the helper is fresh from the tip.
