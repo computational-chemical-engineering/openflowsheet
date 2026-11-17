@@ -34,7 +34,7 @@ import pytest
 from conftest import REPO_ROOT
 from jsonschema import Draft202012Validator
 
-from openflowsheet.application.types import published_schemas
+from openflowsheet.application.documents import published_schemas
 from openflowsheet.registry import (
     Attestation,
     Coded,

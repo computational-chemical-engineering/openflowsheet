@@ -27,32 +27,31 @@ from jsonschema import Draft202012Validator
 from t07_support import AT, COMPLETED, DIGEST, JOB_ID, completed_solve, event, job, ref
 
 from openflowsheet.application.errors import API_ERROR_HTTP_STATUS, ApiError, ApiErrorCode
-from openflowsheet.application.jobs import model
-from openflowsheet.application.types import (
+from openflowsheet.application.inspection_types import JobWait, SubmitResult
+from openflowsheet.application.job_records import ArtifactRef, Job, JobEnding, JobEvent, RunResult
+from openflowsheet.application.job_requests import (
     DEFAULT_SOLVE_POLICY_ID,
-    RIGHTS,
-    ArtifactRef,
     Budgets,
-    CapabilityReference,
-    Change,
-    Edit,
-    ExecutorSettings,
-    Job,
-    JobEnding,
-    JobEvent,
     JobRequest,
-    JobWait,
+    ReproduceBody,
+    SolveBody,
+    normalize_job_request,
+    request_sha256,
+)
+from openflowsheet.application.jobs import model
+from openflowsheet.application.policy_types import (
+    RIGHTS,
+    CapabilityReference,
+    ExecutorSettings,
     Limits,
     ProjectPolicy,
     ReplayPolicy,
-    ReproduceBody,
-    RunResult,
+)
+from openflowsheet.application.transaction_types import (
+    Change,
+    Edit,
     SemanticDiff,
-    SolveBody,
-    SubmitResult,
     TransactionResult,
-    normalize_job_request,
-    request_sha256,
 )
 from openflowsheet.application.validation import validate
 from openflowsheet.schema_check import (

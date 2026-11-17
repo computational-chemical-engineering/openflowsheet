@@ -142,7 +142,7 @@ def step_corpus(out: Path) -> int:
     `out/c03.json`."""
     from openflowsheet.application.errors import ApplicationError
     from openflowsheet.application.local import LocalApplication
-    from openflowsheet.application.types import Change
+    from openflowsheet.application.transaction_types import Change
 
     base = json.loads((ROOT / "examples" / "rankine-cycle.changeset.json").read_text("utf-8"))
 
@@ -177,7 +177,7 @@ def step_corpus(out: Path) -> int:
 
 
 def step_replay(bundles: Path, out: Path) -> int:
-    from openflowsheet.application.revision_run import reproduce_bundle
+    from openflowsheet.application.revision_replay import reproduce_bundle
 
     rows: dict[str, Any] = {}
     with tempfile.TemporaryDirectory() as scratch:

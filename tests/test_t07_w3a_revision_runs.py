@@ -39,12 +39,12 @@ from test_t06_w4_registry import BY_ID, CONSTRUCTED, REGISTRY
 
 import benchmarks.t06.ensemble as ensemble
 from openflowsheet.application.binding import Binding, bind_revision_or_reason
+from openflowsheet.application.revision_replay import reproduce_bundle
 from openflowsheet.application.revision_run import (
     NoRoute,
     Route,
     RunUnsupportedError,
     legacy_plan,
-    reproduce_bundle,
     run_revision_session,
     select_route,
     solve_route,
@@ -269,7 +269,7 @@ def test_legacy_plan_documents_equal_the_pre_move_benchmarks() -> None:
 
 def test_the_new_r0_branches_are_inert_for_a_tear_bundle(tmp_path: Path) -> None:
     """No bundle before T07 has `execution-plan.json` or `solve-path.json` (K05 unchanged)."""
-    from openflowsheet.application.revision_run import registered_case, registered_flowsheet
+    from openflowsheet.application.revision_replay import registered_case, registered_flowsheet
 
     case = registered_case("SYN-001-nominal")
     assert case is not None
@@ -691,7 +691,7 @@ def test_a_k05_bundle_reruns_only_as_a_registered_case(tmp_path: Path) -> None:
     """§12.3: no `revision.json` — the tear path's shape. A registered run id reruns through the
     registered-case construction (`MATCH`); any other is `rerun_unsupported(no_revision_document)`,
     never compared with nominal's rerun."""
-    from openflowsheet.application.revision_run import registered_case, registered_flowsheet
+    from openflowsheet.application.revision_replay import registered_case, registered_flowsheet
 
     case = registered_case("SYN-001-high-recycle")
     assert case is not None

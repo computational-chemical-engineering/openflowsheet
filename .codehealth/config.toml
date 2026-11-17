@@ -108,13 +108,12 @@ cmd = 'V="${OPENFLOWSHEET_VENV:-$(dirname "$(git rev-parse --path-format=absolut
 # order states the target architecture: the violations recorded at adoption are the ones the
 # planned splits remove (S17 R1 to R5).
 # Violations recorded at adoption (11), each with the step that removed it (plan review, S17).
-# R1 to R5 are done; the pair marked `stay` is the one still reported (codehealth arch). R2's two
-# (local, revision_continuation -> transactions) left the list with that module (ADR 0076 I-11):
+# All are done. R2's two (local, revision_continuation -> transactions) left the list with that
+# module (ADR 0076 I-11); revision_run -> validation (D19 item D4) went with ADR 0076 I-10:
 #   types -> validation, store -> validation, authz -> validation       R1 split-validation-report
 #   column_binding -> revision_binding, thermal_binding -> revision_binding   R3 split-revision-binding
 #   revision_binding -> binding                                          R4 split-binding-common
 #   jobs.worker -> jobs.executor                                         R5 (move _defect, refactor mode)
-#   revision_run -> validation                                           stay: interface package (D19 item D4)
 # A violation is keyed by module pair: the one that stays absorbs any new import between the same pair.
 roots = ["src"]
 type_checking = false
@@ -141,8 +140,10 @@ order = [
     # revision engine: validator, routes and runs, binders
     "openflowsheet.application.replacement",
     "openflowsheet.application.trust_region_parent",
+    "openflowsheet.application.structure_inspection",
     "openflowsheet.application.validation",
     "openflowsheet.application.revision_routes",
+    "openflowsheet.application.revision_replay",
     "openflowsheet.application.revision_run",
     "openflowsheet.application.revision_continuation",
     "openflowsheet.application.structure_index",
@@ -157,14 +158,20 @@ order = [
     # persistence
     "openflowsheet.application.authz",
     "openflowsheet.application.store",
+    "openflowsheet.application.store_records",
     # edit algebra and binder vocabulary (S17 R2, R4)
     "openflowsheet.application.revision_edits",
     "openflowsheet.application.binding_common",
     # contract vocabulary
     "openflowsheet.application.projection",
     "openflowsheet.application.contract",
-    "openflowsheet.application.types",
+    "openflowsheet.application.inspection_types",
+    "openflowsheet.application.job_records",
+    "openflowsheet.application.job_requests",
+    "openflowsheet.application.policy_types",
+    "openflowsheet.application.transaction_types",
     "openflowsheet.application.errors",
+    "openflowsheet.application.documents",
     # foundation
     "openflowsheet.application.revisions",
     "openflowsheet.application.jobs.interrupt",
@@ -260,6 +267,9 @@ to = [
     "openflowsheet.application.model_signatures",
     "openflowsheet.application.revision_edits",
     "openflowsheet.application.binding_common",
+    "openflowsheet.application.structure_inspection",
+    "openflowsheet.application.store_records",
+    "openflowsheet.application.revision_replay",
 ]
 reason = "bindings/__init__.py: each binding reads operations.OPERATIONS, goes through operations.dispatch and adds nothing (T07 design note 11.6)"
 
@@ -280,8 +290,14 @@ from = [
     "openflowsheet.application.thermal_binding",
     "openflowsheet.application.model_builders",
     "openflowsheet.application.model_signatures",
+    "openflowsheet.application.structure_inspection",
+    "openflowsheet.application.revision_replay",
 ]
-to = ["openflowsheet.application.store", "openflowsheet.application.authz"]
+to = [
+    "openflowsheet.application.store",
+    "openflowsheet.application.store_records",
+    "openflowsheet.application.authz",
+]
 reason = "the revision engine computes; persistence and authorization belong to the services above it (no engine module imports them at run time today; revision_continuation.py:57 is under TYPE_CHECKING) (S17 plan review)"
 
 [docs]

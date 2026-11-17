@@ -29,7 +29,7 @@ from st_schema_support import ST_OPERATIONS
 from x02_schema_support import without_x02
 from x04_schema_support import without_x04
 
-from openflowsheet.application.types import published_schemas
+from openflowsheet.application.documents import published_schemas
 from openflowsheet.schema_check import SCHEMA_BASE, schema_errors
 
 sys.path.insert(0, str(REPO_ROOT / "scripts"))

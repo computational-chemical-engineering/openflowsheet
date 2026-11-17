@@ -38,8 +38,8 @@ from test_s10c_region import Z, _state
 
 from openflowsheet.application import revision_run
 from openflowsheet.application.local import LocalApplication
+from openflowsheet.application.revision_replay import registered_case, registered_flowsheet
 from openflowsheet.application.revision_routes import ApplicationRevisionRoutes
-from openflowsheet.application.revision_run import registered_case, registered_flowsheet
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models.lifted import AdmissibilityRefusal, LiftedSplit
 from openflowsheet.numerics.solve_record import SolvePolicy

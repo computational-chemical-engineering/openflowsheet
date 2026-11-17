@@ -144,7 +144,7 @@ def test_a3_c_the_policy_is_required_and_known() -> None:
 @pytest.fixture(scope="module")
 def high_recycle(tmp_path_factory: pytest.TempPathFactory) -> tuple[Path, dict[str, Any]]:
     """K05's registered SYN-001-high-recycle, written by this build, and a fresh rerun of it."""
-    from openflowsheet.application.revision_run import registered_case, rerun_registered
+    from openflowsheet.application.revision_replay import registered_case, rerun_registered
 
     case = registered_case("SYN-001-high-recycle")
     assert case is not None
@@ -233,7 +233,7 @@ def test_a3_b_the_same_record_resealed_with_v2_is_compared_under_v2(
 def test_a3_an_unknown_policy_is_refused_and_not_rerun(
     high_recycle: tuple[Path, Any], tmp_path: Path
 ) -> None:
-    from openflowsheet.application.revision_run import reproduce_bundle
+    from openflowsheet.application.revision_replay import reproduce_bundle
     from openflowsheet.run.bundle import verify_bundle
     from openflowsheet.run.replay import Rerun, replay
 
@@ -560,7 +560,7 @@ def test_a15_both_schemas_accept_v1_and_v2_and_refuse_another(schema: str, fixtu
     from referencing import Registry, Resource
     from referencing.jsonschema import DRAFT202012
 
-    from openflowsheet.application.types import published_schemas
+    from openflowsheet.application.documents import published_schemas
 
     registry = Registry().with_resources(
         (schema_id, Resource(contents=dict(document), specification=DRAFT202012))
@@ -582,13 +582,8 @@ def rc_bundles(tmp_path_factory: pytest.TempPathFactory) -> Path:
     records a build recording v2 writes; this build's recording switch is held)."""
     from t07_corpus import CORPUS
 
-    from openflowsheet.application.revision_run import (
-        Route,
-        registered_case,
-        rerun_registered,
-        run_revision_session,
-        select_route,
-    )
+    from openflowsheet.application.revision_replay import registered_case, rerun_registered
+    from openflowsheet.application.revision_run import Route, run_revision_session, select_route
     from openflowsheet.orchestrator.policies import DEFAULT_POLICY_ID, resolve_policy
     from openflowsheet.verify.verdict import CheckPolicy
 
@@ -644,13 +639,13 @@ def test_a14_c3_fails_if_the_events_go_unread(
 
     import t08_rc
 
-    from openflowsheet.application import revision_run
+    from openflowsheet.application import revision_replay
 
     report = SimpleNamespace(
         mode="compatible_reproduction", verdict="MATCH", differences=(), bitwise_floats=True
     )
     monkeypatch.setattr(
-        revision_run, "reproduce_bundle", lambda *args, **kwargs: SimpleNamespace(report=report)
+        revision_replay, "reproduce_bundle", lambda *args, **kwargs: SimpleNamespace(report=report)
     )
     set_name, bundle = t08_rc.A14_CONTROL_BUNDLES["c3"]
     row = t08_rc.run_control("c3", rc_bundles / set_name / bundle, tmp_path)

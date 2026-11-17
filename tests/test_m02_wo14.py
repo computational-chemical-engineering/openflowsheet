@@ -45,13 +45,8 @@ from openflowsheet.application.coupled_run import (
     iterate_differences,
     record_differences,
 )
-from openflowsheet.application.revision_run import (
-    Route,
-    _constants_for_shape,
-    reproduce_bundle,
-    run_revision_session,
-    select_route,
-)
+from openflowsheet.application.revision_replay import _constants_for_shape, reproduce_bundle
+from openflowsheet.application.revision_run import Route, run_revision_session, select_route
 from openflowsheet.application.run_session import EXTERNAL_PROVIDERS, _reproducibility_class
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models.c1.reactor import C1Reactor

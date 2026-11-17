@@ -110,7 +110,7 @@ Values may also be written in the registered non-SI spellings — `bar`, `kPa`, 
 
 ```python
 from openflowsheet.application.local import LocalApplication
-from openflowsheet.application.types import Change, Edit
+from openflowsheet.application.transaction_types import Change, Edit
 
 revision = {
     "schema_version": 1, "revision_id": "rankine", "parent_revision": None,

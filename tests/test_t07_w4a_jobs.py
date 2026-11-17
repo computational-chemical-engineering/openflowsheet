@@ -36,21 +36,14 @@ from t07_jobs_support import (
 import openflowsheet.application.revision_run as revision_run
 from openflowsheet.application.authz import grant
 from openflowsheet.application.errors import ApplicationError
+from openflowsheet.application.job_records import Job, RunResult
+from openflowsheet.application.job_requests import Budgets, JobRequest, ReproduceBody, SolveBody
 from openflowsheet.application.jobs.executor import COMPUTE_LOCK
 from openflowsheet.application.jobs.model import lifecycle_warnings
 from openflowsheet.application.jobs.runner import SOLVE_STAGES
 from openflowsheet.application.local import LocalApplication
+from openflowsheet.application.policy_types import Limits, ReplayPolicy
 from openflowsheet.application.revision_run import Route, run_revision_session, select_route
-from openflowsheet.application.types import (
-    Budgets,
-    Job,
-    JobRequest,
-    Limits,
-    ReplayPolicy,
-    ReproduceBody,
-    RunResult,
-    SolveBody,
-)
 from openflowsheet.canonical import directory_hash, file_sha256
 from openflowsheet.orchestrator.policies import (
     APPLICATION_POLICIES,

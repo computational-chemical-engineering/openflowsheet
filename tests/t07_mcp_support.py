@@ -21,7 +21,7 @@ from openflowsheet.application.authz import grant
 from openflowsheet.application.errors import ApplicationError
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.operations import dispatch
-from openflowsheet.application.types import CapabilityReference
+from openflowsheet.application.policy_types import CapabilityReference
 
 PROJECT_ID = "w6b-mcp"
 PRINCIPAL = "agent-w6b"

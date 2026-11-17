@@ -35,10 +35,11 @@ from t06_support import ALLOWANCE, worst_ratio
 from t07_corpus import CORPUS
 from t07_jobs_support import commit
 
+from openflowsheet.application.job_requests import JobRequest, SolveBody
 from openflowsheet.application.local import LocalApplication
+from openflowsheet.application.policy_types import ReplayPolicy
 from openflowsheet.application.revision_binding import RevisionBinding, bind_revision_flowsheet
 from openflowsheet.application.store import ProjectStore
-from openflowsheet.application.types import JobRequest, ReplayPolicy, SolveBody
 from openflowsheet.orchestrator import region as region_module
 from openflowsheet.orchestrator import region_problem, revision
 from openflowsheet.orchestrator.execution import ExecutionPlan

@@ -18,28 +18,23 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Protocol
 
 if TYPE_CHECKING:
-    from openflowsheet.application.jobs.model import JobStatus
-    from openflowsheet.application.types import (
+    from openflowsheet.application.inspection_types import (
         AdmissionReport,
         AuditOrder,
         AuditRecord,
         CapabilityPage,
-        Change,
-        Job,
-        JobEvent,
-        JobRequest,
-        JobResult,
         JobWait,
         MessageEntry,
         ModelRegistryView,
         ProjectSummary,
-        ReplayPolicy,
         RevisionSummary,
-        RunResult,
-        SemanticDiff,
         SubmitResult,
-        TransactionResult,
     )
+    from openflowsheet.application.job_records import Job, JobEvent, JobResult, RunResult
+    from openflowsheet.application.job_requests import JobRequest
+    from openflowsheet.application.jobs.model import JobStatus
+    from openflowsheet.application.policy_types import ReplayPolicy
+    from openflowsheet.application.transaction_types import Change, SemanticDiff, TransactionResult
     from openflowsheet.application.validation_report import Task, ValidationReport
     from openflowsheet.run.replay import ReplayReport
 

@@ -31,9 +31,9 @@ from openflowsheet.application.revision_run import (
     Route,
     route_analysis,
     route_declaration,
-    route_structure,
     select_route,
 )
+from openflowsheet.application.structure_inspection import route_structure
 from openflowsheet.application.validation import structural_analysis, validate
 from openflowsheet.canonical import canonical_json
 from openflowsheet.graph.trace import StructureUnavailableError

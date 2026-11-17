@@ -22,8 +22,9 @@ from test_m04_study_job import attempts, body, read, submit
 
 from openflowsheet.application.errors import ApplicationError
 from openflowsheet.application.local import LocalApplication
+from openflowsheet.application.policy_types import LOCAL_OWNER_PRINCIPAL
 from openflowsheet.application.revisions import Revision
-from openflowsheet.application.types import LOCAL_OWNER_PRINCIPAL, Change, Edit
+from openflowsheet.application.transaction_types import Change, Edit
 from openflowsheet.canonical import document_sha256
 from openflowsheet.studies.surrogate import records
 from openflowsheet.studies.surrogate.manifest import derived_verdict

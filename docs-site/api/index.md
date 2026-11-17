@@ -7,7 +7,7 @@ may change without notice.
 
 ```python
 from openflowsheet.application.local import LocalApplication
-from openflowsheet.application.types import Change, Edit
+from openflowsheet.application.transaction_types import Change, Edit
 ```
 
 | Page | Contents |

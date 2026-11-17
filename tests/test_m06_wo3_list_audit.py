@@ -25,16 +25,12 @@ from t07_jobs_support import commit
 
 from openflowsheet.application.authz import OPERATION_RIGHTS, authorize, grant
 from openflowsheet.application.errors import ApplicationError
+from openflowsheet.application.inspection_types import AuditRecord
+from openflowsheet.application.job_requests import JobRequest, SolveBody
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.operations import OPERATIONS, dispatch
-from openflowsheet.application.types import (
-    AuditRecord,
-    CapabilityReference,
-    Change,
-    Edit,
-    JobRequest,
-    SolveBody,
-)
+from openflowsheet.application.policy_types import CapabilityReference
+from openflowsheet.application.transaction_types import Change, Edit
 from openflowsheet.canonical import canonical_json, document_sha256
 from openflowsheet.schema_check import SCHEMA_BASE, schema_errors
 

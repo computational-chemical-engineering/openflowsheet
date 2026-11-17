@@ -33,8 +33,8 @@ def main() -> int:
     from t07_identity import _commit
 
     from openflowsheet.application.errors import ApplicationError
+    from openflowsheet.application.job_requests import JobRequest, SolveBody
     from openflowsheet.application.local import LocalApplication
-    from openflowsheet.application.types import JobRequest, SolveBody
     from openflowsheet.canonical import document_sha256
     from openflowsheet.models.revision_flowsheet import parse_revision
     from openflowsheet.run.bundle import read_manifest

@@ -263,7 +263,7 @@ if plan["actions"]:
     from benchmarks.t07.v17 import fixtures
     from openflowsheet.application.local import LocalApplication
     from openflowsheet.application.serving import token_capability
-    from openflowsheet.application.types import Change
+    from openflowsheet.application.transaction_types import Change
     with LocalApplication.open(project, capability=token_capability(project, token_file)) as app:
         for action in plan["actions"]:
             if action in ("solve_verified", "solve_unverified"):

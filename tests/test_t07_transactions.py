@@ -26,15 +26,9 @@ from conftest import REPO_ROOT
 from openflowsheet.application.authz import grant
 from openflowsheet.application.errors import ApplicationError
 from openflowsheet.application.local import LocalApplication
+from openflowsheet.application.policy_types import RIGHTS, CapabilityReference
 from openflowsheet.application.store import ProjectStore
-from openflowsheet.application.types import (
-    RIGHTS,
-    CapabilityReference,
-    Change,
-    ChangeSet,
-    Edit,
-    TransactionResult,
-)
+from openflowsheet.application.transaction_types import Change, ChangeSet, Edit, TransactionResult
 from openflowsheet.canonical import document_sha256
 
 SPAWN = multiprocessing.get_context("spawn")

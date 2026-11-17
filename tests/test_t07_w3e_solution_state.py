@@ -325,7 +325,7 @@ def test_d_an_archive_without_the_file_reruns_to_mismatch(
 
 
 def test_a_tear_path_bundle_has_no_solution_state(tmp_path: Path) -> None:
-    from openflowsheet.application.revision_run import registered_case, registered_flowsheet
+    from openflowsheet.application.revision_replay import registered_case, registered_flowsheet
     from openflowsheet.application.run_session import run_session
 
     case = registered_case("SYN-001-nominal")

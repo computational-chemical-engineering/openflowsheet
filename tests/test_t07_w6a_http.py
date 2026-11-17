@@ -53,7 +53,12 @@ BINDINGS = REPO_ROOT / "src" / "openflowsheet" / "application" / "bindings"
 ALLOWED_APPLICATION = {
     "openflowsheet.application.contract",
     "openflowsheet.application.errors",
-    "openflowsheet.application.types",
+    "openflowsheet.application.documents",
+    "openflowsheet.application.transaction_types",
+    "openflowsheet.application.job_requests",
+    "openflowsheet.application.job_records",
+    "openflowsheet.application.policy_types",
+    "openflowsheet.application.inspection_types",
     "openflowsheet.application.operations",
     "openflowsheet.application.projection",
 }

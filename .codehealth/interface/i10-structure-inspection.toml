@@ -1,0 +1,33 @@
+# ADR 0076 I-10 (W4 run 13, brief S19-W4-13): route_structure and its private helper _index move
+# from application/revision_run.py to the new module application/structure_inspection.py.
+# `codehealth gate --mode interface` reads this plan from the plan commit.
+id = "i10-structure-inspection"
+approved_by = "Frank Peters, 2026-11-14, ADR 0076 accepted (Decision Desk ofs-adr0076-accept)"
+reason = """ADR 0076 I-10 (S17 D4): route_structure (inspect_structure's document, in no identity \
+key) and its private helper _index (its only user; private, so not a plan entry) move verbatim from revision_run.py to the new module \
+application/structure_inspection.py, which sits directly above validation. Pure move: no \
+signature change, no re-export; the lazy 'from openflowsheet.application.validation import \
+structural_analysis, validate' stays inside route_structure as it was. The structural stage \
+stays in validation and traced_analysis in revision_run, so test_m06_wo1_structure_index.py:313's \
+patch of revision_run.trace_declaration still reaches route_structure's route_declaration call \
+(liveness checked: a raising fake fails the test). revision_run loses route_structure from its \
+__all__ and the imports only _index used (structure_index, ProcessGraph). Callers follow: src \
+application/local.py:93 (and inspect_structure's docstring); the five tests of the ADR row \
+(test_m06_wo1_structure_index.py, test_t07_r6_free_role.py, test_t07_r7_admission.py, \
+test_t07_w3c_admission.py, test_t07_w5a_projection.py, the last a lazy import), import lines \
+only. No module-attribute patch targets route_structure, _index or a name either calls through \
+revision_run's namespace (patch_noop 265 total, 0 flagged, at this base and on the step); no \
+test or script reads revision_run.py by path. tests/fixtures/m06/g3_structure_snapshots.json uses \
+"route_structure" as a key, not a module path; unchanged. Expected codehealth arch --depth 4 \
+(measured at this base and on the step applied to it): 1 violation / 1 cycle / 4 cycle edges -> \
+0 / 0 / 0 (cycle 5 revision_routes <-> revision_run <-> validation and the violation \
+revision_run -> validation go; imports 3992 -> 4001, files 315 -> 316). Layer config after the \
+step (separate commit): application-layers gains openflowsheet.application.structure_inspection \
+directly above openflowsheet.application.validation; the revision_run -> validation adoption \
+comment line goes."""
+removed = []
+renamed = {"src/openflowsheet/application/revision_run.py:route_structure" = "src/openflowsheet/application/structure_inspection.py:route_structure"}
+changed = []
+added = []
+new_files = ["src/openflowsheet/application/structure_inspection.py"]
+callers = ["tests/test_m06_wo1_structure_index.py", "tests/test_t07_r6_free_role.py", "tests/test_t07_r7_admission.py", "tests/test_t07_w3c_admission.py", "tests/test_t07_w5a_projection.py"]

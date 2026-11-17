@@ -353,7 +353,7 @@ def test_r252_a_job_cancelled_while_queued_has_no_artifact_and_a_null_experiment
 ) -> None:
     from t07_jobs_support import cancel_while_queued
 
-    from openflowsheet.application.types import JobRequest
+    from openflowsheet.application.job_requests import JobRequest
 
     request = JobRequest.from_document(
         {"operation": "experiment", "idempotency_key": "queued", "body": body()}

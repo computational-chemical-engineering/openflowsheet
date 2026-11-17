@@ -56,6 +56,7 @@ from multiprocessing.synchronize import Event
 from typing import Final, Literal
 
 from openflowsheet.application.errors import ApiError
+from openflowsheet.application.job_records import Job, JobEnding
 from openflowsheet.application.jobs import worker
 from openflowsheet.application.jobs.interrupt import (
     CancelReason,
@@ -66,8 +67,9 @@ from openflowsheet.application.jobs.interrupt import (
 )
 from openflowsheet.application.jobs.model import TERMINAL_STATUSES
 from openflowsheet.application.jobs.runner import RunContext, WorkerResult, defect_result, execute
-from openflowsheet.application.store import JOBS_DIR, ArtifactRow
-from openflowsheet.application.types import ExecutorSettings, Job, JobEnding
+from openflowsheet.application.policy_types import ExecutorSettings
+from openflowsheet.application.store import JOBS_DIR
+from openflowsheet.application.store_records import ArtifactRow
 from openflowsheet.canonical import file_sha256
 
 __all__ = [

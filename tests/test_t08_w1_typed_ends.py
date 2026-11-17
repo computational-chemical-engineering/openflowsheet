@@ -61,7 +61,7 @@ from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.model_builders import MODEL_BUILDERS
 from openflowsheet.application.operations import dispatch
 from openflowsheet.application.revision_binding import RevisionBinding, bind_revision_flowsheet
-from openflowsheet.application.types import Change, Edit
+from openflowsheet.application.transaction_types import Change, Edit
 from openflowsheet.canonical import canonical_json
 from openflowsheet.graph.trace import trace_declaration
 from openflowsheet.thermo.syn001 import Syn001Provider, _flash_failure

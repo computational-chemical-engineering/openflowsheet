@@ -346,8 +346,8 @@ def _signatures() -> list[dict[str, Any]]:
     application, whose construction builds the process registry from the tables written here
     (W2-7); `tests/test_f1_legacy_builtins.py` holds this equal to `list_models()`."""
     from openflowsheet.application import local
+    from openflowsheet.application.inspection_types import ModelRegistryView
     from openflowsheet.application.model_signatures import MODEL_SIGNATURES
-    from openflowsheet.application.types import ModelRegistryView
 
     view = ModelRegistryView(
         models=tuple(

@@ -48,7 +48,7 @@ from openflowsheet.application.authz import grant
 from openflowsheet.application.errors import ApplicationError
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.operations import OPERATIONS, dispatch
-from openflowsheet.application.types import CapabilityReference
+from openflowsheet.application.policy_types import CapabilityReference
 
 ROOT: Final[Path] = Path(__file__).resolve().parents[1]
 TARGET: Final[Path] = ROOT / "tests" / "web" / "fixtures" / "w26"

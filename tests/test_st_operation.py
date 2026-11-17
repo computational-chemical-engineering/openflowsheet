@@ -36,7 +36,7 @@ from openflowsheet.application.authz import grant
 from openflowsheet.application.errors import ApplicationError
 from openflowsheet.application.local import STREAM_TABLE_DEPTH, LocalApplication
 from openflowsheet.application.projection import MAX_DEPTH
-from openflowsheet.application.types import Change
+from openflowsheet.application.transaction_types import Change
 from openflowsheet.canonical import document_sha256
 from openflowsheet.messages.render import render_error
 from openflowsheet.run.bundle import ARTIFACT_DIR

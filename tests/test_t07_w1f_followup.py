@@ -18,19 +18,21 @@ from conftest import REPO_ROOT, load_json
 from t07_support import JOB_ID, ref
 
 from openflowsheet.application.errors import ApiError
-from openflowsheet.application.jobs.model import ARTIFACT_FILE_NAMES, ARTIFACT_KINDS
-from openflowsheet.application.types import (
-    DEFAULT_SOLVE_POLICY_ID,
-    Budgets,
-    JobRequest,
+from openflowsheet.application.job_records import (
     JobResult,
-    Limits,
     RunResult,
-    SolveBody,
     SolvePath,
     VerificationStatus,
     _replay_report_build,
 )
+from openflowsheet.application.job_requests import (
+    DEFAULT_SOLVE_POLICY_ID,
+    Budgets,
+    JobRequest,
+    SolveBody,
+)
+from openflowsheet.application.jobs.model import ARTIFACT_FILE_NAMES, ARTIFACT_KINDS
+from openflowsheet.application.policy_types import Limits
 from openflowsheet.orchestrator import policies
 from openflowsheet.run.replay import ReplayReport
 from openflowsheet.schema_check import DocumentSchemaError, schema_errors

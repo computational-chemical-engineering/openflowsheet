@@ -49,6 +49,7 @@ import mcp.types as mcp_types
 from mcp.server.lowlevel import Server
 from mcp.server.stdio import stdio_server
 
+from openflowsheet.application.documents import published_schemas
 from openflowsheet.application.errors import ApiError, ApplicationError
 from openflowsheet.application.operations import (
     OPERATIONS,
@@ -58,7 +59,6 @@ from openflowsheet.application.operations import (
     project_error,
 )
 from openflowsheet.application.projection import bound_text
-from openflowsheet.application.types import published_schemas
 
 _LOG = logging.getLogger(__name__)
 

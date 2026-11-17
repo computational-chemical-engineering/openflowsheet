@@ -200,7 +200,8 @@ def test_g6a_through_solve_admission() -> None:
     D27)."""
     from openflowsheet.application.admission import admit_solve
     from openflowsheet.application.errors import ApiError
-    from openflowsheet.application.types import Budgets, Limits, SolveBody
+    from openflowsheet.application.job_requests import Budgets, SolveBody
+    from openflowsheet.application.policy_types import Limits
     from openflowsheet.schema_check import schema_errors
 
     pinned = variants.registry()[REAL]

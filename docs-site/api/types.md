@@ -1,36 +1,36 @@
 # Requests and results
 
-::: openflowsheet.application.types.Change
+::: openflowsheet.application.transaction_types.Change
 
-::: openflowsheet.application.types.Edit
+::: openflowsheet.application.transaction_types.Edit
 
-::: openflowsheet.application.types.RunResult
+::: openflowsheet.application.job_records.RunResult
 
-::: openflowsheet.application.types.RunFailure
+::: openflowsheet.application.job_records.RunFailure
 
-::: openflowsheet.application.types.TransactionResult
+::: openflowsheet.application.transaction_types.TransactionResult
 
-::: openflowsheet.application.types.JobRequest
+::: openflowsheet.application.job_requests.JobRequest
 
-::: openflowsheet.application.types.SolveBody
+::: openflowsheet.application.job_requests.SolveBody
 
-::: openflowsheet.application.types.Job
+::: openflowsheet.application.job_records.Job
 
-::: openflowsheet.application.types.JobEvent
+::: openflowsheet.application.job_records.JobEvent
 
-::: openflowsheet.application.types.JobResult
+::: openflowsheet.application.job_records.JobResult
 
-::: openflowsheet.application.types.JobWait
+::: openflowsheet.application.inspection_types.JobWait
 
-::: openflowsheet.application.types.SubmitResult
+::: openflowsheet.application.inspection_types.SubmitResult
 
-::: openflowsheet.application.types.ProjectSummary
+::: openflowsheet.application.inspection_types.ProjectSummary
 
-::: openflowsheet.application.types.ModelRegistryView
+::: openflowsheet.application.inspection_types.ModelRegistryView
 
-::: openflowsheet.application.types.RevisionSummary
+::: openflowsheet.application.inspection_types.RevisionSummary
 
-::: openflowsheet.application.types.SemanticDiff
+::: openflowsheet.application.transaction_types.SemanticDiff
 
-::: openflowsheet.application.types.AuditRecord
+::: openflowsheet.application.inspection_types.AuditRecord
 

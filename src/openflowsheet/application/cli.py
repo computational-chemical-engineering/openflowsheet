@@ -136,7 +136,7 @@ def _check_line(check_id: str) -> str | None:
 
 def command_solve(arguments: argparse.Namespace) -> int:
     """Solve a registered SYN-001 case, verify it, and write a replay bundle."""
-    from openflowsheet.application.revision_run import registered_case, registered_flowsheet
+    from openflowsheet.application.revision_replay import registered_case, registered_flowsheet
     from openflowsheet.application.run_session import run_session
 
     case = registered_case(arguments.case)
@@ -327,7 +327,7 @@ def command_replay(arguments: argparse.Namespace) -> int:
     elif arguments.rerun:
         import tempfile
 
-        from openflowsheet.application.revision_run import reproduce_bundle
+        from openflowsheet.application.revision_replay import reproduce_bundle
 
         with tempfile.TemporaryDirectory() as scratch:
             report = reproduce_bundle(
@@ -358,7 +358,7 @@ def command_project_init(arguments: argparse.Namespace) -> int:
     `--exist-ok` (MSG §3.8) a directory that holds a project is opened and reported as on
     creation. A coded refusal prints its layered text (surface `cli`) on stderr."""
     from openflowsheet.application.local import LocalApplication
-    from openflowsheet.application.store import StoreError
+    from openflowsheet.application.store_records import StoreError
 
     try:
         application = LocalApplication.create(
@@ -376,8 +376,8 @@ def command_project_init(arguments: argparse.Namespace) -> int:
 def command_project_grant(arguments: argparse.Namespace) -> int:
     """T07 §10.3: add a grant; print its token once — only the token's SHA-256 is stored."""
     from openflowsheet.application.authz import grant
-    from openflowsheet.application.store import StoreError
-    from openflowsheet.application.types import Limits
+    from openflowsheet.application.policy_types import Limits
+    from openflowsheet.application.store_records import StoreError
 
     try:
         capability, token = grant(
@@ -407,7 +407,7 @@ def command_project_grant(arguments: argparse.Namespace) -> int:
 def command_project_revoke(arguments: argparse.Namespace) -> int:
     """T07 §10.3: remove a grant; servers see it on their next call."""
     from openflowsheet.application.authz import revoke
-    from openflowsheet.application.store import StoreError
+    from openflowsheet.application.store_records import StoreError
 
     try:
         capability = revoke(Path(arguments.project), arguments.capability)
@@ -423,7 +423,7 @@ def command_project_ambient(arguments: argparse.Namespace) -> int:
     converted to Pa by ADR 0016's arithmetic) or clear it (`--clear`); audited as
     `project_ambient`. Gauge display units read it; no run does."""
     from openflowsheet.application.authz import ambient_pressure_pa, set_ambient_pressure
-    from openflowsheet.application.store import StoreError
+    from openflowsheet.application.store_records import StoreError
 
     if arguments.clear == (arguments.pressure is not None or arguments.unit is not None) or (
         not arguments.clear and (arguments.pressure is None or arguments.unit is None)
@@ -464,7 +464,7 @@ def _print_document(document: Any) -> None:
 def _human_text(error: Exception) -> str:
     """An error as the command line shows it: a coded `StoreError`'s layered text on the
     `cli` surface (MSG §3.7), anything else as `str()`."""
-    from openflowsheet.application.store import StoreError
+    from openflowsheet.application.store_records import StoreError
 
     return error.text("cli") if isinstance(error, StoreError) else str(error)
 
@@ -509,7 +509,7 @@ def command_api(arguments: argparse.Namespace) -> int:
     from openflowsheet.application.errors import ApplicationError
     from openflowsheet.application.local import LocalApplication
     from openflowsheet.application.operations import OPERATIONS, dispatch
-    from openflowsheet.application.store import StoreError
+    from openflowsheet.application.store_records import StoreError
     from openflowsheet.messages.text import format_text
 
     name = arguments.operation
@@ -632,7 +632,7 @@ def command_serve_http(arguments: argparse.Namespace) -> int:
         return 2
     from openflowsheet.application.authz import PolicyRefusedError
     from openflowsheet.application.local import LocalApplication
-    from openflowsheet.application.store import StoreError
+    from openflowsheet.application.store_records import StoreError
 
     try:
         from openflowsheet.application.bindings import http as binding
@@ -783,9 +783,9 @@ def _bundle_display_units(text: str) -> DisplayUnits | ApiError:
     pressure (a directory has no project; X04 decision D-8), or its refusal as the `ApiError`
     `get_stream_table` raises for it (ADR 0075 D9). The request schema's bound on the member
     (1 to 1024 characters) comes first and refuses as `dispatch` does (X04 review S4)."""
+    from openflowsheet.application.documents import validate_inline
     from openflowsheet.application.errors import api_error
     from openflowsheet.application.operations import OPERATIONS
-    from openflowsheet.application.types import validate_inline
     from openflowsheet.schema_check import DocumentSchemaError
     from openflowsheet.units.display import DisplayUnitsError, parse_display_units
 
@@ -820,7 +820,7 @@ def command_streams(arguments: argparse.Namespace) -> int:
     from openflowsheet.application.errors import ApplicationError
     from openflowsheet.application.local import LocalApplication
     from openflowsheet.application.operations import dispatch
-    from openflowsheet.application.store import StoreError
+    from openflowsheet.application.store_records import StoreError
     from openflowsheet.units.display import DisplayUnits
 
     as_json = arguments.format == "json"

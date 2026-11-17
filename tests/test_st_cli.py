@@ -26,7 +26,7 @@ from openflowsheet import __version__
 from openflowsheet.application import cli, stream_table, stream_table_format
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.operations import dispatch
-from openflowsheet.application.types import Change
+from openflowsheet.application.transaction_types import Change
 from openflowsheet.canonical import canonical_json
 from openflowsheet.run.bundle import ARTIFACT_DIR
 

@@ -39,11 +39,11 @@ import pytest
 
 from benchmarks.t07.v17 import export, fixtures, preflight, reference, scorer
 from openflowsheet.application.authz import grant
+from openflowsheet.application.job_requests import JobRequest
 from openflowsheet.application.jobs.executor import ProcessExecutor
 from openflowsheet.application.jobs.worker import PAUSE_AT_STAGE_VARIABLE, PAUSED_FILE
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.store import JOBS_DIR
-from openflowsheet.application.types import JobRequest
 
 REFERENCE = scorer.load_reference()
 C2_REFERENCE = scorer.load_reference(scorer.REFERENCE_C2_PATH)

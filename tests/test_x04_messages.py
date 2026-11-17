@@ -33,10 +33,11 @@ from t07_transport_support import (
 
 from openflowsheet.application.authz import grant, set_ambient_pressure
 from openflowsheet.application.errors import ApiError, ApplicationError
+from openflowsheet.application.job_records import JobResult
 from openflowsheet.application.local import LocalApplication, _displayed
 from openflowsheet.application.operations import OPERATIONS, dispatch, project_response
-from openflowsheet.application.store import StoreError
-from openflowsheet.application.types import Change, JobResult
+from openflowsheet.application.store_records import StoreError
+from openflowsheet.application.transaction_types import Change
 from openflowsheet.canonical import canonical_json
 from openflowsheet.messages.catalogue import CATALOGUE
 from openflowsheet.messages.diagnostic import Diagnostic
@@ -639,7 +640,7 @@ def test_a36_the_codes_have_complete_entries_and_lint_clean() -> None:
 def test_a32_every_other_request_schema_refuses_display_units() -> None:
     from jsonschema import Draft202012Validator
 
-    from openflowsheet.application.types import _registry
+    from openflowsheet.schema_check import _registry
 
     registry = _registry(False)
     open_to = set()

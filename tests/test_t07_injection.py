@@ -60,8 +60,8 @@ from test_t07_w5a_operations import (
 from openflowsheet.application.authz import grant
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.operations import OPERATIONS, dispatch
+from openflowsheet.application.policy_types import RIGHTS, CapabilityReference
 from openflowsheet.application.store import POLICY_NAME
-from openflowsheet.application.types import RIGHTS, CapabilityReference
 from openflowsheet.schema_check import schema_errors
 
 NOMINAL = "SYN-001-nominal"

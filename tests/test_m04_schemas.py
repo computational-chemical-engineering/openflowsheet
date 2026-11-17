@@ -2,7 +2,7 @@
 
 - `surrogate-manifest.schema.json` and `model-evidence.schema.json` are draft 2020-12 schemas
   published under the project's base, by `$id`, beside the others (this branch has no
-  `schemas/registry.json`; the published set is `application.types.published_schemas()` and the
+  `schemas/registry.json`; the published set is `application.documents.published_schemas()` and the
   packaged count, `tests/test_t08_w4_package_data.py`).
 - One valid fixture each, emitted from M04.A19's run (and the `surrogate_study` body and answer from
   a stand-in job), and one invalid each with a required member removed
@@ -22,7 +22,7 @@ import pytest
 from conftest import REPO_ROOT, load_json, load_yaml
 from jsonschema import Draft202012Validator
 
-from openflowsheet.application.types import published_schemas
+from openflowsheet.application.documents import published_schemas
 from openflowsheet.canonical import document_sha256
 from openflowsheet.schema_check import SCHEMA_BASE, schema_errors
 from openflowsheet.studies.surrogate.manifest import check_manifest

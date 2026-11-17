@@ -72,6 +72,11 @@ import yaml  # noqa: E402
 from t07_jobs_support import cancel_while_queued, commit, lifecycle_violations  # noqa: E402
 
 from openflowsheet.application.errors import ApplicationError  # noqa: E402
+from openflowsheet.application.job_requests import (  # noqa: E402
+    JobRequest,
+    ReproduceBody,
+    SolveBody,
+)
 from openflowsheet.application.local import LocalApplication  # noqa: E402
 from openflowsheet.application.operations import dispatch  # noqa: E402
 from openflowsheet.application.revision_run import (  # noqa: E402
@@ -79,7 +84,6 @@ from openflowsheet.application.revision_run import (  # noqa: E402
     run_revision_session,
     select_route,
 )
-from openflowsheet.application.types import JobRequest, ReproduceBody, SolveBody  # noqa: E402
 from openflowsheet.orchestrator.policies import resolve_policy  # noqa: E402
 from openflowsheet.run.bundle import read_artifact  # noqa: E402
 from openflowsheet.run.manifest import THREAD_VARIABLES  # noqa: E402

@@ -10,16 +10,15 @@ from __future__ import annotations
 import dataclasses
 from typing import Any
 
-from openflowsheet.application.types import (
+from openflowsheet.application.job_records import (
     ArtifactRef,
     EffectiveBudgets,
     Job,
     JobEnding,
     JobEvent,
-    JobRequest,
     Progress,
-    SolveBody,
 )
+from openflowsheet.application.job_requests import JobRequest, SolveBody
 
 JOB_ID = "job-000001"
 AT = "2026-09-27T12:00:00.000000Z"

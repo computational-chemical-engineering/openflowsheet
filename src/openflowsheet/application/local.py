@@ -62,6 +62,36 @@ from openflowsheet.application.authz import (
 )
 from openflowsheet.application.contract import Page, Projection
 from openflowsheet.application.errors import ApiError, ApiErrorCode, ApplicationError, api_error
+from openflowsheet.application.inspection_types import (
+    AdmissionReport,
+    AuditOrder,
+    AuditRecord,
+    CapabilityPage,
+    JobWait,
+    MessageEntry,
+    ModelRegistryView,
+    ProjectSummary,
+    RevisionSummary,
+    ServerInfo,
+    SubmitResult,
+)
+from openflowsheet.application.job_records import (
+    EffectiveBudgets,
+    Job,
+    JobEvent,
+    JobResult,
+    RunFailure,
+    RunResult,
+    _replay_report_build,
+)
+from openflowsheet.application.job_requests import (
+    ExperimentBody,
+    JobRequest,
+    OptimizeBody,
+    ReproduceBody,
+    SolveBody,
+    SurrogateStudyBody,
+)
 from openflowsheet.application.jobs.executor import InlineExecutor, ProcessExecutor
 from openflowsheet.application.jobs.model import JOB_STATUSES, TERMINAL_STATUSES, JobStatus
 from openflowsheet.application.jobs.runner import RunContext, bundle_rows, record_rows
@@ -71,6 +101,12 @@ from openflowsheet.application.model_signatures import (
     ModelSignature,
     PinColumn,
     pin_encodings,
+)
+from openflowsheet.application.policy_types import (
+    CapabilityReference,
+    ExecutorSettings,
+    ProjectPolicy,
+    ReplayPolicy,
 )
 from openflowsheet.application.projection import (
     DEFAULT_DEPTH,
@@ -90,54 +126,25 @@ from openflowsheet.application.revision_edits import (
     revision_diff,
     semantic_diff,
 )
-from openflowsheet.application.revision_run import Route, route_structure, select_route
+from openflowsheet.application.revision_run import Route, select_route
 from openflowsheet.application.revisions import Revision
 from openflowsheet.application.store import (
     IMPORTS_DIR,
     STORE_SCHEMA,
+    ProjectStore,
+    atomic_write_bytes,
+)
+from openflowsheet.application.store_records import (
     ActiveJobLimitError,
     ArtifactRow,
     AuditEntry,
     IdempotencyKeyReusedError,
     LedgerRow,
-    ProjectStore,
     StoreError,
-    atomic_write_bytes,
     coded_store_error,
 )
-from openflowsheet.application.types import (
-    AdmissionReport,
-    AuditOrder,
-    AuditRecord,
-    CapabilityPage,
-    CapabilityReference,
-    Change,
-    EffectiveBudgets,
-    ExecutorSettings,
-    ExperimentBody,
-    Job,
-    JobEvent,
-    JobRequest,
-    JobResult,
-    JobWait,
-    MessageEntry,
-    ModelRegistryView,
-    OptimizeBody,
-    ProjectPolicy,
-    ProjectSummary,
-    ReplayPolicy,
-    ReproduceBody,
-    RevisionSummary,
-    RunFailure,
-    RunResult,
-    SemanticDiff,
-    ServerInfo,
-    SolveBody,
-    SubmitResult,
-    SurrogateStudyBody,
-    TransactionResult,
-    _replay_report_build,
-)
+from openflowsheet.application.structure_inspection import route_structure
+from openflowsheet.application.transaction_types import Change, SemanticDiff, TransactionResult
 from openflowsheet.application.validation_report import Task, ValidationReport
 from openflowsheet.canonical import canonical_json, document_sha256, first_noncanonical
 from openflowsheet.orchestrator.policies import APPLICATION_POLICIES, DEFAULT_POLICY_ID
@@ -1528,7 +1535,7 @@ class LocalApplication:
     ) -> Projection:
         """§4.2 as amended by R1.5: the structural report of the formulation `solve` would use,
         naming its `solve_path`, or `{"not_run_reason": …}` when no route binds the revision —
-        `revision_run.route_structure`, projected. `read`."""
+        `structure_inspection.route_structure`, projected. `read`."""
         operation = "inspect_structure"
         self._authorize(operation)
         self._check_view(operation, pointer, depth, cursor, limit)

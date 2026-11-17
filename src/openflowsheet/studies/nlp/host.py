@@ -291,7 +291,7 @@ class RevisionRoutes(Protocol):
         ...
 
     def reproduce(self, directory: Path, *, rerun: bool, rerun_directory: Path, run_id: str) -> Any:
-        """The bundle at `directory` reproduced (`revision_run.reproduce_bundle`)."""
+        """The bundle at `directory` reproduced (`revision_replay.reproduce_bundle`)."""
         ...
 
 

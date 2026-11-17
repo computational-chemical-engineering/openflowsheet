@@ -44,7 +44,7 @@ from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.model_signatures import ModelSignature
 from openflowsheet.application.operations import dispatch
 from openflowsheet.application.replacement import FACETS, check_replacement, replacements
-from openflowsheet.application.types import Change, Edit, TransactionResult
+from openflowsheet.application.transaction_types import Change, Edit, TransactionResult
 from openflowsheet.canonical import document_sha256
 from openflowsheet.models import Port
 from openflowsheet.models.c1.reactor import PORTS

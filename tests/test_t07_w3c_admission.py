@@ -19,13 +19,14 @@ import openflowsheet.application.admission as admission_module
 from openflowsheet.application.admission import SolveAdmission, admit_budgets, admit_solve
 from openflowsheet.application.binding_common import Unbound
 from openflowsheet.application.errors import ApiError
+from openflowsheet.application.job_requests import Budgets, SolveBody
+from openflowsheet.application.policy_types import Limits
 from openflowsheet.application.revision_run import (
     NoRoute,
     Route,
-    route_structure,
     select_route,
 )
-from openflowsheet.application.types import Budgets, Limits, SolveBody
+from openflowsheet.application.structure_inspection import route_structure
 from openflowsheet.application.validation import structural_refusal, validate
 from openflowsheet.orchestrator.execution import ExecutionPlan
 from openflowsheet.orchestrator.policies import ROUTE_DEFAULT_POLICY

@@ -24,12 +24,15 @@ from t07_jobs_support import PATIENCE_S
 
 from openflowsheet.application.authz import read_policy
 from openflowsheet.application.errors import ApplicationError
+from openflowsheet.application.job_records import Job
+from openflowsheet.application.job_requests import JobRequest, SolveBody
 from openflowsheet.application.jobs.executor import ProcessExecutor
 from openflowsheet.application.jobs.model import TERMINAL_STATUSES
 from openflowsheet.application.jobs.worker import PAUSED_FILE
 from openflowsheet.application.local import LocalApplication
-from openflowsheet.application.store import POLICY_NAME, atomic_write_bytes, policy_file_bytes
-from openflowsheet.application.types import ExecutorSettings, Job, JobRequest, SolveBody
+from openflowsheet.application.policy_types import ExecutorSettings
+from openflowsheet.application.store import POLICY_NAME, atomic_write_bytes
+from openflowsheet.application.store_records import policy_file_bytes
 from openflowsheet.run.identity import r0_projection, r0_sha256
 
 #: §9.5 (2): the manifest members that differ between two runs of one solve, and the hash over
