@@ -54,7 +54,7 @@ Position, numbers and rules live in files, not here. A fresh session reads, in o
    S19_DECISIONS and act on an ALERT before starting new work.
    Rule 4 for I-4, I-10, I-12 (ADR 0076, amended 2026-11-16): serial MSG counts at each step's parent and head, run
    by the orchestrator, detached, never alongside a map build: `setsid .claude/skills/s19-refactor/serial.sh
-   <worktree at the commit> <label> &` (log and one `SERIAL` summary line in `<git-common-dir>/codehealth/runs/serial/`).
+   <worktree at the commit> <label> &` (the PID is in the log's first line, not `$!`; log and one `SERIAL` summary line in `<git-common-dir>/codehealth/runs/serial/`).
 4. The test map: `MB` in S19_STATE is the map base; selection is cumulative from it. Move `MB` to the `wp/S19` tip
    at each milestone (`PYTEST_ADDOPTS=--timeout=900 TMPDIR=~/.cache/openflowsheet/tmp-map scripts/test_impact.py build --base <sha>
    --workers 8` in a detached worktree, with the gate queue held: no gate while a map builds; not `-- --timeout`, which

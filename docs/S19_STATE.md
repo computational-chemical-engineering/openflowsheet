@@ -55,10 +55,29 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 - Held until the scale probe reports: G1 (orchestrator/, numerics/). Open: ptc.py 6.8 (P3, P4).
 - G-END (below) stays the end criterion for the whole repository.
 
-## Next actions (2026-11-17 ~02:50, self-reset)
+## Next actions (2026-11-17 ~06:05, self-reset)
 
-Runner RUNNING (pid 300275, restarted 03:45 after G-MAP 4; MB = 1720cc98). Results consumed up to 212; jobs
-through 228 consumed (wait --since 214). One agent: W4 run 13 engineer (lane s19-w4). Lanes at most 2 agents until Thu 19 Nov 13:00. ALERTs standing (proposal 2 with Frank).
+**On resume:** (a) `$Q wait --since 217` in the background (jobs 232 I-12c, 233 review fixes). (b) Serial runs: logs
+`<git-common-dir>/codehealth/runs/serial/{i10-base,i10-head,i12b-head,i12a-base,i12a-head,i12c-head}.log`, each ends
+with `EXIT n` and a `SERIAL` line; a run is live if the PID in its first line is (`kill -0`); i12a-* start when the
+i10 pair ends (chain 517667), i12c-head when i12b-head ends (chain 551916). Wait with a background `while kill -0`
+loop on the live PIDs. Compare pairs: i10-base vs i10-head; i10-head vs i12b-head; i12a-base vs i12a-head; i12a-head
+vs i12c-head: MSG WO-5a bundles, WO-6 run results and with-a-failure, passed, skipped, xfailed, deselected all
+equal (rule 4 amended); log in S19_DECISIONS; remove the `ser-*` worktrees (`git worktree remove`). (c) All PASS and
+EQUAL: helper wp/S19-w4-mc (worktree s19-w4-mc) = lane tip ed13249a + wp/S19 tip merged, enqueue merge-check
+(label w4r13-mc), on PASS merge (message: I-10, I-12b, I-12a, I-12c; R-W4-13; jobs 229-233 + merge-check; serial
+counts), remove the helper. (d) Then brief I-12d (largest step: ADR 0076 lines 231-260, Q-F5 at ~500-510, R1 at
+~517; plan it as several runs) and I-19.
+
+
+Runner RUNNING (pid 475743, cce-code-health cf15245; MB = 1720cc98). Results consumed through 230 (`$Q wait --since 216`). Running:
+serial runs i10-base (7599f205, PID 370532), i10-head (0e71c61a, PID 370533),
+i12b-head (f917c724, PID 436120; i10-head is its base), logs `<git-common-dir>/codehealth/runs/serial/*.log`,
+worktrees `<scratchpad 5222beaa>/ser-*` (remove after). i12a-base (0ca3c762) and i12a-head (0c96257c) chained to
+start after the i10 pair (chain PID 517667). i12c-head (918d4e59) chained after i12b-head (PID 551916). Jobs 229-231 PASS; gating 232 (I-12c), 233 (review fixes). Review R-W4-13 done:
+merge after fixes, fixes done (S19_DECISIONS 06:00). No agent. Lane tip ed13249a. Then: serial counts EQUAL (all
+four) -> helper merge-check, merge; then I-12d, I-19.
+Lanes at most 2 agents until Thu 19 Nov 13:00. ALERTs standing (proposal 2 with Frank).
 Merge-checks run on a helper `wp/S19-<lane>-mc` = lane tip + wp/S19 tip merged in; merge the helper (`git merge
 --no-ff -F <file>`) only if wp/S19 changed ONLY docs since the helper's wp/S19 merge, else refresh and re-run (job 215).
 `enqueue --rerun-of` takes the RUN-LOG STEP number, never across a rebase. Briefs that rebuild a lane chain: check
@@ -67,11 +86,9 @@ repo `.venv`: `PYTHONPATH=<worktree>/src`, no `-n` (no xdist there).
 1. **G-MAP 4: done** (accepted as G-MAP 3; fold fix 0d91ac4b; S19_DECISIONS 03:40). After a reset: `$Q wait --since 212`
    in the background if no result past 212 is consumed.
 2. **I-13: merged** (d63dcd7a, merge-check job 228; S19_DECISIONS 04:00).
-3. **Next W4 run (13): I-10, I-12a (I-12b if room)**, brief DRAFTED (S19-W4-13.md; launch prompt names the wp/S19 tip; serial runs by the orchestrator with `serial.sh`; drafted from pattern S19-W4-12.md and
-   S19-W3-common.md; ADR 0076 rows; rule 4 amended: serial MSG counts at base and head, `-p no:xdist`, both wall-time
-   budget tests deselected, PYTHONHASHSEED=0, all counts equal to 1061/801/100-style lines, ~2.2 h per suite; see
-   S19_DECISIONS 22:24 and 01:40 entries for the serial command, `serial.sh` in session 916d464e's scratchpad). Brief
-   after I-13 merges; branch the lane from the wp/S19 tip.
+3. **W4 runs 13/14:** I-10 enqueued (job 229; arch 0/0/0). On job 229 PASS and serial counts EQUAL: review per
+   cadence (R-W4-13 with run 14's steps, batch the forbid-list question), then merge-check and merge. Then I-12a
+   (after the tool fix), I-12d, I-19.
 4. **G5:** W3 part done (G5 run 11 merged 1720cc98). Left: verify twins gamma_phi_units 6.4 / pr_c1 6.7 (W4 twin merge;
    addendum for Frank), table.py `revision_checks` (W4 routing), R-W3-G5-7 component-order question (design lane at
    the G5 close), checks.py / split_checks.py / certificate.py 8.7, the S3 ladder twin (checks.py:757-794 vs

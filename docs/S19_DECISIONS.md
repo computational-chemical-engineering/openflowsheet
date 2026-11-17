@@ -1839,3 +1839,161 @@
 - **2026-11-17 04:00, job 228 PASS (w4r12-mc, full suite, 7/7); I-13 merged into wp/S19 as d63dcd7a** (helper
   41124b28; wp/S19 changed only docs since its merge). Helper worktree and branch removed. Lane wp/S19-w4
   fast-forwarded to the wp/S19 tip for W4 run 13 (brief S19-W4-13.md: I-10, I-12a, I-12b if room).
+- **2026-11-17 04:15, W4 run 13 reported (opus-engineer, ~200k tokens).** I-10 done: plan 7599f205, interface step
+  0e71c61a (job 229, w4r13-i10-1; local static checks pass), layer config d79ff476 outside the gate. Arch depth 4:
+  a2896f97 1 violation / 1 cycle / 4 edges -> 0 / 0 / 0 (cycle 5 and the last application violation gone, as ADR
+  0076 expects). patch_noop 265, 0 flagged, base and step; liveness of test_m06_wo1_structure_index.py:313 confirmed
+  (raising fake -> RuntimeError). Rule 4 serial runs started: i10-base at 7599f205 (PID 370529), i10-head at 0e71c61a
+  (PID 370530), `serial.sh`, logs `<git-common-dir>/codehealth/runs/serial/i10-{base,head}.log`, worktrees
+  `<this session's scratchpad>/ser-i10-{base,head}`.
+  **I-12a STOP (tool refusal):** README.md:57, docs-site (quickstart.md:15, first-flowsheet.md:113, api/index.md:10)
+  and all 5 example notebooks import `Change`/`Edit` from `application.types`; tests execute them, and the interface
+  caller rule (`interface._text_problems`, cce-code-health ec5aaea) refuses them as callers: "README.md:57: changed
+  beyond the plan's renames", "examples/rankine-cycle.ipynb:44: changed beyond the plan's renames". DECISION: a narrow
+  tool fix (a `from M import a, b` line may follow `renamed` entries M.x = M2.x), requested from session code_health
+  04:14. Alternative: an ADR addendum letting the executable living docs change in the step (design lane; a looser
+  rule). Reversible by: dropping the request and briefing the addendum. Meanwhile run 14 takes I-12b and I-12c
+  (independent of I-12a: no executable text caller imports application.store or revision_run, orchestrator grep).
+  The engineer's I-12a choices, to apply on resume (brief S19-W4-15): constants with their first user
+  (EVENT_COMMON_MEMBERS -> documents; EditOperation, TransactionStatus -> transaction_types; DEFAULT_SOLVE_POLICY_ID
+  -> job_requests; VerificationStatus, SolvePath -> job_records; Right, RIGHTS, LOCAL_OWNER_PRINCIPAL -> policy_types);
+  `_checked`, `_event_common_validator` -> documents as public `checked`, `event_common_validator` (R-1044);
+  `_error_document`, `_error_build` (used by transaction_types and job_records) -> transaction_types as public
+  `error_document`, `error_build`. Before the plan: BODY_READERS (test_m02_experiment_body_isolation.py:48), the
+  binding allow-lists (test_t07_w6a_http.py:56, test_t07_w6b_mcp.py:79) gain the new modules; the G20 allowlist entry
+  for application/types.py `@cache` (2) retargets to documents.py; the `types` entries go after the step. types.py
+  sections now 46/210/246/449/152/250 NLOC vs the ADR's 83/204/245/469/148/252 (documents -45%: I-5, I-5b, I-9 moved
+  its schema names out).
+  For the review batch: (1) structure_inspection not added to the forbid lists `transports-through-operations` `to`
+  and `engine-not-persistence` `from` (the ADR row names only application-layers; one config line each);
+  (2) I-19 living-docs list gains T07-jobs-and-bindings.md:3967, :4126, M04-build-decisions.md:53,
+  M06-web-shell.md:713 (`revision_run.route_structure`), M02-build-decisions.md:26 (`application.store.ArtifactTableSink`).
+- **2026-11-17 04:20, correction:** the I-10 serial runs' PIDs are 370532 (i10-base) and 370533 (i10-head), not
+  370529/370530 (those were `setsid`, which forked). `serial.sh` writes its own PID in each log's first line; read it
+  there.
+- **2026-11-17 04:35, cce-code-health d23326b (session code_health) for I-12a:** text callers may follow the plan's
+  moves in one-line `from M import a, b as c` statements (one target: in place; several: one line per target module,
+  staying names first, then plan order; no split after a notebook's last source line or with a trailing comment; no
+  parenthesised multi-line or relative imports: by hand). 410 tool tests pass. DECISION: re-pin ec5aaea -> d23326b at
+  the next queue-idle window (job 229 gating now; `.venv-codehealth` is shared by every gate): when running = 0, stop
+  the runner, `requirements-codehealth.txt` -> d23326b, `.venv-codehealth/bin/python -m pip install --force-reinstall
+  --no-deps -r requirements-codehealth.txt`, check direct_url commit, commit, restart the runner. Then brief
+  S19-W4-15 (I-12a). Pending jobs of run 14 gate under d23326b (the fix only widens text-caller acceptance).
+- **2026-11-17 04:30, job 229 PASS (w4r13-i10-1, I-10 interface step 0e71c61a, step 275 accepted, 17/17).** Gate
+  report (6 h): "ALERT selected share 71% < 75% of step gates", "ALERT selected gates take 715 s > 300 s (tests
+  tier)", "ALERT selected/full time ratio 0.60 > 0.4: selection saves little" (standing; proposal 2 with Frank).
+  Job 230 (w4r14-i12b-1) started at once, so no idle window yet; the runner has no pause and a stop aborts running
+  gates, so the d23326b re-pin waits for running = 0 and pending = 0 (run 15 shares the lane worktree with run 14 and
+  starts after it anyway). I-10 merge waits for the serial counts and review R-W4-13 (with run 14's steps).
+- **2026-11-17 04:40, W4 run 14 reported (opus-engineer, ~216k tokens).** I-12b done: plan c0ccbdb8, interface step
+  f917c724 (job 230, w4r14-i12b-1), layer config 9d52dde2 (`store_records` directly below `store`) outside the gate;
+  store.py 1062 -> 966 NLOC, store_records.py 114; arch 0/0/0 before and after; patch_noop 265, 0 flagged (no patch
+  on a moved name). Engineer DECISION: `_blob`, `_load`, `EVIDENCE_OPERATIONS` stay in store.py (only user
+  ProjectStore; the ADR's helper rule), although the ADR's I-12b list names `_blob`, `_load` for store_records: for
+  review R-W4-13. Note: `coded_store_error`'s MSG caller module is now store_records (kept only for uncatalogued codes).
+  Serial: i10-head (0e71c61a) serves as i12b's base (diff 0e71c61a..c0ccbdb8 is .codehealth/ only, which no test
+  reads: test_s16_test_impact TOOLING_PREFIXES premise test); i12b-head at f917c724 started (PID 436120).
+  **I-12c STOP (tool refusal)**, work kept on `wp/S19-w4-i12c-wip` (plan d32f150c, step ff5882f6; lane reset to
+  9d52dde2): test_m02_wo14.py:48/:306 import the private `_constants_for_shape`; callers refuse without a renamed
+  entry, public_api refuses the entry ("_constants_for_shape is still bound in .../revision_run.py"), though at
+  ff5882f6 revision_run.py binds no such name (orchestrator git grep). Asked session code_health 04:38 whether that
+  is a defect. Default if the tool is right by design: a test commit outside the gate before the step. Engineer
+  DECISIONs: `_no_stage` (both halves) -> public `no_stage` in revision_run; reproduce_bundle reads
+  `revision_run.run_revision_session` through a module import (keeps test_t08_w2_cli_rerun.py:61 live; liveness :61
+  and test_t08_adr0025.py:652 live, :62 `rerun_registered` dead at base and step alike: review item). I-12c: 
+  revision_run.py 1057 -> 717, revision_replay.py 365, 455 touched tests pass. Leftovers: revision_run.py module
+  docstring still describes reproduce_bundle (docstring step later); `engine-not-persistence` forbid and
+  store_records (review batch); docs anchors into authz.py, runner.py drifted (warnings).
+- **2026-11-17 04:45, cce-code-health cf15245 (session code_health; includes d23326b): the I-12c refusal 2 was a
+  defect.** public_api looked the old name up in its public-API map, which skips private names, so a moved private
+  name was never "gone" and the message said "still bound". Now a renamed entry for a private name in a touched module
+  is checked on bindings only (bound in the old module at base, unbound there at head under the shim rules incl.
+  no_implicit_reexport, newly bound in the new module; record api "private"). Refusal 1 (no entry) is correct: the
+  I-12c plan needs `revision_run.py:_constants_for_shape = revision_replay.py:_constants_for_shape`. 416 tool tests.
+  DECISION: the re-pin target is cf15245 (not d23326b), at the idle window after job 230. Then I-12a (S19-W4-15) and
+  I-12c resume (WIP d32f150c, ff5882f6 + the renamed entry + layer config), one lane run each, serially (same worktree).
+- **2026-11-17 04:50, job 230 PASS (w4r14-i12b-1, I-12b interface step f917c724, step 276 accepted, 17/17). Re-pin
+  cce-code-health ec5aaea -> cf15245 done** in the idle window (runner stopped 04:47, pending 0, running 0):
+  requirements-codehealth.txt, `.venv-codehealth` force-reinstalled, direct_url commit cf152455 (0.2.1.dev19), on the
+  tool's origin/main; runner restarted. Lane wp/S19-w4 tip 9d52dde2 (I-10 and I-12b gated). Next: run 15 = I-12a
+  (S19-W4-15.md), then run 16 = I-12c resume, serially on the lane worktree.
+- **2026-11-17 05:15, W4 run 15 reported (opus-engineer, ~199k tokens): I-12a delivered, job 231 (w4r15-i12a-1,
+  interface step 0c96257c), no STOP.** Chain after 9d52dde2: 0ca3c762 (outside the gate, before: two references to
+  names types.py only imported: test_x04_messages.py:642 `_registry` from schema_check; docs-site/api/contract.md:5,
+  :7 -> errors.ApiError, errors.SolveFailedError), 7e844e9b (lists gain the six modules; G20 `@cache` (2) entry ->
+  documents.py; G20 fails at this commit alone, as d1f2ff38 for I-5), 31eadc43 plan i12a-types-split (66 renamed, 6
+  new_files, 121 callers: 16 src, 94 py, 11 text), 0c96257c step (types.py deleted; moved statements AST-identical
+  after the four public renames), aaee84b9 (lists drop `types`), 0be48459 layer config. Arch: 0/0 at 9d52dde2 and
+  after, the "types matches no module" warning gone. patch_noop 265, 0 flagged; no liveness check due. Touched tests
+  2208 passed, 2 skipped, 3 xfailed. NLOC documents 60, transaction_types 222, job_requests 255, job_records 478,
+  policy_types 160, inspection_types 258 (types.py was 1392). Engineer DECISION: the four private-to-public names
+  also in `added` (tool refused them as "added (not in the plan)" with renamed alone; the ADR row names only renamed,
+  new_files, callers): review item. Leftovers: docs-site/api/contract.md:3 `contract.ApplicationError` (stale since
+  I-9?), docs-site page still api/types.md; I-19 list in the engineer's report (schema_check.py:8 docstring,
+  t07_global_state_allowlist.json:72, schemas/README.md:179, api-error.schema.json description, USER_FEEDBACK.md:16,
+  E01-design.md:1361, M06-web-shell.md:724, MSG-messages.md:233, :246, T07 (2), roadmap 00-core-inventory (7), T08
+  release spec (2), F1-design-followup (2), t07-measurements).
+  Serial: base 0ca3c762 instead of the step's parent 31eadc43 (G20 fails there by design); 0ca3c762..31eadc43 changes
+  no test definition or parameter (orchestrator diff: list literals and the plan only). DECISION: i12a-base at
+  0ca3c762, i12a-head at 0c96257c, chained detached (PID 517667) to start when the i10 pair ends (load). Run 16
+  (I-12c resume, S19-W4-16.md) launched on the lane from 0be48459.
+- **2026-11-17 05:35, W4 run 16 reported (opus-engineer, ~108k tokens): I-12c delivered, job 232 (w4r16-i12c-1,
+  interface step 918d4e59 on plan e3c6fadb), no STOP.** e3c6fadb = run 14's d32f150c + the private renamed entry
+  `_constants_for_shape` (no other moved private name is imported or patched elsewhere: grep); 918d4e59 = ff5882f6
+  cherry-picked without conflict; 93cec9a3 layer config. AST: every top-level statement verbatim from revision_run at
+  0be48459 except the `no_stage` rename and the module-qualified `revision_run.run_revision_session` call. Trial gate
+  (static, cf15245) 11/11 ok; debt 87.7 -> 87.7; arch 0/0/0 (323 files, 4083 imports); revision_run.py 1057 -> 717,
+  revision_replay.py 365; patch_noop 265, 0 flagged; liveness test_t08_w2_cli_rerun.py:56 and test_t08_adr0025.py:648
+  live, :57 not exercised (dead at the base too); 500 touched tests pass. Branch wp/S19-w4-i12c-wip deleted.
+  Leftovers: revision_run.py module docstring, studies/nlp/host.py:294 docstring, forbid lists (review).
+  Serial: i12a-head (0c96257c) serves as i12c's base (0c96257c..e3c6fadb: .codehealth/, list literals and one
+  docstring line in tests; no test definition or parameter); i12c-head at 918d4e59 chained after i12b-head (chain
+  PID 551916). Review R-W4-13 (reviewer, Opus; brief S19-R-W4-13.md) launched over a2896f97..93cec9a3 while jobs 231,
+  232 gate.
+- **2026-11-17 05:40, job 231 PASS (w4r15-i12a-1, I-12a interface step 0c96257c, step 277 accepted, 17/17, debt
+  115.2 -> 115.2).** Gate report (6 h):
+  "ALERT selected share 69% < 75% of step gates"
+  "ALERT selected gates take 744 s > 300 s (tests tier)"
+  "ALERT selected/full time ratio 0.67 > 0.4: selection saves little"
+  (standing; proposal 2 with Frank).
+- **2026-11-17 06:00, review R-W4-13 (reviewer, Opus, ~140k tokens) over a2896f97..93cec9a3: merge after fixes, no
+  step reverted.** (1) Pure moves: AST probe (`python -I`, top-level statements less imports, declared renames
+  applied) identical for I-10 (bar `__all__`), I-12b (plus a TYPE_CHECKING import of ProjectStore: a type-only edge up
+  to store), I-12a (after the four renames), I-12c (bar `no_stage` and revision_replay.py:265); no alias,
+  `__getattr__` or re-export; old paths only in docstrings or data text (schema_check.py:8,
+  t07_global_state_allowlist.json:72, host.py:294); no pickle or `__module__` dependence; `@cache` only on
+  `event_common_validator`, `published_schemas`, no `cache_clear` on them. (2) I-12b `_blob`, `_load` stay in
+  store.py: ACCEPTED (the ADR text contradicts itself: "everything above the class" would take STORE_SCHEMA, _TABLES;
+  EVIDENCE_OPERATIONS is in the range but not on the list; moving them breaks the helper rule); one-line ADR 0076
+  erratum in I-19. (3) I-12a homes OK (computed users); `renamed`+`added` for the four public names acceptable
+  (`added` makes the public-API change exact); 0ca3c762's homes correct. (4) I-12c module-qualified call ACCEPTED (the
+  same late binding as before the move); `no_stage` OK (not in `__all__`, nor is Stage); test_t08_w2_cli_rerun.py:57
+  KEEP: the sentinel behind `reruns == []` (:110, Ruling 11), a raising fake cannot prove a never-called patch.
+  (5) forbid rules: fix. (6) MSG identity: no change (`misses` read only by MSG-G3 failure text and probe auditors).
+  (7) fold-ins: contract.md:3 fix now (mkdocs --strict fails on it); revision_run.py docstring :1, :17-19, :25-27 and
+  host.py:294 fix now; api/types.md page name and schema_check.py:8 to I-19.
+  Fixes done (orchestrator): 4c4648fd fix 3, forbid lists (engine-not-persistence from += structure_inspection,
+  revision_replay; to += store_records; transports-through-operations to += all three; arch 0/0/0, 323 files);
+  ed13249a fixes 1, 2 (docstrings and contract.md:3), job 233 (w4r13-revfix, no-gain). I-19 list gains: the ADR 0076
+  I-12b erratum, api/types.md, schema_check.py:8. Next: job 232, job 233 PASS and the serial counts EQUAL (i10,
+  i12b, i12a, i12c) -> helper wp/S19-w4-mc, merge-check, merge.
+- **2026-11-17 05:50, job 232 PASS (w4r16-i12c-1, I-12c interface step 918d4e59, step 278 accepted, 17/17, debt
+  87.7 -> 87.7).** Gate report (6 h):
+  "ALERT selected share 62% < 75% of step gates"
+  "ALERT selected gates take 715 s > 300 s (tests tier)"
+  "ALERT selected/full time ratio 0.65 > 0.4: selection saves little"
+  (standing; proposal 2 with Frank). Brief S19-W4-17.md drafted (I-12d part 1). DECISION: I-12d lands as one
+  interface step per service (ServiceCore + InspectionService, then Revision, Artifact, Validation, Job), each
+  leaving LocalApplication working. Alternative: one 77-method step. Reversible by: squashing the steps before merge.
+  Launch after the w4r13 merge.
+- **2026-11-17 06:00, job 233 FAIL scope (w4r13-revfix, step 279 gate-fail, 9/10):** "out of scope:
+  docs-site/api/contract.md" (a no-gain step may touch only the scan scope). Not an environment failure; my commit
+  mixed a docs-site line into a gated step. ed13249a split on the lane (nothing built on it): 1c5ae346 (revision_run.py
+  and host.py docstrings) enqueued as job 234 (w4r13-revfix2, no-gain), 617099ef (docs-site/api/contract.md, docs only,
+  outside the gate). Tree at 617099ef identical to ed13249a. Lane tip for the merge-check: 617099ef.
+- **2026-11-17 06:20, job 234 PASS (w4r13-revfix2, 1c5ae346, step 280 accepted-neutral, 15/15, debt 40.6 -> 40.6).**
+  Gate report (6 h):
+  "ALERT selected share 62% < 75% of step gates"
+  "ALERT selected gates take 717 s > 300 s (tests tier)"
+  "ALERT selected/full time ratio 0.66 > 0.4: selection saves little"
+  (standing; proposal 2 with Frank). W4 lane gates done; waiting on the serial counts.
