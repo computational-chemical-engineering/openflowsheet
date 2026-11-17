@@ -56,16 +56,16 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 
 ## Next actions (2026-11-16 23:50, after the self-reset)
 
-Runner pid 2642417. Results consumed up to 200 (`$Q wait --since 200` next). Agents running: W4 run 12 (I-13), G5 run 11.
+Runner pid 2642417. Results consumed up to 203 (`$Q wait --since 203` next; jobs 219, 220 I-13 and 221 I-11 mc2 queued). Agents running: W4 run 12 (I-13), G5 run 11.
 Lanes at most 2 agents until Thu 19 Nov 13:00. ALERTs persist (proposal 2 with Frank). Merge-checks run on a helper
 branch `wp/S19-<lane>-mc` = lane tip + wp/S19 tip merged in; the merge into wp/S19 takes the helper (`git merge --no-ff
 -F <file> wp/S19-<lane>-mc`), after checking wp/S19 changed only docs/S19_* since the helper's merge. `enqueue
 --rerun-of` takes the RUN-LOG STEP number (from the failed result line), never the job number, and never across a
 rebase (enqueue fresh). Mode revert: `--base` is the rejected commit. Detail in S19_DECISIONS (grep quoted words).
 1. **W4 runs 9+10 merged** into wp/S19 as 68a9597a (job 206 PASS); worktree s19-w4-mc removed.
-2. **W4 run 11 (I-11)**: step 265 PASS (job 212); R-W4-11 merge after fix 1 (eb71978d, script); merge-check job 215 on
-   helper wp/S19-w4-mc 97553d85 (worktree s19-w4-mc, base wp/S19 5ac6ddb9). On PASS: check wp/S19 changed only docs
-   since 5ac6ddb9, merge the helper, remove the worktree. **W4 run 12 (I-13 per R-1045) running** (`opus-engineer`,
+2. **W4 run 11 (I-11)**: step 265 PASS (job 212); R-W4-11 merge after fix 1 (eb71978d, script); merge-check job 215 PASS but wp/S19 gained G5 code; merge-check 2 job 221 on
+   helper wp/S19-w4-mc 2490c525 (worktree s19-w4-mc, base wp/S19 38b94728). On PASS: check wp/S19 changed only docs
+   since 38b94728, merge the helper, remove the worktree. **W4 run 12 (I-13 per R-1045) running** (`opus-engineer`,
    S19-W4-12.md, lane wp/S19-w4 from eb71978d). Then I-10 and I-12a-d (serial MSG counts at base and head per amended
    rule 4, ~2.2 h per suite).
 3. **G5**: run 10 merged (640bbd63, job 214). **Run 11 running** (`opus-engineer`, S19-W3-G5-11.md, lane wp/S19-g5i:

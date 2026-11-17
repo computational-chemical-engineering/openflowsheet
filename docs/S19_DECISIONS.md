@@ -1713,3 +1713,6 @@
   78f4e2d2 interface step (job 219 w4r12-i13-3), 1e7e9036 tests, a39da84c refactor step (job 220 w4r12-i13-4,
   no-gain); backup wp/S19-w4r12-job216 = fa93d0b7; diff vs backup = the plan toml only.** A first attempt committed
   `changed = []` (staged checkout); caught and amended before any enqueue.
+- **2026-11-17, job 215 PASS (w4r11-mc, helper 97553d85, full suite, 7/7, 24.6 -> 24.6); not merged: wp/S19 gained
+  G5 run 10's code (verify/certificate.py, column.py; merge 640bbd63) after the helper's base 5ac6ddb9.** Helper
+  refreshed with wp/S19 38b94728 as 2490c525; merge-check 2 job 221 (w4r11-mc2). Merge on its PASS.
