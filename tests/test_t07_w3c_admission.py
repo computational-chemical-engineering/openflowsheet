@@ -22,9 +22,9 @@ from openflowsheet.application.errors import ApiError
 from openflowsheet.application.revision_run import (
     NoRoute,
     Route,
-    route_structure,
     select_route,
 )
+from openflowsheet.application.structure_inspection import route_structure
 from openflowsheet.application.types import Budgets, Limits, SolveBody
 from openflowsheet.application.validation import structural_refusal, validate
 from openflowsheet.orchestrator.execution import ExecutionPlan

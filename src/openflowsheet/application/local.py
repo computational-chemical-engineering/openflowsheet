@@ -90,7 +90,7 @@ from openflowsheet.application.revision_edits import (
     revision_diff,
     semantic_diff,
 )
-from openflowsheet.application.revision_run import Route, route_structure, select_route
+from openflowsheet.application.revision_run import Route, select_route
 from openflowsheet.application.revisions import Revision
 from openflowsheet.application.store import (
     IMPORTS_DIR,
@@ -105,6 +105,7 @@ from openflowsheet.application.store import (
     atomic_write_bytes,
     coded_store_error,
 )
+from openflowsheet.application.structure_inspection import route_structure
 from openflowsheet.application.types import (
     AdmissionReport,
     AuditOrder,
@@ -1528,7 +1529,7 @@ class LocalApplication:
     ) -> Projection:
         """§4.2 as amended by R1.5: the structural report of the formulation `solve` would use,
         naming its `solve_path`, or `{"not_run_reason": …}` when no route binds the revision —
-        `revision_run.route_structure`, projected. `read`."""
+        `structure_inspection.route_structure`, projected. `read`."""
         operation = "inspect_structure"
         self._authorize(operation)
         self._check_view(operation, pointer, depth, cursor, limit)

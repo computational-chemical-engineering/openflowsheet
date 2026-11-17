@@ -425,7 +425,7 @@ def test_the_rules_hold_on_every_corpus_revision(corpus_app: LocalApplication) -
 def test_the_rules_hold_on_every_corpus_structure(corpus_app: LocalApplication) -> None:
     """`inspect_structure` projects `route_structure`'s document under the same rules; its
     matchings and certificates carry arrays up to 79 long, so pages and cuts are exercised."""
-    from openflowsheet.application.revision_run import route_structure
+    from openflowsheet.application.structure_inspection import route_structure
 
     routed = 0
     exercised = {"views": 0, "pages": 0, "cut": 0}

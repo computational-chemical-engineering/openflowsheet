@@ -38,7 +38,8 @@ from openflowsheet.application.revision_binding import (
     RevisionBinding,
     bind_revision_flowsheet,
 )
-from openflowsheet.application.revision_run import NoRoute, route_structure, select_route
+from openflowsheet.application.revision_run import NoRoute, select_route
+from openflowsheet.application.structure_inspection import route_structure
 from openflowsheet.application.types import JobRequest
 from openflowsheet.application.validation import structural_refusal, validate
 

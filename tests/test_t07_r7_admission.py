@@ -55,10 +55,10 @@ from openflowsheet.application.revision_run import (
     RunUnsupportedError,
     bind_route,
     legacy_plan,
-    route_structure,
     select_route,
     solve_route,
 )
+from openflowsheet.application.structure_inspection import route_structure
 from openflowsheet.application.types import JobRequest
 from openflowsheet.application.validation import structural_refusal, validate
 from openflowsheet.models.syn001.flowsheet import HEATER_TEMPERATURE
