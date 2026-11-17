@@ -54,7 +54,7 @@ def test_the_constants_are_the_registered_ones_and_moved_not_copied() -> None:
     assert TWO_PHASE_SATURATION_TOLERANCE == 1e-4
     assert SATURATION_PREFIX == "§8 saturation: "
     assert column_solve_module.TWO_PHASE_SATURATION_TOLERANCE is TWO_PHASE_SATURATION_TOLERANCE
-    assert column_solve_module.saturation_pairs is saturation_pairs
+    assert column_acceptance_module.saturation_pairs is saturation_pairs
 
 
 def test_b1_a_patched_tolerance_raises_exactly_the_six_saturation_failures(
