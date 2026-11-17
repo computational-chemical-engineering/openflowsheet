@@ -224,6 +224,10 @@ the migration table below.
     `IdempotencyKeyReusedError`, `ActiveJobLimitError`, `ArtifactTableSink`, `policy_file_bytes`, `AuditEntry`,
     `ArtifactRow`, `LedgerRow`, `_blob`, `_load`) moves to `store_records.py`. The class is not split. If store.py is
     not under 1000 NLOC after the move, STOP and report.
+    *Erratum (2026-11-17, review R-W4-13 item 2; S19_DECISIONS 2026-11-17 06:00):* `_blob` and `_load` stay in
+    store.py. The list contradicts "everything at module level above the class": `STORE_SCHEMA` and `_TABLES` sit in
+    that range but are not listed, and `EVIDENCE_OPERATIONS` is in it but not on the list; moving the two helpers away
+    from their only users breaks the helper rule. The other listed names moved to `store_records.py`.
   - **I-12c** `revision_run.py` (1111 NLOC; 1081 after I-10): the reproduction half (revision_run.py:1128-1589,
     `registered_case`, `registered_flowsheet`, `rerun_registered`, `declared_kinds`, `Reproduction`,
     `reproduce_bundle` and their private helpers, 319 NLOC) moves to `revision_replay.py`, placed directly above
@@ -244,6 +248,14 @@ the migration table below.
       `_revision`.
     - `inspection_service.InspectionService`: `get_project`, `list_models`, `list_capabilities`, `explain`,
       `list_audit`, `audit_refusal`.
+    *Erratum (2026-11-17, ruling R1 confirmed by review R-W4-I12d; S19_DECISIONS 2026-11-17 09:50):* the placement
+    rule ("a method whose family is not listed goes where its only callers are; callers in two services, the lower
+    one") overrides a family list that would make a service call one above it: `job` is public on
+    `ArtifactService` (callers in Job and Artifact), the job-list cursor helpers are public on `RevisionService`, and
+    `_check_request` is on `RevisionService`. `ServiceCore` as the home of `job` was considered and not taken.
+    `ArtifactService.get_stream_table(job_id, query)` takes a frozen `StreamTableQuery` (`pointer`, `depth`,
+    `cursor`, `limit`, `display_units`, no defaults); the facade keeps its public signature and defaults. The
+    JobService step was gated under Q-F5's fallback (behaviour tiers, full suite).
 
     A service calls only services below it and the core. `LocalApplication` keeps every public method name and
     signature, each a one-line delegation, plus its lifecycle (`create`, `open`, `in_memory`, `authenticated`,
@@ -328,6 +340,12 @@ the migration table below.
   `scripts/registry_builtin.py:134` (a label), `scripts/s16_recall.py:70`, and
   `messages/catalogue/refusals.yaml:1378` (a YAML comment, so the catalogue's parsed content is unchanged; the path is
   gate-frozen, so it is edited in a commit outside the gate).
+  *Erratum (2026-11-17, W4 run 20 STOP, confirmed by review R-W4-I19a 5(a); S19_DECISIONS 2026-11-17 14:15):* the
+  exceptions measured at 0d826601 are 36 bindings, not the four named above: every name the frozen
+  `models/syn001/column_unit.py` takes through a non-home path (:47 `models.syn001.cascade`, 10 names; :59
+  `models.syn001.column`, 18; :79 `models.syn001.column_solve`, 5; :90 `orchestrator.region.StagedSplits`), plus
+  `assessment.program.Refusal` and `application.revision_binding.MODEL_BUILDERS`, as lines 33-34 anticipate. The
+  names are listed in `docs/briefs/S19-I19-inventory.md` (W5 rows); the W5 base recomputes the list against it.
 
 ## Alternatives rejected
 
