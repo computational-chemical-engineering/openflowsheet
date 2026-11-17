@@ -1758,3 +1758,7 @@
   logs kept in session 916d464e's scratchpad.
 - **2026-11-17 01:40, job 222 PASS (g5r11-2, 1147a6f2, step 270 accepted, debt 17.2 -> 16.2, 16/16).** G5 run 11 review
   waits for job 225. Gate report: the three standing ALERTs only (proposal 2 with Frank).
+- **2026-11-17 01:55, job 225 PASS (g5r11-3, c5507eac, step 271 accepted, debt 17.5 -> 16.1, 16/16). G5 run 11 all
+  gated; R-W3-G5-11 launched (`reviewer`, Opus, brief S19-R-W3-G5-11.md, range 640bbd63..c5507eac).** Gate report:
+  the three standing ALERTs only. Note: the I-13 engineer (a0f1e181) was still finishing at the 01:20 self-reset
+  although the state said no agent ran; it ended cleanly (lane clean at a652a744, its handback already consumed).
