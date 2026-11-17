@@ -34,18 +34,12 @@ import uuid
 from collections.abc import Mapping, Sequence
 from dataclasses import replace
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Final, Literal, NoReturn, Self, get_args
+from typing import TYPE_CHECKING, Any, Final, Literal, NoReturn, Self
 
-from openflowsheet.application import capabilities, stream_table, validation
+from openflowsheet.application import stream_table
 from openflowsheet.application.admission import (
     active_jobs_refusal,
-    admit_experiment,
-    admit_optimize,
-    admit_reproduce,
-    admit_solve,
-    admit_surrogate_study,
     resolve_policies,
-    stored_surrogate_manifests,
 )
 from openflowsheet.application.authz import (
     PolicyFile,
@@ -68,7 +62,6 @@ from openflowsheet.application.inspection_types import (
     SubmitResult,
 )
 from openflowsheet.application.job_records import (
-    EffectiveBudgets,
     Job,
     JobEvent,
     JobResult,
@@ -77,12 +70,9 @@ from openflowsheet.application.job_records import (
     _replay_report_build,
 )
 from openflowsheet.application.job_requests import (
-    ExperimentBody,
     JobRequest,
-    OptimizeBody,
     ReproduceBody,
     SolveBody,
-    SurrogateStudyBody,
 )
 from openflowsheet.application.jobs.executor import InlineExecutor, ProcessExecutor
 from openflowsheet.application.jobs.model import JOB_STATUSES, TERMINAL_STATUSES, JobStatus
@@ -114,9 +104,9 @@ from openflowsheet.application.store_records import (
     StoreError,
     coded_store_error,
 )
-from openflowsheet.application.structure_inspection import route_structure
 from openflowsheet.application.transaction_types import Change, SemanticDiff, TransactionResult
 from openflowsheet.application.validation_report import Task, ValidationReport
+from openflowsheet.application.validation_service import ValidationService
 from openflowsheet.canonical import document_sha256, first_noncanonical
 from openflowsheet.registry import default_registry
 from openflowsheet.run.bundle import MANIFEST_NAME
@@ -127,7 +117,6 @@ from openflowsheet.studies.nlp.replay import is_optimization_record
 from openflowsheet.units.display import DisplayUnits, DisplayUnitsError, parse_display_units
 
 Executor = Literal["inline", "process"]
-TASKS: tuple[str, ...] = get_args(Task)
 #: §4.2: `wait_job` polls the store this often.
 WAIT_POLL_S: Final[float] = 0.1
 #: §11.4: page sizes — job lists as arrays (default 50, at most 200), events (100, at most 500).
@@ -173,6 +162,7 @@ class LocalApplication:
         self._core = core
         self._inspection = InspectionService(core)
         self._revisions = RevisionService(core, self._inspection)
+        self._validation = ValidationService(core, self._revisions)
 
     # ------------------------------------------------------------------------- construction
 
@@ -411,51 +401,7 @@ class LocalApplication:
             `invalid_request` (also the missing `optimization`), `unsupported`
             (`nlp_solver_unavailable`, before the revision is read) or `not_found`.
         """
-        self._core.authorize("validate")
-        if task not in TASKS:
-            self._core.refuse(
-                "invalid_request",
-                f"task is one of {list(TASKS)}",
-                operation="validate",
-                pointer="/task",
-            )
-        if task == "optimization":
-            # OPT design §4.11 (ADR 0071 D8, lifting R-129 and U05's refusal): the solver probe
-            # first, at U05's place, before the revision is read; then the request.
-            from openflowsheet.studies.nlp.closure import audited_solver
-
-            availability = audited_solver()
-            if not availability.available:
-                self._core.refuse(
-                    "unsupported",
-                    "nlp_solver_unavailable",
-                    operation="validate",
-                    pointer="/task",
-                )
-            if optimization is None:
-                self._core.refuse(
-                    "invalid_request",
-                    "task optimization needs an optimization request",
-                    operation="validate",
-                    pointer="/optimization",
-                )
-        with self._core.store.reading() as connection:
-            revision = self._core.store.get_revision(connection, revision_id)
-        if revision is None:
-            self._core.refuse(
-                "not_found", "no such revision", operation="validate", revision_id=revision_id
-            )
-        if task != "optimization":
-            return validation.validate(
-                revision.as_document(), task, surrogates=self._core.surrogates()
-            )
-        return validation.validate(
-            revision.as_document(),
-            task,
-            surrogates=self._core.surrogates(),
-            optimization=optimization,
-            solver_probe=lambda: availability,
-        )
+        return self._validation.validate(revision_id, task, optimization)
 
     def commit_change(
         self, change: Change, expected_revision: str | None, idempotency_key: str
@@ -707,7 +653,7 @@ class LocalApplication:
             )
         if prior is not None:
             return self._replayed_job(prior, request_sha256, operation)
-        budgets = self._admit(request, caller, operation, request_sha256)
+        budgets = self._validation.admit(request, caller, operation, request_sha256)
         try:
             job, replayed = store.accept_job(
                 request,
@@ -746,128 +692,6 @@ class LocalApplication:
             request_sha256=request_sha256,
             original_request_sha256=original,
         )
-
-    def _admit(
-        self,
-        request: JobRequest,
-        caller: CapabilityReference,
-        operation: str,
-        request_sha256: str,
-    ) -> EffectiveBudgets:
-        """§5.3's semantic admission; a refusal creates no job and no ledger row, and is
-        audited. The effective budgets the job will run under.
-
-        One admission per job family: `_solve_admission`, `_experiment_admission`,
-        `_surrogate_study_admission`, `_optimize_admission` and `_reproduce_admission`. Raised: the
-        family's refusal (`ServiceCore.refuse_error`)."""
-        active = self._core.store.active_job_count(caller.principal_id)
-        body = request.body
-        budgets: EffectiveBudgets | ApiError
-        if isinstance(body, SolveBody):
-            budgets = self._solve_admission(body, request, caller, active)
-        elif isinstance(body, ExperimentBody):
-            budgets = self._experiment_admission(body, request, caller, active)
-        elif isinstance(body, SurrogateStudyBody):
-            budgets = self._surrogate_study_admission(body, request, caller, active)
-        elif isinstance(body, OptimizeBody):
-            budgets = self._optimize_admission(body, request, caller, active)
-        else:
-            budgets = self._reproduce_admission(body, request, caller, active)
-        if isinstance(budgets, ApiError):
-            self._core.refuse_error(budgets, operation, request_sha256)
-        return budgets
-
-    def _solve_admission(
-        self, body: SolveBody, request: JobRequest, caller: CapabilityReference, active: int
-    ) -> EffectiveBudgets | ApiError:
-        """`admit_solve` on the revision and the declared warm-start source as the store is at
-        admission: the solve's budgets, or the refusal."""
-        store = self._core.store
-        declared = body.warm_start.job_id if body.warm_start is not None else None
-        with store.reading() as connection:
-            revision = store.get_revision(connection, body.revision_id)
-            # ADR 0070 A1: the declared source, as the store is at admission.
-            source = store.solution_of_job(connection, declared) if declared is not None else None
-        admission = admit_solve(
-            body.revision_id,
-            revision.as_document() if revision is not None else None,
-            body,
-            budgets=request.budgets,
-            limits=caller.limits,
-            active_jobs=active,
-            surrogates=self._core.surrogates(),
-            warm_source_found=source is not None,
-        )
-        if isinstance(admission, ApiError):
-            return admission
-        return EffectiveBudgets(
-            wall_time_s=admission.wall_time_s,
-            max_property_calls=admission.policy.max_property_calls,
-        )
-
-    def _experiment_admission(
-        self, body: ExperimentBody, request: JobRequest, caller: CapabilityReference, active: int
-    ) -> EffectiveBudgets | ApiError:
-        """`admit_experiment`: the experiment's budgets, or the refusal."""
-        admitted = admit_experiment(
-            body, budgets=request.budgets, limits=caller.limits, active_jobs=active
-        )
-        if isinstance(admitted, ApiError):
-            return admitted
-        # R-233: an experiment's property calls are its own, never a solve's budget.
-        return EffectiveBudgets(wall_time_s=admitted[1], max_property_calls=None)
-
-    def _surrogate_study_admission(
-        self,
-        body: SurrogateStudyBody,
-        request: JobRequest,
-        caller: CapabilityReference,
-        active: int,
-    ) -> EffectiveBudgets | ApiError:
-        """`admit_surrogate_study` against the stored surrogate manifests: the study's budgets,
-        or the refusal."""
-        store = self._core.store
-        study = admit_surrogate_study(
-            body,
-            budgets=request.budgets,
-            limits=caller.limits,
-            active_jobs=active,
-            manifests=lambda: stored_surrogate_manifests(store, self.files_root),
-        )
-        if isinstance(study, ApiError):
-            return study
-        # R-233 again: a study's experiments are experiments; their calls are their own.
-        return EffectiveBudgets(wall_time_s=study, max_property_calls=None)
-
-    def _optimize_admission(
-        self, body: OptimizeBody, request: JobRequest, caller: CapabilityReference, active: int
-    ) -> EffectiveBudgets | ApiError:
-        """`admit_optimize`: the optimization's budgets, or the refusal."""
-        optimize = admit_optimize(
-            body, budgets=request.budgets, limits=caller.limits, active_jobs=active
-        )
-        if isinstance(optimize, ApiError):
-            return optimize
-        # OPT §4.10: the property-call budget is each production solve's (its policy's), as
-        # requested; the policies resolve in the job.
-        return EffectiveBudgets(wall_time_s=optimize, max_property_calls=body.max_property_calls)
-
-    def _reproduce_admission(
-        self, body: ReproduceBody, request: JobRequest, caller: CapabilityReference, active: int
-    ) -> EffectiveBudgets | ApiError:
-        """`admit_reproduce` on the kind of the archive the body names: the rerun's budgets, or
-        the refusal."""
-        archive = self._core.store.artifact(body.bundle_artifact_id)
-        wall_time_s = admit_reproduce(
-            archive.kind if archive is not None else None,
-            body,
-            budgets=request.budgets,
-            limits=caller.limits,
-            active_jobs=active,
-        )
-        if isinstance(wall_time_s, ApiError):
-            return wall_time_s
-        return EffectiveBudgets(wall_time_s=wall_time_s, max_property_calls=None)
 
     def _job(self, job_id: str, operation: str) -> Job:
         job = self._core.store.get_job(job_id)
@@ -1225,20 +1049,8 @@ class LocalApplication:
         """§4.2 as amended by R1.5: the structural report of the formulation `solve` would use,
         naming its `solve_path`, or `{"not_run_reason": …}` when no route binds the revision —
         `structure_inspection.route_structure`, projected. `read`."""
-        operation = "inspect_structure"
-        self._core.authorize(operation)
-        self._revisions.check_view(operation, pointer, depth, cursor, limit)
-        revision = self._revisions.revision(revision_id, operation)
-        document = route_structure(revision.as_document(), surrogates=self._core.surrogates())
-        return self._revisions.project(
-            operation,
-            document,
-            revision_id,
-            document_sha256(document),
-            pointer,
-            depth,
-            cursor,
-            limit,
+        return self._validation.inspect_structure(
+            revision_id, pointer=pointer, depth=depth, cursor=cursor, limit=limit
         )
 
     def get_artifact(
@@ -1480,12 +1292,7 @@ class LocalApplication:
         project. An unknown id is `not_found` with `detail.suggestions`. The draft form
         (`revision`, a schema_version 1 document) takes one pair per unit instance on the
         property method its component set selects and `nTP-v1`."""
-        name = "check_admission"
-        self._core.authorize(name)
-        try:
-            return capabilities.admission_report(default_registry(), pair=pair, revision=revision)
-        except ApplicationError as refused:
-            self._core.refuse_error(refused.error, name, None)
+        return self._validation.check_admission(pair=pair, revision=revision)
 
     def artifact_bytes(self, artifact_id: str) -> bytes:
         """§4.3, §10.4: an artifact file's bytes exactly as stored — the raw export (Python, CLI,
