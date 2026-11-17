@@ -2132,3 +2132,7 @@
   ALERT selected share 10% < 75% of step gates. ALERT selected gates take 689 s > 300 s (tests tier). ALERT
   selected/full time ratio 0.62 > 0.4: selection saves little. Cause as at bf05de04 (the new I-12d modules are
   unknown to the map); remedy unchanged: MB rebuild right after the I-12d merge, before I-19 run 20. Job 243 next.
+
+- 2026-11-17 10:35, job 243 (w4i12d-f1-1, F1 a995d571) PASS, run-log step 286 accepted, 17/17. All I-12d jobs
+  237-243 PASS. Serial i12d1-base (17cada5f) vs i12d1-head (394effe6): EQUAL (MSG WO-5a 1061, WO-6 801/100;
+  20392 passed, 107 skipped, 222 deselected, 3 xfailed; both rc 0). i12d3-head and i12d5-head started by the chain.
