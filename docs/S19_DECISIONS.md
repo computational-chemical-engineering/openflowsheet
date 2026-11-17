@@ -2047,3 +2047,7 @@
   "ALERT selected gates take 744 s > 300 s (tests tier)"
   "ALERT selected/full time ratio 0.68 > 0.4: selection saves little"
   (standing).
+- **2026-11-17 08:20, serial pair i12a-head vs i12c-head EQUAL (rule 4):** i12c-head 918d4e59 rc=0, the same MSG and
+  count lines (6556 s); it ran test_m06_browser_smoke serially without a failure (job 235's failure: load). All four
+  W4 run 13-16 pairs EQUAL. wp/S19 changed only docs/S19_DECISIONS.md since cd621e12: helper wp/S19-w4-mc (b735b7be,
+  merge-check job 236 PASS) merged.
