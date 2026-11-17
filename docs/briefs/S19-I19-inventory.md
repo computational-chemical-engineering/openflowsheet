@@ -87,11 +87,14 @@ tests/test_t07_w5a_inspection.py:130 (a live patch: revision_binding reads the n
 `I19-SCAN re-exports added since 1fd6826b: 1616 (exempt 15, own-use 1563, retarget 2, w5 36); old-path importers 47
 (W5 exception users 44, others 3); unbound takes 6`. Done: 4866b61e (tests and scripts retargeted outside the gate),
 then four interface steps in the STOP 1 form, each a plan commit and a step: i19a (syn001 cascade, column,
-column_solve: 12 names, src importers retargeted in the step), i19b (region: 27 private aliases), i19c (verify.table:
+column_solve: 11 names (cascade 5, column 3, column_solve 3; the plan subject and S19_DECISIONS said 12, review
+R-W4-I19a), src importers retargeted in the step), i19b (region: 27 private aliases), i19c (verify.table:
 15), i19d (sizing `__init__`: 35, listed under `removed`); a5b8895e (src docstrings, no-gain) and a2ddefcc (scripts
 outside the gate) for the stale references. Left: the 36 W5 bindings; `column_solve.saturation_pairs` (the
 test_s08b_saturation.py:57 assertion); the two live-patch reads of `region_attempts.solve_ptc` (own use, no binding to
-remove); run 21's living docs and refusals.yaml:1378. The rows below are the measurement at 0d826601.
+remove); run 21's living docs and refusals.yaml:1378. Archival, not retargeted (outside the ADR's five trees,
+as i8f's design probes; review R-W4-I19a): docs/derivations/scripts/s08_design/contract_closure_probe.py:169
+(`rg._pin`) and spikes/t03/w0_screen_measurement.py:51 (`region._admissible`), both dangling since 9a80484f. The rows below are the measurement at 0d826601.
 
 ## Rows
 
