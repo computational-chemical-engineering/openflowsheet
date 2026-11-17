@@ -1,0 +1,28 @@
+# ADR 0076 I-19, step a (W4 run 20, brief S19-W4-20; form of S19_DECISIONS 2026-11-16 STOP 1):
+# models/syn001 cascade, column and column_solve stop re-exporting the S19 names that are not
+# W5 exceptions. `codehealth gate --mode interface` reads this plan from the plan commit.
+id = "i19a-syn001-reexports"
+approved_by = "Frank Peters, 2026-11-14, ADR 0076 accepted (Decision Desk ofs-adr0076-accept)"
+reason = """ADR 0076 I-19: every re-export added by S17 or S19 goes (inventory \
+docs/briefs/S19-I19-inventory.md, scan .claude/skills/s19-refactor/i19_scan.py). Tests and scripts \
+were retargeted outside the gate (4866b61e); the step retargets the eight src importers through \
+models.syn001.cascade to the homes (cascade_solve.py, column.py, column_acceptance.py, \
+column_blocks.py, column_compile.py, column_endpoint.py, column_rows.py, column_validation.py: \
+_k_values to cascade_init, _parameter and _phase to cascade_spec, _token to cascade_rows) and drops: \
+in cascade.py the aliases _k_values, _parameter, _token, band_temperature (imports go: cascade does \
+not read them) and _phase (plain import stays: cascade reads it); in column.py the aliases _inflow \
+(plain import stays), GammaPhiLnKBlock and single_phase_admissible (imports go); in column_solve.py \
+the aliases _admissibility, _saturation_pairs and band_temperature (imports go). None of these \
+names is in an __all__, and cce-code-health counts imports as API only in __init__.py, so the plan \
+lists no change (STOP 1 ruling; a `removed` entry for them is refused by the tool as 'still bound at \
+head'). Kept: the W5 exceptions frozen column_unit.py takes through these modules (cascade :47, \
+column :59, column_solve :79; FQ-A) and column_solve's saturation_pairs alias, whose removal needs \
+an assertion change in tests/test_s08b_saturation.py:57 (open question). Expected codehealth arch \
+--depth 4 (measured at this base and on the step applied to it): base 0 violations / 0 cycles / 0 \
+cycle edges, after 0 / 0 / 0 (imports 4190 -> 4177). Layer config: none."""
+removed = []
+renamed = {}
+changed = []
+added = []
+new_files = []
+callers = []
