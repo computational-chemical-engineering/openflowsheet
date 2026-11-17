@@ -2206,3 +2206,14 @@
   solve_record.py:546-551 = HomotopyPolicy defaults). T08-build-first-spec.md:156 now names a file without a line.
   Left: the five SKILL.md out-of-repo paths; 00-core-inventory.md:826 (historical size census of the split
   application/types.py, a note for the docs-scope ruling).
+- **2026-11-17 15:40, review R-W4-I19a (reviewer, Opus, ~166k tokens) over 0d826601..91af908f: merge.** Items 1-4 OK
+  (independent AST + git grep over 1256 files: 0 importers of the 74 unbound names in the five trees; two archival
+  dangling refs outside them); 5(a) FQ-A = 36 CONFIRMED; 5(b) OVERTURNED: test_s08b_saturation.py:57 is a build-lane
+  check (S08b_BUILD_DECISIONS:84), retarget to the delegation site column_acceptance and drop the alias; 6 agreed.
+  Follow-ups done: d7453951 inventory (11 not 12; archival refs) by the orchestrator; sonnet-implementer (~59k):
+  337c3267 test line, 003c2f8c plan i19e, 85fd658e column_solve.py:54 deleted (unused there; grep 0; arch 0/0/0,
+  imports 4101 -> 4100; job 255 no-gain), f2222218 i19_scan getattr reads are reads (importers 47 -> 48, others 4).
+  Correction: S19_DECISIONS 14:15 "12 dropped" for i19a is 11.
+- 2026-11-17 15:40, health over the last 24 h (Frank asked): wp/S19 f562a63d (16 Nov 15:00) -> 7fbfcd33: debt
+  4814.6 -> 4699.2, health 8.06 -> 8.23, brain 26 -> 26, file smells 59 -> 53; arch 4/3/12 -> 0/0/0; 63 of 72 step
+  attempts accepted, debt removed 96.3 (gate report 24 h). CB d90b498f: 6370.9 / 7.29 / brain 44 / arch 14/10/79.
