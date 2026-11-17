@@ -46,6 +46,12 @@ SOLVER_LAYERS = ("numerics", "orchestrator", "compile", "graph", "verify", "run"
 #: experiment records.
 BODY_READERS = (
     "openflowsheet.application.types",
+    "openflowsheet.application.documents",
+    "openflowsheet.application.transaction_types",
+    "openflowsheet.application.job_requests",
+    "openflowsheet.application.job_records",
+    "openflowsheet.application.policy_types",
+    "openflowsheet.application.inspection_types",
     "openflowsheet.application.jobs",
     "openflowsheet.application.operations",
     "openflowsheet.application.local",
