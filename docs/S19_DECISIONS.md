@@ -2217,3 +2217,10 @@
 - 2026-11-17 15:40, health over the last 24 h (Frank asked): wp/S19 f562a63d (16 Nov 15:00) -> 7fbfcd33: debt
   4814.6 -> 4699.2, health 8.06 -> 8.23, brain 26 -> 26, file smells 59 -> 53; arch 4/3/12 -> 0/0/0; 63 of 72 step
   attempts accepted, debt removed 96.3 (gate report 24 h). CB d90b498f: 6370.9 / 7.29 / brain 44 / arch 14/10/79.
+- **2026-11-17 15:35, Decision Desk: ofs-s19-w4-docs-records and ofs-s19-w4-docs-scope VERIFIED (both A, signed
+  14:09/14:10Z, key 032ee0a5ae620a90; decision_desk_verify.py on cards fetched by this session, version 2).**
+  Records: the [docs] records list gains docs/design/** and the measurement and analysis reports (ADR 0076 rule 5);
+  config commit after the I-19 merge (a non-docs commit on wp/S19 now would void merge-check job 257's helper). Scope:
+  W4 docs gate = 0 broken references introduced by S19; pre-S19 ones trail behind 0.5 (gate row W4-DOCS in
+  S19_STATE). Left for the gate: the five S19-introduced references in .claude/skills/s19-refactor/SKILL.md (paths
+  outside the repository) must stop resolving as broken repo paths. `executed` written on each card when done.
