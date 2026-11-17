@@ -111,14 +111,16 @@ def revision_checks(
 
     `owners` (S11 design §10.11): a staged split's key → its instance (`degeneracy`); `None`
     when no instance is staged. A model's own admissibility rows (`ModelChecks.admissibility`)
-    follow the declared ports on every form."""
+    follow the declared ports on every form; the form's own rows come from
+    `_mixture_admissibility`, `_pr_admissibility` or `_syn_admissibility`. Each category's
+    instance rows come from `_instance_rows`, after the stream rows and before the flowsheet
+    rows."""
     at = state if judged_at is None else judged_at
     note = qualification(provider)
     reacting = any(i.model_id in REACTING_MODELS for i in view.instances)
     reaction_note = note + REACTION_DATUM_NOTE.format(
         convention=provider.describe().reference_convention
     )
-    components = view.components
     # S11 design §4.6 (ADR 0050 D5): the form is resolved from the basis. M02 design note §14.2
     # B15: a `pr-c1-v1` revision takes `verify.pr_c1`'s forms at the sites below, SYN-001's runs
     # SYN-001's lines, and every other basis the declared-phase mixture form (`verify.forms`).
@@ -155,98 +157,32 @@ def revision_checks(
         view, at, _Routing(pr, mixture, declared, saturated, degenerate), provider, context
     )
 
-    # Each instance is read twice when the two points differ: its energy rows at `at`, its
-    # material, specification and bounds rows at `state`.
-    units: list[tuple[Unit, ModelChecks | None]] = [
-        (
-            Unit(
-                view=instance,
-                state=at,
-                enthalpy=enthalpy,
-                tolerances=tolerances,
-                energy_note=reaction_note if instance.model_id in REACTING_MODELS else note,
-                provider=provider,
-                context=context,
-                notes=degenerate.notes,
-                unlifted=degenerate.unlifted,
-                components=tuple(components),
-            ),
-            MODEL_CHECKS.get(instance.model_id),
-        )
-        for instance in view.instances
-    ]
-
-    material: list[CheckResult] = []
-    specification: list[CheckResult] = []
-    own_admissibility: list[CheckResult] = []
-    bounds: list[CheckResult] = bounds_checks(
-        provider, state, streams=view.streams, components=components
-    )
-    for judged, entry in units:
-        certified = judged if at is state else replace(judged, state=state)
-        if entry is None:
-            material.append(
-                unsupported(
-                    id=f"material_balance.{certified.id}.all",
-                    category="material_balance",
-                    subject=certified.id,
-                    reason=f"model_unsupported({certified.view.model_id})",
-                )
-            )
-            continue
-        material += entry.material(certified, components)
-        energy += entry.energy(judged, components)
-        specification += entry.specification(certified, components)
-        bounds += entry.bounds(certified, components)
-        own_admissibility += entry.admissibility(judged, components)
-    material += _envelope_material(view, state, tolerances)
+    judging = _Judging(at, provider, context, tolerances, note, reaction_note)
+    stream_bounds = bounds_checks(provider, state, streams=view.streams, components=view.components)
+    instance_rows = _instance_rows(view, state, enthalpy, degenerate, judging)
+    material = [*instance_rows.material, *_envelope_material(view, state, tolerances)]
+    energy += instance_rows.energy
     energy.append(
         _envelope_energy(
             view, at, enthalpy, tolerances, reaction_note if reacting else note, degenerate
         )
     )
 
-    admissibility: list[CheckResult] = []
     if mixture:
-        admissibility += forms.stream_admissibility(view, declared, at, provider, context, note)
-        if saturated:
-            admissibility += _thermal_rows().saturated_stream_checks(
-                view, at, provider, context, tolerances, note
-            )
-        admissibility += own_admissibility
-        return [*material, *energy, *specification, *bounds, *admissibility]
-    if pr:
-        for split in splits:
-            admissibility += pr_c1.split_checks(
-                split, components, at, provider, context, tolerances, note
-            )
-        admissibility += pr_c1.declared_port_checks(
-            view,
-            at,
-            provider,
-            context,
-            note,
-            {model: entry.declared_ports for model, entry in MODEL_CHECKS.items()},
-        )
-        admissibility += own_admissibility
-        return [*material, *energy, *specification, *bounds, *admissibility]
-    for split in splits:
-        admissibility += _split_checks(
-            split,
-            components,
-            at,
-            provider,
-            context,
-            tolerances,
-            note,
-            degenerate.splits.get(split.unit),
-            unresolved=split.unit in degenerate.unresolved,
-        )
-    admissibility += _declared_port_checks(
-        view, at, enthalpy, provider, context, tolerances, note, degenerate
-    )
-    admissibility += own_admissibility
-    return [*material, *energy, *specification, *bounds, *admissibility]
+        admissibility = _mixture_admissibility(view, declared, saturated, judging)
+    elif pr:
+        admissibility = _pr_admissibility(view, splits, judging)
+    else:
+        admissibility = _syn_admissibility(view, splits, enthalpy, degenerate, judging)
+    return [
+        *material,
+        *energy,
+        *instance_rows.specification,
+        *stream_bounds,
+        *instance_rows.bounds,
+        *admissibility,
+        *instance_rows.admissibility,
+    ]
 
 
 def _saturated_outlets(view: RevisionView) -> frozenset[str]:
@@ -348,6 +284,164 @@ def _stream_enthalpies(
         else:
             enthalpy[stream] = enthalpy_flow(provider, carried, context)
     return enthalpy, energy
+
+
+class _Judging(NamedTuple):
+    """What revision_checks judges with (ADR 0013 D1): the fresh-flash point `at`, the fresh
+    provider and context, the tolerances and the two qualification notes; the first five in the
+    order the admissibility checks take them."""
+
+    #: The point judged (`judged_at`, or `state` when it is `None`).
+    at: Mapping[str, float]
+    #: The fresh provider and its evaluation context.
+    provider: PropertyProvider
+    context: EvaluationContext
+    tolerances: Mapping[str, float]
+    #: The provider's qualification note (`checks.qualification`).
+    note: str
+    #: `note` plus `REACTION_DATUM_NOTE`, the note a reacting model's energy rows carry.
+    reaction_note: str
+
+
+class _InstanceRows(NamedTuple):
+    """The rows of the revision's instances by category, instances in declaration order and each
+    model's items in its entry's order (§4.3)."""
+
+    material: list[CheckResult]
+    energy: list[CheckResult]
+    specification: list[CheckResult]
+    bounds: list[CheckResult]
+    #: The models' own admissibility rows (`ModelChecks.admissibility`).
+    admissibility: list[CheckResult]
+
+
+def _instance_rows(
+    view: RevisionView,
+    state: Mapping[str, float],
+    enthalpy: Mapping[str, float],
+    degenerate: Degeneracy,
+    judging: _Judging,
+) -> _InstanceRows:
+    """Each instance's rows by its model's `MODEL_CHECKS` entry, its energy rows reading
+    `enthalpy` and `degenerate`'s notes and unlifted streams; an instance whose model has no
+    entry gets one `unsupported` material row and no other."""
+    at, provider, context, tolerances, note, reaction_note = judging
+    components = view.components
+    # Each instance is read twice when the two points differ: its energy rows at `at`, its
+    # material, specification and bounds rows at `state`.
+    units: list[tuple[Unit, ModelChecks | None]] = [
+        (
+            Unit(
+                view=instance,
+                state=at,
+                enthalpy=enthalpy,
+                tolerances=tolerances,
+                energy_note=reaction_note if instance.model_id in REACTING_MODELS else note,
+                provider=provider,
+                context=context,
+                notes=degenerate.notes,
+                unlifted=degenerate.unlifted,
+                components=tuple(components),
+            ),
+            MODEL_CHECKS.get(instance.model_id),
+        )
+        for instance in view.instances
+    ]
+
+    material: list[CheckResult] = []
+    energy: list[CheckResult] = []
+    specification: list[CheckResult] = []
+    bounds: list[CheckResult] = []
+    own_admissibility: list[CheckResult] = []
+    for judged, entry in units:
+        certified = judged if at is state else replace(judged, state=state)
+        if entry is None:
+            material.append(
+                unsupported(
+                    id=f"material_balance.{certified.id}.all",
+                    category="material_balance",
+                    subject=certified.id,
+                    reason=f"model_unsupported({certified.view.model_id})",
+                )
+            )
+            continue
+        material += entry.material(certified, components)
+        energy += entry.energy(judged, components)
+        specification += entry.specification(certified, components)
+        bounds += entry.bounds(certified, components)
+        own_admissibility += entry.admissibility(judged, components)
+    return _InstanceRows(material, energy, specification, bounds, own_admissibility)
+
+
+def _mixture_admissibility(
+    view: RevisionView,
+    declared: Mapping[str, Phase | None],
+    saturated: frozenset[str],
+    judging: _Judging,
+) -> list[CheckResult]:
+    """The declared-mixture form's admissibility rows: each stream's in its `declared` phase
+    (`forms.stream_admissibility`), then, when any outlet is `saturated`, `verify.thermal`'s
+    saturated-stream rows."""
+    at, provider, context, tolerances, note, _ = judging
+    admissibility: list[CheckResult] = []
+    admissibility += forms.stream_admissibility(view, declared, at, provider, context, note)
+    if saturated:
+        admissibility += _thermal_rows().saturated_stream_checks(
+            view, at, provider, context, tolerances, note
+        )
+    return admissibility
+
+
+def _pr_admissibility(
+    view: RevisionView, splits: Sequence[LiftedSplit], judging: _Judging
+) -> list[CheckResult]:
+    """The `pr-c1-v1` form's admissibility rows (M02 design note §14.2 B15): `verify.pr_c1`'s
+    split checks in `splits` order, then its declared-port checks."""
+    at, provider, context, tolerances, note, _ = judging
+    admissibility: list[CheckResult] = []
+    for split in splits:
+        admissibility += pr_c1.split_checks(
+            split, view.components, at, provider, context, tolerances, note
+        )
+    admissibility += pr_c1.declared_port_checks(
+        view,
+        at,
+        provider,
+        context,
+        note,
+        {model: entry.declared_ports for model, entry in MODEL_CHECKS.items()},
+    )
+    return admissibility
+
+
+def _syn_admissibility(
+    view: RevisionView,
+    splits: Sequence[LiftedSplit],
+    enthalpy: Mapping[str, float],
+    degenerate: Degeneracy,
+    judging: _Judging,
+) -> list[CheckResult]:
+    """SYN-001's form's admissibility rows: each split's admissibility and independent split
+    (`_split_checks`, in `splits` order, routed by `degenerate`), then the declared ports, which
+    read `enthalpy`."""
+    at, provider, context, tolerances, note, _ = judging
+    admissibility: list[CheckResult] = []
+    for split in splits:
+        admissibility += _split_checks(
+            split,
+            view.components,
+            at,
+            provider,
+            context,
+            tolerances,
+            note,
+            degenerate.splits.get(split.unit),
+            unresolved=split.unit in degenerate.unresolved,
+        )
+    admissibility += _declared_port_checks(
+        view, at, enthalpy, provider, context, tolerances, note, degenerate
+    )
+    return admissibility
 
 
 def revision_phase_branch(
