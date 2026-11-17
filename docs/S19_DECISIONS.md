@@ -1977,3 +1977,12 @@
   ed13249a fixes 1, 2 (docstrings and contract.md:3), job 233 (w4r13-revfix, no-gain). I-19 list gains: the ADR 0076
   I-12b erratum, api/types.md, schema_check.py:8. Next: job 232, job 233 PASS and the serial counts EQUAL (i10,
   i12b, i12a, i12c) -> helper wp/S19-w4-mc, merge-check, merge.
+- **2026-11-17 05:50, job 232 PASS (w4r16-i12c-1, I-12c interface step 918d4e59, step 278 accepted, 17/17, debt
+  87.7 -> 87.7).** Gate report (6 h):
+  "ALERT selected share 62% < 75% of step gates"
+  "ALERT selected gates take 715 s > 300 s (tests tier)"
+  "ALERT selected/full time ratio 0.65 > 0.4: selection saves little"
+  (standing; proposal 2 with Frank). Brief S19-W4-17.md drafted (I-12d part 1). DECISION: I-12d lands as one
+  interface step per service (ServiceCore + InspectionService, then Revision, Artifact, Validation, Job), each
+  leaving LocalApplication working. Alternative: one 77-method step. Reversible by: squashing the steps before merge.
+  Launch after the w4r13 merge.
