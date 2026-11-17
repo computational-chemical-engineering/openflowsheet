@@ -57,8 +57,12 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 
 ## Next actions (2026-11-17 ~02:50, self-reset)
 
-Runner RUNNING (pid 300275, restarted 03:45 after G-MAP 4; MB = 1720cc98). Results consumed up to 212; jobs
-through 228 consumed (wait --since 214). One agent: W4 run 13 engineer (lane s19-w4). Lanes at most 2 agents until Thu 19 Nov 13:00. ALERTs standing (proposal 2 with Frank).
+Runner RUNNING (pid 300275; MB = 1720cc98). Results consumed through 228 (`$Q wait --since 214`). Running:
+job 229 (I-10 step 0e71c61a); serial runs i10-base (7599f205, PID 370529) and i10-head (0e71c61a, PID 370530),
+logs `<git-common-dir>/codehealth/runs/serial/i10-*.log`, worktrees `<scratchpad 5222beaa>/ser-i10-*` (remove after);
+agent: W4 run 14 engineer (I-12b, I-12c; brief S19-W4-14.md). I-12a waits for a cce-code-health fix (session
+code_health, asked 04:14; S19_DECISIONS 04:15), then brief S19-W4-15 (I-12a with the engineer's logged choices).
+Lanes at most 2 agents until Thu 19 Nov 13:00. ALERTs standing (proposal 2 with Frank).
 Merge-checks run on a helper `wp/S19-<lane>-mc` = lane tip + wp/S19 tip merged in; merge the helper (`git merge
 --no-ff -F <file>`) only if wp/S19 changed ONLY docs since the helper's wp/S19 merge, else refresh and re-run (job 215).
 `enqueue --rerun-of` takes the RUN-LOG STEP number, never across a rebase. Briefs that rebuild a lane chain: check
@@ -67,11 +71,9 @@ repo `.venv`: `PYTHONPATH=<worktree>/src`, no `-n` (no xdist there).
 1. **G-MAP 4: done** (accepted as G-MAP 3; fold fix 0d91ac4b; S19_DECISIONS 03:40). After a reset: `$Q wait --since 212`
    in the background if no result past 212 is consumed.
 2. **I-13: merged** (d63dcd7a, merge-check job 228; S19_DECISIONS 04:00).
-3. **Next W4 run (13): I-10, I-12a (I-12b if room)**, brief DRAFTED (S19-W4-13.md; launch prompt names the wp/S19 tip; serial runs by the orchestrator with `serial.sh`; drafted from pattern S19-W4-12.md and
-   S19-W3-common.md; ADR 0076 rows; rule 4 amended: serial MSG counts at base and head, `-p no:xdist`, both wall-time
-   budget tests deselected, PYTHONHASHSEED=0, all counts equal to 1061/801/100-style lines, ~2.2 h per suite; see
-   S19_DECISIONS 22:24 and 01:40 entries for the serial command, `serial.sh` in session 916d464e's scratchpad). Brief
-   after I-13 merges; branch the lane from the wp/S19 tip.
+3. **W4 runs 13/14:** I-10 enqueued (job 229; arch 0/0/0). On job 229 PASS and serial counts EQUAL: review per
+   cadence (R-W4-13 with run 14's steps, batch the forbid-list question), then merge-check and merge. Then I-12a
+   (after the tool fix), I-12d, I-19.
 4. **G5:** W3 part done (G5 run 11 merged 1720cc98). Left: verify twins gamma_phi_units 6.4 / pr_c1 6.7 (W4 twin merge;
    addendum for Frank), table.py `revision_checks` (W4 routing), R-W3-G5-7 component-order question (design lane at
    the G5 close), checks.py / split_checks.py / certificate.py 8.7, the S3 ladder twin (checks.py:757-794 vs
