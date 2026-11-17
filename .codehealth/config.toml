@@ -130,6 +130,7 @@ order = [
     "openflowsheet.application.local",
     # LocalApplication's services (ADR 0076 I-12d), top to bottom, the core last
     "openflowsheet.application.validation_service",
+    "openflowsheet.application.artifact_service",
     "openflowsheet.application.revision_service",
     "openflowsheet.application.inspection_service",
     "openflowsheet.application.service_core",
@@ -276,6 +277,7 @@ to = [
     "openflowsheet.application.store_records",
     "openflowsheet.application.revision_replay",
     "openflowsheet.application.validation_service",
+    "openflowsheet.application.artifact_service",
     "openflowsheet.application.revision_service",
     "openflowsheet.application.inspection_service",
     "openflowsheet.application.service_core",
