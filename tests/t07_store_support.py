@@ -14,17 +14,13 @@ from multiprocessing.queues import Queue
 from multiprocessing.synchronize import Event
 from typing import Any
 
+from openflowsheet.application.job_records import EffectiveBudgets
+from openflowsheet.application.job_requests import JobRequest, SolveBody
 from openflowsheet.application.local import LocalApplication
+from openflowsheet.application.policy_types import LOCAL_OWNER_PRINCIPAL
 from openflowsheet.application.revisions import Revision
 from openflowsheet.application.store_records import IdempotencyKeyReusedError
-from openflowsheet.application.types import (
-    LOCAL_OWNER_PRINCIPAL,
-    Change,
-    Edit,
-    EffectiveBudgets,
-    JobRequest,
-    SolveBody,
-)
+from openflowsheet.application.transaction_types import Change, Edit
 
 POLICY_SHA256 = "0" * 64
 

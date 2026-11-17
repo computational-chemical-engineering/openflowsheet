@@ -61,8 +61,8 @@ from openflowsheet.application.coupled_run import (
 )
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.operations import dispatch
+from openflowsheet.application.policy_types import ReplayPolicy
 from openflowsheet.application.revision_run import Route, bind_route
-from openflowsheet.application.types import ReplayPolicy
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.numerics.solve_record import Trace
 from openflowsheet.orchestrator.execution import PlanRefusal

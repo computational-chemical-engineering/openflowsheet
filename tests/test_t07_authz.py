@@ -36,15 +36,15 @@ from openflowsheet.application.authz import (
 from openflowsheet.application.cli import main
 from openflowsheet.application.errors import ApplicationError
 from openflowsheet.application.local import LocalApplication
-from openflowsheet.application.revisions import Revision
-from openflowsheet.application.store import POLICY_NAME, ProjectStore
-from openflowsheet.application.types import (
+from openflowsheet.application.policy_types import (
     LOCAL_OWNER_PRINCIPAL,
     RIGHTS,
     CapabilityReference,
     Limits,
     ProjectPolicy,
 )
+from openflowsheet.application.revisions import Revision
+from openflowsheet.application.store import POLICY_NAME, ProjectStore
 from openflowsheet.schema_check import DocumentSchemaError
 
 #: §10.1, transcribed. `read`: inspect, validate, preview, jobs and artifacts; `draft`:

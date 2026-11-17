@@ -26,16 +26,15 @@ from t07_corpus import CORPUS
 from t07_jobs_support import commit
 from test_t07_w6a_http import CAPABILITY, PRINCIPAL, Served, direct_call, http_call
 
-from openflowsheet.application.jobs.model import check_lifecycle
-from openflowsheet.application.types import (
+from openflowsheet.application.job_records import (
     ArtifactRef,
     EffectiveBudgets,
     Job,
     JobEnding,
     JobEvent,
-    JobRequest,
-    SolveBody,
 )
+from openflowsheet.application.job_requests import JobRequest, SolveBody
+from openflowsheet.application.jobs.model import check_lifecycle
 from openflowsheet.canonical import canonical_json
 
 pytestmark = pytest.mark.filterwarnings(

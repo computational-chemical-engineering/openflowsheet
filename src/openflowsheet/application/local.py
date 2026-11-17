@@ -62,6 +62,36 @@ from openflowsheet.application.authz import (
 )
 from openflowsheet.application.contract import Page, Projection
 from openflowsheet.application.errors import ApiError, ApiErrorCode, ApplicationError, api_error
+from openflowsheet.application.inspection_types import (
+    AdmissionReport,
+    AuditOrder,
+    AuditRecord,
+    CapabilityPage,
+    JobWait,
+    MessageEntry,
+    ModelRegistryView,
+    ProjectSummary,
+    RevisionSummary,
+    ServerInfo,
+    SubmitResult,
+)
+from openflowsheet.application.job_records import (
+    EffectiveBudgets,
+    Job,
+    JobEvent,
+    JobResult,
+    RunFailure,
+    RunResult,
+    _replay_report_build,
+)
+from openflowsheet.application.job_requests import (
+    ExperimentBody,
+    JobRequest,
+    OptimizeBody,
+    ReproduceBody,
+    SolveBody,
+    SurrogateStudyBody,
+)
 from openflowsheet.application.jobs.executor import InlineExecutor, ProcessExecutor
 from openflowsheet.application.jobs.model import JOB_STATUSES, TERMINAL_STATUSES, JobStatus
 from openflowsheet.application.jobs.runner import RunContext, bundle_rows, record_rows
@@ -71,6 +101,12 @@ from openflowsheet.application.model_signatures import (
     ModelSignature,
     PinColumn,
     pin_encodings,
+)
+from openflowsheet.application.policy_types import (
+    CapabilityReference,
+    ExecutorSettings,
+    ProjectPolicy,
+    ReplayPolicy,
 )
 from openflowsheet.application.projection import (
     DEFAULT_DEPTH,
@@ -108,39 +144,7 @@ from openflowsheet.application.store_records import (
     coded_store_error,
 )
 from openflowsheet.application.structure_inspection import route_structure
-from openflowsheet.application.types import (
-    AdmissionReport,
-    AuditOrder,
-    AuditRecord,
-    CapabilityPage,
-    CapabilityReference,
-    Change,
-    EffectiveBudgets,
-    ExecutorSettings,
-    ExperimentBody,
-    Job,
-    JobEvent,
-    JobRequest,
-    JobResult,
-    JobWait,
-    MessageEntry,
-    ModelRegistryView,
-    OptimizeBody,
-    ProjectPolicy,
-    ProjectSummary,
-    ReplayPolicy,
-    ReproduceBody,
-    RevisionSummary,
-    RunFailure,
-    RunResult,
-    SemanticDiff,
-    ServerInfo,
-    SolveBody,
-    SubmitResult,
-    SurrogateStudyBody,
-    TransactionResult,
-    _replay_report_build,
-)
+from openflowsheet.application.transaction_types import Change, SemanticDiff, TransactionResult
 from openflowsheet.application.validation_report import Task, ValidationReport
 from openflowsheet.canonical import canonical_json, document_sha256, first_noncanonical
 from openflowsheet.orchestrator.policies import APPLICATION_POLICIES, DEFAULT_POLICY_ID

@@ -48,6 +48,8 @@ from t07_process_support import (
 )
 
 import openflowsheet
+from openflowsheet.application.job_records import Job
+from openflowsheet.application.job_requests import Budgets
 from openflowsheet.application.jobs.executor import (
     SHUTDOWN_STORE_ATTEMPTS,
     SUPERVISOR_POLL_S,
@@ -60,7 +62,6 @@ from openflowsheet.application.jobs.worker import (
 )
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.store import ProjectStore
-from openflowsheet.application.types import Budgets, Job
 
 SPAWN = multiprocessing.get_context("spawn")
 NOMINAL = "SYN-001-nominal"

@@ -31,14 +31,13 @@ sys.path.insert(0, str(ROOT / "scripts"))
 from v0_0_gate import build as gate_report  # noqa: E402
 
 from openflowsheet.application.cli import main as cli  # noqa: E402
+from openflowsheet.application.job_records import EffectiveBudgets  # noqa: E402
+from openflowsheet.application.job_requests import JobRequest, SolveBody  # noqa: E402
 from openflowsheet.application.local import LocalApplication  # noqa: E402
 from openflowsheet.application.revisions import Revision, content_hash  # noqa: E402
-from openflowsheet.application.types import (  # noqa: E402
+from openflowsheet.application.transaction_types import (  # noqa: E402
     ChangeSet,
     Edit,
-    EffectiveBudgets,
-    JobRequest,
-    SolveBody,
     TransactionResult,
 )
 from openflowsheet.application.validation import validate  # noqa: E402

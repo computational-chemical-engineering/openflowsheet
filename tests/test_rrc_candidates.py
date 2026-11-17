@@ -34,7 +34,7 @@ from test_s02_column_wo2 import FLOW_ABS, FLOW_REL
 
 from benchmarks.rrc import run_candidates as harness
 from openflowsheet.application.local import LocalApplication
-from openflowsheet.application.types import ReplayPolicy
+from openflowsheet.application.policy_types import ReplayPolicy
 from openflowsheet.canonical import encode_doubles
 from openflowsheet.orchestrator.execution import declaration_identity
 from openflowsheet.orchestrator.homotopy import level_values, rebind

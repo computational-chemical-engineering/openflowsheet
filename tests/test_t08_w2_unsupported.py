@@ -93,7 +93,7 @@ def test_u02_a_library_only_providers_records_are_refused_typed() -> None:
 def test_u05_validate_for_optimization_is_unsupported(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    from openflowsheet.application.types import Change, Edit
+    from openflowsheet.application.transaction_types import Change, Edit
     from openflowsheet.studies.nlp.closure import audited_solver
 
     if audited_solver().available:
@@ -136,7 +136,7 @@ def test_u05_a_change_for_optimization_is_refused_audited(
     refuse at the top of `_prepare` with `validate`'s audited `unsupported`,
     `task_unsupported(optimization)`, before any document is built, and write no revision."""
     from openflowsheet.application import local
-    from openflowsheet.application.types import Change, Edit
+    from openflowsheet.application.transaction_types import Change, Edit
 
     document = CORPUS["SYN-001-nominal"]()
     with LocalApplication.create(tmp_path / "project", project_id="u05c") as app:

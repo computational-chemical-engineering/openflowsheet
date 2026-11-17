@@ -44,7 +44,12 @@ from functools import cache
 from typing import Any, Final, Literal, Protocol
 
 from openflowsheet.application.contract import Application, Inspection, JobControl, Page
+from openflowsheet.application.documents import published_schemas, validate_inline
 from openflowsheet.application.errors import ApiError, ApiErrorCode, ApplicationError, api_error
+from openflowsheet.application.inspection_types import AuditRecord, RevisionSummary
+from openflowsheet.application.job_records import Job, JobEvent
+from openflowsheet.application.job_requests import JobRequest
+from openflowsheet.application.policy_types import ReplayPolicy, Right
 from openflowsheet.application.projection import (
     MAX_DEPTH,
     MAX_PAGE,
@@ -52,18 +57,7 @@ from openflowsheet.application.projection import (
     bound_document,
     bound_text,
 )
-from openflowsheet.application.types import (
-    AuditRecord,
-    Change,
-    Job,
-    JobEvent,
-    JobRequest,
-    ReplayPolicy,
-    RevisionSummary,
-    Right,
-    published_schemas,
-    validate_inline,
-)
+from openflowsheet.application.transaction_types import Change
 from openflowsheet.canonical import first_noncanonical
 from openflowsheet.schema_check import SCHEMA_BASE, DocumentSchemaError
 

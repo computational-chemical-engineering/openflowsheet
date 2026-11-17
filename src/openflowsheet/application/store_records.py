@@ -14,7 +14,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal
 
-from openflowsheet.application.types import ArtifactRef, ProjectPolicy
+from openflowsheet.application.job_records import ArtifactRef
+from openflowsheet.application.policy_types import ProjectPolicy
 
 if TYPE_CHECKING:
     from openflowsheet.application.store import ProjectStore

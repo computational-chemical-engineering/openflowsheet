@@ -20,10 +20,10 @@ import pytest
 from conftest import REPO_ROOT
 from t07_jobs_support import commit
 
+from openflowsheet.application.job_requests import JobRequest, SolveBody
 from openflowsheet.application.jobs.model import TERMINAL_STATUSES
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.operations import dispatch
-from openflowsheet.application.types import JobRequest, SolveBody
 
 REVISION = REPO_ROOT / "benchmarks" / "t08" / "ptc_r1" / "revision.json"
 POLICY = "T08-ptc-v1"

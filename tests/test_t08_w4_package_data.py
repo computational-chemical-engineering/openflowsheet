@@ -26,7 +26,7 @@ from pathlib import Path
 import pytest
 from conftest import REPO_ROOT
 
-from openflowsheet.application.types import published_schemas
+from openflowsheet.application.documents import published_schemas
 from openflowsheet.resources import DIRECTORIES, PACKAGED, packaged, repository_path
 
 sys.path.insert(0, str(REPO_ROOT / "scripts"))

@@ -33,7 +33,7 @@ from openflowsheet.application.errors import ApplicationError
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.operations import dispatch
 from openflowsheet.application.revision_binding import bind_revision_flowsheet
-from openflowsheet.application.types import Change, Edit
+from openflowsheet.application.transaction_types import Change, Edit
 from openflowsheet.application.validation import validate
 from openflowsheet.canonical import CanonicalizationError, canonical_json, first_noncanonical
 from openflowsheet.schema_check import schema_errors

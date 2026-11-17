@@ -33,6 +33,7 @@ from openflowsheet.application.binding import (
 )
 from openflowsheet.application.binding_common import Unbound, refusal_code
 from openflowsheet.application.errors import ApplicationError
+from openflowsheet.application.job_requests import JobRequest
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.revision_binding import (
     RevisionBinding,
@@ -40,7 +41,6 @@ from openflowsheet.application.revision_binding import (
 )
 from openflowsheet.application.revision_run import NoRoute, select_route
 from openflowsheet.application.structure_inspection import route_structure
-from openflowsheet.application.types import JobRequest
 from openflowsheet.application.validation import structural_refusal, validate
 
 STRUCTURAL = ("STR-01", "STR-02", "STR-03", "STR-04", "STR-05")

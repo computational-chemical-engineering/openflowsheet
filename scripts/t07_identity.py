@@ -109,7 +109,7 @@ A1_REFERENCE = ROOT / "docs" / "derivations" / "scripts" / "adr0002_a1_reference
 
 def _commit(application: Any, document: Mapping[str, Any], key: str) -> str:
     """`document` as the new head revision (one `set` per top-level key); its id."""
-    from openflowsheet.application.types import Change, Edit
+    from openflowsheet.application.transaction_types import Change, Edit
 
     with application.store.reading() as connection:
         head = application.store.head(connection)
@@ -165,7 +165,7 @@ def runs(application: Any) -> dict[str, Any]:
     Executor-neutral, so a test can compare the inline record with the process executor's."""
     from t07_corpus import CORPUS
 
-    from openflowsheet.application.types import JobRequest, SolveBody
+    from openflowsheet.application.job_requests import JobRequest, SolveBody
 
     out = {}
     for case in CASES:
@@ -229,7 +229,7 @@ def _refusal(binding: Any) -> list[Any] | None:
 
 
 def _commit_refusal(application: Any, document: Mapping[str, Any], key: str) -> list[Any]:
-    from openflowsheet.application.types import Change, Edit
+    from openflowsheet.application.transaction_types import Change, Edit
 
     edits = tuple(Edit("set", (name,), value) for name, value in document.items())
     result = application.commit_change(Change(edits=edits), None, key)
@@ -305,7 +305,7 @@ def _q29(application: Any) -> dict[str, Any]:
 
 
 def _adr0002_a1(application: Any) -> list[list[Any]]:
-    from openflowsheet.application.types import Change, Edit
+    from openflowsheet.application.transaction_types import Change, Edit
 
     rows = json.loads(A1_REFERENCE.read_text("utf-8"))["integers"]
     out = []
@@ -332,7 +332,7 @@ def _adr0002_a1(application: Any) -> list[list[Any]]:
 
 def identity() -> dict[str, Any]:
     from openflowsheet.application.local import LocalApplication
-    from openflowsheet.application.types import Change, Edit
+    from openflowsheet.application.transaction_types import Change, Edit
 
     with tempfile.TemporaryDirectory() as scratch:
         solving = LocalApplication.create(Path(scratch) / "runs", project_id="t07-identity")

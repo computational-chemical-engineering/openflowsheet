@@ -21,7 +21,7 @@ from openflowsheet.messages import audit
 from openflowsheet.schema_check import validate_document
 
 if TYPE_CHECKING:
-    from openflowsheet.application.types import RunResult
+    from openflowsheet.application.job_records import RunResult
 
 
 ApiErrorCode = Literal[

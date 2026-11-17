@@ -26,11 +26,12 @@ from t07_support import AT, COMPLETED, LATER, job
 
 from openflowsheet.application.cli import API_EXIT_CODES, main
 from openflowsheet.application.errors import API_ERROR_HTTP_STATUS, ApplicationError
+from openflowsheet.application.job_records import ArtifactRef, JobEvent
 from openflowsheet.application.jobs.executor import ProcessExecutor
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.operations import OPERATIONS, dispatch
+from openflowsheet.application.policy_types import CapabilityReference
 from openflowsheet.application.store import DATABASE_NAME
-from openflowsheet.application.types import ArtifactRef, CapabilityReference, JobEvent
 from openflowsheet.canonical import canonical_json
 from openflowsheet.schema_check import schema_errors
 

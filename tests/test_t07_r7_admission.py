@@ -47,6 +47,7 @@ from openflowsheet.application.binding import (
 )
 from openflowsheet.application.binding_common import Unbound
 from openflowsheet.application.errors import ApplicationError
+from openflowsheet.application.job_requests import JobRequest
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.revision_binding import RevisionBinding, bind_revision_flowsheet
 from openflowsheet.application.revision_run import (
@@ -59,7 +60,6 @@ from openflowsheet.application.revision_run import (
     solve_route,
 )
 from openflowsheet.application.structure_inspection import route_structure
-from openflowsheet.application.types import JobRequest
 from openflowsheet.application.validation import structural_refusal, validate
 from openflowsheet.models.syn001.flowsheet import HEATER_TEMPERATURE
 from openflowsheet.orchestrator.policies import DEFAULT_POLICY_ID, T04_W12, resolve_policy

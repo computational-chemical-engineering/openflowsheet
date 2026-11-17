@@ -56,12 +56,13 @@ HERE: Final = Path(__file__).resolve().parent
 ROOT: Final = HERE.parents[1]
 sys.path[:0] = [str(ROOT / "src")]
 
+from openflowsheet.application.job_requests import JobRequest, SolveBody  # noqa: E402
 from openflowsheet.application.local import LocalApplication  # noqa: E402
 from openflowsheet.application.revision_binding import (  # noqa: E402
     RevisionBinding,
     bind_revision_flowsheet,
 )
-from openflowsheet.application.types import Change, Edit, JobRequest, SolveBody  # noqa: E402
+from openflowsheet.application.transaction_types import Change, Edit  # noqa: E402
 from openflowsheet.canonical import state_sha256  # noqa: E402
 from openflowsheet.models import flow_id  # noqa: E402
 from openflowsheet.models.syn001 import FLOW_TOLERANCE  # noqa: E402

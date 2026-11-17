@@ -376,8 +376,8 @@ def command_project_init(arguments: argparse.Namespace) -> int:
 def command_project_grant(arguments: argparse.Namespace) -> int:
     """T07 §10.3: add a grant; print its token once — only the token's SHA-256 is stored."""
     from openflowsheet.application.authz import grant
+    from openflowsheet.application.policy_types import Limits
     from openflowsheet.application.store_records import StoreError
-    from openflowsheet.application.types import Limits
 
     try:
         capability, token = grant(
@@ -783,9 +783,9 @@ def _bundle_display_units(text: str) -> DisplayUnits | ApiError:
     pressure (a directory has no project; X04 decision D-8), or its refusal as the `ApiError`
     `get_stream_table` raises for it (ADR 0075 D9). The request schema's bound on the member
     (1 to 1024 characters) comes first and refuses as `dispatch` does (X04 review S4)."""
+    from openflowsheet.application.documents import validate_inline
     from openflowsheet.application.errors import api_error
     from openflowsheet.application.operations import OPERATIONS
-    from openflowsheet.application.types import validate_inline
     from openflowsheet.schema_check import DocumentSchemaError
     from openflowsheet.units.display import DisplayUnitsError, parse_display_units
 

@@ -26,8 +26,8 @@ from typing import Final, TextIO
 
 from openflowsheet.application.authz import authenticate, read_policy
 from openflowsheet.application.local import LocalApplication
+from openflowsheet.application.policy_types import CapabilityReference
 from openflowsheet.application.store import POLICY_NAME
-from openflowsheet.application.types import CapabilityReference
 
 #: §10.2: the environment variable naming the token file when no path is given.
 TOKEN_FILE_VARIABLE: Final[str] = "OPENFLOWSHEET_TOKEN_FILE"

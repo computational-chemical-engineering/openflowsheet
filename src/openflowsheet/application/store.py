@@ -34,6 +34,21 @@ from typing import Any, Final
 
 from openflowsheet._files import atomic_write_bytes as atomic_write_bytes  # re-export, R-237
 from openflowsheet.application.errors import ApiError
+from openflowsheet.application.inspection_types import AuditRecord, RevisionSummary
+from openflowsheet.application.job_records import (
+    ArtifactRef,
+    EffectiveBudgets,
+    Job,
+    JobEnding,
+    JobEvent,
+    Progress,
+)
+from openflowsheet.application.job_requests import JobRequest
+from openflowsheet.application.policy_types import (
+    LOCAL_OWNER_PRINCIPAL,
+    ExecutorSettings,
+    ProjectPolicy,
+)
 from openflowsheet.application.revisions import Revision, content_hash
 from openflowsheet.application.store_records import (
     ActiveJobLimitError,
@@ -44,20 +59,6 @@ from openflowsheet.application.store_records import (
     StoreError,
     coded_store_error,
     policy_file_bytes,
-)
-from openflowsheet.application.types import (
-    LOCAL_OWNER_PRINCIPAL,
-    ArtifactRef,
-    AuditRecord,
-    EffectiveBudgets,
-    ExecutorSettings,
-    Job,
-    JobEnding,
-    JobEvent,
-    JobRequest,
-    Progress,
-    ProjectPolicy,
-    RevisionSummary,
 )
 
 # §5.1's timestamp has one definition, `validation_report.utc_timestamp`; the store stamps with it.

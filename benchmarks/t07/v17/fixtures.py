@@ -38,20 +38,14 @@ from typing import Any, Final
 
 from benchmarks.t07.v17 import scorer
 from openflowsheet.application.authz import grant, read_policy
+from openflowsheet.application.job_requests import JobRequest, ReproduceBody
 from openflowsheet.application.jobs.executor import ProcessExecutor
 from openflowsheet.application.jobs.worker import PAUSE_AT_STAGE_VARIABLE, PAUSED_FILE
 from openflowsheet.application.local import LocalApplication
+from openflowsheet.application.policy_types import CapabilityReference, Limits, ReplayPolicy
 from openflowsheet.application.revision_run import Route, select_route
 from openflowsheet.application.store import JOBS_DIR, POLICY_NAME
-from openflowsheet.application.types import (
-    CapabilityReference,
-    Change,
-    Edit,
-    JobRequest,
-    Limits,
-    ReplayPolicy,
-    ReproduceBody,
-)
+from openflowsheet.application.transaction_types import Change, Edit
 from openflowsheet.canonical import canonical_json, load_document
 from openflowsheet.run.bundle import read_artifact, read_manifest, verify_bundle, write_bundle
 from openflowsheet.run.identity import r0_projection, r0_sha256

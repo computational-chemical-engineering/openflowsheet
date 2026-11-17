@@ -97,7 +97,7 @@ def test_g13_reproduce_imports_and_replays_an_optimization_record(tmp_path: Path
     manifest's format: `MATCH`, the re-run bundles artifacts of the job, the report its one
     output. Without `rerun`: `inspected_archived_results`."""
     from openflowsheet.application.local import LocalApplication
-    from openflowsheet.application.types import ReplayPolicy
+    from openflowsheet.application.policy_types import ReplayPolicy
 
     with LocalApplication.create(tmp_path / "project", project_id="opt-replay") as app:
         report = app.reproduce(FIXTURE, ReplayPolicy(rerun=True))

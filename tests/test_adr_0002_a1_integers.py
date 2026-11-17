@@ -48,7 +48,7 @@ from benchmarks.t07.v17 import reference
 from openflowsheet.application.authz import grant
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.operations import dispatch
-from openflowsheet.application.types import Change, Edit
+from openflowsheet.application.transaction_types import Change, Edit
 from openflowsheet.canonical import (
     CanonicalizationError,
     canonical_json,

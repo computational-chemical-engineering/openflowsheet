@@ -193,9 +193,9 @@ def job_documents() -> dict[str, Any]:
     import tempfile
 
     from openflowsheet.adapters import variants
+    from openflowsheet.application.job_requests import JobRequest
     from openflowsheet.application.local import LocalApplication
     from openflowsheet.application.operations import dispatch
-    from openflowsheet.application.types import JobRequest
 
     standin = variants.registered_variant("standin-x025-v1")
     request = {

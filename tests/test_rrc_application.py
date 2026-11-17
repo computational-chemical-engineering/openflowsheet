@@ -31,14 +31,15 @@ from t07_jobs_support import commit
 from t08_cstr_support import liquid_variant_revision
 
 from openflowsheet.application import revision_continuation as application_module
+from openflowsheet.application.job_requests import JobRequest, SolveBody
 from openflowsheet.application.local import LocalApplication
+from openflowsheet.application.policy_types import ReplayPolicy
 from openflowsheet.application.revision_continuation import (
     CONTINUABLE_PARAMETERS,
     CONTINUABLE_SPECIFICATION_PATHS,
     not_continuable,
 )
 from openflowsheet.application.store import ProjectStore
-from openflowsheet.application.types import JobRequest, ReplayPolicy, SolveBody
 from openflowsheet.models import revision_flowsheet
 from openflowsheet.models.revision_flowsheet import TARGET_PATH_KINDS
 from openflowsheet.orchestrator import executor

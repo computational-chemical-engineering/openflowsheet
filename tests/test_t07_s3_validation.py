@@ -30,7 +30,7 @@ from t08_d1_substitution import d1_reversed
 
 from openflowsheet.application.errors import ApplicationError
 from openflowsheet.application.local import LocalApplication
-from openflowsheet.application.types import Change, Edit
+from openflowsheet.application.transaction_types import Change, Edit
 from openflowsheet.application.validation import validate
 from openflowsheet.canonical import canonical_json
 from openflowsheet.schema_check import schema_errors

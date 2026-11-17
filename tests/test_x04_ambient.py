@@ -36,9 +36,10 @@ from openflowsheet.application.authz import (
 )
 from openflowsheet.application.cli import main
 from openflowsheet.application.local import LocalApplication
+from openflowsheet.application.policy_types import ProjectPolicy
 from openflowsheet.application.store import DATABASE_NAME, POLICY_NAME
 from openflowsheet.application.store_records import StoreError
-from openflowsheet.application.types import Change, ProjectPolicy
+from openflowsheet.application.transaction_types import Change
 from openflowsheet.canonical import document_sha256
 from openflowsheet.schema_check import schema_errors
 

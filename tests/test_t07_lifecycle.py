@@ -23,19 +23,14 @@ from t07_support import (
     ref,
 )
 
+from openflowsheet.application.job_records import Job, JobEnding, JobEvent
+from openflowsheet.application.job_requests import JobRequest, ReproduceBody
 from openflowsheet.application.jobs.model import (
     ENDING_REASONS,
     REQUIRES_STARTED,
     LifecycleViolation,
     check_lifecycle,
     lifecycle_warnings,
-)
-from openflowsheet.application.types import (
-    Job,
-    JobEnding,
-    JobEvent,
-    JobRequest,
-    ReproduceBody,
 )
 
 

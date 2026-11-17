@@ -99,8 +99,8 @@ from openflowsheet.application.jobs.executor import COMPUTE_LOCK
 from openflowsheet.application.jobs.worker import PAUSE_AT_STAGE_VARIABLE, PAUSED_FILE
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.operations import OPERATIONS, dispatch
+from openflowsheet.application.policy_types import LOCAL_OWNER_PRINCIPAL, Limits
 from openflowsheet.application.store import DATABASE_NAME, POLICY_NAME
-from openflowsheet.application.types import LOCAL_OWNER_PRINCIPAL, Limits
 
 NOMINAL = "SYN-001-nominal"
 PROJECT_ID = "t07-conformance"

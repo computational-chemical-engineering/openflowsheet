@@ -39,7 +39,7 @@ from collections.abc import Mapping, Sequence
 from typing import Any, Final
 
 from openflowsheet.application.errors import api_error
-from openflowsheet.application.types import (
+from openflowsheet.application.inspection_types import (
     AdmissionPair,
     AdmissionReport,
     CapabilityDescriptor,

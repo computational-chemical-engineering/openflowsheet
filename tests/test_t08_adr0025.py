@@ -560,7 +560,7 @@ def test_a15_both_schemas_accept_v1_and_v2_and_refuse_another(schema: str, fixtu
     from referencing import Registry, Resource
     from referencing.jsonschema import DRAFT202012
 
-    from openflowsheet.application.types import published_schemas
+    from openflowsheet.application.documents import published_schemas
 
     registry = Registry().with_resources(
         (schema_id, Resource(contents=dict(document), specification=DRAFT202012))

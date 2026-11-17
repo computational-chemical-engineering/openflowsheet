@@ -23,8 +23,8 @@ from collections.abc import Mapping
 from pathlib import Path
 from typing import Any, Final
 
+from openflowsheet.application.documents import published_schemas
 from openflowsheet.application.operations import OPERATIONS, Operation
-from openflowsheet.application.types import published_schemas
 
 ROOT: Final[Path] = Path(__file__).resolve().parents[1]
 TARGET: Final[Path] = ROOT / "apps" / "web" / "js" / "routes.js"

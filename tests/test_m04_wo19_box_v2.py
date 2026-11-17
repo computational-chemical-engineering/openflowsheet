@@ -35,12 +35,8 @@ from openflowsheet.adapters.experiments.runner import ExperimentRunner
 from openflowsheet.adapters.experiments.store import ExperimentStore, ListArtifactSink
 from openflowsheet.application.admission import admit_surrogate_study
 from openflowsheet.application.errors import ApiError
-from openflowsheet.application.types import (
-    Budgets,
-    Limits,
-    SurrogateStudyBody,
-    SurrogateStudyParent,
-)
+from openflowsheet.application.job_requests import Budgets, SurrogateStudyBody, SurrogateStudyParent
+from openflowsheet.application.policy_types import Limits
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models.c1 import COMPONENTS
 from openflowsheet.schema_check import schema_errors

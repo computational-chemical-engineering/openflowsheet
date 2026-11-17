@@ -199,7 +199,7 @@ def variant_documents() -> dict[str, Any]:
 
 def body_documents() -> dict[str, Any]:
     from openflowsheet.adapters import variants
-    from openflowsheet.application.types import JobRequest
+    from openflowsheet.application.job_requests import JobRequest
     from openflowsheet.models.c1 import COMPONENTS
 
     standin = variants.registered_variant("standin-x025-v1")

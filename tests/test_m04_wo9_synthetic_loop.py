@@ -49,7 +49,7 @@ from openflowsheet.adapters.experiments import runner as runner_module
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.operations import dispatch
 from openflowsheet.application.replacement import FACETS
-from openflowsheet.application.types import Change, Edit, TransactionResult
+from openflowsheet.application.transaction_types import Change, Edit, TransactionResult
 from openflowsheet.canonical import document_sha256
 from openflowsheet.models.c1 import COMPONENTS
 from openflowsheet.run.bundle import read_artifact

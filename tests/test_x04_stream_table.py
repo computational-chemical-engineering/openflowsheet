@@ -47,7 +47,7 @@ from openflowsheet.application.errors import ApplicationError
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.operations import OPERATIONS, dispatch
 from openflowsheet.application.store import DATABASE_NAME
-from openflowsheet.application.types import Change
+from openflowsheet.application.transaction_types import Change
 from openflowsheet.canonical import canonical_json, document_sha256
 from openflowsheet.messages.render import render_error
 from openflowsheet.schema_check import schema_errors

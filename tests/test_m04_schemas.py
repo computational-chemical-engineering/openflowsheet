@@ -22,7 +22,7 @@ import pytest
 from conftest import REPO_ROOT, load_json, load_yaml
 from jsonschema import Draft202012Validator
 
-from openflowsheet.application.types import published_schemas
+from openflowsheet.application.documents import published_schemas
 from openflowsheet.canonical import document_sha256
 from openflowsheet.schema_check import SCHEMA_BASE, schema_errors
 from openflowsheet.studies.surrogate.manifest import check_manifest

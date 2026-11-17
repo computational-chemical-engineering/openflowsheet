@@ -34,7 +34,9 @@ from t07_jobs_support import commit, lifecycle_violations
 
 from openflowsheet.application.authz import OPERATION_RIGHTS, grant
 from openflowsheet.application.contract import Application, Inspection, JobControl
+from openflowsheet.application.documents import validate_inline
 from openflowsheet.application.errors import ApplicationError
+from openflowsheet.application.job_requests import JobRequest, SolveBody
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.operations import (
     OPERATIONS,
@@ -42,6 +44,7 @@ from openflowsheet.application.operations import (
     dispatch,
     project_response,
 )
+from openflowsheet.application.policy_types import RIGHTS
 from openflowsheet.application.projection import (
     KEY_LIMIT,
     TEXT_LIMIT,
@@ -49,7 +52,6 @@ from openflowsheet.application.projection import (
     bound_text,
     is_forbidden,
 )
-from openflowsheet.application.types import RIGHTS, JobRequest, SolveBody, validate_inline
 from openflowsheet.canonical import canonical_json
 from openflowsheet.run.bundle import ARTIFACT_DIR
 from openflowsheet.schema_check import schema_errors

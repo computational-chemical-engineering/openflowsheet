@@ -27,8 +27,8 @@ from t07_corpus import CORPUS
 from t07_jobs_support import commit, lifecycle_violations, response_schema_violations
 
 from openflowsheet.application.errors import ApplicationError
+from openflowsheet.application.job_requests import JobRequest, SolveBody
 from openflowsheet.application.local import LocalApplication
-from openflowsheet.application.types import JobRequest, SolveBody
 from openflowsheet.verify.checks import routing_tolerances
 from openflowsheet.verify.kind_tolerance import KIND_TOLERANCE
 from openflowsheet.verify.verdict import CheckPolicy

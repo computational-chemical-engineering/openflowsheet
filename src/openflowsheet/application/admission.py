@@ -59,19 +59,19 @@ from typing import Any, Final
 
 from openflowsheet.adapters import variants
 from openflowsheet.application.errors import ApiError
-from openflowsheet.application.model_builders import SurrogateResolver
-from openflowsheet.application.revision_run import Route, select_route
-from openflowsheet.application.store import ProjectStore
-from openflowsheet.application.types import (
+from openflowsheet.application.job_requests import (
     Budgets,
     ExperimentBody,
-    Limits,
     OptimizeBody,
     ReproduceBody,
     SolveBody,
     SurrogateStudyBody,
     WarmStartDeclaration,
 )
+from openflowsheet.application.model_builders import SurrogateResolver
+from openflowsheet.application.policy_types import Limits
+from openflowsheet.application.revision_run import Route, select_route
+from openflowsheet.application.store import ProjectStore
 from openflowsheet.application.validation import validate
 from openflowsheet.canonical import file_sha256
 from openflowsheet.models.c1 import COMPONENTS as C1_COMPONENTS
