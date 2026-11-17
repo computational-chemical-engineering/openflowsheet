@@ -1950,3 +1950,9 @@
   docstring line in tests; no test definition or parameter); i12c-head at 918d4e59 chained after i12b-head (chain
   PID 551916). Review R-W4-13 (reviewer, Opus; brief S19-R-W4-13.md) launched over a2896f97..93cec9a3 while jobs 231,
   232 gate.
+- **2026-11-17 05:40, job 231 PASS (w4r15-i12a-1, I-12a interface step 0c96257c, step 277 accepted, 17/17, debt
+  115.2 -> 115.2).** Gate report (6 h):
+  "ALERT selected share 69% < 75% of step gates"
+  "ALERT selected gates take 744 s > 300 s (tests tier)"
+  "ALERT selected/full time ratio 0.67 > 0.4: selection saves little"
+  (standing; proposal 2 with Frank).
