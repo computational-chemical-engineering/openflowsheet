@@ -1997,3 +1997,8 @@
   "ALERT selected gates take 717 s > 300 s (tests tier)"
   "ALERT selected/full time ratio 0.66 > 0.4: selection saves little"
   (standing; proposal 2 with Frank). W4 lane gates done; waiting on the serial counts.
+- **2026-11-17 06:10, serial pair i10 EQUAL (rule 4):** i10-base 7599f205 and i10-head 0e71c61a both rc=0: MSG WO-5a
+  1061 bundles, no sidecar key; WO-6 801 run results, 100 with a failure; 20392 passed, 107 skipped, 222 deselected,
+  3 xfailed (6834 s, 6806 s). Worktrees ser-i10-* removed. i12a pair started 06:07 (PIDs 638004, 638005); i12b-head
+  (436120) running, i12c-head after it. Merge-check helper wp/S19-w4-mc (b735b7be = lane 617099ef + wp/S19 cd621e12)
+  enqueued as job 235 ahead of the remaining counts; merge only if all four pairs EQUAL.
