@@ -60,8 +60,8 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 Runner RUNNING (pid 300275; MB = 1720cc98). Results consumed through 228 (`$Q wait --since 214`). Running:
 job 229 (I-10 step 0e71c61a); serial runs i10-base (7599f205, PID 370532) and i10-head (0e71c61a, PID 370533),
 logs `<git-common-dir>/codehealth/runs/serial/i10-*.log`, worktrees `<scratchpad 5222beaa>/ser-i10-*` (remove after);
-agent: W4 run 14 engineer (I-12b, I-12c; brief S19-W4-14.md). I-12a waits for a cce-code-health fix (session
-code_health, asked 04:14; S19_DECISIONS 04:15), then brief S19-W4-15 (I-12a with the engineer's logged choices).
+agent: W4 run 14 engineer (I-12b, I-12c; brief S19-W4-14.md). I-12a: tool fix delivered (cce-code-health d23326b);
+re-pin at the next queue-idle window (S19_DECISIONS 04:35), then brief S19-W4-15 (I-12a with run 13's logged choices).
 Lanes at most 2 agents until Thu 19 Nov 13:00. ALERTs standing (proposal 2 with Frank).
 Merge-checks run on a helper `wp/S19-<lane>-mc` = lane tip + wp/S19 tip merged in; merge the helper (`git merge
 --no-ff -F <file>`) only if wp/S19 changed ONLY docs since the helper's wp/S19 merge, else refresh and re-run (job 215).

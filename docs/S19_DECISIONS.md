@@ -1871,3 +1871,11 @@
 - **2026-11-17 04:20, correction:** the I-10 serial runs' PIDs are 370532 (i10-base) and 370533 (i10-head), not
   370529/370530 (those were `setsid`, which forked). `serial.sh` writes its own PID in each log's first line; read it
   there.
+- **2026-11-17 04:35, cce-code-health d23326b (session code_health) for I-12a:** text callers may follow the plan's
+  moves in one-line `from M import a, b as c` statements (one target: in place; several: one line per target module,
+  staying names first, then plan order; no split after a notebook's last source line or with a trailing comment; no
+  parenthesised multi-line or relative imports: by hand). 410 tool tests pass. DECISION: re-pin ec5aaea -> d23326b at
+  the next queue-idle window (job 229 gating now; `.venv-codehealth` is shared by every gate): when running = 0, stop
+  the runner, `requirements-codehealth.txt` -> d23326b, `.venv-codehealth/bin/python -m pip install --force-reinstall
+  --no-deps -r requirements-codehealth.txt`, check direct_url commit, commit, restart the runner. Then brief
+  S19-W4-15 (I-12a). Pending jobs of run 14 gate under d23326b (the fix only widens text-caller acceptance).
