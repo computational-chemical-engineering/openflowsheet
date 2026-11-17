@@ -2077,3 +2077,21 @@
   ALERT action: the share fell 62% -> 22% because each I-12d step adds modules the MB 1720cc98 map does not know
   (selection falls back to the full suite; S19_RULES "Test map hygiene"). Remedy: MB to the wp/S19 tip right after the
   I-12d merge (queue held for the build), before I-19. Not during run 19 (its steps need the queue).
+- **2026-11-17 09:20, job 240 PASS (w4r19-i12d-3, I-12d step 3 ArtifactService 622dc3b2, step 284 accepted, 17/17,
+  debt 3.7 -> 3.2).** W4 run 19 reported (opus-engineer, Opus, ~197k tokens): 5ea2a339 table note, a4daf90c plan,
+  622dc3b2 step 3 (StreamTableQuery as ruled; local.py 965 -> 801, artifact_service 223; AST receiver substitutions
+  plus `query.` reads, falsifier ok), 8353325e layer; f474d921 BODY_READERS += job_service. STOP step 5 (JobService):
+  the interface gate refuses it: plain plan "FAIL callers ... benchmarks/t07/v17/fixtures.py:613: replace beyond the
+  plan (artifact_id = app._jobs._import_bundle(bundle, 'reproduce'))" (also fixtures.py:607, conftest.py:159, :170);
+  with class-member renames "FAIL public_api ... LocalApplication._run_result is still bound in local.py" plus 106+
+  "takes LocalApplication through its old module". Tool gap: a private member moving between classes, callers
+  switching to `app._jobs`. Parked step checks: AST 56 defs no difference, local.py 801 -> 351, job_service 507, arch
+  0/0/0, patch_noop 0, MSG unchanged, `_run_result` wrapper live (14 failed, 34 errors with a raising fake).
+  DECISION: ADR 0076 Q-F5 fallback for step 5 (the ADR's own default when the tool cannot follow): parked commits
+  applied unchanged by `git am` (f13e2e95 plan, 9697b223 step), fc293d3e layer config (job_service below local;
+  transports-through-operations `to` += job_service; arch 0/0/0, 329 files), gated as job 241 (merge-check mode,
+  behaviour tiers, full suite), recorded as "interface gate not applicable", not as a pass; the reviewer compares the
+  step with its plan. Alternative: a cce-code-health fix first (tool item for the code_health session: class-member
+  moves and `app.<attr>.<member>` caller retargets in the interface plan). Reversible by: re-gating 9697b223 in
+  interface mode once the tool follows. Serial i12d3-head 622dc3b2, i12d5-head 9697b223 chained after the i12d1 pair
+  (chain PID 1093753). Review R-W4-I12d (reviewer, Opus; brief S19-R-W4-I12d.md) launched over 617099ef..fc293d3e.
