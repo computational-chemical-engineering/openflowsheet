@@ -12,7 +12,8 @@ getattr), a dotted string "openflowsheet.<module>.N", or a factory reference
 
 Classes of an added re-export:
   w5            an importer is a frozen M9 module, a registry-hashed file (assessment/cost, lca) or a
-                registry factory reference (ADR 0076 FQ-A; W5 retargets them)
+                factory reference, the form of the registry table (scripts/registry_builtin.py and the
+                test that mirrors it; ADR 0076 FQ-A; W5 retargets them)
   retarget      importers through the old path outside the exceptions: retarget, then remove
   remove        no importer left, but the module marks it as a re-export (`X as X`, `__all__`, noqa
                 F401) or does not use it: remove the binding
@@ -46,7 +47,6 @@ PKG = "src/openflowsheet/"
 SCAN_DIRS = ("src", "tests", "scripts", "benchmarks", "examples")
 S19_BASE = "d90b498f"  # S19's CB: a commit at or before it is S17's
 HASHED = ("src/openflowsheet/assessment/cost/", "src/openflowsheet/assessment/lca/")
-FACTORY_FILES = ("scripts/registry_builtin.py",)
 EXEMPT_INIT = "openflowsheet.assessment.sizing"
 PATCH_KINDS = ("setattr", "assign", "string")
 DOTTED = re.compile(r"^openflowsheet(\.[A-Za-z_]\w*)+$")
@@ -415,13 +415,7 @@ def main() -> int:
             # a patch (setattr, assignment, dotted string) of a name the module reads is a live patch point
             live = [i for i in allhits if i[2] in PATCH_KINDS and m.uses(name)]
             imp = [i for i in allhits if i not in live]
-            exc = [
-                i
-                for i in imp
-                if i[0] in frozen
-                or i[0].startswith(HASHED)
-                or (i[2] == "factory" and i[0] in FACTORY_FILES)
-            ]
+            exc = [i for i in imp if i[0] in frozen or i[0].startswith(HASHED) or i[2] == "factory"]
             marker = [
                 k
                 for k, v in (("alias", b["alias"]), ("__all__", name in m.all), ("noqa", b["noqa"]))
@@ -459,11 +453,11 @@ def main() -> int:
                     }
                 )
     left = sum(len(r["importers"]) for r in rows if r["class"] in ("retarget", "w5"))
-    left_exc = sum(len(r["exceptions"]) for r in rows)
+    left_exc = sum(len(r["exceptions"]) for r in rows if r["class"] == "w5")
     print(
         f"I19-SCAN re-exports added since {a.base}: {sum(counts.values())} "
         f"({', '.join(f'{k} {v}' for k, v in sorted(counts.items()))}); old-path importers {left} "
-        f"(W5 exception users {left_exc}); unbound takes {len(unbound)}"
+        f"(W5 exception users {left_exc}, others {left - left_exc}); unbound takes {len(unbound)}"
     )
     if a.rows:
         for r in rows:
