@@ -1756,3 +1756,5 @@
   MSG counts confirmed directly; the rule 4 amendment (serial form) stands, and I-10 and I-12a-d may proceed with serial
   MSG counts at base and head (~2.2 h per suite) after I-13. Worktree headser2 removed (only the 7af4b2f4 overlay);
   logs kept in session 916d464e's scratchpad.
+- **2026-11-17 01:40, job 222 PASS (g5r11-2, 1147a6f2, step 270 accepted, debt 17.2 -> 16.2, 16/16).** G5 run 11 review
+  waits for job 225. Gate report: the three standing ALERTs only (proposal 2 with Frank).
