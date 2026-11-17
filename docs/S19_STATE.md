@@ -71,11 +71,12 @@ duplication (twin merge: addendum for Frank); certificate, checks, split_checks 
 `_project`, rule 10; many_args at its cap); render 8.5 (ladder, judged); store 8.6 (R-237 interface); compare 8.6
 (frozen v1); thermo/ frozen files (W5).
 **Next (four desk cards signed A and VERIFIED, 2026-11-17 ~20:10):**
-1. Merge wp/S19 into main (ofs-s19-w3w4-merge-main): evidence manifest `implemented` merged (ed0f04ae). CI
-   44158387592 on ed0f04ae FAILED (K05 state hash off the reference platform, both legs); test fix b716feb7, pushed
-   with d500fb07. **Waiting: CI 44173756567 on d500fb07** (background watch; if it ended unseen, `gh run view
-   44173756567`). Green on both legs -> manifest -> `tested` commit (cite the run), merge commit into main, F0 on
-   main, push main, write `executed` on the card, tell hub. Red -> stop, record, diagnose. Then rebuild the map.
+1. Merge wp/S19 into main: card ofs-s19-w3w4-merge-main stopped by its step-3 clause (CI 44158387592 failed; K05
+   hash test fixed in b716feb7 + 4bef2608, reviewed ACCEPT WITH FIXES). It stays UNEXECUTED. Manifest at 4f9f2c3d is
+   `tested` (9649de4c, CI 44173756567). F0 PASS on a local merge; local main reset to 218e7a73 (= origin/main).
+   **Waiting: CI 44194354064 on b36fa2a6, and a new card (DECISION-REQUEST sent to hub 2026-11-17, suggested id
+   ofs-s19-w3w4-merge-main-2).** On a VERIFIED A: add the new run to the manifest's G-END-CI, merge commit into
+   main, F0 on main, push main, `executed` on the new card (note the old one as superseded), tell hub, rebuild map.
 2. WITNF (ofs-s19-oq1b-nan-witness-early): brief WITNF-engineer.md ready (fill BASE_SHA_HERE with main after step 1),
    then `reviewer` (design lane), CI, merge into main, `executed` on both NaN cards.
 3. 0.5 (ofs-s19-start-05): starts after step 1; Frank's roadmap ADR 0057 (X07a, X01, F3, F2, F8, X06). Write
