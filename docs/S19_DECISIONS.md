@@ -2139,3 +2139,6 @@
 - 2026-11-17 10:50, serial i12d2-head (3b72357b) and i12d4-head (50cbb3ed): rc 0, the same MSG and count lines as
   the i12d1 pair (1061; 801/100; 20392/107/222/3). Pairs i12d1-head vs i12d2-head and i12d2-head vs i12d4-head
   EQUAL. Left: i12d4-head vs i12d3-head, i12d3-head vs i12d5-head (running, PIDs 1223888, 1223889).
+- 2026-11-17 11:00, merge-check job 244 (w4i12d-mc, helper wp/S19-w4-mc 52618696 = 5cc529e7 + ec95e062) PASS, 7/7,
+  full suite, debt 28.6 -> 28.1. Gate report ALERTs unchanged (selection share, selected time, ratio; cause and
+  remedy as at 10:02). Merge waits for the i12d3/i12d5 serial pairs only; wp/S19 has changed only docs since ec95e062.
