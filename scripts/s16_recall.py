@@ -67,7 +67,7 @@ CASES: list[tuple[str, str, list[tuple[str, str, str]]]] = [
     (
         "app-transactions-diff",
         "behaviour",
-        [(f"{APP}/transactions.py", "            if old != new:", "            if old == new:")],
+        [(f"{APP}/revision_edits.py", "            if old != new:", "            if old == new:")],
     ),
     (
         "app-authz-revoke",
