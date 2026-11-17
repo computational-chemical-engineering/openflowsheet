@@ -2305,3 +2305,4 @@
   (pre-existing). Not examined by the reviewer: whether a test drives `judged_at != state` on the revision path.
   DECISION: one merge-check for both lanes (helper = wp/S19 tip + wp/S19-g6e + wp/S19-g5j after job 263), not two.
   Alternative: G6 now, G5 after. Reason: one full suite instead of two. Reversible by: merging the lanes separately.
+- **2026-11-17, job 261 PASS (g5r12-3, 672cc673, step 296 accepted, certificate.py 23.9 -> 17.6, 16/16).**
