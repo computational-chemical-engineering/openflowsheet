@@ -1775,3 +1775,6 @@
   `_split_admissibility` (split_checks.py:184-227); merging drops literal ids, so under rule 15 it waits for a
   behaviour-level change, host checks.py. Helper wp/S19-g5i-mc (worktree s19-g5i-mc) = c5507eac + wp/S19 de8ef2f5 as
   1bb7a481; merge-check job 226 (g5r11-mc).
+- **2026-11-17 02:12, jobs 223 PASS (w4r12-i13-5, a741872b, step 272, interface, 17/17) and 224 PASS (w4r12-i13-6,
+  a652a744, step 273 accepted-neutral, 15/15). R-W4-12 launched (`reviewer`, Opus, brief S19-R-W4-12.md, range
+  eb71978d..a652a744).** Gate report: the three standing ALERTs only.
