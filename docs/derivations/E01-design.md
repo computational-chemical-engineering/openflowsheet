@@ -1358,7 +1358,7 @@ the transcriber, who records the exact line of every number in the set file.
 addendum already owns. The two existing schemas reference them by absolute `$id` URL.
 - This is the repository's established cross-schema pattern. For example,
   `optimization-report.schema.json:268` refers to `evaluation-result.schema.json#/$defs/sha256`.
-- Validation resolves the reference through the published-schema registry (`application/types.py:157-170`).
+- Validation resolves the reference through the published-schema registry (`schema_check.py:61-73`).
 - No property name containing `sha256` enters a v2-domain schema, so neither the auditor nor v2 changes.
 
 `assessment.schema.json` gains (B below is `https://github.com/frankp/process-runtime/schemas/`):

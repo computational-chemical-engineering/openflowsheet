@@ -437,7 +437,7 @@ is empty**: no activity-coefficient liquid, no equation-of-state fugacities in e
 3. So a liquid-capable provider with composition-dependent K would be evaluated at the probe composition and give a wrong
    answer **silently**. Declared capabilities (phases, properties) cannot catch this, because such a provider would declare
    exactly what SYN-001 declares.
-4. Today `validate` and `solve_column` accept any `PropertyProvider` (`models/syn001/column.py:614`), so that path exists.
+4. Today `validate` and `solve_column` accept any `PropertyProvider` (`models/syn001/column_validation.py:136`), so that path exists.
 
 **S11 (new refusal; build lane WO-S03-1).**
 - *Rule.* Before R1 and before any provider evaluation, `validate` reads `provider.describe()` (metadata, not an

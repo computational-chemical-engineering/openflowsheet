@@ -20,7 +20,7 @@ and canonical matching, the coarse DM partition, the affine-copy certificate, un
 of freedom, strongly connected components with the block-triangular form, process loops with the
 tear rule, the attempt-signature rule, and the report with its six statements.
 `application/binding.py` binds a SYN-001 revision and promotes §5.1's specification rows;
-`application/validation.py` emits `STR-01`…`STR-05`; `run/session.py` writes the report into every
+`application/validation.py` emits `STR-01`…`STR-05`; `application/run_session.py` writes the report into every
 run bundle and `run/identity.py` projects it into R0, so gate G05 compares it across both CI
 architectures on every push.
 
@@ -99,7 +99,7 @@ an ADR, deferred until a second consumer needs the distinction at status level.
 | S5 | A valve — any pressure row that is not a literal-coefficient copy — is listed `uncertified_affine` with a `STR-06` warning. Correct but noisy once a real unit library exists; T06 generalizes the certificate class |
 | S6 | An inner system that is not perfectly matched yields a silent empty signature rather than a typed result |
 | S8 | Structural under-specification is unreachable through `validate()`: the narrow binding needs every specification the flowsheet is parameterized by, so a revision omitting one is `DRAFT` naming what is missing, rather than reaching `STR-02` |
-| S9 | Three compiles per run in `session.py`, and quadratic matching and lookups. Not a problem at 47 columns; T02 should budget for it |
+| S9 | Three compiles per run in `run_session.py`, and quadratic matching and lookups. Not a problem at 47 columns; T02 should budget for it |
 
 ## What the adversarial assertions caught
 

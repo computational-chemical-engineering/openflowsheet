@@ -153,12 +153,12 @@ It appears in `MODEL_BUILDERS` and `MODEL_SIGNATURES` (`application/revision_bin
   - The build lane writes it in T06-corpus form at `benchmarks/t08/ptc_r1/revision.json`.
   - It is bound by `bind_revision_flowsheet`, so its route is `revision_eo`.
   - `plan_revision` makes it one `solve_eo` region (`orchestrator/revision.py:351–409`).
-- **Offered policy `T08-ptc-v1`.** It is `T06-revision-v2` (`application/policies.py:60`) with exactly one change: `globalization.eo_core = "ptc"`, with `ptc` at `PtcPolicy`'s registered constants (`orchestrator/trace.py:570`; T04 §7.7).
+- **Offered policy `T08-ptc-v1`.** It is `T06-revision-v2` (`orchestrator/policies.py`) with exactly one change: `globalization.eo_core = "ptc"`, with `ptc` at `PtcPolicy`'s registered constants (`numerics/solve_record.py:573`; T04 §7.7).
   - It is added to `APPLICATION_POLICIES` (:69).
   - A caller selects it by naming it in `solve_body.policy_id`, so **no automatic path selects PTC** (T04 §7.1 unchanged).
   - Recovery is the default policy's (`homotopy_or_sequential_restart`). Edge 3 still runs Newton (T04 §7.1 as amended).
 - **Envelope consequence.** U07 ("PTC under an offered policy → `unsupported`") is replaced by: "PTC is offered as `T08-ptc-v1` on flowsheets whose every `holdup_balance` row has a registered mapping entry (`tp_heater`, `tp_flash`, `kinetic_cstr`). Any other flowsheet ends `PTC_MAPPING_INVALID` with `ptc_mapping_invalid(<row>, missing)`." T05 §12.4's refusal for T05 models is unchanged.
-- **`ptc.status`** is the single value `"experimental"` (`trace.py:576`). A V14 (b) PASS is recorded by the verdict and the envelope. Widening `status` and registering a policy that carries a qualified value is a later amendment of ADR 0023. It changes a policy hash, so it is never done to the comparison's policies.
+- **`ptc.status`** is the single value `"experimental"` (`solve_record.py:580`). A V14 (b) PASS is recorded by the verdict and the envelope. Widening `status` and registering a policy that carries a qualified value is a later amendment of ADR 0023. It changes a policy hash, so it is never done to the comparison's policies.
 
 ## A3. Route (a) for this family: T04 §6 applied to the CSTR
 
@@ -522,7 +522,7 @@ It runs no Newton or PTC iteration from a registered start.
 - **F1.** T04 §8.4's criterion was under-determined for a three-root case ("the registered root"). §A4.1 resolves it before any result. A future preregistration should state the success set explicitly.
 - **F2.** `quantity.schema.json`'s kind enum is referenced by MCP-exposed schemas. Any new quantity kind moves T08.A49 and so V17's carry. This constrained the CSTR's parameterization and will constrain v0.2's reactors: a `time` or `thermal_conductance` kind is worth batching into one ADR with the v0.2 contract changes.
 - **F3.** `job.schema.json`'s `artifact_ref.kind` is closed for producers and MCP-exposed. Every new bundle file is therefore an MCP surface change, which is why the warm-start record lives in `solve-path.json`. A v0.2 design may want an extension point there.
-- **F4.** `PtcPolicy.status` is single-valued by design (`trace.py:573`). A qualification needs a new value and a new policy hash (Q-A3).
+- **F4.** `PtcPolicy.status` is single-valued by design (`solve_record.py:580`). A qualification needs a new value and a new policy hash (Q-A3).
 
 # I. Build-lane work order
 

@@ -917,13 +917,13 @@ in place; everything else stands. Register R-822…R-827.
   `plan_or_refusal` looks up `claimed[unit]` and `capable[unit]` for every unit of a specification region, and
   `capable` is keyed by `graph.units` (`execution.py:614-621`). `PlanStep.units` and `StepResult.units` are
   `region.units`.
-- **F2.** The region solve keeps `split.unit in set(region.units)` (`orchestrator/region.py:1876`). Under v2,
-  `_opening_order` indexes `at[split.unit]` with `at` built from `region.units` (`region.py:1061-1063`); a pseudo-unit
+- **F2.** The region solve keeps `split.unit in set(region.units)` (`orchestrator/region.py:380-381`). Under v2,
+  `_opening_order` indexes `at[split.unit]` with `at` built from `region.units` (`region_problem.py:254-256`); a pseudo-unit
   that passed the filter would raise `KeyError` there.
 - **F3.** The region solve never reads `region.signature_units`. It is plan identity: `SolvePlan.signature_units`,
   `_PLAN_IDENTITY` (`orchestrator/executor.py:567-575`), the replay projection (`run/identity.py:71`), and the
   schema types it as an array of non-empty strings. The attempt signature's lifted entries are
-  `(split.unit, regime)` over the active splits (`region.py:1290`). Today `signature_units` equals those keys, in that
+  `(split.unit, regime)` over the active splits (`region.py:595`). Today `signature_units` equals those keys, in that
   order, for every registered flowsheet (instance ids) and for the standalone column (`column_solve.py:416-423`:
   stage keys).
 - **F4.** The registry functions `zero_flow_forms`, `vapour_only_forms` and `split_temperatures`
@@ -1233,7 +1233,7 @@ The file order is as follows:
 - for each instance whose model is in `STAGED_MODELS`, the verifier builds
   `column_staged_splits(column_structure(view, components))`, and passes the result to its `lifted_splits(...,
   staged=)` call (`certificate.py:706`) and to `split_owners`;
-- `table.py:1531` and `zero_flow.py:149` look up `instances[owner(split)]`;
+- `split_checks.py:443` and `zero_flow.py:149` look up `instances[owner(split)]`;
 - a consumer that needs per-stage instance data beyond the owner is escalated.
 
 **I1** gains:
