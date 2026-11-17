@@ -131,7 +131,7 @@ FAMILY_TABLE: Final[tuple[tuple[str, tuple[str, ...], tuple[str, ...]], ...]] = 
         ("thermal.compressor", "thermal.turbine"),
         ("legacy:iapws95-v1", "legacy:coolprop-heos-v1", "legacy:wilson-ig-v2"),
     ),
-    ("not bindable (revision_binding.py:1819)", ("syn001.cascade",), ()),
+    ("not bindable (revision_binding._LIBRARY_ONLY_HINTS)", ("syn001.cascade",), ()),
 )
 #: D6: the unit with no signature, which `list_models` does not list; it is not bindable.
 NOT_BINDABLE: Final = "syn001.cascade"

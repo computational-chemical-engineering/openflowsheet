@@ -279,12 +279,12 @@ def _observe_region(
     decision function and compiled boundary observed. `corrupt_*` are A16's constructed bites
     (spec §5.1: "Registered bites are constructed"); nothing else changes what the solver
     computes."""
-    real_problem = region_module._region_problem
-    real_screen = region_module._screen
-    real_admissible = region_module._admissible
+    real_problem = region_problem._region_problem
+    real_screen = region_screen._screen
+    real_admissible = region_phase._admissible
     real_check = region_module.check_opening
     real_decide = region_module.decide
-    real_blocked = region_module._LiftedOps.blocked
+    real_blocked = region_problem._LiftedOps.blocked
     real_compiled = {
         name: getattr(CasadiCompiledProblem, name) for name in ("residual", "jacobian")
     }
@@ -441,7 +441,7 @@ def _observe_region(
         patch.setattr(region_module, "check_opening", opening_check)
         patch.setattr(region_problem, "check_opening", opening_check)
         patch.setattr(region_module, "decide", decide)
-        patch.setattr(region_module._LiftedOps, "blocked", blocked)
+        patch.setattr(region_problem._LiftedOps, "blocked", blocked)
         for name in real_compiled:
             patch.setattr(CasadiCompiledProblem, name, compiled_spy(name))
         observed.result = solve(observed.trace)
@@ -2269,14 +2269,14 @@ def _a05(runs: Runs, ref: Mapping[str, Any]) -> tuple[bool, Any, Any]:
     registered = ref["policy_simulation"]["cases"][PHS["PHS-04"]]["attempts"][1]
     opening = dict(observed.result.attempts[0].end_state)
     heater = _heater()
-    region_module._pin(opening, heater, "LIQUID")
+    region_phase._pin(opening, heater, "LIQUID")
     context = EvaluationContext(
         model_version="t03", constants_sha256="0" * 64, phase_signature=None
     )
     provider = a02_fixtures.structure(
         a02_fixtures.revision(PHS["PHS-04"])
     ).binding.flowsheet.provider
-    admissible, screen_value = region_module._admissible(
+    admissible, screen_value = region_phase._admissible(
         provider, context, heater, "LIQUID", opening, epsilon
     )
     value["PHS-04 opening"] = {
@@ -2414,7 +2414,7 @@ def _a11(runs: Runs, ref: Mapping[str, Any], t02: Mapping[str, Any]) -> tuple[bo
     result = observed.result
     first, second = result.attempts[:2]
     pinned = dict(first.end_state)
-    region_module._pin(pinned, _heater(), "LIQUID")
+    region_phase._pin(pinned, _heater(), "LIQUID")
     free = observed.free[1]
     x0 = observed.calls[1][0][0]
     target = np.array([pinned[name] for name in free], dtype=np.float64)
@@ -2531,7 +2531,7 @@ def _a13(runs: Runs, ref: Mapping[str, Any]) -> tuple[bool, Any, Any]:
     if len(result.attempts) >= 2:
         first, second = result.attempts[:2]
         pinned = dict(first.end_state)
-        region_module._pin(pinned, _heater(), "LIQUID")
+        region_phase._pin(pinned, _heater(), "LIQUID")
         free = observed.free[1]
         x0 = observed.calls[1][0][0]
         opening_equal = (

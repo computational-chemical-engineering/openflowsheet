@@ -20,6 +20,7 @@ import pytest
 from test_s02_column_wo1 import CASES, PROVIDER, REFERENCE, SPECS, UNIT, _variant
 
 import openflowsheet.models.syn001.column_solve as solve_module
+import openflowsheet.orchestrator.homotopy as homotopy
 import openflowsheet.orchestrator.region_attempts as region_attempts
 from openflowsheet.compile.reference import row_values
 from openflowsheet.compile.spec import ProblemSpec
@@ -40,7 +41,7 @@ from openflowsheet.models.syn001.cascade_spec import (
     vapor_id,
     vapor_total_id,
 )
-from openflowsheet.models.syn001.column import _inflow, _inlet_columns, profile_initial, regime_form
+from openflowsheet.models.syn001.column import _inlet_columns, profile_initial, regime_form
 from openflowsheet.models.syn001.column_acceptance import (
     acceptance_failures,
     overall_closure,
@@ -50,7 +51,7 @@ from openflowsheet.models.syn001.column_acceptance import (
 )
 from openflowsheet.models.syn001.column_compile import compile_column, presolve_rows, slots
 from openflowsheet.models.syn001.column_endpoint import PRESOLVE_ID
-from openflowsheet.models.syn001.column_rows import declared_rows
+from openflowsheet.models.syn001.column_rows import _inflow, declared_rows
 from openflowsheet.models.syn001.column_solve import (
     DECLARATION_CONTEXT,
     FD_COLUMN_SCALE,
@@ -387,7 +388,7 @@ def test_a10_the_compiled_jacobian(case: str, point: str) -> None:
 
 def _forced(monkeypatch: pytest.MonkeyPatch, case: str) -> tuple[Any, list[dict[str, float]]]:
     rebound: list[dict[str, float]] = []
-    real = region_attempts.rebind
+    real = homotopy.rebind
 
     def rebind(spec: Any, values: dict[str, float]) -> Any:
         rebound.append(dict(values))

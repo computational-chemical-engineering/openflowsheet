@@ -51,7 +51,6 @@ from openflowsheet.models.syn001.cascade_solve import (
     run_region,
 )
 from openflowsheet.models.syn001.cascade_solve import FD_COLUMN_SCALE as CASCADE_FD_SCALE
-from openflowsheet.models.syn001.cascade_solve import saturation_pairs as saturation_pairs
 from openflowsheet.models.syn001.cascade_spec import CascadeSpec
 from openflowsheet.models.syn001.column import ProfileInitial, profile_initial
 from openflowsheet.models.syn001.column_acceptance import (
@@ -62,8 +61,6 @@ from openflowsheet.models.syn001.column_acceptance import (
     saturation_errors,
     single_phase_specified_stage,
 )
-from openflowsheet.models.syn001.column_acceptance import _admissibility as _admissibility
-from openflowsheet.models.syn001.column_acceptance import _saturation_pairs as _saturation_pairs
 from openflowsheet.models.syn001.column_acceptance import products as products
 from openflowsheet.models.syn001.column_compile import closure_types as closure_types
 from openflowsheet.models.syn001.column_compile import compile_column, slots
@@ -82,7 +79,6 @@ from openflowsheet.models.syn001.column_endpoint import (
 )
 from openflowsheet.models.syn001.column_spec import ColumnSpec
 from openflowsheet.models.syn001.column_validation import column_warnings, validate
-from openflowsheet.models.syn001.saturation_band import band_temperature as band_temperature
 from openflowsheet.numerics.solve_record import SolvePolicy, Trace
 from openflowsheet.orchestrator.homotopy import Continuation
 from openflowsheet.orchestrator.recovery import (

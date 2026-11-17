@@ -23,7 +23,7 @@ F6, F7, F8, TX), the exact edit each ADR needs, the note edits, and "Not establi
    O-11 (Frank's open preference) a numerical consequence; state it so Frank can be told.
 3. **SQ-F6-3** steady saturation closure of `std.pid`: ADR 0065 D10 (217–235). Default as D10 (σ·e sign rule).
 4. **SQ-F6-4** `heat_direction` tolerance and equal-temperature contact: ADR 0065 D11 (236–245); existing check at
-   `src/openflowsheet/verify/table.py:965`. Default: that check's tolerance; equality passes.
+   `src/openflowsheet/verify/unit_checks.py:646`. Default: that check's tolerance; equality passes.
 5. **SQ-F7-1** τ_idx for `dae_index_near_singular`: `docs/adr/0066-F7-problem-ir-run-kinds.md` D7 (152–160), questions
    (346–352). Default: K04's `ILL_CONDITIONED` threshold on the scaled ∂g/∂z (`docs/derivations/K04-certificate-spec.md`).
 6. **SQ-F7-2** simultaneous events, τ_ev and order: ADR 0066 D5 (111–137). Default: the integrator's event-location

@@ -55,8 +55,9 @@ from openflowsheet.numerics.solve_record import SolvePolicy
 from openflowsheet.orchestrator import splits as splits_module
 from openflowsheet.orchestrator.execution import ExecutionPlan, declaration_identity
 from openflowsheet.orchestrator.executor import PlanResult, execute_plan
-from openflowsheet.orchestrator.region import _attempt_screen, _contract_kernel
+from openflowsheet.orchestrator.region_phase import _contract_kernel
 from openflowsheet.orchestrator.region_result import RegionResult
+from openflowsheet.orchestrator.region_screen import _attempt_screen
 from openflowsheet.orchestrator.revision import instances_of, plan_revision
 from openflowsheet.orchestrator.splits import (
     SPLIT_RULES,

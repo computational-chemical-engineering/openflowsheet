@@ -15,7 +15,7 @@ log (`decisions.md`); the inventory (`00-core-inventory.md`, "inventory §n"); A
 connection); `schemas/specification.schema.json` (structured targets: object type, object id, path, component);
 `compile/spec.py:169-235` (duplicate variable ids refused); `models/__init__.py:101-115` (id helpers; duty positive into
 the unit); `models/syn001/heater.py:114-122` (an energy port that no connection can carry today);
-`verify/table.py:965-985` (the exchanger's second-law checks are judged checks).
+`verify/unit_checks.py:646-666` (the exchanger's second-law checks are judged checks).
 
 This note decides structure and order. It chooses no correlation or parameter set and specifies no package in detail.
 Each package keeps its own design pass, ADR and review (plan §1.3, ADR 0056). The rulings are authoritative on scientific
@@ -1397,7 +1397,7 @@ lives, which foundation hooks it uses, what it refuses, and what broke. Every br
   superstructure.
 - *Hooks:* F4 per-side method sets (steam on IAPWS-95 beside a process side on PR); F5 state points along the exchanger;
   F6 sides, heat curves and heat intervals for the `heat_direction` check; F7 run kinds; X24.
-- *Refuses:* nothing new; a temperature cross is a judged check, as today (`verify/table.py:965`).
+- *Refuses:* nothing new; a temperature cross is a judged check, as today (`verify/unit_checks.py:646`).
 - *Broke, fixed:* (1) "a unit evaluates all its ports with one method" broke for steam against a process fluid, so
   methods are assigned per side (§2.3.8, §2.4.1). (2) Pinch needs heat curves, so units with duty declare one (F6).
   (3) X14 also needs X17 (§4).

@@ -913,7 +913,7 @@ def test_b20d_a_screen_reported_switch_names_the_item() -> None:
     a wall at a toggled item is named `<U>.<port>:<from>-><to>`, the absent side by the outlet's
     declared phase: `phase_wall(…, U-PUMP.outlet:LIQUID->ZERO_FLOW)`."""
     from openflowsheet.orchestrator.phase_contract import _changes
-    from openflowsheet.orchestrator.region import _attempt_screen
+    from openflowsheet.orchestrator.region_screen import _attempt_screen
 
     binding = bind(dz6())
     flowsheet = binding.flowsheet

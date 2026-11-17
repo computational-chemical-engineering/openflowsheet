@@ -95,8 +95,8 @@ def observe(
     compiled = compile_problem(item.binding.spec)
     trace = Trace()
     seen = Observed(result=None, trace=trace)  # type: ignore[arg-type]
-    original = region_module._region_problem
-    original_screen = region_module._screen
+    original = region_problem._region_problem
+    original_screen = region_screen._screen
 
     def observed(compiled_, context, spec, scaling, base, free, rows, screen=None, opening=None):  # type: ignore[no-untyped-def]
         attempt = len(seen.calls)
@@ -295,7 +295,7 @@ def test_a05_the_kernel_is_asked_only_on_flagged_trials(
     """The screen calls K03 §8.2's own check (the closure check's callable) and flashes once per
     flagged trial: 13, 12, 6 on attempt 1 (T03 §4.3's registered counts)."""
     screened: list[tuple[int, str]] = []
-    real = region_module._admissible
+    real = region_phase._admissible
     seen_box: list[Observed] = []
 
     def spy(provider, context, split, regime, state, epsilon):  # type: ignore[no-untyped-def]
@@ -332,14 +332,14 @@ def test_a05_the_opening_state_is_not_screened(
     first = seen.result.attempts[0]
     opening = dict(first.end_state)
     heater = syn001_lifted_splits(("A", "B", "C"))[0]
-    region_module._pin(opening, heater, "LIQUID")
+    region_phase._pin(opening, heater, "LIQUID")
     context = EvaluationContext(
         model_version="t03", constants_sha256="0" * 64, phase_signature=None
     )
     from test_t02_a02 import revision, structure
 
     provider = structure(revision("SYN-001-A02-340-two-phase-guess")).binding.flowsheet.provider
-    ok, value = region_module._admissible(provider, context, heater, "LIQUID", opening, 1e-12)
+    ok, value = region_phase._admissible(provider, context, heater, "LIQUID", opening, 1e-12)
     registered = ref["policy_simulation"]["cases"]["SYN-001-A02-340-two-phase-guess"]
     expected = float(registered["attempts"][1]["opening_screen_value"])
     assert not ok and abs(value - expected) <= 1e-9 * expected
@@ -585,7 +585,7 @@ def test_a16_a_pinned_variable_that_is_not_zero_is_refused(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """`S3.vap.A = 1e-3` under a LIQUID signature: PHS-04's restart into LIQUID, corrupted."""
-    real = region_module._LiftedOps.blocked
+    real = region_problem._LiftedOps.blocked
 
     def corrupted(self: Any, result: Any) -> Any:
         conversion = real(self, result)
@@ -594,7 +594,7 @@ def test_a16_a_pinned_variable_that_is_not_zero_is_refused(
         state, regimes = conversion.opening
         return replace(conversion, opening=({**state, "S3.vap.A": 1e-3}, regimes))
 
-    monkeypatch.setattr(region_module._LiftedOps, "blocked", corrupted)
+    monkeypatch.setattr(region_problem._LiftedOps, "blocked", corrupted)
     assert_refused(
         observe("SYN-001-A02-340-two-phase-guess", monkeypatch), "active_set", "S3.vap.A", 1e-3
     )
@@ -1305,7 +1305,7 @@ def test_s5_both_retained_conversions_on_a_physical_state(
 
     kwargs: list[dict[str, Any]] = []
     flagged: list[dict[str, float]] = []
-    real_init, real_admissible = region_module._LiftedOps.__init__, region_module._admissible
+    real_init, real_admissible = region_problem._LiftedOps.__init__, region_phase._admissible
 
     def init(self: Any, **given: Any) -> None:
         kwargs.append(given)
@@ -1317,7 +1317,7 @@ def test_s5_both_retained_conversions_on_a_physical_state(
             flagged.append(dict(state))
         return ok, value
 
-    monkeypatch.setattr(region_module._LiftedOps, "__init__", init)
+    monkeypatch.setattr(region_problem._LiftedOps, "__init__", init)
     monkeypatch.setattr(region_screen, "_admissible", admissible)
     monkeypatch.setattr(region_phase, "_admissible", admissible)
     monkeypatch.setattr(region_problem, "_admissible", admissible)
@@ -1333,7 +1333,7 @@ def test_s5_both_retained_conversions_on_a_physical_state(
             attempt_index=0,
             frozen=opening,
             wall=walled(()),
-            ops=region_module._LiftedOps(**given),
+            ops=region_problem._LiftedOps(**given),
             policy=POLICY,
             used=[opening],
         )
@@ -1360,9 +1360,9 @@ def test_n4_a_candidate_the_kernel_disagrees_with_is_a_defect(
     """Review N4: `at_candidate` checks, rather than assumes, that the kernel's regime at the
     candidate is the one the screen reported; a disagreement is a defect, never a silent mismatch
     between the cause and the new signature."""
-    real = region_module._kernel
+    real = region_phase._kernel
     in_restart = [False]
-    real_at_candidate = region_module._LiftedOps.at_candidate
+    real_at_candidate = region_problem._LiftedOps.at_candidate
 
     def at_candidate(self: Any, candidate: Any, cause: str) -> Any:
         in_restart[0] = True
@@ -1375,7 +1375,7 @@ def test_n4_a_candidate_the_kernel_disagrees_with_is_a_defect(
         regime, values = real(provider, context, split, state)
         return ("VAPOR" if in_restart[0] else regime), values
 
-    monkeypatch.setattr(region_module._LiftedOps, "at_candidate", at_candidate)
+    monkeypatch.setattr(region_problem._LiftedOps, "at_candidate", at_candidate)
     monkeypatch.setattr(region_module, "_kernel", kernel)
     monkeypatch.setattr(region_phase, "_kernel", kernel)
     with pytest.raises(RuntimeError, match="defect: the kernel reports U-HEAT VAPOR"):
@@ -1393,7 +1393,7 @@ def test_n3_the_screen_passes_the_kernels_refusal_through(
     from openflowsheet.thermo import FlashResult
 
     seen: list[Evaluation] = []
-    real_screen = region_module._screen
+    real_screen = region_screen._screen
 
     def screen(*, splits, regimes, provider, context, epsilon):  # type: ignore[no-untyped-def]
         class Refusing:

@@ -974,7 +974,7 @@ def _lifted_enthalpy(source: Members, name: str, context: Any) -> float:
     `verify_revision`'s split list."""
     from openflowsheet.models.revision_flowsheet import parse_revision
     from openflowsheet.orchestrator.splits import lifted_splits
-    from openflowsheet.verify import table
+    from openflowsheet.verify import split_checks
 
     view = parse_revision({**source.revision, "specifications": []})
     ports = {instance.unit_id: instance.ports for instance in view.instances}
@@ -990,8 +990,8 @@ def _lifted_enthalpy(source: Members, name: str, context: Any) -> float:
     at = (variables[split.temperature], variables[split.pressure])
     vapor = tuple(variables[column] for column in split.vapor)
     liquid = tuple(variables[column] for column in split.liquid)
-    return table._phase_enthalpy(provider, context, vapor, *at, "VAPOR", name) + (
-        table._phase_enthalpy(provider, context, liquid, *at, "LIQUID", name)
+    return split_checks._phase_enthalpy(provider, context, vapor, *at, "VAPOR", name) + (
+        split_checks._phase_enthalpy(provider, context, liquid, *at, "LIQUID", name)
     )
 
 

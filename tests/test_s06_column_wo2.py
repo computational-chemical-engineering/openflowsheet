@@ -31,6 +31,7 @@ from test_s06_column_wo1 import (
 )
 
 import openflowsheet.models.syn001.column_solve as solve_module
+import openflowsheet.orchestrator.homotopy as homotopy_module
 import openflowsheet.orchestrator.region_attempts as region_attempts
 from openflowsheet.compile.reference import row_values
 from openflowsheet.models.lifted_tolerance import KIND_TOLERANCE
@@ -47,7 +48,7 @@ from openflowsheet.models.syn001.cascade_spec import (
     vapor_id,
     vapor_total_id,
 )
-from openflowsheet.models.syn001.column import _inflow, _inlet_columns, profile_initial
+from openflowsheet.models.syn001.column import _inlet_columns, profile_initial
 from openflowsheet.models.syn001.column_acceptance import (
     QUOTIENT_SLACK,
     acceptance_failures,
@@ -62,6 +63,7 @@ from openflowsheet.models.syn001.column_compile import (
     stage_unit,
 )
 from openflowsheet.models.syn001.column_endpoint import BubblePointEndpoint, bubble_point_endpoint
+from openflowsheet.models.syn001.column_rows import _inflow
 from openflowsheet.models.syn001.column_solve import (
     DECLARATION_CONTEXT,
     FD_COLUMN_SCALE,
@@ -538,7 +540,7 @@ def test_a10_forced_edge_3_from_x0(monkeypatch: pytest.MonkeyPatch, name: str) -
     replaced slots, each inverse slot's parameter among them; `p⁰` is A05's; λ dyadic; the λ = 1
     instance is the target's; the recovery is `CONVERGED` at `ref.cases.*.target`."""
     rebound: list[dict[str, float]] = []
-    real = region_attempts.rebind
+    real = homotopy_module.rebind
 
     def rebind(spec: Any, values: dict[str, float]) -> Any:
         rebound.append(dict(values))

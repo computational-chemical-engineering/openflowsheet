@@ -51,8 +51,6 @@ from openflowsheet.models.syn001.band_types import BandError
 from openflowsheet.models.syn001.cascade import (
     DormantAnswer,
     _enthalpy_flow,
-    _parameter,
-    _phase,
     dormant_answer,
     is_dormant,
     regime_form,
@@ -64,6 +62,8 @@ from openflowsheet.models.syn001.cascade_rows import declared_problem, declared_
 from openflowsheet.models.syn001.cascade_spec import MODEL_ID as CASCADE_MODEL_ID
 from openflowsheet.models.syn001.cascade_spec import (
     CascadeSpec,
+    _parameter,
+    _phase,
     inlet_stream,
     liquid_id,
     liquid_total_id,

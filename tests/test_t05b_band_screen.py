@@ -33,19 +33,20 @@ from t05_w12_support import bind
 from t05b_support import POLICY_V2, REF, near_pure, number, sc1
 
 from openflowsheet.models.syn001 import ENERGY_TOLERANCE
+from openflowsheet.models.syn001 import ph_kernel as ph_kernel_module
 from openflowsheet.models.syn001.ph_kernel import ph_state
 from openflowsheet.models.syn001.tp_state import enthalpy_flow, tp_state
 from openflowsheet.orchestrator import executor, region_phase, region_screen, revision
-from openflowsheet.orchestrator import region as region_module
 from openflowsheet.orchestrator.execution import ExecutionPlan
-from openflowsheet.orchestrator.region import (
+from openflowsheet.orchestrator.region_phase import (
+    TP_REGIME,
+    ClosureMemo,
     _band_regime,
-    _build_screen,
     _contract_kernel,
     _kernel,
     _split_enthalpy,
 )
-from openflowsheet.orchestrator.region_phase import TP_REGIME, ClosureMemo
+from openflowsheet.orchestrator.region_screen import _build_screen
 from openflowsheet.orchestrator.revision import TraversalStart, plan_revision
 from openflowsheet.orchestrator.splits import closure_types, lifted_splits
 from openflowsheet.thermo import StreamState
@@ -237,7 +238,7 @@ def test_s3_the_closure_the_screen_asks_is_carried_to_the_opening(
     )
     state = _kernel_state(entry)
     asked: list[float] = []
-    real = region_module.ph_state
+    real = ph_kernel_module.ph_state
 
     def counted(*args: Any, **kwargs: Any) -> Any:
         asked.append(args[3])

@@ -62,10 +62,9 @@ from t05b_support import (
 
 from openflowsheet.models.lifted import DormancyForm, LiftedSplit
 from openflowsheet.numerics.solve_record import Trace
-from openflowsheet.orchestrator import region as region_module
 from openflowsheet.orchestrator import region_problem
-from openflowsheet.orchestrator.region import (
-    _contract_kernel,
+from openflowsheet.orchestrator.region_phase import _contract_kernel
+from openflowsheet.orchestrator.region_problem import (
     _items,
     _opening_order,
     _rederive,
@@ -699,9 +698,9 @@ def test_b31g_a_restart_that_never_settles_is_typed(monkeypatch: pytest.MonkeyPa
     """(g) The same at a restart opening: attempt 0 opens and closes as in CH-UP, and the restart's
     fixed point, stubbed never to settle, closes the region `ACTIVE_SET_CYCLING`,
     `opening_not_settled(U-PHF)`, with attempt 0 kept on the record."""
-    real = region_module._rederive
+    real = region_problem._rederive
     at_restart = {"on": False}
-    settled = region_module._LiftedOps._settled
+    settled = region_problem._LiftedOps._settled
 
     def rederive(entry: Any, *args: Any) -> str:
         return _never_settles(entry) if at_restart["on"] else real(entry, *args)
@@ -714,7 +713,7 @@ def test_b31g_a_restart_that_never_settles_is_typed(monkeypatch: pytest.MonkeyPa
             at_restart["on"] = False
 
     monkeypatch.setattr(region_problem, "_rederive", rederive)
-    monkeypatch.setattr(region_module._LiftedOps, "_settled", restart)
+    monkeypatch.setattr(region_problem._LiftedOps, "_settled", restart)
     document, start = CASES["CH-UP"]()
     result = solve_from_v2(bind(document), start)
     assert result.outcome == "ACTIVE_SET_CYCLING"

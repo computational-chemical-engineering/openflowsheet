@@ -14,7 +14,8 @@ import pytest
 from t05_support import CONTEXT, PROVIDER
 
 from openflowsheet.models.lifted import INADMISSIBLE_BRANCH
-from openflowsheet.orchestrator.region import _admissible, syn001_lifted_splits
+from openflowsheet.orchestrator.region import syn001_lifted_splits
+from openflowsheet.orchestrator.region_phase import _admissible
 from openflowsheet.orchestrator.roots import branch_found
 
 COMPONENTS = ("A", "B", "C")

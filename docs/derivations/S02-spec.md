@@ -613,7 +613,7 @@ SHA-256 goes into `tests/test_s02_column_wo1.py::REFERENCE_SHA256`.
    hooks. `PRESOLVE_ID = "s02-bubble-point-v1"`; `PRESOLVE_POLICY`, `presolve_rows`' use in the path and the TP closure
    variant go (keep `slots`/`continuation`). `ColumnSolution` drops `presolve`/`presolve_summary` for the §18.2 records.
 2. ADR 0044's trigger: `orchestrator/recovery.py` `eo_recovery_due(outcome, budget, attempts)`; the three call sites
-   (`executor.py:864`, `cascade_solve.py:691`, `column_solve.py:746`) pass `len(result.attempts)`; the stubs in
+   (`executor.py:992`, `cascade_solve.py:796`, `column_solve.py:315`) pass `len(result.attempts)`; the stubs in
    `tests/test_s01_cascade_wo3.py:125` and `tests/test_s02_column_wo2.py:475,559` take the third argument (§18.8 item 1).
 3. Tests: A05–A07, A06b, A13, A13b, A14, A20–A22 (§18.6); WO-2's strict xfails flip to plain passes or are deleted with their
    replacement named in the build log; the A05 profile-root tests stay as A06b's precondition.

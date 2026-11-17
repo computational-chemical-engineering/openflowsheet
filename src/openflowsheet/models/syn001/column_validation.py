@@ -22,11 +22,11 @@ from openflowsheet.models.syn001.cascade import (
     _in_domain,
     _invalid,
     _is_dormant,
-    _phase,
 )
 from openflowsheet.models.syn001.cascade_failure import CascadeFailure
 from openflowsheet.models.syn001.cascade_spec import (
     PlacedInlet,
+    _phase,
     inlet_stream,
     stage_pressure_id,
     stage_temperature_id,

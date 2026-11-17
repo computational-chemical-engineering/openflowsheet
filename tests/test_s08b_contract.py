@@ -26,7 +26,7 @@ from openflowsheet.orchestrator.phase_contract import (
     _proposal,
     adjacent,
 )
-from openflowsheet.orchestrator.region import _LiftedOps, _units_and_items_disjoint
+from openflowsheet.orchestrator.region_problem import _LiftedOps, _units_and_items_disjoint
 
 STAGE_1_2P = ("S.stage.1", "TWO_PHASE")
 LIQUID = (STAGE_1_2P, ("S.stage.2", "LIQUID"))

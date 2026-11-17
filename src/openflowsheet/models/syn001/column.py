@@ -10,10 +10,9 @@ specification of §2.1 in place of `Q_j − Q_j*`.
 **The unit layer only** (S02 spec §12 WO-1), in four modules (S19 B2): `column_spec` holds the
 specification object, the declarations and the column's ids, `column_validation` its §5
 refusals and `column_rows` the §2 declared rows; this module holds the per-stage regime forms
-with §2.3's label and the §6 analytic initializer `s02-profile-cmo-v1`. It re-exports the names
-the frozen `column_unit` imports through it (ADR 0076 I-8) and three names outside I-8's move sets
-(`_inflow`, `GammaPhiLnKBlock`, `single_phase_admissible`; I-13 and I-19). The pre-solve, the
-target and acceptance are WO-2's.
+with §2.3's label and the §6 analytic initializer `s02-profile-cmo-v1`. It keeps re-exporting the
+names the frozen `column_unit` imports through it until W5 (ADR 0076 I-8, I-19). The pre-solve,
+the target and acceptance are WO-2's.
 
 Column ids beyond S01's (build decision, `docs/S02_DECISIONS.md`): the total condenser's are
 `<U>.stage.1.{r,d}.<c>`, `<U>.stage.1.{phi,D}` and S01's `<U>.stage.1.{T,P,Q}` for `T_c`, `P_c`,
@@ -38,9 +37,8 @@ from openflowsheet.compile.reference import row_values
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models import flow_id, pressure_id, temperature_id
 from openflowsheet.models.lifted import Regime
-from openflowsheet.models.syn001.cascade import _k_values
 from openflowsheet.models.syn001.cascade_failure import CascadeFailure
-from openflowsheet.models.syn001.cascade_init import CMO_FLOOR, thomas
+from openflowsheet.models.syn001.cascade_init import CMO_FLOOR, _k_values, thomas
 from openflowsheet.models.syn001.cascade_rows import declared_problem
 from openflowsheet.models.syn001.cascade_spec import (
     energy_row_id,
@@ -56,7 +54,7 @@ from openflowsheet.models.syn001.cascade_spec import (
     vapor_id,
     vapor_total_id,
 )
-from openflowsheet.models.syn001.column_rows import _inflow as _inflow
+from openflowsheet.models.syn001.column_rows import _inflow
 from openflowsheet.models.syn001.column_rows import declared_rows as declared_rows
 from openflowsheet.models.syn001.column_spec import COMPONENT_KINDS as COMPONENT_KINDS
 from openflowsheet.models.syn001.column_spec import CONDENSER as CONDENSER
@@ -83,9 +81,7 @@ from openflowsheet.models.syn001.column_spec import product_total_id as product_
 from openflowsheet.models.syn001.column_spec import purity_flow_id as purity_flow_id
 from openflowsheet.models.syn001.column_spec import recovery_flow_id as recovery_flow_id
 from openflowsheet.models.syn001.column_validation import purity_reference
-from openflowsheet.models.syn001.gamma_phi_blocks import GammaPhiLnKBlock as GammaPhiLnKBlock
 from openflowsheet.models.syn001.saturation_band import band_temperature
-from openflowsheet.models.syn001.tp_state import single_phase_admissible as single_phase_admissible
 from openflowsheet.thermo import PropertyProvider
 
 #: Spec §6's registered initializer.

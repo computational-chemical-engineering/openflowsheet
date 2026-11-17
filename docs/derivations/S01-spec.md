@@ -81,7 +81,7 @@ conventions.
 3. **Label (DECISION 4).** `T_label(j) = T_{j−1}` for j > 1, and `T_label(1) = T_top`. A dormant stage takes the temperature of
    the liquid that would enter it from above.
 4. **Contract literal.** `SolvePolicy.phase_contract = "T05b-phase-contract-v2"`. Screens, restarts, disappearance (core ends
-   `BOUND_BLOCKED` on a watched total), cycle rule, `max_attempts = 5` and records are `solve_region`'s (`region.py:1666`),
+   `BOUND_BLOCKED` on a watched total), cycle rule, `max_attempts = 5` and records are `solve_region`'s (`region.py:216`),
    called unchanged. S01 does not write a controller (DECISION 1).
 5. **Typed failures** (no new outcome values): every `SolveOutcome` that `solve_region` can return, plus §5's refusals.
    - A dormant stage whose swapped `energy_j` does not hold (`Q_j* ≠ 0`) ends `SPECIFICATION_CONFLICT`,
@@ -144,7 +144,7 @@ R7 is necessary, not sufficient: no in-domain state can carry `H*`, because `max
    the `Q_j*` of the promoted rows `Q_j − Q_j*`. The map is `p(λ) = Q* + (1 − λ)(Q⁰ − Q*)`.
    - **`x⁰` is an exact root of `H(·, 0)`** (DECISION 2): at `x⁰`, every row but `Q_j − Q_j*` holds, and `Q_j(x⁰) = Q⁰_j`
      by construction.
-   - Controller and records are `HomotopyPolicy`'s defaults (`trace.py:542-551`): `Δλ₀ = 1/4`, `Δλ_min = 1/1024`, growth 2,
+   - Controller and records are `HomotopyPolicy`'s defaults (`solve_record.py:546-551`): `Δλ₀ = 1/4`, `Δλ_min = 1/1024`, growth 2,
      shrink 1/2, `corrector_max_iterations = 10`, `max_lambda_trials = 64`. The homotopy never changes the signature.
    - Each λ-level is a real cascade with real duties. λ < 1 is never certified.
 6. **Policy** `s01-default-v1`. It is the registered EO default with `phase_contract = "T05b-phase-contract-v2"`,

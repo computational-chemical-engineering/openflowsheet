@@ -1375,7 +1375,7 @@ entries:
     complete: true
     title: A value that no specification fixes
     args: [column]
-    # Review Q2: the binder's hint names where a specification would go (`revision_binding.py`).
+    # Review Q2: the binder's hint names where a specification would go (`model_signatures.py`).
     detail_pattern: 'object_id: (?P<object>[^,}]+)'
     params:
       column: {type: text, label: value left free}

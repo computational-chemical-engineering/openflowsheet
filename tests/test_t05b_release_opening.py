@@ -103,7 +103,7 @@ def test_b35b_the_corrector_passes_its_attempts_opening() -> None:
     calls: list[tuple[bool, Any]] = []
     openings: list[npt.NDArray[np.float64]] = []
     inside = {"depth": 0}
-    real_homotopy, real_solve = region_module._homotopy, region_module.solve_newton
+    real_homotopy, real_solve = region_attempts._homotopy, region_module.solve_newton
 
     def homotopy(**kwargs: Any) -> Any:
         openings.append(np.array(kwargs["x0"], dtype=np.float64, copy=True))

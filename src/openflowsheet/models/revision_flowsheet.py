@@ -16,7 +16,7 @@ And `traverse` runs the units causally in declaration order, tearing a stream on
 graph deadlocks — the start of the one EO region a revision-built flowsheet is solved as (D2).
 
 Constructing the units is not here: the builder table is the application layer's
-(`application.revision_binding.MODEL_BUILDERS`), which is where a revision meets the model zoo.
+(`application.model_builders.MODEL_BUILDERS`), which is where a revision meets the model zoo.
 """
 
 from __future__ import annotations

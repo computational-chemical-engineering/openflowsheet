@@ -1,0 +1,24 @@
+# ADR 0076 I-19, step c (W4 run 20, brief S19-W4-20; form of S19_DECISIONS 2026-11-16 STOP 1):
+# verify/table.py stops re-exporting the private check functions of unit_checks and split_checks.
+# `codehealth gate --mode interface` reads this plan from the plan commit.
+id = "i19c-table-private-aliases"
+approved_by = "Frank Peters, 2026-11-14, ADR 0076 accepted (Decision Desk ofs-adr0076-accept)"
+reason = """ADR 0076 I-19: every re-export added by S17 or S19 goes (inventory \
+docs/briefs/S19-I19-inventory.md). The test importers through verify.table \
+(test_m02_wo8_registries.py:17, test_m02_wo9_reactor.py:59, test_st_core.py:993-994) were \
+retargeted outside the gate (4866b61e); no src module imports these names through table. The step \
+drops 15 `X as X` imports table does not read: _c1_flash_material, _c1_reactor_material, \
+_feed_specification, _flash_energy, _flash_specification, _heater_energy, _heater_specification, \
+_mixer_energy, _mixer_material, _pump_material, _reactor_energy, _splitter_energy, \
+_splitter_material, _splitter_specification (verify.unit_checks) and _phase_enthalpy \
+(verify.split_checks). table.py has no __all__ and cce-code-health counts imports as API only in \
+__init__.py, so the plan lists no change (STOP 1 ruling). The R-016 source-reading test \
+test_t05_table_independence still passes (table imports fewer names). Expected codehealth arch \
+--depth 4 (measured at this base and on the step applied to it): base 0 violations / 0 cycles / 0 \
+cycle edges, after 0 / 0 / 0 (imports 4151 -> 4136). Layer config: none."""
+removed = []
+renamed = {}
+changed = []
+added = []
+new_files = []
+callers = []

@@ -26,7 +26,8 @@ from test_s02_column_wo2 import (
 
 import openflowsheet.models.syn001.cascade_solve as cascade_solve_module
 import openflowsheet.models.syn001.column_endpoint as endpoint_module
-import openflowsheet.models.syn001.column_solve as solve_module
+import openflowsheet.models.syn001.saturation_band as saturation_band_module
+import openflowsheet.orchestrator.homotopy as homotopy_module
 import openflowsheet.orchestrator.region_attempts as region_attempts
 from openflowsheet.compile.reference import row_values
 from openflowsheet.models.lifted_tolerance import KIND_TOLERANCE
@@ -260,7 +261,7 @@ def test_a13_edge_3_on_solve_columns_own_path(monkeypatch: pytest.MonkeyPatch, c
     ref.cases.*.bubble_point_continued`; dyadic λ; the λ = 1 instance is the target's; a second
     run's root is `SAME` and bit-identical."""
     rebound: list[dict[str, float]] = []
-    real = region_attempts.rebind
+    real = homotopy_module.rebind
 
     def rebind(spec: Any, values: dict[str, float]) -> Any:
         rebound.append(dict(values))
@@ -410,7 +411,7 @@ def test_a22_a_bubble_point_outside_the_domain(monkeypatch: pytest.MonkeyPatch) 
     1) ends M1 `initialization_failed(s02-bubble-point-v1, bubble_point_outside_domain)` before
     any region solve."""
     _no_region_solve(monkeypatch)
-    real = solve_module.band_temperature
+    real = saturation_band_module.band_temperature
     calls: list[float] = []
 
     def below_once(provider: Any, flows: Any, pressure: float, *rest: Any, **kw: Any) -> Any:
