@@ -2316,3 +2316,7 @@
   debt 4670.7, health 8.24, brain 26; arch 0/0. **The blocking set for 0.5 is done; reported to Frank (via hub).**
   DECISION: MB stays 14c6d414 (refactor steps only since; no lane is waiting for a map). Alternative: rebuild at
   517ab610 now (~1 h, queue held). Reversible by: building the map before the next lane.
+- **2026-11-17, three DECISION-REQUESTs sent to hub (Decision Desk):** ofs-s19-start-05 (start 0.5 after the S19
+  merge into main; rec A), ofs-s19-w3w4-merge-main (prepare evidence and merge wp/S19 into main; rec A), and
+  ofs-s19-trailing-order (S19 beside 0.5 at one lane, order G3, G4, G2, W5, G1, docs; NaN-witness change right after
+  the main merge under a fresh card; rec A). Nothing proceeds on them until a signed card is verified.
