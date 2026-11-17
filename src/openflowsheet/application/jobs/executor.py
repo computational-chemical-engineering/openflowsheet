@@ -66,7 +66,6 @@ from openflowsheet.application.jobs.interrupt import (
 )
 from openflowsheet.application.jobs.model import TERMINAL_STATUSES
 from openflowsheet.application.jobs.runner import RunContext, WorkerResult, defect_result, execute
-from openflowsheet.application.jobs.runner import _defect as _defect
 from openflowsheet.application.store import JOBS_DIR, ArtifactRow
 from openflowsheet.application.types import ExecutorSettings, Job, JobEnding
 from openflowsheet.canonical import file_sha256

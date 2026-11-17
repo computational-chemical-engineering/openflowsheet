@@ -659,10 +659,6 @@ def c1_reactor_surrogate_of(
     }
 
 
-# ADR 0076 I-13 (R-1045): the private name stays bound until I-13's refactor step removes it.
-_c1_reactor_surrogate_of = c1_reactor_surrogate_of
-
-
 def _c1_reactor_surrogate(
     view: InstanceView,
     provider: PropertyProvider,
@@ -721,7 +717,7 @@ def _thermal_builder(model_id: str) -> Builder:
 #: Model id -> builder: the six K02 models, the six T05 ones (§1.3's table), T08's kinetic CSTR
 #: (build-first §A1), S11's column (§4.7), M02's six C1 units and two C1 reactor ids (R-280), and
 #: M04's surrogate of the C1 reactor (R-301): its registered builder refuses; the binder hands a
-#: resolved manifest to `_c1_reactor_surrogate_of` instead.
+#: resolved manifest to `c1_reactor_surrogate_of` instead.
 MODEL_BUILDERS: Final[Mapping[str, Builder]] = {
     FEED_SOURCE.model_id: _feed_source,
     ADIABATIC_MIXER.model_id: _adiabatic_mixer,

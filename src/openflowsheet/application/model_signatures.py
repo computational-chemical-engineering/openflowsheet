@@ -676,7 +676,7 @@ C1_TP_HEATER: Final = ModelSignature(
 )
 
 
-#: As `_TP_FLASH`: the liquid product's T and P are read to be refused when they differ from the
+#: As `TP_FLASH`: the liquid product's T and P are read to be refused when they differ from the
 #: vapour's, which set the flash's.
 C1_TP_FLASH: Final = ModelSignature(
     model_id=c1_flash.MODEL_ID,
@@ -716,7 +716,7 @@ C1_REACTOR_STANDIN: Final = ModelSignature(
 #: M04 WO-7 (spec §8.1, §8.2; ADR 0037 D1, D2): `c1.reactor_surrogate` is M02's embedded unit with
 #: (X̂, ΔT̂) the frozen quadratic of its SurrogateManifest, pinned by the manifest's SHA-256. It
 #: reads `n_tubes` (the surrogate's per-tube flow). The binder resolves and checks the manifest
-#: before building (`_resolve_surrogate`) and hands it to `_c1_reactor_surrogate_of`; the
+#: before building (`_resolve_surrogate`) and hands it to `c1_reactor_surrogate_of`; the
 #: registered builder, called without one, refuses as an unresolved manifest does.
 C1_REACTOR_SURROGATE: Final = ModelSignature(
     model_id=SURROGATE_MODEL_ID, ports=c1_surrogate.PORTS, required=("n_tubes",)
@@ -745,7 +745,7 @@ _SYN001_SIGNATURES: Final[tuple[ModelSignature, ...]] = (
 # -- the `thermal.*` family (S11 units design §4.4, §5.4 I1b) -----------------------------------
 
 #: The seven `thermal.*` signatures, defined here beside the others because `thermal_binding`
-#: imports this module (as `_COLUMN` is for `column_binding`). What they cannot list: the heater's
+#: imports this module (as `COLUMN` is for `column_binding`). What they cannot list: the heater's
 #: optional `pressure_drop` and `outlet_vapor_fraction` (`thermal_binding`'s docstring).
 THERMAL_HEATER: Final = ModelSignature(
     model_id=thermal_heater.MODEL_ID,
@@ -861,49 +861,3 @@ MODEL_BASES: Final[Mapping[str, frozenset[str]]] = {
         for s in THERMAL_SIGNATURES
     },
 }
-
-# ADR 0076 I-13 (R-1045): the private names stay bound until I-13's refactor step removes them.
-_ADIABATIC_MIXER = ADIABATIC_MIXER
-_C1_ADIABATIC_MIXER = C1_ADIABATIC_MIXER
-_C1_FEED_SOURCE = C1_FEED_SOURCE
-_C1_PRODUCT_SINK = C1_PRODUCT_SINK
-_C1_REACTOR = C1_REACTOR
-_C1_REACTOR_STANDIN = C1_REACTOR_STANDIN
-_C1_REACTOR_SURROGATE = C1_REACTOR_SURROGATE
-_C1_STREAM_SPLITTER = C1_STREAM_SPLITTER
-_C1_TP_FLASH = C1_TP_FLASH
-_C1_TP_HEATER = C1_TP_HEATER
-_COLUMN = COLUMN
-_COMPONENT_SEPARATOR = COMPONENT_SEPARATOR
-_CONVERSION_REACTOR = CONVERSION_REACTOR
-_COOLPROP = COOLPROP
-_FEED_SOURCE = FEED_SOURCE
-_HEAT_EXCHANGER = HEAT_EXCHANGER
-_IAPWS95 = IAPWS95
-_KINETIC_CSTR = KINETIC_CSTR
-_LIQUID_PUMP = LIQUID_PUMP
-_ONE_PHASE = ONE_PHASE
-_PH_FLASH = PH_FLASH
-_PRODUCT_SINK = PRODUCT_SINK
-_STREAM_SPLITTER = STREAM_SPLITTER
-_THERMAL_FLASH = THERMAL_FLASH
-_THERMAL_HEATER = THERMAL_HEATER
-_THERMAL_MACHINES = THERMAL_MACHINES
-_THERMAL_MIXER = THERMAL_MIXER
-_THERMAL_SIGNATURES = THERMAL_SIGNATURES
-_THERMAL_VALVE = THERMAL_VALVE
-_TP_FLASH = TP_FLASH
-_TP_HEATER = TP_HEATER
-_VALVE = VALVE
-_WILSON = WILSON
-_column = pin_column
-_columns = pin_columns
-_expand = expand
-_missing_choice_hint = missing_choice_hint
-_missing_pin_hint = missing_pin_hint
-_named_first = named_first
-_phase_hint = phase_hint
-_pin = pin_value
-_pinned = pinned
-_require_phase = require_phase
-_stream = port_stream

@@ -78,7 +78,3 @@ def column_owners(
         elif head in streams:
             owners[column] = streams[head]
     return owners
-
-
-# ADR 0076 I-13 (R-1045): the private name stays bound until I-13's refactor step removes it.
-_column_owners = column_owners

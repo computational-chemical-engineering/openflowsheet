@@ -43,8 +43,6 @@ from openflowsheet.application.model_builders import (
     c1_reactor_surrogate_of,
     resolve_surrogate,
 )
-from openflowsheet.application.model_builders import _c1_reactor_surrogate as _c1_reactor_surrogate
-from openflowsheet.application.model_signatures import _COLUMN as _COLUMN
 from openflowsheet.application.model_signatures import (
     ADIABATIC_MIXER,
     C1_ADIABATIC_MIXER,
@@ -76,7 +74,6 @@ from openflowsheet.application.model_signatures import (
     named_first,
     pin_encodings,
 )
-from openflowsheet.application.model_signatures import _columns as _columns
 from openflowsheet.canonical import document_sha256, first_noncanonical
 from openflowsheet.compile.spec import ProblemSpec
 from openflowsheet.compiled import EvaluationContext
@@ -295,10 +292,6 @@ def basis_refusal(model_id: str, basis: ComponentBasis) -> Unbound:
     if reason is not None:
         hint += f"; {reason}"
     return Unbound("unsupported", f"model_unsupported({model_id})", hint=hint)
-
-
-# ADR 0076 I-13 (R-1045): the private name stays bound until I-13's refactor step removes it.
-_basis_refusal = basis_refusal
 
 
 #: S11 design §4.4, units design §4.7: why a model is not admitted on a basis S11 adds (or why

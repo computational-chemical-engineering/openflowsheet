@@ -282,10 +282,6 @@ def defect_result(error: Exception) -> WorkerResult:
     )
 
 
-# ADR 0076 I-13 (R-1045): the private name stays bound until I-13's refactor step removes it.
-_defect = defect_result
-
-
 def warm_start_candidate(
     context: RunContext, job_id: str, revision_id: str
 ) -> WarmStartCandidate | None:
