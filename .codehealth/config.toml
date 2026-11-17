@@ -322,6 +322,8 @@ records = [
     "docs/adr/**", "docs/*DECISIONS*.md", "docs/design-history/**", "docs/reviews/**", "docs/briefs/**",
     "docs/*HANDOFF*.md", "docs/*rc-record*.md", "docs/HISTORY.md", "docs/progress-archive.md", "docs/*-review.md",
     "docs/progress.md", "docs/decision-register.md", "evidence/**",
+    # Frank, Decision Desk ofs-s19-w4-docs-records (A, 2026-11-17): ADR 0076 rule 5 records.
+    "docs/design/**", "docs/*-measurements*.md", "docs/*-audit.md", "docs/*-report.md", "docs/*-failure-analysis.md",
 ]
 python_roots = ["src"]
 anchors = "warn"
