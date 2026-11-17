@@ -1,0 +1,35 @@
+# ADR 0076 I-12d step 1 of 5 (W4 run 17, brief S19-W4-17): ServiceCore and InspectionService out of
+# application/local.py; LocalApplication delegates. Placement: .codehealth/interface/s19-i12d-placement.md.
+# `codehealth gate --mode interface` reads this plan from the plan commit.
+id = "i12d-1-core-inspection"
+approved_by = "Frank Peters, 2026-11-14, ADR 0076 accepted (Decision Desk ofs-adr0076-accept)"
+reason = """ADR 0076 I-12d, step 1 (orchestrator DECISION, brief S19-W4-17: one interface step per \
+service, ServiceCore with InspectionService first). New module application/service_core.py: ServiceCore \
+holds the store, the policy source, the caller's capability, the owner instance, the executor and the \
+scratch directory that LocalApplication.__init__ held, with project_id, principal_id, capability_id and \
+files_root, and the facade's private surrogates, context, caller, authorize, refuse, refuse_error and \
+audit_refusal made public (they cross modules); close and acting_as (the core of \
+LocalApplication.authenticated: a copy with the capability replaced) are new. New module \
+application/inspection_service.py: InspectionService(core) with get_project, list_models, list_audit, \
+explain, list_capabilities, audit_refusal, the private _decode_audit_cursor, check_limit (was \
+_check_limit: also called by the job and revision lists, so public in the lowest service by the ADR \
+rule), and the module-level AUDIT_ORDERS, _AUDIT_OPERATION_LIMIT, _model_view, _encode_audit_cursor. \
+Statements move unchanged except the receiver (self._x( -> self._core.x(, self._store -> \
+self._core.store, self._policy -> self._core.policy, self._executor -> self._core.executor, \
+self.project_id -> self._core.project_id); checked by AST comparison of every function of local.py at \
+the base. LocalApplication keeps every public method name and signature (the six inspection methods \
+become one-line delegations with their docstrings), its lifecycle and properties (now delegations to \
+the core); OPERATIONS untouched. Callers follow: tests/test_t08_b50_surface_content.py patches \
+MODEL_BUILDERS and MODEL_SIGNATURES where list_models now reads them (inspection_service; local.py no \
+longer imports them; renamed entries on the bindings, Q-F5) and scripts/registry_builtin.py calls \
+inspection_service._model_view. No string literal is added or removed. Expected codehealth arch --depth \
+4 (measured on the step applied to this base): 0 / 0 / 0 -> 0 / 0 / 0 (imports 4083 -> 4115, files 323 \
+-> 325). Layer config after the step (separate commit): application-layers gains \
+application.inspection_service and application.service_core, in that order, between application.local \
+and application.jobs.executor."""
+removed = []
+renamed = {"src/openflowsheet/application/local.py:AUDIT_ORDERS" = "src/openflowsheet/application/inspection_service.py:AUDIT_ORDERS", "src/openflowsheet/application/local.py:MODEL_BUILDERS" = "src/openflowsheet/application/inspection_service.py:MODEL_BUILDERS", "src/openflowsheet/application/local.py:MODEL_SIGNATURES" = "src/openflowsheet/application/inspection_service.py:MODEL_SIGNATURES", "src/openflowsheet/application/local.py:_model_view" = "src/openflowsheet/application/inspection_service.py:_model_view"}
+changed = []
+added = ["src/openflowsheet/application/service_core.py:ServiceCore", "src/openflowsheet/application/inspection_service.py:InspectionService"]
+new_files = ["src/openflowsheet/application/service_core.py", "src/openflowsheet/application/inspection_service.py"]
+callers = ["tests/test_t08_b50_surface_content.py", "scripts/registry_builtin.py"]
