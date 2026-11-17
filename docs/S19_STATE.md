@@ -56,17 +56,14 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 
 ## Next actions (2026-11-17 ~01:30, self-reset)
 
-Runner pid 2642417. Results consumed up to 205; start `$Q wait --since 205` in the background first. No agent running.
+Runner pid 2642417. Results consumed up to 207 (01:35); start `$Q wait --since 207` in the background first. No agent running.
 Queue: running 218 (g5r11-1), 221 (w4r11-mc2); pending 222 (g5r11-2), 223 (w4r12-i13-5), 224 (w4r12-i13-6),
 225 (g5r11-3). Lanes at most 2 agents until Thu 19 Nov 13:00. ALERTs standing (proposal 2 with Frank). Merge-checks
 run on a helper `wp/S19-<lane>-mc` = lane tip + wp/S19 tip merged in; merge the helper (`git merge --no-ff -F <file>`)
 only if wp/S19 changed ONLY docs since the helper's wp/S19 merge, else refresh the helper and re-run (job 215 lesson).
 `enqueue --rerun-of` takes the RUN-LOG STEP number, never across a rebase (enqueue fresh). Briefs that rebuild a lane
 chain: check ListAgents first (fix211 lesson); rename scripts must skip names an importer defines itself (job 219).
-1. **I-11 (W4 run 11)**: reviewed (R-W4-11 merge after fix 1, done eb71978d). Job 215 PASS but wp/S19 gained G5 run 10
-   code; **job 221** = merge-check 2 on helper wp/S19-w4-mc 2490c525 (worktree s19-w4-mc, wp/S19 base 38b94728). On
-   PASS: check wp/S19 changed only docs since 38b94728, merge the helper (message: I-11, R-W4-11, jobs 212, 221),
-   remove worktree s19-w4-mc.
+1. **I-11 (W4 run 11): merged into wp/S19 as 6668be04 (job 221 PASS, 2026-11-17 01:35).**
 2. **I-13 (W4 run 12, R-1045)**: lane wp/S19-w4 eb71978d..a652a744 (plan c2df0d96, interface a741872b **job 223**,
    tests 595ea240, refactor a652a744 **job 224**); jobs 216 and 219 failed `public_api` on plan omissions, fixed
    (S19_DECISIONS "fix216", "fix219"). On both PASS: `reviewer` R-W4-12 (Opus; write the brief from S19-R-W4-11.md:
@@ -82,11 +79,8 @@ chain: check ListAgents first (fix211 lesson); rename scripts must skip names an
    table.py `revision_checks` (W4 routing), R-W3-G5-7 component-order question (design lane at the G5 close),
    checks.py 8.7 / split_checks.py 8.7 / certificate.py 8.7 (remaining debt on public or fixed signatures).
 4. **G6:** W3 part done (S19_DECISIONS "G6 run 7 not briefed"); launcher `launch` after W4. Frozen thermo files: W5.
-5. **Rule 4 falsifier:** serial repeat headser2 (relaunched after a bad conftest overlay), PID 4036764, ~93% at
-   01:25, log `/tmp/claude-1000/-home-eajfpeters-Code-OpenFlowsheet/916d464e-9c10-46af-b355-083a80943fd2/scratchpad/headser2.log`.
-   On EXIT: grep `MSG WO-5a|MSG WO-6|passed` and compare with 1061/801/100, 20375 passed; log in S19_DECISIONS
-   (equal: determinism confirmed, I-10/I-12 may proceed in serial form; unequal: park rule 4 for the design lane with
-   both numbers); then `git worktree remove` that scratchpad's headser2.
+5. **Rule 4 falsifier: EQUAL** (1061/801/100, 20375 passed; S19_DECISIONS 01:40). I-10 and I-12a-d may proceed in
+   serial form after I-13.
 6. Open for Frank (not blocking): R-1042 option C; STOP 1 alternative; tool items; verify twins addendum;
    selection-widening; proposal 2 for the ALERTs; thermo/ below 7.0 reachable only in W5 (S19_DECISIONS "G6 run 7 not
    briefed"). Design lane: NaN derivative-witness pass (R-W3-G5-8); I-19 importer scan over every W4-moved name
