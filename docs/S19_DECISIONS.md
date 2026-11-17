@@ -1836,3 +1836,6 @@
   wait ALERT is gone: median 8 min). Helper wp/S19-w4-mc (worktree s19-w4-mc) = e4c28e19 + wp/S19 abe73e24 as
   41124b28; merge-check job 228 (w4r12-mc). wp/S19 changed code since the last lane merge (test_impact.py fold fix,
   0d91ac4b), so the helper is fresh from the tip.
+- **2026-11-17 04:00, job 228 PASS (w4r12-mc, full suite, 7/7); I-13 merged into wp/S19 as d63dcd7a** (helper
+  41124b28; wp/S19 changed only docs since its merge). Helper worktree and branch removed. Lane wp/S19-w4
+  fast-forwarded to the wp/S19 tip for W4 run 13 (brief S19-W4-13.md: I-10, I-12a, I-12b if room).

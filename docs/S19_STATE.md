@@ -40,7 +40,7 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
   selection (wp/S19-tools2, 37307ab0). G6 runs 2+3 reviewed (merge); W4 run 1: arch 6/4/14 -> 4/4/14.
 
 - G6 run 6 merged into wp/S19 (18f934f6, 2026-11-16 21:42); G6's W3 part done (frozen thermo: W5).
-- 2026-11-17: I-11 merged (6668be04), G5 run 11 merged (1720cc98); I-13 reviewed, fixes done, merge pending.
+- 2026-11-17: I-11 merged (6668be04), G5 run 11 merged (1720cc98), I-13 merged (d63dcd7a). W4 run 13 launched.
 
 - Open (R-W3-G1N-1): numerics/ptc.py health 6.8 after P1 (closing method's 9 parameters); P2 to P4 must end >= 7.0,
   else a miss and P1 is reverted.
@@ -57,8 +57,8 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 
 ## Next actions (2026-11-17 ~02:50, self-reset)
 
-Runner RUNNING (pid 300275, restarted 03:45 after G-MAP 4; MB = 1720cc98). Results consumed up to 212; job 227
-(w4r12-revfix) gating. No agent running. Lanes at most 2 agents until Thu 19 Nov 13:00. ALERTs standing (proposal 2 with Frank).
+Runner RUNNING (pid 300275, restarted 03:45 after G-MAP 4; MB = 1720cc98). Results consumed up to 212; jobs
+through 228 consumed (wait --since 214). One agent: W4 run 13 engineer (lane s19-w4). Lanes at most 2 agents until Thu 19 Nov 13:00. ALERTs standing (proposal 2 with Frank).
 Merge-checks run on a helper `wp/S19-<lane>-mc` = lane tip + wp/S19 tip merged in; merge the helper (`git merge
 --no-ff -F <file>`) only if wp/S19 changed ONLY docs since the helper's wp/S19 merge, else refresh and re-run (job 215).
 `enqueue --rerun-of` takes the RUN-LOG STEP number, never across a rebase. Briefs that rebuild a lane chain: check
@@ -66,12 +66,7 @@ ListAgents first; rename scripts must skip names an importer defines itself (job
 repo `.venv`: `PYTHONPATH=<worktree>/src`, no `-n` (no xdist there).
 1. **G-MAP 4: done** (accepted as G-MAP 3; fold fix 0d91ac4b; S19_DECISIONS 03:40). After a reset: `$Q wait --since 212`
    in the background if no result past 212 is consumed.
-2. **I-13 (W4 run 12)**: R-W4-12 merge after fixes, both done (S19_DECISIONS 02:35, 02:45): lane wp/S19-w4
-   eb71978d..e4c28e19. On job 227 PASS: helper wp/S19-w4-mc (worktree s19-w4-mc) = e4c28e19 + wp/S19 tip, `$Q enqueue
-   --snapshot --worktree <helper> --base <wp/S19 tip> --mode merge-check --label w4r12-mc`; on PASS merge (message:
-   I-13, R-1045, R-W4-12, jobs 223, 224, 227, the merge-check job), remove the helper worktree and branch. The lane
-   worktree s19-w4 stays (W4 continues); fast-forward or re-branch it from the wp/S19 tip for the next run (it must
-   contain MB).
+2. **I-13: merged** (d63dcd7a, merge-check job 228; S19_DECISIONS 04:00).
 3. **Next W4 run (13): I-10, I-12a (I-12b if room)**, brief DRAFTED (S19-W4-13.md; launch prompt names the wp/S19 tip; serial runs by the orchestrator with `serial.sh`; drafted from pattern S19-W4-12.md and
    S19-W3-common.md; ADR 0076 rows; rule 4 amended: serial MSG counts at base and head, `-p no:xdist`, both wall-time
    budget tests deselected, PYTHONHASHSEED=0, all counts equal to 1061/801/100-style lines, ~2.2 h per suite; see
