@@ -2290,3 +2290,18 @@
   joint reviewer R-W3-G5-12 now, with jobs 261-262 still gating. Alternative: wait for both. Reason: the reviewer reads
   diffs only and saves about 25 min; a failed gate goes to a fresh engineer either way. Reversible by: nothing to undo
   (a failed step's review is discarded). Reviewer launched (`reviewer`, Opus, S19-R-W3-G5-12.md).
+- **2026-11-17, R-W3-G5-12 reported (`reviewer`, Opus, 96k tokens): Part A (G5 run 12) merge after fix 1; Part B (G6
+  run 7) merge.** A: step 1 helpers keep calls, arguments and order (envelope rows first, `admissibility +
+  own_admissibility` last); `_Judging` real, disjoint from `_Routing`; step 2's hoist of `bounds_checks` pure (Unit
+  construction cannot raise or touch the provider), result order unchanged; steps 3-4 `_Subject` and widened `_Checked`
+  real, argument evaluation order unchanged; no float expression touched; R-016 clean; lazy imports at the same point.
+  `reaction_note` kept in `_Judging` (reviewer: a note "with what", set where `note` is; prefer `judging.reaction_note`
+  over the positional unpack at the next touch). Fix 1 (`_Judging` docstring) applied by the orchestrator as 604755d7,
+  job 263 (no-gain). B: cleanup order identical including on an exception or KeyboardInterrupt; arguments bound before
+  the `try`. **Rule 6 precedent (record): a helper that writes `LaunchProgress` fields is accepted, because
+  `LaunchProgress` is the attempt's filled-as-it-runs record read after an interrupt (launcher.py:118) and the write of
+  `terminated` must precede `_terminate`; `_await_exit` was the first instance.** Notes kept for a later touch:
+  `_stream_enthalpies` could take `judging`; `_issue`'s `checks +=` mutates the list held by the frozen `_Checked`
+  (pre-existing). Not examined by the reviewer: whether a test drives `judged_at != state` on the revision path.
+  DECISION: one merge-check for both lanes (helper = wp/S19 tip + wp/S19-g6e + wp/S19-g5j after job 263), not two.
+  Alternative: G6 now, G5 after. Reason: one full suite instead of two. Reversible by: merging the lanes separately.
