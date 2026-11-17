@@ -18,6 +18,7 @@ converged path with the refusing provider, so a handler sees the exception the r
 
 from __future__ import annotations
 
+import functools
 import json
 import logging
 import math
@@ -36,6 +37,7 @@ from test_s10c_region import PROVIDER as GAMMA_PHI_PROVIDER
 from test_s10c_region import SPLIT as GAMMA_PHI_SPLIT
 from test_s10c_region import Z, _state
 
+from benchmarks.t06 import ensemble
 from openflowsheet.application import revision_run
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.revision_replay import registered_case, registered_flowsheet
@@ -385,18 +387,39 @@ def test_the_region_k_values_are_the_verifier_k_values_bitwise(
     assert found == expected
 
 
-@pytest.mark.parametrize("case", K05_CASES)
-def test_the_k05_k_values_are_the_verifier_k_values(case: str) -> None:
-    """The K05 runs reach the ideal-K test through `orchestrator/tear.py`'s lifted splits; their
-    bundles hold no state, so the case is solved again as F0 solves it (`run_session`'s
-    `solve_tear` under its default policy). The state is the bundle's, bitwise: its hash is the
-    certificate's `target_state_sha256`. K is then bitwise equal at every lifted split's
-    `(T, P)`."""
+#: The machine class F0 is recorded on (`benchmarks/f0/corpus.json`); M4, the bundles' state
+#: hashes, is judged there only (`scripts/corpus_identity.py`, ADR 0007: a converged state's floats
+#: are not a cross-platform promise, blueprint §8.3).
+F0_REFERENCE_PLATFORM = json.loads(
+    (REPO_ROOT / "benchmarks" / "f0" / "corpus.json").read_text(encoding="utf-8")
+)["reference_platform"]
+
+
+@functools.cache
+def _k05_solve(case: str) -> tuple[Any, Any]:
+    """The K05 case solved again as F0 solves it (`run_session`'s `solve_tear` under its default
+    policy): the flowsheet and the solve result, once per case for the two tests below."""
     registered = registered_case(case)
     assert registered is not None, case
     flowsheet = registered_flowsheet(registered)
     policy = SolvePolicy(policy_id="SYN-001-K03", residual_tolerances={}, scales={})
     result, _ = solve_tear(flowsheet, policy=policy)
+    return flowsheet, result
+
+
+@pytest.mark.parametrize("case", K05_CASES)
+def test_the_k05_state_is_the_bundles_on_the_reference_platform(case: str) -> None:
+    """The K05 bundles hold no state, so the K test below solves the case again. On F0's reference
+    platform that state is the bundle's, bitwise: its hash is the certificate's
+    `target_state_sha256`. Elsewhere the hash is not compared, as F0 does not judge M4 there (CI
+    run 44158387592: x86-64 and aarch64 runners reach other hashes)."""
+    here = ensemble.machine_class()
+    if here != F0_REFERENCE_PLATFORM:
+        pytest.skip(
+            f"F0's state hashes are judged on {F0_REFERENCE_PLATFORM}, this host is {here}: "
+            "a converged state's floats are not promised bitwise across platforms (ADR 0007)"
+        )
+    _, result = _k05_solve(case)
     certificate = json.loads(
         (F0_BUNDLES / "k05" / case / "artifacts" / "solution-certificate.json").read_text(
             encoding="utf-8"
@@ -404,6 +427,14 @@ def test_the_k05_k_values_are_the_verifier_k_values(case: str) -> None:
     )
     assert result.checkpoint is not None
     assert result.checkpoint.full_state_sha256 == certificate["target_state_sha256"]
+
+
+@pytest.mark.parametrize("case", K05_CASES)
+def test_the_k05_k_values_are_the_verifier_k_values(case: str) -> None:
+    """The K05 runs reach the ideal-K test through `orchestrator/tear.py`'s lifted splits. At the
+    state the case converges to on this host (the bundle's on the reference platform, above), K is
+    bitwise equal at every lifted split's `(T, P)`."""
+    flowsheet, result = _k05_solve(case)
     state = result.final_state
     assert state is not None
     provider = Syn001Provider()
