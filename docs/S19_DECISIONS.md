@@ -2323,3 +2323,10 @@
 - **2026-11-17, hub filed the three cards (rec A each, hub agrees); amending request sent: ofs-s19-oq1b-nan-witness-early**
   (land the NaN-witness refusal on main right after the wp/S19 merge into main, as its own package with a design-lane
   review; rec A; B keeps the signed "after G-END").
+- **2026-11-17 ~20:10, four desk cards signed A by Frank, each VERIFIED by `decision_desk_verify.py` (key
+  032ee0a5ae620a90):** ofs-s19-w3w4-merge-main (prepare the W3/W4 evidence and merge wp/S19 into main: manifest tested,
+  budget tests alone, CI green on both legs, F0 on main, push main), ofs-s19-start-05 (start 0.5 after the S19 merge
+  into main), ofs-s19-trailing-order (S19 beside 0.5 at one lane, order G3, G4, G2, W5, G1, docs),
+  ofs-s19-oq1b-nan-witness-early (NaN-witness refusal on main right after the merge; supersedes the timing of
+  ofs-s19-oq1-nan-witness). Order of execution: evidence and merge, then the NaN-witness package, then 0.5 and the
+  trailing lane. Evidence work order: opus-engineer, brief S19-EV-W3W4.md, lane wp/S19-ev from this commit.
