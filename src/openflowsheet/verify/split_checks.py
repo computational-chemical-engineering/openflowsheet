@@ -428,9 +428,9 @@ def degeneracy(
     `owners` (S11 design §10.11) maps a staged split's key to the instance that owns it; a split
     the registry lifted is its own instance's (`owners.get(key, key)`). A staged split (a column
     stage) is heater-style: its stream is its key, which no flowsheet stream is. The owning
-    instance's ports decide the style (`_product_streams`); `_split_substitution` tests each
-    split and `_degenerate_streams` every other stream. Raises `VerifierError` when the
-    verifier's own band or phase evaluation fails."""
+    instance's ports decide the style (`_product_streams`) and so the streams the split owns
+    (`_owned_streams`); `_split_substitution` tests each split and `_degenerate_streams` every
+    other stream. Raises `VerifierError` when the verifier's own band or phase evaluation fails."""
     flow_tolerance = routing_tolerances(tolerances)["molar_flow"]
     instances = {instance.unit_id: instance for instance in view.instances}
     owner = owners or {}
@@ -442,10 +442,7 @@ def degeneracy(
     for split in splits:
         instance = instances[owner.get(split.unit, split.unit)]
         product_streams = _product_streams(instance)
-        if product_streams is not None:
-            owned.update(product_streams)
-        else:
-            owned.add(split.stream)
+        owned.update(_owned_streams(split, product_streams))
         substitution = _split_substitution(
             provider, context, state, split, flow_tolerance, product_streams
         )
@@ -480,6 +477,15 @@ def _product_streams(instance: InstanceView) -> tuple[str, str] | None:
         (liquid_stream,) = instance.ports["liquid"]
         return vapor_stream, liquid_stream
     return None
+
+
+def _owned_streams(split: LiftedSplit, product_streams: tuple[str, str] | None) -> tuple[str, ...]:
+    """The streams `split` owns, which §9.2 leaves to it (`_degenerate_streams`' `owned`): a
+    products-style split's vapour and liquid streams (`product_streams`), else, `product_streams`
+    None (a heater-style split, or a staged one whose stream is its key), its own stream."""
+    if product_streams is not None:
+        return product_streams
+    return (split.stream,)
 
 
 class _SplitSubstitution(NamedTuple):
