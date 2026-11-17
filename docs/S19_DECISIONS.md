@@ -1839,3 +1839,32 @@
 - **2026-11-17 04:00, job 228 PASS (w4r12-mc, full suite, 7/7); I-13 merged into wp/S19 as d63dcd7a** (helper
   41124b28; wp/S19 changed only docs since its merge). Helper worktree and branch removed. Lane wp/S19-w4
   fast-forwarded to the wp/S19 tip for W4 run 13 (brief S19-W4-13.md: I-10, I-12a, I-12b if room).
+- **2026-11-17 04:15, W4 run 13 reported (opus-engineer, ~200k tokens).** I-10 done: plan 7599f205, interface step
+  0e71c61a (job 229, w4r13-i10-1; local static checks pass), layer config d79ff476 outside the gate. Arch depth 4:
+  a2896f97 1 violation / 1 cycle / 4 edges -> 0 / 0 / 0 (cycle 5 and the last application violation gone, as ADR
+  0076 expects). patch_noop 265, 0 flagged, base and step; liveness of test_m06_wo1_structure_index.py:313 confirmed
+  (raising fake -> RuntimeError). Rule 4 serial runs started: i10-base at 7599f205 (PID 370529), i10-head at 0e71c61a
+  (PID 370530), `serial.sh`, logs `<git-common-dir>/codehealth/runs/serial/i10-{base,head}.log`, worktrees
+  `<this session's scratchpad>/ser-i10-{base,head}`.
+  **I-12a STOP (tool refusal):** README.md:57, docs-site (quickstart.md:15, first-flowsheet.md:113, api/index.md:10)
+  and all 5 example notebooks import `Change`/`Edit` from `application.types`; tests execute them, and the interface
+  caller rule (`interface._text_problems`, cce-code-health ec5aaea) refuses them as callers: "README.md:57: changed
+  beyond the plan's renames", "examples/rankine-cycle.ipynb:44: changed beyond the plan's renames". DECISION: a narrow
+  tool fix (a `from M import a, b` line may follow `renamed` entries M.x = M2.x), requested from session code_health
+  04:14. Alternative: an ADR addendum letting the executable living docs change in the step (design lane; a looser
+  rule). Reversible by: dropping the request and briefing the addendum. Meanwhile run 14 takes I-12b and I-12c
+  (independent of I-12a: no executable text caller imports application.store or revision_run, orchestrator grep).
+  The engineer's I-12a choices, to apply on resume (brief S19-W4-15): constants with their first user
+  (EVENT_COMMON_MEMBERS -> documents; EditOperation, TransactionStatus -> transaction_types; DEFAULT_SOLVE_POLICY_ID
+  -> job_requests; VerificationStatus, SolvePath -> job_records; Right, RIGHTS, LOCAL_OWNER_PRINCIPAL -> policy_types);
+  `_checked`, `_event_common_validator` -> documents as public `checked`, `event_common_validator` (R-1044);
+  `_error_document`, `_error_build` (used by transaction_types and job_records) -> transaction_types as public
+  `error_document`, `error_build`. Before the plan: BODY_READERS (test_m02_experiment_body_isolation.py:48), the
+  binding allow-lists (test_t07_w6a_http.py:56, test_t07_w6b_mcp.py:79) gain the new modules; the G20 allowlist entry
+  for application/types.py `@cache` (2) retargets to documents.py; the `types` entries go after the step. types.py
+  sections now 46/210/246/449/152/250 NLOC vs the ADR's 83/204/245/469/148/252 (documents -45%: I-5, I-5b, I-9 moved
+  its schema names out).
+  For the review batch: (1) structure_inspection not added to the forbid lists `transports-through-operations` `to`
+  and `engine-not-persistence` `from` (the ADR row names only application-layers; one config line each);
+  (2) I-19 living-docs list gains T07-jobs-and-bindings.md:3967, :4126, M04-build-decisions.md:53,
+  M06-web-shell.md:713 (`revision_run.route_structure`), M02-build-decisions.md:26 (`application.store.ArtifactTableSink`).
