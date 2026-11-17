@@ -375,6 +375,7 @@ def _parameters(
 
 
 def port_stream(view: InstanceView, port: str) -> str:
+    """The stream wired to `port`; unwired, `port_unwired(<unit>.<port>)`."""
     connected = view.ports.get(port, ())
     if not connected:
         raise RevisionError("incomplete", f"port_unwired({view.unit_id}.{port})")
@@ -402,6 +403,7 @@ def pin_columns(view: InstanceView, pin: PinColumn, components: Sequence[str]) -
 
 
 def pin_column(view: InstanceView, pin: PinColumn) -> str:
+    """The one column id a scalar `pin` names on this instance (a duty, temperature or pressure)."""
     (column,) = pin_columns(view, pin, ())
     return column
 

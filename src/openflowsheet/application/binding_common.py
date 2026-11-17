@@ -1,10 +1,10 @@
 """The binders' shared vocabulary: the refusal type, its hint bound and code, column ownership.
 
 `Unbound` is why a revision could not be bound, in the kinds that call for different statuses;
-`HINT_LIMIT` bounds its hint and `refusal_code` reads its code token. `_column_owners` is the
+`HINT_LIMIT` bounds its hint and `refusal_code` reads its code token. `column_owners` is the
 naming convention that assigns a column to the unit that owns it. Both binders, the legacy one in
 `binding` and the revision binder in `revision_binding`, use these, so they live in a module that
-imports neither; `binding` re-exports every public name.
+imports neither; importers take the names from here.
 """
 
 from __future__ import annotations
