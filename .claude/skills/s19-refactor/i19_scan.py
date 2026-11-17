@@ -323,7 +323,8 @@ def importers(mods: dict[str, Module]) -> tuple[dict, list]:
                 ):
                     d_ = dotted_of(n.args[0])
                     if d_ in mods:
-                        take(d_, n.args[1].value, f, n.lineno, "setattr")
+                        is_get = isinstance(n.func, ast.Name) and n.func.id == "getattr"
+                        take(d_, n.args[1].value, f, n.lineno, "getattr" if is_get else "setattr")
                 elif (
                     isinstance(n, ast.Constant)
                     and isinstance(n.value, str)
