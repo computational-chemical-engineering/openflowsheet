@@ -50,7 +50,9 @@ class StreamTableQuery:
 class ArtifactService:
     """The artifact operations over one caller's `ServiceCore`. Each public method is the
     `LocalApplication` method of the same name, documented there; it takes every argument
-    explicitly (the defaults are the facade's)."""
+    explicitly (the defaults are the facade's), except `get_stream_table`, which takes the view
+    arguments as one `StreamTableQuery`. Public methods without a facade namesake serve the services
+    above this one."""
 
     def __init__(self, core: ServiceCore, revisions: RevisionService) -> None:
         self._core = core

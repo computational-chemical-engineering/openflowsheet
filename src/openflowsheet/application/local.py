@@ -493,8 +493,6 @@ class LocalApplication:
         the result without it."""
         return self._jobs.get_job_result(job_id, display_units=display_units)
 
-    # ------------------------------------------------------------------------- the job steps
-
     # ----------------------------------------------------------------- Inspection (W2b part)
 
     def preview_change(self, change: Change, expected_revision: str | None) -> TransactionResult:
@@ -740,8 +738,6 @@ class LocalApplication:
         """§10.7 for a request refused before it reached a method — by `operations.dispatch`,
         for its canonical form, its schema or a reserved key."""
         self._inspection.audit_refusal(operation, code)
-
-    # --------------------------------------------------------------- the transaction steps
 
 
 if TYPE_CHECKING:
