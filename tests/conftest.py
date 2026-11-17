@@ -154,9 +154,9 @@ def _msg_failure_iff_failure_bundle() -> Any:
     """Every `RunResult` `_run_result` builds has `failure` non-null iff its outputs hold a
     `failure_bundle` (`__post_init__` checks one direction; this wrapper checks the other, over
     every solve the suite reads back). The count goes to the terminal summary."""
-    from openflowsheet.application.local import LocalApplication
+    from openflowsheet.application.job_service import JobService
 
-    built = LocalApplication._run_result
+    built = JobService._run_result
 
     def checked(self: Any, job: Any, **keywords: Any) -> Any:
         result = built(self, job, **keywords)
@@ -167,7 +167,7 @@ def _msg_failure_iff_failure_bundle() -> Any:
         return result
 
     with pytest.MonkeyPatch.context() as monkeypatch:
-        monkeypatch.setattr(LocalApplication, "_run_result", checked)
+        monkeypatch.setattr(JobService, "_run_result", checked)
         yield
     TERMINAL_REPORT.append(_msg_run_results_line(*RUN_RESULTS_SEEN))
 
