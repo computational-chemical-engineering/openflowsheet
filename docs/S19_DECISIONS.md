@@ -2002,3 +2002,9 @@
   3 xfailed (6834 s, 6806 s). Worktrees ser-i10-* removed. i12a pair started 06:07 (PIDs 638004, 638005); i12b-head
   (436120) running, i12c-head after it. Merge-check helper wp/S19-w4-mc (b735b7be = lane 617099ef + wp/S19 cd621e12)
   enqueued as job 235 ahead of the remaining counts; merge only if all four pairs EQUAL.
+- **2026-11-17 06:30, job 235 FAIL tests (w4r13-mc, merge-check b735b7be, full suite): 1 failed, 20390 passed.**
+  test_m06_browser_smoke.py::test_cancel_stops_a_running_job: "two wait_job calls outstanding at once" (second
+  request started 0.19 s before the first ended), under three concurrent serial suites. Environment: passes 3/3 alone
+  on the helper tree; the lane changes only import lines in jobs/ and serving.py; E01B_DECISIONS:459 records the same
+  test failing on timing under load. Re-enqueued unchanged as job 236 (w4r13-mc2). Serial i12a-head and i12c-head
+  run this test serially as well.
