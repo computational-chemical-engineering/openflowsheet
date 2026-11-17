@@ -1956,3 +1956,24 @@
   "ALERT selected gates take 744 s > 300 s (tests tier)"
   "ALERT selected/full time ratio 0.67 > 0.4: selection saves little"
   (standing; proposal 2 with Frank).
+- **2026-11-17 06:00, review R-W4-13 (reviewer, Opus, ~140k tokens) over a2896f97..93cec9a3: merge after fixes, no
+  step reverted.** (1) Pure moves: AST probe (`python -I`, top-level statements less imports, declared renames
+  applied) identical for I-10 (bar `__all__`), I-12b (plus a TYPE_CHECKING import of ProjectStore: a type-only edge up
+  to store), I-12a (after the four renames), I-12c (bar `no_stage` and revision_replay.py:265); no alias,
+  `__getattr__` or re-export; old paths only in docstrings or data text (schema_check.py:8,
+  t07_global_state_allowlist.json:72, host.py:294); no pickle or `__module__` dependence; `@cache` only on
+  `event_common_validator`, `published_schemas`, no `cache_clear` on them. (2) I-12b `_blob`, `_load` stay in
+  store.py: ACCEPTED (the ADR text contradicts itself: "everything above the class" would take STORE_SCHEMA, _TABLES;
+  EVIDENCE_OPERATIONS is in the range but not on the list; moving them breaks the helper rule); one-line ADR 0076
+  erratum in I-19. (3) I-12a homes OK (computed users); `renamed`+`added` for the four public names acceptable
+  (`added` makes the public-API change exact); 0ca3c762's homes correct. (4) I-12c module-qualified call ACCEPTED (the
+  same late binding as before the move); `no_stage` OK (not in `__all__`, nor is Stage); test_t08_w2_cli_rerun.py:57
+  KEEP: the sentinel behind `reruns == []` (:110, Ruling 11), a raising fake cannot prove a never-called patch.
+  (5) forbid rules: fix. (6) MSG identity: no change (`misses` read only by MSG-G3 failure text and probe auditors).
+  (7) fold-ins: contract.md:3 fix now (mkdocs --strict fails on it); revision_run.py docstring :1, :17-19, :25-27 and
+  host.py:294 fix now; api/types.md page name and schema_check.py:8 to I-19.
+  Fixes done (orchestrator): 4c4648fd fix 3, forbid lists (engine-not-persistence from += structure_inspection,
+  revision_replay; to += store_records; transports-through-operations to += all three; arch 0/0/0, 323 files);
+  ed13249a fixes 1, 2 (docstrings and contract.md:3), job 233 (w4r13-revfix, no-gain). I-19 list gains: the ADR 0076
+  I-12b erratum, api/types.md, schema_check.py:8. Next: job 232, job 233 PASS and the serial counts EQUAL (i10,
+  i12b, i12a, i12c) -> helper wp/S19-w4-mc, merge-check, merge.
