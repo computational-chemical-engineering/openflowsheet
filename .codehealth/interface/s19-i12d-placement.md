@@ -149,7 +149,7 @@ nothing above their new homes, and the cursor pair calls only the core.
 | 2133 | `_check_promotion` | revision | `revision_service.RevisionService._check_promotion` | ADR family list | `_prepare` |
 | 2172 | `_store_replacements` | revision | `revision_service.RevisionService._store_replacements` | ADR family list | `commit_change` |
 | 2200 | `_replayed` | revision | `revision_service.RevisionService._replayed` | ADR family list | `commit_change` |
-| 2215 | `_rejected` | revision | `revision_service.RevisionService.rejected` (public: crosses modules) | ADR family list | `_check_promotion`, `_check_request`, `_prepare`, `commit_change` |
+| 2215 | `_rejected` | revision | `revision_service.RevisionService._rejected` (private) | only callers (review R-W4-I12d F1) | `_check_promotion`, `_check_request`, `_prepare`, `commit_change` |
 | 2236 | `_Prepared` | revision | `revision_service._Prepared` | only caller | `_prepare` |
 | 2245 | `REPLACEMENTS_DIR` | revision | `revision_service.REPLACEMENTS_DIR` | only caller | `_store_replacements` |
 | 2248 | `_with_report_hashes` | revision | `revision_service._with_report_hashes` | only caller | `_prepare` |
