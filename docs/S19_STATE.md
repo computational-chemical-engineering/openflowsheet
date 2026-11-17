@@ -55,7 +55,20 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 - Held until the scale probe reports: G1 (orchestrator/, numerics/). Open: ptc.py 6.8 (P3, P4).
 - G-END (below) stays the end criterion for the whole repository.
 
-## Next actions (2026-11-17 ~02:50, self-reset)
+## Next actions (2026-11-17 ~06:05, self-reset)
+
+**On resume:** (a) `$Q wait --since 217` in the background (jobs 232 I-12c, 233 review fixes). (b) Serial runs: logs
+`<git-common-dir>/codehealth/runs/serial/{i10-base,i10-head,i12b-head,i12a-base,i12a-head,i12c-head}.log`, each ends
+with `EXIT n` and a `SERIAL` line; a run is live if the PID in its first line is (`kill -0`); i12a-* start when the
+i10 pair ends (chain 517667), i12c-head when i12b-head ends (chain 551916). Wait with a background `while kill -0`
+loop on the live PIDs. Compare pairs: i10-base vs i10-head; i10-head vs i12b-head; i12a-base vs i12a-head; i12a-head
+vs i12c-head: MSG WO-5a bundles, WO-6 run results and with-a-failure, passed, skipped, xfailed, deselected all
+equal (rule 4 amended); log in S19_DECISIONS; remove the `ser-*` worktrees (`git worktree remove`). (c) All PASS and
+EQUAL: helper wp/S19-w4-mc (worktree s19-w4-mc) = lane tip ed13249a + wp/S19 tip merged, enqueue merge-check
+(label w4r13-mc), on PASS merge (message: I-10, I-12b, I-12a, I-12c; R-W4-13; jobs 229-233 + merge-check; serial
+counts), remove the helper. (d) Then brief I-12d (largest step: ADR 0076 lines 231-260, Q-F5 at ~500-510, R1 at
+~517; plan it as several runs) and I-19.
+
 
 Runner RUNNING (pid 475743, cce-code-health cf15245; MB = 1720cc98). Results consumed through 230 (`$Q wait --since 216`). Running:
 serial runs i10-base (7599f205, PID 370532), i10-head (0e71c61a, PID 370533),
