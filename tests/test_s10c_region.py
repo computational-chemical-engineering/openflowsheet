@@ -18,7 +18,7 @@ from conftest import REPO_ROOT
 
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models.lifted import AdmissibilityRefusal, LiftedSplit
-from openflowsheet.orchestrator.region import _admissible
+from openflowsheet.orchestrator.region_phase import _admissible
 from openflowsheet.thermo.wilson_ig import WilsonIdealGasProvider
 
 CONTEXT = EvaluationContext(model_version="S10C-WO2@" + "0" * 64, constants_sha256="0" * 64)

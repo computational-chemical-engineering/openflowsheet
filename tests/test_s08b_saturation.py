@@ -25,6 +25,7 @@ from test_s06_column_wo1 import J_CASES
 from test_s08_item6 import _regimes, _stage_a_f1
 
 import openflowsheet.models.syn001.cascade_solve as cascade_solve_module
+import openflowsheet.models.syn001.column_acceptance as column_acceptance_module
 import openflowsheet.models.syn001.column_solve as column_solve_module
 from openflowsheet.models.syn001.cascade_solve import (
     SATURATION_PREFIX,
@@ -99,7 +100,7 @@ def test_b2_every_registered_cascade_root_passes_with_margin() -> None:
 
 def test_b3_the_column_pairs_are_the_cascade_function_at_f1_stage_a() -> None:
     spec, provider, _, state, regimes = _stage_a_f1()
-    column = column_solve_module._saturation_pairs(spec, provider, state, regimes)
+    column = column_acceptance_module._saturation_pairs(spec, provider, state, regimes)
     cascade = saturation_pairs(spec.unit_id, spec.components, provider, state, regimes)
     assert _bits(column) == _bits(cascade)
     assert column[4][0] >= 0.3 or column[4][1] >= 0.3  # S08 §3 F1's 0.379 K at stage 4
@@ -110,7 +111,9 @@ def test_b3_the_column_pairs_are_the_cascade_function_at_j8() -> None:
     answer = solve_column(spec, COLUMN_PROVIDER)
     assert isinstance(answer, ColumnSolution) and answer.outcome == "CONVERGED"
     regimes = _regimes(spec, answer)
-    column = column_solve_module._saturation_pairs(spec, COLUMN_PROVIDER, answer.state, regimes)
+    column = column_acceptance_module._saturation_pairs(
+        spec, COLUMN_PROVIDER, answer.state, regimes
+    )
     cascade = saturation_pairs(
         spec.unit_id, spec.components, COLUMN_PROVIDER, answer.state, regimes
     )

@@ -36,7 +36,7 @@ from openflowsheet.models import Contribution
 from openflowsheet.models.c1 import TAU_DEW
 from openflowsheet.models.lifted import LiftedSplit, VapourOnlyForm
 from openflowsheet.orchestrator.execution import declaration_identity
-from openflowsheet.orchestrator.region import _admissible, _dropped, _kernel, _pinned
+from openflowsheet.orchestrator.region_phase import _admissible, _dropped, _kernel, _pinned
 from openflowsheet.orchestrator.revision import instances_of, plan_revision
 from openflowsheet.orchestrator.splits import (
     check_agreement,

@@ -41,6 +41,7 @@ from openflowsheet.application.policy_types import ReplayPolicy
 from openflowsheet.application.revision_binding import RevisionBinding, bind_revision_flowsheet
 from openflowsheet.application.store import ProjectStore
 from openflowsheet.orchestrator import region as region_module
+from openflowsheet.orchestrator import region_phase as region_phase_module
 from openflowsheet.orchestrator import region_problem, revision
 from openflowsheet.orchestrator.execution import ExecutionPlan
 from openflowsheet.orchestrator.executor import PlanResult, execute_plan
@@ -568,7 +569,7 @@ def test_b46_a_negative_flow_is_projected_and_accepted() -> None:
 
 
 def _kernel_refused(state: Any) -> RegionResult:
-    raise region_module._KernelRefusedError("S3", "error", "refused at the candidate")
+    raise region_phase_module._KernelRefusedError("S3", "error", "refused at the candidate")
 
 
 def _not_settled(state: Any) -> RegionResult:

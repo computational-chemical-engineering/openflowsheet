@@ -137,17 +137,14 @@ from openflowsheet.orchestrator import region as region_module
 from openflowsheet.orchestrator import region_attempts, region_phase, region_problem
 from openflowsheet.orchestrator.execution import ExecutionPlan
 from openflowsheet.orchestrator.executor import execute_plan
-from openflowsheet.orchestrator.region import (
+from openflowsheet.orchestrator.region_phase import (
+    TP_REGIME,
     _band_regime,
     _contract_kernel,
-    _items,
     _kernel,
-    _rederive,
-    _settle,
     _split_enthalpy,
-    _trigger_dormant,
 )
-from openflowsheet.orchestrator.region_phase import TP_REGIME
+from openflowsheet.orchestrator.region_problem import _items, _rederive, _settle, _trigger_dormant
 from openflowsheet.orchestrator.region_result import RegionResult
 from openflowsheet.orchestrator.revision import (
     InitialStateFailure,
@@ -3556,7 +3553,7 @@ def _p2_b20c(ledger: Ledger) -> dict[str, Any]:
 
 def _p2_b20d(ledger: Ledger) -> dict[str, Any]:
     from openflowsheet.orchestrator.phase_contract import _changes
-    from openflowsheet.orchestrator.region import _attempt_screen
+    from openflowsheet.orchestrator.region_screen import _attempt_screen
 
     # DZ-12: the item is in attempt 0's signature, absent from attempt 1's, in no cause string.
     result, trace = dormancy._dz12()
@@ -5661,7 +5658,7 @@ def _p4_b31_function_level(ledger: Ledger) -> dict[str, Any]:
     )
     ledger.equal("(g) attempt 0: no attempt", result.attempts, ())
     # (g) at a restart: the stub switched on inside the restart's `_settled` only.
-    real, settled = region_module._rederive, region_module._LiftedOps._settled
+    real, settled = region_problem._rederive, region_problem._LiftedOps._settled
     at_restart = {"on": False}
 
     def rederive(entry: Any, *args: Any) -> Any:
@@ -5677,7 +5674,7 @@ def _p4_b31_function_level(ledger: Ledger) -> dict[str, Any]:
     document, start = openings.CASES["CH-UP"]()
     with pytest.MonkeyPatch.context() as patch:
         patch.setattr(region_problem, "_rederive", rederive)
-        patch.setattr(region_module._LiftedOps, "_settled", restart)
+        patch.setattr(region_problem._LiftedOps, "_settled", restart)
         result = openings.solve_from_v2(openings.bind(document), start)
     value["(g) restart"] = {
         "outcome": result.outcome,
@@ -6823,7 +6820,7 @@ def _b35() -> tuple[bool, dict[str, Any], dict[str, Any]]:
     calls: list[tuple[bool, Any]] = []
     openings_x0: list[Any] = []
     inside = {"depth": 0}
-    real_homotopy, real_solve = region_module._homotopy, region_module.solve_newton
+    real_homotopy, real_solve = region_attempts._homotopy, region_module.solve_newton
 
     def homotopy(**kwargs: Any) -> Any:
         openings_x0.append(np.array(kwargs["x0"], dtype=np.float64, copy=True))
@@ -6948,7 +6945,7 @@ def _b36() -> tuple[bool, dict[str, Any], dict[str, Any]]:
     # (b) CH-UP-DP end to end.
     document, start = openings.CASES["CH-UP-DP"]()
     seen: list[tuple[float, float, float, float, float]] = []
-    real = region_module._kernel
+    real = region_phase._kernel
 
     def kernel(provider: Any, context: Any, split: Any, state: Any, **kwargs: Any) -> Any:
         if split.unit == "U-PHF2" and kwargs.get("temperature") is not None:

@@ -37,7 +37,7 @@ from openflowsheet.models.c1.flash import TPFlash
 from openflowsheet.models.c1.phase import classify
 from openflowsheet.orchestrator.execution import ExecutionPlan
 from openflowsheet.orchestrator.executor import execute_plan
-from openflowsheet.orchestrator.region import _admissible, _kernel
+from openflowsheet.orchestrator.region_phase import _admissible, _kernel
 from openflowsheet.orchestrator.revision import instances_of, plan_revision
 from openflowsheet.orchestrator.splits import closure_types, lifted_splits
 from openflowsheet.thermo import FlashRequest, PropertyRequest, StreamState

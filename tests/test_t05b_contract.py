@@ -54,7 +54,7 @@ from openflowsheet.models.syn001.ph_kernel import port_enthalpy
 from openflowsheet.numerics.solve_record import SolvePolicy
 from openflowsheet.orchestrator.execution import ExecutionPlan
 from openflowsheet.orchestrator.executor import PlanResult, execute_plan
-from openflowsheet.orchestrator.region import _contract_kernel
+from openflowsheet.orchestrator.region_phase import _contract_kernel
 from openflowsheet.orchestrator.region_result import RegionResult
 from openflowsheet.orchestrator.revision import TraversalStart, plan_revision, traversal_start
 from openflowsheet.orchestrator.splits import closure_types, lifted_splits

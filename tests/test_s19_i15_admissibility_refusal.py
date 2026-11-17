@@ -43,13 +43,10 @@ from openflowsheet.application.revision_routes import ApplicationRevisionRoutes
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models.lifted import AdmissibilityRefusal, LiftedSplit
 from openflowsheet.numerics.solve_record import SolvePolicy
-from openflowsheet.orchestrator.region import (
-    _LiftedOps,
-    _reference_k_values,
-    _screen,
-    syn001_lifted_splits,
-)
-from openflowsheet.orchestrator.region_phase import admissibility_value
+from openflowsheet.orchestrator.region import syn001_lifted_splits
+from openflowsheet.orchestrator.region_phase import _reference_k_values, admissibility_value
+from openflowsheet.orchestrator.region_problem import _LiftedOps
+from openflowsheet.orchestrator.region_screen import _screen
 from openflowsheet.orchestrator.tear import solve_tear
 from openflowsheet.studies.nlp.revision_host import DecisionMap, RevisionNlpHost, decision_map
 from openflowsheet.studies.trust_region.checks import ParentSolve

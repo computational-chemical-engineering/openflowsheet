@@ -20,10 +20,10 @@ import pytest
 from conftest import REPO_ROOT
 
 import openflowsheet.models.syn001.cascade_solve as cascade_solve_module
-import openflowsheet.models.syn001.column as column_module
 import openflowsheet.models.syn001.column_compile as column_compile_module
 import openflowsheet.models.syn001.column_solve as column_solve_module
 import openflowsheet.models.syn001.column_validation as column_validation_module
+import openflowsheet.models.syn001.tp_state as tp_state_module
 from openflowsheet.compile.reference import row_values
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models.syn001.cascade_failure import CascadeFailure
@@ -373,7 +373,7 @@ def test_a02_refusal_probes(name: str, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(column_compile_module, "declared_rows", refuse)
     monkeypatch.setattr(cascade_solve_module, "solve_region", refuse)
     provider = _R5OnlyProvider()
-    admissible = column_module.single_phase_admissible
+    admissible = tp_state_module.single_phase_admissible
 
     def r5(*args: Any, **kwargs: Any) -> Any:
         provider.inside_r5 = True

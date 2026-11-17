@@ -42,7 +42,7 @@ from openflowsheet.models.syn001.cascade_spec import (
 )
 from openflowsheet.numerics.scaling import Scaling
 from openflowsheet.numerics.solve_record import SolveOutcome, Trace
-from openflowsheet.orchestrator import region_attempts
+from openflowsheet.orchestrator import homotopy, region_attempts
 from openflowsheet.orchestrator.roots import same_root
 
 #: The single-phase regime a stage reaches, and the phase whose disappearance takes it there.
@@ -115,7 +115,7 @@ def _forced_edge_3(monkeypatch: pytest.MonkeyPatch) -> tuple[CascadeSolution, Tr
     runs edge 3 from the target's item-0 opening, `x⁰`, under the unchanged policy. The λ-level
     re-bindings are spied on (T04's A10 pattern)."""
     rebound: list[dict[str, float]] = []
-    real_rebind = region_attempts.rebind
+    real_rebind = homotopy.rebind
 
     def rebind(spec: Any, values: dict[str, float]) -> Any:
         rebound.append(dict(values))

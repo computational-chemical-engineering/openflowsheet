@@ -56,8 +56,7 @@ from openflowsheet.verify import pr_c1
 from openflowsheet.verify.certificate import verify_revision
 from openflowsheet.verify.flowsheet_rows import EXTERNAL_DUTY_MODELS, REACTING_MODELS
 from openflowsheet.verify.regularity import TAU_ILL
-from openflowsheet.verify.table import _c1_reactor_material, _reactor_energy
-from openflowsheet.verify.unit_checks import MODEL_CHECKS
+from openflowsheet.verify.unit_checks import MODEL_CHECKS, _c1_reactor_material, _reactor_energy
 from openflowsheet.verify.verdict import SolutionCertificate
 
 LOOP_PATH: Path = REPO_ROOT / "benchmarks" / "m02" / "c1-loop-standin.json"

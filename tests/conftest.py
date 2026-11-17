@@ -184,8 +184,9 @@ def _msg_sidecar_in_no_bundle() -> Any:
     `run.diagnosis`. Wraps `write_bundle` where the two session paths import it."""
     import openflowsheet.application.revision_run as revision_run
     import openflowsheet.application.run_session as session
+    import openflowsheet.run.bundle as bundle
 
-    written = session.write_bundle
+    written = bundle.write_bundle
 
     def scanned(directory: Any, manifest: Any, artifacts: Any) -> Any:
         complete = written(directory, manifest, artifacts)

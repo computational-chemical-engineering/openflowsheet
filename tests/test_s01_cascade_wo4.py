@@ -13,7 +13,8 @@ from test_s01_cascade_wo1 import CONTEXT, REFERENCE, UNIT, _spec
 from test_s01_cascade_wo2 import PROVIDER, solved
 
 from openflowsheet.models.lifted_tolerance import KIND_TOLERANCE
-from openflowsheet.models.syn001.cascade import DormantAnswer, _k_values, dormant_answer, validate
+from openflowsheet.models.syn001.cascade import DormantAnswer, dormant_answer, validate
+from openflowsheet.models.syn001.cascade_init import _k_values
 from openflowsheet.models.syn001.cascade_solve import (
     DECLARATION_CONTEXT,
     acceptance_failures,

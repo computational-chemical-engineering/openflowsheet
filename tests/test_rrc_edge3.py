@@ -33,7 +33,7 @@ from openflowsheet.application.revision_binding import RevisionBinding, bind_rev
 from openflowsheet.canonical import encode_doubles, state_sha256
 from openflowsheet.numerics.scaling import Scaling
 from openflowsheet.numerics.solve_record import SolvePolicy
-from openflowsheet.orchestrator import executor, region_attempts, revision
+from openflowsheet.orchestrator import executor, homotopy, region_attempts, revision
 from openflowsheet.orchestrator.execution import ExecutionPlan, declaration_identity
 from openflowsheet.orchestrator.executor import PlanResult, StepResult, execute_plan
 from openflowsheet.orchestrator.homotopy import CorrectorOutcome, level_values, rebind
@@ -277,7 +277,7 @@ def _stub(
     """Wrap every corrector of the homotopy core: run it, and report a λ > 0 trial that `rejects`
     as not converged. Records `(λ, start, end)` of every trial, in order."""
     calls: list[tuple[Fraction, Any, Any]] = []
-    real = region_attempts.continue_specification
+    real = homotopy.continue_specification
 
     def wrapped(*, correct: Any, **keywords: Any) -> Any:
         def stub(lam: Fraction, start: Any, running: Any) -> CorrectorOutcome:
