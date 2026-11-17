@@ -130,7 +130,7 @@ nothing above their new homes, and the cursor pair calls only the core.
 | 1516 | `diff_revisions` | revision | `revision_service.RevisionService.diff_revisions` | ADR family list | - |
 | 1527 | `inspect_structure` | validation | `validation_service.ValidationService.inspect_structure` | ADR family list | - |
 | 1555 | `get_artifact` | artifact | `artifact_service.ArtifactService.get_artifact` | ADR family list | - |
-| 1622 | `get_stream_table` | artifact | `artifact_service.ArtifactService.get_stream_table` | ADR family list | - |
+| 1622 | `get_stream_table` | artifact | `artifact_service.ArtifactService.get_stream_table(job_id, query)`: the five keyword arguments arrive as one frozen `artifact_service.StreamTableQuery`, built by the facade's one-line delegation (ruling of 2026-11-17 on run 18's debt refusal) | ADR family list | - |
 | 1736 | `list_audit` | inspection | `inspection_service.InspectionService.list_audit` | ADR family list | - |
 | 1784 | `explain` | inspection | `inspection_service.InspectionService.explain` | ADR family list | - |
 | 1806 | `list_capabilities` | inspection | `inspection_service.InspectionService.list_capabilities` | ADR family list | - |
