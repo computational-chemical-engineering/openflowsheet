@@ -49,8 +49,6 @@ from openflowsheet.models.syn001.cascade_failure import (
     CascadeFailure as CascadeFailure,
 )
 from openflowsheet.models.syn001.cascade_init import _inflow_sum, _inlet_columns
-from openflowsheet.models.syn001.cascade_init import _k_values as _k_values
-from openflowsheet.models.syn001.cascade_rows import _token as _token
 from openflowsheet.models.syn001.cascade_rows import declared_problem, declared_rows
 from openflowsheet.models.syn001.cascade_spec import _TOKEN as _TOKEN
 from openflowsheet.models.syn001.cascade_spec import BOTTOM as BOTTOM
@@ -58,6 +56,7 @@ from openflowsheet.models.syn001.cascade_spec import TOP as TOP
 from openflowsheet.models.syn001.cascade_spec import (
     CascadeSpec,
     PlacedInlet,
+    _phase,
     energy_row_id,
     label_column,
     label_row_id,
@@ -70,13 +69,10 @@ from openflowsheet.models.syn001.cascade_spec import (
 )
 from openflowsheet.models.syn001.cascade_spec import InletState as InletState
 from openflowsheet.models.syn001.cascade_spec import SideFeed as SideFeed
-from openflowsheet.models.syn001.cascade_spec import _parameter as _parameter
-from openflowsheet.models.syn001.cascade_spec import _phase as _phase
 from openflowsheet.models.syn001.cascade_spec import inlet_stream as inlet_stream
 from openflowsheet.models.syn001.cascade_spec import stage_pressure_id as stage_pressure_id
 from openflowsheet.models.syn001.cascade_spec import stage_row_id as stage_row_id
 from openflowsheet.models.syn001.cascade_spec import stage_temperature_id as stage_temperature_id
-from openflowsheet.models.syn001.saturation_band import band_temperature as band_temperature
 from openflowsheet.models.syn001.tp_state import enthalpy_flow, single_phase_admissible
 from openflowsheet.thermo import Phase, PropertyProvider, StreamState
 
