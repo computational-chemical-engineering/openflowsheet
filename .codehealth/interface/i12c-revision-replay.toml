@@ -1,0 +1,43 @@
+# ADR 0076 I-12c (W4 run 14, brief S19-W4-14; resumed in W4 run 16, brief S19-W4-16): the reproduction half of application/revision_run.py
+# moves to the new module application/revision_replay.py, directly above revision_run.
+# `codehealth gate --mode interface` reads this plan from the plan commit.
+id = "i12c-revision-replay"
+approved_by = "Frank Peters, 2026-11-14, ADR 0076 accepted (Decision Desk ofs-adr0076-accept)"
+reason = """ADR 0076 I-12c (S17 D2): the reproduction half of revision_run.py (from the section 'the tear \
+path's registered cases' to the end: registered_case, registered_flowsheet, rerun_registered, \
+declared_kinds, Reproduction, reproduce_bundle, the constant FAILURE_NAME and their private helpers \
+_inspected, _recorded_warm_start, _recorded_coupled_start, _recorded_revision_continuation, \
+_reproduce_registered, _recorded_policies, _coupling_constants_guard, _rerunnable_manifest, _rerun_inputs, \
+_valid_coupling_record, _shape_coupled_artifacts, _HEX64, _constants_for_shape, _recorded_experiments, \
+_with_differences, _diverged, _replayed_from_record) moves verbatim to the new module \
+application/revision_replay.py, which sits directly above revision_run (I-10 is done). Pure move: no \
+signature change, no re-export; revision_run's __all__ loses the six moved names and revision_replay's \
+__all__ lists them. The run half never reads the moved code. The moved code reads revision_run's \
+SOLVE_PATHS, Route, Stage, bind_route, run_revision_session and the private _no_stage, which the run half \
+uses too: by the ADR helper rule (a private helper used by both modules goes to the lower one and \
+becomes public) _no_stage becomes no_stage in revision_run (added), its body unchanged. Callers follow, \
+import lines and patch targets only: src application/cli.py (2), jobs/runner.py, revision_routes.py; the \
+tests, scripts and benchmark below. Module-attribute patches (ADR rule 4, Q-F5): \
+test_t08_adr0025.py:652 (revision_run.reproduce_bundle, read by scripts/t08_rc.py's lazy import) and \
+test_t08_w2_cli_rerun.py:62 (revision_run.rerun_registered) follow the move to revision_replay. \
+test_t08_w2_cli_rerun.py:61 patches revision_run.run_revision_session, which only the moved \
+reproduce_bundle reads through revision_run's namespace: DECISION, the moved call reads it as \
+revision_run.run_revision_session (module import), so the patch intercepts the same call as at the \
+base and the test line is unchanged (the callers rule refuses retargeting a patch of an unmoved name). \
+Liveness on the step (a raising fake): \
+:61 and :652 are live (the test fails); :62 is dead at the base and on the step alike (2 passed), \
+a dead patch before the move (review item). No other patch targets a name the moved code reads through \
+revision_run (patch_noop 265 total, 0 flagged). tests/test_m02_wo14.py:48 imports the private \
+_constants_for_shape: it follows to revision_replay under its own name (renamed entry, a private \
+binding: cce-code-health cf15245 checks it on bindings); no caller imports any other moved private \
+name. No string literal is removed; revision_run's module \
+docstring is unchanged. revision_run.py 1057 -> 717 NLOC, revision_replay.py 365 NLOC (codehealth \
+scan). Expected codehealth arch --depth 4 (measured on the step applied to this base): 0 / 0 / 0 -> \
+0 / 0 / 0 (imports 4066 -> 4083, files 322 -> 323). Layer config after the step (separate commit): application-layers gains \
+openflowsheet.application.revision_replay directly above openflowsheet.application.revision_run."""
+removed = []
+renamed = {"src/openflowsheet/application/revision_run.py:registered_case" = "src/openflowsheet/application/revision_replay.py:registered_case", "src/openflowsheet/application/revision_run.py:registered_flowsheet" = "src/openflowsheet/application/revision_replay.py:registered_flowsheet", "src/openflowsheet/application/revision_run.py:rerun_registered" = "src/openflowsheet/application/revision_replay.py:rerun_registered", "src/openflowsheet/application/revision_run.py:declared_kinds" = "src/openflowsheet/application/revision_replay.py:declared_kinds", "src/openflowsheet/application/revision_run.py:Reproduction" = "src/openflowsheet/application/revision_replay.py:Reproduction", "src/openflowsheet/application/revision_run.py:reproduce_bundle" = "src/openflowsheet/application/revision_replay.py:reproduce_bundle", "src/openflowsheet/application/revision_run.py:FAILURE_NAME" = "src/openflowsheet/application/revision_replay.py:FAILURE_NAME", "src/openflowsheet/application/revision_run.py:_constants_for_shape" = "src/openflowsheet/application/revision_replay.py:_constants_for_shape"}
+changed = []
+added = ["src/openflowsheet/application/revision_run.py:no_stage"]
+new_files = ["src/openflowsheet/application/revision_replay.py"]
+callers = ["tests/test_m02_wo10_coupled.py", "tests/test_m02_wo14.py", "tests/test_s19_i15_admissibility_refusal.py", "tests/test_t07_w3a_revision_runs.py", "tests/test_t07_w3e_solution_state.py", "tests/test_t07_w3f_initializer_bundle.py", "tests/test_t08_adr0025.py", "tests/test_t08_w2_cli_rerun.py", "tests/test_x02_wo4_external.py", "scripts/corpus_identity.py", "scripts/msg_identity_gate.py", "scripts/t08_rc.py", "benchmarks/m02/g12_real_loop.py"]
