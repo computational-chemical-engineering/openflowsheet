@@ -39,7 +39,7 @@ import uuid
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, replace
 from pathlib import Path
-from typing import Any, Final, Literal, NoReturn, Self, get_args
+from typing import TYPE_CHECKING, Any, Final, Literal, NoReturn, Self, get_args
 
 from openflowsheet.application import capabilities, stream_table, validation
 from openflowsheet.application.admission import (
@@ -2381,3 +2381,11 @@ def _encode_cursor(ordinal: int) -> str:
     ordinal of the last item returned."""
     encoded = base64.urlsafe_b64encode(canonical_json({"ordinal": ordinal}))
     return encoded.decode("ascii").rstrip("=")
+
+
+if TYPE_CHECKING:
+    from openflowsheet.application.contract import Application
+
+    def _conforms(app: LocalApplication) -> Application:
+        """ADR 0076 I-11: mypy checks that `LocalApplication` implements §2.1's `Application`."""
+        return app

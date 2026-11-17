@@ -41,10 +41,11 @@ from openflowsheet.application.binding import (
     legacy_answers,
 )
 from openflowsheet.application.binding_common import Unbound
+from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.revision_binding import RevisionBinding, bind_revision_flowsheet
 from openflowsheet.application.revision_run import NoRoute, Route, legacy_plan, select_route
 from openflowsheet.application.revisions import Revision
-from openflowsheet.application.transactions import Application, ChangeSet, Edit
+from openflowsheet.application.types import Change, Edit
 from openflowsheet.application.validation import (
     FALLBACK_PRODUCED_BY,
     MISSING_REVISION_ID,
@@ -461,23 +462,30 @@ def test_r3_every_noncanonical_report_validates() -> None:
 
 
 def test_r3_every_transaction_result_validation_validates() -> None:
-    """K06's façade: the report a committed, and a replayed, transaction carries."""
+    """The report a committed, and a replayed, transaction carries (K06's façade before ADR
+    0076 I-11; its successor is an in-memory `LocalApplication`)."""
     revision = CORPUS["SYN-001-nominal"]()
-    app = Application()
-    app.store.put(Revision(revision_id=revision["revision_id"], document=revision))
+    app = LocalApplication.in_memory()
+    store = app.store
+    with store.writing() as connection:
+        store.commit_revision(
+            connection,
+            Revision(revision_id=revision["revision_id"], document=revision),
+            principal_id=app.principal_id,
+            capability_id=app.capability_id,
+            policy_sha256=app.policy.policy_sha256,
+        )
     results = []
     for key, name, edits in (
         ("k1", "r1", (Edit("set", ("description",), "one"),)),
         ("k2", "r2", (Edit("set", ("specifications",), []),)),
         ("k3", "r3", (Edit("remove", ("provenance",)),)),
     ):
-        change = ChangeSet(
-            edits=edits,
-            expected_revision=app.store.head,
-            idempotency_key=key,
-            new_revision_id=name,
-        )
-        results += [app.commit(change), app.commit(change)]
+        with store.reading() as connection:
+            head = store.head(connection)
+        change = Change(edits=edits, new_revision_id=name)
+        results += [app.commit_change(change, head, key), app.commit_change(change, head, key)]
+    app.close()
     assert [result.status for result in results] == ["committed", "replayed"] * 3
     for result in results:
         assert result.validation is not None
