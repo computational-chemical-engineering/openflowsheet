@@ -2149,3 +2149,5 @@
 - **2026-11-17 12:12, G-MAP 5 build at the wp/S19 tip (milestone, queue empty).** Remedy for the standing ALERTs
   (the I-12d modules unknown to map 1720cc98). Criteria as G-MAP 3, written in S19_STATE before the run. Runner
   475743 stopped; restart with `$Q run --detach` after the build.
+  Build: base 14c6d414 (7fbfcd33 + docs), detached worktree `<scratchpad 62d65af4>/map5`, `.venv-testmap`, 8 workers,
+  no `--deselect`, PID 1401330, log `<scratchpad 62d65af4>/map5.log`. Runner 475743 stopped (RUNNER stop 11:07Z).
