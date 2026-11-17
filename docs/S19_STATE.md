@@ -74,7 +74,9 @@ serial pair (DECISION, alternative: one more suite). (c) All PASS and EQUAL: hel
 tip, merge-check, merge (message: I-12d steps 1-5, Q-F5 fallback for step 5, R1 and StreamTableQuery rulings,
 review R-W4-I12d and fixes, jobs 237-243 + merge-check, serial counts), remove the helper and ser-i12d* worktrees.
 (d) Then MB to the wp/S19 tip (map build with the queue held; G-MAP criteria; the ALERT remedy), lanes fast-forward,
-then brief I-19 (the I-19 list in S19_DECISIONS: grep "I-19 list gains", "I-19"); W4 is then done.
+then I-19: run 20 brief drafted (`<git-common-dir>/codehealth/briefs/S19-W4-20.md`: inventory, retargets,
+removal; replace TIP_AT_LAUNCH, engineer opus-engineer); run 21 (living docs, ADR errata, refusals.yaml:1378) to draft
+from the I-19 list in S19_DECISIONS (grep "I-19 list gains", "I-19"); W4 is then done.
 Runner pid 475743 (cce-code-health cf15245; MB = 1720cc98). Lanes at most 2 agents until Thu 19 Nov 13:00.
 ALERTs standing (proposal 2 with Frank; selected share fell to 45%).
 Merge-checks run on a helper `wp/S19-<lane>-mc` = lane tip + wp/S19 tip merged in; merge the helper (`git merge
