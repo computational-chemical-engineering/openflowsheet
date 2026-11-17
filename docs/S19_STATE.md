@@ -65,8 +65,8 @@ mode, "interface gate not applicable"); review R-W4-I12d: merge after fixes, all
 environment -> re-enqueue unchanged; real -> fresh engineer. (b) Serial (rule 4), logs
 `<git-common-dir>/codehealth/runs/serial/i12d*.log`, worktrees `<scratchpad 78ab96ef>/ser-i12d*` (remove after):
 running i12d1-base 17cada5f (PID 891621), i12d1-head 394effe6 (891622), i12d2-head 3b72357b (917851), i12d4-head
-50cbb3ed (917852); i12d3-head 622dc3b2 and i12d5-head 9697b223 chained after the i12d1 pair (chain PID 1093753; their
-PIDs in their logs' first lines). Wait with a background `while kill -0` loop on the live PIDs. Compare: i12d1-base
+50cbb3ed (917852); i12d3-head 622dc3b2 and i12d5-head 9697b223 chained after the i12d1 pair (chain PID 1093753 died; restarted
+09:42 as PID 1151652, log `runs/serial/i12d35-chain.log`; their PIDs in their logs' first lines). Wait with a background `while kill -0` loop on the live PIDs. Compare: i12d1-base
 vs i12d1-head; i12d1-head vs i12d2-head; i12d2-head vs i12d4-head; i12d4-head vs i12d3-head (step 3 sits on
 f632c97b, after step 4); i12d3-head vs i12d5-head. Equal = MSG WO-5a, WO-6 lines and passed, skipped, deselected,
 xfailed (20392 / 107 / 222 / 3 at the W4 run 13-16 heads). F1 (a995d571) is a private rename inside one class: no

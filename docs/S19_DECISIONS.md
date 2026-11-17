@@ -2122,3 +2122,7 @@
   "ALERT selected gates take 689 s > 300 s (tests tier)"
   "ALERT selected/full time ratio 0.63 > 0.4: selection saves little"
   (standing; remedy: MB after the I-12d merge).
+
+- 2026-11-17 09:42 (resume after self-reset): serial chain PID 1093753 (i12d3-head, i12d5-head after the i12d1 pair)
+  found dead with the i12d1 pair still running; restarted detached as PID 1151652 (log
+  `<git-common-dir>/codehealth/runs/serial/i12d35-chain.log`), same worktrees and labels. Jobs 242 running, 243 queued.
