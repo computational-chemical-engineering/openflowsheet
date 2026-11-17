@@ -53,7 +53,7 @@ from openflowsheet.application import cli
 from openflowsheet.application.authz import grant
 from openflowsheet.application.errors import ApplicationError, SolveFailedError
 from openflowsheet.application.local import LocalApplication
-from openflowsheet.application.store import StoreError
+from openflowsheet.application.store_records import StoreError
 from openflowsheet.application.types import Change
 from openflowsheet.messages.catalogue import CATALOGUE
 from openflowsheet.messages.lint import lint_entry

@@ -28,7 +28,8 @@ from openflowsheet.application.jobs.executor import ProcessExecutor
 from openflowsheet.application.jobs.model import TERMINAL_STATUSES
 from openflowsheet.application.jobs.worker import PAUSED_FILE
 from openflowsheet.application.local import LocalApplication
-from openflowsheet.application.store import POLICY_NAME, atomic_write_bytes, policy_file_bytes
+from openflowsheet.application.store import POLICY_NAME, atomic_write_bytes
+from openflowsheet.application.store_records import policy_file_bytes
 from openflowsheet.application.types import ExecutorSettings, Job, JobRequest, SolveBody
 from openflowsheet.run.identity import r0_projection, r0_sha256
 

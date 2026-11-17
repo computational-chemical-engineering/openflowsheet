@@ -36,7 +36,8 @@ from openflowsheet.application.authz import (
 )
 from openflowsheet.application.cli import main
 from openflowsheet.application.local import LocalApplication
-from openflowsheet.application.store import DATABASE_NAME, POLICY_NAME, StoreError
+from openflowsheet.application.store import DATABASE_NAME, POLICY_NAME
+from openflowsheet.application.store_records import StoreError
 from openflowsheet.application.types import Change, ProjectPolicy
 from openflowsheet.canonical import document_sha256
 from openflowsheet.schema_check import schema_errors
@@ -221,7 +222,7 @@ def test_a11_grants_and_revocations_write_no_ambient(tmp_path: Path) -> None:
     # The repository commits no `project-policy.json` file; the policies the operator commands
     # write are the existing ones, and none gains a member.
     from openflowsheet.application.authz import revoke
-    from openflowsheet.application.store import policy_file_bytes
+    from openflowsheet.application.store_records import policy_file_bytes
 
     project = _project(tmp_path)
     grant(project, principal_id="agent-1", capability_id="cap-1")

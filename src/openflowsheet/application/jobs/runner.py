@@ -124,7 +124,8 @@ from openflowsheet.application.revision_run import (
     run_revision_session,
     select_route,
 )
-from openflowsheet.application.store import JOBS_DIR, ArtifactRow, ArtifactTableSink, ProjectStore
+from openflowsheet.application.store import JOBS_DIR, ProjectStore
+from openflowsheet.application.store_records import ArtifactRow, ArtifactTableSink
 from openflowsheet.application.types import (
     ArtifactRef,
     ExperimentBody,

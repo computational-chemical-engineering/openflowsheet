@@ -35,7 +35,7 @@ from openflowsheet.application.authz import grant, set_ambient_pressure
 from openflowsheet.application.errors import ApiError, ApplicationError
 from openflowsheet.application.local import LocalApplication, _displayed
 from openflowsheet.application.operations import OPERATIONS, dispatch, project_response
-from openflowsheet.application.store import StoreError
+from openflowsheet.application.store_records import StoreError
 from openflowsheet.application.types import Change, JobResult
 from openflowsheet.canonical import canonical_json
 from openflowsheet.messages.catalogue import CATALOGUE

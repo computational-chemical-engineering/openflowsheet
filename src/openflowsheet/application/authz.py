@@ -35,14 +35,8 @@ from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Final, Literal
 
-from openflowsheet.application.store import (
-    POLICY_NAME,
-    AuditEntry,
-    ProjectStore,
-    StoreError,
-    atomic_write_bytes,
-    policy_file_bytes,
-)
+from openflowsheet.application.store import POLICY_NAME, ProjectStore, atomic_write_bytes
+from openflowsheet.application.store_records import AuditEntry, StoreError, policy_file_bytes
 from openflowsheet.application.types import (
     LOCAL_OWNER_PRINCIPAL,
     RIGHTS,

@@ -25,14 +25,8 @@ from openflowsheet.application.errors import ApplicationError
 from openflowsheet.application.jobs.model import check_lifecycle
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.revisions import Revision
-from openflowsheet.application.store import (
-    DATABASE_NAME,
-    POLICY_NAME,
-    STORE_SCHEMA,
-    IdempotencyKeyReusedError,
-    ProjectStore,
-    StoreError,
-)
+from openflowsheet.application.store import DATABASE_NAME, POLICY_NAME, STORE_SCHEMA, ProjectStore
+from openflowsheet.application.store_records import IdempotencyKeyReusedError, StoreError
 from openflowsheet.application.types import LOCAL_OWNER_PRINCIPAL, ProjectPolicy
 
 SPAWN = multiprocessing.get_context("spawn")

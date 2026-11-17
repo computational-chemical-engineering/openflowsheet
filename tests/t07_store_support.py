@@ -16,7 +16,7 @@ from typing import Any
 
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.revisions import Revision
-from openflowsheet.application.store import IdempotencyKeyReusedError
+from openflowsheet.application.store_records import IdempotencyKeyReusedError
 from openflowsheet.application.types import (
     LOCAL_OWNER_PRINCIPAL,
     Change,

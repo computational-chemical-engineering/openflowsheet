@@ -65,11 +65,8 @@ from openflowsheet.application.jobs.executor import ProcessExecutor  # noqa: E40
 from openflowsheet.application.jobs.model import TERMINAL_STATUSES  # noqa: E402
 from openflowsheet.application.local import LocalApplication  # noqa: E402
 from openflowsheet.application.operations import dispatch  # noqa: E402
-from openflowsheet.application.store import (  # noqa: E402
-    POLICY_NAME,
-    atomic_write_bytes,
-    policy_file_bytes,
-)
+from openflowsheet.application.store import POLICY_NAME, atomic_write_bytes  # noqa: E402
+from openflowsheet.application.store_records import policy_file_bytes  # noqa: E402
 from openflowsheet.application.types import ExecutorSettings  # noqa: E402
 from openflowsheet.compiled import EvaluationContext  # noqa: E402
 from openflowsheet.models.c1 import COMPONENTS  # noqa: E402
