@@ -2151,3 +2151,10 @@
   475743 stopped; restart with `$Q run --detach` after the build.
   Build: base 14c6d414 (7fbfcd33 + docs), detached worktree `<scratchpad 62d65af4>/map5`, `.venv-testmap`, 8 workers,
   no `--deselect`, PID 1401330, log `<scratchpad 62d65af4>/map5.log`. Runner 475743 stopped (RUNNER stop 11:07Z).
+- **2026-11-17 13:12, G-MAP 5 (map at 14c6d414): MISS, map accepted; MB moved to 14c6d414.** 20503 tests, 20389
+  passed, 109 skipped, 5 failed: the B-6 four and test_t07_v17_reference::f6 (wall 310.8 s against its 300 s budget,
+  8 workers under coverage; machine load 1-2 at the end, no gate or serial alongside). DECISION: accept rather than
+  re-run the build: f6 is a wall-time test that every gate deselects (gate.sh:54), and an unsure test among the
+  deselected selects nothing (test_impact.py:706, :751), so it cannot drag its ~300 s file into a gate; the B-6 miss
+  is as in G-MAP 3 and 4. Alternative: a second build (~1 h) hoping f6 lands under 300 s. Reversible by: setting MB
+  back to 1720cc98 in S19_STATE. The f6 budget is still judged alone on wp/S19 before the phase merge into main.
