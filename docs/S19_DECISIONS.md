@@ -1790,3 +1790,22 @@
   Reversible by: keeping MB at c3c5793e in S19_STATE. Lanes branched from wp/S19 before this keep their own
   S19_STATE MB (gate.sh reads MB from the gated worktree), so existing lanes are unaffected. On the result: judge
   G-MAP 4 as G-MAP 3, set MB, restart the runner (`$Q run --detach`), remove map4.
+- **2026-11-17 02:35, R-W4-12 reported (`reviewer`, Opus, 133k tokens): I-13 merge after fixes.** Q1 scope OK: at
+  eb71978d exactly 44 private model_signatures names cross modules at 69 sites (R-1045's 67 + revision_binding:78/79),
+  all in the plan's 48 `added` with column_owners, defect_result, basis_refusal, c1_reactor_surrogate_of; collision
+  names read well; `pinned` is shadowed by local lists (model_builders.py:275, thermal_binding.py:158), harmless
+  (symtable: neither scope calls it), keep. a741872b OK: all 9 src files AST-identical to eb71978d modulo rename; no
+  public name outside the plan; the 4 `changed` constants value-equal. a652a744 OK: no `_x` binding, alias,
+  `__getattr__` or `__all__` entry survives; every openflowsheet import in src/tests/scripts/benchmarks/examples
+  resolves; no string or `module._x` names a removed name; worker.py:234 lazy import kept. 595ea240 OK (same objects;
+  test_m04's context independent; t07_r7 now stricter). Q5 RULED: keep defect_result and basis_refusal out of
+  `__all__` (the lists already omit other public names; changing the `__all__` convention is a repo-wide decision).
+  Q6(a) corrected: test_s11_thermal_verifier calls no builder; fix = a test-built value-equal EvaluationContext.
+  Notes: c2df0d96's message says "five" constants, the plan lists 4 (record); docs/design/T07-jobs-and-bindings.md:775
+  and :3735 name `_defect` -> I-19 living-docs list; revision_edits.py:8 still says `transactions` re-exports (stale
+  since I-11) -> docs pass.
+  Fix 2 (orchestrator): 932023a0 docstrings (binding_common.py:4-7 names column_owners and drops the false re-export
+  claim; column_binding.py:5 COLUMN; docstrings for port_stream, pin_column), job 227 w4r12-revfix (no-gain, pending
+  until the runner restarts after G-MAP 4); a392c711 playbook.md:46 basis_refusal (tooling, outside the gate).
+  Fix 1 (`sonnet-implementer`, outside the gate): test_s11_thermal_verifier.py builds its own EvaluationContext.
+  Then: helper wp/S19-w4-mc (lane + wp/S19 tip), merge-check, merge.
