@@ -4,7 +4,8 @@ import that S17 or S19 added, and every file that takes such a name through that
 A re-export is a module-level name bound by an import (any depth of if/try/with at module level,
 TYPE_CHECKING included) rather than defined there. It is added by S17 or S19 when the module did not
 bind the name by import at the S17 base (`--base`, default 1fd6826b; a module absent there counts as
-added), or when S17/S19 added its re-export marker (an `X as X` alias or an `__all__` entry). An importer through the old path is a file in src, tests, scripts, benchmarks or examples
+added), or when S17/S19 added its re-export marker (an `X as X` alias or an `__all__` entry).
+An importer through the old path is a file in src, tests, scripts, benchmarks or examples
 that takes the name from the re-exporting module: a from-import at any depth (relative resolved),
 `m.N` with `m` bound to the module, a call `f(m, "N", ...)` (setattr, monkeypatch, patch.object,
 getattr), a dotted string "openflowsheet.<module>.N", or a factory reference
@@ -13,21 +14,23 @@ getattr), a dotted string "openflowsheet.<module>.N", or a factory reference
 Classes of an added re-export:
   w5            an importer is a frozen M9 module, a registry-hashed file (in a built-in
                 descriptor's implementation set: frozen M9 plus assessment/cost, lca) or a
-                factory reference, the form of the registry table (scripts/registry_builtin.py and the
+                factory reference, the form of the registry table (scripts/registry_builtin.py
+                and the
                 test that mirrors it; ADR 0076 FQ-A; W5 retargets them)
   retarget      importers through the old path outside the exceptions: retarget, then remove
   remove        no importer left, but the module marks it as a re-export (`X as X`, `__all__`, noqa
                 F401) or does not use it: remove the binding
   own-use       no importer and no marker, the module reads it: a plain import, nothing to do
-A patch (setattr, assignment, dotted string) of a name the module itself reads is a live patch point,
-listed but not counted as an importer.
+A patch (setattr, assignment, dotted string) of a name the module itself reads is a live patch
+point, listed but not counted as an importer.
 Exempt (ADR 0076 I-8): `assessment.sizing`'s `__all__` names that sizing.core defines.
 
     python3 .claude/skills/s19-refactor/i19_scan.py [--base REV] [--rows] [--json PATH] [--moved]
 
 Prints one summary line, then (`--rows`) one line per actionable re-export and its importers.
 `--moved` (needs cce-code-health, run it with .venv-codehealth/bin/python) also re-runs the tool's
-`old_path_importers` (ec5aaea) for every `renamed`/`retargeted` entry of `.codehealth/interface/*.toml`
+`old_path_importers` (ec5aaea) for every `renamed`/`retargeted` entry of
+`.codehealth/interface/*.toml`
 over the whole tree, exempting only the old module (R-W4-9a note 3). Standard library otherwise.
 """
 
@@ -47,7 +50,8 @@ ROOT = Path(__file__).resolve().parents[3]
 PKG = "src/openflowsheet/"
 SCAN_DIRS = ("src", "tests", "scripts", "benchmarks", "examples")
 S19_BASE = "d90b498f"  # S19's CB: a commit at or before it is S17's
-BUILTIN = "src/openflowsheet/registry/builtin"  # descriptors whose implementation sets registry_sha256 hashes
+# descriptors whose implementation sets registry_sha256 hashes
+BUILTIN = "src/openflowsheet/registry/builtin"
 EXEMPT_INIT = "openflowsheet.assessment.sizing"
 PATCH_KINDS = ("setattr", "assign", "string")
 DOTTED = re.compile(r"^openflowsheet(\.[A-Za-z_]\w*)+$")
@@ -92,10 +96,10 @@ def _flat(body: list, tc: bool = False):
         if isinstance(s, ast.If):
             yield from _flat(s.body, tc or _type_checking(s.test))
             yield from _flat(s.orelse, tc)
-        elif isinstance(s, (ast.Try, getattr(ast, "TryStar", ast.Try))):
+        elif isinstance(s, ast.Try | getattr(ast, "TryStar", ast.Try)):
             for b in (s.body, s.orelse, s.finalbody, *[h.body for h in s.handlers]):
                 yield from _flat(b, tc)
-        elif isinstance(s, (ast.With, ast.For, ast.While)):
+        elif isinstance(s, ast.With | ast.For | ast.While):
             yield from _flat(s.body, tc)
             yield from _flat(getattr(s, "orelse", []), tc)
 
@@ -103,7 +107,7 @@ def _flat(body: list, tc: bool = False):
 def _names(t: ast.expr) -> list[str]:
     if isinstance(t, ast.Name):
         return [t.id]
-    if isinstance(t, (ast.Tuple, ast.List)):
+    if isinstance(t, ast.Tuple | ast.List):
         return [n for e in t.elts for n in _names(e)]
     if isinstance(t, ast.Starred):
         return _names(t.value)
@@ -121,7 +125,7 @@ class Module:
         self.all: list[str] = []
         lines = text.splitlines()
         for s, tc in _flat(self.tree.body):
-            if isinstance(s, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+            if isinstance(s, ast.FunctionDef | ast.AsyncFunctionDef | ast.ClassDef):
                 self.defined.add(s.name)
             elif isinstance(s, ast.Assign):
                 for t in s.targets:
@@ -133,7 +137,7 @@ class Module:
                         pass
             elif isinstance(s, getattr(ast, "TypeAlias", ())):
                 self.defined.add(s.name.id)
-            elif isinstance(s, (ast.AnnAssign, ast.AugAssign)):
+            elif isinstance(s, ast.AnnAssign | ast.AugAssign):
                 self.defined.update(_names(s.target))
             elif isinstance(s, ast.For):
                 self.defined.update(_names(s.target))
@@ -272,7 +276,7 @@ def importers(mods: dict[str, Module]) -> tuple[dict, list]:
             consts: dict[str, str] = {}
             for s in tree.body:
                 if (
-                    isinstance(s, (ast.Assign, ast.AnnAssign))
+                    isinstance(s, ast.Assign | ast.AnnAssign)
                     and isinstance(s.value, ast.Constant)
                     and isinstance(s.value.value, str)
                 ):
@@ -294,7 +298,7 @@ def importers(mods: dict[str, Module]) -> tuple[dict, list]:
                         else:
                             alias.setdefault(a.name.split(".")[0], a.name.split(".")[0])
 
-            def dotted_of(e: ast.expr) -> str | None:
+            def dotted_of(e: ast.expr, alias: dict[str, str] = alias) -> str | None:
                 chain = []
                 while isinstance(e, ast.Attribute):
                     chain.append(e.attr)
@@ -335,7 +339,9 @@ def importers(mods: dict[str, Module]) -> tuple[dict, list]:
                         take(*s_, f, n.lineno, "string")
                 elif isinstance(n, ast.Dict):
                     kv = {
-                        k.value: v for k, v in zip(n.keys, n.values) if isinstance(k, ast.Constant)
+                        k.value: v
+                        for k, v in zip(n.keys, n.values, strict=False)
+                        if isinstance(k, ast.Constant)
                     }
                     if "module" in kv and isinstance(kv.get("attribute"), ast.Constant):
                         mv = kv["module"]
@@ -419,7 +425,8 @@ def main() -> int:
             if b.get("module") or (b["src"] or "").split(".")[0] == "__future__":
                 continue
             allhits = sorted(hits.get((mod, name), ()))
-            # a patch (setattr, assignment, dotted string) of a name the module reads is a live patch point
+            # a patch (setattr, assignment, dotted string) of a name the module reads is a live
+            # patch point
             live = [i for i in allhits if i[2] in PATCH_KINDS and m.uses(name)]
             imp = [i for i in allhits if i not in live]
             exc = [i for i in imp if i[0] in frozen or i[0] in hashed or i[2] == "factory"]
@@ -472,7 +479,8 @@ def main() -> int:
                 r["added"] = added_in(r["path"], r["name"], a.base)
             print(
                 f"{r['class']:8} {r['module']}.{r['name']} (:{r['line']}; home {r['home']}; "
-                f"{'/'.join(r['marker']) or '-'}; {'used' if r['used'] else 'unused'}; {r.get('added', '')})"
+                f"{'/'.join(r['marker']) or '-'}; "
+                f"{'used' if r['used'] else 'unused'}; {r.get('added', '')})"
             )
             for i in r["importers"]:
                 print(f"           <- {i}")
