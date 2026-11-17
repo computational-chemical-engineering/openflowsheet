@@ -56,32 +56,29 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 - Held until the scale probe reports: G1 (orchestrator/, numerics/). Open: ptc.py 6.8 (P3, P4).
 - G-END (below) stays the end criterion for the whole repository.
 
-## Next actions (2026-11-17 15:50, self-reset after W4)
+## Next actions (2026-11-17 ~18:30, the blocking set for 0.5 done)
 
-**Position:** W4 DONE on wp/S19 (I-12d merged 7fbfcd33, I-19 merged a758cbbe; W4-DOCS PASS; arch 0/0/0, 4100
-imports). MB = 14c6d414 (G-MAP 5). Runner PID 1474880 (queue idle, results up to 257). No agent, no serial run, no
-background job of this session. Lane wp/S19-w4 is merged; fast-forward it before reuse. Decision Desk cards
-ofs-s19-w4-docs-records / -scope executed. Repo at the merge: debt 4699.2, health 8.23, brain 26 (scan 7fbfcd33).
-Status card: row "OpenFlowsheet wp/S19" added by hub (Frank asked why main's 7.7 does not move: main = 218e7a73).
-**Next (the blocking set for 0.5, Frank's order of 2026-11-15, confirmed 2026-11-17 "keeping the sequence is fine"):**
-1. G6 leftover: `launcher.py` `launch` (8.8; agreed after W4 in R-W3-G6-6). Brief an engineer (opus-engineer), lane from
-   the wp/S19 tip; S19_DECISIONS 2026-11-16 23:45 has the context.
-2. G5 leftovers now that W4 routing is done: table.py `revision_checks` (21.4, "W4 routing"), checks.py /
-   split_checks.py / certificate.py 8.7 (grep S19_DECISIONS "G5 run 11", "R-W3-G5"). Not the verify twins
-   (gamma_phi_units / pr_c1: addendum for Frank) and not the S3 ladder twin (waits for a behaviour change).
-3. Design lane, batched (one pass): R-W3-G5-7 component order; R-W3-G5-8 NaN derivative-witness pass.
-4. Then report to Frank that the blocking set is done; 0.5 (roadmap ADR 0057) is his to start. W5, G1 (held for the
-   scale probe), G2/G3/G4 and the 232 pre-S19 doc breaks trail.
-**Open for Frank (not blocking):** proposal 2 (narrow the selection widening; gates now ~600-650 s selected vs 300 s
-target, Frank asked 2026-11-17); R-1042 option C; STOP 1 alternative; verify twins addendum; selection-widening;
-thermo/ below 7.0 only in W5; optional forbid rule cli/serving -> services.
-**Notes:** STOP 1 steps (empty plan, no `__all__` touched) are enqueued no-gain, not interface (job 245). New tooling
-scripts must pass ruff before a merge-check (job 256). Merge-checks run on a helper `wp/S19-<lane>-mc` = lane tip +
-wp/S19 tip; merge it (`git merge --no-ff -F <file>`) only if wp/S19 changed only docs since. A no-gain step touches
-only scan scope. `enqueue` needs `--target --recipe --model` for every mode; `--rerun-of` takes the RUN-LOG STEP.
-Test runs in a worktree: repo `.venv`, `PYTHONPATH=<worktree>/src`, no `-n`. Lanes at most 2 agents until Thu 19 Nov
-13:00. ALERTs standing (proposal 2).
-- Tip scan 7fbfcd33: repo debt 4699.2, health 8.23, brain 26, file smells 53.
+**Position:** G5 run 12 and G6 run 7 merged into wp/S19 as 517ab610 (review R-W3-G5-12, merge-check job 264 PASS).
+Scan 517ab610: debt 4670.7, health 8.24, brain 26, file smells 53, 27 files below 7.0; arch 0 violations, 0 cycles
+(4100 imports). MB stays 14c6d414 (refactor steps only since; DECISION in S19_DECISIONS). Runner PID 1474880 (queue
+idle, results up to 264). No agent, no serial run, no background job. Design batch 1 ruled
+(`docs/briefs/S19-D-batch1-ruling.md`): Q1 no bug, pinned by `tests/test_s19_component_order.py`; Q2 (NaN witness
+refusal) lands after S19 (Decision Desk ofs-s19-oq1-nan-witness, A, VERIFIED; write `executed` on the card when it
+lands, then tell hub).
+**Blocking set (Frank, 2026-11-15) done:** W4 (ADR 0076), 0 cycles and 0 violations, G5 and G6 to the end W3 allows.
+What stays below 9.0 there, each with its owner: verify twins gamma_phi_units 6.4 / pr_c1 7.7 and table.py's
+duplication (twin merge: addendum for Frank); certificate, checks, split_checks 8.7 (public signatures, test-pinned
+`_project`, rule 10; many_args at its cap); render 8.5 (ladder, judged); store 8.6 (R-237 interface); compare 8.6
+(frozen v1); thermo/ frozen files (W5).
+**Next: waits for Frank.** 0.5 (roadmap ADR 0057) is his to start. Trailing S19 work, in his order: W5 (frozen
+modules, thermo/), G1 (held for the scale probe), G2/G3/G4, the 232 pre-S19 doc breaks, the Q2 change after S19 closes.
+A merge of wp/S19 into main needs a Decision Desk card (evidence manifest, f6 alone, CI both legs, F0).
+**Open for Frank (not blocking):** proposal 2 (selection widening; selected gates ~600 s vs 300 s); R-1042 option C;
+STOP 1 alternative; verify twins addendum; thermo/ below 7.0 only in W5; optional forbid rule cli/serving -> services;
+merge of wp/S19 into main (main = 218e7a73 shows health 7.7).
+**Notes:** as before (STOP 1 no-gain; ruff before a merge-check; helper merge only if wp/S19 changed only docs since;
+`enqueue` needs `--target --recipe --model`; repo `.venv`, `PYTHONPATH=<worktree>/src`, no `-n`). Two lanes can share
+one merge-check helper (done for G5 r12 + G6 r7). Rule-6 precedent: helpers writing `LaunchProgress` (R-W3-G5-12).
 
 ## Gates (pass numbers fixed after A1, before step 1)
 

@@ -2310,3 +2310,9 @@
   604755d7, step 298 accepted-neutral, 15/15).** Helper wp/S19-g5j-mc (worktree s19-g5j-mc) = 604755d7 + wp/S19
   aebdcc58 (a7899ba0) + wp/S19-g6e 2ce4c5fe = 4ea795f2; ruff clean; merge-check job 264 (g5r12-g6r7-mc, full suite).
   Gate report (6 h, 13 gates, 0 failed): the two standing ALERTs (600 s selected; ratio 0.62).
+- **2026-11-17 ~18:25, job 264 PASS (g5r12-g6r7-mc, helper 4ea795f2, full suite, 7/7, debt 56.3 -> 27.8). G5 run 12
+  and G6 run 7 merged into wp/S19 as 517ab610** (wp/S19 changed only docs/S19_DECISIONS.md since aebdcc58; src and
+  tests identical to the helper). Worktrees s19-g5j, s19-g5j-mc, s19-g6e and their branches removed. Scan 517ab610:
+  debt 4670.7, health 8.24, brain 26; arch 0/0. **The blocking set for 0.5 is done; reported to Frank (via hub).**
+  DECISION: MB stays 14c6d414 (refactor steps only since; no lane is waiting for a map). Alternative: rebuild at
+  517ab610 now (~1 h, queue held). Reversible by: building the map before the next lane.
