@@ -1746,3 +1746,7 @@
   16/16).** G5 run 11 review waits for 222 and 225. Gate report (6 h): 32 gates, 2 failed; "ALERT selected share 60% <
   75% of step gates", "ALERT selected gates take 594 s > 300 s (tests tier)", "ALERT selected/full time ratio 0.47 >
   0.4: selection saves little": standing (proposal 2 with Frank), no new kind. headser2 (PID 4036764) still running.
+- **2026-11-17 01:35, job 221 PASS (w4r11-mc2, helper 2490c525, full suite, 7/7, debt 24.6 -> 24.6). I-11 merged into
+  wp/S19 as 6668be04** (wp/S19 changed only docs since 38b94728, checked). Worktree s19-w4-mc and branch
+  wp/S19-w4-mc removed. W4 run 12 (I-13, lane eb71978d..a652a744) waits for jobs 223, 224; its merge-check helper
+  will merge wp/S19 at or after 6668be04.
