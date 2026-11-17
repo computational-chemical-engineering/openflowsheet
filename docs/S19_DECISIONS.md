@@ -2016,3 +2016,23 @@
   "ALERT selected gates take 806 s > 300 s (tests tier)"
   "ALERT selected/full time ratio 0.74 > 0.4: selection saves little"
   (standing). Merge waits for the i12a and i12c serial pairs. I-12d run 17 (brief S19-W4-17.md, lane tip 617099ef) launched now: it only appends to the lane; if a serial pair differs, the lane fix lands before its commits are merged.
+- **2026-11-17 07:10, W4 run 17 reported (opus-engineer, Opus, ~234k tokens):** f3a99e7d placement table
+  (`.codehealth/interface/s19-i12d-placement.md`, AST call graph, fixed point); 6757fda3 retarget `app._store` ->
+  `app.store` (5 test lines); 17cada5f plan, 394effe6 step 1 (service_core.py 124 NLOC, inspection_service.py 221;
+  local.py 1785 -> 1549), job 237; 64fc4d4c layer config (and forbid transports-through-operations `to` += both, on
+  the R-W4-13 fix 3 precedent, unasked: for the reviewer). arch 0/0/0; patch_noop "265 module-attribute patches; 0
+  where the module neither defines nor uses the name"; b50 patches live; AST: receiver substitutions only.
+  `authenticated()`: `copy.copy(self)` then `_bind(self._core.acting_as(capability))`. Engineer DECISIONs: "cursor
+  helpers" = job-list cursor only; public service methods carry no docstrings or defaults (a duplicated default
+  failed the literals check). STOP R1: E1 `get_stream_table -> _job` (local.py:1672), E2 `list_revisions ->
+  _decode_cursor/_encode_cursor` (:1485, :1487), E3 `commit_change/preview_change -> _check_request` (:614, :1410).
+  DECISION (R1 ruling, orchestrator): the ADR's own placement rule decides; a listed home that makes a service call
+  upward yields to it: E1 `job` public on ArtifactService, E2 both cursor helpers public on RevisionService, E3
+  `_check_request` on RevisionService. Alternative: E1/E2 into ServiceCore (beyond the ADR's core list), or an
+  architect ruling now. Reversible by: moving the three methods in a later step before merge. Not numerics, identity
+  or a frozen interface (services are outside OPERATIONS and contract); the I-12d reviewer confirms or overturns; ADR
+  0076 erratum for the I-12d family lists in I-19. Notes: msg_catalogue.py:46 recognises `_refuse` only (codes 253
+  unchanged, fewer sites; run 18 item 1); docs pass: registry_builtin.py:22, :344 and T07-jobs-and-bindings.md:4135
+  name `local._model_view`; BODY_READERS at the JobService step. Serial pair i12d1-base 17cada5f / i12d1-head
+  394effe6 chained after the i12a pair (load 17-21 on 16 cores; chain PID 784080, worktrees in scratchpad 78ab96ef).
+  Run 18 (brief S19-W4-18.md) launched.
