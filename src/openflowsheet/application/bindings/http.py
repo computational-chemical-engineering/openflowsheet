@@ -20,7 +20,7 @@ things:
    `document_not_canonical` before any method runs, §12.5), the schema, the reserved `auto:`
    key, the method, the bounding (§10.4).
 4. **The response.** A domain result is 200 with its document as JSON, whatever its status. A
-   raised `ApiError` is its §5.8 status (`types.API_ERROR_HTTP_STATUS`) with the error document.
+   raised `ApiError` is its §5.8 status (`errors.API_ERROR_HTTP_STATUS`) with the error document.
    The raw export (`GET /v1/artifacts/{artifact_id}/raw`) streams the bytes with
    `X-Content-SHA256`. Anything else raised is a defect: 500 `internal_error` with a fixed
    message; the traceback goes to the log only (§10.4).
@@ -58,7 +58,7 @@ from starlette.responses import Response, StreamingResponse
 from starlette.routing import Match, Route
 from starlette.types import Scope
 
-from openflowsheet.application.contract import ApplicationError
+from openflowsheet.application.errors import ApiError, ApiErrorCode, ApplicationError
 from openflowsheet.application.operations import (
     OPERATIONS,
     Dispatchable,
@@ -66,7 +66,6 @@ from openflowsheet.application.operations import (
     dispatch,
     project_error,
 )
-from openflowsheet.application.types import ApiError, ApiErrorCode
 
 _LOG = logging.getLogger(__name__)
 

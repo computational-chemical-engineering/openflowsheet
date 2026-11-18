@@ -27,27 +27,28 @@ from test_s02_column_wo1 import FEED, PROVIDER, REFERENCE, SPECS, _variant
 from test_s06_column_wo1 import J_CASES, U_SETS, V_SETS
 
 import openflowsheet.models.syn001.cascade_solve as cascade_solve_module
+import openflowsheet.models.syn001.column_acceptance as column_acceptance_module
 import openflowsheet.models.syn001.column_solve as column_solve_module
-from openflowsheet.models.syn001.cascade import (
+from openflowsheet.models.lifted import Regime
+from openflowsheet.models.lifted_tolerance import KIND_TOLERANCE
+from openflowsheet.models.syn001.band_types import BandError, BandTemperature
+from openflowsheet.models.syn001.cascade_init import _k_values
+from openflowsheet.models.syn001.cascade_solve import DECLARATION_CONTEXT
+from openflowsheet.models.syn001.cascade_spec import (
     InletState,
     SideFeed,
-    _k_values,
     liquid_id,
     stage_pressure_id,
     stage_temperature_id,
     vapor_id,
 )
-from openflowsheet.models.syn001.cascade_solve import DECLARATION_CONTEXT
-from openflowsheet.models.syn001.column import ColumnSpec
+from openflowsheet.models.syn001.column_acceptance import acceptance_failures, saturation_errors
 from openflowsheet.models.syn001.column_solve import (
     TWO_PHASE_SATURATION_TOLERANCE,
     ColumnSolution,
-    acceptance_failures,
-    saturation_errors,
     solve_column,
 )
-from openflowsheet.models.syn001.saturation_band import BandError, BandTemperature
-from openflowsheet.orchestrator.region import KIND_TOLERANCE, Regime
+from openflowsheet.models.syn001.column_spec import ColumnSpec
 
 sys.path.insert(0, str(REPO_ROOT / "scripts"))
 import s03_references_ours as s03_ours  # noqa: E402
@@ -87,7 +88,7 @@ def _solve_recording(spec: ColumnSpec, *, accept: bool) -> tuple[ColumnSolution,
     acceptance was called with at the `CONVERGED` state. `accept` bypasses acceptance (`()`),
     which yields today's Stage-A state where §8 would reject it."""
     seen: list[tuple[Any, ...]] = []
-    real = column_solve_module.acceptance_failures
+    real = column_acceptance_module.acceptance_failures
 
     def record(*args: Any) -> tuple[str, ...]:
         seen.append(args)
@@ -199,7 +200,7 @@ def test_a_constructed_near_trivial_split_is_flagged() -> None:
     after = saturation_errors(spec, PROVIDER, state, regimes)
     assert after[stage] >= 0.5 - before[stage]
     assert {j for j, e in after.items() if e > TWO_PHASE_SATURATION_TOLERANCE} == {stage}
-    pairs = column_solve_module._saturation_pairs(spec, PROVIDER, state, regimes)
+    pairs = column_acceptance_module._saturation_pairs(spec, PROVIDER, state, regimes)
     bubble = pairs[stage][0]
     assert abs(bubble - 0.5) <= before[stage] + 1e-9
     failures = acceptance_failures(spec, PROVIDER, declared, state, regimes)

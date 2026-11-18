@@ -18,6 +18,10 @@ from contextlib import contextmanager
 from dataclasses import dataclass, field
 from typing import Any
 
+from openflowsheet.application.documents import validate_inline
+from openflowsheet.application.inspection_types import SubmitResult
+from openflowsheet.application.job_records import Job
+from openflowsheet.application.job_requests import JobRequest
 from openflowsheet.application.jobs.executor import COMPUTE_LOCK
 from openflowsheet.application.jobs.model import (
     TERMINAL_STATUSES,
@@ -26,15 +30,8 @@ from openflowsheet.application.jobs.model import (
 )
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.operations import OPERATIONS, dispatch
-from openflowsheet.application.types import (
-    Change,
-    DocumentSchemaError,
-    Edit,
-    Job,
-    JobRequest,
-    SubmitResult,
-    validate_inline,
-)
+from openflowsheet.application.transaction_types import Change, Edit
+from openflowsheet.schema_check import DocumentSchemaError
 
 #: A generous bound on anything a test waits for; every wait here normally takes milliseconds.
 PATIENCE_S = 60.0

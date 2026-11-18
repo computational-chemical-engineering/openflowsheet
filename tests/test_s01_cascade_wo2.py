@@ -17,22 +17,10 @@ import pytest
 from test_s01_cascade_wo1 import REFERENCE, UNIT, _spec
 
 import openflowsheet.models.syn001.cascade_solve as solve_module
-from openflowsheet.application.policies import T05B_V2
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models.syn001 import ENERGY_TOLERANCE, FLOW_TOLERANCE
-from openflowsheet.models.syn001.cascade import (
-    CascadeSpec,
-    KremserInitial,
-    _enthalpy_flow,
-    kremser_initial,
-    liquid_id,
-    liquid_total_id,
-    mixed_id,
-    stage_duty_id,
-    stage_temperature_id,
-    vapor_id,
-    vapor_total_id,
-)
+from openflowsheet.models.syn001.cascade import _enthalpy_flow
+from openflowsheet.models.syn001.cascade_init import KremserInitial, kremser_initial
 from openflowsheet.models.syn001.cascade_solve import (
     DECLARATION_CONTEXT,
     FD_COLUMN_SCALE,
@@ -46,9 +34,20 @@ from openflowsheet.models.syn001.cascade_solve import (
     solve_cascade,
     stage_unit,
 )
+from openflowsheet.models.syn001.cascade_spec import (
+    CascadeSpec,
+    liquid_id,
+    liquid_total_id,
+    mixed_id,
+    stage_duty_id,
+    stage_temperature_id,
+    vapor_id,
+    vapor_total_id,
+)
 from openflowsheet.models.syn001.ph_kernel import ph_state
 from openflowsheet.numerics.scaling import REGISTERED_NOMINALS
-from openflowsheet.orchestrator.trace import Trace
+from openflowsheet.numerics.solve_record import Trace
+from openflowsheet.orchestrator.policies import T05B_V2
 from openflowsheet.thermo.syn001 import Syn001Provider
 
 PROVIDER = Syn001Provider()

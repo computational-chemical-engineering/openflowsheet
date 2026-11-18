@@ -103,11 +103,11 @@ def stage_a_fields(spec: Any, provider: Any, answer: Any) -> Any:
     from openflowsheet.canonical import state_sha256
     from openflowsheet.models.syn001.cascade_solve import DECLARATION_CONTEXT
     from openflowsheet.models.syn001.column import profile_initial
-    from openflowsheet.models.syn001.column_solve import (
+    from openflowsheet.models.syn001.column_acceptance import regimes_of
+    from openflowsheet.models.syn001.column_compile import compile_column
+    from openflowsheet.models.syn001.column_endpoint import (
         bubble_point_endpoint,
-        compile_column,
         inverse_records,
-        regimes_of,
         unreached_specifications,
     )
 

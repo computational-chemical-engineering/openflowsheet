@@ -22,7 +22,7 @@ import numpy.typing as npt
 
 from openflowsheet.canonical import document_sha256
 from openflowsheet.numerics.newton import NewtonResult
-from openflowsheet.orchestrator.trace import AttemptSignature, SolveOutcome, SolvePolicy
+from openflowsheet.numerics.solve_record import AttemptSignature, SolveOutcome, SolvePolicy
 
 __all__ = [
     "Candidate",
@@ -42,9 +42,9 @@ __all__ = [
 ]
 
 #: ADR 0012 D4's second rule set (T05b spec §6–§7). Its PH-type kernel, unprojected start,
-#: records (§6.2–§6.5) and `ZERO_FLOW` regime (§7.1–§7.5) are the region's (`region.py`); the
-#: tear path has no lifted split, so its rules there are v1's. `ZERO_FLOW`'s place in the lattice
-#: is `adjacent`'s, here.
+#: records (§6.2–§6.5) and `ZERO_FLOW` regime (§7.1–§7.5) are the region's (`region.py`,
+#: `region_phase.py`); the tear path has no lifted split, so its rules there are v1's.
+#: `ZERO_FLOW`'s place in the lattice is `adjacent`'s, here.
 CONTRACT_V2: Final = "T05b-phase-contract-v2"
 
 

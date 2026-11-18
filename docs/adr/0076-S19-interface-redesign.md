@@ -47,6 +47,21 @@ texts; any numeric result. R-016 (verifier independence) is applied, not changed
   "attribute": "MODEL_BUILDERS"`). Through W4 both identities are unchanged and `registry_builtin.py --check` stays
   clean.
 - Replay identity: unchanged (I-10 no longer changes a signature; Q-F3 of the first draft is dropped).
+- Addendum (S19 W4, 2026-11-16, ruling R-W4-STOP3 on Fable; R-1042): the T06 generator self-hash
+  (`benchmarks/t06/generator.py` `generator_sha256()`, T06 spec §6.5) is a registered identity this list missed. I-1
+  changes its line 73 import in place (`orchestrator.trace` -> `numerics.solve_record`, no reorder; per-file ruff
+  `I001` ignore). `GENERATOR_SHA256[0]` takes the new raw value; `tests/t08_rename_substitution.py` undoes the line by
+  an exact full-line substitution before R-149's package substitution, so the published start sets keep `7f426aa9...`
+  and R-149's `509b01fb...` stays checked as the intermediate. A substitution-only move like R-149's; Frank's decision
+  is pending, not blocking (default this form, reported at W4 close).
+- Addendum (S19 W4, 2026-11-16, review R-W4-1a; a fact the lists missed, not a new decision): the W5 `Refusal`
+  exception (FQ-A; the I-7 row and "No shims") names four registry-hashed contributor files; a single-line grep missed
+  the parenthesized imports. Measured on `wp/S19-w4` at 92153233: eight files under `assessment/cost/` and
+  `assessment/lca/` import `Refusal` through `assessment.program`: cost/operating.py:26, cost/index.py:30,
+  lca/brightway.py:44, lca/tables.py:35 (listed) and cost/contributor.py:33, cost/derived.py:33, lca/impact.py:30,
+  lca/inventory.py:37 (added). All eight are retargeted in W5 with the one `registry_sha256` change. The non-hashed
+  importers (assessment/sizing/__init__.py:39, sizing/core.py:27, sizing/families.py:16, studies/assessment.py:46,
+  studies/nlp/revision.py:40 and the tests) are retargeted in W4 with the sizing re-exports (I-8).
 **Affected packages:** S19 (all of `src/openflowsheet`), with the tests, scripts, benchmarks, examples and living docs
 that import moved names.
 
@@ -103,6 +118,14 @@ the migration table below.
   `openflowsheet.schema_check.schema_errors`. Reason: document validation against `schemas/` is foundation; the
   assessment spec needs it (assessment/spec.py:21). Callers: assessment.spec, application.coupled_run (2 lazy),
   application.validation (lazy), tests.
+  Addendum (S19 W4, 2026-11-16, ruling A-I9 on Fable 5.2, `docs/briefs/S19-A-I9-ruling.md`; R-1044): **I-5b.**
+  `DocumentSchemaError`, `validate_document` and the private `_raise_first` (application/types.py:128, :185, :190 at
+  486b6dbb) also become `openflowsheet.schema_check` names: a pure move, before I-9. Reason: they are the
+  raise-first form of `schema_errors` over the same validator, order and pointer, and I-9's `application.errors`
+  needs `validate_document` (`ApiError.from_document`) from below itself. Left in types.py, the I-9 step ends at 3
+  violations / 3 cycles / 12 cycle edges with a new `errors -> types` violation and an `errors <-> types` cycle
+  (measured at import level). `_validator` and `_pointer` are private to schema_check again. Callers:
+  application.cli (lazy), application.local, application.operations, tests.
 - **I-6** `openflowsheet.units` stops re-exporting the display-conversion names (units/__init__.py:612-618). Callers
   import `openflowsheet.units.display`. Removes cycle 6.
 - **I-7** M03's V-tolerances `TAU_GROSS`, `TAU_FEAS`, `TAU_ACTIVE`, `TAU_KKT`, `TAU_SIGN`, `TAU_LICQ`,
@@ -140,6 +163,10 @@ the migration table below.
   and the `types -> contract` violation. `api_error` records its caller's module (`sys._getframe(1)`, contract.py:81):
   the move must not add a frame. MSG's auditor accepts any `openflowsheet.` frame (messages/audit.py:27), so the
   existing audit test cannot see an added frame; a new test pins it (migration, test commit before the step).
+  Addendum (same ruling, R-1044): `ApiError.from_document` imports `validate_document` from
+  `openflowsheet.schema_check` (I-5b). `application.errors` imports no application module at run time (`RunResult`
+  under `TYPE_CHECKING` only); its place in `application-layers` is as stated. Expected `codehealth arch --depth 4`:
+  3 / 3 / 12 -> 2 / 2 / 10.
 - **I-10** (S17 D4) `route_structure` (revision_run.py:367-410, with its private helper `_index`, :354) moves to the new
   module **`openflowsheet.application.structure_inspection`**, placed directly above `validation` in
   `application-layers`. Pure move, no signature change. Reason (review, verified): the run path does not call
@@ -189,11 +216,18 @@ the migration table below.
     `LOCAL_OWNER_PRINCIPAL`, `EditOperation`, `TransactionStatus`, ...) go with their first user in this list's
     order. A private helper goes with its only user; one used by two new modules goes to the lower one and becomes
     public. Measured section sizes (NLOC): 83, 204, 245, 469, 148, 252; each is under 1000.
+    Addendum (same ruling, R-1044): `documents.py` takes `published_schemas`, `validate_inline` and the schema
+    helpers left in types.py (`_event_common_schema`, `_event_common_validator`, `_consumer_event_schema`, `_checked`).
+    `DocumentSchemaError` and `validate_document` are not on its list (I-5b). The order of the I-12a row stands.
   - **I-12b** `store.py` (1062 NLOC; the `ProjectStore` class is 876) keeps `ProjectStore` and `_create_tables`.
     Everything at module level above the class (store.py:102-277: `StoreError`, `coded_store_error`,
     `IdempotencyKeyReusedError`, `ActiveJobLimitError`, `ArtifactTableSink`, `policy_file_bytes`, `AuditEntry`,
     `ArtifactRow`, `LedgerRow`, `_blob`, `_load`) moves to `store_records.py`. The class is not split. If store.py is
     not under 1000 NLOC after the move, STOP and report.
+    *Erratum (2026-11-17, review R-W4-13 item 2; S19_DECISIONS 2026-11-17 06:00):* `_blob` and `_load` stay in
+    store.py. The list contradicts "everything at module level above the class": `STORE_SCHEMA` and `_TABLES` sit in
+    that range but are not listed, and `EVIDENCE_OPERATIONS` is in it but not on the list; moving the two helpers away
+    from their only users breaks the helper rule. The other listed names moved to `store_records.py`.
   - **I-12c** `revision_run.py` (1111 NLOC; 1081 after I-10): the reproduction half (revision_run.py:1128-1589,
     `registered_case`, `registered_flowsheet`, `rerun_registered`, `declared_kinds`, `Reproduction`,
     `reproduce_bundle` and their private helpers, 319 NLOC) moves to `revision_replay.py`, placed directly above
@@ -214,6 +248,14 @@ the migration table below.
       `_revision`.
     - `inspection_service.InspectionService`: `get_project`, `list_models`, `list_capabilities`, `explain`,
       `list_audit`, `audit_refusal`.
+    *Erratum (2026-11-17, ruling R1 confirmed by review R-W4-I12d; S19_DECISIONS 2026-11-17 09:50):* the placement
+    rule ("a method whose family is not listed goes where its only callers are; callers in two services, the lower
+    one") overrides a family list that would make a service call one above it: `job` is public on
+    `ArtifactService` (callers in Job and Artifact), the job-list cursor helpers are public on `RevisionService`, and
+    `_check_request` is on `RevisionService`. `ServiceCore` as the home of `job` was considered and not taken.
+    `ArtifactService.get_stream_table(job_id, query)` takes a frozen `StreamTableQuery` (`pointer`, `depth`,
+    `cursor`, `limit`, `display_units`, no defaults); the facade keeps its public signature and defaults. The
+    JobService step was gated under Q-F5's fallback (behaviour tiers, full suite).
 
     A service calls only services below it and the core. `LocalApplication` keeps every public method name and
     signature, each a one-line delegation, plus its lifecycle (`create`, `open`, `in_memory`, `authenticated`,
@@ -298,6 +340,12 @@ the migration table below.
   `scripts/registry_builtin.py:134` (a label), `scripts/s16_recall.py:70`, and
   `messages/catalogue/refusals.yaml:1378` (a YAML comment, so the catalogue's parsed content is unchanged; the path is
   gate-frozen, so it is edited in a commit outside the gate).
+  *Erratum (2026-11-17, W4 run 20 STOP, confirmed by review R-W4-I19a 5(a); S19_DECISIONS 2026-11-17 14:15):* the
+  exceptions measured at 0d826601 are 36 bindings, not the four named above: every name the frozen
+  `models/syn001/column_unit.py` takes through a non-home path (:47 `models.syn001.cascade`, 10 names; :59
+  `models.syn001.column`, 18; :79 `models.syn001.column_solve`, 5; :90 `orchestrator.region.StagedSplits`), plus
+  `assessment.program.Refusal` and `application.revision_binding.MODEL_BUILDERS`, as lines 33-34 anticipate. The
+  names are listed in `docs/briefs/S19-I19-inventory.md` (W5 rows); the W5 base recomputes the list against it.
 
 ## Alternatives rejected
 
@@ -346,6 +394,14 @@ the migration table below.
    retargets, the engineer runs a liveness check once: replace the fake with one that raises, and the test must fail.
    Record it in the build-decisions log. The full-suite terminal report's "MSG WO-5a: N bundles scanned" and "MSG
    WO-6: N run results checked" must equal the base run's N at every step of I-4, I-10, I-12.
+   *Amendment (2026-11-16, review R-W4-9a Q6; evidence S19_DECISIONS "rule 4 falsifier: base2" and "rule 4 serial
+   runs done"):* under xdist these counts depend on worker scheduling (963/1231 and 964/1228 at one commit), so the
+   N of the sentence above is read from a serial full suite (`-p no:xdist`, `PYTHONHASHSEED=0`, exactly the two named
+   wall-time tests deselected: t07_v17_reference f6 and t07_conformance budget_of_the_scenario_runs) at the step's
+   parent and at the step. The bundles, run results, with-a-failure, passed, skipped, xfailed and deselected counts
+   must all be equal; a run with a different selection is not evidence. On a mismatch, per-file counts locate the
+   loss. A step's head run may serve as the next step's base. I-4 was measured this way without the fixed hash seed
+   (1061 / 801 / 100 at base and head).
 5. **Doc sweeps change living docs only:** README, `docs/interfaces-frozen.md`, `docs/code-health.md`, guides,
    `CLAUDE.md`, `.claude/**/*.md`, examples. Records stay as written: `docs/adr/**`, `docs/design-history/**`,
    `docs/design/**`, `docs/briefs/**`, `evidence/**`, build-decision logs, `*_DECISIONS.md`, measurement and analysis
@@ -362,6 +418,7 @@ the migration table below.
 | I-3 | src retarget; retarget outside gate; interface | `removed` (application/policies.py, the module) | after: application-layers loses `application.policies`; repo-layers adoption line `run.bundle -> application.policies` goes |
 | I-4 | import normalization outside gate (test_m02_wo14.py:59); interface | `renamed` (module run/session.py = application/run_session.py), `new_files`, `callers` (tests/**, scripts/**, living docs) | after: application-layers gains `application.run_session` directly above `application.binding`; repo-layers loses `openflowsheet.run.session` |
 | I-5 | src retarget; retarget outside gate; interface | `removed` (types.py: `schema_errors`) | none |
+| I-5b | interface | `renamed` (types.py: `DocumentSchemaError`, `validate_document` = schema_check.py, same names), `callers` (application/cli.py, local.py, operations.py; the tests that import either name) | none |
 | I-6 | src retarget; retarget outside gate; interface | `removed` (units/__init__.py: the display names) | none |
 | I-7 | src retarget (not the 4 contributor files); retarget outside gate; interface | `removed` (verification.py: the `TAU_*` re-exports; program.py: `Linearization`), `added` (linearization.py: `feasibility_tolerance`) | none |
 | I-8 | per restructure plan: src retarget; retarget outside gate; interface | `removed` (each re-export the plans left, except the I-19 W5 exceptions) | before each B1/B8 split: forbid `to` += its new modules |
@@ -375,8 +432,8 @@ the migration table below.
 | I-15 | forced-refusal tests outside gate before (asserting all but the `exception` detail); interface; tests outside gate after (`exception == "AdmissibilityRefusal"`, the K pin) | `added` (models/lifted.py: `AdmissibilityRefusal`), `callers` (tests that expect `VerifierError` from a region path, listed at the base) | after: the `orchestrator.region -> verify.checks` adoption line goes |
 | I-19 | sweep commits outside gate (docs, refusals.yaml:1378); interface for any re-export left | `removed` | none |
 
-Recommended W4 order: I-6, I-3, I-1, I-2, I-7, I-8, I-5, I-4, I-9, I-14, I-10, I-11, I-15, I-13, I-12a, I-12b, I-12c,
-I-12d, I-19. Hard constraints: I-14 after I-9; I-5 before I-12a; I-10 before I-12c; I-11 before I-12d.
+Recommended W4 order: I-6, I-3, I-1, I-2, I-7, I-8, I-5, I-4, I-5b, I-9, I-14, I-10, I-11, I-15, I-13, I-12a, I-12b,
+I-12c, I-12d, I-19. Hard constraints: I-14 after I-9; I-5 before I-12a; I-5b before I-9 (R-1044); I-10 before I-12c; I-11 before I-12d.
 
 ## Consequences
 

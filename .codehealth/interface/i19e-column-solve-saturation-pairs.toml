@@ -1,0 +1,17 @@
+# ADR 0076 I-19, step e (review R-W4-I19a 5(b); form of S19_DECISIONS 2026-11-16 STOP 1):
+# models/syn001/column_solve.py stops re-exporting saturation_pairs.
+# `codehealth gate --mode interface` reads this plan from the plan commit.
+id = "i19e-column-solve-saturation-pairs"
+approved_by = "Frank Peters, 2026-11-14, ADR 0076 accepted (Decision Desk ofs-adr0076-accept)"
+reason = """ADR 0076 I-19; review R-W4-I19a 5(b). The one alias dropped: column_solve.py:54 \
+`from cascade_solve import saturation_pairs as saturation_pairs`, which column_solve does not read. \
+The only importer through column_solve (test_s08b_saturation.py:57) was retargeted to \
+column_acceptance, the column's delegation site, outside the gate. No __all__ is touched, so the \
+plan lists no change (STOP 1 form, every list empty). Expected codehealth arch --depth 4 \
+(measured at this base): 0 violations / 0 cycles / 0 cycle edges before and after. Layer config: none."""
+removed = []
+renamed = {}
+changed = []
+added = []
+new_files = []
+callers = []

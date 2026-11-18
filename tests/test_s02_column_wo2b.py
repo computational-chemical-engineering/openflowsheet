@@ -26,38 +26,42 @@ from test_s02_column_wo2 import (
 
 import openflowsheet.models.syn001.cascade_solve as cascade_solve_module
 import openflowsheet.models.syn001.column_endpoint as endpoint_module
-import openflowsheet.models.syn001.column_solve as solve_module
-import openflowsheet.orchestrator.region as region_module
+import openflowsheet.models.syn001.saturation_band as saturation_band_module
+import openflowsheet.orchestrator.homotopy as homotopy_module
+import openflowsheet.orchestrator.region_attempts as region_attempts
 from openflowsheet.compile.reference import row_values
-from openflowsheet.models.syn001.cascade import (
-    CascadeFailure,
+from openflowsheet.models.lifted_tolerance import KIND_TOLERANCE
+from openflowsheet.models.syn001.band_types import BandTemperature
+from openflowsheet.models.syn001.cascade_failure import CascadeFailure
+from openflowsheet.models.syn001.cascade_spec import (
     liquid_total_id,
     stage_temperature_id,
     vapor_total_id,
 )
-from openflowsheet.models.syn001.column import ColumnSpec, distillate_total_id, profile_initial
-from openflowsheet.models.syn001.column_solve import (
-    DECLARATION_CONTEXT,
+from openflowsheet.models.syn001.column import profile_initial
+from openflowsheet.models.syn001.column_compile import compile_column, slots
+from openflowsheet.models.syn001.column_endpoint import (
     MAX_SWEEPS,
     PRESOLVE_ID,
     SWEEP_TOLERANCE,
     BubblePointEndpoint,
-    ColumnSolution,
     bubble_point_endpoint,
-    compile_column,
+)
+from openflowsheet.models.syn001.column_solve import (
+    DECLARATION_CONTEXT,
+    ColumnSolution,
     continuation,
-    slots,
     solve_column,
 )
-from openflowsheet.models.syn001.saturation_band import BandTemperature
+from openflowsheet.models.syn001.column_spec import ColumnSpec, distillate_total_id
 from openflowsheet.numerics.scaling import Scaling
+from openflowsheet.numerics.solve_record import SolveOutcome
 from openflowsheet.orchestrator.recovery import (
     EO_CORE_FAILURES,
     EO_RECOVERY_TRIGGERS,
     eo_recovery_due,
     solver_outcomes,
 )
-from openflowsheet.orchestrator.region import KIND_TOLERANCE, SolveOutcome
 from openflowsheet.orchestrator.roots import same_root
 
 #: §18.6 A05: the endpoints the generator registers — M1–M4 and the six regular variant sets
@@ -257,13 +261,13 @@ def test_a13_edge_3_on_solve_columns_own_path(monkeypatch: pytest.MonkeyPatch, c
     ref.cases.*.bubble_point_continued`; dyadic λ; the λ = 1 instance is the target's; a second
     run's root is `SAME` and bit-identical."""
     rebound: list[dict[str, float]] = []
-    real = region_module.rebind
+    real = homotopy_module.rebind
 
     def rebind(spec: Any, values: dict[str, float]) -> Any:
         rebound.append(dict(values))
         return real(spec, values)
 
-    monkeypatch.setattr(region_module, "rebind", rebind)
+    monkeypatch.setattr(region_attempts, "rebind", rebind)
     spec = SPECS[case]
     answer = solve_column(spec, PROVIDER)
     assert isinstance(answer, ColumnSolution) and answer.outcome == "CONVERGED"
@@ -407,7 +411,7 @@ def test_a22_a_bubble_point_outside_the_domain(monkeypatch: pytest.MonkeyPatch) 
     1) ends M1 `initialization_failed(s02-bubble-point-v1, bubble_point_outside_domain)` before
     any region solve."""
     _no_region_solve(monkeypatch)
-    real = solve_module.band_temperature
+    real = saturation_band_module.band_temperature
     calls: list[float] = []
 
     def below_once(provider: Any, flows: Any, pressure: float, *rest: Any, **kw: Any) -> Any:

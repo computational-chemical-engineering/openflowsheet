@@ -20,42 +20,45 @@ import pytest
 from conftest import REPO_ROOT
 
 import openflowsheet.models.syn001.cascade_solve as cascade_solve_module
-import openflowsheet.models.syn001.column as column_module
 import openflowsheet.models.syn001.column_compile as column_compile_module
 import openflowsheet.models.syn001.column_solve as column_solve_module
 import openflowsheet.models.syn001.column_validation as column_validation_module
+import openflowsheet.models.syn001.tp_state as tp_state_module
 from openflowsheet.compile.reference import row_values
 from openflowsheet.compiled import EvaluationContext
-from openflowsheet.models.syn001.cascade import (
-    CascadeFailure,
+from openflowsheet.models.syn001.cascade_failure import CascadeFailure
+from openflowsheet.models.syn001.cascade_rows import declared_problem
+from openflowsheet.models.syn001.cascade_spec import (
     InletState,
     SideFeed,
-    declared_problem,
     liquid_id,
     stage_pressure_id,
     stage_temperature_id,
     vapor_id,
     vapor_total_id,
 )
-from openflowsheet.models.syn001.column import (
-    MULTIPLE_STEADY_STATES_WARNING,
+from openflowsheet.models.syn001.column_acceptance import spec_values
+from openflowsheet.models.syn001.column_rows import declared_rows
+from openflowsheet.models.syn001.column_solve import solve_column
+from openflowsheet.models.syn001.column_spec import (
     NOT_OFFERED,
     ColumnSpec,
     EndSpecification,
-    column_warnings,
-    declared_rows,
     distillate_id,
     distillate_total_id,
     purity_flow_id,
-    purity_reference,
     purity_reference_parameter,
     reflux_id,
-    saturation_temperature,
     slot_column,
+)
+from openflowsheet.models.syn001.column_validation import (
+    MULTIPLE_STEADY_STATES_WARNING,
+    column_warnings,
+    purity_reference,
+    saturation_temperature,
     stage_band,
     validate,
 )
-from openflowsheet.models.syn001.column_solve import solve_column, spec_values
 from openflowsheet.thermo import FlashRequest, PropertyRequest
 from openflowsheet.thermo.syn001 import Syn001Provider
 
@@ -370,7 +373,7 @@ def test_a02_refusal_probes(name: str, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(column_compile_module, "declared_rows", refuse)
     monkeypatch.setattr(cascade_solve_module, "solve_region", refuse)
     provider = _R5OnlyProvider()
-    admissible = column_module.single_phase_admissible
+    admissible = tp_state_module.single_phase_admissible
 
     def r5(*args: Any, **kwargs: Any) -> Any:
         provider.inside_r5 = True

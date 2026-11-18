@@ -19870,3 +19870,95 @@ R-478 is unchanged: each registered module must fail on a name in `NLP_EXTRA_IMP
 
 **Watch for.** `scripts/m07a_evidence_manifest.py:339` (`A30_NLP_EXTRA_MODULES`) is M07a's recorded evidence and
 keeps its three names; A30's walked and imported counts in later evidence change with every new module.
+
+## R-1042: The T06 generator's self-hash moves by substitution only under S19's I-1 (R-149 extended; 2026-11-16)
+
+| | |
+| --- | --- |
+| Date | 2026-11-16 |
+| Decided by | design lane (S19 reviewer on Fable, ruling R-W4-STOP3); Frank's confirmation pending, not blocking (default this decision) |
+| Normative text | ADR 0076 (Affected requirements, Addendum 2026-11-16; I-1); R-149; T06 spec §6.5 |
+| Evidence | S19 gate 162 (`docs/S19_DECISIONS.md`, "gate 162 FAIL"): I-1's retarget of `benchmarks/t06/generator.py` (isort-moved import) changed the raw self-hash `509b01fb -> 5e436348` and the renamed-back value `7f426aa9 -> c2718343`, failing six identity tests; the implementing commit on `wp/S19-w4` quotes the remeasured hashes |
+| Affected packages | S19 (W4 I-1); T06 identity; T08's rename-substitution instrument |
+
+**Decision.** `generator.py` line 73 changes in place (module path only; per-file ruff `I001` ignore so the line
+keeps its position). The rename-back helper undoes it by an exact full-line substitution, asserted to occur once,
+before R-149's package substitution. `GENERATOR_SHA256[0]` becomes the new raw hash; R-149's `509b01fb...` is kept as a
+checked intermediate; the published start sets keep `7f426aa9...`. This waives, for this one pin, S19's rule that a
+retarget never changes an expected value.
+
+**Rejected alternatives, and why.**
+- *Re-register after the isort-ordered edit:* not substitution-only (renamed-back `c2718343`), so the proof chain to
+  the published `7f426aa9` breaks.
+- *Keep a minimal `orchestrator/trace.py` re-export until W5:* keeps a module I-1's migration row marks removed and
+  defers the same move.
+
+## R-1043: S19's W5 `Refusal` exception covers eight registry-hashed contributor files, not four (2026-11-16)
+
+| | |
+| --- | --- |
+| Date | 2026-11-16 |
+| Decided by | build lane (S19 orchestrator), on a finding of the design-lane review R-W4-1a; a fact the list missed, not a new policy |
+| Normative text | ADR 0076 (Affected requirements, Addendum 2026-11-16 R-W4-1a; I-7 row; No shims, FQ-A) |
+| Evidence | `docs/S19_DECISIONS.md`, "R-W4-1a": grep on `wp/S19-w4` at 92153233, parenthesized imports included |
+| Affected packages | S19 (W4 run 7, W5); core.json `registry_sha256` (one change in W5, as already planned) |
+
+**Decision.** The eight files under `assessment/cost/` and `assessment/lca/` that import `Refusal` through
+`assessment.program` (the four listed plus cost/contributor.py, cost/derived.py, lca/impact.py, lca/inventory.py) are
+retargeted in W5 together with the planned `registry_sha256` change. Non-hashed importers are retargeted in W4.
+
+**Rejected alternatives, and why.**
+- *Leave the four added files on the old path after S19:* a permanent re-export path, against ADR 0076 rule 1 (no shims).
+- *Retarget them in W4:* changes `registry_sha256` twice; W5 is the one planned change.
+
+## R-1044: S19's I-9 error vocabulary takes `validate_document` from `schema_check` (new step I-5b; 2026-11-16)
+
+| | |
+| --- | --- |
+| Date | 2026-11-16 |
+| Decided by | design lane (`architect`, Fable 5.2, ruling A-I9) on a STOP of the W4 run 8 engineer |
+| Normative text | ADR 0076 (Addenda 2026-11-16 A-I9 under I-5, I-9 and I-12a; migration row I-5b; recommended order and hard constraints) |
+| Evidence | `docs/briefs/S19-A-I9-ruling.md` (sections 5 and 7: `codehealth arch --depth 4` on a scratch export of `wp/S19-w4` 486b6dbb); `docs/S19_DECISIONS.md`, "W4 run 8 reported" |
+| Affected packages | S19 (W4 runs 9 onward: I-5b, I-9, I-12a) |
+
+**Decision.** `DocumentSchemaError`, `validate_document` and the private `_raise_first` move from
+`application/types.py` to `openflowsheet.schema_check` as a pure move (step I-5b, before I-9). `ApiError.from_document`
+stays a classmethod and imports `validate_document` from `schema_check`; `application.errors` imports no application
+module at run time and keeps its place directly below `application.types`. Expected arch after I-9: 3 / 3 / 12 ->
+2 / 2 / 10 (measured on the scratch export). I-12a's `documents.py` list loses the two names.
+
+**Rejected alternatives, and why.**
+- *I-9 as written:* errors would import `types` upward: a new `errors -> types` violation and an `errors <-> types`
+  cycle (measured 3 / 3 / 12, no gain), against the row's "removes cycle 8".
+- *A function-level import, errors above types, moving `from_document`, creating `documents.py` early, or putting the
+  names in errors.py:* each hides or moves the edge instead of removing it, or splits one concept; reasons in the
+  ruling, section 2.
+
+## R-1045: S19's I-13 builder kit: scope and public names (2026-11-17)
+
+| | |
+| --- | --- |
+| Date | 2026-11-17 |
+| Decided by | design lane (`reviewer`, Opus, review R-W4-11) on a STOP of the W4 run 11 engineer; adopted by the S19 orchestrator |
+| Normative text | ADR 0076 I-13 (lines 255-260) and its migration row; this entry clarifies scope and names |
+| Evidence | `docs/S19_DECISIONS.md`, "R-W4-11 reported" (AST probes of the six collision scopes; importer lists) |
+| Affected packages | S19 (W4: I-13) |
+
+**Decision.** I-13 covers the 44 distinct private names defined in `models/model_signatures` and imported across
+modules (67 import sites: model_builders.py:17, revision_binding.py:47, thermal_binding.py:34), plus the three named
+moves (`_column_owners` -> `binding_common.column_owners`, `_defect` -> `jobs.runner.defect_result`, `_basis_refusal`
+-> `basis_refusal`) and `_c1_reactor_surrogate_of` -> `c1_reactor_surrogate_of` (model_builders; imported at
+revision_binding.py:43). Each name drops its underscore, except four whose plain form collides with a local in six
+scopes: `_pin` -> `pin_value`, `_stream` -> `port_stream`, `_column` -> `pin_column`, `_columns` -> `pin_columns`.
+`_COLUMN` -> `model_signatures.COLUMN` (not in MODEL_SIGNATURES; no public entry). `_CONTEXT` and `_declared_default`
+stay private: test_m04_wo7_surrogate_unit.py:319 calls the public entry `MODEL_BUILDERS[records.MODEL_ID](...)`
+with a test-built context, and test_t07_r7_admission.py:144 checks against `models.syn001.flowsheet.HEATER_TEMPERATURE`.
+The test-only `X as X` re-exports at revision_binding.py:46, :78, :79 go in I-13's refactor step.
+
+**Rejected alternatives, and why.**
+- *Drop every underscore unchanged (the engineer's default):* `pin = signature.pin(...)` would shadow `pin(...)` in
+  model_builders `_feed_source`:129, `_c1_feed_source`:500 and model_signatures `_pinned`:409; `stream = stream(...)`
+  at model_signatures:398 raises UnboundLocalError; `column` collides at model_builders:266 and thermal_binding:145.
+- *All ~150 cross-module privates in orchestrator, verify and models.syn001:* not the builder kit S17 review 11
+  item 5 names ("the private pin readers and signature constants in model_signatures").
+- *Public names for `_CONTEXT` and `_declared_default`:* the tests have a public entry or an independent expectation.

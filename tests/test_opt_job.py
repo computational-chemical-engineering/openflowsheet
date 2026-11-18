@@ -14,9 +14,9 @@ from pathlib import Path
 import pytest
 from test_opt_request import UNAVAILABLE, _fixture, _th_r1
 
-from openflowsheet.application.contract import ApplicationError
+from openflowsheet.application.errors import ApplicationError
+from openflowsheet.application.job_requests import JobRequest, OptimizeBody
 from openflowsheet.application.local import LocalApplication
-from openflowsheet.application.types import JobRequest, OptimizeBody
 from openflowsheet.studies.nlp import closure
 
 
@@ -41,7 +41,7 @@ def test_the_optimize_request_round_trips() -> None:
 def test_g11_submit_job_without_a_solver_is_unsupported_and_creates_no_job(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    from openflowsheet.application.types import Change, Edit
+    from openflowsheet.application.transaction_types import Change, Edit
 
     with LocalApplication.create(tmp_path / "project", project_id="opt-wo6") as app:
         edits = tuple(Edit("set", (key,), value) for key, value in _th_r1().items())

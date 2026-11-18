@@ -24,13 +24,13 @@ from test_s11_thermal_binding import (
     pascal,
 )
 
-from openflowsheet.application.policies import T06_REVISION_V2
 from openflowsheet.application.revision_binding import RevisionBinding, bind_revision_flowsheet
 from openflowsheet.models.revision_flowsheet import COOLPROP_RECORDS, IAPWS95_RECORDS
+from openflowsheet.numerics.solve_record import SolvePolicy
 from openflowsheet.orchestrator.execution import ExecutionPlan
 from openflowsheet.orchestrator.executor import PlanResult, execute_plan
+from openflowsheet.orchestrator.policies import T06_REVISION_V2
 from openflowsheet.orchestrator.revision import plan_revision
-from openflowsheet.orchestrator.trace import SolvePolicy
 
 THERMAL = Path(__file__).resolve().parents[1] / "benchmarks" / "s11" / "thermal"
 

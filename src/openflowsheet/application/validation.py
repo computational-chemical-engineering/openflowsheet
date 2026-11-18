@@ -23,20 +23,20 @@ from collections.abc import Callable, Mapping, Sequence
 from dataclasses import replace
 from typing import TYPE_CHECKING, Any, Final, NamedTuple
 
-from openflowsheet.application.validation_report import Check as Check
-from openflowsheet.application.validation_report import EvidenceClass as EvidenceClass
-from openflowsheet.application.validation_report import Result as Result
-from openflowsheet.application.validation_report import Stage as Stage
-from openflowsheet.application.validation_report import Task as Task
-from openflowsheet.application.validation_report import ValidationReport as ValidationReport
-from openflowsheet.application.validation_report import ValidationStatus as ValidationStatus
-from openflowsheet.application.validation_report import utc_timestamp as utc_timestamp
+from openflowsheet.application.validation_report import (
+    Check,
+    Result,
+    Stage,
+    Task,
+    ValidationReport,
+    ValidationStatus,
+    utc_timestamp,
+)
 from openflowsheet.canonical import first_noncanonical
 
 if TYPE_CHECKING:
-    from openflowsheet.application.binding import Unbound
-    from openflowsheet.application.contract import ApplicationError
-    from openflowsheet.application.revision_binding import SurrogateResolver
+    from openflowsheet.application.binding_common import Unbound
+    from openflowsheet.application.model_builders import SurrogateResolver
     from openflowsheet.graph.process import ProcessGraph
     from openflowsheet.graph.trace import Declaration
     from openflowsheet.models.revision_flowsheet import RevisionError
@@ -73,35 +73,6 @@ def _revision_id(document: Mapping[str, Any]) -> str:
     value = document.get("revision_id")
     text = "" if value is None else str(value)
     return text or MISSING_REVISION_ID
-
-
-def task_unsupported(task: str) -> ApplicationError:
-    """U05's refusal of a task v0.1 does not validate for, ready to raise (T08 review 2, Ruling 1).
-    `LocalApplication.validate` raises it audited, before reading the revision."""
-    from openflowsheet.application.contract import api_error
-
-    return api_error("unsupported", f"task_unsupported({task})", pointer="/task")
-
-
-def nlp_solver_unavailable() -> ApplicationError:
-    """OPT design §4.11 (ADR 0071 D8, D10): `validate(task="optimization")` where no audited NLP
-    solver is available — ADR 0019's `unsupported`, `nlp_solver_unavailable`, pointer `/task`,
-    raised before the revision is read (U05's place). The message is the same on every platform
-    (D-16); the probe's detail, which names the platform, is the report reason's."""
-    from openflowsheet.application.contract import api_error
-
-    return api_error("unsupported", "nlp_solver_unavailable", pointer="/task")
-
-
-def optimization_request_missing() -> ApplicationError:
-    """OPT design §4.11: `task="optimization"` without an `optimization` request."""
-    from openflowsheet.application.contract import api_error
-
-    return api_error(
-        "invalid_request",
-        "task optimization needs an optimization request",
-        pointer="/optimization",
-    )
 
 
 def validate(
@@ -291,6 +262,10 @@ def _validate_optimization(
     solver_probe: Callable[[], Any] | None,
 ) -> ValidationReport:
     """OPT design §4.11: see `validate`."""
+    from openflowsheet.application.errors import (
+        nlp_solver_unavailable,
+        optimization_request_missing,
+    )
     from openflowsheet.application.revision_routes import REVISION_ROUTES
     from openflowsheet.studies.nlp.closure import audited_solver
     from openflowsheet.studies.nlp.request import STATIC_CODES, static_readiness
@@ -456,7 +431,7 @@ def _first_schema_error(document: Mapping[str, Any]) -> tuple[str, str] | None:
     """The first `process-revision.schema.json` error of a canonical `document`, as `(pointer,
     message)`, or `None`. The document is read as JSON reads it (a tuple is an array, any mapping
     an object): the schema judges the document's canonical form, not its Python spelling."""
-    from openflowsheet.application.types import schema_errors
+    from openflowsheet.schema_check import schema_errors
 
     errors = schema_errors("process-revision.schema.json", _as_json(document))
     if not errors:
@@ -1053,7 +1028,7 @@ def _judged_parameters(
 
 def _code_with_hint(error: RevisionError) -> str:
     """The code, then its hint (ruling round 6, B2), bounded as an `Unbound`'s is."""
-    from openflowsheet.application.binding import HINT_LIMIT
+    from openflowsheet.application.binding_common import HINT_LIMIT
     from openflowsheet.application.projection import bound_text
 
     if error.hint is None:

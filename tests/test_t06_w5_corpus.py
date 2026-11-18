@@ -46,7 +46,8 @@ from t06_support import ALLOWANCE, registered_root, worst_ratio
 from test_t05_w1c_executor import _reference as nominal_reference
 from test_t06_w4_registry import BY_ID, CASES, CONSTRUCTED
 
-from openflowsheet.application.binding import Binding, Unbound, bind_revision_or_reason
+from openflowsheet.application.binding import Binding, bind_revision_or_reason
+from openflowsheet.application.binding_common import Unbound
 from openflowsheet.application.revision_binding import RevisionBinding, bind_revision_flowsheet
 from openflowsheet.application.validation import validate
 from openflowsheet.compile.casadi_backend import compile_problem

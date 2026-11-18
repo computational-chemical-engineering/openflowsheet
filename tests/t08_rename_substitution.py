@@ -15,6 +15,13 @@ pins and the W5c binding signatures. Frank approved re-registering them as a sub
 move (2026-10-02, R-149). As for R-148 (`t08_v2_substitution`), the substitution is undone where
 the values are made: `record_process_runtime` monkeypatches both self-hashes back to their
 pre-rename values, and with it every moved value is the registered one byte for byte.
+
+The generator moved once more, by one line: S19's I-1 step (ADR 0076) retired the module it
+imported the solve record's types from, and the import names the new home on the line where it
+named the old one (line 73, out of import order: `pyproject.toml` waives I001 for the file). That
+line is put back first (`GENERATOR_I1_LINE`, a full-line substitution that must occur once), which
+gives R-149's registered new hash (`GENERATOR_SHA256_BEFORE_I1`), and then the package's name
+(R-W4-STOP3 Q1).
 """
 
 from __future__ import annotations
@@ -36,18 +43,38 @@ PROVIDER_SHA256 = (
 )
 #: (new, old): the T06 generator's `generator_sha256`. The published start sets
 #: (`starts-nominal-v1.json`, `starts-nominal-holdout1.json`) record the old one: §6.5 never
-#: regenerates them, so they keep naming the bytes that generated them.
+#: regenerates them, so they keep naming the bytes that generated them. The new one is the
+#: generator's bytes as they are now, after S19's I-1 line (`GENERATOR_I1_LINE`).
 GENERATOR_SHA256 = (
-    "509b01fb1544ec24a79b43c11353cfa9b5563ee885ed3eddfdc04d8daf1c14b4",
+    "d03247b6435510d8f85eb3c82444fd2e1b08291469df600b0c43744dc822f2c2",
     "7f426aa9f8a114553d362ed03f4a040e67827a8be17c1751b7e2374043117893",
 )
+#: (new, old): the generator's import of the solve record's types, as S19's I-1 step left it and
+#: as it was before (ADR 0076: `orchestrator.trace` removed), each one full line.
+GENERATOR_I1_LINE = (
+    b"from openflowsheet.numerics.solve_record import SolvePlan, SolvePolicy\n",
+    b"from openflowsheet.orchestrator.trace import SolvePlan, SolvePolicy\n",
+)
+#: The generator's hash with the I-1 line put back: R-149's registered new value.
+GENERATOR_SHA256_BEFORE_I1 = "509b01fb1544ec24a79b43c11353cfa9b5563ee885ed3eddfdc04d8daf1c14b4"
+
+
+def before_i1(data: bytes) -> bytes:
+    """The generator's bytes with S19's I-1 line put back, which must occur exactly once."""
+    new, old = GENERATOR_I1_LINE
+    count = data.count(new)
+    if count != 1:
+        raise ValueError(f"the I-1 line occurs {count} times in the T06 generator, not once")
+    return data.replace(new, old)
 
 
 def renamed_back_sha256(path: Path) -> str:
-    """SHA-256 of `path`'s bytes with the package's name as it was before the rename."""
-    return hashlib.sha256(
-        path.read_bytes().replace(b"openflowsheet", b"process_runtime")
-    ).hexdigest()
+    """SHA-256 of `path`'s bytes with the package's name as it was before the rename (for the
+    T06 generator, after its I-1 line is put back)."""
+    data = path.read_bytes()
+    if path.resolve() == Path(generator.__file__).resolve():
+        data = before_i1(data)
+    return hashlib.sha256(data.replace(b"openflowsheet", b"process_runtime")).hexdigest()
 
 
 def record_process_runtime(monkeypatch: pytest.MonkeyPatch) -> None:

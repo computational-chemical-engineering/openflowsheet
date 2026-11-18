@@ -60,21 +60,17 @@ from openflowsheet.adapters import variants
 from openflowsheet.adapters.experiments.runner import CacheMode, ExperimentRunner
 from openflowsheet.adapters.experiments.store import ExperimentStore, ListArtifactSink
 from openflowsheet.application.coupled_run import LiveExperiments, answer_of, final_constants
-from openflowsheet.application.policies import T06_REVISION_V2
-from openflowsheet.application.revision_run import (
-    Route,
-    reproduce_bundle,
-    run_revision_session,
-    select_route,
-)
+from openflowsheet.application.revision_replay import reproduce_bundle
+from openflowsheet.application.revision_run import Route, run_revision_session, select_route
 from openflowsheet.canonical import document_sha256, file_sha256
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models.c1 import COMPONENTS
 from openflowsheet.models.c1.boundary import data_domain_violations, hard_domain_violations
+from openflowsheet.orchestrator.policies import T06_REVISION_V2
 from openflowsheet.run.bundle import BundleError, read_artifact
 from openflowsheet.thermo import StreamState
 from openflowsheet.thermo.pr_c1 import PrC1Provider
-from openflowsheet.verify.certificate import CheckPolicy
+from openflowsheet.verify.verdict import CheckPolicy
 
 REPO = Path(__file__).resolve().parents[2]
 LOOP = REPO / "benchmarks" / "m02" / "c1-loop-real.json"

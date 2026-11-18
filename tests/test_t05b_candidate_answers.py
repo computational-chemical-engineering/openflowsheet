@@ -51,12 +51,13 @@ from t05b_support import (
     solve_from_v2,
 )
 
-from openflowsheet.orchestrator import region as region_module
+from openflowsheet.orchestrator import region_problem as region_problem_module
 from openflowsheet.orchestrator.phase_contract import Candidate
-from openflowsheet.orchestrator.region import RegionResult
+from openflowsheet.orchestrator.region_result import RegionResult
 from openflowsheet.orchestrator.revision import InitialStateFailure, initial_state
 from openflowsheet.verify import NEAR_THRESHOLD_MARGIN
-from openflowsheet.verify.certificate import CheckPolicy, SolutionCertificate, verify_revision
+from openflowsheet.verify.certificate import verify_revision
+from openflowsheet.verify.verdict import CheckPolicy, SolutionCertificate
 
 FEED = (1.0, 1.0, 1.0)
 DUTIES = (0.0, 30_000.0, 90_000.0, 115_000.0, 125_000.0)
@@ -345,7 +346,7 @@ def p11_candidate() -> Caught:
     """P11's candidate: `U-PHF` declared first, `Q2 = 0`, the start at 125 kW (both flashes
     `VAPOR`), the target at 90 kW; the first candidate reporting both units changed."""
     caught: list[Caught] = []
-    real = region_module._LiftedOps.at_candidate
+    real = region_problem_module._LiftedOps.at_candidate
 
     def spy(self: Any, candidate: Candidate, cause: str) -> Any:
         changed = [
@@ -361,7 +362,7 @@ def p11_candidate() -> Caught:
     start = _start(125_000.0, 0.0, False)
     assert isinstance(start, dict), start
     with pytest.MonkeyPatch.context() as patch:
-        patch.setattr(region_module._LiftedOps, "at_candidate", spy)
+        patch.setattr(region_problem_module._LiftedOps, "at_candidate", spy)
         with pytest.raises(_StopError):
             solve_from_v2(bind(chain(90_000.0, 0.0, phf2_first=False)), start)
     (found,) = caught

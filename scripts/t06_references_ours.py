@@ -49,10 +49,10 @@ from openflowsheet.orchestrator.executor import execute_plan  # noqa: E402
 from openflowsheet.orchestrator.revision import plan_revision  # noqa: E402
 from openflowsheet.orchestrator.tear import solve_tear  # noqa: E402
 from openflowsheet.verify.certificate import (  # noqa: E402
-    SolutionCertificate,
     verify,
     verify_revision,
 )
+from openflowsheet.verify.verdict import SolutionCertificate  # noqa: E402
 
 RESULTS = ROOT / "benchmarks" / "t06" / "references" / "results"
 

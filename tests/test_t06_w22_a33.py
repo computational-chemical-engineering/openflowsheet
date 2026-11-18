@@ -18,7 +18,8 @@ from test_t06_w5_corpus import REVISION_RUNS, solved
 
 from benchmarks.t06 import ensemble
 from openflowsheet.verify import dormant
-from openflowsheet.verify.certificate import SolutionCertificate, verify_revision
+from openflowsheet.verify.certificate import verify_revision
+from openflowsheet.verify.verdict import SolutionCertificate
 
 
 def _certified(case: str) -> tuple[SolutionCertificate, Any]:

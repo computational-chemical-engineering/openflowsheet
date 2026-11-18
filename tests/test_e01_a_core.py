@@ -19,13 +19,12 @@ import pytest
 from m03_support import flowsheet
 
 from openflowsheet.assessment.defaults import DEFAULTS, REQUIRED
+from openflowsheet.assessment.linearization import Linearization, Refusal
 from openflowsheet.assessment.program import (
     AssessmentProgram,
     BuildContext,
     ContributionPlan,
-    Linearization,
     OutputDef,
-    Refusal,
     Symbols,
     Theta,
 )
@@ -45,7 +44,7 @@ from openflowsheet.canonical import document_sha256
 from openflowsheet.compile.casadi_backend import TwinEvaluationError, compile_parametric_twin
 from openflowsheet.compile.reference import row_values
 from openflowsheet.compile.spec import EquationSpec, ProblemSpec
-from openflowsheet.studies.nlp.verification import TAU_FEAS
+from openflowsheet.studies.nlp.tolerances import TAU_FEAS
 from openflowsheet.studies.syn001 import solve_certified
 
 X1, X2 = "S3.T", "S3.n.A"

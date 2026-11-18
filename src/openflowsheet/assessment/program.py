@@ -26,9 +26,8 @@ from typing import Any, Final, Protocol
 
 import numpy as np
 
-from openflowsheet.assessment.linearization import Linearization as Linearization
+from openflowsheet.assessment.linearization import Linearization, feasibility_tolerance
 from openflowsheet.assessment.linearization import Refusal as Refusal
-from openflowsheet.assessment.linearization import _feasibility_tolerance
 from openflowsheet.assessment.quantities import ASSESSMENT_PREFIX, classify
 from openflowsheet.assessment.regimes import Regime, RegimeEntry
 from openflowsheet.assessment.spec import AssessmentSpec
@@ -59,7 +58,6 @@ __all__ = [
     "Contributor",
     "FunctionalBuilder",
     "Limitation",
-    "Linearization",
     "OutputDef",
     "Refusal",
     "Symbols",
@@ -606,7 +604,7 @@ class AssessmentProgram:
         )
 
     def _admissible_at(self, state: Mapping[str, float]) -> AssessmentProgram | Refusal:
-        tau = _feasibility_tolerance()
+        tau = feasibility_tolerance()
         try:
             values = self.evaluate(state)
         except TwinEvaluationError as error:
@@ -813,7 +811,7 @@ class AssessmentProgram:
         `decisions` are host pins at other values than the program's (a study's candidate,
         §4.10.3 V7): the rows and the rule then read them. `release` gives entries to the rule
         whatever their rows — V7's dormancy entries, which have none (§4.3.1)."""
-        tau = _feasibility_tolerance()
+        tau = feasibility_tolerance()
         try:
             values = self.evaluate(x, decisions)
         except TwinEvaluationError:

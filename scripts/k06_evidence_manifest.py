@@ -31,11 +31,14 @@ sys.path.insert(0, str(ROOT / "scripts"))
 from v0_0_gate import build as gate_report  # noqa: E402
 
 from openflowsheet.application.cli import main as cli  # noqa: E402
+from openflowsheet.application.job_records import EffectiveBudgets  # noqa: E402
+from openflowsheet.application.job_requests import JobRequest, SolveBody  # noqa: E402
+from openflowsheet.application.local import LocalApplication  # noqa: E402
 from openflowsheet.application.revisions import Revision, content_hash  # noqa: E402
-from openflowsheet.application.transactions import (  # noqa: E402
-    Application,
+from openflowsheet.application.transaction_types import (  # noqa: E402
     ChangeSet,
     Edit,
+    TransactionResult,
 )
 from openflowsheet.application.validation import validate  # noqa: E402
 from openflowsheet.canonical import file_sha256  # noqa: E402
@@ -49,23 +52,58 @@ def case(name: str) -> dict[str, Any]:
 
 
 def measure_transactions() -> dict[str, Any]:
+    """K06's properties on an in-memory `LocalApplication` (ADR 0076 I-11: K06's façade is gone).
+
+    The nominal case is stored under its own id with the store's own calls, and the run it
+    invalidates is a solve job recorded in the store (ADR 0035 D4), not a caller's side table.
+    """
     nominal = case("SYN-001-nominal")
-    app = Application()
-    app.store.put(Revision(revision_id=nominal["revision_id"], document=nominal))
-    app.record_run("run-a", nominal["revision_id"])
+    app = LocalApplication.in_memory()
+    store = app.store
+    policy_sha256 = app.policy.policy_sha256
+    with store.writing() as connection:
+        store.commit_revision(
+            connection,
+            Revision(revision_id=nominal["revision_id"], document=nominal),
+            principal_id=app.principal_id,
+            capability_id=app.capability_id,
+            policy_sha256=policy_sha256,
+        )
+    job, _ = store.accept_job(
+        JobRequest(
+            operation="solve",
+            idempotency_key="run-a",
+            body=SolveBody(revision_id=nominal["revision_id"]),
+        ),
+        principal_id=app.principal_id,
+        capability_id=app.capability_id,
+        policy_sha256=policy_sha256,
+        owner_instance=app.owner_instance,
+        effective_budgets=EffectiveBudgets(),
+    )
+
+    def head() -> str | None:
+        with store.reading() as connection:
+            return store.head(connection)
+
+    def commit(change_set: ChangeSet) -> TransactionResult:
+        return app.commit_change(
+            change_set.change, change_set.expected_revision, change_set.idempotency_key
+        )
 
     request = ChangeSet(
         edits=(Edit("set", ("title",), "edited"),),
-        expected_revision=app.store.head,
+        expected_revision=head(),
         idempotency_key="key-1",
         new_revision_id="rev-2",
     )
-    committed = app.commit(request)
-    replayed = app.commit(request)
+    committed = commit(request)
+    replayed = commit(request)
     # Counted *here*, before the later commits: the claim is that a retry creates no second
     # revision, and taking the count at the end would have measured three unrelated commits.
-    after_retry = len(app.store.history())
-    stale = app.commit(
+    with store.reading() as connection:
+        after_retry = len(store.revision_ids(connection))
+    stale = commit(
         ChangeSet(
             edits=(Edit("set", ("title",), "other"),),
             expected_revision=nominal["revision_id"],
@@ -73,23 +111,26 @@ def measure_transactions() -> dict[str, Any]:
             new_revision_id="rev-3",
         )
     )
-    draft = app.commit(
+    draft = commit(
         ChangeSet(
             edits=(Edit("set", ("specifications",), []),),
-            expected_revision=app.store.head,
+            expected_revision=head(),
             idempotency_key="key-3",
             new_revision_id="draft-1",
         )
     )
+    head_after_conflict = head()
+    app.close()
     return {
         "committed": committed.status,
+        "recorded_run": f"run-{job.job_id}",
         "invalidations": list(committed.invalidations),
         "idempotent_retry": replayed.status,
         "retry_same_revision": replayed.revision_id == committed.revision_id,
         "revisions_after_retry": after_retry,
         "stale_commit": stale.status,
         "conflict": dict(stale.conflict or {}),
-        "head_after_conflict": app.store.head,
+        "head_after_conflict": head_after_conflict,
         "draft_commit": draft.status,
         "draft_status": draft.validation.status if draft.validation else None,
         "content_hash_ignores_title": content_hash(nominal)
@@ -163,7 +204,7 @@ def build(commit: str, gate_stdout: Path) -> dict[str, Any]:
             and transactions["retry_same_revision"]
             and transactions["revisions_after_retry"] == 2
             and transactions["stale_commit"] == "conflict"
-            and transactions["invalidations"] == ["run-a"]
+            and transactions["invalidations"] == [transactions["recorded_run"]]
             else "fail",
             "value": transactions,
             "expected": "committed / replayed / conflict, with the invalidated run named",
@@ -316,7 +357,8 @@ def build(commit: str, gate_stdout: Path) -> dict[str, Any]:
                 "Immutable content-addressed revisions.",
             ),
             ("src/openflowsheet/application/validation.py", "Task validation, §4.3."),
-            ("src/openflowsheet/application/transactions.py", "Local transactions, §11."),
+            ("src/openflowsheet/application/local.py", "LocalApplication.commit_change, §11."),
+            ("src/openflowsheet/application/revision_edits.py", "apply_edits, semantic_diff, §11."),
             ("src/openflowsheet/application/cli.py", "The CLI, D15 and G06."),
             ("scripts/v0_0_gate.py", "The v0.0 gate summary."),
         )

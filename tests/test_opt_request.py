@@ -22,13 +22,13 @@ import pytest
 from jsonschema import Draft202012Validator
 from t07_corpus import A02_FILES, CORPUS
 
-from openflowsheet.application import types as application_types
+from openflowsheet import schema_check
 from openflowsheet.application import validation
-from openflowsheet.application.contract import ApplicationError
+from openflowsheet.application.errors import ApplicationError
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.revision_routes import REVISION_ROUTES
-from openflowsheet.application.types import schema_errors
 from openflowsheet.canonical import canonical_json, document_sha256
+from openflowsheet.schema_check import schema_errors
 from openflowsheet.studies.nlp import closure
 from openflowsheet.studies.nlp import request as request_module
 from openflowsheet.studies.nlp.closure import SolverAvailability, audited_solver
@@ -78,7 +78,7 @@ def test_g18_the_schema_is_a_draft_2020_12_schema_and_registered() -> None:
 
 def test_the_request_reader_reports_the_application_schema_errors_bytewise() -> None:
     """OPT review M2: `studies` reads the request schema itself (it never imports `application`);
-    its errors are `application.types.schema_errors`'s, text and order, on every fixture and on
+    its errors are `schema_check.schema_errors`'s, text and order, on every fixture and on
     ill-formed documents, and its pointers carry the same RFC 6901 escapes."""
     documents: list[Any] = [
         json.loads(path.read_bytes()) for path in sorted(FIXTURES.rglob("*.json"))
@@ -91,7 +91,7 @@ def test_the_request_reader_reports_the_application_schema_errors_bytewise() -> 
         expected = schema_errors(SCHEMA_REFERENCE, document)
         assert request_module._schema_errors(document) == expected, document
     path = ["a/b~c", 0, "~/"]
-    assert request_module._pointer(path) == application_types._pointer(path) == "/a~1b~0c/0/~0~1"
+    assert request_module._pointer(path) == schema_check._pointer(path) == "/a~1b~0c/0/~0~1"
 
 
 @pytest.mark.parametrize("name", ["th_r1_minimal", "th_r1_full"])
@@ -463,7 +463,7 @@ def test_g11_the_application_refuses_before_reading_and_wants_the_request(
     nothing read; given, the static readiness's report. Without a solver: `unsupported
     nlp_solver_unavailable`, before the request is looked at."""
     from openflowsheet.application.operations import OPERATIONS
-    from openflowsheet.application.types import Change, Edit
+    from openflowsheet.application.transaction_types import Change, Edit
 
     with LocalApplication.create(tmp_path / "project", project_id="opt-wo3") as app:
         edits = tuple(Edit("set", (key,), value) for key, value in _th_r1().items())
@@ -501,7 +501,7 @@ _NO_NLP_IMPORT = """
 import json, sys
 sys.path.insert(0, sys.argv[1])
 from openflowsheet.application import validation
-from openflowsheet.application.contract import ApplicationError
+from openflowsheet.application.errors import ApplicationError
 from openflowsheet.application.revision_routes import REVISION_ROUTES
 from openflowsheet.studies.nlp.closure import SolverAvailability
 from openflowsheet.studies.nlp.request import static_readiness

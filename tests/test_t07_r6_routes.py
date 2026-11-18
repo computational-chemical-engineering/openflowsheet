@@ -36,13 +36,8 @@ from t07_v17_c1_documents import c1_document, schema_conformant
 from t08_d1_substitution import d1_reversed
 
 import openflowsheet.application.revision_binding as revision_binding_module
-from openflowsheet.application.binding import (
-    Binding,
-    Unbound,
-    bind_revision_or_reason,
-    legacy_answers,
-    refusal_code,
-)
+from openflowsheet.application.binding import Binding, bind_revision_or_reason, legacy_answers
+from openflowsheet.application.binding_common import Unbound, refusal_code
 from openflowsheet.application.revision_binding import bind_revision_flowsheet
 from openflowsheet.application.revision_run import NoRoute, Route, select_route
 from openflowsheet.application.validation import validate

@@ -1293,11 +1293,11 @@ def test_a22_the_structural_report_is_in_the_bundle_and_in_the_g05_comparison(
     """
     import os
 
+    from openflowsheet.application.run_session import run_session
     from openflowsheet.compiled import EvaluationContext
     from openflowsheet.models.syn001.flowsheet import Syn001Flowsheet
     from openflowsheet.run.bundle import read_artifact
     from openflowsheet.run.identity import floats_in, r0_projection
-    from openflowsheet.run.session import run_session
     from openflowsheet.thermo.syn001 import Syn001Provider
 
     for variable in ("OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS"):

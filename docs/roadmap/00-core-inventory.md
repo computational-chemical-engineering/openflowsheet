@@ -51,7 +51,7 @@ Solution-vector variables per material stream (`src/openflowsheet/models/__init_
 | `orchestrator/region.py:161` | `Regime = Literal["TWO_PHASE", "LIQUID", "VAPOR", "ZERO_FLOW"]` | region regimes in the EO solve |
 | `models/thermal/kernel.py:66` | `Regime = Literal["LIQUID", "VAPOR", "SATURATED"]` | pure-fluid declared regimes (ADR 0051 D1) |
 
-Also: `orchestrator/trace.py:99` `AttemptSignature = tuple[tuple[str, PhaseSignature], ...]`.
+Also: `numerics/solve_record.py:99` `AttemptSignature = tuple[tuple[str, PhaseSignature], ...]`.
 
 `phase_capability` on a port or connection: `models/__init__.py:240` (`Port.phase_capabilities`)
 and `schemas/process-revision.schema.json` `connections[].phase_capability` enum
@@ -384,7 +384,7 @@ Notes:
 - `execute_plan` (`orchestrator/executor.py:215`) runs the steps. `StepResult` `:107`, `PlanResult` `:134`.
 - Causal (sequential) traversal: `RevisionFlowsheet.traverse` (`models/revision_flowsheet.py`) runs units
   in declaration order, tearing a stream only where the graph deadlocks (module docstring, lines 1-17).
-- Each EO region is solved as one compiled problem: `solve_region(...)` at `orchestrator/region.py:1763`.
+- Each EO region is solved as one compiled problem: `solve_region(...)` at `orchestrator/region.py:216`.
   Its `Regime` is at `region.py:161`.
 - Attempts: `solve_with_attempts(...)` at `orchestrator/attempts.py:223`. `AttemptCore`
   `Literal["newton","anderson","ptc","homotopy"]` at `:86`. `AttemptContext` `:101`. `SolveResult` `:187`.
@@ -399,10 +399,10 @@ Notes:
 
 - Tear: `orchestrator/tear.py`: `Syn001TearProblem` `:130`, `build_plan` `:493`, `solve_tear` `:540`.
   Candidate tears come from `graph/tear.py` (404 lines); `iterated_tear_set` in `execution.py:243`.
-- Initializer: `SolvePolicy.initializer_chain` (`orchestrator/trace.py:659` class `SolvePolicy`).
+- Initializer: `SolvePolicy.initializer_chain` (`numerics/solve_record.py:667` class `SolvePolicy`).
   Compatible warm starts are an opt-in source id `WARM_START_SOURCE = "compatible_warm_start"`
   (`orchestrator/warm_start.py:48`). The opt-in chain is `("compatible_warm_start", "traversal-G0-v1")`
-  (`application/policies.py:13`). It is never a route default.
+  (`orchestrator/policies.py:13`). It is never a route default.
 - Per-model local initializers: `INITIALIZER_ID` in `models/syn001/column.py:136`
   (`"s02-profile-cmo-v1"`) and `models/syn001/cascade.py:93` (`"s01-kremser-cmo-v1"`).
 
@@ -419,7 +419,7 @@ Notes:
   Fires at most once per region step per solve (ADR 0010 D3, amended by ADR 0044).
 - Phase-attempt contract: ADR 0005; code `orchestrator/phase_contract.py` (527 lines), `orchestrator/attempts.py`.
 
-### 5e. Solve outcomes (`orchestrator/trace.py:28`, `SolveOutcome` Literal)
+### 5e. Solve outcomes (`numerics/solve_record.py:28`, `SolveOutcome` Literal)
 
 `CONVERGED, INITIALIZATION_FAILED, SCALE_UNAVAILABLE, SPECIFICATION_CONFLICT,
 UNSUPPORTED_RANK_STRUCTURE, PHASE_UPDATE_REQUIRED, ACTIVE_SET_CYCLING, ATTEMPTS_EXHAUSTED,
@@ -500,12 +500,12 @@ Revision-level content hash: `application/revisions.py:24`
   new_revision_id, restore_from, task, author`.
 - `$defs/edit`: `{operation: "set"|"remove"|"append", path: [string | integer>=0] (minItems 1), value}`.
   `value` is required for `set` and `append` and absent for `remove`.
-- Python: `EditOperation = Literal["set","remove","append"]` (`application/types.py:111`);
-  `Edit` dataclass `:308`; `Change` `:359` (edits, new_revision_id, restore_from, task, author).
-- Application: `apply_edits(base, edits)` `application/transactions.py:96`; `_apply` `:114`;
-  `semantic_diff` `:168`; `element_diff` `:237`.
-- Operations: `LocalApplication.commit_change` `application/local.py:488`,
-  `preview_change` `:1144`, `diff_revisions` `:1258`. `TransactionResult` `application/types.py:544`.
+- Python: `EditOperation = Literal["set","remove","append"]` (`application/transaction_types.py:24`);
+  `Edit` dataclass `:43`; `Change` `:94` (edits, new_revision_id, restore_from, task, author).
+- Application: `apply_edits(base, edits)` `application/revision_edits.py:37`; `_apply` `:55`;
+  `semantic_diff` `:145`; `element_diff` `:214`.
+- Operations: `LocalApplication.commit_change` `application/local.py:377`,
+  `preview_change` `:498`, `diff_revisions` `:546`. `TransactionResult` `application/transaction_types.py:279`.
 
 ### 6c. Frozen schema list (plan §2.2; `docs/interfaces-frozen.md` §2)
 
@@ -593,7 +593,7 @@ A refusal at submission is raised as `ApplicationError`. A failed solve is a res
 Other methods: `validate :443`, `commit_change :488`, `reproduce :645`, `submit_job :669`,
 `wait_job :719`, `get_job_result :767`, `list_audit :1359`, `artifact_bytes :1440`.
 
-### 8b. RunResult (`application/types.py:1142`)
+### 8b. RunResult (`application/job_records.py:398`)
 
 Fields: `job_id, run_id, revision_id, revision_content_sha256, policy_id, policy_sha256,
 check_policy_sha256, job_status: TerminalStatus, outcome, verification_status: VerificationStatus | None,
@@ -603,9 +603,9 @@ solve_path: SolvePath = "revision_eo"`.
 `job_status` is not `verification_status`.
 
 `TerminalStatus = Literal["completed","failed","cancelled","timed_out"]` (`application/jobs/model.py:31`).
-`SolvePath = Literal["revision_eo","legacy_eo","revision_coupled"]` (`application/types.py:116`).
+`SolvePath = Literal["revision_eo","legacy_eo","revision_coupled"]` (`application/job_records.py:41`).
 
-### 8c. ApiError and codes (`application/types.py`)
+### 8c. ApiError and codes (`application/errors.py`)
 
 - `ApiErrorCode` Literal at `:69` (15 codes): `invalid_request, document_not_canonical,
   unauthenticated, forbidden, not_found, idempotency_key_reused, not_ready, revision_not_ready,
@@ -635,7 +635,7 @@ solve_path: SolvePath = "revision_eo"`.
 - MCP: `application/bindings/mcp.py`. `TOOL_OPERATIONS` (`:81`); `list_tools` and `call_tool` (`:197`, `:207`).
 - Web shell: `application/bindings/web.py` adds static routes after the OPERATIONS routes.
 - Authorization: `Right = Literal["read","draft","execute","install","policy","publish"]`
-  (`application/types.py:106`); `application/authz.py`.
+  (`application/policy_types.py:17`); `application/authz.py`.
 
 ---
 
@@ -781,7 +781,7 @@ Cost (`assessment/cost/`):
   `load_rates` `:125` (default series `frb-g5a-annual-v1`).
 - `forms.py` (801 lines) and `contributor.py` (1154 lines): cost forms and the cost contributor.
 - `sets.py` (653 lines), `quotes.py`, `uncertainty.py`, `defaults.py`: equipment cost sets, quotes, uncertainty.
-- Sizing: `assessment/sizing/__init__.py:135` `SizingPlan`; `families.py` (1058 lines); `SizingInput` `:90`.
+- Sizing: `assessment/sizing/core.py:109` `SizingPlan`; `families.py` (1058 lines); `SizingInput` `:64`.
 - Not verified in depth: `assessment/cost/derived.py` and `cost/forms.py` formula text.
 
 LCA (`assessment/lca/`):
@@ -823,7 +823,7 @@ Lines of Python (`find ... -name "*.py" | xargs cat | wc -l`, excluding `__pycac
 (Subpackage sum is 117,064; root files are 1,237.)
 
 Sub-totals for the big ones: `application/revision_binding.py` 2131; `application/local.py` 1864;
-`application/types.py` 1694; `application/store.py` 1268; `application/revision_run.py` 1254;
+the former application types module 1694 (split and removed by S19, ADR 0076 I-12a); `application/store.py` 1268; `application/revision_run.py` 1254;
 `orchestrator/region.py` 2794; `models/syn001/column.py` 2080; `thermo/_coolprop_heos_fluids.py` 4919 (data table);
 `verify/certificate.py` 1435.
 

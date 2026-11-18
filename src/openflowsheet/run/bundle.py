@@ -211,12 +211,11 @@ def _cross_check_solve_path(
     Only an indexed, present and intact file is judged, and an unknown route or policy id is
     itself a reason. A bundle without the file — every K05 bundle — is untouched.
 
-    The registry is the application's: imported here, as `run.session` imports the binder's
-    inputs, so that `run/` has no import-time dependency on `application/`.
+    The registry is `orchestrator.policies`' (ADR 0076 I-3), imported here, not at module level.
     """
     from dataclasses import replace  # noqa: PLC0415
 
-    from openflowsheet.application.policies import (  # noqa: PLC0415
+    from openflowsheet.orchestrator.policies import (  # noqa: PLC0415
         INNER_ROUTE,
         ROUTE_DEFAULT_POLICY,
         resolve_policy,

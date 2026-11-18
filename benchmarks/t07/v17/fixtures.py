@@ -38,20 +38,14 @@ from typing import Any, Final
 
 from benchmarks.t07.v17 import scorer
 from openflowsheet.application.authz import grant, read_policy
+from openflowsheet.application.job_requests import JobRequest, ReproduceBody
 from openflowsheet.application.jobs.executor import ProcessExecutor
 from openflowsheet.application.jobs.worker import PAUSE_AT_STAGE_VARIABLE, PAUSED_FILE
 from openflowsheet.application.local import LocalApplication
+from openflowsheet.application.policy_types import CapabilityReference, Limits, ReplayPolicy
 from openflowsheet.application.revision_run import Route, select_route
 from openflowsheet.application.store import JOBS_DIR, POLICY_NAME
-from openflowsheet.application.types import (
-    CapabilityReference,
-    Change,
-    Edit,
-    JobRequest,
-    Limits,
-    ReplayPolicy,
-    ReproduceBody,
-)
+from openflowsheet.application.transaction_types import Change, Edit
 from openflowsheet.canonical import canonical_json, load_document
 from openflowsheet.run.bundle import read_artifact, read_manifest, verify_bundle, write_bundle
 from openflowsheet.run.identity import r0_projection, r0_sha256
@@ -614,9 +608,9 @@ def _import_without_rerun(app: LocalApplication, bundle: Path, step: Mapping[str
     with one difference: the job's idempotency key is registered, not `reproduce`'s fresh
     `auto:<uuid>`. The key is inside `request_sha256`, which the §4.3 digest holds, so a random
     key would make the three repetitions' digests differ (FX-10). The import itself is
-    `reproduce`'s own (`LocalApplication._import_bundle`); the job is an ordinary `submit_job`."""
+    `reproduce`'s own (`JobService._import_bundle`); the job is an ordinary `submit_job`."""
     policy = ReplayPolicy(rerun=False)
-    artifact_id = app._import_bundle(bundle, "reproduce")
+    artifact_id = app._jobs._import_bundle(bundle, "reproduce")
     submitted = app.submit_job(
         JobRequest.from_document(
             {

@@ -91,7 +91,7 @@ from openflowsheet.models import SpecificationError, Wiring, origin  # noqa: E40
 from openflowsheet.models.syn001.flash import TPFlash  # noqa: E402
 from openflowsheet.models.syn001.heater import TPHeater  # noqa: E402
 from openflowsheet.models.syn001.ph_flash import PHFlash  # noqa: E402
-from openflowsheet.verify.checks import KIND_TOLERANCE  # noqa: E402
+from openflowsheet.verify.kind_tolerance import KIND_TOLERANCE  # noqa: E402
 
 REFERENCE = ROOT / "benchmarks" / "t05" / "reference_values.yaml"
 SPEC = ROOT / "docs" / "derivations" / "T05-unit-models-spec.md"
@@ -2110,7 +2110,7 @@ def _a21(runs: Runs, ref: Mapping[str, Any]) -> tuple[bool, Any, Any]:
     from openflowsheet.verify.certificate import BoundDeclaration
     from openflowsheet.verify.checks import qualification
     from openflowsheet.verify.regularity import target_jacobian
-    from openflowsheet.verify.table import REACTION_DATUM_NOTE
+    from openflowsheet.verify.table_kit import REACTION_DATUM_NOTE
 
     ledger = Ledger()
     provider = Syn001Provider()
@@ -2676,7 +2676,7 @@ def _a26(runs: Runs, ref: Mapping[str, Any]) -> tuple[bool, Any, Any]:
     (`test_t05_coupled.BRANCH_FOUND`, spec A26's literal) in declaration order."""
     from dataclasses import fields as dataclass_fields
 
-    from openflowsheet.orchestrator.region import LiftedSplit
+    from openflowsheet.models.lifted import LiftedSplit
     from openflowsheet.orchestrator.revision import instances_of
     from openflowsheet.orchestrator.splits import lifted_splits
 
@@ -2733,6 +2733,7 @@ def _a27(ref: Mapping[str, Any]) -> tuple[bool, Any, Any]:
     first T05 `holdup_balance` row in region row order (`FIRST_UNMAPPED_ROW`, measured)."""
     import openflowsheet.orchestrator.executor as executor_module
     from openflowsheet.compile.casadi_backend import compile_problem
+    from openflowsheet.numerics.solve_record import Trace
     from openflowsheet.orchestrator.executor import execute_plan
     from openflowsheet.orchestrator.mass import residence_time
     from openflowsheet.orchestrator.region import solve_region
@@ -2743,7 +2744,6 @@ def _a27(ref: Mapping[str, Any]) -> tuple[bool, Any, Any]:
         plan_revision,
     )
     from openflowsheet.orchestrator.splits import lifted_splits
-    from openflowsheet.orchestrator.trace import Trace
 
     ledger = Ledger()
     per_case: dict[str, Any] = {}
@@ -2935,7 +2935,7 @@ def _a23(
 
 def _a23_local(identity_document: Mapping[str, Any]) -> tuple[bool, dict[str, Any]]:
     from openflowsheet.orchestrator.region import syn001_lifted_splits
-    from openflowsheet.verify.certificate import CheckPolicy
+    from openflowsheet.verify.verdict import CheckPolicy
 
     ledger = Ledger()
     # (i) The provider's source, byte for byte against the base commit.

@@ -84,21 +84,14 @@ class ReplayReport:
 
 
 def decide_mode(recorded: Environment, current: Environment) -> tuple[ReplayMode, tuple[str, ...]]:
-    """D4's table, evaluated before anything runs. Every reason is named, not summarized."""
+    """D4's table, evaluated before anything runs, the first rung that holds deciding the mode
+    with its one reason (`exact_replay`, with none, when no rung holds). Every reason is named,
+    not summarized. The first rung is `_unverified_lock_reason`, the last
+    `_unset_thread_pins_reason`."""
     reasons: list[str] = []
 
-    # M3, from the Fable review: an empty lock hash is an unknown dependency set, and two
-    # unknowns are not a match. ADR 0069 D5 (X05): from X05 on `""` means the lock did not
-    # verify, and the reason names this side's failing distributions; the archive's findings are
-    # not recorded, so its side says only that it recorded no verified lock.
-    if not recorded.lock_sha256 or not current.lock_sha256:
-        findings = TEMPLATES["JOIN"].join(current.lock_findings) or TEMPLATES["NONE"]
-        if not recorded.lock_sha256 and not current.lock_sha256:
-            reasons.append(TEMPLATES["R_BOTH"].format(findings=findings))
-        elif not recorded.lock_sha256:
-            reasons.append(TEMPLATES["R_ARCHIVE"])
-        else:
-            reasons.append(TEMPLATES["R_THIS"].format(findings=findings))
+    if (reason := _unverified_lock_reason(recorded, current)) is not None:
+        reasons.append(reason)
         return "inspected_archived_results", tuple(reasons)
 
     if not recorded.same_dependencies(current):
@@ -141,21 +134,49 @@ def decide_mode(recorded: Environment, current: Environment) -> tuple[ReplayMode
         )
         return "compatible_reproduction", tuple(reasons)
 
-    # F4, answered by Frank on 2026-09-22: unset is unknown, and unknown is never exact.
+    if (reason := _unset_thread_pins_reason(recorded, current)) is not None:
+        reasons.append(reason)
+        return "compatible_reproduction", tuple(reasons)
+
+    return "exact_replay", tuple(reasons)
+
+
+def _unverified_lock_reason(recorded: Environment, current: Environment) -> str | None:
+    """D4's first rung: the reason when either side's lock hash is empty, naming which side and,
+    for this side, its failing distributions (`current.lock_findings`); None when both sides
+    recorded a verified lock.
+
+    M3, from the Fable review: an empty lock hash is an unknown dependency set, and two unknowns
+    are not a match. ADR 0069 D5 (X05): from X05 on `""` means the lock did not verify, and the
+    reason names this side's failing distributions; the archive's findings are not recorded, so
+    its side says only that it recorded no verified lock."""
+    if not recorded.lock_sha256 or not current.lock_sha256:
+        findings = TEMPLATES["JOIN"].join(current.lock_findings) or TEMPLATES["NONE"]
+        if not recorded.lock_sha256 and not current.lock_sha256:
+            return TEMPLATES["R_BOTH"].format(findings=findings)
+        if not recorded.lock_sha256:
+            return TEMPLATES["R_ARCHIVE"]
+        return TEMPLATES["R_THIS"].format(findings=findings)
+    return None
+
+
+def _unset_thread_pins_reason(recorded: Environment, current: Environment) -> str | None:
+    """D4's last rung: the reason when the thread pins are unset on either side, naming the side
+    (`threads_known()` read again per side for the name); None when both sides know theirs.
+
+    F4, answered by Frank on 2026-09-22: unset is unknown, and unknown is never exact."""
     if not (recorded.threads_known() and current.threads_known()):
         unknown = (
             "both sides"
             if not (recorded.threads_known() or current.threads_known())
             else ("the archive's side" if not recorded.threads_known() else "this side")
         )
-        reasons.append(
+        return (
             f"the thread pins are unset on {unknown}, so the effective thread count is "
             "unknown; pin OPENBLAS_NUM_THREADS, OMP_NUM_THREADS and MKL_NUM_THREADS for an "
             "exact replay, as CI does"
         )
-        return "compatible_reproduction", tuple(reasons)
-
-    return "exact_replay", tuple(reasons)
+    return None
 
 
 @dataclass(frozen=True)

@@ -34,7 +34,8 @@ from t07_transport_support import (
 
 from openflowsheet.application import cli
 from openflowsheet.application.authz import grant
-from openflowsheet.application.contract import ApplicationError, api_error
+from openflowsheet.application.documents import published_schemas
+from openflowsheet.application.errors import ApiError, ApplicationError, api_error
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.operations import (
     ANY,
@@ -45,9 +46,10 @@ from openflowsheet.application.operations import (
     project_response,
 )
 from openflowsheet.application.projection import TEXT_LIMIT
-from openflowsheet.application.types import ApiError, Change, published_schemas, schema_errors
+from openflowsheet.application.transaction_types import Change
 from openflowsheet.messages.catalogue import CATALOGUE
 from openflowsheet.messages.render import RenderContext, render_error
+from openflowsheet.schema_check import schema_errors
 
 # ============================================================== §4.7: the schema walk
 
@@ -221,7 +223,7 @@ def failed(tmp_path_factory: pytest.TempPathFactory) -> Failed:
 def _members(failed: Failed) -> list[str]:
     """The bundle's file names on disk, independent of the store's member query."""
     with LocalApplication.open(failed.project) as app:
-        row = app._store.artifact(failed.bundle_id)
+        row = app.store.artifact(failed.bundle_id)
         assert row is not None
         directory = app.files_root / row.relpath
     return sorted(path.name for path in directory.rglob("*") if path.is_file())
@@ -270,9 +272,9 @@ def test_fb03b_the_refusal_names_the_bundle_its_members_and_the_run_outcome(
 def test_fb03b_a_cut_member_list_says_so(failed: Failed, monkeypatch: pytest.MonkeyPatch) -> None:
     """Review S5 (D3-4): `members` is cut at `MAX_LISTED_MEMBERS` names, and a cut list carries
     `members_total`, which the entry reads; an uncut one does not (the test above)."""
-    from openflowsheet.application import local
+    from openflowsheet.application import artifact_service
 
-    monkeypatch.setattr(local, "MAX_LISTED_MEMBERS", 2)
+    monkeypatch.setattr(artifact_service, "MAX_LISTED_MEMBERS", 2)
     missing = f"{failed.bundle_id}/solution-state.json"
     with LocalApplication.open(failed.project) as app:
         with pytest.raises(ApplicationError) as refused:

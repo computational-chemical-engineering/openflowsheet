@@ -18,7 +18,7 @@ flowsheet order and fixes nothing that the declaration order does not already fi
 
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
+from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
 
 __all__ = [
@@ -87,23 +87,38 @@ def canonical_matching(
 
     fixed: dict[int, int] = {}
     for column in range(len(column_ids)):
-        taken = set(fixed.values())
-        for row in sorted(by_column[column]):
-            if row in taken:
-                continue
-            trial = {**fixed, column: row}
-            used_rows = set(trial.values())
-            free_columns = [
-                other for other in range(len(column_ids)) if other not in trial and other > column
-            ]
-            remainder: list[frozenset[int]] = [
-                by_column[other] - used_rows if other in free_columns else frozenset()
-                for other in range(len(column_ids))
-            ]
-            if len(trial) + len(_match_indices(remainder, len(row_ids), free_columns)) == target:
-                fixed = trial
-                break
+        fixed = _with_least_row(fixed, column, by_column, len(row_ids), target)
     return {column_ids[column]: row_ids[row] for column, row in fixed.items()}
+
+
+def _with_least_row(
+    fixed: dict[int, int],
+    column: int,
+    by_column: Sequence[frozenset[int]],
+    row_count: int,
+    target: int,
+) -> dict[int, int]:
+    """`fixed` extended by `column -> row` for the least row not yet taken such that a matching of
+    size `target` (the maximum) still extends the assignments; `fixed` itself when no row does.
+
+    Only columns after `column` are free to complete the trial matching.
+    """
+    taken = set(fixed.values())
+    for row in sorted(by_column[column]):
+        if row in taken:
+            continue
+        trial = {**fixed, column: row}
+        used_rows = set(trial.values())
+        free_columns = [
+            other for other in range(len(by_column)) if other not in trial and other > column
+        ]
+        remainder: list[frozenset[int]] = [
+            by_column[other] - used_rows if other in free_columns else frozenset()
+            for other in range(len(by_column))
+        ]
+        if len(trial) + len(_match_indices(remainder, row_count, free_columns)) == target:
+            return trial
+    return fixed
 
 
 @dataclass(frozen=True)
@@ -164,35 +179,12 @@ def dulmage_mendelsohn(
         for column in references[row]:
             by_column[column].append(row)
 
-    over_rows: set[str] = set()
-    over_cols: set[str] = set()
-    stack = [row for row in row_ids if row not in row_mate]
-    over_rows.update(stack)
-    while stack:
-        row = stack.pop()
-        for column in references[row]:
-            if column in over_cols:
-                continue
-            over_cols.add(column)
-            mate = pairs.get(column)
-            if mate is not None and mate not in over_rows:
-                over_rows.add(mate)
-                stack.append(mate)
-
-    under_cols: set[str] = set()
-    under_rows: set[str] = set()
-    columns = [column for column in column_ids if column not in pairs]
-    under_cols.update(columns)
-    while columns:
-        column = columns.pop()
-        for row in by_column[column]:
-            if row in under_rows:
-                continue
-            under_rows.add(row)
-            mate = row_mate.get(row)
-            if mate is not None and mate not in under_cols:
-                under_cols.add(mate)
-                columns.append(mate)
+    over_rows, over_cols = _alternating_reach(
+        [row for row in row_ids if row not in row_mate], references, pairs
+    )
+    under_cols, under_rows = _alternating_reach(
+        [column for column in column_ids if column not in pairs], by_column, row_mate
+    )
 
     def ordered(names: Sequence[str], chosen: set[str]) -> tuple[str, ...]:
         return tuple(name for name in names if name in chosen)
@@ -206,3 +198,30 @@ def dulmage_mendelsohn(
         square_cols=ordered(column_ids, set(column_ids) - over_cols - under_cols),
         structural_rank=len(pairs),
     )
+
+
+def _alternating_reach(
+    starts: Sequence[str], neighbours: Mapping[str, Iterable[str]], mate: Mapping[str, str]
+) -> tuple[set[str], set[str]]:
+    """The vertices reachable from the unmatched `starts` by alternating paths (§6.3).
+
+    A path leaves a start-side vertex by any of its `neighbours` and comes back by that
+    neighbour's `mate`, when it has one. Returns the reached start-side vertices (the starts
+    included) and the reached other-side vertices. For `R+`/`C+` the starts are the unmatched
+    rows; the mirror image, from the unmatched columns, gives `C-`/`R-`.
+    """
+    start_side: set[str] = set()
+    other_side: set[str] = set()
+    stack = list(starts)
+    start_side.update(stack)
+    while stack:
+        vertex = stack.pop()
+        for neighbour in neighbours[vertex]:
+            if neighbour in other_side:
+                continue
+            other_side.add(neighbour)
+            matched = mate.get(neighbour)
+            if matched is not None and matched not in start_side:
+                start_side.add(matched)
+                stack.append(matched)
+    return start_side, other_side

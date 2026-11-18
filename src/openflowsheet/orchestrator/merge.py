@@ -25,10 +25,10 @@ import numpy as np
 import numpy.typing as npt
 
 from openflowsheet.canonical import state_sha256
-from openflowsheet.numerics.anderson import RecyclePolicy, RecycleResult, solve_recycle
+from openflowsheet.numerics.anderson import RecycleResult, solve_recycle
 from openflowsheet.numerics.newton import Problem
+from openflowsheet.numerics.solve_record import Counters, RecyclePolicy, SolveOutcome, Trace
 from openflowsheet.orchestrator.roots import root_fingerprint
-from openflowsheet.orchestrator.trace import Counters, SolveOutcome, Trace
 
 __all__ = [
     "MERGE_TRIGGERS",

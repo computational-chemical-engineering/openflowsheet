@@ -48,7 +48,7 @@ from benchmarks.t07.v17 import reference
 from openflowsheet.application.authz import grant
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.operations import dispatch
-from openflowsheet.application.types import Change, Edit, schema_errors
+from openflowsheet.application.transaction_types import Change, Edit
 from openflowsheet.canonical import (
     CanonicalizationError,
     canonical_json,
@@ -57,6 +57,7 @@ from openflowsheet.canonical import (
     integer_binary64,
     load_document,
 )
+from openflowsheet.schema_check import schema_errors
 from openflowsheet.units import read_number
 
 REFERENCE_PATH = REPO_ROOT / "docs" / "derivations" / "scripts" / "adr0002_a1_reference.json"

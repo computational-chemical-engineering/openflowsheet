@@ -33,8 +33,8 @@ from m02_c1_support import (
 from m02_wo8_support import POLICY
 from test_schemas_p01 import validator_for
 
-from openflowsheet.application import revision_binding as rb
-from openflowsheet.application.binding import Unbound
+from openflowsheet.application.binding_common import Unbound
+from openflowsheet.application.model_builders import MODEL_BUILDERS
 from openflowsheet.application.revision_binding import RevisionBinding, bind_revision_flowsheet
 from openflowsheet.canonical import document_sha256
 from openflowsheet.compile.casadi_backend import compile_problem
@@ -46,11 +46,13 @@ from openflowsheet.orchestrator.executor import PlanResult, execute_plan
 from openflowsheet.orchestrator.revision import plan_revision
 from openflowsheet.studies.surrogate import plan as spl
 from openflowsheet.studies.surrogate import reactor as sr
+from openflowsheet.studies.surrogate import records
 from openflowsheet.thermo import StreamState
 from openflowsheet.thermo.pr_c1 import COMPONENTS, PrC1Provider
 from openflowsheet.verify import CheckResult, Limitation
-from openflowsheet.verify.certificate import SolutionCertificate, verify_revision
+from openflowsheet.verify.certificate import verify_revision
 from openflowsheet.verify.surrogate import surrogate_items
+from openflowsheet.verify.verdict import SolutionCertificate
 
 REFERENCE: Mapping[str, Any] = load_json(REPO_ROOT / "benchmarks" / "m04" / "reference_values.json")
 STATES: Mapping[str, Mapping[str, Any]] = {s["id"]: s for s in REFERENCE["jacobian_states"]}
@@ -112,7 +114,7 @@ def surrogate_instance(
 ) -> dict[str, Any]:
     return instance(
         unit,
-        sr.MODEL_ID,
+        records.MODEL_ID,
         {"n_tubes": _n_tubes(n_tubes)},
         version=manifest["surrogate_id"] if version is None else version,
         artifact_ref=document_sha256(manifest) if artifact_ref is None else artifact_ref,
@@ -313,8 +315,9 @@ def test_the_registered_builder_without_a_manifest_refuses() -> None:
     document = reactor_revision(inlet_of(STATES["J1"]), surrogate_instance(A19))
     view = parse_revision(document)
     (reactor,) = (i for i in view.instances if i.unit_id == UNIT)
+    context = EvaluationContext(model_version="t", constants_sha256="0" * 64, phase_signature=None)
     with pytest.raises(RevisionError, match=r"surrogate_manifest_mismatch\(R\)"):
-        rb._c1_reactor_surrogate(reactor, PrC1Provider(), rb._CONTEXT, COMPONENTS)
+        MODEL_BUILDERS[records.MODEL_ID](reactor, PrC1Provider(), context, COMPONENTS)
 
 
 # -- W27 Amendment 3 §22.4 (R-302): the C1 corpus's surrogate revision ----------------------------
@@ -593,7 +596,7 @@ def surrogate_loop() -> tuple[dict[str, Any], RevisionBinding]:
     document: dict[str, Any] = json.loads(LOOP_PATH.read_text(encoding="utf-8"))
     (reactor,) = (i for i in document["instances"] if i["id"] == "reactor")
     reactor["model"] = {
-        "id": sr.MODEL_ID,
+        "id": records.MODEL_ID,
         "version": A19["surrogate_id"],
         "artifact_ref": document_sha256(A19),
     }

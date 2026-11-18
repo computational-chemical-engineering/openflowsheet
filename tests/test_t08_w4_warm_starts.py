@@ -35,17 +35,14 @@ from t06_support import ALLOWANCE, worst_ratio
 from t07_corpus import CORPUS
 from t07_jobs_support import commit
 
+from openflowsheet.application.job_requests import JobRequest, SolveBody
 from openflowsheet.application.local import LocalApplication
-from openflowsheet.application.policies import (
-    APPLICATION_POLICIES,
-    T06_REVISION_V2,
-    T08_WARM_V1,
-)
+from openflowsheet.application.policy_types import ReplayPolicy
 from openflowsheet.application.revision_binding import RevisionBinding, bind_revision_flowsheet
 from openflowsheet.application.store import ProjectStore
-from openflowsheet.application.types import JobRequest, ReplayPolicy, SolveBody
 from openflowsheet.orchestrator import region as region_module
-from openflowsheet.orchestrator import revision
+from openflowsheet.orchestrator import region_phase as region_phase_module
+from openflowsheet.orchestrator import region_problem, revision
 from openflowsheet.orchestrator.execution import ExecutionPlan
 from openflowsheet.orchestrator.executor import PlanResult, execute_plan
 from openflowsheet.orchestrator.phase_contract import (
@@ -53,14 +50,19 @@ from openflowsheet.orchestrator.phase_contract import (
     OpeningRequirement,
     OpeningState,
 )
-from openflowsheet.orchestrator.region import RegionResult
+from openflowsheet.orchestrator.policies import (
+    APPLICATION_POLICIES,
+    T06_REVISION_V2,
+    T08_WARM_V1,
+)
+from openflowsheet.orchestrator.region_result import RegionResult
 from openflowsheet.orchestrator.splits import lifted_splits
 from openflowsheet.orchestrator.warm_start import WarmStartCandidate
 from openflowsheet.run import solution_state
 from openflowsheet.run.bundle import MANIFEST_NAME
 from openflowsheet.run.identity import r0_projection
 from openflowsheet.run.manifest import policy_sha256
-from openflowsheet.verify.checks import KIND_TOLERANCE
+from openflowsheet.verify.kind_tolerance import KIND_TOLERANCE
 
 #: The members `run_revision_session` writes under `artifacts/`.
 Artifacts = dict[str, Any]
@@ -567,7 +569,7 @@ def test_b46_a_negative_flow_is_projected_and_accepted() -> None:
 
 
 def _kernel_refused(state: Any) -> RegionResult:
-    raise region_module._KernelRefusedError("S3", "error", "refused at the candidate")
+    raise region_phase_module._KernelRefusedError("S3", "error", "refused at the candidate")
 
 
 def _not_settled(state: Any) -> RegionResult:
@@ -588,9 +590,10 @@ def test_a_warm_opening_that_ends_before_an_attempt_falls_through(
 ) -> None:
     """Review S4 (§B2, "the run never fails because of the warm start"): a candidate that passes
     `integrity`, `compatibility` and `evaluation`, but whose region solve ends before any attempt
-    other than by the opening check — §6.2's kernel refusal (`region.py`, `_KernelRefusedError`),
-    or an opening that does not settle (§7.8 (ii)) — is rejected `opening:<outcome>`, and the
-    traversal follows. The refusal is monkeypatched at the warm solve only."""
+    other than by the opening check — §6.2's kernel refusal (`region_phase.py`,
+    `_KernelRefusedError`), or an opening that does not settle (§7.8 (ii)) — is rejected
+    `opening:<outcome>`, and the traversal follows. The refusal is monkeypatched at the warm
+    solve only."""
     original = region_module._solve_region
 
     def refusing(**kwargs: Any) -> RegionResult:
@@ -659,6 +662,7 @@ def test_a_warm_opening_refused_by_the_opening_check_falls_through(
 
     monkeypatch.setattr(region_module, "_solve_region", solving)
     monkeypatch.setattr(region_module, "check_opening", checking)
+    monkeypatch.setattr(region_problem, "check_opening", checking)
     target = _binding(_child(0.95))
     run = _plan_run(target, T08_WARM_V1, _constructed(lambda values: None))
     assert [refused.check if refused else None for refused in refusals] == [check]

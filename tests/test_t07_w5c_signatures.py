@@ -41,10 +41,12 @@ from s11_column_support import COLUMN_OPTIONAL, COLUMN_SAMPLES, committed_case  
 from s11_column_support import MODEL_ID as COLUMN_MODEL  # noqa: E402
 from s11_thermal_support import THERMAL_SAMPLES, sample_case  # noqa: E402
 
-from openflowsheet.application.revision_binding import (  # noqa: E402
-    MODEL_BUILDERS,
+from openflowsheet.application.model_builders import MODEL_BUILDERS  # noqa: E402
+from openflowsheet.application.model_signatures import (  # noqa: E402
     MODEL_SIGNATURES,
     ModelSignature,
+)
+from openflowsheet.application.revision_binding import (  # noqa: E402
     RevisionBinding,
     bind_revision_flowsheet,
 )

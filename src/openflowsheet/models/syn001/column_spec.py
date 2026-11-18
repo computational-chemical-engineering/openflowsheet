@@ -22,7 +22,7 @@ from openflowsheet.models.syn001 import (
     PRESSURE,
     TEMPERATURE,
 )
-from openflowsheet.models.syn001.cascade import (
+from openflowsheet.models.syn001.cascade_spec import (
     BOTTOM,
     TOP,
     InletState,
@@ -38,7 +38,7 @@ from openflowsheet.models.syn001.cascade import (
     vapor_id,
     vapor_total_id,
 )
-from openflowsheet.models.syn001.cascade import EQUATIONS as CASCADE_EQUATIONS
+from openflowsheet.models.syn001.cascade_spec import EQUATIONS as CASCADE_EQUATIONS
 
 MODEL_ID: Final = "syn001.column"
 

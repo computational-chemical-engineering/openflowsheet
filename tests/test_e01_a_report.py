@@ -33,26 +33,24 @@ from s11_thermal_support import committed_case, solve  # noqa: E402
 from test_e01_a_contributor import C2_DOC  # noqa: E402
 from test_e01_a_contributor_c1 import C1_DOC, _c1  # noqa: E402
 
-from openflowsheet.application.policies import T06_REVISION_V2  # noqa: E402
 from openflowsheet.application.revision_binding import bind_revision_flowsheet  # noqa: E402
-from openflowsheet.application.types import schema_errors  # noqa: E402
 from openflowsheet.assessment.cost import uncertainty as aace  # noqa: E402
 from openflowsheet.assessment.cost.contributor import CostContributor  # noqa: E402
 from openflowsheet.assessment.cost.derived import DerivedContributor  # noqa: E402
 from openflowsheet.assessment.defaults import DEFAULTS  # noqa: E402
 from openflowsheet.assessment.lca.section import LcaContributor  # noqa: E402
-from openflowsheet.assessment.program import (  # noqa: E402
-    CONTRIBUTOR_MODULES,
-    AssessmentProgram,
-    Refusal,
-)
+from openflowsheet.assessment.linearization import Refusal  # noqa: E402
+from openflowsheet.assessment.program import CONTRIBUTOR_MODULES, AssessmentProgram  # noqa: E402
 from openflowsheet.assessment.report import SCHEMA_REFERENCE, report_body  # noqa: E402
 from openflowsheet.assessment.spec import load_assessment  # noqa: E402
 from openflowsheet.assessment.views import view_of  # noqa: E402
 from openflowsheet.canonical import canonical_json, state_sha256  # noqa: E402
+from openflowsheet.compile.casadi_backend import TwinEvaluationError  # noqa: E402
 from openflowsheet.orchestrator.executor import execute_plan  # noqa: E402
+from openflowsheet.orchestrator.policies import T06_REVISION_V2  # noqa: E402
 from openflowsheet.orchestrator.revision import plan_revision  # noqa: E402
 from openflowsheet.run.compare import _is_float_digest_v2  # noqa: E402
+from openflowsheet.schema_check import schema_errors  # noqa: E402
 
 FIXTURES = Path(__file__).resolve().parent / "fixtures" / "schemas" / "assessment_report"
 REPO = Path(__file__).resolve().parents[1]
@@ -367,6 +365,47 @@ def test_a40_refused_item_nulls_totals_and_exclude_restores_them(registered: Non
     )
     assert report["excluded"] == [{"item": "B", "reason": "existing boiler"}]
     assert {i["item_id"]: i["status"] for i in report["items"]}["B"] == "excluded"
+
+
+def test_report_body_is_refused_when_the_values_at_the_state_are_refused(
+    registered: None, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Both refusals of `_checked_values` drive `report_body` to `REFUSED`, with every output
+    `null` and the refusal appended after the program's own refusals. Falsifier:
+    `refusals.insert(0, checked)` in place of `refusals.append(checked)` in `report_body` puts it
+    first."""
+    refused = {
+        **P1_DOC,
+        "items": {
+            **P1_DOC["items"],
+            "B": {"F_BM": 3.17, "correlation": {"set": "sslw-idaes-v1", "entry": "pump"}},
+        },
+    }
+    program, state, digest = _program("TH-C1", refused)
+    own = [(r.code, r.target) for r in program.refusals]
+    assert own
+    row = next(n for n in program.admissibility_ids if n not in program.domain_rows)
+    original = AssessmentProgram.evaluate
+
+    def failing(self: AssessmentProgram, *args: Any, **kwargs: Any) -> Any:
+        raise TwinEvaluationError("stub evaluation failure")
+
+    def inadmissible(self: AssessmentProgram, *args: Any, **kwargs: Any) -> Any:
+        values = original(self, *args, **kwargs)
+        assert isinstance(values, Mapping)
+        return {**values, row: -1.0}
+
+    for evaluate, expected in (
+        (failing, ("ASSESSMENT_EVALUATION_FAILED", "")),
+        (inadmissible, ("ASSESSMENT_REGIME_INADMISSIBLE", row)),
+    ):
+        monkeypatch.setattr(AssessmentProgram, "evaluate", evaluate)
+        body = report_body(program, state, state_sha256=digest, uncertainty=True)
+        assert body["status"] == "REFUSED"
+        assert [(r["code"], r["target"]) for r in body["refusals"]] == [*own, expected]
+        assert body["capex"] and all(v is None for v in body["capex"].values())
+        assert body["annual"] and all(v is None for v in body["annual"].values())
+        assert body["uncertainty"]["linear_interval"] == {}
 
 
 # -- A41: every default used is reported ---------------------------------------------------------

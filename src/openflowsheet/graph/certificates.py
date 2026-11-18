@@ -38,7 +38,7 @@ from dataclasses import dataclass
 from typing import Final
 
 from openflowsheet.compile.spec import QuantityKind
-from openflowsheet.graph.trace import Declaration
+from openflowsheet.graph.trace import Declaration, TracedRow
 
 __all__ = [
     "CERTIFIABLE_KINDS",
@@ -169,68 +169,92 @@ class _Forest:
 def certify(
     declaration: Declaration, *, row_ids: Sequence[str] | None = None
 ) -> CertifiedRedundancy:
-    """Apply §8.2 to every certifiable kind independently, in declaration order."""
+    """Apply §8.2 to every certifiable kind independently, in declaration order
+    (`_certified_kind`, which admits copy rows by `_copy_coefficients`)."""
     considered = tuple(row_ids) if row_ids is not None else declaration.row_ids
     certificates: list[Certificate] = []
     uncertified: list[str] = []
 
     for kind, tolerance in CERTIFIABLE_KINDS.items():
-        forest = _Forest()
-        forest.add(CONST)
-        for row_id in considered:
-            row = declaration.rows[row_id]
-            if row.kind != kind:
-                continue
-            if row.coefficients is None:
-                uncertified.append(row_id)
-                continue
-            over = {
-                name: value
-                for name, value in row.coefficients.items()
-                if declaration.column_kinds.get(name) == kind
-            }
-            if len(over) != len(row.coefficients) or not over:
-                uncertified.append(row_id)
-                continue
-            if len(over) > 2 or any(abs(value) != 1.0 for value in over.values()):
-                uncertified.append(row_id)
-                continue
-            # A *copy* is a difference. `P1 - P2` and `P1 - s` are copies; `P1 + P2 - s` is a
-            # sum, and treating it as an edge between `P1` and the constant node certifies it as
-            # equal to `P1 - s`, which is false at every state. The Fable review of T01 measured
-            # exactly that (M4) and it was wrong in three places at once: here, the specification's
-            # §8.2 wording, and the reference generator. Requiring the two coefficients to cancel
-            # is what makes the telescoping argument true.
-            if len(over) == 2 and sum(over.values()) != 0.0:
-                uncertified.append(row_id)
-                continue
-
-            positive = next((name for name, value in over.items() if value > 0.0), CONST)
-            negative = next((name for name, value in over.items() if value < 0.0), CONST)
-            forest.add(positive)
-            forest.add(negative)
-
-            if not forest.connected(positive, negative):
-                forest.link(positive, negative, row_id)
-                continue
-
-            equals = forest.path(positive, negative)
-            mismatch = row.constant(declaration.parameters) - sum(
-                sign * declaration.rows[name].constant(declaration.parameters)
-                for name, sign in equals
-            )
-            certificates.append(
-                Certificate(
-                    row_id=row_id,
-                    equals=equals,
-                    constant_mismatch=mismatch,
-                    tolerance=tolerance,
-                    kind=kind,
-                )
-            )
+        kind_certificates, kind_uncertified = _certified_kind(
+            declaration, considered, kind, tolerance
+        )
+        certificates.extend(kind_certificates)
+        uncertified.extend(kind_uncertified)
 
     order = {row_id: index for index, row_id in enumerate(considered)}
     return CertifiedRedundancy(
         certificates=tuple(sorted(certificates, key=lambda entry: order[entry.row_id])),
         uncertified_affine_rows=tuple(sorted(set(uncertified), key=lambda name: order[name])),
     )
+
+
+def _certified_kind(
+    declaration: Declaration, considered: Sequence[str], kind: QuantityKind, tolerance: float
+) -> tuple[list[Certificate], list[str]]:
+    """§8.2 for one certifiable `kind` over the `considered` rows of `declaration`, on a forest
+    of its own: the certificates (with `tolerance`) of the rows of `kind` that close a cycle,
+    and the rows of `kind` that are not copies (`_copy_coefficients`), each in `considered`
+    order."""
+    certificates: list[Certificate] = []
+    uncertified: list[str] = []
+    forest = _Forest()
+    forest.add(CONST)
+    for row_id in considered:
+        row = declaration.rows[row_id]
+        if row.kind != kind:
+            continue
+        over = _copy_coefficients(row, kind, declaration.column_kinds)
+        if over is None:
+            uncertified.append(row_id)
+            continue
+
+        positive = next((name for name, value in over.items() if value > 0.0), CONST)
+        negative = next((name for name, value in over.items() if value < 0.0), CONST)
+        forest.add(positive)
+        forest.add(negative)
+
+        if not forest.connected(positive, negative):
+            forest.link(positive, negative, row_id)
+            continue
+
+        equals = forest.path(positive, negative)
+        mismatch = row.constant(declaration.parameters) - sum(
+            sign * declaration.rows[name].constant(declaration.parameters) for name, sign in equals
+        )
+        certificates.append(
+            Certificate(
+                row_id=row_id,
+                equals=equals,
+                constant_mismatch=mismatch,
+                tolerance=tolerance,
+                kind=kind,
+            )
+        )
+    return certificates, uncertified
+
+
+def _copy_coefficients(
+    row: TracedRow, kind: QuantityKind, column_kinds: Mapping[str, QuantityKind]
+) -> dict[str, float] | None:
+    """§8.2's admission of one affine `row` of `kind`: its coefficients when the row is a copy,
+    every column of `kind` (by `column_kinds`) with one or two coefficients of magnitude one
+    that cancel when there are two; `None` for a row without coefficients or any other row."""
+    if row.coefficients is None:
+        return None
+    over = {
+        name: value for name, value in row.coefficients.items() if column_kinds.get(name) == kind
+    }
+    if len(over) != len(row.coefficients) or not over:
+        return None
+    if len(over) > 2 or any(abs(value) != 1.0 for value in over.values()):
+        return None
+    # A *copy* is a difference. `P1 - P2` and `P1 - s` are copies; `P1 + P2 - s` is a
+    # sum, and treating it as an edge between `P1` and the constant node certifies it as
+    # equal to `P1 - s`, which is false at every state. The Fable review of T01 measured
+    # exactly that (M4) and it was wrong in three places at once: here, the specification's
+    # §8.2 wording, and the reference generator. Requiring the two coefficients to cancel
+    # is what makes the telescoping argument true.
+    if len(over) == 2 and sum(over.values()) != 0.0:
+        return None
+    return over

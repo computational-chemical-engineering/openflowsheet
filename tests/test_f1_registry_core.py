@@ -34,7 +34,7 @@ import pytest
 from conftest import REPO_ROOT
 from jsonschema import Draft202012Validator
 
-from openflowsheet.application.types import SCHEMA_BASE, published_schemas, schema_errors
+from openflowsheet.application.documents import published_schemas
 from openflowsheet.registry import (
     Attestation,
     Coded,
@@ -55,6 +55,7 @@ from openflowsheet.registry.tokens import (
     satisfied,
     token_problem,
 )
+from openflowsheet.schema_check import SCHEMA_BASE, schema_errors
 
 SYNTHETIC = REPO_ROOT / "tests" / "fixtures" / "registry" / "synthetic"
 SYNTHETIC_ROOT = SYNTHETIC / "root"

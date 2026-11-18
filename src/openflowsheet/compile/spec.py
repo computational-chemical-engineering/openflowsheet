@@ -169,7 +169,8 @@ class ProblemSpec:
         Every check here is for a mistake that is silent rather than loud: a duplicate id makes a
         later entry shadow an earlier one; a parameter missing from `parameter_ids` drops out of
         `constants_sha256` so two different problems claim the same identity; a block whose inputs
-        are not variables would be fed a symbol that does not exist.
+        are not variables would be fed a symbol that does not exist. The block checks are
+        `_check_block_wiring`'s.
         """
         _no_duplicates(self.variable_ids, "variable_ids")
         _no_duplicates(self.equation_ids, "equation_ids")
@@ -185,25 +186,7 @@ class ProblemSpec:
             )
 
         known = set(self.variable_ids)
-        for block in self.blocks:
-            feeding = self.block_inputs.get(block.block_id)
-            if feeding is None:
-                raise ValueError(f"block {block.block_id!r} has no entry in block_inputs")
-            if len(feeding) != len(block.input_ids):
-                raise ValueError(
-                    f"block {block.block_id!r} declares {len(block.input_ids)} inputs but is fed "
-                    f"{len(feeding)}"
-                )
-            unknown = [name for name in feeding if name not in known]
-            if unknown:
-                raise ValueError(f"block {block.block_id!r} is fed unknown variables {unknown}")
-            _check_pattern(block)
-
-        block_ids = [block.block_id for block in self.blocks]
-        _no_duplicates(tuple(block_ids), "block ids")
-        for name in self.block_inputs:
-            if name not in block_ids:
-                raise ValueError(f"block_inputs names {name!r}, which is not a declared block")
+        _check_block_wiring(self.blocks, self.block_inputs, known)
 
         for kinds, names, label in (
             (self.variable_kinds, known, "variable_kinds"),
@@ -233,6 +216,38 @@ def _no_duplicates(names: tuple[str, ...], label: str) -> None:
     repeated = sorted(name for name, count in counted.items() if count > 1)
     if repeated:
         raise ValueError(f"{label} contains duplicates {repeated}")
+
+
+def _check_block_wiring(
+    blocks: tuple[PropertyBlock, ...],
+    block_inputs: Mapping[str, tuple[str, ...]],
+    known: set[str],
+) -> None:
+    """Refuse a block that is not fed exactly its declared inputs from `known` variables.
+
+    Checks each block in declaration order (an entry in `block_inputs`, its length, every name
+    in `known`, then its Jacobian pattern), then that block ids are unique and that every
+    `block_inputs` key names a declared block. Raises `ValueError` at the first failure.
+    """
+    for block in blocks:
+        feeding = block_inputs.get(block.block_id)
+        if feeding is None:
+            raise ValueError(f"block {block.block_id!r} has no entry in block_inputs")
+        if len(feeding) != len(block.input_ids):
+            raise ValueError(
+                f"block {block.block_id!r} declares {len(block.input_ids)} inputs but is fed "
+                f"{len(feeding)}"
+            )
+        unknown = [name for name in feeding if name not in known]
+        if unknown:
+            raise ValueError(f"block {block.block_id!r} is fed unknown variables {unknown}")
+        _check_pattern(block)
+
+    block_ids = [block.block_id for block in blocks]
+    _no_duplicates(tuple(block_ids), "block ids")
+    for name in block_inputs:
+        if name not in block_ids:
+            raise ValueError(f"block_inputs names {name!r}, which is not a declared block")
 
 
 def _check_pattern(block: PropertyBlock) -> None:

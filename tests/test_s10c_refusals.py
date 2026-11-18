@@ -20,20 +20,13 @@ from test_s10c_blocks import CONTEXT, REAL, column_spec
 
 import openflowsheet.models.syn001.column_validation as column_validation_module
 from openflowsheet.compiled import EvaluationContext
-from openflowsheet.models.syn001.cascade import (
-    CascadeFailure,
-    InletState,
-    SideFeed,
-    property_method_refusal,
-)
+from openflowsheet.models.syn001.cascade import property_method_refusal
 from openflowsheet.models.syn001.cascade import validate as cascade_validate
-from openflowsheet.models.syn001.column import (
-    GAMMA_PHI_KINDS,
-    EndSpecification,
-    energy_precheck,
-    validate,
-)
+from openflowsheet.models.syn001.cascade_failure import CascadeFailure
+from openflowsheet.models.syn001.cascade_spec import InletState, SideFeed
 from openflowsheet.models.syn001.column_solve import solve_column
+from openflowsheet.models.syn001.column_spec import GAMMA_PHI_KINDS, EndSpecification
+from openflowsheet.models.syn001.column_validation import energy_precheck, validate
 from openflowsheet.models.syn001.gamma_phi import enthalpy_flow
 from openflowsheet.thermo import (
     FlashRequest,

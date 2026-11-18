@@ -68,7 +68,7 @@ from openflowsheet.models.c1.boundary import (
     TubeInlet,
     refused,
 )
-from openflowsheet.orchestrator.trace import INTERRUPT_CHECK
+from openflowsheet.numerics.solve_record import INTERRUPT_CHECK
 from openflowsheet.thermo import (
     FlashRequest,
     FlashResult,
@@ -190,6 +190,29 @@ def _frozen(failure: Execution) -> Execution:
     return dataclasses.replace(failure, message=message, timing={"wall_s": 0.0})
 
 
+@dataclass(frozen=True)
+class _Experiment:
+    """What `ExperimentRunner._attempt` evaluates: the variant and its backend, at `run`'s inlet,
+    components and tube count."""
+
+    variant: Variant
+    backend: Backend
+    inlet: StreamState
+    components: Sequence[str]
+    n_tubes: float
+
+
+@dataclass(frozen=True)
+class _AttemptId:
+    """Which attempt record `ExperimentRunner._document` builds: the experiment key, the attempt's
+    number under it, and the number of the attempt that produced the stored result it repeats
+    (`None` when no result is stored)."""
+
+    key: str
+    number: int
+    repeat_of: int | None
+
+
 class ExperimentRunner:
     """Runs experiments into one project's records, for one job (or none)."""
 
@@ -289,17 +312,8 @@ class ExperimentRunner:
         key = request["experiment_key"]
         with self.records.locked(key, check):
             existing = self.records.result(key)
-            written: list[Mapping[str, Any]] = []
             self.records.write_request(request, self.job_id)  # once; byte-equal if present
-            # Every execution is an attempt (§3.3): a handshake that failed is one, under the key
-            # its fingerprint (measured after a retry, or not at all) gave the request. A later
-            # experiment of the same job is not handshaken again (R-236); when the job's handshake
-            # failed, its attempt records that frozen failure, which it did not execute.
-            if first:
-                for failure in failed:
-                    written.append(self._failed_handshake(key, failure, existing))
-            elif environment.failure is not None:
-                written.append(self._failed_handshake(key, _frozen(environment.failure), existing))
+            written = self._write_handshake_attempts(key, first, failed, environment, existing)
             if environment.failure is not None:
                 failure = environment.failure
                 envelope = refused("error", f"external_{failure.status}", failure.message)
@@ -311,17 +325,10 @@ class ExperimentRunner:
                 return ExperimentOutcome(
                     request, existing, existing["envelope"], True, tuple(written)
                 )
+            experiment = _Experiment(variant, backend, inlet, components, n_tubes)
             while True:
                 attempt, envelope, calls = self._attempt(
-                    variant,
-                    backend,
-                    request,
-                    inlet,
-                    components,
-                    n_tubes,
-                    check,
-                    existing,
-                    self._start_bytes(start),
+                    experiment, request, check, existing, self._start_bytes(start)
                 )
                 written.append(attempt)
                 status = attempt["execution"]["status"]
@@ -399,12 +406,36 @@ class ExperimentRunner:
                 self._handshakes[variant.sha256] = (environment, tuple(found))
                 return environment, tuple(found), True
 
+    def _write_handshake_attempts(
+        self,
+        key: str,
+        first: bool,
+        failed: tuple[Execution, ...],
+        environment: Environment,
+        existing: Mapping[str, Any] | None,
+    ) -> list[Mapping[str, Any]]:
+        """The attempts the job's handshake gives the experiment `key`, each written in turn.
+
+        Every execution is an attempt (§3.3): a handshake that failed is one, under the key its
+        fingerprint (measured after a retry, or not at all) gave the request. On the job's
+        `first` experiment of the variant those are the `failed` handshakes. A later experiment
+        of the same job is not handshaken again (R-236); when the job's handshake failed, its
+        attempt records that frozen failure, which it did not execute. Otherwise there is none.
+        """
+        written: list[Mapping[str, Any]] = []
+        if first:
+            for failure in failed:
+                written.append(self._failed_handshake(key, failure, existing))
+        elif environment.failure is not None:
+            written.append(self._failed_handshake(key, _frozen(environment.failure), existing))
+        return written
+
     def _failed_handshake(
         self, key: str, failure: Execution, existing: Mapping[str, Any] | None
     ) -> dict[str, Any]:
         number = self.records.next_attempt(key)
         repeat_of = None if existing is None else int(existing["produced_by"]["attempt"])
-        attempt = self._document(key, number, failure, None, 0.0, repeat_of, None)
+        attempt = self._document(_AttemptId(key, number, repeat_of), failure, None, 0.0, None)
         self.records.write_attempt(attempt, self.job_id)
         return attempt
 
@@ -417,12 +448,8 @@ class ExperimentRunner:
 
     def _attempt(
         self,
-        variant: Variant,
-        backend: Backend,
+        experiment: _Experiment,
         request: Mapping[str, Any],
-        inlet: StreamState,
-        components: Sequence[str],
-        n_tubes: float,
         check: Callable[[], None] | None,
         existing: Mapping[str, Any] | None,
         start: bytes | None = None,
@@ -432,14 +459,16 @@ class ExperimentRunner:
         number = self.records.next_attempt(key)
         directory = self.records.attempt_directory(key, number)
         repeat_of = None if existing is None else int(existing["produced_by"]["attempt"])
+        attempt_id = _AttemptId(key, number, repeat_of)
         provider = _Counting(self.provider)
+        backend = experiment.backend
         boundary = Boundary(
             provider=provider,
-            n_tubes=n_tubes,
-            identity=backend.identity(n_tubes),
-            sweep_ratio=variant.sweep_ratio,
-            discretization_estimate=variant.accuracy["discretization_estimate"],
-            hard_domain=hard_domain(variant),
+            n_tubes=experiment.n_tubes,
+            identity=backend.identity(experiment.n_tubes),
+            sweep_ratio=experiment.variant.sweep_ratio,
+            discretization_estimate=experiment.variant.accuracy["discretization_estimate"],
+            hard_domain=hard_domain(experiment.variant),
         )
         progress = LaunchProgress()
         seen: list[tuple[TubeInlet, Execution]] = []
@@ -456,7 +485,9 @@ class ExperimentRunner:
         started = time.perf_counter()
         interrupted = True
         try:
-            envelope = boundary.evaluate(inlet, components, evaluation, self.context)
+            envelope = boundary.evaluate(
+                experiment.inlet, experiment.components, evaluation, self.context
+            )
             interrupted = False
         except Exception:
             interrupted = False
@@ -475,7 +506,7 @@ class ExperimentRunner:
                 )
                 tube = seen[0][0] if seen else None
                 attempt = self._document(
-                    key, number, cancelled, tube, time.perf_counter() - started, repeat_of, None
+                    attempt_id, cancelled, tube, time.perf_counter() - started, None
                 )
                 self.records.write_attempt(attempt, self.job_id)
         wall = time.perf_counter() - started
@@ -487,7 +518,7 @@ class ExperimentRunner:
         equal: bool | None = None
         if existing is not None and execution.status in DETERMINISTIC:
             equal = not _differing(self._producing(existing), self._execution(execution, tube))
-        attempt = self._document(key, number, execution, tube, wall, repeat_of, equal)
+        attempt = self._document(attempt_id, execution, tube, wall, equal)
         self.records.write_attempt(attempt, self.job_id)
         return attempt, envelope, provider.calls
 
@@ -509,17 +540,17 @@ class ExperimentRunner:
 
     def _document(
         self,
-        key: str,
-        number: int,
+        attempt_id: _AttemptId,
         execution: Execution,
         tube: TubeInlet | None,
         wall_s: float,
-        repeat_of: int | None,
         equal: bool | None,
     ) -> dict[str, Any]:
         body = self._execution(execution, tube)
         if body["logs"] is not None:
-            directory = execution.directory or self.records.attempt_directory(key, number)
+            directory = execution.directory or self.records.attempt_directory(
+                attempt_id.key, attempt_id.number
+            )
             body["logs"]["relpaths"] = {
                 name: self.records.relpath(directory / path)
                 for name, path in body["logs"]["relpaths"].items()
@@ -532,11 +563,11 @@ class ExperimentRunner:
         }
         return {
             "schema_version": ATTEMPT_VERSION,
-            "experiment_key": key,
-            "attempt": number,
+            "experiment_key": attempt_id.key,
+            "attempt": attempt_id.number,
             "job_id": self.job_id,
             "execution": body,
-            "repeat_of": repeat_of,
+            "repeat_of": attempt_id.repeat_of,
             "repeat_bitwise_equal": equal,
         }
 

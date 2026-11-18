@@ -96,11 +96,11 @@ def _case(case: str, document: Mapping[str, Any]) -> dict[str, Any]:
     import t05b_support as support
     from t05_w12_support import bind
 
+    from openflowsheet.numerics.solve_record import Trace
     from openflowsheet.orchestrator.execution import ExecutionPlan
     from openflowsheet.orchestrator.executor import execute_plan
-    from openflowsheet.orchestrator.region import RegionResult
+    from openflowsheet.orchestrator.region_result import RegionResult
     from openflowsheet.orchestrator.revision import plan_revision
-    from openflowsheet.orchestrator.trace import Trace
     from openflowsheet.run.identity import execution_plan_r0, r0_projection
     from openflowsheet.verify.certificate import verify_revision
 

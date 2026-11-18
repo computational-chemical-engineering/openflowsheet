@@ -12,7 +12,7 @@ a change set that creates the revision.
 ```python
 import json
 from openflowsheet.application.local import LocalApplication
-from openflowsheet.application.types import Change
+from openflowsheet.application.transaction_types import Change
 
 with open("rankine-cycle.changeset.json") as handle:
     change_set = json.load(handle)

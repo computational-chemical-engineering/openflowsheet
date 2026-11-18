@@ -20,7 +20,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Final, Literal, get_args
 
 if TYPE_CHECKING:
-    from openflowsheet.application.types import Job, JobEvent
+    from openflowsheet.application.job_records import Job, JobEvent
 
 #: J3's closed discriminator (§5.3). A later operation is an added value and an added `oneOf`
 #: branch in `job.schema.json#/$defs/job_request`; resume would arrive as `solve_resume`.

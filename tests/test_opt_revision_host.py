@@ -27,7 +27,6 @@ import pytest
 from t05_w12_support import Feed, Outlet, duty_pin, mini_revision, unit_instance
 
 from openflowsheet.application import revision_routes
-from openflowsheet.application.policies import DEFAULT_POLICY_ID, resolve_policy
 from openflowsheet.application.revision_routes import REVISION_ROUTES
 from openflowsheet.application.revision_run import (
     Route,
@@ -37,7 +36,9 @@ from openflowsheet.application.revision_run import (
 )
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.orchestrator import region as region_module
-from openflowsheet.orchestrator.region import _admissible
+from openflowsheet.orchestrator import region_attempts, region_phase, region_screen
+from openflowsheet.orchestrator.policies import DEFAULT_POLICY_ID, resolve_policy
+from openflowsheet.orchestrator.region_phase import _admissible
 from openflowsheet.orchestrator.revision import instances_of
 from openflowsheet.orchestrator.splits import region_splits
 from openflowsheet.studies.nlp import revision_host
@@ -51,7 +52,7 @@ from openflowsheet.studies.nlp.revision_host import (
     document_at,
 )
 from openflowsheet.studies.sensitivity import TAU_REGIME, OutputFunctional, StudyParameter
-from openflowsheet.verify.certificate import CheckPolicy
+from openflowsheet.verify.verdict import CheckPolicy
 
 REPO = Path(__file__).resolve().parents[1]
 S11 = REPO / "benchmarks" / "s11"
@@ -140,11 +141,14 @@ def _certified(case: str) -> tuple[RevisionNlpHost, CertifiedPoint, tuple[float,
         residuals.append(tuple(result.residual))
         return result
 
+    # The homotopy corrector's Newton calls go through region_attempts (S19 split-region-2).
     region_module.solve_newton = spy  # type: ignore[assignment]
+    region_attempts.solve_newton = spy  # type: ignore[assignment]
     try:
         point = host.certify({parameter: host.base_spec().parameters[parameter]})
     finally:
         region_module.solve_newton = original  # type: ignore[assignment]
+        region_attempts.solve_newton = original  # type: ignore[assignment]
     assert point.verified, (case, point.outcome, point.message)
     return host, point, residuals[-1]
 
@@ -557,7 +561,8 @@ def test_a_provider_whose_closure_tests_otherwise_gets_no_margin(
     margin, Q4′ refuses it and the start's phase rows name it undefined — shown on the PH flash
     with the provider reported `pr-c1-v1`."""
     host, point, _ = _certified("PHF")
-    monkeypatch.setattr(region_module, "_pr_c1", lambda provider: True)
+    monkeypatch.setattr(region_screen, "_pr_c1", lambda provider: True)
+    monkeypatch.setattr(region_phase, "_pr_c1", lambda provider: True)
     monkeypatch.setattr(revision_host._handle(point), "phase", None)
     assert host.phase_rows(point).undefined == ("U-PHF",)
     (split,) = host.regimes(point).splits

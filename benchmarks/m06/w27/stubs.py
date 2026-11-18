@@ -263,7 +263,7 @@ if plan["actions"]:
     from benchmarks.t07.v17 import fixtures
     from openflowsheet.application.local import LocalApplication
     from openflowsheet.application.serving import token_capability
-    from openflowsheet.application.types import Change
+    from openflowsheet.application.transaction_types import Change
     with LocalApplication.open(project, capability=token_capability(project, token_file)) as app:
         for action in plan["actions"]:
             if action in ("solve_verified", "solve_unverified"):
@@ -526,7 +526,7 @@ def _synthetic_bundle(
 
 def scripted_store(state: State, scratch: Path) -> dict[str, Any]:
     """The store export of a session that committed one revision and solved it."""
-    from openflowsheet.verify.checks import KIND_TOLERANCE  # noqa: PLC0415
+    from openflowsheet.verify.kind_tolerance import KIND_TOLERANCE  # noqa: PLC0415
 
     principal = "agent-w27"
     components = list(state.store.get("components", ["H2"]))

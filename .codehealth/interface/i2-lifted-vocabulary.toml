@@ -1,0 +1,33 @@
+# ADR 0076 I-2 (W4 run 3, brief S19-W4-3; form of S19_DECISIONS 2026-11-16 STOP 1): orchestrator.region
+# stops re-exporting the lifted-split vocabulary, whose one home is openflowsheet.models.lifted and
+# openflowsheet.models.lifted_tolerance since S19 A4. `codehealth gate --mode interface` reads this
+# plan from the plan commit.
+id = "i2-lifted-vocabulary"
+approved_by = "Frank Peters, 2026-11-14, ADR 0076 accepted (Decision Desk ofs-adr0076-accept)"
+reason = """ADR 0076 I-2: the lifted-split vocabulary lives in openflowsheet.models.lifted and the \
+solver's row tolerances in the leaf openflowsheet.models.lifted_tolerance (restructure A4). src \
+importers were retargeted in refactor mode (40ca795c; the four R-016 table-rule verifier modules in \
+d250ba4c, after the rule was amended in b2380d3a, S19_DECISIONS STOP 2) and tests, scripts and \
+benchmarks outside the gate (354e73ad), so an AST inventory (from-imports, module-alias attribute \
+reads, dotted strings, setattr patches, living docs) finds no use of these names through \
+openflowsheet.orchestrator.region or openflowsheet.orchestrator.rank, except the frozen M9 module \
+models/syn001/column_unit.py:90, which imports StagedSplits from orchestrator.region: StagedSplits \
+stays re-exported there (alias and __all__ entry), the I-19 W5 exception. The step drops, in \
+orchestrator/region.py, the `X as X` aliases of INADMISSIBLE_BRANCH, Branch and EQUILIBRIUM_TOLERANCE \
+(the imports go: region's own code does not use them) and of LABEL_KIND, ClosureType, DormancyForm, \
+LiftedSplit, Regime, VapourOnlyForm, ZeroFlowForm and KIND_TOLERANCE (plain imports stay: region's \
+own code uses them), and the __all__ entries ClosureType, DormancyForm, LiftedSplit, Regime, \
+VapourOnlyForm and ZeroFlowForm; in orchestrator/rank.py, which has no __all__, the alias \
+`PRESSURE_TOLERANCE as PRESSURE_TOLERANCE` becomes a plain import (rank's defaults use it). \
+AdmissibilityRefusal is not re-exported by region (I-15). cce-code-health counts imports as API only \
+in __init__.py, so the dropped aliases are invisible to the public-API tier and region.py's __all__ \
+is the one listed change (STOP 1 ruling). Expected codehealth arch --depth 4 (measured at this base \
+and by a simulation of the step): base 4 violations / 3 cycles / 12 cycle edges, after 4 / 3 / 12 \
+(no module edge goes: region still imports models.lifted and models.lifted_tolerance for its own use; \
+ADR 0076's 2 violations were removed by A4). Layer config: none for this step."""
+removed = []
+renamed = {}
+changed = ["src/openflowsheet/orchestrator/region.py:__all__"]
+added = []
+new_files = []
+callers = []

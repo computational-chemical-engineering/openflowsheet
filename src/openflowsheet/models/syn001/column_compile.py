@@ -15,10 +15,12 @@ from typing import Final
 from openflowsheet.compile.casadi_backend import compile_problem
 from openflowsheet.compile.spec import EquationSpec, QuantityKind
 from openflowsheet.models import Contribution, SpecificationError, origin
+from openflowsheet.models.lifted import ClosureType, LiftedSplit, ZeroFlowForm
 from openflowsheet.models.rows import ratio_row, specification_row
-from openflowsheet.models.syn001.cascade import (
+from openflowsheet.models.syn001.cascade_rows import declared_problem
+from openflowsheet.models.syn001.cascade_solve import DECLARATION_CONTEXT, CompiledCascade
+from openflowsheet.models.syn001.cascade_spec import (
     _parameter,
-    declared_problem,
     liquid_id,
     liquid_total_id,
     mixed_id,
@@ -30,21 +32,19 @@ from openflowsheet.models.syn001.cascade import (
     vapor_id,
     vapor_total_id,
 )
-from openflowsheet.models.syn001.cascade_solve import DECLARATION_CONTEXT, CompiledCascade
-from openflowsheet.models.syn001.column import (
+from openflowsheet.models.syn001.column import regime_form
+from openflowsheet.models.syn001.column_rows import declared_rows
+from openflowsheet.models.syn001.column_spec import (
     MODEL_ID,
     RATIO_KINDS,
     ColumnSpec,
-    declared_rows,
     distillate_total_id,
     ratio_parameter,
     reflux_id,
-    regime_form,
     slot_column,
     slot_row_id,
 )
 from openflowsheet.orchestrator.execution import Region
-from openflowsheet.orchestrator.region import ClosureType, LiftedSplit, ZeroFlowForm
 from openflowsheet.thermo import PropertyProvider
 
 #: `ref.cases.*.continued`'s kind letter of each continued slot (S06 §12: an inverse slot's is

@@ -8,8 +8,9 @@ single phase. There is no condenser, reboiler or reflux (S01 spec §1; those are
 specification object, the declarations and the cascade's ids, `cascade_rows` the §2 declared rows
 built from `models.rows` and `cascade_init` the §6 analytic initializer `s01-kremser-cmo-v1`; this
 module holds the §5 refusals, the per-stage regime forms of §4.2 and the §4.6 closed-form answer
-for an all-dormant cascade, and re-exports the other three's names. Compiling, the isothermal
-pre-solve and the `solve_region` call are WO-2's.
+for an all-dormant cascade. It keeps re-exporting the names the frozen `column_unit` imports
+through it until W5 (ADR 0076 I-8, I-19). Compiling, the isothermal pre-solve and the
+`solve_region` call are WO-2's.
 
 **Every stage is one lifted split, PH-type** (S01 spec §4.1): its mixed inflow `m_j` is lifted
 (DECISION 3), so `feed = m_j`, and its energy row fixes `T_j`. Equilibrium is written
@@ -47,49 +48,31 @@ from openflowsheet.models.syn001 import (
 from openflowsheet.models.syn001.cascade_failure import (
     CascadeFailure as CascadeFailure,
 )
-from openflowsheet.models.syn001.cascade_failure import (
-    FailureOutcome as FailureOutcome,
-)
-from openflowsheet.models.syn001.cascade_init import BETA_BOUNDS as BETA_BOUNDS
-from openflowsheet.models.syn001.cascade_init import CMO_FLOOR as CMO_FLOOR
-from openflowsheet.models.syn001.cascade_init import INITIALIZER_ID as INITIALIZER_ID
-from openflowsheet.models.syn001.cascade_init import KremserInitial as KremserInitial
-from openflowsheet.models.syn001.cascade_init import KValues as KValues
 from openflowsheet.models.syn001.cascade_init import _inflow_sum, _inlet_columns
-from openflowsheet.models.syn001.cascade_init import _k_values as _k_values
-from openflowsheet.models.syn001.cascade_init import kremser_initial as kremser_initial
-from openflowsheet.models.syn001.cascade_init import thomas as thomas
-from openflowsheet.models.syn001.cascade_rows import _token as _token
-from openflowsheet.models.syn001.cascade_rows import declared_problem as declared_problem
-from openflowsheet.models.syn001.cascade_rows import declared_rows as declared_rows
+from openflowsheet.models.syn001.cascade_rows import declared_problem, declared_rows
 from openflowsheet.models.syn001.cascade_spec import _TOKEN as _TOKEN
 from openflowsheet.models.syn001.cascade_spec import BOTTOM as BOTTOM
-from openflowsheet.models.syn001.cascade_spec import EQUATIONS as EQUATIONS
-from openflowsheet.models.syn001.cascade_spec import MODEL_ID as MODEL_ID
-from openflowsheet.models.syn001.cascade_spec import SPECIFICATION as SPECIFICATION
 from openflowsheet.models.syn001.cascade_spec import TOP as TOP
-from openflowsheet.models.syn001.cascade_spec import CascadeSpec as CascadeSpec
+from openflowsheet.models.syn001.cascade_spec import (
+    CascadeSpec,
+    PlacedInlet,
+    _phase,
+    energy_row_id,
+    label_column,
+    label_row_id,
+    liquid_id,
+    liquid_total_id,
+    mixed_id,
+    stage_duty_id,
+    vapor_id,
+    vapor_total_id,
+)
 from openflowsheet.models.syn001.cascade_spec import InletState as InletState
-from openflowsheet.models.syn001.cascade_spec import PlacedInlet as PlacedInlet
 from openflowsheet.models.syn001.cascade_spec import SideFeed as SideFeed
-from openflowsheet.models.syn001.cascade_spec import _parameter as _parameter
-from openflowsheet.models.syn001.cascade_spec import _phase as _phase
-from openflowsheet.models.syn001.cascade_spec import energy_row_id as energy_row_id
-from openflowsheet.models.syn001.cascade_spec import inlet_row_id as inlet_row_id
 from openflowsheet.models.syn001.cascade_spec import inlet_stream as inlet_stream
-from openflowsheet.models.syn001.cascade_spec import label_column as label_column
-from openflowsheet.models.syn001.cascade_spec import label_row_id as label_row_id
-from openflowsheet.models.syn001.cascade_spec import liquid_id as liquid_id
-from openflowsheet.models.syn001.cascade_spec import liquid_total_id as liquid_total_id
-from openflowsheet.models.syn001.cascade_spec import mixed_id as mixed_id
-from openflowsheet.models.syn001.cascade_spec import stage_duty_id as stage_duty_id
-from openflowsheet.models.syn001.cascade_spec import stage_prefix as stage_prefix
 from openflowsheet.models.syn001.cascade_spec import stage_pressure_id as stage_pressure_id
 from openflowsheet.models.syn001.cascade_spec import stage_row_id as stage_row_id
 from openflowsheet.models.syn001.cascade_spec import stage_temperature_id as stage_temperature_id
-from openflowsheet.models.syn001.cascade_spec import vapor_id as vapor_id
-from openflowsheet.models.syn001.cascade_spec import vapor_total_id as vapor_total_id
-from openflowsheet.models.syn001.saturation_band import band_temperature as band_temperature
 from openflowsheet.models.syn001.tp_state import enthalpy_flow, single_phase_admissible
 from openflowsheet.thermo import Phase, PropertyProvider, StreamState
 
@@ -175,14 +158,35 @@ def validate(
 
     S03 §9 S11 precedes R1: a provider other than SYN-001 is refused by identity before anything
     else is read or evaluated.
+
+    After R1 and `_well_formed_spec_inlets` (R1's misuse checks), one helper per clause, in order:
+    `_inlet_flow_refusal` (R2), `_domain_refusal` (R3), `_side_feed_stage_refusal` (R4),
+    `_two_phase_inlet_refusal` (R6), `_inadmissible_inlet_refusal` (R5) and `_energy_refusal`
+    (R7, `None` when every inlet is dormant).
     """
-    unit, components = spec.unit_id, spec.components
+    unit = spec.unit_id
     refused = property_method_refusal(unit, provider)
     if refused is not None:
         return refused
     count = spec.stage_count
     if isinstance(count, bool) or not isinstance(count, int) or count < 1:
         return _invalid("stage_count", f"{unit}: N = {count!r} is not an integer >= 1")
+    inlets = _well_formed_spec_inlets(spec)
+    return (
+        _inlet_flow_refusal(unit, inlets)
+        or _domain_refusal(spec, inlets)
+        or _side_feed_stage_refusal(spec)
+        or _two_phase_inlet_refusal(unit, inlets)
+        or _inadmissible_inlet_refusal(spec, inlets, provider, context)
+        or _energy_refusal(spec, provider, context)
+    )
+
+
+def _well_formed_spec_inlets(spec: CascadeSpec) -> tuple[PlacedInlet, ...]:
+    """R1's misuse checks on a specification whose `N` passed R1: `spec.inlets()`, after
+    `ValueError` for a pressure or duty list that is not one per stage or a non-finite duty, and
+    before `ValueError` for duplicated inlet ports or a flow vector of the wrong length."""
+    unit, components, count = spec.unit_id, spec.components, spec.stage_count
     if len(spec.pressures) != count or len(spec.duties) != count:
         raise ValueError(
             f"{unit}: {len(spec.pressures)} pressures and {len(spec.duties)} duties for "
@@ -201,15 +205,24 @@ def validate(
                 f"{unit}: inlet {inlet.port} carries {len(inlet.state.n)} flows for "
                 f"{len(components)} components"
             )
+    return inlets
 
-    # R2
+
+def _inlet_flow_refusal(unit: str, inlets: tuple[PlacedInlet, ...]) -> CascadeFailure | None:
+    """R2: the first inlet whose flows are not all finite and `>= 0`, else `None`."""
     for inlet in inlets:
         if not all(math.isfinite(a) and a >= 0.0 for a in inlet.state.n):
             return _invalid(
                 f"inlet_flow:{inlet.port}",
                 f"{unit}: inlet {inlet.port} flows {inlet.state.n} are not finite and >= 0",
             )
-    # R3
+    return None
+
+
+def _domain_refusal(spec: CascadeSpec, inlets: tuple[PlacedInlet, ...]) -> CascadeFailure | None:
+    """R3: the first inlet `T` outside `(T_MIN, T_MAX)` or `P` outside `(P_MIN, P_MAX)`, then
+    the first stage pressure `P_j*` outside `(P_MIN, P_MAX)`, else `None`."""
+    unit = spec.unit_id
     for inlet in inlets:
         stream = inlet_stream(unit, inlet.port)
         for column, value, bounds in (
@@ -222,7 +235,13 @@ def validate(
         column = stage_pressure_id(unit, stage)
         if not _in_domain(value, (P_MIN, P_MAX)):
             return _invalid(f"domain:{column}", f"{column} = {value!r} outside {(P_MIN, P_MAX)}")
-    # R4
+    return None
+
+
+def _side_feed_stage_refusal(spec: CascadeSpec) -> CascadeFailure | None:
+    """R4: the first side feed whose stage is not an integer in `1..N` or repeats an earlier side
+    feed's stage, else `None`."""
+    unit, count = spec.unit_id, spec.stage_count
     taken: set[int] = set()
     for side in spec.sides:
         stage = side.stage
@@ -238,7 +257,11 @@ def validate(
                 "per stage)",
             )
         taken.add(stage)
-    # R6
+    return None
+
+
+def _two_phase_inlet_refusal(unit: str, inlets: tuple[PlacedInlet, ...]) -> CascadeFailure | None:
+    """R6: the first inlet declared neither LIQUID nor VAPOR, else `None`."""
     for inlet in inlets:
         if inlet.state.phase not in INLET_PHASES:
             return CascadeFailure(
@@ -247,8 +270,18 @@ def validate(
                 f"{unit}: inlet {inlet.port} declared {inlet.state.phase!r}; S01 takes a declared "
                 "LIQUID or VAPOR inlet only",
             )
-    # R5: R-007 admissibility (spec §17.3, R-512), the inlet at its own `(n, T, P)` in its
-    # declared phase.
+    return None
+
+
+def _inadmissible_inlet_refusal(
+    spec: CascadeSpec,
+    inlets: tuple[PlacedInlet, ...],
+    provider: PropertyProvider,
+    context: EvaluationContext,
+) -> CascadeFailure | None:
+    """R5: R-007 admissibility (spec §17.3, R-512): the first non-dormant inlet that
+    `single_phase_admissible` refuses at its own `(n, T, P)` in its declared phase, else `None`."""
+    unit, components = spec.unit_id, spec.components
     for inlet in inlets:
         state = inlet.state
         if _is_dormant(state):
@@ -268,7 +301,15 @@ def validate(
                 f"inadmissible_inlet({inlet.port}, {state.phase})",
                 f"{unit}: inlet {inlet.port} is not an admissible {state.phase} ({detail})",
             )
-    # R7
+    return None
+
+
+def _energy_refusal(
+    spec: CascadeSpec, provider: PropertyProvider, context: EvaluationContext
+) -> CascadeFailure | None:
+    """R7: `None` when every inlet is dormant, else the refusal when `H*` is outside the
+    `energy_precheck` bounds, else `None`."""
+    unit = spec.unit_id
     if is_dormant(spec):
         # Every inlet dormant: §4.6's closed form answers (see the design-lane question in
         # docs/S01_DECISIONS.md on R7's scope).
@@ -482,30 +523,18 @@ class _NoAlgebra:
 _NO_ALGEBRA: Final = _NoAlgebra()
 
 __all__ = [
-    "BETA_BOUNDS",
     "BOTTOM",
-    "CMO_FLOOR",
-    "EQUATIONS",
-    "INITIALIZER_ID",
     "INLET_PHASES",
-    "MODEL_ID",
     "TOP",
     "CascadeFailure",
-    "CascadeSpec",
     "DormantAnswer",
     "EnergyPrecheck",
     "InletState",
-    "KremserInitial",
-    "PlacedInlet",
     "RegimeForm",
     "SideFeed",
-    "declared_problem",
-    "declared_rows",
     "dormant_answer",
     "energy_precheck",
     "is_dormant",
-    "kremser_initial",
     "regime_form",
-    "thomas",
     "validate",
 ]

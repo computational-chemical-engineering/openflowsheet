@@ -1,0 +1,484 @@
+{
+  "work_package": "S19",
+  "commit": "4f9f2c3dbb8e42ce6b54d8fb4b263d71ef81b9e7",
+  "requirements": [],
+  "status": "tested",
+  "inputs": {
+    "case_id": "S19 (Frank, 2026-11-14: excellent code health before further development); docs/S19_RULES.md; ADR 0076 (accepted 2026-11-14); this manifest covers what merged into wp/S19 since main 218e7a73: phase W3 (lanes G1 to G6), phase W4 (ADR 0076 items I-1 to I-15 and I-19; I-16 not taken, I-17 deferred, I-18 unchanged by the ADR), the gate tooling and design batch 1's test, for the merge into main by Frank's Decision Desk sign-off ofs-s19-w3w4-merge-main",
+    "case_hash": "430f9bef05fb58f0640b68f44eb5fc4b3778a73670d796bdd580216fa734fbc2",
+    "environment_lock_hash": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+  },
+  "commands": [
+    {
+      "cmd": ".venv-codehealth/bin/codehealth gate --mode restructure|refactor|interface|revert ... (via .claude/skills/s19-refactor/gate.sh and gate_queue.py); run log git-common-dir codehealth/runs/s19.jsonl, steps 46 to 298 (253 entries since the first manifest): interface 31 accepted, 7 gate-fail; refactor 129 accepted, 46 accepted-neutral, 11 no-gain, 21 gate-fail; restructure 2 accepted, 2 accepted-neutral, 2 gate-fail; revert 1 gate-fail, 1 review-reject. Heads in the history of 4f9f2c3d: 206 accepted or accepted-neutral (interface 28, refactor 174, restructure 4), 11 no-gain, 8 gate-fail or review-reject",
+      "cwd": ".claude/worktrees/s19 and the lane worktrees",
+      "exit_code": 0
+    },
+    {
+      "cmd": ".venv-codehealth/bin/codehealth arch --depth 4 (at 4f9f2c3d: ARCH 329 files, 4100 imports, 0 violation(s), 0 cycle(s) at depth 4; at 17967ccb: 7 violations, 4 cycles, 14 cycle edges)",
+      "cwd": ".claude/worktrees/s19-ev",
+      "exit_code": 0
+    },
+    {
+      "cmd": ".venv-codehealth/bin/codehealth scan --json git-common-dir/codehealth/runs/scan-4f9f2c3d.json (SCAN 329 files, 102258 NLOC, debt 4670.7 (45.68/kNLOC), health 8.24, functions with debt 580/5025, brain 26, file smells 53, errors 0; CB d90b498f: debt 6370.9, health 7.3)",
+      "cwd": ".claude/worktrees/s19-ev",
+      "exit_code": 0
+    },
+    {
+      "cmd": "python3 .claude/skills/s19-refactor/patch_noop.py . (265 module-attribute patches; 0 where the module neither defines nor uses the name)",
+      "cwd": ".claude/worktrees/s19-ev",
+      "exit_code": 0
+    },
+    {
+      "cmd": "PYTHONPATH=src .venv/bin/python scripts/corpus_identity.py --check (F0 PASS: M1 50/50, M2 61/61, M3 61/61, M4 61/61, M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 35/35)",
+      "cwd": ".claude/worktrees/s19-ev",
+      "exit_code": 0
+    },
+    {
+      "cmd": "PYTHONPATH=src .venv/bin/python -m pytest -q -p no:cacheprovider tests/test_t08_w2_surface_digest.py tests/test_m07a_surface_chain.py (the mcp_digest tier of .codehealth/config.toml; 40 passed)",
+      "cwd": ".claude/worktrees/s19-ev",
+      "exit_code": 0
+    },
+    {
+      "cmd": "PYTHONPATH=src .venv/bin/python -m pytest -p no:cacheprovider -rA --durations=0 tests/test_t07_v17_reference.py::test_f6_the_forty_runs_fit_their_budget (alone, load 0.28; 1 passed in 101.42 s)",
+      "cwd": ".claude/worktrees/s19-ev",
+      "exit_code": 0
+    },
+    {
+      "cmd": "PYTHONPATH=src .venv/bin/python -m pytest -p no:cacheprovider -rA --durations=0 tests/test_t07_conformance.py::test_the_budget_of_the_scenario_runs (alone, load 1.38; 1 passed in 28.40 s)",
+      "cwd": ".claude/worktrees/s19-ev",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/test_impact.py build (G-MAP 5, test map at 14c6d414)",
+      "cwd": ".claude/worktrees/s19",
+      "exit_code": 1
+    },
+    {
+      "cmd": "gh run watch 44173756567 --exit-status",
+      "cwd": ".claude/worktrees/s19",
+      "exit_code": 0
+    },
+    {
+      "cmd": "gh run watch 44194354064 --exit-status",
+      "cwd": ".claude/worktrees/s19",
+      "exit_code": 0
+    }
+  ],
+  "checks": [
+    {
+      "id": "S19.G-STEP-W3W4",
+      "description": "every kept step since the first manifest: gate exit 0 (refactor: touched files' debt strictly lower or accepted-neutral by rule; restructure: the plan's arch numbers; interface: the ADR 0076 plan's declared public API change)",
+      "result": "pass",
+      "value": "206 accepted or accepted-neutral steps and 11 no-gain steps in the history of 4f9f2c3d, each with a passing gate; the 8 gate-fail or review-reject entries in that history have a passing re-run (step 54 -> 62, 130/136/143 -> 146, 197 -> 199, 222 -> 224, 161 -> job 49 on the rebuilt lane) or are the R-W3-G5-9 revert of 24f772cc (253 gate-fail on a wrong --base, 254 the review-reject record of re-run job 198)"
+    },
+    {
+      "id": "S19.G-REVIEW-W3W4",
+      "description": "fresh reviewer per the sensitivity tiers; rejects reverted and logged (docs/S19_DECISIONS.md)",
+      "result": "pass",
+      "value": "R-I15 (Fable 5.2): merge after test fixes; R-W3-G1N-1 (Fable 5.2): Q1 ruled, RC form accepted; R-W3-G1N-2 (Opus): merge after fixes; R-W3-G1O-1 (Opus): merge; R-W3-G1O-2 (Opus): merge after fixes; R-W3-G1O-3 (model not recorded): merge after one docstring fix; R-W3-G2-2 (Opus): merge after fixes; R-W3-G2-3 (Opus): merge; R-W3-G2-4 (Opus): merge; R-W3-G2-5 (Opus): merge; R-W3-G3-1 (Opus): merge after fixes; R-W3-G4-1 (Opus): merge after fixes; R-W3-G4-2 (model not recorded): merge; R-W3-G5-1 (Opus): merge; R-W3-G5-3 (Opus): merge after fixes; R-W3-G5-4 (Opus): merge after fixes; R-W3-G5-5 (Opus): merge after fixes; R-W3-G5-6 (Opus): merge after fixes; R-W3-G5-7 (Opus): merge after fixes; R-W3-G5-8 (Opus): merge, notes only; R-W3-G5-9 (Opus): step 2 24f772cc rejected (reverted in 620d6c02, run-log steps 253-254), the other three merge after fix 2; R-W3-G5-10 (Opus): merge; R-W3-G5-11 (Opus): merge, no fixes; R-W3-G5-12 (Opus; joint with G6 run 7, the R-W3-G6-7 slot): G5 run 12 merge after fix 1, G6 run 7 merge; R-W3-G6-1 (Opus): merge; R-W3-G6-2 (Opus): merge; R-W3-G6-4 (Opus): merge after fixes; R-W3-G6-5 (Opus): merge after fixes; R-W3-G6-6 (Opus): merge after fixes; R-W4-1a (Opus): merge after fixes; R-W4-1b (Opus): merge after fixes (R-W4-1 split in 1a and 1b); R-W4-7 (Opus): merge, no fixes; R-W4-8 (Opus): merge after fixes; R-W4-9a (Opus): merge, no fixes; R-W4-9b (Fable): merge after one docstring fix (R-W4-9 split in 9a and 9b); R-W4-11 (Opus): merge after fix 1; R-W4-12 (Opus): merge after fixes; R-W4-13 (Opus): merge after fixes; R-W4-I12d (Opus): merge after fixes; R-W4-I19a (Opus): merge; R-W4-STOP3 (reviewer on Fable): ruling, fix in 8ae387f1"
+    },
+    {
+      "id": "S19.G-MAP-3",
+      "description": "the map at the wp/S19 tip when the queue drains (2026-11-16): build exit 0 or 1, at least 20356 tests, failures a subset of the S17 G-MAP set, no unsure test in a file that costs more than about 60 s",
+      "result": "fail",
+      "value": "MISS on the unsure-file criterion, map accepted (c3c5793e): 20483 tests, 3473 s quiet, 25.7 MB; 4 failed = the B-6 set (m04_wo9 a25, a29; x02_wo4 g4e x2); test_m04_wo9_synthetic_loop.py about 77 s, above 60 s"
+    },
+    {
+      "id": "S19.G-MAP-4",
+      "description": "the map at 1720cc98 (2026-11-17), criteria as G-MAP 3",
+      "result": "fail",
+      "value": "MISS on the unsure-file criterion as G-MAP 3, map accepted (1720cc98): 20503 tests (20390 passed, 109 skipped, 4 failed = the B-6 set), pytest exit 1, 3988 s quiet, 25.8 MB; the fold's crash on one empty coverage file fixed and the run refolded"
+    },
+    {
+      "id": "S19.G-MAP-5",
+      "description": "the map at the wp/S19 tip after the I-12d merge (2026-11-17), criteria as G-MAP 3 (failures a subset of the B-6 set; at least 20503 tests)",
+      "result": "fail",
+      "value": "MISS on the failure subset and the unsure-file criterion, map accepted (14c6d414): 20503 tests (20389 passed, 109 skipped, 5 failed = the B-6 set + t07_v17_reference f6 at 310.8 s against 300 s under coverage), pytest exit 1, 3692 s, 25.9 MB; f6 is deselected by every gate"
+    },
+    {
+      "id": "S19.W4-DOCS",
+      "description": "end of W4: codehealth docs with ADR 0076 rule 5's records list, 0 broken references introduced by S19 (tip against CB d90b498f)",
+      "result": "pass",
+      "value": "2026-11-17, after the I-19 merge a758cbbe and 26d343f6: 0 introduced by S19; 232 pre-S19 broken references trailing; 286 broken in living docs (repo config)"
+    },
+    {
+      "id": "S19.ARCH-W3W4",
+      "description": "codehealth arch --depth 4 at 4f9f2c3d (blocking set: 0 cycles and 0 violations)",
+      "result": "pass",
+      "value": "violations/cycles/cycle edges 7/4/14 at 17967ccb -> 0/0/0 at 4f9f2c3d (4100 imports)"
+    },
+    {
+      "id": "S19.PATCH-NOOP",
+      "description": "no test patches a module attribute the module neither defines nor uses (ADR 0076 review)",
+      "result": "pass",
+      "value": "265 module-attribute patches; 0 flagged"
+    },
+    {
+      "id": "S19.F0",
+      "description": "scripts/corpus_identity.py --check at 4f9f2c3d",
+      "result": "pass",
+      "value": "F0 PASS: M1 50/50, M2 61/61, M3 61/61, M4 61/61, M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 35/35"
+    },
+    {
+      "id": "S19.MCP-DIGEST",
+      "description": "the mcp_digest tier (tests/test_t08_w2_surface_digest.py, tests/test_m07a_surface_chain.py) at 4f9f2c3d",
+      "result": "pass",
+      "value": "40 passed in 13.11 s"
+    },
+    {
+      "id": "S19.BUDGET-F6",
+      "description": "test_t07_v17_reference f6 (the forty runs within 300 s), run alone on a quiet host",
+      "result": "pass",
+      "value": "1 passed in 101.42 s (fixture setup 100.12 s), load average 0.28 before the run"
+    },
+    {
+      "id": "S19.BUDGET-T07C",
+      "description": "test_t07_conformance budget_of_the_scenario_runs (the five scenario runs within 120 s), run alone on a quiet host",
+      "result": "pass",
+      "value": "1 passed in 28.40 s (fixture setup 25.32 s), load average 1.38 before the run; an 'Exception ignored' message from t07_transport_support.ThreadStream at interpreter exit, exit code 0"
+    },
+    {
+      "id": "S19.G-END-CI",
+      "description": "CI green on ubuntu-latest and ubuntu-24.04-arm at the branch commit to be merged (default-install and identity jobs green too)",
+      "result": "pass",
+      "value": "run 44194354064 at b36fa2a6 (the wp/S19 tip merged, with the K05 test fix b716feb7 and its review fix 4bef2608; Decision Desk ofs-s19-w3w4-merge-main-2) green on both legs; before it, run 44173756567 at d500fb07 (4f9f2c3d + the manifest, merge-check fixes, and the test-only fix b716feb7); the earlier runs 43773007283 (d122b86a) and 44158387592 (ed0f04ae) failed only tests/test_s19_i15_admissibility_refusal.py, which asserted the K05 re-solve's state hash bitwise off F0's reference platform (ADR 0007: no cross-platform promise); the informational codehealth job (continue-on-error) reports failure on 44158387592 and 44173756567 (success on 43773007283)"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "docs/S19_DECISIONS.md",
+      "sha256": "ee3571501ae6f3cb58d04a025b2e3cc3e2d2c450de0794235e998d59f3ac1c0b",
+      "description": "decisions per work order and review"
+    },
+    {
+      "path": "docs/S19_STATE.md",
+      "sha256": "430f9bef05fb58f0640b68f44eb5fc4b3778a73670d796bdd580216fa734fbc2",
+      "description": "state: gates with criteria fixed before the run, and results"
+    },
+    {
+      "path": "docs/S19_RULES.md",
+      "sha256": "3801203228e94785cab094305a42e4134a90be750dcbf1ced349eda550ac9177",
+      "description": "standing rules for every S19 worker"
+    },
+    {
+      "path": "docs/briefs/S19-architecture.md",
+      "sha256": "b7e7b741455fdac75354dc07c082a2a7c58d49f9b72c4227ea6b6ffa66a386b4",
+      "description": "the design note (architect): phases W0 to W4, arch numbers per step"
+    },
+    {
+      "path": "docs/adr/0076-S19-interface-redesign.md",
+      "sha256": "8c5043d51c0df428369535c86ced97576d7401c3f434b80f515e42969fb5c776",
+      "description": "ADR 0076, accepted 2026-11-14, amended in W4"
+    },
+    {
+      "path": ".codehealth/config.toml",
+      "sha256": "41701009a549c9e39169148909c6da36901e6d59d0ddb9e4ed227400390f7415",
+      "description": "the codehealth config: scope src/openflowsheet/*, repo-layers, the architecture ratchet, the docs records"
+    },
+    {
+      "path": ".codehealth/playbook.md",
+      "sha256": "9cbabae6fa7c5305b8f274a9bfb7f3b69662332e36b397e1bc3935fc3a8d002a",
+      "description": "the refactor playbook"
+    },
+    {
+      "path": "tests/test_s19_component_order.py",
+      "sha256": "e6457b551f168293f1def31a934f1974da98d0a0c96ed534e7c3d59b5e595985",
+      "description": "design batch 1, Q1: component order pinned (docs/briefs/S19-D-batch1-ruling.md)"
+    },
+    {
+      "path": "scripts/test_impact.py",
+      "sha256": "4028e7ea0d41b53a39cc53007461b9dd5db8ad89b56aabdd46d93c28f90da810",
+      "description": "the test map and step-relative selection"
+    },
+    {
+      "path": ".claude/skills/s19-refactor/SKILL.md",
+      "sha256": "10290f0797de9b2296eea15b9925e18bf1b1c9ccde2c5df88585e70dff4f8dd9",
+      "description": "S19 gate tooling (added or changed since 17967ccb)"
+    },
+    {
+      "path": ".claude/skills/s19-refactor/gate.sh",
+      "sha256": "4b748b3b036e0ab7b1e2ee32a5b3196194e0b9ec4ed335b0c134badeff71a523",
+      "description": "S19 gate tooling (added or changed since 17967ccb)"
+    },
+    {
+      "path": ".claude/skills/s19-refactor/gate_queue.py",
+      "sha256": "aba96ca8eb80f8e9a1f3d8fd1b42072de2369a42d2d9e8b90233a4acc1f4ab4e",
+      "description": "S19 gate tooling (added or changed since 17967ccb)"
+    },
+    {
+      "path": ".claude/skills/s19-refactor/gate_report.py",
+      "sha256": "b2a338a16e19f2e9c33ae0867a146209d27e247c8dbc5a8504740e1e68da820b",
+      "description": "S19 gate tooling (added or changed since 17967ccb)"
+    },
+    {
+      "path": ".claude/skills/s19-refactor/i19_scan.py",
+      "sha256": "b6787bf8809e4f620504b3825be2d05cf36cde9b931976c5da9e4355b49f1f8a",
+      "description": "S19 gate tooling (added or changed since 17967ccb)"
+    },
+    {
+      "path": ".claude/skills/s19-refactor/rc_check.py",
+      "sha256": "f1adecd4678ea9109f9e424ced829ceab51a9d95e71b4d5912f2359c4b8a2fad",
+      "description": "S19 gate tooling (added or changed since 17967ccb)"
+    },
+    {
+      "path": ".claude/skills/s19-refactor/serial.sh",
+      "sha256": "790f13610716ca5a5218bddcef548bd5b2c1679ed68f62a65f70dbd6eb5e288a",
+      "description": "S19 gate tooling (added or changed since 17967ccb)"
+    },
+    {
+      "path": ".codehealth/interface/I-14.toml",
+      "sha256": "12f6fc670a554fc965937cd071222e51cb29a2ecb9cac03d0c90fc78b613ea93",
+      "description": "an approved ADR 0076 interface plan added since 17967ccb"
+    },
+    {
+      "path": ".codehealth/interface/i1-solve-record.toml",
+      "sha256": "2de75c05119b975606f07863e6fa221dacbe418c585644e029bbc3ce2115658e",
+      "description": "an approved ADR 0076 interface plan added since 17967ccb"
+    },
+    {
+      "path": ".codehealth/interface/i10-structure-inspection.toml",
+      "sha256": "ee8ea643ab95a4326f94566deaf63f09db10bbcb0acbe385fa0b004e4492d14c",
+      "description": "an approved ADR 0076 interface plan added since 17967ccb"
+    },
+    {
+      "path": ".codehealth/interface/i11-k06-facade.toml",
+      "sha256": "9ba79b4b0af4a15fa64adb6e65f7cfa8690bd9a1e0dfc39dca285502f1f4ae2d",
+      "description": "an approved ADR 0076 interface plan added since 17967ccb"
+    },
+    {
+      "path": ".codehealth/interface/i12a-types-split.toml",
+      "sha256": "4920528850a68e1b542b0bd1eeb28e73816de5c55df6b5ce9be4fe2b63efdff2",
+      "description": "an approved ADR 0076 interface plan added since 17967ccb"
+    },
+    {
+      "path": ".codehealth/interface/i12b-store-records.toml",
+      "sha256": "6c26aae397e489724e6d87cafe22f8c53e07c81d0299f3e29ae47a7776654a19",
+      "description": "an approved ADR 0076 interface plan added since 17967ccb"
+    },
+    {
+      "path": ".codehealth/interface/i12c-revision-replay.toml",
+      "sha256": "323e21a67386a1d9b661abe24b7e79875566ecf48b619db51dfad05f375a9cc4",
+      "description": "an approved ADR 0076 interface plan added since 17967ccb"
+    },
+    {
+      "path": ".codehealth/interface/i12d-1-core-inspection.toml",
+      "sha256": "1f908a69150002d1d72a433ff8c5f8ddf1abbfd1703cee4d27a0bc7d179ce89b",
+      "description": "an approved ADR 0076 interface plan added since 17967ccb"
+    },
+    {
+      "path": ".codehealth/interface/i12d-2-revision.toml",
+      "sha256": "a10a602dc830944ddb0fbf48745ffd51c3227530011fa611cc1b569a9f56a581",
+      "description": "an approved ADR 0076 interface plan added since 17967ccb"
+    },
+    {
+      "path": ".codehealth/interface/i12d-3-artifact.toml",
+      "sha256": "a15bcd47c56f26629234afbd686493c32211e0e82186f0054abce598b07b050a",
+      "description": "an approved ADR 0076 interface plan added since 17967ccb"
+    },
+    {
+      "path": ".codehealth/interface/i12d-4-validation.toml",
+      "sha256": "5f675a63202bfc1e59c6fb9c6d6cae55313c75aa5163cbd686f6c31ea242e0a2",
+      "description": "an approved ADR 0076 interface plan added since 17967ccb"
+    },
+    {
+      "path": ".codehealth/interface/i12d-5-job.toml",
+      "sha256": "f332c6c26803ff37b68a61200645156acbfce29971d7b97c585a9944e9b93bdd",
+      "description": "an approved ADR 0076 interface plan added since 17967ccb"
+    },
+    {
+      "path": ".codehealth/interface/i12d-f1-rejected.toml",
+      "sha256": "d04a77671fd7b7d32bab397430687da4fc67859720123bcdab4d8d326c83642c",
+      "description": "an approved ADR 0076 interface plan added since 17967ccb"
+    },
+    {
+      "path": ".codehealth/interface/i13-builder-kit.toml",
+      "sha256": "4387ed7526f716d79faad97f59476b887b26e6e7d8ec34fa26dba03e07e1f6b3",
+      "description": "an approved ADR 0076 interface plan added since 17967ccb"
+    },
+    {
+      "path": ".codehealth/interface/i15-region-verifier.toml",
+      "sha256": "b42ae8496039a70cce8662334d1e6d6fbea7e54f4e9ea2f14161930ebc5d8862",
+      "description": "an approved ADR 0076 interface plan added since 17967ccb"
+    },
+    {
+      "path": ".codehealth/interface/i19a-syn001-reexports.toml",
+      "sha256": "88c6a4cce7c6dbdc2f9c663debbaf558b51bfd6697a715daae61643321c42b9f",
+      "description": "an approved ADR 0076 interface plan added since 17967ccb"
+    },
+    {
+      "path": ".codehealth/interface/i19b-region-private-aliases.toml",
+      "sha256": "029d2a3a96b6fd6436495b460ed47b10d57ad6a336bc7133ce8e64c11a20ff6a",
+      "description": "an approved ADR 0076 interface plan added since 17967ccb"
+    },
+    {
+      "path": ".codehealth/interface/i19c-table-private-aliases.toml",
+      "sha256": "fd09226834a5fa4b1b65d1dece3831af8a5802bde5965bafb3809a4f656631b6",
+      "description": "an approved ADR 0076 interface plan added since 17967ccb"
+    },
+    {
+      "path": ".codehealth/interface/i19d-sizing-init-aliases.toml",
+      "sha256": "61a442514ca20003cb51a7867bf37f70e7d6d05440caca10cfa7aa7d1821a0ee",
+      "description": "an approved ADR 0076 interface plan added since 17967ccb"
+    },
+    {
+      "path": ".codehealth/interface/i19e-column-solve-saturation-pairs.toml",
+      "sha256": "fc2661ffd72469bb87a264c04b7ad7a3cd0c7544b9a63d973f3c6b1186974ce5",
+      "description": "an approved ADR 0076 interface plan added since 17967ccb"
+    },
+    {
+      "path": ".codehealth/interface/i2-lifted-vocabulary.toml",
+      "sha256": "66f3526cc213d282e5aa04e4dd30418085c7bf74db0a33b34f2440748d18d8b3",
+      "description": "an approved ADR 0076 interface plan added since 17967ccb"
+    },
+    {
+      "path": ".codehealth/interface/i3-route-policies.toml",
+      "sha256": "0d5d024e84a912d7408188072033e0d4e2772efd90b8b363680c0c9b3fc2369b",
+      "description": "an approved ADR 0076 interface plan added since 17967ccb"
+    },
+    {
+      "path": ".codehealth/interface/i3b-policies-all.toml",
+      "sha256": "867805c08f1933189684757489ab92f0737cf8dff8bb1794654a3a66dff01c51",
+      "description": "an approved ADR 0076 interface plan added since 17967ccb"
+    },
+    {
+      "path": ".codehealth/interface/i4-run-session.toml",
+      "sha256": "702526fccb5d7e0058301eb74585bb0e6a81de024a803ae4f9f669bd1774b68e",
+      "description": "an approved ADR 0076 interface plan added since 17967ccb"
+    },
+    {
+      "path": ".codehealth/interface/i5-schema-check.toml",
+      "sha256": "0fd221c6895839d41dfdeef69d085b8b31a40d8a2038c9c6c067e831e328b7e6",
+      "description": "an approved ADR 0076 interface plan added since 17967ccb"
+    },
+    {
+      "path": ".codehealth/interface/i5b-document-validation.toml",
+      "sha256": "098001eb00c38cdbb557ec5aa5337be37740ec8c944e61a6b8466fb089680bd5",
+      "description": "an approved ADR 0076 interface plan added since 17967ccb"
+    },
+    {
+      "path": ".codehealth/interface/i6-units-display.toml",
+      "sha256": "867c4c8f17fe329a0c66a3d0be934406e9925801f453187a38f1a84bdf6837f9",
+      "description": "an approved ADR 0076 interface plan added since 17967ccb"
+    },
+    {
+      "path": ".codehealth/interface/i7-tolerances-linearization.toml",
+      "sha256": "e65720cb9bdf3764cd0759618bebcee0d673edbc80c8aa1b79f5df9a1829b1e5",
+      "description": "an approved ADR 0076 interface plan added since 17967ccb"
+    },
+    {
+      "path": ".codehealth/interface/i8a-leaf-reexports.toml",
+      "sha256": "30bd3bc371b28844f41060cff57136f2a8754dada66133f8fcb633722d900cda",
+      "description": "an approved ADR 0076 interface plan added since 17967ccb"
+    },
+    {
+      "path": ".codehealth/interface/i8b-split-reexports.toml",
+      "sha256": "ab526ac37a2c52826f38a3769987a6d094a6add5151acd16e51c018c01bdd995",
+      "description": "an approved ADR 0076 interface plan added since 17967ccb"
+    },
+    {
+      "path": ".codehealth/interface/i8c-table-binding-reexports.toml",
+      "sha256": "72e5f103531fcf6999e67ee4af622b9749430a5df00d987630f997dc869d563e",
+      "description": "an approved ADR 0076 interface plan added since 17967ccb"
+    },
+    {
+      "path": ".codehealth/interface/i8d-cascade-reexports.toml",
+      "sha256": "255968b3cf7dd0701cd8de26d1c7e56b0ea4fc88893dbe0fbe7872a8176a235d",
+      "description": "an approved ADR 0076 interface plan added since 17967ccb"
+    },
+    {
+      "path": ".codehealth/interface/i8e-column-solve-reexports.toml",
+      "sha256": "5cb71937a7505de6e4c1960f2784db9834aec8b88f0640577e283e86c424c507",
+      "description": "an approved ADR 0076 interface plan added since 17967ccb"
+    },
+    {
+      "path": ".codehealth/interface/i8f-column-reexports.toml",
+      "sha256": "357113035c4dffaff4eda5252a47bc91ac8aa46f9930916c4f5378c571d68349",
+      "description": "an approved ADR 0076 interface plan added since 17967ccb"
+    },
+    {
+      "path": ".codehealth/interface/i8g-transactions-reexports.toml",
+      "sha256": "30d584206bbf25b26d38e6f7f041b306386eab3505bbaee97c784fe1985516fb",
+      "description": "an approved ADR 0076 interface plan added since 17967ccb"
+    },
+    {
+      "path": ".codehealth/interface/i8h-anderson-recyclepolicy.toml",
+      "sha256": "3223771a6e8795cd1b15b8da463e51dfe2f8c487d854f8cd0afe0d12fe1be2a0",
+      "description": "an approved ADR 0076 interface plan added since 17967ccb"
+    },
+    {
+      "path": ".codehealth/interface/i9-errors.toml",
+      "sha256": "43907c3e2a05697b8b21cfc7c92ebf4c23f4214c11bcb90aad8ed6de83e15716",
+      "description": "an approved ADR 0076 interface plan added since 17967ccb"
+    },
+    {
+      "path": ".codehealth/interface/s19-i12d-placement.md",
+      "sha256": "bfb7569bc3ee428ea3b2e7f2e3cdde8a9570f6228970a838115ae9ad4e733221",
+      "description": "the I-12d placement note"
+    },
+    {
+      "path": ".codehealth/restructure/move-route-policies.toml",
+      "sha256": "426ff3b6e6a79b5ba753a59904e2b8f76655256493cfb0306d28104a7e90b5f6",
+      "description": "an approved restructure plan added since 17967ccb"
+    },
+    {
+      "path": ".codehealth/restructure/move-schema-check.toml",
+      "sha256": "a9ba78d02c4c9530ea2d6d97916c3b3509161fe044983856ff72c649efcf8ac2",
+      "description": "an approved restructure plan added since 17967ccb"
+    },
+    {
+      "path": ".codehealth/restructure/split-region-2.toml",
+      "sha256": "c5dc38327718053f39850eeedcd72deea0c857a63b7ee9c432e6cf66f66e11fd",
+      "description": "an approved restructure plan added since 17967ccb"
+    },
+    {
+      "path": ".codehealth/restructure/split-region.toml",
+      "sha256": "126f893c51a5a0f9ac5f3bf894e591efcaf379bd9ec8cd4edcddd29e60051500",
+      "description": "an approved restructure plan added since 17967ccb"
+    },
+    {
+      "path": "docs/briefs/S19-A-I9-ruling.md",
+      "sha256": "23a3ae3cdab2a70d04f30a82e0f3a17ab00c9c4741aa36ea38d26e877f5b1a45",
+      "description": "a design-lane ruling or plan added since 17967ccb"
+    },
+    {
+      "path": "docs/briefs/S19-A11-ruling.md",
+      "sha256": "1bff9e51b62ace333fe01e4dd5e243e13a4cd9bda622c4e07cd9fe97de5145f6",
+      "description": "a design-lane ruling or plan added since 17967ccb"
+    },
+    {
+      "path": "docs/briefs/S19-D-batch1-ruling.md",
+      "sha256": "0cd276041b404a186f473be198138198946c7bfe7696b8e5ccebeba8a957a090",
+      "description": "a design-lane ruling or plan added since 17967ccb"
+    },
+    {
+      "path": "docs/briefs/S19-G1-plan.md",
+      "sha256": "22460244accc917223821caa617076b8e23abbd14ed84440db383c50e715dcb8",
+      "description": "a design-lane ruling or plan added since 17967ccb"
+    },
+    {
+      "path": "docs/briefs/S19-I19-inventory.md",
+      "sha256": "93ff65dfcacedbf3f0ef45390b683f4ae7deef02b84733b3ba11b7d8d03bb47e",
+      "description": "a design-lane ruling or plan added since 17967ccb"
+    },
+    {
+      "path": "git-common-dir codehealth/runs/scan-4f9f2c3d.json (outside the tree)",
+      "sha256": "54dabd7fb362d783029d0fff7090d1fdbd47235a3e99bfb8d08198672fe743fb",
+      "description": "scan at 4f9f2c3d: debt 4670.7, health 8.24"
+    }
+  ],
+  "limitations": [
+    "Evidence class: software verification of behaviour-preserving refactors (bitwise: literal multiset, public API, F0 corpus identity, MCP digest, test suite), not a validation of the simulator. The gates prove the tested behaviour unchanged; behaviour no test or corpus pins is covered only by the reviewers reading each step.",
+    "The status follows CI (a G-END-CI check is added when CI is green on both legs; the schema has no pending result); the review block stays pending until human sign-off.",
+    "W4's interface steps change the public API as ADR 0076 declares it (I-1 to I-15, I-19; old import paths and S17/S19 re-exports removed by I-19); the interface gate checks that only the plan's declared names change, not that callers outside the repository are unaffected.",
+    "G-END is not met at 4f9f2c3d: debt 4670.7 (bound 1900), health 8.24 (binding bound 9.0), brain functions 26 (bound 0), 27 files below health 7.0 (bound 0), one huge_file (thermo/_coolprop_heos_fluids.py, frozen until W5). Met: 0 cycles and 0 violations at depth 4, F0 and MCP digest. Trailing work in Frank's order: W5 (frozen modules, thermo/), G1 (held for the scale probe; R-W3-G1N-1 numerics/ptc.py health 6.8), G2/G3/G4, the 232 pre-S19 doc breaks, the NaN witness change (Q2) after S19.",
+    "Known failures (S16 B-6): m04_wo9 a25, a29 and x02_wo4 g4e (2 nodes) fail under the test-map build only and pass without it, deterministic since S16; t07_v17_reference f6 exceeded its 300 s budget under coverage in G-MAP 2 and G-MAP 5 (310.8 s) and is deselected by every gate. The G-MAP 3 to 5 misses are recorded as fail.",
+    "Open for Frank (not blocking, docs/S19_STATE.md): proposal 2 (selection widening; selected gates about 600 s against 300 s); R-1042 option C; the STOP 1 alternative; the verify twins addendum; thermo/ below 7.0 only in W5; an optional forbid rule cli/serving -> services.",
+    "The 35 F0 M9 modules are untouched until W5.",
+    "Requirements empty: S19 maps to no D/A requirement; it is a development-process package."
+  ],
+  "review": {
+    "numerical": "pending",
+    "process_model": "pending"
+  }
+}

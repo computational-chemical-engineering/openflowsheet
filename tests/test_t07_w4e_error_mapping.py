@@ -30,20 +30,16 @@ from t07_process_support import paused_pid, set_executor, solve_request, wait_en
 
 import openflowsheet.application.revision_run as revision_run
 from openflowsheet.application.authz import grant
-from openflowsheet.application.contract import ApplicationError
+from openflowsheet.application.errors import ApiError, ApiErrorCode, ApplicationError
+from openflowsheet.application.job_records import Job, JobEnding
+from openflowsheet.application.job_service import _unproduced
 from openflowsheet.application.jobs import runner
-from openflowsheet.application.jobs.executor import ProcessExecutor, _defect
+from openflowsheet.application.jobs.executor import ProcessExecutor
+from openflowsheet.application.jobs.runner import defect_result
 from openflowsheet.application.jobs.worker import PAUSE_AT_STAGE_VARIABLE
-from openflowsheet.application.local import LocalApplication, _unproduced
-from openflowsheet.application.types import (
-    ApiError,
-    ApiErrorCode,
-    Job,
-    JobEnding,
-    Limits,
-    ReplayPolicy,
-    schema_errors,
-)
+from openflowsheet.application.local import LocalApplication
+from openflowsheet.application.policy_types import Limits, ReplayPolicy
+from openflowsheet.schema_check import schema_errors
 from openflowsheet.verify.checks import VerifierError
 
 NOMINAL = "SYN-001-nominal"
@@ -230,9 +226,9 @@ def test_retryable_table_operation_error_is_false_for_every_code() -> None:
     exception: every `operation_error` code is false; only a store error is true."""
     for code in get_args(ApiErrorCode):
         assert runner._error(code, "m").retryable is False, code
-    assert _defect(ValueError("x")).as_document()["error"]["retryable"] is False
-    assert _defect(ValueError("x")).reason == "operation_error"
-    stored = _defect(sqlite3.OperationalError("database is locked"))
+    assert defect_result(ValueError("x")).as_document()["error"]["retryable"] is False
+    assert defect_result(ValueError("x")).reason == "operation_error"
+    stored = defect_result(sqlite3.OperationalError("database is locked"))
     assert (stored.reason, stored.as_document()["error"]["retryable"]) == ("store_error", True)
 
 

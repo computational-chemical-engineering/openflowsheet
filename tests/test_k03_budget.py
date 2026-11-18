@@ -20,9 +20,9 @@ import pytest
 
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models.syn001.flowsheet import Syn001Flowsheet
+from openflowsheet.numerics.solve_record import SolvePolicy
 from openflowsheet.orchestrator.budget import BudgetedProvider, BudgetExhaustedError
 from openflowsheet.orchestrator.tear import solve_tear
-from openflowsheet.orchestrator.trace import SolvePolicy
 from openflowsheet.thermo.cache import ExactPropertyCache
 from openflowsheet.thermo.syn001 import Syn001Provider
 

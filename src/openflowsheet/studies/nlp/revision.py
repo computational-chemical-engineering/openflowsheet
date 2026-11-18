@@ -37,13 +37,14 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Final
 
-from openflowsheet.assessment.program import AssessmentProgram, Refusal
+from openflowsheet.assessment.linearization import Refusal
+from openflowsheet.assessment.program import AssessmentProgram
 from openflowsheet.assessment.spec import load_assessment
 from openflowsheet.assessment.views import view_of
 from openflowsheet.canonical import canonical_json, document_sha256
 from openflowsheet.compile.casadi_backend import TwinEvaluationError
 from openflowsheet.models.revision_flowsheet import si_unit
-from openflowsheet.orchestrator.trace import SolvePolicy
+from openflowsheet.numerics.solve_record import SolvePolicy
 from openflowsheet.run.manifest import policy_sha256
 from openflowsheet.studies.nlp.boundary import PHASE_BOUNDARY_FORM
 from openflowsheet.studies.nlp.closure import (
@@ -87,7 +88,7 @@ from openflowsheet.studies.nlp.request import (
 )
 from openflowsheet.studies.nlp.revision_host import ROUTE, DecisionMap, RevisionNlpHost
 from openflowsheet.studies.nlp.verification import CandidateVerification
-from openflowsheet.verify.certificate import CheckPolicy
+from openflowsheet.verify.verdict import CheckPolicy
 
 OPTIMIZATION_FORMAT: Final = "openflowsheet-optimization-v1"
 #: §4.8's record members, by path relative to the record directory.

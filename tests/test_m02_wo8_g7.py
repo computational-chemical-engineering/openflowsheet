@@ -37,13 +37,14 @@ from openflowsheet.models.c1.flash import TPFlash
 from openflowsheet.models.c1.phase import classify
 from openflowsheet.orchestrator.execution import ExecutionPlan
 from openflowsheet.orchestrator.executor import execute_plan
-from openflowsheet.orchestrator.region import _admissible, _kernel
+from openflowsheet.orchestrator.region_phase import _admissible, _kernel
 from openflowsheet.orchestrator.revision import instances_of, plan_revision
 from openflowsheet.orchestrator.splits import closure_types, lifted_splits
 from openflowsheet.thermo import FlashRequest, PropertyRequest, StreamState
 from openflowsheet.thermo.pr_c1 import COMPONENTS, PrC1Provider
 from openflowsheet.verify import pr_c1
-from openflowsheet.verify.certificate import SolutionCertificate, verify_revision
+from openflowsheet.verify.certificate import verify_revision
+from openflowsheet.verify.verdict import SolutionCertificate
 
 FLASH: Mapping[str, Any] = load_yaml(REPO_ROOT / "benchmarks" / "m01" / "reference_values.yaml")[
     "closed_form"

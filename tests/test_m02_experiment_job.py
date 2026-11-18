@@ -28,12 +28,12 @@ from t07_process_support import set_executor, wait_ended
 
 from openflowsheet.adapters import variants
 from openflowsheet.adapters.experiments.store import ExperimentStore
-from openflowsheet.application.contract import ApplicationError
+from openflowsheet.application.errors import ApplicationError
 from openflowsheet.application.jobs.executor import ProcessExecutor
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.operations import dispatch
-from openflowsheet.application.types import schema_errors
 from openflowsheet.models.c1 import COMPONENTS
+from openflowsheet.schema_check import schema_errors
 
 STANDIN = variants.registered_variant("standin-x025-v1")
 REAL = variants.registered_variant("pymrm-6089593-g2-nz800-s123-v1")
@@ -353,7 +353,7 @@ def test_r252_a_job_cancelled_while_queued_has_no_artifact_and_a_null_experiment
 ) -> None:
     from t07_jobs_support import cancel_while_queued
 
-    from openflowsheet.application.types import JobRequest
+    from openflowsheet.application.job_requests import JobRequest
 
     request = JobRequest.from_document(
         {"operation": "experiment", "idempotency_key": "queued", "body": body()}

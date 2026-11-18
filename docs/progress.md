@@ -364,6 +364,14 @@ genuinely structural, and guessing that before measuring it is how the wrong lin
 
 **No package is `BLOCKED`.**
 
+**Design-lane item (S19 reviews R-W3-G5-7 and R-W3-G5-8; ruled 2026-11-17 in `docs/briefs/S19-D-batch1-ruling.md`):** Q1 component order: guaranteed by construction, no bug; pinned by
+`tests/test_s19_component_order.py` (Q1.A1, Q1.A2); hygiene of four `split_checks.py` sites at the next touch (OQ-2).
+Q2 NaN in the derivative witness: no registered path returns `ok` with a non-finite entry (CasADi backend refuses),
+but the witness cannot exclude it (no finiteness contract on `CompiledProblem`; overflow from finite values; five
+falsifiers fail today). Ruling: a non-finite term becomes `unsupported` with `witness_stencil_non_finite(<col>)`.
+Frank chose after S19 (Decision Desk `ofs-s19-oq1-nan-witness`, A, signed 2026-11-17, VERIFIED): after S19 closes,
+one commit with the K04 §4.8 amendment, tests Q2.A1 to A6 and F0; then write `executed` on the card and tell hub.
+
 ADR 0008 registers four open questions with recommended defaults, all applied. **Q1 is closed:**
 Frank confirmed on 2026-09-16 that the SYN-001 heater is a holdup unit, so the registered
 `holdup_balance` classification stands and no file changed. Q2 (K01 adds `row_accumulation` and

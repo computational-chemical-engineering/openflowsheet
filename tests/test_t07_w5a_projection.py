@@ -20,7 +20,8 @@ from typing import Any
 import pytest
 from t07_corpus import CORPUS
 
-from openflowsheet.application.contract import ApplicationError, Projection
+from openflowsheet.application.contract import Projection
+from openflowsheet.application.errors import ApplicationError
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.projection import (
     DEFAULT_DEPTH,
@@ -424,7 +425,7 @@ def test_the_rules_hold_on_every_corpus_revision(corpus_app: LocalApplication) -
 def test_the_rules_hold_on_every_corpus_structure(corpus_app: LocalApplication) -> None:
     """`inspect_structure` projects `route_structure`'s document under the same rules; its
     matchings and certificates carry arrays up to 79 long, so pages and cuts are exercised."""
-    from openflowsheet.application.revision_run import route_structure
+    from openflowsheet.application.structure_inspection import route_structure
 
     routed = 0
     exercised = {"views": 0, "pages": 0, "cut": 0}

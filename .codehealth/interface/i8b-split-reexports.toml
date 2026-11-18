@@ -1,0 +1,37 @@
+# ADR 0076 I-8, batch B (W4 run 4, brief S19-W4-4; form of S19_DECISIONS 2026-11-16 STOP 1): four old
+# modules stop re-exporting the names that the restructure plans split-validation-report,
+# split-region, split-region-2, leaf-models-lifted (StagedSplits excepted), split-certificate-verdict
+# and split-projection gave a new home. `codehealth gate --mode interface` reads this plan from the
+# plan commit.
+id = "i8b-split-reexports"
+approved_by = "Frank Peters, 2026-11-14, ADR 0076 accepted (Decision Desk ofs-adr0076-accept)"
+reason = """ADR 0076 I-8: every module created by an S19 restructure step is the only path for the \
+names it holds; the normative list is the union of the committed restructure plans' new_public \
+names. src importers were retargeted in refactor mode (75233089) and tests, scripts and benchmarks \
+outside the gate (6a637a62), so an AST inventory (from-imports at any depth, module-alias attribute \
+reads, setattr patches, dotted strings; living docs by grep) finds no use of these names through the \
+old modules, except one live patch: test_t08_w2_unsupported.py:111 patches \
+application.validation.ValidationReport, which validation calls itself and keeps as a plain import. \
+Frozen exception (I-19, W5): models/syn001/column_unit.py:90 imports StagedSplits from \
+orchestrator.region, which keeps its alias and __all__ entry. The step drops: in \
+application/validation.py (no __all__) the aliases Check, Result, Stage, Task, ValidationReport, \
+ValidationStatus, utc_timestamp (plain imports stay: validation uses them) and EvidenceClass (import \
+goes); in orchestrator/region.py the aliases AttemptSystem, RecoveryStart, RegionAttempt, \
+RegionResult (plain imports stay), region_ptc_problem, TP_REGIME and admissibility_value (imports \
+go), and the __all__ entries RecoveryStart, RegionResult, region_ptc_problem; in \
+verify/certificate.py (no __all__) the aliases CheckPolicy, ExternalEvidence, SolutionCertificate, \
+absent_state_certificate, grade, statements_for (plain imports stay), REGISTERED_POLICY_ID, \
+CheckReport and run_checks (imports go); in studies/trust_region/projection.py (no __all__) the \
+aliases ShapeCheck, OmittedRow, ProjectionRefusedError, ZeroBlock, ZeroEliminated (plain imports \
+stay), SHAPE_CHECK_CRITERION, OMITTED_ROW_REASON, RefusalCode, JOINT_PERTURBATION, JOINT_RCOND_MIN \
+and JOINT_SEED (imports go). cce-code-health counts imports as API only in __init__.py, so the \
+dropped aliases are invisible to the public-API tier and region.py's __all__ is the one listed \
+change (STOP 1 ruling). Expected codehealth arch --depth 4 (measured at this base and by a \
+simulation of the step): base 4 violations / 3 cycles / 12 cycle edges, after 4 / 3 / 12 (imports \
+4115 -> 4082; each old module still imports its home for its own use). Layer config: none."""
+removed = []
+renamed = {}
+changed = ["src/openflowsheet/orchestrator/region.py:__all__"]
+added = []
+new_files = []
+callers = []

@@ -2,7 +2,7 @@
 check level, on `C1-LOOP-M02-v1` with its reactor bound to the synthetic smooth parent.
 
 `check_replacement` is called with a resolver over the study manifests, as a project's commit
-passes its own (`LocalApplication._surrogates`). The manifests are A19's (the committed fixture,
+passes its own (`ServiceCore.surrogates`). The manifests are A19's (the committed fixture,
 smooth parent, prefix plan, PROMOTABLE), and A17's, A18's and the stand-in's prefix study, each run
 here in process (`run_study`, < 2 s each; `tests/test_m04_study.py` pins their numbers). The project
 and transaction level (commit, invalidation, preview, rollback reuse) is WO-9's.
@@ -40,7 +40,7 @@ from openflowsheet.application.replacement import (
 )
 from openflowsheet.canonical import document_sha256
 from openflowsheet.compiled import EvaluationContext
-from openflowsheet.studies.surrogate import reactor as sr
+from openflowsheet.studies.surrogate import records
 from openflowsheet.studies.surrogate.manifest import check_manifest, derived_verdict
 from openflowsheet.studies.surrogate.study import run_study
 from openflowsheet.thermo.pr_c1 import PrC1Provider
@@ -114,7 +114,7 @@ def parent_of(variant: variants.Variant) -> dict[str, Any]:
 
 def surrogate(manifest: Mapping[str, Any]) -> dict[str, Any]:
     return {
-        "id": sr.MODEL_ID,
+        "id": records.MODEL_ID,
         "version": manifest["surrogate_id"],
         "artifact_ref": document_sha256(manifest),
     }
@@ -147,7 +147,10 @@ def test_a25_the_a19_surrogate_in_place_of_its_parent_passes_every_facet(
     report = judged(parent_of(smooth), surrogate(A19), A19)
     assert results(report) == {facet: "pass" for facet in FACETS}
     assert report.compatible
-    assert detail(report, "resolvable") == f"{sr.MODEL_ID} binds as surrogate {A19['surrogate_id']}"
+    assert (
+        detail(report, "resolvable")
+        == f"{records.MODEL_ID} binds as surrogate {A19['surrogate_id']}"
+    )
     assert detail(report, "surrogate_evidence") == (
         f"verdict=PROMOTABLE; the old model is its parent c1.reactor {parents.SMOOTH_ID} @ "
         f"{smooth.sha256}"

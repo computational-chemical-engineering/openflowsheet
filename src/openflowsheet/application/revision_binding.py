@@ -23,8 +23,8 @@ the signature constructs nothing.
 
 The signatures, the pin readers and the `Builder` and `Configuration` types live in
 `model_signatures`, the builder catalogue in `model_builders` (S17 R3); this module holds the
-binder (`bind_revision_flowsheet`), the basis and provider selection, and the refusals, and
-re-exports both modules' public names, so `revision_binding.<name>` imports keep working.
+binder (`bind_revision_flowsheet`), the basis and provider selection, and the refusals. Their
+names are imported from those modules, not through this one (ADR 0076 I-8).
 """
 
 from __future__ import annotations
@@ -36,56 +36,44 @@ from functools import partial
 from typing import TYPE_CHECKING, Any, Final, overload
 
 from openflowsheet.adapters import variants
-from openflowsheet.application.binding_common import Unbound, _column_owners
-from openflowsheet.application.model_builders import MODEL_BUILDERS as MODEL_BUILDERS
-from openflowsheet.application.model_builders import SurrogateResolver as SurrogateResolver
-from openflowsheet.application.model_builders import _c1_reactor_surrogate as _c1_reactor_surrogate
-from openflowsheet.application.model_builders import _c1_reactor_surrogate_of
-from openflowsheet.application.model_builders import resolve_surrogate as resolve_surrogate
-from openflowsheet.application.model_signatures import (
-    _ADIABATIC_MIXER,
-    _C1_ADIABATIC_MIXER,
-    _C1_FEED_SOURCE,
-    _C1_PRODUCT_SINK,
-    _C1_STREAM_SPLITTER,
-    _C1_TP_FLASH,
-    _C1_TP_HEATER,
-    _COOLPROP,
-    _FEED_SOURCE,
-    _IAPWS95,
-    _LIQUID_PUMP,
-    _PH_FLASH,
-    _PRODUCT_SINK,
-    _STREAM_SPLITTER,
-    _THERMAL_FLASH,
-    _THERMAL_HEATER,
-    _THERMAL_MIXER,
-    _THERMAL_VALVE,
-    _TP_FLASH,
-    _TP_HEATER,
-    _VALVE,
-    _WILSON,
-    _named_first,
+from openflowsheet.application.binding_common import Unbound, column_owners
+from openflowsheet.application.model_builders import (
+    MODEL_BUILDERS,
+    SurrogateResolver,
+    c1_reactor_surrogate_of,
+    resolve_surrogate,
 )
-from openflowsheet.application.model_signatures import _COLUMN as _COLUMN
-from openflowsheet.application.model_signatures import LIST_MODELS_LINE as LIST_MODELS_LINE
-from openflowsheet.application.model_signatures import MODEL_BASES as MODEL_BASES
-from openflowsheet.application.model_signatures import MODEL_SIGNATURES as MODEL_SIGNATURES
-from openflowsheet.application.model_signatures import ROUTING_MODELS as ROUTING_MODELS
-from openflowsheet.application.model_signatures import S11_BASES as S11_BASES
-from openflowsheet.application.model_signatures import TARGET_PATH_HEADING as TARGET_PATH_HEADING
-from openflowsheet.application.model_signatures import Builder as Builder
-from openflowsheet.application.model_signatures import Configuration as Configuration
-from openflowsheet.application.model_signatures import Encoding as Encoding
-from openflowsheet.application.model_signatures import ModelSignature as ModelSignature
-from openflowsheet.application.model_signatures import PinColumn as PinColumn
-from openflowsheet.application.model_signatures import PinQuantity as PinQuantity
-from openflowsheet.application.model_signatures import SpecificationChoice as SpecificationChoice
-from openflowsheet.application.model_signatures import _columns as _columns
-from openflowsheet.application.model_signatures import instance_contract as instance_contract
-from openflowsheet.application.model_signatures import pin_encodings as pin_encodings
-from openflowsheet.application.model_signatures import render_encoding as render_encoding
-from openflowsheet.application.model_signatures import target_path_table as target_path_table
+from openflowsheet.application.model_signatures import (
+    ADIABATIC_MIXER,
+    C1_ADIABATIC_MIXER,
+    C1_FEED_SOURCE,
+    C1_PRODUCT_SINK,
+    C1_STREAM_SPLITTER,
+    C1_TP_FLASH,
+    C1_TP_HEATER,
+    COOLPROP,
+    FEED_SOURCE,
+    IAPWS95,
+    LIQUID_PUMP,
+    MODEL_BASES,
+    MODEL_SIGNATURES,
+    PH_FLASH,
+    PRODUCT_SINK,
+    ROUTING_MODELS,
+    STREAM_SPLITTER,
+    THERMAL_FLASH,
+    THERMAL_HEATER,
+    THERMAL_MIXER,
+    THERMAL_VALVE,
+    TP_FLASH,
+    TP_HEATER,
+    VALVE,
+    WILSON,
+    Configuration,
+    ModelSignature,
+    named_first,
+    pin_encodings,
+)
 from openflowsheet.canonical import document_sha256, first_noncanonical
 from openflowsheet.compile.spec import ProblemSpec
 from openflowsheet.compiled import EvaluationContext
@@ -107,7 +95,7 @@ from openflowsheet.models.revision_flowsheet import (
 from openflowsheet.models.syn001 import PROVIDER_ID as SYN001_PROVIDER_ID
 from openflowsheet.models.thermal import machines as thermal_machines
 from openflowsheet.orchestrator.splits import split_owners, staged_units
-from openflowsheet.studies.surrogate import reactor as c1_surrogate
+from openflowsheet.studies.surrogate.records import MODEL_ID as SURROGATE_MODEL_ID
 from openflowsheet.thermo import PropertyProvider
 from openflowsheet.thermo.pr_c1 import PROVIDER_ID as C1_PROVIDER_ID
 
@@ -115,26 +103,12 @@ if TYPE_CHECKING:
     from openflowsheet.orchestrator.budget import PropertyMeter
 
 __all__ = [
-    "MODEL_BASES",
-    "MODEL_BUILDERS",
-    "MODEL_SIGNATURES",
     "SELECTABLE_BASES",
-    "Builder",
-    "SurrogateResolver",
-    "Encoding",
-    "ModelSignature",
-    "PinColumn",
     "RevisionBinding",
-    "SpecificationChoice",
     "basis_provider",
     "bind_revision_flowsheet",
-    "instance_contract",
     "provider_for",
-    "pin_encodings",
-    "render_encoding",
-    "resolve_surrogate",
     "specification_rows",
-    "target_path_table",
 ]
 
 #: The context a revision-built flowsheet's units are constructed with (§1.4).
@@ -196,10 +170,10 @@ def _first_encodings(
     view: InstanceView, signature: ModelSignature, components: Sequence[str]
 ) -> str:
     """Each of `signature`'s pins with its first encoding, then each choice's options."""
-    parts = [_named_first(view, signature, pin, components) for pin in signature.pins]
+    parts = [named_first(view, signature, pin, components) for pin in signature.pins]
     parts += [
         f"one of {choice.name} ("
-        + "; ".join(_named_first(view, signature, option, components) for option in choice.options)
+        + "; ".join(named_first(view, signature, option, components) for option in choice.options)
         + ")"
         for choice in signature.choices
     ]
@@ -261,12 +235,12 @@ _INSTANCE_TARGETS: Final[Mapping[str, str]] = {
 _NAMESAKES: Final[tuple[tuple[str, str], ...]] = tuple(
     (syn001_unit.model_id, c1_unit.model_id)
     for syn001_unit, c1_unit in (
-        (_FEED_SOURCE, _C1_FEED_SOURCE),
-        (_ADIABATIC_MIXER, _C1_ADIABATIC_MIXER),
-        (_TP_HEATER, _C1_TP_HEATER),
-        (_TP_FLASH, _C1_TP_FLASH),
-        (_STREAM_SPLITTER, _C1_STREAM_SPLITTER),
-        (_PRODUCT_SINK, _C1_PRODUCT_SINK),
+        (FEED_SOURCE, C1_FEED_SOURCE),
+        (ADIABATIC_MIXER, C1_ADIABATIC_MIXER),
+        (TP_HEATER, C1_TP_HEATER),
+        (TP_FLASH, C1_TP_FLASH),
+        (STREAM_SPLITTER, C1_STREAM_SPLITTER),
+        (PRODUCT_SINK, C1_PRODUCT_SINK),
     )
 )
 _SAME_FUNCTION: Final[Mapping[str, str]] = {
@@ -300,7 +274,7 @@ class _SelectableBases(Sequence[ComponentBasis]):
 SELECTABLE_BASES: Final[Sequence[ComponentBasis]] = _SelectableBases()
 
 
-def _basis_refusal(model_id: str, basis: ComponentBasis) -> Unbound:
+def basis_refusal(model_id: str, basis: ComponentBasis) -> Unbound:
     """R-288: `model_id` does not bind on `basis`. The hint names the bases it binds on and, when
     there is one, the model of the same function on `basis`.
 
@@ -350,18 +324,18 @@ _UNADMITTED: Final[Mapping[str, str]] = {
 #: Units design §4.7: a `syn001.*` model's `thermal.*` namesake on a pure fluid, and a
 #: `thermal.*` model's `syn001.*` namesake on Wilson.
 _THERMAL_NAMESAKE: Final[Mapping[str, str]] = {
-    _TP_HEATER.model_id: "heater",
-    _VALVE.model_id: "valve",
-    _ADIABATIC_MIXER.model_id: "mixer",
-    _PH_FLASH.model_id: "flash",
-    _TP_FLASH.model_id: "flash",
-    _LIQUID_PUMP.model_id: "pump",
+    TP_HEATER.model_id: "heater",
+    VALVE.model_id: "valve",
+    ADIABATIC_MIXER.model_id: "mixer",
+    PH_FLASH.model_id: "flash",
+    TP_FLASH.model_id: "flash",
+    LIQUID_PUMP.model_id: "pump",
 }
 _LIFTED_NAMESAKE: Final[Mapping[str, str]] = {
-    _THERMAL_HEATER.model_id: "tp_heater",
-    _THERMAL_VALVE.model_id: "valve",
-    _THERMAL_MIXER.model_id: "adiabatic_mixer",
-    _THERMAL_FLASH.model_id: "ph_flash",
+    THERMAL_HEATER.model_id: "tp_heater",
+    THERMAL_VALVE.model_id: "valve",
+    THERMAL_MIXER.model_id: "adiabatic_mixer",
+    THERMAL_FLASH.model_id: "ph_flash",
 }
 _THERMAL_PUMP: Final = thermal_machines.MACHINE_MODEL_IDS["pump"]
 _COLUMN_MODEL: Final = "syn001.column"
@@ -376,20 +350,20 @@ def _unadmitted(model_id: str, provider_id: str) -> str | None:
     if model_id == _COLUMN_MODEL:
         if provider_id == C1_PROVIDER_ID:
             return _UNADMITTED["column_vapour"]
-        if provider_id in (_IAPWS95, _COOLPROP):
+        if provider_id in (IAPWS95, COOLPROP):
             return _UNADMITTED["column_pure"]
         return None
     if model_id in ROUTING_MODELS or model_id in _C1_ROUTING:
         return None
     if model_id.startswith("thermal."):
         return _unadmitted_thermal(model_id, provider_id)
-    if provider_id in (_IAPWS95, _COOLPROP):
+    if provider_id in (IAPWS95, COOLPROP):
         namesake = _THERMAL_NAMESAKE.get(model_id)
         if namesake is not None:
             return _UNADMITTED["declared_regime"].format(namesake=namesake)
         return _UNADMITTED["pure_fluid" if model_id.startswith("syn001.") else "c1_physics"]
-    if provider_id == _WILSON:
-        if model_id == _LIQUID_PUMP.model_id:
+    if provider_id == WILSON:
+        if model_id == LIQUID_PUMP.model_id:
             return _UNADMITTED["no_volume"]
         return _UNADMITTED["gamma_phi" if model_id.startswith("syn001.") else "c1_physics"]
     return None
@@ -401,7 +375,7 @@ def _unadmitted_thermal(model_id: str, provider_id: str) -> str | None:
     others; `None` on any other basis."""
     if provider_id in (SYN001_PROVIDER_ID, C1_PROVIDER_ID):
         return _UNADMITTED["no_entropy"]
-    if provider_id == _WILSON:
+    if provider_id == WILSON:
         if model_id == _THERMAL_PUMP:
             return _UNADMITTED["no_volume"]
         return _UNADMITTED["lifted"].format(namesake=_LIFTED_NAMESAKE[model_id])
@@ -483,7 +457,7 @@ def basis_provider(basis: ComponentBasis) -> PropertyProvider:
         from openflowsheet.thermo.iapws95 import Iapws95Provider  # noqa: PLC0415
 
         return Iapws95Provider()
-    if basis.provider_id == _WILSON:
+    if basis.provider_id == WILSON:
         from openflowsheet import resources  # noqa: PLC0415
         from openflowsheet.thermo import wilson_ig  # noqa: PLC0415
         from openflowsheet.thermo.wilson_ig_v2 import WilsonIdealGasProviderV2  # noqa: PLC0415
@@ -517,7 +491,7 @@ def provider_for(basis: ComponentBasis) -> PropertyProvider | Unbound:
         return Unbound(
             "unsupported", "basis_unavailable(coolprop-heos-v1)", hint=COOLPROP_UNAVAILABLE_HINT
         )
-    if basis.provider_id == _WILSON:
+    if basis.provider_id == WILSON:
         refusal = _wilson_refusal()
         if refusal is not None:
             code, hint = refusal
@@ -539,13 +513,13 @@ def _wilson_refusal() -> tuple[str, str] | None:
     except wilson_ig.RecordError as error:
         cause = _first_line(error).split(":", 1)[0]
         return (
-            f"basis_unavailable({_WILSON})",
+            f"basis_unavailable({WILSON})",
             f"{cause}: the records {wilson_ig.RECORDS_PATH} are neither package data nor in a "
             "source checkout (R-880)",
         )
     found = wilson_premises.violations(records)
     if found:
-        return f"basis_premises_unmet({_WILSON})", found[0].hint
+        return f"basis_premises_unmet({WILSON})", found[0].hint
     return None
 
 
@@ -656,7 +630,7 @@ def bind_revision_flowsheet(
             for stream, producer, consumer in sorted(set(view.edges))
         ),
         instance_ids={unit: unit for unit in units},
-        column_owners=_column_owners(spec.variable_ids, producers, units),
+        column_owners=column_owners(spec.variable_ids, producers, units),
     )
     return RevisionBinding(
         flowsheet=flowsheet,
@@ -694,7 +668,7 @@ def _model_refusal(instances: Sequence[InstanceView], basis: ComponentBasis) -> 
                 hint=_LIBRARY_ONLY_HINTS.get(instance.model_id),
             )
         if basis.provider_id not in MODEL_BASES[instance.model_id]:
-            return _basis_refusal(instance.model_id, basis)
+            return basis_refusal(instance.model_id, basis)
     return None
 
 
@@ -708,7 +682,7 @@ def _surrogate_manifests(
     for instance in instances:
         # M04 spec §8.2 (ADR 0037 D2): a surrogate is pinned by its manifest's SHA-256, resolved
         # through the injected resolver and checked; `revision_unsupported` otherwise.
-        if instance.model_id == c1_surrogate.MODEL_ID:
+        if instance.model_id == SURROGATE_MODEL_ID:
             manifest = _resolve_surrogate(instance, surrogates)
             if manifest is None:
                 return Unbound("unsupported", f"surrogate_manifest_mismatch({instance.unit_id})")
@@ -731,7 +705,7 @@ def _built_instances(
         reader = _PinReader(instance.pins)
         builder = MODEL_BUILDERS[instance.model_id]
         if instance.unit_id in manifests:
-            builder = partial(_c1_reactor_surrogate_of, manifest=manifests[instance.unit_id])
+            builder = partial(c1_reactor_surrogate_of, manifest=manifests[instance.unit_id])
         try:
             unit, configuration = builder(
                 replace(instance, pins=reader), provider, _CONTEXT, components

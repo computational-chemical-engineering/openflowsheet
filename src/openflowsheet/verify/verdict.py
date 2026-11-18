@@ -36,7 +36,6 @@ from openflowsheet.verify import (
     unsupported,
 )
 from openflowsheet.verify.checks import (
-    KIND_TOLERANCE,
     admissibility_checks,
     alias_checks,
     bounds_checks,
@@ -46,6 +45,7 @@ from openflowsheet.verify.checks import (
     residual_checks,
     specification_checks,
 )
+from openflowsheet.verify.kind_tolerance import KIND_TOLERANCE
 
 #: §5.4. The registered default: the tolerance table by quantity kind. A supplied policy is an
 #: input with a hash, never something the verifier or the solver may adjust on its own.

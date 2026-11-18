@@ -1,0 +1,18 @@
+# ADR 0076 I-12d review fix F1 (W4, review R-W4-I12d, brief S19-W4-I12d-F1): RevisionService.rejected becomes private again.
+# `codehealth gate --mode interface` reads this plan from the plan commit.
+id = "i12d-f1-rejected"
+approved_by = "Frank Peters, 2026-11-14, ADR 0076 accepted (Decision Desk ofs-adr0076-accept)"
+reason = """Review R-W4-I12d F1: RevisionService.rejected (revision_service.py:474, public since step 2 on the \
+placement table's claim that it crosses modules) has six callers, all inside RevisionService (_check_request, \
+_prepare, _check_promotion, commit_change and the two self.rejected( calls of the change checks), as the \
+old local.py _rejected had. By the ADR rule a private helper used by one module stays private, so it is \
+renamed back to _rejected (body unchanged) and its six call sites follow; the public name \
+RevisionService.rejected goes. revision_service.py's module docstring drops 'the rejected result' from the \
+list of names shared with the services above. Expected codehealth arch --depth 4: 0 / 0 / 0 -> 0 / 0 / 0. \
+No caller outside revision_service.py (grep of src, tests, scripts, benchmarks)."""
+removed = ["src/openflowsheet/application/revision_service.py:RevisionService.rejected"]
+renamed = {}
+changed = []
+added = []
+new_files = []
+callers = []

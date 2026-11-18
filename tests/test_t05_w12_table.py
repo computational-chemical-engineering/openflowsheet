@@ -25,9 +25,11 @@ from openflowsheet.models.revision_flowsheet import parse_revision
 from openflowsheet.orchestrator.splits import lifted_splits
 from openflowsheet.thermo.syn001 import Syn001Provider
 from openflowsheet.verify import CheckResult
-from openflowsheet.verify.certificate import CheckPolicy, SolutionCertificate, verify_revision
+from openflowsheet.verify.certificate import verify_revision
 from openflowsheet.verify.checks import qualification
-from openflowsheet.verify.table import REACTION_DATUM_NOTE, revision_checks
+from openflowsheet.verify.table import revision_checks
+from openflowsheet.verify.table_kit import REACTION_DATUM_NOTE
+from openflowsheet.verify.verdict import CheckPolicy, SolutionCertificate
 
 SOLVABLE = ("SYN-001-UL-C1", "SYN-001-UL-C2", "SYN-001-UL-C3")
 CONTEXT = EvaluationContext(model_version="t05-w12", constants_sha256="0" * 64)

@@ -47,7 +47,7 @@ from typing import Any, Final
 import numpy as np
 
 import openflowsheet.numerics.ptc as ptc_module
-import openflowsheet.orchestrator.region as region_module
+import openflowsheet.orchestrator.region_attempts as region_attempts
 from benchmarks.t06.ensemble import host, provenance
 from benchmarks.t08.ptc_r1 import compare
 from openflowsheet.numerics.ptc import PtcRecord
@@ -102,7 +102,7 @@ def _capture(
 ) -> Iterator[None]:
     """The two pass-through shims (module docstring). `signs[a]` holds attempt `a`'s determinant
     signs in call order. Both originals are restored whatever happens."""
-    original_solve: Callable[..., Any] = getattr(region_module, "solve_ptc")  # noqa: B009
+    original_solve: Callable[..., Any] = getattr(region_attempts, "solve_ptc")  # noqa: B009
     original_linear: Callable[..., Any] = getattr(ptc_module, "solve_linear")  # noqa: B009
 
     def solving(problem: Any, *args: Any, **kwargs: Any) -> Any:
@@ -117,12 +117,12 @@ def _capture(
             signs[-1].append(int(sign))
         return original_linear(matrix, *args, **kwargs)
 
-    setattr(region_module, "solve_ptc", solving)  # noqa: B010 - a module attribute
+    setattr(region_attempts, "solve_ptc", solving)  # noqa: B010 - a module attribute
     setattr(ptc_module, "solve_linear", linear)  # noqa: B010
     try:
         yield
     finally:
-        setattr(region_module, "solve_ptc", original_solve)  # noqa: B010
+        setattr(region_attempts, "solve_ptc", original_solve)  # noqa: B010
         setattr(ptc_module, "solve_linear", original_linear)  # noqa: B010
 
 

@@ -35,11 +35,10 @@ from test_m02_wo8_units import minimal
 from test_m02_wo9_reactor import NOMINAL, reactor_revision
 from test_schemas_p01 import validator_for
 
-from openflowsheet.application.binding import Unbound
+from openflowsheet.application.binding_common import Unbound
+from openflowsheet.application.model_builders import MODEL_BUILDERS
+from openflowsheet.application.model_signatures import MODEL_BASES, MODEL_SIGNATURES
 from openflowsheet.application.revision_binding import (
-    MODEL_BASES,
-    MODEL_BUILDERS,
-    MODEL_SIGNATURES,
     SELECTABLE_BASES,
     RevisionBinding,
     basis_provider,

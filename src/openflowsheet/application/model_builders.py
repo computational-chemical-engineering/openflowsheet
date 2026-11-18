@@ -15,46 +15,46 @@ from typing import Any, Final
 
 from openflowsheet.adapters import variants
 from openflowsheet.application.model_signatures import (
-    _ADIABATIC_MIXER,
-    _C1_ADIABATIC_MIXER,
-    _C1_FEED_SOURCE,
-    _C1_PRODUCT_SINK,
-    _C1_REACTOR,
-    _C1_REACTOR_STANDIN,
-    _C1_REACTOR_SURROGATE,
-    _C1_STREAM_SPLITTER,
-    _C1_TP_FLASH,
-    _C1_TP_HEATER,
-    _COLUMN,
-    _COMPONENT_SEPARATOR,
-    _CONVERSION_REACTOR,
-    _FEED_SOURCE,
-    _HEAT_EXCHANGER,
-    _KINETIC_CSTR,
-    _LIQUID_PUMP,
-    _ONE_PHASE,
-    _PH_FLASH,
-    _PRODUCT_SINK,
-    _STREAM_SPLITTER,
-    _THERMAL_SIGNATURES,
-    _TP_FLASH,
-    _TP_HEATER,
-    _VALVE,
+    ADIABATIC_MIXER,
+    C1_ADIABATIC_MIXER,
+    C1_FEED_SOURCE,
+    C1_PRODUCT_SINK,
+    C1_REACTOR,
+    C1_REACTOR_STANDIN,
+    C1_REACTOR_SURROGATE,
+    C1_STREAM_SPLITTER,
+    C1_TP_FLASH,
+    C1_TP_HEATER,
+    COLUMN,
+    COMPONENT_SEPARATOR,
+    CONVERSION_REACTOR,
+    FEED_SOURCE,
+    HEAT_EXCHANGER,
+    KINETIC_CSTR,
+    LIQUID_PUMP,
+    ONE_PHASE,
+    PH_FLASH,
+    PRODUCT_SINK,
+    STREAM_SPLITTER,
+    THERMAL_SIGNATURES,
+    TP_FLASH,
+    TP_HEATER,
+    VALVE,
     Builder,
     Configuration,
     ModelSignature,
     PinColumn,
-    _column,
-    _columns,
-    _expand,
-    _missing_choice_hint,
-    _missing_pin_hint,
-    _phase_hint,
-    _pin,
-    _pinned,
-    _require_phase,
-    _stream,
+    expand,
     instance_contract,
+    missing_choice_hint,
+    missing_pin_hint,
+    phase_hint,
+    pin_column,
+    pin_columns,
+    pin_value,
+    pinned,
+    port_stream,
+    require_phase,
 )
 from openflowsheet.canonical import document_sha256
 from openflowsheet.compiled import EvaluationContext
@@ -100,11 +100,11 @@ def _names(
     """The names one of `signature`'s required templates expands to on this instance."""
     if template not in signature.required:
         raise ValueError(f"{signature.model_id} does not require {template!r}")
-    return _expand(template, view, components)
+    return expand(template, view, components)
 
 
 def _inlet_phase(view: InstanceView) -> Phase | None:
-    _stream(view, "inlet")
+    port_stream(view, "inlet")
     return view.phases["inlet"]
 
 
@@ -132,18 +132,18 @@ def _feed_source(
     context: EvaluationContext,
     components: tuple[str, ...],
 ) -> tuple[UnitModel, Configuration]:
-    signature = _FEED_SOURCE
+    signature = FEED_SOURCE
     instance_contract(view, signature, components)
     pin = signature.pin("flows")
-    flows = _columns(view, pin, components)
+    flows = pin_columns(view, pin, components)
     unit = FeedSource(
         unit_id=view.unit_id,
         flows=tuple(
-            _pin(view, column, partial(_missing_pin_hint, view, signature, pin, components, c))
+            pin_value(view, column, partial(missing_pin_hint, view, signature, pin, components, c))
             for c, column in zip(components, flows, strict=True)
         ),
-        temperature=_pinned(view, signature, "temperature"),
-        pressure=_pinned(view, signature, "pressure"),
+        temperature=pinned(view, signature, "temperature"),
+        pressure=pinned(view, signature, "pressure"),
         components=components,
         **_routing_fields(provider),
     )
@@ -156,7 +156,7 @@ def _adiabatic_mixer(
     context: EvaluationContext,
     components: tuple[str, ...],
 ) -> tuple[UnitModel, Configuration]:
-    instance_contract(view, _ADIABATIC_MIXER, components)
+    instance_contract(view, ADIABATIC_MIXER, components)
     unit = AdiabaticMixer(
         unit_id=view.unit_id,
         provider=provider,
@@ -173,13 +173,13 @@ def _tp_heater(
     context: EvaluationContext,
     components: tuple[str, ...],
 ) -> tuple[UnitModel, Configuration]:
-    signature = _TP_HEATER
+    signature = TP_HEATER
     instance_contract(view, signature, components)
     inlet_phase = _inlet_phase(view)
     unit = TPHeater(
         unit_id=view.unit_id,
         provider=provider,
-        outlet_temperature=_pinned(view, signature, "outlet_temperature"),
+        outlet_temperature=pinned(view, signature, "outlet_temperature"),
         context=context,
         inlet_phase=inlet_phase,
         pressure_drop=0.0,
@@ -195,17 +195,17 @@ def _tp_flash(
     context: EvaluationContext,
     components: tuple[str, ...],
 ) -> tuple[UnitModel, Configuration]:
-    signature = _TP_FLASH
+    signature = TP_FLASH
     instance_contract(view, signature, components)
     inlet_phase = _inlet_phase(view)
     # Both outlets wired before either is read.
-    _stream(view, "vapor")
-    _stream(view, "liquid")
-    temperature = _pinned(view, signature, "temperature")
-    pressure = _pinned(view, signature, "pressure")
-    if _pinned(view, signature, "liquid_temperature") != temperature:
+    port_stream(view, "vapor")
+    port_stream(view, "liquid")
+    temperature = pinned(view, signature, "temperature")
+    pressure = pinned(view, signature, "pressure")
+    if pinned(view, signature, "liquid_temperature") != temperature:
         raise RevisionError("conflict", f"specification_conflict({view.unit_id}.T)")
-    if _pinned(view, signature, "liquid_pressure") != pressure:
+    if pinned(view, signature, "liquid_pressure") != pressure:
         raise RevisionError("conflict", f"specification_conflict({view.unit_id}.P)")
     unit = TPFlash(
         unit_id=view.unit_id,
@@ -226,7 +226,7 @@ def _stream_splitter(
     context: EvaluationContext,
     components: tuple[str, ...],
 ) -> tuple[UnitModel, Configuration]:
-    parameters = instance_contract(view, _STREAM_SPLITTER, components)
+    parameters = instance_contract(view, STREAM_SPLITTER, components)
     unit = StreamSplitter(
         unit_id=view.unit_id,
         split_fraction=parameters["split_fraction"],
@@ -242,7 +242,7 @@ def _product_sink(
     context: EvaluationContext,
     components: tuple[str, ...],
 ) -> tuple[UnitModel, Configuration]:
-    instance_contract(view, _PRODUCT_SINK, components)
+    instance_contract(view, PRODUCT_SINK, components)
     unit = ProductSink(unit_id=view.unit_id, components=components, **_routing_fields(provider))
     return unit, {}
 
@@ -252,13 +252,13 @@ def _product_sink(
 
 def _declared_phase(view: InstanceView, port: str) -> Phase:
     """A port whose rule is `liquid` or `vapor`: wired, and not lifted."""
-    _stream(view, port)
+    port_stream(view, port)
     phase = view.phases[port]
     if phase is None:
         raise RevisionError(
             "unsupported",
             f"port_phase_unsupported({view.unit_id}.{port})",
-            _phase_hint(view, port, _ONE_PHASE),
+            phase_hint(view, port, ONE_PHASE),
         )
     return phase
 
@@ -271,13 +271,13 @@ def _one_specification(
     Options are keyed by column, a later option taking an earlier one's column.
     """
     choice = signature.choice(name)
-    candidates = {_column(view, option): option for option in choice.options}
+    candidates = {pin_column(view, option): option for option in choice.options}
     pinned = [column for column in candidates if column in view.pins]
     if not pinned:
         raise RevisionError(
             "incomplete",
             f"specification_missing({view.unit_id}.{choice.name})",
-            _missing_choice_hint(view, signature, choice),
+            missing_choice_hint(view, signature, choice),
         )
     if len(pinned) > 1:
         raise RevisionError("conflict", f"specification_conflict({view.unit_id}.{choice.name})")
@@ -290,13 +290,13 @@ def _ph_flash(
     context: EvaluationContext,
     components: tuple[str, ...],
 ) -> tuple[UnitModel, Configuration]:
-    signature = _PH_FLASH
+    signature = PH_FLASH
     parameters = instance_contract(view, signature, components)
     inlet_phase = _inlet_phase(view)
     unit = PHFlash(
         unit_id=view.unit_id,
         provider=provider,
-        duty=_pinned(view, signature, "duty"),
+        duty=pinned(view, signature, "duty"),
         context=context,
         pressure_drop=parameters["pressure_drop"],
         inlet_phase=inlet_phase,
@@ -312,13 +312,13 @@ def _valve(
     context: EvaluationContext,
     components: tuple[str, ...],
 ) -> tuple[UnitModel, Configuration]:
-    signature = _VALVE
+    signature = VALVE
     instance_contract(view, signature, components)
     inlet_phase = _inlet_phase(view)
     unit = Valve(
         unit_id=view.unit_id,
         provider=provider,
-        outlet_pressure=_pinned(view, signature, "outlet_pressure"),
+        outlet_pressure=pinned(view, signature, "outlet_pressure"),
         context=context,
         inlet_phase=inlet_phase,
         components=components,
@@ -333,12 +333,12 @@ def _liquid_pump(
     context: EvaluationContext,
     components: tuple[str, ...],
 ) -> tuple[UnitModel, Configuration]:
-    signature = _LIQUID_PUMP
+    signature = LIQUID_PUMP
     parameters = instance_contract(view, signature, components)
     unit = LiquidPump(
         unit_id=view.unit_id,
         provider=provider,
-        outlet_pressure=_pinned(view, signature, "outlet_pressure"),
+        outlet_pressure=pinned(view, signature, "outlet_pressure"),
         efficiency=parameters["efficiency"],
         context=context,
         components=components,
@@ -353,7 +353,7 @@ def _conversion_reactor(
     components: tuple[str, ...],
 ) -> tuple[UnitModel, Configuration]:
     """`conversion.<k>` names the key `k`: the one reaction has exactly one."""
-    signature = _CONVERSION_REACTOR
+    signature = CONVERSION_REACTOR
     stoichiometry = _names(signature, "nu.{component}", view, components)
     conversions = _names(signature, "conversion.{key}", view, components)
     parameters = instance_contract(view, signature, components)
@@ -369,7 +369,7 @@ def _conversion_reactor(
         key_component=key_component,
         conversion=parameters[conversion],
         energy_specification=energy_specification,
-        value=_pin(view, column),
+        value=pin_value(view, column),
         context=context,
         pressure_drop=parameters["pressure_drop"],
         inlet_phase=inlet_phase,
@@ -389,7 +389,7 @@ def _kinetic_cstr(
     components: tuple[str, ...],
 ) -> tuple[UnitModel, Configuration]:
     """`damkohler.<k>` names the key `k`; the outlet is declared `vapor` or `liquid`."""
-    signature = _KINETIC_CSTR
+    signature = KINETIC_CSTR
     stoichiometry = _names(signature, "nu.{component}", view, components)
     rates = _names(signature, "damkohler.{key}", view, components)
     parameters = instance_contract(view, signature, components)
@@ -438,7 +438,7 @@ def _component_separator(
     context: EvaluationContext,
     components: tuple[str, ...],
 ) -> tuple[UnitModel, Configuration]:
-    signature = _COMPONENT_SEPARATOR
+    signature = COMPONENT_SEPARATOR
     split = _names(signature, "split.{component}", view, components)
     parameters = instance_contract(view, signature, components)
     inlet_phase = _inlet_phase(view)
@@ -464,19 +464,19 @@ def _heat_exchanger(
     components: tuple[str, ...],
 ) -> tuple[UnitModel, Configuration]:
     """Each side keeps its declared phase: its outlet's rule is its inlet's."""
-    signature = _HEAT_EXCHANGER
+    signature = HEAT_EXCHANGER
     instance_contract(view, signature, components)
     phases: dict[str, Phase] = {}
     for side in ("hot", "cold"):
         phases[side] = _declared_phase(view, f"{side}_inlet")
-        _stream(view, f"{side}_outlet")
-        _require_phase(view, f"{side}_outlet", phases[side])
+        port_stream(view, f"{side}_outlet")
+        require_phase(view, f"{side}_outlet", phases[side])
     option, column = _one_specification(view, signature, "specification")
     unit = HeatExchanger(
         unit_id=view.unit_id,
         provider=provider,
         specification=option.name,
-        value=_pin(view, column),
+        value=pin_value(view, column),
         context=context,
         hot_phase=phases["hot"],
         cold_phase=phases["cold"],
@@ -503,18 +503,18 @@ def _c1_feed_source(
     context: EvaluationContext,
     components: tuple[str, ...],
 ) -> tuple[UnitModel, Configuration]:
-    signature = _C1_FEED_SOURCE
+    signature = C1_FEED_SOURCE
     instance_contract(view, signature, components)
     pin = signature.pin("flows")
-    flows = _columns(view, pin, components)
+    flows = pin_columns(view, pin, components)
     unit = c1_feed.FeedSource(
         unit_id=view.unit_id,
         flows=tuple(
-            _pin(view, column, partial(_missing_pin_hint, view, signature, pin, components, c))
+            pin_value(view, column, partial(missing_pin_hint, view, signature, pin, components, c))
             for c, column in zip(components, flows, strict=True)
         ),
-        temperature=_pinned(view, signature, "temperature"),
-        pressure=_pinned(view, signature, "pressure"),
+        temperature=pinned(view, signature, "temperature"),
+        pressure=pinned(view, signature, "pressure"),
         components=components,
     )
     return unit, {}
@@ -526,7 +526,7 @@ def _c1_adiabatic_mixer(
     context: EvaluationContext,
     components: tuple[str, ...],
 ) -> tuple[UnitModel, Configuration]:
-    instance_contract(view, _C1_ADIABATIC_MIXER, components)
+    instance_contract(view, C1_ADIABATIC_MIXER, components)
     unit = c1_mixer.AdiabaticMixer(
         unit_id=view.unit_id, provider=provider, context=context, components=components
     )
@@ -539,12 +539,12 @@ def _c1_tp_heater(
     context: EvaluationContext,
     components: tuple[str, ...],
 ) -> tuple[UnitModel, Configuration]:
-    signature = _C1_TP_HEATER
+    signature = C1_TP_HEATER
     instance_contract(view, signature, components)
     unit = c1_heater.TPHeater(
         unit_id=view.unit_id,
         provider=provider,
-        outlet_temperature=_pinned(view, signature, "outlet_temperature"),
+        outlet_temperature=pinned(view, signature, "outlet_temperature"),
         context=context,
         components=components,
     )
@@ -557,16 +557,16 @@ def _c1_tp_flash(
     context: EvaluationContext,
     components: tuple[str, ...],
 ) -> tuple[UnitModel, Configuration]:
-    signature = _C1_TP_FLASH
+    signature = C1_TP_FLASH
     instance_contract(view, signature, components)
-    _stream(view, "inlet")
-    _stream(view, "vapor")
-    _stream(view, "liquid")
-    temperature = _pinned(view, signature, "temperature")
-    pressure = _pinned(view, signature, "pressure")
-    if _pinned(view, signature, "liquid_temperature") != temperature:
+    port_stream(view, "inlet")
+    port_stream(view, "vapor")
+    port_stream(view, "liquid")
+    temperature = pinned(view, signature, "temperature")
+    pressure = pinned(view, signature, "pressure")
+    if pinned(view, signature, "liquid_temperature") != temperature:
         raise RevisionError("conflict", f"specification_conflict({view.unit_id}.T)")
-    if _pinned(view, signature, "liquid_pressure") != pressure:
+    if pinned(view, signature, "liquid_pressure") != pressure:
         raise RevisionError("conflict", f"specification_conflict({view.unit_id}.P)")
     unit = c1_flash.TPFlash(
         unit_id=view.unit_id,
@@ -585,7 +585,7 @@ def _c1_stream_splitter(
     context: EvaluationContext,
     components: tuple[str, ...],
 ) -> tuple[UnitModel, Configuration]:
-    parameters = instance_contract(view, _C1_STREAM_SPLITTER, components)
+    parameters = instance_contract(view, C1_STREAM_SPLITTER, components)
     unit = c1_splitter.StreamSplitter(
         unit_id=view.unit_id,
         split_fraction=parameters["split_fraction"],
@@ -600,7 +600,7 @@ def _c1_product_sink(
     context: EvaluationContext,
     components: tuple[str, ...],
 ) -> tuple[UnitModel, Configuration]:
-    instance_contract(view, _C1_PRODUCT_SINK, components)
+    instance_contract(view, C1_PRODUCT_SINK, components)
     return c1_sink.ProductSink(unit_id=view.unit_id, components=components), {}
 
 
@@ -610,7 +610,7 @@ def _c1_reactor(
     context: EvaluationContext,
     components: tuple[str, ...],
 ) -> tuple[UnitModel, Configuration]:
-    signature = _C1_REACTOR if view.model_id == _C1_REACTOR.model_id else _C1_REACTOR_STANDIN
+    signature = C1_REACTOR if view.model_id == C1_REACTOR.model_id else C1_REACTOR_STANDIN
     parameters = instance_contract(view, signature, components)
     variant = variants.resolve(view.model_id, view.model_version, view.model_artifact_ref)
     if variant is None:  # the binder resolved every variant-backed instance before building
@@ -632,14 +632,14 @@ def _c1_reactor(
     return unit, {}
 
 
-def _c1_reactor_surrogate_of(
+def c1_reactor_surrogate_of(
     view: InstanceView,
     provider: PropertyProvider,
     context: EvaluationContext,
     components: tuple[str, ...],
     manifest: Mapping[str, Any],
 ) -> tuple[UnitModel, Configuration]:
-    parameters = instance_contract(view, _C1_REACTOR_SURROGATE, components)
+    parameters = instance_contract(view, C1_REACTOR_SURROGATE, components)
     assert view.model_artifact_ref is not None  # `_resolve_surrogate` resolved it
     unit = c1_surrogate.C1ReactorSurrogate(
         unit_id=view.unit_id,
@@ -717,33 +717,33 @@ def _thermal_builder(model_id: str) -> Builder:
 #: Model id -> builder: the six K02 models, the six T05 ones (§1.3's table), T08's kinetic CSTR
 #: (build-first §A1), S11's column (§4.7), M02's six C1 units and two C1 reactor ids (R-280), and
 #: M04's surrogate of the C1 reactor (R-301): its registered builder refuses; the binder hands a
-#: resolved manifest to `_c1_reactor_surrogate_of` instead.
+#: resolved manifest to `c1_reactor_surrogate_of` instead.
 MODEL_BUILDERS: Final[Mapping[str, Builder]] = {
-    _FEED_SOURCE.model_id: _feed_source,
-    _ADIABATIC_MIXER.model_id: _adiabatic_mixer,
-    _TP_HEATER.model_id: _tp_heater,
-    _TP_FLASH.model_id: _tp_flash,
-    _STREAM_SPLITTER.model_id: _stream_splitter,
-    _PRODUCT_SINK.model_id: _product_sink,
-    _PH_FLASH.model_id: _ph_flash,
-    _VALVE.model_id: _valve,
-    _LIQUID_PUMP.model_id: _liquid_pump,
-    _CONVERSION_REACTOR.model_id: _conversion_reactor,
-    _COMPONENT_SEPARATOR.model_id: _component_separator,
-    _HEAT_EXCHANGER.model_id: _heat_exchanger,
-    _KINETIC_CSTR.model_id: _kinetic_cstr,
-    _COLUMN.model_id: _syn001_column,
-    _C1_FEED_SOURCE.model_id: _c1_feed_source,
-    _C1_ADIABATIC_MIXER.model_id: _c1_adiabatic_mixer,
-    _C1_TP_HEATER.model_id: _c1_tp_heater,
-    _C1_TP_FLASH.model_id: _c1_tp_flash,
-    _C1_STREAM_SPLITTER.model_id: _c1_stream_splitter,
-    _C1_PRODUCT_SINK.model_id: _c1_product_sink,
-    _C1_REACTOR.model_id: _c1_reactor,
+    FEED_SOURCE.model_id: _feed_source,
+    ADIABATIC_MIXER.model_id: _adiabatic_mixer,
+    TP_HEATER.model_id: _tp_heater,
+    TP_FLASH.model_id: _tp_flash,
+    STREAM_SPLITTER.model_id: _stream_splitter,
+    PRODUCT_SINK.model_id: _product_sink,
+    PH_FLASH.model_id: _ph_flash,
+    VALVE.model_id: _valve,
+    LIQUID_PUMP.model_id: _liquid_pump,
+    CONVERSION_REACTOR.model_id: _conversion_reactor,
+    COMPONENT_SEPARATOR.model_id: _component_separator,
+    HEAT_EXCHANGER.model_id: _heat_exchanger,
+    KINETIC_CSTR.model_id: _kinetic_cstr,
+    COLUMN.model_id: _syn001_column,
+    C1_FEED_SOURCE.model_id: _c1_feed_source,
+    C1_ADIABATIC_MIXER.model_id: _c1_adiabatic_mixer,
+    C1_TP_HEATER.model_id: _c1_tp_heater,
+    C1_TP_FLASH.model_id: _c1_tp_flash,
+    C1_STREAM_SPLITTER.model_id: _c1_stream_splitter,
+    C1_PRODUCT_SINK.model_id: _c1_product_sink,
+    C1_REACTOR.model_id: _c1_reactor,
     # R-310: `models/c1/reactor_standin.py`'s sentence "Not registered in `MODEL_BUILDERS`" is a
     # recorded erratum (the module's bytes are the stand-in variant's pinned artifact).
-    _C1_REACTOR_STANDIN.model_id: _c1_reactor,
-    _C1_REACTOR_SURROGATE.model_id: _c1_reactor_surrogate,
+    C1_REACTOR_STANDIN.model_id: _c1_reactor,
+    C1_REACTOR_SURROGATE.model_id: _c1_reactor_surrogate,
     # S11 units design §5.4 (I1b): the seven `thermal.*` builders (`thermal_binding`).
-    **{s.model_id: _thermal_builder(s.model_id) for s in _THERMAL_SIGNATURES},
+    **{s.model_id: _thermal_builder(s.model_id) for s in THERMAL_SIGNATURES},
 }

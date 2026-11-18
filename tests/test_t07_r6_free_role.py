@@ -27,20 +27,20 @@ from t07_r7_documents import BASE, MUTATIONS, mutated
 
 from openflowsheet.application.binding import (
     Binding,
-    Unbound,
     bind_revision_or_reason,
     legacy_answers,
-    refusal_code,
     revision_probe,
 )
-from openflowsheet.application.contract import ApplicationError
+from openflowsheet.application.binding_common import Unbound, refusal_code
+from openflowsheet.application.errors import ApplicationError
+from openflowsheet.application.job_requests import JobRequest
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.revision_binding import (
     RevisionBinding,
     bind_revision_flowsheet,
 )
-from openflowsheet.application.revision_run import NoRoute, route_structure, select_route
-from openflowsheet.application.types import JobRequest
+from openflowsheet.application.revision_run import NoRoute, select_route
+from openflowsheet.application.structure_inspection import route_structure
 from openflowsheet.application.validation import structural_refusal, validate
 
 STRUCTURAL = ("STR-01", "STR-02", "STR-03", "STR-04", "STR-05")

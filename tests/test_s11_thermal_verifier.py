@@ -26,11 +26,8 @@ from test_s11_thermal_binding import (
 )
 from test_s11_thermal_machines import ADDITIVE_STATES, CP, _closed_form, _IdealGas
 
-from openflowsheet.application.revision_binding import (
-    _CONTEXT,
-    RevisionBinding,
-    bind_revision_flowsheet,
-)
+from openflowsheet.application.revision_binding import RevisionBinding, bind_revision_flowsheet
+from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models import duty_id, flow_id, pressure_id, temperature_id
 from openflowsheet.models.revision_flowsheet import IAPWS95_RECORDS, RevisionView, parse_revision
 from openflowsheet.models.syn001.pump import work_id
@@ -40,12 +37,17 @@ from openflowsheet.thermo import PropertyProvider, StreamState
 from openflowsheet.thermo.iapws95 import Iapws95Provider
 from openflowsheet.verify import CheckResult
 from openflowsheet.verify import thermal as vt
-from openflowsheet.verify.checks import KIND_TOLERANCE, qualification
+from openflowsheet.verify.checks import qualification
+from openflowsheet.verify.flowsheet_rows import EXTERNAL_DUTY_MODELS, WORK_MODELS
 from openflowsheet.verify.forms import declared_phases, stream_admissibility
-from openflowsheet.verify.table import EXTERNAL_DUTY_MODELS, WORK_MODELS, Unit
+from openflowsheet.verify.kind_tolerance import KIND_TOLERANCE
+from openflowsheet.verify.table_kit import Unit
 
 TAU_FLOW = KIND_TOLERANCE["molar_flow"]
-CONTEXT = _CONTEXT
+# Built here, value-equal to the revision binder's context (ADR 0076 I-13: no private imports).
+CONTEXT = EvaluationContext(
+    model_version="revision-structural", constants_sha256="0" * 64, phase_signature=None
+)
 
 
 # -- documents: the C6 cases' unit chains, evaluated once by the units themselves ----------------

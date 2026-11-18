@@ -29,14 +29,19 @@ import yaml
 
 import openflowsheet.orchestrator.phase_contract as phase_contract
 import openflowsheet.orchestrator.region as region_module
+import openflowsheet.orchestrator.region_attempts as region_attempts
+import openflowsheet.orchestrator.region_phase as region_phase
+import openflowsheet.orchestrator.region_problem as region_problem
+import openflowsheet.orchestrator.region_screen as region_screen
 from openflowsheet.canonical import state_sha256
 from openflowsheet.compile.casadi_backend import compile_problem
 from openflowsheet.numerics.newton import Evaluation, Problem
 from openflowsheet.numerics.scaling import Scaling
+from openflowsheet.numerics.solve_record import SolvePolicy, Trace
 from openflowsheet.orchestrator.attempts import solve_with_attempts
-from openflowsheet.orchestrator.region import RegionResult, solve_region, syn001_lifted_splits
+from openflowsheet.orchestrator.region import solve_region, syn001_lifted_splits
+from openflowsheet.orchestrator.region_result import RegionResult
 from openflowsheet.orchestrator.tear import solve_tear
-from openflowsheet.orchestrator.trace import SolvePolicy, Trace
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 POLICY = SolvePolicy(policy_id="T03", residual_tolerances={}, scales={})
@@ -90,8 +95,8 @@ def observe(
     compiled = compile_problem(item.binding.spec)
     trace = Trace()
     seen = Observed(result=None, trace=trace)  # type: ignore[arg-type]
-    original = region_module._region_problem
-    original_screen = region_module._screen
+    original = region_problem._region_problem
+    original_screen = region_screen._screen
 
     def observed(compiled_, context, spec, scaling, base, free, rows, screen=None, opening=None):  # type: ignore[no-untyped-def]
         attempt = len(seen.calls)
@@ -138,7 +143,8 @@ def observe(
         )
 
     monkeypatch.setattr(region_module, "_region_problem", observed)
-    monkeypatch.setattr(region_module, "_screen", counted_screen)
+    monkeypatch.setattr(region_attempts, "_region_problem", observed)
+    monkeypatch.setattr(region_screen, "_screen", counted_screen)
     seen.result = solve_region(
         compiled=compiled,
         spec=item.binding.spec,
@@ -196,7 +202,15 @@ def test_a02_one_decision_function_for_both_paths(monkeypatch: pytest.MonkeyPatc
     source = (REPO_ROOT / "src" / "openflowsheet" / "orchestrator").glob("*.py")
     producing = [path.name for path in source if "active_set_cycling(" in path.read_text()]
     assert producing == ["phase_contract.py"], "the cycling refusal is produced in one place"
-    for name in ("attempts.py", "region.py"):
+    for name in (
+        "attempts.py",
+        "region.py",
+        "region_phase.py",
+        "region_problem.py",
+        "region_result.py",
+        "region_screen.py",
+        "region_attempts.py",
+    ):
         text = (REPO_ROOT / "src" / "openflowsheet" / "orchestrator" / name).read_text()
         assert "ACTIVE_SET_CYCLING" not in text, f"{name} keeps no cycle rule of its own"
         assert " in used" not in text, f"{name} tests no used signatures itself"
@@ -281,7 +295,7 @@ def test_a05_the_kernel_is_asked_only_on_flagged_trials(
     """The screen calls K03 §8.2's own check (the closure check's callable) and flashes once per
     flagged trial: 13, 12, 6 on attempt 1 (T03 §4.3's registered counts)."""
     screened: list[tuple[int, str]] = []
-    real = region_module._admissible
+    real = region_phase._admissible
     seen_box: list[Observed] = []
 
     def spy(provider, context, split, regime, state, epsilon):  # type: ignore[no-untyped-def]
@@ -289,7 +303,9 @@ def test_a05_the_kernel_is_asked_only_on_flagged_trials(
         screened.append((len(seen_box[0].calls) - 1 if seen_box else -1, split.unit))
         return real(provider, context, split, regime, state, epsilon)
 
-    monkeypatch.setattr(region_module, "_admissible", spy)
+    monkeypatch.setattr(region_screen, "_admissible", spy)
+    monkeypatch.setattr(region_phase, "_admissible", spy)
+    monkeypatch.setattr(region_problem, "_admissible", spy)
     original_observe_calls = Observed.__init__
 
     def remember(self: Observed, *arguments: Any, **keywords: Any) -> None:
@@ -316,14 +332,14 @@ def test_a05_the_opening_state_is_not_screened(
     first = seen.result.attempts[0]
     opening = dict(first.end_state)
     heater = syn001_lifted_splits(("A", "B", "C"))[0]
-    region_module._pin(opening, heater, "LIQUID")
+    region_phase._pin(opening, heater, "LIQUID")
     context = EvaluationContext(
         model_version="t03", constants_sha256="0" * 64, phase_signature=None
     )
     from test_t02_a02 import revision, structure
 
     provider = structure(revision("SYN-001-A02-340-two-phase-guess")).binding.flowsheet.provider
-    ok, value = region_module._admissible(provider, context, heater, "LIQUID", opening, 1e-12)
+    ok, value = region_phase._admissible(provider, context, heater, "LIQUID", opening, 1e-12)
     registered = ref["policy_simulation"]["cases"]["SYN-001-A02-340-two-phase-guess"]
     expected = float(registered["attempts"][1]["opening_screen_value"])
     assert not ok and abs(value - expected) <= 1e-9 * expected
@@ -561,6 +577,7 @@ def test_a16_an_incompatible_opening_is_refused_and_opens_nothing(
         return real(corrupt(state), requirement)
 
     monkeypatch.setattr(region_module, "check_opening", corrupted)
+    monkeypatch.setattr(region_problem, "check_opening", corrupted)
     assert_refused(observe("SYN-001-A02-355-liquid-guess", monkeypatch), check, subject, observed)
 
 
@@ -568,7 +585,7 @@ def test_a16_a_pinned_variable_that_is_not_zero_is_refused(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """`S3.vap.A = 1e-3` under a LIQUID signature: PHS-04's restart into LIQUID, corrupted."""
-    real = region_module._LiftedOps.blocked
+    real = region_problem._LiftedOps.blocked
 
     def corrupted(self: Any, result: Any) -> Any:
         conversion = real(self, result)
@@ -577,7 +594,7 @@ def test_a16_a_pinned_variable_that_is_not_zero_is_refused(
         state, regimes = conversion.opening
         return replace(conversion, opening=({**state, "S3.vap.A": 1e-3}, regimes))
 
-    monkeypatch.setattr(region_module._LiftedOps, "blocked", corrupted)
+    monkeypatch.setattr(region_problem._LiftedOps, "blocked", corrupted)
     assert_refused(
         observe("SYN-001-A02-340-two-phase-guess", monkeypatch), "active_set", "S3.vap.A", 1e-3
     )
@@ -624,6 +641,7 @@ def test_a16_every_registered_opening_passes_all_six_checks(
         return outcome
 
     monkeypatch.setattr(region_module, "check_opening", watched)
+    monkeypatch.setattr(region_problem, "check_opening", watched)
     for case_id in (
         "SYN-001-A02-355-liquid-guess",
         "SYN-001-A02-360-liquid-guess",
@@ -997,7 +1015,7 @@ VAP: Any = (("U-HEAT", "VAPOR"),)
 
 def newton(outcome: str, iterations: int = 3, **extra: Any) -> Any:
     from openflowsheet.numerics.newton import NewtonResult
-    from openflowsheet.orchestrator.trace import Counters
+    from openflowsheet.numerics.solve_record import Counters
 
     return NewtonResult(
         outcome=outcome,  # type: ignore[arg-type]
@@ -1287,7 +1305,7 @@ def test_s5_both_retained_conversions_on_a_physical_state(
 
     kwargs: list[dict[str, Any]] = []
     flagged: list[dict[str, float]] = []
-    real_init, real_admissible = region_module._LiftedOps.__init__, region_module._admissible
+    real_init, real_admissible = region_problem._LiftedOps.__init__, region_phase._admissible
 
     def init(self: Any, **given: Any) -> None:
         kwargs.append(given)
@@ -1299,8 +1317,10 @@ def test_s5_both_retained_conversions_on_a_physical_state(
             flagged.append(dict(state))
         return ok, value
 
-    monkeypatch.setattr(region_module._LiftedOps, "__init__", init)
-    monkeypatch.setattr(region_module, "_admissible", admissible)
+    monkeypatch.setattr(region_problem._LiftedOps, "__init__", init)
+    monkeypatch.setattr(region_screen, "_admissible", admissible)
+    monkeypatch.setattr(region_phase, "_admissible", admissible)
+    monkeypatch.setattr(region_problem, "_admissible", admissible)
     observe("SYN-001-A02-355-liquid-guess", monkeypatch)
     assert flagged, "the registered flagged trial was screened"
     given = {**kwargs[0], "end_state": flagged[0]}
@@ -1313,7 +1333,7 @@ def test_s5_both_retained_conversions_on_a_physical_state(
             attempt_index=0,
             frozen=opening,
             wall=walled(()),
-            ops=region_module._LiftedOps(**given),
+            ops=region_problem._LiftedOps(**given),
             policy=POLICY,
             used=[opening],
         )
@@ -1340,9 +1360,9 @@ def test_n4_a_candidate_the_kernel_disagrees_with_is_a_defect(
     """Review N4: `at_candidate` checks, rather than assumes, that the kernel's regime at the
     candidate is the one the screen reported; a disagreement is a defect, never a silent mismatch
     between the cause and the new signature."""
-    real = region_module._kernel
+    real = region_phase._kernel
     in_restart = [False]
-    real_at_candidate = region_module._LiftedOps.at_candidate
+    real_at_candidate = region_problem._LiftedOps.at_candidate
 
     def at_candidate(self: Any, candidate: Any, cause: str) -> Any:
         in_restart[0] = True
@@ -1355,8 +1375,9 @@ def test_n4_a_candidate_the_kernel_disagrees_with_is_a_defect(
         regime, values = real(provider, context, split, state)
         return ("VAPOR" if in_restart[0] else regime), values
 
-    monkeypatch.setattr(region_module._LiftedOps, "at_candidate", at_candidate)
+    monkeypatch.setattr(region_problem._LiftedOps, "at_candidate", at_candidate)
     monkeypatch.setattr(region_module, "_kernel", kernel)
+    monkeypatch.setattr(region_phase, "_kernel", kernel)
     with pytest.raises(RuntimeError, match="defect: the kernel reports U-HEAT VAPOR"):
         observe("SYN-001-A02-355-liquid-guess", monkeypatch)
 
@@ -1372,7 +1393,7 @@ def test_n3_the_screen_passes_the_kernels_refusal_through(
     from openflowsheet.thermo import FlashResult
 
     seen: list[Evaluation] = []
-    real_screen = region_module._screen
+    real_screen = region_screen._screen
 
     def screen(*, splits, regimes, provider, context, epsilon):  # type: ignore[no-untyped-def]
         class Refusing:
@@ -1401,7 +1422,7 @@ def test_n3_the_screen_passes_the_kernels_refusal_through(
 
         return spied
 
-    monkeypatch.setattr(region_module, "_screen", screen)
+    monkeypatch.setattr(region_screen, "_screen", screen)
     from test_t02_a02 import POLICY as T02_POLICY
     from test_t02_a02 import revision, structure, the_region
 

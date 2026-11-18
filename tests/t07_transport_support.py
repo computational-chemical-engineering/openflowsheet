@@ -25,19 +25,15 @@ from urllib.parse import quote
 from t07_support import AT, COMPLETED, LATER, job
 
 from openflowsheet.application.cli import API_EXIT_CODES, main
-from openflowsheet.application.contract import ApplicationError
+from openflowsheet.application.errors import API_ERROR_HTTP_STATUS, ApplicationError
+from openflowsheet.application.job_records import ArtifactRef, JobEvent
 from openflowsheet.application.jobs.executor import ProcessExecutor
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.operations import OPERATIONS, dispatch
+from openflowsheet.application.policy_types import CapabilityReference
 from openflowsheet.application.store import DATABASE_NAME
-from openflowsheet.application.types import (
-    API_ERROR_HTTP_STATUS,
-    ArtifactRef,
-    CapabilityReference,
-    JobEvent,
-    schema_errors,
-)
 from openflowsheet.canonical import canonical_json
+from openflowsheet.schema_check import schema_errors
 
 Outcome = tuple[bool, Any]  # (is an error, the response document, bytes, or ApiError document)
 ALL = frozenset(OPERATIONS)

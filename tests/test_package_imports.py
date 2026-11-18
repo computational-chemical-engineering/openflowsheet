@@ -43,7 +43,8 @@ LAYERS = [
     # imports only `messages.diagnostic`, and the G3 hooks only `messages.audit`.
     "messages",
     # F1's extension registry (ADR 0060): descriptors, capability tokens, admission and the
-    # registry snapshot. It imports `messages` only inside a build (D8), and no application module.
+    # registry snapshot. It imports `messages.catalogue` at import, to install the catalogue's
+    # before-freeze hook (ADR 0076 I-14), and no application module.
     "registry",
 ]
 

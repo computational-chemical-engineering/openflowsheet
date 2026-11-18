@@ -16,7 +16,7 @@ import pytest
 from test_s02_column_wo1 import PROVIDER, REFERENCE, SPECS, UNIT
 from test_s02_column_wo2 import FLOW_ABS, FLOW_REL, T_ABS, stages_state
 
-from openflowsheet.models.syn001.cascade import (
+from openflowsheet.models.syn001.cascade_spec import (
     liquid_id,
     liquid_total_id,
     mixed_id,
@@ -25,17 +25,14 @@ from openflowsheet.models.syn001.cascade import (
     vapor_id,
     vapor_total_id,
 )
-from openflowsheet.models.syn001.column import ColumnSpec, _inflow, regime_form
-from openflowsheet.models.syn001.column_solve import (
-    FD_COLUMN_SCALE,
-    ColumnSolution,
-    acceptance_failures,
-    compile_column,
-    solve_column,
-    stage_unit,
-)
+from openflowsheet.models.syn001.column import regime_form
+from openflowsheet.models.syn001.column_acceptance import acceptance_failures
+from openflowsheet.models.syn001.column_compile import compile_column, stage_unit
+from openflowsheet.models.syn001.column_rows import _inflow
+from openflowsheet.models.syn001.column_solve import FD_COLUMN_SCALE, ColumnSolution, solve_column
+from openflowsheet.models.syn001.column_spec import ColumnSpec
 from openflowsheet.numerics.scaling import REGISTERED_NOMINALS
-from openflowsheet.orchestrator.region import RegionResult
+from openflowsheet.orchestrator.region_result import RegionResult
 from openflowsheet.thermo.syn001 import C_P, h_liquid, h_vapor
 
 # -- A11: §4.3's circulation vector on the compiled Jacobian -------------------------------------

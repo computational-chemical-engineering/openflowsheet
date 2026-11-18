@@ -23,13 +23,12 @@ from semantic_roles import role_of
 
 from openflowsheet import resources
 from openflowsheet.application import revision_binding
-from openflowsheet.application.binding import Unbound
+from openflowsheet.application.binding_common import Unbound
+from openflowsheet.application.model_builders import MODEL_BUILDERS
+from openflowsheet.application.model_signatures import MODEL_BASES, MODEL_SIGNATURES
 from openflowsheet.application.revision_binding import (
-    MODEL_BASES,
-    MODEL_BUILDERS,
-    MODEL_SIGNATURES,
     RevisionBinding,
-    _basis_refusal,
+    basis_refusal,
     bind_revision_flowsheet,
 )
 from openflowsheet.canonical import document_sha256
@@ -405,7 +404,7 @@ def test_a13_the_syn001_c1_hints_are_the_bases() -> None:
         for basis in (SYN001_BASIS, c1):
             if basis.provider_id in MODEL_BASES[model]:
                 continue
-            refused = _basis_refusal(model, basis)
+            refused = basis_refusal(model, basis)
             if model in S11_CHANGED:
                 admitted = {m for m in MODEL_BASES if basis.provider_id in MODEL_BASES[m]}
                 assert (refused.kind, refused.detail, refused.hint) == (
@@ -420,15 +419,15 @@ def test_a13_the_syn001_c1_hints_are_the_bases() -> None:
     assert (count, digest.hexdigest()) == (14, BASE_SYN001_C1_HINTS)
     # The base's eight moved pairs, the column on C1's basis and each `thermal.*` model on both.
     assert moved == 8 + 1 + 2 * len(THERMAL)
-    assert _basis_refusal(COLUMN, c1).hint == (
+    assert basis_refusal(COLUMN, c1).hint == (
         f"{COLUMN} binds on the syn001, wilson-ig-v2 bases only, not on this revision's pr-c1-v1; "
         f"{COLUMN_VAPOUR}"
     )
-    assert _basis_refusal("thermal.heater", SYN001_BASIS).hint == (
+    assert basis_refusal("thermal.heater", SYN001_BASIS).hint == (
         "thermal.heater binds on the coolprop-heos-v1, iapws95-v1 bases only, not on this "
         f"revision's syn001; {NO_ENTROPY}"
     )
-    assert _basis_refusal("syn001.valve", c1).hint == (
+    assert basis_refusal("syn001.valve", c1).hint == (
         "syn001.valve binds on the syn001, wilson-ig-v2 bases only, not on this revision's pr-c1-v1"
     )
 
@@ -465,7 +464,7 @@ def test_a13_every_refused_pair_on_a_new_basis_names_its_reason(provider: str) -
         assert admitted == {*ROUTING, *THERMAL}
     assert set(MODEL_BASES) - set(refused_models) == admitted
     for model in refused_models:
-        refused = _basis_refusal(model, basis)
+        refused = basis_refusal(model, basis)
         assert (refused.kind, refused.detail, refused.hint) == (
             "unsupported",
             f"model_unsupported({model})",
@@ -490,7 +489,7 @@ def test_a13_the_binder_refuses_a_bound_pair(case: str, model: str) -> None:
     assert isinstance(refused, Unbound)
     assert refused.detail == f"model_unsupported({model})"
     basis = component_basis(document)
-    assert refused.hint == _basis_refusal(model, basis).hint
+    assert refused.hint == basis_refusal(model, basis).hint
     assert refused.hint is not None and refused.hint.startswith(f"{model} binds on the ")
 
 

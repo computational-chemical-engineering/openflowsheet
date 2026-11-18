@@ -27,7 +27,7 @@ from m03_fixture_compare import fixture_differences, measurement_differences
 from m03_support import flowsheet, nlp_formulation, number, record_measurement, reference
 from test_m03_schemas import FIXTURES, REPORT, report_violations
 
-from openflowsheet.application.types import schema_errors
+from openflowsheet.schema_check import schema_errors
 from openflowsheet.studies.nlp.closure import (
     AUDITED_PYNUMERO_ASL_SHA256,
     OptimizationReport,

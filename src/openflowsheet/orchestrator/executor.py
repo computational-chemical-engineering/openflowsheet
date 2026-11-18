@@ -38,8 +38,28 @@ from openflowsheet.compile.casadi_backend import compile_problem
 from openflowsheet.compile.spec import ProblemSpec
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.messages.diagnostic import Diagnostic
+from openflowsheet.models.lifted import (
+    ClosureType,
+    DormancyForm,
+    LiftedSplit,
+    Regime,
+    VapourOnlyForm,
+    ZeroFlowForm,
+)
 from openflowsheet.models.revision_flowsheet import RevisionFlowsheet
 from openflowsheet.models.syn001.flowsheet import FEED_UNIT, WIRING, Syn001Flowsheet
+from openflowsheet.numerics.solve_record import (
+    AttemptSignature,
+    Checkpoint,
+    Counters,
+    EoRecoveryUnsupported,
+    EventKind,
+    RecyclePolicy,
+    SolveOutcome,
+    SolvePlan,
+    SolvePolicy,
+    Trace,
+)
 from openflowsheet.orchestrator import revision
 from openflowsheet.orchestrator.budget import BudgetExhaustedError, PropertyMeter
 from openflowsheet.orchestrator.execution import ExecutionPlan, PlanStep, Region
@@ -57,18 +77,8 @@ from openflowsheet.orchestrator.recovery import (
     recovered_provenance,
     solver_outcomes,
 )
-from openflowsheet.orchestrator.region import (
-    ClosureType,
-    DormancyForm,
-    LiftedSplit,
-    RecoveryStart,
-    Regime,
-    RegionResult,
-    VapourOnlyForm,
-    ZeroFlowForm,
-    solve_region,
-    syn001_lifted_splits,
-)
+from openflowsheet.orchestrator.region import solve_region, syn001_lifted_splits
+from openflowsheet.orchestrator.region_result import RecoveryStart, RegionResult
 from openflowsheet.orchestrator.revision_continuation import (
     REVISION_CONTINUATION_REJECTED,
     REVISION_CONTINUATION_SOURCE,
@@ -87,18 +97,6 @@ from openflowsheet.orchestrator.splits import (
     zero_flow_forms,
 )
 from openflowsheet.orchestrator.tear import INITIALIZER_ID, Syn001TearProblem, solve_tear
-from openflowsheet.orchestrator.trace import (
-    AttemptSignature,
-    Checkpoint,
-    Counters,
-    EoRecoveryUnsupported,
-    EventKind,
-    RecyclePolicy,
-    SolveOutcome,
-    SolvePlan,
-    SolvePolicy,
-    Trace,
-)
 from openflowsheet.orchestrator.warm_start import (
     EXPLICIT,
     WARM_START_REJECTED,
@@ -753,39 +751,12 @@ def _solve_revision_region(
 ) -> tuple[StepResult, Counters, dict[str, float] | None]:
     """T05 §2.3's general branch of `_solve_eo`: the region from `traversal-G0-v1`'s start, or
     from `user_start` (`execute_plan`), recorded `user_guess`, with no closure routes. With no
-    `user_start` and a chain that names it, the compatible warm start comes first (ADR 0024)."""
-    if region.specification_rows:
-        # No cross-unit specification on a revision-built flowsheet in v0.1 (T05 §9).
-        return (
-            StepResult(
-                index,
-                "solve_eo",
-                region.units,
-                "UNSUPPORTED_RANK_STRUCTURE",
-                message="specification_region_unsupported(revision_flowsheet)",
-            ),
-            spent,
-            None,
-        )
-    # S11 §4.7.5 (A28): a staged unit's stage splits are PH-type and its standalone solve runs
-    # under phase contract v2; under v1 the region is refused before the traversal.
-    staged = [
-        unit.model_id
-        for unit in flowsheet.units()
-        if unit.model_id in STAGED_MODELS and unit.unit_id in region.units
-    ]
-    if staged and policy.phase_contract != CONTRACT_V2:
-        return (
-            StepResult(
-                index,
-                "solve_eo",
-                region.units,
-                "CAPABILITY_UNAVAILABLE",
-                message=f"phase_contract_unsupported({staged[0]})",
-            ),
-            spent,
-            None,
-        )
+    `user_start` and a chain that names it, the compatible warm start comes first (ADR 0024).
+    It refuses first by `_traversal_refusal` (a specification region; a staged unit under a phase
+    contract other than v2), and later an `InitialStateFailure` start as `INITIALIZATION_FAILED`."""
+    refusal = _traversal_refusal(index, region, flowsheet, policy)
+    if refusal is not None:
+        return refusal, spent, None
     record: WarmStartRecord | None = None
     if user_start is None and (
         WARM_START_SOURCE in policy.initializer_chain
@@ -845,6 +816,39 @@ def _solve_revision_region(
     return _eo_recovery(
         step, region, flowsheet, spec, policy, run, spent, state, following, revision_continuation
     )
+
+
+def _traversal_refusal(
+    index: int, region: Region, flowsheet: RevisionFlowsheet, policy: SolvePolicy
+) -> StepResult | None:
+    """The refusals before the traversal, in order: a cross-unit specification region (T05 §9),
+    then a staged unit under a phase contract other than v2 (S11 §4.7.5, A28); None when the
+    region passes both."""
+    if region.specification_rows:
+        # No cross-unit specification on a revision-built flowsheet in v0.1 (T05 §9).
+        return StepResult(
+            index,
+            "solve_eo",
+            region.units,
+            "UNSUPPORTED_RANK_STRUCTURE",
+            message="specification_region_unsupported(revision_flowsheet)",
+        )
+    # S11 §4.7.5 (A28): a staged unit's stage splits are PH-type and its standalone solve runs
+    # under phase contract v2; under v1 the region is refused before the traversal.
+    staged = [
+        unit.model_id
+        for unit in flowsheet.units()
+        if unit.model_id in STAGED_MODELS and unit.unit_id in region.units
+    ]
+    if staged and policy.phase_contract != CONTRACT_V2:
+        return StepResult(
+            index,
+            "solve_eo",
+            region.units,
+            "CAPABILITY_UNAVAILABLE",
+            message=f"phase_contract_unsupported({staged[0]})",
+        )
+    return None
 
 
 def _warm_start(
@@ -975,7 +979,8 @@ def _eo_recovery(
     `_sequential_restart`), and under `"homotopy_or_revision_continuation_or_sequential_restart"`
     the revision continuation comes first (ADR 0072; `_revision_continuation`), from
     `revision_source`, which no other value reads. The count of one is structural: this runs once
-    per region step, on the region solve the step ran, and never on its own recovery.
+    per region step, on the region solve the step ran, and never on its own recovery. A recovery
+    solve is the step's outcome (`_recovery_taken`).
     """
     failed = step.detail
     if policy.globalization.eo_recovery not in (
@@ -1035,28 +1040,7 @@ def _eo_recovery(
             initializer_source=failed.branch_provenance[0]["initializer_source"],
         ),
     )
-    recovered = replace(
-        recovered,
-        branch_provenance=recovered_provenance(
-            failed.branch_provenance, recovered.branch_provenance
-        ),
-        # The step's checkpoint is the recovery's last accepted level (T04 §4.4: `partial` with
-        # its λ below 1); the failed solve's own stays on `recovered_from`.
-        checkpoint=recovered.checkpoint if recovered.checkpoint is not None else failed.checkpoint,
-    )
-    return (
-        replace(
-            step,
-            outcome=recovered.outcome,
-            iterations=step.iterations + recovered.iterations,
-            message=recovered.message,
-            detail=recovered,
-            eo_recovery="taken",
-            recovered_from=failed,
-        ),
-        spent,
-        state,
-    )
+    return _recovery_taken(step, failed, recovered), spent, state
 
 
 def _revision_continuation(
@@ -1082,7 +1066,7 @@ def _revision_continuation(
     `rejected(opening(<check>:<subject>))`. Every refusal is recorded as one
     `initializer_rejected` event and the step's record, and the ADR 0015 restart then runs exactly
     as under `homotopy_or_sequential_restart`. A solve that opened an attempt is the step's
-    outcome, whatever it is (FQ3: one recovery per step).
+    outcome, whatever it is (FQ3: one recovery per step; `_revision_continuation_taken`).
     """
     failed = step.detail
     found: Continuation | RevisionContinuationRefusal
@@ -1123,30 +1107,8 @@ def _revision_continuation(
             found = RevisionContinuationRefusal("rejected", f"opening({check}")
             spent = spent_after
         else:
-            recovered = replace(
-                recovered,
-                branch_provenance=recovered_provenance(
-                    failed.branch_provenance,
-                    recovered.branch_provenance,
-                    first_initializer_source=REVISION_CONTINUATION_SOURCE,
-                ),
-                checkpoint=(
-                    recovered.checkpoint if recovered.checkpoint is not None else failed.checkpoint
-                ),
-            )
             return (
-                replace(
-                    step,
-                    outcome=recovered.outcome,
-                    iterations=step.iterations + recovered.iterations,
-                    message=recovered.message,
-                    detail=recovered,
-                    eo_recovery="taken",
-                    recovered_from=failed,
-                    revision_continuation=RevisionContinuationRecord(
-                        "taken", None, found.parameter_ids, found.start_values
-                    ),
-                ),
+                _revision_continuation_taken(step, failed, recovered, found),
                 spent_after,
                 state_after,
             )
@@ -1156,6 +1118,39 @@ def _revision_continuation(
         step, revision_continuation=RevisionContinuationRecord(found.status, found.reason)
     )
     return _sequential_restart(step, region, flowsheet, spec, policy, run, spent, state, following)
+
+
+def _revision_continuation_taken(
+    step: StepResult, failed: RegionResult, recovered: RegionResult, found: Continuation
+) -> StepResult:
+    """`step` once R9b's recovery solve has opened an attempt (`eo_recovery = "taken"`): the
+    recovery's outcome, message and result, its iterations added to the step's, its branch
+    provenance after the failed solve's with `REVISION_CONTINUATION_SOURCE` first, its checkpoint
+    (else the failed solve's), the failed solve on `recovered_from`, and the taken record of
+    `found`'s parameters and start values."""
+    recovered = replace(
+        recovered,
+        branch_provenance=recovered_provenance(
+            failed.branch_provenance,
+            recovered.branch_provenance,
+            first_initializer_source=REVISION_CONTINUATION_SOURCE,
+        ),
+        checkpoint=(
+            recovered.checkpoint if recovered.checkpoint is not None else failed.checkpoint
+        ),
+    )
+    return replace(
+        step,
+        outcome=recovered.outcome,
+        iterations=step.iterations + recovered.iterations,
+        message=recovered.message,
+        detail=recovered,
+        eo_recovery="taken",
+        recovered_from=failed,
+        revision_continuation=RevisionContinuationRecord(
+            "taken", None, found.parameter_ids, found.start_values
+        ),
+    )
 
 
 def _sequential_restart(
@@ -1243,6 +1238,31 @@ def _sequential_restart(
         ),
         spent,
         state,
+    )
+
+
+def _recovery_taken(step: StepResult, failed: RegionResult, recovered: RegionResult) -> StepResult:
+    """`step` once edge 3's recovery solve has run (`eo_recovery = "taken"`): the recovery's
+    outcome, message and result, its iterations added to the step's, its branch provenance after
+    the failed solve's (`recovered_provenance`), its checkpoint (else the failed solve's), and the
+    failed solve on `recovered_from`."""
+    recovered = replace(
+        recovered,
+        branch_provenance=recovered_provenance(
+            failed.branch_provenance, recovered.branch_provenance
+        ),
+        # The step's checkpoint is the recovery's last accepted level (T04 §4.4: `partial` with
+        # its λ below 1); the failed solve's own stays on `recovered_from`.
+        checkpoint=recovered.checkpoint if recovered.checkpoint is not None else failed.checkpoint,
+    )
+    return replace(
+        step,
+        outcome=recovered.outcome,
+        iterations=step.iterations + recovered.iterations,
+        message=recovered.message,
+        detail=recovered,
+        eo_recovery="taken",
+        recovered_from=failed,
     )
 
 

@@ -36,7 +36,7 @@ ROOT: Final = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
 
 FIXTURE_DIR: Final = ROOT / "tests" / "fixtures" / "schemas"
-#: Each fixture directory's schema reference, as `application.types.schema_errors` takes it.
+#: Each fixture directory's schema reference, as `schema_check.schema_errors` takes it.
 REFERENCES: Final[Mapping[str, str]] = {
     "model_variant": "model-variant.schema.json",
     "experiment_request": "experiment.schema.json#/$defs/request",
@@ -199,7 +199,7 @@ def variant_documents() -> dict[str, Any]:
 
 def body_documents() -> dict[str, Any]:
     from openflowsheet.adapters import variants
-    from openflowsheet.application.types import JobRequest
+    from openflowsheet.application.job_requests import JobRequest
     from openflowsheet.models.c1 import COMPONENTS
 
     standin = variants.registered_variant("standin-x025-v1")
@@ -234,12 +234,12 @@ def coupling_documents() -> dict[str, Any]:
     from openflowsheet.adapters.experiments.runner import ExperimentRunner
     from openflowsheet.adapters.experiments.store import ExperimentStore
     from openflowsheet.application.coupled_run import LiveExperiments
-    from openflowsheet.application.policies import T06_REVISION_V2
     from openflowsheet.application.revision_run import Route, run_revision_session, select_route
     from openflowsheet.compiled import EvaluationContext
+    from openflowsheet.orchestrator.policies import T06_REVISION_V2
     from openflowsheet.run.bundle import read_artifact
     from openflowsheet.thermo.pr_c1 import PrC1Provider
-    from openflowsheet.verify.certificate import CheckPolicy
+    from openflowsheet.verify.verdict import CheckPolicy
 
     document = json.loads(
         (ROOT / "benchmarks" / "m02" / "c1-loop-standin.json").read_text(encoding="utf-8")

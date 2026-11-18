@@ -39,7 +39,21 @@ from test_t06_w4_registry import BY_ID, CONSTRUCTED, REGISTRY
 
 import benchmarks.t06.ensemble as ensemble
 from openflowsheet.application.binding import Binding, bind_revision_or_reason
-from openflowsheet.application.policies import (
+from openflowsheet.application.revision_replay import reproduce_bundle
+from openflowsheet.application.revision_run import (
+    NoRoute,
+    Route,
+    RunUnsupportedError,
+    legacy_plan,
+    run_revision_session,
+    select_route,
+    solve_route,
+)
+from openflowsheet.application.run_session import run_session
+from openflowsheet.canonical import canonical_json
+from openflowsheet.numerics.solve_record import RecyclePolicy, SolvePolicy
+from openflowsheet.orchestrator.execution import ExecutionPlan
+from openflowsheet.orchestrator.policies import (
     APPLICATION_POLICIES,
     DEFAULT_POLICY_ID,
     ROUTE_DEFAULT_POLICY,
@@ -47,24 +61,10 @@ from openflowsheet.application.policies import (
     T06_REVISION_V2,
     resolve_policy,
 )
-from openflowsheet.application.revision_run import (
-    NoRoute,
-    Route,
-    RunUnsupportedError,
-    legacy_plan,
-    reproduce_bundle,
-    run_revision_session,
-    select_route,
-    solve_route,
-)
-from openflowsheet.canonical import canonical_json
-from openflowsheet.orchestrator.execution import ExecutionPlan
-from openflowsheet.orchestrator.trace import RecyclePolicy, SolvePolicy
 from openflowsheet.run.bundle import read_artifact, read_manifest, verify_bundle, write_bundle
 from openflowsheet.run.identity import execution_plan_r0, floats_in, r0_projection, r0_sha256
 from openflowsheet.run.manifest import policy_sha256
-from openflowsheet.run.session import run_session
-from openflowsheet.verify.certificate import CheckPolicy
+from openflowsheet.verify.verdict import CheckPolicy
 
 sys.path.insert(0, str(REPO_ROOT / "scripts"))
 
@@ -269,7 +269,7 @@ def test_legacy_plan_documents_equal_the_pre_move_benchmarks() -> None:
 
 def test_the_new_r0_branches_are_inert_for_a_tear_bundle(tmp_path: Path) -> None:
     """No bundle before T07 has `execution-plan.json` or `solve-path.json` (K05 unchanged)."""
-    from openflowsheet.application.revision_run import registered_case, registered_flowsheet
+    from openflowsheet.application.revision_replay import registered_case, registered_flowsheet
 
     case = registered_case("SYN-001-nominal")
     assert case is not None
@@ -691,7 +691,7 @@ def test_a_k05_bundle_reruns_only_as_a_registered_case(tmp_path: Path) -> None:
     """§12.3: no `revision.json` — the tear path's shape. A registered run id reruns through the
     registered-case construction (`MATCH`); any other is `rerun_unsupported(no_revision_document)`,
     never compared with nominal's rerun."""
-    from openflowsheet.application.revision_run import registered_case, registered_flowsheet
+    from openflowsheet.application.revision_replay import registered_case, registered_flowsheet
 
     case = registered_case("SYN-001-high-recycle")
     assert case is not None

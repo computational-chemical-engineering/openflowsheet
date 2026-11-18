@@ -19,7 +19,8 @@ from test_e01_a_contributor import (
 
 from openflowsheet.assessment.cost.contributor import CostContributor
 from openflowsheet.assessment.cost.derived import DerivedContributor
-from openflowsheet.assessment.program import AssessmentProgram, Linearization
+from openflowsheet.assessment.linearization import Linearization
+from openflowsheet.assessment.program import AssessmentProgram
 from openflowsheet.assessment.spec import load_assessment
 from openflowsheet.assessment.views import view_of
 

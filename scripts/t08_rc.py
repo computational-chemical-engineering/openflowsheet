@@ -527,7 +527,7 @@ def step_lock_check(arguments: argparse.Namespace) -> int:
     import numpy  # noqa: PLC0415
 
     import openflowsheet  # noqa: PLC0415
-    from openflowsheet.application.revision_run import reproduce_bundle  # noqa: PLC0415
+    from openflowsheet.application.revision_replay import reproduce_bundle  # noqa: PLC0415
     from openflowsheet.run.bundle import read_manifest  # noqa: PLC0415
     from openflowsheet.run.manifest import environment  # noqa: PLC0415
     from openflowsheet.run.replay import decide_mode  # noqa: PLC0415
@@ -812,17 +812,17 @@ def step_bundles_write(arguments: argparse.Namespace) -> int:
     from t07_corpus import CORPUS  # noqa: PLC0415
 
     from openflowsheet.application.cli import main as cli  # noqa: PLC0415
-    from openflowsheet.application.policies import (  # noqa: PLC0415
-        DEFAULT_POLICY_ID,
-        resolve_policy,
-    )
     from openflowsheet.application.revision_run import (  # noqa: PLC0415
         Route,
         run_revision_session,
         select_route,
     )
+    from openflowsheet.orchestrator.policies import (  # noqa: PLC0415
+        DEFAULT_POLICY_ID,
+        resolve_policy,
+    )
     from openflowsheet.run.bundle import read_manifest  # noqa: PLC0415
-    from openflowsheet.verify.certificate import CheckPolicy  # noqa: PLC0415
+    from openflowsheet.verify.verdict import CheckPolicy  # noqa: PLC0415
 
     os.environ.update({name: "1" for name in THREAD_VARIABLES})
     out: Path = arguments.out
@@ -938,7 +938,8 @@ def c1_move_heat_rate(documents: dict[str, Any]) -> str:
     """C1: the first `heat_rate` variable of `solution-state.json` (in `variable_ids` order) moved
     by 10× its v2 tolerance; the state's digest, and the certificate's target and digest-form id,
     follow it (the bundle's own consistency check, `run.bundle`)."""
-    from openflowsheet.application.revision_run import bind_route, declared_kinds  # noqa: PLC0415
+    from openflowsheet.application.revision_replay import declared_kinds  # noqa: PLC0415
+    from openflowsheet.application.revision_run import bind_route  # noqa: PLC0415
     from openflowsheet.run import compare, solution_state  # noqa: PLC0415
 
     route = bind_route(documents["solve-path.json"]["solve_path"], documents["revision.json"])
@@ -995,7 +996,7 @@ def run_control(control: str, source: Path, scratch: Path) -> dict[str, Any]:
     """One A14 control: mutate and re-seal a copy of `source`, check its integrity first, then
     replay it against a fresh rerun. Passes iff the verdict is A14's, for a `MISMATCH` the
     expected path is named, and `bitwise_floats` is what `A14_BITWISE_FLOATS` fixes, if anything."""
-    from openflowsheet.application.revision_run import reproduce_bundle  # noqa: PLC0415
+    from openflowsheet.application.revision_replay import reproduce_bundle  # noqa: PLC0415
     from openflowsheet.run.bundle import read_manifest, verify_bundle  # noqa: PLC0415
 
     target = scratch / "controls" / control
@@ -1028,7 +1029,7 @@ def run_control(control: str, source: Path, scratch: Path) -> dict[str, Any]:
 
 
 def step_bundles_replay(arguments: argparse.Namespace) -> int:
-    from openflowsheet.application.revision_run import reproduce_bundle  # noqa: PLC0415
+    from openflowsheet.application.revision_replay import reproduce_bundle  # noqa: PLC0415
     from openflowsheet.run.bundle import read_manifest  # noqa: PLC0415
     from openflowsheet.run.compare import CURRENT_POLICY_ID  # noqa: PLC0415
 

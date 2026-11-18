@@ -266,10 +266,10 @@ def test_v3_routes_are_the_v2_routes_with_their_record_sources() -> None:
 
 
 def test_the_0_1_1_reading_carries_the_syn001_record_source_under_v3() -> None:
-    from openflowsheet.application import revision_binding  # noqa: PLC0415
+    from openflowsheet.application import model_builders  # noqa: PLC0415
 
     binder = ModuleType("binder_0_1_1")
-    binder.MODEL_BUILDERS = revision_binding.MODEL_BUILDERS  # type: ignore[attr-defined]
+    binder.MODEL_BUILDERS = model_builders.MODEL_BUILDERS  # type: ignore[attr-defined]
     (route,) = snapshot.build_snapshot("0.1.1", binder, registration_version=3)["routes"]
     assert route["record_source"] == "benchmarks/syn001/components.yaml"
     (old,) = snapshot.build_snapshot("0.1.1", binder)["routes"]

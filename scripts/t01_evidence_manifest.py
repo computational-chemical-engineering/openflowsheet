@@ -1255,12 +1255,12 @@ def _bundle_projection() -> dict[str, Any]:
     import os
     import tempfile
 
+    from openflowsheet.application.run_session import run_session
     from openflowsheet.compiled import EvaluationContext
     from openflowsheet.models.syn001.flowsheet import Syn001Flowsheet
     from openflowsheet.run.bundle import read_artifact
     from openflowsheet.run.identity import floats_in, r0_projection
     from openflowsheet.run.manifest import THREAD_VARIABLES
-    from openflowsheet.run.session import run_session
     from openflowsheet.thermo.syn001 import Syn001Provider
 
     for variable in THREAD_VARIABLES:

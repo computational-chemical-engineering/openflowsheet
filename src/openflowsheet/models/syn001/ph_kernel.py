@@ -52,7 +52,7 @@ from __future__ import annotations
 import math
 from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Final, Literal
+from typing import Final, Literal, NamedTuple
 
 from openflowsheet.compiled import EvaluationContext, PhaseSignature
 from openflowsheet.models import UnitEvaluation
@@ -63,13 +63,10 @@ from openflowsheet.models.syn001 import (
     REFERENCE_CONVENTION,
     gamma_phi,
 )
+from openflowsheet.models.syn001.band_types import BandError, BandTemperature
 from openflowsheet.models.syn001.bisection import Root, bracketed_root
 from openflowsheet.models.syn001.equilibrium_form import form_of
-from openflowsheet.models.syn001.saturation_band import (
-    BandError,
-    band_split,
-    band_temperature,
-)
+from openflowsheet.models.syn001.saturation_band import band_split, band_temperature
 from openflowsheet.models.syn001.tp_state import (
     TPState,
     enthalpy_flow,
@@ -320,7 +317,8 @@ def ph_state(
 
     `flows` must be flowing; a dormant stream is the caller's (spec §4.7). `max_evaluations` is
     the registered 200 and exists as a keyword only so the budget failure can be exercised; it
-    bounds step 4's evaluations of `f` and, separately, step 2's `T_sat` bisection.
+    bounds step 4's evaluations of `f` and, separately, step 2's `T_sat` bisection. Once step 4's
+    bracket has closed, `_closed_bracket_state` gives the state (step 5 and the band route).
     """
     n = tuple(float(value) for value in flows)
     if sum(n) == 0.0:
@@ -408,36 +406,53 @@ def ph_state(
                 f"the bracket did not close in {max_evaluations} evaluations",
                 root.evaluations,
             )
-        # Step 5 (T05b §5.3): the candidate is the bracket's better end with the provider's TP
-        # split there (step 6); it is accepted on the closure's rows.
-        rows = _closure_rows(provider, n, root.payload, root.point, pressure, target, context)
-        if rows.accepted:
-            return PHState(
-                status="ok",
-                temperature=root.point,
-                split=root.payload,
-                route="bracket",
-                evaluations=root.evaluations,
-                residual=root.value,
-            )
-        attempts: list[tuple[str, float, _Rows]] = [("bracket", root.point, rows)]
-        evaluations = root.evaluations
-        # T05b §5.1 step 4: the band route, only with at least two flowing components.
-        if len(flowing) >= 2:
-            band = _band_route(provider, n, pressure, target, context)
-            if isinstance(band, PHState):
-                return band
-            if band is not None:
-                answer, band_rows = band
-                if band_rows.accepted:
-                    return answer
-                assert answer.temperature is not None
-                attempts.append(("band", answer.temperature, band_rows))
-                evaluations += answer.evaluations
-        # T05b §5.1 step 5: no route's answer passed.
-        return _ill_conditioned(attempts, evaluations)
+        return _closed_bracket_state(provider, n, pressure, target, context, root, flowing)
     except _InnerFailureError as failure:
         return failure.state
+
+
+def _closed_bracket_state(
+    provider: PropertyProvider,
+    n: tuple[float, ...],
+    pressure: float,
+    target: float,
+    context: EvaluationContext,
+    root: Root[TPState],
+    flowing: Sequence[int],
+) -> PHState:
+    """`ph_state` after step 4's bracket closed at `root`: the bracket's state when the closure's
+    rows accept it (step 5, T05b §5.3); else, with at least two `flowing` components, the band
+    route's typed failure or accepted answer (T05b §5.1 step 4); else `_ill_conditioned` over the
+    routes tried (T05b §5.1 step 5). `_closure_rows` and `_band_route` raise `_InnerFailureError`
+    on a provider failure; `ph_state`'s handler turns it into its state."""
+    # Step 5 (T05b §5.3): the candidate is the bracket's better end with the provider's TP
+    # split there (step 6); it is accepted on the closure's rows.
+    rows = _closure_rows(provider, n, root.payload, root.point, pressure, target, context)
+    if rows.accepted:
+        return PHState(
+            status="ok",
+            temperature=root.point,
+            split=root.payload,
+            route="bracket",
+            evaluations=root.evaluations,
+            residual=root.value,
+        )
+    attempts: list[tuple[str, float, _Rows]] = [("bracket", root.point, rows)]
+    evaluations = root.evaluations
+    # T05b §5.1 step 4: the band route, only with at least two flowing components.
+    if len(flowing) >= 2:
+        band = _band_route(provider, n, pressure, target, context)
+        if isinstance(band, PHState):
+            return band
+        if band is not None:
+            answer, band_rows = band
+            if band_rows.accepted:
+                return answer
+            assert answer.temperature is not None
+            attempts.append(("band", answer.temperature, band_rows))
+            evaluations += answer.evaluations
+    # T05b §5.1 step 5: no route's answer passed.
+    return _ill_conditioned(attempts, evaluations)
 
 
 # --------------------------------------------------------------- the band route (T05b §5.2)
@@ -788,28 +803,14 @@ def _region_route(
 ) -> PHState:
     """§4.5 with two or more flowing components. The region is decided by enthalpy, exactly
     (S10-C spec §2: T1, T2 make `T_b`, `T_d` unique, T3 makes `Hdot_TP(T)` strictly increasing),
-    so one route is solved and there is no fallback between routes."""
+    so one route is solved and there is no fallback between routes. `_region_ends` gives the
+    band ends and step 1's enthalpies at the domain's ends, or a band end's typed failure;
+    `_band_end_enthalpies` gives step 3's enthalpies at the band ends."""
     t_min, t_max = domain
-    try:
-        bubble = gamma_phi.band_point(provider, n, pressure, 0.0, context)
-        dew = gamma_phi.band_point(provider, n, pressure, 1.0, context)
-    except BandError as error:
-        return _surfaced(error.status, "band end", error.message, 0)
-
-    # Step 1: the TP enthalpy at each domain end, from the band ends' positions; the provider's TP
-    # flash only at an end inside the band.
-    if bubble.position != "below":
-        h_lo = _phase_enthalpy(provider, n, t_min, pressure, "LIQUID", context)
-    elif dew.position == "below":
-        h_lo = _phase_enthalpy(provider, n, t_min, pressure, "VAPOR", context)
-    else:
-        h_lo = _tp_enthalpy(provider, n, t_min, pressure, context)
-    if dew.position != "above":
-        h_hi = _phase_enthalpy(provider, n, t_max, pressure, "VAPOR", context)
-    elif bubble.position == "above":
-        h_hi = _phase_enthalpy(provider, n, t_max, pressure, "LIQUID", context)
-    else:
-        h_hi = _tp_enthalpy(provider, n, t_max, pressure, context)
+    ends = _region_ends(provider, n, pressure, domain, context)
+    if isinstance(ends, PHState):
+        return ends
+    bubble, dew, h_lo, h_hi = ends
 
     # Step 2: today's codes and message forms.
     f_lo, f_hi = h_lo - target, h_hi - target
@@ -829,14 +830,7 @@ def _region_route(
         )
 
     # Step 3: the region.
-    if bubble.temperature is not None:
-        h_b = _phase_enthalpy(provider, n, bubble.temperature, pressure, "LIQUID", context)
-    else:
-        h_b = h_hi if bubble.position == "above" else -math.inf
-    if dew.temperature is not None:
-        h_d = _phase_enthalpy(provider, n, dew.temperature, pressure, "VAPOR", context)
-    else:
-        h_d = h_lo if dew.position == "below" else math.inf
+    h_b, h_d = _band_end_enthalpies(provider, n, pressure, ends, context)
     if target <= h_b:
         upper = t_max if bubble.temperature is None else bubble.temperature
         return _single_phase_route(
@@ -863,6 +857,72 @@ def _region_route(
         return answer
     assert answer.temperature is not None
     return _ill_conditioned([("band", answer.temperature, rows)], answer.evaluations)
+
+
+class _RegionEnds(NamedTuple):
+    """`_region_route`'s band ends, `bubble` (β = 0) and `dew` (β = 1), and step 1's TP
+    enthalpies `h_lo`, `h_hi` at the domain's ends `T_min`, `T_max`."""
+
+    bubble: BandTemperature
+    dew: BandTemperature
+    h_lo: float
+    h_hi: float
+
+
+def _region_ends(
+    provider: PropertyProvider,
+    n: tuple[float, ...],
+    pressure: float,
+    domain: tuple[float, float],
+    context: EvaluationContext,
+) -> _RegionEnds | PHState:
+    """`_region_route`'s band ends, `gamma_phi.band_point` at β = 0 and β = 1, then step 1 on
+    `domain`. A `BandError` from either band end is returned as its typed failure (`_surfaced`,
+    "band end"), before any enthalpy is evaluated."""
+    t_min, t_max = domain
+    try:
+        bubble = gamma_phi.band_point(provider, n, pressure, 0.0, context)
+        dew = gamma_phi.band_point(provider, n, pressure, 1.0, context)
+    except BandError as error:
+        return _surfaced(error.status, "band end", error.message, 0)
+
+    # Step 1: the TP enthalpy at each domain end, from the band ends' positions; the provider's TP
+    # flash only at an end inside the band.
+    if bubble.position != "below":
+        h_lo = _phase_enthalpy(provider, n, t_min, pressure, "LIQUID", context)
+    elif dew.position == "below":
+        h_lo = _phase_enthalpy(provider, n, t_min, pressure, "VAPOR", context)
+    else:
+        h_lo = _tp_enthalpy(provider, n, t_min, pressure, context)
+    if dew.position != "above":
+        h_hi = _phase_enthalpy(provider, n, t_max, pressure, "VAPOR", context)
+    elif bubble.position == "above":
+        h_hi = _phase_enthalpy(provider, n, t_max, pressure, "LIQUID", context)
+    else:
+        h_hi = _tp_enthalpy(provider, n, t_max, pressure, context)
+    return _RegionEnds(bubble, dew, h_lo, h_hi)
+
+
+def _band_end_enthalpies(
+    provider: PropertyProvider,
+    n: tuple[float, ...],
+    pressure: float,
+    ends: _RegionEnds,
+    context: EvaluationContext,
+) -> tuple[float, float]:
+    """Step 3's enthalpies at the band ends, `(h_b, h_d)`: the liquid's at the bubble temperature
+    and the vapour's at the dew temperature. A bubble point outside the domain gives `h_hi` above
+    it and `−inf` below it; a dew point outside gives `h_lo` below it and `+inf` above it."""
+    bubble, dew, h_lo, h_hi = ends
+    if bubble.temperature is not None:
+        h_b = _phase_enthalpy(provider, n, bubble.temperature, pressure, "LIQUID", context)
+    else:
+        h_b = h_hi if bubble.position == "above" else -math.inf
+    if dew.temperature is not None:
+        h_d = _phase_enthalpy(provider, n, dew.temperature, pressure, "VAPOR", context)
+    else:
+        h_d = h_lo if dew.position == "below" else math.inf
+    return h_b, h_d
 
 
 def _single_phase_route(

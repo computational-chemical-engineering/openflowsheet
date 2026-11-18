@@ -22,12 +22,32 @@ memory).
    the last sibling that calls it. (S17 review 3; review 5: 1fe361e5, fixed in 140ce084; review 8: 02ce7453, fixed
    in ac9d221c)
 6. A helper transforms its input purely; the caller owns the edits to its side tables. (review 2: e81fd1a2, 81203d61)
+   Exception: an algorithm's own working state (Tarjan's `stack` and `on_stack` in `graph/blocks.py::_pop_component`)
+   may be edited by a helper whose name says so and which keeps the state's invariant (`on_stack == set(stack)`).
+   (S19 R-W3-G6-1: 623bd9a3)
+   Run objects (S19 G1 recipe `closures-to-class`, RC1 to RC7; R-W3-G1N-1, Q1): where evaluations that can raise
+   separate a loop's phases, the trace as written is part of the result. A method of the per-call run object may
+   therefore write the run's own state and the event sinks the base wrote at that place (`trace.record`, observer
+   calls), each site moved once, never forwarded, and named in its docstring. Rule 6 holds otherwise: what can be
+   computed before anything is written is a pure function, and a table the function returns or was handed is
+   written by the caller. A builder with no evaluation between its writes (`column_rows.declared_rows`) qualifies
+   only under the working-state exception above: product tables are fields written solely by its append methods,
+   with a field table first.
+   Projection member writers (S19 R-W3-G5-6, 11d21d5a `run/identity.py::_add_warm_start_r0`): a helper may write one
+   member of a projection dict its caller is building, named `_add_<member>_r0` and documented as writing into
+   `projection`, when the member's nested writes are part of the identity literals (the gate counts the literal
+   multiset) and both pure forms fail a gate: pure helpers with the writes in the caller raised the caller's debt
+   (job 111, `r0_projection` cognitive 17 -> 23), and one helper building the member in a local dropped two
+   `"warm_start"` subscript literals (b74823ba). It writes only that member, and nothing in the caller reads it in between.
 7. A refusal ladder or check-and-return block is extracted whole and returns `T | Unbound` (or `Unbound | None` for a
    clause helper, citing its clause id and listed in the caller's docstring). (review 2: ee653caa, 0fd8079b; review
    3: 0843250a, 26b58c96) The step that extracts a caller's first clause or phase helper also lists it in the
    caller's docstring, writing that docstring if the caller has none (review 7: b92b807b). `_<clause>_refusal` names a check returning `Unbound | None`; a function that always builds an
-   Unbound takes another suffix. (review 5: 140ce084; `_basis_refusal` predates the rule and is imported by
+   Unbound takes another suffix. (review 5: 140ce084; `basis_refusal` (public since I-13, R-1045) predates the rule and is imported by
    tests/test_s11_routing.py)
+   Clause helpers returning `Failure | None` may be chained `return a() or b() or ...` when the failure type is a
+   frozen dataclass without `__bool__`/`__len__` and a test pins its truthiness (S19 R-W3-G2-1, R-W3-G2-3:
+   `CascadeFailure`, tests/test_c8_duty_only_warning.py); otherwise one `if (f := ...) is not None` per clause.
 8. A name covers every effect of the body, including effects of the methods it calls, and never uses a term the
    code's own comment sets apart (a declared default is not a start). A helper whose bool means "the caller goes on"
    is named for the state it guarantees, not for the caller's next action. (review 2: 81203d61, 0fd8079b; fixed in
@@ -83,7 +103,10 @@ generator with the recursion left in the walker, only if the walk never mutates 
 materialised to a list (2b2d079f); sibling builders for spec-named record kinds may share one parameter list, never
 merged into one builder with a kind flag (0b1537e6); per-family admission helpers return `T | Error` and the caller
 issues the single refusal, when only an isinstance check and a return sit between the call and the refusal and the
-refusal function is NoReturn (420b299e).
+refusal function is NoReturn (420b299e); a producer loop feeding a closure that keeps side tables becomes a lazy generator of
+the produced items, the closure called by the caller per item, only if the generator reads none of the state the
+closure writes and the generator is consumed by one `for` loop, never materialised (S19 eccacaab, review
+R-W3-G6-2).
 
 ## Restructure (module splits, D18)
 

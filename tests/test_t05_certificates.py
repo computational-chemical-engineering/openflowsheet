@@ -24,14 +24,11 @@ from test_t05_w12_table import _GENERIC, TABLE_IDS, worst_ratios
 
 from openflowsheet.compile.casadi_backend import compile_problem
 from openflowsheet.thermo.syn001 import Syn001Provider
-from openflowsheet.verify.certificate import (
-    BoundDeclaration,
-    SolutionCertificate,
-    verify_revision,
-)
+from openflowsheet.verify.certificate import BoundDeclaration, verify_revision
 from openflowsheet.verify.checks import DERIVATIVE_TOLERANCE, FD_RELATIVE_STEP, qualification
 from openflowsheet.verify.regularity import target_jacobian
-from openflowsheet.verify.table import REACTION_DATUM_NOTE
+from openflowsheet.verify.table_kit import REACTION_DATUM_NOTE
+from openflowsheet.verify.verdict import SolutionCertificate
 
 #: Spec §11.5 / W0.6: one tenth of the smallest scaled allowance of §11.5.
 SOLUTION_ERROR_BOUND = 1e-8

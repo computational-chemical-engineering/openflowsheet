@@ -60,22 +60,22 @@ from t05b_support import (
     solve_from_v2,
 )
 
-from openflowsheet.orchestrator import region as region_module
-from openflowsheet.orchestrator.region import (
-    DormancyForm,
-    LiftedSplit,
-    RegionResult,
-    _contract_kernel,
+from openflowsheet.models.lifted import DormancyForm, LiftedSplit
+from openflowsheet.numerics.solve_record import Trace
+from openflowsheet.orchestrator import region_problem
+from openflowsheet.orchestrator.region_phase import _contract_kernel
+from openflowsheet.orchestrator.region_problem import (
     _items,
     _opening_order,
     _rederive,
     _settle,
     _trigger_dormant,
 )
+from openflowsheet.orchestrator.region_result import RegionResult
 from openflowsheet.orchestrator.revision import initial_state, instances_of
 from openflowsheet.orchestrator.splits import closure_types, dormancy_forms, lifted_splits
-from openflowsheet.orchestrator.trace import Trace
-from openflowsheet.verify.certificate import SolutionCertificate, verify_revision
+from openflowsheet.verify.certificate import verify_revision
+from openflowsheet.verify.verdict import SolutionCertificate
 
 FEED = (1.0, 1.0, 1.0)
 DORMANT = (0.0, 0.0, 0.0)
@@ -686,7 +686,7 @@ def _never_settles(entry: Any, *args: Any) -> str:
 def test_b31g_attempt_0_that_never_settles_is_typed(monkeypatch: pytest.MonkeyPatch) -> None:
     """(g) With the re-derivation stubbed to report a change at every entry, attempt 0's opening
     closes `ACTIVE_SET_CYCLING` with `opening_not_settled(<first entry>)`, no exception."""
-    monkeypatch.setattr(region_module, "_rederive", _never_settles)
+    monkeypatch.setattr(region_problem, "_rederive", _never_settles)
     document, start = CASES["CH-UP"]()
     result = solve_from_v2(bind(document), start)
     assert result.outcome == "ACTIVE_SET_CYCLING"
@@ -698,9 +698,9 @@ def test_b31g_a_restart_that_never_settles_is_typed(monkeypatch: pytest.MonkeyPa
     """(g) The same at a restart opening: attempt 0 opens and closes as in CH-UP, and the restart's
     fixed point, stubbed never to settle, closes the region `ACTIVE_SET_CYCLING`,
     `opening_not_settled(U-PHF)`, with attempt 0 kept on the record."""
-    real = region_module._rederive
+    real = region_problem._rederive
     at_restart = {"on": False}
-    settled = region_module._LiftedOps._settled
+    settled = region_problem._LiftedOps._settled
 
     def rederive(entry: Any, *args: Any) -> str:
         return _never_settles(entry) if at_restart["on"] else real(entry, *args)
@@ -712,8 +712,8 @@ def test_b31g_a_restart_that_never_settles_is_typed(monkeypatch: pytest.MonkeyPa
         finally:
             at_restart["on"] = False
 
-    monkeypatch.setattr(region_module, "_rederive", rederive)
-    monkeypatch.setattr(region_module._LiftedOps, "_settled", restart)
+    monkeypatch.setattr(region_problem, "_rederive", rederive)
+    monkeypatch.setattr(region_problem._LiftedOps, "_settled", restart)
     document, start = CASES["CH-UP"]()
     result = solve_from_v2(bind(document), start)
     assert result.outcome == "ACTIVE_SET_CYCLING"

@@ -23,9 +23,12 @@ from test_s06_column_wo1 import J_CASES, U_SETS
 import openflowsheet.models.syn001.cascade_solve as cascade_solve_module
 import openflowsheet.models.syn001.column_blocks as blocks_module
 from openflowsheet.compile.reference import row_values
+from openflowsheet.models.lifted_tolerance import KIND_TOLERANCE
 from openflowsheet.models.syn001 import ENERGY_TOLERANCE
-from openflowsheet.models.syn001.cascade import (
-    CascadeFailure,
+from openflowsheet.models.syn001.band_types import BandError, BandTemperature
+from openflowsheet.models.syn001.cascade_failure import CascadeFailure
+from openflowsheet.models.syn001.cascade_solve import DECLARATION_CONTEXT
+from openflowsheet.models.syn001.cascade_spec import (
     InletState,
     SideFeed,
     liquid_id,
@@ -34,8 +37,7 @@ from openflowsheet.models.syn001.cascade import (
     vapor_id,
     vapor_total_id,
 )
-from openflowsheet.models.syn001.cascade_solve import DECLARATION_CONTEXT
-from openflowsheet.models.syn001.column import ColumnSpec, EndSpecification, profile_initial
+from openflowsheet.models.syn001.column import profile_initial
 from openflowsheet.models.syn001.column_blocks import (
     BLOCK_ENDPOINT_ID,
     BlockEndpoint,
@@ -44,18 +46,10 @@ from openflowsheet.models.syn001.column_blocks import (
     candidates,
     sources,
 )
-from openflowsheet.models.syn001.column_solve import (
-    REENTRY_OUTCOMES,
-    BubblePointEndpoint,
-    ColumnSolution,
-    bubble_point_endpoint,
-    compile_column,
-    lifted_splits,
-    slots,
-    solve_column,
-)
-from openflowsheet.models.syn001.saturation_band import BandError, BandTemperature
-from openflowsheet.orchestrator.region import KIND_TOLERANCE
+from openflowsheet.models.syn001.column_compile import compile_column, lifted_splits, slots
+from openflowsheet.models.syn001.column_endpoint import BubblePointEndpoint, bubble_point_endpoint
+from openflowsheet.models.syn001.column_solve import REENTRY_OUTCOMES, ColumnSolution, solve_column
+from openflowsheet.models.syn001.column_spec import ColumnSpec, EndSpecification
 from openflowsheet.orchestrator.roots import branch_found
 from openflowsheet.thermo.syn001 import C_P
 

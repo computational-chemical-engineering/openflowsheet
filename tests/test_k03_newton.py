@@ -22,7 +22,7 @@ import scipy.sparse as sp
 
 from openflowsheet.numerics.newton import Evaluation, Problem, solve_newton
 from openflowsheet.numerics.scaling import Scaling
-from openflowsheet.orchestrator.trace import SolvePolicy, Trace
+from openflowsheet.numerics.solve_record import SolvePolicy, Trace
 
 POLICY = SolvePolicy(policy_id="K03-synthetic-seeds", residual_tolerances={}, scales={})
 

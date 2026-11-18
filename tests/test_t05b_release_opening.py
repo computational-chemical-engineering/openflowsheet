@@ -34,8 +34,9 @@ from test_t04_edge3 import case_document, case_policy, plan_run, region_step
 
 from openflowsheet.numerics.newton import Evaluation, Problem, solve_newton
 from openflowsheet.numerics.scaling import Scaling
+from openflowsheet.numerics.solve_record import SolvePolicy, Trace
 from openflowsheet.orchestrator import region as region_module
-from openflowsheet.orchestrator.trace import SolvePolicy, Trace
+from openflowsheet.orchestrator import region_attempts
 
 POLICY = SolvePolicy(policy_id="K03-synthetic-seeds", residual_tolerances={}, scales={})
 IDS = ("a", "b", "c")
@@ -102,7 +103,7 @@ def test_b35b_the_corrector_passes_its_attempts_opening() -> None:
     calls: list[tuple[bool, Any]] = []
     openings: list[npt.NDArray[np.float64]] = []
     inside = {"depth": 0}
-    real_homotopy, real_solve = region_module._homotopy, region_module.solve_newton
+    real_homotopy, real_solve = region_attempts._homotopy, region_module.solve_newton
 
     def homotopy(**kwargs: Any) -> Any:
         openings.append(np.array(kwargs["x0"], dtype=np.float64, copy=True))
@@ -119,6 +120,7 @@ def test_b35b_the_corrector_passes_its_attempts_opening() -> None:
     with pytest.MonkeyPatch.context() as patch:
         patch.setattr(region_module, "_homotopy", homotopy)
         patch.setattr(region_module, "solve_newton", solve)
+        patch.setattr(region_attempts, "solve_newton", solve)
         run = plan_run(case_document("HOM-01"), case_policy("HOM-01"))
     step = region_step(run.result)
     assert (step.eo_recovery, step.outcome) == ("taken", "CONVERGED")

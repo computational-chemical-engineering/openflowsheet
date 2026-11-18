@@ -37,21 +37,15 @@ from t07_support import (
     ref,
 )
 
+from openflowsheet.application.job_records import Job, JobEvent
+from openflowsheet.application.job_requests import JobRequest, ReproduceBody, SolveBody
 from openflowsheet.application.jobs.model import (
     EVENT_KINDS,
     JOB_OPERATIONS,
     JobOperation,
     check_lifecycle,
 )
-from openflowsheet.application.types import (
-    DocumentSchemaError,
-    Job,
-    JobEvent,
-    JobRequest,
-    ReproduceBody,
-    SolveBody,
-    schema_errors,
-)
+from openflowsheet.schema_check import DocumentSchemaError, schema_errors
 
 JOB_REQUEST = "job.schema.json#/$defs/job_request"
 FIXTURES = REPO_ROOT / "tests" / "fixtures" / "schemas"

@@ -279,94 +279,33 @@ def solve_newton(
         opened = np.array([normalize_zero(float(value)) for value in opening], dtype=np.float64)
         if opened.shape != x.shape:
             raise ValueError(f"opening has {opened.size} components, the start {x.size}")
-    tolerance = problem.tolerance_vector()
-    lower = problem.lower_bound_vector()
-    running = counters or Counters()
-    merits: list[float] = []
-    # ADR 0018: the column tolerances, the attempt's last factorization, the iterate a refinement
-    # started from, and the last chord solve's record (D5: it goes on the closing event).
-    column_tolerance = (
-        None
-        if refinement is None
-        else np.array([refinement.get(name, np.inf) for name in problem.variable_ids])
+    run = _NewtonRun(
+        problem=problem,
+        policy=policy,
+        trace=trace,
+        signature=signature,
+        attempt=attempt,
+        observer=observer,
+        compare_empty=compare_empty,
+        opened=opened,
+        tolerance=problem.tolerance_vector(),
+        lower=problem.lower_bound_vector(),
+        x=x,
+        running=counters or Counters(),
+        merits=[],
+        column_tolerance=(
+            None
+            if refinement is None
+            else np.array([refinement.get(name, np.inf) for name in problem.variable_ids])
+        ),
     )
-    kept: KeptFactorization | None = None
-    refining: _Converged | None = None
-    chord_linear: LinearRecord | None = None
 
-    def digest(vector: npt.NDArray[np.float64]) -> str:
-        return state_sha256(vector, problem.variable_ids)
-
-    def evaluate(vector: npt.NDArray[np.float64]) -> tuple[Evaluation, Counters]:
-        nonlocal running
-        running = running.plus(residual_calls=1)
-        return problem.residual(vector), running
-
-    def finish(
-        outcome: SolveOutcome,
-        values: tuple[float, ...],
-        *,
-        message: str = "",
-        budget: str | None = None,
-        linear_reason: str | None = None,
-        iterations: int,
-        accepted_any: bool,
-        blocked_by: tuple[str, ...] = (),
-        linear: LinearRecord | None = None,
-    ) -> NewtonResult:
-        nonlocal x, refining
-        if refining is not None:
-            # ADR 0018 D4: whatever would have ended the attempt inside its refinement abandons
-            # the refinement; the attempt returns `x_k`, `CONVERGED`, with its counters as spent.
-            start, refining = refining, None
-            x = start.x
-            ended = f"{outcome}({budget})" if budget else outcome
-            return finish(
-                "CONVERGED",
-                start.values,
-                message=start.message(f"abandoned: {ended}"),
-                iterations=start.iteration,
-                accepted_any=start.accepted_any,
-                linear=chord_linear,
-            )
-        array = np.asarray(values, dtype=np.float64)
-        infinity = float(np.max(np.abs(array))) if array.size else 0.0
-        merit = problem.scaling.merit(values, problem.row_ids)
-        trace.record(
-            kind="attempt_closed",
-            attempt=attempt,
-            iteration=iterations,
-            signature=signature,
-            state_sha256=digest(x),
-            residual_inf_unscaled=infinity,
-            merit=merit,
-            counters=running,
-            outcome=outcome,
-            message=message,
-            linear=linear,
-        )
-        return NewtonResult(
-            outcome=outcome,
-            x=x,
-            residual=values,
-            residual_inf=infinity,
-            merit=merit,
-            iterations=iterations,
-            counters=running,
-            converged=outcome == "CONVERGED",
-            budget=budget,
-            linear_reason=linear_reason,
-            message=message,
-            accepted_any=accepted_any,
-            blocked_by=blocked_by,
-        )
-
-    evaluation, running = evaluate(x)
+    evaluation, run.running = run.evaluate(run.x)
     if evaluation.status != "ok" or evaluation.values is None:
         outcome: SolveOutcome = (
             "EVALUATION_ERROR" if evaluation.status == "error" else "LINE_SEARCH_FAILED"
         )
-        return finish(
+        return run.finish(
             outcome,
             tuple(np.full(len(problem.row_ids), np.nan)),
             message=f"the initial point could not be evaluated: {evaluation.status}: "
@@ -374,135 +313,55 @@ def solve_newton(
             iterations=0,
             accepted_any=False,
         )
-    values = evaluation.values
-    accepted_any = False
+    run.values = evaluation.values
+    run.accepted_any = False
 
     for iteration in range(policy.max_iterations_per_attempt + 1):
-        array = np.asarray(values, dtype=np.float64)
+        array = np.asarray(run.values, dtype=np.float64)
         infinity = float(np.max(np.abs(array))) if array.size else 0.0
-        merit = problem.scaling.merit(values, problem.row_ids)
+        merit = problem.scaling.merit(run.values, problem.row_ids)
 
         # §5.2: the convergence test, on the unscaled residual, before any Jacobian.
-        if bool(np.all(np.abs(array) <= tolerance)):
-            if column_tolerance is None or kept is None or iteration == 0:
-                return finish("CONVERGED", values, iterations=iteration, accepted_any=accepted_any)
-            # ADR 0018 D2: the chord correction at this iterate with the last factorization.
-            try:
-                ratio, column, chord_linear = _chord(problem, kept, values, column_tolerance)
-            except LinearSolveFailedError as failure:
-                # ADR 0004 D3's test failed on the back-solve: there is no estimate. Before a
-                # refinement the iterate is returned as `newton` returns it, and after one the
-                # attempt returns `x_k` (D4); either way the closing message says so.
-                if refining is None:
-                    return finish(
-                        "CONVERGED",
-                        values,
-                        message=f"terminal_refinement(abandoned: chord {failure.reason})",
-                        iterations=iteration,
-                        accepted_any=accepted_any,
-                    )
-                start, refining = refining, None
-                x = start.x
-                return finish(
-                    "CONVERGED",
-                    start.values,
-                    message=start.message(f"reverted: chord {failure.reason}"),
-                    iterations=start.iteration,
-                    accepted_any=start.accepted_any,
-                    linear=chord_linear,
-                )
-            if refining is not None:
-                # D4: the refined iterate is kept iff its own chord, with `x_k`'s factorization,
-                # is within the kind tolerance on every column.
-                start, refining = refining, None
-                if ratio <= 1.0:
-                    return finish(
-                        "CONVERGED",
-                        values,
-                        message=start.message(f"accepted: chord {ratio!r} at {column}"),
-                        iterations=iteration,
-                        accepted_any=accepted_any,
-                        linear=chord_linear,
-                    )
-                x = start.x
-                return finish(
-                    "CONVERGED",
-                    start.values,
-                    message=start.message(f"reverted: chord {ratio!r} at {column}"),
-                    iterations=start.iteration,
-                    accepted_any=start.accepted_any,
-                    linear=chord_linear,
-                )
-            if not ratio > 1.0:
-                return finish(
-                    "CONVERGED",
-                    values,
-                    iterations=iteration,
-                    accepted_any=accepted_any,
-                    linear=chord_linear,
-                )
-            converged = _Converged(x.copy(), values, iteration, accepted_any, ratio, column)
-            if iteration == policy.max_iterations_per_attempt:
-                # D2: never at the iteration budget; the estimate is disclosed all the same.
-                return finish(
-                    "CONVERGED",
-                    values,
-                    message=converged.message("abandoned: BUDGET_EXHAUSTED(newton_iterations)"),
-                    iterations=iteration,
-                    accepted_any=accepted_any,
-                    linear=chord_linear,
-                )
-            # D3: one more iteration of this loop from `x_k`, unchanged.
-            refining = converged
-        elif refining is not None:
-            # D4: the refined iterate does not pass every row; the attempt returns `x_k`.
-            start, refining = refining, None
-            x = start.x
-            return finish(
-                "CONVERGED",
-                start.values,
-                message=start.message("reverted: rows unconverged"),
-                iterations=start.iteration,
-                accepted_any=start.accepted_any,
-                linear=chord_linear,
-            )
+        closed = run._closing_at_convergence(iteration, array)
+        if closed is not None:
+            return closed
 
         if iteration == policy.max_iterations_per_attempt:
-            return finish(
+            return run.finish(
                 "BUDGET_EXHAUSTED",
-                values,
+                run.values,
                 budget="newton_iterations",
                 message=f"{iteration} accepted iterations without convergence",
                 iterations=iteration,
-                accepted_any=accepted_any,
+                accepted_any=run.accepted_any,
             )
 
         # §5.7: stagnation, on accepted steps only, before spending another factorization.
-        if len(merits) >= policy.stagnation_window:
-            window = merits[-policy.stagnation_window :]
+        if len(run.merits) >= policy.stagnation_window:
+            window = run.merits[-policy.stagnation_window :]
             if all(ratio > policy.stagnation_ratio for ratio in window):
-                return finish(
+                return run.finish(
                     "STAGNATION",
-                    values,
+                    run.values,
                     message=(
                         f"{policy.stagnation_window} consecutive merit ratios above "
                         f"{policy.stagnation_ratio} with the residual unconverged; a small step "
                         "with a large residual is stagnation, not convergence"
                     ),
                     iterations=iteration,
-                    accepted_any=accepted_any,
+                    accepted_any=run.accepted_any,
                 )
 
-        running = running.plus(jacobian_calls=1)
+        run.running = run.running.plus(jacobian_calls=1)
         try:
-            unscaled = sp.csc_matrix(problem.jacobian(x))
+            unscaled = sp.csc_matrix(problem.jacobian(run.x))
         except JacobianUnavailableError as unavailable:
-            return finish(
+            return run.finish(
                 "EVALUATION_ERROR",
-                values,
+                run.values,
                 message=f"the Jacobian could not be evaluated: {unavailable}",
                 iterations=iteration,
-                accepted_any=accepted_any,
+                accepted_any=run.accepted_any,
             )
         scaled = _scale_matrix(unscaled, problem)
         trace.record(
@@ -510,25 +369,25 @@ def solve_newton(
             attempt=attempt,
             iteration=iteration,
             signature=signature,
-            state_sha256=digest(x),
+            state_sha256=run.digest(run.x),
             residual_inf_unscaled=infinity,
             merit=merit,
-            counters=running,
+            counters=run.running,
             inner_consistency=(
                 problem.jacobian_diagnostics() if problem.jacobian_diagnostics else None
             ),
         )
         for inner in problem.jacobian_evidence() if problem.jacobian_evidence else ():
-            running = running.plus(factorizations=1)
+            run.running = run.running.plus(factorizations=1)
             trace.record(
                 kind="linear_solve",
                 attempt=attempt,
                 iteration=iteration,
                 signature=signature,
-                state_sha256=digest(x),
+                state_sha256=run.digest(run.x),
                 residual_inf_unscaled=infinity,
                 merit=merit,
-                counters=running,
+                counters=run.running,
                 linear=LinearRecord(
                     residual_normalized=inner.residual_normalized,
                     u_diag_min_abs=inner.min_abs_u_diagonal,
@@ -539,43 +398,43 @@ def solve_newton(
                 message=f"assembling the derivative: {inner.dimension}x{inner.dimension}",
             )
 
-        scaled_residual = problem.scaling.scale_residual(values, problem.row_ids)
-        running = running.plus(factorizations=1)
+        scaled_residual = problem.scaling.scale_residual(run.values, problem.row_ids)
+        run.running = run.running.plus(factorizations=1)
         try:
-            if column_tolerance is None:
+            if run.column_tolerance is None:
                 step_scaled, record = solve_linear(scaled, -scaled_residual)
             else:
-                step_scaled, record, kept = solve_linear_kept(scaled, -scaled_residual)
+                step_scaled, record, run.kept = solve_linear_kept(scaled, -scaled_residual)
         except LinearSolveFailedError as failure:
             trace.record(
                 kind="linear_solve",
                 attempt=attempt,
                 iteration=iteration,
                 signature=signature,
-                state_sha256=digest(x),
+                state_sha256=run.digest(run.x),
                 residual_inf_unscaled=infinity,
                 merit=merit,
-                counters=running,
+                counters=run.running,
                 outcome="LINEAR_SOLVE_FAILED",
                 message=str(failure),
             )
-            return finish(
+            return run.finish(
                 "LINEAR_SOLVE_FAILED",
-                values,
+                run.values,
                 linear_reason=failure.reason,
                 message=str(failure),
                 iterations=iteration,
-                accepted_any=accepted_any,
+                accepted_any=run.accepted_any,
             )
         trace.record(
             kind="linear_solve",
             attempt=attempt,
             iteration=iteration,
             signature=signature,
-            state_sha256=digest(x),
+            state_sha256=run.digest(run.x),
             residual_inf_unscaled=infinity,
             merit=merit,
-            counters=running,
+            counters=run.running,
             linear=LinearRecord(
                 residual_normalized=record.residual_normalized,
                 u_diag_min_abs=record.min_abs_u_diagonal,
@@ -587,30 +446,32 @@ def solve_newton(
 
         direction = problem.scaling.unscale_state(step_scaled, problem.variable_ids)
         direction, alpha_max, landing, released = _bound_aware_step(
-            x, direction, lower, opening=opened, residual=values, jacobian=unscaled
+            run.x, direction, run.lower, opening=run.opened, residual=run.values, jacobian=unscaled
         )
         if released:
             # The step taken is the exact Newton step on the released set; so is its record.
             step_scaled = step_scaled.copy()
             step_scaled[list(released)] = 0.0
         if alpha_max == 0.0:
-            return finish(
+            return run.finish(
                 "BOUND_BLOCKED",
-                values,
+                run.values,
                 blocked_by=tuple(problem.variable_ids[index] for index in landing),
                 message=(
                     "a component sits on its lower bound and the Newton direction points out of "
                     "the feasible set; no trial can be taken along it"
                 ),
                 iterations=iteration,
-                accepted_any=accepted_any,
+                accepted_any=run.accepted_any,
             )
 
         accepted = False
         for halving in range(policy.step_halvings_max + 1):
             alpha = alpha_max / (2.0**halving)
-            trial = _trial_point(x, direction, alpha, lower, landing if halving == 0 else ())
-            trial_evaluation, running = evaluate(trial)
+            trial = _trial_point(
+                run.x, direction, alpha, run.lower, landing if halving == 0 else ()
+            )
+            trial_evaluation, run.running = run.evaluate(trial)
             step_inf = float(np.max(np.abs(step_scaled))) * alpha
 
             reason: RejectionReason | None = None
@@ -621,21 +482,21 @@ def solve_newton(
                     attempt=attempt,
                     iteration=iteration,
                     signature=signature,
-                    state_sha256=digest(trial),
+                    state_sha256=run.digest(trial),
                     residual_inf_unscaled=float("nan"),
                     merit=float("nan"),
-                    counters=running,
+                    counters=run.running,
                     alpha=alpha,
                     step_inf_scaled=step_inf,
                     trial_status="rejected",
                     message=trial_evaluation.message,
                 )
-                return finish(
+                return run.finish(
                     "EVALUATION_ERROR",
-                    values,
+                    run.values,
                     message=trial_evaluation.message,
                     iterations=iteration,
-                    accepted_any=accepted_any,
+                    accepted_any=run.accepted_any,
                 )
             if trial_evaluation.status != "ok" or trial_evaluation.values is None:
                 reason = "invalid_trial"
@@ -655,7 +516,7 @@ def solve_newton(
                     attempt=attempt,
                     iteration=iteration,
                     signature=trial_evaluation.signature or signature,
-                    state_sha256=digest(trial),
+                    state_sha256=run.digest(trial),
                     residual_inf_unscaled=(
                         float(np.max(np.abs(trial_values))) if trial_values else float("nan")
                     ),
@@ -664,7 +525,7 @@ def solve_newton(
                         if trial_values
                         else float("nan")
                     ),
-                    counters=running,
+                    counters=run.running,
                     alpha=alpha,
                     step_inf_scaled=step_inf,
                     trial_status="rejected",
@@ -677,55 +538,281 @@ def solve_newton(
 
             assert trial_values is not None
             next_merit = problem.scaling.merit(trial_values, problem.row_ids)
-            merits.append(next_merit / merit if merit > 0.0 else 0.0)
-            x = trial
-            values = trial_values
+            run.merits.append(next_merit / merit if merit > 0.0 else 0.0)
+            run.x = trial
+            run.values = trial_values
             accepted = True
-            accepted_any = True
+            run.accepted_any = True
             trace.record(
                 kind="step_accepted",
                 attempt=attempt,
                 iteration=iteration,
                 signature=signature,
-                state_sha256=digest(x),
-                residual_inf_unscaled=float(np.max(np.abs(np.asarray(values)))),
+                state_sha256=run.digest(run.x),
+                residual_inf_unscaled=float(np.max(np.abs(np.asarray(run.values)))),
                 merit=next_merit,
-                counters=running,
+                counters=run.running,
                 alpha=alpha,
                 step_inf_scaled=step_inf,
                 trial_status="accepted",
             )
             if halving == 0:
-                _notify_landing(observer, iteration, landing, x)
+                _notify_landing(observer, iteration, landing, run.x)
             break
 
         if observer is not None:
             requested = observer.should_close(iteration)
             if requested is not None:
-                return finish(
+                return run.finish(
                     requested,
-                    values,
+                    run.values,
                     message=(
                         "the attempt controller closed the attempt: a persistent phase wall, "
                         "not an overshoot (§9.3)"
                     ),
                     iterations=iteration + (1 if accepted else 0),
-                    accepted_any=accepted_any,
+                    accepted_any=run.accepted_any,
                 )
 
         if not accepted:
-            return finish(
+            return run.finish(
                 "LINE_SEARCH_FAILED",
-                values,
+                run.values,
                 message=(
                     f"no trial accepted in {policy.step_halvings_max + 1} steps from "
                     f"alpha = {alpha_max}"
                 ),
                 iterations=iteration,
-                accepted_any=accepted_any,
+                accepted_any=run.accepted_any,
             )
 
     raise AssertionError("unreachable: the iteration budget is checked inside the loop")
+
+
+@dataclass
+class _NewtonRun:
+    """One call of `solve_newton`: its fixed frame and the state carried between iterations.
+
+    The state: the iterate `x`, its residual `values`, whether a step was accepted, the counters,
+    and the merit ratios of the accepted steps (§5.7). ADR 0018: the column tolerances, the
+    attempt's last factorization (`kept`), the iterate a refinement started from (`refining`), and
+    the last chord solve's record (`chord_linear`; D5: it goes on the closing event).
+    """
+
+    problem: Problem
+    policy: SolvePolicy
+    trace: Trace
+    signature: AttemptSignature
+    attempt: int
+    observer: IterationObserver | None
+    compare_empty: bool
+    opened: npt.NDArray[np.float64]
+    tolerance: npt.NDArray[np.float64]
+    lower: npt.NDArray[np.float64]
+    column_tolerance: npt.NDArray[np.float64] | None
+    x: npt.NDArray[np.float64]
+    running: Counters
+    merits: list[float]
+    kept: KeptFactorization | None = None
+    refining: _Converged | None = None
+    chord_linear: LinearRecord | None = None
+    values: tuple[float, ...] = field(init=False)
+    accepted_any: bool = field(init=False)
+
+    def evaluate(self, vector: npt.NDArray[np.float64]) -> tuple[Evaluation, Counters]:
+        """Count one residual call on `running`, then evaluate `vector`; returns both.
+
+        The count comes first, so it stands when `problem.residual` raises.
+        """
+        self.running = self.running.plus(residual_calls=1)
+        return self.problem.residual(vector), self.running
+
+    def finish(
+        self,
+        outcome: SolveOutcome,
+        values: tuple[float, ...],
+        *,
+        message: str = "",
+        budget: str | None = None,
+        linear_reason: str | None = None,
+        iterations: int,
+        accepted_any: bool,
+        blocked_by: tuple[str, ...] = (),
+        linear: LinearRecord | None = None,
+    ) -> NewtonResult:
+        """Write `attempt_closed` on `trace` and return the attempt's result at `x`.
+
+        Inside a refinement (ADR 0018 D4) it first restores `x` to the iterate the refinement
+        started from and clears `refining`, and closes `CONVERGED` there instead.
+        """
+        if self.refining is not None:
+            # ADR 0018 D4: whatever would have ended the attempt inside its refinement abandons
+            # the refinement; the attempt returns `x_k`, `CONVERGED`, with its counters as spent.
+            start, self.refining = self.refining, None
+            self.x = start.x
+            ended = f"{outcome}({budget})" if budget else outcome
+            return self.finish(
+                "CONVERGED",
+                start.values,
+                message=start.message(f"abandoned: {ended}"),
+                iterations=start.iteration,
+                accepted_any=start.accepted_any,
+                linear=self.chord_linear,
+            )
+        array = np.asarray(values, dtype=np.float64)
+        infinity = float(np.max(np.abs(array))) if array.size else 0.0
+        merit = self.problem.scaling.merit(values, self.problem.row_ids)
+        self.trace.record(
+            kind="attempt_closed",
+            attempt=self.attempt,
+            iteration=iterations,
+            signature=self.signature,
+            state_sha256=self.digest(self.x),
+            residual_inf_unscaled=infinity,
+            merit=merit,
+            counters=self.running,
+            outcome=outcome,
+            message=message,
+            linear=linear,
+        )
+        return NewtonResult(
+            outcome=outcome,
+            x=self.x,
+            residual=values,
+            residual_inf=infinity,
+            merit=merit,
+            iterations=iterations,
+            counters=self.running,
+            converged=outcome == "CONVERGED",
+            budget=budget,
+            linear_reason=linear_reason,
+            message=message,
+            accepted_any=accepted_any,
+            blocked_by=blocked_by,
+        )
+
+    def digest(self, vector: npt.NDArray[np.float64]) -> str:
+        return state_sha256(vector, self.problem.variable_ids)
+
+    def _closing_at_convergence(
+        self, iteration: int, array: npt.NDArray[np.float64]
+    ) -> NewtonResult | None:
+        """§5.2's convergence test on the unscaled residual `array` of `values`; ADR 0018's exits.
+
+        Returns the closing result, or None when the loop goes on: rows unconverged outside a
+        refinement, or D3's one more iteration from `_refinement`. Converged at iteration 0, or
+        without column tolerances or a kept factorization, it closes `CONVERGED`; converged
+        otherwise, it returns `_refinement`'s answer. Unconverged inside a refinement (D4), it
+        restores `x` to `x_k`, clears `refining` and closes `CONVERGED` there. Every close writes
+        `attempt_closed` through `finish`.
+        """
+        if bool(np.all(np.abs(array) <= self.tolerance)):
+            if self.column_tolerance is None or self.kept is None or iteration == 0:
+                return self.finish(
+                    "CONVERGED", self.values, iterations=iteration, accepted_any=self.accepted_any
+                )
+            return self._refinement(iteration, self.kept, self.column_tolerance)
+        if self.refining is not None:
+            # D4: the refined iterate does not pass every row; the attempt returns `x_k`.
+            start, self.refining = self.refining, None
+            self.x = start.x
+            return self.finish(
+                "CONVERGED",
+                start.values,
+                message=start.message("reverted: rows unconverged"),
+                iterations=start.iteration,
+                accepted_any=start.accepted_any,
+                linear=self.chord_linear,
+            )
+        return None
+
+    def _refinement(
+        self, iteration: int, kept: KeptFactorization, column_tolerance: npt.NDArray[np.float64]
+    ) -> NewtonResult | None:
+        """ADR 0018 D2 to D4 at a converged iterate `x`, with the fields `kept` and
+        `column_tolerance` (the caller has checked both are set).
+
+        The chord correction with the last factorization (D2) sets `chord_linear` when the
+        back-solve succeeds. Inside a refinement it judges the refined iterate (D4): it keeps it
+        or restores `x` to `x_k`, clears `refining`, and closes `CONVERGED`. Outside one a failed
+        back-solve closes `CONVERGED` ("abandoned: chord"); else it closes `CONVERGED` when the
+        chord is within the kind tolerance or at the iteration budget, and otherwise opens the
+        refinement (D3: sets `refining`) and returns None for one more iteration. Every close
+        writes `attempt_closed` through `finish`.
+        """
+        # ADR 0018 D2: the chord correction at this iterate with the last factorization.
+        try:
+            ratio, column, self.chord_linear = _chord(
+                self.problem, kept, self.values, column_tolerance
+            )
+        except LinearSolveFailedError as failure:
+            # ADR 0004 D3's test failed on the back-solve: there is no estimate. Before a
+            # refinement the iterate is returned as `newton` returns it, and after one the
+            # attempt returns `x_k` (D4); either way the closing message says so.
+            if self.refining is None:
+                return self.finish(
+                    "CONVERGED",
+                    self.values,
+                    message=f"terminal_refinement(abandoned: chord {failure.reason})",
+                    iterations=iteration,
+                    accepted_any=self.accepted_any,
+                )
+            start, self.refining = self.refining, None
+            self.x = start.x
+            return self.finish(
+                "CONVERGED",
+                start.values,
+                message=start.message(f"reverted: chord {failure.reason}"),
+                iterations=start.iteration,
+                accepted_any=start.accepted_any,
+                linear=self.chord_linear,
+            )
+        if self.refining is not None:
+            # D4: the refined iterate is kept iff its own chord, with `x_k`'s factorization,
+            # is within the kind tolerance on every column.
+            start, self.refining = self.refining, None
+            if ratio <= 1.0:
+                return self.finish(
+                    "CONVERGED",
+                    self.values,
+                    message=start.message(f"accepted: chord {ratio!r} at {column}"),
+                    iterations=iteration,
+                    accepted_any=self.accepted_any,
+                    linear=self.chord_linear,
+                )
+            self.x = start.x
+            return self.finish(
+                "CONVERGED",
+                start.values,
+                message=start.message(f"reverted: chord {ratio!r} at {column}"),
+                iterations=start.iteration,
+                accepted_any=start.accepted_any,
+                linear=self.chord_linear,
+            )
+        if not ratio > 1.0:
+            return self.finish(
+                "CONVERGED",
+                self.values,
+                iterations=iteration,
+                accepted_any=self.accepted_any,
+                linear=self.chord_linear,
+            )
+        converged = _Converged(
+            self.x.copy(), self.values, iteration, self.accepted_any, ratio, column
+        )
+        if iteration == self.policy.max_iterations_per_attempt:
+            # D2: never at the iteration budget; the estimate is disclosed all the same.
+            return self.finish(
+                "CONVERGED",
+                self.values,
+                message=converged.message("abandoned: BUDGET_EXHAUSTED(newton_iterations)"),
+                iterations=iteration,
+                accepted_any=self.accepted_any,
+                linear=self.chord_linear,
+            )
+        # D3: one more iteration of this loop from `x_k`, unchanged.
+        self.refining = converged
+        return None
 
 
 def _chord(

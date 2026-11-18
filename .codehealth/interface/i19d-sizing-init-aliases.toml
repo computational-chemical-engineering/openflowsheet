@@ -1,0 +1,64 @@
+# ADR 0076 I-19, step d (W4 run 20, brief S19-W4-20, inventory item (a)): assessment.sizing's
+# package __init__ stops re-exporting the 35 names S19 A8 aliased outside its __all__.
+# `codehealth gate --mode interface` reads this plan from the plan commit.
+id = "i19d-sizing-init-aliases"
+approved_by = "Frank Peters, 2026-11-14, ADR 0076 accepted (Decision Desk ofs-adr0076-accept)"
+reason = """ADR 0076 I-19: every re-export added by S17 or S19 goes; ADR 0076 I-8 exempts only the \
+`__all__` names of assessment.sizing that sizing.core defines (15, kept). S19 A8 (the sizing split) \
+made the package __init__'s remaining imports `X as X` aliases outside __all__: typing Any, Final, \
+Literal, Protocol; collections.abc Sequence; dataclasses dataclass, field, replace; \
+assessment.blocks VOLUME_OUTPUT, SaturatedVolumetricFlowBlock, VolumetricFlowBlock, \
+identity_volume, saturated_volume_available, volume_available, volumetric_block_id; \
+assessment.defaults default; assessment.program ContributionPlan, Limitation, OutputDef, Symbols, \
+Theta; assessment.quantities SIZE_QUANTITIES; assessment.regimes AdmissibilityRow, RegimeEntry, \
+select_dormancy; assessment.views UnitRef; compile.spec Algebra, Expr, PropertyBlock; models \
+flow_id, pressure_id, temperature_id; models.thermal.state liquid_id, vapor_id; thermo Phase. The \
+__init__ reads none of them and no file in src, tests, scripts, benchmarks or examples takes any \
+of them through assessment.sizing (inventory docs/briefs/S19-I19-inventory.md, i19_scan), so the \
+35 imports go. cce-code-health counts an __init__.py's imports as public API, so each is listed \
+under `removed`. __all__ is unchanged. The registry-hashed files (assessment/cost, lca) import only \
+the exempt sizing.core names through the package. Expected codehealth arch --depth 4 (measured at \
+this base and on the step applied to it): base 0 violations / 0 cycles / 0 cycle edges, after 0 / \
+0 / 0 (imports 4136 -> 4101). Layer config: none."""
+removed = [
+    "src/openflowsheet/assessment/sizing/__init__.py:AdmissibilityRow",
+    "src/openflowsheet/assessment/sizing/__init__.py:Algebra",
+    "src/openflowsheet/assessment/sizing/__init__.py:Any",
+    "src/openflowsheet/assessment/sizing/__init__.py:ContributionPlan",
+    "src/openflowsheet/assessment/sizing/__init__.py:dataclass",
+    "src/openflowsheet/assessment/sizing/__init__.py:default",
+    "src/openflowsheet/assessment/sizing/__init__.py:Expr",
+    "src/openflowsheet/assessment/sizing/__init__.py:field",
+    "src/openflowsheet/assessment/sizing/__init__.py:Final",
+    "src/openflowsheet/assessment/sizing/__init__.py:flow_id",
+    "src/openflowsheet/assessment/sizing/__init__.py:identity_volume",
+    "src/openflowsheet/assessment/sizing/__init__.py:Limitation",
+    "src/openflowsheet/assessment/sizing/__init__.py:liquid_id",
+    "src/openflowsheet/assessment/sizing/__init__.py:Literal",
+    "src/openflowsheet/assessment/sizing/__init__.py:OutputDef",
+    "src/openflowsheet/assessment/sizing/__init__.py:Phase",
+    "src/openflowsheet/assessment/sizing/__init__.py:pressure_id",
+    "src/openflowsheet/assessment/sizing/__init__.py:PropertyBlock",
+    "src/openflowsheet/assessment/sizing/__init__.py:Protocol",
+    "src/openflowsheet/assessment/sizing/__init__.py:RegimeEntry",
+    "src/openflowsheet/assessment/sizing/__init__.py:replace",
+    "src/openflowsheet/assessment/sizing/__init__.py:saturated_volume_available",
+    "src/openflowsheet/assessment/sizing/__init__.py:SaturatedVolumetricFlowBlock",
+    "src/openflowsheet/assessment/sizing/__init__.py:select_dormancy",
+    "src/openflowsheet/assessment/sizing/__init__.py:Sequence",
+    "src/openflowsheet/assessment/sizing/__init__.py:SIZE_QUANTITIES",
+    "src/openflowsheet/assessment/sizing/__init__.py:Symbols",
+    "src/openflowsheet/assessment/sizing/__init__.py:temperature_id",
+    "src/openflowsheet/assessment/sizing/__init__.py:Theta",
+    "src/openflowsheet/assessment/sizing/__init__.py:UnitRef",
+    "src/openflowsheet/assessment/sizing/__init__.py:vapor_id",
+    "src/openflowsheet/assessment/sizing/__init__.py:volume_available",
+    "src/openflowsheet/assessment/sizing/__init__.py:VOLUME_OUTPUT",
+    "src/openflowsheet/assessment/sizing/__init__.py:volumetric_block_id",
+    "src/openflowsheet/assessment/sizing/__init__.py:VolumetricFlowBlock",
+]
+renamed = {}
+changed = []
+added = []
+new_files = []
+callers = []

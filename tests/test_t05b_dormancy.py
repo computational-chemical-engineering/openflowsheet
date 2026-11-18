@@ -57,12 +57,14 @@ from test_t05_w11_cases import case_document
 
 from openflowsheet.application.revision_binding import RevisionBinding
 from openflowsheet.graph.trace import trace_declaration
+from openflowsheet.models.lifted import DormancyForm
 from openflowsheet.models.revision_flowsheet import parse_revision
 from openflowsheet.models.syn001 import TEMPERATURE_TOLERANCE
+from openflowsheet.numerics.solve_record import SolvePolicy, Trace
 from openflowsheet.orchestrator.execution import ExecutionPlan, declaration_identity
 from openflowsheet.orchestrator.executor import PlanResult, execute_plan
 from openflowsheet.orchestrator.recovery import eo_recovery_due, solver_outcomes
-from openflowsheet.orchestrator.region import DormancyForm, RegionResult
+from openflowsheet.orchestrator.region_result import RegionResult
 from openflowsheet.orchestrator.revision import instances_of, plan_revision
 from openflowsheet.orchestrator.splits import (
     DORMANCY_RULES,
@@ -72,9 +74,9 @@ from openflowsheet.orchestrator.splits import (
     lifted_splits,
     zero_flow_forms,
 )
-from openflowsheet.orchestrator.trace import SolvePolicy, Trace
 from openflowsheet.verify import CheckResult
-from openflowsheet.verify.certificate import SolutionCertificate, verify_revision
+from openflowsheet.verify.certificate import verify_revision
+from openflowsheet.verify.verdict import SolutionCertificate
 from openflowsheet.verify.zero_flow import zero_flow_splits
 
 CASES: dict[str, Any] = REF["dormant_non_lifted_cases"]
@@ -713,10 +715,10 @@ def test_b27_without_the_outlet_reset_attempt_1_cannot_step(
     """The negative control for F7: with §7.8 (ii)'s reset disabled, attempt 1 opens with
     `S4 = 0`, so `HX-energy-hot`'s `S4.T` coefficient is zero, the `S4.T` column empty
     (`ref…opening_without_outlet_reset`: rank 33 of 34), and Newton fails its first solve."""
-    from openflowsheet.orchestrator import region as region_module
+    from openflowsheet.orchestrator import region_problem
 
     # §7.8 (ii)'s reset is `_reset_outlet` inside the opening's fixed point (W9.3, Q-S9).
-    monkeypatch.setattr(region_module, "_reset_outlet", lambda state, form: False)
+    monkeypatch.setattr(region_problem, "_reset_outlet", lambda state, form: False)
     result = solve_from_v2(bind(dz12()), registered_state(DZ12["start"]))
     assert [a.solver_outcome for a in result.attempts] == ["CONVERGED", "LINEAR_SOLVE_FAILED"]
     assert DZ12["attempt1"]["opening_without_outlet_reset"]["rank"] == 33
@@ -726,9 +728,9 @@ def test_b27_the_negative_control_is_not_due_for_edge_3(monkeypatch: pytest.Monk
     """S02 §19 item 1 (R-550, review M1): the negative control's solve ends `LINEAR_SOLVE_FAILED`
     after two attempts, the first `CONVERGED` — a restart that a physical correction, not a
     globalization failure, opened. ADR 0044 D1 as narrowed does not send it to edge 3."""
-    from openflowsheet.orchestrator import region as region_module
+    from openflowsheet.orchestrator import region_problem
 
-    monkeypatch.setattr(region_module, "_reset_outlet", lambda state, form: False)
+    monkeypatch.setattr(region_problem, "_reset_outlet", lambda state, form: False)
     result = solve_from_v2(bind(dz12()), registered_state(DZ12["start"]))
     attempts = solver_outcomes(result.attempts)
     assert result.outcome == "LINEAR_SOLVE_FAILED"
@@ -911,7 +913,7 @@ def test_b20d_a_screen_reported_switch_names_the_item() -> None:
     a wall at a toggled item is named `<U>.<port>:<from>-><to>`, the absent side by the outlet's
     declared phase: `phase_wall(…, U-PUMP.outlet:LIQUID->ZERO_FLOW)`."""
     from openflowsheet.orchestrator.phase_contract import _changes
-    from openflowsheet.orchestrator.region import _attempt_screen
+    from openflowsheet.orchestrator.region_screen import _attempt_screen
 
     binding = bind(dz6())
     flowsheet = binding.flowsheet

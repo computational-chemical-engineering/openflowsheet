@@ -1,0 +1,29 @@
+# ADR 0076 I-12b (W4 run 14, brief S19-W4-14): store.py's module-level records and errors above
+# ProjectStore move to the new module application/store_records.py; ProjectStore and _create_tables stay.
+# `codehealth gate --mode interface` reads this plan from the plan commit.
+id = "i12b-store-records"
+approved_by = "Frank Peters, 2026-11-14, ADR 0076 accepted (Decision Desk ofs-adr0076-accept)"
+reason = """ADR 0076 I-12b (S17 D2): the module level of store.py above ProjectStore moves verbatim to the \
+new module application/store_records.py, directly below store: StoreError, coded_store_error, \
+IdempotencyKeyReusedError, ActiveJobLimitError, ArtifactTableSink, policy_file_bytes, AuditEntry, \
+ArtifactRow, LedgerRow. ProjectStore and _create_tables stay; the class is not split. Pure move: no \
+signature change, no re-export; store.py imports the names its own code reads by a plain \
+'from openflowsheet.application.store_records import ...' (not a re-export under no_implicit_reexport). \
+ArtifactTableSink's ProjectStore annotation is imported under TYPE_CHECKING (store_records sits below \
+store). DECISION (ADR helper rule over the item's name list): the private helpers _blob and _load and \
+the constant EVIDENCE_OPERATIONS stay in store.py with their only user, ProjectStore; nothing moved reads \
+them, so moving them would make two new public names for no importer. No string literal is removed. \
+store.py 1062 -> 966 NLOC, store_records.py 114 NLOC (codehealth scan). Callers follow, import lines \
+only: src application/authz.py, cli.py (8 lazy imports of StoreError), jobs/executor.py, jobs/runner.py, \
+local.py; the tests and script below. No module-attribute patch targets a moved name through store \
+(patch_noop 265 total, 0 flagged, at this base and on the step); no test, script or living doc reads \
+store.py's moved code by path or names a moved name through application.store. Expected codehealth arch \
+--depth 4 (measured at this base and on the step): 0 / 0 / 0 -> 0 / 0 / 0 (imports 4001 -> 4012, files \
+316 -> 317). Layer config after the step (separate commit): application-layers gains \
+openflowsheet.application.store_records directly below openflowsheet.application.store."""
+removed = []
+renamed = {"src/openflowsheet/application/store.py:StoreError" = "src/openflowsheet/application/store_records.py:StoreError", "src/openflowsheet/application/store.py:coded_store_error" = "src/openflowsheet/application/store_records.py:coded_store_error", "src/openflowsheet/application/store.py:IdempotencyKeyReusedError" = "src/openflowsheet/application/store_records.py:IdempotencyKeyReusedError", "src/openflowsheet/application/store.py:ActiveJobLimitError" = "src/openflowsheet/application/store_records.py:ActiveJobLimitError", "src/openflowsheet/application/store.py:ArtifactTableSink" = "src/openflowsheet/application/store_records.py:ArtifactTableSink", "src/openflowsheet/application/store.py:policy_file_bytes" = "src/openflowsheet/application/store_records.py:policy_file_bytes", "src/openflowsheet/application/store.py:AuditEntry" = "src/openflowsheet/application/store_records.py:AuditEntry", "src/openflowsheet/application/store.py:ArtifactRow" = "src/openflowsheet/application/store_records.py:ArtifactRow", "src/openflowsheet/application/store.py:LedgerRow" = "src/openflowsheet/application/store_records.py:LedgerRow"}
+changed = []
+added = []
+new_files = ["src/openflowsheet/application/store_records.py"]
+callers = ["tests/t07_process_support.py", "tests/t07_store_support.py", "tests/test_m02_experiments.py", "tests/test_m04_iterations.py", "tests/test_msg_corpus.py", "tests/test_t07_store.py", "tests/test_x04_ambient.py", "tests/test_x04_messages.py", "scripts/m04_prewarm.py"]

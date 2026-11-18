@@ -66,12 +66,14 @@ import test_t04_registry as registry_fixtures  # noqa: E402
 
 import openflowsheet.orchestrator.executor as executor_module  # noqa: E402
 import openflowsheet.orchestrator.region as region_module  # noqa: E402
+import openflowsheet.orchestrator.region_attempts as region_attempts  # noqa: E402
+import openflowsheet.orchestrator.region_problem as region_problem  # noqa: E402
 import openflowsheet.orchestrator.tear as tear_module  # noqa: E402
 import openflowsheet.verify.certificate as certificate_module  # noqa: E402
 from openflowsheet.canonical import file_sha256  # noqa: E402
 from openflowsheet.compile.casadi_backend import compile_problem  # noqa: E402
 from openflowsheet.compiled import EvaluationContext  # noqa: E402
-from openflowsheet.orchestrator.trace import (  # noqa: E402
+from openflowsheet.numerics.solve_record import (  # noqa: E402
     GlobalizationPolicy,
     HomotopyPolicy,
     PtcPolicy,
@@ -1338,10 +1340,10 @@ def _a08(runs: Runs, ref: Mapping[str, Any], t02: Mapping[str, Any]) -> tuple[bo
 
 
 def _a09(runs: Runs, ref: Mapping[str, Any]) -> tuple[bool, Any, Any]:
+    from openflowsheet.numerics.solve_record import SolveOutcome
     from openflowsheet.orchestrator.phase_contract import OpeningRefusal
     from openflowsheet.orchestrator.recovery import EO_RECOVERY_TRIGGERS, eo_recovery_due
-    from openflowsheet.orchestrator.region import RegionResult
-    from openflowsheet.orchestrator.trace import SolveOutcome
+    from openflowsheet.orchestrator.region_result import RegionResult
 
     ledger = Ledger()
     registered = sorted(ref["constants"]["edge3_triggers"])
@@ -1452,6 +1454,11 @@ def _a09(runs: Runs, ref: Mapping[str, Any]) -> tuple[bool, Any, Any]:
             "check_opening",
             lambda state, requirement: OpeningRefusal("coverage", "S3.T"),
         )
+        patch.setattr(
+            region_problem,
+            "check_opening",
+            lambda state, requirement: OpeningRefusal("coverage", "S3.T"),
+        )
         document = yaml.safe_load((CASES / "SYN-001-A02-355-liquid-guess.yaml").read_text())
         incompatible = edge3_fixtures.plan_run(
             document, SolvePolicy(policy_id="T04", residual_tolerances={}, scales={})
@@ -1559,7 +1566,7 @@ def _a10() -> tuple[bool, Any, Any]:
             return level
 
         with pytest.MonkeyPatch.context() as patch:
-            patch.setattr(region_module, "rebind", spy)
+            patch.setattr(region_attempts, "rebind", spy)
             result = edge3_fixtures.plan_run(
                 edge3_fixtures.case_document(case_id), edge3_fixtures.case_policy(case_id)
             ).result

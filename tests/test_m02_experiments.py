@@ -53,11 +53,12 @@ from openflowsheet.adapters.experiments.runner import ExperimentOutcome, Experim
 from openflowsheet.adapters.experiments.store import ExperimentStore
 from openflowsheet.application.jobs.interrupt import JobInterrupted, interruptible
 from openflowsheet.application.local import LocalApplication
-from openflowsheet.application.store import ArtifactTableSink, ProjectStore
-from openflowsheet.application.types import schema_errors
+from openflowsheet.application.store import ProjectStore
+from openflowsheet.application.store_records import ArtifactTableSink
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models.c1 import COMPONENTS
 from openflowsheet.models.c1.reactor_standin import ReactorStandin
+from openflowsheet.schema_check import schema_errors
 from openflowsheet.thermo import StreamState
 from openflowsheet.thermo.pr_c1 import PrC1Provider
 

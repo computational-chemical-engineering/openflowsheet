@@ -20,20 +20,15 @@ from typing import Any
 import pytest
 from t07_corpus import CORPUS
 
-from openflowsheet.application import revision_run
+from openflowsheet.application import revision_replay, revision_run
 from openflowsheet.application.cli import main
-from openflowsheet.application.policies import DEFAULT_POLICY_ID, resolve_policy
-from openflowsheet.application.revision_run import (
-    Route,
-    registered_case,
-    registered_flowsheet,
-    run_revision_session,
-    select_route,
-)
+from openflowsheet.application.revision_replay import registered_case, registered_flowsheet
+from openflowsheet.application.revision_run import Route, run_revision_session, select_route
+from openflowsheet.application.run_session import run_session
+from openflowsheet.orchestrator.policies import DEFAULT_POLICY_ID, resolve_policy
 from openflowsheet.run.bundle import read_artifact, read_manifest
 from openflowsheet.run.manifest import THREAD_VARIABLES
-from openflowsheet.run.session import run_session
-from openflowsheet.verify.certificate import CheckPolicy
+from openflowsheet.verify.verdict import CheckPolicy
 
 
 @pytest.fixture(autouse=True)
@@ -48,7 +43,7 @@ def reruns(monkeypatch: pytest.MonkeyPatch) -> list[tuple[str, Any]]:
     """Every rerun `reproduce_bundle` starts: `("revision", solve_path)` or `("registered", id)`."""
     started: list[tuple[str, Any]] = []
     revision_session = revision_run.run_revision_session
-    registered = revision_run.rerun_registered
+    registered = revision_replay.rerun_registered
 
     def on_route(route: Route, *args: Any, **kwargs: Any) -> Any:
         started.append(("revision", route.solve_path))
@@ -59,7 +54,7 @@ def reruns(monkeypatch: pytest.MonkeyPatch) -> list[tuple[str, Any]]:
         return registered(case, *args, **kwargs)
 
     monkeypatch.setattr(revision_run, "run_revision_session", on_route)
-    monkeypatch.setattr(revision_run, "rerun_registered", on_case)
+    monkeypatch.setattr(revision_replay, "rerun_registered", on_case)
     return started
 
 

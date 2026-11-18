@@ -38,8 +38,8 @@ import re
 from collections.abc import Mapping, Sequence
 from typing import Any, Final
 
-from openflowsheet.application.contract import api_error
-from openflowsheet.application.types import (
+from openflowsheet.application.errors import api_error
+from openflowsheet.application.inspection_types import (
     AdmissionPair,
     AdmissionReport,
     CapabilityDescriptor,
@@ -135,7 +135,7 @@ def capability_page(
 ) -> CapabilityPage:
     """D11 `list_capabilities`: the registered descriptors of `kind` (one kind or several; all
     when `None`) whose id starts with `id_prefix`, after `cursor`, at most `limit`. The caller
-    checks `limit` (`LocalApplication._check_limit`)."""
+    checks `limit` (`InspectionService.check_limit`)."""
     _check_page_request(kind, id_prefix)
     kinds = None if kind is None else ((kind,) if isinstance(kind, str) else tuple(kind))
     entries = [

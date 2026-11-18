@@ -14,11 +14,11 @@ from typing import Any
 import pytest
 from t07_corpus import A02_FILES, CORPUS
 
-from openflowsheet.application.policies import DEFAULT_POLICY_ID, resolve_policy
 from openflowsheet.application.revision_routes import REVISION_ROUTES
 from openflowsheet.application.revision_run import select_route
-from openflowsheet.application.types import schema_errors
 from openflowsheet.canonical import canonical_json, document_sha256
+from openflowsheet.orchestrator.policies import DEFAULT_POLICY_ID, resolve_policy
+from openflowsheet.schema_check import schema_errors
 from openflowsheet.studies.nlp.closure import SolverAvailability
 from openflowsheet.studies.nlp.host import CertifiedPoint
 from openflowsheet.studies.nlp.revision import (
@@ -30,7 +30,7 @@ from openflowsheet.studies.nlp.revision import (
     optimize_revision,
 )
 from openflowsheet.studies.nlp.revision_host import RevisionNlpHost
-from openflowsheet.verify.certificate import CheckPolicy
+from openflowsheet.verify.verdict import CheckPolicy
 
 REPO = Path(__file__).resolve().parents[1]
 OPT = REPO / "benchmarks" / "opt"
@@ -145,7 +145,7 @@ def test_g11_a_fresh_interpreter_loads_neither_pyomo_nor_cyipopt() -> None:
     script = f"""
 import json, sys
 sys.path.insert(0, {str(REPO / "tests")!r})
-from openflowsheet.application.policies import DEFAULT_POLICY_ID, resolve_policy
+from openflowsheet.orchestrator.policies import DEFAULT_POLICY_ID, resolve_policy
 from openflowsheet.application.revision_routes import REVISION_ROUTES
 from openflowsheet.studies.nlp.closure import SolverAvailability
 from openflowsheet.studies.nlp.revision import optimize_revision

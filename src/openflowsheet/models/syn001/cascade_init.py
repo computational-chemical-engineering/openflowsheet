@@ -17,6 +17,7 @@ from openflowsheet.canonical import normalize_zero
 from openflowsheet.compile.reference import row_values
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models import flow_id, pressure_id, temperature_id
+from openflowsheet.models.syn001.band_types import BandError
 from openflowsheet.models.syn001.cascade_failure import CascadeFailure
 from openflowsheet.models.syn001.cascade_rows import declared_problem, declared_rows
 from openflowsheet.models.syn001.cascade_spec import (
@@ -36,7 +37,7 @@ from openflowsheet.models.syn001.cascade_spec import (
 )
 from openflowsheet.models.syn001.equilibrium_form import composition_dependent
 from openflowsheet.models.syn001.gamma_phi import _ln_k
-from openflowsheet.models.syn001.saturation_band import BandError, band_temperature
+from openflowsheet.models.syn001.saturation_band import band_temperature
 from openflowsheet.thermo import PropertyProvider, PropertyRequest, StreamState
 
 #: Spec §6's registered initializer.

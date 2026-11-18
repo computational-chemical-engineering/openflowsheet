@@ -41,15 +41,14 @@ from t07_r7_documents import mutated
 import openflowsheet.application.revision_binding as revision_binding_module
 from openflowsheet.application.binding import (
     Binding,
-    Unbound,
-    _declared_default,
     bind_revision_or_reason,
     legacy_admission,
     revision_probe,
 )
-from openflowsheet.application.contract import ApplicationError
+from openflowsheet.application.binding_common import Unbound
+from openflowsheet.application.errors import ApplicationError
+from openflowsheet.application.job_requests import JobRequest
 from openflowsheet.application.local import LocalApplication
-from openflowsheet.application.policies import DEFAULT_POLICY_ID, T04_W12, resolve_policy
 from openflowsheet.application.revision_binding import RevisionBinding, bind_revision_flowsheet
 from openflowsheet.application.revision_run import (
     NoRoute,
@@ -57,14 +56,15 @@ from openflowsheet.application.revision_run import (
     RunUnsupportedError,
     bind_route,
     legacy_plan,
-    route_structure,
     select_route,
     solve_route,
 )
-from openflowsheet.application.types import JobRequest
+from openflowsheet.application.structure_inspection import route_structure
 from openflowsheet.application.validation import structural_refusal, validate
+from openflowsheet.models.syn001.flowsheet import HEATER_TEMPERATURE
+from openflowsheet.orchestrator.policies import DEFAULT_POLICY_ID, T04_W12, resolve_policy
 from openflowsheet.orchestrator.revision import plan_revision
-from openflowsheet.verify.certificate import CheckPolicy
+from openflowsheet.verify.verdict import CheckPolicy
 
 #: Every A02 file's revision refusal, the admitted route's `route_reason` at `86ab418`.
 ROUTE_REASON = "unsupported(specification_role_unsupported(GUESS-heater-outlet-T))"
@@ -126,8 +126,9 @@ def test_g_r7_4_every_admitted_revision_frees_a_coordinate_and_plans_a_solve(nam
 def test_g_r7_4_a_free_specification_without_a_value_starts_at_the_declared_default(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """`SYN-001-A02-360-no-guess`: the probe reads the guess at `_declared_default("S3.T")`, in K,
-    with no `bounds` — the start the legacy binder assembled with."""
+    """`SYN-001-A02-360-no-guess`: the probe reads the guess at the flowsheet class's declared
+    default for `S3.T` (`HEATER_TEMPERATURE`), in K, with no `bounds` — the start the legacy
+    binder assembled with."""
     document = CORPUS["SYN-001-A02-360-no-guess"]()
     _, legacy = _bound(document)
     seen: list[dict[str, Any]] = []
@@ -141,9 +142,7 @@ def test_g_r7_4_a_free_specification_without_a_value_starts_at_the_declared_defa
     assert revision_probe(document, legacy)[0] is None
     assert len(seen) == 2
     (guess,) = [e for e in seen[0]["specifications"] if e["id"] == "GUESS-heater-outlet-T"]
-    default = _declared_default("S3.T")
-    assert default is not None
-    assert (guess["role"], guess["value"], guess["unit"]) == ("fixed", default, "K")
+    assert (guess["role"], guess["value"], guess["unit"]) == ("fixed", HEATER_TEMPERATURE, "K")
     assert "bounds" not in guess
     assert TARGET not in {e["id"] for e in seen[1]["specifications"]}
     # The caller's document is not touched.

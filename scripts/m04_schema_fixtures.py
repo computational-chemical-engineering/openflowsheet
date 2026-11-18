@@ -51,7 +51,7 @@ sys.path.insert(0, str(ROOT / "tests" / "support"))
 
 FIXTURE_DIR: Final = ROOT / "tests" / "fixtures" / "schemas"
 _STUDY: Final = "surrogate-manifest.schema.json#/$defs/"
-#: Each fixture directory's schema reference, as `application.types.schema_errors` takes it.
+#: Each fixture directory's schema reference, as `schema_check.schema_errors` takes it.
 REFERENCES: Final[Mapping[str, str]] = {
     "surrogate_manifest": "surrogate-manifest.schema.json",
     "model_evidence": "model-evidence.schema.json",
@@ -193,9 +193,9 @@ def job_documents() -> dict[str, Any]:
     import tempfile
 
     from openflowsheet.adapters import variants
+    from openflowsheet.application.job_requests import JobRequest
     from openflowsheet.application.local import LocalApplication
     from openflowsheet.application.operations import dispatch
-    from openflowsheet.application.types import JobRequest
 
     standin = variants.registered_variant("standin-x025-v1")
     request = {

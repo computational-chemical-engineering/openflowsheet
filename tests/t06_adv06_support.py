@@ -50,7 +50,8 @@ from openflowsheet.thermo import (
     PropertyRequest,
     PropertyResult,
 )
-from openflowsheet.verify.certificate import SolutionCertificate, verify_revision
+from openflowsheet.verify.certificate import verify_revision
+from openflowsheet.verify.verdict import SolutionCertificate
 
 __all__ = [
     "CASE",

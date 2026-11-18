@@ -50,7 +50,7 @@ import openflowsheet.studies.surrogate as surrogate_package
 # thing to assert against. K01 must port group H to the canonical hash when it lands; no digest
 # value is pinned here (D2.1).
 from benchmarks.p02.judge import _state_sha256 as _judge_state_sha256
-from openflowsheet.application.revision_binding import MODEL_BUILDERS
+from openflowsheet.application.model_builders import MODEL_BUILDERS
 from openflowsheet.canonical import state_sha256 as _production_state_sha256
 from openflowsheet.compiled import (
     CompiledProblem,
@@ -355,7 +355,11 @@ DECLARATION_PACKAGES: tuple[tuple[Any, str], ...] = (
 #: The residence-time pseudo-holdup mapping (T04 §6.2), and the PTC-path modules that import it.
 PSEUDO_HOLDUP_MODULE = "openflowsheet.orchestrator.mass"
 REGISTERED_MASS_IMPORTERS = frozenset(
-    {"openflowsheet.orchestrator.executor", "openflowsheet.orchestrator.region"}
+    {
+        "openflowsheet.orchestrator.executor",
+        "openflowsheet.orchestrator.region",
+        "openflowsheet.orchestrator.region_attempts",
+    }
 )
 
 PACKAGE_ROOT = REPO_ROOT / "src" / "openflowsheet"

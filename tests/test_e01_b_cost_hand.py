@@ -37,13 +37,13 @@ from s11_column_support import committed_case as column_case  # noqa: E402
 from s11_thermal_support import committed_case, solve  # noqa: E402
 from test_e01_a_report import registered  # noqa: E402, F401
 
-from openflowsheet.application.policies import T06_REVISION_V2  # noqa: E402
 from openflowsheet.application.revision_binding import bind_revision_flowsheet  # noqa: E402
 from openflowsheet.canonical import state_sha256  # noqa: E402
 from openflowsheet.compiled import EvaluationContext  # noqa: E402
 from openflowsheet.models.revision_flowsheet import component_basis  # noqa: E402
 from openflowsheet.models.thermal.kernel import Failure, phase_properties, saturation  # noqa: E402
 from openflowsheet.orchestrator.executor import execute_plan  # noqa: E402
+from openflowsheet.orchestrator.policies import T06_REVISION_V2  # noqa: E402
 from openflowsheet.orchestrator.revision import plan_revision  # noqa: E402
 from openflowsheet.thermo import syn001  # noqa: E402
 from openflowsheet.thermo.iapws95 import Iapws95Provider  # noqa: E402

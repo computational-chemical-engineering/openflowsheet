@@ -57,6 +57,7 @@ from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models import flow_id, pressure_id, temperature_id
 from openflowsheet.models.c1 import NU
 from openflowsheet.models.c1.reactor import KEY_COMPONENT, C1Reactor
+from openflowsheet.numerics.solve_record import Counters, SolvePolicy, Trace
 from openflowsheet.orchestrator.coupling import (
     CouplingBlock,
     CouplingRun,
@@ -68,7 +69,6 @@ from openflowsheet.orchestrator.coupling import (
 from openflowsheet.orchestrator.execution import PlanRefusal, declaration_identity
 from openflowsheet.orchestrator.executor import PlanResult, execute_plan
 from openflowsheet.orchestrator.revision import plan_revision
-from openflowsheet.orchestrator.trace import Counters, SolvePolicy, Trace
 from openflowsheet.orchestrator.warm_start import (
     WARM_START_REJECTED,
     WARM_START_SOURCE,
@@ -80,7 +80,7 @@ from openflowsheet.run import solution_state
 from openflowsheet.run.compare import KIND_FLOOR, differences, floored_difference
 from openflowsheet.thermo import StreamState
 from openflowsheet.verify import CheckResult, Limitation
-from openflowsheet.verify.certificate import ExternalEvidence
+from openflowsheet.verify.verdict import ExternalEvidence
 
 if TYPE_CHECKING:
     from openflowsheet.adapters.experiments.runner import ExperimentOutcome
@@ -673,7 +673,7 @@ def coupling_record_problem(record: Any) -> str | None:
     """§7.2 step 1: why `external-coupling.json` is not a record this replay can read — invalid
     against `experiment.schema.json#/$defs/coupling`, or an embedded request whose key is not its
     content's — or `None`."""
-    from openflowsheet.application.types import schema_errors
+    from openflowsheet.schema_check import schema_errors
 
     errors = schema_errors("experiment.schema.json#/$defs/coupling", record)
     if errors:
@@ -815,7 +815,7 @@ def job_coupling_start(path: Path | None) -> CoupledStart:
 def _source_record(path: Path | None) -> tuple[str, Mapping[str, Any] | None]:
     """D3 step 1's three checks on a source job's `external-coupling.json`: `("absent", None)`
     for no file, `("rejected", None)` for a record that fails one, else `("accepted", record)`."""
-    from openflowsheet.application.types import schema_errors
+    from openflowsheet.schema_check import schema_errors
 
     if path is None or not path.is_file():
         return "absent", None

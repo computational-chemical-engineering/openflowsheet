@@ -28,12 +28,11 @@ import io
 from collections.abc import Callable, Iterator, Mapping, Sequence
 from typing import Any, Final
 
-from openflowsheet.application.contract import api_error
+from openflowsheet.application.errors import api_error
 from openflowsheet.application.projection import ELIDED, MAX_PAGE, escape_token
 from openflowsheet.application.stream_table import SITES
 from openflowsheet.canonical import canonical_json
-from openflowsheet.units import DISPLAY_KINDS
-from openflowsheet.units.display import csv_suffix, text_unit
+from openflowsheet.units.display import DISPLAY_KINDS, csv_suffix, text_unit
 
 #: `fetch(pointer, depth, cursor, limit)`: one `get_stream_table` projection, as its document.
 Fetch = Callable[[str, int, str | None, int], Mapping[str, Any]]

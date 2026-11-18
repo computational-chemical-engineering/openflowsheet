@@ -43,14 +43,13 @@ from dataclasses import dataclass
 from functools import cache
 from typing import Any, Final, Literal, Protocol
 
-from openflowsheet.application.contract import (
-    Application,
-    ApplicationError,
-    Inspection,
-    JobControl,
-    Page,
-    api_error,
-)
+from openflowsheet.application.contract import Application, Inspection, JobControl, Page
+from openflowsheet.application.documents import published_schemas, validate_inline
+from openflowsheet.application.errors import ApiError, ApiErrorCode, ApplicationError, api_error
+from openflowsheet.application.inspection_types import AuditRecord, RevisionSummary
+from openflowsheet.application.job_records import Job, JobEvent
+from openflowsheet.application.job_requests import JobRequest
+from openflowsheet.application.policy_types import ReplayPolicy, Right
 from openflowsheet.application.projection import (
     MAX_DEPTH,
     MAX_PAGE,
@@ -58,23 +57,9 @@ from openflowsheet.application.projection import (
     bound_document,
     bound_text,
 )
-from openflowsheet.application.types import (
-    SCHEMA_BASE,
-    ApiError,
-    ApiErrorCode,
-    AuditRecord,
-    Change,
-    DocumentSchemaError,
-    Job,
-    JobEvent,
-    JobRequest,
-    ReplayPolicy,
-    RevisionSummary,
-    Right,
-    published_schemas,
-    validate_inline,
-)
+from openflowsheet.application.transaction_types import Change
 from openflowsheet.canonical import first_noncanonical
+from openflowsheet.schema_check import SCHEMA_BASE, DocumentSchemaError
 
 Transport = Literal["python", "cli", "http", "mcp"]
 ALL_TRANSPORTS: Final[tuple[Transport, ...]] = ("python", "cli", "http", "mcp")
@@ -135,7 +120,7 @@ JOB_ID: Final = _ref("job.schema.json#/$defs/job_id")
 ARTIFACT_ID: Final = _ref("job.schema.json#/$defs/artifact_id")
 CURSOR: Final = {"type": ["string", "null"], "maxLength": 1024}
 POINTER: Final = {"type": "string", "maxLength": 8192}
-#: ADR 0075 D8: a display preference's text; its grammar is `units.parse_display_units`'s.
+#: ADR 0075 D8: a display preference's text; its grammar is `units.display.parse_display_units`'s.
 DISPLAY_UNITS: Final = {"type": "string", "minLength": 1, "maxLength": 1024}
 #: ADR 0058 D7: a message code as `explain` takes it (MSG §3.5).
 MESSAGE_CODE: Final = {

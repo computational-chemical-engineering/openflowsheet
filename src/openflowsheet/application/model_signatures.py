@@ -51,13 +51,14 @@ from openflowsheet.models.syn001 import (
     splitter,
     valve,
 )
-from openflowsheet.models.syn001.column import MODEL_ID as COLUMN_MODEL_ID
+from openflowsheet.models.syn001.column_spec import MODEL_ID as COLUMN_MODEL_ID
 from openflowsheet.models.thermal import flash as thermal_flash
 from openflowsheet.models.thermal import heater as thermal_heater
 from openflowsheet.models.thermal import machines as thermal_machines
 from openflowsheet.models.thermal import mixer as thermal_mixer
 from openflowsheet.models.thermal import valve as thermal_valve
 from openflowsheet.studies.surrogate import reactor as c1_surrogate
+from openflowsheet.studies.surrogate.records import MODEL_ID as SURROGATE_MODEL_ID
 from openflowsheet.thermo import Phase, PropertyProvider
 from openflowsheet.thermo.pr_c1 import PROVIDER_ID as C1_PROVIDER_ID
 
@@ -236,7 +237,7 @@ def _pin_column_ids(
     pin = signature.pin(name)
     if pin.port is not None and not view.ports.get(pin.port):
         return (f"{{connection:{pin.port}}}",)
-    return _columns(view, pin, components)
+    return pin_columns(view, pin, components)
 
 
 def render_encoding(
@@ -268,7 +269,7 @@ def render_encoding(
     return text
 
 
-def _missing_pin_hint(
+def missing_pin_hint(
     view: InstanceView,
     signature: ModelSignature,
     pin: PinColumn,
@@ -282,7 +283,7 @@ def _missing_pin_hint(
     )
 
 
-def _named_first(
+def named_first(
     view: InstanceView, signature: ModelSignature, pin: PinColumn, components: Sequence[str]
 ) -> str:
     """`<pin name>: <its first encoding>`, on this instance."""
@@ -290,16 +291,16 @@ def _named_first(
     return f"{pin.name}: {render_encoding(first, view, signature, components)}"
 
 
-def _missing_choice_hint(
+def missing_choice_hint(
     view: InstanceView, signature: ModelSignature, choice: SpecificationChoice
 ) -> str:
     """`specification_missing(<unit>.<choice>)`'s hint."""
     return "Pin exactly one of: " + "; ".join(
-        _named_first(view, signature, option, ()) for option in choice.options
+        named_first(view, signature, option, ()) for option in choice.options
     )
 
 
-def _phase_hint(view: InstanceView, port: str, accepted: str) -> str:
+def phase_hint(view: InstanceView, port: str, accepted: str) -> str:
     """`port_phase_unsupported(<unit>.<port>)`'s hint, in the document's words."""
     declared = PHASE_CAPABILITIES[view.phases[port]] if port in view.phases else "none"
     return (
@@ -337,7 +338,7 @@ def target_path_table() -> str:
 # -- pin readers and the instance contract -----------------------------------------------------
 
 
-def _expand(template: str, view: InstanceView, components: Sequence[str]) -> tuple[str, ...]:
+def expand(template: str, view: InstanceView, components: Sequence[str]) -> tuple[str, ...]:
     """A `required` template's parameter names on this instance (`ModelSignature`)."""
     if "{component}" in template:
         return tuple(template.format(component=c) for c in components)
@@ -356,7 +357,7 @@ def _parameters(
     nothing is a label for a function the revision's author did not get.
     """
     required = tuple(
-        name for template in signature.required for name in _expand(template, view, components)
+        name for template in signature.required for name in expand(template, view, components)
     )
     zero = signature.zero
     unknown = [name for name in view.parameters if name not in (*required, *zero)]
@@ -373,14 +374,15 @@ def _parameters(
     return {name: view.parameters[name] for name in required}
 
 
-def _stream(view: InstanceView, port: str) -> str:
+def port_stream(view: InstanceView, port: str) -> str:
+    """The stream wired to `port`; unwired, `port_unwired(<unit>.<port>)`."""
     connected = view.ports.get(port, ())
     if not connected:
         raise RevisionError("incomplete", f"port_unwired({view.unit_id}.{port})")
     return connected[0]
 
 
-def _pin(view: InstanceView, column: str, hint: Callable[[], str] | None = None) -> float:
+def pin_value(view: InstanceView, column: str, hint: Callable[[], str] | None = None) -> float:
     """The value pinned to `column`; missing, `specification_missing(<column>)` with `hint()`,
     the encodings that would pin it (ruling round 6, B2), computed only on a miss."""
     if column not in view.pins:
@@ -390,34 +392,37 @@ def _pin(view: InstanceView, column: str, hint: Callable[[], str] | None = None)
     return view.pins[column]
 
 
-def _columns(view: InstanceView, pin: PinColumn, components: Sequence[str]) -> tuple[str, ...]:
+def pin_columns(view: InstanceView, pin: PinColumn, components: Sequence[str]) -> tuple[str, ...]:
     """The column ids `pin` names on this instance: one per component for a flow, else one."""
     if pin.port is None:
         return (duty_id(view.unit_id),)
-    stream = _stream(view, pin.port)
+    stream = port_stream(view, pin.port)
     if pin.quantity == "flow":
         return tuple(flow_id(stream, c) for c in components)
     return (temperature_id(stream) if pin.quantity == "temperature" else pressure_id(stream),)
 
 
-def _column(view: InstanceView, pin: PinColumn) -> str:
-    (column,) = _columns(view, pin, ())
+def pin_column(view: InstanceView, pin: PinColumn) -> str:
+    """The one column id a scalar `pin` names on this instance (a duty, temperature or pressure)."""
+    (column,) = pin_columns(view, pin, ())
     return column
 
 
-def _pinned(view: InstanceView, signature: ModelSignature, name: str) -> float:
+def pinned(view: InstanceView, signature: ModelSignature, name: str) -> float:
     """The value of `signature`'s scalar pin `name`."""
     pin = signature.pin(name)
-    return _pin(view, _column(view, pin), lambda: _missing_pin_hint(view, signature, pin, ()))
+    return pin_value(
+        view, pin_column(view, pin), lambda: missing_pin_hint(view, signature, pin, ())
+    )
 
 
-def _require_phase(view: InstanceView, port: str, phase: Phase | None) -> None:
+def require_phase(view: InstanceView, port: str, phase: Phase | None) -> None:
     """A port phase rule of §1.3's table, on a wired port."""
     if port in view.phases and view.phases[port] != phase:
         raise RevisionError(
             "unsupported",
             f"port_phase_unsupported({view.unit_id}.{port})",
-            _phase_hint(view, port, PHASE_CAPABILITIES[phase]),
+            phase_hint(view, port, PHASE_CAPABILITIES[phase]),
         )
 
 
@@ -460,7 +465,7 @@ def instance_contract(
     _require_one_keyed(view, signature, components)
     for port, phase in _PORT_PHASES.get(signature.model_id, ()):
         for each in tuple(view.ports) if port == "*" else (port,):
-            _require_phase(view, each, phase)
+            require_phase(view, each, phase)
     # Note §1.3 R4, the converse (review S1): a `vapor_liquid` connection is read as
     # `<S>.vap.*`/`<S>.liq.*`, which only the `outlet` port of an `outlet`-style lifting model
     # allocates. Any other producer declared so would bind and then fail untyped.
@@ -473,7 +478,7 @@ def instance_contract(
             raise RevisionError(
                 "unsupported",
                 f"port_phase_unsupported({view.unit_id}.{port})",
-                _phase_hint(view, port, _ONE_PHASE),
+                phase_hint(view, port, ONE_PHASE),
             )
     return parameters
 
@@ -487,7 +492,7 @@ def _require_one_keyed(
     for template in signature.required:
         if not template.endswith("{key}"):
             continue
-        keyed = _expand(template, view, components)
+        keyed = expand(template, view, components)
         if not keyed:
             name = template.removesuffix("{key}").removesuffix(".")
             raise RevisionError("incomplete", f"parameter_missing({view.unit_id}.{name})")
@@ -498,7 +503,7 @@ def _require_one_keyed(
 # -- the six K02 signatures (§1.3's table) ------------------------------------------------------
 
 
-_FEED_SOURCE: Final = ModelSignature(
+FEED_SOURCE: Final = ModelSignature(
     model_id=feed.MODEL_ID,
     ports=feed.PORTS,
     pins=(
@@ -509,12 +514,12 @@ _FEED_SOURCE: Final = ModelSignature(
 )
 
 
-_ADIABATIC_MIXER: Final = ModelSignature(
+ADIABATIC_MIXER: Final = ModelSignature(
     model_id=mixer.MODEL_ID, ports=mixer.PORTS, zero=("pressure_drop",)
 )
 
 
-_TP_HEATER: Final = ModelSignature(
+TP_HEATER: Final = ModelSignature(
     model_id=heater.MODEL_ID,
     ports=heater.PORTS,
     zero=("pressure_drop",),
@@ -524,7 +529,7 @@ _TP_HEATER: Final = ModelSignature(
 
 #: The liquid outlet's temperature and pressure are read to be refused when they differ from the
 #: vapour's, which set the flash's.
-_TP_FLASH: Final = ModelSignature(
+TP_FLASH: Final = ModelSignature(
     model_id=flash.MODEL_ID,
     ports=flash.PORTS,
     zero=("pressure_drop",),
@@ -537,22 +542,22 @@ _TP_FLASH: Final = ModelSignature(
 )
 
 
-_STREAM_SPLITTER: Final = ModelSignature(
+STREAM_SPLITTER: Final = ModelSignature(
     model_id=splitter.MODEL_ID, ports=splitter.PORTS, required=("split_fraction",)
 )
 
 
-_PRODUCT_SINK: Final = ModelSignature(model_id=sink.MODEL_ID, ports=sink.PORTS)
+PRODUCT_SINK: Final = ModelSignature(model_id=sink.MODEL_ID, ports=sink.PORTS)
 
 
 # -- the T05 signatures (§1.3's table, W11) --------------------------------------------------------
 
 
 #: A port whose rule is `liquid` or `vapor` (not lifted), in the document's words.
-_ONE_PHASE: Final = f"{PHASE_CAPABILITIES['LIQUID']} or {PHASE_CAPABILITIES['VAPOR']}"
+ONE_PHASE: Final = f"{PHASE_CAPABILITIES['LIQUID']} or {PHASE_CAPABILITIES['VAPOR']}"
 
 
-_PH_FLASH: Final = ModelSignature(
+PH_FLASH: Final = ModelSignature(
     model_id=ph_flash.MODEL_ID,
     ports=ph_flash.PORTS,
     required=("pressure_drop",),
@@ -560,14 +565,14 @@ _PH_FLASH: Final = ModelSignature(
 )
 
 
-_VALVE: Final = ModelSignature(
+VALVE: Final = ModelSignature(
     model_id=valve.MODEL_ID,
     ports=valve.PORTS,
     pins=(PinColumn("outlet_pressure", "pressure", "outlet"),),
 )
 
 
-_LIQUID_PUMP: Final = ModelSignature(
+LIQUID_PUMP: Final = ModelSignature(
     model_id=pump.MODEL_ID,
     ports=pump.PORTS,
     required=("efficiency",),
@@ -575,7 +580,7 @@ _LIQUID_PUMP: Final = ModelSignature(
 )
 
 
-_CONVERSION_REACTOR: Final = ModelSignature(
+CONVERSION_REACTOR: Final = ModelSignature(
     model_id=conversion_reactor.MODEL_ID,
     ports=conversion_reactor.PORTS,
     required=("nu.{component}", "conversion.{key}", "pressure_drop"),
@@ -591,7 +596,7 @@ _CONVERSION_REACTOR: Final = ModelSignature(
 #: T08 build-first §A1.2. `damkohler.<k>` names the key `k`, as `conversion.<k>` does the
 #: conversion reactor's: the one reaction has exactly one. The outlet's declared phase is the
 #: `phase` configuration; the unit reads no stream or duty pin (`Q` is `CSTR-cooling`'s).
-_KINETIC_CSTR: Final = ModelSignature(
+KINETIC_CSTR: Final = ModelSignature(
     model_id=kinetic_cstr.MODEL_ID,
     ports=kinetic_cstr.PORTS,
     required=(
@@ -613,19 +618,19 @@ _KINETIC_CSTR: Final = ModelSignature(
 #: — `stage_pressure.<j>`, `stage_duty.<j>`, `feed_stage.<stream>` and the twelve end parameters
 #: (§10.5) — have no `ModelSignature` field to be listed in (`docs/S11B_DECISIONS.md`, B3b).
 #: Defined here beside the others, because `column_binding` imports this module.
-_COLUMN: Final = ModelSignature(
+COLUMN: Final = ModelSignature(
     model_id=COLUMN_MODEL_ID, ports=column_unit.PORTS, required=(column_unit.STAGE_COUNT,)
 )
 
 
-_COMPONENT_SEPARATOR: Final = ModelSignature(
+COMPONENT_SEPARATOR: Final = ModelSignature(
     model_id=component_separator.MODEL_ID,
     ports=component_separator.PORTS,
     required=("split.{component}",),
 )
 
 
-_HEAT_EXCHANGER: Final = ModelSignature(
+HEAT_EXCHANGER: Final = ModelSignature(
     model_id=heat_exchanger.MODEL_ID,
     ports=heat_exchanger.PORTS,
     choices=(
@@ -649,7 +654,7 @@ _HEAT_EXCHANGER: Final = ModelSignature(
 # `MODEL_BASES` states and the binder enforces (R-288); the builders do not check it.
 
 
-_C1_FEED_SOURCE: Final = ModelSignature(
+C1_FEED_SOURCE: Final = ModelSignature(
     model_id=c1_feed.MODEL_ID,
     ports=c1_feed.PORTS,
     pins=(
@@ -660,12 +665,12 @@ _C1_FEED_SOURCE: Final = ModelSignature(
 )
 
 
-_C1_ADIABATIC_MIXER: Final = ModelSignature(
+C1_ADIABATIC_MIXER: Final = ModelSignature(
     model_id=c1_mixer.MODEL_ID, ports=c1_mixer.PORTS, zero=("pressure_drop",)
 )
 
 
-_C1_TP_HEATER: Final = ModelSignature(
+C1_TP_HEATER: Final = ModelSignature(
     model_id=c1_heater.MODEL_ID,
     ports=c1_heater.PORTS,
     zero=("pressure_drop",),
@@ -673,9 +678,9 @@ _C1_TP_HEATER: Final = ModelSignature(
 )
 
 
-#: As `_TP_FLASH`: the liquid product's T and P are read to be refused when they differ from the
+#: As `TP_FLASH`: the liquid product's T and P are read to be refused when they differ from the
 #: vapour's, which set the flash's.
-_C1_TP_FLASH: Final = ModelSignature(
+C1_TP_FLASH: Final = ModelSignature(
     model_id=c1_flash.MODEL_ID,
     ports=c1_flash.PORTS,
     zero=("pressure_drop",),
@@ -688,12 +693,12 @@ _C1_TP_FLASH: Final = ModelSignature(
 )
 
 
-_C1_STREAM_SPLITTER: Final = ModelSignature(
+C1_STREAM_SPLITTER: Final = ModelSignature(
     model_id=c1_splitter.MODEL_ID, ports=c1_splitter.PORTS, required=("split_fraction",)
 )
 
 
-_C1_PRODUCT_SINK: Final = ModelSignature(model_id=c1_sink.MODEL_ID, ports=c1_sink.PORTS)
+C1_PRODUCT_SINK: Final = ModelSignature(model_id=c1_sink.MODEL_ID, ports=c1_sink.PORTS)
 
 
 #: M02 WO-9 (design note §4.1; ADR 0034 D1, D9): `c1.reactor` and `c1.reactor_standin` are one
@@ -702,10 +707,10 @@ _C1_PRODUCT_SINK: Final = ModelSignature(model_id=c1_sink.MODEL_ID, ports=c1_sin
 #: already resolved the instance's pinned variant (`model_variant_mismatch` otherwise). The coupling
 #: parameters start at that variant's `coupling.initial`; the coupled route moves them (WO-10).
 #: Optional `coupling_initial.X` / `.dT` parameters are not admitted (build log D46).
-_C1_REACTOR: Final = ModelSignature(
+C1_REACTOR: Final = ModelSignature(
     model_id=c1_reactor.REACTOR_MODEL_ID, ports=c1_reactor.PORTS, required=("n_tubes",)
 )
-_C1_REACTOR_STANDIN: Final = ModelSignature(
+C1_REACTOR_STANDIN: Final = ModelSignature(
     model_id=c1_reactor.STANDIN_MODEL_ID, ports=c1_reactor.PORTS, required=("n_tubes",)
 )
 
@@ -713,38 +718,38 @@ _C1_REACTOR_STANDIN: Final = ModelSignature(
 #: M04 WO-7 (spec §8.1, §8.2; ADR 0037 D1, D2): `c1.reactor_surrogate` is M02's embedded unit with
 #: (X̂, ΔT̂) the frozen quadratic of its SurrogateManifest, pinned by the manifest's SHA-256. It
 #: reads `n_tubes` (the surrogate's per-tube flow). The binder resolves and checks the manifest
-#: before building (`_resolve_surrogate`) and hands it to `_c1_reactor_surrogate_of`; the
+#: before building (`_resolve_surrogate`) and hands it to `c1_reactor_surrogate_of`; the
 #: registered builder, called without one, refuses as an unresolved manifest does.
-_C1_REACTOR_SURROGATE: Final = ModelSignature(
-    model_id=c1_surrogate.MODEL_ID, ports=c1_surrogate.PORTS, required=("n_tubes",)
+C1_REACTOR_SURROGATE: Final = ModelSignature(
+    model_id=SURROGATE_MODEL_ID, ports=c1_surrogate.PORTS, required=("n_tubes",)
 )
 
 
 #: SYN-001's thirteen models: the six K02 ones, the six T05 ones (§1.3's table) and T08's kinetic
 #: CSTR (build-first §A1). They bind on SYN-001's basis only (R-288).
 _SYN001_SIGNATURES: Final[tuple[ModelSignature, ...]] = (
-    _FEED_SOURCE,
-    _ADIABATIC_MIXER,
-    _TP_HEATER,
-    _TP_FLASH,
-    _STREAM_SPLITTER,
-    _PRODUCT_SINK,
-    _PH_FLASH,
-    _VALVE,
-    _LIQUID_PUMP,
-    _CONVERSION_REACTOR,
-    _COMPONENT_SEPARATOR,
-    _HEAT_EXCHANGER,
-    _KINETIC_CSTR,
+    FEED_SOURCE,
+    ADIABATIC_MIXER,
+    TP_HEATER,
+    TP_FLASH,
+    STREAM_SPLITTER,
+    PRODUCT_SINK,
+    PH_FLASH,
+    VALVE,
+    LIQUID_PUMP,
+    CONVERSION_REACTOR,
+    COMPONENT_SEPARATOR,
+    HEAT_EXCHANGER,
+    KINETIC_CSTR,
 )
 
 
 # -- the `thermal.*` family (S11 units design §4.4, §5.4 I1b) -----------------------------------
 
 #: The seven `thermal.*` signatures, defined here beside the others because `thermal_binding`
-#: imports this module (as `_COLUMN` is for `column_binding`). What they cannot list: the heater's
+#: imports this module (as `COLUMN` is for `column_binding`). What they cannot list: the heater's
 #: optional `pressure_drop` and `outlet_vapor_fraction` (`thermal_binding`'s docstring).
-_THERMAL_HEATER: Final = ModelSignature(
+THERMAL_HEATER: Final = ModelSignature(
     model_id=thermal_heater.MODEL_ID,
     ports=thermal_heater.PORTS,
     choices=(
@@ -757,20 +762,20 @@ _THERMAL_HEATER: Final = ModelSignature(
         ),
     ),
 )
-_THERMAL_VALVE: Final = ModelSignature(
+THERMAL_VALVE: Final = ModelSignature(
     model_id=thermal_valve.MODEL_ID,
     ports=thermal_valve.PORTS,
     pins=(PinColumn("outlet_pressure", "pressure", "outlet"),),
 )
-_THERMAL_MIXER: Final = ModelSignature(model_id=thermal_mixer.MODEL_ID, ports=thermal_mixer.PORTS)
-_THERMAL_FLASH: Final = ModelSignature(
+THERMAL_MIXER: Final = ModelSignature(model_id=thermal_mixer.MODEL_ID, ports=thermal_mixer.PORTS)
+THERMAL_FLASH: Final = ModelSignature(
     model_id=thermal_flash.MODEL_ID,
     ports=thermal_flash.PORTS,
     required=("pressure_drop",),
     pins=(PinColumn("duty", "duty"),),
 )
 #: Machine (`pump`, `compressor`, `turbine`) -> its signature.
-_THERMAL_MACHINES: Final[Mapping[str, ModelSignature]] = {
+THERMAL_MACHINES: Final[Mapping[str, ModelSignature]] = {
     machine: ModelSignature(
         model_id=model_id,
         ports=thermal_machines.PORTS[machine],
@@ -779,12 +784,12 @@ _THERMAL_MACHINES: Final[Mapping[str, ModelSignature]] = {
     )
     for machine, model_id in thermal_machines.MACHINE_MODEL_IDS.items()
 }
-_THERMAL_SIGNATURES: Final[tuple[ModelSignature, ...]] = (
-    _THERMAL_HEATER,
-    _THERMAL_VALVE,
-    _THERMAL_MIXER,
-    _THERMAL_FLASH,
-    *_THERMAL_MACHINES.values(),
+THERMAL_SIGNATURES: Final[tuple[ModelSignature, ...]] = (
+    THERMAL_HEATER,
+    THERMAL_VALVE,
+    THERMAL_MIXER,
+    THERMAL_FLASH,
+    *THERMAL_MACHINES.values(),
 )
 
 
@@ -792,15 +797,15 @@ _THERMAL_SIGNATURES: Final[tuple[ModelSignature, ...]] = (
 #: and M04's surrogate of the reactor (W27 Amendment 3, R-301). They bind on the C1 basis only
 #: (R-288).
 _C1_SIGNATURES: Final[tuple[ModelSignature, ...]] = (
-    _C1_FEED_SOURCE,
-    _C1_ADIABATIC_MIXER,
-    _C1_TP_HEATER,
-    _C1_TP_FLASH,
-    _C1_STREAM_SPLITTER,
-    _C1_PRODUCT_SINK,
-    _C1_REACTOR,
-    _C1_REACTOR_STANDIN,
-    _C1_REACTOR_SURROGATE,
+    C1_FEED_SOURCE,
+    C1_ADIABATIC_MIXER,
+    C1_TP_HEATER,
+    C1_TP_FLASH,
+    C1_STREAM_SPLITTER,
+    C1_PRODUCT_SINK,
+    C1_REACTOR,
+    C1_REACTOR_STANDIN,
+    C1_REACTOR_SURROGATE,
 )
 
 #: Model id -> signature: what each builder reads (§1.3's table), for `list_models` (T07 §4.2):
@@ -808,28 +813,28 @@ _C1_SIGNATURES: Final[tuple[ModelSignature, ...]] = (
 #: M04's surrogate (R-301); the seven `thermal.*` models (S11 units design §5.4 I1b).
 MODEL_SIGNATURES: Final[Mapping[str, ModelSignature]] = {
     signature.model_id: signature
-    for signature in (*_SYN001_SIGNATURES, _COLUMN, *_C1_SIGNATURES, *_THERMAL_SIGNATURES)
+    for signature in (*_SYN001_SIGNATURES, COLUMN, *_C1_SIGNATURES, *THERMAL_SIGNATURES)
 }
 
-_IAPWS95: Final = "iapws95-v1"
-_COOLPROP: Final = "coolprop-heos-v1"
+IAPWS95: Final = "iapws95-v1"
+COOLPROP: Final = "coolprop-heos-v1"
 #: Units design §4.6 (WO-D5): the Wilson record source selects `wilson-ig-v2`.
-_WILSON: Final = WILSON_BASIS.provider_id
+WILSON: Final = WILSON_BASIS.provider_id
 #: The provider ids of the bases S11 makes selectable (ADR 0050 D1).
-S11_BASES: Final = (_IAPWS95, _COOLPROP, _WILSON)
+S11_BASES: Final = (IAPWS95, COOLPROP, WILSON)
 #: S11 design §4.4: the models that hold no provider and evaluate no property.
 ROUTING_MODELS: Final = (feed.MODEL_ID, sink.MODEL_ID, splitter.MODEL_ID)
 #: Units design §4.5, §4.7: the five K02/T05 units with γ–φ faces, which bind on Wilson too.
 _GAMMA_PHI_MODELS: Final = (
-    _TP_HEATER.model_id,
-    _TP_FLASH.model_id,
-    _PH_FLASH.model_id,
-    _VALVE.model_id,
-    _ADIABATIC_MIXER.model_id,
+    TP_HEATER.model_id,
+    TP_FLASH.model_id,
+    PH_FLASH.model_id,
+    VALVE.model_id,
+    ADIABATIC_MIXER.model_id,
 )
 #: Units design §4.7: the pure-fluid bases every `thermal.*` model binds on, and the vapour
 #: machines that bind on Wilson as well (L-GP-2).
-_PURE_FLUID_BASES: Final = frozenset({_IAPWS95, _COOLPROP})
+_PURE_FLUID_BASES: Final = frozenset({IAPWS95, COOLPROP})
 _WILSON_MACHINES: Final = (
     thermal_machines.MACHINE_MODEL_IDS["compressor"],
     thermal_machines.MACHINE_MODEL_IDS["turbine"],
@@ -849,12 +854,12 @@ MODEL_BASES: Final[Mapping[str, frozenset[str]]] = {
     # S11 design §4.7, §9 (I1): the column binds on SYN-001's basis and on the provider id the
     # Wilson registry row holds (`WILSON_BASIS`); C1's is vapour-only and a pure fluid has no
     # stage composition (`_UNADMITTED`).
-    _COLUMN.model_id: frozenset({SYN001_PROVIDER_ID, WILSON_BASIS.provider_id}),
+    COLUMN.model_id: frozenset({SYN001_PROVIDER_ID, WILSON_BASIS.provider_id}),
     # Units design §4.7 (I1b): the five γ–φ-faced units on Wilson as well (track D), and the seven
     # `thermal.*` models on the pure-fluid bases, the compressor and turbine also on Wilson.
-    **{model_id: frozenset({SYN001_PROVIDER_ID, _WILSON}) for model_id in _GAMMA_PHI_MODELS},
+    **{model_id: frozenset({SYN001_PROVIDER_ID, WILSON}) for model_id in _GAMMA_PHI_MODELS},
     **{
-        s.model_id: _PURE_FLUID_BASES | ({_WILSON} if s.model_id in _WILSON_MACHINES else set())
-        for s in _THERMAL_SIGNATURES
+        s.model_id: _PURE_FLUID_BASES | ({WILSON} if s.model_id in _WILSON_MACHINES else set())
+        for s in THERMAL_SIGNATURES
     },
 }

@@ -1,0 +1,30 @@
+# ADR 0076 I-14 (ruling docs/briefs/S19-A11-ruling.md sections 2 and 3, accepted 2026-11-14 with its
+# defaults; W4 run 10, brief S19-W4-10): the message catalogue stops importing the registry and the
+# audit; its two slots are filled from above. `codehealth gate --mode interface` reads this plan from
+# the plan commit.
+id = "I-14"
+approved_by = "Frank Peters, 2026-11-14, ADR 0076 accepted (Decision Desk ofs-adr0076-accept); A11 ruling accepted with its defaults (S19_DECISIONS 2026-11-14)"
+reason = """ADR 0076 I-14 per the A11 ruling: messages/catalogue.py gains a private hook holder \
+(_Hooks, _HOOKS: before_freeze defaults to _core_alone, audit_on to _audit_off) and the public \
+setters set_before_freeze and set_audit_probe (the third name, ruling 2.7 gap 1 and Q1); \
+_frozen_entries calls _HOOKS.before_freeze() in place of its lazy registry import, and _load reads \
+_HOOKS.audit_on() in place of its lazy audit import (same short-circuit order). The private \
+_yaml_load moves verbatim to the new leaf messages/yaml_io.py as the public yaml_load; catalogue.py \
+and registry/discovery.py (still lazy) call it; no re-export. messages/audit.py: _on(), and \
+enable() installs it with catalogue.set_audit_probe before its if (its two global lines \
+unchanged). registry/__init__.py imports messages.catalogue at top level (as _catalogue: in an \
+__init__ a plain from-import would be a public re-export, the 2.2 fallback for a bound import \
+name) and its last statement installs before_catalogue_freeze; application/errors.py and \
+application/jobs/worker.py import openflowsheet.registry (FQ-B installers). Initialization order \
+and every rendered text are unchanged (ruling 2.1, 2.4). Expected codehealth arch --depth 4 \
+(measured at this base and on the step applied to it): 2 violations / 2 cycles / 10 cycle edges \
+-> 1 / 1 / 4 (messages.catalogue -> registry and the 4-node messages/registry cycle with its 6 \
+edges go; the ruling's delta -1 / -1 / -6), files 315 -> 316, imports 3998 -> 4002. Layer config \
+after the step (separate commit): the repo-layers adoption line messages.catalogue -> registry \
+goes."""
+removed = []
+renamed = {}
+changed = []
+added = ["src/openflowsheet/messages/catalogue.py:set_before_freeze", "src/openflowsheet/messages/catalogue.py:set_audit_probe", "src/openflowsheet/messages/yaml_io.py:yaml_load"]
+new_files = ["src/openflowsheet/messages/yaml_io.py"]
+callers = []

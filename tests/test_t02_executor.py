@@ -25,6 +25,7 @@ from openflowsheet.compiled import EvaluationContext
 from openflowsheet.graph.analysis import analyse
 from openflowsheet.graph.trace import trace_declaration
 from openflowsheet.models.syn001.flowsheet import Syn001Flowsheet
+from openflowsheet.numerics.solve_record import RecyclePolicy, SolvePolicy
 from openflowsheet.orchestrator.budget import PropertyMeter
 from openflowsheet.orchestrator.execution import (
     ExecutionPlan,
@@ -33,7 +34,6 @@ from openflowsheet.orchestrator.execution import (
     specification_regions,
 )
 from openflowsheet.orchestrator.executor import PlanResult, execute_plan
-from openflowsheet.orchestrator.trace import RecyclePolicy, SolvePolicy
 from openflowsheet.thermo.syn001 import Syn001Provider
 
 REPO_ROOT = Path(__file__).resolve().parents[1]

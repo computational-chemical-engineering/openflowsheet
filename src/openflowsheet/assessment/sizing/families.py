@@ -13,11 +13,11 @@ from dataclasses import dataclass, replace
 from fractions import Fraction
 from typing import Any
 
+from openflowsheet.assessment.linearization import Refusal
 from openflowsheet.assessment.program import (
     FunctionalBuilder,
     Limitation,
     OutputDef,
-    Refusal,
     Symbols,
     Theta,
 )
@@ -44,7 +44,7 @@ from openflowsheet.assessment.sizing.core import (
 from openflowsheet.assessment.views import UnitRef
 from openflowsheet.compile.spec import Algebra, Expr
 from openflowsheet.models import duty_id, pressure_id, temperature_id
-from openflowsheet.models.syn001 import cascade
+from openflowsheet.models.syn001 import cascade_spec
 from openflowsheet.models.syn001.pump import work_id
 from openflowsheet.models.thermal.state import liquid_id, vapor_id
 from openflowsheet.thermo import FlashRequest, StreamState
@@ -173,7 +173,9 @@ def exchanger_utility(
     """An `exchanger.utility` item (§4.4.1): area `|Q|/(U F_T ΔT_lm)` against one utility.
 
     `t_in`/`t_out` are the host ids of the process inlet and outlet temperatures; `streams` the
-    process streams, when there are any, for the phase-change limitation."""
+    process streams, when there are any, for the phase-change limitation. `_candidates`
+    refuses NO_ADMISSIBLE_UTILITY for an undeclared named utility; `_cheapest_admissible` returns
+    `None`, which this function turns into the same refusal."""
     doc = sctx.item(item_id)
     regime = sctx.ctx.regime
     service_entry_id = f"{item_id}.service"
@@ -204,16 +206,9 @@ def exchanger_utility(
     # Rule 2: the utility.
     t_pi, t_po = sctx.x(t_in), sctx.x(t_out)
     named = doc.get("utility", "auto")
-    candidates = [u for u in sctx.utilities if u.get("kind") == service]
-    if named != "auto":
-        candidates = [u for u in sctx.utilities if u["utility_id"] == named]
-        if not candidates:
-            return _refused("NO_ADMISSIBLE_UTILITY", item_id, f"utility {named!r} is not declared")
-
-    def dt_min_of(utility: Mapping[str, Any]) -> float | None:
-        if "dT_min" in doc:
-            return float(doc["dT_min"])
-        return float(utility["dT_min"]) if "dT_min" in utility else None
+    candidates = _candidates(sctx, item_id, service, named)
+    if isinstance(candidates, SizingPlan):
+        return candidates
 
     utility_entry_id = f"{item_id}.utility"
     held = regime.choice(utility_entry_id)
@@ -224,23 +219,15 @@ def exchanger_utility(
     elif named != "auto":
         chosen = candidates[0]
     else:
-        admissible: list[tuple[float, int, Mapping[str, Any]]] = []
-        for order, utility in enumerate(candidates):
-            temperatures, dt_min = _utility_temperatures(utility), dt_min_of(utility)
-            price = _price_per_joule(utility)
-            if temperatures is None or dt_min is None or price is None:
-                continue
-            dt1, dt2 = _differences(service, *temperatures, t_pi, t_po)
-            if dt1 - dt_min >= 0.0 and dt2 - dt_min >= 0.0:
-                admissible.append((price, order, utility))
-        if not admissible:
+        cheapest = _cheapest_admissible(doc, candidates, service, t_pi, t_po)
+        if cheapest is None:
             return _refused("NO_ADMISSIBLE_UTILITY", item_id, f"service {service}")
-        chosen = min(admissible, key=lambda entry: (entry[0], entry[1]))[2]
+        chosen = cheapest
     utility_id = chosen["utility_id"]
     temperatures = _utility_temperatures(chosen)
     if temperatures is None:
         return _refused("SIZING_INPUT_MISSING", f"{item_id}.T_supply", utility_id)
-    dt_min = dt_min_of(chosen)
+    dt_min = _dt_min(doc, chosen)
     if dt_min is None:
         return _refused("SIZING_INPUT_MISSING", f"{item_id}.dT_min", utility_id)
 
@@ -285,17 +272,9 @@ def exchanger_utility(
     )
     limitations = list(extra_limitations)
     if streams is not None:
-        before, after = (_signature(sctx, stream) for stream in streams)
-        if before is not None and after is not None and before != after:
-            detail: dict[str, Any] = {"inlet": before, "outlet": after}
-            if dt1_f > 0.0 and dt2_f > 0.0:
-                ratio = max(dt1_f, dt2_f) / min(dt1_f, dt2_f)
-                exact = dt1_f if dt1_f == dt2_f else (dt1_f - dt2_f) / math.log(dt1_f / dt2_f)
-                detail |= {
-                    "r": ratio,
-                    "underwood_over_lmtd_minus_1": underwood(dt1_f, dt2_f) / exact - 1.0,
-                }
-            limitations.append(Limitation("LMTD_ACROSS_PHASE_CHANGE", item_id, detail))
+        phase_change = _phase_change(sctx, item_id, streams, dt1_f, dt2_f)
+        if phase_change is not None:
+            limitations.append(phase_change)
 
     def magnitude(s: Symbols, a: Algebra) -> Expr:
         return signed(s, a)
@@ -326,6 +305,73 @@ def exchanger_utility(
         regime_entries=(service_entry, utility_entry),
         limitations=tuple(limitations),
     )
+
+
+def _candidates(
+    sctx: SizingContext, item_id: str, service: str, named: Any
+) -> list[Mapping[str, Any]] | SizingPlan:
+    """§4.3.2 rule 2's candidates: the utility the item names (`named`, unless `auto`), else every
+    utility of the service's kind. A `NO_ADMISSIBLE_UTILITY` refusal when the named utility is not
+    declared."""
+    candidates = [u for u in sctx.utilities if u.get("kind") == service]
+    if named != "auto":
+        candidates = [u for u in sctx.utilities if u["utility_id"] == named]
+        if not candidates:
+            return _refused("NO_ADMISSIBLE_UTILITY", item_id, f"utility {named!r} is not declared")
+    return candidates
+
+
+def _cheapest_admissible(
+    doc: Mapping[str, Any],
+    candidates: Sequence[Mapping[str, Any]],
+    service: str,
+    t_pi: float,
+    t_po: float,
+) -> Mapping[str, Any] | None:
+    """§4.3.2 rule 2 without a held or declared utility: the cheapest candidate whose ΔT₁ and ΔT₂
+    both reach the item's `dT_min`, else the candidate's, at the process temperatures `t_pi`,
+    `t_po`, ties to the earlier candidate. A candidate without temperatures, `dT_min` or a
+    comparable price is skipped; `None` when no candidate is admissible."""
+    admissible: list[tuple[float, int, Mapping[str, Any]]] = []
+    for order, utility in enumerate(candidates):
+        temperatures, dt_min = _utility_temperatures(utility), _dt_min(doc, utility)
+        price = _price_per_joule(utility)
+        if temperatures is None or dt_min is None or price is None:
+            continue
+        dt1, dt2 = _differences(service, *temperatures, t_pi, t_po)
+        if dt1 - dt_min >= 0.0 and dt2 - dt_min >= 0.0:
+            admissible.append((price, order, utility))
+    if not admissible:
+        return None
+    return min(admissible, key=lambda entry: (entry[0], entry[1]))[2]
+
+
+def _dt_min(doc: Mapping[str, Any], utility: Mapping[str, Any]) -> float | None:
+    """The item's `dT_min`, else the utility's; `None` when neither declares one."""
+    if "dT_min" in doc:
+        return float(doc["dT_min"])
+    return float(utility["dT_min"]) if "dT_min" in utility else None
+
+
+def _phase_change(
+    sctx: SizingContext, item_id: str, streams: tuple[str, str], dt1_f: float, dt2_f: float
+) -> Limitation | None:
+    """§4.4.1's `LMTD_ACROSS_PHASE_CHANGE` (information only): the process streams' phase
+    signatures at inlet and outlet, when both are known and differ; with ΔT₁ and ΔT₂ both positive
+    the detail also carries their ratio `r` and Underwood's relative error against the exact LMTD.
+    `None` when either signature is unknown or they agree."""
+    before, after = (_signature(sctx, stream) for stream in streams)
+    if before is not None and after is not None and before != after:
+        detail: dict[str, Any] = {"inlet": before, "outlet": after}
+        if dt1_f > 0.0 and dt2_f > 0.0:
+            ratio = max(dt1_f, dt2_f) / min(dt1_f, dt2_f)
+            exact = dt1_f if dt1_f == dt2_f else (dt1_f - dt2_f) / math.log(dt1_f / dt2_f)
+            detail |= {
+                "r": ratio,
+                "underwood_over_lmtd_minus_1": underwood(dt1_f, dt2_f) / exact - 1.0,
+            }
+        return Limitation("LMTD_ACROSS_PHASE_CHANGE", item_id, detail)
+    return None
 
 
 def _options(doc: Mapping[str, Any]) -> dict[str, Any]:
@@ -487,24 +533,9 @@ def drum(sctx: SizingContext, unit: UnitRef, item_id: str) -> SizingPlan:
         else:
             members.append(("V", d2_vapour))
     outputs = [OutputDef(size_output(item_id, "volume"), "m3", volume)]
-    entries = [liquid_entry, vapour_entry]
     volume_theta, volume_records = sctx.volume_inputs(item_id, (liquid, vapour))
     theta = [theta for theta, _ in inputs] + list(volume_theta)
-    if len(members) == 1:
-        controlling = "L"
-    else:
-        probe = [
-            OutputDef(f"size.{item_id}.{name}.diameter", "m", build) for name, build in members
-        ]
-        floats = sctx.values([*outputs, *probe], theta)
-        values = {name: floats[f"size.{item_id}.{name}.diameter"] for name, _ in members}
-        held = sctx.ctx.regime.choice(f"{item_id}.controlling")
-        names = [name for name, _ in members]
-        controlling = held or names[select_argmax([values[name] for name in names])]
-        rows = argmax_rows(members, controlling, values)
-        entries.append(
-            RegimeEntry(f"{item_id}.controlling", "argmax", controlling, "§4.3.2 rule 6", rows)
-        )
+    controlling, rule_6 = _drum_controlling(sctx, item_id, members, outputs, theta)
     d2 = dict(members)[controlling]
 
     def diameter(s: Symbols, a: Algebra) -> Expr:
@@ -542,8 +573,33 @@ def drum(sctx: SizingContext, unit: UnitRef, item_id: str) -> SizingPlan:
         items=(item,),
         outputs=tuple(outputs),
         theta=tuple(theta),
-        regime_entries=tuple(entries),
+        regime_entries=(liquid_entry, vapour_entry, *rule_6),
         refusals=tuple(refusals),
+    )
+
+
+def _drum_controlling(
+    sctx: SizingContext,
+    item_id: str,
+    members: Sequence[tuple[str, FunctionalBuilder]],
+    outputs: Sequence[OutputDef],
+    theta: Sequence[Theta],
+) -> tuple[str, tuple[RegimeEntry, ...]]:
+    """The drum's controlling diameter member by §4.3.2 rule 6, with its regime entries: `L` and
+    none when `L` is the only member; else the held `controlling` choice, or the member with the
+    largest diameter at the state (`select_argmax` over the members' diameters, evaluated with
+    `outputs` and `theta`), and its `argmax` entry."""
+    if len(members) == 1:
+        return "L", ()
+    probe = [OutputDef(f"size.{item_id}.{name}.diameter", "m", build) for name, build in members]
+    floats = sctx.values([*outputs, *probe], theta)
+    values = {name: floats[f"size.{item_id}.{name}.diameter"] for name, _ in members}
+    held = sctx.ctx.regime.choice(f"{item_id}.controlling")
+    names = [name for name, _ in members]
+    controlling = held or names[select_argmax([values[name] for name in names])]
+    rows = argmax_rows(members, controlling, values)
+    return controlling, (
+        RegimeEntry(f"{item_id}.controlling", "argmax", controlling, "§4.3.2 rule 6", rows),
     )
 
 
@@ -713,7 +769,7 @@ class _Column:
             SizingPlan(limitations=(Limitation("COLUMN_AUXILIARIES_NOT_COSTED", u),))
         )
         if structure.condenser != "none":
-            duty = _duty(sctx, u, cascade.stage_duty_id(u, 1))
+            duty = _duty(sctx, u, cascade_spec.stage_duty_id(u, 1))
             if duty is None:
                 plan = plan.merged(_refused("SIZING_INPUT_UNAVAILABLE", f"{u}.condenser.Q"))
             else:
@@ -723,14 +779,14 @@ class _Column:
                         sub_item(u, "condenser"),
                         u,
                         duty,
-                        cascade.stage_temperature_id(u, 2),
-                        cascade.stage_temperature_id(u, 1),
+                        cascade_spec.stage_temperature_id(u, 2),
+                        cascade_spec.stage_temperature_id(u, 1),
                         forced_service="cooling",
                         design_pressure=design,
                     )
                 )
         if structure.reboiler != "none":
-            duty = _duty(sctx, u, cascade.stage_duty_id(u, n))
+            duty = _duty(sctx, u, cascade_spec.stage_duty_id(u, n))
             if duty is None:
                 plan = plan.merged(_refused("SIZING_INPUT_UNAVAILABLE", f"{u}.reboiler.Q"))
             else:
@@ -740,8 +796,8 @@ class _Column:
                         sub_item(u, "reboiler"),
                         u,
                         duty,
-                        cascade.stage_temperature_id(u, n - 1),
-                        cascade.stage_temperature_id(u, n),
+                        cascade_spec.stage_temperature_id(u, n - 1),
+                        cascade_spec.stage_temperature_id(u, n),
                         forced_service="heating",
                         design_pressure=design,
                     )
@@ -794,12 +850,12 @@ class _Column:
         members: list[tuple[str, FunctionalBuilder]] = []
         for j in range(first, last + 1):
             vap_ids = (
-                tuple(cascade.vapor_id(u, j, c) for c in components),
-                cascade.stage_temperature_id(u, j),
-                cascade.stage_pressure_id(u, j),
+                tuple(cascade_spec.vapor_id(u, j, c) for c in components),
+                cascade_spec.stage_temperature_id(u, j),
+                cascade_spec.stage_pressure_id(u, j),
             )
             liq_ids = (
-                tuple(cascade.liquid_id(u, j, c) for c in components),
+                tuple(cascade_spec.liquid_id(u, j, c) for c in components),
                 vap_ids[1],
                 vap_ids[2],
             )

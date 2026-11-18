@@ -12,23 +12,21 @@ from dataclasses import replace
 from test_s01_cascade_wo1 import CONTEXT, REFERENCE, UNIT, _spec
 from test_s01_cascade_wo2 import PROVIDER, solved
 
-from openflowsheet.models.syn001.cascade import (
-    CascadeSpec,
-    DormantAnswer,
-    _k_values,
-    dormant_answer,
-    liquid_id,
-    stage_pressure_id,
-    stage_temperature_id,
-    validate,
-)
+from openflowsheet.models.lifted_tolerance import KIND_TOLERANCE
+from openflowsheet.models.syn001.cascade import DormantAnswer, dormant_answer, validate
+from openflowsheet.models.syn001.cascade_init import _k_values
 from openflowsheet.models.syn001.cascade_solve import (
     DECLARATION_CONTEXT,
     acceptance_failures,
     compile_cascade,
     solve_cascade,
 )
-from openflowsheet.orchestrator.region import KIND_TOLERANCE
+from openflowsheet.models.syn001.cascade_spec import (
+    CascadeSpec,
+    liquid_id,
+    stage_pressure_id,
+    stage_temperature_id,
+)
 
 #: Probe E1 of the review: C2's `top` at the upper adjacent double of its bubble temperature.
 E1_TEMPERATURE = 359.1106267639602

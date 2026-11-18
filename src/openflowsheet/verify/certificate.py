@@ -1,7 +1,7 @@
 """The verifier: issue or withhold a certificate for a solve. §8.
 
-The check set, the verdict rules (`grade`) and the certificate record are `verify.verdict`'s;
-this module re-exports them.
+The check set, the verdict rules (`grade`) and the certificate record are `verify.verdict`'s and
+are imported from there (ADR 0076 I-8).
 
 A `FAILED` verdict on a solve the solver called `CONVERGED` is the whole point of the package,
 and it is recorded as `false_success_detected` rather than left for a reader to infer.
@@ -20,7 +20,7 @@ from __future__ import annotations
 
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Final
+from typing import TYPE_CHECKING, Any, Final, NamedTuple
 
 import numpy as np
 import numpy.typing as npt
@@ -30,7 +30,7 @@ from openflowsheet.canonical import document_sha256, state_sha256
 from openflowsheet.compile.casadi_backend import compile_problem
 from openflowsheet.compile.reference import state_vector
 from openflowsheet.compile.spec import ProblemSpec
-from openflowsheet.compiled import CompiledProblem, EvaluationContext
+from openflowsheet.compiled import CompiledProblem, CompiledProblemMetadata, EvaluationContext
 from openflowsheet.models.syn001.flowsheet import STREAMS, Syn001Flowsheet
 from openflowsheet.numerics.scaling import Scaling
 from openflowsheet.orchestrator.rank import (
@@ -47,6 +47,7 @@ from openflowsheet.thermo.syn001 import Syn001Provider
 from openflowsheet.verify import (
     CheckResult,
     Limitation,
+    VerificationStatus,
     unsupported,
 )
 from openflowsheet.verify.checks import (
@@ -62,19 +63,20 @@ from openflowsheet.verify.checks import (
     witness_classes,
 )
 from openflowsheet.verify.projection import PROJECTED_CATEGORIES, Projection, project
-from openflowsheet.verify.verdict import REGISTERED_POLICY_ID as REGISTERED_POLICY_ID
-from openflowsheet.verify.verdict import CheckPolicy as CheckPolicy
-from openflowsheet.verify.verdict import CheckReport as CheckReport
-from openflowsheet.verify.verdict import ExternalEvidence as ExternalEvidence
-from openflowsheet.verify.verdict import SolutionCertificate as SolutionCertificate
-from openflowsheet.verify.verdict import _check_set
-from openflowsheet.verify.verdict import absent_state_certificate as absent_state_certificate
-from openflowsheet.verify.verdict import grade as grade
-from openflowsheet.verify.verdict import run_checks as run_checks
-from openflowsheet.verify.verdict import statements_for as statements_for
+from openflowsheet.verify.verdict import (
+    CheckPolicy,
+    ExternalEvidence,
+    SolutionCertificate,
+    _check_set,
+    absent_state_certificate,
+    grade,
+    statements_for,
+)
 
 if TYPE_CHECKING:
-    from openflowsheet.models.revision_flowsheet import ComponentBasis
+    from openflowsheet.models.lifted import LiftedSplit
+    from openflowsheet.models.revision_flowsheet import ComponentBasis, RevisionView
+    from openflowsheet.thermo import PropertyCapabilities
     from openflowsheet.verify.regularity import RegularityEvidence
     from openflowsheet.verify.zero_flow import ZeroFlowSplit
 
@@ -121,10 +123,11 @@ def _guard(
     this declaration at this state.
 
     The solve's identity is read from its root fingerprint and from its `SolvePlan` (the result's,
-    or the region plan the caller holds); `x_final` from `state=`, else `final_state`, else
-    `state`. Refusals are `VerifierError`s with an R0 message: `declaration_unidentified`,
-    `declaration_mismatch(<field>)`, `state_mismatch(full_state_sha256)`. Only the hash
-    comparison is skipped under `state=` (K04 §9's injections)."""
+    or the region plan the caller holds) and compared by `_require_claimed_identity`; `x_final`
+    from `state=`, else `final_state`, else `state`. Refusals are `VerifierError`s with an R0
+    message: `declaration_unidentified`, `declaration_mismatch(<field>)`,
+    `state_mismatch(full_state_sha256)`. Only the hash comparison is skipped under `state=`
+    (K04 §9's injections)."""
     source = _last_solve(result)
     fingerprint = getattr(source, "root_fingerprint", None)
     own_plan = getattr(source, "plan", None)
@@ -134,16 +137,7 @@ def _guard(
     if fingerprint is None and own_plan is None:
         raise VerifierError("declaration_unidentified")
     plans = [plan for plan in (own_plan, solve_plan) if plan is not None]
-    metadata = compiled.metadata
-    claimed: list[tuple[str, str]] = []
-    if fingerprint is not None:
-        claimed.append((fingerprint["model_version"], fingerprint["constants_sha256"]))
-    claimed += [(plan.model_version, plan.constants_sha256) for plan in plans]
-    for model_version, constants in claimed:
-        if model_version != metadata.model_version:
-            raise VerifierError("declaration_mismatch(model_version)")
-        if constants != metadata.constants_sha256:
-            raise VerifierError("declaration_mismatch(constants_sha256)")
+    _require_claimed_identity(fingerprint, plans, compiled.metadata)
     # §4.8 item 1: the first differing of `model_version`, `constants_sha256` and `revision`.
     if not revision_matches:
         raise VerifierError("declaration_mismatch(revision)")
@@ -165,6 +159,26 @@ def _guard(
         "row_ids": list(tear_plan.tear_row_ids) if tear_plan is not None else [],
     }
     return _Solved(source, final_state, tear)
+
+
+def _require_claimed_identity(
+    fingerprint: Mapping[str, Any] | None,
+    plans: Sequence[Any],
+    metadata: CompiledProblemMetadata,
+) -> None:
+    """T04 §4.8 item 1 (ADR 0010 D9.2): every `(model_version, constants_sha256)` the solve
+    claims, its root `fingerprint`'s first and then each of `plans`' in order, is the compiled
+    declaration's (`metadata`). The first claim that differs raises `VerifierError`
+    `declaration_mismatch(model_version)`, else `declaration_mismatch(constants_sha256)`."""
+    claimed: list[tuple[str, str]] = []
+    if fingerprint is not None:
+        claimed.append((fingerprint["model_version"], fingerprint["constants_sha256"]))
+    claimed += [(plan.model_version, plan.constants_sha256) for plan in plans]
+    for model_version, constants in claimed:
+        if model_version != metadata.model_version:
+            raise VerifierError("declaration_mismatch(model_version)")
+        if constants != metadata.constants_sha256:
+            raise VerifierError("declaration_mismatch(constants_sha256)")
 
 
 def verify(
@@ -203,10 +217,7 @@ def verify(
         phase_signature=None,
     )
     return _certify(
-        tear,
-        result,
-        solved,
-        final_state,
+        _Subject(tear, result, solved, final_state),
         context=context,
         specifications=specification_checks(flowsheet, final_state, resolved.tolerances),
         split_fraction=flowsheet.split_fraction,
@@ -279,10 +290,7 @@ def verify_bound(
         tolerances=resolved.tolerances,
     )
     return _certify(
-        target,
-        result,
-        solved,
-        final_state,
+        _Subject(target, result, solved, final_state),
         context=context,
         specifications=specifications,
         split_fraction=split_fraction,
@@ -375,8 +383,10 @@ def verify_revision(
     """K04 on a **revision-built** flowsheet (T05 design note §4.2): the binding's declaration,
     judged by the table of `verify.table` against the revision's own values.
 
-    The guard, the residual rows, the alias certificates and everything after the check set
-    (`_issue`) are the ones `verify_bound` runs; only the check set in between is the table's. The
+    The guard, the residual rows, the alias certificates (`_require_planned_aliases`) and
+    everything after the check set (`_issue`) are the ones `verify_bound` runs; only the check
+    set in between is the table's, and the derivative witness's columns are classified on the
+    revision (`_revision_witness`). The
     table reads the revision through `parse_revision` (ids, pins, parameters) and a fresh
     provider, never the binding's flowsheet or units (R-016). `binding` is an
     `application.revision_binding.RevisionBinding`; `revision` must be the document it was bound
@@ -428,15 +438,7 @@ def verify_revision(
     target = BoundDeclaration(
         binding.spec, compiled, final_state, pressure_domain=fresh.describe().domain["P"]
     )
-    if solve_plan is not None:
-        found = [alias_document(row) for row in target.partition.elimination.eliminated]
-        planned = [alias_document(row) for row in solve_plan.eliminated_rows]
-        if found != planned:
-            raise VerifierError(
-                "the certified aliases of the declaration at x_final are not the region plan's: "
-                f"{[row['row_id'] for row in found]} against "
-                f"{[row['row_id'] for row in planned]}"
-            )
+    _require_planned_aliases(target, solve_plan)
 
     try:
         view = parse_revision(revision)
@@ -511,53 +513,41 @@ def verify_revision(
     bounds = [k for k, check in enumerate(table) if check.category == "bounds_and_domain"]
     at = bounds[-1] + 1 if bounds else len(table)
     checks += [*table[:at], *surrogate_checks, *table[at:]]
-    classes = witness_classes(
-        target.spec.variable_ids,
-        final_state,
-        view.components,
-        basis=basis,
-        streams=view.streams,
-        splits=splits,
-    )
+    witness = _revision_witness(target, final_state, view, basis, splits)
     return _issue(
-        target,
-        result,
-        solved,
-        final_state,
-        checks=checks,
-        digest=digest,
+        _Subject(target, result, solved, final_state),
+        checked=_Checked(
+            checks, digest, screened, projection, surrogate_limitations, fresh, external
+        ),
         policy=resolved,
         declaration=NOMINAL_DECLARATION,
         phase_branch=revision_phase_branch(
             final_state, view.streams, splits, components=view.components
         ),
-        screened=screened,
-        projection=projection,
-        provider=fresh,
-        # K04 §4.8.2 (amendment WIT, ADR 0073): not differenced, and listed — §14.2 B17
-        # *Consequence* as narrowed by §14.3 C2 (R-281), a `pr-c1-v1` revision's stream
-        # component-flow columns exactly 0.0 (class 1), and a dormant lifted liquid side on a
-        # Wilson basis (class 2, A2); differenced one-sided — S11 rulings item 2's (R-831) Z
-        # (class 3) and a dormant lifted vapour side on a Wilson basis (class 4, A1).
-        unstenciled=frozenset(name for name, k in classes.items() if k in (1, 2)),
-        one_sided=frozenset(name for name, k in classes.items() if k in (3, 4)),
-        components=view.components,
-        # ADR 0073 D5 as amended: classes 1 and 2 never share a basis, so the reason follows it.
-        skipped_reason=(
-            "wilson_dormant_liquid_columns"
-            if basis in ONE_SIDED_BASES
-            else "pr_c1_zero_flow_columns"
-        ),
-        appended=surrogate_limitations,
-        external=external,
+        witness=witness,
     )
+
+
+def _require_planned_aliases(target: BoundDeclaration, solve_plan: Any) -> None:
+    """§4.8 item 3: the certified aliases of `target`'s declaration at `x_final` are the ones the
+    region's `SolvePlan` eliminated, compared as `alias_document`s in order; else a
+    `VerifierError` naming both row lists. Nothing to compare when `solve_plan` is `None`."""
+    if solve_plan is not None:
+        found = [alias_document(row) for row in target.partition.elimination.eliminated]
+        planned = [alias_document(row) for row in solve_plan.eliminated_rows]
+        if found != planned:
+            raise VerifierError(
+                "the certified aliases of the declaration at x_final are not the region plan's: "
+                f"{[row['row_id'] for row in found]} against "
+                f"{[row['row_id'] for row in planned]}"
+            )
 
 
 def _staged_splits(view: Any) -> dict[str, Any]:
     """S11 design §10.11 (B4): `column_staged_splits(column_structure(view, components))` for
     each instance whose model is in `STAGED_MODELS`, by instance id in declaration order — the
     function the column's builder calls, on the revision's own view of the instance."""
-    from openflowsheet.models.syn001.column import MODEL_ID as COLUMN
+    from openflowsheet.models.syn001.column_spec import MODEL_ID as COLUMN
     from openflowsheet.models.syn001.column_unit import column_staged_splits, column_structure
     from openflowsheet.orchestrator.splits import STAGED_MODELS
 
@@ -570,6 +560,43 @@ def _staged_splits(view: Any) -> dict[str, Any]:
         structure = column_structure(instance, view.components)
         staged[instance.unit_id] = column_staged_splits(structure)
     return staged
+
+
+def _revision_witness(
+    target: BoundDeclaration,
+    final_state: Mapping[str, float],
+    view: RevisionView,
+    basis: str,
+    splits: Sequence[LiftedSplit],
+) -> _WitnessColumns:
+    """K04 §4.8.2 (amendment WIT, ADR 0073): the columns of `target`'s declaration the
+    derivative witness does not difference or differences one-sided, by `witness_classes` at
+    `final_state` over `view`'s components and streams and the lifted `splits` on the fresh
+    provider's `basis`, and the reason its partial-witness limitation records."""
+    classes = witness_classes(
+        target.spec.variable_ids,
+        final_state,
+        view.components,
+        basis=basis,
+        streams=view.streams,
+        splits=splits,
+    )
+    return _WitnessColumns(
+        # Not differenced, and listed — §14.2 B17 *Consequence* as narrowed by §14.3 C2 (R-281),
+        # a `pr-c1-v1` revision's stream component-flow columns exactly 0.0 (class 1), and a
+        # dormant lifted liquid side on a Wilson basis (class 2, A2); differenced one-sided —
+        # S11 rulings item 2's (R-831) Z (class 3) and a dormant lifted vapour side on a Wilson
+        # basis (class 4, A1).
+        unstenciled=frozenset(name for name, k in classes.items() if k in (1, 2)),
+        one_sided=frozenset(name for name, k in classes.items() if k in (3, 4)),
+        components=view.components,
+        # ADR 0073 D5 as amended: classes 1 and 2 never share a basis, so the reason follows it.
+        skipped_reason=(
+            "wilson_dormant_liquid_columns"
+            if basis in ONE_SIDED_BASES
+            else "pr_c1_zero_flow_columns"
+        ),
+    )
 
 
 def alias_document(row: Any) -> dict[str, Any]:
@@ -644,9 +671,7 @@ def _revision_values(
     for name, entry in entries.items():
         role = entry.get("role")
         if role == "free":
-            for column in targets.get(name, ()):
-                if column in binding.freed.values():
-                    freed[column] = name
+            freed.update(_freed_columns(binding, targets.get(name, ()), name))
             continue
         if role != "fixed":
             continue
@@ -657,6 +682,13 @@ def _revision_values(
     if split_fraction is None:
         raise VerifierError("the revision declares no split fraction; §4.3 cannot be judged")
     return values, freed, split_fraction
+
+
+def _freed_columns(binding: Any, columns: Sequence[str], entry_id: str) -> dict[str, str]:
+    """The target `columns` of the revision's `role: free` entry `entry_id` that the binding
+    freed (`binding.freed`), each mapped to `entry_id`, in `columns`' order; a repeated column
+    is one entry."""
+    return {column: entry_id for column in columns if column in binding.freed.values()}
 
 
 class BoundDeclaration:
@@ -797,11 +829,22 @@ def _absent(
     )
 
 
+class _Subject(NamedTuple):
+    """What a certificate is issued about (T04 §4.8 items 1–2): `target`'s declaration at
+    `final_state`, for the solve `result` the entry point was handed, as the guard resolved it."""
+
+    #: The declaration judged: SYN-001's tear problem or a `BoundDeclaration`.
+    target: Any
+    #: The solve result the entry point was handed.
+    result: Any
+    #: The guard's resolution of `result`.
+    solved: _Solved
+    #: `x_final`: `solved.final_state`, never `None` here.
+    final_state: Mapping[str, float]
+
+
 def _certify(
-    target: Any,
-    result: Any,
-    solved: _Solved,
-    final_state: Mapping[str, float],
+    subject: _Subject,
     *,
     context: EvaluationContext,
     specifications: Sequence[CheckResult],
@@ -809,8 +852,9 @@ def _certify(
     policy: CheckPolicy,
     declaration: Mapping[str, Any],
 ) -> SolutionCertificate:
-    """§4, §7 and §8 on `target`'s declaration at `final_state`: the one engine both entry points
-    share. The regularity screen runs before the fresh-flash categories (ADR 0013 D1)."""
+    """§4, §7 and §8 on `subject`'s declaration at its `final_state`: the one engine both entry
+    points share. The regularity screen runs before the fresh-flash categories (ADR 0013 D1)."""
+    target, final_state = subject.target, subject.final_state
     fresh = Syn001Provider()
     rows, digest = residual_checks(
         target.compiled,
@@ -847,18 +891,12 @@ def _certify(
         projection,
     )
     return _issue(
-        target,
-        result,
-        solved,
-        final_state,
-        checks=checks,
-        digest=digest,
+        subject,
+        checked=_Checked(checks, digest, screened, projection),
         policy=policy,
         declaration=declaration,
         phase_branch=_phase_branch(final_state),
-        screened=screened,
-        projection=projection,
-        components=COMPONENTS,
+        witness=_WitnessColumns(components=COMPONENTS),
     )
 
 
@@ -956,37 +994,68 @@ def _judged_at(
     ]
 
 
+@dataclass(frozen=True)
+class _WitnessColumns:
+    """K04 §4.8.2 (amendment WIT, ADR 0073): how the derivative witness treats the declaration's
+    columns, and the reason its `derivative_witness_partial` limitation records (§14.3 C2)."""
+
+    #: The columns not differenced, and listed (`witness_classes`' classes 1 and 2).
+    unstenciled: frozenset[str] = frozenset()
+    #: The columns differenced one-sided (classes 3 and 4).
+    one_sided: frozenset[str] = frozenset()
+    #: The components whose class-5 columns `escalate_column` may re-difference.
+    components: Sequence[str] = ()
+    #: The limitation's `reason` when `unstenciled` holds a column of the declaration.
+    skipped_reason: str = "pr_c1_zero_flow_columns"
+
+
+@dataclass(frozen=True)
+class _Checked:
+    """The check set a caller of `_issue` judged at `x_final` (T05 design note §4.2), with the
+    evidence it was judged with and the caller's own limitations."""
+
+    #: The caller's check set; `_issue` extends this list in place.
+    checks: list[CheckResult]
+    #: The residual state hash of the caller's residual checks.
+    digest: str
+    #: The regularity screen the caller ran at `x_final` before its fresh-flash categories (ADR
+    #: 0013 D1), on the zero-flow form of its `ZERO_FLOW` splits (T05b spec §9.3; none for
+    #: SYN-001).
+    screened: _Screened
+    #: Where those categories were judged, recorded as `transformations.projection` (K04-F9 spec
+    #: §5.5).
+    projection: Projection
+    #: The caller's own limitations, recorded after the grade's (M04 spec §8.6: a surrogate's).
+    appended: Sequence[Limitation] = ()
+    #: The fresh provider the checks ran on (M02 design note §14.2 B15); `None` for SYN-001's.
+    provider: PropertyProvider | None = None
+    #: A coupled run's evidence about its external units, whose checks are judged with the check
+    #: set (M02 design note §4.4); `None` when the run has none.
+    external: ExternalEvidence | None = None
+
+
 def _issue(
-    target: Any,
-    result: Any,
-    solved: _Solved,
-    final_state: Mapping[str, float],
+    subject: _Subject,
     *,
-    checks: list[CheckResult],
-    digest: str,
+    checked: _Checked,
     policy: CheckPolicy,
     declaration: Mapping[str, Any],
     phase_branch: Mapping[str, Any],
-    screened: _Screened,
-    projection: Projection,
-    provider: PropertyProvider | None = None,
-    unstenciled: frozenset[str] = frozenset(),
-    one_sided: frozenset[str] = frozenset(),
-    components: Sequence[str] = (),
-    skipped_reason: str = "pr_c1_zero_flow_columns",
-    appended: Sequence[Limitation] = (),
-    external: ExternalEvidence | None = None,
+    witness: _WitnessColumns,
 ) -> SolutionCertificate:
     """§4.8, §7 and §8 after the check set: the derivative witness, the grade and the certificate
     (T05 design note §4.2). Shared by `_certify` (SYN-001's check set) and `verify_revision` (the
-    table's); `checks` and `digest` are the caller's check set and its residual state hash,
-    `phase_branch` the caller's record of the branch, `screened` the regularity screen the caller
-    ran at `final_state` before its fresh-flash categories (ADR 0013 D1), on the zero-flow form of
-    its `ZERO_FLOW` splits (T05b spec §9.3; none for SYN-001), and `projection` where those
-    categories were judged, recorded as `transformations.projection` (K04-F9 spec §5.5)."""
-    from openflowsheet.verify.checks import derivative_witness, witness_skipped_columns
+    table's); `subject` is what the certificate is about, `checked` the caller's check set at
+    its `final_state` with its residual state hash, regularity screen, projection, own
+    limitations, fresh provider and external evidence, `phase_branch` the caller's record of the
+    branch, and `witness` the columns the derivative witness does not difference or differences
+    one-sided."""
+    from openflowsheet.verify.checks import derivative_witness
     from openflowsheet.verify.regularity import solution_error_bound
 
+    target, result, solved, final_state = subject
+    checks, digest, screened = checked.checks, checked.digest, checked.screened
+    external = checked.external
     resolved = policy
     plan = getattr(result, "plan", None)
     plan_id = getattr(plan, "plan_id", "")
@@ -994,7 +1063,11 @@ def _issue(
         # M02 design note §4.4: the coupling checks are judged with the check set.
         checks += external.checks
     checks += derivative_witness(
-        target, final_state, unstenciled=unstenciled, one_sided=one_sided, components=components
+        target,
+        final_state,
+        unstenciled=witness.unstenciled,
+        one_sided=witness.one_sided,
+        components=witness.components,
     )
 
     matrix, scaled_residual = screened.matrix, screened.scaled_residual
@@ -1008,32 +1081,10 @@ def _issue(
     if bound is None:
         bound = solution_error_bound(matrix, scaled_residual)
 
-    derivative_ok = all(
-        check.result == "pass" for check in checks if check.category == "derivative_witness"
-    )
-    status, limitations = grade(
-        checks,
-        policy=resolved,
-        regularity_status=regularity.status,
-        regularity_reason=regularity.ill_conditioned_reason,
-        derivative_ok=derivative_ok,
-    )
-    # M02 design note §14.3 C2 (R-281): the columns the witness did not difference, recorded
-    # where a reader enumerates what was not established; nothing when none was skipped.
-    skipped = witness_skipped_columns(target.spec.variable_ids, unstenciled)
-    if skipped:
-        limitations.append(
-            Limitation(
-                "derivative_witness_partial",
-                {"columns": skipped, "reason": skipped_reason},
-            )
-        )
-    if external is not None:
-        limitations += external.limitations
-    # The caller's own limitations after the grade's (M04 spec §8.6: a surrogate's).
-    limitations.extend(appended)
+    status, limitations = _graded(target, checked, resolved, witness)
     # M02 design note §14.2 B15: the fresh provider the checks ran on, which the independence
     # qualifications and the statements name; SYN-001's unless given.
+    provider = checked.provider
     if provider is None:
         provider = Syn001Provider()
     capabilities = provider.describe()
@@ -1062,45 +1113,106 @@ def _issue(
             dict(item) for item in getattr(solved.source, "branch_provenance", ()) or ()
         ),
         root_fingerprint=getattr(solved.source, "root_fingerprint", None),
-        transformations={
-            "scales": {"column": dict(target.scaling.column), "row": dict(target.scaling.row)},
-            "eliminated_rows": [
-                row.as_document() for row in target.partition.elimination.eliminated
-            ],
-            "tear": dict(solved.tear),
-            # ADR 0010 D9.4: what the binding removed, freed and promoted; empty when nominal.
-            "declaration": {key: _plain(value) for key, value in declaration.items()},
-            # ADR 0013 D5: where the fresh-flash categories were judged, and why. R0, no float.
-            "projection": projection.as_document(),
-        },
-        derivative_provenance={
-            "path": "assembled_schur",
-            "pattern_provenance": identity.get("pattern_provenance", "declared-by-compiler"),
-            # `None` when the witness did not run (T06 spec §8.2): a 0.0 would read as a pass.
-            "witness_max_diff": max(
-                (
-                    c.value
-                    for c in checks
-                    if c.category == "derivative_witness" and c.value is not None
-                ),
-                default=None,
-            ),
-            # M02 design note §4.4: an external unit's map has no derivative (ADR 0034 D4).
-            **({} if external is None else {"external_map": dict(external.derivatives)}),
-        },
-        independence_qualifications=tuple(
-            {
-                "check_id": check.id,
-                "provider_id": capabilities.provider_id,
-                "implementation_sha256": capabilities.implementation_sha256,
-                "data_sha256": capabilities.data_sha256,
-                "reference_convention": capabilities.reference_convention,
-            }
-            for check in checks
-            if check.independence_qualification is not None
-        ),
+        transformations=_transformations(target, solved, declaration, checked.projection),
+        derivative_provenance=_derivative_provenance(identity, checks, external),
+        independence_qualifications=_independence_qualifications(checks, capabilities),
         limitations=tuple(limitations),
         statements=statements_for(provider),
+    )
+
+
+def _graded(
+    target: Any,
+    checked: _Checked,
+    policy: CheckPolicy,
+    witness: _WitnessColumns,
+) -> tuple[VerificationStatus, list[Limitation]]:
+    """§8.1's verdict on `checked`'s check set, the derivative witness's checks included, with
+    its limitations: `grade`'s under `policy` and the screen's regularity, then
+    `derivative_witness_partial` when `witness` left a column of `target`'s declaration
+    undifferenced, `checked.external`'s, and the caller's own (`checked.appended`)."""
+    from openflowsheet.verify.checks import witness_skipped_columns
+
+    regularity = checked.screened.regularity
+    derivative_ok = all(
+        check.result == "pass" for check in checked.checks if check.category == "derivative_witness"
+    )
+    status, limitations = grade(
+        checked.checks,
+        policy=policy,
+        regularity_status=regularity.status,
+        regularity_reason=regularity.ill_conditioned_reason,
+        derivative_ok=derivative_ok,
+    )
+    # M02 design note §14.3 C2 (R-281): the columns the witness did not difference, recorded
+    # where a reader enumerates what was not established; nothing when none was skipped.
+    skipped = witness_skipped_columns(target.spec.variable_ids, witness.unstenciled)
+    if skipped:
+        limitations.append(
+            Limitation(
+                "derivative_witness_partial",
+                {"columns": skipped, "reason": witness.skipped_reason},
+            )
+        )
+    if checked.external is not None:
+        limitations += checked.external.limitations
+    # The caller's own limitations after the grade's (M04 spec §8.6: a surrogate's).
+    limitations.extend(checked.appended)
+    return status, limitations
+
+
+def _transformations(
+    target: Any, solved: _Solved, declaration: Mapping[str, Any], projection: Projection
+) -> dict[str, Any]:
+    """The certificate's `transformations` record: `target`'s scales and eliminated rows, the
+    solve's tear, the binding's `declaration` and where the fresh-flash categories were judged
+    (`projection`)."""
+    return {
+        "scales": {"column": dict(target.scaling.column), "row": dict(target.scaling.row)},
+        "eliminated_rows": [row.as_document() for row in target.partition.elimination.eliminated],
+        "tear": dict(solved.tear),
+        # ADR 0010 D9.4: what the binding removed, freed and promoted; empty when nominal.
+        "declaration": {key: _plain(value) for key, value in declaration.items()},
+        # ADR 0013 D5: where the fresh-flash categories were judged, and why. R0, no float.
+        "projection": projection.as_document(),
+    }
+
+
+def _derivative_provenance(
+    identity: Mapping[str, Any], checks: Sequence[CheckResult], external: ExternalEvidence | None
+) -> dict[str, Any]:
+    """The certificate's `derivative_provenance` record: the assembled-Schur path, the screen's
+    pattern provenance (`identity`), the largest derivative-witness value in `checks`, and an
+    `external` unit's derivative map when there is one."""
+    return {
+        "path": "assembled_schur",
+        "pattern_provenance": identity.get("pattern_provenance", "declared-by-compiler"),
+        # `None` when the witness did not run (T06 spec §8.2): a 0.0 would read as a pass.
+        "witness_max_diff": max(
+            (c.value for c in checks if c.category == "derivative_witness" and c.value is not None),
+            default=None,
+        ),
+        # M02 design note §4.4: an external unit's map has no derivative (ADR 0034 D4).
+        **({} if external is None else {"external_map": dict(external.derivatives)}),
+    }
+
+
+def _independence_qualifications(
+    checks: Sequence[CheckResult], capabilities: PropertyCapabilities
+) -> tuple[dict[str, str], ...]:
+    """The certificate's `independence_qualifications`: for each check of `checks` that carries
+    an independence qualification, in check order, the fresh provider it ran on (`capabilities`,
+    M02 design note §14.2 B15)."""
+    return tuple(
+        {
+            "check_id": check.id,
+            "provider_id": capabilities.provider_id,
+            "implementation_sha256": capabilities.implementation_sha256,
+            "data_sha256": capabilities.data_sha256,
+            "reference_convention": capabilities.reference_convention,
+        }
+        for check in checks
+        if check.independence_qualification is not None
     )
 
 

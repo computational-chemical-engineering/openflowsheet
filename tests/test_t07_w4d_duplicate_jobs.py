@@ -25,9 +25,8 @@ from t07_corpus import CORPUS
 from t07_jobs_support import PATIENCE_S, commit, lifecycle_violations
 from t07_process_support import contend_process_submit, solve_request
 
-from openflowsheet.application.contract import ApplicationError
+from openflowsheet.application.errors import API_ERROR_HTTP_STATUS, ApplicationError
 from openflowsheet.application.local import LocalApplication
-from openflowsheet.application.types import API_ERROR_HTTP_STATUS
 
 SPAWN = multiprocessing.get_context("spawn")
 THREADS = 25

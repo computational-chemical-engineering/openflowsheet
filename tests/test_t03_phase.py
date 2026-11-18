@@ -24,10 +24,13 @@ import pytest
 import yaml
 
 import openflowsheet.orchestrator.region as region_module
+import openflowsheet.orchestrator.region_attempts as region_attempts
+import openflowsheet.orchestrator.region_problem as region_problem_module
 from openflowsheet.compile.casadi_backend import compile_problem
-from openflowsheet.orchestrator.region import RegionResult, solve_region, syn001_lifted_splits
+from openflowsheet.numerics.solve_record import SolvePolicy, Trace
+from openflowsheet.orchestrator.region import solve_region, syn001_lifted_splits
+from openflowsheet.orchestrator.region_result import RegionResult
 from openflowsheet.orchestrator.tear import solve_tear
-from openflowsheet.orchestrator.trace import SolvePolicy, Trace
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 CASES = REPO_ROOT / "benchmarks" / "syn001" / "cases"
@@ -62,7 +65,7 @@ def run_case(case_id: str, monkeypatch: pytest.MonkeyPatch) -> Run:
     assert pre.final_state is not None
 
     calls: dict[int, list[float]] = {}
-    original = region_module._region_problem
+    original = region_problem_module._region_problem
 
     def observed(compiled, context, spec, scaling, base, free, rows, screen=None, opening=None):  # type: ignore[no-untyped-def]
         problem = original(compiled, context, spec, scaling, base, free, rows, screen, opening)
@@ -78,6 +81,7 @@ def run_case(case_id: str, monkeypatch: pytest.MonkeyPatch) -> Run:
         return replace(problem, residual=residual)
 
     monkeypatch.setattr(region_module, "_region_problem", observed)
+    monkeypatch.setattr(region_attempts, "_region_problem", observed)
     trace = Trace()
     result = solve_region(
         compiled=compile_problem(item.binding.spec),

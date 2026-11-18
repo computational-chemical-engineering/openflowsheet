@@ -19,8 +19,9 @@ parameter written in a unit of ADR 0016's table is converted to its kind's SI un
 validation and binding, and the conversion is recorded. Nothing stored is in a non-SI unit. No
 expression evaluation and no state objects. Everything here is a pure function over plain data.
 
-The other direction, for reading only, is `display-conversion-v1` (ADR 0075, `units.display`,
-re-exported here): an SI number a response carries gains a display value beside it.
+The other direction, for reading only, is `display-conversion-v1` (ADR 0075; its one home is
+`openflowsheet.units.display`, ADR 0076 I-6): an SI number a response carries gains a display
+value beside it.
 """
 
 from __future__ import annotations
@@ -38,9 +39,6 @@ from openflowsheet.canonical import integer_binary64
 
 __all__ = [
     "CONVERSION_ROWS",
-    "DISPLAY_CONVERSION_ID",
-    "DISPLAY_KINDS",
-    "DISPLAY_ROWS",
     "DIMENSION_ORDER",
     "FRACTION_PARAMETERS",
     "KIND_LOWER_BOUNDS_EXCLUSIVE",
@@ -53,8 +51,6 @@ __all__ = [
     "ConversionRule",
     "ConversionSource",
     "Dimension",
-    "DisplayUnits",
-    "DisplayUnitsError",
     "TargetClass",
     "UnitConversion",
     "UnitConversionError",
@@ -63,11 +59,8 @@ __all__ = [
     "combine_kinds",
     "convert_input_value",
     "dimension_of",
-    "display_item",
     "normalize_zero",
-    "parse_display_units",
     "read_number",
-    "text_unit",
 ]
 
 Dimension = tuple[int, int, int, int, int, int, int]
@@ -268,60 +261,14 @@ def check_quantity(quantity: Mapping[str, object]) -> tuple[str, ...]:
             problems.append(f"missing required field {field!r}")
 
     kind = quantity.get("kind")
-    dimension: Dimension | None = None
-    if isinstance(kind, str):
-        try:
-            dimension = dimension_of(kind)
-        except UnknownKindError as error:
-            problems.append(str(error))
-    elif "kind" in quantity:
-        problems.append(f"kind must be a string, got {kind!r}")
+    dimension, kind_problems = _kind_dimension(quantity, kind)
+    problems.extend(kind_problems)
 
     value = read_number(quantity.get("value")) if "value" in quantity else None
-    if "value" in quantity and value is None:
-        problems.append(f"value must be a number, got {quantity['value']!r}")
-    elif value is not None:
-        if not isfinite(value):
-            problems.append(
-                f"value must be finite, got {value!r}; nonfinite numbers are rejected in every "
-                "semantic input (ADR 0001 D1.5)"
-            )
-        elif value == 0.0 and copysign(1.0, value) < 0.0:
-            problems.append(
-                "value is -0.0; canonical form normalizes signed zero to +0.0 (ADR 0001 D1.5)"
-            )
+    problems.extend(_check_value(quantity, value))
 
     if dimension is not None and isinstance(kind, str):
-        declared = quantity.get("dimension")
-        if not (
-            isinstance(declared, list)
-            and len(declared) == len(DIMENSION_ORDER)
-            and all(isinstance(item, int) and not isinstance(item, bool) for item in declared)
-        ):
-            problems.append(
-                f"dimension must be {len(DIMENSION_ORDER)} integers in the order "
-                f"{list(DIMENSION_ORDER)}, got {declared!r}"
-            )
-        elif tuple(declared) != dimension:
-            problems.append(
-                f"dimension {declared} does not match kind {kind!r}, which is "
-                f"{list(dimension)} (ADR 0001 D1.2)"
-            )
-
-        expected_unit = _KIND_SI_UNITS[kind]
-        unit = quantity.get("unit")
-        if unit != expected_unit:
-            problems.append(
-                f"unit {unit!r} is not the internal SI unit for kind {kind!r}, which is "
-                f"{expected_unit!r}; display units belong in display_unit (ADR 0001 D1.1)"
-            )
-
-        bound = _KIND_LOWER_BOUNDS_EXCLUSIVE[kind]
-        if bound is not None and value is not None and isfinite(value) and value <= bound:
-            problems.append(f"kind {kind!r} requires value > {bound}, got {value!r}")
-        if kind == "mole_fraction" and value is not None and isfinite(value):
-            if not (0.0 <= value <= 1.0):
-                problems.append(f"mole_fraction must lie in [0, 1], got {value!r}")
+        problems.extend(_check_registration(quantity, kind, dimension, value))
 
     role = quantity.get("role")
     if "role" in quantity and role not in QUANTITY_ROLES:
@@ -338,14 +285,100 @@ def check_quantity(quantity: Mapping[str, object]) -> tuple[str, ...]:
     return tuple(problems)
 
 
-def _check_bounds(quantity: Mapping[str, object], value: float | None) -> list[str]:
+def _kind_dimension(
+    quantity: Mapping[str, object], kind: object
+) -> tuple[Dimension | None, list[str]]:
+    """The dimension ADR 0001 registers for the quantity's declared `kind`, and the problem that
+    leaves it `None`: an unknown kind, or a present `kind` that is not a string. An absent
+    `kind` gives `None` and no problem (the missing field is reported by the caller)."""
     problems: list[str] = []
+    dimension: Dimension | None = None
+    if isinstance(kind, str):
+        try:
+            dimension = dimension_of(kind)
+        except UnknownKindError as error:
+            problems.append(str(error))
+    elif "kind" in quantity:
+        problems.append(f"kind must be a string, got {kind!r}")
+    return dimension, problems
+
+
+def _check_value(quantity: Mapping[str, object], value: float | None) -> list[str]:
+    """The quantity's `value` as `read_number` gave it (None when absent or not a number): a
+    present `value` must be a number, finite, and not -0.0 (ADR 0001 D1.5)."""
+    problems: list[str] = []
+    if "value" in quantity and value is None:
+        problems.append(f"value must be a number, got {quantity['value']!r}")
+    elif value is not None:
+        if not isfinite(value):
+            problems.append(
+                f"value must be finite, got {value!r}; nonfinite numbers are rejected in every "
+                "semantic input (ADR 0001 D1.5)"
+            )
+        elif value == 0.0 and copysign(1.0, value) < 0.0:
+            problems.append(
+                "value is -0.0; canonical form normalizes signed zero to +0.0 (ADR 0001 D1.5)"
+            )
+    return problems
+
+
+def _check_registration(
+    quantity: Mapping[str, object], kind: str, dimension: Dimension, value: float | None
+) -> list[str]:
+    """What ADR 0001 registers for a known `kind`: the declared `dimension` must equal the kind's
+    `dimension` (D1.2), the `unit` must be its internal SI unit (D1.1), and a finite `value`
+    must respect the kind's exclusive lower bound and, for `mole_fraction`, lie in [0, 1]."""
+    problems: list[str] = []
+    declared = quantity.get("dimension")
+    if not (
+        isinstance(declared, list)
+        and len(declared) == len(DIMENSION_ORDER)
+        and all(isinstance(item, int) and not isinstance(item, bool) for item in declared)
+    ):
+        problems.append(
+            f"dimension must be {len(DIMENSION_ORDER)} integers in the order "
+            f"{list(DIMENSION_ORDER)}, got {declared!r}"
+        )
+    elif tuple(declared) != dimension:
+        problems.append(
+            f"dimension {declared} does not match kind {kind!r}, which is "
+            f"{list(dimension)} (ADR 0001 D1.2)"
+        )
+
+    expected_unit = _KIND_SI_UNITS[kind]
+    unit = quantity.get("unit")
+    if unit != expected_unit:
+        problems.append(
+            f"unit {unit!r} is not the internal SI unit for kind {kind!r}, which is "
+            f"{expected_unit!r}; display units belong in display_unit (ADR 0001 D1.1)"
+        )
+
+    bound = _KIND_LOWER_BOUNDS_EXCLUSIVE[kind]
+    if bound is not None and value is not None and isfinite(value) and value <= bound:
+        problems.append(f"kind {kind!r} requires value > {bound}, got {value!r}")
+    if kind == "mole_fraction" and value is not None and isfinite(value):
+        if not (0.0 <= value <= 1.0):
+            problems.append(f"mole_fraction must lie in [0, 1], got {value!r}")
+    return problems
+
+
+def _check_bounds(quantity: Mapping[str, object], value: float | None) -> list[str]:
+    """The quantity's declared `bounds` (none: no problems; not an object: that one problem): an
+    object whose present limits are finite numbers (`_read_limits`), the lower not above the
+    upper, and a finite `value` within them (`_limit_problems`)."""
     bounds = quantity.get("bounds")
     if bounds is None:
-        return problems
+        return []
     if not isinstance(bounds, Mapping):
         return [f"bounds must be an object with optional lower/upper, got {bounds!r}"]
+    limits, problems = _read_limits(bounds)
+    return problems + _limit_problems(limits, value)
 
+
+def _read_limits(bounds: Mapping[object, object]) -> tuple[dict[str, float], list[str]]:
+    """The finite `lower` and `upper` limits of `bounds`, keyed by name, and a problem for each
+    present limit that is not a finite number; an absent or `None` limit is neither."""
+    problems: list[str] = []
     limits: dict[str, float] = {}
     for name in ("lower", "upper"):
         if name not in bounds or bounds[name] is None:
@@ -355,7 +388,14 @@ def _check_bounds(quantity: Mapping[str, object], value: float | None) -> list[s
             problems.append(f"bounds.{name} must be a finite number, got {bounds[name]!r}")
         else:
             limits[name] = limit
+    return limits, problems
 
+
+def _limit_problems(limits: Mapping[str, float], value: float | None) -> list[str]:
+    """The problems of finite `limits`: a lower limit above the upper one, then a finite
+    `value` below the lower or above the upper limit (a `None` or nonfinite value is not
+    compared)."""
+    problems: list[str] = []
     if "lower" in limits and "upper" in limits and limits["lower"] > limits["upper"]:
         problems.append(
             f"bounds.lower {limits['lower']!r} exceeds bounds.upper {limits['upper']!r}"
@@ -589,16 +629,7 @@ def convert_input_value(
         raise UnitConversionError("unit")
     if value is None:
         return None, None
-    a = row.a
-    molar_mass: float | None = None
-    if row.rule == "mass_to_molar":
-        assert component is not None
-        molar_mass = molar_masses[component]
-        a = a / Fraction(repr(molar_mass))
-    try:
-        si_value = float(a * Fraction(repr(value)) + row.b)
-    except OverflowError:
-        raise UnitConversionError("value") from None
+    si_value, molar_mass = _row_conversion(row, value, component, molar_masses)
     return si_value, UnitConversion(
         source=source,
         input_id=input_id,
@@ -612,14 +643,20 @@ def convert_input_value(
     )
 
 
-# -- display-conversion-v1 (ADR 0075), re-exported; it reads the kind tables above --------------
-from openflowsheet.units.display import (  # noqa: E402
-    DISPLAY_CONVERSION_ID,
-    DISPLAY_KINDS,
-    DISPLAY_ROWS,
-    DisplayUnits,
-    DisplayUnitsError,
-    display_item,
-    parse_display_units,
-    text_unit,
-)
+def _row_conversion(
+    row: ConversionRow, value: float, component: str | None, molar_masses: Mapping[str, float]
+) -> tuple[float, float | None]:
+    """ADR 0016 D2 for one admitted `row`: `value` in SI, `RN(a·D(v) + b)`, and the molar mass
+    of `component` that a `mass_to_molar` row's `a` is divided by (`None` for any other row).
+    Raises `UnitConversionError("value")` when the result overflows binary64."""
+    a = row.a
+    molar_mass: float | None = None
+    if row.rule == "mass_to_molar":
+        assert component is not None
+        molar_mass = molar_masses[component]
+        a = a / Fraction(repr(molar_mass))
+    try:
+        si_value = float(a * Fraction(repr(value)) + row.b)
+    except OverflowError:
+        raise UnitConversionError("value") from None
+    return si_value, molar_mass

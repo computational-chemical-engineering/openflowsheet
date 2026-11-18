@@ -34,18 +34,18 @@ import pytest
 from t07_corpus import CORPUS
 
 from openflowsheet.application import validation
-from openflowsheet.application.binding import Unbound
-from openflowsheet.application.contract import ApplicationError
+from openflowsheet.application.binding_common import Unbound
+from openflowsheet.application.errors import ApplicationError
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.operations import OPERATIONS
 from openflowsheet.application.revision_binding import bind_revision_flowsheet
-from openflowsheet.application.types import schema_errors
 from openflowsheet.application.validation import validate
 from openflowsheet.models.revision_flowsheet import (
     RevisionError,
     canonical_components,
     component_basis,
 )
+from openflowsheet.schema_check import schema_errors
 from openflowsheet.thermo import pr_c1
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -93,7 +93,7 @@ def test_u02_a_library_only_providers_records_are_refused_typed() -> None:
 def test_u05_validate_for_optimization_is_unsupported(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    from openflowsheet.application.types import Change, Edit
+    from openflowsheet.application.transaction_types import Change, Edit
     from openflowsheet.studies.nlp.closure import audited_solver
 
     if audited_solver().available:
@@ -135,8 +135,8 @@ def test_u05_a_change_for_optimization_is_refused_audited(
     """U05 on the change path: `commit_change` and `preview_change` with `task="optimization"`
     refuse at the top of `_prepare` with `validate`'s audited `unsupported`,
     `task_unsupported(optimization)`, before any document is built, and write no revision."""
-    from openflowsheet.application import local
-    from openflowsheet.application.types import Change, Edit
+    from openflowsheet.application import revision_service
+    from openflowsheet.application.transaction_types import Change, Edit
 
     document = CORPUS["SYN-001-nominal"]()
     with LocalApplication.create(tmp_path / "project", project_id="u05c") as app:
@@ -147,7 +147,7 @@ def test_u05_a_change_for_optimization_is_refused_audited(
         def no_build(*_: object, **__: object) -> None:
             raise AssertionError("a document was built")
 
-        monkeypatch.setattr(local, "apply_edits", no_build)
+        monkeypatch.setattr(revision_service, "apply_edits", no_build)
         change = Change(edits=(Edit("set", ("description",), "x"),), task="optimization")
         with pytest.raises(ApplicationError) as refused:
             if operation == "commit_change":

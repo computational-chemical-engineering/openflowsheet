@@ -27,19 +27,14 @@ from conftest import REPO_ROOT
 from test_msg_surfaces import _c01
 
 from openflowsheet.application import cli
-from openflowsheet.application.contract import ApplicationError
+from openflowsheet.application.errors import ApiError, ApplicationError, SolveFailedError
+from openflowsheet.application.job_records import RunFailure, RunResult
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.operations import dispatch
 from openflowsheet.application.store import DATABASE_NAME
-from openflowsheet.application.types import (
-    ApiError,
-    Change,
-    RunFailure,
-    RunResult,
-    SolveFailedError,
-    schema_errors,
-)
+from openflowsheet.application.transaction_types import Change
 from openflowsheet.messages.render import render_failure
+from openflowsheet.schema_check import schema_errors
 
 RANKINE = REPO_ROOT / "examples" / "rankine-cycle.changeset.json"
 
@@ -103,8 +98,8 @@ def test_fb03_the_failure_names_the_inner_cause_and_its_elements(solved: Solved)
 def _context(solved: Solved, failure: RunFailure) -> Any:
     from openflowsheet.messages.render import RenderContext
 
-    with LocalApplication.open(solved.project) as app, app._store.reading() as connection:
-        revision = app._store.get_revision(connection, solved.failed.revision_id)
+    with LocalApplication.open(solved.project) as app, app.store.reading() as connection:
+        revision = app.store.get_revision(connection, solved.failed.revision_id)
     assert revision is not None
     return RenderContext(
         revision=revision.document,
@@ -230,7 +225,7 @@ def test_an_unreadable_failure_bundle_gives_the_failure_of_the_outcome_alone(
     failure = solved.failed.failure
     assert failure is not None
     with LocalApplication.open(project) as app:
-        row = app._store.artifact(failure.failure_bundle)
+        row = app.store.artifact(failure.failure_bundle)
         assert row is not None
         (app.files_root / row.relpath).write_text("not json", encoding="utf-8")
         result = app.get_job_result(solved.failed.job_id).run_result
@@ -270,7 +265,7 @@ def test_inspect_prints_the_failure_text_under_its_section(
     failure = solved.failed.failure
     assert failure is not None
     with LocalApplication.open(solved.project) as app:
-        row = app._store.artifact(failure.failure_bundle.rpartition("/")[0])
+        row = app.store.artifact(failure.failure_bundle.rpartition("/")[0])
         assert row is not None
         directory = app.files_root / row.relpath
     assert cli.main(["inspect", str(directory)]) == 0

@@ -1,97 +1,42 @@
-"""The application contract's error and its frozen protocol (T07 design note §4, ADR 0019 D1, D5).
+"""The application contract's frozen protocol (T07 design note §4, ADR 0019 D1, D5).
 
 `Application` is `docs/interfaces-frozen.md` §1 verbatim: names, parameter names, order, arity and
 result-type names, now annotated (the `CompiledProblem` precedent). `JobControl` (§4.1, ADR 0019)
 is W4a's; `Inspection` and `Projection` are W5a's.
 
 **Errors are one shape.** A non-domain outcome — a refusal, a missing object, a defect — is raised
-as `ApplicationError` carrying an `ApiError` (§5.8). A domain outcome is *returned*: a conflicted
-or rejected transaction, an `INVALID` report, a non-converged solve, a cancelled job.
+as `ApplicationError` carrying an `ApiError` (§5.8; both in `application.errors`, ADR 0076 I-9). A
+domain outcome is *returned*: a conflicted or rejected transaction, an `INVALID` report, a
+non-converged solve, a cancelled job.
 """
 
 from __future__ import annotations
 
 import os
-import sys
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Protocol
 
-from openflowsheet.application.types import ApiError, ApiErrorCode
-from openflowsheet.messages import audit
-
 if TYPE_CHECKING:
-    from openflowsheet.application.jobs.model import JobStatus
-    from openflowsheet.application.types import (
+    from openflowsheet.application.inspection_types import (
         AdmissionReport,
         AuditOrder,
         AuditRecord,
         CapabilityPage,
-        Change,
-        Job,
-        JobEvent,
-        JobRequest,
-        JobResult,
         JobWait,
         MessageEntry,
         ModelRegistryView,
         ProjectSummary,
-        ReplayPolicy,
         RevisionSummary,
-        RunResult,
-        SemanticDiff,
         SubmitResult,
-        TransactionResult,
     )
-    from openflowsheet.application.validation import Task, ValidationReport
+    from openflowsheet.application.job_records import Job, JobEvent, JobResult, RunResult
+    from openflowsheet.application.job_requests import JobRequest
+    from openflowsheet.application.jobs.model import JobStatus
+    from openflowsheet.application.policy_types import ReplayPolicy
+    from openflowsheet.application.transaction_types import Change, SemanticDiff, TransactionResult
+    from openflowsheet.application.validation_report import Task, ValidationReport
     from openflowsheet.run.replay import ReplayReport
-
-
-class ApplicationError(Exception):
-    """§4.2: a non-domain outcome of a contract call. `error` is the typed `ApiError`."""
-
-    def __init__(self, error: ApiError) -> None:
-        super().__init__(f"{error.code}: {error.message}")
-        self.error = error
-
-    @property
-    def code(self) -> ApiErrorCode:
-        return self.error.code
-
-    @property
-    def explanation(self) -> dict[str, Any]:
-        """MSG §3.3: the error's explanation as Python shows it (surface `python`)."""
-        return self.error.render_explanation("python")
-
-    def __str__(self) -> str:
-        """MSG §4.5: the layered text; its last line is `args[0]`, `"<code>: <message>"`, the
-        pre-MSG string, so an unanchored match on that string still matches. Never convert
-        this error to a document through `str()` (§4.7): use `error.as_document()`."""
-        from openflowsheet.messages.text import format_text
-
-        return format_text(self.explanation, str(self.args[0]))
-
-
-def api_error(
-    code: ApiErrorCode, message: str, /, *, retryable: bool = False, **detail: Any
-) -> ApplicationError:
-    """An `ApplicationError` of `code`, ready to raise. `code` and `message` are positional, so
-    a `detail` member may be named `code` (`explain`'s `not_found`, ADR 0058 D7)."""
-    if audit.auditor is not None:  # MSG-G3: the codes this machine text carries have entries
-        _observe(code, message, detail, sys._getframe(1).f_globals.get("__name__", ""))
-    return ApplicationError(
-        ApiError(code=code, message=message, retryable=retryable, detail=detail)
-    )
-
-
-def _observe(code: str, message: str, detail: dict[str, Any], caller: str) -> None:
-    auditor = audit.auditor
-    assert auditor is not None
-    auditor.code(code, caller)
-    auditor.observe(message, caller)
-    reason = detail.get("reason")
-    if isinstance(reason, str):
-        auditor.observe(reason, caller)
 
 
 class Application(Protocol):

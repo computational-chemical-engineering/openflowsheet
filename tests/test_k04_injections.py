@@ -18,7 +18,8 @@ from conftest import REPO_ROOT, load_yaml
 from test_k04_checks import flowsheet_for
 
 from openflowsheet.orchestrator.tear import solve_tear
-from openflowsheet.verify.certificate import CheckPolicy, verify
+from openflowsheet.verify.certificate import verify
+from openflowsheet.verify.verdict import CheckPolicy
 
 
 @pytest.fixture(scope="module")
@@ -206,7 +207,7 @@ def test_a16_inj4_a_relaxed_policy_is_never_verified(
     under a *tightened* policy is `FAILED`, not `RELAXED` — relaxation is about the policy
     being looser than the registered one, not merely different from it.
     """
-    from openflowsheet.verify.checks import KIND_TOLERANCE
+    from openflowsheet.verify.kind_tolerance import KIND_TOLERANCE
 
     flowsheet, result, state, _ = inj3_state(variants, reference)
     assert verify(flowsheet, result, state=state).verification_status == "FAILED"

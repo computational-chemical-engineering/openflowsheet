@@ -81,7 +81,7 @@ def test_m1_j1_a_failed_polish_jacobian_ends_the_attempt_evaluation_error(status
     `CONVERGED` with `polish = rejected:linear_solve_failed`. §7.5 as amended: the Jacobian at x_c
     returning `error` *or otherwise not `ok`* is recorded `polish(rejected:error)` with x_c kept,
     and ends the attempt `EVALUATION_ERROR`."""
-    from openflowsheet.orchestrator.trace import Trace
+    from openflowsheet.numerics.solve_record import Trace
 
     item = case(HIGH)
     last = jacobian_calls("initializer")
@@ -175,7 +175,7 @@ PLAN_PROBE = textwrap.dedent(
     import openflowsheet.orchestrator.executor as executor_module
     from test_t04_edge3 import CASES, plan_run, region_step
     from openflowsheet.compile.casadi_backend import compile_problem as real_compile
-    from openflowsheet.orchestrator.trace import GlobalizationPolicy, SolvePolicy
+    from openflowsheet.numerics.solve_record import GlobalizationPolicy, SolvePolicy
 
     count = {"calls": 0}
 

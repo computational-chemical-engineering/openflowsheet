@@ -35,34 +35,28 @@ from t07_jobs_support import (
 
 import openflowsheet.application.revision_run as revision_run
 from openflowsheet.application.authz import grant
-from openflowsheet.application.contract import ApplicationError
+from openflowsheet.application.errors import ApplicationError
+from openflowsheet.application.job_records import Job, RunResult
+from openflowsheet.application.job_requests import Budgets, JobRequest, ReproduceBody, SolveBody
 from openflowsheet.application.jobs.executor import COMPUTE_LOCK
 from openflowsheet.application.jobs.model import lifecycle_warnings
 from openflowsheet.application.jobs.runner import SOLVE_STAGES
 from openflowsheet.application.local import LocalApplication
-from openflowsheet.application.policies import (
+from openflowsheet.application.policy_types import Limits, ReplayPolicy
+from openflowsheet.application.revision_run import Route, run_revision_session, select_route
+from openflowsheet.canonical import directory_hash, file_sha256
+from openflowsheet.orchestrator.policies import (
     APPLICATION_POLICIES,
     DEFAULT_POLICY_ID,
     T06_REVISION_V2,
     resolve_policy,
 )
-from openflowsheet.application.revision_run import Route, run_revision_session, select_route
-from openflowsheet.application.types import (
-    Budgets,
-    Job,
-    JobRequest,
-    Limits,
-    ReplayPolicy,
-    ReproduceBody,
-    RunResult,
-    SolveBody,
-    schema_errors,
-)
-from openflowsheet.canonical import directory_hash, file_sha256
 from openflowsheet.run.bundle import read_artifact, read_manifest, verify_bundle
 from openflowsheet.run.manifest import policy_sha256
-from openflowsheet.verify.certificate import CheckPolicy
-from openflowsheet.verify.checks import KIND_TOLERANCE, VerifierError
+from openflowsheet.schema_check import schema_errors
+from openflowsheet.verify.checks import VerifierError
+from openflowsheet.verify.kind_tolerance import KIND_TOLERANCE
+from openflowsheet.verify.verdict import CheckPolicy
 
 NOMINAL = "SYN-001-nominal"
 #: One revision per shape: revision_eo with a certificate, legacy_eo with a certificate,

@@ -43,40 +43,42 @@ from openflowsheet.models import (
     origin,
     temperature_id,
 )
+from openflowsheet.models.lifted import LABEL_KIND, ClosureType, LiftedSplit, Regime, ZeroFlowForm
+from openflowsheet.models.lifted_tolerance import KIND_TOLERANCE
 from openflowsheet.models.rows import specification_row
 from openflowsheet.models.syn001 import TEMPERATURE
+from openflowsheet.models.syn001.band_types import BandError
 from openflowsheet.models.syn001.cascade import (
-    MODEL_ID as CASCADE_MODEL_ID,
-)
-from openflowsheet.models.syn001.cascade import (
-    CascadeFailure,
-    CascadeSpec,
     DormantAnswer,
-    KremserInitial,
     _enthalpy_flow,
+    dormant_answer,
+    is_dormant,
+    regime_form,
+    validate,
+)
+from openflowsheet.models.syn001.cascade_failure import CascadeFailure
+from openflowsheet.models.syn001.cascade_init import KremserInitial, kremser_initial
+from openflowsheet.models.syn001.cascade_rows import declared_problem, declared_rows
+from openflowsheet.models.syn001.cascade_spec import MODEL_ID as CASCADE_MODEL_ID
+from openflowsheet.models.syn001.cascade_spec import (
+    CascadeSpec,
     _parameter,
     _phase,
-    declared_problem,
-    declared_rows,
-    dormant_answer,
     inlet_stream,
-    is_dormant,
-    kremser_initial,
     liquid_id,
     liquid_total_id,
     mixed_id,
-    regime_form,
     stage_duty_id,
     stage_prefix,
     stage_pressure_id,
     stage_row_id,
     stage_temperature_id,
-    validate,
     vapor_id,
     vapor_total_id,
 )
-from openflowsheet.models.syn001.saturation_band import BandError, band_temperature
+from openflowsheet.models.syn001.saturation_band import band_temperature
 from openflowsheet.models.syn001.tp_state import single_phase_admissible
+from openflowsheet.numerics.solve_record import GlobalizationPolicy, SolvePolicy, Trace
 from openflowsheet.orchestrator.execution import Region
 from openflowsheet.orchestrator.homotopy import Continuation
 from openflowsheet.orchestrator.recovery import (
@@ -84,18 +86,8 @@ from openflowsheet.orchestrator.recovery import (
     recovered_provenance,
     solver_outcomes,
 )
-from openflowsheet.orchestrator.region import (
-    KIND_TOLERANCE,
-    LABEL_KIND,
-    ClosureType,
-    LiftedSplit,
-    RecoveryStart,
-    Regime,
-    RegionResult,
-    ZeroFlowForm,
-    solve_region,
-)
-from openflowsheet.orchestrator.trace import GlobalizationPolicy, SolvePolicy, Trace
+from openflowsheet.orchestrator.region import solve_region
+from openflowsheet.orchestrator.region_result import RecoveryStart, RegionResult
 from openflowsheet.thermo import Phase, PropertyProvider, StreamState
 
 #: Spec §7.3's registered pre-solve.
@@ -468,7 +460,7 @@ def saturation_pairs(
     """S08 §5.5: `(|T_j − T_bub(l_j, P_j)|, |T_j − T_dew(v_j, P_j)|)` for every `TWO_PHASE` stage
     `j`, through `band_temperature` at `β = 0` and `β = 1`. A band position other than `inside`, a
     band refusal (`BandError`) or a phase with no positive flow is `inf` (a failure). Shared by
-    S01 §8 (Amendment 2) and S02 §8 item 6 (S08b §5.2)."""
+    S01 §8 (Amendment 2) and S02 §8 item 6 (S08b §5.2). Each error is `_saturation_error`'s."""
     pairs: dict[int, tuple[float, float]] = {}
     for stage, regime in regimes.items():
         if regime != "TWO_PHASE":
@@ -478,17 +470,30 @@ def saturation_pairs(
         errors: list[float] = []
         for outlet, beta in ((liquid_id, 0.0), (vapor_id, 1.0)):
             flows = tuple(float(state[outlet(unit, stage, c)]) for c in components)
-            error = math.inf
-            if any(value > 0.0 for value in flows):
-                try:
-                    band = band_temperature(provider, flows, pressure, beta, DECLARATION_CONTEXT)
-                except BandError:
-                    band = None
-                if band is not None and band.position == "inside" and band.temperature is not None:
-                    error = abs(temperature - band.temperature)
-            errors.append(error)
+            errors.append(_saturation_error(provider, flows, pressure, beta, temperature))
         pairs[stage] = (errors[0], errors[1])
     return pairs
+
+
+def _saturation_error(
+    provider: PropertyProvider,
+    flows: tuple[float, ...],
+    pressure: float,
+    beta: float,
+    temperature: float,
+) -> float:
+    """S08 §5.5 for one outlet of a `TWO_PHASE` stage: `|T_j − T(β)|` with `T(β)` from
+    `band_temperature(flows, P_j, β)`. `inf` when no flow is positive (no band evaluation), when
+    `band_temperature` refuses (`BandError`), or when the band position is not `inside`."""
+    error = math.inf
+    if any(value > 0.0 for value in flows):
+        try:
+            band = band_temperature(provider, flows, pressure, beta, DECLARATION_CONTEXT)
+        except BandError:
+            band = None
+        if band is not None and band.position == "inside" and band.temperature is not None:
+            error = abs(temperature - band.temperature)
+    return error
 
 
 def acceptance_failures(
@@ -502,16 +507,45 @@ def acceptance_failures(
     column `+0.0`, `V_j, L_j > 0` on a `TWO_PHASE` stage, admissibility on a single-phase one, and
     (Amendment 2, S08b §5.2) every `TWO_PHASE` stage within `TWO_PHASE_SATURATION_TOLERANCE` of
     its liquid's bubble and its vapour's dew temperature (`SATURATION_PREFIX`). Empty when the
-    answer is accepted."""
-    failures: list[str] = []
+    answer is accepted. The checks, in this order: `_row_failures`, `_pinned_failures`,
+    `_stage_failures`, `_saturation_failures`."""
     residuals, pinned = system_residuals(spec, declared, state, regimes)
+    failures = _row_failures(declared, residuals)
+    failures += _pinned_failures(state, pinned)
+    failures += _stage_failures(spec, provider, state, regimes)
+    failures += _saturation_failures(spec, provider, state, regimes)
+    return tuple(failures)
+
+
+def _row_failures(declared: ProblemSpec, residuals: Mapping[str, float]) -> list[str]:
+    """Spec §8: each declared row whose residual is not within its kind's `KIND_TOLERANCE`, in
+    `residuals` order."""
+    failures: list[str] = []
     for row, value in residuals.items():
         tolerance = KIND_TOLERANCE[row_kind(declared, row)]
         if not abs(value) <= tolerance:
             failures.append(f"row {row} = {value!r} exceeds {tolerance!r}")
+    return failures
+
+
+def _pinned_failures(state: Mapping[str, float], pinned: Sequence[str]) -> list[str]:
+    """Spec §8: each `pinned` column whose state value is not `0.0`, in `pinned` order."""
+    failures: list[str] = []
     for column in pinned:
         if state[column] != 0.0:
             failures.append(f"pinned column {column} = {state[column]!r} is not zero")
+    return failures
+
+
+def _stage_failures(
+    spec: CascadeSpec,
+    provider: PropertyProvider,
+    state: Mapping[str, float],
+    regimes: Sequence[Regime],
+) -> list[str]:
+    """Spec §8, stage by stage: on a `TWO_PHASE` stage each of `V_j`, `L_j` that is not `> 0`; on a
+    `LIQUID` or `VAPOR` stage a failed `admissibility`."""
+    failures: list[str] = []
     unit = spec.unit_id
     for stage, regime in enumerate(regimes, start=1):
         if regime == "TWO_PHASE":
@@ -523,9 +557,20 @@ def acceptance_failures(
             admissible, detail = admissibility(spec, provider, state, stage, phase)
             if not admissible:
                 failures.append(f"{regime} stage {stage} inadmissible: {detail}")
-    # S08b §5.2 (S01 §8 as amended by Amendment 2): S02 §8 item 6's saturation consistency.
+    return failures
+
+
+def _saturation_failures(
+    spec: CascadeSpec,
+    provider: PropertyProvider,
+    state: Mapping[str, float],
+    regimes: Sequence[Regime],
+) -> list[str]:
+    """S08b §5.2 (S01 §8 as amended by Amendment 2): S02 §8 item 6's saturation consistency, each
+    bubble or dew error of `saturation_pairs` not within `TWO_PHASE_SATURATION_TOLERANCE`."""
+    failures: list[str] = []
     pairs = saturation_pairs(
-        unit, spec.components, provider, state, dict(enumerate(regimes, start=1))
+        spec.unit_id, spec.components, provider, state, dict(enumerate(regimes, start=1))
     )
     for stage, errors in pairs.items():
         for side, error in zip(("bubble", "dew"), errors, strict=True):
@@ -533,7 +578,7 @@ def acceptance_failures(
                 failures.append(
                     f"{SATURATION_PREFIX}TWO_PHASE stage {stage}: {side} error {error!r} K"
                 )
-    return tuple(failures)
+    return failures
 
 
 # -- spec §2: overall closure (A08) ---------------------------------------------------------------

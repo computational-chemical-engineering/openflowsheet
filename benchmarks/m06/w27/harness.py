@@ -171,7 +171,7 @@ def seed_project(project: Path, token_file: Path) -> dict[str, int]:
     from benchmarks.t07.v17 import fixtures  # noqa: PLC0415
     from openflowsheet.application.authz import grant  # noqa: PLC0415
     from openflowsheet.application.local import LocalApplication  # noqa: PLC0415
-    from openflowsheet.application.types import Limits  # noqa: PLC0415
+    from openflowsheet.application.policy_types import Limits  # noqa: PLC0415
 
     table = _principal()
     LocalApplication.create(project, project_id=PROJECT_ID).close()

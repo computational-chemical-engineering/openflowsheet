@@ -44,9 +44,9 @@ from openflowsheet.thermo import (
     PropertyRequest,
     StreamState,
 )
-from openflowsheet.units import DisplayUnits, display_item
+from openflowsheet.units.display import DisplayUnits, display_item
 from openflowsheet.verify import column
-from openflowsheet.verify.table import (
+from openflowsheet.verify.flowsheet_rows import (
     EXTERNAL_DUTY_MODELS,
     FEED_MODELS,
     PRODUCT_MODELS,
@@ -55,7 +55,7 @@ from openflowsheet.verify.table import (
 )
 
 if TYPE_CHECKING:
-    from openflowsheet.orchestrator.region import LiftedSplit
+    from openflowsheet.models.lifted import LiftedSplit
 
 SCHEMA_VERSION: Final = "stream-table-v1"
 #: §4.2's phase rule, named in every document's header.
@@ -1118,7 +1118,7 @@ def from_bundle(
     revision's basis cannot be bound here (`basis_unavailable(<id>)`, its hint in `detail`), and
     `internal_error` as `build` does.
     """
-    from openflowsheet.application.binding import Unbound  # noqa: PLC0415
+    from openflowsheet.application.binding_common import Unbound  # noqa: PLC0415
     from openflowsheet.application.revision_binding import provider_for  # noqa: PLC0415
     from openflowsheet.run.bundle import ARTIFACT_DIR  # noqa: PLC0415
 

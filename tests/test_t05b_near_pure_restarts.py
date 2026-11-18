@@ -41,15 +41,20 @@ from test_t05b_openings import CASES as B31_CASES
 
 from openflowsheet.application.revision_binding import RevisionBinding
 from openflowsheet.models import temperature_id
+from openflowsheet.models.lifted import LiftedSplit
 from openflowsheet.numerics.newton import _bound_aware_step, _released, _trial_point
+from openflowsheet.numerics.solve_record import Trace
 from openflowsheet.orchestrator import region as region_module
+from openflowsheet.orchestrator import region_phase as region_phase_module
+from openflowsheet.orchestrator import region_problem
 from openflowsheet.orchestrator.execution import ExecutionPlan
 from openflowsheet.orchestrator.executor import execute_plan
-from openflowsheet.orchestrator.region import LiftedSplit, RegionResult, _KernelAnswer
+from openflowsheet.orchestrator.region_phase import _KernelAnswer
+from openflowsheet.orchestrator.region_result import RegionResult
 from openflowsheet.orchestrator.revision import initial_state, plan_revision
 from openflowsheet.orchestrator.splits import closure_types
-from openflowsheet.orchestrator.trace import Trace
-from openflowsheet.verify.certificate import SolutionCertificate, verify_revision
+from openflowsheet.verify.certificate import verify_revision
+from openflowsheet.verify.verdict import SolutionCertificate
 
 
 @dataclass(frozen=True)
@@ -70,7 +75,7 @@ def openings(monkeypatch: pytest.MonkeyPatch) -> Iterator[list[Opening]]:
     gives one `Opening`, read off the settled state."""
     found: list[Opening] = []
     answers: dict[str, _KernelAnswer] = {}
-    kernel, settled = region_module._contract_kernel, region_module._LiftedOps._settled
+    kernel, settled = region_phase_module._contract_kernel, region_problem._LiftedOps._settled
 
     def spy_kernel(*args: Any, **kwargs: Any) -> _KernelAnswer:
         answer = kernel(*args, **kwargs)
@@ -109,7 +114,8 @@ def openings(monkeypatch: pytest.MonkeyPatch) -> Iterator[list[Opening]]:
         return result
 
     monkeypatch.setattr(region_module, "_contract_kernel", spy_kernel)
-    monkeypatch.setattr(region_module._LiftedOps, "_settled", spy_settled)
+    monkeypatch.setattr(region_problem, "_contract_kernel", spy_kernel)
+    monkeypatch.setattr(region_problem._LiftedOps, "_settled", spy_settled)
     yield found
 
 

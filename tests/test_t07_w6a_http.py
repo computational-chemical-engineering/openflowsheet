@@ -38,11 +38,11 @@ from msg_support import machine_detail
 from t07_corpus import CORPUS
 
 from openflowsheet.application.authz import grant, new_token, revoke
-from openflowsheet.application.contract import ApplicationError
+from openflowsheet.application.errors import API_ERROR_HTTP_STATUS, ApplicationError
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.operations import OPERATIONS, dispatch
-from openflowsheet.application.types import API_ERROR_HTTP_STATUS, schema_errors
 from openflowsheet.canonical import canonical_json
+from openflowsheet.schema_check import schema_errors
 
 NOMINAL = "SYN-001-nominal"
 PROJECT_ID = "w6a-http"
@@ -52,7 +52,13 @@ BINDINGS = REPO_ROOT / "src" / "openflowsheet" / "application" / "bindings"
 #: §11.6 (2): what a binding may import, besides the standard library.
 ALLOWED_APPLICATION = {
     "openflowsheet.application.contract",
-    "openflowsheet.application.types",
+    "openflowsheet.application.errors",
+    "openflowsheet.application.documents",
+    "openflowsheet.application.transaction_types",
+    "openflowsheet.application.job_requests",
+    "openflowsheet.application.job_records",
+    "openflowsheet.application.policy_types",
+    "openflowsheet.application.inspection_types",
     "openflowsheet.application.operations",
     "openflowsheet.application.projection",
 }

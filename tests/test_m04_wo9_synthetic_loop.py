@@ -49,11 +49,11 @@ from openflowsheet.adapters.experiments import runner as runner_module
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.operations import dispatch
 from openflowsheet.application.replacement import FACETS
-from openflowsheet.application.types import Change, Edit, TransactionResult
+from openflowsheet.application.transaction_types import Change, Edit, TransactionResult
 from openflowsheet.canonical import document_sha256
 from openflowsheet.models.c1 import COMPONENTS
 from openflowsheet.run.bundle import read_artifact
-from openflowsheet.studies.surrogate import reactor as sr
+from openflowsheet.studies.surrogate import records
 from openflowsheet.studies.surrogate.manifest import Q0
 
 sys.path.insert(0, str(REPO_ROOT / "tests" / "support"))
@@ -105,7 +105,7 @@ def reference(variant: variants.Variant) -> dict[str, Any]:
 
 def surrogate(world: World, name: str) -> dict[str, Any]:
     manifest, sha256 = world.manifests[name]
-    return {"id": sr.MODEL_ID, "version": manifest["surrogate_id"], "artifact_ref": sha256}
+    return {"id": records.MODEL_ID, "version": manifest["surrogate_id"], "artifact_ref": sha256}
 
 
 def loop() -> dict[str, Any]:

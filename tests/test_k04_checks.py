@@ -24,7 +24,7 @@ from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models.syn001.flowsheet import Syn001Flowsheet
 from openflowsheet.orchestrator.tear import solve_tear
 from openflowsheet.thermo.syn001 import Syn001Provider
-from openflowsheet.verify.certificate import CheckPolicy, grade, run_checks
+from openflowsheet.verify.verdict import CheckPolicy, grade, run_checks
 
 CONTEXT = EvaluationContext(model_version="K04@" + "0" * 64, constants_sha256="0" * 64)
 

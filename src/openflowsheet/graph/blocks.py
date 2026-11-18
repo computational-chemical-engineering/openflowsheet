@@ -105,50 +105,77 @@ class BlockTriangularForm:
 def _components(
     row_ids: Sequence[str], dependencies: Mapping[str, frozenset[str]]
 ) -> list[list[str]]:
-    """Tarjan's strongly connected components, iteratively, in declaration order of entry."""
-    index_of: dict[str, int] = {}
-    low: dict[str, int] = {}
-    on_stack: set[str] = set()
-    stack: list[str] = []
-    found: list[list[str]] = []
-    counter = 0
+    """Tarjan's strongly connected components, iteratively, in declaration order of entry.
 
+    One `_Tarjan.search` from each row not yet entered, in `row_ids` order; the components are
+    returned in the order they close.
+    """
+    tarjan = _Tarjan(dependencies)
     for start in row_ids:
-        if start in index_of:
-            continue
-        work: list[tuple[str, list[str]]] = [(start, sorted(dependencies[start]))]
-        index_of[start] = low[start] = counter
-        counter += 1
-        stack.append(start)
-        on_stack.add(start)
+        if start not in tarjan.index_of:
+            tarjan.search(start)
+    return tarjan.found
 
+
+class _Tarjan:
+    """Tarjan's working state over one dependency digraph.
+
+    Each entered row's index and low-link, the component stack (`on_stack == set(stack)`), the
+    next index to give, and the components found, in the order they close.
+    """
+
+    def __init__(self, dependencies: Mapping[str, frozenset[str]]) -> None:
+        self.dependencies = dependencies
+        self.index_of: dict[str, int] = {}
+        self.low: dict[str, int] = {}
+        self.on_stack: set[str] = set()
+        self.stack: list[str] = []
+        self.found: list[list[str]] = []
+        self.counter = 0
+
+    def search(self, start: str) -> None:
+        """One iterative depth-first search from the unentered row `start`.
+
+        Each row's dependencies are visited in reverse sorted order (the work frame pops from the
+        end); every component whose root finishes is popped off the stack and appended to `found`.
+        """
+        work: list[tuple[str, list[str]]] = [self._enter(start)]
         while work:
             node, pending = work[-1]
             if pending:
                 target = pending.pop()
-                if target not in index_of:
-                    index_of[target] = low[target] = counter
-                    counter += 1
-                    stack.append(target)
-                    on_stack.add(target)
-                    work.append((target, sorted(dependencies[target])))
-                elif target in on_stack:
-                    low[node] = min(low[node], index_of[target])
+                if target not in self.index_of:
+                    work.append(self._enter(target))
+                elif target in self.on_stack:
+                    self.low[node] = min(self.low[node], self.index_of[target])
                 continue
 
             work.pop()
             if work:
-                low[work[-1][0]] = min(low[work[-1][0]], low[node])
-            if low[node] == index_of[node]:
-                component: list[str] = []
-                while True:
-                    member = stack.pop()
-                    on_stack.discard(member)
-                    component.append(member)
-                    if member == node:
-                        break
-                found.append(component)
-    return found
+                self.low[work[-1][0]] = min(self.low[work[-1][0]], self.low[node])
+            if self.low[node] == self.index_of[node]:
+                self.found.append(_pop_component(self.stack, self.on_stack, node))
+
+    def _enter(self, node: str) -> tuple[str, list[str]]:
+        """Give `node` the next index as its index and low-link, push it on the stack, and return
+        its work frame: the node and its sorted dependencies."""
+        self.index_of[node] = self.low[node] = self.counter
+        self.counter += 1
+        self.stack.append(node)
+        self.on_stack.add(node)
+        return node, sorted(self.dependencies[node])
+
+
+def _pop_component(stack: list[str], on_stack: set[str], root: str) -> list[str]:
+    """Pop the component whose root is `root` off Tarjan's `stack`, top first, down to and
+    including `root`, and clear its members from `on_stack`; return the members in pop order."""
+    component: list[str] = []
+    while True:
+        member = stack.pop()
+        on_stack.discard(member)
+        component.append(member)
+        if member == root:
+            return component
 
 
 def block_triangular_form(
@@ -160,7 +187,8 @@ def block_triangular_form(
 
     `matching` is `column -> row` and must cover every row exactly once; a system that is not
     perfectly matched has no block-triangular form and this refuses rather than producing one for
-    part of it.
+    part of it. The blocks and their edges are `_condensation`'s; their order is
+    `_canonical_order`'s.
     """
     order = {row_id: index for index, row_id in enumerate(row_ids)}
     column_of = {row: column for column, row in matching.items()}
@@ -181,6 +209,33 @@ def block_triangular_form(
         for row_id in row_ids
     }
 
+    grouped, raw_edges = _condensation(row_ids, dependencies, order)
+
+    placed = _canonical_order(raw_edges, grouped, order)
+
+    position = {old: new for new, old in enumerate(placed)}
+    blocks = tuple(
+        Block(
+            rows=tuple(grouped[old]),
+            cols=tuple(column_of[row_id] for row_id in grouped[old]),
+            depends_on=tuple(sorted(position[target] for target in raw_edges[old])),
+        )
+        for old in placed
+    )
+    return BlockTriangularForm(blocks=blocks)
+
+
+def _condensation(
+    row_ids: Sequence[str],
+    dependencies: Mapping[str, frozenset[str]],
+    order: Mapping[str, int],
+) -> tuple[list[list[str]], dict[int, frozenset[int]]]:
+    """The condensation of the row dependency digraph: its blocks and the edges between them.
+
+    The blocks are `_components`' strongly connected components in the order they close, each
+    one's rows sorted by declaration index (`order`); a block's edges are the other blocks its
+    rows depend on, keyed by the block's index in that list.
+    """
     components = _components(list(row_ids), dependencies)
     membership: dict[str, int] = {}
     grouped: list[list[str]] = []
@@ -199,9 +254,22 @@ def block_triangular_form(
         )
         for index, rows in enumerate(grouped)
     }
+    return grouped, raw_edges
 
-    # §7.2's canonical order: of the blocks whose predecessors are all placed, the one whose first
-    # row has the least declaration index. Not a FIFO queue -- `BTF-1` distinguishes them.
+
+def _canonical_order(
+    raw_edges: Mapping[int, frozenset[int]],
+    grouped: Sequence[Sequence[str]],
+    order: Mapping[str, int],
+) -> list[int]:
+    """§7.2's canonical order of the blocks: of the blocks whose predecessors are all placed, the
+    one whose first row has the least declaration index. Not a FIFO queue -- `BTF-1`
+    distinguishes them.
+
+    `raw_edges` maps a block (an index into `grouped`) to the blocks it depends on; `order` is
+    the rows' declaration index. Raises ValueError if the condensation were cyclic, which an SCC
+    condensation cannot be.
+    """
     remaining = {index: set(edges) for index, edges in raw_edges.items()}
     placed: list[int] = []
     while remaining:
@@ -213,14 +281,4 @@ def block_triangular_form(
         del remaining[chosen]
         for waiting in remaining.values():
             waiting.discard(chosen)
-
-    position = {old: new for new, old in enumerate(placed)}
-    blocks = tuple(
-        Block(
-            rows=tuple(grouped[old]),
-            cols=tuple(column_of[row_id] for row_id in grouped[old]),
-            depends_on=tuple(sorted(position[target] for target in raw_edges[old])),
-        )
-        for old in placed
-    )
-    return BlockTriangularForm(blocks=blocks)
+    return placed

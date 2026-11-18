@@ -23,8 +23,10 @@ import pytest
 from conftest import REPO_ROOT
 from test_m06_static_scan import UI_OPERATIONS
 
+from openflowsheet.application.documents import validate_inline
+from openflowsheet.application.errors import ApiError
 from openflowsheet.application.operations import OPERATIONS
-from openflowsheet.application.types import ApiError, schema_errors, validate_inline
+from openflowsheet.schema_check import schema_errors
 
 FIXTURES = REPO_ROOT / "tests" / "web" / "fixtures" / "w26"
 #: The record schema of each bundle member kind (`solve_trace` is an array of solve events).

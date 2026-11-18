@@ -32,13 +32,14 @@ from test_s10_flash import NEAR_AZEOTROPE
 
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models.syn001 import gamma_phi
+from openflowsheet.models.syn001.band_types import BandError
 from openflowsheet.models.syn001.gamma_phi import (
     DELTA_BETA,
     band_point,
     incipient_liquid,
     ln_k,
 )
-from openflowsheet.models.syn001.saturation_band import BandError, band_temperature
+from openflowsheet.models.syn001.saturation_band import band_temperature
 from openflowsheet.thermo import PropertyRequest, StreamState
 from openflowsheet.thermo.wilson_ig import WilsonIdealGasProvider
 

@@ -45,7 +45,8 @@ import openflowsheet.models.syn001.column_endpoint as column_endpoint  # noqa: E
 import openflowsheet.models.syn001.column_solve as column_solve  # noqa: E402
 import openflowsheet.numerics.newton as newton_module  # noqa: E402
 import openflowsheet.orchestrator.region as region  # noqa: E402
-from openflowsheet.orchestrator.trace import Trace  # noqa: E402
+import openflowsheet.orchestrator.region_attempts as region_attempts  # noqa: E402
+from openflowsheet.numerics.solve_record import Trace  # noqa: E402
 
 #: How many of the last sweeps to print.
 SWEEP_TAIL = 6
@@ -142,8 +143,8 @@ class Recorder:
         }
 
     def install(self) -> Callable[[], None]:
-        sweep_flows = column_solve.sweep_flows
-        relaxed = column_solve.relaxed_compositions
+        sweep_flows = column_endpoint.sweep_flows
+        relaxed = column_endpoint.relaxed_compositions
         newton = region.solve_newton
         bound_step = newton_module._bound_aware_step
 
@@ -191,6 +192,7 @@ class Recorder:
             (column_endpoint, "sweep_flows", sweep_flows, sweep_spy),
             (column_endpoint, "relaxed_compositions", relaxed, relaxed_spy),
             (region, "solve_newton", newton, newton_spy),
+            (region_attempts, "solve_newton", newton, newton_spy),
             (newton_module, "_bound_aware_step", bound_step, bound_spy),
         ]
         for module, name, _, spy in spies:

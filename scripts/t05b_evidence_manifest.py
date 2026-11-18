@@ -119,6 +119,7 @@ from t05b_support import DORMANT_NON_LIFTED_CASES, Biased, Jump, number
 
 import openflowsheet.verify.certificate as p5_certificate_module
 from openflowsheet.canonical import canonical_json, file_sha256
+from openflowsheet.models.lifted import DormancyForm
 from openflowsheet.models.revision_flowsheet import parse_revision
 from openflowsheet.models.syn001 import TEMPERATURE_TOLERANCE
 from openflowsheet.models.syn001.admission import admitted_enthalpy
@@ -131,22 +132,20 @@ from openflowsheet.models.syn001.ph_kernel import (
 from openflowsheet.models.syn001.saturation_band import degeneracy_distance
 from openflowsheet.models.syn001.tp_state import single_phase_admissible
 from openflowsheet.numerics.newton import _trial_point, solve_newton
+from openflowsheet.numerics.solve_record import PhaseContract, SolvePolicy, Trace
 from openflowsheet.orchestrator import region as region_module
+from openflowsheet.orchestrator import region_attempts, region_phase, region_problem
 from openflowsheet.orchestrator.execution import ExecutionPlan
 from openflowsheet.orchestrator.executor import execute_plan
-from openflowsheet.orchestrator.region import (
+from openflowsheet.orchestrator.region_phase import (
     TP_REGIME,
-    DormancyForm,
-    RegionResult,
     _band_regime,
     _contract_kernel,
-    _items,
     _kernel,
-    _rederive,
-    _settle,
     _split_enthalpy,
-    _trigger_dormant,
 )
+from openflowsheet.orchestrator.region_problem import _items, _rederive, _settle, _trigger_dormant
+from openflowsheet.orchestrator.region_result import RegionResult
 from openflowsheet.orchestrator.revision import (
     InitialStateFailure,
     TraversalStart,
@@ -156,20 +155,12 @@ from openflowsheet.orchestrator.revision import (
 )
 from openflowsheet.orchestrator.splits import DORMANCY_RULES, closure_types, lifted_splits
 from openflowsheet.orchestrator.tear import Syn001TearProblem
-from openflowsheet.orchestrator.trace import PhaseContract, SolvePolicy, Trace
 from openflowsheet.run.compare import differences
 from openflowsheet.run.identity import floats_in, r0_projection
 from openflowsheet.thermo import FlashRequest, StreamState
 from openflowsheet.verify import CheckResult
-from openflowsheet.verify.certificate import (
-    CheckReport,
-    SolutionCertificate,
-    run_checks,
-    verify,
-    verify_bound,
-    verify_revision,
-)
-from openflowsheet.verify.checks import KIND_TOLERANCE
+from openflowsheet.verify.certificate import verify, verify_bound, verify_revision
+from openflowsheet.verify.kind_tolerance import KIND_TOLERANCE
 from openflowsheet.verify.projection import PROJECTED_CATEGORIES
 from openflowsheet.verify.saturation import (
     UNRESOLVED_FLOOR_OVER_TOLERANCE,
@@ -177,10 +168,8 @@ from openflowsheet.verify.saturation import (
     resolution_floor,
     split_route,
 )
-from openflowsheet.verify.table import (
-    SPLIT_ENTHALPY_NOTE,
-    UNRESOLVED_ENTHALPY_NOTE,
-)
+from openflowsheet.verify.table_kit import SPLIT_ENTHALPY_NOTE, UNRESOLVED_ENTHALPY_NOTE
+from openflowsheet.verify.verdict import CheckReport, SolutionCertificate, run_checks
 from openflowsheet.verify.zero_flow import DORMANT_OUTLETS
 
 REFERENCE = ROOT / "benchmarks" / "t05b" / "reference_values.yaml"
@@ -618,7 +607,7 @@ def _t02_floats_sha256() -> str:
 
 def _identities_local() -> dict[str, Any]:
     """The registered identities on this machine (`docs/t05b-measurements.md`'s protocol)."""
-    from openflowsheet.verify.certificate import CheckPolicy
+    from openflowsheet.verify.verdict import CheckPolicy
 
     document = identity_document()
     return {
@@ -1741,7 +1730,7 @@ def _b06() -> tuple[bool, dict[str, Any], dict[str, Any]]:
     import k03_schema_fixtures as k03
     import t04_schema_fixtures as t04
 
-    from openflowsheet.orchestrator.trace import GlobalizationPolicy, RecyclePolicy
+    from openflowsheet.numerics.solve_record import GlobalizationPolicy, RecyclePolicy
 
     ptc = t04.policy(
         "ptc",
@@ -3564,7 +3553,7 @@ def _p2_b20c(ledger: Ledger) -> dict[str, Any]:
 
 def _p2_b20d(ledger: Ledger) -> dict[str, Any]:
     from openflowsheet.orchestrator.phase_contract import _changes
-    from openflowsheet.orchestrator.region import _attempt_screen
+    from openflowsheet.orchestrator.region_screen import _attempt_screen
 
     # DZ-12: the item is in attempt 0's signature, absent from attempt 1's, in no cause string.
     result, trace = dormancy._dz12()
@@ -5656,7 +5645,7 @@ def _p4_b31_function_level(ledger: Ledger) -> dict[str, Any]:
     # (g) at attempt 0.
     document, start = openings.CASES["CH-UP"]()
     with pytest.MonkeyPatch.context() as patch:
-        patch.setattr(region_module, "_rederive", openings._never_settles)
+        patch.setattr(region_problem, "_rederive", openings._never_settles)
         result = openings.solve_from_v2(openings.bind(document), start)
     value["(g) attempt 0"] = {
         "outcome": result.outcome,
@@ -5669,7 +5658,7 @@ def _p4_b31_function_level(ledger: Ledger) -> dict[str, Any]:
     )
     ledger.equal("(g) attempt 0: no attempt", result.attempts, ())
     # (g) at a restart: the stub switched on inside the restart's `_settled` only.
-    real, settled = region_module._rederive, region_module._LiftedOps._settled
+    real, settled = region_problem._rederive, region_problem._LiftedOps._settled
     at_restart = {"on": False}
 
     def rederive(entry: Any, *args: Any) -> Any:
@@ -5684,8 +5673,8 @@ def _p4_b31_function_level(ledger: Ledger) -> dict[str, Any]:
 
     document, start = openings.CASES["CH-UP"]()
     with pytest.MonkeyPatch.context() as patch:
-        patch.setattr(region_module, "_rederive", rederive)
-        patch.setattr(region_module._LiftedOps, "_settled", restart)
+        patch.setattr(region_problem, "_rederive", rederive)
+        patch.setattr(region_problem._LiftedOps, "_settled", restart)
         result = openings.solve_from_v2(openings.bind(document), start)
     value["(g) restart"] = {
         "outcome": result.outcome,
@@ -6831,7 +6820,7 @@ def _b35() -> tuple[bool, dict[str, Any], dict[str, Any]]:
     calls: list[tuple[bool, Any]] = []
     openings_x0: list[Any] = []
     inside = {"depth": 0}
-    real_homotopy, real_solve = region_module._homotopy, region_module.solve_newton
+    real_homotopy, real_solve = region_attempts._homotopy, region_module.solve_newton
 
     def homotopy(**kwargs: Any) -> Any:
         openings_x0.append(np.array(kwargs["x0"], dtype=np.float64, copy=True))
@@ -6848,6 +6837,7 @@ def _b35() -> tuple[bool, dict[str, Any], dict[str, Any]]:
     with pytest.MonkeyPatch.context() as patch:
         patch.setattr(region_module, "_homotopy", homotopy)
         patch.setattr(region_module, "solve_newton", solve)
+        patch.setattr(region_attempts, "solve_newton", solve)
         run = release.plan_run(release.case_document("HOM-01"), release.case_policy("HOM-01"))
     step = release.region_step(run.result)
     corrector = [opening for inside_homotopy, opening in calls if inside_homotopy]
@@ -6955,7 +6945,7 @@ def _b36() -> tuple[bool, dict[str, Any], dict[str, Any]]:
     # (b) CH-UP-DP end to end.
     document, start = openings.CASES["CH-UP-DP"]()
     seen: list[tuple[float, float, float, float, float]] = []
-    real = region_module._kernel
+    real = region_phase._kernel
 
     def kernel(provider: Any, context: Any, split: Any, state: Any, **kwargs: Any) -> Any:
         if split.unit == "U-PHF2" and kwargs.get("temperature") is not None:
@@ -6972,6 +6962,7 @@ def _b36() -> tuple[bool, dict[str, Any], dict[str, Any]]:
 
     with pytest.MonkeyPatch.context() as patch:
         patch.setattr(region_module, "_kernel", kernel)
+        patch.setattr(region_phase, "_kernel", kernel)
         result = openings.solve_from_v2(openings.bind(document), start)
     outlet = 100_000.0 - openings.DP
     ledger.equal("(b) CH-UP-DP outcome", result.outcome, "CONVERGED")

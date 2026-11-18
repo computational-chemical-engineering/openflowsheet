@@ -16,16 +16,12 @@ import pytest
 from s11_column_support import column_checks, column_revision, quantity
 from test_s02_column_wo1 import SPECS
 
-from openflowsheet.application.binding import Unbound
-from openflowsheet.application.revision_binding import (
-    MODEL_BASES,
-    MODEL_BUILDERS,
-    MODEL_SIGNATURES,
-    RevisionBinding,
-    bind_revision_flowsheet,
-)
+from openflowsheet.application.binding_common import Unbound
+from openflowsheet.application.model_builders import MODEL_BUILDERS
+from openflowsheet.application.model_signatures import MODEL_BASES, MODEL_SIGNATURES
+from openflowsheet.application.revision_binding import RevisionBinding, bind_revision_flowsheet
 from openflowsheet.models.revision_flowsheet import WILSON_BASIS, parse_revision, required_kind
-from openflowsheet.verify.table import MODEL_CHECKS
+from openflowsheet.verify.unit_checks import MODEL_CHECKS
 
 COLUMN = "syn001.column"
 M1 = SPECS["M1"]

@@ -296,12 +296,12 @@ class CatalogueCheck:
     def load(reference: Mapping[str, Any]) -> object:
         """D7: the YAML document a `message_entries` payload names, through
         `importlib.resources`."""
-        from openflowsheet.messages.catalogue import _yaml_load  # noqa: PLC0415
+        from openflowsheet.messages.yaml_io import yaml_load  # noqa: PLC0415
 
         path = resources.files(str(reference["package"])).joinpath(
             *str(reference["path"]).split("/")
         )
-        return _yaml_load(path.read_text(encoding="utf-8"))
+        return yaml_load(path.read_text(encoding="utf-8"))
 
     def problem(self, document: object, namespace: str) -> str | None:
         """MSG's schema and namespace rule (`Catalogue.register`'s checks) on `document`, or

@@ -37,8 +37,8 @@ from test_s11_column_solve import (
 )
 from test_s11_column_verifier import column_items
 
+from openflowsheet.application.job_records import RunResult
 from openflowsheet.application.local import LocalApplication
-from openflowsheet.application.types import RunResult
 from openflowsheet.models import flow_id
 from openflowsheet.run.bundle import read_artifact
 

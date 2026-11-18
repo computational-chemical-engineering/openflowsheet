@@ -13,11 +13,9 @@ everything the originals pinned, plus the additions: no check is narrowed.
 from __future__ import annotations
 
 from openflowsheet.orchestrator.splits import DORMANCY_RULES, SPLIT_RULES, DormancyRule, SplitRule
-from openflowsheet.verify.table import (
-    EXTERNAL_DUTY_MODELS,
-    FEED_MODELS,
+from openflowsheet.verify.flowsheet_rows import EXTERNAL_DUTY_MODELS, FEED_MODELS, PRODUCT_MODELS
+from openflowsheet.verify.unit_checks import (
     MODEL_CHECKS,
-    PRODUCT_MODELS,
     _c1_flash_material,
     _c1_reactor_material,
     _feed_specification,

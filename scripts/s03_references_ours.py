@@ -33,11 +33,11 @@ from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
 
-from openflowsheet.models.syn001.cascade import (
+from openflowsheet.models.syn001.cascade import DormantAnswer
+from openflowsheet.models.syn001.cascade_failure import CascadeFailure
+from openflowsheet.models.syn001.cascade_spec import (
     BOTTOM,
     TOP,
-    CascadeFailure,
-    DormantAnswer,
     InletState,
     SideFeed,
     liquid_total_id,
@@ -45,7 +45,8 @@ from openflowsheet.models.syn001.cascade import (
     stage_temperature_id,
     vapor_total_id,
 )
-from openflowsheet.models.syn001.column import (
+from openflowsheet.models.syn001.column_solve import S02_TARGET_POLICY, solve_column
+from openflowsheet.models.syn001.column_spec import (
     CONDENSER,
     REBOILER,
     ColumnSpec,
@@ -53,7 +54,6 @@ from openflowsheet.models.syn001.column import (
     product_flow_id,
     reflux_fraction_id,
 )
-from openflowsheet.models.syn001.column_solve import S02_TARGET_POLICY, solve_column
 from openflowsheet.thermo.syn001 import Syn001Provider
 
 ROOT = Path(__file__).resolve().parent.parent

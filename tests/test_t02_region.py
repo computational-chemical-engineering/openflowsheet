@@ -29,20 +29,17 @@ from openflowsheet.compile.spec import ProblemSpec
 from openflowsheet.compiled import CompiledProblem, EvaluationContext
 from openflowsheet.graph.analysis import analyse
 from openflowsheet.graph.trace import trace_declaration
+from openflowsheet.models.lifted_tolerance import EQUILIBRIUM_TOLERANCE
 from openflowsheet.models.syn001.flowsheet import Syn001Flowsheet
+from openflowsheet.numerics.solve_record import RecyclePolicy, SolvePolicy
 from openflowsheet.orchestrator.execution import (
     Region,
     build_execution_plan,
     declaration_identity,
 )
-from openflowsheet.orchestrator.region import (
-    EQUILIBRIUM_TOLERANCE,
-    RegionResult,
-    solve_region,
-    syn001_lifted_splits,
-)
+from openflowsheet.orchestrator.region import solve_region, syn001_lifted_splits
+from openflowsheet.orchestrator.region_result import RegionResult
 from openflowsheet.orchestrator.tear import INITIALIZER_ID, Syn001TearProblem, solve_tear
-from openflowsheet.orchestrator.trace import RecyclePolicy, SolvePolicy
 from openflowsheet.thermo.syn001 import Syn001Provider
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -136,7 +133,7 @@ def disagreement(item: Case, state: Mapping[str, float]) -> list[str]:
 
 def test_the_equilibrium_tolerance_is_k04s() -> None:
     """Restated in the region module to avoid an import cycle; pinned here so it cannot drift."""
-    from openflowsheet.verify.checks import EQUILIBRIUM_TOLERANCE as REGISTERED
+    from openflowsheet.verify.kind_tolerance import EQUILIBRIUM_TOLERANCE as REGISTERED
 
     assert EQUILIBRIUM_TOLERANCE == REGISTERED
 
@@ -221,7 +218,7 @@ def test_a24_eo_triv_the_projection_keeps_the_solve_off_the_trivial_root() -> No
         state[f"S3.vap.{component}"] = 0.0
     state["S3.V"], state["S3.L"] = 0.0, float(sum(feed))
 
-    from openflowsheet.orchestrator.trace import Trace
+    from openflowsheet.numerics.solve_record import Trace
 
     trace = Trace()
     result = solve(item, state, trace)
@@ -255,7 +252,7 @@ def test_s6_newton_names_the_variable_that_blocks() -> None:
 
     from openflowsheet.numerics.newton import Evaluation, Problem, solve_newton
     from openflowsheet.numerics.scaling import Scaling
-    from openflowsheet.orchestrator.trace import Trace
+    from openflowsheet.numerics.solve_record import Trace
 
     problem = Problem(
         variable_ids=("x",),

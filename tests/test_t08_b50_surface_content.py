@@ -35,7 +35,7 @@ import pytest
 from conftest import REPO_ROOT
 from m04_schema_support import M04_MODELS
 
-from openflowsheet.application import local
+from openflowsheet.application import inspection_service, model_builders, model_signatures
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.operations import dispatch
 
@@ -254,10 +254,19 @@ def test_m07a_a51_b_an_unregistered_model_fails_naming_it(
     tmp_path: Any, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     probe = "c1.unregistered_probe"
-    signature = dataclasses.replace(local.MODEL_SIGNATURES["c1.tp_heater"], model_id=probe)
-    builders = {**local.MODEL_BUILDERS, probe: local.MODEL_BUILDERS["c1.tp_heater"]}
-    monkeypatch.setattr(local, "MODEL_BUILDERS", builders)
-    monkeypatch.setattr(local, "MODEL_SIGNATURES", {**local.MODEL_SIGNATURES, probe: signature})
+    signature = dataclasses.replace(
+        model_signatures.MODEL_SIGNATURES["c1.tp_heater"], model_id=probe
+    )
+    builders = {
+        **model_builders.MODEL_BUILDERS,
+        probe: model_builders.MODEL_BUILDERS["c1.tp_heater"],
+    }
+    monkeypatch.setattr(inspection_service, "MODEL_BUILDERS", builders)
+    monkeypatch.setattr(
+        inspection_service,
+        "MODEL_SIGNATURES",
+        {**model_signatures.MODEL_SIGNATURES, probe: signature},
+    )
     assert mr7_problems(_serve(tmp_path)) == [
         f"models: `{probe}` is served, not c7bbc98's, named by no entry"
     ]
@@ -266,8 +275,8 @@ def test_m07a_a51_b_an_unregistered_model_fails_naming_it(
 def test_m07a_a51_c_a_registered_addition_removed_fails_naming_it(
     tmp_path: Any, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    builders = {k: v for k, v in local.MODEL_BUILDERS.items() if k != "c1.tp_heater"}
-    monkeypatch.setattr(local, "MODEL_BUILDERS", builders)
+    builders = {k: v for k, v in model_builders.MODEL_BUILDERS.items() if k != "c1.tp_heater"}
+    monkeypatch.setattr(inspection_service, "MODEL_BUILDERS", builders)
     assert mr7_problems(_serve(tmp_path)) == [
         "models: `c1.tp_heater` (R-230) served 0 times, not once"
     ]

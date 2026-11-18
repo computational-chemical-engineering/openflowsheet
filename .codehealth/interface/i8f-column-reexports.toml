@@ -1,0 +1,44 @@
+# ADR 0076 I-8, batch F (W4 run 6, brief S19-W4-6; form of S19_DECISIONS 2026-11-16 STOP 1):
+# models/syn001/column.py stops re-exporting the names that the restructure plan split-column
+# gave a new home, except the eighteen the frozen column_unit.py imports through it.
+# `codehealth gate --mode interface` reads this plan from the plan commit.
+id = "i8f-column-reexports"
+approved_by = "Frank Peters, 2026-11-14, ADR 0076 accepted (Decision Desk ofs-adr0076-accept)"
+reason = """ADR 0076 I-8: every module created by an S19 restructure step is the only path for the \
+names it holds; the normative list is the union of the committed restructure plans' new_public \
+names. src importers were retargeted in refactor mode (f9dec891: application/column_binding.py, \
+application/model_signatures.py, models/syn001/column_acceptance.py, column_blocks.py, \
+column_compile.py, column_endpoint.py, column_solve.py, verify/certificate.py, verify/column.py) \
+and tests and scripts outside the gate (1a26b068), so an AST inventory (from-imports at any \
+depth, module-alias attribute reads, setattr patches, dotted strings; living docs by grep) finds \
+no use of the moved names through models.syn001.column, except the frozen M9 module \
+models/syn001/column_unit.py:59, which imports COMPONENT_KINDS, CONDENSER, END_KINDS, EQUATIONS, \
+F_REF, FLOWSHEET_EQUATIONS, GAMMA_PHI_KINDS, INVERSE_KINDS, MODEL_ID, REBOILER, ColumnSpec, \
+EndSpecification, FlowsheetLinks, declared_rows, product_flow_id, product_total_id, \
+purity_flow_id and recovery_flow_id from column: these eighteen keep their aliases and __all__ \
+entries, the I-19 W5 exception. test_s02_column_wo1.py:696 patches column's own lookup of \
+declared_rows (frozen, kept). The step drops, in models/syn001/column.py, the aliases \
+distillate_id, distillate_total_id, label_source, purity_reference, reflux_fraction_id, reflux_id \
+(plain imports stay: column uses them) and COLUMN_EQUATIONS, CONDENSER_KINDS, INVERSE_EQUATIONS, \
+MULTIPLE_STEADY_STATES_WARNING, NOT_OFFERED, RATIO_KINDS, REBOILER_KINDS, S06_SPECIFICATION, \
+S11_SPECIFICATION, SPECIFICATION, column_warnings, component_feeds, energy_precheck, \
+inverse_parameter, product_link_row_id, purity_reference_parameter, ratio_parameter, \
+recovery_reference_parameter, saturation_temperature, slot_column, slot_row_id, \
+specified_quantity, stage_band, validate (imports go), and the 26 __all__ entries among them \
+(all but S11_SPECIFICATION, SPECIFICATION, product_link_row_id and \
+recovery_reference_parameter, which were never listed); the module docstring's sentence on \
+re-exports is corrected. The private alias _inflow (tests read it) and the same-name imports \
+GammaPhiLnKBlock and single_phase_admissible (no restructure plan gives them a home in a new \
+module) are not I-8 names and stay. Not retargeted: the archival design probes \
+docs/derivations/scripts/s08_design/block_endpoint_prototype.py:15 (EndSpecification, a frozen \
+name, still served) and contract_closure_probe.py:66 (_inflow, kept). cce-code-health counts \
+imports as API only in __init__.py, so the dropped aliases are invisible to the public-API tier \
+and column.py's __all__ is the one listed change (STOP 1 ruling). Expected codehealth arch \
+--depth 4 (measured at this base and with the step applied): base 4 violations / 3 cycles / 12 \
+cycle edges, after 4 / 3 / 12 (imports 4021 -> 3993). Layer config: none."""
+removed = []
+renamed = {}
+changed = ["src/openflowsheet/models/syn001/column.py:__all__"]
+added = []
+new_files = []
+callers = []

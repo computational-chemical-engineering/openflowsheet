@@ -24,18 +24,13 @@ from conftest import REPO_ROOT, load_json
 from jsonschema import Draft202012Validator
 from t07_support import AT, COMPLETED, JOB_ID, LATER, completed_solve, event, job, opaque, ref
 
+from openflowsheet.application.documents import published_schemas
+from openflowsheet.application.job_records import Job, JobEvent
 from openflowsheet.application.jobs.model import EVENT_KINDS
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.store import DATABASE_NAME
-from openflowsheet.application.types import (
-    SCHEMA_BASE,
-    DocumentSchemaError,
-    Job,
-    JobEvent,
-    published_schemas,
-    schema_errors,
-)
 from openflowsheet.canonical import canonical_json
+from openflowsheet.schema_check import SCHEMA_BASE, DocumentSchemaError, schema_errors
 
 FIXTURES = REPO_ROOT / "tests" / "fixtures" / "schemas"
 EVENT_ID = SCHEMA_BASE + "job-event.schema.json"

@@ -427,7 +427,6 @@ class LoopEvaluator:
 
     def __call__(self, t: float, literal: str) -> dict[str, Any]:
         from openflowsheet.application.coupled_run import LiveExperiments
-        from openflowsheet.application.policies import T06_REVISION_V2
         from openflowsheet.application.revision_run import (
             Route,
             RunUnsupportedError,
@@ -435,9 +434,11 @@ class LoopEvaluator:
             select_route,
         )
         from openflowsheet.canonical import document_sha256
+        from openflowsheet.models.lifted import AdmissibilityRefusal
+        from openflowsheet.orchestrator.policies import T06_REVISION_V2
         from openflowsheet.run.bundle import read_artifact
-        from openflowsheet.verify.certificate import CheckPolicy
         from openflowsheet.verify.checks import VerifierError
+        from openflowsheet.verify.verdict import CheckPolicy
 
         document = document_at(self.document, t)
         entry = empty_entry(t, literal)
@@ -463,7 +464,7 @@ class LoopEvaluator:
             entry["outcome"] = f"unsupported({error.code})"
             entry["wall_s"] = self.clock() - started
             return entry
-        except VerifierError as error:
+        except (VerifierError, AdmissibilityRefusal) as error:
             entry["outcome"] = f"verifier_refused({error})"
             entry["wall_s"] = self.clock() - started
             return entry

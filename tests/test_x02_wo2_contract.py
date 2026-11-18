@@ -37,16 +37,12 @@ from t07_corpus import CORPUS
 from t07_jobs_support import commit
 from t07_transport_support import dispatched
 
+from openflowsheet.application.job_requests import JobRequest, SolveBody, WarmStartDeclaration
 from openflowsheet.application.local import LocalApplication
-from openflowsheet.application.types import (
-    JobRequest,
-    ReplayPolicy,
-    SolveBody,
-    WarmStartDeclaration,
-)
+from openflowsheet.application.policy_types import ReplayPolicy
 from openflowsheet.run import solution_state
 from openflowsheet.run.identity import r0_projection
-from openflowsheet.verify.checks import KIND_TOLERANCE
+from openflowsheet.verify.kind_tolerance import KIND_TOLERANCE
 
 EXPLICIT = "explicit-v1"
 

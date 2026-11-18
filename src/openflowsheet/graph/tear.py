@@ -134,7 +134,11 @@ class TearAnalysis:
 
 
 def _strongly_connected(units: Sequence[str], edges: Sequence[tuple[str, str]]) -> list[list[str]]:
-    """Kosaraju on the unit digraph, in declaration order. Small graphs; clarity over speed."""
+    """Kosaraju on the unit digraph, in declaration order. Small graphs; clarity over speed.
+
+    `_finishing_order` is the first pass; the second walks `backward` in reverse finishing order,
+    one `_assign_component` from each unit no earlier component took.
+    """
     forward: dict[str, list[str]] = {unit: [] for unit in units}
     backward: dict[str, list[str]] = {unit: [] for unit in units}
     for source, target in edges:
@@ -142,6 +146,21 @@ def _strongly_connected(units: Sequence[str], edges: Sequence[tuple[str, str]]) 
             forward[source].append(target)
             backward[target].append(source)
 
+    order = _finishing_order(units, forward)
+
+    assigned: set[str] = set()
+    components: list[list[str]] = []
+    for unit in reversed(order):
+        if unit in assigned:
+            continue
+        component = _assign_component(unit, backward, assigned)
+        components.append(sorted(component, key=units.index))
+    return components
+
+
+def _finishing_order(units: Sequence[str], forward: Mapping[str, list[str]]) -> list[str]:
+    """Kosaraju's first pass: the units in the order their depth-first search on `forward`
+    finishes, each search started from the next unseen unit in declaration order."""
     order: list[str] = []
     seen: set[str] = set()
 
@@ -163,39 +182,51 @@ def _strongly_connected(units: Sequence[str], edges: Sequence[tuple[str, str]]) 
     for unit in units:
         if unit not in seen:
             visit(unit)
+    return order
 
-    assigned: set[str] = set()
-    components: list[list[str]] = []
-    for unit in reversed(order):
-        if unit in assigned:
-            continue
-        component: list[str] = []
-        stack = [unit]
-        assigned.add(unit)
-        while stack:
-            node = stack.pop()
-            component.append(node)
-            for previous in backward[node]:
-                if previous not in assigned:
-                    assigned.add(previous)
-                    stack.append(previous)
-        components.append(sorted(component, key=units.index))
-    return components
+
+def _assign_component(
+    unit: str, backward: Mapping[str, list[str]], assigned: set[str]
+) -> list[str]:
+    """Kosaraju's second pass from the unassigned `unit`: `unit` and every unit it reaches on
+    `backward` that no earlier component took, in visit order. Adds each to `assigned`, the
+    pass's working state."""
+    component: list[str] = []
+    stack = [unit]
+    assigned.add(unit)
+    while stack:
+        node = stack.pop()
+        component.append(node)
+        for previous in backward[node]:
+            if previous not in assigned:
+                assigned.add(previous)
+                stack.append(previous)
+    return component
 
 
 def _boundary_distances(graph: ProcessGraph) -> dict[str, int]:
-    """Material edges from a boundary unit, breadth first. Unreachable units are absent."""
+    """Material edges from a boundary unit, breadth first, one `_record_next_layer` at a time.
+    Unreachable units are absent."""
     distance: dict[str, int] = {unit: 0 for unit in graph.boundary_units()}
     frontier = list(distance)
     while frontier:
-        following: list[str] = []
-        for unit in frontier:
-            for connection in graph.connections:
-                if connection.producer == unit and connection.consumer not in distance:
-                    distance[connection.consumer] = distance[unit] + 1
-                    following.append(connection.consumer)
-        frontier = following
+        frontier = _record_next_layer(graph, frontier, distance)
     return distance
+
+
+def _record_next_layer(
+    graph: ProcessGraph, frontier: list[str], distance: dict[str, int]
+) -> list[str]:
+    """One breadth-first layer: the units first reached from `frontier` by a material edge, in
+    frontier then connection order. Records each one's distance in `distance`, the search's
+    working state."""
+    following: list[str] = []
+    for unit in frontier:
+        for connection in graph.connections:
+            if connection.producer == unit and connection.consumer not in distance:
+                distance[connection.consumer] = distance[unit] + 1
+                following.append(connection.consumer)
+    return following
 
 
 def analyse_tear(
@@ -205,7 +236,11 @@ def analyse_tear(
     retained_rows: Sequence[str],
     square_form: BlockTriangularForm,
 ) -> TearAnalysis:
-    """§9's rule on the square system `square_form` describes."""
+    """§9's rule on the square system `square_form` describes.
+
+    Each loop is a strongly connected component of more than one unit; `_candidates` scores its
+    cycle edges as tears and `_loop_tear` chooses one, or marks the loop `unsupported`.
+    """
     incidence = declaration.incidence()
     distances = _boundary_distances(graph)
     edges = [(connection.producer, connection.consumer) for connection in graph.connections]
@@ -217,84 +252,8 @@ def analyse_tear(
 
     results: list[LoopTear] = []
     for units in loops:
-        inside = set(units)
-        cycle = [
-            connection
-            for connection in graph.connections
-            if connection.producer in inside and connection.consumer in inside
-        ]
-        candidates: list[Candidate] = []
-        for connection in cycle:
-            # Does removing *this* edge break the loop? Parallel edges between the same pair of
-            # units are possible, so the edge is dropped by identity and not by endpoint.
-            remaining = [
-                (other.producer, other.consumer)
-                for other in graph.connections
-                if other is not connection
-            ]
-            # "No cycle remains among these units", not "the component is no longer the whole
-            # set". Two recycles sharing a unit split into two smaller loops when either is cut,
-            # and the weaker test called every edge breaking — so one tear was chosen and a
-            # recycle survived inside the supposedly acyclic inner system. Measured by the Fable
-            # review of T01 (M1); SYN-001's single simple cycle cannot distinguish the two tests.
-            still_looped = any(
-                len(component) > 1 for component in _strongly_connected(list(units), remaining)
-            )
-            torn = tuple(
-                column
-                for column in connection.state_columns
-                if _in_coupled_block(square_form, column)
-            )
-            candidates.append(
-                Candidate(
-                    stream_id=connection.stream_id,
-                    producer=connection.producer,
-                    consumer=connection.consumer,
-                    breaks_loop=not still_looped,
-                    torn_variables=torn,
-                    not_torn=tuple(
-                        column for column in connection.state_columns if column not in set(torn)
-                    ),
-                    consumer_boundary_distance=distances.get(connection.consumer, len(graph.units)),
-                )
-            )
-
-        breaking = [candidate for candidate in candidates if candidate.breaks_loop]
-        if not breaking:
-            results.append(
-                LoopTear(
-                    units=tuple(units),
-                    cycle_edges=tuple(candidate.stream_id for candidate in candidates),
-                    candidates=tuple(candidates),
-                    chosen_stream=None,
-                    tie_break_used=None,
-                    tear_variables=(),
-                    tear_rows=(),
-                    unsupported="multi_edge_feedback_set",
-                )
-            )
-            continue
-
-        chosen, decided_by = _choose(breaking)
-        tear_variables = chosen.torn_variables
-        torn_here = set(tear_variables)
-        tear_rows = tuple(
-            row_id
-            for row_id in retained_rows
-            if declaration.rows[row_id].unit == chosen.producer
-            and torn_here.intersection(incidence[row_id])
-        )
-        results.append(
-            LoopTear(
-                units=tuple(units),
-                cycle_edges=tuple(candidate.stream_id for candidate in candidates),
-                candidates=tuple(candidates),
-                chosen_stream=chosen.stream_id,
-                tie_break_used=decided_by,
-                tear_variables=tear_variables,
-                tear_rows=tear_rows,
-            )
-        )
+        candidates = _candidates(units, graph, square_form, distances)
+        results.append(_loop_tear(units, candidates, declaration, incidence, retained_rows))
 
     torn_rows = {row_id for loop in results for row_id in loop.tear_rows}
     torn_columns = {column for loop in results for column in loop.tear_variables}
@@ -327,10 +286,109 @@ def analyse_tear(
     )
 
 
+def _candidates(
+    units: Sequence[str],
+    graph: ProcessGraph,
+    square_form: BlockTriangularForm,
+    distances: Mapping[str, int],
+) -> list[Candidate]:
+    """One loop's cycle edges as tear candidates (§9.3), in `graph.connections` order.
+
+    `units` is the loop's component; a consumer that `distances` does not reach scores the unit
+    count.
+    """
+    inside = set(units)
+    cycle = [
+        connection
+        for connection in graph.connections
+        if connection.producer in inside and connection.consumer in inside
+    ]
+    candidates: list[Candidate] = []
+    for connection in cycle:
+        # Does removing *this* edge break the loop? Parallel edges between the same pair of
+        # units are possible, so the edge is dropped by identity and not by endpoint.
+        remaining = [
+            (other.producer, other.consumer)
+            for other in graph.connections
+            if other is not connection
+        ]
+        # "No cycle remains among these units", not "the component is no longer the whole
+        # set". Two recycles sharing a unit split into two smaller loops when either is cut,
+        # and the weaker test called every edge breaking — so one tear was chosen and a
+        # recycle survived inside the supposedly acyclic inner system. Measured by the Fable
+        # review of T01 (M1); SYN-001's single simple cycle cannot distinguish the two tests.
+        still_looped = any(
+            len(component) > 1 for component in _strongly_connected(list(units), remaining)
+        )
+        torn = tuple(
+            column for column in connection.state_columns if _in_coupled_block(square_form, column)
+        )
+        candidates.append(
+            Candidate(
+                stream_id=connection.stream_id,
+                producer=connection.producer,
+                consumer=connection.consumer,
+                breaks_loop=not still_looped,
+                torn_variables=torn,
+                not_torn=tuple(
+                    column for column in connection.state_columns if column not in set(torn)
+                ),
+                consumer_boundary_distance=distances.get(connection.consumer, len(graph.units)),
+            )
+        )
+    return candidates
+
+
 def _in_coupled_block(form: BlockTriangularForm, column: str) -> bool:
     """Is the column inside a block bigger than one? That is what makes a coordinate coupled."""
     index = form.index_of_column(column)
     return index is not None and form.blocks[index].size > 1
+
+
+def _loop_tear(
+    units: Sequence[str],
+    candidates: Sequence[Candidate],
+    declaration: Declaration,
+    incidence: Mapping[str, frozenset[str]],
+    retained_rows: Sequence[str],
+) -> LoopTear:
+    """One loop's tear: §9.3's chain over the `candidates` that break it, and the tear rows.
+
+    A loop no single candidate breaks is `unsupported` (`multi_edge_feedback_set`), with no
+    chosen stream. The tear rows are the `retained_rows` of the chosen producer that read a torn
+    variable.
+    """
+    breaking = [candidate for candidate in candidates if candidate.breaks_loop]
+    if not breaking:
+        return LoopTear(
+            units=tuple(units),
+            cycle_edges=tuple(candidate.stream_id for candidate in candidates),
+            candidates=tuple(candidates),
+            chosen_stream=None,
+            tie_break_used=None,
+            tear_variables=(),
+            tear_rows=(),
+            unsupported="multi_edge_feedback_set",
+        )
+
+    chosen, decided_by = _choose(breaking)
+    tear_variables = chosen.torn_variables
+    torn_here = set(tear_variables)
+    tear_rows = tuple(
+        row_id
+        for row_id in retained_rows
+        if declaration.rows[row_id].unit == chosen.producer
+        and torn_here.intersection(incidence[row_id])
+    )
+    return LoopTear(
+        units=tuple(units),
+        cycle_edges=tuple(candidate.stream_id for candidate in candidates),
+        candidates=tuple(candidates),
+        chosen_stream=chosen.stream_id,
+        tie_break_used=decided_by,
+        tear_variables=tear_variables,
+        tear_rows=tear_rows,
+    )
 
 
 #: §9.3's score, in order. Each key is an integer, so each step is a minimum over a finite

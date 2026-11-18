@@ -42,7 +42,7 @@ from __future__ import annotations
 import math
 import re
 from collections.abc import Mapping
-from typing import Any, Final
+from typing import Any, Final, NamedTuple
 
 from openflowsheet.resources import packaged
 from openflowsheet.run.solution_state import SCHEMA_VERSION as SOLUTION_STATE_SCHEMA
@@ -259,7 +259,7 @@ def _number_or_none(value: Any) -> bool:
     return value is None or (isinstance(value, int | float) and not isinstance(value, bool))
 
 
-def _inside_window(key: str, committed: dict[str, Any]) -> bool:
+def _inside_window_v1(key: str, committed: dict[str, Any]) -> bool:
     sibling, minimum = COMPARABILITY_WINDOW[key]
     selector = committed.get(sibling)
     return isinstance(selector, int | float) and float(selector) >= minimum
@@ -318,7 +318,7 @@ def differences(
             raise TypeError(f"{V1_POLICY_ID} compares no declared kinds (ADR 0025 D5)")
         return _differences_v1(emitted, committed, path, floor)
     if policy_id == CURRENT_POLICY_ID:
-        return _differences_v2(emitted, committed, path, floor, None, variable_kinds)
+        return _differences_v2(emitted, committed, path, _RowFloor(floor, None), variable_kinds)
     raise ValueError(
         f"unknown numerical policy {policy_id!r}; this build knows {sorted(KNOWN_POLICY_IDS)}"
     )
@@ -335,59 +335,12 @@ def _differences_v1(
         if not isinstance(emitted, dict):
             return [f"{where}: expected an object, got {type(emitted).__name__}"]
         for key in sorted(set(committed) | set(emitted)):
-            if key not in committed:
-                found.append(f"{where}.{key}: present in the emitted document only")
-            elif key not in emitted:
-                found.append(f"{where}.{key}: present in the committed document only")
-            elif path == "" and (key in PROVENANCE_SUBTREES or key in VOLATILE_FIELDS):
-                if not _well_formed_provenance(committed[key], emitted[key]):
-                    found.append(
-                        f"{where}.{key}: {type(emitted[key]).__name__} where the recorded "
-                        f"document has {type(committed[key]).__name__}. Provenance is not "
-                        "compared for value, but its shape is."
-                    )
-            elif key in UNREPRODUCIBLE_COUNTS:
-                if not isinstance(emitted[key], int) or emitted[key] < 0:
-                    found.append(
-                        f"{where}.{key}: {emitted[key]!r} is not a count. Its value is not "
-                        "compared, its kind is."
-                    )
-            elif is_float_digest(key):
-                if not _well_formed_digest(emitted[key]):
-                    found.append(
-                        f"{where}.{key}: {emitted[key]!r} is not 64 lowercase hex digits or "
-                        "empty. Its value is not compared (ADR 0008 D2.1), its shape is."
-                    )
-            elif key == "certificate_id" and _digest_derived_id(committed, emitted):
-                # K04 §9's `certificate_id` is the target hash when no plan names the solve
-                # (`cert-` + the first 12 hex digits of `target_state_sha256`): a digest of
-                # floating-point state, so its value is not compared (ADR 0008 D2.1). What is
-                # compared is that it is exactly the emitted document's own digest prefix.
-                expected = f"cert-{emitted['target_state_sha256'][:12]}"
-                if emitted[key] != expected:
-                    found.append(
-                        f"{where}.{key}: {emitted[key]!r} is not {expected!r}, the prefix of the "
-                        "document's own target_state_sha256"
-                    )
-            elif key in WINDOW_SELECTORS:
-                if not _number_or_none(emitted[key]):
-                    found.append(f"{where}.{key}: {emitted[key]!r} is not a number or null")
-            elif key in COMPARABILITY_WINDOW and not _inside_window(key, committed):
-                if not _number_or_none(emitted[key]) or (emitted[key] is None) != (
-                    committed[key] is None
-                ):
-                    found.append(
-                        f"{where}.{key}: {emitted[key]!r} against {committed[key]!r} — outside "
-                        "the comparability window the value is not compared, its shape is"
-                    )
-            else:
-                floor = None
-                source = SELF_FLOORED.get(key)
-                if source is not None and isinstance(committed.get(source), int | float):
-                    floor = abs(float(committed[source]))
-                found += _differences_v1(
-                    emitted[key], committed[key], f"{where}.{key}", floor=floor
-                )
+            ruled = _key_rule_v1(where, key, path, emitted, committed)
+            if ruled is not None:
+                found += ruled
+                continue
+            floor = _self_floor_v1(key, committed)
+            found += _differences_v1(emitted[key], committed[key], f"{where}.{key}", floor=floor)
         return found
 
     if isinstance(committed, list):
@@ -400,23 +353,141 @@ def _differences_v1(
         return found
 
     if isinstance(committed, float) or isinstance(emitted, float):
-        if emitted is None or committed is None:
-            if emitted is not committed:
-                found.append(f"{where}: {emitted!r} against {committed!r}")
-            return found
-        if floor is None:
-            floor = REGISTERED_FLOOR.get(where.rsplit(".", 1)[-1], NO_FLOOR)
-        if not math.isclose(
-            float(emitted), float(committed), rel_tol=RELATIVE_TOLERANCE, abs_tol=floor
-        ):
-            found.append(
-                f"{where}: {emitted!r} against {committed!r}, outside the interim "
-                f"{RELATIVE_TOLERANCE:g} relative / {floor:g} absolute"
-            )
-        return found
+        return _float_leaf_v1(emitted, committed, where, floor)
 
     if emitted != committed:
         found.append(f"{where}: {emitted!r} against {committed!r}")
+    return found
+
+
+def _key_rule_v1(
+    where: str, key: str, path: str, emitted: dict[str, Any], committed: dict[str, Any]
+) -> list[str] | None:
+    """v1 on the key `key` of the object at `where`: the differences its own rule finds, or
+    None when no rule applies and `_differences_v1` compares its value as a child.
+
+    The rules, tried in order, the first match deciding: present on one side only;
+    root-anchored provenance (`path` is ""); an unreproducible count; a float digest; a
+    digest-derived `certificate_id`; a window selector; a windowed float outside its window.
+    """
+    if key not in committed:
+        return [f"{where}.{key}: present in the emitted document only"]
+    if key not in emitted:
+        return [f"{where}.{key}: present in the committed document only"]
+    if path == "" and (key in PROVENANCE_SUBTREES or key in VOLATILE_FIELDS):
+        return _provenance_v1(where, key, emitted, committed)
+    if key in UNREPRODUCIBLE_COUNTS:
+        return _count_v1(where, key, emitted)
+    if is_float_digest(key):
+        return _float_digest_v1(where, key, emitted)
+    if key == "certificate_id" and _digest_derived_id(committed, emitted):
+        return _certificate_id_v1(where, key, emitted)
+    if key in WINDOW_SELECTORS:
+        return _window_selector_v1(where, key, emitted)
+    if key in COMPARABILITY_WINDOW and not _inside_window_v1(key, committed):
+        return _windowed_shape_v1(where, key, emitted, committed)
+    return None
+
+
+def _provenance_v1(
+    where: str, key: str, emitted: Mapping[str, Any], committed: Mapping[str, Any]
+) -> list[str]:
+    """v1 on a root-anchored provenance field `key`: compared for shape, never for value."""
+    if not _well_formed_provenance(committed[key], emitted[key]):
+        return [
+            f"{where}.{key}: {type(emitted[key]).__name__} where the recorded "
+            f"document has {type(committed[key]).__name__}. Provenance is not "
+            "compared for value, but its shape is."
+        ]
+    return []
+
+
+def _count_v1(where: str, key: str, emitted: Mapping[str, Any]) -> list[str]:
+    """v1 on an unreproducible count `key`: compared for kind (an int >= 0), never for value."""
+    if not isinstance(emitted[key], int) or emitted[key] < 0:
+        return [
+            f"{where}.{key}: {emitted[key]!r} is not a count. Its value is not "
+            "compared, its kind is."
+        ]
+    return []
+
+
+def _float_digest_v1(where: str, key: str, emitted: Mapping[str, Any]) -> list[str]:
+    """v1 on a float digest `key`: its shape, never its value (ADR 0008 D2.1)."""
+    if not _well_formed_digest(emitted[key]):
+        return [
+            f"{where}.{key}: {emitted[key]!r} is not 64 lowercase hex digits or "
+            "empty. Its value is not compared (ADR 0008 D2.1), its shape is."
+        ]
+    return []
+
+
+def _certificate_id_v1(where: str, key: str, emitted: Mapping[str, Any]) -> list[str]:
+    """v1 on a `certificate_id` that `_digest_derived_id` found built from the target hash.
+
+    K04 §9's `certificate_id` is the target hash when no plan names the solve (`cert-` + the
+    first 12 hex digits of `target_state_sha256`): a digest of floating-point state, so its value
+    is not compared (ADR 0008 D2.1). What is compared is that it is exactly the emitted
+    document's own digest prefix.
+    """
+    expected = f"cert-{emitted['target_state_sha256'][:12]}"
+    if emitted[key] != expected:
+        return [
+            f"{where}.{key}: {emitted[key]!r} is not {expected!r}, the prefix of the "
+            "document's own target_state_sha256"
+        ]
+    return []
+
+
+def _window_selector_v1(where: str, key: str, emitted: Mapping[str, Any]) -> list[str]:
+    """v1 on a comparability window's selector `key`: compared for kind, a number or null."""
+    if not _number_or_none(emitted[key]):
+        return [f"{where}.{key}: {emitted[key]!r} is not a number or null"]
+    return []
+
+
+def _windowed_shape_v1(
+    where: str, key: str, emitted: Mapping[str, Any], committed: Mapping[str, Any]
+) -> list[str]:
+    """v1 on a windowed float `key` outside its window: compared for shape, never for value.
+
+    Its shape is a number or null, and null on one side exactly when null on the other.
+    """
+    if not _number_or_none(emitted[key]) or (emitted[key] is None) != (committed[key] is None):
+        return [
+            f"{where}.{key}: {emitted[key]!r} against {committed[key]!r} — outside "
+            "the comparability window the value is not compared, its shape is"
+        ]
+    return []
+
+
+def _self_floor_v1(key: str, committed: dict[str, Any]) -> float | None:
+    """v1's floor for the child `key` of the committed object: the magnitude of its
+    `SELF_FLOORED` sibling when that is a number, else None."""
+    source = SELF_FLOORED.get(key)
+    if source is not None and isinstance(committed.get(source), int | float):
+        return abs(float(committed[source]))
+    return None
+
+
+def _float_leaf_v1(emitted: Any, committed: Any, where: str, floor: float | None) -> list[str]:
+    """v1 on a float at `where` (at least one side is a float): null against a float is a
+    difference, compared exactly; otherwise `math.isclose` at the interim relative tolerance and
+    `floor` absolute, else the registered floor of its key, else none."""
+    found: list[str] = []
+    if emitted is None or committed is None:
+        if emitted is not committed:
+            found.append(f"{where}: {emitted!r} against {committed!r}")
+        return found
+    if floor is None:
+        floor = REGISTERED_FLOOR.get(where.rsplit(".", 1)[-1], NO_FLOOR)
+    if not math.isclose(
+        float(emitted), float(committed), rel_tol=RELATIVE_TOLERANCE, abs_tol=floor
+    ):
+        found.append(
+            f"{where}: {emitted!r} against {committed!r}, outside the interim "
+            f"{RELATIVE_TOLERANCE:g} relative / {floor:g} absolute"
+        )
     return found
 
 
@@ -584,119 +655,51 @@ def _variables(
         elif name not in emitted:
             found.append(f"{where}.{name}: present in the committed document only")
         else:
-            kind = kinds.get(name)
-            floor = KIND_FLOOR.get(kind) if kind is not None else None
-            source = (
-                f"tau_kind of {kind}, ADR 0025 D5"
-                if floor is not None
-                else (
-                    f"{kind} registers no tau_kind, relative only, ADR 0025 D5"
-                    if kind is not None
-                    else "no declared kind, relative only, ADR 0025 D5"
-                )
-            )
+            row_floor = _kind_floor(kinds.get(name))
             found += _differences_v2(
-                emitted[name],
-                committed[name],
-                f"{where}.{name}",
-                floor if floor is not None else NO_FLOOR,
-                source,
-                None,
+                emitted[name], committed[name], f"{where}.{name}", row_floor, None
             )
     return found
+
+
+def _kind_floor(kind: str | None) -> _RowFloor:
+    """Row 11, D5.1: the floor a variable of declared kind `kind` (None when it declares none)
+    is compared under, and its source: `τ_kind` of the kind when it registers one, else
+    `NO_FLOOR` (relative only)."""
+    floor = KIND_FLOOR.get(kind) if kind is not None else None
+    source = (
+        f"tau_kind of {kind}, ADR 0025 D5"
+        if floor is not None
+        else (
+            f"{kind} registers no tau_kind, relative only, ADR 0025 D5"
+            if kind is not None
+            else "no declared kind, relative only, ADR 0025 D5"
+        )
+    )
+    return _RowFloor(floor if floor is not None else NO_FLOOR, source)
 
 
 def _differences_v2(
     emitted: Any,
     committed: Any,
     path: str,
-    floor: float | None,
-    source: str | None,
+    row_floor: _RowFloor,
     kinds: Mapping[str, str] | None,
 ) -> list[str]:
-    """`T08-numerical-policy-v2`: ADR 0025 §5's rows, in order."""
+    """`T08-numerical-policy-v2`: ADR 0025 §5's rows, in order.
+
+    `row_floor` is the floor a float leaf is compared under and its source, as its row gave
+    them (`_RowFloor(None, None)` when none did).
+
+    An object goes to `_object_differences` (its keys by rule, else as children); a list is
+    compared entry by entry; a float leaf goes to `_float_leaf` (rows 9 to 14); every other
+    leaf is compared exactly (row 15).
+    """
     found: list[str] = []
     where = path or "<root>"
 
     if isinstance(committed, dict):
-        if not isinstance(emitted, dict):
-            return [f"{where}: expected an object, got {type(emitted).__name__}"]
-        solution_state = path == "" and committed.get("schema_version") == SOLUTION_STATE_SCHEMA
-        for key in sorted(set(committed) | set(emitted)):
-            if key not in committed:
-                found.append(f"{where}.{key}: present in the emitted document only")
-                continue
-            if key not in emitted:
-                found.append(f"{where}.{key}: present in the committed document only")
-                continue
-            mine, theirs = emitted[key], committed[key]
-            # Row 1: root-anchored provenance.
-            if path == "" and (key in PROVENANCE_SUBTREES or key in VOLATILE_FIELDS):
-                if not _well_formed_provenance(theirs, mine):
-                    found.append(
-                        f"{where}.{key}: {type(mine).__name__} where the recorded document has "
-                        f"{type(theirs).__name__}. Provenance is not compared for value, but "
-                        "its shape is."
-                    )
-            # Row 2: counts.
-            elif key in V2_UNREPRODUCIBLE_COUNTS:
-                if not isinstance(mine, int) or mine < 0:
-                    found.append(
-                        f"{where}.{key}: {mine!r} is not a count. Its value is not compared, "
-                        "its kind is."
-                    )
-            # Row 3: post-pivoting diagnostics.
-            elif key in POST_PIVOTING_FLOATS:
-                found += _post_pivoting(where, key, emitted, theirs)
-            # Row 4: float digests.
-            elif _is_float_digest_v2(key):
-                if not _well_formed_digest(mine):
-                    found.append(
-                        f"{where}.{key}: {mine!r} is not 64 lowercase hex digits or empty. Its "
-                        "value is not compared (ADR 0008 D2.1, ADR 0025 D2), its shape is."
-                    )
-                elif key in NULL_MATCHED_DIGESTS and (mine is None) != (theirs is None):
-                    found.append(
-                        f"{where}.{key}: {mine!r} against {theirs!r}; null on one side requires "
-                        "null on the other (ADR 0025 D2.1)"
-                    )
-            # Row 5: the certificate id, by how it was built.
-            elif key == "certificate_id":
-                difference = _certificate_id(where, emitted, committed)
-                if difference:
-                    found.append(difference)
-            # Row 6: a comparability window's selector.
-            elif key in V2_WINDOW_SELECTORS:
-                if not _number_or_none(mine):
-                    found.append(f"{where}.{key}: {mine!r} is not a number or null")
-            # Row 7: outside its window, a windowed float is compared for shape.
-            elif key in V2_COMPARABILITY_WINDOW and not _inside_v2_window(key, committed):
-                if not _number_or_none(mine) or (mine is None) != (theirs is None):
-                    found.append(
-                        f"{where}.{key}: {mine!r} against {theirs!r} — outside the "
-                        "comparability window the value is not compared, its shape is"
-                    )
-            # Row 8: text with floats in it.
-            elif key in TEXT_KEYS and isinstance(mine, str) and isinstance(theirs, str):
-                found += _text(f"{where}.{key}", mine, theirs)
-            # Row 11: a solution state's variables, by declared kind.
-            elif solution_state and key == "variables" and isinstance(theirs, dict):
-                if kinds is None:
-                    found.append(
-                        f"{where}.variables: declared kinds not supplied; {CURRENT_POLICY_ID} "
-                        "does not compare a solution state without them (ADR 0025 D5)"
-                    )
-                else:
-                    found += _variables(f"{where}.variables", mine, theirs, kinds)
-            # Row 12: phase-branch flows.
-            elif key in PHASE_BRANCH_FLOWS and _PHASE_BRANCH_ENTRY.match(where):
-                found += _phase_branch_flow(f"{where}.{key}", mine, theirs)
-            else:
-                child_floor, child_source = _sibling_floor(where, key, committed)
-                found += _differences_v2(
-                    mine, theirs, f"{where}.{key}", child_floor, child_source, None
-                )
-        return found
+        return _object_differences(emitted, committed, where, path, kinds)
 
     if isinstance(committed, list):
         if not isinstance(emitted, list):
@@ -704,24 +707,12 @@ def _differences_v2(
         if len(emitted) != len(committed):
             return [f"{where}: {len(emitted)} entries against {len(committed)}"]
         for index, (left, right) in enumerate(zip(emitted, committed, strict=True)):
-            found += _differences_v2(left, right, f"{where}[{index}]", None, None, None)
+            found += _differences_v2(left, right, f"{where}[{index}]", _RowFloor(None, None), None)
         return found
 
     # Rows 9–14: a float, under the floor its row gives, else its registered one, else none.
     if isinstance(committed, float) or isinstance(emitted, float):
-        if emitted is None or committed is None:
-            if emitted is not committed:
-                found.append(f"{where}: {emitted!r} against {committed!r}")
-            return found
-        if not (_real(emitted) and _real(committed)):
-            return [f"{where}: {emitted!r} against {committed!r}"]
-        if floor is None:
-            key = where.rsplit(".", 1)[-1]
-            if key in V2_REGISTERED_FLOOR:
-                floor, source = V2_REGISTERED_FLOOR[key], f"the floor of {key}, ADR 0007 D2.2"
-            else:
-                floor, source = NO_FLOOR, "no registered floor, ADR 0007 D2.3"
-        return _outside(emitted, committed, where, floor, source or "")
+        return _float_leaf(emitted, committed, where, *row_floor)
 
     # Row 15: every other leaf, exactly.
     if emitted != committed:
@@ -729,25 +720,189 @@ def _differences_v2(
     return found
 
 
-def _inside_v2_window(key: str, committed: dict[str, Any]) -> bool:
+def _object_differences(
+    emitted: Any,
+    committed: dict[str, Any],
+    where: str,
+    path: str,
+    kinds: Mapping[str, str] | None,
+) -> list[str]:
+    """v2 on an object at `where` (`path` "" at the root): an emitted side that is not an object
+    is one difference; else each key, in sorted order, goes to `_key_rule` first (present on
+    one side only, then rows 1 to 8, 11 and 12), and a key no rule takes is compared as a
+    child, under `_sibling_floor`'s floor. `kinds` reaches row 11 only.
+    """
+    if not isinstance(emitted, dict):
+        return [f"{where}: expected an object, got {type(emitted).__name__}"]
+    solution_state = path == "" and committed.get("schema_version") == SOLUTION_STATE_SCHEMA
+    compared = _ComparedObject(where, path, emitted, committed, solution_state, kinds)
+    found: list[str] = []
+    for key in sorted(set(committed) | set(emitted)):
+        ruled = _key_rule(compared, key)
+        if ruled is not None:
+            found += ruled
+            continue
+        child_row_floor = _sibling_floor(where, key, committed)
+        found += _differences_v2(
+            emitted[key], committed[key], f"{where}.{key}", child_row_floor, None
+        )
+    return found
+
+
+class _RowFloor(NamedTuple):
+    """The floor a float leaf is compared against and the field it was read from.
+    `differences()` passes `_RowFloor(floor, None)`, a caller's floor with no source, which
+    `_float_leaf` cites as `""`; `_RowFloor(None, None)` means no floor."""
+
+    floor: float | None
+    source: str | None
+
+
+class _ComparedObject(NamedTuple):
+    """An object `_object_differences` compares key by key: where it sits (`path` "" at the
+    root), both sides, whether it is a root solution state (row 11), and the declared kinds row
+    11 reads."""
+
+    where: str
+    path: str
+    emitted: dict[str, Any]
+    committed: dict[str, Any]
+    solution_state: bool
+    kinds: Mapping[str, str] | None
+
+
+def _key_rule(compared: _ComparedObject, key: str) -> list[str] | None:
+    """v2 on the key `key` of the object `compared`: the differences its own rule finds, or
+    None when no rule applies and `_object_differences` compares its value as a child.
+
+    The rules, tried in order, the first match deciding: present on one side only, then rows 1
+    to 8, 11 and 12 of ADR 0025 §5. `_key_rule_v1` is v1's twin.
+    """
+    where, path, emitted, committed, solution_state, kinds = compared
+    if key not in committed:
+        return [f"{where}.{key}: present in the emitted document only"]
+    if key not in emitted:
+        return [f"{where}.{key}: present in the committed document only"]
+    mine, theirs = emitted[key], committed[key]
+    # Row 1: root-anchored provenance.
+    if path == "" and (key in PROVENANCE_SUBTREES or key in VOLATILE_FIELDS):
+        return _provenance(where, key, mine, theirs)
+    # Row 2: counts.
+    if key in V2_UNREPRODUCIBLE_COUNTS:
+        return _count(where, key, mine)
+    # Row 3: post-pivoting diagnostics.
+    if key in POST_PIVOTING_FLOATS:
+        return _post_pivoting(where, key, emitted, theirs)
+    # Row 4: float digests.
+    if _is_float_digest_v2(key):
+        return _float_digest(where, key, mine, theirs)
+    # Row 5: the certificate id, by how it was built.
+    if key == "certificate_id":
+        difference = _certificate_id(where, emitted, committed)
+        return [difference] if difference else []
+    # Row 6: a comparability window's selector.
+    if key in V2_WINDOW_SELECTORS:
+        return _window_selector(where, key, mine)
+    # Row 7: outside its window, a windowed float is compared for shape.
+    if key in V2_COMPARABILITY_WINDOW and not _inside_window(key, committed):
+        return _windowed_shape(where, key, mine, theirs)
+    # Row 8: text with floats in it.
+    if key in TEXT_KEYS and isinstance(mine, str) and isinstance(theirs, str):
+        return _text(f"{where}.{key}", mine, theirs)
+    # Row 11: a solution state's variables, by declared kind.
+    if solution_state and key == "variables" and isinstance(theirs, dict):
+        return _solution_variables(where, mine, theirs, kinds)
+    # Row 12: phase-branch flows.
+    if key in PHASE_BRANCH_FLOWS and _PHASE_BRANCH_ENTRY.match(where):
+        return _phase_branch_flow(f"{where}.{key}", mine, theirs)
+    return None
+
+
+def _provenance(where: str, key: str, mine: Any, theirs: Any) -> list[str]:
+    """Row 1: a root-anchored provenance field, compared for shape, never for value."""
+    if not _well_formed_provenance(theirs, mine):
+        return [
+            f"{where}.{key}: {type(mine).__name__} where the recorded document has "
+            f"{type(theirs).__name__}. Provenance is not compared for value, but "
+            "its shape is."
+        ]
+    return []
+
+
+def _count(where: str, key: str, mine: Any) -> list[str]:
+    """Row 2: an unreproducible count, compared for kind (an int >= 0), never for value."""
+    if not isinstance(mine, int) or mine < 0:
+        return [f"{where}.{key}: {mine!r} is not a count. Its value is not compared, its kind is."]
+    return []
+
+
+def _float_digest(where: str, key: str, mine: Any, theirs: Any) -> list[str]:
+    """Row 4, D2: a float digest's shape, and for `NULL_MATCHED_DIGESTS` its nullness (D2.1)."""
+    if not _well_formed_digest(mine):
+        return [
+            f"{where}.{key}: {mine!r} is not 64 lowercase hex digits or empty. Its "
+            "value is not compared (ADR 0008 D2.1, ADR 0025 D2), its shape is."
+        ]
+    if key in NULL_MATCHED_DIGESTS and (mine is None) != (theirs is None):
+        return [
+            f"{where}.{key}: {mine!r} against {theirs!r}; null on one side requires "
+            "null on the other (ADR 0025 D2.1)"
+        ]
+    return []
+
+
+def _window_selector(where: str, key: str, mine: Any) -> list[str]:
+    """Row 6: a comparability window's selector, compared for kind: a number or null."""
+    if not _number_or_none(mine):
+        return [f"{where}.{key}: {mine!r} is not a number or null"]
+    return []
+
+
+def _inside_window(key: str, committed: dict[str, Any]) -> bool:
     sibling, minimum = V2_COMPARABILITY_WINDOW[key]
     selector = committed.get(sibling)
     return isinstance(selector, int | float) and float(selector) >= minimum
 
 
-def _sibling_floor(
-    where: str, key: str, committed: Mapping[str, Any]
-) -> tuple[float | None, str | None]:
+def _windowed_shape(where: str, key: str, mine: Any, theirs: Any) -> list[str]:
+    """Row 7: a windowed float outside its window, compared for shape, never for value.
+
+    Its shape is a number or null, and null on one side exactly when null on the other.
+    """
+    if not _number_or_none(mine) or (mine is None) != (theirs is None):
+        return [
+            f"{where}.{key}: {mine!r} against {theirs!r} — outside the "
+            "comparability window the value is not compared, its shape is"
+        ]
+    return []
+
+
+def _solution_variables(
+    where: str, mine: Any, theirs: Mapping[str, Any], kinds: Mapping[str, str] | None
+) -> list[str]:
+    """Row 11, D5: a solution state's `variables` under their declared `kinds`.
+
+    `kinds` None is a difference of its own: v2 does not compare a solution state without them.
+    """
+    if kinds is None:
+        return [
+            f"{where}.variables: declared kinds not supplied; {CURRENT_POLICY_ID} "
+            "does not compare a solution state without them (ADR 0025 D5)"
+        ]
+    return _variables(f"{where}.variables", mine, theirs, kinds)
+
+
+def _sibling_floor(where: str, key: str, committed: Mapping[str, Any]) -> _RowFloor:
     """Rows 9 and 10: a floor read from the committed object's own sibling, or none."""
     kind = committed.get("kind")
     in_limitation = isinstance(kind, str) and _LIMITATION_ENTRY.search(where) is not None
     sibling = LIMITATION_FLOORS.get(str(kind), {}).get(key) if in_limitation else None
     if sibling is not None and _real(committed.get(sibling)):
-        return abs(float(committed[sibling])), f"its sibling {sibling}, ADR 0025 D3"
+        return _RowFloor(abs(float(committed[sibling])), f"its sibling {sibling}, ADR 0025 D3")
     sibling = V2_SELF_FLOORED.get(key)
     if sibling is not None and isinstance(committed.get(sibling), int | float):
-        return abs(float(committed[sibling])), f"its sibling {sibling}, ADR 0007 D2.2"
-    return None, None
+        return _RowFloor(abs(float(committed[sibling])), f"its sibling {sibling}, ADR 0007 D2.2")
+    return _RowFloor(None, None)
 
 
 def _phase_branch_flow(where: str, emitted: Any, committed: Any) -> list[str]:
@@ -761,9 +916,34 @@ def _phase_branch_flow(where: str, emitted: Any, committed: Any) -> list[str]:
             return [f"{where}: {len(emitted)} entries against {len(committed)}"]
         found: list[str] = []
         for index, (left, right) in enumerate(zip(emitted, committed, strict=True)):
-            found += _differences_v2(left, right, f"{where}[{index}]", floor, source, None)
+            found += _differences_v2(
+                left, right, f"{where}[{index}]", _RowFloor(floor, source), None
+            )
         return found
-    return _differences_v2(emitted, committed, where, floor, source, None)
+    return _differences_v2(emitted, committed, where, _RowFloor(floor, source), None)
+
+
+def _float_leaf(
+    emitted: Any, committed: Any, where: str, floor: float | None, source: str | None
+) -> list[str]:
+    """Rows 9–14: a float at `where`, under `floor` (labelled `source`) when its row gave one,
+    else the registered floor of its key, else none.
+
+    Null against null is no difference; null against anything else, or a side that is not a
+    real number, is one, compared exactly."""
+    if emitted is None or committed is None:
+        if emitted is not committed:
+            return [f"{where}: {emitted!r} against {committed!r}"]
+        return []
+    if not (_real(emitted) and _real(committed)):
+        return [f"{where}: {emitted!r} against {committed!r}"]
+    if floor is None:
+        key = where.rsplit(".", 1)[-1]
+        if key in V2_REGISTERED_FLOOR:
+            floor, source = V2_REGISTERED_FLOOR[key], f"the floor of {key}, ADR 0007 D2.2"
+        else:
+            floor, source = NO_FLOOR, "no registered floor, ADR 0007 D2.3"
+    return _outside(emitted, committed, where, floor, source or "")
 
 
 def pinned_digests(document: Any, path: str = "") -> list[str]:

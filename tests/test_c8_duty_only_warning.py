@@ -12,14 +12,13 @@ import pytest
 from test_s02_column_wo1 import PROVIDER, REFERENCE, SPECS, _variant
 from test_s02_column_wo2b import R2, solved
 
-from openflowsheet.models.syn001.cascade import CascadeFailure
-from openflowsheet.models.syn001.column import (
+from openflowsheet.models.syn001.cascade_failure import CascadeFailure
+from openflowsheet.models.syn001.column_solve import ColumnSolution, solve_column
+from openflowsheet.models.syn001.column_spec import ColumnSpec, EndSpecification
+from openflowsheet.models.syn001.column_validation import (
     MULTIPLE_STEADY_STATES_WARNING,
-    ColumnSpec,
-    EndSpecification,
     column_warnings,
 )
-from openflowsheet.models.syn001.column_solve import ColumnSolution, solve_column
 
 WARNING = ("multiple_steady_states_possible(duty_only)",)
 
@@ -131,3 +130,10 @@ def test_a_failure_for_another_spec_carries_none() -> None:
     failure = solve_column(replace(SPECS["M1"], condenser="subcooled"), PROVIDER)
     assert isinstance(failure, CascadeFailure)
     assert failure.warnings == ()
+
+
+def test_a_cascade_failure_is_always_truthy() -> None:
+    """column_validation chains its refusals with `or`: a failure, with or without warnings, is
+    truthy, so the chain stops at the first one."""
+    assert bool(CascadeFailure("INVALID_SPECIFICATION", "x"))
+    assert bool(CascadeFailure("INVALID_SPECIFICATION", "x", warnings=WARNING))

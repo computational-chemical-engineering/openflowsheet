@@ -5,9 +5,9 @@ note §4, register R-046; T05b spec §9.1-§9.2, ADR 0012 D7). `verify.table` re
 from __future__ import annotations
 
 import math
-from collections.abc import Mapping, Sequence
+from collections.abc import Iterator, Mapping, Sequence
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, NamedTuple
 
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models import pressure_id, temperature_id
@@ -25,6 +25,7 @@ from openflowsheet.verify.checks import (
     stream_of,
 )
 from openflowsheet.verify.saturation import (
+    Route,
     SaturationError,
     band_distance,
     band_ends,
@@ -40,7 +41,8 @@ from openflowsheet.verify.table_kit import (
 from openflowsheet.verify.unit_checks import MODEL_CHECKS
 
 if TYPE_CHECKING:
-    from openflowsheet.orchestrator.region import LiftedSplit
+    from openflowsheet.models.lifted import LiftedSplit
+    from openflowsheet.models.revision_flowsheet import InstanceView
 
 
 # -- admissibility and the independent split ---------------------------------------------------
@@ -59,12 +61,14 @@ def _split_checks(
     unresolved: bool = False,
 ) -> list[CheckResult]:
     """K04 §4.7 on one lifted split, read from the state at the split's `(T, P)`: K03 §8.2's
-    admissibility, then a fresh flash of the split's feed compared with the split.
+    admissibility (`_split_admissibility`), then a fresh flash of the split's feed compared with
+    the split.
 
     A flowing split judged temperature-degenerate (`distance` is its `δ`; T05b spec §9.1) has
     instead `phase_admissibility.<U>.<S>.saturation` (value `δ`, kind temperature) in place of its
     branch's bubble, dew or closure check, and `independent_split.<U>.<S>` `not_applicable`
-    (`temperature_degenerate`): its fresh flash cannot recompute what the state carries.
+    (`temperature_degenerate`): its fresh flash cannot recompute what the state carries
+    (`_degenerate_split_checks`, returned before the split is read).
 
     An `unresolved` two-phase split (ADR 0013 D3; K04-F9 spec §5.3) keeps its branch's own
     admissibility check — it is not degenerate — and has `independent_split.<U>.<S>`
@@ -72,79 +76,24 @@ def _split_checks(
     flash's vapour flow by at least a tenth of the tolerance it would be judged at."""
     name = f"{split.unit}.{split.stream}"
     subject = split.stream
-    checks: list[CheckResult] = []
 
     if distance is not None:
-        return [
-            evaluated(
-                id=f"phase_admissibility.{name}.saturation",
-                category="phase_admissibility",
-                subject=subject,
-                value=distance,
-                tolerance=tolerances["temperature"],
-                reference=KIND_REFERENCE["temperature"],
-                independence_qualification=note,
-            ),
-            dormant(
-                id=f"independent_split.{name}",
-                category="independent_split",
-                subject=subject,
-                reason="temperature_degenerate",
-            ),
-        ]
+        return _degenerate_split_checks(name, subject, distance, tolerances, note)
 
-    vapor = tuple(state[column] for column in split.vapor)
-    liquid = tuple(state[column] for column in split.liquid)
-    temperature = state[split.temperature]
-    pressure = state[split.pressure]
-    total_vapor, total_liquid = sum(vapor), sum(liquid)
-
-    if total_vapor + total_liquid == 0.0:
-        checks.append(
-            dormant(
-                id=f"phase_admissibility.{name}", category="phase_admissibility", subject=subject
-            )
-        )
-    else:
-        constants = k_values(provider, temperature, pressure, context)
-        if total_vapor == 0.0:
-            checks.append(
-                _one_sided(
-                    id=f"phase_admissibility.{name}.bubble",
-                    subject=subject,
-                    value=sum(x * k for x, k in zip(_fractions(liquid), constants, strict=True)),
-                    note=note,
-                )
-            )
-        elif total_liquid == 0.0:
-            checks.append(
-                _one_sided(
-                    id=f"phase_admissibility.{name}.dew",
-                    subject=subject,
-                    value=sum(y / k for y, k in zip(_fractions(vapor), constants, strict=True)),
-                    note=note,
-                )
-            )
-        else:
-            checks.append(
-                closure_check(
-                    id=f"phase_admissibility.{name}.closure",
-                    subject=subject,
-                    provider=provider,
-                    vapor=vapor,
-                    liquid=liquid,
-                    temperature=temperature,
-                    pressure=pressure,
-                    context=context,
-                    tolerance=tolerances["temperature"],
-                    note=note,
-                )
-            )
+    at = _SplitAt(
+        name,
+        subject,
+        vapor=tuple(state[column] for column in split.vapor),
+        liquid=tuple(state[column] for column in split.liquid),
+        temperature=state[split.temperature],
+        pressure=state[split.pressure],
+    )
+    checks = [_split_admissibility(at, provider, context, tolerances, note)]
 
     carried = StreamState(
         n=tuple(state[column] for column in split.feed),
-        temperature=temperature,
-        pressure=pressure,
+        temperature=at.temperature,
+        pressure=at.pressure,
     )
     if carried.is_dormant:
         checks.append(
@@ -182,13 +131,100 @@ def _split_checks(
                 id=f"independent_split.{name}.{component}",
                 category="independent_split",
                 subject=subject,
-                value=vapor[index] - flashed.vapor.n[index],
+                value=at.vapor[index] - flashed.vapor.n[index],
                 tolerance=tolerances["molar_flow"],
                 reference=KIND_REFERENCE["molar_flow"],
                 independence_qualification=note,
             )
         )
     return checks
+
+
+def _degenerate_split_checks(
+    name: str, subject: str, distance: float, tolerances: Mapping[str, float], note: str
+) -> list[CheckResult]:
+    """T05b spec §9.1's two checks of the temperature-degenerate split `name` (`<U>.<S>`), both on
+    `subject`: `phase_admissibility.<U>.<S>.saturation` with value `distance` (its feed's `δ` at
+    the split's `(T, P)`, spec §4.4), judged at the temperature kind's tolerance of `tolerances`
+    and qualified by `note`, then `independent_split.<U>.<S>` `not_applicable`
+    (`temperature_degenerate`)."""
+    return [
+        evaluated(
+            id=f"phase_admissibility.{name}.saturation",
+            category="phase_admissibility",
+            subject=subject,
+            value=distance,
+            tolerance=tolerances["temperature"],
+            reference=KIND_REFERENCE["temperature"],
+            independence_qualification=note,
+        ),
+        dormant(
+            id=f"independent_split.{name}",
+            category="independent_split",
+            subject=subject,
+            reason="temperature_degenerate",
+        ),
+    ]
+
+
+class _SplitAt(NamedTuple):
+    """A lifted split as `_split_checks` reads it from the state, at the split's own `(T, P)`."""
+
+    #: `<U>.<S>`, the middle of its check ids.
+    name: str
+    #: `S`, the split's stream: the subject of its checks.
+    subject: str
+    #: Its vapour and liquid flows, in the order of the split's own columns.
+    vapor: tuple[float, ...]
+    liquid: tuple[float, ...]
+    temperature: float
+    pressure: float
+
+
+def _split_admissibility(
+    at: _SplitAt,
+    provider: PropertyProvider,
+    context: EvaluationContext,
+    tolerances: Mapping[str, float],
+    note: str,
+) -> CheckResult:
+    """K03 §8.2's admissibility of the split read `at` (K04 §4.7): `phase_admissibility.<U>.<S>`
+    `not_applicable` when both phases are empty; else, from `k_values` at the split's `(T, P)`,
+    the bubble test of an all-liquid split, the dew test of an all-vapour one, or the two-phase
+    closure (`closure_check`, at the temperature kind's tolerance of `tolerances`), each qualified
+    by `note`."""
+    total_vapor, total_liquid = sum(at.vapor), sum(at.liquid)
+    if total_vapor + total_liquid == 0.0:
+        return dormant(
+            id=f"phase_admissibility.{at.name}", category="phase_admissibility", subject=at.subject
+        )
+    constants = k_values(provider, at.temperature, at.pressure, context)
+    if total_vapor == 0.0:
+        return _one_sided(
+            id=f"phase_admissibility.{at.name}.bubble",
+            subject=at.subject,
+            value=sum(x * k for x, k in zip(_fractions(at.liquid), constants, strict=True)),
+            note=note,
+        )
+    if total_liquid == 0.0:
+        return _one_sided(
+            id=f"phase_admissibility.{at.name}.dew",
+            subject=at.subject,
+            value=sum(y / k for y, k in zip(_fractions(at.vapor), constants, strict=True)),
+            note=note,
+        )
+    return closure_check(
+        id=f"phase_admissibility.{at.name}.closure",
+        subject=at.subject,
+        provider=provider,
+        vapor=at.vapor,
+        liquid=at.liquid,
+        temperature=at.temperature,
+        pressure=at.pressure,
+        context=context,
+        tolerance=tolerances["temperature"],
+        note=note,
+    )
 
 
 def _declared_phase(
@@ -230,6 +266,45 @@ def _declared_port_checks(
     degenerate: Degeneracy,
 ) -> list[CheckResult]:
     checks: list[CheckResult] = []
+    for declared in _declared_streams(view):
+        identifier, stream = declared.identifier, declared.stream
+        if stream_of(state, stream, view.components).is_dormant:
+            checks.append(dormant(id=identifier, category="phase_admissibility", subject=stream))
+            continue
+        if stream in degenerate.unlifted:
+            checks.append(blocked_check(identifier, "phase_admissibility", stream, stream))
+            continue
+        checks.append(
+            evaluated(
+                id=identifier,
+                category="phase_admissibility",
+                subject=stream,
+                value=_declared_phase(
+                    stream, declared.phase, view.components, state, enthalpy, provider, context
+                ),
+                tolerance=tolerances["temperature"],
+                reference=KIND_REFERENCE["temperature"],
+                independence_qualification=note + degenerate.notes.get(stream, ""),
+            )
+        )
+    return checks
+
+
+class _DeclaredStream(NamedTuple):
+    """A stream at a port whose phase its model declares, and the id of its admissibility check."""
+
+    #: `phase_admissibility.<U>.<port>`, or `phase_admissibility.<U>.<port>.<S>` for a port
+    #: that carries several streams.
+    identifier: str
+    stream: str
+    #: The port's declared phase.
+    phase: Phase
+
+
+def _declared_streams(view: RevisionView) -> Iterator[_DeclaredStream]:
+    """Each stream of each declared port (`MODEL_CHECKS[model].declared_ports`) that has a
+    declared phase, by instance in `view.instances` order, then port in the entry's order; an
+    instance whose model has no entry contributes none."""
     for instance in view.instances:
         entry = MODEL_CHECKS.get(instance.model_id)
         if entry is None:
@@ -244,28 +319,7 @@ def _declared_port_checks(
                     if several
                     else f"phase_admissibility.{instance.unit_id}.{port}"
                 )
-                if stream_of(state, stream, view.components).is_dormant:
-                    checks.append(
-                        dormant(id=identifier, category="phase_admissibility", subject=stream)
-                    )
-                    continue
-                if stream in degenerate.unlifted:
-                    checks.append(blocked_check(identifier, "phase_admissibility", stream, stream))
-                    continue
-                checks.append(
-                    evaluated(
-                        id=identifier,
-                        category="phase_admissibility",
-                        subject=stream,
-                        value=_declared_phase(
-                            stream, phase, view.components, state, enthalpy, provider, context
-                        ),
-                        tolerance=tolerances["temperature"],
-                        reference=KIND_REFERENCE["temperature"],
-                        independence_qualification=note + degenerate.notes.get(stream, ""),
-                    )
-                )
-    return checks
+                yield _DeclaredStream(identifier, stream, phase)
 
 
 # -- temperature-degenerate streams (T05b spec §9.1–§9.2; ADR 0012 D7) -------------------------
@@ -343,9 +397,10 @@ def _producer_phases(view: RevisionView) -> dict[str, Phase | None]:
     phases: dict[str, Phase | None] = {}
     for instance in view.instances:
         for port, direction in instance.directions.items():
-            if direction == "outlet":
-                for stream in instance.ports[port]:
-                    phases[stream] = instance.phases.get(port)
+            if direction != "outlet":
+                continue
+            for stream in instance.ports[port]:
+                phases[stream] = instance.phases.get(port)
     return phases
 
 
@@ -372,7 +427,10 @@ def degeneracy(
 
     `owners` (S11 design §10.11) maps a staged split's key to the instance that owns it; a split
     the registry lifted is its own instance's (`owners.get(key, key)`). A staged split (a column
-    stage) is heater-style: its stream is its key, which no flowsheet stream is."""
+    stage) is heater-style: its stream is its key, which no flowsheet stream is. The owning
+    instance's ports decide the style (`_product_streams`) and so the streams the split owns
+    (`_owned_streams`); `_split_substitution` tests each split and `_degenerate_streams` every
+    other stream. Raises `VerifierError` when the verifier's own band or phase evaluation fails."""
     flow_tolerance = routing_tolerances(tolerances)["molar_flow"]
     instances = {instance.unit_id: instance for instance in view.instances}
     owner = owners or {}
@@ -383,63 +441,165 @@ def degeneracy(
     owned: set[str] = set()
     for split in splits:
         instance = instances[owner.get(split.unit, split.unit)]
-        products = "vapor" in instance.ports and "liquid" in instance.ports
-        if products:
-            (vapor_stream,) = instance.ports["vapor"]
-            (liquid_stream,) = instance.ports["liquid"]
-            owned.update((vapor_stream, liquid_stream))
-        else:
-            owned.add(split.stream)
-        feed = tuple(state[column] for column in split.feed)
-        if all(flow == 0.0 for flow in feed):
-            continue
-        temperature, pressure = state[split.temperature], state[split.pressure]
-        t_bubble, t_dew = _band(provider, feed, pressure, context, f"{split.unit}.{split.stream}")
-        distance = band_distance(temperature, t_bubble, t_dew)
-        route, floor = split_route(
-            temperature,
-            sum(feed),
-            t_bubble,
-            t_dew,
-            two_phase=state[split.vapor_total] > 0.0 and state[split.liquid_total] > 0.0,
-            flow_tolerance=flow_tolerance,
+        product_streams = _product_streams(instance)
+        owned.update(_owned_streams(split, product_streams))
+        substitution = _split_substitution(
+            provider, context, state, split, flow_tolerance, product_streams
         )
-        if route == "resolved":
+        if substitution is None:
             continue
-        if route == "degenerate":
-            distances[split.unit] = distance
+        if substitution.route == "degenerate":
+            distances[split.unit] = substitution.distance
             template = SPLIT_ENTHALPY_NOTE
         else:
+            floor = substitution.floor
             unresolved[split.unit] = floor if floor is not None else math.inf
             template = UNRESOLVED_ENTHALPY_NOTE
-        vapor = tuple(state[column] for column in split.vapor)
-        liquid = tuple(state[column] for column in split.liquid)
-        if products:
-            products_phases: tuple[tuple[str, tuple[float, ...], Phase], ...] = (
-                (vapor_stream, vapor, "VAPOR"),
-                (liquid_stream, liquid, "LIQUID"),
-            )
-            for stream, flows, phase in products_phases:
-                if stream_of(state, stream).is_dormant:
-                    continue
-                enthalpy[stream] = _phase_enthalpy(
-                    provider,
-                    context,
-                    flows,
-                    state[temperature_id(stream)],
-                    state[pressure_id(stream)],
-                    phase,
-                    stream,
-                )
-                notes[stream] = template.format(stream=stream)
-        else:
-            stream = split.stream
-            enthalpy[stream] = _phase_enthalpy(
-                provider, context, vapor, temperature, pressure, "VAPOR", stream
-            ) + _phase_enthalpy(provider, context, liquid, temperature, pressure, "LIQUID", stream)
+        for stream, value in substitution.enthalpy.items():
+            enthalpy[stream] = value
             notes[stream] = template.format(stream=stream)
 
+    declared_enthalpy, declared_notes, unlifted = _degenerate_streams(
+        view, state, provider, context, owned
+    )
+    enthalpy.update(declared_enthalpy)
+    notes.update(declared_notes)
+    return Degeneracy(distances, enthalpy, notes, frozenset(unlifted), unresolved)
+
+
+def _product_streams(instance: InstanceView) -> tuple[str, str] | None:
+    """The vapour and liquid streams of a products-style split's owning `instance`: the single
+    stream of each of its `vapor` and `liquid` ports. None when it lacks either port (a
+    heater-style split). Unpacking raises `ValueError` when either port carries more or fewer
+    than one stream."""
+    if "vapor" in instance.ports and "liquid" in instance.ports:
+        (vapor_stream,) = instance.ports["vapor"]
+        (liquid_stream,) = instance.ports["liquid"]
+        return vapor_stream, liquid_stream
+    return None
+
+
+def _owned_streams(split: LiftedSplit, product_streams: tuple[str, str] | None) -> tuple[str, ...]:
+    """The streams `split` owns, which §9.2 leaves to it (`_degenerate_streams`' `owned`): a
+    products-style split's vapour and liquid streams (`product_streams`), else, `product_streams`
+    None (a heater-style split, or a staged one whose stream is its key), its own stream."""
+    if product_streams is not None:
+        return product_streams
+    return (split.stream,)
+
+
+class _SplitSubstitution(NamedTuple):
+    """A flowing split that is not resolved, and the enthalpies §9.1 gives its streams."""
+
+    #: `degenerate` (§9.1) or `unresolved` (ADR 0013 D3).
+    route: Route
+    #: `δ` of its feed at the split's `(T, P)`.
+    distance: float
+    #: Its fresh flash's floor over `τ_flow`; None outside the band.
+    floor: float | None
+    #: Stream -> `Ḣ` from the state's split (`_split_enthalpies`).
+    enthalpy: dict[str, float]
+
+
+def _split_substitution(
+    provider: PropertyProvider,
+    context: EvaluationContext,
+    state: Mapping[str, float],
+    split: LiftedSplit,
+    flow_tolerance: float,
+    product_streams: tuple[str, str] | None,
+) -> _SplitSubstitution | None:
+    """§9.1 and ADR 0013 D3 at one split of `state`: its feed tested at the split's `(T, P)`
+    (`split_route`), and, when it is degenerate or unresolved, the enthalpies
+    `_split_enthalpies` gives its streams (`product_streams` as there).
+
+    None when every feed flow is zero (not tested) or when the split is resolved. Raises
+    `VerifierError` when the verifier's own band or phase evaluation fails."""
+    feed = tuple(state[column] for column in split.feed)
+    if all(flow == 0.0 for flow in feed):
+        return None
+    temperature, pressure = state[split.temperature], state[split.pressure]
+    t_bubble, t_dew = _band(provider, feed, pressure, context, f"{split.unit}.{split.stream}")
+    distance = band_distance(temperature, t_bubble, t_dew)
+    route, floor = split_route(
+        temperature,
+        sum(feed),
+        t_bubble,
+        t_dew,
+        two_phase=state[split.vapor_total] > 0.0 and state[split.liquid_total] > 0.0,
+        flow_tolerance=flow_tolerance,
+    )
+    if route == "resolved":
+        return None
+    split_enthalpy = _split_enthalpies(
+        provider, context, state, split, temperature, pressure, product_streams
+    )
+    return _SplitSubstitution(route, distance, floor, split_enthalpy)
+
+
+def _split_enthalpies(
+    provider: PropertyProvider,
+    context: EvaluationContext,
+    state: Mapping[str, float],
+    split: LiftedSplit,
+    temperature: float,
+    pressure: float,
+    product_streams: tuple[str, str] | None,
+) -> dict[str, float]:
+    """§9.1 at `state`: the enthalpy a degenerate or unresolved split gives each of its streams,
+    read from the state's split rather than from a fresh flash.
+
+    `product_streams` are a products-style split's vapour and liquid streams: each one that is not
+    dormant gets its own phase's enthalpy at its own `(T, P)`, vapour first. None is a
+    heater-style split: its stream gets `Σ v_i h_i^V(T, P) + Σ l_i h_i^L(T, P)` at the split's
+    `temperature` and `pressure`. Raises `VerifierError` when the verifier's own phase
+    evaluation fails."""
+    vapor = tuple(state[column] for column in split.vapor)
+    liquid = tuple(state[column] for column in split.liquid)
+    if product_streams is not None:
+        vapor_stream, liquid_stream = product_streams
+        products_phases: tuple[tuple[str, tuple[float, ...], Phase], ...] = (
+            (vapor_stream, vapor, "VAPOR"),
+            (liquid_stream, liquid, "LIQUID"),
+        )
+        found: dict[str, float] = {}
+        for stream, flows, phase in products_phases:
+            if stream_of(state, stream).is_dormant:
+                continue
+            found[stream] = _phase_enthalpy(
+                provider,
+                context,
+                flows,
+                state[temperature_id(stream)],
+                state[pressure_id(stream)],
+                phase,
+                stream,
+            )
+        return found
+    stream = split.stream
+    return {
+        stream: _phase_enthalpy(provider, context, vapor, temperature, pressure, "VAPOR", stream)
+        + _phase_enthalpy(provider, context, liquid, temperature, pressure, "LIQUID", stream)
+    }
+
+
+def _degenerate_streams(
+    view: RevisionView,
+    state: Mapping[str, float],
+    provider: PropertyProvider,
+    context: EvaluationContext,
+    owned: set[str],
+) -> tuple[dict[str, float], dict[str, str], set[str]]:
+    """§9.2 at `state`: every flowing stream of `view` outside `owned` (the splits' streams),
+    tested at its own `(n, T, P)`. Returns the enthalpies and notes of the degenerate ones in
+    their declared phase (read at the producer's outlet port), in stream order, and the
+    degenerate ones with no declared phase there (declared `vapor_liquid`, or no producer),
+    which are unlifted.
+
+    Raises `VerifierError` when the verifier's own band or phase evaluation fails."""
     declared = _producer_phases(view)
+    declared_enthalpy: dict[str, float] = {}
+    declared_notes: dict[str, str] = {}
     unlifted: set[str] = set()
     for stream in view.streams:
         carried = stream_of(state, stream)
@@ -452,8 +612,8 @@ def degeneracy(
         if capability is None:
             unlifted.add(stream)
             continue
-        enthalpy[stream] = _phase_enthalpy(
+        declared_enthalpy[stream] = _phase_enthalpy(
             provider, context, carried.n, carried.temperature, carried.pressure, capability, stream
         )
-        notes[stream] = DECLARED_ENTHALPY_NOTE.format(stream=stream, phase=capability)
-    return Degeneracy(distances, enthalpy, notes, frozenset(unlifted), unresolved)
+        declared_notes[stream] = DECLARED_ENTHALPY_NOTE.format(stream=stream, phase=capability)
+    return declared_enthalpy, declared_notes, unlifted

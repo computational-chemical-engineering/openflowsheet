@@ -26,7 +26,7 @@ sys.path.insert(0, str(REPO_ROOT / "scripts"))
 import s11_identity  # noqa: E402
 import s11_identity_recorder as recorder  # noqa: E402
 
-from openflowsheet.application.binding import Unbound  # noqa: E402
+from openflowsheet.application.binding_common import Unbound  # noqa: E402
 from openflowsheet.application.revision_binding import (  # noqa: E402
     RevisionBinding,
     bind_revision_flowsheet,

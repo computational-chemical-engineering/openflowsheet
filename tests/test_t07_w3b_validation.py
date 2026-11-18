@@ -36,30 +36,30 @@ import openflowsheet.application.binding as binding_module
 import openflowsheet.application.revision_binding as revision_binding_module
 from openflowsheet.application.binding import (
     Binding,
-    Unbound,
     bind_revision_or_reason,
     legacy_admission,
     legacy_answers,
 )
-from openflowsheet.application.policies import resolve_policy
+from openflowsheet.application.binding_common import Unbound
+from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.revision_binding import RevisionBinding, bind_revision_flowsheet
 from openflowsheet.application.revision_run import NoRoute, Route, legacy_plan, select_route
 from openflowsheet.application.revisions import Revision
-from openflowsheet.application.transactions import Application, ChangeSet, Edit
-from openflowsheet.application.types import schema_errors
+from openflowsheet.application.transaction_types import Change, Edit
 from openflowsheet.application.validation import (
     FALLBACK_PRODUCED_BY,
     MISSING_REVISION_ID,
     PRODUCED_BY,
     REQUIRED_KEYS,
     SCHEMA_ONLY_PRODUCED_BY,
-    ValidationReport,
-    utc_timestamp,
     validate,
 )
+from openflowsheet.application.validation_report import ValidationReport, utc_timestamp
 from openflowsheet.graph.analysis import analyse
 from openflowsheet.orchestrator.execution import ExecutionPlan, declaration_identity
+from openflowsheet.orchestrator.policies import resolve_policy
 from openflowsheet.orchestrator.revision import plan_revision
+from openflowsheet.schema_check import schema_errors
 
 SCHEMA = "validation-report.schema.json"
 STRUCTURAL = ("STR-01", "STR-02", "STR-03", "STR-04", "STR-05")
@@ -240,7 +240,7 @@ def test_fallback_labels_implicated_columns_with_their_specifications(
     specification's id, and any other object is kept; the labels do not change the finding. No
     corpus revision's fallback analysis implicates a column, so the check list is replaced."""
     import openflowsheet.application.validation as validation_module
-    from openflowsheet.application.validation import Check
+    from openflowsheet.application.validation_report import Check
     from openflowsheet.models.revision_flowsheet import pin_specifications
 
     document = CORPUS["SYN-001-T06-NET03"]()
@@ -408,7 +408,7 @@ def test_r3_every_corpus_report_validates(task: str) -> None:
     """T08 review 2, Ruling 1 (U05) moved the `optimization` case: no report is built for that
     task, so every corpus document is refused `unsupported` instead — amended on purpose by ADR
     0071 (OPT design §4.11): without an audited solver, `nlp_solver_unavailable`."""
-    from openflowsheet.application.contract import ApplicationError
+    from openflowsheet.application.errors import ApplicationError
 
     for name, build in CORPUS.items():
         if task == "optimization":
@@ -462,23 +462,30 @@ def test_r3_every_noncanonical_report_validates() -> None:
 
 
 def test_r3_every_transaction_result_validation_validates() -> None:
-    """K06's façade: the report a committed, and a replayed, transaction carries."""
+    """The report a committed, and a replayed, transaction carries (K06's façade before ADR
+    0076 I-11; its successor is an in-memory `LocalApplication`)."""
     revision = CORPUS["SYN-001-nominal"]()
-    app = Application()
-    app.store.put(Revision(revision_id=revision["revision_id"], document=revision))
+    app = LocalApplication.in_memory()
+    store = app.store
+    with store.writing() as connection:
+        store.commit_revision(
+            connection,
+            Revision(revision_id=revision["revision_id"], document=revision),
+            principal_id=app.principal_id,
+            capability_id=app.capability_id,
+            policy_sha256=app.policy.policy_sha256,
+        )
     results = []
     for key, name, edits in (
         ("k1", "r1", (Edit("set", ("description",), "one"),)),
         ("k2", "r2", (Edit("set", ("specifications",), []),)),
         ("k3", "r3", (Edit("remove", ("provenance",)),)),
     ):
-        change = ChangeSet(
-            edits=edits,
-            expected_revision=app.store.head,
-            idempotency_key=key,
-            new_revision_id=name,
-        )
-        results += [app.commit(change), app.commit(change)]
+        with store.reading() as connection:
+            head = store.head(connection)
+        change = Change(edits=edits, new_revision_id=name)
+        results += [app.commit_change(change, head, key), app.commit_change(change, head, key)]
+    app.close()
     assert [result.status for result in results] == ["committed", "replayed"] * 3
     for result in results:
         assert result.validation is not None

@@ -20,7 +20,7 @@ import pytest
 from m03_support import flowsheet, nlp_formulation, number, record_measurement, reference
 from t07_corpus import CORPUS
 
-from openflowsheet.application.contract import ApplicationError
+from openflowsheet.application.errors import ApplicationError
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.compile.casadi_backend import compile_parametric_twin, compile_problem
 from openflowsheet.compiled import EvaluationContext
@@ -341,7 +341,7 @@ def test_a33_simulation_not_ready() -> None:
 def test_a33_validate_for_optimization_is_still_r129s_unsupported(tmp_path: Path) -> None:
     """Amended on purpose (ADR 0071 D8, OPT design §4.11): R-129 is lifted; without an audited
     solver the refusal is `nlp_solver_unavailable`, before the revision is read."""
-    from openflowsheet.application.types import Change, Edit
+    from openflowsheet.application.transaction_types import Change, Edit
     from openflowsheet.studies.nlp.closure import audited_solver
 
     if audited_solver().available:

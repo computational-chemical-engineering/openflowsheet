@@ -28,7 +28,7 @@ from t07_jobs_support import commit
 
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.operations import dispatch
-from openflowsheet.application.types import ReplayPolicy
+from openflowsheet.application.policy_types import ReplayPolicy
 from openflowsheet.run.bundle import read_artifact, read_manifest, write_bundle
 
 LOOP_PATH = REPO_ROOT / "benchmarks" / "m02" / "c1-loop-standin.json"

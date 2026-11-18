@@ -40,8 +40,11 @@ from t05b_support import POLICY_V2, solve_from_v2
 from test_t05b_openings import CASES, DP, QUP, _traversal, ch
 
 from openflowsheet.orchestrator import region as region_module
+from openflowsheet.orchestrator import region_phase
+from openflowsheet.orchestrator import region_problem as region_problem_module
 from openflowsheet.orchestrator.phase_contract import Candidate
-from openflowsheet.orchestrator.region import _attempt_screen, _contract_kernel, _kernel
+from openflowsheet.orchestrator.region_phase import _contract_kernel, _kernel
+from openflowsheet.orchestrator.region_screen import _attempt_screen
 from openflowsheet.orchestrator.revision import instances_of
 from openflowsheet.orchestrator.splits import closure_types, lifted_splits, split_temperatures
 
@@ -118,7 +121,7 @@ def test_b36b_off_the_dew_point_the_leaving_flash_is_at_the_outlet_pressure() ->
     (its outlet), not at its feed's `S2.P`, and at the feed's `T`."""
     document, start = CASES["CH-UP-DP"]()
     asked: list[tuple[float, float, float, float, float]] = []
-    real = region_module._kernel
+    real = region_phase._kernel
 
     def kernel(provider: Any, context: Any, split: Any, state: Any, **kwargs: Any) -> Any:
         if split.unit == "U-PHF2" and kwargs.get("temperature") is not None:
@@ -135,6 +138,7 @@ def test_b36b_off_the_dew_point_the_leaving_flash_is_at_the_outlet_pressure() ->
 
     with pytest.MonkeyPatch.context() as patch:
         patch.setattr(region_module, "_kernel", kernel)
+        patch.setattr(region_phase, "_kernel", kernel)
         result = solve_from_v2(bind(document), start)
     assert result.outcome == "CONVERGED", result.message
     assert asked
@@ -202,7 +206,7 @@ def _ch_up_operations() -> dict[str, Any]:
     """The keyword arguments of CH-UP's attempt-0 operations (`U-PHF` `LIQUID`, `U-PHF2`
     `ZERO_FLOW`)."""
     caught: list[dict[str, Any]] = []
-    real = region_module._LiftedOps.__init__
+    real = region_problem_module._LiftedOps.__init__
 
     def spy(self: Any, **kwargs: Any) -> None:
         caught.append(kwargs)
@@ -210,7 +214,7 @@ def _ch_up_operations() -> dict[str, Any]:
 
     document, start = CASES["CH-UP"]()
     with pytest.MonkeyPatch.context() as patch:
-        patch.setattr(region_module._LiftedOps, "__init__", spy)
+        patch.setattr(region_problem_module._LiftedOps, "__init__", spy)
         solve_from_v2(bind(document), start)
     given = caught[0]
     assert dict(given["regimes"]) == {"U-PHF": "LIQUID", "U-PHF2": "ZERO_FLOW"}
@@ -225,7 +229,7 @@ def _leaving_candidate(reported: str) -> tuple[Any, Candidate]:
     at a candidate needs the upstream flash already two-phase in the attempt.)"""
     _, _, _, state, _, _ = _ch_up_opening()
     given = {**_ch_up_operations(), "regimes": TRIAL_REGIMES, "end_state": state}
-    ops = region_module._LiftedOps(**given)
+    ops = region_problem_module._LiftedOps(**given)
     candidate = Candidate(
         iteration=0,
         halving=1,

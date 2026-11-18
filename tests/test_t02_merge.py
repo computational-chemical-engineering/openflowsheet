@@ -17,11 +17,10 @@ import numpy.typing as npt
 import pytest
 import yaml
 
-from openflowsheet.numerics.anderson import RecyclePolicy
 from openflowsheet.numerics.newton import Evaluation, NewtonResult, Problem, solve_newton
 from openflowsheet.numerics.scaling import Scaling
+from openflowsheet.numerics.solve_record import Counters, RecyclePolicy, SolvePolicy, Trace
 from openflowsheet.orchestrator.merge import ConvergeResult, converge_with_merge
-from openflowsheet.orchestrator.trace import Counters, SolvePolicy, Trace
 from openflowsheet.verify.failure import bundle_for
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -264,8 +263,8 @@ def test_a32_the_merge_region_is_the_loop_with_nothing_added() -> None:
     from openflowsheet.graph.analysis import analyse
     from openflowsheet.graph.trace import trace_declaration
     from openflowsheet.models.syn001.flowsheet import Syn001Flowsheet
+    from openflowsheet.numerics.solve_record import RecyclePolicy as Recycle
     from openflowsheet.orchestrator.execution import build_execution_plan, declaration_identity
-    from openflowsheet.orchestrator.trace import RecyclePolicy as Recycle
     from openflowsheet.thermo.syn001 import Syn001Provider
 
     flowsheet = Syn001Flowsheet(

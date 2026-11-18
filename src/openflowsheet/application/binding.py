@@ -29,10 +29,7 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field, replace
 from typing import TYPE_CHECKING, Any, Final
 
-from openflowsheet.application.binding_common import HINT_LIMIT as HINT_LIMIT
-from openflowsheet.application.binding_common import Unbound as Unbound
-from openflowsheet.application.binding_common import _column_owners
-from openflowsheet.application.binding_common import refusal_code as refusal_code
+from openflowsheet.application.binding_common import Unbound, column_owners, refusal_code
 from openflowsheet.canonical import document_sha256, first_noncanonical
 from openflowsheet.compile.spec import EquationSpec, ProblemSpec
 from openflowsheet.compiled import EvaluationContext
@@ -48,17 +45,15 @@ from openflowsheet.models.revision_flowsheet import (
 from openflowsheet.units import UnitConversion, read_number
 
 if TYPE_CHECKING:
-    from openflowsheet.application.revision_binding import SurrogateResolver
+    from openflowsheet.application.model_builders import SurrogateResolver
 
 __all__ = [
     "Binding",
-    "Unbound",
     "bind_revision",
     "bind_revision_or_reason",
     "instance_named",
     "legacy_admission",
     "legacy_answers",
-    "refusal_code",
     "revision_probe",
 ]
 
@@ -251,7 +246,7 @@ def structural_inputs(flowsheet: Any) -> tuple[ProblemSpec, ProcessGraph, dict[s
             for stream, source, target in sorted(set(edges))
         ),
         instance_ids={unit: unit for unit in WIRING},
-        column_owners=_column_owners(
+        column_owners=column_owners(
             spec.variable_ids, {stream: source for stream, source, _ in edges}, tuple(WIRING)
         ),
     )
@@ -638,7 +633,7 @@ def bind_revision_or_reason(document: Mapping[str, Any]) -> Binding | Unbound:
     # the assembled column set, so the graph gains it once the flowsheet exists.
     graph = replace(
         graph,
-        column_owners=_column_owners(
+        column_owners=column_owners(
             spec.variable_ids,
             {stream: source for stream, source, _ in wiring_edges},
             tuple(WIRING),
@@ -937,7 +932,7 @@ def _instance_contracts(document: Mapping[str, Any], components: Sequence[str]) 
     SYN-001's problem instead. The views are the document's with `specifications` emptied: the
     roles this binder reads (`free`) are what the revision binder refuses, and pins are not part
     of the contract."""
-    from openflowsheet.application.revision_binding import MODEL_SIGNATURES, instance_contract
+    from openflowsheet.application.model_signatures import MODEL_SIGNATURES, instance_contract
     from openflowsheet.models.revision_flowsheet import parse_revision
 
     try:

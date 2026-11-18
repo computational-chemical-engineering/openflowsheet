@@ -20,7 +20,7 @@ the test-suite audit each fallback is recorded as a defect, which fails the sess
 from __future__ import annotations
 
 import math
-from collections.abc import Iterable, Mapping, Sequence
+from collections.abc import Iterable, Iterator, Mapping, Sequence
 from dataclasses import dataclass, replace
 from typing import Any, Literal
 
@@ -49,7 +49,7 @@ from openflowsheet.messages.legacy import (
     parse_check,
     resolve,
 )
-from openflowsheet.units import display_item, text_unit
+from openflowsheet.units.display import display_item, text_unit
 
 Surface = Literal["python", "cli", "http", "mcp"]
 Explanation = dict[str, Any]
@@ -64,9 +64,9 @@ UNBOUND_INPUT_KINDS = frozenset({"conflict", "inadmissible", "incomplete"})
 class RenderContext:
     """What a rendering may know besides the chain (§4.2.5): the surface, the revision document,
     and the ids that are context params. `display_units` is the request's resolved display
-    preference (ADR 0075 D7.2, a `units.DisplayUnits`, which carries the ambient pressure): with
-    it, every quantity of a kind in the map gains its display item and renders from it; `None`
-    renders SI only."""
+    preference (ADR 0075 D7.2, a `units.display.DisplayUnits`, which carries the ambient
+    pressure): with it, every quantity of a kind in the map gains its display item and renders
+    from it; `None` renders SI only."""
 
     surface: Surface | None = None
     revision: Mapping[str, Any] | None = None
@@ -252,14 +252,20 @@ def _locate(
         return ("specification", [member, value], None) if 0 <= value < len(items) else None
     for index, item in enumerate(items):
         if isinstance(item, Mapping) and item.get("id") == value:
-            model = None
-            if member == "instances":
-                model_document = item.get("model")
-                if isinstance(model_document, Mapping) and isinstance(
-                    model_document.get("id"), str
-                ):
-                    model = model_document["id"]
+            model = _unit_model(member, item)
             return ("unit" if kind == "element" else kind), [member, index], model
+    return None
+
+
+def _unit_model(member: str, item: Mapping[str, Any]) -> str | None:
+    """§4.2.5: `x_model`, the model id of a unit (an item of the revision's `instances`); `None`
+    for an item of another member and for an instance whose `model` has no string `id`."""
+    if member != "instances":
+        return None
+    model_document = item.get("model")
+    if isinstance(model_document, Mapping) and isinstance(model_document.get("id"), str):
+        model_id: str = model_document["id"]
+        return model_id
     return None
 
 
@@ -276,6 +282,8 @@ def _raw(value: object) -> str:
 
 
 def _format(typed: _Typed, conversion: template.Conversion, catalogue: Catalogue) -> str:
+    """§4.2.4: a param's text: a pointer as its path whatever the conversion, then `!raw` and
+    `!title`, else `_by_type`."""
     value = typed.value
     if typed.type == "pointer" and isinstance(value, list | tuple):
         return _pointer(value)
@@ -284,35 +292,66 @@ def _format(typed: _Typed, conversion: template.Conversion, catalogue: Catalogue
     if conversion == "title":
         entry = catalogue.entry(str(value)) if typed.type == "code" else None
         return entry.title if entry is not None else _raw(value)
+    return _by_type(typed, catalogue)
+
+
+def _by_type(typed: _Typed, catalogue: Catalogue) -> str:
+    """§4.2.4: `{name}` with no conversion, by the param's type. A type without a rule here
+    (`text`, `code`, a pointer that is not a path) and a value its rule cannot read (no number, no
+    phrase) give `_raw`."""
+    value = typed.value
     if typed.type in ELEMENT_TYPES:
         return f"'{_raw(value)}'"
     if typed.type == "quantity":
-        display = typed.display
-        if display is not None and display["value"] is not None:
-            # ADR 0075 D7.2, D7.7: a converted quantity, in MSG's format and the unit's text
-            # spelling; out of range shows SI.
-            return f"{format_number(display['value'])} {text_unit(display['unit'])}"
-        quantity = _quantity(value)
-        if quantity is not None:
-            return f"{format_number(quantity[0])} {quantity[1]}"
-        number = _number(value)
-        return format_number(number) if number is not None else _raw(value)
+        return _quantity_text(typed)
     if typed.type == "number":
-        number = _number(value)
-        return format_number(number) if number is not None else _raw(value)
+        return _number_text(value)
     if typed.type == "enum":
-        phrase = (
-            None if typed.vocabulary is None else catalogue.phrase(typed.vocabulary, str(value))
-        )
-        return phrase if phrase is not None else _raw(value)
+        return _enum_text(typed, catalogue)
     if typed.type == "list":
-        items = value if isinstance(value, list | tuple) else [value]
-        return ", ".join(_raw(item) for item in items)
+        return _list_text(value)
     if typed.type == "display_unit":
         # ADR 0075 D7.7 (X04 D-21): a display unit in human text takes its text spelling; the
         # param keeps the D2 spelling (`degF`), and `!raw` gives it.
         return text_unit(_raw(value))
     return _raw(value)
+
+
+def _quantity_text(typed: _Typed) -> str:
+    """§4.2.4's `quantity` rule: the converted display value in its unit's text spelling when
+    there is one, else the value read as a quantity, else `_number_text`."""
+    display = typed.display
+    if display is not None and display["value"] is not None:
+        # ADR 0075 D7.2, D7.7: a converted quantity, in MSG's format and the unit's text
+        # spelling; out of range shows SI.
+        return f"{format_number(display['value'])} {text_unit(display['unit'])}"
+    quantity = _quantity(typed.value)
+    if quantity is not None:
+        return f"{format_number(quantity[0])} {quantity[1]}"
+    return _number_text(typed.value)
+
+
+def _number_text(value: object) -> str:
+    """§4.2.4's `number` rule, also a `quantity`'s when it reads as no quantity: `value` as a
+    number in §4.5's format, or `_raw` when it is no number."""
+    number = _number(value)
+    return format_number(number) if number is not None else _raw(value)
+
+
+def _enum_text(typed: _Typed, catalogue: Catalogue) -> str:
+    """§4.2.4's `enum` rule: the vocabulary's phrase for the value, or `_raw` when the param
+    names no vocabulary or the vocabulary has no phrase for it."""
+    phrase = (
+        None if typed.vocabulary is None else catalogue.phrase(typed.vocabulary, str(typed.value))
+    )
+    return phrase if phrase is not None else _raw(typed.value)
+
+
+def _list_text(value: object) -> str:
+    """§4.2.4's `list` rule: the items' `_raw` texts joined by `, `; a value that is not a list
+    or tuple is one item."""
+    items = value if isinstance(value, list | tuple) else [value]
+    return ", ".join(_raw(item) for item in items)
 
 
 def _render(nodes: tuple[template.Node, ...], scope: _Scope) -> str:
@@ -358,17 +397,12 @@ def _matches(
 def _field(
     entry: Entry, name: str, scope: _Scope, outer: Sequence[str], *, strict: bool, machine: str
 ) -> str | None:
-    """`name` of `entry`: the first matching variant that defines it, then the base (§4.2.2).
-    An empty rendering counts as not supplied. A candidate that fails is a defect: `strict`
-    raises it, the audit records it, and the next candidate is tried; `RenderError` when every
-    candidate fails."""
-    candidates = [
-        str(variant[name])
-        for variant in entry.variants
-        if name in variant and _matches(variant["when"], scope.params, scope.context.surface, outer)
-    ]
-    if name in entry.document:
-        candidates.append(str(entry.document[name]))
+    """`name` of `entry`: the first of `_field_candidates` (each matching variant that defines
+    it, then the base; §4.2.2) that renders non-empty. A candidate that fails is a defect:
+    `strict` raises it, the audit records it, and the next candidate is tried. `None` when there
+    is no candidate, or when every candidate renders empty and none failed; the first failure, a
+    `RenderError`, when no candidate renders non-empty and one failed."""
+    candidates = _field_candidates(entry, name, scope, outer)
     if not candidates:
         return None
     error: RenderError | None = None
@@ -387,6 +421,19 @@ def _field(
     if error is not None:
         raise error
     return None
+
+
+def _field_candidates(entry: Entry, name: str, scope: _Scope, outer: Sequence[str]) -> list[str]:
+    """§4.2.2: the templates that may supply `name` of `entry`, in the order they are tried: each
+    variant that defines it and whose `when` matches, in declaration order, then the base's."""
+    candidates = [
+        str(variant[name])
+        for variant in entry.variants
+        if name in variant and _matches(variant["when"], scope.params, scope.context.surface, outer)
+    ]
+    if name in entry.document:
+        candidates.append(str(entry.document[name]))
+    return candidates
 
 
 def _kind(entry: Entry, scope: _Scope, outer: Sequence[str]) -> str:
@@ -441,6 +488,12 @@ def _from_entry(
     *,
     strict: bool,
 ) -> Explanation:
+    """The explanation of the chain `codes` from `entry`, the resolved link at `position`: its
+    summary, kind (or the request's override), for a complete entry its why, action and where,
+    and the kind's default action for any entry without one; when an `outcome` entry other than
+    `entry` heads the chain, its line (`_outcome_line`), when it gives one, becomes the summary
+    and the entry's summary the cause. Raises `RenderError` when `entry` renders no summary or a
+    field fails as `_field` raises it."""
     scope = _Scope(entry, request.params, request.context, catalogue)
     outer = codes[:position]
     machine = request.machine
@@ -464,18 +517,7 @@ def _from_entry(
     cause = None
     head = resolved[0]
     if head[0] == 0 and head[1].family == "outcome" and head[1].code != entry.code:
-        outcome = head[1]
-        outcome_scope = _Scope(outcome, request.params, request.context, catalogue)
-        try:
-            line = field(outcome, "context", outcome_scope, [])
-            if line is None:
-                line = field(outcome, "summary", outcome_scope, [])
-        except RenderError as error:
-            if strict:
-                raise
-            if audit.auditor is not None:
-                audit.auditor.defect(f"{outcome.code}: {error}", request.machine)
-            line = None
+        line = _outcome_line(head[1], request, catalogue, strict=strict)
         if line is not None:
             summary, cause = line, summary
     return {
@@ -495,6 +537,30 @@ def _from_entry(
         "chain": codes,
         "docs": entry.docs,
     }
+
+
+def _outcome_line(
+    outcome: Entry, request: _Request, catalogue: Catalogue, *, strict: bool
+) -> str | None:
+    """The line an `outcome` entry heading the chain gives in place of the summary: its
+    `context`, else its `summary`, rendered in its own scope with no outer codes (`_field`);
+    `None` when it has neither, or when rendering fails and not `strict` (the failure recorded
+    as a defect when an auditor is set, as `_explain` records one for an entry); `strict`
+    raises the `RenderError`."""
+    outcome_scope = _Scope(outcome, request.params, request.context, catalogue)
+    try:
+        line = _field(outcome, "context", outcome_scope, [], strict=strict, machine=request.machine)
+        if line is None:
+            line = _field(
+                outcome, "summary", outcome_scope, [], strict=strict, machine=request.machine
+            )
+    except RenderError as error:
+        if strict:
+            raise
+        if audit.auditor is not None:
+            audit.auditor.defect(f"{outcome.code}: {error}", request.machine)
+        line = None
+    return line
 
 
 def _minimal(request: _Request, codes: list[str], catalogue: Catalogue) -> Explanation:
@@ -533,16 +599,8 @@ def _elements(request: _Request, resolved: list[tuple[int, Entry]]) -> list[dict
             seen.add((kind, identifier))
             out.append({"type": kind, "id": identifier, "path": path})
 
-    for _, entry in resolved:
-        for name, value in request.params.items():
-            declared = entry.params.get(name)
-            if declared is None or declared.type not in ELEMENT_TYPES or not _present(value):
-                continue
-            located = _locate(declared.type, value, request.context.revision)
-            if located is None:
-                add(declared.type, _raw(value), None)
-            else:
-                add(located[0], _raw(value), located[1])
+    for kind, identifier, path in _param_elements(request, resolved):
+        add(kind, identifier, path)
     for identifier in request.extra_elements:
         if any(element["id"] == identifier for element in out):
             continue  # an implicated id a chain param already typed (rule 2's check, Q2)
@@ -552,6 +610,25 @@ def _elements(request: _Request, resolved: list[tuple[int, Entry]]) -> list[dict
         else:
             add(located[0], identifier, located[1])
     return out
+
+
+def _param_elements(
+    request: _Request, resolved: list[tuple[int, Entry]]
+) -> Iterator[tuple[str, str, list[str | int] | None]]:
+    """The request's present element params, per resolved entry in chain order and then in param
+    order, as `(type, id, path)`: `_locate`'s type and path, or the declared type and no path
+    when `_locate` finds none. Lazy: `_elements` adds each one before the next is
+    located."""
+    for _, entry in resolved:
+        for name, value in request.params.items():
+            declared = entry.params.get(name)
+            if declared is None or declared.type not in ELEMENT_TYPES or not _present(value):
+                continue
+            located = _locate(declared.type, value, request.context.revision)
+            if located is None:
+                yield declared.type, _raw(value), None
+            else:
+                yield located[0], _raw(value), located[1]
 
 
 def _numbers(
@@ -695,17 +772,9 @@ def render_error(
         for name in entry.params
     }
     members = {name: value for name, value in detail.items() if name in declared}
-    unbound = detail.get("unbound")
-    hint = None
-    extra: tuple[str, ...] = implicated_objects
-    kind_override = None
-    if isinstance(unbound, Mapping):
-        hint = unbound.get("hint") if isinstance(unbound.get("hint"), str) else None
-        implicated = unbound.get("implicated")
-        if isinstance(implicated, Sequence) and not isinstance(implicated, str):
-            extra += tuple(str(item) for item in implicated)
-        if from_binder and unbound.get("kind") in UNBOUND_INPUT_KINDS:
-            kind_override = "input"
+    hint, extra, kind_override = _unbound_request_fields(
+        detail.get("unbound"), from_binder, implicated_objects
+    )
     request = _Request(
         links=links,
         params=_merge(context, links, members),
@@ -717,6 +786,26 @@ def render_error(
         extra_elements=extra,
     )
     return _explain(request, catalogue, strict=strict)
+
+
+def _unbound_request_fields(
+    unbound: object, from_binder: bool, implicated_objects: tuple[str, ...]
+) -> tuple[str | None, tuple[str, ...], str | None]:
+    """The request's `hint`, `extra_elements` and `kind_override` from the binder's `Unbound`
+    (`detail.unbound`): its hint when a string; `implicated_objects`, then its implicated ids;
+    `input` when the chain is the binder's and its kind is an input kind. Without an `Unbound`
+    mapping: no hint, `implicated_objects` alone, no override."""
+    hint = None
+    extra: tuple[str, ...] = implicated_objects
+    kind_override = None
+    if isinstance(unbound, Mapping):
+        hint = unbound.get("hint") if isinstance(unbound.get("hint"), str) else None
+        implicated = unbound.get("implicated")
+        if isinstance(implicated, Sequence) and not isinstance(implicated, str):
+            extra += tuple(str(item) for item in implicated)
+        if from_binder and unbound.get("kind") in UNBOUND_INPUT_KINDS:
+            kind_override = "input"
+    return hint, extra, kind_override
 
 
 def _consistent(diagnosis: Mapping[str, Any], links: Sequence[Link], catalogue: Catalogue) -> bool:
@@ -806,6 +895,31 @@ def explain_failure(
         (entry for link in reversed(links) if (entry := catalogue.entry(link.code)) is not None),
         None,
     )
+    layer = _sidecar_params(diagnosis, links, explained, catalogue, strict=strict)
+    params = _merge(context, links, layer)
+    if explained is not None:
+        params.update(_derived_elements(explained, params, context.revision))
+    request = _Request(
+        links=links,
+        params=params,
+        context=context,
+        machine=message or outcome,
+        family_hint="outcome",
+    )
+    return _explain(request, catalogue, strict=strict), dict(request.params)
+
+
+def _sidecar_params(
+    diagnosis: Diagnostic | Mapping[str, Any] | None,
+    links: list[Link],
+    explained: Entry | None,
+    catalogue: Catalogue,
+    *,
+    strict: bool,
+) -> dict[str, Any]:
+    """§4.8: the diagnostic sidecar's params when `diagnosis` agrees with the chain `links`, with
+    the numbers the `explained` entry's pattern reads from its `detail`; none without a diagnosis
+    or when it disagrees, and `RenderError` on a disagreement under `strict` or the audit."""
     layer: dict[str, Any] = {}
     if diagnosis is not None:
         document = diagnosis.as_document() if isinstance(diagnosis, Diagnostic) else diagnosis
@@ -818,17 +932,7 @@ def explain_failure(
                 layer = {**detail_params(explained, detail), **layer}
         elif strict or audit.auditor is not None:
             raise RenderError(f"diagnosis {document.get('code')!r} does not match the chain")
-    params = _merge(context, links, layer)
-    if explained is not None:
-        params.update(_derived_elements(explained, params, context.revision))
-    request = _Request(
-        links=links,
-        params=params,
-        context=context,
-        machine=message or outcome,
-        family_hint="outcome",
-    )
-    return _explain(request, catalogue, strict=strict), dict(request.params)
+    return layer
 
 
 # -- the catalogue entry (`explain`, §3.5, §4.9) ------------------------------------------------

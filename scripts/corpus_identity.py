@@ -236,16 +236,16 @@ def solve(
         if code != 0:
             raise RuntimeError(f"k05 {name}: solve exited {code}")
         return
-    from openflowsheet.application.policies import (  # noqa: PLC0415
-        DEFAULT_POLICY_ID,
-        resolve_policy,
-    )
     from openflowsheet.application.revision_run import (  # noqa: PLC0415
         Route,
         run_revision_session,
         select_route,
     )
-    from openflowsheet.verify.certificate import CheckPolicy  # noqa: PLC0415
+    from openflowsheet.orchestrator.policies import (  # noqa: PLC0415
+        DEFAULT_POLICY_ID,
+        resolve_policy,
+    )
+    from openflowsheet.verify.verdict import CheckPolicy  # noqa: PLC0415
 
     revision = dict(document) if document is not None else revision_document(run_set, name)
     route = select_route(revision)
@@ -472,7 +472,7 @@ def m6_sample_entries(requests: Mapping[str, Sequence[dict[str, Any]]]) -> dict[
 def m7(bundles: Path = V030_BUNDLES) -> dict[str, dict[str, Any]]:
     """Each bundle re-run and compared as RC step 5 (`bundles-replay`) does, keyed `<set>/<name>`.
     A directory the index does not name, or an entry with no directory, is its own key."""
-    from openflowsheet.application.revision_run import reproduce_bundle  # noqa: PLC0415
+    from openflowsheet.application.revision_replay import reproduce_bundle  # noqa: PLC0415
 
     index = json.loads((bundles / "index.json").read_text(encoding="utf-8"))
     entries = {entry["directory"]: f"{entry['set']}/{entry['name']}" for entry in index["entries"]}

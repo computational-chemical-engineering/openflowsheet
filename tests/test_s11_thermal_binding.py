@@ -17,8 +17,12 @@ import pytest
 from m02_c1_support import connection, quantity, revision, specification
 from semantic_roles import role_of
 
-from openflowsheet.application import revision_binding, thermal_binding
-from openflowsheet.application.binding import Unbound
+from openflowsheet.application import (
+    model_builders,
+    model_signatures,
+    thermal_binding,
+)
+from openflowsheet.application.binding_common import Unbound
 from openflowsheet.application.revision_binding import RevisionBinding, bind_revision_flowsheet
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models.revision_flowsheet import (
@@ -251,9 +255,9 @@ def test_the_three_tables_name_the_seven_models() -> None:
 def test_since_i1b_the_binder_holds_the_family() -> None:
     """Units design §5.4 (I1b): the seven are rows of the binder's three tables."""
     for model_id in THERMAL:
-        assert revision_binding.MODEL_SIGNATURES[model_id] is thermal_binding.SIGNATURES[model_id]
-        assert revision_binding.MODEL_BASES[model_id] == thermal_binding.BASES[model_id]
-        assert model_id in revision_binding.MODEL_BUILDERS
+        assert model_signatures.MODEL_SIGNATURES[model_id] is thermal_binding.SIGNATURES[model_id]
+        assert model_signatures.MODEL_BASES[model_id] == thermal_binding.BASES[model_id]
+        assert model_id in model_builders.MODEL_BUILDERS
 
 
 def test_outlet_vapor_fraction_is_a_dimensionless_parameter() -> None:
@@ -788,7 +792,7 @@ def test_list_models_lists_each_thermal_pin_with_its_encodings(tmp_path: Any) ->
     each option's `specifications` is its `pin_encodings` (7 in all: the heater's two options,
     the flash's duty, and each pressure-changer's outlet pressure)."""
     from openflowsheet.application.local import LocalApplication
-    from openflowsheet.application.revision_binding import MODEL_SIGNATURES, pin_encodings
+    from openflowsheet.application.model_signatures import MODEL_SIGNATURES, pin_encodings
 
     with LocalApplication.create(tmp_path / "p", project_id="s11-thermal") as application:
         view = application.list_models().as_document()

@@ -18,16 +18,16 @@ from typing import Any
 
 import pytest
 
-from openflowsheet.application import revision_binding
+from openflowsheet.application import model_builders, model_signatures
 from openflowsheet.application.column_binding import build_column
-from openflowsheet.application.revision_binding import _COLUMN
+from openflowsheet.application.model_signatures import COLUMN
 from openflowsheet.models.revision_flowsheet import WILSON_RECORDS
-from openflowsheet.models.syn001.cascade import BOTTOM, TOP
-from openflowsheet.models.syn001.column import CONDENSER, MODEL_ID, REBOILER, ColumnSpec
+from openflowsheet.models.syn001.cascade_spec import BOTTOM, TOP
+from openflowsheet.models.syn001.column_spec import CONDENSER, MODEL_ID, REBOILER, ColumnSpec
 from openflowsheet.models.syn001.column_unit import END_PARAMETERS
 from openflowsheet.units import dimension_of
-from openflowsheet.verify import column, table
-from openflowsheet.verify.table import ModelChecks
+from openflowsheet.verify import column, unit_checks
+from openflowsheet.verify.table_kit import ModelChecks
 
 _SI = {
     "molar_flow": "mol/s",
@@ -193,10 +193,10 @@ def column_registered(
 ) -> Iterator[None]:
     """The column in `MODEL_BUILDERS`, `MODEL_SIGNATURES`, `MODEL_BASES` and the verifier's
     `MODEL_CHECKS` for one test."""
-    monkeypatch.setitem(revision_binding.MODEL_BUILDERS, MODEL_ID, build_column)
-    monkeypatch.setitem(revision_binding.MODEL_SIGNATURES, MODEL_ID, _COLUMN)
-    monkeypatch.setitem(revision_binding.MODEL_BASES, MODEL_ID, bases)
-    monkeypatch.setitem(table.MODEL_CHECKS, MODEL_ID, column_checks())
+    monkeypatch.setitem(model_builders.MODEL_BUILDERS, MODEL_ID, build_column)
+    monkeypatch.setitem(model_signatures.MODEL_SIGNATURES, MODEL_ID, COLUMN)
+    monkeypatch.setitem(model_signatures.MODEL_BASES, MODEL_ID, bases)
+    monkeypatch.setitem(unit_checks.MODEL_CHECKS, MODEL_ID, column_checks())
     yield
 
 

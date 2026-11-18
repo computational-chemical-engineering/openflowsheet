@@ -22,14 +22,13 @@ from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from typing import Final
 
-from openflowsheet.models.syn001.cascade import CascadeFailure, _k_values, thomas
+from openflowsheet.models.lifted import Regime
+from openflowsheet.models.syn001.band_types import BandError
+from openflowsheet.models.syn001.cascade_failure import CascadeFailure
+from openflowsheet.models.syn001.cascade_init import _k_values, thomas
 from openflowsheet.models.syn001.cascade_solve import DECLARATION_CONTEXT
-from openflowsheet.models.syn001.column import (
-    PHI_INITIAL,
-    ColumnSpec,
-    ProfileInitial,
-    _initial_state,
-)
+from openflowsheet.models.syn001.cascade_spec import PlacedInlet
+from openflowsheet.models.syn001.column import PHI_INITIAL, ProfileInitial, _initial_state
 from openflowsheet.models.syn001.column_acceptance import _admissibility
 from openflowsheet.models.syn001.column_endpoint import (
     MAX_SWEEPS,
@@ -39,10 +38,10 @@ from openflowsheet.models.syn001.column_endpoint import (
     relaxed_compositions,
     stage_ratios,
 )
+from openflowsheet.models.syn001.column_spec import ColumnSpec
 from openflowsheet.models.syn001.equilibrium_form import composition_dependent
-from openflowsheet.models.syn001.saturation_band import BandError, band_temperature
+from openflowsheet.models.syn001.saturation_band import band_temperature
 from openflowsheet.models.syn001.tp_state import enthalpy_flow
-from openflowsheet.orchestrator.region import Regime
 from openflowsheet.thermo import Phase, PropertyProvider, StreamState
 
 __all__ = [
@@ -87,17 +86,27 @@ def _flows(n: tuple[float, ...]) -> bool:
 
 
 def sources(spec: ColumnSpec) -> Sources:
-    """§5.2's liquid sources, vapour sources and fixed stages of `spec`."""
-    count = spec.stage_count
+    """§5.2's liquid sources, vapour sources and fixed stages of `spec`: the table's first two rows
+    (`_flow_sources`), then its third (`_fixed_stages`)."""
     equilibrium = set(spec.equilibrium_stages())
+    liquid, vapor = _flow_sources(spec, equilibrium)
+    fixed = _fixed_stages(spec, equilibrium)
+    return Sources(tuple(liquid), tuple(vapor), tuple(sorted(fixed)))
+
+
+def _flow_sources(
+    spec: ColumnSpec, equilibrium: set[int]
+) -> tuple[list[tuple[int, str]], list[tuple[int, str]]]:
+    """§5.2's liquid and vapour sources of `spec` as `(stage, kind)`: the ends, then the flowing
+    inlets in `spec.inlets()` order, then the intermediate duties of the `equilibrium` stages by
+    stage."""
+    count = spec.stage_count
     liquid: list[tuple[int, str]] = []
     vapor: list[tuple[int, str]] = []
-    fixed: set[int] = set()
     if spec.condenser == "partial":
         liquid.append((1, "end"))
     elif spec.total_condenser:
         liquid.append((2, "reflux"))
-        fixed.add(2)
     if spec.reboiler == "partial":
         vapor.append((count, "end"))
     for inlet in spec.inlets():
@@ -110,13 +119,23 @@ def sources(spec: ColumnSpec) -> Sources:
             liquid.append((stage, "duty"))
         elif duty is not None and duty > 0.0:
             vapor.append((stage, "duty"))
+    return liquid, vapor
+
+
+def _fixed_stages(spec: ColumnSpec, equilibrium: set[int]) -> set[int]:
+    """§5.2's fixed stages of `spec`: stage 2 under a total condenser, a partial end stage whose
+    specification is absent or not `duty`, and every `equilibrium` stage named by a `temperature`
+    specification."""
+    fixed: set[int] = set()
+    if spec.total_condenser:
+        fixed.add(2)
     for end in spec.ends():
         given = spec.end_specification(end)
         if spec.end_kind(end) == "partial" and (given is None or given.kind != "duty"):
             fixed.add(spec.end_stage(end))
         if given is not None and given.kind == "temperature" and given.stage in equilibrium:
             fixed.add(given.stage)
-    return Sources(tuple(liquid), tuple(vapor), tuple(sorted(fixed)))
+    return fixed
 
 
 def _carries(spec: ColumnSpec, stage: int, phase: str) -> bool:
@@ -248,19 +267,35 @@ def _core_flows(
     vapor = {j: [0.0] * len(components) for j in carry}
     for i in range(len(components)):
         strip = {j: (k_stage[j][i] * rho[j] if j in k_stage else 0.0) for j in carry}
-        diag = [-(1.0 + strip[j]) for j in carry]
-        if phi is not None:
-            diag[0] += phi * strip[carry[0]]
-        solved = thomas(
-            [1.0] * len(carry),
-            diag,
-            [strip[j + 1] if j < count else 0.0 for j in carry],
-            [-sum(f.state.n[i] for f in inlets if f.stage == j) for j in carry],
-        )
+        solved = _component_liquid(carry, strip, phi, count, inlets, i)
         for k, j in enumerate(carry):
             liquid[j][i] = solved[k]
             vapor[j][i] = strip[j] * solved[k] if j in k_stage else 0.0
     return liquid, vapor
+
+
+def _component_liquid(
+    carry: tuple[int, ...],
+    strip: Mapping[int, float],
+    phi: float | None,
+    count: int,
+    inlets: tuple[PlacedInlet, ...],
+    i: int,
+) -> list[float]:
+    """§5.3 step 3b for component `i`: `thomas` on the tridiagonal over `carry` with
+    `S_ij = strip[j]`, row `j` reading `[j > t] l_{i,j−1} − (1 + S_ij) l_ij + [j < N] S_{i,j+1}
+    l_{i,j+1} = −F_ij` (`t = carry[0]`, `N = count`; `F_ij` the sum of the component's inlet
+    flows on stage `j`; total condenser, `phi` given: first diagonal `−(1 + S_i2) + φ S_i2`).
+    Returns `l_ij` in `carry` order."""
+    diag = [-(1.0 + strip[j]) for j in carry]
+    if phi is not None:
+        diag[0] += phi * strip[carry[0]]
+    return thomas(
+        [1.0] * len(carry),
+        diag,
+        [strip[j + 1] if j < count else 0.0 for j in carry],
+        [-sum(f.state.n[i] for f in inlets if f.stage == j) for j in carry],
+    )
 
 
 def _specified_duty(spec: ColumnSpec, stage: int) -> float:
@@ -427,6 +462,12 @@ def _build(
     ratio_scale: float,
     max_sweeps: int,
 ) -> BlockEndpoint:
+    """§5.3 steps 1–9 for `candidate = (a, c)`: the first `a` equilibrium stages are the V-block,
+    the last `c` the L-block and the `b` between them the core. Steps 2–4 on a non-empty core are
+    `_core_endpoint`'s, which raises `_RefusalError` (`sweeps_exhausted`, or `_bubble`'s) as the
+    later steps do (`_block_stage`'s, `_bubble`'s, `inadmissible_endpoint`). Steps 5 and 6 sum the
+    block flows with `_summed_inlet_flows` (the L-block's only on an empty core) and find the block
+    temperatures with `_block_temperatures`; `_build` writes every table."""
     unit, components = spec.unit_id, spec.components
     signature = block_signature(spec, candidate)
     stages = spec.equilibrium_stages()
@@ -442,75 +483,37 @@ def _build(
     sweeps, delta = 0, 0.0
     if b >= 1:
         carry = stages[a:]
-        # Step 2: the start; step 3: the sweeps over the core.
-        temperatures = {j: initial.profile[j - 1] + profile_shift for j in core}
-        # S10-C §4.9: a composition-dependent K is relaxed as in §18.2's sweeps.
-        compositions = (
-            liquid_compositions(initial.liquid, core) if composition_dependent(provider) else None
+        core_end = _core_endpoint(
+            spec, provider, initial, carry, core, rho, phi, profile_shift, max_sweeps
         )
-        delta, change = float("inf"), 0.0
-        for sweep in range(1, max_sweeps + 1):
-            flows, _ = _core_flows(
-                spec, provider, carry, core, temperatures, rho, phi, compositions
-            )
-            updated = {
-                j: _bubble(
-                    provider,
-                    flows[j],
-                    spec.pressures[j - 1],
-                    f"{unit} stage {j}, sweep {sweep}",
-                )
-                for j in core
-            }
-            delta = max(abs(updated[j] - temperatures[j]) for j in core)
-            temperatures = updated
-            if compositions is not None:
-                compositions, change = relaxed_compositions(compositions, flows, core)
-            if delta <= SWEEP_TOLERANCE and change <= SWEEP_COMPOSITION_TOLERANCE:
-                sweeps = sweep
-                break
-        else:
-            detail = "" if compositions is None else f", max |dx| = {change!r}"
-            raise _RefusalError(
-                "sweeps_exhausted",
-                f"{unit}: core max |dT| = {delta!r} K{detail} after {max_sweeps} sweeps",
-            )
-        # Step 4: the final flows at the stopped T (and the relaxed composition, S10-C §4.9).
-        flows, rising = _core_flows(
-            spec, provider, carry, core, temperatures, rho, phi, compositions
-        )
+        temperatures, sweeps, delta = dict(core_end.temperatures), core_end.sweeps, core_end.delta
         for j in carry:
-            liquid[j] = flows[j]
-            vapor[j] = rising[j]
+            liquid[j] = core_end.liquid[j]
+            vapor[j] = core_end.vapor[j]
     # Step 5: the L-block, top-down.
+    if b == 0:
+        liquid.update(_summed_inlet_flows(spec, l_block, [0.0] * len(components)))
     for j in l_block:
-        above = j - 1
-        carried = above in core or above in l_block
-        if b == 0:
-            feed = _inlet_flows(spec, j)
-            upper = liquid[above] if carried else [0.0] * len(components)
-            liquid[j] = [upper[i] + feed[i] for i in range(len(components))]
         vapor[j] = [0.0] * len(components)
-        neighbour = (
-            (liquid[above], temperatures[above], float(spec.pressures[above - 1]))
-            if carried
-            else None
-        )
-        temperatures[j] = _block_stage(spec, provider, j, liquid[j], "LIQUID", neighbour)
+    descending = (
+        (liquid[core[-1]], temperatures[core[-1]], float(spec.pressures[core[-1] - 1]))
+        if core
+        else None
+    )
+    temperatures.update(_block_temperatures(spec, provider, l_block, liquid, "LIQUID", descending))
     # Step 6: the V-block, bottom-up.
-    for j in reversed(v_block):
-        below = j + 1
-        rising_in = below in core or below in v_block
-        feed = _inlet_flows(spec, j)
-        lower = vapor[below] if rising_in else [0.0] * len(components)
-        vapor[j] = [lower[i] + feed[i] for i in range(len(components))]
+    upward = v_block[::-1]
+    vapor.update(
+        _summed_inlet_flows(spec, upward, vapor[core[0]] if core else [0.0] * len(components))
+    )
+    for j in v_block:
         liquid[j] = [0.0] * len(components)
-        neighbour = (
-            (vapor[below], temperatures[below], float(spec.pressures[below - 1]))
-            if rising_in
-            else None
-        )
-        temperatures[j] = _block_stage(spec, provider, j, vapor[j], "VAPOR", neighbour)
+    rising = (
+        (vapor[core[0]], temperatures[core[0]], float(spec.pressures[core[0] - 1]))
+        if core
+        else None
+    )
+    temperatures.update(_block_temperatures(spec, provider, upward, vapor, "VAPOR", rising))
     # Step 7: the total condenser.
     profile = [temperatures.get(j, 0.0) for j in range(1, spec.stage_count + 1)]
     if phi is not None:
@@ -533,3 +536,103 @@ def _build(
         if not admissible:
             raise _RefusalError(f"inadmissible_endpoint({j})", f"{unit} stage {j}: {message}")
     return BlockEndpoint(state, signature, rho, phi, sweeps, delta)
+
+
+@dataclass(frozen=True)
+class _CoreEndpoint:
+    """§5.3 steps 2–4 on a non-empty core: the core's stopped `T_j`, the sweep count, the last
+    core `max_j |ΔT_j|`, and the final liquid and vapor flows over the liquid-carrying stages."""
+
+    temperatures: dict[int, float]
+    sweeps: int
+    delta: float
+    liquid: dict[int, list[float]]
+    vapor: dict[int, list[float]]
+
+
+def _core_endpoint(
+    spec: ColumnSpec,
+    provider: PropertyProvider,
+    initial: ProfileInitial,
+    carry: tuple[int, ...],
+    core: tuple[int, ...],
+    rho: Mapping[int, float],
+    phi: float | None,
+    profile_shift: float,
+    max_sweeps: int,
+) -> _CoreEndpoint:
+    """§5.3 steps 2–4 over the non-empty `core` (`carry`: the core, then the L-block): the start
+    `T_j = initial.profile[j - 1] + profile_shift`, at most `max_sweeps` sweeps of `_core_flows` and
+    `_bubble` until `max_j |ΔT_j|` (and, for a composition-dependent form, the relaxed liquid's
+    `max |Δx|`, S10-C §4.9) is within tolerance, then the flows at the stopped `T`. Raises
+    `_RefusalError` `sweeps_exhausted` when no sweep meets the tolerances, or `_bubble`'s."""
+    unit = spec.unit_id
+    # Step 2: the start; step 3: the sweeps over the core.
+    temperatures = {j: initial.profile[j - 1] + profile_shift for j in core}
+    # S10-C §4.9: a composition-dependent K is relaxed as in §18.2's sweeps.
+    compositions = (
+        liquid_compositions(initial.liquid, core) if composition_dependent(provider) else None
+    )
+    delta, change = float("inf"), 0.0
+    for sweep in range(1, max_sweeps + 1):
+        flows, _ = _core_flows(spec, provider, carry, core, temperatures, rho, phi, compositions)
+        updated = {
+            j: _bubble(
+                provider,
+                flows[j],
+                spec.pressures[j - 1],
+                f"{unit} stage {j}, sweep {sweep}",
+            )
+            for j in core
+        }
+        delta = max(abs(updated[j] - temperatures[j]) for j in core)
+        temperatures = updated
+        if compositions is not None:
+            compositions, change = relaxed_compositions(compositions, flows, core)
+        if delta <= SWEEP_TOLERANCE and change <= SWEEP_COMPOSITION_TOLERANCE:
+            sweeps = sweep
+            break
+    else:
+        detail = "" if compositions is None else f", max |dx| = {change!r}"
+        raise _RefusalError(
+            "sweeps_exhausted",
+            f"{unit}: core max |dT| = {delta!r} K{detail} after {max_sweeps} sweeps",
+        )
+    # Step 4: the final flows at the stopped T (and the relaxed composition, S10-C §4.9).
+    flows, rising = _core_flows(spec, provider, carry, core, temperatures, rho, phi, compositions)
+    return _CoreEndpoint(temperatures, sweeps, delta, flows, rising)
+
+
+def _summed_inlet_flows(
+    spec: ColumnSpec, walk: tuple[int, ...], start: list[float]
+) -> dict[int, list[float]]:
+    """§5.3 steps 5–6 block flows: down `walk` (the block's stages in flow order), each stage's
+    flow is the previous stage's (`start` for the first) plus its `_inlet_flows`, component by
+    component. A new list per stage; `start` is not modified."""
+    summed: dict[int, list[float]] = {}
+    previous = start
+    for j in walk:
+        feed = _inlet_flows(spec, j)
+        previous = [previous[i] + feed[i] for i in range(len(spec.components))]
+        summed[j] = previous
+    return summed
+
+
+def _block_temperatures(
+    spec: ColumnSpec,
+    provider: PropertyProvider,
+    walk: tuple[int, ...],
+    flows: Mapping[int, list[float]],
+    phase: Phase,
+    edge: tuple[list[float], float, float] | None,
+) -> dict[int, float]:
+    """§5.3 steps 5–6 block temperatures: `_block_stage` down `walk` (the block's stages in flow
+    order) on `flows[j]` in `phase`; the first stage's neighbour is `edge` (the stream entering
+    the block, or `None`), each later stage's the previous stage's flows, `T` and `P*`. Raises
+    `_block_stage`'s `_RefusalError`."""
+    temperatures: dict[int, float] = {}
+    neighbour = edge
+    for j in walk:
+        temperatures[j] = _block_stage(spec, provider, j, flows[j], phase, neighbour)
+        neighbour = (flows[j], temperatures[j], float(spec.pressures[j - 1]))
+    return temperatures

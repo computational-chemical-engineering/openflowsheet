@@ -65,6 +65,10 @@ import test_t03_roots as roots_fixtures  # noqa: E402
 
 import openflowsheet.orchestrator.attempts as attempts_module  # noqa: E402
 import openflowsheet.orchestrator.region as region_module  # noqa: E402
+import openflowsheet.orchestrator.region_attempts as region_attempts  # noqa: E402
+import openflowsheet.orchestrator.region_phase as region_phase  # noqa: E402
+import openflowsheet.orchestrator.region_problem as region_problem  # noqa: E402
+import openflowsheet.orchestrator.region_screen as region_screen  # noqa: E402
 import openflowsheet.orchestrator.tear as tear_module  # noqa: E402
 from openflowsheet.canonical import file_sha256, state_sha256  # noqa: E402
 from openflowsheet.compile.casadi_backend import (  # noqa: E402
@@ -72,11 +76,14 @@ from openflowsheet.compile.casadi_backend import (  # noqa: E402
     compile_problem,
 )
 from openflowsheet.compiled import EvaluationContext  # noqa: E402
-from openflowsheet.numerics.anderson import RecyclePolicy  # noqa: E402
+from openflowsheet.numerics.solve_record import (  # noqa: E402
+    RecyclePolicy,
+    SolvePolicy,
+    Trace,
+)
 from openflowsheet.orchestrator.attempts import solve_with_attempts  # noqa: E402
 from openflowsheet.orchestrator.region import solve_region, syn001_lifted_splits  # noqa: E402
 from openflowsheet.orchestrator.tear import Syn001TearProblem, solve_tear  # noqa: E402
-from openflowsheet.orchestrator.trace import SolvePolicy, Trace  # noqa: E402
 
 REFERENCE = ROOT / "benchmarks" / "t03" / "reference_values.yaml"
 T02_REFERENCE = ROOT / "benchmarks" / "t02" / "reference_values.yaml"
@@ -272,12 +279,12 @@ def _observe_region(
     decision function and compiled boundary observed. `corrupt_*` are A16's constructed bites
     (spec §5.1: "Registered bites are constructed"); nothing else changes what the solver
     computes."""
-    real_problem = region_module._region_problem
-    real_screen = region_module._screen
-    real_admissible = region_module._admissible
+    real_problem = region_problem._region_problem
+    real_screen = region_screen._screen
+    real_admissible = region_phase._admissible
     real_check = region_module.check_opening
     real_decide = region_module.decide
-    real_blocked = region_module._LiftedOps.blocked
+    real_blocked = region_problem._LiftedOps.blocked
     real_compiled = {
         name: getattr(CasadiCompiledProblem, name) for name in ("residual", "jacobian")
     }
@@ -426,11 +433,15 @@ def _observe_region(
 
     with pytest.MonkeyPatch.context() as patch:
         patch.setattr(region_module, "_region_problem", problem)
-        patch.setattr(region_module, "_screen", screen_factory)
-        patch.setattr(region_module, "_admissible", admissible)
+        patch.setattr(region_attempts, "_region_problem", problem)
+        patch.setattr(region_screen, "_screen", screen_factory)
+        patch.setattr(region_screen, "_admissible", admissible)
+        patch.setattr(region_phase, "_admissible", admissible)
+        patch.setattr(region_problem, "_admissible", admissible)
         patch.setattr(region_module, "check_opening", opening_check)
+        patch.setattr(region_problem, "check_opening", opening_check)
         patch.setattr(region_module, "decide", decide)
-        patch.setattr(region_module._LiftedOps, "blocked", blocked)
+        patch.setattr(region_problem._LiftedOps, "blocked", blocked)
         for name in real_compiled:
             patch.setattr(CasadiCompiledProblem, name, compiled_spy(name))
         observed.result = solve(observed.trace)
@@ -1877,10 +1888,19 @@ def _a02(runs: Runs) -> tuple[bool, Any, Any]:
             if token in sources[name]
         ]
         + budget_comparison.findall(sources[name])
-        for name in ("attempts.py", "region.py")
+        for name in (
+            "attempts.py",
+            "region.py",
+            "region_phase.py",
+            "region_problem.py",
+            "region_result.py",
+            "region_screen.py",
+            "region_attempts.py",
+        )
     }
     constructs_wall = {
-        name: "WallObserver(policy)" in sources[name] for name in ("attempts.py", "region.py")
+        name: "WallObserver(policy)" in sources[name]
+        for name in ("attempts.py", "region.py", "region_attempts.py")
     }
     value = {
         "per_run": per_run,
@@ -1893,8 +1913,20 @@ def _a02(runs: Runs) -> tuple[bool, Any, Any]:
         "per_run": "decide_calls == attempt_closures on every run (2, 2, 2, 2)",
         "cycling_refusal_produced_in": ["phase_contract.py"],
         "WallObserver_defined_in": ["phase_contract.py"],
-        "WallObserver_constructed_by": {"attempts.py": True, "region.py": True},
-        "own_cycle_or_budget_rule": {"attempts.py": [], "region.py": []},
+        "WallObserver_constructed_by": {
+            "attempts.py": True,
+            "region.py": True,
+            "region_attempts.py": True,
+        },
+        "own_cycle_or_budget_rule": {
+            "attempts.py": [],
+            "region.py": [],
+            "region_phase.py": [],
+            "region_problem.py": [],
+            "region_result.py": [],
+            "region_screen.py": [],
+            "region_attempts.py": [],
+        },
     }
     ok = (
         all(row["decide_calls"] == row["attempt_closures"] > 0 for row in per_run.values())
@@ -2237,14 +2269,14 @@ def _a05(runs: Runs, ref: Mapping[str, Any]) -> tuple[bool, Any, Any]:
     registered = ref["policy_simulation"]["cases"][PHS["PHS-04"]]["attempts"][1]
     opening = dict(observed.result.attempts[0].end_state)
     heater = _heater()
-    region_module._pin(opening, heater, "LIQUID")
+    region_phase._pin(opening, heater, "LIQUID")
     context = EvaluationContext(
         model_version="t03", constants_sha256="0" * 64, phase_signature=None
     )
     provider = a02_fixtures.structure(
         a02_fixtures.revision(PHS["PHS-04"])
     ).binding.flowsheet.provider
-    admissible, screen_value = region_module._admissible(
+    admissible, screen_value = region_phase._admissible(
         provider, context, heater, "LIQUID", opening, epsilon
     )
     value["PHS-04 opening"] = {
@@ -2382,7 +2414,7 @@ def _a11(runs: Runs, ref: Mapping[str, Any], t02: Mapping[str, Any]) -> tuple[bo
     result = observed.result
     first, second = result.attempts[:2]
     pinned = dict(first.end_state)
-    region_module._pin(pinned, _heater(), "LIQUID")
+    region_phase._pin(pinned, _heater(), "LIQUID")
     free = observed.free[1]
     x0 = observed.calls[1][0][0]
     target = np.array([pinned[name] for name in free], dtype=np.float64)
@@ -2499,7 +2531,7 @@ def _a13(runs: Runs, ref: Mapping[str, Any]) -> tuple[bool, Any, Any]:
     if len(result.attempts) >= 2:
         first, second = result.attempts[:2]
         pinned = dict(first.end_state)
-        region_module._pin(pinned, _heater(), "LIQUID")
+        region_phase._pin(pinned, _heater(), "LIQUID")
         free = observed.free[1]
         x0 = observed.calls[1][0][0]
         opening_equal = (

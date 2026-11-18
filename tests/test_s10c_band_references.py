@@ -35,7 +35,8 @@ from test_s10c_band_point import _bisect, _ln_psat
 
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models.syn001 import gamma_phi
-from openflowsheet.models.syn001.saturation_band import BandTemperature, band_temperature
+from openflowsheet.models.syn001.band_types import BandTemperature
+from openflowsheet.models.syn001.saturation_band import band_temperature
 from openflowsheet.thermo import StreamState
 from openflowsheet.thermo.wilson_ig import WilsonIdealGasProvider
 

@@ -14,13 +14,7 @@ from test_s01_cascade_wo1 import REFERENCE, UNIT, _spec
 from test_s01_cascade_wo2 import PROVIDER, solved
 from test_s01_cascade_wo3 import _registered_partial_dormancy_root
 
-from openflowsheet.models.syn001.cascade import (
-    DormantAnswer,
-    _enthalpy_flow,
-    energy_precheck,
-    label_row_id,
-    stage_temperature_id,
-)
+from openflowsheet.models.syn001.cascade import DormantAnswer, _enthalpy_flow, energy_precheck
 from openflowsheet.models.syn001.cascade_solve import (
     DECLARATION_CONTEXT,
     AcceptanceDefectError,
@@ -29,6 +23,7 @@ from openflowsheet.models.syn001.cascade_solve import (
     solve_cascade,
 )
 from openflowsheet.models.syn001.cascade_solve import run_region as real_run_region
+from openflowsheet.models.syn001.cascade_spec import label_row_id, stage_temperature_id
 from openflowsheet.thermo.syn001 import T_MIN
 
 solve_module = __import__("openflowsheet.models.syn001.cascade_solve", fromlist=["run_region"])

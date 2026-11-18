@@ -31,9 +31,11 @@ from test_t04_edge3 import plan_run, region_step
 from test_t05_w11_cases import _instance, shaped_revision
 from test_t06_w5_corpus import _spy
 
-from openflowsheet.application.binding import Binding, Unbound, bind_revision_or_reason
+from openflowsheet.application.binding import Binding, bind_revision_or_reason
+from openflowsheet.application.binding_common import Unbound
 from openflowsheet.application.revision_binding import RevisionBinding, bind_revision_flowsheet
-from openflowsheet.application.validation import ValidationReport, validate
+from openflowsheet.application.validation import validate
+from openflowsheet.application.validation_report import ValidationReport
 from openflowsheet.canonical import canonical_json
 from openflowsheet.graph.analysis import analyse
 from openflowsheet.models.revision_flowsheet import (
@@ -42,11 +44,11 @@ from openflowsheet.models.revision_flowsheet import (
     pin_specifications,
     required_kind,
 )
+from openflowsheet.numerics.solve_record import SolvePolicy, Trace
 from openflowsheet.orchestrator.execution import ExecutionPlan, declaration_identity
 from openflowsheet.orchestrator.executor import execute_plan
 from openflowsheet.orchestrator.revision import plan_revision
 from openflowsheet.orchestrator.tear import solve_tear
-from openflowsheet.orchestrator.trace import SolvePolicy, Trace
 from openflowsheet.units import (
     CONVERSION_ROWS,
     FRACTION_PARAMETERS,

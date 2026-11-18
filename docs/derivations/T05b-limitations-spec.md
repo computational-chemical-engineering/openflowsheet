@@ -215,7 +215,7 @@ TP-type splits are answered by the provider's TP flash, as in v1. The screen's f
 <!-- B06-V2-REGISTER -->
 | policy id | source | object | registered by |
 | --- | --- | --- | --- |
-| `T05b-v2` | `src/openflowsheet/application/policies.py` | `T05B_V2` (`tests/t05b_support.POLICY_V2`) | this §6.6; T07 W3a (design note §12.2) |
+| `T05b-v2` | `src/openflowsheet/orchestrator/policies.py` | `T05B_V2` (`tests/t05b_support.POLICY_V2`) | this §6.6; T07 W3a (design note §12.2) |
 | `s01-default-v1` | `src/openflowsheet/models/syn001/cascade_solve.py` | `S01_DEFAULT_V1` | S01 spec §4 item 4, §7 item 6; R-505 |
 <!-- /B06-V2-REGISTER -->
 

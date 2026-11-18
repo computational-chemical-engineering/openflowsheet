@@ -28,7 +28,8 @@ from typing import Any
 import pytest
 from conftest import REPO_ROOT, load_yaml
 
-from openflowsheet.application.binding import Binding, Unbound, bind_revision_or_reason
+from openflowsheet.application.binding import Binding, bind_revision_or_reason
+from openflowsheet.application.binding_common import Unbound
 from openflowsheet.application.revision_binding import RevisionBinding, bind_revision_flowsheet
 from openflowsheet.application.validation import validate
 from openflowsheet.canonical import CanonicalizationError, canonical_json, first_noncanonical

@@ -22,8 +22,8 @@ from t07_corpus import CORPUS
 from test_schemas_p01 import schema_errors
 
 from openflowsheet import resources
-from openflowsheet.application import revision_binding
-from openflowsheet.application.binding import Unbound
+from openflowsheet.application import model_builders, revision_binding
+from openflowsheet.application.binding_common import Unbound
 from openflowsheet.application.revision_binding import (
     SELECTABLE_BASES,
     basis_provider,
@@ -363,7 +363,7 @@ def test_a83_the_envelope_holds_the_thermal_models_and_their_limitations() -> No
     axes = {axis["id"]: axis for axis in envelope["axes"]}
     members = axes["unit_models"]["members"]
     assert len(members) == 30
-    assert sorted(members) == sorted(revision_binding.MODEL_BUILDERS)
+    assert sorted(members) == sorted(model_builders.MODEL_BUILDERS)
     assert axes["property_model"]["providers"] == [
         "coolprop-heos-v1",
         "iapws95-v1",

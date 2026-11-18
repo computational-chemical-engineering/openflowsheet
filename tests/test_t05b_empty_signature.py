@@ -46,12 +46,14 @@ from openflowsheet.compile.casadi_backend import compile_problem
 from openflowsheet.numerics.newton import Evaluation, Problem, another_signature, solve_newton
 from openflowsheet.numerics.ptc import PtcProblem, solve_ptc
 from openflowsheet.numerics.scaling import Scaling
+from openflowsheet.numerics.solve_record import PtcPolicy, SolvePolicy, Trace
 from openflowsheet.orchestrator.execution import ExecutionPlan
 from openflowsheet.orchestrator.executor import execute_plan
-from openflowsheet.orchestrator.region import RegionResult, _attempt_screen, _region_problem
+from openflowsheet.orchestrator.region_problem import _region_problem
+from openflowsheet.orchestrator.region_result import RegionResult
+from openflowsheet.orchestrator.region_screen import _attempt_screen
 from openflowsheet.orchestrator.revision import instances_of, plan_revision
 from openflowsheet.orchestrator.splits import dormancy_forms
-from openflowsheet.orchestrator.trace import PtcPolicy, SolvePolicy, Trace
 from openflowsheet.thermo import EvaluationContext
 
 ITEM = (("X.outlet", "ZERO_FLOW"),)

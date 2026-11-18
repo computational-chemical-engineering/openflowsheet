@@ -1617,8 +1617,8 @@ def _m_g17c1(inputs: Inputs) -> Measured:
 
 
 def _lifecycle_of_export(path: Path) -> tuple[int, list[list[Any]], list[str]]:
+    from openflowsheet.application.job_records import Job, JobEvent
     from openflowsheet.application.jobs.model import check_lifecycle
-    from openflowsheet.application.types import Job, JobEvent
 
     document = json.loads(path.read_bytes())
     violations: list[list[Any]] = []

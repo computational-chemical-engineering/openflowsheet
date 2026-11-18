@@ -66,9 +66,10 @@ from test_t04_edge3 import (
 from test_t05_coupled import POLICY as POLICY_V1
 
 from openflowsheet.compile.casadi_backend import compile_problem
+from openflowsheet.numerics.solve_record import GlobalizationPolicy, SolvePolicy, Trace
 from openflowsheet.orchestrator import revision as revision_module
 from openflowsheet.orchestrator.homotopy import continuation_parameter
-from openflowsheet.orchestrator.region import RegionResult
+from openflowsheet.orchestrator.region_result import RegionResult
 from openflowsheet.orchestrator.revision import initial_state
 from openflowsheet.orchestrator.splits import (
     closure_types,
@@ -76,8 +77,8 @@ from openflowsheet.orchestrator.splits import (
     lifted_splits,
     zero_flow_forms,
 )
-from openflowsheet.orchestrator.trace import GlobalizationPolicy, SolvePolicy, Trace
-from openflowsheet.verify.certificate import SolutionCertificate, verify_revision
+from openflowsheet.verify.certificate import verify_revision
+from openflowsheet.verify.verdict import SolutionCertificate
 
 #: Spec §13's EO allowances (T02 §6.4), as `ref.tolerances.coupled_allowances` states them.
 ALLOWANCE: dict[str, float] = {

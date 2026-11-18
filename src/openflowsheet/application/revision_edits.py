@@ -16,7 +16,7 @@ from dataclasses import replace
 from typing import Any, Final
 
 from openflowsheet.application.revisions import CONTENT_HASH_EXCLUDED
-from openflowsheet.application.types import DiffElement, DiffMember, Edit, SemanticDiff
+from openflowsheet.application.transaction_types import DiffElement, DiffMember, Edit, SemanticDiff
 
 
 class EditPathError(ValueError):

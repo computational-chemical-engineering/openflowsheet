@@ -4,8 +4,11 @@ The core catalogue is package data, `catalogue/*.yaml`, each file one document o
 `schemas/message-catalogue.schema.json`; `kinds.yaml` and `vocabulary.yaml` are that schema's two
 table forms. `CATALOGUE` is the lazy process singleton: the core is read on first use, an extension
 may `register()` its own namespaced document until the first lookup, and the first lookup freezes
-the key set (§4.11). Its first lookup builds the extension registry first (ADR 0060 D8), which
-registers every installed extension's document, so they are present whatever the call order.
+the key set (§4.11). Its first lookup runs the before-freeze hook the registry installed at its
+import (ADR 0060 D8, ADR 0076 I-14): it builds the extension registry, which registers every
+installed extension's document, so in a process that has imported the registry they are present
+whatever the call order. A process that never imports it (`messages.render` alone) freezes the core
+catalogue alone (ADR 0076 FQ-B).
 Codes are stable: a key is never removed or renamed, only deprecated.
 
 Neither the format id nor the content digest enters any identity, hash or explanation (§3.2).
@@ -15,13 +18,13 @@ from __future__ import annotations
 
 import hashlib
 import threading
-from collections.abc import Iterator, Mapping, Sequence
+from collections.abc import Callable, Iterator, Mapping, Sequence
 from dataclasses import dataclass, field
 from functools import cached_property
 from importlib import resources
 from typing import Any, Final
 
-from openflowsheet.messages import template
+from openflowsheet.messages import template, yaml_io
 
 FORMAT_ID: Final[str] = "openflowsheet-messages-v1"
 #: `site_url` in `mkdocs.yml`; `tests/test_msg_engine.py` holds the two equal.
@@ -181,13 +184,6 @@ class Entry:
                     yield name, index, str(variant[name])
 
 
-def _yaml_load(text: str) -> Any:
-    import yaml  # noqa: PLC0415 (PyYAML is a runtime dependency; loaded with the catalogue)
-
-    loader = getattr(yaml, "CSafeLoader", yaml.SafeLoader)
-    return yaml.load(text, Loader=loader)  # noqa: S506 (a safe loader)
-
-
 @dataclass
 class _Validators:
     schema: Mapping[str, Any]
@@ -271,9 +267,7 @@ class Catalogue:
                 return self._entries
             validate = self._validate_core
             if validate is None:
-                from openflowsheet.messages import audit  # noqa: PLC0415
-
-                validate = self._core_texts is not None or audit.auditor is not None
+                validate = self._core_texts is not None or _HOOKS.audit_on()
 
             def check(document: object, definition: str) -> None:
                 if validate:
@@ -281,7 +275,7 @@ class Catalogue:
 
             entries: dict[str, Entry] = {}
             for name, text in self._texts().items():
-                document = _yaml_load(text)
+                document = yaml_io.yaml_load(text)
                 if name == "kinds.yaml":
                     check(document, "kinds_document")
                     self._kinds = {
@@ -342,9 +336,7 @@ class Catalogue:
 
     def _frozen_entries(self) -> dict[str, Entry]:
         if self._registry_first and not self._frozen:
-            from openflowsheet.registry import before_catalogue_freeze  # noqa: PLC0415
-
-            before_catalogue_freeze()
+            _HOOKS.before_freeze()
         entries = self._load()
         self._frozen = True
         return entries
@@ -384,12 +376,45 @@ class Catalogue:
         return self._sha256
 
 
+def _core_alone() -> None:
+    """No hook installed: this process never imported the registry; the core freezes alone (ADR
+    0076 I-14)."""
+
+
+def _audit_off() -> bool:
+    return False
+
+
+@dataclass
+class _Hooks:
+    """The catalogue's two slots, filled from above (ADR 0076 I-14). Process-global by design: it
+    is wiring, set at import (`openflowsheet.registry` installs the before-freeze hook) or by the
+    tests' audit switch (`audit.enable()` installs the probe), the same for every job; it holds no
+    job, request or catalogue state."""
+
+    before_freeze: Callable[[], None] = _core_alone
+    audit_on: Callable[[], bool] = _audit_off
+
+
+_HOOKS: Final[_Hooks] = _Hooks()
 CATALOGUE: Final[Catalogue] = Catalogue(registry_first=True)
 
 
 def register(document: Mapping[str, Any], *, namespace: str) -> None:
     """§4.11, the extension slot F1 inherits: `CATALOGUE.register(document, namespace=...)`."""
     CATALOGUE.register(document, namespace=namespace)
+
+
+def set_before_freeze(hook: Callable[[], None]) -> None:
+    """The hook a `registry_first` catalogue's lookup calls before it freezes (ADR 0076 I-14); the
+    registry installs its `before_catalogue_freeze` at import. The last install wins."""
+    _HOOKS.before_freeze = hook
+
+
+def set_audit_probe(probe: Callable[[], bool]) -> None:
+    """Whether the runtime audit is on (ADR 0076 I-14): a load with no explicit `validate_core`
+    validates the packaged core exactly when it returns true; `audit.enable()` installs it."""
+    _HOOKS.audit_on = probe
 
 
 def parsed(text: str) -> tuple[template.Node, ...]:

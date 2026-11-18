@@ -65,6 +65,7 @@ from openflowsheet.compiled import (
     EvaluationResult,
     JacobianResult,
 )
+from openflowsheet.models.lifted import LABEL_KIND
 from openflowsheet.numerics.linear import (
     RESIDUAL_THRESHOLD,
     LinearSolveFailedError,
@@ -72,7 +73,6 @@ from openflowsheet.numerics.linear import (
     solve_linear_kept,
 )
 from openflowsheet.numerics.scaling import REGISTERED_NOMINALS, Scaling
-from openflowsheet.orchestrator.region import LABEL_KIND
 from openflowsheet.verify.regularity import PAIRING_FIELDS, RegularityEvidence, screen
 
 if TYPE_CHECKING:

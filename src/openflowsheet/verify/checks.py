@@ -21,7 +21,7 @@ import numpy.typing as npt
 
 from openflowsheet.compile.reference import state_vector
 from openflowsheet.compile.spec import ProblemSpec
-from openflowsheet.compiled import CompiledProblem, EvaluationContext
+from openflowsheet.compiled import CompiledProblem, EvaluationContext, JacobianResult
 from openflowsheet.models import duty_id, flow_id, pressure_id, temperature_id
 from openflowsheet.models.syn001 import (
     FLOW_TOLERANCE,
@@ -48,14 +48,10 @@ from openflowsheet.verify import (
     evaluated,
     unsupported,
 )
-from openflowsheet.verify.kind_tolerance import (
-    EQUILIBRIUM_TOLERANCE as EQUILIBRIUM_TOLERANCE,
-)
-from openflowsheet.verify.kind_tolerance import KIND_TOLERANCE as KIND_TOLERANCE
-from openflowsheet.verify.kind_tolerance import PRESSURE_TOLERANCE as PRESSURE_TOLERANCE
+from openflowsheet.verify.kind_tolerance import KIND_TOLERANCE, PRESSURE_TOLERANCE
 
 if TYPE_CHECKING:
-    from openflowsheet.orchestrator.region import LiftedSplit
+    from openflowsheet.models.lifted import LiftedSplit
     from openflowsheet.verify.zero_flow import ZeroFlowSplit
 
 #: §4.7, as K03 §8.2 argues it.
@@ -746,6 +742,8 @@ def admissibility_checks(
     The registered case is the trivial root: S3 forced all-liquid at the once-through variant
     has `sum x_i K_i(350 K) = 1.07 > 1`, which says a liquid at that composition and temperature
     would boil. A branch that cannot exist is the one thing a residual cannot report.
+
+    The independent split of S3 follows (`_s3_independent_split_checks`).
     """
     note = qualification(provider)
     checks: list[CheckResult] = []
@@ -796,20 +794,36 @@ def admissibility_checks(
                 )
             )
 
-    # The independent split: flash S3 from its own (n, T, P) and compare, rather than believing
-    # the lifted variables. At the trivial root this differs by 0.304 mol/s, ten million times
-    # the tolerance.
+    checks += _s3_independent_split_checks(provider, state, context, vapor, note)
+    return checks
+
+
+def _s3_independent_split_checks(
+    provider: PropertyProvider,
+    state: Mapping[str, float],
+    context: EvaluationContext,
+    vapor: tuple[float, ...],
+    note: str,
+) -> list[CheckResult]:
+    """§4.7's independent split of S3: flash S3 from its own `(n, T, P)` in `state` and compare,
+    rather than believing the lifted variables (at the trivial root they differ by 0.304 mol/s,
+    ten million times the tolerance). `independent_split.S3` `not_applicable` when S3 is dormant;
+    else the lifted total vapour flow read from `state`, then each component's of `vapor` (the
+    lifted vapour flows in `COMPONENTS` order), against the flash's at `FLOW_TOLERANCE`,
+    qualified by `note`. Raises `VerifierError` when the verifier's own split does not return
+    `ok` with a vapour."""
+    independent: list[CheckResult] = []
     carried = stream_of(state, "S3")
     if carried.is_dormant:
-        checks.append(
+        independent.append(
             dormant(id="independent_split.S3", category="independent_split", subject="S3")
         )
-        return checks
+        return independent
 
     flashed = provider.flash(FlashRequest(state=carried), context)
     if flashed.status != "ok" or flashed.vapor is None:
         raise VerifierError(f"the verifier's own split returned {flashed.status}")
-    checks.append(
+    independent.append(
         evaluated(
             id="independent_split.S3.total",
             category="independent_split",
@@ -821,7 +835,7 @@ def admissibility_checks(
         )
     )
     for index, component in enumerate(COMPONENTS):
-        checks.append(
+        independent.append(
             evaluated(
                 id=f"independent_split.S3.{component}",
                 category="independent_split",
@@ -832,7 +846,7 @@ def admissibility_checks(
                 independence_qualification=note,
             )
         )
-    return checks
+    return independent
 
 
 # ---------------------------------------------------------------- 4.8 the derivative witness
@@ -933,10 +947,11 @@ def witness_classes(
 
     `streams` are the revision's streams (R-281 reads `<S>.n.<c>` over them); `splits` the
     verifier's own reading of the revision's lifted splits (`lifted_splits(..., staged=...)`),
-    from declarations, never from the solver's attempts. A side is dormant when every column of
-    its tuple is exactly 0.0 (`-0.0` counts as 0.0, as for Z). A split whose feed is all exactly
-    0.0 in `state` (`ZERO_FLOW`) is skipped, so its sides fall to class 5 and §4.8.8's "stays
-    unsupported" holds (review F-2); a feed column absent from `state` is not taken as 0.0.
+    from declarations, never from the solver's attempts (`_dormant_sides` reads them). A side is
+    dormant when every column of its tuple is exactly 0.0 (`-0.0` counts as 0.0, as for Z). A
+    split whose feed is all exactly 0.0 in `state` (`ZERO_FLOW`) is skipped, so its sides fall to
+    class 5 and §4.8.8's "stays unsupported" holds (review F-2); a feed column absent from `state`
+    is not taken as 0.0.
     Classes 2-4 are empty on every basis outside `ONE_SIDED_BASES`, class 1 on every basis but
     `pr-c1-v1`. The witness's `unstenciled` is classes 1 and 2, its `one_sided` classes 3 and 4."""
     zero_flow = (
@@ -949,13 +964,7 @@ def witness_classes(
     dormant_liquid: set[str] = set()
     dormant_vapour: set[str] = set()
     if gamma_phi:
-        for split in splits:
-            if all(name in state and state[name] == 0.0 for name in split.feed):
-                continue
-            if all(state[name] == 0.0 for name in split.liquid):
-                dormant_liquid.update(split.liquid)
-            if all(state[name] == 0.0 for name in split.vapor):
-                dormant_vapour.update(split.vapor)
+        dormant_liquid, dormant_vapour = _dormant_sides(splits, state)
     classes: dict[str, int] = {}
     for name in columns:
         if name in zero_flow and state[name] == 0.0:
@@ -969,6 +978,26 @@ def witness_classes(
         else:
             classes[name] = 5
     return classes
+
+
+def _dormant_sides(
+    splits: Sequence[LiftedSplit], state: Mapping[str, float]
+) -> tuple[set[str], set[str]]:
+    """§4.8.2 classes 2 and 4 (A2, A1): the columns of the dormant liquid sides and of the
+    dormant vapour sides of `splits` at `state`, a side being dormant when every column of its
+    tuple is exactly 0.0. A split whose feed is all exactly 0.0 (`ZERO_FLOW`) is skipped (review
+    F-2); a feed column absent from `state` is not taken as 0.0, while a side column absent from
+    `state` raises `KeyError`."""
+    liquid: set[str] = set()
+    vapour: set[str] = set()
+    for split in splits:
+        if all(name in state and state[name] == 0.0 for name in split.feed):
+            continue
+        if all(state[name] == 0.0 for name in split.liquid):
+            liquid.update(split.liquid)
+        if all(state[name] == 0.0 for name in split.vapor):
+            vapour.update(split.vapor)
+    return liquid, vapour
 
 
 @dataclass(frozen=True)
@@ -1055,37 +1084,60 @@ def escalate_column(
             barred.append(False)
             previous = None
             continue
-        flat = {
-            row
-            for row in range(len(row_scales))
-            if all(values[row] == points[0][row] for values in points[1:])
-        }
+        flat = _flat_rows(points, len(row_scales))
         level_barred = bool(flat & varied)
         varied.update(row for row in range(len(row_scales)) if row not in flat)
-        estimate = []
-        for row, row_scale in enumerate(row_scales):
-            accumulated = 0.0
-            for weight, values in zip(_CENTRAL4_WEIGHTS, points, strict=True):
-                accumulated += weight * values[row]
-            estimate.append(accumulated / (12.0 * h) * column_scale / row_scale)
-        current = tuple(estimate)
+        current = _central4_estimate(points, h, column_scale, row_scales)
         admissible.append(True)
         barred.append(level_barred)
-        if previous is None:
-            gaps.append(None)
-        else:
-            differences = [abs(now - before) for now, before in zip(current, previous, strict=True)]
-            gaps.append(max(differences, default=0.0))
-            # `all(<=)` rather than `max <=`, so that a NaN row never resolves a column.
-            if (
-                not level_barred
-                and not previous_barred
-                and all(difference <= RESOLUTION_TOLERANCE for difference in differences)
-            ):
-                return Escalation(tuple(admissible), tuple(gaps), tuple(barred), k, current)
+        gap, agreed = _level_gap(current, previous)
+        gaps.append(gap)
+        if not level_barred and not previous_barred and agreed:
+            return Escalation(tuple(admissible), tuple(gaps), tuple(barred), k, current)
         previous = current
         previous_barred = level_barred
     return Escalation(tuple(admissible), tuple(gaps), tuple(barred), None, None)
+
+
+def _flat_rows(points: Sequence[Sequence[float]], rows: int) -> set[int]:
+    """§4.8.3 (c), the flat rule: the rows of `range(rows)` whose values at the level's four
+    `points` are all equal (`==`, so -0.0 equals 0.0 and a NaN row is never flat)."""
+    return {
+        row for row in range(rows) if all(values[row] == points[0][row] for values in points[1:])
+    }
+
+
+def _central4_estimate(
+    points: Sequence[Sequence[float]],
+    h: float,
+    column_scale: float,
+    row_scales: Sequence[float],
+) -> tuple[float, ...]:
+    """§4.8.3 (b): the level's central fourth-order estimate per row, scaled as the witness
+    scales (`D * column_scale / row_scales[i]`), from its four `points` in `_CENTRAL4_OFFSETS`'
+    order, the weighted sum accumulated in that order."""
+    estimate = []
+    for row, row_scale in enumerate(row_scales):
+        accumulated = 0.0
+        for weight, values in zip(_CENTRAL4_WEIGHTS, points, strict=True):
+            accumulated += weight * values[row]
+        estimate.append(accumulated / (12.0 * h) * column_scale / row_scale)
+    return tuple(estimate)
+
+
+def _level_gap(
+    current: tuple[float, ...], previous: tuple[float, ...] | None
+) -> tuple[float | None, bool]:
+    """§4.8.3 (b): an admissible level's e_k, the largest row difference between its estimate
+    `current` and the previous level's `previous`, and whether every row's difference is within
+    `RESOLUTION_TOLERANCE`; `(None, False)` when `previous` is None (k = 0, or level k - 1 was
+    inadmissible). `all(<=)` rather than `max <=`, so that a NaN row never resolves a column."""
+    if previous is None:
+        return None, False
+    differences = [abs(now - before) for now, before in zip(current, previous, strict=True)]
+    return max(differences, default=0.0), all(
+        difference <= RESOLUTION_TOLERANCE for difference in differences
+    )
 
 
 def _discrepancies(
@@ -1159,6 +1211,9 @@ def derivative_witness(
     exactly, a refusal included. A column whose central result passes is computed exactly as
     before, so no witness that passes changes. Nothing is recorded (§4.8.3 (g)); `escalations`,
     when given, receives each escalated column's `Escalation` for a test or a diagnosis.
+
+    Each differenced column, in column order, is `_column_witness`'s; the first column whose
+    result keeps a refusal ends the witness with both checks `unsupported`.
     """
     from openflowsheet.compile.reference import state_vector
 
@@ -1172,75 +1227,23 @@ def derivative_witness(
     if jacobian.status != "ok":
         raise VerifierError(f"the witness could not read the Jacobian: {jacobian.status}")
 
-    exact: dict[tuple[int, int], float] = {}
-    for column in range(len(jacobian.col_ids)):
-        for offset in range(jacobian.indptr[column], jacobian.indptr[column + 1]):
-            exact[(int(jacobian.indices[offset]), column)] = float(jacobian.data[offset])
+    exact = _exact_entries(jacobian)
 
     declared = frozenset(components)
-    row_ids = jacobian.row_ids
+    frame = _WitnessFrame(
+        compiled, context, base, exact, jacobian.row_ids, scaling.column, scaling.row, declared
+    )
     worst_on, worst_off = 0.0, 0.0
     for column, name in enumerate(jacobian.col_ids):
         if name in unstenciled:
             continue
-        step = FD_RELATIVE_STEP * scaling.column[name]
-        column_scale = scaling.column[name]
-        # Central (x + h, x - h), or on Z the forward five-point stencil (x + k h, k = 0..4).
-        offsets = _FORWARD_OFFSETS if name in one_sided else _CENTRAL_OFFSETS
-        points, refusal = _stencil(compiled, context, base, column, step, offsets)
-        on, off = 0.0, 0.0
-        if refusal is None:
-            scaled = []
-            for row, row_id in enumerate(row_ids):
-                if name in one_sided:
-                    difference = (
-                        -25.0 * points[0][row]
-                        + 48.0 * points[1][row]
-                        - 36.0 * points[2][row]
-                        + 16.0 * points[3][row]
-                        - 3.0 * points[4][row]
-                    ) / (12.0 * step)
-                else:
-                    difference = (points[0][row] - points[1][row]) / (2.0 * step)
-                scaled.append(difference * column_scale / scaling.row[row_id])
-            on, off = _discrepancies(scaled, column, column_scale, exact, row_ids, scaling.row)
-        # §4.8.3 (a): a class-5 component column with x_j > 0 whose central result is not a pass.
-        if (
-            name not in one_sided
-            and component_column(name, declared)
-            and base[column] > 0.0
-            and (refusal is not None or on > DERIVATIVE_TOLERANCE or off > DERIVATIVE_TOLERANCE)
-        ):
-            escalation = escalate_column(
-                compiled,
-                context,
-                base,
-                column,
-                step,
-                column_scale,
-                [scaling.row[row_id] for row_id in row_ids],
-                registered=points if refusal is None else None,
-            )
-            if escalations is not None:
-                escalations[name] = escalation
-            if escalation.scaled is not None:
-                refusal = None
-                on, off = _discrepancies(
-                    escalation.scaled, column, column_scale, exact, row_ids, scaling.row
-                )
-        if refusal is not None:
-            reason = f"witness_stencil_{refusal}({name})"
-            return [
-                unsupported(
-                    id=f"derivative_witness.{which}",
-                    category="derivative_witness",
-                    subject="target_jacobian",
-                    reason=reason,
-                )
-                for which in ("on_pattern", "off_pattern")
-            ]
-        worst_on = max(worst_on, on)
-        worst_off = max(worst_off, off)
+        found = _column_witness(frame, column, name, name in one_sided)
+        if escalations is not None and found.escalation is not None:
+            escalations[name] = found.escalation
+        if found.refusal is not None:
+            return _witness_unsupported(f"witness_stencil_{found.refusal}({name})")
+        worst_on = max(worst_on, found.on)
+        worst_off = max(worst_off, found.off)
 
     return [
         evaluated(
@@ -1259,6 +1262,136 @@ def derivative_witness(
             tolerance=DERIVATIVE_TOLERANCE,
             reference=1.0,
         ),
+    ]
+
+
+def _exact_entries(jacobian: JacobianResult) -> dict[tuple[int, int], float]:
+    """§4.8's AD entries J_ij of `jacobian`'s CSC arrays, keyed by `(row, column)`: the pattern
+    the witness compares on, every other entry being off-pattern. A repeated `(row, column)` in
+    the CSC arrays: the last entry wins."""
+    exact: dict[tuple[int, int], float] = {}
+    for column in range(len(jacobian.col_ids)):
+        for offset in range(jacobian.indptr[column], jacobian.indptr[column + 1]):
+            exact[(int(jacobian.indices[offset]), column)] = float(jacobian.data[offset])
+    return exact
+
+
+@dataclass(frozen=True)
+class _WitnessFrame:
+    """What `derivative_witness` fixes before its first column: the compiled function and its
+    context, the base point x, the AD entries J_ij (`_exact_entries`), the row ids, the registered
+    scales S_x and S_F by id (`scaling.column`, `scaling.row`), and the declared components."""
+
+    compiled: object
+    context: object
+    base: npt.NDArray[np.float64]
+    exact: Mapping[tuple[int, int], float]
+    row_ids: Sequence[str]
+    scaling_column: Mapping[str, float]
+    scaling_row: Mapping[str, float]
+    declared: frozenset[str]
+
+
+@dataclass(frozen=True)
+class _ColumnWitness:
+    """One differenced column's part of §4.8: its on-pattern and off-pattern maxima (both 0.0 when
+    `refusal` is set), the status of the stencil point that refused (None when the column
+    evaluated), and its §4.8.3 `Escalation` (None when none was triggered)."""
+
+    on: float
+    off: float
+    refusal: str | None
+    escalation: Escalation | None
+
+
+def _column_witness(frame: _WitnessFrame, column: int, name: str, forward: bool) -> _ColumnWitness:
+    """§4.8 for column `name` (index `column`) of `frame`: the registered stencil at
+    h = `FD_RELATIVE_STEP` S_x, central, or with `forward` (Z) the forward five-point one, and the
+    column's two maxima in the scaled form. §4.8.3 (a): a central component column with x_j > 0
+    whose result is not a pass (`_not_a_pass`) is re-differenced by `escalate_column`; a resolved
+    estimate replaces the maxima and clears the refusal, an unresolved one keeps the registered
+    result, a refusal included."""
+    step = FD_RELATIVE_STEP * frame.scaling_column[name]
+    column_scale = frame.scaling_column[name]
+    # Central (x + h, x - h), or on Z the forward five-point stencil (x + k h, k = 0..4).
+    offsets = _FORWARD_OFFSETS if forward else _CENTRAL_OFFSETS
+    points, refusal = _stencil(frame.compiled, frame.context, frame.base, column, step, offsets)
+    on, off = 0.0, 0.0
+    if refusal is None:
+        scaled = [
+            _stencil_difference(points, row, step, forward)
+            * column_scale
+            / frame.scaling_row[row_id]
+            for row, row_id in enumerate(frame.row_ids)
+        ]
+        on, off = _discrepancies(
+            scaled, column, column_scale, frame.exact, frame.row_ids, frame.scaling_row
+        )
+    # §4.8.3 (a): a class-5 component column with x_j > 0 whose central result is not a pass.
+    if (
+        not forward
+        and component_column(name, frame.declared)
+        and frame.base[column] > 0.0
+        and _not_a_pass(refusal, on, off)
+    ):
+        escalation = escalate_column(
+            frame.compiled,
+            frame.context,
+            frame.base,
+            column,
+            step,
+            column_scale,
+            [frame.scaling_row[row_id] for row_id in frame.row_ids],
+            registered=points if refusal is None else None,
+        )
+        if escalation.scaled is not None:
+            refusal = None
+            on, off = _discrepancies(
+                escalation.scaled,
+                column,
+                column_scale,
+                frame.exact,
+                frame.row_ids,
+                frame.scaling_row,
+            )
+        return _ColumnWitness(on, off, refusal, escalation)
+    return _ColumnWitness(on, off, refusal, None)
+
+
+def _stencil_difference(
+    points: Sequence[Sequence[float]], row: int, step: float, forward: bool
+) -> float:
+    """The registered stencil's difference quotient in `row`, from `_stencil`'s `points`:
+    central (F(x + h) - F(x - h)) / (2 h), or with `forward` (§4.8.2 classes 3-4: Z, R-831, and A1)
+    the forward five-point (-25 F0 + 48 F1 - 36 F2 + 16 F3 - 3 F4) / (12 h)."""
+    if forward:
+        return (
+            -25.0 * points[0][row]
+            + 48.0 * points[1][row]
+            - 36.0 * points[2][row]
+            + 16.0 * points[3][row]
+            - 3.0 * points[4][row]
+        ) / (12.0 * step)
+    return (points[0][row] - points[1][row]) / (2.0 * step)
+
+
+def _not_a_pass(refusal: str | None, on: float, off: float) -> bool:
+    """§4.8.3 (a): whether a column's central result is not a pass: a refused point (`refusal`),
+    or either maximum above `DERIVATIVE_TOLERANCE`."""
+    return refusal is not None or on > DERIVATIVE_TOLERANCE or off > DERIVATIVE_TOLERANCE
+
+
+def _witness_unsupported(reason: str) -> list[CheckResult]:
+    """Both witness checks `unsupported` with `reason` (T06 spec §8.2; ADR 0014 D5): a stencil
+    point the compiled function cannot evaluate."""
+    return [
+        unsupported(
+            id=f"derivative_witness.{which}",
+            category="derivative_witness",
+            subject="target_jacobian",
+            reason=reason,
+        )
+        for which in ("on_pattern", "off_pattern")
     ]
 
 
