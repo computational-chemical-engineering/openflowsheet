@@ -768,7 +768,8 @@ class _Accepted(NamedTuple):
 class _Rejected(NamedTuple):
     """A rejected trial (§7.3.5): its reason, the step length when a step was taken, the
     variables that blocked it, the trial point (`x` when none was formed), its evaluation, the
-    scaled step's length, and the message its records carry."""
+    scaled step's infinity norm times the step length (None when no trial was formed), and the
+    message its records carry."""
 
     reason: RejectionReason
     alpha: float | None
