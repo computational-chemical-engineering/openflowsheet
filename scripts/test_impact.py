@@ -914,6 +914,7 @@ def build(base: str, out: Path | None, workers: int, extra: list[str]) -> int:
 SUMMARY = re.compile(r"^=*\s*(\d+ (?:passed|failed|error|skipped|deselected).*?) in [\d.]+s")
 COUNT = re.compile(r"(\d+) (\w+)")
 NO_TESTS = 5  # pytest's exit code when it collected nothing
+INTERNAL_ERROR = 3  # pytest's exit code for an internal error: a run with a killed call exits so
 
 
 def _runs(selection: Selection, workers: int) -> list[tuple[list[str], list[str]]]:
@@ -1009,10 +1010,14 @@ def run(
     wall = time.monotonic() - started
     # A part that collected nothing (an extra -k, say) is not a failure while another part ran.
     ran = [code for code in codes if code != NO_TESTS] or codes
-    exit_code = max(ran)
+    # A call killed by a signal returns -signal: never a pass or a test failure, whatever the other
+    # call returned. Calls are numbered as their `<log>.N.args` listings.
+    killed = [(index, -code) for index, code in enumerate(codes) if code < 0]
+    exit_code = INTERNAL_ERROR if killed else max(ran)
     summary = (
         ", ".join(f"{number} {kind}" for kind, number in counts.items()) or "no pytest summary"
     )
+    summary += "".join(f", killed: call {index} signal {signal}" for index, signal in killed)
     verdict = "PASS" if exit_code == 0 else f"FAIL (exit {exit_code})"
     selected = "all" if selection.fallback else str(len(selection.nodes))
     fallback = "yes" if selection.fallback else "no"

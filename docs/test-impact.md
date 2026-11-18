@@ -85,6 +85,8 @@ runs it under pytest-xdist and, like `build`, keeps the `XDIST_SERIAL` files out
 they run in a second, serial call, on a fallback and whenever the selection holds them (B-12).
 `-n` after `--` is refused for that reason. The line sums both calls' counts; the exit code is
 nonzero when either call fails (a call that collected nothing, exit 5, counts only if both did).
+A call killed by a signal makes the run exit 3, pytest's internal error, and the line names it
+(`killed: call N signal S`, N as in the call's `<log>.N.args` listing).
 `--workers` needs pytest-xdist, which only the test-map venv has. `--repo DIR` (before the
 subcommand) selects in another checkout.
 
