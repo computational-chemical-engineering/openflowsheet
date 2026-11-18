@@ -231,8 +231,9 @@ def _joint_blocks(
     derivatives: _RowDerivatives,
 ) -> list[tuple[tuple[str, ...], tuple[str, ...]]]:
     """§18.1 steps 1-3 up to certification: the candidate rows R_J with their numerical
-    incidence N_e, and the connected components of the bipartite graph (R_J, Z_J), ordered by
-    their first variable, rows in spec order and variables in variable order."""
+    incidence N_e, and the connected components of the bipartite graph (R_J, Z_J)
+    (`_components`), ordered by their first variable, rows in spec order and variables in
+    variable order."""
     free = set(zero) - set(eliminated)
     index = {name: i for i, name in enumerate(spec.variable_ids)}
     numerical: dict[str, frozenset[str]] = {}
@@ -257,6 +258,16 @@ def _joint_blocks(
             if any(float(value) != 0.0 for value in partials):
                 continue
         numerical[row] = frozenset(columns)
+    return _components(spec, numerical)
+
+
+def _components(
+    spec: ProblemSpec, numerical: Mapping[str, frozenset[str]]
+) -> list[tuple[tuple[str, ...], tuple[str, ...]]]:
+    """§18.1 step 3: the connected components of the bipartite graph (R_J, Z_J) whose edges are
+    the candidate rows' numerical incidences N_e (`numerical`, by row), ordered by their first
+    variable, rows in spec order and variables in variable order; one component per
+    `_component`. Pure."""
     rows_of: dict[str, list[str]] = {}
     for row, incident in numerical.items():
         for name in incident:
@@ -266,16 +277,7 @@ def _joint_blocks(
     for start in (name for name in spec.variable_ids if name in rows_of):
         if start in seen:
             continue
-        rows: set[str] = set()
-        variables = {start}
-        frontier = [start]
-        while frontier:
-            for row in rows_of[frontier.pop()]:
-                if row not in rows:
-                    rows.add(row)
-                    for name in numerical[row] - variables:
-                        variables.add(name)
-                        frontier.append(name)
+        rows, variables = _component(start, rows_of, numerical)
         seen |= variables
         blocks.append(
             (
@@ -284,6 +286,26 @@ def _joint_blocks(
             )
         )
     return blocks
+
+
+def _component(
+    start: str, rows_of: Mapping[str, list[str]], numerical: Mapping[str, frozenset[str]]
+) -> tuple[set[str], set[str]]:
+    """The rows and the variables of the component of the bipartite graph that holds the
+    variable `start`, by a worklist over `rows_of` (each variable's rows) and `numerical` (each
+    row's variables). Pure."""
+    rows: set[str] = set()
+    variables = {start}
+    frontier = [start]
+    while frontier:
+        for row in rows_of[frontier.pop()]:
+            if row in rows:
+                continue
+            rows.add(row)
+            for name in numerical[row] - variables:
+                variables.add(name)
+                frontier.append(name)
+    return rows, variables
 
 
 def _certify_block(
