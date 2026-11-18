@@ -537,3 +537,45 @@ Brief `docs/briefs/F3-WO5b-2.md` (continuation of `docs/briefs/F3-WO5b.md`).
   Alternative (I would take it, for the design lane): `detail.reason` as the chain text with
   args, `record_schema_invalid(/name)`, so the inner link renders its own pointer; it changes
   WO5b-1's stated form. Reversible by: one function, `RecordsService._refuse_coded`.
+
+**Part 2: files and commits.** `a66116d9` (surface: the T07 request corpora carry the five
+operations on one user record, `tests/f3_schema_support.py`; `SNAPSHOT_F3`; link c_10, R-1051;
+A20 at 30; support matrix, operations page and web routes regenerated; eight `application_results`
+fixtures; WO5b-7, WO5b-8), `89827b70` and `702a2673` (CLI `records`), `e050aed8` (descriptors,
+WO3-6), `7d58be44` (catalogue), `61c740dc` (ADR 0019 Amendment 8 pointer, `interfaces-frozen.md`),
+`9ada682f` (WO5b-9), `8a078c0f` (`tests/test_f3_operations.py`; E-F3-5's grant clause in
+`tests/test_f3_lock_rights.py`), `b0580939` (the record fixtures hold a synthetic record: T08.A32
+found a real `user.xenonol` in `record_view`'s fixture in the first battery run).
+
+**Moved (old -> new).** MCP served digest D_9 `e2c44b6b…` -> D_10
+`248c2e74baebcf489e012e14dff04fb0d14601d2df5d3ad88d51d0ad11e8a884` (`without_f3` recovers D_9
+exactly). `SNAPSHOT_F3` new: `search_records` `e52240dd…`, `get_record` `4ec84cbf…`,
+`register_record` `59785fe3…`, `validate_record` `900b2712…`, `assess_rights` `75d3f109…`; no
+earlier R4-G3 snapshot moved. Description files pinned (`F3_FILE_SHA256`): `assess_rights`
+`4fa0c2c0…`, `get_record` `eaf900f8…`, `register_record` `de47ccb9…`, `search_records` `03031fcb…`,
+`validate_record` `2cdb2e5d…`. `records.json` `2ec2ab3f…` -> `8f0fc8fb…`; its `table_sha256`
+`93436402…` -> `5a368bf0…`; `registry_sha256` `affa126f…` -> `c8d191de…`. Catalogue sha256
+`afa8e493…` -> `ff50954d…` (the two `message_entry` fixtures). Numerical policy v2 `6b449911…`
+unmoved. New schema `record-results.schema.json`; `registry.json` gains its name.
+
+**Expected red.** `tests/test_t08_w2_description_reviews.py::test_every_description_is_reviewed_by_both_lanes`:
+the five texts (`search_records`, `get_record`, `register_record`, `validate_record`,
+`assess_rights`) await the design lane's and Frank's reviews in `REVIEW.json` (T08.A18).
+
+**Left for WO7 (close-out).** The five description reviews (REVIEW.json; a review edit re-takes
+D_10 and R-1051's digest); the design-lane ruling round on WO5b-1 to WO5b-9 (WO5b-9's alternative
+recommended); the package's `reviewer` pass and evidence manifest; the descriptors' `status`
+(`implemented` until close-out); `not_found`'s generic `action` text still names jobs for the
+default variant (the record variant has its own).
+
+**Acceptance (at `b0580939`, clean tree).** `tests/test_f3_*.py` (7 files): 282 passed.
+`records_legacy_index.py --check`: clean, 149 records in 7 files. `ruff check`: all passed;
+`ruff format --check`: 1292 files formatted; `mypy`: no issues in 409 files. Battery, 71 files (the
+62 of `F3-battery.txt`, `test_f3_lock_rights.py`, `test_f3_operations.py`, the touched T07/T08
+surface, conformance and authz files, `test_m02_schemas.py`, `test_m04_study_job.py` and
+`test_t08_w2_description_reviews.py`), serial: 2132 passed, 1 failed (the expected red above), 14
+skipped, 22 deselected, 3 xfailed, 577 s. `codehealth arch`: 0 violations, 0 cycles; `codehealth
+scan`: no brain function in `records/` or `application/`; the 17 F3-new files there at health
+>= 9.5 (`records/validate.py` 9.5, `records_service.py` 9.6); `cli.py` 8.7 as before the order.
+F0 `corpus_identity.py --check` PASS (M1 50/50 … M9 35/35). `git diff 5d085f05 HEAD -- docs/adr`:
+the Amendment 8 paragraph and ADR 0061's status paragraph (the acceptance commit `0f6dafb5`).
