@@ -2384,3 +2384,12 @@
 - CI 44194354064 at b36fa2a6 green on both legs (check x86-64 and aarch64, default-install, identity; codehealth
   informational, failure). Manifest G-END-CI cites it. cce-code-health 9a4605f (stricter new-brain matching, no score
   change): re-pin optional, deferred to after the merge.
+
+## 2026-11-18 ~02:27 G-MAP 6 build at the wp/S19 tip (after the W3/W4 merge into main)
+
+- Base 756e1c12, detached worktree `/tmp/claude-1000/-home-eajfpeters-Code-OpenFlowsheet/699141ff-e78c-4a66-86be-5b45a91e69ff/scratchpad/map6`, `.venv-testmap`, 8 workers, no `--deselect`,
+  PID 2678417, log `/tmp/claude-1000/-home-eajfpeters-Code-OpenFlowsheet/699141ff-e78c-4a66-86be-5b45a91e69ff/scratchpad/map6.log`. Runner 1474880 stopped; restart with `$Q run --detach` after the build.
+  Criteria as G-MAP 5 (exit 0 or 1; failures a subset of the B-6 four + f6; no unsure test in a file over ~60 s).
+- WITNF (card ofs-s19-oq1b): engineer a07f0ff0/95e1e16c; review (reviewer, Opus) ACCEPT WITH FIXES (fail-open when
+  levels 0 and 1 are inadmissible: a non_finite registered pair now stays the reference; Q2.A7, Q2.A8); fix round
+  8067229f/9836a04c. CI 44215779298 on 9836a04c running.
