@@ -2708,7 +2708,7 @@ The capability legacy:syn001 is reserved, so the extension that declares it is n
 - **Summary:** The namespace &lt;namespace&gt; is reserved, so the extension package that uses it is not loaded.
 - **Why:** An extension's namespace is the name of its entry point, and every id it registers starts with it. The first segment of every built-in id, and openflowsheet, core, std, legacy, x and user, are reserved so that an extension can never take a built-in's id.
 - **Do:** Rename the extension's entry point to a namespace of its own, and start every id the package declares with it.
-- **Parameters:** `namespace` (text)
+- **Parameters:** `namespace` (text), `carrier` (text, optional)
 - **See also:** [`namespace_conflict`](#namespace_conflict)
 
 Example:
@@ -2717,6 +2717,17 @@ Example:
 The namespace thermal is reserved, so the extension package that uses it is not loaded.
   Why:     An extension's namespace is the name of its entry point, and every id it registers starts with it. The first segment of every built-in id, and openflowsheet, core, std, legacy, x and user, are reserved so that an extension can never take a built-in's id.
   Do:      Rename the extension's entry point to a namespace of its own, and start every id the package declares with it.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    reserved_namespace (openflowsheet explain reserved_namespace)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#reserved_namespace
+```
+
+Example:
+
+```text
+The prefix legacy. and the member legacy are reserved for the records that come with OpenFlowsheet, so the record is not stored.
+  Why:     A source id that starts with legacy., and the member legacy, mark a record imported from a file that comes with OpenFlowsheet. A rights assessment of such a source holds for every record that carries it, so only the importer's own records, recognised by their SHA, may use them.
+  Do:      Give the source an id of your own, for example one that starts with user., and remove the legacy member if the record has one.
   Kind:    Input problem: something in the flowsheet or the request needs to change.
   Code:    reserved_namespace (openflowsheet explain reserved_namespace)
   Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#reserved_namespace

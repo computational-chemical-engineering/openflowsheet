@@ -56,6 +56,8 @@ API_ERROR_OF_KIND: Final[Mapping[str, ApiErrorCode]] = {
 }
 #: D11: the source-id prefix only the legacy importer writes.
 LEGACY_PREFIX: Final = "legacy."
+#: D1, R-1056: the record member only the legacy importer writes.
+LEGACY_MEMBER: Final = "legacy"
 #: R-1052: the most errors a refused submission lists in `detail.errors` (`errors_total` counts
 #: them all).
 MAX_LISTED_ERRORS: Final = 200
@@ -70,9 +72,12 @@ def legacy_shas() -> frozenset[str]:
 
 
 def forged(outcome: RecordOutcome) -> bool:
-    """D11: whether `outcome` names a `legacy.` source without being an indexed legacy record."""
+    """D11, R-1056: whether `outcome` names a `legacy.` source or carries a `legacy` member
+    without being an indexed legacy record."""
     sources = outcome.record.get("sources") or {}
-    claims = any(str(ident).startswith(LEGACY_PREFIX) for ident in sources)
+    claims = LEGACY_MEMBER in outcome.record or any(
+        str(ident).startswith(LEGACY_PREFIX) for ident in sources
+    )
     return claims and outcome.record_sha256 not in legacy_shas()
 
 
@@ -346,10 +351,15 @@ class RecordsService:
         findings: list[Coded],
         known: dict[str, Mapping[str, Any]],
     ) -> str | None:
-        errors += outcome.errors
+        """The outcome's errors, `register_record`'s `reserved_namespace` among them (R-1056), and
+        findings; its SHA when nothing refuses it."""
+        refused = refusals(outcome)
+        errors += refused
         findings += outcome.findings
-        if outcome.record_sha256 is not None:
-            known[outcome.record_sha256] = outcome.record
+        if refused:
+            return None
+        assert outcome.record_sha256 is not None
+        known[outcome.record_sha256] = outcome.record
         return outcome.record_sha256
 
     def _reactions(
@@ -481,10 +491,13 @@ class RecordsService:
         """A record refusal as an `ApiError` (WO5b-1). The refusal's params travel as `detail`
         members too, where no member of the error's own has the name, so MSG renders the
         `reason` link with them (F3 decision WO5b-9); `detail.refusal` holds them all. The one
-        colliding name, `pointer`, continues: `at` followed by the refusal's own (R-1052)."""
+        colliding name, `pointer`, continues: `at` followed by the refusal's own (R-1052).
+        `reserved_namespace` takes its record variant (`detail.carrier`, R-1056)."""
         entry = CATALOGUE.entry(coded.code)
         code = API_ERROR_OF_KIND.get(entry.kind if entry is not None else "bug", "internal_error")
         at = at + str(coded.params.get("pointer", ""))
+        if coded.code == "reserved_namespace":
+            detail = {**detail, "carrier": "record"}
         members = {"operation": name, "pointer": at, "reason": coded.code, **detail}
         params = {key: value for key, value in coded.params.items() if key not in members}
         self._core.refuse(

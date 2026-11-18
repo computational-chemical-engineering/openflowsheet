@@ -52,6 +52,7 @@ from openflowsheet.application.operations import OPERATIONS, dispatch
 from openflowsheet.application.policy_types import LOCAL_OWNER_PRINCIPAL, Limits
 from openflowsheet.canonical import canonical_json
 from openflowsheet.messages.catalogue import CATALOGUE
+from openflowsheet.records.importers import legacy
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT / "scripts"))
@@ -586,3 +587,38 @@ def test_c2_detail_errors_names_the_record_of_each_error(app: LocalApplication) 
         "/file/content",
     )
     assert app.search_records(key="yenonol").items == (), "a refused file stores nothing"
+
+
+def _m01_h2(app: LocalApplication) -> tuple[str, dict[str, Any]]:
+    """`m01`'s H2 as the legacy store serves it (the committed index's first `m01` record)."""
+    (entry,) = [e for e in legacy.committed_index()["files"] if e["profile"] == "m01"]
+    sha = entry["records"][0]["sha256"]
+    assert entry["records"][0]["id"] == "H2"
+    return sha, json.loads(json.dumps(app.get_record(sha).record))
+
+
+def test_c3_a_copy_carrying_the_legacy_member_is_refused(app: LocalApplication) -> None:
+    """R-1056 (M3, S1): the `legacy` member is reserved as the `legacy.` prefix is; the record
+    variant of `reserved_namespace` explains it; `validate_record` reports it too."""
+    sha, record = _m01_h2(app)
+    assert "legacy" in record
+    copy = json.loads(json.dumps(record).replace('"legacy.m01"', '"user.copy"'))
+    copy["molar_mass"]["value"] *= 2.0
+    assert list(copy["sources"]) == ["user.copy"]
+    refused = _refusal(app, "register_record", {"record": copy})
+    _assert_reserved(refused, pointer="/record", carrier="record")
+    assert refused["detail"]["explanation"]["summary"] == (
+        "The prefix legacy. and the member legacy are reserved for the records that come with "
+        "OpenFlowsheet, so the record is not stored."
+    )
+    assert [i for i in app.search_records(limit=200).items if i["store"] == "project"] == []
+    report = dispatch(app, "validate_record", {"record": copy})
+    assert report["record_sha256"] is None
+    assert {"code": "reserved_namespace", "params": {"namespace": "legacy"}} in [
+        {k: item[k] for k in ("code", "params")} for item in report["errors"]
+    ]
+    # The importer's own record still copies, and validates clean.
+    assert dispatch(app, "validate_record", {"record": record})["record_sha256"] == sha
+    result = dispatch(app, "register_record", {"record": record})["results"]
+    assert [(item["record_sha256"], item["created"]) for item in result] == [(sha, True)]
+    assert app.get_record(sha).store == "project"
