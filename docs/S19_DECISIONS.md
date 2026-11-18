@@ -2742,3 +2742,9 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   DECISION: the orchestrator applied both fixes (2f842a31, gated no-gain, job 331), although fix 1 touches code:
   a local's rename plus ruff's reflow of one call, argument order unchanged. Alternative: a fresh engineer
   (rejected: cost out of proportion to a rename). Reversible by: reverting 2f842a31. Merge-check g3r9-mc queued.
+- **2026-11-18, F3 CI 44326799399 on 54eb696c: failure, as expected.** Each of the three suite legs (check x86-64,
+  check aarch64, default-install) fails exactly one test, `test_every_description_is_reviewed_by_both_lanes`
+  (20770 / 20738 / 17305 passed); `codehealth` red (informational, F3-3-4 accepted debt). So F3 is ready except
+  Frank's human review: the REVIEW.json edit for card ofs-f3-mcp-descriptions-human (signed A, VERIFIED) waits for
+  Frank to allow it or to edit the five `human` reviews himself; then `executed` on the card, CI green, manifest
+  `tested`, merge card via hub.
