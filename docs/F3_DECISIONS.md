@@ -440,3 +440,59 @@ module is now `openflowsheet.records.importers.user_file`); `reserved_namespace(
 must also cover a user file whose `defaults.source_id` or v2 `sources` names a `legacy.` source;
 `register_record` passing `retrieved_at` (now) and `local_path`; `validate_record` calling
 `reactions.check_reactions` and its request schema screening WO5a-3's inputs and `defaults`' shape.
+
+## F3-WO5b (Records operations), 2026-11-18, part 1 (stopped at the context cap)
+
+Brief `docs/briefs/F3-WO5b.md`. Commits `363f38f8` (wiring: `ServiceCore.records`, a process-wide
+`LEGACY_STORE`), `4eb9747d` (protocol `Records`, five rows, `authz`, `records_service.py`,
+`record_types.py`, `application-results` `$defs`, codehealth layers, T07 counts 30/28/26),
+`8d30f7ae` (five MCP descriptions, REVIEW.json both reviews pending). Smoke-run by hand on
+`in_memory()`: search (methanol: `ambiguous_identity`, 2 items), paging 100 + 49, get, register
+(created), assess_rights (row sequence 1, effective `refused`/project), two `allowed` audit rows.
+
+- **DECISION WO5b-1. A record refusal is an `ApiError` by catalogue kind** (`input` →
+  `invalid_request`, `not_supported` → `unsupported`, `bug` → `internal_error`), pointer `/record`
+  or `/file/content` (+ `record_index`), `detail.reason` the code (MSG renders its chain) and
+  `detail.refusal` its `{code, params}`. Every record of a submission is judged (forged legacy
+  source first, then its first error) before any is stored: a refused file stores nothing.
+  Alternative: per-record errors in `results` (D13's result has no error member). For the design
+  lane: D13 names no refusal path for `register_record`.
+- **DECISION WO5b-2. One legacy store per process** (`service_core.LEGACY_STORE`): the import
+  (0.74 s) runs once. Alternative: one per `LocalApplication`.
+- **DECISION WO5b-3. `file.local_path`** (optional) is the only source of the volatile
+  `local_path`; D13's `file` names `{format, content}`. Alternative: never pass one.
+- **DECISION WO5b-4. `search_records` without a key** lists every stored record (both layers, by
+  SHA), and `resolution` is computed over the same set; `scheme` requires `key`
+  (`dependentRequired`). Cursor: base64url of `{"after": <sha>}`; another text is
+  `invalid_request` at `/cursor`. `store` is `project` when the project store holds the object.
+- **DECISION WO5b-5. Rights in responses**: `effective` = `{assessment, conditions, layer}`
+  (layer null for `unknown`); `get_record`'s `rows` are the rows naming one of its sources (by
+  `source_sha256`, record or whole-source), project rows first, each with `layer` and `sequence`
+  (repository: 1-based file order). `assess_rights` returns the row with `layer: project` and its
+  `sequence`; `date` is the UTC date; `decided_by` the caller's principal.
+- **DECISION WO5b-6. `get_record`/`validate_record`/`assess_rights` on a SHA no layer holds** is
+  `not_found` with `record_sha256` (+ `reason: data_unavailable` when the committed legacy index
+  names it). `validate_record` refuses `invalid_request` for a `components` record that is not a
+  `component`, a stoichiometry key outside `components`, and (last resort) any `ValueError` or
+  `KeyError` of `check_reactions`; the request schema requires `components` with `reactions`.
+
+**Where it stopped (next engineer starts here).** The surface tests are red (57 failures in the
+T07/T08/M02/M04/M07a/F1 surface files, all expected moves): in order,
+(a) request corpora gaining the five operations: `tests/test_t07_w5a_operations.py` (~398, 496,
+650), `test_t07_w5b_cli.py` (~373), `test_t07_w6a_http.py` (~355), `test_t07_w6b_mcp.py` (244,
+325, 462), `test_t07_conformance.py` (349); (b) `test_t07_w5e_application_results.py`: the def
+map (73), R4-G3 snapshot hashes (309) as a `SNAPSHOT_F3`, the per-campaign "without its additions"
+strips (`f1_schema_support.py` is the F1 model: an `f3_schema_support.py` with
+`F3_OPERATIONS`), schema fixtures (`scripts/t07_schema_fixtures.py --write`); (c) MCP served
+digest D_10 and surface link c_10 in `scripts/m07a_rc.py`, register **R-1051** (F3 holds
+R-1050..R-1059), `test_t08_w2_surface_digest.py` and `test_m07a_surface_chain.py` (without_f3
+must recover F1's D_9 exactly); (d) `test_t08_w2_support_envelope.py` A20 (30 operations),
+`docs/support-matrix.md`, `scripts/t08_support_matrix.py`, `benchmarks/t08/support_envelope.yaml`,
+`docs-site/api/operations.md`, `apps/web/js/routes.js`; (e) `test_f1_operations.py`'s two
+failures (G2 scan, FU-A6) not yet diagnosed. Then brief items 3 (CLI `openflowsheet records
+search|get|register|validate|rights`, F1's `_registry_operation` form but on `--project`), 4
+(descriptors, WO3-6), 5 (catalogue: `not_found` gains `record_sha256`; message fixtures and
+`docs-site/messages` re-taken), 6 (ADR 0019 Amendment 8 pointer headed "Accepted 2026-11-18 with
+ADR 0061, Frank Peters; proposed 2026-11-05; F3", `interfaces-frozen.md`), 7
+(`tests/test_f3_operations.py`), 8 (this entry completed), and the acceptance runs. Nothing
+measured against the acceptance list yet.
