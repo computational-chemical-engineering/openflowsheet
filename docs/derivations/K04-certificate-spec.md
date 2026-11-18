@@ -26,7 +26,7 @@ Nothing else here changes. Two findings against this document are recorded in T0
 
 **Amendment, 2026-11-08 (design lane, WIT; ADR 0073, Accepted 2026-11-08; brief `docs/briefs/WIT-specifier.md`).** §4.8 gains §4.8.1–§4.8.9, the witness's treatment of small and exactly-zero component flows. (i) A component column with a positive flow, whose registered central difference is refused or fails, is re-differenced by an escalation that never reads the AD Jacobian: the central fourth-order stencil at `h_j 2^−k`, `k ≤ 8`, resolved when two successive estimates agree within `τ_D/10` (§4.8.3). An unresolved escalation leaves the registered result. (ii) On a γ–φ-IG basis, a lifted split's dormant vapour side joins R-831's forward five-point set (§4.8.4). Its dormant liquid side, where no derivative exists, is not differenced and is recorded as R-281 records (§4.8.5). The tolerance, the registered step, the two checks, the policy hash and every field set are unchanged. Every certificate whose witness passes under the registered stencil is byte-identical, F0's corpus included (§4.8.6). Assertions WIT.A01–WIT.A15 (§4.8.7); reference values `docs/derivations/scripts/wit_reference.py` → `wit_reference.json`. Normative when ADR 0073 is accepted.
 
-**Amendment, 2026-11-18 (design lane, S19 design batch 1 Q2, ruling `c29e1cf1`, `docs/briefs/S19-D-batch1-ruling.md`; Decision Desk `ofs-s19-oq1b-nan-witness-early`; register R-1046).** A differenced column whose scaled difference or comparison term is not finite has no difference. §4.8 refuses it as `non_finite`, as a stencil point that is not `ok`, and §4.8.3 (a) escalates it on that trigger. The witness then reports both checks `unsupported` with reason `witness_stencil_non_finite(<column id>)`, unless an escalation resolves the column. Before, a NaN term was dropped by the max fold and the column passed, and an overflowing term gave a `fail` with value inf. No registered certificate carries a non-finite term (the compiled backend refuses a non-finite residual or Jacobian as `invalid_trial_state`), so every certificate is byte-identical, F0's corpus included. Assertions Q2.A1-Q2.A6 (`tests/test_wit_witness.py`) are regression fixtures of the guard on a synthetic double; they validate no certificate.
+**Amendment, 2026-11-18 (design lane, S19 design batch 1 Q2, ruling `c29e1cf1`, `docs/briefs/S19-D-batch1-ruling.md`; Decision Desk `ofs-s19-oq1b-nan-witness-early`; register R-1046).** A differenced column whose scaled difference or comparison term is not finite has no difference. §4.8 refuses it as `non_finite`, as a stencil point that is not `ok`, and §4.8.3 (a) escalates it on that trigger. The witness then reports both checks `unsupported` with reason `witness_stencil_non_finite(<column id>)`, unless an escalation resolves the column. Before, a NaN term was dropped by the max fold and the column passed, and an overflowing term gave a `fail` with value inf. No registered certificate carries a non-finite term (the compiled backend refuses a non-finite residual or Jacobian as `invalid_trial_state`), so every certificate is byte-identical, F0's corpus included. A pair refused as `non_finite` was evaluated `ok` at both points, so it remains the registered pair of §4.8.3 (c)'s flat rule; without it, a column whose levels 0 and 1 are inadmissible could resolve on a flat-quantized finer level. In §4.8.3 (d) and in T06 §(A2), `<status>` may be `non_finite` as well as an `EvaluationResult.status`. Assertions Q2.A1-Q2.A8 (`tests/test_wit_witness.py`) are regression fixtures of the guard on a synthetic double; they validate no certificate.
 
 ---
 
@@ -241,6 +241,8 @@ row (on and off pattern). Levels are evaluated in increasing `k`. The column is 
 `k*` or `k* − 1` when a coarser complete stencil of that row was not flat, whether the registered pair or an evaluated
 level. The test is on the values, not the estimate: the accumulated estimate of a flat stencil is not always exactly
 0.0. A row that is independent of the column is flat at every level, the registered pair included, and is unaffected.
+A registered pair refused as `non_finite` (§4.8; both points evaluated `ok`) remains the registered pair of this rule,
+and a row with a NaN value in it counts as not flat. *(Amendment 2026-11-18, S19 design batch 1 Q2.)*
 
 **(d) Outcome.**
 
@@ -248,7 +250,8 @@ level. The test is on the values, not the estimate: the accumulated estimate of 
   `|Ĵ_ij − D̂_k*,i|`, off-pattern `|D̂_k*,i|`. They enter the two maxima and are judged against `τ_D`, as before.
 - *Unresolved* (no `k ≤ K_MAX`). The registered result of column `j` stands exactly as it is today. Either its values
   enter the maxima, or, when a registered point was refused, both checks are `unsupported` with the registered reason
-  `witness_stencil_<status>(<name>)`.
+  `witness_stencil_<status>(<name>)`, `<status>` the refused point's `EvaluationResult.status`, or `non_finite` when a
+  term of the column's difference is not finite (§4.8).
 
 **(e) Independence from the AD path.** The levels, `e_k`, `k*` and `D̂_k*` are functions of the compiled residual,
 `x_final`, `h_j` and the scales only. The AD Jacobian enters the trigger (a) and the comparison (d), never the

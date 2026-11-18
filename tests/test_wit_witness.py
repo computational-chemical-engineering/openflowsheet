@@ -586,6 +586,9 @@ def test_q2_a4_a_non_finite_component_column_escalates_and_resolves() -> None:
     checks, escalations = run(tear(injected, jacobian), state, components=("A", "B"))
     assert "S1.n.A" in escalations
     assert escalations["S1.n.A"].scaled is not None
+    assert escalations["S1.n.A"].level == 3
+    discrepancy = escalated_discrepancy(escalations["S1.n.A"], "S1.n.A", jacobian)
+    assert discrepancy == 5.759526189308417e-11  # bitwise
     for which in ("on_pattern", "off_pattern"):
         assert checks[f"derivative_witness.{which}"].result == "pass"
 
@@ -601,3 +604,64 @@ def test_q2_a6_without_injection_the_witness_is_bitwise_unchanged() -> None:
     checks, _ = run(tear(residual, jacobian), state)
     assert checks["derivative_witness.on_pattern"].value == 2.3646862246096134e-09  # bitwise
     assert checks["derivative_witness.off_pattern"].value == 0.0  # bitwise
+
+
+def _refused_at(
+    residual: Callable[[Sequence[float]], list[float] | None],
+    base: Sequence[float],
+    column: int,
+    shifts: Sequence[float],
+) -> Callable[[Sequence[float]], list[float] | None]:
+    """`residual` refused (None) at every point whose `column` coordinate is exactly
+    `base[column] + s h` for `s` in `shifts`, computed as `_stencil` does (see `_injected`)."""
+    h = FD_RELATIVE_STEP * COLUMN_SCALE[COLUMNS[column]]
+    refused = set()
+    for shift in shifts:
+        point = np.array(base, dtype=float)
+        point[column] += shift * h
+        refused.add(float(point[column]))
+
+    def wrapped(x: Sequence[float]) -> list[float] | None:
+        return None if x[column] in refused else residual(x)
+
+    return wrapped
+
+
+def test_q2_a7_a_resolved_escalation_with_a_non_finite_term_is_refused_as_non_finite() -> None:
+    """The second call site: S1.n.A's registered point x + h refused, so the column escalates
+    (levels 0 and 1 hold x + h) and resolves at a finer level; the AD entry (R1, S1.n.A) is NaN, so
+    the resolved difference has a non-finite term and the column is refused as non_finite."""
+    state, residual, jacobian, base = _w0()
+    refused = _refused_at(residual, base, 0, (1.0,))
+    checks, escalations = run(
+        tear(refused, {**jacobian, ("R1", "S1.n.A"): math.nan}), state, components=("A", "B")
+    )
+    assert "S1.n.A" in escalations
+    assert escalations["S1.n.A"].scaled is not None
+    _assert_non_finite(checks, "S1.n.A")
+
+
+def test_q2_a8_a_non_finite_registered_pair_stays_the_coarser_reference() -> None:
+    """§4.8.3 (c): S1.n.A's registered pair is evaluated `ok` but refused as non_finite (R2 is NaN
+    at x + h), so it stays the coarser reference of the flat rule. Levels 0 to 2 are inadmissible
+    (refused at x + 2h and x + h/2), and R1 is quantized flat within |dx| < 0.3 h, so every later
+    level is flat in R1, which varied across the registered pair: each is barred, the column stays
+    unresolved and both checks `unsupported` (not resolved on a flat R1 estimate of 0)."""
+    state, residual, jacobian, base = _w0()
+    h = FD_RELATIVE_STEP * COLUMN_SCALE["S1.n.A"]
+    plateau = residual(base)
+    assert plateau is not None
+    refused = _refused_at(_injected(residual, base, 0, {(1.0, 1): math.nan}), base, 0, (2.0, 0.5))
+
+    def quantized(x: Sequence[float]) -> list[float] | None:
+        values = refused(x)
+        if values is not None and 0.0 < abs(x[0] - base[0]) < 0.3 * h:
+            values[0] = plateau[0]
+        return values
+
+    checks, escalations = run(tear(quantized, jacobian), state, components=("A", "B"))
+    escalation = escalations["S1.n.A"]
+    assert escalation.admissible == (False,) * 3 + (True,) * (ESCALATION_LEVELS - 2)
+    assert escalation.barred == (False,) * 3 + (True,) * (ESCALATION_LEVELS - 2)
+    assert escalation.level is None and escalation.scaled is None
+    _assert_non_finite(checks, "S1.n.A")

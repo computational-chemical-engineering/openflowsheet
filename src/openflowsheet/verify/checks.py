@@ -1355,7 +1355,8 @@ def _column_witness(frame: _WitnessFrame, column: int, name: str, forward: bool)
             step,
             column_scale,
             [frame.scaling_row[row_id] for row_id in frame.row_ids],
-            registered=points if refusal is None else None,
+            # §4.8.3 (c): a pair refused as non_finite was evaluated, so it stays the reference.
+            registered=points if refusal in (None, "non_finite") else None,
         )
         if escalation.scaled is not None:
             maxima = _discrepancies(
@@ -1400,7 +1401,8 @@ def _not_a_pass(refusal: str | None, on: float, off: float) -> bool:
 
 def _witness_unsupported(reason: str) -> list[CheckResult]:
     """Both witness checks `unsupported` with `reason` (T06 spec §8.2; ADR 0014 D5): a stencil
-    point the compiled function cannot evaluate."""
+    point the compiled function cannot evaluate, or a column whose difference has a non-finite
+    term (`non_finite`, K04 §4.8)."""
     return [
         unsupported(
             id=f"derivative_witness.{which}",
