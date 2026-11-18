@@ -76,8 +76,11 @@ duplication (twin merge: addendum for Frank); certificate, checks, split_checks 
    (G-MAP 6 PASS). Still to do: re-pin cce-code-health
    to 9a4605f (optional, stricter new-brain matching, no score change).
 2. DONE 2026-11-18: WITNF on main (a283925c, pushed; both NaN cards executed; main merged into wp/S19 as 170709bc).
-3. 0.5 (ofs-s19-start-05): starts after step 1; Frank's roadmap ADR 0057 (X07a, X01, F3, F2, F8, X06). Write
-   `executed` when the first 0.5 package is started.
+3. 0.5 (ofs-s19-start-05, A, VERIFIED): may start now (main a283925c). Roadmap ADR 0057; `docs/progress.md` "0.5
+   line": F1 merged, next F3 (component data, ADR 0061) then F2 (ADR 0062); X07a needs the `workflow` scope. First
+   step: read ADR 0061's status and whether an F3 spec exists; brief the design lane (specifier) or the engineer.
+   Write `executed` on the card when the first 0.5 package starts. One 0.5 agent + one trailing S19 lane (2 max
+   until Thu 19 Nov 13:00).
 4. Trailing S19 at one lane (ofs-s19-trailing-order): G3, G4, G2 (non-legacy), W5, G1 after the scale probe, docs.
 **Open for Frank (not blocking):** proposal 2 (selection widening; selected gates ~600 s vs 300 s); R-1042 option C;
 STOP 1 alternative; verify twins addendum; thermo/ below 7.0 only in W5; optional forbid rule cli/serving -> services;
