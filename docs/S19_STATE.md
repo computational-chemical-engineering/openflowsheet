@@ -76,12 +76,15 @@ duplication (twin merge: addendum for Frank); certificate, checks, split_checks 
    (G-MAP 6 PASS). Still to do: re-pin cce-code-health
    to 9a4605f (optional, stricter new-brain matching, no score change).
 2. DONE 2026-11-18: WITNF on main (a283925c, pushed; both NaN cards executed; main merged into wp/S19 as 170709bc).
-3. 0.5 (ofs-s19-start-05, A, VERIFIED): may start now (main a283925c). Roadmap ADR 0057; `docs/progress.md` "0.5
-   line": F1 merged, next F3 (component data, ADR 0061) then F2 (ADR 0062); X07a needs the `workflow` scope. First
-   step: read ADR 0061's status and whether an F3 spec exists; brief the design lane (specifier) or the engineer.
-   Write `executed` on the card when the first 0.5 package starts. One 0.5 agent + one trailing S19 lane (2 max
-   until Thu 19 Nov 13:00).
-4. Trailing S19 at one lane (ofs-s19-trailing-order): G3, G4, G2 (non-legacy), W5, G1 after the scale probe, docs.
+3. 0.5 STARTED 2026-11-18: F3-WO1 (record model) on `wp/F3` (worktree `f3`, from main a283925c, brief
+   `docs/briefs/F3-WO1.md`, build log `docs/F3_DECISIONS.md`), opus-engineer running, built on ADR 0061's Proposed
+   text. DECISION-REQUEST to hub: accept ADR 0061 (card suggested ofs-f3-accept-adr0061); F3 merges only after it.
+   Then: design-lane `reviewer` on WO1, F3-WO2/WO3, card for ADR 0062 (F2) near F3 close-out. Write `executed` on
+   ofs-s19-start-05 (not yet done: needs ArtifactData on the desk).
+4. Trailing S19 at one lane (ofs-s19-trailing-order): G3 run 3 running (`wp/S19-g3c` from 226ca985, brief
+   `S19-W3-G3-3.md`; ports de77fa37 + drafts g3-run2, then trf `_run`, `optimize_revision`); on its report: `$Q wait
+   --since 264` in the background, reviewer (run_study RC step), merge-check, merge. Then G4, G2 (non-legacy), W5,
+   G1 after the scale probe, docs.
 **Open for Frank (not blocking):** proposal 2 (selection widening; selected gates ~600 s vs 300 s); R-1042 option C;
 STOP 1 alternative; verify twins addendum; thermo/ below 7.0 only in W5; optional forbid rule cli/serving -> services;
 **Notes:** as before (STOP 1 no-gain; ruff before a merge-check; helper merge only if wp/S19 changed only docs since;
