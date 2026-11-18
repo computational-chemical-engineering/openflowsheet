@@ -2641,3 +2641,9 @@
 ## 2026-11-18 resume after reset
 
 Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g3f started. F3 fix round 3 launched (opus-engineer, brief docs/briefs/F3-fix3.md at wp/F3 e73368c2).
+- **2026-11-18 ~13:15, G3 run 6 merged into wp/S19 (a8109c80):** jobs 303 (g3r6-revfix, no-gain, step 329
+  accepted-neutral) and 304 (g3r6-mc, merge-check, full suite, debt over touched files 254.6 -> 154.2) PASS. Gate
+  report (6 h, 23 gates, 1 failed = job 291): `ALERT selected share 45% < 75% of step gates` (11 full-suite
+  fallbacks, all import-time code: studies/, proposal 2) and `ALERT queue wait median 19 min > 15 min` (8-step burst
+  on 2 slots): standing, no action. G3 run 7 launched (opus-engineer, brief S19-W3-G3-7.md, base a8109c80, lane
+  wp/S19-g3g).
