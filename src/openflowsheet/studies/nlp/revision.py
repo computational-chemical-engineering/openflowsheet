@@ -222,19 +222,12 @@ def optimize_revision(
         ),
     }
     record = _Record(directory, sha, identity, request, document) if directory else None
-
-    def finish(report: OptimizationReport, points: tuple[StartPoints, ...]) -> OptimizationOutcome:
-        # §4.10: the `record` stage begins before the report and the manifest are written, so
-        # an interruption there leaves neither.
-        check()
-        progress("record", {"status": report.status})
-        return _finish(record, report, points)
-
+    optimization = _OptimizationRun(check, progress, record)
     progress("resolve", {"ready": static.ready, "codes": list(static.codes)})
     if not static.ready or static.formulation is None or static.decisions is None:
         reasons = static.reasons or _not_run(static)
         report = _unsupported(parsed, static, revision, reasons, document=document)
-        return finish(report, ())
+        return optimization.finish(report, ())
     formulation = static.formulation
     sink = _Sink() if record is not None else None
     host = RevisionNlpHost(
@@ -277,7 +270,7 @@ def optimize_revision(
             assessment=assessment_record(formulation, bound.closure(host, starts, static.solver)),
         )
         points = tuple(StartPoints(start.point, None) for start in starts)
-        return finish(report, points)
+        return optimization.finish(report, points)
     if len(failures) == len(starts):
         reasons = tuple(
             ReadinessReason("SIMULATION_NOT_READY", failures[index], f"start {index}")
@@ -288,7 +281,7 @@ def optimize_revision(
             parsed, static, revision, reasons, formulation, refused, host.model_record()
         )
         points = tuple(StartPoints(start.point, None) for start in starts)
-        return finish(report, points)
+        return optimization.finish(report, points)
 
     check()
     adapter = importlib.import_module(ADAPTER_MODULE)
@@ -312,7 +305,7 @@ def optimize_revision(
             parsed, static, revision, reasons, formulation, refused, host.model_record()
         )
         points = tuple(StartPoints(start.point, None) for start in starts)
-        return finish(report, points)
+        return optimization.finish(report, points)
     runs: list[Any] = []
     evidence: list[StartEvidence] = []
     for index, readiness in enumerate(starts):
@@ -399,7 +392,27 @@ def optimize_revision(
         )
         for readiness, run in zip(starts, runs, strict=True)
     )
-    return finish(report, points)
+    return optimization.finish(report, points)
+
+
+@dataclass
+class _OptimizationRun:
+    """`optimize_revision`'s run: the stage calls (`check`, `progress`) and the record (`None`
+    without a directory), with the closing stage as a method. `finish` writes the record's
+    report and manifest."""
+
+    check: Callable[[], None]
+    progress: Progress
+    record: _Record | None
+
+    def finish(
+        self, report: OptimizationReport, points: tuple[StartPoints, ...]
+    ) -> OptimizationOutcome:
+        # §4.10: the `record` stage begins before the report and the manifest are written, so
+        # an interruption there leaves neither.
+        self.check()
+        self.progress("record", {"status": report.status})
+        return _finish(self.record, report, points)
 
 
 def _start_failure(
