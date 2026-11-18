@@ -320,24 +320,144 @@ def couple(
         )
         / scales
     )
-    record: list[dict[str, Any]] = []
     start = (
         [value for _ in units for value in block.initial]
         if initial is None
         else [value for unit in units for value in initial[unit]]
     )
-    u = np.array(start, dtype=np.float64) / scales
-    b_matrix = -np.eye(m2)
+    run = _Outer(
+        units=units,
+        block=block,
+        solve_inner=solve_inner,
+        evaluate=evaluate,
+        scales=scales,
+        lower=lower,
+        upper=upper,
+        m2=m2,
+        u=np.array(start, dtype=np.float64) / scales,
+        b_matrix=-np.eye(m2),
+    )
+
+    while True:
+        if on_iteration is not None:
+            on_iteration(run.k, block.max_outer)
+        halvings = 0
+        while True:  # the trial at u, halved back towards `base` on a failure
+            w = _w_of(run.u, units, scales)
+            inner = solve_inner(w, None if run.base is None else run.base.inner.state)
+            failure: str | None = None
+            accepted: tuple[Vector, float, dict[str, ExternalAnswer], dict[str, Any]] | None
+            accepted = None
+            if not inner.converged:
+                item = run.entry(run.u, inner, {})
+                if run.base is None:
+                    # §4.4: an inner failure at k = 0 passes its own outcome through.
+                    return run.end(inner.outcome, None, inner, run.u)
+                failure = "inner_failed"
+            else:
+                answers, unit_entries, r_hat, rho, failure, transient = _experiments(
+                    units, inner, evaluate, w, block
+                )
+                if transient is not None:
+                    run.entry(run.u, inner, unit_entries)
+                    return run.end("EVALUATION_ERROR", transient, inner, run.u)
+                item = run.entry(run.u, inner, unit_entries)
+                if failure is None:
+                    item["rho"] = rho
+                    accepted = (r_hat, rho, answers, item)
+                elif run.base is None:
+                    # No iterate to halve back towards: a refusal at the start ends the run.
+                    return run.end("COUPLING_NOT_CONVERGED", failure, inner, run.u)
+            if accepted is not None:
+                break
+            assert run.base is not None and failure is not None
+            if halvings == BACKTRACKS:
+                return run.end("COUPLING_NOT_CONVERGED", failure, inner, run.u)
+            halvings += 1
+            run.u = run.base.u + 0.5 * (run.u - run.base.u)
+            item["step"] = {
+                "kind": "backtrack",
+                "du": [float(v) for v in run.u - run.base.u],
+                "B": None,
+            }
+
+        r_hat, rho, answers, item = accepted
+        run.accepted_count += 1
+        point = _Point(k=run.k, u=run.u.copy(), inner=inner, r_hat=r_hat, rho=rho)
+        if rho <= 1.0:
+            item["step"] = {"kind": "converged", "du": None, "B": None}
+            return run.end("CONVERGED", None, inner, run.u, answers)
+        if run.k == block.max_outer - 1:
+            return run.end("COUPLING_NOT_CONVERGED", "max_outer", inner, run.u)
+        rose = run.best is not None and rho > run.best.rho
+        if run.best is not None and rose and run.k >= 2 * m2:
+            if run.reset_last:
+                return run.end("COUPLING_NOT_CONVERGED", "no_decrease", inner, run.u)
+            run.b_matrix = -np.eye(m2)
+            step_from, kind, run.reset_last = run.best, "reset", True
+        else:
+            # §14.5 D5 (R-305): a rise inside the first 2n iterations (n = 2m, Gay's bound for
+            # Broyden on an affine map) does not reset; B is updated as usual and the best
+            # iterate does not move.
+            if run.base is not None:
+                du = point.u - run.base.u
+                denominator = float(du @ du)
+                if denominator == 0.0:
+                    # A zero secant step (a step clipped back onto its base): the update is
+                    # undefined.
+                    return run.end("COUPLING_NOT_CONVERGED", "broyden_singular", inner, run.u)
+                run.b_matrix = run.b_matrix + np.outer(
+                    (point.r_hat - run.base.r_hat) - run.b_matrix @ du, du
+                ) / (denominator)
+            if not rose:
+                run.best = point
+            step_from, kind, run.reset_last = point, "broyden", False
+        try:
+            step = np.linalg.solve(run.b_matrix, -step_from.r_hat)
+        except np.linalg.LinAlgError:
+            return run.end("COUPLING_NOT_CONVERGED", "broyden_singular", inner, run.u)
+        if not np.all(np.isfinite(step)):
+            return run.end("COUPLING_NOT_CONVERGED", "broyden_singular", inner, run.u)
+        u_next = np.clip(step_from.u + step, lower, upper)
+        item["step"] = {
+            "kind": kind,
+            "du": [float(v) for v in u_next - step_from.u],
+            "B": [[float(v) for v in row] for row in run.b_matrix],
+        }
+        run.base = step_from
+        run.u = u_next
+        run.k += 1
+
+
+@dataclass
+class _Outer:
+    """One `couple` call's outer iteration: the frame its trials and updates read, and the state
+    that crosses iterations (the iterate `u`, the Broyden matrix, the best and base points, the
+    reset flag, `k`, the accepted count and the record)."""
+
+    units: Sequence[str]
+    block: CouplingBlock
+    solve_inner: InnerSolver
+    evaluate: Evaluate
+    scales: Vector
+    lower: Vector
+    upper: Vector
+    m2: int
+    u: Vector
+    b_matrix: Vector
     best: _Point | None = None
     base: _Point | None = None  # the iterate the current step was taken from
-    reset_last = False
-    k = 0
-    accepted_count = 0
+    reset_last: bool = False
+    k: int = 0
+    accepted_count: int = 0
+    record: list[dict[str, Any]] = field(default_factory=list)
 
-    def entry(u_at: Vector, inner: InnerSolve, unit_entries: Mapping[str, Any]) -> dict[str, Any]:
-        w_at = u_at * scales
+    def entry(
+        self, u_at: Vector, inner: InnerSolve, unit_entries: Mapping[str, Any]
+    ) -> dict[str, Any]:
+        w_at = u_at * self.scales
         item: dict[str, Any] = {
-            "k": k,
+            "k": self.k,
             "w": [float(value) for value in w_at],
             "u": [float(value) for value in u_at],
             "inner": inner.as_document(),
@@ -345,10 +465,11 @@ def couple(
             "rho": None,
             "step": {"kind": "none", "du": None, "B": None},
         }
-        record.append(item)
+        self.record.append(item)
         return item
 
     def end(
+        self,
         outcome: str,
         reason: str | None,
         final: InnerSolve | None,
@@ -358,98 +479,12 @@ def couple(
         return CouplingRun(
             outcome=outcome,
             reason=reason,
-            iterations=tuple(record),
+            iterations=tuple(self.record),
             final=final,
-            w=_w_of(u_at, units, scales),
+            w=_w_of(u_at, self.units, self.scales),
             answers=dict(answers or {}),
-            outer_iterations=accepted_count,
+            outer_iterations=self.accepted_count,
         )
-
-    while True:
-        if on_iteration is not None:
-            on_iteration(k, block.max_outer)
-        halvings = 0
-        while True:  # the trial at u, halved back towards `base` on a failure
-            w = _w_of(u, units, scales)
-            inner = solve_inner(w, None if base is None else base.inner.state)
-            failure: str | None = None
-            accepted: tuple[Vector, float, dict[str, ExternalAnswer], dict[str, Any]] | None
-            accepted = None
-            if not inner.converged:
-                item = entry(u, inner, {})
-                if base is None:
-                    # §4.4: an inner failure at k = 0 passes its own outcome through.
-                    return end(inner.outcome, None, inner, u)
-                failure = "inner_failed"
-            else:
-                answers, unit_entries, r_hat, rho, failure, transient = _experiments(
-                    units, inner, evaluate, w, block
-                )
-                if transient is not None:
-                    entry(u, inner, unit_entries)
-                    return end("EVALUATION_ERROR", transient, inner, u)
-                item = entry(u, inner, unit_entries)
-                if failure is None:
-                    item["rho"] = rho
-                    accepted = (r_hat, rho, answers, item)
-                elif base is None:
-                    # No iterate to halve back towards: a refusal at the start ends the run.
-                    return end("COUPLING_NOT_CONVERGED", failure, inner, u)
-            if accepted is not None:
-                break
-            assert base is not None and failure is not None
-            if halvings == BACKTRACKS:
-                return end("COUPLING_NOT_CONVERGED", failure, inner, u)
-            halvings += 1
-            u = base.u + 0.5 * (u - base.u)
-            item["step"] = {"kind": "backtrack", "du": [float(v) for v in u - base.u], "B": None}
-
-        r_hat, rho, answers, item = accepted
-        accepted_count += 1
-        point = _Point(k=k, u=u.copy(), inner=inner, r_hat=r_hat, rho=rho)
-        if rho <= 1.0:
-            item["step"] = {"kind": "converged", "du": None, "B": None}
-            return end("CONVERGED", None, inner, u, answers)
-        if k == block.max_outer - 1:
-            return end("COUPLING_NOT_CONVERGED", "max_outer", inner, u)
-        rose = best is not None and rho > best.rho
-        if best is not None and rose and k >= 2 * m2:
-            if reset_last:
-                return end("COUPLING_NOT_CONVERGED", "no_decrease", inner, u)
-            b_matrix = -np.eye(m2)
-            step_from, kind, reset_last = best, "reset", True
-        else:
-            # §14.5 D5 (R-305): a rise inside the first 2n iterations (n = 2m, Gay's bound for
-            # Broyden on an affine map) does not reset; B is updated as usual and the best
-            # iterate does not move.
-            if base is not None:
-                du = point.u - base.u
-                denominator = float(du @ du)
-                if denominator == 0.0:
-                    # A zero secant step (a step clipped back onto its base): the update is
-                    # undefined.
-                    return end("COUPLING_NOT_CONVERGED", "broyden_singular", inner, u)
-                b_matrix = b_matrix + np.outer((point.r_hat - base.r_hat) - b_matrix @ du, du) / (
-                    denominator
-                )
-            if not rose:
-                best = point
-            step_from, kind, reset_last = point, "broyden", False
-        try:
-            step = np.linalg.solve(b_matrix, -step_from.r_hat)
-        except np.linalg.LinAlgError:
-            return end("COUPLING_NOT_CONVERGED", "broyden_singular", inner, u)
-        if not np.all(np.isfinite(step)):
-            return end("COUPLING_NOT_CONVERGED", "broyden_singular", inner, u)
-        u_next = np.clip(step_from.u + step, lower, upper)
-        item["step"] = {
-            "kind": kind,
-            "du": [float(v) for v in u_next - step_from.u],
-            "B": [[float(v) for v in row] for row in b_matrix],
-        }
-        base = step_from
-        u = u_next
-        k += 1
 
 
 class _Experiments(NamedTuple):
