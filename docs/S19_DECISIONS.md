@@ -2499,3 +2499,8 @@
   (E-F3-10, E-F3-12; opus-engineer), WO5b the five operations on four transports, assess_rights, wiring and the
   items deferred to WO5 in F3_DECISIONS (E-F3-11; opus-engineer, contract-touching). Then WO7 close-out and the
   package reviewer.
+- **2026-11-18, G3 run 4 gated: jobs 275-282 all PASS** (steps 308-315 accepted). Gate report 08:23 (6 h, 18 gates,
+  0 failed): `ALERT selected share 71% < 75% of step gates`, `ALERT queue wait median 15 min > 15 min`. Causes: the 5
+  full-suite fallbacks are all import-time code (studies/ modules with module-level code; inherent to these targets,
+  proposal 2 covers it); the wait is one 8-step chain enqueued in a burst onto 2 slots (26% busy), as at run 3. No
+  action. Review R-W3-G3-4 (reviewer, Opus) launched, brief `<git-common-dir>/codehealth/briefs/S19-R-W3-G3-4.md`.
