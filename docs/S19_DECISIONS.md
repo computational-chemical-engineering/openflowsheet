@@ -2672,3 +2672,7 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   allowlist, six nullary caches), F3-3-2 (Q26 stoichiometry map), F3-3-3 (rollback as try/finally), F3-3-4 (local.py
   duplication left). Full suite at 05ccf880 serial: 20771 passed, 2 failed (expected human-review red; manifest schema,
   fixed after). Ruling round 2 (reviewer, Opus) launched: brief wp/F3 docs/briefs/F3-rulings-2.md (c946bfec).
+- **2026-11-18, G3 run 7 merged into wp/S19 (c7945474):** merge-check 313 (g3r7-mc) PASS, full suite, debt over
+  touched files 325.6 -> 202.5. Gate report (6 h, 24 gates, 1 failed = job 291): the two standing ALERTs (selected
+  52%, queue wait 19 min), no action. G3 run 8 launched (opus-engineer, brief S19-W3-G3-8.md, base c7945474, lane
+  wp/S19-g3h; step 1 the two pinning tests R-W3-G3-7 owes).
