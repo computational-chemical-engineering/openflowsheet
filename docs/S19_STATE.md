@@ -56,21 +56,27 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 - Held until the scale probe reports: G1 (orchestrator/, numerics/). Open: ptc.py 6.8 (P3, P4).
 - G-END (below) stays the end criterion for the whole repository.
 
-## Next actions (2026-11-18 ~17:00; earlier: the blocking set for 0.5 done 2026-11-17)
+## Next actions (2026-11-18 ~19:00; earlier: the blocking set for 0.5 done 2026-11-17)
 
-**Position:** wp/S19 = G3 run 8 merged (3edcf23b) plus docs (50bc8c6a). Engineer's scan at run 8's head b3f304bd:
-debt 4134.8, health 8.34, brain 18; studies/ below 7.0 only nlp/verification.py 6.1 (verify_candidate 33.7 stays,
-ruling R-W3-G3-5 (b)). MB 756e1c12. Runner PID 2763884; queue empty at result 308. G3 run 9 engineer
-(opus-engineer) running on `wp/S19-g3i` (worktree s19-g3i from 50bc8c6a, brief S19-W3-G3-9.md). Background shell:
-`gh run watch 44326799399` (F3 CI; prints CONCLUSION and the non-green jobs).
-**Blocking set (Frank, 2026-11-15) done** (W4, 0 cycles/violations, G5, G6; residues and owners as in S19_DECISIONS
-2026-11-17).
+**Position:** wp/S19 = G3 run 9 merged (9f41b5ed) plus docs. **G3 closed** (studies/ below 7.0 only
+nlp/verification.py 6.1, ruled). Orchestrator scan at 9f41b5ed: debt 4060.5, health 8.35, brain 18, 20 files below
+7.0 (assessment/cost contributor 2.8, sets 4.7; thermo pr_c1 4.6, iapws95 6.2, coolprop_heos 6.4, pr_lib, wilson_ig
+6.9; models/syn001 column_unit 4.9, cascade_solve 6.6, conversion_reactor 6.6, kinetic_cstr 6.8, column_rows 6.9,
+mixer 6.9; models/revision_flowsheet 6.5; orchestrator executor 5.5, region 5.6, region_screen 6.3; numerics/ptc
+6.8; verify/gamma_phi_units 6.4). MB 756e1c12. Runner PID 2763884, queue empty at result 318. No agent of this
+session running; no background shell owed.
+**Blocking set (Frank, 2026-11-15) done.** G4 done except W5 files. G2 (non-legacy) empty: revision_flowsheet.py
+counted as legacy (S19_DECISIONS 2026-11-18 ~19:00), waits for Frank's legacy ruling.
 **Next:**
-1. G3 run 9: on the engineer's report, log it ("G3 run 9 delivered"), then `$Q wait --since 308 --idle
-   .../s19-g3i` in the background; on all PASS: gate report, review R-W3-G3-9 (brief from S19-R-W3-G3-8.md; S1 if
-   projection.py touched), fixes, ruff, merge-check (`--base 50bc8c6a`), merge, log. A test-only commit is not gated
-   (config forbids tests/*; precedent g3r8-1): check its tests at the head plus a negative control. Close G3 when
-   studies/ has no file below 7.0 except verification.py.
+1. W5 design ruling: one `specifier` (or `verdict`) pass with a brief file: Q1 of S19_DECISIONS (line ~33: one F0
+   M9 and registry_sha256 re-registration for a batch of behaviour-identical edits to the 35 frozen modules and the
+   45 registry-hashed files, `grep -n 'registry-hashed files wait for W5'`), how that squares with G-END's "F0 and
+   MCP digest identical", the B7 generator route, and the W5 work-order order. Non-models files (assessment/cost,
+   lca; thermo providers) first; the models/ part waits for Frank's legacy ruling.
+2. G1 beside it (hold lifted 2026-11-16, scale probe reported): orchestrator/ (executor 5.5, region 5.6,
+   region_screen 6.3) and numerics/ptc.py (6.8; R-W3-G1N-1: P2 to P4 must end >= 7.0, else a miss and P1
+   reverted). Brief from the last G1 brief (`ls <git-common-dir>/codehealth/briefs/ | grep G1`) and
+   docs/briefs/S19-G1-plan.md; S1 cadence (reviewer every chain).
 2. F3 (0.5, `wp/F3`, worktree `f3`): fix round 4 done, pushed 54eb696c (manifest `evidence/F3/361c6207.../`
    implemented). On CI 44326799399: if the only red is `test_every_description_is_reviewed_by_both_lanes` (and the
    informational codehealth job, F3-3-4 accepted debt), the package is ready except Frank's human review. A real

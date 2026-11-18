@@ -2748,3 +2748,21 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   Frank's human review: the REVIEW.json edit for card ofs-f3-mcp-descriptions-human (signed A, VERIFIED) waits for
   Frank to allow it or to edit the five `human` reviews himself; then `executed` on the card, CI green, manifest
   `tested`, merge card via hub.
+- **2026-11-18 ~19:00, G3 run 9 merged into wp/S19 (9f41b5ed); G3 closed.** Jobs 323-330 PASS, fix job 331 PASS
+  (no gain), merge-check g3r9-mc (job 332) PASS at 2f842a31 (touched-file debt 178.6 -> 104.3); wp/S19 changed only
+  docs since 50bc8c6a. Orchestrator scan at 9f41b5ed (`codehealth scan`, scope src/openflowsheet/*): 329 files,
+  debt 4060.5, health 8.35, brain 18, file smells 53; 20 files below 7.0, in studies/ only nlp/verification.py 6.1
+  (ruling R-W3-G3-5 (b)): G3's end condition met. Gate report (6 h): 28 gates, 0 failed; "ALERT selected share 71%"
+  (standing, proposal 2 for Frank); "ALERT queue wait median 28 min": gate.sh's clone-wide lock (a1059f16) serialises
+  the two slots (44% busy of 2 = about 88% of one), and each lane enqueues its 8-9 steps at once; no action while one
+  lane runs (engineers end after enqueueing).
+  G4: done since 2026-11-15 except its registry-hashed files (assessment/cost/*, lca/*: contributor.py 2.8, sets.py
+  4.7), which are W5. G2 (non-legacy): nothing left. DECISION: `models/revision_flowsheet.py` (6.5) counts as part of
+  the legacy models/ engine (it builds flowsheets from the legacy units and imports models.syn001; the std seed, ADR
+  0065, replaces them), so it waits with the rest of models/ for Frank's legacy ruling (2026-11-15 item 5).
+  Alternative: treat it as non-legacy and refactor it now. Reversible by: a G2 run on it. Non-legacy models/ files
+  (rows, lifted, lifted_tolerance, __init__) are all >= 8.5.
+  Next by Frank's order (G3, G4, G2, W5, G1, docs): W5 needs a design-lane ruling first (Q1: one M9 and
+  registry_sha256 re-registration for a batch of behaviour-identical edits, and how that squares with G-END's "F0
+  identical"); W5's models/ part also waits for Frank's legacy ruling. G1 (hold lifted 2026-11-16) can run beside
+  the W5 ruling.
