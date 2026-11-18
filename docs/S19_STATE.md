@@ -76,16 +76,26 @@ duplication (twin merge: addendum for Frank); certificate, checks, split_checks 
    (G-MAP 6 PASS). Still to do: re-pin cce-code-health
    to 9a4605f (optional, stricter new-brain matching, no score change).
 2. DONE 2026-11-18: WITNF on main (a283925c, pushed; both NaN cards executed; main merged into wp/S19 as 170709bc).
-3. 0.5 STARTED 2026-11-18: F3 on `wp/F3` (worktree `f3`, from main a283925c; build log `docs/F3_DECISIONS.md`).
-   Done: WO1 + review + fix1 (8ca21576), WO2 (1dfbfb5b), WO3 (9e41f012; 149 records). Running: WO4 (lock and rights,
-   brief `docs/briefs/F3-WO4.md`), first commit the orchestrator default for WO3-1 (one citation per legacy file).
-   Next: one design-lane ruling round on all F3 choices (fix1-1..4, WO2-1..9, WO3-1..7, WO4-*), then hub re-pins
-   card ofs-f3-accept-adr0061 once with the ruled ADR text; then WO5 (operations), WO7 close-out and the package
-   reviewer. Ruling round 1 done (5d085f05); B1-B7 running; card re-pinned (desk v3), option A verbatim: "accept ADR 0061 (F3 component data) as on wp/F3 at 5d085f05 (with the F3-WO1 review and F3 ruling round 1 applied), with ADR 0019 Amendment 8 (Records interface, five operations), so that F3 can merge into main" (ADR frozen). Card for
-   ADR 0062 (F2) near F3 close-out.
-4. Trailing S19 at one lane (ofs-s19-trailing-order): G3 run 3 merged (8cb44f62; scan 4591.7 / 8.25 / brain 23).
-   G3 run 4 running (`wp/S19-g3d` from 8cb44f62, brief `S19-W3-G3-4.md`); on its report: `$Q wait --since 274`,
-   reviewer, merge-check, merge. Then G4, G2 (non-legacy), W5, G1 after the scale probe, docs.
+3. 0.5 STARTED 2026-11-18: F3 on `wp/F3` (worktree `f3`, from main a283925c; build log `docs/F3_DECISIONS.md`,
+   briefs `docs/briefs/F3-*.md`). Done and ruled: WO1 (+review, fix1), WO2, WO3, WO4, ruling round 1
+   (`docs/reviews/F3-rulings-1.md`, ADR edits 5d085f05) and its B1-B7 (head 270b6534; 65-file battery 2010/0, F0
+   PASS; battery list in the orchestrator scratchpad `f3-tests.txt`: re-derive as the changed test files plus those
+   grepping catalogue|message_entry|schema_fixtures|registry_sha256|list_capabilities|check_admission).
+   Card ofs-f3-accept-adr0061 (desk v3) pinned to ADR 0061 at 5d085f05, option A verbatim: "accept ADR 0061 (F3
+   component data) as on wp/F3 at 5d085f05 (with the F3-WO1 review and F3 ruling round 1 applied), with ADR 0019
+   Amendment 8 (Records interface, five operations), so that F3 can merge into main". ADR frozen until signed.
+   **Next:** write and launch F3-WO5a (reactions.py + user-file importer, E-F3-10, E-F3-12; opus-engineer; brief in
+   the form of `docs/briefs/F3-WO4.md`, ADR not to be edited), then WO5b (five operations on four transports,
+   assess_rights, LocalApplication wiring, every "Left for WO5" item in F3_DECISIONS; E-F3-11, MCP digest
+   re-take), WO7 close-out (manifest, CI both legs), one package `reviewer` (open: R1-B6 da41b295, fix1 and WO2-WO4
+   choices already ruled). Card for ADR 0062 (F2) near close-out.
+4. Trailing S19 at one lane (ofs-s19-trailing-order): G3 run 4 (`wp/S19-g3d`, 8cb44f62..8eedd642): jobs 275-280
+   PASS, 281-282 queued at reset (a `wait --since 274` shell may still wake the session). nlp rule met (S19_DECISIONS
+   "nlp-marked suite"). **Next:** when 281-282 pass, gate report, then reviewer R-W3-G3-4 (brief in the form of
+   `S19-R-W3-G3-3.md`), fixes, merge-check, merge. Rule: lanes touching studies/ also need the nlp-marked suite at
+   head with failures a subset of base (script `nlp3b.sh` pattern: .venv-nlp env plus mpmath; base 2 failures
+   test_opt_cost_lca_nlp g19, g20). Then G4, G2 (non-legacy), W5, G1 after the scale probe, docs.
+**Open build-lane items:** `benchmarks/m03/nlp-test.lock` lacks mpmath (m03_nlp_check.sh fails collection); test_opt_cost_lca_nlp g19, g20 fail; no CI or gate runs nlp-marked tests (add an nlp gate tier).
 **Open for Frank (not blocking):** proposal 2 (selection widening; selected gates ~600 s vs 300 s); R-1042 option C;
 STOP 1 alternative; verify twins addendum; thermo/ below 7.0 only in W5; optional forbid rule cli/serving -> services;
 **Notes:** as before (STOP 1 no-gain; ruff before a merge-check; helper merge only if wp/S19 changed only docs since;

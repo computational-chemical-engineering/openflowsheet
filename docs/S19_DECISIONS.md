@@ -2491,3 +2491,11 @@
   `.venv` (script in the orchestrator scratchpad): 226ca985 (base), 8cb44f62 (G3 run 3 merged) and 8eedd642 (G3 run
   4 head) each 210 passed, 2 skipped, 2 failed, the same two (test_opt_cost_lca_nlp g19, g20; also at base, so
   pre-existing). G3 run 3 confirmed retroactively; G3 run 4 meets the nlp rule.
+- **2026-11-18, F3 rulings-1 B1-B7 done (opus-engineer, Opus, 190k):** 270b6534 on wp/F3; B1 moved exactly the two
+  parameter-set SHAs; register 9 rows; B4 repair notice, catalogue SHA re-taken; extra DECISION R1-B6 (da41b295):
+  the vetted-file A32 branch judges components only (open for the package design pass; revert da41b295 to undo).
+  F3 tests 216 passed 1 skipped; 65 files 2010 passed 0 failed; F0 PASS; ADR unchanged since 5d085f05.
+  Milestone: WO1-WO4 complete and ruled. Next WO5 (operations) split in two: WO5a reactions.py + user-file importer
+  (E-F3-10, E-F3-12; opus-engineer), WO5b the five operations on four transports, assess_rights, wiring and the
+  items deferred to WO5 in F3_DECISIONS (E-F3-11; opus-engineer, contract-touching). Then WO7 close-out and the
+  package reviewer.
