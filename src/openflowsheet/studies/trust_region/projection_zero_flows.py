@@ -117,12 +117,14 @@ class _Assembly:
 class _ZeroFlowRows:
     """The fixed row data of one `_eliminate_zero_flows` call, built once before its passes: the
     equation ids in spec order with each row's `position` there, each variable's `index` in
-    variable order, each built row's structural `incidence`, the `omitted` rows, the candidates
-    Z₀ (`zero`), and every row's residual and derivatives at x₀."""
+    variable order, the shape check's `unknowns` by name and each built row's structural
+    `incidence` over them (`_structural_incidence`), the `omitted` rows, the candidates Z₀
+    (`zero`), and every row's residual and derivatives at x₀."""
 
     equation_ids: tuple[str, ...]
     position: Mapping[str, int]
     index: Mapping[str, int]
+    unknowns: Mapping[str, Any]
     incidence: Mapping[str, frozenset[str]]
     omitted: Collection[str]
     zero: frozenset[str]
@@ -160,6 +162,7 @@ def _eliminate_zero_flows(
         equation_ids=spec.equation_ids,
         position={name: i for i, name in enumerate(spec.equation_ids)},
         index={name: i for i, name in enumerate(variable_ids)},
+        unknowns=unknowns,
         incidence=incidence,
         omitted=omitted,
         zero=frozenset(candidates),
@@ -175,10 +178,7 @@ def _eliminate_zero_flows(
         if row_data.zero <= found.keys():
             break
         # §18.1: the joint stage on the flows the passes leave.
-        joint = _joint_blocks(
-            spec, assembly, omitted, pins, found.keys(), row_data.zero, incidence, unknowns,
-            residuals_x0, derivatives,
-        )  # fmt: skip
+        joint = _joint_blocks(spec, assembly, row_data, pins, found.keys())
         if not joint:
             break
         if xi is None:
@@ -257,28 +257,27 @@ def _add_single_pins(
 def _joint_blocks(
     spec: ProblemSpec,
     assembly: _Assembly,
-    omitted: Collection[str],
+    row_data: _ZeroFlowRows,
     pins: Collection[str],
     eliminated: Collection[str],
-    zero: Collection[str],
-    incidence: Mapping[str, frozenset[str]],
-    unknowns: Mapping[str, Any],
-    residuals_x0: Mapping[str, float],
-    derivatives: _RowDerivatives,
 ) -> list[tuple[tuple[str, ...], tuple[str, ...]]]:
-    """§18.1 steps 1-3 up to certification: the candidate rows R_J with their numerical
-    incidence N_e, and the connected components of the bipartite graph (R_J, Z_J)
-    (`_components`), ordered by their first variable, rows in spec order and variables in
-    variable order."""
-    free = set(zero) - set(eliminated)
-    index = {name: i for i, name in enumerate(spec.variable_ids)}
+    """§18.1 steps 1-3 up to certification, on the call's fixed `row_data` and the kept rows
+    (not in `pins`) and zero flows (not in `eliminated`) the single pins leave: the candidate
+    rows R_J with their numerical incidence N_e, and the connected components of the bipartite
+    graph (R_J, Z_J) (`_components`), ordered by their first variable, rows in spec order and
+    variables in variable order."""
+    free = set(row_data.zero) - set(eliminated)
+    index = row_data.index
+    derivatives = row_data.derivatives
     numerical: dict[str, frozenset[str]] = {}
-    for e, row in enumerate(spec.equation_ids):
-        if row in omitted or row in pins:
+    for e, row in enumerate(row_data.equation_ids):
+        if row in row_data.omitted or row in pins:
             continue
-        if residuals_x0[row] != 0.0 or any(float(value) != 0.0 for value in derivatives.d[e]):
+        if row_data.residuals_x0[row] != 0.0 or any(
+            float(value) != 0.0 for value in derivatives.d[e]
+        ):
             continue
-        rest = incidence[row] - set(eliminated)
+        rest = row_data.incidence[row] - set(eliminated)
         columns = {k for k in rest if k in index and float(derivatives.x[e, index[k]]) != 0.0}
         if not columns or not columns <= free:
             continue
@@ -288,7 +287,7 @@ def _joint_blocks(
         if others:
             partials = differentiate(
                 assembly.built[row],
-                wrt_list=[unknowns[k] for k in others],
+                wrt_list=[row_data.unknowns[k] for k in others],
                 mode=Modes.reverse_numeric,
             )
             if any(float(value) != 0.0 for value in partials):
