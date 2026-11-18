@@ -56,7 +56,7 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 - Held until the scale probe reports: G1 (orchestrator/, numerics/). Open: ptc.py 6.8 (P3, P4).
 - G-END (below) stays the end criterion for the whole repository.
 
-## Next actions (2026-11-17 ~18:30, the blocking set for 0.5 done)
+## Next actions (2026-11-18 ~11:30; earlier: the blocking set for 0.5 done 2026-11-17)
 
 **Position:** G5 run 12 and G6 run 7 merged into wp/S19 as 517ab610 (review R-W3-G5-12, merge-check job 264 PASS).
 Scan 517ab610: debt 4670.7, health 8.24, brain 26, file smells 53, 27 files below 7.0; arch 0 violations, 0 cycles
@@ -85,17 +85,27 @@ duplication (twin merge: addendum for Frank); certificate, checks, split_checks 
    component data) as on wp/F3 at 5d085f05 (with the F3-WO1 review and F3 ruling round 1 applied), with ADR 0019
    Amendment 8 (Records interface, five operations), so that F3 can merge into main". ADR frozen until signed.
    WO5a done (02889a00; S19_DECISIONS). WO5b done (50e6ca04). Review 2 done (68ca5b98, `docs/reviews/F3-review-2.md`; R-1052..1057).
-   **Running:** fix round 2 C1-C12 (opus-engineer, brief `docs/briefs/F3-fix2.md` at bb45b09e). Then: record the
-   design-lane description reviews (review file section) in `REVIEW.json`, Frank's five via a card, WO7. Card
-   ofs-f3-qf1-rational-coefficients open (default A; nothing to build). Open for the design lane: `molar_mass_inconsistent`
+   Fix round 2 done (afde8883; S19_DECISIONS). **Next (F3):** (i) check the four C11 description files equal the
+   texts `docs/reviews/F3-review-2.md` section "The five MCP descriptions" gives (get_record accepted unchanged); if
+   so, record the design-lane reviews in `bindings/descriptions/REVIEW.json` (reviewer = the F3 review 2 pass, Fable,
+   68ca5b98) and send hub a DECISION-REQUEST for Frank's human review of the five served texts (paths + sha256);
+   (ii) brief WO7 close-out (Sonnet-able: `sonnet-implementer`): R-1051 heading and Decision to f7ec3c94, the
+   Amendment 8 `reserved_namespace` sentence (record variant, per R-105x), evidence manifest
+   `evidence/F3/<commit>/manifest.json` (form of `evidence/F1/a423093f`), push `wp/F3`, CI on both legs; manifest
+   `tested` only on CI green; (iii) then a merge card for Frank (via hub). Card ofs-f3-qf1-rational-coefficients
+   open (default A; nothing to build). Open for the design lane: `molar_mass_inconsistent`
    signature clash ADR 0061 vs 0062. **Then:** WO5b (five operations on four transports,
    assess_rights, LocalApplication wiring, every "Left for WO5" item in F3_DECISIONS; E-F3-11, MCP digest
    re-take), WO7 close-out (manifest, CI both legs), one package `reviewer` (open: R1-B6 da41b295, fix1 and WO2-WO4
    choices already ruled). Card for ADR 0062 (F2) near close-out.
 4. Trailing S19 at one lane (ofs-s19-trailing-order): G3 run 4 merged (43236b56; scan debt 4496.2, health 8.28,
-   brain 20, 25 files < 7.0). G3 run 5 merged (4fc833d9). **Running:** G3 run 6
-   (opus-engineer, `wp/S19-g3f` from 4fc833d9, brief `S19-W3-G3-6.md`, labels g3r6-*). **Next:** on delivery
-   `$Q wait --since 274 --idle .../s19-g3f`, gate report, nlp suite at head, reviewer, merge-check, merge. Rule: lanes touching studies/ also need the nlp-marked suite at
+   brain 20, 25 files < 7.0). G3 run 5 merged (4fc833d9). G3 run 6 (`wp/S19-g3f`,
+   4fc833d9..f10dbf31, 8 steps, 4 S1) delivered; gate jobs 289-296 running at reset (a `wait --since 274 --idle
+   .../s19-g3f` shell may wake the session; else `$Q status`). nlp rule met (engineer ran it at every step).
+   **Next:** when 289-296 pass: gate report, launch `reviewer` with the written brief
+   `<git-common-dir>/codehealth/briefs/S19-R-W3-G3-6.md`, fixes, merge-check (base 4fc833d9 if wp/S19 changed only
+   docs), merge. Then G3 run 7 (projection.py `project` 27.6, `_source_map` 15 params; trf `_run` 38.0;
+   revision_host `decision_map` 31.0; phase_rows 25.8) or G4. Rule: lanes touching studies/ also need the nlp-marked suite at
    head with failures a subset of base (script pattern `<git-common-dir>/codehealth/tools/nlp_suite_at.sh`, edit its commit list and scratch paths: .venv-nlp env plus mpmath; base 2 failures
    test_opt_cost_lca_nlp g19, g20). Then G4, G2 (non-legacy), W5, G1 after the scale probe, docs.
 **Open build-lane items:** `benchmarks/m03/nlp-test.lock` lacks mpmath (m03_nlp_check.sh fails collection); test_opt_cost_lca_nlp g19, g20 fail; no CI or gate runs nlp-marked tests (add an nlp gate tier).

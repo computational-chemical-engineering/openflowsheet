@@ -2582,3 +2582,12 @@
   verification.py (ruled residual). Engineer's scan 4414.3 -> 4313.9, health 8.31, brain 18. nlp-marked suite at
   every step 210 passed, 2 failed (g19, g20), as at its own base run: nlp rule met. Left: `project` 27.6,
   `_source_map` 15 params.
+- **2026-11-18, F3 fix round 2 done (opus-engineer, Opus, ~300k):** wp/F3 fbe3968e..afde8883, one commit per C1-C12
+  (each test fails with its change reverted). M1 alias file refused in 41 ms (v2) / 1 ms (v1), was > 90 s. F3 tests
+  pass; 71-file battery 2147 passed, 1 failed (description-review test: "10 open", the five F3 operations' design-lane
+  and human reviews); F0 PASS; mypy, arch 0/0; touched files >= 9.6. Moved: registry_sha256 c8d191de -> fc0af96b,
+  catalogue ff50954d -> 9ac09855, SNAPSHOT_F3 validate_record 900b2712 -> eb6a1cfa, D_10 248c2e74 -> f7ec3c94
+  (`without_f3` gives D_9), four description files (C11, the reviewer's text). DECISIONs F2-1..6; F2-3 (R-1051's
+  Evidence row edited, 97cbe41c) accepted by the orchestrator: F3's own entry, the evidence had to follow C11.
+  Left for WO7: R-1051 heading/Decision still name 248c2e74; Amendment 8's `reserved_namespace` sentence names only
+  the prefix; REVIEW.json reviews; manifest; CI.
