@@ -2833,3 +2833,14 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   intended (quoted in the report). Notes: the fix-4 falsifier used `pr_lib.py`'s `describe()` (cost/lca contributors
   have no generator-read `describe()`); the WO-N4 factory switch and B7's module names are constants citing the
   ruling (`predict_tables`). Merge-check enqueued (job 342, w5wo0-mc, full suite).
+- **2026-11-18 ~23:00, review R-W3-G1N-3 (reviewer, Opus, ~112k tokens): merge after one docstring fix.** rc_check
+  RESULT OK on A3, N3, P3 (RC5 counts as quoted); the retarget changes one line, A33 consistent at head; both early
+  returns exact negations (`k`, `stagnation_window` ints); P3's dropped initialisers safe (the base read them only on
+  `linear_solve_failed`/`bound_blocked`, and `_Rejected(reason, None, blocked, self.x, None, None, message)` passes
+  those values); `_Step` and `_evaluated` accepted. Fix 1 (`_Rejected` docstring, ptc.py:769) applied by the
+  orchestrator f0064645, gated no-gain (job 343); merge-check g1n3-mc queued behind it (job 344). Notes for run 4:
+  A4 needs its own retarget commit first (`event:acceleration@openflowsheet.numerics.anderson._RecycleRun._accelerated_step`);
+  ptc.py:599/601 dead initialisers `reason = None`, `failure_message = ""` (literal-counted) listed for later.
+  DECISION (reviewer's recommendation): N4 defines `_Step` once in newton.py and ptc imports it (ptc already imports
+  `_bound_aware_alpha`, `_trial_point` from newton), no twin. Alternative: two NamedTuples. Reversible by: a local
+  copy in ptc. `_accepted_trial`'s 3-tuple stays unless P4 reads it awkwardly.
