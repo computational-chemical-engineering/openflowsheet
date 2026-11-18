@@ -37,7 +37,7 @@ from __future__ import annotations
 import math
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
-from typing import Any, Final, Literal, Protocol, cast
+from typing import Any, Final, Literal, NamedTuple, Protocol, cast
 
 import numpy as np
 import numpy.typing as npt
@@ -632,11 +632,45 @@ def _feasibility(
     constraint_values: Mapping[str, float],
 ) -> tuple[dict[str, dict[str, float]], tuple[ActiveConstraint, ...], VerificationCheck]:
     """V3: the box exactly, `ĝ ≥ −τ_feas` on every inequality side of `constraints` (the
-    formulation's, then an assessment's admissibility rows), and the active set."""
+    formulation's, then an assessment's admissibility rows), and the active set (the box's, then
+    the inequalities'). The box part is `_box_feasibility`'s, the inequality part
+    `_constraint_feasibility`'s."""
+    box = _box_feasibility(formulation, decisions)
+    rows = _constraint_feasibility(constraints, constraint_values)
+    active = box.active + rows.active
+    return (
+        rows.slacks,
+        tuple(active),
+        VerificationCheck(
+            "V3",
+            "fail" if box.outside_box or rows.violated else "pass",
+            {
+                "outside_box": box.outside_box,
+                "violated": rows.violated,
+                "tau_feas": TAU_FEAS,
+                "tau_active": TAU_ACTIVE,
+                "active_set": [item.name for item in active],
+            },
+        ),
+    )
+
+
+class _BoxFeasibility(NamedTuple):
+    """`_box_feasibility`'s result: the `<parameter>:<side>` names of the box sides a decision is
+    outside, and the box sides it is active on, each in decision then side order."""
+
+    outside_box: list[str]
+    active: list[ActiveConstraint]
+
+
+def _box_feasibility(
+    formulation: NlpFormulation, decisions: Mapping[str, float]
+) -> _BoxFeasibility:
+    """V3's box part: per decision of `formulation` and finite side of its box (lower, then upper),
+    the scaled slack of its value in `decisions`; the side is outside when the slack is negative
+    (exactly, no tolerance) and active when `|slack| ≤ τ_active`."""
     active: list[ActiveConstraint] = []
     outside_box: list[str] = []
-    violated: list[str] = []
-    slacks: dict[str, dict[str, float]] = {}
     for decision in formulation.decisions:
         value = decisions[decision.parameter_id]
         for side, bound in (("lower", decision.lower), ("upper", decision.upper)):
@@ -655,6 +689,28 @@ def _feasibility(
                         slack,
                     )
                 )
+    return _BoxFeasibility(outside_box, active)
+
+
+class _ConstraintFeasibility(NamedTuple):
+    """`_constraint_feasibility`'s result: each constraint's slack per side, by constraint id, the
+    names of the violated sides, and the active sides, each in constraint then side order."""
+
+    slacks: dict[str, dict[str, float]]
+    violated: list[str]
+    active: list[ActiveConstraint]
+
+
+def _constraint_feasibility(
+    constraints: Sequence[InequalityConstraint], constraint_values: Mapping[str, float]
+) -> _ConstraintFeasibility:
+    """V3's inequality part: per constraint and declared side (lower, then upper), the slack of its
+    value in `constraint_values`; the side is violated when the slack is below `−τ_feas` and
+    active when `|slack| ≤ τ_active`. A one-sided constraint is named by its id, a two-sided one
+    by `<id>:<side>`."""
+    active: list[ActiveConstraint] = []
+    violated: list[str] = []
+    slacks: dict[str, dict[str, float]] = {}
     for constraint in constraints:
         value = constraint_values[constraint.constraint_id]
         sides = [
@@ -677,21 +733,7 @@ def _feasibility(
                 active.append(
                     ActiveConstraint(name, "constraint", constraint.constraint_id, side, slack)  # type: ignore[arg-type]
                 )
-    return (
-        slacks,
-        tuple(active),
-        VerificationCheck(
-            "V3",
-            "fail" if outside_box or violated else "pass",
-            {
-                "outside_box": outside_box,
-                "violated": violated,
-                "tau_feas": TAU_FEAS,
-                "tau_active": TAU_ACTIVE,
-                "active_set": [item.name for item in active],
-            },
-        ),
-    )
+    return _ConstraintFeasibility(slacks, violated, active)
 
 
 def _regimes(
