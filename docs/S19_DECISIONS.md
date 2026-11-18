@@ -2433,3 +2433,10 @@
   F3-WO1 review applied), with ADR 0019 Amendment 8 (Records interface, five operations), so that F3 can merge into
   main". The ADR text stays as at 8ca21576 until signed (else tell hub to re-pin). Fix1 choices fix1-1..4 wait for
   the package's design-lane pass.
+- **2026-11-18, review R-W3-G3-3 (reviewer, Opus, 99k): merge after fixes.** All 8 steps OK, no behaviour or
+  arithmetic moved. Fix 1 (rule 7): `evaluate`'s docstring names `_scored`, `_centre_evidence`; with it `_run`'s
+  names `_run_log` (note). Applied by the orchestrator as 02110a41 on wp/S19-g3c; job 273 no-gain, job 274
+  merge-check (full suite; base 226ca985, wp/S19 changed only docs since). Second RC step on `run_study` justified
+  (cog 29, NLOC 76): first the twin rungs both stages share as one method returning `StudyResult | None` (RC4,
+  rule 15), then Stage A whole only if cog still > 15; the stage-C loop stays in the caller (rule 11). Notes:
+  `_Linearization.n` duplicates `len(decision_ids)`, keep; `_run_log` could be `_after_solve` (optional).
