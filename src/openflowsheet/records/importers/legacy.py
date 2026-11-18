@@ -12,6 +12,11 @@ The committed **legacy index** (`records/legacy_index.json`, written by
 `available_records` is the legacy store's loader (`records.stack.LegacyStore`): it imports the
 profiled files available here (package data, or a source checkout) and refuses a file whose
 bytes or records differ from the index `legacy_record_drift(<file>, <id>)`.
+
+D12's parameter rows are public (`molar_mass`, `constant`, `constant_entry`, `correlation_entry`
+with `CP` and `PSAT`, `formation`, `note`, `number` and the v1 parameter names): the user-file
+adapter's v1 path (`importers.user_file`, F3-WO5a) maps a parameter D12 names through them, with
+its provenance from a `Classifier` of its own.
 """
 
 from __future__ import annotations
@@ -24,7 +29,7 @@ from functools import cache
 from importlib.resources import files
 from itertools import zip_longest
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Final
+from typing import TYPE_CHECKING, Any, Final, Protocol
 
 import yaml
 
@@ -78,15 +83,25 @@ _PARAMETER_KEYS: Final = frozenset(
 _LAMBDA_KEYS: Final = frozenset({"i", "j", "value", "provenance"})
 
 #: D4's correlation coefficients by form, each with the v1 parameter it is read from.
-_CP_COEFFICIENTS: Final = {f"b{k}": f"ideal_gas_cp_b{k}" for k in range(5)}
-_PSAT_COEFFICIENTS: Final = {name: f"vapour_pressure_{name}" for name in "abcd"}
-_CP_BOUNDS: Final = ("ideal_gas_cp_lower_temperature", "ideal_gas_cp_upper_temperature")
-_CRITICAL: Final = ("critical_temperature", "critical_pressure", "acentric_factor")
-_FORMATION: Final = "standard_formation_enthalpy"
+CP_COEFFICIENTS: Final = {f"b{k}": f"ideal_gas_cp_b{k}" for k in range(5)}
+PSAT_COEFFICIENTS: Final = {name: f"vapour_pressure_{name}" for name in "abcd"}
+CP_BOUNDS: Final = ("ideal_gas_cp_lower_temperature", "ideal_gas_cp_upper_temperature")
+CRITICAL: Final = ("critical_temperature", "critical_pressure", "acentric_factor")
+FORMATION: Final = "standard_formation_enthalpy"
 
 
 class LegacyImportError(ValueError):
     """A legacy file off D12's closed mapping, or a record D2 refuses: the message says where."""
+
+
+class Classifier(Protocol):
+    """What D12's parameter rows need of their file: the `provenance` of a field. A legacy file
+    classifies by its profile (`_File`); the user-file adapter (`importers.user_file`) by the
+    request's `defaults`."""
+
+    def provenance(self, field: str) -> dict[str, Any]:
+        """The provenance block of a value classified as `field`."""
+        ...
 
 
 @dataclass(frozen=True)
@@ -285,7 +300,7 @@ def _component(context: _File, record: Mapping[str, Any], position: int) -> dict
         "identifiers": identifiers,
         "amount_basis": "mol",
         "charge": 0,
-        "molar_mass": _molar_mass(context, record, where),
+        "molar_mass": molar_mass(context, record, where),
         "elements": record["elemental_composition"],
         "elemental_verification": record["elemental_verification"],
         **_MAPPINGS[context.profile.mapping](context, record["parameters"], where),
@@ -311,16 +326,16 @@ def _identifiers(profile: Profile, record: Mapping[str, Any], where: str) -> dic
     return {scheme: value for scheme, value in identifiers.items() if scheme not in dropped}
 
 
-def _molar_mass(context: _File, record: Mapping[str, Any], where: str) -> dict[str, Any]:
+def molar_mass(context: Classifier, record: Mapping[str, Any], where: str) -> dict[str, Any]:
     """The Constant of `molecular_weight`, its `note` ending with the component's v1
     `rights.source` (F3 decision WO4-0)."""
-    constant = _constant(context, "molar_mass", record["molecular_weight"], where)
-    constant["note"] = _note([record["molecular_weight"]], record["rights"]["source"])
-    return constant
+    mass = constant(context, "molar_mass", record["molecular_weight"], where)
+    mass["note"] = note([record["molecular_weight"]], record["rights"]["source"])
+    return mass
 
 
-def _constant(
-    context: _File, field: str, parameter: Mapping[str, Any], where: str
+def constant(
+    context: Classifier, field: str, parameter: Mapping[str, Any], where: str
 ) -> dict[str, Any]:
     """A Constant from one v1 parameter (D12's parameter rows): `value`, `unit`, `kind`,
     `meaning`, the provenance text as `note`, `uncertainty` null."""
@@ -332,7 +347,7 @@ def _constant(
         "uncertainty": None,
         "provenance": context.provenance(field),
         "meaning": parameter.get("meaning"),
-        "note": _note([parameter]),
+        "note": note([parameter]),
     }
 
 
@@ -348,7 +363,7 @@ def _parameter(parameter: object, where: str) -> None:
         raise LegacyImportError(f"{where}: role {parameter['role']!r} is not fixed")
 
 
-def _note(parameters: Iterable[Mapping[str, Any]], *more: str) -> str | None:
+def note(parameters: Iterable[Mapping[str, Any]], *more: str) -> str | None:
     """D12's `note`: the distinct provenance texts of `parameters`, in their order, then the
     distinct texts of `more` (F3 decision WO4-0: a component's `rights.source`), joined by a
     newline; `None` when there is none."""
@@ -363,7 +378,7 @@ def _namespaced(
     if not isinstance(parameters, Mapping):
         raise LegacyImportError(f"{where}.parameters is not a mapping")
     entries = [
-        _constant_entry(
+        constant_entry(
             context, f"{context.profile.profile}.{name}", "parameters", parameter, f"{where}.{name}"
         )
         for name, parameter in parameters.items()
@@ -376,16 +391,14 @@ def _critical(
 ) -> dict[str, list[dict[str, Any]]]:
     """D12 `m01`, `l01`: Tc, Pc and the acentric factor constant entries; `ideal_gas_cp` with
     validity `{T: [lower, upper]}`; formation `ig`."""
-    _exactly(parameters, {*_CRITICAL, *_CP_COEFFICIENTS.values(), *_CP_BOUNDS, _FORMATION}, where)
+    _exactly(parameters, {*CRITICAL, *CP_COEFFICIENTS.values(), *CP_BOUNDS, FORMATION}, where)
     entries = [
-        _constant_entry(context, name, name, parameters[name], f"{where}.{name}")
-        for name in _CRITICAL
+        constant_entry(context, name, name, parameters[name], f"{where}.{name}")
+        for name in CRITICAL
     ]
-    bounds = [
-        _number(parameters[name], "K", "temperature", f"{where}.{name}") for name in _CP_BOUNDS
-    ]
-    entries.append(_correlation_entry(context, _CP, parameters, where, validity={"T": bounds}))
-    return {"entries": entries, "formation": _formation(context, parameters, where)}
+    bounds = [number(parameters[name], "K", "temperature", f"{where}.{name}") for name in CP_BOUNDS]
+    entries.append(correlation_entry(context, CP, parameters, where, validity={"T": bounds}))
+    return {"entries": entries, "formation": formation(context, parameters, where)}
 
 
 def _wilson(
@@ -393,14 +406,12 @@ def _wilson(
 ) -> dict[str, list[dict[str, Any]]]:
     """D12 `s10`, `s10-verification`: `ideal_gas_cp` (validity null), `vapour_pressure`,
     formation `ig`."""
-    _exactly(
-        parameters, {*_CP_COEFFICIENTS.values(), *_PSAT_COEFFICIENTS.values(), _FORMATION}, where
-    )
+    _exactly(parameters, {*CP_COEFFICIENTS.values(), *PSAT_COEFFICIENTS.values(), FORMATION}, where)
     entries = [
-        _correlation_entry(context, _CP, parameters, where, validity=None),
-        _correlation_entry(context, _PSAT, parameters, where, validity=None),
+        correlation_entry(context, CP, parameters, where, validity=None),
+        correlation_entry(context, PSAT, parameters, where, validity=None),
     ]
-    return {"entries": entries, "formation": _formation(context, parameters, where)}
+    return {"entries": entries, "formation": formation(context, parameters, where)}
 
 
 def _none(
@@ -421,8 +432,8 @@ def _exactly(parameters: object, names: set[str], where: str) -> None:
         raise LegacyImportError(f"{where}.parameters: missing {missing}")
 
 
-def _constant_entry(
-    context: _File, prop: str, field: str, parameter: Mapping[str, Any], where: str
+def constant_entry(
+    context: Classifier, prop: str, field: str, parameter: Mapping[str, Any], where: str
 ) -> dict[str, Any]:
     """A constant entry of property `prop` from one parameter, classified as `field`."""
     return {
@@ -430,12 +441,12 @@ def _constant_entry(
         "phase": None,
         "form": "constant",
         "validity": None,
-        **_constant(context, field, parameter, where),
+        **constant(context, field, parameter, where),
     }
 
 
 @dataclass(frozen=True)
-class _Correlation:
+class Correlation:
     """A core property built from several parameters: its form, phase and coefficients."""
 
     property: str
@@ -444,13 +455,13 @@ class _Correlation:
     coefficients: Mapping[str, str]
 
 
-_CP: Final = _Correlation("ideal_gas_cp", "cp_ig_poly4_theta", "ig", _CP_COEFFICIENTS)
-_PSAT: Final = _Correlation("vapour_pressure", "ln_psat_abcd_theta", "l", _PSAT_COEFFICIENTS)
+CP: Final = Correlation("ideal_gas_cp", "cp_ig_poly4_theta", "ig", CP_COEFFICIENTS)
+PSAT: Final = Correlation("vapour_pressure", "ln_psat_abcd_theta", "l", PSAT_COEFFICIENTS)
 
 
-def _correlation_entry(
-    context: _File,
-    correlation: _Correlation,
+def correlation_entry(
+    context: Classifier,
+    correlation: Correlation,
     parameters: Mapping[str, Any],
     where: str,
     *,
@@ -460,10 +471,10 @@ def _correlation_entry(
     parameter; `meaning` null; `note` the distinct provenance texts of the parameters it is
     built from (the coefficients, and the validity bounds of `ideal_gas_cp`) in file order."""
     coefficients = {
-        name: _number(parameters[source], "1", "dimensionless", f"{where}.{source}")
+        name: number(parameters[source], "1", "dimensionless", f"{where}.{source}")
         for name, source in correlation.coefficients.items()
     }
-    used = {*correlation.coefficients.values(), *(_CP_BOUNDS if validity else ())}
+    used = {*correlation.coefficients.values(), *(CP_BOUNDS if validity else ())}
     return {
         "property": correlation.property,
         "phase": correlation.phase,
@@ -473,11 +484,11 @@ def _correlation_entry(
         "uncertainty": None,
         "provenance": context.provenance(correlation.property),
         "meaning": None,
-        "note": _note(parameters[name] for name in parameters if name in used),
+        "note": note(parameters[name] for name in parameters if name in used),
     }
 
 
-def _number(parameter: object, unit: str, kind: str, where: str) -> Any:
+def number(parameter: object, unit: str, kind: str, where: str) -> Any:
     """The value of a parameter that must state `unit` and `kind` (a coefficient, a bound)."""
     _parameter(parameter, where)
     assert isinstance(parameter, Mapping)
@@ -486,9 +497,11 @@ def _number(parameter: object, unit: str, kind: str, where: str) -> Any:
     return parameter["value"]
 
 
-def _formation(context: _File, parameters: Mapping[str, Any], where: str) -> list[dict[str, Any]]:
+def formation(
+    context: Classifier, parameters: Mapping[str, Any], where: str
+) -> list[dict[str, Any]]:
     """D12: `standard_formation_enthalpy` as formation `ig`, `s` null."""
-    h = _constant(context, "formation", parameters[_FORMATION], f"{where}.{_FORMATION}")
+    h = constant(context, "formation", parameters[FORMATION], f"{where}.{FORMATION}")
     return [{"phase": "ig", "h": h, "s": None}]
 
 
@@ -548,7 +561,7 @@ def _lambda_entry(context: _File, entry: Mapping[str, Any], where: str) -> dict[
         "uncertainty": None,
         "provenance": context.provenance("wilson_lambda"),
         "meaning": None,
-        "note": _note([entry]),
+        "note": note([entry]),
     }
 
 
