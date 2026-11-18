@@ -255,6 +255,43 @@ def test_a32_v2_compares_the_optimizer_state_with_the_resolved_simulation() -> N
     assert "V2" in other.failures
 
 
+def test_a32_the_active_set_lists_the_box_before_the_inequalities() -> None:
+    """V3's active set is the box's sides, then the inequalities' (rule 16 pin): with the flash
+    temperature's upper bound moved onto the reference optimum, that side and `recovery_A` (renamed
+    `A-recovery`, which sorts first by name) are both active, in that order, in `active_set` and in
+    V3's detail."""
+    optimum = reference()["nlp"]["NLP-1"]["reference_optimum"]
+    decisions = (number(optimum["U-SPLIT.split_fraction"]), number(optimum["U-FLASH.T_spec"]))
+    formulation = nlp_formulation()
+    capped = dataclasses.replace(
+        formulation,
+        decisions=tuple(
+            dataclasses.replace(decision, upper=decisions[1])
+            if decision.parameter_id == "U-FLASH.T_spec"
+            else decision
+            for decision in formulation.decisions
+        ),
+        # A name that sorts before the bound's, so a sort by name would fail this pin (R-W3-G3-8).
+        constraints=tuple(
+            dataclasses.replace(constraint, constraint_id="A-recovery")
+            if constraint.constraint_id == "recovery_A"
+            else constraint
+            for constraint in formulation.constraints
+        ),
+    )
+    regimes = readiness().declared_regimes
+    assert regimes is not None
+    verification = verify_candidate(flowsheet({}), capped, decisions, regimes=regimes)
+    assert verification.active_names == ("U-FLASH.T_spec:upper", "A-recovery")
+    assert [(item.kind, item.side) for item in verification.active_set] == [
+        ("bound", "upper"),
+        ("constraint", "lower"),
+    ]
+    assert verification.outcome("V3") == "pass"
+    (v3,) = (item for item in verification.checks if item.check == "V3")
+    assert v3.detail["active_set"] == list(verification.active_names)
+
+
 # -- A33: readiness, one reason at a time ----------------------------------------------------------
 
 

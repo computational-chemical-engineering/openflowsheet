@@ -138,7 +138,8 @@ def request_problems(request: Any) -> list[tuple[str, str]]:
     """Every problem of `request` as `(pointer, message)`: none for a well-formed request.
 
     First a node with no canonical JSON form (ADR 0002, as the revision reader refuses it), then
-    the schema's errors in pointer order, then the rules the schema cannot state."""
+    the schema's errors in pointer order, then the rules the schema cannot state, in this order:
+    `_check_decisions`, `_check_starts`, `_check_constraint_ids`, `_check_expressions`."""
     pointer = first_noncanonical(request)
     if pointer is not None:
         return [(pointer, f"document_not_canonical({pointer})")]
@@ -147,9 +148,32 @@ def request_problems(request: Any) -> list[tuple[str, str]]:
         return [_split(error) for error in errors]
     problems: list[tuple[str, str]] = []
     decisions = [entry["specification_id"] for entry in request["decisions"]]
+    problems += _check_decisions(decisions)
+    problems += _check_starts(request, decisions)
+    constraints = request.get("constraints", ())
+    problems += _check_constraint_ids(constraints)
+    problems += _check_expressions(request["objective"]["expression"], constraints)
+    return problems
+
+
+def _split(error: str) -> tuple[str, str]:
+    pointer, _, message = error.partition(": ")
+    return pointer, message
+
+
+def _check_decisions(decisions: Sequence[str]) -> list[tuple[str, str]]:
+    """`request_problems`' first rule: each decision's specification id after its first use."""
+    problems: list[tuple[str, str]] = []
     for index, name in enumerate(decisions):
         if name in decisions[:index]:
             problems.append((f"/decisions/{index}", f"specification {name!r} repeats"))
+    return problems
+
+
+def _check_starts(request: Any, decisions: Sequence[str]) -> list[tuple[str, str]]:
+    """`request_problems`' second rule: each explicit start whose length is not the number of
+    `decisions`, in start order."""
+    problems: list[tuple[str, str]] = []
     for index, start in enumerate((request.get("starts") or {}).get("explicit", ())):
         if len(start) != len(decisions):
             problems.append(
@@ -158,13 +182,31 @@ def request_problems(request: Any) -> list[tuple[str, str]]:
                     f"{len(start)} values for {len(decisions)} decisions",
                 )
             )
-    expressions = [("/objective/expression", request["objective"]["expression"])]
+    return problems
+
+
+def _check_constraint_ids(constraints: Sequence[Mapping[str, Any]]) -> list[tuple[str, str]]:
+    """`request_problems`' third rule: each constraint id after its first use, in constraint
+    order."""
+    problems: list[tuple[str, str]] = []
     seen: set[str] = set()
-    for index, constraint in enumerate(request.get("constraints", ())):
+    for index, constraint in enumerate(constraints):
         if constraint["id"] in seen:
             problems.append((f"/constraints/{index}/id", f"{constraint['id']!r} repeats"))
         seen.add(constraint["id"])
+    return problems
+
+
+def _check_expressions(
+    objective: Mapping[str, Any], constraints: Sequence[Mapping[str, Any]]
+) -> list[tuple[str, str]]:
+    """`request_problems`' fourth rule, over the `objective` expression and then each of
+    `constraints`' expressions: an expression with neither linear nor quadratic terms, and each
+    quadratic pair after its first use."""
+    expressions = [("/objective/expression", objective)]
+    for index, constraint in enumerate(constraints):
         expressions.append((f"/constraints/{index}/expression", constraint["expression"]))
+    problems: list[tuple[str, str]] = []
     for where, expression in expressions:
         if not expression.get("linear") and not expression.get("quadratic"):
             problems.append((where, "an expression names at least one variable"))
@@ -173,11 +215,6 @@ def request_problems(request: Any) -> list[tuple[str, str]]:
             if pair in pairs[:index]:
                 problems.append((f"{where}/quadratic/{index}", f"the pair {list(pair)} repeats"))
     return problems
-
-
-def _split(error: str) -> tuple[str, str]:
-    pointer, _, message = error.partition(": ")
-    return pointer, message
 
 
 def request_sha256(request: Mapping[str, Any]) -> str:

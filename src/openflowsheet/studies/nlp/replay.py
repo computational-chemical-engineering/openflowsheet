@@ -280,14 +280,9 @@ def _verification_floor(
     """§4.9 step (3) (OPT review M1): the floor of the float at `keys` in `verification.json`,
     with its label — the tolerance of the V-check whose verdict it feeds, as ADR 0007 D2.2 floors
     `check.value` at its own tolerance. `None` where the float compares under the registered
-    policy alone: V6's `objective` (and `assessment_values`), relative only, and `decisions`."""
-    from openflowsheet.studies.nlp.tolerances import (
-        TAU_FEAS,
-        TAU_GROSS,
-        TAU_KKT,
-        TAU_LICQ,
-        TAU_SIGN,
-    )
+    policy alone: V6's `objective` (and `assessment_values`), relative only, and `decisions`.
+    The `kkt` family is `_kkt_floor`'s, the `checks` family `_check_floor`'s."""
+    from openflowsheet.studies.nlp.tolerances import TAU_FEAS, TAU_KKT
 
     feas = (TAU_FEAS, "TAU_FEAS")
     kkt = (TAU_KKT, "TAU_KKT")
@@ -297,20 +292,50 @@ def _verification_floor(
     if head == "active_set":
         return feas if rest[-1:] == ("slack",) else None
     if head == "kkt" and rest:
-        if rest[0] in (
-            "stationarity_residual_inf",
-            "objective_gradient_scaled",
-            "constraint_gradients_scaled",
-        ):
-            return kkt
-        if rest[0] == "multipliers":
-            return TAU_SIGN, "TAU_SIGN"
-        if rest[0] == "licq_singular_values":
-            values = (recorded.get("kkt") or {}).get("licq_singular_values") or []
-            largest = max((abs(float(v)) for v in values if _number(v)), default=0.0)
-            return TAU_LICQ * largest, "TAU_LICQ times the largest"
+        return _kkt_floor(rest, recorded, kkt)
+    if head != "checks":
         return None
-    if head != "checks" or len(rest) < 2 or not isinstance(rest[0], int):
+    return _check_floor(rest, recorded, feas, kkt)
+
+
+def _kkt_floor(
+    rest: tuple[str | int, ...], recorded: Mapping[str, Any], kkt: tuple[float, str]
+) -> tuple[float, str] | None:
+    """`_verification_floor`'s `kkt` family, `rest` the keys below `kkt` (at least one): the
+    stationarity residual and the scaled gradients floor at `kkt` (`TAU_KKT`), the multipliers at
+    `TAU_SIGN`, the LICQ singular values at `TAU_LICQ` times the largest recorded one; `None`
+    for any other member."""
+    from openflowsheet.studies.nlp.tolerances import TAU_LICQ, TAU_SIGN
+
+    if rest[0] in (
+        "stationarity_residual_inf",
+        "objective_gradient_scaled",
+        "constraint_gradients_scaled",
+    ):
+        return kkt
+    if rest[0] == "multipliers":
+        return TAU_SIGN, "TAU_SIGN"
+    if rest[0] == "licq_singular_values":
+        values = (recorded.get("kkt") or {}).get("licq_singular_values") or []
+        largest = max((abs(float(v)) for v in values if _number(v)), default=0.0)
+        return TAU_LICQ * largest, "TAU_LICQ times the largest"
+    return None
+
+
+def _check_floor(
+    rest: tuple[str | int, ...],
+    recorded: Mapping[str, Any],
+    feas: tuple[float, str],
+    kkt: tuple[float, str],
+) -> tuple[float, str] | None:
+    """`_verification_floor`'s `checks` family, `rest` the keys below `checks`: a member of a
+    check's detail by the check's index in `recorded` and the member's name. V2's scaled
+    difference floors at `TAU_GROSS`, V4's split margins and V6's constraint values at `feas`,
+    V5's stationarity residual at `kkt`; `None` for any other member, a key path shorter than two
+    or not led by an index, and an index past the recorded checks."""
+    from openflowsheet.studies.nlp.tolerances import TAU_GROSS
+
+    if len(rest) < 2 or not isinstance(rest[0], int):
         return None
     checks = recorded.get("checks") or []
     check = checks[rest[0]].get("check") if rest[0] < len(checks) else None
