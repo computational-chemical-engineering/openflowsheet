@@ -7,8 +7,8 @@
   "sources": {
     "fixture.handbook": {
       "version": "2026-03",
-      "citation": "Fixture handbook of water data, 3rd edition",
-      "licence_stated": "CC-BY-4.0",
+      "citation": "Fictitious fixture handbook: every value citing it is invented",
+      "licence_stated": "LicenseRef-fixture",
       "url": "https://example.org/handbook/water"
     }
   },

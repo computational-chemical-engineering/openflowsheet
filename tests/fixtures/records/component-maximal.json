@@ -3,17 +3,17 @@
   "record_type": "component",
   "type_version": "1.0.0",
   "id": "fixture.water",
-  "name": "Water, maximal fixture record",
+  "name": "Fixture component with water's identifiers and invented values",
   "sources": {
     "fixture.handbook": {
       "version": "2026-03",
-      "citation": "Fixture handbook of water data, 3rd edition",
-      "licence_stated": "CC-BY-4.0",
+      "citation": "Fictitious fixture handbook: every value citing it is invented",
+      "licence_stated": "LicenseRef-fixture",
       "url": "https://example.org/handbook/water"
     },
     "fixture.fit": {
       "version": "1.2.0",
-      "citation": "Fixture fit of saturation points",
+      "citation": "Fictitious fixture fit of invented points",
       "licence_stated": "CC0-1.0",
       "url": "https://example.org/fit"
     }
@@ -28,7 +28,7 @@
       "data_provenance": "fixture text"
     }
   },
-  "uncertainty_statement": "Values within the stated uncertainties of the handbook.",
+  "uncertainty_statement": "Every value is invented for the fixture and has no physical meaning.",
   "volatile": {
     "retrieved_at": "2026-11-18T10:15:30.25Z",
     "request": {
@@ -77,7 +77,7 @@
   "amount_basis": "mol",
   "charge": 0,
   "molar_mass": {
-    "value": 0.01801528,
+    "value": 0.0123456,
     "unit": "kg/mol",
     "kind": "molar_mass",
     "uncertainty": {
@@ -103,10 +103,10 @@
           "sha256": "d4a5f1e26780d4bd463d906ebc3396d7f41d5d00d1c91513674461c0e380b3a4"
         }
       ],
-      "transformation": "sum of standard atomic weights"
+      "transformation": "invented transformation"
     },
-    "meaning": "Molar mass of water",
-    "note": "IUPAC 2021 weights"
+    "meaning": "Molar mass (invented)",
+    "note": "invented value"
   },
   "elements": {
     "H": 2,
@@ -118,7 +118,7 @@
     {
       "phase": "l",
       "h": {
-        "value": -285830.0,
+        "value": -111111.0,
         "unit": "J/mol",
         "kind": "molar_enthalpy",
         "uncertainty": {
@@ -141,13 +141,13 @@
               "path": "benchmarks/fixture/table.csv"
             }
           ],
-          "transformation": "copied from the source table"
+          "transformation": "copied from the fictitious table"
         },
         "meaning": "Formation enthalpy, liquid",
-        "note": "CODATA key value"
+        "note": "invented value"
       },
       "s": {
-        "value": 69.95,
+        "value": 11.1,
         "unit": "J/(mol K)",
         "kind": "molar_entropy",
         "uncertainty": {
@@ -169,16 +169,16 @@
               "path": "benchmarks/fixture/table.csv"
             }
           ],
-          "transformation": "copied from the source table"
+          "transformation": "copied from the fictitious table"
         },
         "meaning": "Standard entropy, liquid",
-        "note": "third-law value"
+        "note": "invented value"
       }
     },
     {
       "phase": "ig",
       "h": {
-        "value": -241826.0,
+        "value": -100000.0,
         "unit": "J/mol",
         "kind": "molar_enthalpy",
         "uncertainty": {
@@ -201,13 +201,13 @@
               "path": "benchmarks/fixture/table.csv"
             }
           ],
-          "transformation": "copied from the source table"
+          "transformation": "copied from the fictitious table"
         },
         "meaning": "Formation enthalpy, ideal gas",
-        "note": "CODATA key value"
+        "note": "invented value"
       },
       "s": {
-        "value": 188.835,
+        "value": 22.2,
         "unit": "J/(mol K)",
         "kind": "molar_entropy",
         "uncertainty": {
@@ -229,10 +229,10 @@
               "path": "benchmarks/fixture/table.csv"
             }
           ],
-          "transformation": "copied from the source table"
+          "transformation": "copied from the fictitious table"
         },
         "meaning": "Standard entropy, ideal gas",
-        "note": "third-law value"
+        "note": "invented value"
       }
     }
   ],
@@ -241,7 +241,7 @@
       "from": "l",
       "to": "ig",
       "h": {
-        "value": 44004.0,
+        "value": 11111.0,
         "unit": "J/mol",
         "kind": "molar_enthalpy",
         "uncertainty": {
@@ -263,13 +263,13 @@
               "path": "benchmarks/fixture/table.csv"
             }
           ],
-          "transformation": "copied from the source table"
+          "transformation": "copied from the fictitious table"
         },
         "meaning": "Vaporisation enthalpy at T°",
         "note": "difference of formation enthalpies"
       },
       "s": {
-        "value": 118.885,
+        "value": 11.1,
         "unit": "J/(mol K)",
         "kind": "molar_entropy",
         "uncertainty": {
@@ -291,7 +291,7 @@
               "path": "benchmarks/fixture/table.csv"
             }
           ],
-          "transformation": "copied from the source table"
+          "transformation": "copied from the fictitious table"
         },
         "meaning": "Vaporisation entropy at T°",
         "note": "difference of entropies"
@@ -302,7 +302,7 @@
     {
       "property": "critical_temperature",
       "form": "constant",
-      "value": 647.096,
+      "value": 555.5,
       "unit": "K",
       "kind": "temperature",
       "uncertainty": {
@@ -324,26 +324,26 @@
             "path": "benchmarks/fixture/table.csv"
           }
         ],
-        "transformation": "copied from the source table"
+        "transformation": "copied from the fictitious table"
       },
       "meaning": "Critical temperature",
-      "note": "IAPWS-95"
+      "note": "invented value"
     },
     {
       "property": "ideal_gas_cp",
       "phase": "ig",
       "form": "cp_ig_poly4_theta",
       "coefficients": {
-        "b0": 4.19864,
-        "b1": -2.0364,
-        "b2": 6.5204,
-        "b3": -5.4879,
-        "b4": 1.7718
+        "b0": 1.0,
+        "b1": -0.5,
+        "b2": 0.25,
+        "b3": -0.125,
+        "b4": 0.0625
       },
       "validity": {
         "T": [
-          200.0,
-          1000.0
+          250.0,
+          900.0
         ]
       },
       "uncertainty": {
@@ -369,7 +369,7 @@
             "sha256": "d4a5f1e26780d4bd463d906ebc3396d7f41d5d00d1c91513674461c0e380b3a4"
           }
         ],
-        "transformation": "least squares on NASA-7 points"
+        "transformation": "invented fit"
       },
       "meaning": "Ideal-gas heat capacity",
       "note": "low range"
@@ -378,13 +378,13 @@
       "property": "user.surface_tension",
       "phase": "l",
       "form": "constant",
-      "value": 0.0728,
+      "value": 0.5,
       "unit": "1",
       "kind": "dimensionless",
       "validity": {
         "T": [
-          273.16,
-          373.15
+          300.0,
+          400.0
         ],
         "P": [
           1000.0,
@@ -410,7 +410,7 @@
             "path": "benchmarks/fixture/table.csv"
           }
         ],
-        "transformation": "copied from the source table"
+        "transformation": "copied from the fictitious table"
       },
       "meaning": "Surface tension ratio, dimensionless fixture",
       "note": "user parameter"
@@ -420,15 +420,15 @@
       "phase": "l",
       "form": "ln_psat_abcd_theta",
       "coefficients": {
-        "a": 25.6,
-        "b": -5.2,
-        "c": -3.1,
-        "d": 0.5
+        "a": 10.0,
+        "b": -2.0,
+        "c": -1.0,
+        "d": 0.25
       },
       "validity": {
         "T": [
-          273.16,
-          647.0
+          300.0,
+          550.0
         ]
       },
       "uncertainty": {
@@ -455,7 +455,7 @@
             "sha256": "d4a5f1e26780d4bd463d906ebc3396d7f41d5d00d1c91513674461c0e380b3a4"
           }
         ],
-        "transformation": "fit to saturation points"
+        "transformation": "invented fit"
       },
       "meaning": "Vapour pressure",
       "note": "fitted"
