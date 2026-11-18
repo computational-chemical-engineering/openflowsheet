@@ -2956,3 +2956,6 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   of 245 finished test-impact logs in `~/.cache/openflowsheet/tmp-gates`, none has a `$ ` call header without its
   closing counts line (the two that do are the region self-test and job 352, still running), so no gate is known to
   have passed on a killed call. Fix round 1 launched (opus-engineer, brief `S19-W5-WO1gm-fix1.md`).
+- **2026-11-19 ~01:50 CET, region self-test `g1o-self-region` PASS: 2/3 behaviour tiers detected the mutation**
+  (`region.py:663` in `_solve_region`, at wp/S19 14a8491b). Plan 7.1 met for region; lane O run 4 launches after the
+  g1n4 merge.
