@@ -622,3 +622,34 @@ def test_c3_a_copy_carrying_the_legacy_member_is_refused(app: LocalApplication) 
     result = dispatch(app, "register_record", {"record": record})["results"]
     assert [(item["record_sha256"], item["created"]) for item in result] == [(sha, True)]
     assert app.get_record(sha).store == "project"
+
+
+@pytest.mark.parametrize(
+    ("file_format", "content", "at"),
+    [
+        ("record-v2-json", "[]", "/file/content"),
+        ("record-v2-yaml", "[]\n", "/file/content"),
+        (
+            "component-record-v1-yaml",
+            "schema_version: 1\nrecord_schema: schemas/component-record.schema.json\n"
+            "components: []\n",
+            "/file/content/components",
+        ),
+    ],
+)
+def test_c4_a_file_with_no_record_is_refused(
+    app: LocalApplication, file_format: str, content: str, at: str
+) -> None:
+    """M4: a file with no record is one refused outcome, never `{"results": []}`; no `allowed`
+    audit row is written."""
+    file = {"format": file_format, "content": content}
+    refused = _refusal(app, "register_record", {"file": file})
+    detail = refused["detail"]
+    assert (refused["code"], detail["reason"], detail["pointer"]) == (
+        "invalid_request",
+        "record_schema_invalid",
+        at,
+    )
+    assert detail["record_index"] == 0
+    rows = [row for row in app.store.audit_rows() if row["operation"] == "register_record"]
+    assert [row["outcome"] for row in rows if row["outcome"] == "allowed"] == []

@@ -26,7 +26,9 @@ any the file states; `retrieved_at` is the caller's (the operation passes the ti
 Text that is not one JSON or YAML document (a YAML alias included, R-1057), and each list element
 that is not an object, is one refused outcome `record_schema_invalid("")`; a v1 file or component
 off its format is one refused outcome `record_schema_invalid(<pointer into the file>)`, its first
-error (F3 decision WO5a-5).
+error (F3 decision WO5a-5). A file with no record is one refused outcome too: an empty v2 list
+`record_schema_invalid("")`, a v1 `components: []` `record_schema_invalid("/components")` (F3
+review 2, C4).
 """
 
 from __future__ import annotations
@@ -76,7 +78,7 @@ def import_user_file(
 ) -> tuple[RecordOutcome, ...]:
     """D12's user-file adapter on `content` in `file_format` (one of `FORMATS`; another is a
     caller's `ValueError`): one D2 outcome per record, in file order, against `registry` (the
-    process registry when `None`). `defaults` is read for a v1 file only."""
+    process registry when `None`); never none. `defaults` is read for a v1 file only."""
     if file_format not in FORMATS:
         raise ValueError(f"{file_format!r} is not a user-file format {FORMATS}")
     volatile = {
@@ -92,6 +94,8 @@ def import_user_file(
     if file_format == "component-record-v1-yaml":
         return _v1_file(document, _Defaults.read(defaults), volatile, registry)
     items = document if isinstance(document, list) else [document]
+    if not items:
+        return (_refused(""),)
     return tuple(
         identify({**item, VOLATILE: dict(volatile)}, registry=registry)
         if isinstance(item, Mapping)
@@ -168,6 +172,8 @@ def _v1_file(
     if refused is not None:
         return (_refused(refused),)
     assert isinstance(document, Mapping)
+    if not document["components"]:
+        return (_refused("/components"),)
     return tuple(
         _v1_component(component, f"/components/{index}", defaults, volatile, registry)
         for index, component in enumerate(document["components"])
