@@ -143,3 +143,60 @@ N4: `volatile: {mirror_url: null}` is refused (harmless to identity). N5 (WO3, X
 N7 (E-F3-12 docs): YAML 1.1 scalars (`1e5` a string, `010` is 8, `1:30` is 90). N8: WO1-9 pointers address the
 normalised record. N9: cache the `if` validator in `normalize._applicable` before a bulk importer. N11: batch the
 `registry_sha256` re-takes at WO3 and WO5.
+
+## F3-WO2 (store and resolution), 2026-11-18
+
+Files: `src/openflowsheet/records/{store,stack,resolve}.py`, `tests/test_f3_store.py`, four entries in
+`messages/catalogue/records.yaml`. Commits `e25332bc` (validate's `CAS`, `INCHIKEY`, `formula_counts` made public,
+renamed only), `da9ce359` (store, stack, resolution, tests), `d396f0ba` (catalogue).
+
+- **DECISION WO2-1. A corrupt existing object is refused, not replaced.** D8's protocol (`if target exists:
+  verify(target)`) and E-F3-8 refuse it `store_object_corrupt`; the W1 P1 review's N7 "replace a corrupt target
+  instead of failing forever" is not applied (the ADR carries no edit for it). N7's other three items are applied:
+  a failing `unlink(tmp)` after the target verified is ignored, a rebuild skips `.tmp-*`, the object is written
+  before its rows. Alternative: fall through to the write when the target fails verification. Lives in
+  `RecordStore._write_object`. **For the design lane:** D8 text for the replace, if wanted: "a target that fails
+  verification is replaced by the write; a Windows replace failure on it stays `store_object_corrupt`".
+- **DECISION WO2-2. `registrations` columns and which submission wins (F3-WO1 review N1).** D8's columns plus
+  `sequence INTEGER PRIMARY KEY` (insertion order) and `findings` (the submission's notices, canonical JSON), with
+  `UNIQUE (sha, volatile_sha)`: the first registration of one (record, volatile block) pair is kept and a later one
+  adds no row, so a defaulted `ig` registered first keeps its `anchor_defaulted`. An absent volatile block is stored
+  as `{}` with its SHA. `Registration.findings` returns the call's own findings. Alternative: one row per call (an
+  append log). Lives in `store._TABLES`, `RecordStore.register`.
+- **DECISION WO2-3. Schema id and the other tables.** A `meta (key, value)` table holds `schema = f3-records-v1`; a
+  database with another id is refused (uncoded `RecordStoreError`, as T07's schema mismatch). `objects`, `keys`
+  (primary key (scheme, value, sha)) carry no foreign key, so a rebuild can empty them. `rights` = D11's row fields
+  plus `sequence` (D11's "latest"), `assessment` checked against D11's three values; WO4 writes it. Alternative:
+  `PRAGMA user_version`.
+- **DECISION WO2-4. Key spellings.** `inchikey`, `inchi`, `cas`, `id`: as stored, exact (case-sensitive). `name`:
+  NFC, casefold, whitespace collapsed, NFC again (casefold can leave non-NFC text). `formula`: Hill order of WO1's
+  formula reader; a formula it cannot read (N5's ions) is its own key, NFC without whitespace. A query value is
+  spelled by the same rule. Alternative: upper-case InChIKey queries. Lives in `resolve.lookup_keys`, `_key_value`.
+- **DECISION WO2-5. Query form.** `<scheme>:<value>` only when the text before the first `:` is one of the seven
+  schemes; otherwise the whole text is a bare query. A bare query tries `inchikey` and `cas` only on a whole-string
+  pattern match (CAS digits pattern; the check digit is not tested). Lives in `resolve.query_keys`.
+- **DECISION WO2-6. Resolution's scope and its empty result.** `resolve` reads `component` records only
+  (`record_type` parameter), filtered before "the first scheme with a match wins"; `search` reads every type unless
+  given one. No match is `None`; F3-WO5's operation maps it (`not_found`, or `data_unavailable` for `sha256:`).
+  Alternative: a coded refusal here (the ADR names none for no match).
+- **DECISION WO2-7. `detail.candidates` form.** Per class `{class, records}`: `class` is the sorted list of
+  `cas:<v>` and `inchikey:<v>` keys its records carry (`[]` for a record with neither); `records` =
+  `[{sha, source_ids, name}]` by SHA; classes sorted by canonical-JSON bytes. Alternative: a class index. Lives in
+  `resolve.candidates`. **For the design lane:** D9 states "`[{class, records: [{sha, source ids, name}]}]`" without
+  the class value; this reading is identity-free and order-stable (tested over registration orders).
+- **DECISION WO2-8. Errors are an exception.** `RecordStoreError(coded)` carries `store_object_corrupt`,
+  `store_path_too_long`, `data_unavailable`, or a refused outcome's first error on `register`. `rebuild` returns
+  the corrupt objects' codes instead of raising, and keeps `registrations` and `rights`. A copy into the project store
+  (`StoreStack.adopt`, D8's data-lock case) writes no registration row.
+- **DECISION WO2-9. The legacy store** is an in-memory `RecordStore` filled once from a loader of normalised
+  projections (`stack.LegacyStore`); F3-WO3 supplies the loader and its drift check against the legacy index.
+
+**Moved.** The catalogue's sha256 `ae4b7d1c…` → `3aa34e6d…` in the two `message_entry` fixtures
+(`scripts/t07_schema_fixtures.py --write`); `docs-site/messages/refusals.md` regenerated (`scripts/doc_pages.py`). No
+registry table, `registry_sha256`, R4-G3 snapshot, MCP digest or F0 measure moved.
+
+**Left for later work orders.** WO3: the legacy loader and drift check, the skipped source-checkout E-F3-9 test
+(`methanol` across `s07` and `s10`), N9 (cache the `if` validator before the bulk import). WO5: wiring
+`LocalApplication` (`in_memory()` gets `RecordStore.in_memory()`), the `register_record` and `search_records`
+operations and their mapping of `RecordStoreError` and of `resolve`'s `None`. Windows behaviour stays simulated until
+X07a's legs (risk 9).
