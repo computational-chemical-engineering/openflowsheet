@@ -355,6 +355,14 @@ REFUSALS: dict[str, tuple[Callable[[dict[str, Any]], Any], str]] = {
         lambda b: {**b, "admitted": [*b["admitted"], SYN001]},
         f"admitted {SYN001}: tier 4 (excluded, ruling R1)",
     ),
+    "generator in R": (
+        lambda b: {**b, "generator": [*b["generator"], FEED]},
+        f"generator {FEED}: in R at the base but not admitted",
+    ),
+    "retarget in R": (
+        lambda b: {**b, "retarget": [*b["retarget"], SYN001]},
+        f"retarget {SYN001}: in R at the base but not admitted",
+    ),
     "above max_tier": (
         lambda b: {**b, "max_tier": 1},
         f"admitted {PR_LIB}: tier 2, above max_tier 1",
@@ -393,12 +401,40 @@ def test_validate_accepts_batch_n_and_exits_2_on_a_refusal(
     assert good.returncode == 0, good.stdout
     digest = gate.digest(tmp_path / "n.json")
     assert good.stdout.strip().endswith(f"expected failures 2, standing 1, sha256 {digest}")
-    checked = _cli("batch", str(tmp_path / "n.json"))
-    assert checked.stdout.strip().endswith(f"base {BASE[:12]} sha256 {digest}"), checked.stdout
     bad = {**batch, "admitted": [*batch["admitted"], SYN001]}
     refused = _cli("validate", str(_write(tmp_path / "bad.json", bad)), "--head", BASE)
     assert refused.returncode == 2
     assert refused.stdout.startswith("W5 batch REFUSED: admitted") and "tier 4" in refused.stdout
+
+
+def test_batch_prints_the_sha256_and_refuses_a_dirty_tree(
+    batch: dict[str, Any], tmp_path: Path, monkeypatch, capsys
+) -> None:
+    path = _write(tmp_path / "n.json", batch)
+    monkeypatch.setattr(gate, "dirty", lambda: "")
+    assert gate.main(["batch", str(path)]) == 0
+    assert (
+        capsys.readouterr().out.strip() == f"W5 batch N base {BASE[:12]} sha256 {gate.digest(path)}"
+    )
+    monkeypatch.setattr(gate, "dirty", lambda: "?? stray.py")
+    assert gate.main(["batch", str(path)]) == 2
+    assert "the tree under test is not clean:\n?? stray.py" in capsys.readouterr().out
+
+
+def test_dirty_reads_the_porcelain_status(tmp_path: Path) -> None:
+    def git(*arguments: str) -> None:
+        subprocess.run(["git", *arguments], cwd=tmp_path, check=True, capture_output=True)
+
+    git("init", "-q")
+    (tmp_path / "a.txt").write_text("a\n")
+    git("add", "a.txt")
+    git("-c", "user.name=t", "-c", "user.email=t@t", "commit", "-q", "-m", "a")
+    assert gate.dirty(tmp_path) == ""
+    (tmp_path / "a.txt").write_text("b\n")
+    assert gate.dirty(tmp_path) == "M a.txt"
+    git("checkout", "-q", "a.txt")
+    (tmp_path / "new.txt").write_text("n\n")
+    assert gate.dirty(tmp_path) == "?? new.txt"
 
 
 def _job(queue: Path, state: str, label: str, base: str | None, sha256: str | None) -> None:

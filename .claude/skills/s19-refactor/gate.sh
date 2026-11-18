@@ -20,6 +20,9 @@ CB=d90b498f8759b739361016cca7858f71bc647ccc
 MB=$(sed -n 's/^- `MB` = `\([0-9a-f]\{40\}\)`.*/\1/p' "$(git rev-parse --show-toplevel)/docs/S19_STATE.md" | head -n 1)
 [ -n "$MB" ] || { echo "GATE no MB in docs/S19_STATE.md"; exit 2; }
 if [ -n "${S19_W5_BATCH:-}" ]; then
+    # absolute before use: every tier runs in the tree under test, not in this shell's directory
+    S19_W5_BATCH=$(realpath -e -- "$S19_W5_BATCH") || { echo "GATE S19_W5_BATCH: no such file"; exit 2; }
+    export S19_W5_BATCH
     python3 "$(git rev-parse --show-toplevel)/scripts/w5_gate.py" batch "$S19_W5_BATCH" || exit 2
 fi
 GC=$(git rev-parse --path-format=absolute --git-common-dir)

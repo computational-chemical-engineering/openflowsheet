@@ -8,9 +8,11 @@ file's `base`, not the step's `{base}`.
 
     w5_gate.py validate FILE --head REV   the enqueue check: the schema, B an ancestor of REV,
                                           `admitted` a subset of R at B with no tier 4 file and
-                                          none above `max_tier` (`w5_identity.py sets --base B`)
-    w5_gate.py batch FILE                 gate.sh's check: the schema and B an ancestor of HEAD
-                                          (both print FILE's sha256, which the queue stores)
+                                          none above `max_tier` (`w5_identity.py sets --base B`),
+                                          and no `generator` or `retarget` path in R unless admitted
+    w5_gate.py batch FILE                 gate.sh's check: the schema, B an ancestor of HEAD and
+                                          a clean tree (validate and batch print FILE's sha256,
+                                          which the queue stores)
     w5_gate.py batch-check --queue-dir DIR --base B
                                           one batch file per B: the distinct `batch_sha256` of
                                           the queue's pending, running and done jobs whose batch
@@ -122,7 +124,7 @@ def structure(document: Any) -> list[str]:
 
 def membership(document: Mapping[str, Any], sets: Mapping[str, Any]) -> list[str]:
     """The admitted set against `w5_identity.py sets --json` at B: in R, not tier 4, at most
-    `max_tier`."""
+    `max_tier`; a generator or retarget path in R must be admitted too."""
     r_set = set(sets["R"])
     tier_of = {file: int(tier) for tier, files in sets["tiers"].items() for file in files}
     problems = []
@@ -134,6 +136,13 @@ def membership(document: Mapping[str, Any], sets: Mapping[str, Any]) -> list[str
             problems.append(f"admitted {path}: tier 4 (excluded, ruling R1)")
         elif tier > document["max_tier"]:
             problems.append(f"admitted {path}: tier {tier}, above max_tier {document['max_tier']}")
+    admitted = set(document["admitted"])
+    for key in ("generator", "retarget"):
+        problems += [
+            f"{key} {path}: in R at the base but not admitted"
+            for path in document[key]
+            if path in r_set and path not in admitted
+        ]
     return problems
 
 
@@ -154,6 +163,11 @@ def read(path: Path) -> Any:
         return json.loads(path.read_text(encoding="utf-8"))
     except (OSError, ValueError) as error:
         raise BatchRefusedError(f"{path}: {error}") from None
+
+
+def dirty(cwd: Path = ROOT) -> str:
+    """`git status --porcelain` of a tree (as the gate queue reads a worktree's state)."""
+    return _git("status", "--porcelain", cwd=cwd).stdout.strip()
 
 
 def load(path: Path, head: str = "HEAD", cwd: Path = ROOT) -> dict[str, Any]:
@@ -419,6 +433,8 @@ def command_validate(arguments: argparse.Namespace) -> int:
 def command_batch(arguments: argparse.Namespace) -> int:
     path = Path(arguments.file)
     document = load(path)
+    if status := dirty():
+        raise BatchRefusedError(f"the tree under test is not clean:\n{status}")
     print(f"W5 batch {document['batch']} base {document['base'][:12]} sha256 {digest(path)}")
     return 0
 
