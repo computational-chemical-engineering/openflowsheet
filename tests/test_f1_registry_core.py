@@ -458,9 +458,18 @@ def test_an_extension_of_a_core_kind_without_a_payload_schema_is_preview(
         assert stability(kind, builtin=True, legacy_form=False) == "core"
 
 
-#: F3-WO1: a valid payload of each of ADR 0061's three core kinds (ADR 0061 D1, D4, D12).
+#: F3-WO1: a valid payload of each of ADR 0061's three core kinds (ADR 0061 D1, D4, D12); the
+#: record type's names `acme_types/schema.json` below the package's import root (`_schema_root`).
+SCHEMA_BYTES = b'{"$defs": {"x": {"type": "object"}}}\n'
 CORE_PAYLOADS: dict[str, dict[str, Any]] = {
-    "record_type": {"payload_schema": None},
+    "record_type": {
+        "payload_schema": {
+            "package": "acme_types",
+            "path": "schema.json",
+            "pointer": "/$defs/x",
+            "sha256": hashlib.sha256(SCHEMA_BYTES).hexdigest(),
+        }
+    },
     "correlation_form": {
         "variables": [{"name": "T", "kind": "temperature", "unit": "K"}],
         "coefficients": [{"name": "a", "kind": "dimensionless", "unit": "1"}],
@@ -472,18 +481,25 @@ CORE_PAYLOADS: dict[str, dict[str, Any]] = {
 }
 
 
+def _schema_root(tmp_path: Path) -> Path:
+    """An import root carrying `acme_types/schema.json` (CRLF: the hash is over LF bytes)."""
+    (tmp_path / "acme_types").mkdir()
+    (tmp_path / "acme_types" / "schema.json").write_bytes(SCHEMA_BYTES.replace(b"\n", b"\r\n"))
+    return tmp_path
+
+
 @pytest.mark.parametrize("kind", sorted(CORE_PAYLOADS))
 def test_an_extension_of_a_core_kind_is_core_once_its_payload_schema_is_installed(
-    kind: str,
+    kind: str, tmp_path: Path
 ) -> None:
     """ADR 0060 D1, erratum F-5, after F3-WO1: with the kind's payload schema installed, an
     extension with a valid payload is `core`, with no `preview_kind`; a payload the schema
     refuses quarantines its package (`extension_invalid` at the payload). A built-in `record_type`
     `assay` stays `preview` (ADR 0061 D1)."""
     assert kind in PAYLOAD_DEFS
-    registry = _build(
-        packages=[_package("acme", [_descriptor(kind, "acme.x", payload=CORE_PAYLOADS[kind])])]
-    )
+    root = _schema_root(tmp_path)
+    descriptor = _descriptor(kind, "acme.x", payload=CORE_PAYLOADS[kind])
+    registry = _build(packages=[_package("acme", [descriptor], import_root=root)])
     entry = registry.resolve(kind, "acme.x")
     assert entry.stability == "core"
     assert Coded("preview_kind", {"kind": kind, "id": "acme.x"}) not in entry.evidence_notices()
@@ -496,7 +512,90 @@ def test_an_extension_of_a_core_kind_is_core_once_its_payload_schema_is_installe
     assert (
         stability("record_type", builtin=True, legacy_form=False, identifier="assay") == "preview"
     )
-    assert stability("record_type", builtin=False, legacy_form=False, identifier="assay") == "core"
+    payload = CORE_PAYLOADS["record_type"]
+    assert stability("record_type", builtin=False, legacy_form=False, payload=payload) == "core"
+
+
+def test_an_extension_record_type_without_a_payload_schema_is_preview() -> None:
+    """ADR 0061 review ruling WO1-11: `payload_schema: null` is a preview type's; an extension
+    `record_type` with it registers as `preview`, with `preview_kind`."""
+    package = _package(
+        "acme", [_descriptor("record_type", "acme.x", payload={"payload_schema": None})]
+    )
+    entry = _build(packages=[package]).resolve("record_type", "acme.x")
+    assert entry.stability == "preview"
+    assert Coded("preview_kind", {"kind": "record_type", "id": "acme.x"}) in (
+        entry.evidence_notices()
+    )
+
+
+@pytest.mark.parametrize(
+    ("kind", "payload", "pointer"),
+    [
+        (
+            "record_type",
+            {
+                "payload_schema": {
+                    **CORE_PAYLOADS["record_type"]["payload_schema"],
+                    "sha256": "0" * 64,
+                }
+            },
+            "/payload/payload_schema/sha256",
+        ),
+        (
+            "record_type",
+            {
+                "payload_schema": {
+                    **CORE_PAYLOADS["record_type"]["payload_schema"],
+                    "path": "none.json",
+                }
+            },
+            "/payload/payload_schema/sha256",
+        ),
+        (
+            "record_type",
+            {
+                "payload_schema": {
+                    key: value
+                    for key, value in CORE_PAYLOADS["record_type"]["payload_schema"].items()
+                    if key != "sha256"
+                }
+            },
+            "/payload/payload_schema",
+        ),
+        ("data_source", {"record_types": ["component"], "formats": []}, "/payload/formats"),
+    ],
+    ids=["sha256 mismatch", "file missing", "sha256 absent", "no format"],
+)
+def test_a_core_payload_ruling_wo1_11_refuses_quarantines(
+    kind: str, payload: dict[str, Any], pointer: str, tmp_path: Path
+) -> None:
+    """ADR 0061 review ruling WO1-11: a record type's payload schema carries the SHA-256 of the
+    file's LF-normalised bytes, checked at registration; a data source reads at least one
+    format. A miss is `extension_invalid` at the member."""
+    package = _package(
+        "acme", [_descriptor(kind, "acme.x", payload=payload)], import_root=_schema_root(tmp_path)
+    )
+    [quarantine] = _build(packages=[package]).quarantined
+    assert quarantine.reason == Coded(
+        "extension_invalid", {"entry_point": "acme", "pointer": "/descriptors/0" + pointer}
+    )
+
+
+def test_a_built_in_record_type_whose_schema_file_moved_fails_the_build() -> None:
+    """ADR 0061 review ruling WO1-11: a built-in `record_type` whose payload schema file does not
+    hash to its `sha256` fails the build, so an edit of `record-v2.schema.json` without
+    regenerating `records.json` cannot register."""
+    rows = json.loads(
+        (REPO_ROOT / "src" / "openflowsheet" / "registry" / "builtin" / "records.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    Registry.build(builtin_tables={"records": rows}, builtin_version="0.0.0")
+    [component] = [row for row in rows if row["id"] == "component"]
+    component["payload"]["payload_schema"]["sha256"] = "0" * 64
+    with pytest.raises(RegistryBuildError, match="/payload/payload_schema/sha256"):
+        Registry.build(builtin_tables={"records": rows}, builtin_version="0.0.0")
 
 
 def test_an_unregistered_name_is_never_satisfied_and_is_flagged() -> None:

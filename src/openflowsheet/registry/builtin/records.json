@@ -215,7 +215,8 @@
       "payload_schema": {
         "package": "openflowsheet",
         "path": "_data/schemas/record-v2.schema.json",
-        "pointer": "/$defs/component"
+        "pointer": "/$defs/component",
+        "sha256": "b71341a2345b09d9d1de5f4e6e365af4d1fe21207b0174534506d40f67a858c8"
       }
     },
     "pip_extra": null,
@@ -242,7 +243,8 @@
       "payload_schema": {
         "package": "openflowsheet",
         "path": "_data/schemas/record-v2.schema.json",
-        "pointer": "/$defs/parameter_set"
+        "pointer": "/$defs/parameter_set",
+        "sha256": "b71341a2345b09d9d1de5f4e6e365af4d1fe21207b0174534506d40f67a858c8"
       }
     },
     "pip_extra": null,

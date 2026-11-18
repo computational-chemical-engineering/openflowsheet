@@ -67,7 +67,7 @@ from openflowsheet.registry.descriptor import (
     stability,
     version_key,
 )
-from openflowsheet.registry.selfhash import SelfHashUnavailableError, self_sha256
+from openflowsheet.registry.selfhash import SelfHashUnavailableError, file_sha, self_sha256
 from openflowsheet.registry.snapshot import Quarantine, registry_sha256, snapshot_document
 from openflowsheet.registry.tokens import (
     REGISTRY_SPACES,
@@ -181,6 +181,7 @@ def _registered(
             builtin=source.builtin,
             legacy_form=source.legacy_form,
             identifier=normal["id"],
+            payload=normal["payload"],
         ),
     )
 
@@ -210,6 +211,22 @@ def _limitation_problem(document: Mapping[str, Any], codes: frozenset[str]) -> s
         if limitation["code"] not in codes:
             return f"/limitations/{index}/code"
     return None
+
+
+def _payload_schema_problem(document: Mapping[str, Any], root: Path | None) -> str | None:
+    """ADR 0061 review ruling WO1-11: `/payload/payload_schema/sha256` when a `record_type`'s
+    payload schema file (`<root>/<package>/<path>`, the package's dots as directories, `root`
+    the import root its `modules` are relative to) is unreadable or its LF-normalised bytes do
+    not hash to the declared `sha256`; `None` otherwise. A schema-valid descriptor only."""
+    named = document["payload"].get("payload_schema") if document["kind"] == "record_type" else None
+    if named is None:
+        return None
+    location = "/".join((*str(named["package"]).split("."), str(named["path"])))
+    try:
+        found = file_sha(root, location)
+    except SelfHashUnavailableError:
+        found = None
+    return None if found == named["sha256"] else "/payload/payload_schema/sha256"
 
 
 def _extension_invalid(entry_point: str, pointer: str) -> Coded:
@@ -352,6 +369,8 @@ class Registry:
         )
         if pointer is None and document["limitations"]:
             pointer = _limitation_problem(document, self._messages.core_codes())
+        if pointer is None:
+            pointer = _payload_schema_problem(document, source.import_root)
         if pointer is not None:
             raise RegistryBuildError(
                 Coded("extension_invalid", {"entry_point": identity, "pointer": pointer})
@@ -465,6 +484,8 @@ class Registry:
         for index, descriptor in enumerate(descriptors):
             where = f"/descriptors/{index}"
             found = descriptor_problem(descriptor)
+            if found is None:
+                found = _payload_schema_problem(descriptor, package.import_root)
             if found is not None:
                 return _extension_invalid(package.entry_point, where + found)
             if not str(descriptor["id"]).startswith(namespace + "."):

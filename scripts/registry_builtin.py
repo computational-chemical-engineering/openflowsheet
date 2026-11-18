@@ -46,7 +46,9 @@ the implementation set is every `*.py` under the directory of the module definin
 `assay`), `correlation_form` (D4: the two forms) and `data_source` (D12: `legacy-yaml`,
 `user-file`) descriptors, read from `openflowsheet.records.model`'s tables. Their modules are
 empty (a record type's or a form's descriptor is its whole content, ADR 0060 D9; the importers
-are F3-WO3's and WO5's) and their status is `implemented` until F3's close-out.
+are F3-WO3's and WO5's) and their status is `implemented` until F3's close-out. A record type's
+`payload_schema` carries the SHA-256 of the schema file's LF-normalised bytes (ADR 0061 review
+ruling WO1-11), so an edit of the record schema moves the descriptor and fails `--check`.
 """
 
 from __future__ import annotations
@@ -533,6 +535,7 @@ def _payload_only(
 def records() -> list[dict[str, Any]]:
     """ADR 0061's built-in record types (D1), correlation forms (D4) and data sources (D12)."""
     from openflowsheet.records.model import CORRELATION_FORMS, DATA_SOURCES, RECORD_TYPES
+    from openflowsheet.registry.selfhash import file_sha
 
     found = []
     for name, record_type in RECORD_TYPES.items():
@@ -543,6 +546,7 @@ def records() -> list[dict[str, Any]]:
                 "package": "openflowsheet",
                 "path": RECORD_SCHEMA_PATH,
                 "pointer": record_type.pointer,
+                "sha256": file_sha(SOURCE, f"openflowsheet/{RECORD_SCHEMA_PATH}"),
             }
         )
         found.append(

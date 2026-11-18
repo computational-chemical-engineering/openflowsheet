@@ -52,6 +52,15 @@ names its payload schema and must use this envelope and D2's identity rule (Q9.R
 | `uncertainty_statement` | string, optional | narrative uncertainty of the whole record |
 | `volatile` | optional, closed (D2) | excluded from identity |
 
+**Core payloads of the three descriptor kinds** (`schemas/extension-descriptor.schema.json`, `payload_<kind>`; the frozen
+field list, review ruling WO1-11). X11 adds optional members only.
+
+| Kind | Payload | Rule |
+| --- | --- | --- |
+| `record_type` (D1) | `{payload_schema: null \| {package, path, pointer, sha256}}` | `sha256` is the SHA-256 of the schema file's LF-normalised bytes, written by `scripts/registry_builtin.py` for the built-ins and checked at registration (`extension_invalid` on a mismatch); `null` only for a preview type (`assay`), and an extension `record_type` with `null` is `preview` |
+| `correlation_form` (D4) | `{variables, coefficients, result {kind, per_amount}, expression, evaluator}` | D4's form payload as written; `evaluator` preview until ADR-F4 |
+| `data_source` (D12) | `{record_types (≥ 1), formats (≥ 1)}` | the record types a source writes and the formats it reads |
+
 ### D2. Identity
 
 **Identity = SHA-256 of `canonical_json(identity projection)`**, the projection being the normalised record without its
@@ -688,3 +697,4 @@ Status stays Proposed. Design-lane rulings of the F3-WO1 review, applied by the 
 | M3 | D2 step 2a: an optional member is one the schema names in `properties` and does not require; map entries and undescribed members stay for step 6. |
 | M1 | D6: "A stated anchor must be" becomes "The anchor, stated or derived, must be"; validity is a function of the normalised record, so a charged component with formation data and none in `aq` is refused at first submission. |
 | S4 | D6 step 3: among `s:` forms, the smallest token by canonical-JSON bytes (entries are a set); formation keeps record order (step 2). |
+| WO1-11 | D1: the three-row core payload table (`payload_schema.sha256` required; `null` only for a preview type; `data_source.formats` at least one). |

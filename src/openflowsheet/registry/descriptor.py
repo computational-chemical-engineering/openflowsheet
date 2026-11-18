@@ -223,14 +223,25 @@ def evidence_class(effective: str, *, builtin: bool, attested: bool) -> str:
     return "reviewed" if attested else "unreviewed"
 
 
-def stability(kind: str, *, builtin: bool, legacy_form: bool, identifier: str | None = None) -> str:
+def stability(
+    kind: str,
+    *,
+    builtin: bool,
+    legacy_form: bool,
+    identifier: str | None = None,
+    payload: Mapping[str, Any] | None = None,
+) -> str:
     """D1's payload stability of one registered descriptor: `core` or `preview`. An extension of
     a core kind is `preview` while the kind has no payload schema (`PAYLOAD_DEFS`): its payload
     is checked against nothing yet (F1 review SF-4). A built-in (kind, `identifier`) in
-    `PREVIEW_BUILTINS` is `preview` (ADR 0061 D1: `record_type` `assay`)."""
+    `PREVIEW_BUILTINS` is `preview` (ADR 0061 D1: `record_type` `assay`), and so is an extension
+    `record_type` whose `payload` names no payload schema (ADR 0061 review ruling WO1-11:
+    `payload_schema: null` is a preview type's)."""
     if kind in CORE_KINDS:
         if builtin:
             return "preview" if (kind, identifier) in PREVIEW_BUILTINS else "core"
+        if kind == "record_type" and (payload or {}).get("payload_schema") is None:
+            return "preview"
         return "core" if kind in PAYLOAD_DEFS else "preview"
     if kind in LEGACY_FORM_KINDS:
         return "core" if legacy_form else "preview"
