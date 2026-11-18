@@ -678,3 +678,69 @@ bytes). `tests/fixtures/registry/builtin-sha256.txt` is byte-identical (`fc0af96
 (the expected red, five human reviews open), 2358 passed, 14 skipped, 22 deselected, 3 xfailed, 581.62 s.
 `registry_builtin.py --check` clean; `records_legacy_index.py --check` clean (149 records); F0 `corpus_identity.py
 --check` PASS; `ruff check` passed, `ruff format --check` 1292 files, `mypy` no issues in 409 files.
+
+## F3 fix round 3 (CI 44283813577 on `6800a65f`), 2026-11-18
+
+Brief `docs/briefs/F3-fix3.md`, build lane (`opus-engineer`).
+
+**Item 1, A21 (`2d931e8a`).** The six items of the WO7 manifest (`limitations[0..4]`, `checks[0]`) were not in
+`benchmarks/t08/support_envelope.yaml`'s harvest. Added as class P with their text hashes, `docs/support-matrix.md`
+re-emitted (`t08_support_matrix.py --check` clean). Re-mapped to the moved manifest in item 8's commit.
+
+**Item 2, A50 (`9138ed64`).** `(99, 1134, 147) - (98, 1129, 146) = (1, 5, 1)`: exactly the WO7 manifest (one manifest,
+five limitations, one non-pass check, `F3.CI` pending). `HARVEST_SIZE` moved with a comment line naming it; moved again
+in item 8 by the new manifest's counts.
+
+**Item 3, E-F3-8 (`fdb730b3`).** Cause: `PRAGMA journal_mode = WAL` on a store's first opening. Switching a new database to
+WAL takes an exclusive lock without calling SQLite's busy handler, so two processes opening one new store at once get
+`database is locked` from the pragma itself (both CI tracebacks end at `store.py:244`, the pragma; `busy_timeout` does
+not cover it). Locally reproduced with a race harness (8 processes open one fresh store after a shared go file, 20
+repetitions): 56 of 160 openings failed before the fix, 0 of 160 after. Fix: `_journal_mode_wal` retries the pragma
+on `SQLITE_BUSY` (5 ms sleeps) until `BUSY_TIMEOUT_S`; any other error, or busy past the deadline, raises as before. A
+database already in WAL answers at once, so later openings pay nothing. The test, 50 times in a loop: 50 passed, 0 failed; 50 more under load (eight concurrent serial `pytest
+tests/test_t08_w2_support_envelope.py` loops beside it, 192 of them completed, since `pytest-xdist` is not installed in
+`.venv`): 50 passed, 0 failed.
+
+**Item 4, `local.py` duplication: not changed, DECISION F3-3-4.** The 17 new duplicated lines (49 of 411, 0.119 >
+0.10) are two windows: `search_records`' and `assess_rights`' keyword-only signatures, restated from the frozen
+`Records` protocol (`contract.py`, ADR 0019 Amendment 8) and, for `assess_rights`, by `RecordsService`. The other 32 are
+older (the `__init__` signature with `service_core.py`, `list_audit` with `contract.py`, the projection signatures of
+`get_revision`/`inspect_structure`/`get_artifact`). No behaviour-preserving edit removes a protocol's restatement by
+its implementation: reordering keyword-only parameters would only defeat the window, and a `**kwargs` or descriptor
+delegation changes the signatures the bindings and the contract tests read.
+
+**DECISION F3-3-1: G20's six F3 `@cache` hits -> listed, none removed (`7aa1adef`).** All six are nullary readers of
+package data: `records/model.record_schema`, `records/validate._validator`, `records/rights.repository_rows`,
+`records/importers/legacy.profiles` and `.committed_index`, `application/records_service.legacy_shas`. None is keyed
+on any input; no cached object reaches a response (`get_record` copies each row, `{**row, ...}`; effective assessments
+are new documents); the project register and store are read per call. Alternative: drop the caches and re-read per
+call. Reversible by: reverting `7aa1adef`.
+
+**DECISION F3-3-2: Q26, `validate_record`'s `reactions/*/stoichiometry` map -> allowed by full path (`b2399a2a`).**
+ADR 0061 D7 (Q7.A3) fixes the input form `{id, stoichiometry: {component key: ν}}`; the map is a reaction definition
+whose coefficients are balance-checked, never stored and never solved, the M02 inlet's and OPT request's argument.
+Alternative: a list of `{component, nu}` items (the scan would then find a numeric array, no better; and ADR 0061 names
+the map). Reversible by: reverting `b2399a2a`.
+
+**DECISION F3-3-3: `test_no_broad_except`, `records/store.py`'s transaction rollback -> rewritten as `try/finally`
+with a completion flag (`3a43dd75`).** The handler must clean up after every exception, interrupts included: the in-memory
+store shares one connection, and a transaction left open by a `KeyboardInterrupt` would make its next `BEGIN
+IMMEDIATE` fail. So narrowing to `Exception` would change behaviour. `try/finally` rolls back on exactly the same
+exits (any exception, `GeneratorExit` included), re-raises the same exception, and commits on the same path; it holds
+no `except` clause the lint could flag, and cannot swallow. Alternative: keep `except BaseException: ROLLBACK; raise`
+and extend the test's allowed directories to `src/openflowsheet/records/store.py` (a test-rule change, the design
+lane's). Reversible by: reverting `3a43dd75`.
+
+**DECISION F3-3-4: the `local.py` duplication smell -> left, not suppressed.** See item 4. Alternatives: a file-level
+`# codehealth: allow-file duplication -- protocol signatures restated by the implementation` (no file in `src/` uses
+one yet), or moving the five delegations to a mixin module (moves the restatement, does not remove it). Reversible
+by: adding the allow line or the mixin.
+
+**Manifest schema (not in the brief's table, found in the same CI log).** `test_manifest_validates[evidence/F3/ebdff46f…]`
+failed on every leg: `checks[0].result` `pending` is not in the schema's enum, and `review` has `design_lane` and
+`human`, which the schema does not admit. The moved manifest carries CI as a limitation (X10c's form) and the review
+records as limitation text; `review` keeps `numerical` and `process_model` only.
+
+**Item 6, codehealth (`codehealth diff --base main --head HEAD` at `3a43dd75`).** Debt over touched files 51.60 ->
+62.70, unchanged by this round (the store's helper and the `finally` add no debt); the `local.py` duplication smell
+stays (F3-3-4); the 26 `repo-layers` lines are the base-config artefact the brief names.
