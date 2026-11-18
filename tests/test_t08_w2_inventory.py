@@ -555,7 +555,10 @@ def _component_records() -> list[tuple[str, dict[str, Any]]]:
     """Every component-record-shaped mapping in a tracked YAML or JSON file.
 
     The schema's negative fixtures (`tests/fixtures/schemas/component_record/invalid/`) are
-    excluded: they are invalid by construction and ship nowhere.
+    excluded: they are invalid by construction and ship nowhere. So is a v2 record (ADR 0061,
+    `record_format: openflowsheet-record-v2`): it is not a v1 ComponentRecord, a v1 reader refuses
+    it (ADR 0002 D7.5), its rights live in F3's rights register (D11), and F3 validates it (F3
+    build decision WO1-15).
     """
     found = []
     for path in _tracked():
@@ -569,7 +572,11 @@ def _component_records() -> list[tuple[str, dict[str, Any]]]:
         while stack:
             item = stack.pop()
             if isinstance(item, dict):
-                if "elemental_verification" in item and isinstance(item.get("id"), str):
+                if (
+                    "elemental_verification" in item
+                    and isinstance(item.get("id"), str)
+                    and "record_format" not in item
+                ):
                     found.append((path, item))
                 stack.extend(item.values())
             elif isinstance(item, list):
