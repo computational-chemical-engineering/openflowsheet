@@ -2562,3 +2562,15 @@
   floor; the record can later replace `_joint_blocks`' 10 arguments. (b) `verify_candidate`: leave it, residual debt;
   revisit only with a design-lane behaviour change, after a test pins `assessment_not_evaluable` and
   `phase_rows_not_evaluable` texts and the stop record (none pins them now). Merge-check job 288 (base 43236b56).
+- **2026-11-18, G3 run 5 merged into wp/S19 as 4fc833d9** (merge-check job 288 PASS, debt 169.2 -> 87.3 over the
+  touched files). G3 run 6 (opus-engineer) launched, brief `<git-common-dir>/codehealth/briefs/S19-W3-G3-6.md`
+  (ruling (a) step, replay.py, projection_checks.py, projection.py within the S1 cap, the R-W3-G3-5 docstring notes).
+- **2026-11-18, F3 review 2 (reviewer, Fable, 274k): sound to close out after C1-C12** (wp/F3 68ca5b98: review file,
+  R-1052..R-1057, ADR 0061 section "F3 ruling round 2 applied", clarifications only). Four must-fix: M1 YAML alias
+  file held `register_record` 292 s; M2 `record_schema_invalid` pointer wrong; M3 a forged `legacy` member stored and
+  shown with m01's file hash; M4 empty file returns a schema-invalid result. C9: the description-review test fails on
+  its count (21 hard-coded, 26 now), not on the pending reviews: WO5b's "expected red" was misdiagnosed (orchestrator
+  checked line 33). Kept: WO5b-1, -3, -5, -8, WO5a-1, -2; WO5b-4 changed (C5); WO5b-9's alternative rejected (C2).
+  F2 is to take `group_molar_mass_inconsistent(<S>, <species>)`. Q-F1 ([p, q] coefficients in validate_record) sent
+  to hub as a DECISION-REQUEST (default A: with ADR 0062, JSON numbers until then). Fix round 2 (opus-engineer)
+  launched, brief `docs/briefs/F3-fix2.md` at bb45b09e.
