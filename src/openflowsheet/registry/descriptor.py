@@ -238,16 +238,23 @@ def stability(
     `record_type` whose `payload` names no payload schema (ADR 0061 review ruling WO1-11:
     `payload_schema: null` is a preview type's)."""
     if kind in CORE_KINDS:
-        if builtin:
-            return "preview" if (kind, identifier) in PREVIEW_BUILTINS else "core"
-        if kind == "record_type" and (payload or {}).get("payload_schema") is None:
-            return "preview"
-        return "core" if kind in PAYLOAD_DEFS else "preview"
+        return _core_kind_stability(kind, builtin=builtin, identifier=identifier, payload=payload)
     if kind in LEGACY_FORM_KINDS:
         return "core" if legacy_form else "preview"
     if kind in BUILTIN_CORE_KINDS:
         return "core" if builtin else "preview"
     return "preview"
+
+
+def _core_kind_stability(
+    kind: str, *, builtin: bool, identifier: str | None, payload: Mapping[str, Any] | None
+) -> str:
+    """`stability` of a descriptor of a kind D1 marks core."""
+    if builtin:
+        return "preview" if (kind, identifier) in PREVIEW_BUILTINS else "core"
+    if kind == "record_type" and (payload or {}).get("payload_schema") is None:
+        return "preview"
+    return "core" if kind in PAYLOAD_DEFS else "preview"
 
 
 # ---------------------------------------------------------------------------------------------
