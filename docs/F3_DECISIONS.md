@@ -358,3 +358,85 @@ Brief `docs/briefs/F3-rulings-1-fix.md`. One commit per item:
 also states "formation enthalpy: zero by definition" where the profile citation states "ATcT 1.112". O2's own text is
 whole in its molar mass's note, so nothing is lost (ruling: keep one citation per file). The WO4-0 and WO4-2 counts
 ("9 in all", nine seed rows) are superseded by B1: 7 `source_sha256` values, 7 seed rows.
+
+## F3-WO5a (reaction consistency, user-file adapter), 2026-11-18
+
+Brief `docs/briefs/F3-WO5a.md`. Files: `src/openflowsheet/records/reactions.py`,
+`records/importers/user_file.py`; `records/importers/legacy.py` (D12's parameter rows public),
+`records/normalize.py` (`loaded` public); four codes in `messages/catalogue/records.yaml`;
+`tests/test_f3_reactions.py`, `tests/test_f3_user_file.py`. Commits `84dcdb4d` and `ebc7f20d`
+(reactions), `7e7d4f3d` (catalogue), `733e5db9` (legacy rows public, WO5a-9), `26194673`
+(`normalize.loaded`), `94287fee` (adapter), `425fb4e3` and `7b4c1e9c` (E-F3-10), `b3b9b7d8`
+(E-F3-12). E-F3-10's ratios, recomputed exactly from the YAML molecular weights: 6.37e-18,
+3.61e-17, 7.77e-6, the ADR's 6.4e-18, 3.6e-17, 7.8e-6 to its two digits (4ε = 8.88e-16).
+
+- **DECISION WO5a-1. `<component>` in `reaction_element_unchecked` is the stoichiometry's component
+  key**, not the record `id` (WO1-9's reading for one record): two keys may name records with one
+  `id` (E-F3-10's mixed water, `l01`'s and `s10`'s `H2O`). Alternative: the record `id`. Lives in
+  `reactions.check_reactions`.
+- **DECISION WO5a-2. A component with `elements` null leaves the reaction's element balance
+  unjudged**: one `reaction_element_unchecked` per such component and no
+  `reaction_element_imbalance` for that reaction (D7's "instead"); charge and molar mass are still
+  checked. Alternative: balance the elements of the other components, which can refuse a balanced
+  reaction whose pseudo-component carries the missing atoms.
+- **DECISION WO5a-3. Malformed reaction input is a caller's `ValueError`, not a code**: a
+  stoichiometry key with no record, a ν that is not a finite `int`/`float` (a `bool` included),
+  a record without `molar_mass` (`kg`, refused `amount_basis_unsupported` before it can be
+  registered). WO5b's `validate_record` request schema must screen the first two. Alternative:
+  new catalogued codes (an ADR change). Element counts are converted with `Fraction` as ν is.
+- **DECISION WO5a-4. The adapter returns one D2 outcome (`RecordOutcome`) per record**, `identify`
+  run inside it, so `register_record` passes each to `RecordStore.register`. Without complete
+  `defaults` a v1 record goes through steps 1 to 5 only: no `sources`, every Constant and entry
+  `provenance_invalid(<entry>)` at its pointer in the normalised record (`normalize.quantities`),
+  no SHA, no other check (step 6 would stop at `record_schema_invalid` for the missing provenance).
+  Alternative: return built documents and let `register_record` run `identify`.
+- **DECISION WO5a-5. A v1 file off its format is `record_schema_invalid(<pointer into the file>)`**,
+  one refused outcome: the envelope (exactly D12's file keys `schema_version` 1, `record_schema`
+  the v1 schema, `reference_convention`, `components` a list; a `wilson_lambda` file's keys are
+  refused, so a parameter set cannot come from a v1 user file), a component against
+  `schemas/component-record.schema.json` (first error), a D12-named group incomplete
+  (`ideal_gas_cp_b0…b4` all or none; both bounds or none, and only with the coefficients;
+  `vapour_pressure_a…d` all or none) or a parameter outside D12's parameter keys (the v1 quantity's
+  `bounds`, `nominal`, `display_unit`, `uncertainty_ref`) at `/components/<i>/parameters` (or
+  `/molecular_weight`). `record_schema_invalid`'s `why` gains one sentence saying so.
+  Alternative: a new code for a v1 file (an ADR change).
+- **DECISION WO5a-6. A v1 user component maps by D12's component rows** through `legacy.py`'s
+  functions: its `rights.source` is the last line of its molar mass's `note` (`legacy.molar_mass`);
+  `rights.redistribution`, `rights.notes` and `reference_convention` are dropped (rights are
+  `assess_rights`', WO5b); `synthetic` and `elemental_verification` are copied when stated and
+  otherwise left for D7 to refuse (never defaulted); identifiers are copied, none dropped; no
+  `legacy` member (D1). Each parameter D12 names maps by its row (`ideal_gas_cp` takes validity
+  `{T: [lower, upper]}` with both bounds, `null` without); every other is `user.<name>`.
+- **DECISION WO5a-7. `defaults`** must have exactly D12's five members, `origin` a list of strings
+  and the others strings; anything else counts as absent. Each value's provenance is `{origin,
+  derivation, source: source_id, inputs: [], transformation: null}`, the record's `sources`
+  `{source_id: {version: source_version, citation, licence_stated: null, url: null}}`; their values
+  are D7's to judge (an empty `origin` is `provenance_invalid`, a `derivation` off the enum
+  `record_schema_invalid`, `fitted` gives `fit_inputs_unhashed` per value). `defaults` is not read
+  for a v2 file. Alternative: apply `defaults` to v2 values that lack provenance.
+- **DECISION WO5a-8. v2 formats**: both take one record or a list (D12's parenthesis read for
+  both); `record-v2-json` is parsed as JSON only, `record-v2-yaml` as YAML; a list element that is
+  not an object is refused `record_schema_invalid("")` alone. Each record's `volatile` is replaced
+  by `{retrieved_at, local_path (if given), adapter_version: "1.0.0"}` (a bare version, as the
+  maximal fixture's `"0.3.1"`). Alternative: merge the file's own volatile block.
+- **DECISION WO5a-9. Shared code**: `legacy.py`'s D12 parameter rows lose their underscore
+  (`molar_mass`, `constant`, `constant_entry`, `correlation_entry`, `Correlation`, `CP`, `PSAT`,
+  `formation`, `note`, `number`, the v1 name constants) and take a `Classifier` protocol
+  (`provenance(field)`), which `_File` and the adapter's defaults satisfy; `normalize._loaded`
+  becomes `normalize.loaded(source, *, syntax=None)`, step 1 unchanged. Index unchanged.
+- **For the design lane (no change made).** ADR 0062 (F2) lists `molar_mass_inconsistent` among its
+  new codes with Q3's params `(<S>, <species>)` (`docs/roadmap/foundation-rulings.md` line 520);
+  ADR 0061 registers it now as `(<reaction>)`. One code cannot carry both argument lists: F2 needs
+  another name, or both ADRs one signature.
+
+**Moved.** Catalogue sha256 `787017d4…` → `afa8e4934c34dc31667ce4fb63bda7ecb35ca12abca0d006cc00c8357aa8e100`
+in the two `message_entry` fixtures (`scripts/t07_schema_fixtures.py --write`);
+`docs-site/messages/{notices,refusals}.md` regenerated (`scripts/doc_pages.py`). The legacy index,
+the registry tables, `registry_sha256`, R4-G3 snapshots, the MCP digest and F0 did not move.
+
+**Left for WO5b.** The five operations on four transports and `assess_rights`; `LocalApplication`
+wiring; the `legacy-yaml` and `user-file` descriptors' implementation sets (WO3-6; the adapter's
+module is now `openflowsheet.records.importers.user_file`); `reserved_namespace(legacy)`, which
+must also cover a user file whose `defaults.source_id` or v2 `sources` names a `legacy.` source;
+`register_record` passing `retrieved_at` (now) and `local_path`; `validate_record` calling
+`reactions.check_reactions` and its request schema screening WO5a-3's inputs and `defaults`' shape.
