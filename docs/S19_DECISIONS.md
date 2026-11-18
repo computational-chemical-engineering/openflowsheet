@@ -2647,3 +2647,8 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   fallbacks, all import-time code: studies/, proposal 2) and `ALERT queue wait median 19 min > 15 min` (8-step burst
   on 2 slots): standing, no action. G3 run 7 launched (opus-engineer, brief S19-W3-G3-7.md, base a8109c80, lane
   wp/S19-g3g).
+- **2026-11-18, G3 run 7 delivered (opus-engineer, Opus):** wp/S19-g3g a8109c80..de26de56, 8 extract-phase steps
+  enqueued as jobs 305-312 (g3r7-1..8): trf._run x2, revision_host.decision_map, projection.project (S1),
+  phase.phase_rows (S1), closure.optimization_readiness, manifest.build_records, verification._feasibility. Engineer's
+  scan 4313.9 -> 4190.8, health 8.31 -> 8.32, brain 18. nlp-marked at each step: failures g19, g20 only (base same).
+  verification.py stays 5.6 (next: _kkt 17.1, _regimes 9.0). Review R-W3-G3-7 due (S1 steps 4, 5; S2 cadence).
