@@ -2682,3 +2682,9 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   without reason. Build-lane changes C1-C5 (WAL tests, finally-exit lint, rollback only if in_transaction, Q26 cites
   R-1058, manifest fix). F3 fix round 4 (opus-engineer, Opus) launched, brief wp/F3 docs/briefs/F3-fix4.md
   (f2fe606c). CI 44322172910 on db59c345 running (codehealth job failed, informational, F3-3-4).
+- **2026-11-18, F3 fix round 4 done (opus-engineer, Opus, 131k):** wp/F3 pushed db59c345..54eb696c. C1 78555814 (3
+  WAL tests; retry reverted: 2 fail; 20/20), C2 504b5ca7 (test_no_finally_exits; a return in `_writing`'s finally
+  fails it), C3 758244c7 (rollback only if in_transaction; 2 failed before, 2 passed after; f3+interrupt 318 passed),
+  C4 361c6207 (Q26 cites R-1058), C5 54eb696c (manifest evidence/F3/361c6207.../ implemented; HARVEST_SIZE (99, 1135,
+  146)). ruff, mypy 409 files, F3 battery 324 passed, F0 PASS. Full suite not re-run (CI decides). CI 44326799399 on
+  54eb696c running (watched); expected red: the human description reviews (REVIEW.json, waits for Frank).
