@@ -2926,3 +2926,9 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   identical, so step 366's evidence holds). Fixes 2, 3 and the `_Step` note: d2589f2a (docstrings only), job 352
   `g1n4-fix` no-gain. Merge-check job 351 `g1n4-mc` over 6722d919..d2589f2a (full suite). Both PASS -> merge
   `wp/S19-g1n4` into wp/S19.
+- **2026-11-19 ~01:05 CET, lane O region run prepared.** Plan 7.1 requires a gate self-test inside each function
+  before its first step: coupling detected on 2026-11-15 (`g1o-self-coupling`, 1/3 tiers); no region record exists, so
+  the orchestrator runs `gate.sh --self-test src/openflowsheet/orchestrator/region.py:663` (`if attempt_index == 0:`
+  inside `_solve_region`, which spans 324-962 at 6722d919; the plan's region.py:737 predates the RS split) at the
+  wp/S19 tip, label `g1o-self-region`. Brief `S19-W3-G1O-4.md` (R1, S1, C2; branch `wp/S19-g1o4` from the tip after the
+  g1n4 merge). It launches after the g1n4 merge and a region self-test PASS.
