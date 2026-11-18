@@ -44,7 +44,8 @@ decision values, certified before it is used (design §4.4). Its eight numeric c
 allowed by full path under exactly those two prefixes (`OPT_REQUEST_CONTAINERS`), and its scalars
 are pinned by full path (`OPT_REQUEST_SCALARS`), the same under both.
 
-**F3 (ADR 0061 D7, Q7.A3; D13).** `validate_record`'s `reactions` are reaction definitions in
+**F3 (ADR 0061 D7, Q7.A3; D13; the exception to R-088 Q26 is ADR 0061, section 'F3 ruling round 2
+applied: fix round 3'; R-1058).** `validate_record`'s `reactions` are reaction definitions in
 ADR 0061's form `{id, stoichiometry: {component key: ν}}`: the coefficients are checked for element,
 charge and molar-mass balance, nothing is stored and nothing is solved. One numeric map is allowed
 by full path and only there, `validate_record`'s `reactions/*/stoichiometry`.
@@ -187,7 +188,8 @@ OPT_REQUEST_SCALARS = frozenset(
         "starts/halton",
     }
 )
-#: F3 (ADR 0061 D7): a reaction's stoichiometry, checked by `validate_record`, never solved.
+#: F3 (ADR 0061 D7; ADR 0061, section 'F3 ruling round 2 applied: fix round 3'; R-1058): a
+#: reaction's stoichiometry, checked by `validate_record`, never solved.
 ALLOWED_BY_PATH = frozenset(
     {
         ("submit_job", "body/inlet/n", "array"),
