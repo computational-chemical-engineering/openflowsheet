@@ -42,8 +42,8 @@ if TYPE_CHECKING:
 
 #: D3, D7: a CAS registry number (its check digit is checked apart) and an InChIKey; the
 #: three patterns here are whole-string (`fullmatch`), so a trailing newline never passes.
-_CAS: re.Pattern[str] = re.compile(r"(\d{2,7})-(\d{2})-(\d)")
-_INCHIKEY: re.Pattern[str] = re.compile(r"[A-Z]{14}-[A-Z]{10}-[A-Z]")
+CAS: re.Pattern[str] = re.compile(r"(\d{2,7})-(\d{2})-(\d)")
+INCHIKEY: re.Pattern[str] = re.compile(r"[A-Z]{14}-[A-Z]{10}-[A-Z]")
 #: D7: a formula read as element symbols with optional counts (`CH3OH`), in any order.
 _FORMULA: re.Pattern[str] = re.compile(r"(?:[A-Z][a-z]?[0-9]*)+")
 _FORMULA_TERM: re.Pattern[str] = re.compile(r"([A-Z][a-z]?)([0-9]*)")
@@ -197,8 +197,8 @@ def _identifier_ok(identifiers: Mapping[str, str], scheme: str) -> bool:
     if value is None:
         return True
     if scheme == "inchikey":
-        return _INCHIKEY.fullmatch(value) is not None
-    match = _CAS.fullmatch(value)
+        return INCHIKEY.fullmatch(value) is not None
+    match = CAS.fullmatch(value)
     if match is None:
         return False
     digits = (match[1] + match[2])[::-1]
@@ -213,12 +213,12 @@ def _formula_errors(record: Mapping[str, Any]) -> list[Coded]:
     elements = record.get("elements")
     if record["amount_basis"] != "mol" or formula is None or elements is None:
         return []
-    if _formula_counts(formula) == elements:
+    if formula_counts(formula) == elements:
         return []
     return [Coded("formula_elements_invalid", {"component": str(record["id"])})]
 
 
-def _formula_counts(formula: str) -> dict[str, int] | None:
+def formula_counts(formula: str) -> dict[str, int] | None:
     """The element counts a formula states (`CH3OH`: C 1, H 4, O 1); `None` when it is not a
     sequence of element symbols with optional counts."""
     if _FORMULA.fullmatch(formula) is None:
