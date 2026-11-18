@@ -2618,3 +2618,9 @@
 - **2026-11-18, WO7 human-review commit denied by the permission system** (the engineer's REVIEW.json edit recording
   Frank's review, card ofs-f3-mcp-descriptions-human A VERIFIED, refused as undermining oversight). Not worked around
   by the orchestrator: parked for Frank. WO7 finishes with the human review `pending` (one expected red).
+- **2026-11-18, G3 run 6 gated: all 8 steps PASS** (jobs 289, 290, 297-302; run-log steps 320, 321, 323-328; step 3's
+  re-run 301 PASS confirms job 291 an environment kill). Gate report (6 h, 24 gates, 1 failed = job 291): `ALERT
+  selected share 52% < 75% of step gates`: studies/ import-time fallbacks (proposal 2), no action. F3 WO7 done
+  (sonnet-implementer, Sonnet, 89k): wp/F3 6800a65f pushed, manifest `evidence/F3/ebdff46f/` implemented, battery
+  2358 passed / 1 expected red (human reviews), F0 PASS; CI 44283813577 will be red on that test until Frank's review
+  is recorded. Review R-W3-G3-6 (reviewer, Opus) launched.
