@@ -1,0 +1,17 @@
+# F3 (ADR 0061 D1, D2, D4; ADR 0025 D2.3): the `sha256`-bearing property names that F3's record
+# schema adds. A separate table beside F1's, so that the registered numerical policies keep their ids
+# and their contents (M02's precedent; F3 build decision in `docs/F3_DECISIONS.md`).
+#
+# Read by `scripts/t08_numerical_policy.py --check` (the closed partition of `sha256` names, one
+# addendum after another). A record's numbers are declared data, copied, never solved values: the
+# table carries no `rules`.
+numerical_policy_external:
+  id: F3-numerical-policy-external-v1
+  schemas:
+  - record-v2.schema.json
+  # An exact digest (ADR 0007 D1, digest row; ADR 0025 D2): its preimage is file bytes.
+  # - `file_sha256`: SHA-256 of a legacy source file's LF-normalised bytes (D1 `legacy`, D12).
+  # `sha256` (a record SHA or an input file's SHA, D4 `provenance.inputs`; D5 `match.record`'s
+  # `$defs/sha256` is a pattern, not a property name) is classified exact by an earlier table.
+  exact_sha256:
+  - file_sha256
