@@ -32,6 +32,7 @@ from openflowsheet import resources
 from openflowsheet.records.identity import identify
 from openflowsheet.records.model import RECORD_FORMAT, RECORD_TYPES, RecordOutcome
 from openflowsheet.records.store import RecordStoreError
+from openflowsheet.records.validate import identifier_ok
 from openflowsheet.registry.selfhash import lf
 from openflowsheet.registry.tokens import Coded
 
@@ -67,6 +68,8 @@ _COMPONENT_KEYS: Final = frozenset(
     }
 )
 _IDENTIFIER_KEYS: Final = frozenset({"cas", "inchi", "inchikey", "formula"})
+#: The identifier schemes D3 reads, the only ones a profile may drop (F3 ruling round 1 B3).
+_CHECKED_SCHEMES: Final = frozenset({"cas", "inchikey"})
 _RIGHTS_KEYS: Final = frozenset({"source", "redistribution", "notes"})
 #: D12: a parameter's keys; `dimension` and `role` (always `fixed`) are dropped.
 _PARAMETER_KEYS: Final = frozenset(
@@ -90,7 +93,8 @@ class LegacyImportError(ValueError):
 class Profile:
     """One `legacy_profiles.yaml` profile: its file, source id, the file's citation (F3 decision
     WO4-0), D12 parameter rule (`mapping`), provenance classification by field, and the
-    identifiers it drops by component id (F3 decision WO3-2: a v1 identifier D3 refuses)."""
+    identifiers it drops by component id (F3 decision WO3-2: a v1 `cas` or `inchikey` D3
+    refuses, ruling round 1 B3)."""
 
     profile: str
     file: str
@@ -289,13 +293,21 @@ def _component(context: _File, record: Mapping[str, Any], position: int) -> dict
 
 
 def _identifiers(profile: Profile, record: Mapping[str, Any], where: str) -> dict[str, Any]:
-    """D12: the v1 identifiers copied, less those the profile drops for this component (each
-    of which must be stated)."""
+    """D12: the v1 identifiers copied, less those the profile drops for this component, each of
+    which must be stated and be one D3 refuses: a `cas` or `inchikey` whose stated value fails
+    `validate.identifier_ok` (F3 decision WO3-2, F3 ruling round 1 B3)."""
     identifiers = record.get("identifiers", {})
     _known(identifiers, _IDENTIFIER_KEYS, where)
     dropped = set(profile.dropped_identifiers.get(record["id"], ()))
     if not dropped <= set(identifiers):
         raise LegacyImportError(f"{where}: dropped identifiers {sorted(dropped)} are not stated")
+    kept = sorted(
+        scheme
+        for scheme in dropped
+        if scheme not in _CHECKED_SCHEMES or identifier_ok(identifiers, scheme)
+    )
+    if kept:
+        raise LegacyImportError(f"{where}: dropped identifiers {kept} are not ones D3 refuses")
     return {scheme: value for scheme, value in identifiers.items() if scheme not in dropped}
 
 

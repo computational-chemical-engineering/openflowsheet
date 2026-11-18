@@ -186,13 +186,14 @@ def _identifier_errors(record: Mapping[str, Any]) -> list[Coded]:
     if record["synthetic"]:
         bad = sorted(identifiers)
     else:
-        bad = [scheme for scheme in ("cas", "inchikey") if not _identifier_ok(identifiers, scheme)]
+        bad = [scheme for scheme in ("cas", "inchikey") if not identifier_ok(identifiers, scheme)]
     component = str(record["id"])
     return [Coded("identifier_invalid", {"component": component, "scheme": s}) for s in bad]
 
 
-def _identifier_ok(identifiers: Mapping[str, str], scheme: str) -> bool:
-    """Whether `identifiers[scheme]` is absent or well formed (D3)."""
+def identifier_ok(identifiers: Mapping[str, str], scheme: str) -> bool:
+    """Whether `identifiers[scheme]` is absent or well formed (D3; the legacy importer holds a
+    dropped identifier to it, F3 ruling round 1 B3)."""
     value = identifiers.get(scheme)
     if value is None:
         return True

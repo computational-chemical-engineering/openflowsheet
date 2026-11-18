@@ -564,3 +564,22 @@ def test_s07_spin_isomer_labels_are_dropped_and_the_rest_copied() -> None:
         kept = {k: v for k, v in stated.items() if not re.fullmatch(r"\d+-\d\d-\d[op]", v)}
         assert record.get("identifiers", {}) == kept
     assert sum(1 for c in v1.values() if c["identifiers"]["cas"][-1] in "op") == 3
+
+
+@pytest.mark.parametrize(
+    ("profile", "dropped"),
+    [("m01", {"H2": ["cas"]}), ("m01", {"H2": ["inchikey"]}), ("m01", {"H2": ["formula"]})],
+)
+def test_b3_a_dropped_identifier_must_be_one_d3_refuses(
+    profile: str, dropped: dict[str, list[str]]
+) -> None:
+    """F3 ruling round 1 (B3, WO3-2): a profile may drop only a `cas` or `inchikey` whose stated
+    value D3 refuses; dropping H2's valid CAS number, InChIKey or its formula fails the import.
+    The committed profiles still import to the committed index (E-F3-6)."""
+    v1 = {c["id"]: c for c in _yaml(profile)["components"]}
+    assert set(dropped["H2"]) <= set(v1["H2"]["identifiers"])
+    edited = dataclasses.replace(legacy.profile_named(profile), dropped_identifiers=dropped)
+    data = (REPO_ROOT / D12_FILES[profile][0]).read_bytes()
+    with pytest.raises(LegacyImportError, match="are not ones D3 refuses"):
+        legacy.import_file(edited, data)
+    assert records_legacy_index.regenerated() == INDEX.read_text(encoding="utf-8")
