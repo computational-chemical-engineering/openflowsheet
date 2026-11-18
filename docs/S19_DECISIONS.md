@@ -2893,3 +2893,8 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   failed, 20469 passed. The 10 are the ruling's 3.3 groups G1 (5), G2 (4), G3 S10 A26 (1); no surprise. Recorded with
   the admitted set in `<git-common-dir>/codehealth/briefs/S19-W5-batchN.md` (B_N still to fix after the w5gm merge).
   Scratch worktrees removed; the scratch branch is kept (never merged).
+- **2026-11-18 ~23:35 CET, job 346 `g1n4-1` (A4) PASS 16/16, anderson 74.7 -> 13.2.** Gate report ALERTs:
+  "ALERT selected gates take 397 s > 300 s (tests tier)" (the standing one; proposal 2 with Frank) and "ALERT queue
+  wait median 19 min > 15 min". Cause of the second: this session's two L_N probes held both gate slots for ~29 min
+  (21:29 to 21:58), so jobs 345 to 348 queued behind them. Action: none beyond not running probes beside a busy queue;
+  later probes go through the queue or wait for an empty one.
