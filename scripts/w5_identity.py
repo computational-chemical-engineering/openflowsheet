@@ -2,10 +2,11 @@
 
 The ruling decides what a byte change of a registry-hashed file moves; this tool computes it.
 
-    w5_identity.py sets [--check] [--base REV] [--legacy PATH] [--core PATH] [--json PATH]
+    w5_identity.py sets [--check] [--step] [--base REV] [--legacy PATH] [--core PATH]
+                        [--json PATH]
     w5_identity.py predict --base REV [--files PATH ...] [--against-log F0LOG] [--json PATH]
     w5_identity.py judge --before REV --after REV [--files PATH ...]
-    w5_identity.py coverage --base REV
+    w5_identity.py coverage --base REV [--head REV]
 
 - `sets`: R (the union of the implementation `modules` of `legacy.json` and `core.json`), F (F0's
   M9 set, `corpus_identity.frozen_modules`) and the four tiers of section 4, by its rules. It
@@ -14,7 +15,11 @@ The ruling decides what a byte change of a registry-hashed file moves; this tool
   site has a provider id and every provider one `implementation_sha256`; S4 the code's
   `[:12]` of every provider equals the one in each registered M2 label naming it (otherwise the
   tier rules would read a stale registry); S5 T-2a; S6 the tiers partition R. `--check` prints
-  the one summary line only.
+  the one summary line only. S2 and S4 hold only at a base (B, or K once re-registered): at a
+  step the held tables lag a tier 1 split and the registered labels lag a tier 3 edit. `--step`
+  says the revision is a step: S2 and S4 are skipped and the summary line says so. The tiers
+  printed at a step read the step's code against B's registry; a batch's admitted set is the
+  one fixed at B.
 - `predict`: the (measure, key) pairs of F0's registry that a comment-only change of the files
   moves, by section 3.2's reach rules, and whether `registry_sha256` moves. `--files` defaults
   to `git diff --name-only BASE..HEAD`; files outside R move nothing. `--against-log` compares
@@ -23,15 +28,17 @@ The ruling decides what a byte change of a registry-hashed file moves; this tool
   AFTER must equal `predict --base BEFORE` for E = `git diff --name-only BEFORE AFTER` (or
   `--files`), every predicted value must change, and `format`, `reference_platform`, `corpus`
   and `archived_outputs` must stay equal.
-- `coverage`: R4 and W5-S7. For each file of R at BASE that the working tree changes, every
-  (`openflowsheet` module, name) pair it imports now must have been imported at BASE or lie in
-  its hash scope now: the intersection of every identity set that holds the file (its provider
-  hash sets from M9's scan, a unit's own `artifact_hash`, and the regenerated registry
-  implementation sets), so one contributor's hash does not cover another's directory.
+- `coverage`: R4 and W5-S7. For each file of R at BASE that HEAD (default: the working tree)
+  changes, every (`openflowsheet` module, name) pair it imports at HEAD must have been imported
+  at BASE or lie in its hash scope at HEAD: the intersection of every identity set that holds
+  the file (its provider hash sets from M9's scan, a unit's own `artifact_hash`, and the
+  regenerated registry implementation sets), so one contributor's hash does not cover another's
+  directory.
   A new name from a module the file imported at BASE is admitted only if it was importable from
   that module at BASE (code moved into it since is a hole). A new module is admitted only as a
   retarget: every name taken from it was taken at BASE from a module M0 with `M0.name is M.name`
-  there. Also M9's key set must be BASE's.
+  there. Also M9's key set must be BASE's. The gate passes the step's commit as `--head`, so that
+  W5-S3 and W5-S7 judge the same E.
 
 A revision's facts are measured in a subprocess on an extracted copy (`git archive`), with that
 revision's own `corpus_identity.py` and `registry_builtin.py`; the working tree's with `--tree`.
@@ -306,8 +313,14 @@ def _registered_values(facts: Facts, measures: Iterable[str]) -> str:
     return json.dumps([measured[m] for m in measures], sort_keys=True)
 
 
-def assertions(facts: Facts) -> dict[str, list[str]]:
-    """S1 to S6: assertion -> its failures (empty when it holds)."""
+#: The assertions that hold only at a base: after a tier 1 split the held tables lag the
+#: generator (S2), and after a tier 3 edit the registered labels lag the code (S4), until K.
+BASE_ONLY: Final = ("S2", "S4")
+
+
+def assertions(facts: Facts, *, step: bool = False) -> dict[str, list[str]]:
+    """S1 to S6: assertion -> its failures (empty when it holds). At a step (`step`), S2 and S4
+    are not checked (`BASE_ONLY`) and hold no entry."""
     r_set, frozen = set(registry_set(facts)), set(facts["frozen"])
     failures: dict[str, list[str]] = {}
     failures["S1 F subset of R"] = [f"{file} is in F, not in R" for file in sorted(frozen - r_set)]
@@ -373,6 +386,8 @@ def assertions(facts: Facts) -> dict[str, list[str]]:
             if file not in attributed
         ]
     failures["S6 the tiers partition R"] = partition
+    if step:
+        failures = {name: found for name, found in failures.items() if name[:2] not in BASE_ONLY}
     return failures
 
 
@@ -408,9 +423,9 @@ def tiers(facts: Facts) -> dict[int, list[str]]:
     return found
 
 
-def checked(facts: Facts) -> None:
+def checked(facts: Facts, *, step: bool = False) -> None:
     """Raise `RuleError` naming every failed assertion."""
-    failed = {name: problems for name, problems in assertions(facts).items() if problems}
+    failed = {name: problems for name, problems in assertions(facts, step=step).items() if problems}
     if failed:
         raise RuleError(
             "; ".join(f"{name}: {', '.join(problems[:5])}" for name, problems in failed.items())
@@ -704,11 +719,13 @@ def command_sets(arguments: argparse.Namespace, tree: Path) -> int:
     base = resolve(tree, arguments.base) if arguments.base else None
     facts = facts_at(tree, base, legacy=arguments.legacy, core=arguments.core)
     try:
-        checked(facts)
+        checked(facts, step=arguments.step)
     except RuleError as error:
         print(f"sets --check FAIL: {error}")
         return 1
     line, listing, document = sets_report(facts)
+    if arguments.step:
+        line = line.replace("PASS: ", f"PASS at a step ({', '.join(BASE_ONLY)} not checked): ", 1)
     if not arguments.check:
         print("\n".join(listing))
     _write_json(arguments.json, {"base": base, **document})
@@ -788,12 +805,13 @@ def command_judge(arguments: argparse.Namespace, tree: Path) -> int:
 
 def command_coverage(arguments: argparse.Namespace, tree: Path) -> int:
     base = resolve(tree, arguments.base)
+    head = resolve(tree, arguments.head) if arguments.head else None
     with contextlib.ExitStack() as stack:
         base_root = stack.enter_context(revision_tree(tree, base))
-        head_root = tree
+        head_root = tree if head is None else stack.enter_context(revision_tree(tree, head))
         before = _subprocess_facts(base_root)
         after = _subprocess_facts(head_root)
-        changed = set(_git(tree, "diff", "--name-only", base).split())
+        changed = set(_git(tree, "diff", "--name-only", base, *([head] if head else [])).split())
         edited = sorted(changed & set(registry_set(before)))
         holes, candidates, names_taken = new_edges(edited, base_root, head_root, after)
         queries = [[_dotted(old), _dotted(new), name] for _, name, old, new in candidates]
@@ -827,6 +845,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     commands = parser.add_subparsers(dest="command", required=True)
     sets = commands.add_parser("sets")
     sets.add_argument("--check", action="store_true")
+    sets.add_argument(
+        "--step", action="store_true", help="the revision is a step, not a base: skip S2 and S4"
+    )
     sets.add_argument("--base")
     sets.add_argument("--legacy", type=Path)
     sets.add_argument("--core", type=Path)
@@ -842,6 +863,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     judgement.add_argument("--files", nargs="+")
     coverage = commands.add_parser("coverage")
     coverage.add_argument("--base", required=True)
+    coverage.add_argument("--head", help="the step's commit (default: the working tree)")
     facts = commands.add_parser("_facts")
     facts.add_argument("--root", required=True)
     facts.add_argument("--out", required=True)

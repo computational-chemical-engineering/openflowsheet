@@ -396,3 +396,42 @@ def test_t7_a_name_importable_at_the_base_from_an_imported_module_is_admitted(
         "importable from it at base",
         _summary(0),
     ]
+
+
+def test_t7_coverage_judges_the_head_commit(scratch: Path) -> None:
+    """Review R-W5-WO0, fix 2: `--head REV` judges that commit, not the working tree, so the gate
+    and W5-S3 read the same E. The hole is committed and the working tree put back at the base:
+    the working tree reports 0, the commit 1."""
+    _append(scratch, PROGRAM, MOVED)
+    _append(scratch, INDEX, "from openflowsheet.assessment.program import w5_moved\n")
+    _commit(scratch, "a hole", PROGRAM, INDEX)
+    _git("checkout", "-q", BASE, "--", PROGRAM, INDEX, cwd=scratch)
+    working = _tool("--tree", str(scratch), "coverage", "--base", BASE)
+    assert working.returncode == 0, working.stdout
+    assert working.stdout.splitlines() == [_summary(0, edited=0)]
+    done = _tool("--tree", str(scratch), "coverage", "--base", BASE, "--head", "HEAD")
+    assert done.returncode == 1, done.stdout
+    assert done.stdout.splitlines() == [
+        f"EDGE {INDEX} -> {PROGRAM} (w5_moved): outside its scope",
+        _summary(1),
+    ]
+
+
+def test_t1_s2_and_s4_run_only_at_a_base(scratch: Path) -> None:
+    """Review R-W5-WO0, fix 2: at a step after a tier 1 split (a new module in `cost/`) S2 fails,
+    and after a tier 3 edit (`pr_c1.py`) S4 fails, until K. `--step` skips both and says so."""
+    split = scratch / "src/openflowsheet/assessment/cost/w5_split.py"
+    split.write_text('"""A tier 1 split\'s new module."""\n', encoding="utf-8")
+    _append(scratch, "thermo/pr_c1.py", COMMENT)
+    done = _tool("--tree", str(scratch), "sets", "--check")
+    assert done.returncode == 1, done.stdout
+    assert "S2 implementation sets equal the generator's: core:functional_contributor:cost" in (
+        done.stdout
+    )
+    assert "S4 registered labels carry the code's [:12]: M2 m02/C1-FLASH-F1-M02-v1" in done.stdout
+    step = _tool("--tree", str(scratch), "sets", "--check", "--step")
+    assert step.returncode == 0, step.stdout
+    assert step.stdout.strip() == (
+        "sets --check PASS at a step (S2, S4 not checked): |R| 51, |F| 35, F subset of R, "
+        "tiers 16/28/6/1, T-2a holds (27 unit hashes)"
+    )
