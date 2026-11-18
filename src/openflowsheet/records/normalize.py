@@ -79,8 +79,9 @@ def _parsed(source: str | bytes | Mapping[str, Any]) -> dict[str, Any] | Coded:
     object; a repeated key) or at the first node outside the JSON data model (a YAML
     date, a non-finite float; `canonical.first_noncanonical`). JSON is text starting with `{`
     after an optional byte-order mark; anything else is YAML (`yaml.safe_load`'s loader). A
-    repeated key is refused in either. Bytes that are not UTF-8, a recursive YAML alias and
-    nesting deeper than the interpreter's recursion limit are `record_schema_invalid("")`."""
+    repeated key is refused in either, and so is a YAML alias (R-1057). Bytes that are not
+    UTF-8, an alias and nesting deeper than the interpreter's recursion limit are
+    `record_schema_invalid("")`."""
     try:
         document = loaded(source) if isinstance(source, str | bytes) else source
         if not isinstance(document, Mapping):
@@ -97,9 +98,9 @@ def _parsed(source: str | bytes | Mapping[str, Any]) -> dict[str, Any] | Coded:
 def loaded(source: str | bytes, *, syntax: Literal["json", "yaml"] | None = None) -> object:
     """JSON or YAML text (bytes as UTF-8; `UnicodeDecodeError` is a `ValueError`), parsed, a
     leading byte-order mark ignored; a repeated key raises (`ValueError` in JSON,
-    `yaml.YAMLError` in YAML, review S2). `syntax` names the language; `None` reads JSON when the
-    text starts with `{` and YAML otherwise (step 1). The user-file adapter reads its files with
-    it (`importers.user_file`)."""
+    `yaml.YAMLError` in YAML, review S2), and so does a YAML alias (`yaml.YAMLError`, R-1057).
+    `syntax` names the language; `None` reads JSON when the text starts with `{` and YAML
+    otherwise (step 1). The user-file adapter reads its files with it (`importers.user_file`)."""
     text = (source.decode("utf-8") if isinstance(source, bytes) else source).removeprefix("\ufeff")
     if syntax == "json" or (syntax is None and text.lstrip().startswith("{")):
         return json.loads(text, object_pairs_hook=_unique_members)
@@ -108,7 +109,14 @@ def loaded(source: str | bytes, *, syntax: Literal["json", "yaml"] | None = None
 
 class _UniqueKeySafeLoader(yaml.SafeLoader):
     """`yaml.SafeLoader` that refuses a mapping with a repeated key, as the JSON path does,
-    instead of keeping the last value. A merge key (`<<`) is not a member."""
+    instead of keeping the last value, and refuses an alias (`*name`) where it is composed, before
+    anything expands it: 24 nested aliases in 903 characters held a call for 292 s (F3 review 2,
+    M1; R-1057). A merge key (`<<`) is not a member."""
+
+    def compose_node(self, parent: yaml.Node | None, index: int) -> yaml.Node | None:
+        if self.check_event(yaml.AliasEvent):  # refused as a whole text: no mark is reported
+            raise yaml.composer.ComposerError(None, None, "an alias (R-1057)")
+        return super().compose_node(parent, index)
 
     def construct_mapping(self, node: yaml.MappingNode, deep: bool = False) -> dict[Any, Any]:
         keys = [

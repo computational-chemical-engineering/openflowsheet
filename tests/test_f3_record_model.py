@@ -1055,8 +1055,11 @@ def test_step_1_refuses_a_repeated_key_in_yaml_and_behind_a_byte_order_mark() ->
         assert outcome.record_sha256 is None
     base = identify(_minimal()).record_sha256
     assert identify("\ufeff" + json.dumps(_minimal())).record_sha256 == base is not None
-    merged = normalize("a: &x {k: 1}\nb:\n  <<: *x\n  k: 2\n")  # a merge key is no repeat
-    assert (merged.errors, merged.record) == ((), {"a": {"k": 1}, "b": {"k": 2}})
+    merged = normalize("b:\n  <<: {k: 1}\n  k: 2\n")  # a merge key is no repeat
+    assert (merged.errors, merged.record) == ((), {"b": {"k": 2}})
+    # A merge key through an alias is refused as every alias is (R-1057, F3 review 2 C1).
+    aliased = normalize("a: &x {k: 1}\nb:\n  <<: *x\n  k: 2\n")
+    assert _codes(aliased.errors) == [("record_schema_invalid", {"pointer": ""})]
 
 
 def test_step_1_refuses_and_never_raises_on_undecodable_or_unbounded_input() -> None:

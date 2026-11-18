@@ -28,6 +28,7 @@ import hashlib
 import io
 import json
 import sys
+import time
 from collections.abc import Iterator
 from pathlib import Path
 from typing import Any
@@ -503,3 +504,35 @@ def test_d13_latest_is_the_highest_insertion_sequence_not_the_date(app: LocalApp
     view = app.get_record(SHA)
     assert [row["sequence"] for row in view.rows] == [1, 2, 3]
     assert view.effective["user.lab"]["assessment"] == "unknown"
+
+
+# ===================================== F3 review 2 (R-1052 to R-1057), the fix round's C items
+
+
+def _alias_bomb(tail: str) -> str:
+    """M1's file: 24 nested aliases (`aN: &aN [*aN-1, *aN-1]`, 2^24 leaves) before `tail`."""
+    lines = ["a0: &a0 [x, x]", *(f"a{n}: &a{n} [*a{n - 1}, *a{n - 1}]" for n in range(1, 24))]
+    return "\n".join([*lines, tail])
+
+
+@pytest.mark.parametrize(
+    "file_format", ["record-v2-yaml", "component-record-v1-yaml"], ids=["v2", "v1"]
+)
+def test_c1_a_yaml_alias_is_refused_before_it_expands(
+    app: LocalApplication, file_format: str
+) -> None:
+    """R-1057: a user file's YAML may not use an alias; the 903-character file of M1 took 292 s
+    before the fix and is refused here at once, nothing stored."""
+    tail = "components: []" if file_format.startswith("component") else "name: xenonol"
+    request = {"file": {"format": file_format, "content": _alias_bomb(tail)}}
+    started = time.perf_counter()
+    refused = _refusal(app, "register_record", request)
+    elapsed = time.perf_counter() - started
+    assert refused["code"] == "invalid_request"
+    assert refused["detail"]["reason"] == "record_schema_invalid"
+    assert elapsed < 1.0, elapsed
+    # One alias of one scalar is refused as well: the rule is the alias, not its size.
+    small = "- &h2 {name: h2}\n- *h2\n"
+    refused = _refusal(app, "register_record", {"file": {"format": file_format, "content": small}})
+    assert refused["detail"]["reason"] == "record_schema_invalid"
+    assert [i for i in app.search_records(limit=200).items if i["store"] == "project"] == []

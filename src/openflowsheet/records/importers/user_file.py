@@ -23,9 +23,10 @@ its volatile block, its errors and findings, and its SHA when nothing refuses it
 
 Every record's `volatile` is `{retrieved_at, local_path (when given), adapter_version}`, replacing
 any the file states; `retrieved_at` is the caller's (the operation passes the time of the request).
-Text that is not one JSON or YAML document, and each list element that is not an object, is one
-refused outcome `record_schema_invalid("")`; a v1 file or component off its format is one refused
-outcome `record_schema_invalid(<pointer into the file>)`, its first error (F3 decision WO5a-5).
+Text that is not one JSON or YAML document (a YAML alias included, R-1057), and each list element
+that is not an object, is one refused outcome `record_schema_invalid("")`; a v1 file or component
+off its format is one refused outcome `record_schema_invalid(<pointer into the file>)`, its first
+error (F3 decision WO5a-5).
 """
 
 from __future__ import annotations
