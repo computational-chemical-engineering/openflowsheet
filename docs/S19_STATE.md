@@ -42,7 +42,7 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 - G6 run 6 merged into wp/S19 (18f934f6, 2026-11-16 21:42); G6's W3 part done (frozen thermo: W5).
 - 2026-11-17: I-11 merged (6668be04), G5 run 11 merged (1720cc98), I-13 merged (d63dcd7a), W4 runs 13-16 merged (e61b23f2). I-12d done on the lane, gating (jobs 241-243).
 
-- Open (R-W3-G1N-1): numerics/ptc.py health 6.8 after P1 (closing method's 9 parameters); P2 to P4 must end >= 7.0,
+- R-W3-G1N-1 ptc.py item met: health 8.3 after P3 (2026-11-18).
   else a miss and P1 is reverted.
 
 ## Order (Frank, 2026-11-15; S19_DECISIONS)
@@ -53,45 +53,45 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 - In parallel: the scale probe (R-1034).
 - Behind development: G3 studies, G4 assessment, G2 models (legacy engine untouched until Frank rules), W5.
 - Trailing behind 0.5 (Frank, ofs-s19-w4-docs-scope A, 2026-11-17): pre-S19 broken references in living docs.
-- Held until the scale probe reports: G1 (orchestrator/, numerics/). Open: ptc.py 6.8 (P3, P4).
+- G1 (orchestrator/, numerics/) running since 2026-11-18 (hold lifted 2026-11-16); ptc.py item met (8.3 after P3).
 - G-END (below) stays the end criterion for the whole repository.
 
-## Next actions (2026-11-18 ~19:00; earlier: the blocking set for 0.5 done 2026-11-17)
+## Next actions (2026-11-18 ~23:10)
 
-**Position:** wp/S19 = G3 run 9 merged (9f41b5ed) plus docs. **G3 closed** (studies/ below 7.0 only
-nlp/verification.py 6.1, ruled). Orchestrator scan at 9f41b5ed: debt 4060.5, health 8.35, brain 18, 20 files below
-7.0 (assessment/cost contributor 2.8, sets 4.7; thermo pr_c1 4.6, iapws95 6.2, coolprop_heos 6.4, pr_lib, wilson_ig
-6.9; models/syn001 column_unit 4.9, cascade_solve 6.6, conversion_reactor 6.6, kinetic_cstr 6.8, column_rows 6.9,
-mixer 6.9; models/revision_flowsheet 6.5; orchestrator executor 5.5, region 5.6, region_screen 6.3; numerics/ptc
-6.8; verify/gamma_phi_units 6.4). MB 756e1c12. Runner PID 2763884, queue empty at result 332.
-**Running (2026-11-18 ~20:40):** G1 lane N run 3 rebuilt (A3 2be11ee8 with the T08.A33 label fix, N3 b7895be0,
-P3 7e29bf7b on `wp/S19-g1n3`), gating as jobs 336-338 (g1n3b-*); on PASS: `reviewer` (S1, brief from
-`S19-R-W3-G1N-2.md`), then merge-check, merge. `opus-engineer` on W5 WO-0 (brief `S19-W5-WO0.md`, `wp/S19-w5`,
-`scripts/w5_identity.py`). W5 ruling merged (2b5c1d13); card request FR-1/FR-2/FR-3 sent to hub (batch P and any
-W5 merge wait). On a fresh context agent reports are lost: read `git log wp/S19-w5`, `$Q status`.
-**Blocking set (Frank, 2026-11-15) done.** G4 done except W5 files. G2 (non-legacy) empty: revision_flowsheet.py
-counted as legacy (S19_DECISIONS 2026-11-18 ~19:00), waits for Frank's legacy ruling.
+**Position:** wp/S19 = 59a65543 (G3 closed at 9f41b5ed; W5 ruling merged 2b5c1d13; docs since). Scan at 8d31b89e:
+debt 4060.5, health 8.35, brain 18 (17 after lane N run 3). MB 756e1c12. Runner PID 2763884. No agent of this
+session running. Background `gate_queue.py wait --since 338` may still be live (its wake carries no context:
+check `$Q status`).
+**In the queue (on wake, act in this order):**
+- job 342 `w5wo0-mc` (merge-check of `wp/S19-w5` 444b230d..583a6eb3: W5 WO-0 tool + fix round, reviewed R-W5-WO0,
+  fixes delivered). PASS -> `git merge --no-ff -F <msg> wp/S19-w5` into wp/S19, log. FAIL -> read failed checks.
+- job 343 `g1n3-fix` (no-gain, f0064645 `_Rejected` docstring, R-W3-G1N-3 fix 1) and job 344 `g1n3-mc`
+  (merge-check 8d31b89e..f0064645). Both PASS -> merge `wp/S19-g1n3` into wp/S19 (merge commit; message: A3, N3,
+  P3 + retarget 885e97a3 + fix; anderson 109.0->74.7, newton 102.1->79.8, ptc 105.6->33.9 health 6.8->8.3; review
+  R-W3-G1N-3), log.
 **Next:**
-1. W5 design ruling: one `specifier` (or `verdict`) pass with a brief file: Q1 of S19_DECISIONS (line ~33: one F0
-   M9 and registry_sha256 re-registration for a batch of behaviour-identical edits to the 35 frozen modules and the
-   45 registry-hashed files, `grep -n 'registry-hashed files wait for W5'`), how that squares with G-END's "F0 and
-   MCP digest identical", the B7 generator route, and the W5 work-order order. Non-models files (assessment/cost,
-   lca; thermo providers) first; the models/ part waits for Frank's legacy ruling.
-2. G1 beside it (hold lifted 2026-11-16, scale probe reported): orchestrator/ (executor 5.5, region 5.6,
-   region_screen 6.3) and numerics/ptc.py (6.8; R-W3-G1N-1: P2 to P4 must end >= 7.0, else a miss and P1
-   reverted). Brief from the last G1 brief (`ls <git-common-dir>/codehealth/briefs/ | grep G1`) and
-   docs/briefs/S19-G1-plan.md; S1 cadence (reviewer every chain).
-3. F3 (0.5, `wp/F3`, worktree `f3`): fix round 4 done, pushed 54eb696c (manifest `evidence/F3/361c6207.../`
-   implemented). CI 44326799399: only `test_every_description_is_reviewed_by_both_lanes` red on each suite leg (and
-   the informational codehealth job): ready except Frank's human review. **Waits for Frank:** card ofs-f3-mcp-descriptions-human signed A
-   and VERIFIED, but the REVIEW.json edit recording it was refused by the permission system; Frank allows it or edits
-   the five `human` reviews himself; then write `executed` on that card, CI green, manifest `tested` (record the CI
-   run ID and commit), merge card via hub. Card ofs-f3-qf1 executed (F2 owes `[p, q]` in validate_record when ADR
-   0062 is accepted). Open for the design lane: `molar_mass_inconsistent` signature clash ADR 0061 vs 0062.
-4. Then: G1 on, W5 by its ruling, the models/ legacy part and G2 after Frank's legacy ruling, docs. Rule: lanes
-   touching studies/ also need the nlp-marked suite at head, failures a subset of base (g19, g20).
-**Open for Frank (new):** the legacy models/ engine ruling (S19_DECISIONS 2026-11-15 item 5): G2's remainder and
-W5's models/ part wait for it.
+1. After the g1n3 merge: launch `opus-engineer` on lane N run 4, brief `<git-common-dir>/codehealth/briefs/S19-W3-G1N-4.md`
+   (fill `<BASE>` with the merge sha; A4 with its own retarget commit first, N4 with a shared `_Step` in newton,
+   P4). Then review R-W3-G1N-4 (S1), merge. Then lane O region run (R1, S1, C2; plan section 6; brief from
+   `S19-W3-G1O-3.md`).
+2. W5 (ruling `docs/briefs/S19-W5-ruling.md` section 9): after the WO-0 merge, WO-1 (orchestrator: batch N base
+   B_N; `i19_scan.py` 36 bindings; `w5_identity.py sets --check`; health scan; L_N by method 3.1; a W5 queue/gate
+   mode applying W5-S2..S4, S6 and the frozen-rule exemption for batch N's admitted set; delegate the queue-mode code
+   to an engineer with a spec) and WO-1b (S10 A26 oracle -> F0's registered M9 value; sonnet-implementer, reviewer
+   reads it). Then WO-N1 (cost contributor 2.8, sets 4.7), WO-N2 (lca), WO-N3 (pr_lib), WO-N4, close N (WO-N5)
+   with `--max-tier 2`. Batch N's MERGE into wp/S19 waits for card FR-2. Batch P waits for FR-1, batch L for the
+   legacy ruling.
+3. Desk cards (hub filed 2026-11-18, version 2): ofs-s19-w5-fr1-providers (A/B/C), ofs-s19-w5-fr2-reregister (A/B),
+   ofs-s19-w5-fr3-gend-clause (A/B). Action texts verbatim in S19_DECISIONS (grep "W5 cards filed") and hub's
+   message; on a doorbell: ArtifactData get + verify with `decision_desk_verify.py`, act only on VERIFIED.
+4. F3 (0.5, `wp/F3`, worktree `f3`): ready except Frank's human review. **Waits for Frank:** card
+   ofs-f3-mcp-descriptions-human signed A and VERIFIED, but the REVIEW.json edit recording it was refused by the
+   permission system; Frank allows it or edits the five `human` reviews himself; then `executed` on that card, CI
+   green, manifest `tested`, merge card via hub. Open for the design lane: `molar_mass_inconsistent` signature clash
+   ADR 0061 vs 0062.
+5. Rule: lanes touching studies/ also need the nlp-marked suite at head, failures a subset of base (g19, g20).
+**Open for Frank (new):** the three W5 cards (item 3); the legacy models/ engine ruling (S19_DECISIONS 2026-11-15 item 5): G2's remainder and
+W5 batch L wait for it.
 **Open build-lane items:** `benchmarks/m03/nlp-test.lock` lacks mpmath (m03_nlp_check.sh fails collection); test_opt_cost_lca_nlp g19, g20 fail; no CI or gate runs nlp-marked tests (add an nlp gate tier); the f3 worktree's `.venv` lacks pytest-xdist and pytest-timeout (fix round 3 ran the full suite serially, 6747 s).
 **Open for Frank (not blocking):** proposal 2 (selection widening; selected gates ~600 s vs 300 s; standing ALERT
 selected share ~50%); R-1042 option C; STOP 1 alternative; verify twins addendum; thermo/ below 7.0 only in W5;
