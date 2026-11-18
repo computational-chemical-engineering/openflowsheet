@@ -111,6 +111,22 @@ def schema_leaves(node: Any = SCHEMA, at: tuple[str, ...] = ()) -> dict[tuple[st
 LEAVES = schema_leaves()
 
 
+def pattern_leaves(node: Any = SCHEMA, at: tuple[str, ...] = ()) -> set[tuple[str, ...]]:
+    """The leaf path patterns of the schema at which a subschema declares a `pattern`."""
+    children = _children(node)
+    if not children:
+        return {at} if any("pattern" in part for part in _parts(node)) else set()
+    return {
+        path
+        for key, schemas in children.items()
+        for child in schemas
+        for path in pattern_leaves(child, (*at, key))
+    }
+
+
+PATTERNED = pattern_leaves()
+
+
 def document_leaves(node: Any, at: tuple[str, ...] = ()) -> Iterator[tuple[tuple[str, ...], Any]]:
     """Every leaf of a document (a scalar, or an empty array or object) and its path."""
     if isinstance(node, dict) and node:
@@ -634,6 +650,56 @@ def test_d7_refusals(
     outcome = identify(_with(changes, _water()))
     assert expected in _codes(outcome.errors)
     assert outcome.record_sha256 is None
+
+
+@pytest.mark.parametrize("name", MAXIMAL)
+def test_d7_a_trailing_newline_matches_no_pattern(name: str) -> None:
+    """Review M2: every schema leaf with a `pattern` refuses its fixture value plus `"\\n"` (a
+    YAML block scalar spells one), so no non-token is hashed and D6 never misreads `"l\\n"`. The
+    fixtures' own refusals are not `record_schema_invalid`, which is the only error a schema
+    failure gives."""
+    document = _fixture(name)
+    assert "record_schema_invalid" not in {code for code, _ in _codes(identify(document).errors)}
+    for path, value in document_leaves(document):
+        if _pattern_of(path) in PATTERNED and isinstance(value, str):
+            outcome = identify(_set(document, path, value + "\n"))
+            assert [code for code, _ in _codes(outcome.errors)] == ["record_schema_invalid"], path
+            assert outcome.record_sha256 is None
+
+
+def test_d7_the_fixtures_reach_every_patterned_leaf() -> None:
+    reached = {_pattern_of(path) for name in MAXIMAL for path, _ in document_leaves(_fixture(name))}
+    assert PATTERNED <= reached
+    assert ("formation", "*", "phase") in PATTERNED
+
+
+@pytest.mark.parametrize(
+    ("changes", "expected"),
+    [
+        ({("identifiers", "cas"): "7732-18-5\n"}, ("identifier_invalid", "cas")),
+        (
+            {("identifiers", "inchikey"): "XLYOFNOQVPJJNP-UHFFFAOYSA-N\n"},
+            ("identifier_invalid", "inchikey"),
+        ),
+        ({("identifiers", "formula"): "H2O\n"}, ("formula_elements_invalid", None)),
+    ],
+)
+def test_d7_a_trailing_newline_fails_the_identifier_rules(
+    changes: dict[tuple[str, ...], Any], expected: tuple[str, str | None]
+) -> None:
+    """Review M2: the CAS, InChIKey and formula readers match the whole string."""
+    code, scheme = expected
+    params = {"component": "fixture.water"} | ({} if scheme is None else {"scheme": scheme})
+    outcome = identify(_with(changes, _water()))
+    assert _codes(outcome.errors) == [(code, params)]
+
+
+def test_d7_a_source_key_with_a_trailing_newline_is_refused() -> None:
+    document = _minimal()
+    document["sources"] = {"s\n": {"version": "1"}}
+    document["molar_mass"]["provenance"]["source"] = "s\n"
+    outcome = identify(document)
+    assert [code for code, _ in _codes(outcome.errors)] == ["record_schema_invalid"]
 
 
 def test_d7_a_duplicate_key_is_refused_never_dropped() -> None:
