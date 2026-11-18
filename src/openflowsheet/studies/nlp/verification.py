@@ -53,6 +53,7 @@ from openflowsheet.studies.nlp.boundary import CERTIFICATE, PHASE_BOUNDARY_FORM,
 from openflowsheet.studies.nlp.formulation import (
     AssessmentBinding,
     AssessmentClosure,
+    Decision,
     InequalityConstraint,
     NlpFormulation,
     QuadraticExpression,
@@ -81,6 +82,7 @@ from openflowsheet.studies.nlp.tolerances import (
 )
 from openflowsheet.studies.sensitivity import (
     TAU_REGIME,
+    Matrix,
     OutputFunctional,
     SensitivityResult,
     StudyParameter,
@@ -931,7 +933,8 @@ def _kkt(
     held: Sequence[str] = (),
 ) -> tuple[SensitivityResult | None, KktEvidence | None, VerificationCheck]:
     """V5, from M03's adjoint sensitivities at `x_sim` (plus `∂G/∂d` for assessment terms);
-    `held` are the splits whose phase row is active (Q4's held mode, OPT §4.7)."""
+    `held` are the splits whose phase row is active (Q4's held mode, OPT §4.7). Each output is
+    `_functional`'s linearization; their scaled gradients are `_output_gradients`'s."""
     if not all(decision.bounded for decision in formulation.decisions):
         return None, None, VerificationCheck("V5", "not_evaluated", {"reason": "bounds_undeclared"})
     parameters = tuple(
@@ -967,17 +970,7 @@ def _kkt(
                 },
             ),
         )
-    host = np.array(sensitivity.adjoint.scaled, dtype=np.float64)
-    scales = np.array([decision.scale for decision in formulation.decisions], dtype=np.float64)
-    rows: list[npt.NDArray[np.float64]] = []
-    position = 0
-    for functional, direct in built:
-        if functional is not None:
-            row = host[position]
-            position += 1
-        else:
-            row = np.zeros(n)
-        rows.append(row if direct is None else row + direct * scales)
+    rows = _output_gradients(built, sensitivity.adjoint.scaled, formulation.decisions)
     objective_gradient = rows[0]
     gradients = {
         constraint.constraint_id: rows[index]
@@ -989,7 +982,7 @@ def _kkt(
     active_rows = []
     for item in active:
         if item.kind == "bound":
-            row = np.zeros(n)
+            row: npt.NDArray[np.float64] = np.zeros(n)
             row[position_of[item.target]] = 1.0
         else:
             row = gradients[item.target].copy()
@@ -1012,6 +1005,29 @@ def _kkt(
             },
         ),
     )
+
+
+def _output_gradients(
+    built: Sequence[tuple[OutputFunctional | None, npt.NDArray[np.float64] | None]],
+    scaled: Matrix,
+    decisions: Sequence[Decision],
+) -> list[npt.NDArray[np.float64]]:
+    """Each output of `built` (`_functional`'s, the objective then the constraints), its scaled
+    gradient over `decisions` in order: the next row of the adjoint's `scaled` matrix (one row
+    per output whose functional is not `None`, in order), or zeros for one without a functional;
+    plus its direct term times the decision scales where it has one."""
+    host = np.array(scaled, dtype=np.float64)
+    scales = np.array([decision.scale for decision in decisions], dtype=np.float64)
+    rows: list[npt.NDArray[np.float64]] = []
+    position = 0
+    for functional, direct in built:
+        if functional is not None:
+            row = host[position]
+            position += 1
+        else:
+            row = np.zeros(len(decisions))
+        rows.append(row if direct is None else row + direct * scales)
+    return rows
 
 
 def _stationarity(
