@@ -20003,5 +20003,5 @@ register, importers and the five `Records` operations. The build decisions of WO
 yet ruled stay open for the package's reviewer pass; reversing any part of the accepted text takes a new decision
 recorded the same way.
 
-**Rejected alternatives, and why.** Option B on the card (hold acceptance until WO5 is built): the text it would accept
-is the same, and acceptance lets F3 merge as soon as its close-out passes.
+**Rejected alternatives, and why.** Option B on the card, "keep ADR 0061 Proposed; F3 stays on wp/F3 and does not
+merge": not chosen by Frank.
