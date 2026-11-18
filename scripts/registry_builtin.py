@@ -42,13 +42,14 @@ It never reads `MODEL_BASES`, so E-F1-1's comparison of the admitted set with it
 the implementation set is every `*.py` under the directory of the module defining the factory
 (D6). They are listed only: the registry never calls `register_contributor` (D1, risk 4).
 
-`records.json` holds ADR 0061's built-in `record_type` (D1: `component`, `parameter_set`,
-`assay`), `correlation_form` (D4: the two forms) and `data_source` (D12: `legacy-yaml`,
-`user-file`) descriptors, read from `openflowsheet.records.model`'s tables. Their modules are
-empty (a record type's or a form's descriptor is its whole content, ADR 0060 D9; the importers
-are F3-WO3's and WO5's) and their status is `implemented` until F3's close-out. A record type's
-`payload_schema` carries the SHA-256 of the schema file's LF-normalised bytes (ADR 0061 review
-ruling WO1-11), so an edit of the record schema moves the descriptor and fails `--check`.
+`records.json` holds ADR 0061's built-in `record_type` (D1: `component`, `parameter_set`, `assay`),
+`correlation_form` (D4: the two forms) and `data_source` (D12: `legacy-yaml`, `user-file`)
+descriptors, read from `openflowsheet.records.model`'s tables. A record type's and a form's modules
+are empty (the descriptor is its whole content, ADR 0060 D9); a data source's are its importer
+module (`DATA_SOURCE_MODULES`, F3 decision WO3-6, filled at F3-WO5b). Every one's status is
+`implemented` until F3's close-out. A record type's `payload_schema` carries the SHA-256 of the
+schema file's LF-normalised bytes (ADR 0061 review ruling WO1-11), so an edit of the record schema
+moves the descriptor and fails `--check`.
 """
 
 from __future__ import annotations
@@ -513,10 +514,22 @@ def contributors() -> list[dict[str, Any]]:
 RECORDS_STATUS: Final = "implemented"
 #: ADR 0061 D1: the schema file of the built-in record types' payloads, in the package.
 RECORD_SCHEMA_PATH: Final = "_data/schemas/record-v2.schema.json"
+#: ADR 0061 D12 (F3 decision WO3-6, filled at F3-WO5b): each data source's implementation set,
+#: its importer module (`records.importers.legacy`; the user-file adapter's
+#: `records.importers.user_file`, which `register_record` reaches).
+DATA_SOURCE_MODULES: Final[Mapping[str, tuple[str, ...]]] = {
+    "legacy-yaml": ("openflowsheet/records/importers/legacy.py",),
+    "user-file": ("openflowsheet/records/importers/user_file.py",),
+}
 
 
 def _payload_only(
-    kind: str, identifier: str, title: str, payload: Mapping[str, Any], version: str = VERSION
+    kind: str,
+    identifier: str,
+    title: str,
+    payload: Mapping[str, Any],
+    version: str = VERSION,
+    modules: Iterable[str] = (),
 ) -> dict[str, Any]:
     return _descriptor(
         kind,
@@ -524,7 +537,7 @@ def _payload_only(
         title,
         requires=[],
         provides=[],
-        modules=[],
+        modules=modules,
         factory=None,
         payload=payload,
         version=version,
@@ -562,7 +575,11 @@ def records() -> list[dict[str, Any]]:
         found.append(_payload_only("correlation_form", name, form.title, form.payload))
     for name, source in DATA_SOURCES.items():
         payload = {"record_types": source["record_types"], "formats": source["formats"]}
-        found.append(_payload_only("data_source", name, source["title"], payload))
+        found.append(
+            _payload_only(
+                "data_source", name, source["title"], payload, modules=DATA_SOURCE_MODULES[name]
+            )
+        )
     return found
 
 

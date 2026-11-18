@@ -124,7 +124,9 @@
     "id": "legacy-yaml",
     "implementation": {
       "factory": null,
-      "modules": []
+      "modules": [
+        "openflowsheet/records/importers/legacy.py"
+      ]
     },
     "kind": "data_source",
     "limitations": [],
@@ -153,7 +155,9 @@
     "id": "user-file",
     "implementation": {
       "factory": null,
-      "modules": []
+      "modules": [
+        "openflowsheet/records/importers/user_file.py"
+      ]
     },
     "kind": "data_source",
     "limitations": [],
