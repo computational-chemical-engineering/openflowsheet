@@ -2591,3 +2591,5 @@
   Evidence row edited, 97cbe41c) accepted by the orchestrator: F3's own entry, the evidence had to follow C11.
   Left for WO7: R-1051 heading/Decision still name 248c2e74; Amendment 8's `reserved_namespace` sentence names only
   the prefix; REVIEW.json reviews; manifest; CI.
+- 2026-11-18 ~11:30, gate report before the self-reset (6 h, 21 gates, 0 failed): `ALERT selected share 56% < 75%
+  of step gates`: the studies/ steps fall back on import-time code (as runs 3-5; proposal 2); no action.
