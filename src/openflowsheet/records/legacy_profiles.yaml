@@ -59,6 +59,12 @@ profiles:
     mapping: none
     provenance:
       molar_mass: {origin: [measured], derivation: direct}
+    # F3 decision WO3-2: CoolProp's spin-isomer labels (a CAS number with an `o` or `p` suffix)
+    # are not CAS numbers (D3, `identifier_invalid`); the records keep their id and name.
+    dropped_identifiers:
+      OrthoDeuterium: [cas]
+      OrthoHydrogen: [cas]
+      ParaDeuterium: [cas]
 
   - profile: s10
     file: benchmarks/s10/records.yaml
