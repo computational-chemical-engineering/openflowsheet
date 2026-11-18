@@ -2454,3 +2454,8 @@
   rights rows. Reversible by: reverting WO4-0 and regenerating the index. The design-lane ruling round on all F3
   choices (fix1-1..4, WO2-1..9, WO3-1..7, WO4-*) runs after WO4, before WO5 touches the application contract; its
   ADR edits then go to hub to re-pin card ofs-f3-accept-adr0061 once.
+- **2026-11-18, G3 run 3 merged into wp/S19 as 8cb44f62** (jobs 273 no-gain PASS, 274 merge-check PASS). Gate
+  report: 10 gates, 0 failed, no ALERT. Scan 8cb44f62: debt 4591.7, health 8.25, brain 23; studies/ 1052.6, 7 files
+  below 7.0. Old lane wp/S19-g3 superseded (its step ported). G3 run 4 launched: `wp/S19-g3d` from 8cb44f62, brief
+  `S19-W3-G3-4.md` (run_study second RC step per R-W3-G3-3, _shape_check, _recomputed_chain, _assemble and
+  _eliminate_zero_flows within the S1 cap, optimize_revision).

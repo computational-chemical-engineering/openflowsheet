@@ -77,15 +77,15 @@ duplication (twin merge: addendum for Frank); certificate, checks, split_checks 
    to 9a4605f (optional, stricter new-brain matching, no score change).
 2. DONE 2026-11-18: WITNF on main (a283925c, pushed; both NaN cards executed; main merged into wp/S19 as 170709bc).
 3. 0.5 STARTED 2026-11-18: F3 on `wp/F3` (worktree `f3`, from main a283925c; build log `docs/F3_DECISIONS.md`).
-   WO1 done, reviewed (`docs/reviews/F3-WO1-review.md`), fix round 1 done at 8ca21576 (130 F3 tests, 62-file
-   battery 1923/0, F0 PASS). Card ofs-f3-accept-adr0061 (desk v2) pinned to the ADR text at 8ca21576: do not edit
-   ADR 0061 before it is signed, else ask hub to re-pin. Option A verbatim: "accept ADR 0061 (F3 component data) as
-   on wp/F3 at 8ca21576 (with the F3-WO1 review applied), with ADR 0019 Amendment 8 (Records interface, five
-   operations), so that F3 can merge into main". Next: F3-WO2 (store and resolution). Fix1 choices fix1-1..4 and
-   the WO2.. choices go to one package design-lane pass. Card for ADR 0062 (F2) near F3 close-out.
-4. Trailing S19 at one lane (ofs-s19-trailing-order): G3 run 3 (`wp/S19-g3c`, 226ca985..06e39f72): jobs 265-272 PASS;
-   review R-W3-G3-3 running (brief in briefs/); then fixes, merge-check, merge. Then G4, G2 (non-legacy), W5,
-   G1 after the scale probe, docs.
+   Done: WO1 + review + fix1 (8ca21576), WO2 (1dfbfb5b), WO3 (9e41f012; 149 records). Running: WO4 (lock and rights,
+   brief `docs/briefs/F3-WO4.md`), first commit the orchestrator default for WO3-1 (one citation per legacy file).
+   Next: one design-lane ruling round on all F3 choices (fix1-1..4, WO2-1..9, WO3-1..7, WO4-*), then hub re-pins
+   card ofs-f3-accept-adr0061 once with the ruled ADR text; then WO5 (operations), WO7 close-out and the package
+   reviewer. Card currently pinned to the ADR at 8ca21576 (do not edit the ADR before the ruling round). Card for
+   ADR 0062 (F2) near F3 close-out.
+4. Trailing S19 at one lane (ofs-s19-trailing-order): G3 run 3 merged (8cb44f62; scan 4591.7 / 8.25 / brain 23).
+   G3 run 4 running (`wp/S19-g3d` from 8cb44f62, brief `S19-W3-G3-4.md`); on its report: `$Q wait --since 274`,
+   reviewer, merge-check, merge. Then G4, G2 (non-legacy), W5, G1 after the scale probe, docs.
 **Open for Frank (not blocking):** proposal 2 (selection widening; selected gates ~600 s vs 300 s); R-1042 option C;
 STOP 1 alternative; verify twins addendum; thermo/ below 7.0 only in W5; optional forbid rule cli/serving -> services;
 **Notes:** as before (STOP 1 no-gain; ruff before a merge-check; helper merge only if wp/S19 changed only docs since;
