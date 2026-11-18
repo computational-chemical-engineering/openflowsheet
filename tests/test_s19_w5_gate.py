@@ -183,22 +183,60 @@ def test_s6_the_node_ids_of_a_real_pytest_short_summary(tmp_path: Path) -> None:
 
 def test_s1_admitted_paths_pass(batch: dict[str, Any], sets: dict[str, Any]) -> None:
     files = [CONTRIBUTOR, PR_LIB, "scripts/registry_builtin.py", "tests/test_t07_w5a_inspection.py"]
-    assert gate.scope_problems(files, batch, sets["tiers"]["4"]) == []
+    assert gate.scope_problems(files, batch, sets["tiers"]) == []
 
 
 def test_s1_a_tier_2_file_outside_admitted_fails_naming_it(
     batch: dict[str, Any], sets: dict[str, Any]
 ) -> None:
-    problems = gate.scope_problems([CONTRIBUTOR, FEED], batch, sets["tiers"]["4"])
+    problems = gate.scope_problems([CONTRIBUTOR, FEED], batch, sets["tiers"])
     assert problems == [f"{FEED}: outside the batch's admitted, generator and retarget sets"]
 
 
+CONTRIBUTOR_PART = f"{SRC}/assessment/cost/contributor_terms.py"  # a new module in its directory
+PLANS = "plans/*.toml"  # config.toml passes the restructure plans' directory
+
+
+def test_s1_a_tier_1_split_and_a_restructure_plan_pass(
+    batch: dict[str, Any], sets: dict[str, Any]
+) -> None:
+    files = [CONTRIBUTOR, CONTRIBUTOR_PART, "plans/r1-split.toml"]
+    added = [CONTRIBUTOR_PART, "plans/r1-split.toml"]
+    assert gate.scope_problems(files, batch, sets["tiers"], added, PLANS) == []
+
+
+def test_s1_new_paths_outside_a_tier_1_directory_and_unadmitted_tiers_fail(
+    batch: dict[str, Any], sets: dict[str, Any]
+) -> None:
+    """A new module beside a tier 2 file, a new non-module beside a tier 1 file, a tier 1 file
+    not admitted that exists at B, a tier 3 file, a plan in another directory: each refused."""
+    beside_feed = f"{SRC}/models/c1/feed_terms.py"
+    data = f"{SRC}/assessment/cost/terms.json"
+    tier_1 = sets["tiers"]["1"][-1]
+    tier_3 = sets["tiers"]["3"][0]
+    batch["admitted"] = [CONTRIBUTOR, PR_LIB]
+    assert tier_1 != CONTRIBUTOR
+    files = [beside_feed, data, tier_1, tier_3, "plans/sub/r1.toml", "other/r1.toml"]
+    added = [beside_feed, data, "plans/sub/r1.toml", "other/r1.toml"]
+    outside = ": outside the batch's admitted, generator and retarget sets"
+    assert gate.scope_problems(files, batch, sets["tiers"], added, PLANS) == [
+        f"{path}{outside}" for path in sorted(files)
+    ]
+    # without the plans glob, or for a file that exists at B, a plan-like path is refused too
+    assert gate.scope_problems([CONTRIBUTOR_PART], batch, sets["tiers"]) == [
+        f"{CONTRIBUTOR_PART}{outside}"
+    ]
+    assert gate.scope_problems(["plans/r1.toml"], batch, sets["tiers"], ["plans/r1.toml"]) == [
+        f"plans/r1.toml{outside}"
+    ]
+
+
 def test_s1_syn001_fails_even_when_admitted(batch: dict[str, Any], sets: dict[str, Any]) -> None:
-    assert gate.scope_problems([SYN001], batch, sets["tiers"]["4"]) == [
+    assert gate.scope_problems([SYN001], batch, sets["tiers"]) == [
         f"{SYN001}: tier 4 (excluded, ruling R1)"
     ]
     batch["admitted"].append(SYN001)
-    assert gate.scope_problems([SYN001], batch, sets["tiers"]["4"]) == [
+    assert gate.scope_problems([SYN001], batch, sets["tiers"]) == [
         f"{SYN001}: tier 4 (excluded, ruling R1)"
     ]
 

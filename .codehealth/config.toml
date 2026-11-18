@@ -60,7 +60,7 @@ timeout = 600
 kind = "command"
 cadence = "step"
 behaviour = false
-cmd = 'V="${OPENFLOWSHEET_VENV:-$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")/.venv}/bin"; [ -n "${S19_W5_BATCH:-}" ] || { echo "w5_scope: S19_W5_BATCH unset, not a W5 step: pass"; exit 0; }; PYTHONPATH=src "$V/python" scripts/w5_gate.py scope'
+cmd = 'V="${OPENFLOWSHEET_VENV:-$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")/.venv}/bin"; [ -n "${S19_W5_BATCH:-}" ] || { echo "w5_scope: S19_W5_BATCH unset, not a W5 step: pass"; exit 0; }; PYTHONPATH=src "$V/python" scripts/w5_gate.py scope --plans ".codehealth/restructure/*.toml"'
 
 [[gate.tier]]
 name = "w5_coverage"

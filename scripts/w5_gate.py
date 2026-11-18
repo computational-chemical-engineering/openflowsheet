@@ -15,8 +15,11 @@ file's `base`, not the step's `{base}`.
                                           --against-log L`, and the summary line fails no
                                           measure but M9
     w5_gate.py registry                   W5-S4: `predict --base B --max-tier T --against-tables`
-    w5_gate.py scope                      W5-S1: `git diff --name-only B..HEAD` is a subset of
-                                          admitted + generator + retarget, with no tier 4 file
+    w5_gate.py scope [--plans GLOB]       W5-S1: `git diff --name-only B..HEAD` is a subset of
+                                          admitted + generator + retarget, with no tier 4 file;
+                                          also allowed: a .py file absent at B in the directory of
+                                          an admitted tier 1 file (a split, ruling R4) and a file
+                                          matching GLOB (a restructure step's plan)
     w5_gate.py coverage                   W5-S7: `w5_identity.py coverage --base B --head HEAD`
     w5_gate.py tests --log L -- CMD ...   W5-S6: CMD (test_impact.py run, which writes L and
                                           reports with -rfE); on exit 1 the failed and errored
@@ -37,8 +40,10 @@ Standard library only: gate.sh runs `batch` under any Python 3.
 from __future__ import annotations
 
 import argparse
+import fnmatch
 import json
 import os
+import posixpath
 import re
 import subprocess
 import sys
@@ -187,25 +192,48 @@ def sets_at(base: str) -> dict[str, Any]:
 # -- the verdicts ----------------------------------------------------------------------------------
 
 
-def changed(base: str) -> list[str]:
-    done = _git("diff", "--name-only", f"{base}..HEAD")
+def changed(base: str, *, added: bool = False) -> list[str]:
+    """The paths `base..HEAD` changes (`added`: only those absent at the base). A rename counts
+    as both of its paths."""
+    filters = ["--diff-filter=A"] if added else []
+    done = _git("diff", "--name-only", "--no-renames", *filters, f"{base}..HEAD")
     if done.returncode != 0:
         raise BatchRefusedError(f"git diff {base[:12]}..HEAD: {done.stderr.strip()}")
     return sorted(done.stdout.split())
 
 
+def plan_file(path: str, plans: str | None) -> bool:
+    """Whether `path` matches the restructure plans' glob, a file pattern in one directory."""
+    return plans is not None and (
+        posixpath.dirname(path) == posixpath.dirname(plans)
+        and fnmatch.fnmatchcase(posixpath.basename(path), posixpath.basename(plans))
+    )
+
+
 def scope_problems(
-    files: Iterable[str], document: Mapping[str, Any], tier_4: Iterable[str]
+    files: Iterable[str],
+    document: Mapping[str, Any],
+    tiers: Mapping[str, Sequence[str]],
+    added: Iterable[str] = (),
+    plans: str | None = None,
 ) -> list[str]:
     """W5-S1: every changed path is admitted, the generator's or a named retarget, and none is a
-    tier 4 file."""
+    tier 4 file. Also allowed: a new module (in `added`, absent at B) in the directory of an
+    admitted tier 1 file, which a tier 1 split adds (ruling R4: tier 1 files may be split within
+    their directory), and a restructure step's plan file (`plans`, the glob config.toml passes)."""
     allowed = {path for key in ("admitted", "generator", "retarget") for path in document[key]}
-    excluded = set(tier_4)
+    excluded = set(tiers["4"])
+    split_into = {posixpath.dirname(path) for path in set(document["admitted"]) & set(tiers["1"])}
+    new = set(added)
     problems = []
     for path in sorted(set(files)):
         if path in excluded:
             problems.append(f"{path}: tier 4 (excluded, ruling R1)")
-        elif path not in allowed:
+        elif path in allowed or plan_file(path, plans):
+            continue
+        elif path in new and path.endswith(".py") and posixpath.dirname(path) in split_into:
+            continue
+        else:
             problems.append(f"{path}: outside the batch's admitted, generator and retarget sets")
     return problems
 
@@ -402,10 +430,12 @@ def command_coverage(_: argparse.Namespace) -> int:
     return done.returncode
 
 
-def command_scope(_: argparse.Namespace) -> int:
+def command_scope(arguments: argparse.Namespace) -> int:
     document = from_environment()
     files = changed(document["base"])
-    problems = scope_problems(files, document, sets_at(document["base"])["tiers"]["4"])
+    added = changed(document["base"], added=True)
+    tiers = sets_at(document["base"])["tiers"]
+    problems = scope_problems(files, document, tiers, added, arguments.plans)
     for problem in problems:
         print(problem)
     verdict = f"FAIL: {len(problems)} path(s) outside the batch" if problems else "PASS"
@@ -436,8 +466,10 @@ def main(argv: Sequence[str] | None = None) -> int:
     validate.add_argument("--head", required=True)
     batch = commands.add_parser("batch")
     batch.add_argument("file")
-    for name in ("f0", "registry", "scope", "coverage"):
+    for name in ("f0", "registry", "coverage"):
         commands.add_parser(name)
+    scope = commands.add_parser("scope")
+    scope.add_argument("--plans", help="the glob of the restructure plan files a W5 step may add")
     tests = commands.add_parser("tests")
     tests.add_argument("--log", required=True)
     tests.add_argument("command", nargs=argparse.REMAINDER)
