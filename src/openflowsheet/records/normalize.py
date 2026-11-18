@@ -253,16 +253,17 @@ def sort_sets(record: dict[str, Any]) -> dict[str, Any]:
     """Step 4 on a `component` or `parameter_set` record: `synonyms`, `entries` (by property,
     phase, indices), `transitions` (by from, to) and `components` (by key) sorted by the
     canonical-JSON bytes of their keys, and every provenance's `origin` and `inputs` by their
-    elements'; canonically identical elements removed, distinct elements with one key kept.
+    elements' (the provenance sets first, review S1); canonically identical elements removed,
+    distinct elements with one key kept.
     `formation` is sorted by phase class, stably. Another record type is returned as it is."""
     if record.get("record_type") not in ("component", "parameter_set"):
         return record
+    for _, holder in quantities(record):  # inner sets first, so outer elements compare normalised
+        if isinstance(holder.get("provenance"), dict):
+            holder["provenance"] = _provenance_sets(holder["provenance"])
     for name, key in _SET_KEYS.items():
         if isinstance(record.get(name), list):
             record[name] = _as_set(record[name], key)
-    for _, holder in quantities(record):
-        if isinstance(holder.get("provenance"), dict):
-            holder["provenance"] = _provenance_sets(holder["provenance"])
     if isinstance(record.get("formation"), list):
         record["formation"] = sorted(record["formation"], key=_formation_class)
     return record

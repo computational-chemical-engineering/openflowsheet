@@ -783,6 +783,21 @@ def test_d7_a_duplicate_key_is_refused_never_dropped() -> None:
     assert identify(identical).record_sha256 == identify(_water()).record_sha256
 
 
+def test_e_f3_4_entries_equal_after_their_inner_sets_are_sorted_are_one_entry() -> None:
+    """Review S1: two entries that differ only in the order of `provenance.origin` are
+    canonically identical after step 4, so one is removed and the record is the one-entry
+    record."""
+    single = _water()
+    single["entries"][0]["provenance"]["origin"] = ["measured", "computed"]
+    twins = copy.deepcopy(single)
+    twin = copy.deepcopy(single["entries"][0])
+    twin["provenance"]["origin"] = ["computed", "measured"]
+    twins["entries"].append(twin)
+    outcome = identify(twins)
+    assert outcome.errors == ()
+    assert outcome.record_sha256 == identify(single).record_sha256 is not None
+
+
 def test_d7_colliding_keys_after_nfc_are_refused() -> None:
     document = _minimal()
     document["sources"] = {"café": {"version": "1"}, "café": {"version": "2"}}
