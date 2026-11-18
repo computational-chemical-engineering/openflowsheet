@@ -56,38 +56,40 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 - Held until the scale probe reports: G1 (orchestrator/, numerics/). Open: ptc.py 6.8 (P3, P4).
 - G-END (below) stays the end criterion for the whole repository.
 
-## Next actions (2026-11-18 ~14:00; earlier: the blocking set for 0.5 done 2026-11-17)
+## Next actions (2026-11-18 ~17:30; earlier: the blocking set for 0.5 done 2026-11-17)
 
-**Position:** wp/S19 = G3 run 5 merged (4fc833d9) plus docs. Scan at G3 run 6's head 55bad42e: debt 4313.9, health
-8.31, brain 18, 20 files below 7.0; studies/ 774.8, below 7.0 only nlp/verification.py 5.6. MB 756e1c12. Runner PID
-2763884. No agent running. Background shell (may wake the session): `gate_queue.py wait --since 288 --idle
-.../s19-g3f` for jobs 303 (g3r6-revfix, no-gain) and 304 (g3r6-mc, merge-check, base 4fc833d9).
+**Position:** wp/S19 = G3 run 7 merged (c7945474) plus docs. Engineer's scan at G3 run 8's head b3f304bd: debt
+4134.8, health 8.34, brain 18; studies/ below 7.0 only nlp/verification.py 6.1 (verify_candidate 33.7 stays, ruling
+R-W3-G3-5 (b)). MB 756e1c12. Runner PID 2763884. No agent of this session running. Background shells that may wake
+the session: `gate_queue.py wait --since 299 --idle .../s19-g3h` (jobs 314-321, G3 run 8), and `gh run watch
+44326799399` (F3 CI on 54eb696c; prints CONCLUSION and the non-green jobs).
 **Blocking set (Frank, 2026-11-15) done** (W4, 0 cycles/violations, G5, G6; residues and owners as in S19_DECISIONS
 2026-11-17).
 **Next:**
-1. G3 run 6 (`wp/S19-g3f`, 4fc833d9..55bad42e): all 8 steps PASS, review R-W3-G3-6 merge (notes 1-2 applied
-   55bad42e, note 3 rejected). On 303 and 304 PASS: gate report, merge `wp/S19-g3f` into `wp/S19` (merge commit,
-   `git merge -F`), log. Then G3 run 7: brief ready `<git-common-dir>/codehealth/briefs/S19-W3-G3-7.md`; replace
-   `@@BASE@@` with the new wp/S19 tip, launch `opus-engineer`; on delivery, `wait --since <N> --idle .../s19-g3g`.
-   On a FAIL: an environment kill (no failure line, SIGTERM) is re-queued with `--rerun-of <run-log step> --reason`.
-2. F3 (0.5, `wp/F3`, worktree `f3`): WO7 done (6800a65f, manifest `evidence/F3/ebdff46f/` implemented, pushed).
-   CI 44283813577 FAILED: besides the expected red (Frank's human review), 6 full-suite tests the battery missed
-   (A21 manifest checks, G20 five `@cache`, M07a A50 harvest size, no_broad_except, Q26 stoichiometry map, E-F3-8
-   sqlite locked on x86) and codehealth (local.py duplication; the 26 arch lines are a base-config artefact, head 0
-   violations; job informational). **Launch fix round 3**: `opus-engineer` with brief `docs/briefs/F3-fix3.md` (wp/F3
-   e73368c2; evidence `<git-common-dir>/codehealth/briefs/F3-ci-44283813577.txt`). Then one design-lane ruling round
-   on its DECISIONs F3-3-n (G20 allowlist, Q26 map, broad except), CI green, manifest `tested`, merge card via hub.
-   **Waits for Frank:** card ofs-f3-mcp-descriptions-human signed A and VERIFIED, but the agent's REVIEW.json edit
-   recording it was refused by the permission system (oversight); the orchestrator did not work around it. Frank
-   allows it or edits the five `human` reviews himself (status reviewed, by "Frank Peters (Decision Desk
-   ofs-f3-mcp-descriptions-human)", 2026-11-18); then write `executed` on that card. Card ofs-f3-qf1 executed (F2 owes
-   `[p, q]` in validate_record when ADR 0062 is accepted). Open for the design lane: `molar_mass_inconsistent`
-   signature clash ADR 0061 vs 0062. Re-pin cce-code-health to 9a4605f (optional).
+1. G3 run 8 (`wp/S19-g3h`, c7945474..b3f304bd, 8 steps, jobs 314-321; report `grep -n -A8 'G3 run 8 delivered'
+   docs/S19_DECISIONS.md`). On all PASS: gate report; review R-W3-G3-8 (`reviewer`, Opus; write the brief from
+   `<git-common-dir>/codehealth/briefs/S19-R-W3-G3-7.md` as template; no S1 file touched; rule on: step 1 pinning
+   tests (phase_rows uses a monkeypatched `_port_entries`: is that an adequate pin?), steps 2-4 verifier independence
+   and order of active rows/regimes, step 5 order of request findings across `_check_*`, step 6 replay floor order);
+   then ruff, merge-check (`enqueue --snapshot --worktree .../s19-g3h --base c7945474 --mode merge-check --label
+   g3r8-mc --target studies --recipe merge-check --model claude-opus-5-5`), merge (`git merge --no-ff -F`), log.
+   Then G3 run 9 (write the brief from S19-W3-G3-8.md): remaining studies/ hot spots: `static_readiness` 15.5 (a
+   refusal ladder with a closure writing `not_run`, needs a whole-ladder pass), projection.py `project` 21.5 (S1),
+   projection_checks.py, trf.py remainder; or close G3 when studies/ has no file below 7.0 except verification.py.
+2. F3 (0.5, `wp/F3`, worktree `f3`): fix round 4 done, pushed 54eb696c (manifest `evidence/F3/361c6207.../`
+   implemented). On CI 44326799399: if the only red is `test_every_description_is_reviewed_by_both_lanes` (and the
+   informational codehealth job, F3-3-4 accepted debt), the package is ready except Frank's human review. A real
+   failure: fresh opus-engineer with a brief file. **Waits for Frank:** card ofs-f3-mcp-descriptions-human signed A
+   and VERIFIED, but the REVIEW.json edit recording it was refused by the permission system; Frank allows it or edits
+   the five `human` reviews himself; then write `executed` on that card, CI green, manifest `tested` (record the CI
+   run ID and commit), merge card via hub. Card ofs-f3-qf1 executed (F2 owes `[p, q]` in validate_record when ADR
+   0062 is accepted). Open for the design lane: `molar_mass_inconsistent` signature clash ADR 0061 vs 0062.
 3. Trailing after G3: G4, G2 (non-legacy), W5, G1 after the scale probe, docs. Rule: lanes touching studies/ also need
    the nlp-marked suite at head, failures a subset of base (g19, g20).
-**Open build-lane items:** `benchmarks/m03/nlp-test.lock` lacks mpmath (m03_nlp_check.sh fails collection); test_opt_cost_lca_nlp g19, g20 fail; no CI or gate runs nlp-marked tests (add an nlp gate tier).
-**Open for Frank (not blocking):** proposal 2 (selection widening; selected gates ~600 s vs 300 s); R-1042 option C;
-STOP 1 alternative; verify twins addendum; thermo/ below 7.0 only in W5; optional forbid rule cli/serving -> services;
+**Open build-lane items:** `benchmarks/m03/nlp-test.lock` lacks mpmath (m03_nlp_check.sh fails collection); test_opt_cost_lca_nlp g19, g20 fail; no CI or gate runs nlp-marked tests (add an nlp gate tier); the f3 worktree's `.venv` lacks pytest-xdist and pytest-timeout (fix round 3 ran the full suite serially, 6747 s).
+**Open for Frank (not blocking):** proposal 2 (selection widening; selected gates ~600 s vs 300 s; standing ALERT
+selected share ~50%); R-1042 option C; STOP 1 alternative; verify twins addendum; thermo/ below 7.0 only in W5;
+optional forbid rule cli/serving -> services; re-pin cce-code-health to 9a4605f (optional).
 **Notes:** as before (STOP 1 no-gain; ruff before a merge-check; helper merge only if wp/S19 changed only docs since;
 `enqueue` needs `--target --recipe --model`; repo `.venv`, `PYTHONPATH=<worktree>/src`, no `-n`). Two lanes can share
 one merge-check helper (done for G5 r12 + G6 r7). Rule-6 precedent: helpers writing `LaunchProgress` (R-W3-G5-12).

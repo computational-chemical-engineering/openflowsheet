@@ -2688,3 +2688,10 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   C4 361c6207 (Q26 cites R-1058), C5 54eb696c (manifest evidence/F3/361c6207.../ implemented; HARVEST_SIZE (99, 1135,
   146)). ruff, mypy 409 files, F3 battery 324 passed, F0 PASS. Full suite not re-run (CI decides). CI 44326799399 on
   54eb696c running (watched); expected red: the human description reviews (REVIEW.json, waits for Frank).
+- **2026-11-18, G3 run 8 delivered (opus-engineer, Opus, 190k):** wp/S19-g3h c7945474..b3f304bd, 8 steps queued as
+  jobs 314-321: step 1 the two R-W3-G3-7 pinning tests (no-gain; phase_rows via a monkeypatched `_port_entries`,
+  since no benchmark has a guarded split row and a declared port; active_set on NLP-1 with T_spec's upper bound on the
+  optimum; each fails under a local swap), 2-3 verification._kkt, 4 _regimes, 5 request.request_problems, 6
+  replay._verification_floor, 7 manifest._split_consistency, 8 study.StudyResult.accounting. Engineer's scan 4190.8 ->
+  4134.8, health 8.34, brain 18; verification.py 5.6 -> 6.1; patch_noop 0/266; nlp-marked g19, g20 only. Skipped
+  `static_readiness` (15.5; whole-ladder pass). State rewritten for a self-reset.
