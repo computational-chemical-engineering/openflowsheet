@@ -2798,3 +2798,8 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   for the acceleration event. Reversible by: reverting the yaml line with the step. The reviewer reads it (S1).
   Engineer deviations for the reviewer: A3 `_stagnation(self, k, values)`; N3 early return on `<`; P3 adds
   `_evaluated` and NamedTuple `_Step` (RC7: `_trial` was cog 19, NLOC 84).
+- **2026-11-18 ~21:00, hub filed the W5 request as three cards** (one choice each): ofs-s19-w5-fr1-providers (A/B/C),
+  ofs-s19-w5-fr2-reregister (A once / B per batch), ofs-s19-w5-fr3-gend-clause (A approve E1-E5 / B keep). Hub
+  caught an imprecision in this session's request: coolprop_heos.py was listed among the M2/M3-moving files, but
+  probes x8/x12 move only M9, the registry hash and two M6 coolprop-heos-v1 sample keys (no F0 run uses CoolProp).
+  Corrected B wording sent for the unsigned card. Verify each signed card with the exact action text hub quoted.
