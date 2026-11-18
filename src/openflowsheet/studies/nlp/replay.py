@@ -39,7 +39,7 @@ import json
 import math
 from collections.abc import Callable, Mapping
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Final
+from typing import TYPE_CHECKING, Any, Final, NamedTuple
 
 import numpy as np
 
@@ -51,7 +51,7 @@ from openflowsheet.run.replay import ReplayMode, ReplayReport, ReplayVerdict
 from openflowsheet.studies.nlp.host import RevisionRoutes
 
 if TYPE_CHECKING:
-    from openflowsheet.studies.nlp.closure import StartReadiness
+    from openflowsheet.studies.nlp.closure import StartEvidence, StartReadiness
     from openflowsheet.studies.nlp.formulation import NlpFormulation
     from openflowsheet.studies.nlp.host import CertifiedPoint
     from openflowsheet.studies.nlp.revision_host import RevisionNlpHost
@@ -147,7 +147,9 @@ def replay_optimization(
 
     `stage` is called as `reproduce_bundle` calls it (T07 §6.4): `integrity` on entry, `rerun`
     before the bundles are re-run, `compare` before the report is built; a job's `reproduce`
-    passes its stage boundary (OPT design §4.9)."""
+    passes its stage boundary (OPT design §4.9).
+
+    Step 2 is `_rerun_bundles`, steps 3 and 4 `_recomputed_chain`."""
     at = stage if stage is not None else (lambda _: None)
     directory = Path(directory)
     at("integrity")
@@ -170,30 +172,8 @@ def replay_optimization(
             current_environment=current_environment,
             reasons=(reason,),
         )
-    found: list[str] = []
-    reasons: list[str] = []
-    modes: list[str] = []
-    near: list[str] = []
     at("rerun")
-    for index in _starts(directory):
-        for name in BUNDLES:
-            bundle = directory / "starts" / str(index) / name
-            if not (bundle / MANIFEST_NAME).is_file():
-                continue
-            prefix = f"starts/{index}/{name}: "
-            run_id = read_manifest(bundle)[0].run_id
-            report = routes.reproduce(
-                bundle,
-                rerun=True,
-                rerun_directory=Path(rerun_directory) / "starts" / str(index) / name,
-                run_id=run_id,
-            ).report
-            modes.append(report.mode)
-            if report.verdict != "MATCH":
-                found.append(f"{prefix}verdict {report.verdict}")
-            found += [prefix + item for item in report.differences]
-            reasons += [prefix + item for item in report.reasons]
-            near += [prefix + item for item in report.verdict_changed_near_threshold]
+    found, reasons, modes, near = _rerun_bundles(directory, routes, rerun_directory)
     chain, chain_reasons, chain_near = _recomputed_chain(directory, routes)
     found += chain
     reasons += chain_reasons
@@ -221,6 +201,49 @@ def replay_optimization(
         differences=tuple(found),
         verdict_changed_near_threshold=tuple(near),
     )
+
+
+class _BundleReruns(NamedTuple):
+    """Step 2 over the starts' bundles (`_rerun_bundles`), each entry prefixed
+    `starts/<k>/<start|resolve>: `: the differences (a verdict other than `MATCH`, then the
+    bundle's differences), the reasons, each re-run bundle's replay mode, and the entries changed
+    near their threshold, in start order and `BUNDLES` order within a start."""
+
+    differences: list[str]
+    reasons: list[str]
+    modes: list[str]
+    near: list[str]
+
+
+def _rerun_bundles(directory: Path, routes: RevisionRoutes, rerun_directory: Path) -> _BundleReruns:
+    """Step 2: `routes.reproduce` with `rerun=True` on every `starts/<k>/<start|resolve>` bundle
+    of the record at `directory` that has a manifest, under its recorded `run_id`, writing the
+    rerun under `rerun_directory` at the same relative path; a start's missing bundle is
+    skipped. Returns what the bundles' reports found (`_BundleReruns`)."""
+    found: list[str] = []
+    reasons: list[str] = []
+    modes: list[str] = []
+    near: list[str] = []
+    for index in _starts(directory):
+        for name in BUNDLES:
+            bundle = directory / "starts" / str(index) / name
+            if not (bundle / MANIFEST_NAME).is_file():
+                continue
+            prefix = f"starts/{index}/{name}: "
+            run_id = read_manifest(bundle)[0].run_id
+            report = routes.reproduce(
+                bundle,
+                rerun=True,
+                rerun_directory=Path(rerun_directory) / "starts" / str(index) / name,
+                run_id=run_id,
+            ).report
+            modes.append(report.mode)
+            if report.verdict != "MATCH":
+                found.append(f"{prefix}verdict {report.verdict}")
+            found += [prefix + item for item in report.differences]
+            reasons += [prefix + item for item in report.reasons]
+            near += [prefix + item for item in report.verdict_changed_near_threshold]
+    return _BundleReruns(found, reasons, modes, near)
 
 
 def _near_active(slack: Any) -> bool:
@@ -427,17 +450,11 @@ def classification_differences(
 def _recomputed_chain(
     directory: Path, routes: RevisionRoutes
 ) -> tuple[list[str], list[str], list[str]]:
-    """Steps 3 and 4: the differences, the reasons and the near-threshold entries. A start with
-    a recorded verification and a certified point has it recomputed by
-    `_recomputed_verification`."""
+    """Steps 3 and 4: the differences, the reasons and the near-threshold entries. Each start's
+    recorded verification is compared by `_compared_starts`."""
     from openflowsheet.numerics.solve_record import SolvePolicy
     from openflowsheet.run.manifest import policy_sha256
-    from openflowsheet.studies.nlp.closure import (
-        SolverAvailability,
-        StartEvidence,
-        _start,
-        classify_starts,
-    )
+    from openflowsheet.studies.nlp.closure import SolverAvailability, _start, classify_starts
     from openflowsheet.studies.nlp.request import OptimizationRequest, static_readiness
     from openflowsheet.studies.nlp.revision import (
         REPORT,
@@ -496,6 +513,41 @@ def _recomputed_chain(
     if parsed.assessment is not None:
         bound = _bind_assessment(parsed.assessment, formulation, host, starts, failures)
         formulation = bound.formulation
+    compared = _compared_starts(directory, host, formulation, starts, report)
+    verdict = classify_starts(compared.evidence)
+    reasons = [reason.as_document() for reason in verdict.reasons]
+    real, flipped = classification_differences(
+        report, verdict.status, reasons, verdict.classifications, compared.near_starts
+    )
+    return compared.differences + real, [], compared.near + flipped
+
+
+class _StartComparison(NamedTuple):
+    """Step 3 over the starts (`_compared_starts`): the differences and the near-threshold
+    entries of every recomputed verification, the starts with a near-threshold flip, and each
+    start's evidence for `classify_starts`, in start order."""
+
+    differences: list[str]
+    near: list[str]
+    near_starts: set[int]
+    evidence: list[StartEvidence]
+
+
+def _compared_starts(
+    directory: Path,
+    host: RevisionNlpHost,
+    formulation: NlpFormulation,
+    starts: list[StartReadiness],
+    report: Mapping[str, Any],
+) -> _StartComparison:
+    """Step 3 per start, in start order: a start without `optimizer.json` gives evidence with no
+    Ipopt status and no checks; one with a recorded `verification.json` and a certified point has
+    it recomputed by `_recomputed_verification` and compared (`verification_differences`), its
+    entries prefixed `starts/<k>/verification.json: `. Each start's evidence carries the
+    report's recorded `detail` for it. Reads the record under `directory` and `report`'s
+    `starts`; it writes nothing."""
+    from openflowsheet.studies.nlp.closure import StartEvidence
+
     out: list[str] = []
     near: list[str] = []
     near_starts: set[int] = set()
@@ -523,12 +575,7 @@ def _recomputed_chain(
         evidence.append(
             StartEvidence(optimizer.get("ipopt_status"), checks, recorded_start.get("detail"))
         )
-    verdict = classify_starts(evidence)
-    reasons = [reason.as_document() for reason in verdict.reasons]
-    real, flipped = classification_differences(
-        report, verdict.status, reasons, verdict.classifications, near_starts
-    )
-    return out + real, [], near + flipped
+    return _StartComparison(out, near, near_starts, evidence)
 
 
 def _recomputed_verification(

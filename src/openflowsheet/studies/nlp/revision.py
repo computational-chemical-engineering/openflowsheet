@@ -289,6 +289,10 @@ class _OptimizationRun:
     def finish(
         self, report: OptimizationReport, points: tuple[StartPoints, ...]
     ) -> OptimizationOutcome:
+        """The closing stage of every path that ends the call: `check`, the `record` progress
+        with the report's status, then `_finish`, which writes the record's report and manifest
+        when the run has a record and returns the outcome with the record's directory (None
+        without a record) and the starts' `points`."""
         # §4.10: the `record` stage begins before the report and the manifest are written, so
         # an interruption there leaves neither.
         self.check()
@@ -299,8 +303,10 @@ class _OptimizationRun:
         self, formulation: NlpFormulation, host: RevisionNlpHost, sink: _Sink | None
     ) -> _StartPhase | OptimizationOutcome:
         """The start phase (§4.5): per start in order, `check`, the `start` progress, the
-        start's bundle target in `sink` and its certification (`_start`, `_start_failure`);
-        then the assessment's binding (`_bind_assessment`, at the first start that passes).
+        start's bundle target in `sink`, its certification (`_start`) and its refusal detail
+        (`_start_failure`, which adds §4.7's phase-rows check at a certified point); then, only
+        when the request names an assessment, its binding (`_bind_assessment`, at the first
+        start that passes).
         Ends the call through `finish` when the binding's program-wide reasons refuse the
         request or when no start passes (`SIMULATION_NOT_READY`); else the bound formulation,
         every start's readiness and the failing starts' details."""

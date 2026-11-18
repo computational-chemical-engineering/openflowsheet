@@ -174,11 +174,9 @@ def _undetermined_columns(
     (and of the worklist in `numerics.newton`'s released-set search), which, like this walk, does
     not depend on the matching found. It is not merged because the twins differ in form: integer
     columns from SciPy's matching here, string ids with `frozenset` incidence there; a merge changes
-    the iteration order and so waits for a change that may alter behaviour."""
-    incident: list[list[int]] = [[] for _ in range(size)]
-    for r, (_, cols) in enumerate(equations):
-        for c in cols:
-            incident[c].append(r)
+    the iteration order and so waits for a change that may alter behaviour. The equations of
+    each unknown come from `_incident_rows`."""
+    incident = _incident_rows(equations, size)
     # Alternating paths from the unmatched variables: variable → any incident equation → the
     # variable that equation is matched to. What they reach is the under-determined block.
     undetermined = {c for c in range(size) if column_match[c] < 0}
@@ -193,6 +191,16 @@ def _undetermined_columns(
                     reached.append(partner)
         frontier = reached
     return undetermined
+
+
+def _incident_rows(equations: Sequence[tuple[str, list[int]]], size: int) -> list[list[int]]:
+    """The transpose of the equations' incidence, pure: for each of the `size` unknowns, by
+    column, the equations whose incidence holds it, in equation order."""
+    incident: list[list[int]] = [[] for _ in range(size)]
+    for r, (_, cols) in enumerate(equations):
+        for c in cols:
+            incident[c].append(r)
+    return incident
 
 
 # -- the omitted rows (R-274) ---------------------------------------------------------------------
