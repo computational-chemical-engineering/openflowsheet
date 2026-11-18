@@ -1,0 +1,123 @@
+{
+  "work_package": "X10c",
+  "commit": "a07f0ff07de032e6c083a9dd4bb5c1eeb2244567",
+  "requirements": [
+    "A08"
+  ],
+  "status": "implemented",
+  "inputs": {
+    "case_id": "WITNF (filed as X10c, as WIT was filed as X10a: the schema's work_package pattern admits no WITNF): the derivative witness refuses a non-finite term as non_finite. S19 design batch 1 ruling c29e1cf1 (docs/briefs/S19-D-batch1-ruling.md, Q2 / R-W3-G5-8, steps 1-3, tests Q2.A1-Q2.A6); landing approved on Decision Desk ofs-s19-oq1b-nan-witness-early (answer A, verified); K04 section 4.8 and 4.8.3 (a) amended 2026-11-18; register R-1046; base main a88655a2",
+    "case_hash": "0cd276041b404a186f473be198138198946c7bfe7696b8e5ccebeba8a957a090",
+    "environment_lock_hash": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+  },
+  "commands": [
+    {
+      "cmd": "PYTHONPATH=$PWD/src .venv/bin/python -m pytest -q -p no:cacheprovider tests/test_wit_witness.py -k q2 (tests only, before the code change, at a88655a2 plus the Q2 tests: 5 failed, 1 passed)",
+      "cwd": ".claude/worktrees/witnf",
+      "exit_code": 1
+    },
+    {
+      "cmd": "PYTHONPATH=$PWD/src .venv/bin/python -m pytest -q -p no:cacheprovider tests/test_wit_witness.py (at a07f0ff0: 29 passed)",
+      "cwd": ".claude/worktrees/witnf",
+      "exit_code": 0
+    },
+    {
+      "cmd": "OMP_NUM_THREADS=1 PYTHONPATH=$PWD/src .venv/bin/python -m pytest -q -p no:cacheprovider $(grep -rln 'derivative_witness\\|witness_stencil\\|verify.checks' tests --include=*.py) (39 files; at a07f0ff0: 848 passed, 2 deselected in 377 s)",
+      "cwd": ".claude/worktrees/witnf",
+      "exit_code": 0
+    },
+    {
+      "cmd": ".venv/bin/ruff check . && .venv/bin/ruff format --check . && .venv/bin/mypy",
+      "cwd": ".claude/worktrees/witnf",
+      "exit_code": 0
+    },
+    {
+      "cmd": "OMP_NUM_THREADS=1 PYTHONPATH=$PWD/src .venv/bin/python scripts/corpus_identity.py --check",
+      "cwd": ".claude/worktrees/witnf",
+      "exit_code": 0
+    }
+  ],
+  "checks": [
+    {
+      "id": "WITNF.Q2.A1",
+      "description": "NaN at R3 at x+h e(S1.T), components=(): both checks unsupported, reason witness_stencil_non_finite(S1.T)",
+      "result": "pass",
+      "value": "before the change: FAILED (result pass); after: passed"
+    },
+    {
+      "id": "WITNF.Q2.A2",
+      "description": "NaN at R1 at x+h e(S1.T): as A1",
+      "result": "pass",
+      "value": "before the change: FAILED (result pass); after: passed"
+    },
+    {
+      "id": "WITNF.Q2.A3",
+      "description": "R3 = +1e308 / -1e308 at x +/- h e(S1.T): as A1",
+      "result": "pass",
+      "value": "before the change: FAILED (result fail, value inf); after: passed"
+    },
+    {
+      "id": "WITNF.Q2.A4",
+      "description": "NaN at R1 at x+h e(S1.n.A), components=(A, B): S1.n.A escalated, scaled not None, both checks pass",
+      "result": "pass",
+      "value": "before the change: FAILED (escalations == {}); after: passed, resolved at level 3, column discrepancy 5.759526189308417e-11"
+    },
+    {
+      "id": "WITNF.Q2.A5",
+      "description": "NaN AD entry (R3, S1.T), components=(): as A1",
+      "result": "pass",
+      "value": "before the change: FAILED (result pass); after: passed"
+    },
+    {
+      "id": "WITNF.Q2.A6",
+      "description": "no injection (W0): on bitwise 2.3646862246096134e-09, off 0.0; every existing test_wit_witness.py test passes unedited",
+      "result": "pass",
+      "value": "passed before and after; 23 existing tests passed unedited"
+    },
+    {
+      "id": "WITNF.TESTS",
+      "description": "the test files that import verify.checks or read witness reasons",
+      "result": "pass",
+      "value": "848 passed, 2 deselected (39 files)"
+    },
+    {
+      "id": "WITNF.STATIC",
+      "description": "ruff check, ruff format --check, mypy (pyproject files list)",
+      "result": "pass",
+      "value": "ruff clean; mypy: no issues found in 392 source files"
+    },
+    {
+      "id": "WITNF.F0",
+      "description": "F0 corpus identity (scripts/corpus_identity.py --check)",
+      "result": "pass",
+      "value": "F0 PASS: M1 50/50, M2 61/61, M3 61/61, M4 61/61, M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 35/35"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "docs/briefs/S19-D-batch1-ruling.md",
+      "sha256": "0cd276041b404a186f473be198138198946c7bfe7696b8e5ccebeba8a957a090",
+      "description": "S19 design batch 1 ruling (c29e1cf1), Q2 is the spec"
+    },
+    {
+      "path": "docs/derivations/K04-certificate-spec.md",
+      "sha256": "45a10f74c1b75f7c0c13115e27a0e201b1d0a58b3ebbd7e9ea5c7ee0be601a0a",
+      "description": "K04 with the 2026-11-18 amendment of section 4.8 and 4.8.3 (a)"
+    },
+    {
+      "path": "tests/test_wit_witness.py",
+      "sha256": "8be2fc12fe3abd582d2157db758a99071a61a8d006478caa960c79f8797a1496",
+      "description": "Q2.A1-Q2.A6"
+    }
+  ],
+  "limitations": [
+    "Evidence class: software verification of a guard on the certificate path; the Q2 tests run against WIT's synthetic double and are regression fixtures of the guard, not a validation of any certificate. By the ruling's part (a) no registered certificate carried a non-finite witness term, and F0 confirms the corpus is byte-identical.",
+    "Status is implemented: the full suite and CI have not run on this commit, and the review block stays pending; no reviewed status is claimed.",
+    "Not established (ruling, 'What this ruling does not establish'): the witness's tolerances (K04 section 4.8) and the escalation's numerics were not re-examined; nor whether the PR, mixture or gamma-phi forms pair components correctly.",
+    "A column refused as non_finite at its registered stencil escalates with registered=None, as any refused column does (the existing line), so the section 4.8.3 (c) flat rule's coarser reference is an earlier admissible level only."
+  ],
+  "review": {
+    "numerical": "pending",
+    "process_model": "pending"
+  }
+}

@@ -19970,7 +19970,7 @@ The test-only `X as X` re-exports at revision_binding.py:46, :78, :79 go in I-13
 | Date | 2026-11-18 |
 | Decided by | design lane (S19 design batch 1, ruling `c29e1cf1`, Q2 / R-W3-G5-8); landing before S19's close approved on Decision Desk `ofs-s19-oq1b-nan-witness-early` (answer A, verified) |
 | Normative text | `docs/briefs/S19-D-batch1-ruling.md` Q2 ("The change, after S19", steps 1-3); K04 §4.8 and §4.8.3 (a), amendment 2026-11-18 |
-| Evidence | `tests/test_wit_witness.py` Q2.A1-Q2.A6; `evidence/WITNF/` |
+| Evidence | `tests/test_wit_witness.py` Q2.A1-Q2.A6; `evidence/X10c/` (package WITNF, filed as X10c as WIT was as X10a) |
 | Affected packages | WITNF (K04 §4.8, `verify/checks.py`) |
 
 **Decision.** `_discrepancies` returns None when any term it folds (`|D-hat_ij|` off-pattern, `|J-hat_ij - D-hat_ij|`

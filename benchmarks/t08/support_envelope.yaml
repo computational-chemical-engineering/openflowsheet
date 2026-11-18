@@ -9704,3 +9704,27 @@ harvest:
   class: P
   to: []
   note: 'process note: G-MAP 5 missed the failure-subset and unsure-file criteria (f6 under coverage); map accepted'
+- manifest: evidence/X10c/a07f0ff07de032e6c083a9dd4bb5c1eeb2244567/manifest.json
+  item: limitations[0]
+  sha256: f9aec4200501664996230dfc4055255cefb1991f524430553ed5e4087276ca2d
+  class: P
+  to: []
+  note: 'provenance note: software verification of a witness guard on a synthetic double, not validation'
+- manifest: evidence/X10c/a07f0ff07de032e6c083a9dd4bb5c1eeb2244567/manifest.json
+  item: limitations[1]
+  sha256: 273e4cffb45502ac446d215c20087cf56fd7a7cb724ee967f5774192d0d154dc
+  class: P
+  to: []
+  note: 'provenance note: status follows CI; review pending'
+- manifest: evidence/X10c/a07f0ff07de032e6c083a9dd4bb5c1eeb2244567/manifest.json
+  item: limitations[2]
+  sha256: d94beb1a8d03e99f4d52467ce84daf0ac5d3b831d6b6e9bee30bf1cc6cfc9a70
+  class: P
+  to: []
+  note: 'provenance note: witness tolerances and escalation numerics not re-examined (ruling scope)'
+- manifest: evidence/X10c/a07f0ff07de032e6c083a9dd4bb5c1eeb2244567/manifest.json
+  item: limitations[3]
+  sha256: 1c634422560ce0c582a6d3cfa60088e71da621aadc92b36808a26683253ba086
+  class: P
+  to: []
+  note: 'provenance note: a non_finite column escalates with registered=None, as any refused column'
