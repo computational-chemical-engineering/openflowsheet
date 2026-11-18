@@ -116,7 +116,7 @@ from __future__ import annotations
 import math
 from collections.abc import Callable, Collection, Mapping, Sequence
 from dataclasses import dataclass
-from typing import Any, Final, Literal
+from typing import Any, Final, Literal, NamedTuple
 
 import pyomo.environ as pyo
 from pyomo.common.collections import ComponentSet
@@ -587,7 +587,8 @@ def _assemble(
     skip: Collection[str],
 ) -> _Assembly:
     """§6.1 steps 1-4 and the row expressions, with `constants` (the eliminated zero flows, by
-    variable id) in place of their variables and the rows in `skip` (their pins) not built."""
+    variable id) in place of their variables and the rows in `skip` (their pins) not built.
+    Step 2's decision coordinates are `_decision_coordinates`'s."""
     model = pyo.ConcreteModel(name=spec.label)
 
     # 1. Variables.
@@ -614,23 +615,7 @@ def _assemble(
     }
 
     # 2. Decisions.
-    centers: list[float] = []
-    half_widths: list[float] = []
-    starts: list[float] = []
-    for decision in decisions:
-        center, half_width = decision.center_half_width()
-        start = float(spec.parameters[decision.parameter_id])
-        if decision.bounded:
-            if not decision.lower <= start <= decision.upper:  # type: ignore[operator]
-                raise ValueError(
-                    f"decision {decision.parameter_id!r} starts at {start!r}, outside "
-                    f"[{decision.lower!r}, {decision.upper!r}]"
-                )
-            starts.append((start - center) / half_width)
-        else:
-            starts.append(start)
-        centers.append(center)
-        half_widths.append(half_width)
+    centers, half_widths, starts = _decision_coordinates(spec, decisions)
     model.d = pyo.Var(
         range(len(decisions)),
         initialize=dict(enumerate(starts)),
@@ -836,6 +821,41 @@ def _variable_bounds(
     if kind == "molar_flow":
         return (None, None) if start == 0.0 else (0.0, None)
     return None, None
+
+
+class _DecisionCoordinates(NamedTuple):
+    """§6.1 step 2's scaling of the decisions, in declaration order: each decision's centre and
+    half-width (`DecisionSpec.center_half_width`) and its start in the model's coordinate."""
+
+    centers: list[float]
+    half_widths: list[float]
+    starts: list[float]
+
+
+def _decision_coordinates(
+    spec: ProblemSpec, decisions: Sequence[DecisionSpec]
+) -> _DecisionCoordinates:
+    """§6.1 step 2 before the model's `d` exists, pure: a bounded decision's start is the
+    parameter's value in `spec`, checked inside [lower, upper] (`ValueError` otherwise) and
+    scaled to (start − c)/h; an unbounded decision's start is the value itself."""
+    centers: list[float] = []
+    half_widths: list[float] = []
+    starts: list[float] = []
+    for decision in decisions:
+        center, half_width = decision.center_half_width()
+        start = float(spec.parameters[decision.parameter_id])
+        if decision.bounded:
+            if not decision.lower <= start <= decision.upper:  # type: ignore[operator]
+                raise ValueError(
+                    f"decision {decision.parameter_id!r} starts at {start!r}, outside "
+                    f"[{decision.lower!r}, {decision.upper!r}]"
+                )
+            starts.append((start - center) / half_width)
+        else:
+            starts.append(start)
+        centers.append(center)
+        half_widths.append(half_width)
+    return _DecisionCoordinates(centers, half_widths, starts)
 
 
 def _build(
