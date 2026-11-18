@@ -2982,3 +2982,7 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   initialisers before the start, C2's `entry(` count 4 not the plan's 7, end-site regex, five unread frame fields
   for C3/C4).
 - **2026-11-19 ~02:45 CET, gate report before the self-reset:** "ALERT selected gates take 631 s > 300 s (tests tier)", "ALERT selected/full time ratio 0.55 > 0.4: selection saves little" (the standing pair; proposal 2 with Frank). Self-reset at ec2f0056.
+- **2026-11-19 ~00:30 CET, job 354 `g1o4-1` (R1) PASS 16/16, region.py 227.4 -> 221.7 (run-log step 369, head
+  52bb085d).** Gate report: "ALERT selected gates take 674 s > 300 s (tests tier)", "ALERT selected/full time ratio
+  0.58 > 0.4: selection saves little" (the standing pair; proposal 2 with Frank, no new action). Review brief
+  `S19-R-W3-G1O-4.md` written (nine deviations), launched once jobs 356, 357 pass.
