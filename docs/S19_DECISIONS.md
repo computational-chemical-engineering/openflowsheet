@@ -2775,3 +2775,26 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   per solver, reviewer before run 4). DECISION: lane N before lane O's region run 3 (R1, S1, C2), since the
   "one lane beside 0.5" order (ofs-s19-trailing-order) allows one engineer lane and ptc.py 6.8 is an open review item.
   Alternative: region first (largest debt, 227.4). Reversible by: briefing lane O next instead of lane N run 4.
+- **2026-11-18 ~20:30, W5 ruling merged (2b5c1d13; specifier, report ~396k tokens).** `docs/briefs/S19-W5-ruling.md`:
+  four identity tiers; one re-registration commit per batch against a predicted key set; batches N (assessment,
+  pr_lib, registry factory switch), P (tier-3 providers and B7, after FR-1), L (unit modules and the 34
+  column_unit bindings, after the legacy ruling); G-END's F0 clause restated (E1 to E5); ADR 0077 drafted
+  (proposed). **Erratum to the 2026-11-15 entry "registry-hashed files wait for W5": the set is 51 files, not 45**
+  (its own group counts sum to 51; ruling F-1). Findings F-2 (S10 A26 compares providers with `main`: ruling R7,
+  WO-1b), F-3 (S11 A75 pins wilson_ig), F-4 (L01 A22 pins pr_c1 and models/c1). DECISION-REQUEST to hub for one
+  card (suggested id ofs-s19-w5-identity): FR-1 (tier 3 admitted? rec A; default C, batch P not started), FR-2
+  (re-register once or per batch? rec b; default: batch N's merge into wp/S19 waits), FR-3 (approve the restated
+  F0 clause). Nothing on batch P or a W5 merge proceeds until a signed card verifies.
+- **2026-11-18 ~20:20, G1 lane N run 3 (opus-engineer, ~172k tokens): A3 0838e392, N3 9d60c9f6, P3 60065600
+  (anderson 109.0 -> 74.7; newton 102.1 -> 79.8; ptc 105.6 -> 33.9, health 6.8 -> 8.3, so R-W3-G1N-1's ptc item is
+  met and P1 stays).** Gate g1n3-1 (job 333) FAIL tests: T08.A33 `test_a33_the_bijection_holds`, the restart
+  event's producer moved to `_RecycleRun._stagnation`, and `docs/recovery-edges.yaml` names the producer as
+  `event:<kind>@<module>.<function>` (its header: labels follow the code; nothing reads the file to solve). Jobs
+  334, 335 SKIPPED. DECISION (orchestrator): the label follows the code in the same commit; chain rebuilt on
+  `wp/S19-g1n3` from 8d31b89e: A3 2be11ee8 (amended with the one-line yaml edit, message notes it), N3 b7895be0,
+  P3 7e29bf7b (cherry-picks); failed attempt kept as `wp/S19-g1n3-try1` (60065600); the whole recovery-edges file
+  26 passed at 7e29bf7b; re-enqueued as g1n3b-1..3 (jobs 336-338). Alternative: keep the producer call lexically in
+  `solve_recycle`. Rejected: it pins the RC form to the inventory and A4 (`_accelerated_step`) would hit it again
+  for the acceleration event. Reversible by: reverting the yaml line with the step. The reviewer reads it (S1).
+  Engineer deviations for the reviewer: A3 `_stagnation(self, k, values)`; N3 early return on `<`; P3 adds
+  `_evaluated` and NamedTuple `_Step` (RC7: `_trial` was cog 19, NLOC 84).
