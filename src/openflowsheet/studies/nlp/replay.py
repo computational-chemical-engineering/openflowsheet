@@ -39,7 +39,7 @@ import json
 import math
 from collections.abc import Callable, Mapping
 from pathlib import Path
-from typing import Any, Final
+from typing import TYPE_CHECKING, Any, Final
 
 import numpy as np
 
@@ -49,6 +49,13 @@ from openflowsheet.run.compare import CURRENT_POLICY_ID, differences, floored_di
 from openflowsheet.run.manifest import environment
 from openflowsheet.run.replay import ReplayMode, ReplayReport, ReplayVerdict
 from openflowsheet.studies.nlp.host import RevisionRoutes
+
+if TYPE_CHECKING:
+    from openflowsheet.studies.nlp.closure import StartReadiness
+    from openflowsheet.studies.nlp.formulation import NlpFormulation
+    from openflowsheet.studies.nlp.host import CertifiedPoint
+    from openflowsheet.studies.nlp.revision_host import RevisionNlpHost
+    from openflowsheet.studies.nlp.verification import CandidateVerification
 
 FORMAT: Final = "openflowsheet-optimization-v1"
 MANIFEST: Final = "optimization-manifest.json"
@@ -420,7 +427,9 @@ def classification_differences(
 def _recomputed_chain(
     directory: Path, routes: RevisionRoutes
 ) -> tuple[list[str], list[str], list[str]]:
-    """Steps 3 and 4: the differences, the reasons and the near-threshold entries."""
+    """Steps 3 and 4: the differences, the reasons and the near-threshold entries. A start with
+    a recorded verification and a certified point has it recomputed by
+    `_recomputed_verification`."""
     from openflowsheet.numerics.solve_record import SolvePolicy
     from openflowsheet.run.manifest import policy_sha256
     from openflowsheet.studies.nlp.closure import (
@@ -429,7 +438,6 @@ def _recomputed_chain(
         _start,
         classify_starts,
     )
-    from openflowsheet.studies.nlp.formulation import FullSpaceNlp
     from openflowsheet.studies.nlp.request import OptimizationRequest, static_readiness
     from openflowsheet.studies.nlp.revision import (
         REPORT,
@@ -438,7 +446,6 @@ def _recomputed_chain(
         _bind_assessment,
     )
     from openflowsheet.studies.nlp.revision_host import RevisionNlpHost
-    from openflowsheet.studies.nlp.verification import verify_candidate
     from openflowsheet.verify.verdict import CheckPolicy
 
     manifest = _read(directory, MANIFEST)
@@ -503,22 +510,8 @@ def _recomputed_chain(
         optimizer = _read(base, "optimizer.json")
         checks: dict[str, Any] = {}
         if (base / "verification.json").is_file() and readiness.point is not None:
-            nlp = FullSpaceNlp(host, formulation, readiness.point, readiness.start)
-            primal = optimizer["final_primal"]
-            values = np.array([float(primal[name]) for name in nlp.primal_ids], dtype=np.float64)
-            x, decided = nlp.split(values)
-            decisions = tuple(decided[name] for name in formulation.decision_ids)
-            state = dict(zip(nlp.spec.variable_ids, (float(value) for value in x), strict=True))
-            held = nlp.system if readiness.point.signature is not None else None
-            fresh = verify_candidate(
-                host,
-                formulation,
-                decisions,
-                regimes=readiness.regimes or {},
-                optimizer_state=state,
-                closure=nlp.closure,
-                held=held,
-                phase=nlp.phase,
+            fresh = _recomputed_verification(
+                host, formulation, readiness, readiness.point, optimizer
             )
             recorded = _read(base, "verification.json")
             real, flipped = verification_differences(fresh.as_document(), recorded)
@@ -536,3 +529,37 @@ def _recomputed_chain(
         report, verdict.status, reasons, verdict.classifications, near_starts
     )
     return out + real, [], near + flipped
+
+
+def _recomputed_verification(
+    host: RevisionNlpHost,
+    formulation: NlpFormulation,
+    readiness: StartReadiness,
+    point: CertifiedPoint,
+    optimizer: Mapping[str, Any],
+) -> CandidateVerification:
+    """Step 4 for one start: `verify_candidate` recomputed at the record's optimizer point. The
+    start's `FullSpaceNlp` at its certified `point` (`readiness.point`) splits
+    `optimizer["final_primal"]` into the state and the decisions; the start's regimes, the NLP's
+    closure and phase, and its system as the held one when `point` carries a signature. Reads
+    the record only through `optimizer`; it writes nothing."""
+    from openflowsheet.studies.nlp.formulation import FullSpaceNlp
+    from openflowsheet.studies.nlp.verification import verify_candidate
+
+    nlp = FullSpaceNlp(host, formulation, point, readiness.start)
+    primal = optimizer["final_primal"]
+    values = np.array([float(primal[name]) for name in nlp.primal_ids], dtype=np.float64)
+    x, decided = nlp.split(values)
+    decisions = tuple(decided[name] for name in formulation.decision_ids)
+    state = dict(zip(nlp.spec.variable_ids, (float(value) for value in x), strict=True))
+    held = nlp.system if point.signature is not None else None
+    return verify_candidate(
+        host,
+        formulation,
+        decisions,
+        regimes=readiness.regimes or {},
+        optimizer_state=state,
+        closure=nlp.closure,
+        held=held,
+        phase=nlp.phase,
+    )
