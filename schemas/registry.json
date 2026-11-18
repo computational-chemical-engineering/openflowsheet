@@ -29,6 +29,7 @@
   "process-revision.schema.json",
   "project-policy.schema.json",
   "quantity.schema.json",
+  "record-results.schema.json",
   "record-v2.schema.json",
   "registry-snapshot.schema.json",
   "regularity-evidence.schema.json",

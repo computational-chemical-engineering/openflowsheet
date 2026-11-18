@@ -1,0 +1,7 @@
+{
+  "expect_error": "'assessment' is a required property",
+  "document": {
+    "conditions": null,
+    "layer": "repository"
+  }
+}

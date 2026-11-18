@@ -496,3 +496,34 @@ search|get|register|validate|rights`, F1's `_registry_operation` form but on `--
 ADR 0061, Frank Peters; proposed 2026-11-05; F3", `interfaces-frozen.md`), 7
 (`tests/test_f3_operations.py`), 8 (this entry completed), and the acceptance runs. Nothing
 measured against the acceptance list yet.
+
+## F3-WO5b (Records operations), 2026-11-18, part 2
+
+Brief `docs/briefs/F3-WO5b-2.md` (continuation of `docs/briefs/F3-WO5b.md`).
+
+- **DECISION WO5b-7. Conformance's grant lacks `policy`, so `assess_rights` succeeds only on the
+  local-owner clients.** The scenario's `forbidden` steps (`audit everyone`, `newer cancel`) need a
+  grant without `policy`; `assess_rights` is the first operation that needs `policy` outright. Its
+  step is `forbidden` on python-process, HTTP and MCP (compared equal to the reference), and
+  `test_every_carried_operation_succeeds_at_least_once` expects, for a grant client, the carried
+  operations whose right the grant holds (computed from `OPERATION_RIGHTS`; for every earlier
+  operation the set is unchanged). `assess_rights` on all four transports, as a principal holding
+  `policy`, is E-F3-11 in `tests/test_f3_operations.py`. Alternative: a second, `policy`-holding
+  grant per client (each client is bound to one credential). Reversible by: that test's one
+  `if` and the scenario's `_records`.
+- **DECISION WO5b-8. The `Records` response shapes live in a new F3 schema,
+  `schemas/record-results.schema.json`, reached by bare `$ref`s (R-1032's structure).** The
+  `$defs` part 1 put in `application-results.schema.json` declared `record_sha256` and
+  `source_sha256`, which put two unclassified `sha256` names in the v2 policy's domain
+  (`t08_numerical_policy.py --check`: "(d) unclassified sha256 names: ['record_sha256',
+  'source_sha256']"; `test_f1_operations.py::test_fu_a6_…` red). R-1032's "Watch for" names the
+  remedy: the eight `$defs` moved verbatim; F3's addendum lists the new schema and classifies the
+  two names exact. Measured after the move: v2 bytes `6b449911…` unchanged, D_10 and the five
+  `SNAPSHOT_F3` digests unchanged. Alternative: the `$defs` in `record-v2.schema.json` (changes the
+  record schema's bytes and its pinned SHA in the registry). Reversible by: one commit.
+- **The other F1 failure, E-F1-10 (MSG-G2 scan):** part 1's `KIND_CODES` in `records_service.py`
+  ends in `_CODES`, which MSG-G2's scan reads as a table of codes, so `input`, `not_supported` and
+  `bug` (catalogue kinds) were reported as codes without entries. Not a planned move: the constant
+  is renamed `API_ERROR_OF_KIND`; the scan is unchanged.
+- Part 1's `_decode_cursor` raised `TypeError` for a cursor decoding to a JSON scalar (it called
+  `set()` on it before the type check); fixed in the surface commit.

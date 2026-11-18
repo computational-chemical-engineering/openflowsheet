@@ -28,6 +28,7 @@ from pathlib import Path
 from typing import Any
 
 import pytest
+from f3_schema_support import records_requests, user_component
 from msg_support import machine_detail
 from t07_corpus import CORPUS
 from t07_jobs_support import commit, lifecycle_violations
@@ -355,6 +356,8 @@ def _success_path(app: LocalApplication, tmp_path: Path) -> list[tuple[str, dict
     outside = tmp_path / "outside"
     shutil.copytree(bundle, outside)
     state = f"{job_id}:bundle/solution-state.json"
+    # ADR 0061 D13 (F3): the user record the `Records` requests read and assess.
+    record = app.register_record(record=user_component()).results[0]["record_sha256"]
     return [
         ("validate", {"revision_id": revision_id, "task": "simulation"}),
         (
@@ -396,6 +399,7 @@ def _success_path(app: LocalApplication, tmp_path: Path) -> list[tuple[str, dict
         ("explain", {"code": "not_found"}),
         ("list_capabilities", {"kind": "unit_model", "id_prefix": "thermal.", "limit": 2}),
         ("check_admission", {"pair": {"unit": "thermal.heater", "method": "coolprop-heos-v1"}}),
+        *records_requests(record),
         ("artifact_bytes", {"artifact_id": state}),
     ]
 
@@ -422,6 +426,8 @@ def test_every_operation_succeeds_through_dispatch_and_meets_its_response_schema
             "submit_job",
             "cancel_job",
             "artifact_bytes",
+            "register_record",
+            "assess_rights",
         ):
             continue
         operation = OPERATIONS[name]
@@ -456,6 +462,7 @@ def _probe(name: str, text: str, other_job: str) -> dict[str, Any]:
     """A schema-valid request for `name` that is cheap whether allowed or not: an allowed call
     succeeds or fails on its merits (`not_found`, a conflict), never `forbidden`."""
     missing_job = {"job_id": "job-999999"}
+    missing_record = {"record_sha256": "0" * 64}
     return {
         "validate": {"revision_id": "rev-000001", "task": "simulation"},
         "commit_change": {
@@ -494,12 +501,24 @@ def _probe(name: str, text: str, other_job: str) -> dict[str, Any]:
         "explain": {"code": "not_found"},
         "list_capabilities": {"limit": 1},  # ADR 0060 D11 (F1)
         "check_admission": {"pair": {"unit": "thermal.heater", "method": "coolprop-heos-v1"}},
+        # ADR 0061 D13 (F3): a record no layer holds, and a record D2 refuses.
+        "search_records": {"key": text[:1024], "limit": 1},
+        "get_record": missing_record,
+        "register_record": {"record": {"name": text}},
+        "validate_record": {"record": {"name": text}},
+        "assess_rights": {
+            **missing_record,
+            "source_id": "user.lab",
+            "scope": "record",
+            "assessment": "permitted",
+            "basis": text,
+        },
         "artifact_bytes": {"artifact_id": "job-999999:bundle/run-manifest.json"},
     }[name]
 
 
 def test_g11_every_subset_and_every_operation_through_dispatch(app: LocalApplication) -> None:
-    """64 right subsets × 25 operations, plus `cancel_job` of another principal's job and
+    """64 right subsets × 30 operations, plus `cancel_job` of another principal's job and
     `list_audit` of every principal's rows (ADR 0019 Amendment 3), through
     `dispatch`: allowed iff §10.1's table says so, whatever the grant's note or the request's
     text says."""
@@ -531,7 +550,8 @@ def test_g11_every_subset_and_every_operation_through_dispatch(app: LocalApplica
                     assert refused.code != "unauthenticated", (rights, name)
                 assert allowed == (needed <= set(rights)), (rights, name, text)
                 cells += 1
-    assert cells == 64 * 25  # with ADR 0068's `get_stream_table` and ADR 0060 D11's two
+    # with ADR 0068's `get_stream_table`, ADR 0060 D11's two and ADR 0061 D13's five
+    assert cells == 64 * 30
     assert app.get_job(others_job).status == "completed", "the probes changed nothing"
 
 
@@ -648,6 +668,26 @@ def test_g13_every_response_is_bounded_and_the_raw_export_is_exact(
     call("explain", {"code": "phase_regime_mismatch"})  # ADR 0058 D7 (MSG)
     call("list_capabilities", {"id_prefix": "thermal."})  # ADR 0060 D11 (F1)
     call("check_admission", {"pair": {"unit": "thermal.heater", "method": "coolprop-heos-v1"}})
+    # ADR 0061 D13 (F3): hostile text in a record's name (stored, and refused), a validated
+    # record's id, a search key and a rights row's basis and conditions.
+    call("register_record", {"record": user_component(name=description)})
+    stored = call("register_record", {"record": user_component(name=HOSTILE.replace("\x00", ""))})
+    record = stored["results"][0]["record_sha256"]
+    call("validate_record", {"record": {**user_component(), "id": HOSTILE}})
+    call("search_records", {"key": HOSTILE})
+    call("search_records", {"key": "xenonol"})
+    call("get_record", {"record_sha256": record})
+    call(
+        "assess_rights",
+        {
+            "source_id": "user.lab",
+            "record_sha256": record,
+            "scope": "source",
+            "assessment": "refused",
+            "basis": HOSTILE * 10,
+            "conditions": HOSTILE * 10,
+        },
+    )
     job = call(
         "submit_job",
         {"operation": "solve", "idempotency_key": "solve-a", "body": {"revision_id": a}},

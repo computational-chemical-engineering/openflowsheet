@@ -1,0 +1,12 @@
+{
+  "assessment": "permitted",
+  "basis": "the lab's own measurement",
+  "conditions": null,
+  "date": "2026-11-18",
+  "decided_by": "local-owner",
+  "layer": "project",
+  "record_sha256": "13e2678939e745ba9f754e8e836ec7c7a4648ca922ec8d5ad20bb4e31bf44e3c",
+  "sequence": 1,
+  "source_id": "user.lab",
+  "source_sha256": "da23d5243a74596a64d68e202e451a8115ea9d596a46ba287f7c4d0136f6b274"
+}

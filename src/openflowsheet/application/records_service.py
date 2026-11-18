@@ -45,8 +45,9 @@ from openflowsheet.records.store import RecordStoreError
 from openflowsheet.registry.tokens import Coded
 from openflowsheet.schema_check import DocumentSchemaError
 
-#: A record refusal's `ApiError` code by its catalogue kind (F3 decision WO5b-1).
-KIND_CODES: Final[Mapping[str, ApiErrorCode]] = {
+#: A record refusal's `ApiError` code by its catalogue kind (F3 decision WO5b-1). Not named
+#: `*_CODES`: its keys are catalogue kinds, not codes (MSG-G2's scan reads such a table).
+API_ERROR_OF_KIND: Final[Mapping[str, ApiErrorCode]] = {
     "input": "invalid_request",
     "not_supported": "unsupported",
     "bug": "internal_error",
@@ -93,10 +94,10 @@ def _decode_cursor(cursor: str) -> str | None:
         decoded = json.loads(base64.urlsafe_b64decode(cursor + "=" * (-len(cursor) % 4)))
     except (ValueError, TypeError, binascii.Error):
         return None
-    after = decoded.get("after") if isinstance(decoded, dict) else None
-    if set(decoded) != {"after"} or not isinstance(after, str) or len(after) != 64:
+    if not isinstance(decoded, dict) or set(decoded) != {"after"}:
         return None
-    return after
+    after = decoded["after"]
+    return after if isinstance(after, str) and len(after) == 64 else None
 
 
 def resolution(records: Mapping[str, Mapping[str, Any]]) -> dict[str, Any]:
@@ -463,7 +464,7 @@ class RecordsService:
 
     def _refuse_coded(self, name: str, coded: Coded, at: str, **detail: Any) -> NoReturn:
         entry = CATALOGUE.entry(coded.code)
-        code = KIND_CODES.get(entry.kind if entry is not None else "bug", "internal_error")
+        code = API_ERROR_OF_KIND.get(entry.kind if entry is not None else "bug", "internal_error")
         self._core.refuse(
             code,
             f"the record is refused: {coded.code}",

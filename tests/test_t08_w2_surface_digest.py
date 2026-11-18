@@ -74,6 +74,12 @@ holds as before.
 `F1_SERVED_SHA256`. With F1's tools removed first (`without_f1`, `tests/f1_schema_support.py`) the
 list is X04's served digest `6be1c002…` exactly (`test_f1s_surface_move_decomposes_onto_x04s`), and
 every decomposition below holds as before.
+
+**F3 (ADR 0061 D13, ADR 0019 Amendment 8; R-1051) widens it again, additively** — five tools, the
+protocol `Records` — so the served digest moves to `F3_SERVED_SHA256`. With F3's tools removed
+first (`without_f3`, `tests/f3_schema_support.py`) the list is F1's served digest `e2c44b6b…`
+exactly (`test_f3s_surface_move_decomposes_onto_f1s`), and every decomposition below holds as
+before.
 """
 
 from __future__ import annotations
@@ -86,6 +92,7 @@ from typing import Any
 import pytest
 from conftest import REPO_ROOT, load_yaml
 from f1_schema_support import F1_OPERATIONS, without_f1
+from f3_schema_support import F3_OPERATIONS, without_f3
 from m02_schema_support import without_m02
 from m04_schema_support import without_m04
 from msg_schema_support import MSG_OPERATIONS, without_msg
@@ -102,7 +109,7 @@ V17_C2_TEXTS = REPO_ROOT / "tests" / "fixtures" / "t08" / "v17_c2_descriptions"
 MCP_OPERATIONS = sorted(name for name, op in OPERATIONS.items() if "mcp" in op.transports)
 #: The MCP operations before MSG (ADR 0058 D7 added `explain`, whose text `v17-c2` never served).
 PRE_MSG_MCP_OPERATIONS = sorted(
-    set(MCP_OPERATIONS) - MSG_OPERATIONS - ST_OPERATIONS - F1_OPERATIONS
+    set(MCP_OPERATIONS) - MSG_OPERATIONS - ST_OPERATIONS - F1_OPERATIONS - F3_OPERATIONS
 )
 
 #: R-133: the served descriptions' digest after N1 and N2 (`harness.tool_descriptions_sha256`).
@@ -141,6 +148,10 @@ X04_SERVED_SHA256 = "6be1c002592524126617af8dd65d331513f4a96355f5381dba020ad561a
 #: the F1 review's fix round, which applied the design lane's edits to both texts
 #: (`scripts/m07a_rc.py`'s `D_9`). Without them it is `X04_SERVED_SHA256` (c_9).
 F1_SERVED_SHA256 = "e2c44b6b9c2a7f5689ed4f2fd96b6e9804d1a63e60a5c620d29b5b5d594bcebb"
+#: F3 (ADR 0061 D13, R-1051): the served digest with F3's five `Records` tools over F1's list,
+#: measured at F3-WO5b on `wp/F3` (`scripts/m07a_rc.py`'s `D_10`). Without them it is
+#: `F1_SERVED_SHA256` (c_10).
+F3_SERVED_SHA256 = "248c2e74baebcf489e012e14dff04fb0d14601d2df5d3ad88d51d0ad11e8a884"
 #: The files N1 and N2 changed; the only difference from `v17-c2`'s served texts.
 CHANGED = ("commit_change", "validate")
 #: Each description's SHA-256 as `v17-c2` served it: the table of
@@ -176,10 +187,17 @@ def _tools(mcp: ModuleType) -> list[dict[str, Any]]:
     return [tool.model_dump(mode="json", exclude_none=True) for tool in mcp.tools()]
 
 
+def _before_f3(mcp: ModuleType) -> list[dict[str, Any]]:
+    """The served tool list without F3's five tools (`without_f3`), F1's list."""
+    stripped = without_f3(_tools(mcp))
+    assert isinstance(stripped, list)
+    return stripped
+
+
 def _before_f1(mcp: ModuleType) -> list[dict[str, Any]]:
-    """The served tool list without F1's two tools (`without_f1`), X04's list: every earlier
-    decomposition starts from it."""
-    stripped = without_f1(_tools(mcp))
+    """The served tool list without F3's five tools and F1's two (`without_f1`), X04's list:
+    every earlier decomposition starts from it."""
+    stripped = without_f1(_before_f3(mcp))
     assert isinstance(stripped, list)
     return stripped
 
@@ -455,12 +473,28 @@ def test_f1s_surface_move_decomposes_onto_x04s(mcp: ModuleType) -> None:
     X04's (`X04_SERVED_SHA256`, which decomposes onto ST's and the earlier lists above). F1 added
     `list_capabilities` and `check_admission`, each served from its file, and moved no other tool
     at all: name, description, input or output schema."""
-    served = _tools(mcp)
+    served = _before_f3(mcp)  # F3's tools postdate F1
     stripped = without_f1(served)
     assert _digest(served) == F1_SERVED_SHA256
     assert _digest(stripped) == X04_SERVED_SHA256
     added = [t for t in served if t["name"] in {OPERATIONS[n].mcp_tool for n in F1_OPERATIONS}]
     assert sorted(t["name"] for t in added) == ["check_admission", "list_capabilities"]
+    assert [t for t in served if t not in added] == stripped
+    for tool in added:
+        assert tool["description"] == (DESCRIPTIONS / f"{tool['name']}.md").read_text("utf-8")
+
+
+def test_f3s_surface_move_decomposes_onto_f1s(mcp: ModuleType) -> None:
+    """F3 (ADR 0061 D13, R-1051): the served list is `F3_SERVED_SHA256`; minus F3's five tools it
+    is F1's (`F1_SERVED_SHA256`, which decomposes onto X04's and the earlier lists above). F3
+    added the five `Records` tools, each served from its file, and moved no other tool at all:
+    name, description, input or output schema."""
+    served = _tools(mcp)
+    stripped = without_f3(served)
+    assert _digest(served) == F3_SERVED_SHA256
+    assert _digest(stripped) == F1_SERVED_SHA256
+    added = [t for t in served if t["name"] in {OPERATIONS[n].mcp_tool for n in F3_OPERATIONS}]
+    assert sorted(t["name"] for t in added) == sorted(F3_OPERATIONS)
     assert [t for t in served if t not in added] == stripped
     for tool in added:
         assert tool["description"] == (DESCRIPTIONS / f"{tool['name']}.md").read_text("utf-8")

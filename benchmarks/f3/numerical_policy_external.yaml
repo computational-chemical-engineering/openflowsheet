@@ -11,9 +11,16 @@ numerical_policy_external:
   - record-v2.schema.json
   # F3-WO4 (D10): the data lock. Its `implementation_sha256` is classified exact by ST's table.
   - data-lock.schema.json
+  # F3-WO5b (D13): the `Records` responses, reached from `application-results` by bare `$ref`s
+  # (R-1032's structure; F3 decision WO5b-8).
+  - record-results.schema.json
   # An exact digest (ADR 0007 D1, digest row; ADR 0025 D2): its preimage is file bytes.
   # - `file_sha256`: SHA-256 of a legacy source file's LF-normalised bytes (D1 `legacy`, D12).
   # `sha256` (a record SHA or an input file's SHA, D4 `provenance.inputs`; D5 `match.record`'s
   # `$defs/sha256` is a pattern, not a property name) is classified exact by an earlier table.
+  # - `record_sha256`: a record's SHA (D3), the content address of the object it names (D8).
+  # - `source_sha256`: a source's SHA (D11), the digest a rights row names its source by.
   exact_sha256:
   - file_sha256
+  - record_sha256
+  - source_sha256

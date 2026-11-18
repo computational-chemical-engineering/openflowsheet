@@ -1,0 +1,19 @@
+{
+  "errors": [
+    {
+      "code": "record_schema_invalid",
+      "params": {
+        "pointer": "/name"
+      }
+    }
+  ],
+  "findings": [
+    {
+      "code": "anchor_defaulted",
+      "params": {
+        "component": "user.xenonol"
+      }
+    }
+  ],
+  "record_sha256": null
+}

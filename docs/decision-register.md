@@ -20005,3 +20005,27 @@ recorded the same way.
 
 **Rejected alternatives, and why.** Option B on the card, "keep ADR 0061 Proposed; F3 stays on wp/F3 and does not
 merge": not chosen by Frank.
+
+## R-1051 — the surface chain gains link c_10 = (ADR 0061 D13, `without_f3`, `248c2e74…`): F3's five `Records` tools, after F1's c_9
+
+| | |
+| --- | --- |
+| Date | 2026-11-18 |
+| Decided by | build lane, F3-WO5b, applying ADR 0061 D13 (ADR 0019 Amendment 8; Accepted 2026-11-18, R-1050) in R-457's form, as F1-WO4a took c_9 (R-1030). Number from F3's block R-1050…R-1059 |
+| Normative text | ADR 0061 D13; ADR 0019 Amendment 8; `scripts/m07a_rc.py` (link c_10) |
+| Evidence | On `wp/F3` at F3-WO5b the served MCP tool list digests to `248c2e74baebcf489e012e14dff04fb0d14601d2df5d3ad88d51d0ad11e8a884` (D_10). `without_f3` (`tests/f3_schema_support.py`) leaves `e2c44b6b9c2a7f5689ed4f2fd96b6e9804d1a63e60a5c620d29b5b5d594bcebb` = D_9 exactly, and the chain holds down to R-133's `D_0` (`tests/test_m07a_surface_chain.py`, `tests/test_t08_w2_surface_digest.py::test_f3s_surface_move_decomposes_onto_f1s`) |
+| Affected packages | F3; M07a (`scripts/m07a_rc.py`, A37 tests); M07 (the next RC's V17 carry names c_10); T08.A18 (five description reviews) |
+
+**Decision.** `m07a_rc.LINKS` gains c_10 (R-1051; strip `strip_f3` = `without_f3`; D_10 = `248c2e74…`). The strip
+removes the five tools F3 added, `search_records`, `get_record`, `register_record`, `validate_record` and
+`assess_rights`; F3 changes no existing tool, text or response schema (`application-results.schema.json` gains eight
+`$defs`; every other R4-G3 snapshot is unchanged, `SNAPSHOT_F3` holds the five new rows). §5.3 item 4 pins the five
+new files at their own hashes (`m07a_rc.F3_FILE_SHA256`). The texts await the design lane's review (F3's reviewer
+pass) and Frank's; `REVIEW.json` records them pending, so `tests/test_t08_w2_description_reviews.py` stays red until
+both are recorded (T08.A18's rule; no agent marks it). A review edit to any text moves D_10: the edit re-takes D_10
+and this entry's digest within F3, not as a new link.
+
+**Rejected alternatives.** A link per operation (one ADR, one package, one move).
+
+**Watch for.** A strip that removes more than F3's five tools (`test_f3_control_c_10_left_in_place`). A later
+MCP-visible change moves D_10: it becomes c_11.

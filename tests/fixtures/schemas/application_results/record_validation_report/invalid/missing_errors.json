@@ -1,0 +1,14 @@
+{
+  "expect_error": "'errors' is a required property",
+  "document": {
+    "findings": [
+      {
+        "code": "anchor_defaulted",
+        "params": {
+          "component": "user.xenonol"
+        }
+      }
+    ],
+    "record_sha256": null
+  }
+}

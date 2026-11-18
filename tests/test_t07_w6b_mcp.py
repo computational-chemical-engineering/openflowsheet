@@ -35,6 +35,7 @@ from typing import Any
 
 import pytest
 from conftest import REPO_ROOT
+from f3_schema_support import records_requests, user_record_sha256
 from jsonschema import Draft202012Validator
 from t07_corpus import CORPUS
 from t07_mcp_support import (
@@ -244,6 +245,13 @@ async def _scenario(session: Session, direct: LocalApplication, record: Transcri
         "check_admission",
         {"pair": {"unit": "thermal.heater", "method": "coolprop-heos-v1"}},
     )
+    # ADR 0061 D13 (F3): the direct registration finds the record MCP stored; `assess_rights`
+    # needs `policy`, which the grant does not hold.
+    sha = user_record_sha256()
+    for name, request in records_requests(sha):
+        relation = "registered" if name == "register_record" else "equal"
+        label = "no policy" if name == "assess_rights" else name
+        await pair(label, name, request, relation)
     document = CORPUS[NOMINAL]()
     first = {
         "edits": [{"operation": "set", "path": [k], "value": v} for k, v in document.items()],
@@ -325,6 +333,7 @@ async def _scenario(session: Session, direct: LocalApplication, record: Transcri
         "check_admission",
         {"pair": {"unit": "thermal.heatr", "method": "coolprop-heos-v1"}},
     )  # ADR 0060
+    await pair("no record", "get_record", {"record_sha256": "0" * 64})  # ADR 0061 D13
     await pair("key reused", "commit_change", first | {"expected_revision": second})
     big = {**first, "idempotency_key": "w6b-big", "expected_revision": second}
     big["edits"] = [{"operation": "set", "path": ["title"], "value": 2**53 + 1}]
@@ -407,6 +416,10 @@ def test_g14_every_mcp_operation_equals_dispatch_as_the_same_principal(
             assert via_mcp == via_direct, pair.label
         elif pair.relation == "timeless":
             assert _timeless(via_mcp) == _timeless(via_direct), pair.label
+        elif pair.relation == "registered":  # ADR 0061 D13: idempotent by content
+            assert [item["created"] for item in via_mcp["results"]] == [True], pair.label
+            created = [{**item, "created": False} for item in via_mcp["results"]]
+            assert via_direct == {"results": created}, pair.label
         else:  # the direct call replays the effect the MCP call made
             assert via_mcp["status"] == "committed" and via_direct["status"] == "replayed"
             assert via_mcp | {"status": "replayed"} == via_direct, pair.label
@@ -460,6 +473,8 @@ def test_g14_refusals_reach_mcp_as_tool_errors_with_the_api_error(transcript: Tr
         "unknown code": "not_found",  # `explain` (ADR 0058 D7)
         "no job's table": "not_found",  # `get_stream_table` (ADR 0068)
         "no such unit": "not_found",  # `check_admission` (ADR 0060 D11)
+        "no policy": "forbidden",  # `assess_rights` (ADR 0061 D13)
+        "no record": "not_found",  # `get_record` (ADR 0061 D13)
         "key reused": "idempotency_key_reused",
         "non-canonical": "document_not_canonical",
     }
@@ -487,8 +502,10 @@ def test_every_effect_is_the_session_principals(transcript: Transcript) -> None:
         if row["effect"] is not None and not row["operation"].startswith("project_")
     ]
     # The cancel of the ended job, over MCP and directly, changes nothing and is audited all the
-    # same (ruling round 5, S10).
+    # same (ruling round 5, S10). A registration of a stored record is audited too (ADR 0061 D13).
     assert [row["operation"] for row in effects] == [
+        "register_record",
+        "register_record",
         "commit_change",
         "commit_change",
         "submit_job",

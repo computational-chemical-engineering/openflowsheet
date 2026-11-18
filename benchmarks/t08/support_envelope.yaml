@@ -282,16 +282,19 @@ axes:
   - id: interfaces
     title: Interfaces
     statement: >-
-      Python (`LocalApplication`), CLI, HTTP (`/v1`) and MCP over stdio; the twenty-five operations of
+      Python (`LocalApplication`), CLI, HTTP (`/v1`) and MCP over stdio; the thirty operations of
       `OPERATIONS`, each on the transports listed (`explain`, ADR 0058 D7, reads the message catalogue
       only; `get_stream_table`, ADR 0068, computes a finished run's stream table from its bundle and
       stores nothing; `list_capabilities` and `check_admission`, ADR 0060 D11, read the extension
-      registry only); authority from the credential only (ADR 0019).
+      registry only; the protocol `Records`, ADR 0061 D13, reads and writes the project's record
+      store and rights register over the read-only legacy store); authority from the credential
+      only (ADR 0019).
       With `serve-http --ui`, the diagnostic web shell at `/ui/` is a browser client of eighteen of
       them over HTTP and of nothing else (M06, and ST's `get_stream_table` since Frank's O3;
       L-WEB-1 to L-WEB-4).
     operations:
       artifact_bytes: [python, cli, http]
+      assess_rights: [python, cli, http, mcp]
       cancel_job: [python, cli, http, mcp]
       check_admission: [python, cli, http, mcp]
       commit_change: [python, cli, http, mcp]
@@ -301,6 +304,7 @@ axes:
       get_job: [python, cli, http, mcp]
       get_job_result: [python, cli, http, mcp]
       get_project: [python, cli, http, mcp]
+      get_record: [python, cli, http, mcp]
       get_revision: [python, cli, http, mcp]
       get_stream_table: [python, cli, http, mcp]
       inspect_structure: [python, cli, http, mcp]
@@ -311,10 +315,13 @@ axes:
       list_models: [python, cli, http, mcp]
       list_revisions: [python, cli, http, mcp]
       preview_change: [python, cli, http, mcp]
+      register_record: [python, cli, http, mcp]
       reproduce: [python, cli]
+      search_records: [python, cli, http, mcp]
       solve: [python, cli]
       submit_job: [python, cli, http, mcp]
       validate: [python, cli, http, mcp]
+      validate_record: [python, cli, http, mcp]
       wait_job: [python, cli, http, mcp]
     evidence:
       - tests/test_t07_v17_reference.py::test_g16b_reference_run
