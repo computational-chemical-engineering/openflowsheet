@@ -90,9 +90,10 @@ duplication (twin merge: addendum for Frank); certificate, checks, split_checks 
    assess_rights, LocalApplication wiring, every "Left for WO5" item in F3_DECISIONS; E-F3-11, MCP digest
    re-take), WO7 close-out (manifest, CI both legs), one package `reviewer` (open: R1-B6 da41b295, fix1 and WO2-WO4
    choices already ruled). Card for ADR 0062 (F2) near close-out.
-4. Trailing S19 at one lane (ofs-s19-trailing-order): G3 run 4 (`wp/S19-g3d`): 8 steps PASS, review R-W3-G3-4
-   merge after fix 1 (applied ea758842); jobs 283 (no-gain) and 284 (merge-check, base 8cb44f62) queued. **Next:**
-   when both pass, merge into wp/S19 (`git merge -F`), log, then brief G3 run 5 or G4. Rule: lanes touching studies/ also need the nlp-marked suite at
+4. Trailing S19 at one lane (ofs-s19-trailing-order): G3 run 4 merged (43236b56; scan debt 4496.2, health 8.28,
+   brain 20, 25 files < 7.0). **Running:** G3 run 5 (opus-engineer, `wp/S19-g3e` from 43236b56, brief
+   `S19-W3-G3-5.md`; labels g3r5-*). **Next:** on delivery `$Q wait --since 270 --idle .../s19-g3e`, gate report,
+   nlp suite at head vs base 43236b56, reviewer R-W3-G3-5, fixes, merge-check, merge. Rule: lanes touching studies/ also need the nlp-marked suite at
    head with failures a subset of base (script pattern `<git-common-dir>/codehealth/tools/nlp_suite_at.sh`, edit its commit list and scratch paths: .venv-nlp env plus mpmath; base 2 failures
    test_opt_cost_lca_nlp g19, g20). Then G4, G2 (non-legacy), W5, G1 after the scale probe, docs.
 **Open build-lane items:** `benchmarks/m03/nlp-test.lock` lacks mpmath (m03_nlp_check.sh fails collection); test_opt_cost_lca_nlp g19, g20 fail; no CI or gate runs nlp-marked tests (add an nlp gate tier).
