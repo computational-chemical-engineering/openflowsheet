@@ -231,63 +231,16 @@ def solve_recycle(
     while True:
         if run.current.status != "ok" or run.current.values is None:
             return run.finish("EVALUATION_ERROR", k, None, run.current.message)
-        residual = np.array(run.current.values, dtype=np.float64)
-        f_hat = residual / scale
-        norm = float(np.max(np.abs(f_hat))) if n else 0.0
-        run.norms.append(norm)
-        if keep_trajectory:
-            run.trajectory.append(run.x.copy())
-        if norm < run.best_norm:
-            run.best_norm, run.best_x = norm, run.x.copy()
+        f_hat = run._measure()
 
         # §5.2: convergence, tested before anything else.
         if bool(np.all(np.abs(f_hat) <= tolerance_hat)):
             return run.finish("CONVERGED", k, tuple(run.current.values))
 
-        # §5.6: stagnation over accepted iterates. Growth counts: a residual that grows is a
-        # residual that is not shrinking, which is why no divergence factor exists.
-        if k > 0:
-            if run.norms[-1] / run.norms[-2] > rules.stagnation_ratio:
-                run.stagnation += 1
-            else:
-                run.stagnation = 0
-            if run.stagnation >= rules.stagnation_window:
-                run.closures.append(k)
-                if len(run.restarts) < rules.max_restarts:
-                    run.restarts.append(RestartEvent(iteration=k, count=len(run.restarts) + 1))
-                    if trace is not None:
-                        trace.record(
-                            kind="restart",
-                            attempt=attempt,
-                            iteration=k,
-                            signature=signature,
-                            state_sha256=run.digest(run.x),
-                            residual_inf_unscaled=run.unscaled_inf(run.current.values),
-                            merit=problem.scaling.merit(run.current.values, problem.row_ids),
-                            counters=run.running,
-                            restart_reason="stagnation",
-                            restart_count=len(run.restarts),
-                        )
-                    run.history_x.clear()
-                    run.history_f.clear()
-                    run.stagnation = 0
-                else:
-                    return run.finish("RECYCLE_STAGNATION", k, tuple(run.current.values))
-
-        # §5.6: the oscillation detector on the dominant component, damping plain steps only.
-        dominant = int(np.argmax(np.abs(f_hat)))
-        if (
-            run.previous_f is not None
-            and abs(run.previous_f[dominant]) > tolerance_hat[dominant]
-            and run.previous_f[dominant] * f_hat[dominant] < 0.0
-        ):
-            run.flips += 1
-        else:
-            run.flips = 0
-        if run.flips >= rules.oscillation_window and run.oscillation_at is None:
-            run.oscillation_at = k
-            run.beta_sub = rules.beta_substitution_oscillating
-        run.previous_f = f_hat
+        closed = run._stagnation(k, run.current.values)
+        if closed is not None:
+            return closed
+        run._oscillation(k, f_hat)
 
         if observer is not None:
             closing = observer.should_close(k)
@@ -502,6 +455,81 @@ class _RecycleRun:
 
     def unscaled_inf(self, values: Sequence[float] | None) -> float:
         return float(np.max(np.abs(np.asarray(values)))) if values else float("nan")
+
+    def _measure(self) -> npt.NDArray[np.float64]:
+        """The scaled residual `f_hat` of `current`, whose values the caller has checked: appends
+        its infinity norm to `norms` (0.0 when there are no variables) and, with
+        `keep_trajectory`, a copy of `x` to `trajectory`, and makes `x` the best iterate when the
+        norm is below `best_norm`."""
+        residual = np.array(self.current.values, dtype=np.float64)
+        f_hat = residual / self.scale
+        norm = float(np.max(np.abs(f_hat))) if self.n else 0.0
+        self.norms.append(norm)
+        if self.keep_trajectory:
+            self.trajectory.append(self.x.copy())
+        if norm < self.best_norm:
+            self.best_norm, self.best_x = norm, self.x.copy()
+        return f_hat
+
+    def _stagnation(self, k: int, values: tuple[float, ...]) -> RecycleResult | None:
+        """§5.6's stagnation test at iteration `k` over `norms`: counts a non-shrinking residual in
+        `stagnation`, and at `stagnation_window` such iterations lists `k` in `closures` and either
+        restarts (a `RestartEvent`, the `restart` event when `trace` is set, the history cleared,
+        the count reset) or, with `max_restarts` used, closes as `RECYCLE_STAGNATION` through
+        `finish`. `values` are `current`'s values, which the caller has checked (mypy's narrowing
+        does not cross the call). None at iteration 0, and whenever the attempt goes on."""
+        if k <= 0:
+            return None
+        # §5.6: stagnation over accepted iterates. Growth counts: a residual that grows is a
+        # residual that is not shrinking, which is why no divergence factor exists.
+        if self.norms[-1] / self.norms[-2] > self.rules.stagnation_ratio:
+            self.stagnation += 1
+        else:
+            self.stagnation = 0
+        if self.stagnation >= self.rules.stagnation_window:
+            self.closures.append(k)
+            if len(self.restarts) < self.rules.max_restarts:
+                self.restarts.append(RestartEvent(iteration=k, count=len(self.restarts) + 1))
+                if self.trace is not None:
+                    self.trace.record(
+                        kind="restart",
+                        attempt=self.attempt,
+                        iteration=k,
+                        signature=self.signature,
+                        state_sha256=self.digest(self.x),
+                        residual_inf_unscaled=self.unscaled_inf(values),
+                        merit=self.problem.scaling.merit(values, self.problem.row_ids),
+                        counters=self.running,
+                        restart_reason="stagnation",
+                        restart_count=len(self.restarts),
+                    )
+                self.history_x.clear()
+                self.history_f.clear()
+                self.stagnation = 0
+            else:
+                return self.finish("RECYCLE_STAGNATION", k, tuple(values))
+        return None
+
+    def _oscillation(self, k: int, f_hat: npt.NDArray[np.float64]) -> None:
+        """§5.6's oscillation detector on the dominant component of `f_hat`: counts sign flips of
+        that component against `previous_f` (only where the earlier value is above tolerance) in
+        `flips`, sets `oscillation_at` to `k` and `beta_sub` to the oscillating substitution
+        damping the first time `flips` reaches `oscillation_window`, and keeps `f_hat` as
+        `previous_f`."""
+        # §5.6: the oscillation detector on the dominant component, damping plain steps only.
+        dominant = int(np.argmax(np.abs(f_hat)))
+        if (
+            self.previous_f is not None
+            and abs(self.previous_f[dominant]) > self.tolerance_hat[dominant]
+            and self.previous_f[dominant] * f_hat[dominant] < 0.0
+        ):
+            self.flips += 1
+        else:
+            self.flips = 0
+        if self.flips >= self.rules.oscillation_window and self.oscillation_at is None:
+            self.oscillation_at = k
+            self.beta_sub = self.rules.beta_substitution_oscillating
+        self.previous_f = f_hat
 
     def record_trial(
         self,

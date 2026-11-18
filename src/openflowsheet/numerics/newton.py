@@ -337,112 +337,18 @@ def solve_newton(
             )
 
         # §5.7: stagnation, on accepted steps only, before spending another factorization.
-        if len(run.merits) >= policy.stagnation_window:
-            window = run.merits[-policy.stagnation_window :]
-            if all(ratio > policy.stagnation_ratio for ratio in window):
-                return run.finish(
-                    "STAGNATION",
-                    run.values,
-                    message=(
-                        f"{policy.stagnation_window} consecutive merit ratios above "
-                        f"{policy.stagnation_ratio} with the residual unconverged; a small step "
-                        "with a large residual is stagnation, not convergence"
-                    ),
-                    iterations=iteration,
-                    accepted_any=run.accepted_any,
-                )
+        closed = run._stagnation(iteration)
+        if closed is not None:
+            return closed
 
-        run.running = run.running.plus(jacobian_calls=1)
-        try:
-            unscaled = sp.csc_matrix(problem.jacobian(run.x))
-        except JacobianUnavailableError as unavailable:
-            return run.finish(
-                "EVALUATION_ERROR",
-                run.values,
-                message=f"the Jacobian could not be evaluated: {unavailable}",
-                iterations=iteration,
-                accepted_any=run.accepted_any,
-            )
-        scaled = _scale_matrix(unscaled, problem)
-        trace.record(
-            kind="jacobian",
-            attempt=attempt,
-            iteration=iteration,
-            signature=signature,
-            state_sha256=run.digest(run.x),
-            residual_inf_unscaled=infinity,
-            merit=merit,
-            counters=run.running,
-            inner_consistency=(
-                problem.jacobian_diagnostics() if problem.jacobian_diagnostics else None
-            ),
-        )
-        for inner in problem.jacobian_evidence() if problem.jacobian_evidence else ():
-            run.running = run.running.plus(factorizations=1)
-            trace.record(
-                kind="linear_solve",
-                attempt=attempt,
-                iteration=iteration,
-                signature=signature,
-                state_sha256=run.digest(run.x),
-                residual_inf_unscaled=infinity,
-                merit=merit,
-                counters=run.running,
-                linear=LinearRecord(
-                    residual_normalized=inner.residual_normalized,
-                    u_diag_min_abs=inner.min_abs_u_diagonal,
-                    u_diag_max_abs=inner.max_abs_u_diagonal,
-                    nnz_l=inner.nnz_l,
-                    nnz_u=inner.nnz_u,
-                ),
-                message=f"assembling the derivative: {inner.dimension}x{inner.dimension}",
-            )
-
-        scaled_residual = problem.scaling.scale_residual(run.values, problem.row_ids)
-        run.running = run.running.plus(factorizations=1)
-        try:
-            if run.column_tolerance is None:
-                step_scaled, record = solve_linear(scaled, -scaled_residual)
-            else:
-                step_scaled, record, run.kept = solve_linear_kept(scaled, -scaled_residual)
-        except LinearSolveFailedError as failure:
-            trace.record(
-                kind="linear_solve",
-                attempt=attempt,
-                iteration=iteration,
-                signature=signature,
-                state_sha256=run.digest(run.x),
-                residual_inf_unscaled=infinity,
-                merit=merit,
-                counters=run.running,
-                outcome="LINEAR_SOLVE_FAILED",
-                message=str(failure),
-            )
-            return run.finish(
-                "LINEAR_SOLVE_FAILED",
-                run.values,
-                linear_reason=failure.reason,
-                message=str(failure),
-                iterations=iteration,
-                accepted_any=run.accepted_any,
-            )
-        trace.record(
-            kind="linear_solve",
-            attempt=attempt,
-            iteration=iteration,
-            signature=signature,
-            state_sha256=run.digest(run.x),
-            residual_inf_unscaled=infinity,
-            merit=merit,
-            counters=run.running,
-            linear=LinearRecord(
-                residual_normalized=record.residual_normalized,
-                u_diag_min_abs=record.min_abs_u_diagonal,
-                u_diag_max_abs=record.max_abs_u_diagonal,
-                nnz_l=record.nnz_l,
-                nnz_u=record.nnz_u,
-            ),
-        )
+        matrices = run._jacobian(iteration, infinity, merit)
+        if isinstance(matrices, NewtonResult):
+            return matrices
+        unscaled, scaled = matrices
+        solved = run._linear_step(iteration, scaled, infinity, merit)
+        if isinstance(solved, NewtonResult):
+            return solved
+        step_scaled = solved
 
         direction = problem.scaling.unscale_state(step_scaled, problem.variable_ids)
         direction, alpha_max, landing, released = _bound_aware_step(
@@ -813,6 +719,138 @@ class _NewtonRun:
         # D3: one more iteration of this loop from `x_k`, unchanged.
         self.refining = converged
         return None
+
+    def _stagnation(self, iteration: int) -> NewtonResult | None:
+        """§5.7's stagnation test over `merits`, the merit ratios of the accepted steps: closes
+        `STAGNATION` through `finish` (writing `attempt_closed`) when the last
+        `stagnation_window` ratios all exceed `stagnation_ratio`. None when fewer ratios exist
+        than the window, or when one of them does not exceed the ratio."""
+        if len(self.merits) < self.policy.stagnation_window:
+            return None
+        window = self.merits[-self.policy.stagnation_window :]
+        if all(ratio > self.policy.stagnation_ratio for ratio in window):
+            return self.finish(
+                "STAGNATION",
+                self.values,
+                message=(
+                    f"{self.policy.stagnation_window} consecutive merit ratios above "
+                    f"{self.policy.stagnation_ratio} with the residual unconverged; a small step "
+                    "with a large residual is stagnation, not convergence"
+                ),
+                iterations=iteration,
+                accepted_any=self.accepted_any,
+            )
+        return None
+
+    def _jacobian(
+        self, iteration: int, infinity: float, merit: float
+    ) -> tuple[sp.csc_matrix, sp.csc_matrix] | NewtonResult:
+        """The Jacobian at `x`, unscaled and scaled, with its evidence: counts the call in
+        `running` before the evaluation, closes `EVALUATION_ERROR` through `finish` when the
+        Jacobian is unavailable, and writes the `jacobian` event (with the inner consistency
+        diagnostics when the problem has them) and one `linear_solve` event per inner
+        factorization of `jacobian_evidence`, each counted in `running` before its record."""
+        self.running = self.running.plus(jacobian_calls=1)
+        try:
+            unscaled = sp.csc_matrix(self.problem.jacobian(self.x))
+        except JacobianUnavailableError as unavailable:
+            return self.finish(
+                "EVALUATION_ERROR",
+                self.values,
+                message=f"the Jacobian could not be evaluated: {unavailable}",
+                iterations=iteration,
+                accepted_any=self.accepted_any,
+            )
+        scaled = _scale_matrix(unscaled, self.problem)
+        self.trace.record(
+            kind="jacobian",
+            attempt=self.attempt,
+            iteration=iteration,
+            signature=self.signature,
+            state_sha256=self.digest(self.x),
+            residual_inf_unscaled=infinity,
+            merit=merit,
+            counters=self.running,
+            inner_consistency=(
+                self.problem.jacobian_diagnostics() if self.problem.jacobian_diagnostics else None
+            ),
+        )
+        for inner in self.problem.jacobian_evidence() if self.problem.jacobian_evidence else ():
+            self.running = self.running.plus(factorizations=1)
+            self.trace.record(
+                kind="linear_solve",
+                attempt=self.attempt,
+                iteration=iteration,
+                signature=self.signature,
+                state_sha256=self.digest(self.x),
+                residual_inf_unscaled=infinity,
+                merit=merit,
+                counters=self.running,
+                linear=LinearRecord(
+                    residual_normalized=inner.residual_normalized,
+                    u_diag_min_abs=inner.min_abs_u_diagonal,
+                    u_diag_max_abs=inner.max_abs_u_diagonal,
+                    nnz_l=inner.nnz_l,
+                    nnz_u=inner.nnz_u,
+                ),
+                message=f"assembling the derivative: {inner.dimension}x{inner.dimension}",
+            )
+        return unscaled, scaled
+
+    def _linear_step(
+        self, iteration: int, scaled: sp.csc_matrix, infinity: float, merit: float
+    ) -> npt.NDArray[np.float64] | NewtonResult:
+        """The scaled Newton step: solves `scaled` against the scaled residual of `values`, the
+        factorization counted in `running` before the solve, keeping the factorization in `kept`
+        when the call has column tolerances (ADR 0018). A failed solve writes its
+        `linear_solve` event and closes `LINEAR_SOLVE_FAILED` through `finish`; a solved one
+        writes the `linear_solve` event with the solve's record and returns the step."""
+        scaled_residual = self.problem.scaling.scale_residual(self.values, self.problem.row_ids)
+        self.running = self.running.plus(factorizations=1)
+        try:
+            if self.column_tolerance is None:
+                step_scaled, record = solve_linear(scaled, -scaled_residual)
+            else:
+                step_scaled, record, self.kept = solve_linear_kept(scaled, -scaled_residual)
+        except LinearSolveFailedError as failure:
+            self.trace.record(
+                kind="linear_solve",
+                attempt=self.attempt,
+                iteration=iteration,
+                signature=self.signature,
+                state_sha256=self.digest(self.x),
+                residual_inf_unscaled=infinity,
+                merit=merit,
+                counters=self.running,
+                outcome="LINEAR_SOLVE_FAILED",
+                message=str(failure),
+            )
+            return self.finish(
+                "LINEAR_SOLVE_FAILED",
+                self.values,
+                linear_reason=failure.reason,
+                message=str(failure),
+                iterations=iteration,
+                accepted_any=self.accepted_any,
+            )
+        self.trace.record(
+            kind="linear_solve",
+            attempt=self.attempt,
+            iteration=iteration,
+            signature=self.signature,
+            state_sha256=self.digest(self.x),
+            residual_inf_unscaled=infinity,
+            merit=merit,
+            counters=self.running,
+            linear=LinearRecord(
+                residual_normalized=record.residual_normalized,
+                u_diag_min_abs=record.min_abs_u_diagonal,
+                u_diag_max_abs=record.max_abs_u_diagonal,
+                nnz_l=record.nnz_l,
+                nnz_u=record.nnz_u,
+            ),
+        )
+        return step_scaled
 
 
 def _chord(
