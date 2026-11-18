@@ -18,7 +18,7 @@ import json
 import unicodedata
 from collections import Counter
 from collections.abc import Callable, Iterator, Mapping
-from typing import Any, NamedTuple
+from typing import Any, Literal, NamedTuple
 
 import yaml
 from jsonschema import Draft202012Validator
@@ -82,7 +82,7 @@ def _parsed(source: str | bytes | Mapping[str, Any]) -> dict[str, Any] | Coded:
     repeated key is refused in either. Bytes that are not UTF-8, a recursive YAML alias and
     nesting deeper than the interpreter's recursion limit are `record_schema_invalid("")`."""
     try:
-        document = _loaded(source) if isinstance(source, str | bytes) else source
+        document = loaded(source) if isinstance(source, str | bytes) else source
         if not isinstance(document, Mapping):
             return schema_invalid("")
         bad = first_noncanonical(document)
@@ -94,12 +94,14 @@ def _parsed(source: str | bytes | Mapping[str, Any]) -> dict[str, Any] | Coded:
     return copied
 
 
-def _loaded(source: str | bytes) -> object:
+def loaded(source: str | bytes, *, syntax: Literal["json", "yaml"] | None = None) -> object:
     """JSON or YAML text (bytes as UTF-8; `UnicodeDecodeError` is a `ValueError`), parsed, a
     leading byte-order mark ignored; a repeated key raises (`ValueError` in JSON,
-    `yaml.YAMLError` in YAML, review S2)."""
+    `yaml.YAMLError` in YAML, review S2). `syntax` names the language; `None` reads JSON when the
+    text starts with `{` and YAML otherwise (step 1). The user-file adapter reads its files with
+    it (`importers.user_file`)."""
     text = (source.decode("utf-8") if isinstance(source, bytes) else source).removeprefix("\ufeff")
-    if text.lstrip().startswith("{"):
+    if syntax == "json" or (syntax is None and text.lstrip().startswith("{")):
         return json.loads(text, object_pairs_hook=_unique_members)
     return yaml.load(text, Loader=_UniqueKeySafeLoader)  # noqa: S506 (a SafeLoader subclass)
 
