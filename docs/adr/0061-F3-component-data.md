@@ -52,6 +52,9 @@ names its payload schema and must use this envelope and D2's identity rule (Q9.R
 | `uncertainty_statement` | string, optional | narrative uncertainty of the whole record |
 | `volatile` | optional, closed (D2) | excluded from identity |
 
+The envelope member names are reserved against every payload, now and for later envelope members (the layout is flat:
+a type's members sit beside the envelope, F3 decision WO1-1).
+
 **Core payloads of the three descriptor kinds** (`schemas/extension-descriptor.schema.json`, `payload_<kind>`; the frozen
 field list, review ruling WO1-11). X11 adds optional members only.
 
@@ -698,3 +701,4 @@ Status stays Proposed. Design-lane rulings of the F3-WO1 review, applied by the 
 | M1 | D6: "A stated anchor must be" becomes "The anchor, stated or derived, must be"; validity is a function of the normalised record, so a charged component with formation data and none in `aq` is refused at first submission. |
 | S4 | D6 step 3: among `s:` forms, the smallest token by canonical-JSON bytes (entries are a set); formation keeps record order (step 2). |
 | WO1-11 | D1: the three-row core payload table (`payload_schema.sha256` required; `null` only for a preview type; `data_source.formats` at least one). |
+| N10 | D1: envelope member names are reserved against every payload. |
