@@ -2552,3 +2552,13 @@
   battery 2132 passed, 1 failed (expected red: the five descriptions' reviews pending); F0 PASS; mypy clean; arch 0/0.
   DECISIONs WO5b-7..9. Next for F3: package reviewer pass (WO5a, WO5b; rulings WO5a-1..9, WO5b-1..9, R1-B6;
   reactions.py numerics), the five description reviews (design lane, then Frank), WO7 close-out.
+- **2026-11-18, R-W3-G3-5 (reviewer, Opus, 125k): merge, no fixes.** Steps 1-2 (optimize_revision RC): the 28 moved
+  statements verbatim in order, call order per start index and refusal ladders unchanged; `_StartPhase`/`_Solved`
+  are real RC2 hand-offs, `write_start_members` within RC7. Step 3 (S1): no float operation moved; the inversion is
+  the whole loop body. Notes only (revision.py:289 `finish` docstring; :301-303 wording). **Rulings:** (a)
+  `_eliminate_zero_flows`: no RC class; one P step: a frozen record of the fixed row data built before the loop, the
+  section 17.1 step-2 fixpoint moved verbatim as one working-state helper editing `found`/`pins` passed explicitly
+  (invariant stated), alternation, lazy `xi` draw and certify loop stay in the caller; leave it if under the 2-point
+  floor; the record can later replace `_joint_blocks`' 10 arguments. (b) `verify_candidate`: leave it, residual debt;
+  revisit only with a design-lane behaviour change, after a test pins `assessment_not_evaluable` and
+  `phase_rows_not_evaluable` texts and the stop record (none pins them now). Merge-check job 288 (base 43236b56).
