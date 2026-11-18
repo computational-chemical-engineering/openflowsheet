@@ -77,16 +77,17 @@ counted as legacy (S19_DECISIONS 2026-11-18 ~19:00), waits for Frank's legacy ru
    region_screen 6.3) and numerics/ptc.py (6.8; R-W3-G1N-1: P2 to P4 must end >= 7.0, else a miss and P1
    reverted). Brief from the last G1 brief (`ls <git-common-dir>/codehealth/briefs/ | grep G1`) and
    docs/briefs/S19-G1-plan.md; S1 cadence (reviewer every chain).
-2. F3 (0.5, `wp/F3`, worktree `f3`): fix round 4 done, pushed 54eb696c (manifest `evidence/F3/361c6207.../`
-   implemented). On CI 44326799399: if the only red is `test_every_description_is_reviewed_by_both_lanes` (and the
-   informational codehealth job, F3-3-4 accepted debt), the package is ready except Frank's human review. A real
-   failure: fresh opus-engineer with a brief file. **Waits for Frank:** card ofs-f3-mcp-descriptions-human signed A
+3. F3 (0.5, `wp/F3`, worktree `f3`): fix round 4 done, pushed 54eb696c (manifest `evidence/F3/361c6207.../`
+   implemented). CI 44326799399: only `test_every_description_is_reviewed_by_both_lanes` red on each suite leg (and
+   the informational codehealth job): ready except Frank's human review. **Waits for Frank:** card ofs-f3-mcp-descriptions-human signed A
    and VERIFIED, but the REVIEW.json edit recording it was refused by the permission system; Frank allows it or edits
    the five `human` reviews himself; then write `executed` on that card, CI green, manifest `tested` (record the CI
    run ID and commit), merge card via hub. Card ofs-f3-qf1 executed (F2 owes `[p, q]` in validate_record when ADR
    0062 is accepted). Open for the design lane: `molar_mass_inconsistent` signature clash ADR 0061 vs 0062.
-3. Trailing after G3: G4, G2 (non-legacy), W5, G1 after the scale probe, docs. Rule: lanes touching studies/ also need
-   the nlp-marked suite at head, failures a subset of base (g19, g20).
+4. Then: G1 on, W5 by its ruling, the models/ legacy part and G2 after Frank's legacy ruling, docs. Rule: lanes
+   touching studies/ also need the nlp-marked suite at head, failures a subset of base (g19, g20).
+**Open for Frank (new):** the legacy models/ engine ruling (S19_DECISIONS 2026-11-15 item 5): G2's remainder and
+W5's models/ part wait for it.
 **Open build-lane items:** `benchmarks/m03/nlp-test.lock` lacks mpmath (m03_nlp_check.sh fails collection); test_opt_cost_lca_nlp g19, g20 fail; no CI or gate runs nlp-marked tests (add an nlp gate tier); the f3 worktree's `.venv` lacks pytest-xdist and pytest-timeout (fix round 3 ran the full suite serially, 6747 s).
 **Open for Frank (not blocking):** proposal 2 (selection widening; selected gates ~600 s vs 300 s; standing ALERT
 selected share ~50%); R-1042 option C; STOP 1 alternative; verify twins addendum; thermo/ below 7.0 only in W5;
