@@ -2637,3 +2637,7 @@
   base config; at the head `codehealth arch --depth 4` reports 0 violations). Fix round 3 briefed
   (`docs/briefs/F3-fix3.md`, wp/F3 e73368c2), launch after the self-reset. Lesson: a package battery does not replace
   the full suite before a push meant to reach `tested`; fix round 3 runs it.
+
+## 2026-11-18 resume after reset
+
+Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g3f started. F3 fix round 3 launched (opus-engineer, brief docs/briefs/F3-fix3.md at wp/F3 e73368c2).
