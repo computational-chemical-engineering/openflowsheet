@@ -349,23 +349,9 @@ def _run(
         for holder in projection.holders:
             holder.end_run()
 
-    exit_lines = tuple(
-        line for line in captured.getvalue().splitlines() if line.startswith("EXIT:")
+    exit_lines, refusals, iterations, log_error = _run_log(
+        captured, projection, refused_before, handler
     )
-    refusals = sorted(
-        (
-            refusal
-            for holder in projection.holders
-            for refusal in holder.refusals[refused_before[holder.name] :]
-        ),
-        key=lambda refusal: refusal.order,
-    )
-    try:
-        iterations = handler.iterations()
-        log_error = None
-    except TrfLogError as error:
-        iterations = ()
-        log_error = str(error)
 
     # R-401: the final step against the radius it was solved with, and the returned decision.
     radius_rule = {
@@ -522,6 +508,47 @@ def _preflight_phase(
             for holder in projection.holders:
                 holder.end_run()
     return _Preflown(refused, refused_phase, built)
+
+
+class _RunLog(NamedTuple):
+    """`_run_log`'s result: the `EXIT:` lines of TRF's stdout, the truth refusals raised during
+    the solve in their order, and the parsed iteration log (empty, with the log's error text in
+    `log_error`, when the log is not TRF 6.10.1's; `log_error` is `None` otherwise)."""
+
+    exit_lines: tuple[str, ...]
+    refusals: list[TruthRefused]
+    iterations: tuple[IterationRecord, ...]
+    log_error: str | None
+
+
+def _run_log(
+    captured: io.StringIO,
+    projection: Projection,
+    refused_before: Mapping[str, int],
+    handler: TrfLogHandler,
+) -> _RunLog:
+    """What the solve left behind, read after the holders' run ended: the `EXIT:` lines of the
+    `captured` stdout, each holder's refusals past its count in `refused_before` (the backstop,
+    R-276) sorted by `order`, and `handler`'s iteration records; a `TrfLogError` from them is
+    returned as its text in `log_error`, not raised."""
+    exit_lines = tuple(
+        line for line in captured.getvalue().splitlines() if line.startswith("EXIT:")
+    )
+    refusals = sorted(
+        (
+            refusal
+            for holder in projection.holders
+            for refusal in holder.refusals[refused_before[holder.name] :]
+        ),
+        key=lambda refusal: refusal.order,
+    )
+    try:
+        iterations = handler.iterations()
+        log_error = None
+    except TrfLogError as error:
+        iterations = ()
+        log_error = str(error)
+    return _RunLog(exit_lines, refusals, iterations, log_error)
 
 
 def _at_box_bound(projection: Projection, model: Any) -> bool:
