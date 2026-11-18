@@ -435,3 +435,68 @@ def test_t1_s2_and_s4_run_only_at_a_base(scratch: Path) -> None:
         "sets --check PASS at a step (S2, S4 not checked): |R| 51, |F| 35, F subset of R, "
         "tiers 16/28/6/1, T-2a holds (27 unit hashes)"
     )
+
+
+# -- R1's refusals (review R-W5-WO0, fix 3) --------------------------------------------------------
+
+SYN001 = f"{THERMO}/syn001.py"
+PR_C1 = f"{THERMO}/pr_c1.py"
+
+
+def test_r1_predict_refuses_tier_4_and_m7() -> None:
+    done = _tool("predict", "--base", BASE, "--files", "thermo/syn001.py")
+    assert done.returncode == 1, done.stdout
+    assert done.stdout.splitlines() == [
+        f"REFUSED {SYN001}: tier 4 (excluded), refused by R1",
+        "REFUSED M7: 52 key(s) predicted to move, refused by R1",
+        "predict FAIL: E refused (2 problem(s))",
+    ]
+
+
+def test_r1_predict_refuses_a_file_above_max_tier() -> None:
+    done = _tool("predict", "--base", BASE, "--files", "thermo/pr_c1.py", "--max-tier", "2")
+    assert done.returncode == 1, done.stdout
+    assert done.stdout.splitlines() == [
+        f"REFUSED {PR_C1}: tier 3 (run identity), above --max-tier 2",
+        "predict FAIL: E refused (1 problem(s))",
+    ]
+    assert _tool("predict", "--base", BASE, "--files", "thermo/pr_c1.py").returncode == 0
+
+
+def test_r1_a_nonempty_m7_prediction_is_refused_alone(facts: w5.Facts) -> None:
+    moved: w5.Moved = {measure: set() for measure in w5.MEASURES}
+    moved["M7"] = {"bundle"}
+    assert w5.refusals(facts, [], moved, 3) == ["M7: 1 key(s) predicted to move, refused by R1"]
+
+
+def _re_registered(scratch: Path, facts: w5.Facts, edited: str) -> str:
+    """A synthetic K on the base: a comment edit of `edited` and every predicted value of
+    `corpus.json` re-registered."""
+    _git("checkout", "-q", "--detach", BASE, cwd=scratch)
+    _append(scratch, edited, COMMENT)
+    predicted, _ = w5.predict(facts, [edited])
+    corpus = scratch / w5.CORPUS_FILE
+    document = json.loads(corpus.read_text(encoding="utf-8"))
+    for measure, keys in predicted.items():
+        for key in keys:
+            document["measures"][measure][key] = "re-registered"
+    corpus.write_text(json.dumps(document, indent=1, sort_keys=True) + "\n", encoding="utf-8")
+    return _commit(scratch, "synthetic re-registration", edited, w5.CORPUS_FILE)
+
+
+def test_r1_judge_refuses_a_k_re_registering_m7(facts: w5.Facts, scratch: Path) -> None:
+    """The reviewer's falsifier: a K re-registering all 52 M7 keys (with every other predicted
+    key of `syn001.py`) passed W5-K2; R1 refuses it. And a tier 3 K above `--max-tier 2`."""
+    after = _re_registered(scratch, facts, SYN001)
+    done = _tool("--tree", str(scratch), "judge", "--before", BASE, "--after", after)
+    assert done.returncode == 1, done.stdout
+    assert done.stdout.splitlines()[-1] == "judge FAIL: E refused (2 problem(s))"
+    assert "REFUSED M7: 52 key(s) predicted to move, refused by R1" in done.stdout
+    after = _re_registered(scratch, facts, PR_C1)
+    arguments = ("--tree", str(scratch), "judge", "--before", BASE, "--after", after)
+    done = _tool(*arguments, "--max-tier", "2")
+    assert done.returncode == 1, done.stdout
+    assert done.stdout.splitlines() == [
+        f"REFUSED {PR_C1}: tier 3 (run identity), above --max-tier 2",
+        "judge FAIL: E refused (1 problem(s))",
+    ]

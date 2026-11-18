@@ -5,7 +5,8 @@ The ruling decides what a byte change of a registry-hashed file moves; this tool
     w5_identity.py sets [--check] [--step] [--base REV] [--legacy PATH] [--core PATH]
                         [--json PATH]
     w5_identity.py predict --base REV [--files PATH ...] [--against-log F0LOG] [--json PATH]
-    w5_identity.py judge --before REV --after REV [--files PATH ...]
+                           [--max-tier N]
+    w5_identity.py judge --before REV --after REV [--files PATH ...] [--max-tier N]
     w5_identity.py coverage --base REV [--head REV]
 
 - `sets`: R (the union of the implementation `modules` of `legacy.json` and `core.json`), F (F0's
@@ -24,6 +25,9 @@ The ruling decides what a byte change of a registry-hashed file moves; this tool
   moves, by section 3.2's reach rules, and whether `registry_sha256` moves. `--files` defaults
   to `git diff --name-only BASE..HEAD`; files outside R move nothing. `--against-log` compares
   the prediction with an unpinned F0 `--check` log, both ways, and its summary line (W5-S3).
+  `predict` and `judge` refuse, exit 1 naming it, an E with a tier 4 file, a file above
+  `--max-tier N` (default 3; batch N runs with 2 until FR-1 is signed) or a nonempty M7
+  prediction (R1).
 - `judge`: W5-K2. The changed (measure, key) pairs of `benchmarks/f0/corpus.json` from BEFORE to
   AFTER must equal `predict --base BEFORE` for E = `git diff --name-only BEFORE AFTER` (or
   `--files`), every predicted value must change, and `format`, `reference_platform`, `corpus`
@@ -541,6 +545,24 @@ def differences(predicted: Moved, actual: Moved, verb: str) -> list[str]:
     return found
 
 
+def refusals(facts: Facts, files: Iterable[str], moved: Moved, max_tier: int) -> list[str]:
+    """R1's refusals of an E: a tier 4 file, a file above `max_tier`, a nonempty M7 prediction
+    (M7 is never re-registered in W5; a step that moves it goes to the design lane)."""
+    tier_of = {file: tier for tier, found in tiers(facts).items() for file in found}
+    problems = []
+    for name in sorted(set(files)):
+        tier = tier_of.get(name)
+        if tier == 4:
+            problems.append(f"{name}: tier 4 ({TIER_NAMES[4]}), refused by R1")
+        elif tier is not None and tier > max_tier:
+            problems.append(
+                f"{name}: tier {tier} ({TIER_NAMES[tier]}), above --max-tier {max_tier}"
+            )
+    if moved["M7"]:
+        problems.append(f"M7: {len(moved['M7'])} key(s) predicted to move, refused by R1")
+    return problems
+
+
 def counts(moved: Moved) -> str:
     return ", ".join(f"{m} {len(keys)}" for m, keys in moved.items() if keys) or "none"
 
@@ -750,6 +772,12 @@ def command_predict(arguments: argparse.Namespace, tree: Path) -> int:
     files = _edited(tree, base, arguments.files)
     r_set = set(registry_set(facts))
     moved, registry = predict(facts, files)
+    refused = refusals(facts, files, moved, arguments.max_tier)
+    if refused:
+        for problem in refused:
+            print(f"REFUSED {problem}")
+        print(f"predict FAIL: E refused ({len(refused)} problem(s))")
+        return 1
     line = f"predicted {f0_line(facts, moved)}"
     for name in files:
         print(f"{'E' if name in r_set else 'not in R (moves nothing)'}: {name}")
@@ -791,6 +819,12 @@ def command_judge(arguments: argparse.Namespace, tree: Path) -> int:
         return 1
     files = _edited(tree, before, arguments.files, after)
     predicted, _ = predict(facts, files)
+    refused = refusals(facts, files, predicted, arguments.max_tier)
+    if refused:
+        for problem in refused:
+            print(f"REFUSED {problem}")
+        print(f"judge FAIL: E refused ({len(refused)} problem(s))")
+        return 1
     held = json.loads(_git(tree, "show", f"{after}:{CORPUS_FILE}"))
     problems = judge(facts["registry"], held, predicted)
     for problem in problems:
@@ -857,10 +891,12 @@ def main(argv: Sequence[str] | None = None) -> int:
     prediction.add_argument("--files", nargs="+")
     prediction.add_argument("--against-log", type=Path)
     prediction.add_argument("--json", type=Path)
+    prediction.add_argument("--max-tier", type=int, choices=(1, 2, 3), default=3)
     judgement = commands.add_parser("judge")
     judgement.add_argument("--before", required=True)
     judgement.add_argument("--after", required=True)
     judgement.add_argument("--files", nargs="+")
+    judgement.add_argument("--max-tier", type=int, choices=(1, 2, 3), default=3)
     coverage = commands.add_parser("coverage")
     coverage.add_argument("--base", required=True)
     coverage.add_argument("--head", help="the step's commit (default: the working tree)")
