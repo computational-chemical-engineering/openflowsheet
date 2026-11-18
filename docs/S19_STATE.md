@@ -56,26 +56,21 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 - Held until the scale probe reports: G1 (orchestrator/, numerics/). Open: ptc.py 6.8 (P3, P4).
 - G-END (below) stays the end criterion for the whole repository.
 
-## Next actions (2026-11-18 ~17:30; earlier: the blocking set for 0.5 done 2026-11-17)
+## Next actions (2026-11-18 ~17:00; earlier: the blocking set for 0.5 done 2026-11-17)
 
-**Position:** wp/S19 = G3 run 7 merged (c7945474) plus docs. Engineer's scan at G3 run 8's head b3f304bd: debt
-4134.8, health 8.34, brain 18; studies/ below 7.0 only nlp/verification.py 6.1 (verify_candidate 33.7 stays, ruling
-R-W3-G3-5 (b)). MB 756e1c12. Runner PID 2763884. No agent of this session running. Background shells that may wake
-the session: `gate_queue.py wait --since 299 --idle .../s19-g3h` (jobs 314-321, G3 run 8), and `gh run watch
-44326799399` (F3 CI on 54eb696c; prints CONCLUSION and the non-green jobs).
+**Position:** wp/S19 = G3 run 8 merged (3edcf23b) plus docs (50bc8c6a). Engineer's scan at run 8's head b3f304bd:
+debt 4134.8, health 8.34, brain 18; studies/ below 7.0 only nlp/verification.py 6.1 (verify_candidate 33.7 stays,
+ruling R-W3-G3-5 (b)). MB 756e1c12. Runner PID 2763884; queue empty at result 308. G3 run 9 engineer
+(opus-engineer) running on `wp/S19-g3i` (worktree s19-g3i from 50bc8c6a, brief S19-W3-G3-9.md). Background shell:
+`gh run watch 44326799399` (F3 CI; prints CONCLUSION and the non-green jobs).
 **Blocking set (Frank, 2026-11-15) done** (W4, 0 cycles/violations, G5, G6; residues and owners as in S19_DECISIONS
 2026-11-17).
 **Next:**
-1. G3 run 8 (`wp/S19-g3h`, c7945474..b3f304bd, 8 steps, jobs 314-321; report `grep -n -A8 'G3 run 8 delivered'
-   docs/S19_DECISIONS.md`). On all PASS: gate report; review R-W3-G3-8 (`reviewer`, Opus; write the brief from
-   `<git-common-dir>/codehealth/briefs/S19-R-W3-G3-7.md` as template; no S1 file touched; rule on: step 1 pinning
-   tests (phase_rows uses a monkeypatched `_port_entries`: is that an adequate pin?), steps 2-4 verifier independence
-   and order of active rows/regimes, step 5 order of request findings across `_check_*`, step 6 replay floor order);
-   then ruff, merge-check (`enqueue --snapshot --worktree .../s19-g3h --base c7945474 --mode merge-check --label
-   g3r8-mc --target studies --recipe merge-check --model claude-opus-5-5`), merge (`git merge --no-ff -F`), log.
-   Then G3 run 9 (write the brief from S19-W3-G3-8.md): remaining studies/ hot spots: `static_readiness` 15.5 (a
-   refusal ladder with a closure writing `not_run`, needs a whole-ladder pass), projection.py `project` 21.5 (S1),
-   projection_checks.py, trf.py remainder; or close G3 when studies/ has no file below 7.0 except verification.py.
+1. G3 run 9: on the engineer's report, log it ("G3 run 9 delivered"), then `$Q wait --since 308 --idle
+   .../s19-g3i` in the background; on all PASS: gate report, review R-W3-G3-9 (brief from S19-R-W3-G3-8.md; S1 if
+   projection.py touched), fixes, ruff, merge-check (`--base 50bc8c6a`), merge, log. A test-only commit is not gated
+   (config forbids tests/*; precedent g3r8-1): check its tests at the head plus a negative control. Close G3 when
+   studies/ has no file below 7.0 except verification.py.
 2. F3 (0.5, `wp/F3`, worktree `f3`): fix round 4 done, pushed 54eb696c (manifest `evidence/F3/361c6207.../`
    implemented). On CI 44326799399: if the only red is `test_every_description_is_reviewed_by_both_lanes` (and the
    informational codehealth job, F3-3-4 accepted debt), the package is ready except Frank's human review. A real
