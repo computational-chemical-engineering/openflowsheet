@@ -78,7 +78,9 @@ duplication (twin merge: addendum for Frank); certificate, checks, split_checks 
 2. DONE 2026-11-18: WITNF on main (a283925c, pushed; both NaN cards executed; main merged into wp/S19 as 170709bc).
 3. 0.5 STARTED 2026-11-18: F3-WO1 (record model) on `wp/F3` (worktree `f3`, from main a283925c, brief
    `docs/briefs/F3-WO1.md`, build log `docs/F3_DECISIONS.md`), opus-engineer running, built on ADR 0061's Proposed
-   text. DECISION-REQUEST to hub: accept ADR 0061 (card suggested ofs-f3-accept-adr0061); F3 merges only after it.
+   text. Card ofs-f3-accept-adr0061 filed by hub (open, rec A); A's action verbatim for the verifier: "accept ADR 0061 (F3
+   component data) as written, with ADR 0019 Amendment 8 (Records interface, five operations), so that F3 can merge
+   into main". F3 merges only after it is signed and VERIFIED.
    Then: design-lane `reviewer` on WO1, F3-WO2/WO3, card for ADR 0062 (F2) near F3 close-out. `executed` written on
    ofs-s19-start-05 (2026-11-18).
 4. Trailing S19 at one lane (ofs-s19-trailing-order): G3 run 3 running (`wp/S19-g3c` from 226ca985, brief
