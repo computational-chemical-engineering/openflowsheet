@@ -560,8 +560,33 @@ def test_a32_no_third_party_data_in_the_sdist_or_the_wheel(built: dict[str, Path
 #: ADR 0061 D1: the record format a v1 reader refuses (ADR 0002 D7.5).
 RECORD_V2 = "openflowsheet-record-v2"
 #: F3 decision WO1-15 as narrowed by the design lane: the directory of the v2 schema fixtures
-#: (some refused by construction; they ship nowhere), which A32's v2 clause skips (F3-WO4).
+#: (some refused by construction; they ship nowhere), which A32's v2 clause judges by its own
+#: branch (F3-WO4; F3 ruling round 1, B6).
 RECORD_V2_HOME = "tests/fixtures/records/"
+#: F3 ruling round 1 (B6): the source-id prefix of the v2 fixtures' invented sources.
+FIXTURE_SOURCE_PREFIX = "fixture."
+
+
+def _mappings(marker: str, *, skip_invalid: bool) -> list[tuple[str, dict[str, Any]]]:
+    """Every mapping, at any depth, of a tracked YAML or JSON file whose text contains `marker`,
+    with its path; files under an `/invalid/` directory skipped when `skip_invalid`."""
+    found = []
+    for path in _tracked():
+        if not path.endswith((".yaml", ".yml", ".json")) or (skip_invalid and "/invalid/" in path):
+            continue
+        text = (REPO_ROOT / path).read_text(encoding="utf-8", errors="replace")
+        if marker not in text:
+            continue
+        document = yaml.safe_load(text) if path.endswith((".yaml", ".yml")) else json.loads(text)
+        stack = [document]
+        while stack:
+            item = stack.pop()
+            if isinstance(item, dict):
+                found.append((path, item))
+                stack.extend(item.values())
+            elif isinstance(item, list):
+                stack.extend(item)
+    return found
 
 
 def _record_mappings() -> list[tuple[str, dict[str, Any]]]:
@@ -569,24 +594,22 @@ def _record_mappings() -> list[tuple[str, dict[str, Any]]]:
     tracked YAML or JSON file, v1 or v2. The schema's negative fixtures
     (`tests/fixtures/schemas/component_record/invalid/`) are excluded: they are invalid by
     construction and ship nowhere."""
-    found = []
-    for path in _tracked():
-        if not path.endswith((".yaml", ".yml", ".json")) or "/invalid/" in path:
-            continue
-        text = (REPO_ROOT / path).read_text(encoding="utf-8", errors="replace")
-        if "elemental_verification" not in text:
-            continue
-        document = yaml.safe_load(text) if path.endswith((".yaml", ".yml")) else json.loads(text)
-        stack = [document]
-        while stack:
-            item = stack.pop()
-            if isinstance(item, dict):
-                if "elemental_verification" in item and isinstance(item.get("id"), str):
-                    found.append((path, item))
-                stack.extend(item.values())
-            elif isinstance(item, list):
-                stack.extend(item)
-    return found
+    return [
+        (path, item)
+        for path, item in _mappings("elemental_verification", skip_invalid=True)
+        if "elemental_verification" in item and isinstance(item.get("id"), str)
+    ]
+
+
+def _record_v2_mappings() -> list[tuple[str, dict[str, Any]]]:
+    """Every mapping with `record_format: openflowsheet-record-v2` in a tracked YAML or JSON
+    file, whatever its `record_type` (F3 ruling round 1, B6: a v2 `parameter_set` has no
+    `elemental_verification`, so `_record_mappings` never finds it)."""
+    return [
+        (path, item)
+        for path, item in _mappings(RECORD_V2, skip_invalid=False)
+        if item.get("record_format") == RECORD_V2
+    ]
 
 
 def _component_records() -> list[tuple[str, dict[str, Any]]]:
@@ -924,17 +947,23 @@ def test_a32_every_component_record_is_synthetic_or_a_vetted_real_record_with_ri
 def _a32_v2_problems(
     mappings: list[tuple[str, dict[str, Any]]], register: tuple[dict[str, Any], ...]
 ) -> list[str]:
-    """T08.A32's v2 clause (F3 decision WO1-15, the design lane's narrowing; F3-WO4): a v2 record
-    (`record_format: openflowsheet-record-v2`) outside `RECORD_V2_HOME` must pass D2
-    (`records.identify`) and then be `synthetic: true`, or carry the `legacy.file_sha256` of a
-    file of `VETTED_RECORD_FILES` (the D12 SHA of its LF-normalised bytes), or have each of its
-    sources `permitted` in the repository rights register `register` (ADR 0061 D11's precedence
-    over the repository layer: packaging reads that layer only). Returns one line per failing
-    record."""
+    """T08.A32's v2 clause (F3 decision WO1-15, the design lane's narrowing; F3-WO4; F3 ruling
+    round 1, B6) on the v2 records (`record_format: openflowsheet-record-v2`) of `mappings`. Inside
+    `RECORD_V2_HOME` a record's `sources` must be a non-empty object whose every key begins
+    `fixture.` (its records are invented, some refused by construction, so D2 is not run).
+    Outside it a record must pass D2 (`records.identify`) and then be `synthetic: true`, or
+    carry the `legacy.file_sha256` of a file of `VETTED_RECORD_FILES` (the D12 SHA of its
+    LF-normalised bytes), or have each of its sources `permitted` in the repository rights
+    register `register` (ADR 0061 D11's precedence over the repository layer: packaging reads
+    that layer only). Returns one line per failing record."""
     vetted = {legacy.file_sha256((REPO_ROOT / path).read_bytes()) for path in VETTED_RECORD_FILES}
     found = []
     for path, item in mappings:
-        if item.get("record_format") != RECORD_V2 or path.startswith(RECORD_V2_HOME):
+        if item.get("record_format") != RECORD_V2:
+            continue
+        if path.startswith(RECORD_V2_HOME):
+            if not _fixture_sources(item.get("sources")):
+                found.append(f"{path}: {item.get('id')} names a source that is not fixture.*")
             continue
         outcome = identify(item)
         if outcome.record_sha256 is None:
@@ -951,12 +980,23 @@ def _a32_v2_problems(
     return found
 
 
+def _fixture_sources(sources: object) -> bool:
+    """A32's v2 clause in `RECORD_V2_HOME`: `sources` is a non-empty object whose every key
+    begins `fixture.`."""
+    return (
+        isinstance(sources, dict)
+        and bool(sources)
+        and all(str(key).startswith(FIXTURE_SOURCE_PREFIX) for key in sources)
+    )
+
+
 def test_a32_v2_records_pass_the_v2_clause() -> None:
-    """T08.A32's v2 clause (`_a32_v2_problems`) over every tracked v2 mapping, against the
-    packaged rights register; the schema fixtures stay where the clause skips them."""
-    mappings = _record_mappings()
-    v2 = {path for path, item in mappings if item.get("record_format") == RECORD_V2}
-    assert v2 >= {RECORD_V2_HOME + "component-maximal.json"}
+    """T08.A32's v2 clause (`_a32_v2_problems`) over every tracked v2 mapping of any record type,
+    against the packaged rights register; the three committed fixtures are found and pass their
+    branch."""
+    mappings = _record_v2_mappings()
+    fixtures = {"component-maximal.json", "component-segment.json", "parameter-set-maximal.json"}
+    assert {path for path, _ in mappings} >= {RECORD_V2_HOME + name for name in fixtures}
     assert _a32_v2_problems(mappings, rights.repository_rows()) == []
 
 
@@ -981,7 +1021,14 @@ def test_a32_v2_clause_refuses_each_defect() -> None:
     assert _a32_v2_problems([(at, refused)], register)[0].startswith(
         f"{at}: {s07['id']} is refused"
     )
-    assert _a32_v2_problems([(RECORD_V2_HOME + "x.json", refused)], ()) == []
+    assert _a32_v2_problems([(RECORD_V2_HOME + "x.json", refused)], ()) == [
+        f"{RECORD_V2_HOME}x.json: {s07['id']} names a source that is not fixture.*"
+    ]
+    invented = {**refused, "sources": {"fixture.x": {"version": "1"}}}
+    assert _a32_v2_problems([(RECORD_V2_HOME + "x.json", invented)], ()) == []
+    for sources in ({}, None, {"fixture.x": {}, "other": {}}):
+        mapping = {**invented, "sources": sources}
+        assert len(_a32_v2_problems([(RECORD_V2_HOME + "x.json", mapping)], ())) == 1
 
 
 def test_a32_one_datum_rule_within_and_across_conventions() -> None:
