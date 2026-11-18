@@ -2393,3 +2393,6 @@
 - WITNF (card ofs-s19-oq1b): engineer a07f0ff0/95e1e16c; review (reviewer, Opus) ACCEPT WITH FIXES (fail-open when
   levels 0 and 1 are inadmissible: a non_finite registered pair now stays the reference; Q2.A7, Q2.A8); fix round
   8067229f/9836a04c. CI 44215779298 on 9836a04c running.
+- **2026-11-18 03:37, G-MAP 6 (map at 756e1c12): PASS; MB moved to 756e1c12.** 20516 tests, 20403 passed, 109
+  skipped, 4 failed = the B-6 four (test_m04_wo9 a25, a29; test_x02_wo4 g4e x2); f6 passed; wall 4168 s, 25.9 MB.
+  map6 worktree removed; runner restarted.

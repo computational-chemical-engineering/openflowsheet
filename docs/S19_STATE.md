@@ -17,7 +17,7 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
   `docs/briefs/S19-digest.md`; scan JSON `<git-common-dir>/codehealth/runs/repo-wide-scan-d90b498f.json`.
 - `MB` (the test-map base, read by `.claude/skills/s19-refactor/gate.sh` from the line below; moves to milestone
   commits, `S19_DECISIONS`):
-- `MB` = `14c6d4146eee73e66378cf83e0ef20b877c933f7` (the `wp/S19` tip after the I-12d merge, 2026-11-17; G-MAP 5 map; unsure set = the B-6 four + t07_v17_reference f6, which every gate deselects; earlier MB 1720cc98, c3c5793e, 736f70db, bec6dbe6).
+- `MB` = `756e1c12076d043ddf3a7f06176a2eb3610fec04` (the `wp/S19` tip after the W3/W4 merge into main, 2026-11-18; G-MAP 6 map: 20516 tests, failed = the B-6 four; earlier MB 14c6d414, 1720cc98, c3c5793e, 736f70db, bec6dbe6).
 - A1 done: design note `docs/briefs/S19-architecture.md` (phases W0 to W4, table 4.1 with the arch numbers per
   step), ADR 0076 proposed. Config committed: scope `src/openflowsheet/*`, `repo-layers`, forbid
   `verifier-not-through-the-solver`; adoption 14 violations, 10 cycles, 79 cycle edges.
@@ -60,7 +60,7 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 
 **Position:** G5 run 12 and G6 run 7 merged into wp/S19 as 517ab610 (review R-W3-G5-12, merge-check job 264 PASS).
 Scan 517ab610: debt 4670.7, health 8.24, brain 26, file smells 53, 27 files below 7.0; arch 0 violations, 0 cycles
-(4100 imports). MB stays 14c6d414 (refactor steps only since; DECISION in S19_DECISIONS). Runner PID 1474880 (queue
+(4100 imports). MB stays 14c6d414 (refactor steps only since; DECISION in S19_DECISIONS). Runner PID 2763884 (queue
 idle, results up to 264). No agent, no serial run, no background job. Design batch 1 ruled
 (`docs/briefs/S19-D-batch1-ruling.md`): Q1 no bug, pinned by `tests/test_s19_component_order.py`; Q2 (NaN witness
 refusal) lands after S19 (Decision Desk ofs-s19-oq1-nan-witness, A, VERIFIED; write `executed` on the card when it
@@ -72,8 +72,8 @@ duplication (twin merge: addendum for Frank); certificate, checks, split_checks 
 (frozen v1); thermo/ frozen files (W5).
 **Next (four desk cards signed A and VERIFIED, 2026-11-17 ~20:10):**
 1. DONE 2026-11-18: wp/S19 (0f4a1d0e) merged into main as a88655a2 and pushed (card ofs-s19-w3w4-merge-main-2,
-   executed; the first card superseded, unexecuted). CI 44194354064 green, F0 PASS on main. Still to do: rebuild the
-   map (MB) at the wp/S19 tip once WITNF's engineer is done (no heavy job beside a map build); re-pin cce-code-health
+   executed; the first card superseded, unexecuted). CI 44194354064 green, F0 PASS on main. MB moved to 756e1c12
+   (G-MAP 6 PASS). Still to do: re-pin cce-code-health
    to 9a4605f (optional, stricter new-brain matching, no score change).
 2. WITNF (ofs-s19-oq1b-nan-witness-early): opus-engineer RUNNING (brief WITNF-engineer.md, base a88655a2, worktree
    .claude/worktrees/witnf, branch wp/WITNF). Then `reviewer` (design lane), push wp/WITNF, CI, merge into main (WITNF
