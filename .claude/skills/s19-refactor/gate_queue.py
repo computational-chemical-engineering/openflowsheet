@@ -34,7 +34,9 @@ State in <git-common-dir>/codehealth/queue/: pending/, running/, done/<label>.js
       `scripts/w5_gate.py validate` (the keys, B an ancestor of the head, the admitted set in R
       at B with no tier 4 file; batch P, which needs the pin W5-S2, is refused); a refusal exits
       2 and queues nothing. --mode revert takes no batch. Without --batch, S19_W5_BATCH is never
-      set. (`--mode w5` of WO-1 is gone: write `--mode step --batch FILE`.)
+      set. (`--mode w5` of WO-1 is gone: write `--mode step --batch FILE`.) The job records the
+      sha256 validate prints and B (`batch_sha256`, `batch_base`): one batch file per B is
+      checked by `scripts/w5_gate.py batch-check --queue-dir <queue> --base B` (exit 1 if two).
   run [--detach] [--log-out JSONL]
       The runner: FIFO, at most SLOTS jobs at a time, one job per worktree at a time. It refuses a
       job whose worktree HEAD or tree changed since enqueue, runs gate.sh in the worktree, then
@@ -96,6 +98,7 @@ PENDING, RUNNING, DONE = QUEUE / "pending", QUEUE / "running", QUEUE / "done"
 BATCHES = QUEUE / "batches"  # the W5 batch files of --batch jobs, copied at enqueue
 W5_VARIABLE = "S19_W5_BATCH"
 W5_REFUSED = 2
+W5_DIGEST = re.compile(r"sha256 ([0-9a-f]{64})$")  # the end of `w5_gate.py validate`'s line
 RESULTS, PIDFILE, RUNLOG = QUEUE / "results.log", QUEUE / "runner.pid", QUEUE / "runner.log"
 
 
@@ -159,9 +162,10 @@ def runner_pid() -> int | None:
 # -- enqueue ---------------------------------------------------------------------------------------
 
 
-def w5_batch(worktree: Path, source: str, head: str) -> Path:
+def w5_batch(worktree: Path, source: str, head: str) -> tuple[Path, str, str]:
     """A validated copy of a W5 batch file (`scripts/w5_gate.py validate` of the worktree), still
-    under a temporary name; a refusal exits 2."""
+    under a temporary name, with the sha256 validate printed and the batch base B; a refusal
+    exits 2. The job keeps both: `w5_gate.py batch-check` finds one batch file per B."""
     script = worktree / "scripts" / "w5_gate.py"
     if not script.is_file():
         print(f"W5 batch REFUSED: {worktree} has no scripts/w5_gate.py", file=sys.stderr)
@@ -187,8 +191,13 @@ def w5_batch(worktree: Path, source: str, head: str) -> Path:
         copy.unlink(missing_ok=True)
         print(output or f"W5 batch REFUSED: validate exit {done.returncode}", file=sys.stderr)
         raise SystemExit(W5_REFUSED)
+    digest = W5_DIGEST.search(output.splitlines()[-1] if output else "")
+    if not digest:
+        copy.unlink(missing_ok=True)
+        print(f"W5 batch REFUSED: validate printed no sha256: {output}", file=sys.stderr)
+        raise SystemExit(W5_REFUSED)
     print(output.splitlines()[-1])
-    return copy
+    return copy, digest.group(1), json.loads(copy.read_text())["base"]
 
 
 def enqueue(a: argparse.Namespace) -> int:
@@ -224,7 +233,9 @@ def enqueue(a: argparse.Namespace) -> int:
     base = git("rev-parse", "--verify", f"{a.base}^{{commit}}", cwd=worktree)
     if a.snapshot and not is_ancestor(base, head, worktree):
         raise SystemExit(f"--base {base[:10]} is not an ancestor of the head {head[:10]}")
-    candidate = w5_batch(worktree, a.batch, head) if a.batch else None
+    candidate, batch_sha256, batch_base = (
+        w5_batch(worktree, a.batch, head) if a.batch else (None, None, None)
+    )
     batch = None
     with locked():
         if a.label in labels_in_use():
@@ -254,6 +265,8 @@ def enqueue(a: argparse.Namespace) -> int:
             "reason": a.reason,
             "rerun_of": a.rerun_of,
             "batch": str(batch) if batch else None,
+            "batch_sha256": batch_sha256,
+            "batch_base": batch_base,
             "enqueued": now(),
         }
         write_json(PENDING / f"{seq:06d}-{a.label}.json", job)

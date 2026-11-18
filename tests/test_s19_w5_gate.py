@@ -356,11 +356,45 @@ def test_validate_accepts_batch_n_and_exits_2_on_a_refusal(
 ) -> None:
     good = _cli("validate", str(_write(tmp_path / "n.json", batch)), "--head", BASE)
     assert good.returncode == 0, good.stdout
-    assert good.stdout.strip().endswith("expected failures 2, standing 1")
+    digest = gate.digest(tmp_path / "n.json")
+    assert good.stdout.strip().endswith(f"expected failures 2, standing 1, sha256 {digest}")
+    checked = _cli("batch", str(tmp_path / "n.json"))
+    assert checked.stdout.strip().endswith(f"base {BASE[:12]} sha256 {digest}"), checked.stdout
     bad = {**batch, "admitted": [*batch["admitted"], SYN001]}
     refused = _cli("validate", str(_write(tmp_path / "bad.json", bad)), "--head", BASE)
     assert refused.returncode == 2
     assert refused.stdout.startswith("W5 batch REFUSED: admitted") and "tier 4" in refused.stdout
+
+
+def _job(queue: Path, state: str, label: str, base: str | None, sha256: str | None) -> None:
+    (queue / state).mkdir(parents=True, exist_ok=True)
+    job = {"label": label, "mode": "step", "batch_base": base, "batch_sha256": sha256}
+    _write(queue / state / f"{label}.json", job)
+
+
+def test_batch_check_finds_one_batch_file_per_base(tmp_path: Path) -> None:
+    """Jobs of one B with one hash pass; a second hash for B fails naming both; jobs of another
+    B, without a batch, or withdrawn do not count."""
+    queue, other = tmp_path / "queue", "1" * 40
+    _job(queue, "done", "n1", BASE, "a" * 64)
+    _job(queue, "running", "n2", BASE, "a" * 64)
+    _job(queue, "done", "elsewhere", other, "b" * 64)
+    _job(queue, "done", "plain", None, None)
+    _job(queue, "withdrawn", "gone", BASE, "c" * 64)
+    one = _cli("batch-check", "--queue-dir", str(queue), "--base", BASE[:12])
+    assert one.returncode == 0, one.stdout
+    assert one.stdout.splitlines() == [
+        f"sha256 {'a' * 64}: n1, n2",
+        f"w5 batch-check PASS: base {BASE[:12]}, 2 job(s), 1 distinct batch file(s)",
+    ]
+    _job(queue, "pending", "n3", BASE, "d" * 64)
+    two = _cli("batch-check", "--queue-dir", str(queue), "--base", BASE)
+    assert two.returncode == 1
+    assert f"sha256 {'d' * 64}: n3" in two.stdout.splitlines()
+    assert two.stdout.splitlines()[-1].endswith("3 job(s), 2 distinct batch file(s)")
+    assert two.stdout.splitlines()[-1].startswith("w5 batch-check FAIL")
+    refused = _cli("batch-check", "--queue-dir", str(queue), "--base", "zz")
+    assert refused.returncode == 2
 
 
 @pytest.mark.parametrize("command", ["validate", "batch"])

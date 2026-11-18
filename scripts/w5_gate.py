@@ -10,6 +10,11 @@ file's `base`, not the step's `{base}`.
                                           `admitted` a subset of R at B with no tier 4 file and
                                           none above `max_tier` (`w5_identity.py sets --base B`)
     w5_gate.py batch FILE                 gate.sh's check: the schema and B an ancestor of HEAD
+                                          (both print FILE's sha256, which the queue stores)
+    w5_gate.py batch-check --queue-dir DIR --base B
+                                          one batch file per B: the distinct `batch_sha256` of
+                                          the queue's pending, running and done jobs whose batch
+                                          base is B; exit 1 if there is more than one
     w5_gate.py f0                         W5-S3: `corpus_identity.py --check --log L`, then
                                           `w5_identity.py predict --base B --max-tier T
                                           --against-log L`, and the summary line fails no
@@ -41,6 +46,7 @@ from __future__ import annotations
 
 import argparse
 import fnmatch
+import hashlib
 import json
 import os
 import posixpath
@@ -155,6 +161,22 @@ def load(path: Path, head: str = "HEAD", cwd: Path = ROOT) -> dict[str, Any]:
     if problems:
         raise BatchRefusedError("; ".join(problems))
     return dict(document)
+
+
+def digest(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def batch_files(queue: Path, base: str) -> dict[str, list[str]]:
+    """The labels of the queue's pending, running and done jobs with batch base `base` (a sha or
+    a prefix of one), by their batch file's sha256 (`none` for a job without one)."""
+    found: dict[str, list[str]] = {}
+    for state in ("pending", "running", "done"):
+        for path in sorted((queue / state).glob("*.json")):
+            job = read(path)
+            if isinstance(job, dict) and str(job.get("batch_base") or "").startswith(base):
+                found.setdefault(job.get("batch_sha256") or "none", []).append(str(job["label"]))
+    return found
 
 
 def from_environment() -> dict[str, Any]:
@@ -357,15 +379,32 @@ def command_validate(arguments: argparse.Namespace) -> int:
         f"W5 batch {document['batch']} valid: base {document['base'][:12]}, max_tier "
         f"{document['max_tier']}, admitted {len(document['admitted'])}, generator "
         f"{len(document['generator'])}, retarget {len(document['retarget'])}, expected failures "
-        f"{len(document['expected_failures'])}, standing {len(document['standing_failures'])}"
+        f"{len(document['expected_failures'])}, standing {len(document['standing_failures'])}, "
+        f"sha256 {digest(path)}"
     )
     return 0
 
 
 def command_batch(arguments: argparse.Namespace) -> int:
-    document = load(Path(arguments.file))
-    print(f"W5 batch {document['batch']} base {document['base'][:12]}")
+    path = Path(arguments.file)
+    document = load(path)
+    print(f"W5 batch {document['batch']} base {document['base'][:12]} sha256 {digest(path)}")
     return 0
+
+
+def command_batch_check(arguments: argparse.Namespace) -> int:
+    if not SHA.fullmatch(arguments.base.ljust(40, "0")) or len(arguments.base) < 7:
+        raise BatchRefusedError(f"--base {arguments.base!r}: not a commit sha of 7 to 40 hex")
+    found = batch_files(Path(arguments.queue_dir), arguments.base)
+    for sha256, labels in sorted(found.items()):
+        print(f"sha256 {sha256}: {', '.join(sorted(labels))}")
+    jobs = sum(map(len, found.values()))
+    verdict = "PASS" if len(found) <= 1 else "FAIL"
+    print(
+        f"w5 batch-check {verdict}: base {arguments.base[:12]}, {jobs} job(s), "
+        f"{len(found)} distinct batch file(s)"
+    )
+    return 0 if len(found) <= 1 else 1
 
 
 def command_f0(_: argparse.Namespace) -> int:
@@ -466,6 +505,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     validate.add_argument("--head", required=True)
     batch = commands.add_parser("batch")
     batch.add_argument("file")
+    batch_check = commands.add_parser("batch-check")
+    batch_check.add_argument("--queue-dir", required=True)
+    batch_check.add_argument("--base", required=True)
     for name in ("f0", "registry", "coverage"):
         commands.add_parser(name)
     scope = commands.add_parser("scope")
@@ -477,6 +519,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     handlers = {
         "validate": command_validate,
         "batch": command_batch,
+        "batch-check": command_batch_check,
         "f0": command_f0,
         "registry": command_registry,
         "scope": command_scope,
