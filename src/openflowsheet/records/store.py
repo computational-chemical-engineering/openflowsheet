@@ -569,10 +569,11 @@ def _fsync_directory(directory: Path) -> None:
 
 
 def _journal_mode_wal(connection: sqlite3.Connection) -> str:
-    """`PRAGMA journal_mode = WAL`, retried while busy until `BUSY_TIMEOUT_S`. The switch takes
-    an exclusive lock without calling SQLite's busy handler, so two processes opening a new store
-    at once see `database is locked` from it (E-F3-8 on CI); a database already in WAL answers
-    at once."""
+    """`PRAGMA journal_mode = WAL`, retried while busy until `BUSY_TIMEOUT_S`. On a database in
+    rollback mode the switch upgrades the read lock it holds to a write lock, and SQLite returns
+    `SQLITE_BUSY` on that upgrade rather than call the busy handler, to avoid deadlock; so of two
+    processes opening a new store at once, one sees `database is locked` from it (E-F3-8 on CI).
+    A database already in WAL answers from its read, at once (F3 ruling round 2, C1)."""
     deadline = time.monotonic() + BUSY_TIMEOUT_S
     while True:
         try:

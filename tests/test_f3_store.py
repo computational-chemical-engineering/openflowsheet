@@ -18,6 +18,7 @@ import sqlite3
 import subprocess
 import sys
 import textwrap
+import threading
 import time
 from pathlib import Path
 from typing import Any
@@ -45,6 +46,7 @@ from openflowsheet.records.store import (
     TMP_PREFIX,
     RecordStore,
     RecordStoreError,
+    _journal_mode_wal,
     path_too_long,
 )
 from openflowsheet.registry import Coded
@@ -469,6 +471,86 @@ def test_e_f3_8_a_refused_record_is_not_stored(tmp_path: Path) -> None:
         store.register(identify(record), principal="p")
     assert _code(caught.value) == ("identifier_invalid", {"component": "W", "scheme": "cas"})
     assert not (tmp_path / "records").exists() or _object_files(tmp_path) == []
+
+
+def _rollback_database_held(root: Path) -> sqlite3.Connection:
+    """`<root>/records/<DATABASE_NAME>` in rollback-journal mode with one table, and a second
+    connection holding its write lock (`BEGIN IMMEDIATE`): the state in which another process
+    is part-way through the first opening of a new store."""
+    (root / "records").mkdir(parents=True)
+    path = root / "records" / DATABASE_NAME
+    setup = sqlite3.connect(path, isolation_level=None)
+    try:
+        setup.execute("CREATE TABLE holder (x INTEGER)")
+        assert setup.execute("PRAGMA journal_mode").fetchone() == ("delete",)
+    finally:
+        setup.close()
+    holder = sqlite3.connect(path, isolation_level=None, check_same_thread=False)
+    holder.execute("BEGIN IMMEDIATE")
+    return holder
+
+
+def test_e_f3_8_the_wal_switch_waits_for_a_writer(tmp_path: Path) -> None:
+    """E-F3-8 deterministically (F3 ruling round 2, C1): the first opening's WAL switch meets a
+    held write lock, which SQLite reports as `SQLITE_BUSY` without its busy handler; the store
+    retries until the holder lets go after 0.3 s, then switches the database to WAL."""
+    holder = _rollback_database_held(tmp_path)
+    release = threading.Timer(0.3, holder.execute, ("ROLLBACK",))
+    try:
+        started = time.monotonic()
+        release.start()
+        _register(RecordStore.at(tmp_path), _component("W", "Water", cas=WATER_CAS))
+        elapsed = time.monotonic() - started
+    finally:
+        release.join()
+        holder.close()
+    assert elapsed >= 0.25
+    connection = sqlite3.connect(tmp_path / "records" / DATABASE_NAME)
+    try:
+        assert connection.execute("PRAGMA journal_mode").fetchone() == ("wal",)
+    finally:
+        connection.close()
+
+
+def test_e_f3_8_the_wal_switch_gives_up_at_the_deadline(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """With the write lock held throughout, the retry stops at `BUSY_TIMEOUT_S` (0.3 s here)
+    and the plain `SQLITE_BUSY` error propagates."""
+    monkeypatch.setattr("openflowsheet.records.store.BUSY_TIMEOUT_S", 0.3)
+    holder = _rollback_database_held(tmp_path)
+    try:
+        started = time.monotonic()
+        with pytest.raises(sqlite3.OperationalError) as caught:
+            _register(RecordStore.at(tmp_path), _component("W", "Water", cas=WATER_CAS))
+        elapsed = time.monotonic() - started
+    finally:
+        holder.close()
+    assert caught.value.sqlite_errorcode == sqlite3.SQLITE_BUSY
+    assert 0.3 <= elapsed < 5.0
+
+
+def test_e_f3_8_a_wal_database_is_not_retried(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A database already in WAL answers the switch from its read, whoever holds the write
+    lock: no retry and no wait."""
+    store = RecordStore.at(tmp_path)
+    _register(store, _component("W", "Water", cas=WATER_CAS))
+    monkeypatch.setattr("openflowsheet.records.store.BUSY_TIMEOUT_S", 2.0)
+    path = tmp_path / "records" / DATABASE_NAME
+    holder = sqlite3.connect(path, isolation_level=None, check_same_thread=False)
+    connection = sqlite3.connect(path, isolation_level=None)
+    try:
+        holder.execute("BEGIN IMMEDIATE")
+        started = time.monotonic()
+        mode = _journal_mode_wal(connection)
+        elapsed = time.monotonic() - started
+    finally:
+        connection.close()
+        holder.close()
+    assert mode == "wal"
+    assert elapsed < 0.5
 
 
 def test_e_f3_8_in_memory_store() -> None:
