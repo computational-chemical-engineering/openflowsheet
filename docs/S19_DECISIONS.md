@@ -2695,3 +2695,11 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   replay._verification_floor, 7 manifest._split_consistency, 8 study.StudyResult.accounting. Engineer's scan 4190.8 ->
   4134.8, health 8.34, brain 18; verification.py 5.6 -> 6.1; patch_noop 0/266; nlp-marked g19, g20 only. Skipped
   `static_readiness` (15.5; whole-ladder pass). State rewritten for a self-reset.
+- **2026-11-18, G3 run 8 step 1 (job 314) gate FAIL forbid, scope:** the commit (f3996448) adds only the two
+  R-W3-G3-7 pinning tests; the gate config forbids `tests/*` in a step (S19_RULES "Rejected"), so a test-only commit
+  cannot pass a step gate (no precedent in the queue; orchestrator precedent 2264: test-only, checked outside the gate).
+  DECISION: accept f3996448 as a test-only commit outside the step gate; evidence: at the lane head b3f304bd
+  `pytest tests/test_opt_phase_rows.py tests/test_m03_nlp_formulation.py` 30 passed, ruff clean; the merge-check full
+  suite covers them again, and R-W3-G3-8 reads them (the engineer's swap controls). Alternative: re-gate as a step
+  (impossible without a config change, rejected). Reversible by: reverting f3996448 before the merge. Steps 2-8 gate
+  against f3996448 as base, unaffected.
