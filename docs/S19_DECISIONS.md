@@ -2824,3 +2824,12 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   plus `--write` passes judge); (4) test gaps; (5) the 13 probe re-runs not recorded. DECISION: table-pointer
   prediction and diff go in `w5_identity.py` (reviewer's recommendation), not in the gate mode. Alternative: WO-1's
   gate mode. Reversible by: moving the check into the gate. Fix round brief `S19-W5-WO0-fix1.md` (opus-engineer).
+- **2026-11-18 ~22:40, G1 lane N run 3 gated: jobs 339-341 PASS 16/16 each** (A3 4e0d6ebd 109.0 -> 74.7, N3 8087a787
+  102.1 -> 79.8, P3 4387dc30 105.6 -> 33.9). Review R-W3-G1N-3 launched (reviewer, Opus; brief `S19-R-W3-G1N-3.md`).
+- **2026-11-18 ~22:40, W5 WO-0 fix round 1 delivered (opus-engineer, ~220k tokens): 6 commits, tip 583a6eb3.**
+  Coverage by (module, name) pair; `coverage --head`; `sets --step` (S2, S4 skipped); tier-4 / `--max-tier` / M7
+  refusals; table-pointer prediction and B..K pointer diff (`predict --against-tables`, `judge`); 47 tests pass;
+  probes recorded in `docs/briefs/S19-W5-WO0-probes.md` (x3 now refused by R1). Each reviewer falsifier fails as
+  intended (quoted in the report). Notes: the fix-4 falsifier used `pr_lib.py`'s `describe()` (cost/lca contributors
+  have no generator-read `describe()`); the WO-N4 factory switch and B7's module names are constants citing the
+  ruling (`predict_tables`). Merge-check enqueued (job 342, w5wo0-mc, full suite).
