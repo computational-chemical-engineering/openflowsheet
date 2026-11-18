@@ -4,6 +4,50 @@
 
 Messages that report something worth knowing but are not failures. How to read an explanation, and how to ask for one (`openflowsheet explain <code>`, the `explain` operation), is on [Messages](index.md).
 
+<a id="anchor_defaulted"></a>
+
+## `anchor_defaulted`: A component's anchor phase was defaulted to the ideal gas
+
+**Kind:** Notice: not a failure.
+
+- **Summary:** Component &lt;component&gt; gives no formation data and no phase-specific data, so it is anchored in the ideal gas by default.
+- **Why:** Every component has one anchor phase, where its formation data fix its enthalpy and entropy. A molar record that states none, is uncharged and gives nothing phase-specific takes the ideal gas. This record and one that states the ideal gas are the same record.
+- **Do:** Nothing is needed; state an anchor phase in the record if another phase is meant.
+- **Parameters:** `component` (text)
+
+Example:
+
+```text
+Component Methanol gives no formation data and no phase-specific data, so it is anchored in the ideal gas by default.
+  Why:     Every component has one anchor phase, where its formation data fix its enthalpy and entropy. A molar record that states none, is uncharged and gives nothing phase-specific takes the ideal gas. This record and one that states the ideal gas are the same record.
+  Do:      Nothing is needed; state an anchor phase in the record if another phase is meant.
+  Kind:    Notice: not a failure.
+  Code:    anchor_defaulted (openflowsheet explain anchor_defaulted)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/notices/#anchor_defaulted
+```
+
+<a id="anchor_undetermined"></a>
+
+## `anchor_undetermined`: A component has no anchor phase
+
+**Kind:** Notice: not a failure.
+
+- **Summary:** Component &lt;component&gt; has no anchor phase.
+- **Why:** A record on a mass or segment basis that states no anchor phase, gives no formation data and nothing phase-specific has none. Its energy reference cannot be fixed, so it is refused for an elemental reference until the record states an anchor.
+- **Do:** State an anchor phase in the record.
+- **Parameters:** `component` (text)
+
+Example:
+
+```text
+Component bitumen has no anchor phase.
+  Why:     A record on a mass or segment basis that states no anchor phase, gives no formation data and nothing phase-specific has none. Its energy reference cannot be fixed, so it is refused for an elemental reference until the record states an anchor.
+  Do:      State an anchor phase in the record.
+  Kind:    Notice: not a failure.
+  Code:    anchor_undetermined (openflowsheet explain anchor_undetermined)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/notices/#anchor_undetermined
+```
+
 <a id="capability_unresolved"></a>
 
 ## `capability_unresolved`: A capability names something that is not registered
@@ -69,6 +113,28 @@ The extension acme.slurry-mixer (installed) has not been reviewed.
   Kind:    Notice: not a failure.
   Code:    extension_unreviewed (openflowsheet explain extension_unreviewed)
   Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/notices/#extension_unreviewed
+```
+
+<a id="fit_inputs_unhashed"></a>
+
+## `fit_inputs_unhashed`: A fitted value does not identify the data it was fitted to
+
+**Kind:** Notice: not a failure.
+
+- **Summary:** The value at &lt;entry&gt; was fitted or generated, but its input data are not identified by hash.
+- **Why:** A fitted or generated value names the data it came from by hash, so that a change of those data is a change of the value. This one names none, usually because its inputs are not in the repository.
+- **Do:** Add the hashes of the input data to the value's provenance if they are available.
+- **Parameters:** `entry` (text)
+
+Example:
+
+```text
+The value at /entries/1 was fitted or generated, but its input data are not identified by hash.
+  Why:     A fitted or generated value names the data it came from by hash, so that a change of those data is a change of the value. This one names none, usually because its inputs are not in the repository.
+  Do:      Add the hashes of the input data to the value's provenance if they are available.
+  Kind:    Notice: not a failure.
+  Code:    fit_inputs_unhashed (openflowsheet explain fit_inputs_unhashed)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/notices/#fit_inputs_unhashed
 ```
 
 <a id="preview_kind"></a>

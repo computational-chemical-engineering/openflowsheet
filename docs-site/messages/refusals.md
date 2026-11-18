@@ -572,6 +572,73 @@ Pressures cannot be shown as gauge pressures in barg: the project has no declare
   Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#ambient_pressure_undeclared
 ```
 
+<a id="amount_basis_invalid"></a>
+
+## `amount_basis_invalid`: A component's amount basis does not fit its molar mass or charge
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+- **Summary:** The component &lt;component&gt; breaks the amount-basis rule &lt;rule&gt;.
+- **Why:** A component on a molar basis states its molar mass, of the kind its basis needs; a component on a mass basis states none and carries no charge. The rule names which of these the record breaks: molar_mass_present, molar_mass_absent, molar_mass_kind or charge_nonzero.
+- **Do:** Add, remove or correct the molar mass or the charge so the record fits its amount basis.
+- **Parameters:** `component` (text), `rule` (text)
+
+Example:
+
+```text
+The component H2O breaks the amount-basis rule molar_mass_absent.
+  Why:     A component on a molar basis states its molar mass, of the kind its basis needs; a component on a mass basis states none and carries no charge. The rule names which of these the record breaks: molar_mass_present, molar_mass_absent, molar_mass_kind or charge_nonzero.
+  Do:      Add, remove or correct the molar mass or the charge so the record fits its amount basis.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    amount_basis_invalid (openflowsheet explain amount_basis_invalid)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#amount_basis_invalid
+```
+
+<a id="amount_basis_unsupported"></a>
+
+## `amount_basis_unsupported`: Records on this amount basis cannot be stored yet
+
+**Kind:** Not supported in this version: a limitation of OpenFlowsheet, not an error in your flowsheet.
+
+- **Summary:** Records on the amount basis &lt;basis&gt; cannot be stored yet.
+- **Why:** A component on a mass or segment basis needs quantity kinds that are not registered yet. The rules for these bases are fixed; only their kinds are missing.
+- **Do:** Store the component on the molar basis if that describes it, or wait for the release that registers the kinds of this basis.
+- **Parameters:** `basis` (text)
+- **Not supported:** missing capability: the quantity kinds of the mass and segment amount bases
+
+Example:
+
+```text
+Records on the amount basis kg cannot be stored yet.
+  Why:     A component on a mass or segment basis needs quantity kinds that are not registered yet. The rules for these bases are fixed; only their kinds are missing.
+  Do:      Store the component on the molar basis if that describes it, or wait for the release that registers the kinds of this basis.
+  Kind:    Not supported in this version: a limitation of OpenFlowsheet, not an error in your flowsheet.
+  Code:    amount_basis_unsupported (openflowsheet explain amount_basis_unsupported)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#amount_basis_unsupported
+```
+
+<a id="anchor_phase_invalid"></a>
+
+## `anchor_phase_invalid`: A component's anchor phase is not allowed
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+- **Summary:** The anchor phase &lt;phase&gt; of component &lt;component&gt; is not allowed.
+- **Why:** The anchor phase is where a component's formation data fix its enthalpy and entropy. A stated anchor must be a phase with formation data when the record gives any, and a charged component is anchored in aqueous solution.
+- **Do:** State an anchor phase in which the record gives formation data, aq for a charged component, or leave the anchor out so that it is derived.
+- **Parameters:** `component` (text), `phase` (text)
+
+Example:
+
+```text
+The anchor phase s:ice-Ih of component H2O is not allowed.
+  Why:     The anchor phase is where a component's formation data fix its enthalpy and entropy. A stated anchor must be a phase with formation data when the record gives any, and a charged component is anchored in aqueous solution.
+  Do:      State an anchor phase in which the record gives formation data, aq for a charged component, or leave the anchor out so that it is derived.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    anchor_phase_invalid (openflowsheet explain anchor_phase_invalid)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#anchor_phase_invalid
+```
+
 <a id="basis_mismatch"></a>
 
 ## `basis_mismatch`: Basis mismatch
@@ -758,6 +825,50 @@ The capability flash:PH is not known, so the extension that declares it is not l
 *No plain-language explanation is written yet; the summary is the technical one.*
 
 - **Summary:** Refused: continuation level.
+
+<a id="correlation_coefficients_invalid"></a>
+
+## `correlation_coefficients_invalid`: A record entry's coefficients do not match its correlation form
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+- **Summary:** The coefficients of the entry at &lt;entry&gt; are not exactly those of the correlation form &lt;form&gt;.
+- **Why:** A correlation entry gives every coefficient its form defines and no other.
+- **Do:** Give exactly the coefficients the form names.
+- **Parameters:** `entry` (text), `form` (text)
+
+Example:
+
+```text
+The coefficients of the entry at /entries/2 are not exactly those of the correlation form cp_ig_poly4_theta.
+  Why:     A correlation entry gives every coefficient its form defines and no other.
+  Do:      Give exactly the coefficients the form names.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    correlation_coefficients_invalid (openflowsheet explain correlation_coefficients_invalid)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#correlation_coefficients_invalid
+```
+
+<a id="correlation_form_unknown"></a>
+
+## `correlation_form_unknown`: A record entry names an unknown correlation form
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+- **Summary:** The entry at &lt;entry&gt; uses the correlation form &lt;form&gt;, which is not registered.
+- **Why:** A correlation entry stores coefficients of a registered correlation form, which fixes their names, the variables and the result. An entry of an unregistered form cannot be checked or evaluated.
+- **Do:** Use a registered correlation form, or install the extension that registers this one. The list_capabilities operation lists the registered forms.
+- **Parameters:** `entry` (text), `form` (text)
+
+Example:
+
+```text
+The entry at /entries/2 uses the correlation form acme.antoine, which is not registered.
+  Why:     A correlation entry stores coefficients of a registered correlation form, which fixes their names, the variables and the result. An entry of an unregistered form cannot be checked or evaluated.
+  Do:      Use a registered correlation form, or install the extension that registers this one. The list_capabilities operation lists the registered forms.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    correlation_form_unknown (openflowsheet explain correlation_form_unknown)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#correlation_form_unknown
+```
 
 <a id="declaration_mismatch"></a>
 
@@ -1113,6 +1224,28 @@ The phase split of stream 'S3' at its temperature and pressure could not be comp
   Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#flash_failed
 ```
 
+<a id="formula_elements_invalid"></a>
+
+## `formula_elements_invalid`: A component's formula does not match its elements
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+- **Summary:** The formula of component &lt;component&gt; does not match its elemental composition.
+- **Why:** On a molar basis the formula and the element amounts describe the same molecule. The formula is read as element symbols with counts, and its counts must equal the stated element amounts exactly.
+- **Do:** Correct the formula or the element amounts so that they agree.
+- **Parameters:** `component` (text)
+
+Example:
+
+```text
+The formula of component CH3OH does not match its elemental composition.
+  Why:     On a molar basis the formula and the element amounts describe the same molecule. The formula is read as element symbols with counts, and its counts must equal the stated element amounts exactly.
+  Do:      Correct the formula or the element amounts so that they agree.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    formula_elements_invalid (openflowsheet explain formula_elements_invalid)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#formula_elements_invalid
+```
+
 <a id="homotopy_stalled"></a>
 
 ## `homotopy_stalled`: Homotopy stalled
@@ -1142,6 +1275,28 @@ The phase split of stream 'S3' at its temperature and pressure could not be comp
 *No plain-language explanation is written yet; the summary is the technical one.*
 
 - **Summary:** Refused: id unsupported.
+
+<a id="identifier_invalid"></a>
+
+## `identifier_invalid`: A component identifier is malformed or not allowed
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+- **Summary:** The &lt;scheme&gt; identifier of component &lt;component&gt; is malformed, or the component is synthetic and may carry none.
+- **Why:** A CAS number must have a valid check digit and an InChIKey the standard 27-character form. A synthetic component has no chemical identity, so it may carry no identifier at all.
+- **Do:** Correct the identifier, or remove it if the component is synthetic.
+- **Parameters:** `component` (text), `scheme` (text)
+
+Example:
+
+```text
+The cas identifier of component H2O is malformed, or the component is synthetic and may carry none.
+  Why:     A CAS number must have a valid check digit and an InChIKey the standard 27-character form. A synthetic component has no chemical identity, so it may carry no identifier at all.
+  Do:      Correct the identifier, or remove it if the component is synthetic.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    identifier_invalid (openflowsheet explain identifier_invalid)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#identifier_invalid
+```
 
 <a id="inadmissible_endpoint"></a>
 
@@ -2159,6 +2314,28 @@ The property basis wilson-ig-v2 does not provide the property v, so the values t
   Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#property_not_provided
 ```
 
+<a id="provenance_invalid"></a>
+
+## `provenance_invalid`: A record value has incomplete provenance
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+- **Summary:** The provenance of the value at &lt;entry&gt; has no origin, or names a source the record does not list.
+- **Why:** Every stored value says where it came from: at least one origin (measured, computed, estimated or synthetic) and a source listed in the record's sources.
+- **Do:** Give the value an origin and a source listed in the record.
+- **Parameters:** `entry` (text)
+
+Example:
+
+```text
+The provenance of the value at /molar_mass has no origin, or names a source the record does not list.
+  Why:     Every stored value says where it came from: at least one origin (measured, computed, estimated or synthetic) and a source listed in the record's sources.
+  Do:      Give the value an origin and a source listed in the record.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    provenance_invalid (openflowsheet explain provenance_invalid)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#provenance_invalid
+```
+
 <a id="provider_missing"></a>
 
 ## `provider_missing`: Provider missing
@@ -2228,6 +2405,50 @@ The property basis wilson-ig-v2 does not provide the property v, so the values t
 *No plain-language explanation is written yet; the summary is the technical one.*
 
 - **Summary:** Refused: reactor not accepted.
+
+<a id="record_schema_invalid"></a>
+
+## `record_schema_invalid`: A record does not match the record format
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+- **Summary:** The record is not valid at &lt;pointer&gt;.
+- **Why:** A record is checked against the record format before it is stored or hashed: its members and their types, every object closed, phase and identifier spellings, and the rules the format adds, such as one entry per property and phase and one formation entry per phase. The location is a JSON pointer into the record after normalisation; an empty location is the whole record, for example text that is not one JSON or YAML object.
+- **Do:** Correct the record at the location given and submit it again.
+- **Parameters:** `pointer` (text)
+
+Example:
+
+```text
+The record is not valid at /entries/0/phase.
+  Why:     A record is checked against the record format before it is stored or hashed: its members and their types, every object closed, phase and identifier spellings, and the rules the format adds, such as one entry per property and phase and one formation entry per phase. The location is a JSON pointer into the record after normalisation; an empty location is the whole record, for example text that is not one JSON or YAML object.
+  Do:      Correct the record at the location given and submit it again.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    record_schema_invalid (openflowsheet explain record_schema_invalid)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#record_schema_invalid
+```
+
+<a id="record_unit_invalid"></a>
+
+## `record_unit_invalid`: A record value has an unknown kind or a unit other than its SI unit
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+- **Summary:** The value at &lt;entry&gt; has a quantity kind that is not registered, or a unit that is not that kind's SI unit.
+- **Why:** Records store every value in the SI unit of a registered quantity kind, and a core property has a fixed kind. A kind that is not registered, such as a molar entropy before it is added, cannot be stored yet.
+- **Do:** State the value in the SI unit of the kind the property needs, or leave out a value whose kind is not registered yet.
+- **Parameters:** `entry` (text)
+
+Example:
+
+```text
+The value at /entries/1 has a quantity kind that is not registered, or a unit that is not that kind's SI unit.
+  Why:     Records store every value in the SI unit of a registered quantity kind, and a core property has a fixed kind. A kind that is not registered, such as a molar entropy before it is added, cannot be stored yet.
+  Do:      State the value in the SI unit of the kind the property needs, or leave out a value whose kind is not registered yet.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    record_unit_invalid (openflowsheet explain record_unit_invalid)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#record_unit_invalid
+```
 
 <a id="recovery_feed_not_positive"></a>
 
@@ -2863,6 +3084,28 @@ A change is checked for the task "simulation" only; this version cannot check it
 *No plain-language explanation is written yet; the summary is the technical one.*
 
 - **Summary:** Refused: user start unsupported.
+
+<a id="validity_range_invalid"></a>
+
+## `validity_range_invalid`: A record's validity range is not valid
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+- **Summary:** The validity range of &lt;variable&gt; at &lt;entry&gt; is not valid.
+- **Why:** A validity range names a variable of the entry's form (T or P for a constant) and gives a lower bound below its upper bound.
+- **Do:** Use a variable of the form and order the bounds from low to high.
+- **Parameters:** `entry` (text), `variable` (text)
+
+Example:
+
+```text
+The validity range of T at /entries/2 is not valid.
+  Why:     A validity range names a variable of the entry's form (T or P for a constant) and gives a lower bound below its upper bound.
+  Do:      Use a variable of the form and order the bounds from low to high.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    validity_range_invalid (openflowsheet explain validity_range_invalid)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#validity_range_invalid
+```
 
 <a id="value_not_finite"></a>
 
