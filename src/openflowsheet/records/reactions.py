@@ -10,7 +10,8 @@ as `l01`'s and `s10`'s water do), `<element>` the element symbol.
 
 **The arithmetic.** Every number (ν_c, the element counts A_ec, the charges z_c and the molar
 masses M_c) is converted exactly to a `Fraction`: a binary64 value is a dyadic rational, so
-`Fraction(x)` is its exact value and every sum below is exact, independent of the platform and of
+`Fraction(x)` is its exact value, a ν given as a `Fraction` is taken as it is (R-1054), and every
+sum below is exact, independent of the platform and of
 the summation order. Per reaction:
 
 - element balance: for each element e of the components, Σ_c ν_c A_ec = 0, else the refusal
@@ -78,8 +79,11 @@ def molar_mass_consistent(terms: Iterable[tuple[Fraction, Fraction]]) -> bool:
 
 
 def exact(value: object, where: str) -> Fraction:
-    """The exact rational value of an `int` or finite `float` (`Fraction(x)` of a binary64 value
-    is exact); `ValueError` for anything else, a `bool` included."""
+    """The exact rational value of an `int`, a finite `float` (`Fraction(x)` of a binary64 value
+    is exact) or a `fractions.Fraction` (a rational ν, as F2 holds it; R-1054); `ValueError` for
+    anything else, a `bool` included."""
+    if isinstance(value, Fraction):
+        return value
     if isinstance(value, bool) or not isinstance(value, int | float):
         raise ValueError(f"{where}: {value!r} is not a number")
     try:

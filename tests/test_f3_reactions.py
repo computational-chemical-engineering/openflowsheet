@@ -245,3 +245,15 @@ def test_a_coefficient_that_is_not_a_finite_number_is_a_callers_error(nu: object
 def test_a_key_without_a_record_is_a_callers_error() -> None:
     with pytest.raises(ValueError, match="no record for component key 'NH3'"):
         check_reactions([AMMONIA], {k: v for k, v in _components("m01").items() if k != "NH3"})
+
+
+def test_a_rational_coefficient_is_taken_exactly_and_its_double_is_not() -> None:
+    """R-1054 (F3 review 2, S5, C7): ν may be a `Fraction` (F2's rational coefficients); a third
+    as a double is not a third, so the same reaction in doubles is an element imbalance in H
+    (3 · fl(2/3) ≠ 2; N balances, as fl(2/3) = 2 · fl(1/3))."""
+    rational = {"N2": Fraction(-1, 3), "H2": Fraction(-1), "NH3": Fraction(2, 3)}
+    reaction = {"id": "third", "stoichiometry": rational}
+    assert check_reactions([reaction], _components("m01")) == ((), ())
+    doubles = {"id": "third", "stoichiometry": {k: float(v) for k, v in rational.items()}}
+    errors, _ = check_reactions([doubles], _components("m01"))
+    assert errors == (Coded("reaction_element_imbalance", {"reaction": "third", "element": "H"}),)
