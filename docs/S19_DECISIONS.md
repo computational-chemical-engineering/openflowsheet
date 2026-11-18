@@ -3003,3 +3003,9 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   S19-W5-batchN.md L_N), validated at 605d332f (sha256 4f7e1232...), `sets --check` PASS (W5-T1), A26 passes at B_N.
   Branch `wp/S19-w5n` at 605d332f. WO-N1 brief `S19-W5-N1.md` written; launch waits for the runner restart (the old
   runner does not pass `S19_W5_BATCH`).
+- **2026-11-19 ~01:25 CET, jobs 356 `g1o4-2` (S1, region_screen.py 66.0 -> 47.0, step 370) and 357 `g1o4-3` (C2,
+  coupling.py 78.4 -> 72.3, step 371) PASS 16/16.** Gate report at 356: "ALERT selected gates take 731 s > 300 s
+  (tests tier)", "ALERT selected/full time ratio 0.60 > 0.4" (the standing pair; the selected time rises: 631, 674,
+  731 s over the last three reports; proposal 2 with Frank). Queue idle: runner restarted for `--batch`, old PID
+  2763884 killed, new PID 1341562. Launched: review R-W3-G1O-4 (reviewer, Opus) and WO-N1 (opus-engineer, brief
+  `S19-W5-N1.md`, worktree `s19-w5n`).
