@@ -510,8 +510,9 @@ def contributors() -> list[dict[str, Any]]:
 
 # -- records (ADR 0061) ----------------------------------------------------------------------
 
-#: F3-WO1: the status of ADR 0061's built-ins until F3's close-out.
-RECORDS_STATUS: Final = "implemented"
+#: F3-WO1: the status of ADR 0061's built-ins; F3's close-out raised it (ADR 0060 D10: status is an
+#: evidence field, excluded from the descriptor and registry hashes).
+RECORDS_STATUS: Final = "tested"
 #: ADR 0061 D1: the schema file of the built-in record types' payloads, in the package.
 RECORD_SCHEMA_PATH: Final = "_data/schemas/record-v2.schema.json"
 #: ADR 0061 D12 (F3 decision WO3-6, filled at F3-WO5b): each data source's implementation set,

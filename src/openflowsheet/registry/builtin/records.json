@@ -57,7 +57,7 @@
     ],
     "provides": [],
     "requires": [],
-    "status": "implemented",
+    "status": "tested",
     "title": "Ideal-gas heat capacity, quartic in T over 1000 K",
     "version": "1.0.0"
   },
@@ -114,7 +114,7 @@
     ],
     "provides": [],
     "requires": [],
-    "status": "implemented",
+    "status": "tested",
     "title": "Vapour pressure, ln P_sat in T over 1000 K",
     "version": "1.0.0"
   },
@@ -145,7 +145,7 @@
     ],
     "provides": [],
     "requires": [],
-    "status": "implemented",
+    "status": "tested",
     "title": "Legacy benchmark record files",
     "version": "1.0.0"
   },
@@ -178,7 +178,7 @@
     ],
     "provides": [],
     "requires": [],
-    "status": "implemented",
+    "status": "tested",
     "title": "User record files",
     "version": "1.0.0"
   },
@@ -201,7 +201,7 @@
     ],
     "provides": [],
     "requires": [],
-    "status": "implemented",
+    "status": "tested",
     "title": "Assay record",
     "version": "0.1.0"
   },
@@ -229,7 +229,7 @@
     ],
     "provides": [],
     "requires": [],
-    "status": "implemented",
+    "status": "tested",
     "title": "Component record",
     "version": "1.0.0"
   },
@@ -257,7 +257,7 @@
     ],
     "provides": [],
     "requires": [],
-    "status": "implemented",
+    "status": "tested",
     "title": "Parameter set record",
     "version": "1.0.0"
   }
