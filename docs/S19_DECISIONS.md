@@ -2734,3 +2734,11 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   and zero-flow reassembly and `_source_map`'s 15 parameters): no. The values come from different phases, and
   S19_RULES rejects bundling unrelated parameters; projection.py at 7.4 meets G-END's file floor. Alternative: the
   object (rejected, rule above). Reversible by: a later step if a design pass finds a cohesive type.
+- **2026-11-18, R-W3-G3-9 (reviewer, Opus, 100k): merge after fixes 1-2** (both step 1, request.py, no behaviour
+  change): (1) rule 13, `static_readiness`'s `found` -> `revision_rows`; (2) `_RevisionFindings` docstring (the map
+  is None unless the probes mapped). Steps 2-8 OK (S1 projection and boundary: no float op or component creation
+  moved; step 5 branches token-identical, no rule-15 twin; S2 replay order rung by rung). Commit 0 pins list order;
+  the ROUTE_UNAVAILABLE and RevisionUnbound exits are covered only through the shared `revision_codes` list (note).
+  DECISION: the orchestrator applied both fixes (2f842a31, gated no-gain, job 331), although fix 1 touches code:
+  a local's rename plus ruff's reflow of one call, argument order unchanged. Alternative: a fresh engineer
+  (rejected: cost out of proportion to a rename). Reversible by: reverting 2f842a31. Merge-check g3r9-mc queued.
