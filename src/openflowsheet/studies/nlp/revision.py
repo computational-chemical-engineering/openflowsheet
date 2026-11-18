@@ -35,7 +35,8 @@ import math
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Final
+from types import ModuleType
+from typing import Any, Final, NamedTuple
 
 from openflowsheet.assessment.linearization import Refusal
 from openflowsheet.assessment.program import AssessmentProgram
@@ -196,7 +197,10 @@ def optimize_revision(
     an exception of one of the `interruptions` types (a job's `JobInterrupted`) is held and
     re-raised once Ipopt has returned (`greybox.solve_start`); `progress(stage, info)` is told
     each stage. `wall_time_remaining` (a job's, §4.10) caps each start's Ipopt `max_wall_time`
-    at the job's remaining wall time; `None` (or a `None` answer) leaves the request's."""
+    at the job's remaining wall time; `None` (or a `None` answer) leaves the request's.
+
+    The stages after static readiness are methods of `_OptimizationRun`: `start_phase`,
+    `solve` and `report_and_record`; every exit goes through its `finish`."""
     check = check or (lambda: None)
     progress = progress or (lambda stage, info: None)
     parsed = OptimizationRequest.of(request)
@@ -222,19 +226,23 @@ def optimize_revision(
         ),
     }
     record = _Record(directory, sha, identity, request, document) if directory else None
-
-    def finish(report: OptimizationReport, points: tuple[StartPoints, ...]) -> OptimizationOutcome:
-        # §4.10: the `record` stage begins before the report and the manifest are written, so
-        # an interruption there leaves neither.
-        check()
-        progress("record", {"status": report.status})
-        return _finish(record, report, points)
-
+    optimization = _OptimizationRun(
+        check,
+        progress,
+        record,
+        document=document,
+        parsed=parsed,
+        static=static,
+        revision=revision,
+        sha=sha,
+        interruptions=interruptions,
+        wall_time_remaining=wall_time_remaining,
+    )
     progress("resolve", {"ready": static.ready, "codes": list(static.codes)})
     if not static.ready or static.formulation is None or static.decisions is None:
         reasons = static.reasons or _not_run(static)
         report = _unsupported(parsed, static, revision, reasons, document=document)
-        return finish(report, ())
+        return optimization.finish(report, ())
     formulation = static.formulation
     sink = _Sink() if record is not None else None
     host = RevisionNlpHost(
@@ -247,159 +255,286 @@ def optimize_revision(
         sink=sink,
         surrogates=surrogates,
     )
-    spec = host.base_spec()
-    starts: list[StartReadiness] = []
-    failures: dict[int, str] = {}
-    for index, start in enumerate(formulation.starts):
-        check()
-        progress("start", {"start": index})
-        if sink is not None:
-            sink.target = (record.path(f"starts/{index}/start"), f"opt-{sha[:16]}-s{index}")  # type: ignore[union-attr]
-        readiness, found = _start(formulation, host, index, start, True, spec)
-        starts.append(readiness)
-        failure = _start_failure(host, index, readiness, found)
-        if failure is not None:
-            failures[index] = failure
-    bound = _Bound(formulation, (), None)
-    if parsed.assessment is not None:
-        bound = _bind_assessment(parsed.assessment, formulation, host, starts, failures)
-        formulation = bound.formulation
-    if bound.reasons:
-        refused = Readiness("unsupported", bound.reasons, static.solver, tuple(starts))
-        report = _unsupported(
-            parsed,
-            static,
-            revision,
-            bound.reasons,
-            formulation,
-            refused,
-            host.model_record(),
-            assessment=assessment_record(formulation, bound.closure(host, starts, static.solver)),
-        )
-        points = tuple(StartPoints(start.point, None) for start in starts)
-        return finish(report, points)
-    if len(failures) == len(starts):
-        reasons = tuple(
-            ReadinessReason("SIMULATION_NOT_READY", failures[index], f"start {index}")
-            for index in range(len(starts))
-        )
-        refused = Readiness("unsupported", reasons, static.solver, tuple(starts))
-        report = _unsupported(
-            parsed, static, revision, reasons, formulation, refused, host.model_record()
-        )
-        points = tuple(StartPoints(start.point, None) for start in starts)
-        return finish(report, points)
+    started = optimization.start_phase(formulation, host, sink)
+    if isinstance(started, OptimizationOutcome):
+        return started
+    bound, starts, failures = started
+    formulation = bound.formulation
+    solved = optimization.solve(formulation, host, starts, failures, sink)
+    if isinstance(solved, OptimizationOutcome):
+        return solved
+    return optimization.report_and_record(bound, host, starts, solved)
 
-    check()
-    adapter = importlib.import_module(ADAPTER_MODULE)
-    solver = dataclasses.replace(
-        static.solver, versions={**static.solver.versions, "ipopt": adapter.ipopt_version()}
-    )
-    # R-190, G-A10 (D-44): the loaded stack must be the audited one, as M03's `optimize` requires
-    # (`greybox.environment_problems`: PyNumero's ASL build, no forbidden object mapped) — else
-    # `UNSUPPORTED(NLP_SOLVER_UNAVAILABLE)` before any Ipopt call.
-    problems = adapter.environment_problems()
-    if problems:
-        reasons = (
-            ReadinessReason(
-                "NLP_SOLVER_UNAVAILABLE",
-                "; ".join(problems) + f" — see {AUDIT_DOCUMENT} ({AUDIT_GATE}: {AUDIT_VERDICT})",
-                AUDIT_DOCUMENT,
-            ),
-        )
-        refused = Readiness("unsupported", reasons, solver, tuple(starts))
-        report = _unsupported(
-            parsed, static, revision, reasons, formulation, refused, host.model_record()
-        )
-        points = tuple(StartPoints(start.point, None) for start in starts)
-        return finish(report, points)
-    runs: list[Any] = []
-    evidence: list[StartEvidence] = []
-    for index, readiness in enumerate(starts):
-        if index in failures:
-            runs.append(None)
-            evidence.append(StartEvidence(None, {}, failures[index]))
-            continue
-        check()
-        progress("optimize", {"start": index})
-        options = _start_options(parsed.max_iter, parsed.max_wall_time_s, wall_time_remaining)
 
-        def place(index: int = index) -> None:
-            check()
+@dataclass
+class _OptimizationRun:
+    """`optimize_revision`'s run. Its frame: the stage calls (`check`, `progress`), the record
+    (`None` without a directory), the revision document, the parsed request, its static
+    readiness, the report's `revision` member, the optimization sha and the job's
+    `interruptions` and `wall_time_remaining`. Its methods are the stages after static
+    readiness (`start_phase`, `solve`, `report_and_record`), each of which may end the call
+    through the closing stage `finish`, which writes the record's report and manifest."""
+
+    check: Callable[[], None]
+    progress: Progress
+    record: _Record | None
+    document: Mapping[str, Any]
+    parsed: OptimizationRequest
+    static: StaticReadiness
+    revision: Mapping[str, Any]
+    sha: str
+    interruptions: tuple[type[BaseException], ...]
+    wall_time_remaining: Callable[[], float | None] | None
+
+    def finish(
+        self, report: OptimizationReport, points: tuple[StartPoints, ...]
+    ) -> OptimizationOutcome:
+        # §4.10: the `record` stage begins before the report and the manifest are written, so
+        # an interruption there leaves neither.
+        self.check()
+        self.progress("record", {"status": report.status})
+        return _finish(self.record, report, points)
+
+    def start_phase(
+        self, formulation: NlpFormulation, host: RevisionNlpHost, sink: _Sink | None
+    ) -> _StartPhase | OptimizationOutcome:
+        """The start phase (§4.5): per start in order, `check`, the `start` progress, the
+        start's bundle target in `sink` and its certification (`_start`, `_start_failure`);
+        then the assessment's binding (`_bind_assessment`, at the first start that passes).
+        Ends the call through `finish` when the binding's program-wide reasons refuse the
+        request or when no start passes (`SIMULATION_NOT_READY`); else the bound formulation,
+        every start's readiness and the failing starts' details."""
+        spec = host.base_spec()
+        starts: list[StartReadiness] = []
+        failures: dict[int, str] = {}
+        for index, start in enumerate(formulation.starts):
+            self.check()
+            self.progress("start", {"start": index})
             if sink is not None:
-                sink.target = (record.path(f"starts/{index}/resolve"), f"opt-{sha[:16]}-r{index}")  # type: ignore[union-attr]
+                sink.target = (
+                    self.record.path(f"starts/{index}/start"),  # type: ignore[union-attr]
+                    f"opt-{self.sha[:16]}-s{index}",
+                )
+            readiness, found = _start(formulation, host, index, start, True, spec)
+            starts.append(readiness)
+            failure = _start_failure(host, index, readiness, found)
+            if failure is not None:
+                failures[index] = failure
+        bound = _Bound(formulation, (), None)
+        if self.parsed.assessment is not None:
+            bound = _bind_assessment(self.parsed.assessment, formulation, host, starts, failures)
+            formulation = bound.formulation
+        if bound.reasons:
+            refused = Readiness("unsupported", bound.reasons, self.static.solver, tuple(starts))
+            report = _unsupported(
+                self.parsed,
+                self.static,
+                self.revision,
+                bound.reasons,
+                formulation,
+                refused,
+                host.model_record(),
+                assessment=assessment_record(
+                    formulation, bound.closure(host, starts, self.static.solver)
+                ),
+            )
+            points = tuple(StartPoints(start.point, None) for start in starts)
+            return self.finish(report, points)
+        if len(failures) == len(starts):
+            reasons = tuple(
+                ReadinessReason("SIMULATION_NOT_READY", failures[index], f"start {index}")
+                for index in range(len(starts))
+            )
+            refused = Readiness("unsupported", reasons, self.static.solver, tuple(starts))
+            report = _unsupported(
+                self.parsed,
+                self.static,
+                self.revision,
+                reasons,
+                formulation,
+                refused,
+                host.model_record(),
+            )
+            points = tuple(StartPoints(start.point, None) for start in starts)
+            return self.finish(report, points)
 
-        run = adapter.solve_start(
-            host,
-            formulation,
-            readiness,
-            index,
-            options=options,
-            before_verification=place,
-            interrupt=check,
-            interruptions=interruptions,
+        return _StartPhase(bound, starts, failures)
+
+    def solve(
+        self,
+        formulation: NlpFormulation,
+        host: RevisionNlpHost,
+        starts: list[StartReadiness],
+        failures: dict[int, str],
+        sink: _Sink | None,
+    ) -> _Solved | OptimizationOutcome:
+        """Solve and verify (§4.6): `check`, M03's gray box imported (`ADAPTER_MODULE`) and its
+        Ipopt version added to the solver; the call ends through `finish` when the loaded stack
+        is not the audited one (`NLP_SOLVER_UNAVAILABLE`). Then per start in order: a failing
+        start's evidence (not run), else `check`, the `optimize` progress and
+        `greybox.solve_start`, whose V1 re-solve's bundle target `place` sets in `sink`."""
+        self.check()
+        adapter = importlib.import_module(ADAPTER_MODULE)
+        solver = dataclasses.replace(
+            self.static.solver,
+            versions={**self.static.solver.versions, "ipopt": adapter.ipopt_version()},
         )
-        runs.append(run)
-        evidence.append(run.evidence())
-    verdict = classify_starts(evidence)
-    records = []
-    for index, (readiness, run) in enumerate(zip(starts, runs, strict=True)):
-        records.append(_start_record(formulation, readiness, run, index, host))
-    verified = [runs[index] for index in verdict.verified_starts]
-    candidate = adapter._candidate(verified)
-    assessment = assessment_record(formulation, bound.closure(host, starts, solver), candidate)
-    candidate_document = None
-    if candidate is not None:
-        best = next(run for run in verified if run.verification is candidate)
-        candidate_document = {
-            **candidate.as_document(),
-            **_candidate_members(host, document, formulation, best, sha),
-            **_phase_members(host, starts[best.index], candidate, assessment),
-        }
-    report = OptimizationReport(
-        formulation=formulation_record(formulation, _declared(starts), assessment),
-        model=host.model_record(),
-        solver=solver_record(solver, adapter.solver_environment()),
-        hessian_policy=dict(HESSIAN_POLICY),
-        starts=verdict.start_records(records),
-        candidate=candidate_document,
-        distinct_local_solutions=adapter._distinct(formulation, verified),
-        status=verdict.status,
-        reasons=verdict.reasons,
-        claims={
-            "global_optimality": False,
-            "local_stationarity": verdict.local_stationarity,
-            "second_order": (
-                candidate.kkt.second_order
-                if candidate is not None and candidate.kkt is not None
-                else "not_assessed"
-            ),
-            # §9 A-1: numerical verification is reported apart from optimality evidence (§2.5).
-            **(
-                {"numerical_verification": candidate.basis}
-                if candidate is not None and candidate.basis is not None
-                else {}
-            ),
-        },
-        limits={
-            **report_limits(),
-            "max_iter": parsed.max_iter,
-            "max_wall_time": parsed.max_wall_time_s,
-        },
-        revision=revision,
-    )
-    if record is not None:
-        for index, run in enumerate(runs):
-            if run is not None:
-                record.start_members(index, host, formulation, run)
-    points = tuple(
-        StartPoints(
-            readiness.point,
-            run.verification.point if run is not None and run.verification is not None else None,
+        # R-190, G-A10 (D-44): the loaded stack must be the audited one, as M03's `optimize`
+        # requires (`greybox.environment_problems`: PyNumero's ASL build, no forbidden object
+        # mapped) — else `UNSUPPORTED(NLP_SOLVER_UNAVAILABLE)` before any Ipopt call.
+        problems = adapter.environment_problems()
+        if problems:
+            reasons = (
+                ReadinessReason(
+                    "NLP_SOLVER_UNAVAILABLE",
+                    "; ".join(problems)
+                    + f" — see {AUDIT_DOCUMENT} ({AUDIT_GATE}: {AUDIT_VERDICT})",
+                    AUDIT_DOCUMENT,
+                ),
+            )
+            refused = Readiness("unsupported", reasons, solver, tuple(starts))
+            report = _unsupported(
+                self.parsed,
+                self.static,
+                self.revision,
+                reasons,
+                formulation,
+                refused,
+                host.model_record(),
+            )
+            points = tuple(StartPoints(start.point, None) for start in starts)
+            return self.finish(report, points)
+        runs: list[Any] = []
+        evidence: list[StartEvidence] = []
+        for index, readiness in enumerate(starts):
+            if index in failures:
+                runs.append(None)
+                evidence.append(StartEvidence(None, {}, failures[index]))
+                continue
+            self.check()
+            self.progress("optimize", {"start": index})
+            options = _start_options(
+                self.parsed.max_iter, self.parsed.max_wall_time_s, self.wall_time_remaining
+            )
+
+            def place(index: int = index) -> None:
+                self.check()
+                if sink is not None:
+                    sink.target = (
+                        self.record.path(f"starts/{index}/resolve"),  # type: ignore[union-attr]
+                        f"opt-{self.sha[:16]}-r{index}",
+                    )
+
+            run = adapter.solve_start(
+                host,
+                formulation,
+                readiness,
+                index,
+                options=options,
+                before_verification=place,
+                interrupt=self.check,
+                interruptions=self.interruptions,
+            )
+            runs.append(run)
+            evidence.append(run.evidence())
+        return _Solved(adapter, solver, runs, evidence)
+
+    def report_and_record(
+        self, bound: _Bound, host: RevisionNlpHost, starts: list[StartReadiness], solved: _Solved
+    ) -> OptimizationOutcome:
+        """The report (§4.13) from the solved starts' evidence and the candidate's change-set,
+        each solved start's members written into the record (`write_start_members`), and
+        `finish`."""
+        formulation = bound.formulation
+        adapter, solver, runs, evidence = solved
+        verdict = classify_starts(evidence)
+        records = []
+        for index, (readiness, run) in enumerate(zip(starts, runs, strict=True)):
+            records.append(_start_record(formulation, readiness, run, index, host))
+        verified = [runs[index] for index in verdict.verified_starts]
+        candidate = adapter._candidate(verified)
+        assessment = assessment_record(formulation, bound.closure(host, starts, solver), candidate)
+        candidate_document = None
+        if candidate is not None:
+            best = next(run for run in verified if run.verification is candidate)
+            candidate_document = {
+                **candidate.as_document(),
+                **_candidate_members(host, self.document, formulation, best, self.sha),
+                **_phase_members(host, starts[best.index], candidate, assessment),
+            }
+        report = OptimizationReport(
+            formulation=formulation_record(formulation, _declared(starts), assessment),
+            model=host.model_record(),
+            solver=solver_record(solver, adapter.solver_environment()),
+            hessian_policy=dict(HESSIAN_POLICY),
+            starts=verdict.start_records(records),
+            candidate=candidate_document,
+            distinct_local_solutions=adapter._distinct(formulation, verified),
+            status=verdict.status,
+            reasons=verdict.reasons,
+            claims={
+                "global_optimality": False,
+                "local_stationarity": verdict.local_stationarity,
+                "second_order": (
+                    candidate.kkt.second_order
+                    if candidate is not None and candidate.kkt is not None
+                    else "not_assessed"
+                ),
+                # §9 A-1: numerical verification is reported apart from optimality evidence (§2.5).
+                **(
+                    {"numerical_verification": candidate.basis}
+                    if candidate is not None and candidate.basis is not None
+                    else {}
+                ),
+            },
+            limits={
+                **report_limits(),
+                "max_iter": self.parsed.max_iter,
+                "max_wall_time": self.parsed.max_wall_time_s,
+            },
+            revision=self.revision,
         )
-        for readiness, run in zip(starts, runs, strict=True)
-    )
-    return finish(report, points)
+        self.write_start_members(host, formulation, runs)
+        points = tuple(
+            StartPoints(
+                readiness.point,
+                run.verification.point
+                if run is not None and run.verification is not None
+                else None,
+            )
+            for readiness, run in zip(starts, runs, strict=True)
+        )
+        return self.finish(report, points)
+
+    def write_start_members(
+        self, host: RevisionNlpHost, formulation: NlpFormulation, runs: list[Any]
+    ) -> None:
+        """§4.8: every solved start's members (`_Record.start_members`) written into the
+        record, in start order; nothing without a record or for a start not run."""
+        if self.record is not None:
+            for index, run in enumerate(runs):
+                if run is not None:
+                    self.record.start_members(index, host, formulation, run)
+
+
+class _StartPhase(NamedTuple):
+    """`_OptimizationRun.start_phase`'s result when the formulation is ready: the formulation
+    with its assessment binding, every start's readiness in order, and the failing starts'
+    `START_NOT_CERTIFIED` details by index."""
+
+    bound: _Bound
+    starts: list[StartReadiness]
+    failures: dict[int, str]
+
+
+class _Solved(NamedTuple):
+    """`_OptimizationRun.solve`'s result: the gray-box adapter module, the solver with its
+    Ipopt version, and per start in order its run (`None` when not run) and its evidence."""
+
+    adapter: ModuleType
+    solver: SolverAvailability
+    runs: list[Any]
+    evidence: list[StartEvidence]
 
 
 def _start_failure(
