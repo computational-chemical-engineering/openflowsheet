@@ -2445,3 +2445,12 @@
   PASS; ADR untouched since 8ca21576 (checked). Decisions WO2-1..9 for the package design pass (WO2-1 refuses, not
   replaces, a corrupt object against review N7; WO2-7 candidate `class` value needs a ruling). Catalogue SHA in two
   message_entry fixtures re-taken. F3-WO3 (legacy import) launched, brief `docs/briefs/F3-WO3.md` (b8a65811).
+- **2026-11-18, F3-WO3 done (opus-engineer, Opus, 273k):** 9e41f012 on wp/F3; 149 records, 149 SHAs, index
+  `--check` clean; battery 65 files 1985 passed 0 failed; F0 PASS; ADR, legacy files and thermo/ unchanged; only the
+  catalogue SHA moved (2 fixtures). WO3-1 (D12 citation per component gives 99 `source_sha256` vs D11's one rights
+  row per source) and WO3-2 (three s07 spin-isomer CAS labels dropped) are identity-bearing: for the design round.
+  DECISION: WO4 proceeds on the orchestrator's default for WO3-1, one citation per legacy file, component
+  `rights.source` to the molar-mass note (WO4-0; regenerates the index). Alternative: D12 literal with per-component
+  rights rows. Reversible by: reverting WO4-0 and regenerating the index. The design-lane ruling round on all F3
+  choices (fix1-1..4, WO2-1..9, WO3-1..7, WO4-*) runs after WO4, before WO5 touches the application contract; its
+  ADR edits then go to hub to re-pin card ofs-f3-accept-adr0061 once.
