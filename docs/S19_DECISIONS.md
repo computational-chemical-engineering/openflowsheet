@@ -2510,3 +2510,12 @@
   `under_cols`, and `numerics.newton`'s released-set worklist) and why it is not merged; applied by the orchestrator
   as ea758842, gated no-gain (job 283). Optional notes not applied. Merge-check job 284 at base 8cb44f62 (wp/S19
   changed only docs since).
+- **2026-11-18, F3-WO5a done (opus-engineer, Opus, 229k):** wp/F3 84dcdb4d..02889a00. `records/reactions.py` (exact
+  Fraction balance, 4ε inequality; health 10.0), `records/importers/user_file.py` (9.80), four catalogue codes (sha
+  787017d4 -> afa8e493), legacy.py/normalize.py helpers made public (index unmoved). E-F3-10 ratios 6.37e-18, 3.61e-17,
+  7.77e-6 (ADR: 6.4e-18, 3.6e-17, 7.8e-6). F3 tests 269; battery 2192 passed 0 failed (test_f3_record_model's 130
+  counted twice: it is in the 62-file list and in the glob; orchestrator check). F0 PASS, ADR unchanged.
+  DECISIONs WO5a-1..9 for the package design pass. **For the design lane (F2):** ADR 0062 uses
+  `molar_mass_inconsistent(<S>, <species>)`, ADR 0061 registers `(<reaction>)`: one name or one signature needed
+  (raise with the ADR 0062 card). reactions.py's numerics review folds into the package `reviewer` pass.
+  F3-WO5b (opus-engineer) launched, brief `docs/briefs/F3-WO5b.md` at c3c0fee0 (may need a continuation).

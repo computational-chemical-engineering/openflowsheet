@@ -83,15 +83,15 @@ duplication (twin merge: addendum for Frank); certificate, checks, split_checks 
    Card ofs-f3-accept-adr0061 (desk v3) pinned to ADR 0061 at 5d085f05, option A verbatim: "accept ADR 0061 (F3
    component data) as on wp/F3 at 5d085f05 (with the F3-WO1 review and F3 ruling round 1 applied), with ADR 0019
    Amendment 8 (Records interface, five operations), so that F3 can merge into main". ADR frozen until signed.
-   **Running:** F3-WO5a (opus-engineer, launched 2026-11-18 ~09:00; brief `docs/briefs/F3-WO5a.md` at a4eefc4a:
-   reactions.py + user-file importer, E-F3-10, E-F3-12). **Next:** WO5b (five operations on four transports,
+   WO5a done (02889a00; S19_DECISIONS). **Running:** F3-WO5b (opus-engineer, brief `docs/briefs/F3-WO5b.md` at
+   c3c0fee0; may end at its cap with a continuation needed). Open for the design lane: `molar_mass_inconsistent`
+   signature clash ADR 0061 vs 0062. **Then:** WO5b (five operations on four transports,
    assess_rights, LocalApplication wiring, every "Left for WO5" item in F3_DECISIONS; E-F3-11, MCP digest
    re-take), WO7 close-out (manifest, CI both legs), one package `reviewer` (open: R1-B6 da41b295, fix1 and WO2-WO4
    choices already ruled). Card for ADR 0062 (F2) near close-out.
-4. Trailing S19 at one lane (ofs-s19-trailing-order): G3 run 4 (`wp/S19-g3d`, 8cb44f62..8eedd642): jobs 275-280
-   PASS, 281-282 queued at reset (a `wait --since 274` shell may still wake the session). nlp rule met (S19_DECISIONS
-   "nlp-marked suite"). **Next:** when 281-282 pass, gate report, then reviewer R-W3-G3-4 (brief in the form of
-   `S19-R-W3-G3-3.md`), fixes, merge-check, merge. Rule: lanes touching studies/ also need the nlp-marked suite at
+4. Trailing S19 at one lane (ofs-s19-trailing-order): G3 run 4 (`wp/S19-g3d`): 8 steps PASS, review R-W3-G3-4
+   merge after fix 1 (applied ea758842); jobs 283 (no-gain) and 284 (merge-check, base 8cb44f62) queued. **Next:**
+   when both pass, merge into wp/S19 (`git merge -F`), log, then brief G3 run 5 or G4. Rule: lanes touching studies/ also need the nlp-marked suite at
    head with failures a subset of base (script pattern `<git-common-dir>/codehealth/tools/nlp_suite_at.sh`, edit its commit list and scratch paths: .venv-nlp env plus mpmath; base 2 failures
    test_opt_cost_lca_nlp g19, g20). Then G4, G2 (non-legacy), W5, G1 after the scale probe, docs.
 **Open build-lane items:** `benchmarks/m03/nlp-test.lock` lacks mpmath (m03_nlp_check.sh fails collection); test_opt_cost_lca_nlp g19, g20 fail; no CI or gate runs nlp-marked tests (add an nlp gate tier).
