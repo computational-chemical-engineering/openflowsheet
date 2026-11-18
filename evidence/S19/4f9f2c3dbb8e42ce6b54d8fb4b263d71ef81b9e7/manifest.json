@@ -58,6 +58,11 @@
       "cmd": "gh run watch 44173756567 --exit-status",
       "cwd": ".claude/worktrees/s19",
       "exit_code": 0
+    },
+    {
+      "cmd": "gh run watch 44194354064 --exit-status",
+      "cwd": ".claude/worktrees/s19",
+      "exit_code": 0
     }
   ],
   "checks": [
@@ -137,7 +142,7 @@
       "id": "S19.G-END-CI",
       "description": "CI green on ubuntu-latest and ubuntu-24.04-arm at the branch commit to be merged (default-install and identity jobs green too)",
       "result": "pass",
-      "value": "run 44173756567 at d500fb07 (4f9f2c3d + the manifest, merge-check fixes, and the test-only fix b716feb7); the earlier runs 43773007283 (d122b86a) and 44158387592 (ed0f04ae) failed only tests/test_s19_i15_admissibility_refusal.py, which asserted the K05 re-solve's state hash bitwise off F0's reference platform (ADR 0007: no cross-platform promise); the informational codehealth job (continue-on-error) reports failure on 44158387592 and 44173756567 (success on 43773007283)"
+      "value": "run 44194354064 at b36fa2a6 (the wp/S19 tip merged, with the K05 test fix b716feb7 and its review fix 4bef2608; Decision Desk ofs-s19-w3w4-merge-main-2) green on both legs; before it, run 44173756567 at d500fb07 (4f9f2c3d + the manifest, merge-check fixes, and the test-only fix b716feb7); the earlier runs 43773007283 (d122b86a) and 44158387592 (ed0f04ae) failed only tests/test_s19_i15_admissibility_refusal.py, which asserted the K05 re-solve's state hash bitwise off F0's reference platform (ADR 0007: no cross-platform promise); the informational codehealth job (continue-on-error) reports failure on 44158387592 and 44173756567 (success on 43773007283)"
     }
   ],
   "artifacts": [

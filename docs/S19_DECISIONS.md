@@ -2378,3 +2378,9 @@
 - F0 on the local merge d79a2312 (wp/S19 9649de4c into main): PASS, M1 50/50, M2 61/61, M3 61/61, M4 61/61, M5 61/61,
   M6 85/85, M7 52/52, M8 105/105, M9 35/35. Local main then reset to 218e7a73 (= origin/main); nothing pushed to main.
 - Next: push wp/S19, CI on the tip, then a new desk card for the merge (the signed card stays unexecuted).
+
+## 2026-11-18 merge into main (card ofs-s19-w3w4-merge-main-2, A, VERIFIED)
+
+- CI 44194354064 at b36fa2a6 green on both legs (check x86-64 and aarch64, default-install, identity; codehealth
+  informational, failure). Manifest G-END-CI cites it. cce-code-health 9a4605f (stricter new-brain matching, no score
+  change): re-pin optional, deferred to after the merge.
