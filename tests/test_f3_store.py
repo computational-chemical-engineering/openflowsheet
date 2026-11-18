@@ -3,8 +3,8 @@
 E-F3-8 (store) in full: one object per record, object bytes hashing to the name, a flipped byte
 refused `store_object_corrupt`, two processes registering 200 overlapping records concurrently,
 the simulated Windows replace failures and the 167/168 path-length boundary. E-F3-9 (resolution)
-on synthetic records; its source-checkout part (`methanol` across `s07` and `s10`) waits for the
-legacy import (F3-WO3) and is skipped, not passed. Records here are built in the test: every
+on synthetic records, and its source-checkout part (`methanol` across `s07` and `s10`) on the
+legacy store filled by the legacy import (F3-WO3). Records here are built in the test: every
 identifier and value is invented apart from the CAS and InChIKey spellings, which must pass D7.
 """
 
@@ -26,7 +26,9 @@ import pytest
 from conftest import REPO_ROOT
 
 from openflowsheet.canonical import canonical_json
+from openflowsheet.models.revision_flowsheet import COOLPROP_RECORDS, WILSON_RECORDS
 from openflowsheet.records import identify
+from openflowsheet.records.importers import legacy
 from openflowsheet.records.resolve import (
     Ambiguous,
     formula_key,
@@ -529,12 +531,27 @@ def test_e_f3_9_a_synthetic_analogue_of_methanol_across_two_sources() -> None:
     assert resolve(stack, "id:CH3OH") == shas[1]
 
 
-@pytest.mark.skip(reason="needs F3-WO3 legacy import")
 def test_e_f3_9_methanol_in_a_source_checkout() -> None:
     """E-F3-9 in a source checkout: `methanol` is `component_ambiguous`, ambiguity `identity`,
     two classes (`s07`'s `Methanol`, CAS 67-56-1; `s10`'s `CH3OH`, name `methanol`, no
     identifiers); `cas:67-56-1` resolves to the `s07` record and `id:CH3OH` to the `s10` one."""
-    raise AssertionError("not reachable while skipped")
+    stack = StoreStack(RecordStore.in_memory(), LegacyStore(legacy.available_records))
+    found = resolve(stack, "methanol")
+    assert isinstance(found, Ambiguous)
+    assert found.refusal == Coded("component_ambiguous", {"key": "methanol"})
+    assert found.detail["ambiguity"] == "identity"
+    candidates = found.detail["candidates"]
+    assert [c["class"] for c in candidates] == [[f"cas:{METHANOL_CAS}"], []]
+    named = [[(r["name"], r["source_ids"]) for r in c["records"]] for c in candidates]
+    assert named == [[("Methanol", ["legacy.s07"])], [("methanol", ["legacy.s10"])]]
+    s07 = stack.record(str(resolve(stack, f"cas:{METHANOL_CAS}")))
+    assert (s07["id"], s07["legacy"]["file"]) == ("Methanol", COOLPROP_RECORDS)
+    s10 = stack.record(str(resolve(stack, "id:CH3OH")))
+    assert (s10["name"], s10["legacy"]["file"], "identifiers" in s10) == (
+        "methanol",
+        WILSON_RECORDS,
+        False,
+    )
 
 
 def test_e_f3_9_classes_join_through_shared_cas_or_inchikey() -> None:
