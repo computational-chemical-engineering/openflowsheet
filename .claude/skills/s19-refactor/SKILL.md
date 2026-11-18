@@ -44,6 +44,14 @@ Position, numbers and rules live in files, not here. A fresh session reads, in o
    SKIPPED; modes include `interface` (W4, `--plan`) and `merge-check`. The tests tier selects step-relative
    (`--since {base} --import-time-by-file`), which has holes only the full suite closes. A lane must contain `MB`
    (else every gate falls back to the full suite): branch lanes from the `wp/S19` tip.
+   W5 steps (ruling `docs/briefs/S19-W5-ruling.md` 6.2) are enqueued with `--mode w5 --batch FILE`, otherwise as
+   `--mode step`. FILE is the batch file the orchestrator writes at the batch base B (`batch`, `base`, `max_tier`,
+   `admitted`, `generator`, `retarget`, `expected_failures` = L_B, `standing_failures`). Enqueue validates it and
+   copies it under `<queue>/batches/`; a refusal exits 2, and batch P is refused until W5-S2 exists. The runner sets
+   `S19_W5_BATCH` to the copy. The base's tiers then run W5-S1, S3, S4, S6 and S7 through `scripts/w5_gate.py`, and
+   the frozen list leaves out the admitted paths. The config and `codehealth_frozen.py` are read at the step's base,
+   so the mode applies only to bases that contain it. A runner started before the mode existed does not know
+   `--mode w5`: restart it once it is idle.
 3. On a result: PASS -> reviewer per cadence -> review fixes (docstrings by the orchestrator, gated no-gain;
    code by a fresh engineer) -> `$Q enqueue --snapshot --worktree W --base <wp/S19 tip> --mode merge-check
    --label <lane>-mc` (full suite; a PASS is required) -> merge the lane into `wp/S19` (merge commit, `git merge -F <file>`) -> log in
