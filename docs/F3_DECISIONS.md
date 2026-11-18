@@ -267,3 +267,49 @@ clause (WO1-15). WO5: wiring `LegacyStore(legacy.available_records)` into `Local
   `note` of its `molar_mass`; `sources.<source id>.citation` is the file's citation, fixed per profile in
   `legacy_profiles.yaml` (one `source_sha256` per legacy source, D11)", and in the "Set for every component" sentence
   `citation: v1 rights.source` becomes `citation: the profile's citation`.
+
+Files: `schemas/data-lock.schema.json` ("DRAFT until ADR 0061 is Accepted"), `records/{lock,rights}.py`,
+`records/rights-register.json`, `RecordStore.append_rights`/`rights_rows`, `tests/test_f3_lock_rights.py`,
+`tests/fixtures/records/data-lock{.json,-sha256.txt}`, A32's v2 clause in `tests/test_t08_w2_inventory.py`. Commits
+`cc11f918` (WO4-0), `ca71f8c5` (rights, seed, A32), `57d88321` (lock, schema), `5b5fe8bb` (catalogue), `4542b66c`
+(tests).
+
+- **DECISION WO4-1. The repository register's file** is `{register_format: "openflowsheet-rights-register-v1", rows}`,
+  rows in D11's field order, each checked by `rights.check_row` (exactly D11's eight fields, SHAs 64 lower-case hex,
+  the three assessments, non-empty `basis` and `decided_by`, `date` `YYYY-MM-DD`); the project table's rows pass the
+  same check. Alternative: a bare JSON list. Lives in `rights.register_rows`.
+- **DECISION WO4-2. Seed rows and the S10 row.** One whole-source row per distinct `source_sha256` of a file's records,
+  in profile order: 9 (WO4-0). The assessment is D11's reading of the file's one `redistribution` text (the importer
+  now refuses a file whose components state several; `ImportedFile.redistribution`, not identity); `basis` quotes the
+  file and the text, `decided_by` "ADR 0061 D11 seed", `date` 2026-11-18. D11's S10 row is added once per S10
+  `source_sha256` (components and the Wilson set: R-880 ships both), `permitted`, "NOTICE Wilson block", `decided_by`
+  Frank, 2026-10-29: 11 rows. `--check` requires, per seed, a first whole-source row of that SHA with the seed's id,
+  assessment and conditions, and no `legacy.` row naming a SHA the import does not give. Alternative: give the
+  parameter sets the file citation as well (7 seed rows; reverses WO3-5, moves the index again).
+- **DECISION WO4-3. Precedence keys.** A record-scoped row matches on (`source_sha256`, `record_sha256`), equivalent
+  to (source id, record) since a record has one entry per id. `effective` returns the deciding row and its layer
+  (for D13's `rights.rows`/`effective`); `embeddable` needs at least one source, all `permitted`. Lives in `rights`.
+- **DECISION WO4-4. `build_lock`'s inputs and uncoded refusals.** `components` are (component id, record SHA) pairs in
+  revision order; `methods` are D10 rows (`method_entry(substream, Registered)` builds one). Duplicate component ids,
+  a (substream, method, version) locked twice, options for a method not in the lock, and a SHA naming a record of the
+  other type are `DataLockError` with `coded` `None` (a caller's bug; the ADR names no code); duplicate set SHAs are
+  merged (D10 "unique"). Alternative: new catalogued codes (an ADR change).
+- **DECISION WO4-5. `parameter_set_component_missing(<set>, <key>)`'s `<set>` is the set's record `id`**, as
+  `<component>` is the record id (WO1-9). Alternative: the set's SHA.
+- **DECISION WO4-6. `build_lock` copies the named records into the project store (D8, review item 20) after every
+  check passes**, so a refused lock copies nothing. Alternative: callers copy (the builder stays read-only).
+- **DECISION WO4-7. T08.A32's v2 clause** (WO1-15): a v2 mapping outside `tests/fixtures/records/` must pass
+  `identify` and be `synthetic: true`, or carry the `legacy.file_sha256` (LF-normalised) of a `VETTED_RECORD_FILES`
+  file, or be `embeddable` against the repository register alone (packaging reads that layer only, D11). The schema
+  fixtures stay skipped (some are refused by construction). The placement test is replaced by the clause and a test
+  of each branch. **For the design lane:** whether the clause should also judge the fixture directory.
+- **Not built (F4):** the per-provider narrowed lock (`data_sha256`, ADR 0063 D2).
+
+**Moved.** The 149 legacy index SHAs (WO4-0). Catalogue sha256 `89f77348…` → `dd487916…` in the two `message_entry`
+fixtures; `docs-site/messages/refusals.md` regenerated. `schemas/registry.json` +1 name; the F3 numerical-policy
+addendum lists `data-lock.schema.json` (`implementation_sha256` keeps ST's exact class; policy digest `6b449911…`
+unmoved). `pyproject.toml` package data and A32's `SHIPPED_DATA` gain the register.
+
+**Left for WO5.** `assess_rights` (D13: `policy` right, `not_found`, `invalid_request`, one audit row) and E-F3-5's
+grant clause (skipped here); the `reserved_namespace(legacy)` refusal on every non-importer path (D11); `effective_rights`
+in `search_records`/`get_record`; wiring the project register into `LocalApplication`.
