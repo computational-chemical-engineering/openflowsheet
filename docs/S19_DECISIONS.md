@@ -2534,3 +2534,10 @@
   below 7.0; studies/ 957.1, 6 files below 7.0. G3 run 5 (opus-engineer) launched, brief
   `<git-common-dir>/codehealth/briefs/S19-W3-G3-5.md`: optimize_revision by the RC recipe, projection_zero_flows (S1),
   verify_candidate.
+- **2026-11-18, G3 run 5 delivered (opus-engineer, Opus, ~140k):** 3 steps on `wp/S19-g3e` (43236b56..d6781922),
+  jobs 285-287: optimize_revision RC steps 1-2 (`_OptimizationRun`; 54.8 -> 8.9, no longer brain; rc_check OK),
+  `_joint_blocks` (S1) extract-phase (52.0 -> 16.0; one `if not in` -> `continue` inversion). revision.py 6.8 -> 8.8,
+  projection_zero_flows.py 5.4 -> 6.4; engineer's scan 4496.2 -> 4414.3, brain 19. nlp-marked: revision files 19
+  passed, 2 failed (g19, g20, base failures); zero-flow files 157 passed. Not taken: `_eliminate_zero_flows` (phases
+  need >= 6 inputs; proposal: an RC-like `_ZeroFlowStage`), `verify_candidate` (twin early returns drop literals
+  under rule 15; phases need >= 9 locals). Both for the review to rule.
