@@ -2803,3 +2803,16 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   caught an imprecision in this session's request: coolprop_heos.py was listed among the M2/M3-moving files, but
   probes x8/x12 move only M9, the registry hash and two M6 coolprop-heos-v1 sample keys (no F0 run uses CoolProp).
   Corrected B wording sent for the unsigned card. Verify each signed card with the exact action text hub quoted.
+- **2026-11-18 ~21:30, job 336 (g1n3b-1) FAIL scope: "out of scope: docs/recovery-edges.yaml"; 337, 338 SKIPPED.**
+  My ~20:20 fix put the label edit inside the step; the 2026-11-14 retarget rule (line ~113) already says: an
+  orchestrator-authorised retarget commit BEFORE the step, the step gated against it, the affected tests may fail at
+  the retarget commit alone. Applied to a test-read docs inventory (same rationale as tests/scripts/test data).
+  Chain rebuilt on `wp/S19-g1n3`: retarget 885e97a3, A3 4e0d6ebd (code only), N3 8087a787, P3 4387dc30; tree at
+  4387dc30 identical to 7e29bf7b (`git diff` empty); attempt 2 kept as `wp/S19-g1n3-try2`. Enqueued g1n3c-1..3
+  (jobs 339-341), A3 with base 885e97a3. My ~20:20 entry's DECISION stands in substance (label follows the code);
+  only its placement changed.
+- **2026-11-18 ~21:30, W5 WO-0 delivered (opus-engineer, ~210k tokens): `wp/S19-w5` 12701837 (`scripts/w5_identity.py`:
+  sets, predict, judge, coverage; no pin), 71abe578 (tests, 28 passed).** Reported: W5-T1 PASS (|R| 51, |F| 35,
+  tiers 16/28/6/1, falsifiers exit 1); W5-T2 13/13 probe re-runs match both ways; W5-T6, W5-T7 as specified. Three
+  interpretations for the reviewer (T1 assertions S1-S6, R4 hash scope as intersection, coverage on the working
+  tree). Review R-W5-WO0 launched (reviewer, Opus; brief `S19-R-W5-WO0.md`).
