@@ -424,7 +424,9 @@ def project(
     result. A name that is not a variable, or an eliminated zero flow (R-300 E5), is a
     `ValueError`.
 
-    §6.1 steps 5 to 7 (rows, inequalities, objective) are `_add_constraints_and_objective`'s."""
+    §6.1 steps 5 to 7 (rows, inequalities, objective) are `_add_constraints_and_objective`'s;
+    the refusals are `_check_omitted_rows`'s (the caller's `omitted_rows`) and, after the rows,
+    `_check_smooth`'s (PROJECTION_NONSMOOTH) before `_check_structure`'s and the shape check's."""
     spec.validate()
     _check_call(spec, x0, decisions, external_links)
     scaling = projection_scaling(spec)
@@ -445,16 +447,7 @@ def project(
     }
     elimination, residuals_x0 = _eliminate(spec, x0, starts_by_key, derivatives.x, domain)
     omitted = {row.row_id for row in elimination}
-    if requested is not None and requested != omitted:
-        subject = next(
-            name for name in spec.equation_ids if (name in requested) != (name in omitted)
-        )
-        raise ProjectionRefusedError(
-            "PROJECTION_OMITTED_ROW_UNCERTIFIED",
-            subject,
-            f"the caller omits {sorted(requested)}; the certified alias elimination omits "
-            f"{sorted(omitted)}",
-        )
+    _check_omitted_rows(spec, requested, omitted)
 
     # §17.1, §18.1 (R-296, R-326): the exact-zero flows and their pins leave the projection
     # together.
@@ -477,9 +470,8 @@ def project(
 
     # 5. Rows: the certified alias rows (R-274) and the zero-flow pins (R-296) are not projected.
     row_ids = tuple(name for name in spec.equation_ids if name not in omitted and name not in pins)
-    expressions, inequality_expressions, objective_expression = _add_constraints_and_objective(
-        assembly, spec, row_ids, inequalities, objective
-    )
+    added = _add_constraints_and_objective(assembly, spec, row_ids, inequalities, objective)
+    expressions = added.rows
 
     # Scaling (Ipopt `user-scaling`).
     variable_ids = spec.variable_ids
@@ -498,17 +490,7 @@ def project(
     model.scaling_factor[model.obj] = 1.0 / objective.scale
 
     # Refusals, in §6.1's order (PARAMETER_NOT_DIFFERENTIABLE was raised by `_build`).
-    for subject, expression in (
-        *zip(row_ids, expressions, strict=True),
-        *(
-            (item.inequality_id, e)
-            for item, e in zip(inequalities, inequality_expressions, strict=True)
-        ),
-        (objective.objective_id, objective_expression),
-    ):
-        found = find_nonsmooth_node(expression)
-        if found is not None:
-            raise ProjectionRefusedError("PROJECTION_NONSMOOTH", subject, f"contains {found}")
+    _check_smooth(row_ids, added, inequalities, objective)
     _check_structure(model, spec, decisions, external_links, output_rows, len(decisions), projected)
     shape = _shape_check(model, spec, row_ids, expressions, output_rows, external_links, projected)
     if shape_check == "required" and shape.refusal is not None:
@@ -634,6 +616,24 @@ def _assemble(
 # -- helpers --------------------------------------------------------------------------------------
 
 
+def _check_omitted_rows(
+    spec: ProblemSpec, requested: frozenset[str] | None, omitted: set[str]
+) -> None:
+    """R-274: the caller's `requested` omitted rows (None: not given) against the certified alias
+    elimination's `omitted`; raises `PROJECTION_OMITTED_ROW_UNCERTIFIED` with the first equation
+    id, in spec order, on which the two differ."""
+    if requested is not None and requested != omitted:
+        subject = next(
+            name for name in spec.equation_ids if (name in requested) != (name in omitted)
+        )
+        raise ProjectionRefusedError(
+            "PROJECTION_OMITTED_ROW_UNCERTIFIED",
+            subject,
+            f"the caller omits {sorted(requested)}; the certified alias elimination omits "
+            f"{sorted(omitted)}",
+        )
+
+
 class _Expressions(NamedTuple):
     """`_add_constraints_and_objective`'s result: the projected rows' expressions in `row_ids`
     order, the inequalities' expressions in their order, and the objective's expression."""
@@ -688,6 +688,28 @@ def _add_constraints_and_objective(
         sense=pyo.minimize if objective.sense == "minimize" else pyo.maximize,
     )
     return _Expressions(expressions, inequality_expressions, objective_expression)
+
+
+def _check_smooth(
+    row_ids: tuple[str, ...],
+    added: _Expressions,
+    inequalities: Sequence[InequalitySpec],
+    objective: ObjectiveSpec,
+) -> None:
+    """§6.1's PROJECTION_NONSMOOTH refusal over `added` (`_add_constraints_and_objective`'s
+    result): the rows in `row_ids` order, then the inequalities in their order, then the
+    objective; raises for the first expression `find_nonsmooth_node` finds a node in."""
+    for subject, expression in (
+        *zip(row_ids, added.rows, strict=True),
+        *(
+            (item.inequality_id, e)
+            for item, e in zip(inequalities, added.inequalities, strict=True)
+        ),
+        (objective.objective_id, added.objective),
+    ):
+        found = find_nonsmooth_node(expression)
+        if found is not None:
+            raise ProjectionRefusedError("PROJECTION_NONSMOOTH", subject, f"contains {found}")
 
 
 def projection_scaling(spec: ProblemSpec) -> Scaling:
