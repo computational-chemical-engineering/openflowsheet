@@ -2981,3 +2981,4 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   Nine deviations for review R-W3-G1O-4 in the report (instance `solve`, frame only what `closed` reads, ledger
   initialisers before the start, C2's `entry(` count 4 not the plan's 7, end-site regex, five unread frame fields
   for C3/C4).
+- **2026-11-19 ~02:45 CET, gate report before the self-reset:** "ALERT selected gates take 631 s > 300 s (tests tier)", "ALERT selected/full time ratio 0.55 > 0.4: selection saves little" (the standing pair; proposal 2 with Frank). Self-reset at ec2f0056.
