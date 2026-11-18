@@ -79,8 +79,7 @@ duplication (twin merge: addendum for Frank); certificate, checks, split_checks 
 3. 0.5 STARTED 2026-11-18: F3 on `wp/F3` (worktree `f3`, from main a283925c; build log `docs/F3_DECISIONS.md`,
    briefs `docs/briefs/F3-*.md`). Done and ruled: WO1 (+review, fix1), WO2, WO3, WO4, ruling round 1
    (`docs/reviews/F3-rulings-1.md`, ADR edits 5d085f05) and its B1-B7 (head 270b6534; 65-file battery 2010/0, F0
-   PASS; battery list in the orchestrator scratchpad `f3-tests.txt`: re-derive as the changed test files plus those
-   grepping catalogue|message_entry|schema_fixtures|registry_sha256|list_capabilities|check_admission).
+   PASS; battery list `<git-common-dir>/codehealth/briefs/F3-battery.txt`, 62 files, plus `tests/test_f3_*.py`).
    Card ofs-f3-accept-adr0061 (desk v3) pinned to ADR 0061 at 5d085f05, option A verbatim: "accept ADR 0061 (F3
    component data) as on wp/F3 at 5d085f05 (with the F3-WO1 review and F3 ruling round 1 applied), with ADR 0019
    Amendment 8 (Records interface, five operations), so that F3 can merge into main". ADR frozen until signed.
@@ -93,7 +92,7 @@ duplication (twin merge: addendum for Frank); certificate, checks, split_checks 
    PASS, 281-282 queued at reset (a `wait --since 274` shell may still wake the session). nlp rule met (S19_DECISIONS
    "nlp-marked suite"). **Next:** when 281-282 pass, gate report, then reviewer R-W3-G3-4 (brief in the form of
    `S19-R-W3-G3-3.md`), fixes, merge-check, merge. Rule: lanes touching studies/ also need the nlp-marked suite at
-   head with failures a subset of base (script `nlp3b.sh` pattern: .venv-nlp env plus mpmath; base 2 failures
+   head with failures a subset of base (script pattern `<git-common-dir>/codehealth/tools/nlp_suite_at.sh`, edit its commit list and scratch paths: .venv-nlp env plus mpmath; base 2 failures
    test_opt_cost_lca_nlp g19, g20). Then G4, G2 (non-legacy), W5, G1 after the scale probe, docs.
 **Open build-lane items:** `benchmarks/m03/nlp-test.lock` lacks mpmath (m03_nlp_check.sh fails collection); test_opt_cost_lca_nlp g19, g20 fail; no CI or gate runs nlp-marked tests (add an nlp gate tier).
 **Open for Frank (not blocking):** proposal 2 (selection widening; selected gates ~600 s vs 300 s); R-1042 option C;
