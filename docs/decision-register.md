@@ -20013,7 +20013,7 @@ merge": not chosen by Frank.
 | Date | 2026-11-18 |
 | Decided by | build lane, F3-WO5b, applying ADR 0061 D13 (ADR 0019 Amendment 8; Accepted 2026-11-18, R-1050) in R-457's form, as F1-WO4a took c_9 (R-1030). Number from F3's block R-1050…R-1059 |
 | Normative text | ADR 0061 D13; ADR 0019 Amendment 8; `scripts/m07a_rc.py` (link c_10) |
-| Evidence | On `wp/F3` at F3-WO5b the served MCP tool list digests to `248c2e74baebcf489e012e14dff04fb0d14601d2df5d3ad88d51d0ad11e8a884` (D_10). `without_f3` (`tests/f3_schema_support.py`) leaves `e2c44b6b9c2a7f5689ed4f2fd96b6e9804d1a63e60a5c620d29b5b5d594bcebb` = D_9 exactly, and the chain holds down to R-133's `D_0` (`tests/test_m07a_surface_chain.py`, `tests/test_t08_w2_surface_digest.py::test_f3s_surface_move_decomposes_onto_f1s`) |
+| Evidence | On `wp/F3` at F3-WO5b the served MCP tool list digests to `248c2e74baebcf489e012e14dff04fb0d14601d2df5d3ad88d51d0ad11e8a884` (D_10), re-taken within F3 at the F3 review 2 fix round (C6, C11) as `f7ec3c94233d30506ec2082a13c4e54d57bd540e43e97fdf877b1e3c75fed467`. `without_f3` (`tests/f3_schema_support.py`) leaves `e2c44b6b9c2a7f5689ed4f2fd96b6e9804d1a63e60a5c620d29b5b5d594bcebb` = D_9 exactly, and the chain holds down to R-133's `D_0` (`tests/test_m07a_surface_chain.py`, `tests/test_t08_w2_surface_digest.py::test_f3s_surface_move_decomposes_onto_f1s`) |
 | Affected packages | F3; M07a (`scripts/m07a_rc.py`, A37 tests); M07 (the next RC's V17 carry names c_10); T08.A18 (five description reviews) |
 
 **Decision.** `m07a_rc.LINKS` gains c_10 (R-1051; strip `strip_f3` = `without_f3`; D_10 = `248c2e74…`). The strip
