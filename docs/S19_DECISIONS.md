@@ -2630,3 +2630,10 @@
   order and overwrite. Optional notes 1-2 applied by the orchestrator (55bad42e, docstrings; gate 303 no-gain);
   note 3 rejected: `replay.py:152` assigns steps 3 and 4 to `_recomputed_chain` and :420 names step 4, so "Step 4"
   at :588 is consistent. Merge-check 304 (base 4fc833d9: wp/S19 changed only docs since).
+- **2026-11-18, F3 CI 44283813577 (wp/F3 6800a65f) FAILED** on all three test legs: 7-8 failures each, the expected
+  red plus six full-suite tests outside the battery (A21, G20, A50, no_broad_except, Q26 container, E-F3-8 sqlite
+  locked on x86 and default-install only); codehealth (informational) flags local.py duplication, touched-file debt
+  51.6 -> 62.7, and 26 repo-layers lines that are a base-config artefact (`architecture.compare_refs` ratchets with the
+  base config; at the head `codehealth arch --depth 4` reports 0 violations). Fix round 3 briefed
+  (`docs/briefs/F3-fix3.md`, wp/F3 e73368c2), launch after the self-reset. Lesson: a package battery does not replace
+  the full suite before a push meant to reach `tested`; fix round 3 runs it.
