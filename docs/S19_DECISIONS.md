@@ -2665,3 +2665,10 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   assert `rows.ids`), and one `verify_candidate` case with a box side and an inequality both active (assert
   `active_set`). Placement notes (projection.py helper above `# -- helpers` :634; closure.py `_check_hessian` :469,
   `_assessment_theta` :484) left to a later no-gain pass. Ruff clean; merge-check 313 (g3r7-mc, base a8109c80) queued.
+- **2026-11-18, F3 fix round 3 done (opus-engineer, Opus, 187k):** wp/F3 db59c345 pushed, CI 44322172910 running.
+  A21 harvest rows, A50 HARVEST_SIZE (99, 1134, 146), E-F3-8 a real defect (first-opening `PRAGMA journal_mode = WAL`
+  takes its lock without the busy handler; retried while SQLITE_BUSY to BUSY_TIMEOUT_S; race harness 56/160 -> 0/160),
+  manifest schema failure found and fixed (moved to evidence/F3/05ccf880.../, implemented). DECISIONs F3-3-1 (G20
+  allowlist, six nullary caches), F3-3-2 (Q26 stoichiometry map), F3-3-3 (rollback as try/finally), F3-3-4 (local.py
+  duplication left). Full suite at 05ccf880 serial: 20771 passed, 2 failed (expected human-review red; manifest schema,
+  fixed after). Ruling round 2 (reviewer, Opus) launched: brief wp/F3 docs/briefs/F3-rulings-2.md (c946bfec).
