@@ -290,7 +290,9 @@ class RecordStore:
     def _writing(self) -> Iterator[sqlite3.Connection]:
         """One `BEGIN IMMEDIATE` transaction: all of it or, on any exception, none of it. The
         rollback is a `finally`, so it runs on an interrupt too (the in-memory store shares one
-        connection) and the exception propagates unchanged (T07 §8.1)."""
+        connection) and the exception propagates unchanged (T07 §8.1). A transaction SQLite has
+        already ended (SQLITE_FULL, IOERR, NOMEM) is not rolled back again, which would replace
+        the exception (F3 ruling round 2, C3)."""
         with self._connect() as connection:
             connection.execute("BEGIN IMMEDIATE")
             completed = False
@@ -298,7 +300,7 @@ class RecordStore:
                 yield connection
                 completed = True
             finally:
-                if not completed:
+                if not completed and connection.in_transaction:
                     connection.execute("ROLLBACK")
             connection.execute("COMMIT")
 

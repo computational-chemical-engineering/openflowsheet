@@ -553,6 +553,21 @@ def test_e_f3_8_a_wal_database_is_not_retried(
     assert elapsed < 0.5
 
 
+@pytest.mark.parametrize("where", ["file", "memory"])
+def test_e_f3_8_a_transaction_sqlite_already_ended_keeps_the_original_exception(
+    tmp_path: Path, where: str
+) -> None:
+    """F3 ruling round 2, C3: when the body's exception comes after the transaction has already
+    ended (here the body rolls back itself, as SQLite does on SQLITE_FULL, IOERR or NOMEM),
+    `_writing` runs no second `ROLLBACK`, so the body's exception propagates unchanged, and the
+    store stays usable."""
+    store = RecordStore.at(tmp_path) if where == "file" else RecordStore.in_memory()
+    with pytest.raises(ValueError, match="the body's own"), store._writing() as connection:
+        connection.execute("ROLLBACK")
+        raise ValueError("the body's own")
+    assert _register(store, _component("W", "Water", cas=WATER_CAS))
+
+
 def test_e_f3_8_in_memory_store() -> None:
     store = RecordStore.in_memory()
     outcome = identify(_component("W", "Water"))
