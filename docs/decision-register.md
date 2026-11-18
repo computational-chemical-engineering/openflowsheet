@@ -19987,3 +19987,21 @@ are inadmissible could resolve on a flat-quantized finer level (Q2.A8).
   and the witness's own arithmetic overflows from finite `ok` values; a NaN term was silently dropped by the max fold.
 - *`evaluated(value=inf)`:* breaks K04 A30 (inf serializes to null), puts inf into `witness_max_diff`, and a NaN in
   its place would be dropped again by the outer fold.
+
+## R-1050: ADR 0061 (F3 component data) is Accepted as on `wp/F3` at 5d085f05, with ADR 0019 Amendment 8 (the `Records` protocol, five operations) (2026-11-18)
+
+| | |
+| --- | --- |
+| Date | 2026-11-18 |
+| Decided by | Frank Peters, Decision Desk card `ofs-f3-accept-adr0061` (desk version 3), option A, signed 2026-11-18T07:24:52Z, key `032ee0a5ae620a90`; verified by the build lane with `decision_desk_verify.py` (VERIFIED). Number and block by the build lane: F3 reserves R-1050…R-1059 |
+| Normative text | `docs/adr/0061-F3-component-data.md` at 5d085f05 (only its status line changed since); ADR 0019 Amendment 8 (pointer paragraph added by F3-WO5b) |
+| Evidence | The F3-WO1 review (`docs/reviews/F3-WO1-review.md`) and F3 ruling round 1 (`docs/reviews/F3-rulings-1.md`) applied to the ADR text; build log `docs/F3_DECISIONS.md` (WO1 to WO5a) |
+| Affected packages | F3 (the rest of WO5, WO7 close-out, merge into `main`); F2 (ADR 0062 reuses D7's reaction check; open: `molar_mass_inconsistent`'s signature differs between ADR 0061 `(<reaction>)` and ADR 0062 `(<S>, <species>)`); F8 (D11's register and `data_unavailable`) |
+
+**Decision.** ADR 0061 takes effect as written at 5d085f05: records v2, identity, store, resolution, data lock, rights
+register, importers and the five `Records` operations. The build decisions of WO5a onward that the design lane has not
+yet ruled stay open for the package's reviewer pass; reversing any part of the accepted text takes a new decision
+recorded the same way.
+
+**Rejected alternatives, and why.** Option B on the card (hold acceptance until WO5 is built): the text it would accept
+is the same, and acceptance lets F3 merge as soon as its close-out passes.

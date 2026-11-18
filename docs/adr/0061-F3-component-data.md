@@ -1,7 +1,10 @@
 # ADR 0061 — F3: component data core — records v2, identity, store, data lock, rights register, importers
 
-**Status:** **Proposed, 2026-11-05.** Design wave W1, pass P1 (ADR 0057, R-928). Takes effect when Accepted after the W1
-reviewer pass over ADRs 0060 and 0061; built in 0.5 on `wp/F3`, after ADR 0060's WO1.
+**Status:** **Accepted (Frank Peters, 2026-11-18, Decision Desk `ofs-f3-accept-adr0061`, option A: "accept ADR 0061
+(F3 component data) as on wp/F3 at 5d085f05 (with the F3-WO1 review and F3 ruling round 1 applied), with ADR 0019
+Amendment 8 (Records interface, five operations), so that F3 can merge into main"), with ADR 0019 Amendment 8; register
+R-1050.** Proposed 2026-11-05, design wave W1, pass P1 (ADR 0057, R-928); W1 reviewer pass over ADRs 0060 and 0061;
+built in 0.5 on `wp/F3`, after ADR 0060's WO1. The text below is the text at 5d085f05.
 **Author:** design lane (`architect`). **Brief:** `docs/roadmap/brief-architect-W1-P1.md`.
 **Rulings implemented (not re-ruled):** Q7.R1–R5, Q7.A3; Q9.R1–R7, Q9.A1–A3; Q2.R2, R4, R8 as amended by Amendment 2
 (the anchor is a record field); Q8.R7 (an isotherm's parameters are an ordinary `parameter_set`; no new record type).
