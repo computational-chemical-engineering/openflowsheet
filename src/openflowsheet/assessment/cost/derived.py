@@ -30,12 +30,12 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Any
 
+from openflowsheet.assessment.linearization import Refusal
 from openflowsheet.assessment.program import (
     BuildContext,
     ContributionPlan,
     FunctionalBuilder,
     OutputDef,
-    Refusal,
     Symbols,
     register_contributor,
 )

@@ -23,7 +23,8 @@ from openflowsheet.assessment.cost.index import (
     TargetBasis,
     escalate,
 )
-from openflowsheet.assessment.program import Limitation, Refusal
+from openflowsheet.assessment.linearization import Refusal
+from openflowsheet.assessment.program import Limitation
 from openflowsheet.compile.spec import Expr
 
 __all__ = ["ENERGY_PER", "PER_SI", "SECONDS_PER_HOUR", "PriceOnBasis", "annual", "price_on_basis"]

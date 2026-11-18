@@ -30,13 +30,13 @@ from openflowsheet.assessment.cost.index import (
     series_from,
 )
 from openflowsheet.assessment.defaults import default
+from openflowsheet.assessment.linearization import Refusal
 from openflowsheet.assessment.program import (
     BuildContext,
     ContributionPlan,
     FunctionalBuilder,
     Limitation,
     OutputDef,
-    Refusal,
     Symbols,
     Theta,
     register_contributor,
