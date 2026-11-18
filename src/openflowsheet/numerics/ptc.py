@@ -57,6 +57,7 @@ from openflowsheet.numerics.newton import (
     Problem,
     _bound_aware_alpha,
     _scale_matrix,
+    _Step,
     _trial_point,
     another_signature,
 )
@@ -778,16 +779,6 @@ class _Rejected(NamedTuple):
     evaluation: Evaluation | None
     step_inf: float | None
     message: str
-
-
-class _Step(NamedTuple):
-    """One trial's bound-aware step (K03 §5.3): the unscaled direction, the scaled step, the
-    length `alpha_max` (above zero) and the indices of the bounds it lands on."""
-
-    direction: npt.NDArray[np.float64]
-    step_scaled: npt.NDArray[np.float64]
-    alpha_max: float
-    landing: tuple[int, ...]
 
 
 @dataclass(frozen=True)

@@ -39,7 +39,7 @@ from __future__ import annotations
 from collections import deque
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
-from typing import Any, Literal, Protocol
+from typing import Any, Literal, NamedTuple, Protocol
 
 import numpy as np
 import numpy.typing as npt
@@ -371,114 +371,14 @@ def solve_newton(
                 accepted_any=run.accepted_any,
             )
 
-        accepted = False
-        for halving in range(policy.step_halvings_max + 1):
-            alpha = alpha_max / (2.0**halving)
-            trial = _trial_point(
-                run.x, direction, alpha, run.lower, landing if halving == 0 else ()
-            )
-            trial_evaluation, run.running = run.evaluate(trial)
-            step_inf = float(np.max(np.abs(step_scaled))) * alpha
-
-            reason: RejectionReason | None = None
-            trial_values: tuple[float, ...] | None = None
-            if trial_evaluation.status == "error":
-                trace.record(
-                    kind="trial",
-                    attempt=attempt,
-                    iteration=iteration,
-                    signature=signature,
-                    state_sha256=run.digest(trial),
-                    residual_inf_unscaled=float("nan"),
-                    merit=float("nan"),
-                    counters=run.running,
-                    alpha=alpha,
-                    step_inf_scaled=step_inf,
-                    trial_status="rejected",
-                    message=trial_evaluation.message,
-                )
-                return run.finish(
-                    "EVALUATION_ERROR",
-                    run.values,
-                    message=trial_evaluation.message,
-                    iterations=iteration,
-                    accepted_any=run.accepted_any,
-                )
-            if trial_evaluation.status != "ok" or trial_evaluation.values is None:
-                reason = "invalid_trial"
-            elif another_signature(
-                signature, trial_evaluation.signature, compare_empty=compare_empty
-            ):
-                reason = "phase_update_required"
-            else:
-                trial_values = trial_evaluation.values
-                trial_merit = problem.scaling.merit(trial_values, problem.row_ids)
-                if trial_merit > (1.0 - 2.0 * policy.armijo_c * alpha) * merit:
-                    reason = "armijo"
-
-            if reason is not None:
-                trace.record(
-                    kind="trial",
-                    attempt=attempt,
-                    iteration=iteration,
-                    signature=trial_evaluation.signature or signature,
-                    state_sha256=run.digest(trial),
-                    residual_inf_unscaled=(
-                        float(np.max(np.abs(trial_values))) if trial_values else float("nan")
-                    ),
-                    merit=(
-                        problem.scaling.merit(trial_values, problem.row_ids)
-                        if trial_values
-                        else float("nan")
-                    ),
-                    counters=run.running,
-                    alpha=alpha,
-                    step_inf_scaled=step_inf,
-                    trial_status="rejected",
-                    rejection_reason=reason,
-                    message=trial_evaluation.message,
-                )
-                if observer is not None:
-                    observer.rejected(iteration, alpha, trial, reason, trial_evaluation.signature)
-                continue
-
-            assert trial_values is not None
-            next_merit = problem.scaling.merit(trial_values, problem.row_ids)
-            run.merits.append(next_merit / merit if merit > 0.0 else 0.0)
-            run.x = trial
-            run.values = trial_values
-            accepted = True
-            run.accepted_any = True
-            trace.record(
-                kind="step_accepted",
-                attempt=attempt,
-                iteration=iteration,
-                signature=signature,
-                state_sha256=run.digest(run.x),
-                residual_inf_unscaled=float(np.max(np.abs(np.asarray(run.values)))),
-                merit=next_merit,
-                counters=run.running,
-                alpha=alpha,
-                step_inf_scaled=step_inf,
-                trial_status="accepted",
-            )
-            if halving == 0:
-                _notify_landing(observer, iteration, landing, run.x)
-            break
-
-        if observer is not None:
-            requested = observer.should_close(iteration)
-            if requested is not None:
-                return run.finish(
-                    requested,
-                    run.values,
-                    message=(
-                        "the attempt controller closed the attempt: a persistent phase wall, "
-                        "not an overshoot (§9.3)"
-                    ),
-                    iterations=iteration + (1 if accepted else 0),
-                    accepted_any=run.accepted_any,
-                )
+        accepted = run._line_search(
+            iteration, merit, _Step(direction, step_scaled, alpha_max, landing)
+        )
+        if isinstance(accepted, NewtonResult):
+            return accepted
+        closed = run._closed_by_observer(iteration, accepted)
+        if closed is not None:
+            return closed
 
         if not accepted:
             return run.finish(
@@ -851,6 +751,172 @@ class _NewtonRun:
             ),
         )
         return step_scaled
+
+    def _line_search(self, iteration: int, merit: float, step: _Step) -> bool | NewtonResult:
+        """K03 §5.4's halving search along `step` from `x`, whose residual has the merit `merit`:
+        evaluates each trial (`_trial_point`, landing on the bounds only at the full step); an
+        `error` trial writes its rejected `trial` event and closes as `EVALUATION_ERROR` through
+        `finish`; one `_rejection` refuses goes to `_reject`; the first other is `_accept`ed, and
+        the observer hears of a landing at the full step. True when a trial was accepted, False
+        when `step_halvings_max` halvings found none."""
+        for halving in range(self.policy.step_halvings_max + 1):
+            alpha = step.alpha_max / (2.0**halving)
+            point = _trial_point(
+                self.x, step.direction, alpha, self.lower, step.landing if halving == 0 else ()
+            )
+            trial_evaluation, self.running = self.evaluate(point)
+            step_inf = float(np.max(np.abs(step.step_scaled))) * alpha
+            if trial_evaluation.status == "error":
+                self.trace.record(
+                    kind="trial",
+                    attempt=self.attempt,
+                    iteration=iteration,
+                    signature=self.signature,
+                    state_sha256=self.digest(point),
+                    residual_inf_unscaled=float("nan"),
+                    merit=float("nan"),
+                    counters=self.running,
+                    alpha=alpha,
+                    step_inf_scaled=step_inf,
+                    trial_status="rejected",
+                    message=trial_evaluation.message,
+                )
+                return self.finish(
+                    "EVALUATION_ERROR",
+                    self.values,
+                    message=trial_evaluation.message,
+                    iterations=iteration,
+                    accepted_any=self.accepted_any,
+                )
+            trial = _Trial(alpha, point, trial_evaluation, step_inf)
+            reason, trial_values = self._rejection(trial_evaluation, alpha, merit)
+            if reason is not None:
+                self._reject(iteration, trial, reason, trial_values)
+                continue
+            assert trial_values is not None
+            self._accept(iteration, trial, trial_values, merit)
+            if halving == 0:
+                _notify_landing(self.observer, iteration, step.landing, self.x)
+            return True
+        return False
+
+    def _rejection(
+        self, evaluation: Evaluation, alpha: float, merit: float
+    ) -> tuple[RejectionReason | None, tuple[float, ...] | None]:
+        """A non-error trial's verdict and its residual values; pure. `invalid_trial` without
+        values when the evaluation is not ok or has none; `phase_update_required` without values
+        when it reports another signature (`another_signature`, with `compare_empty`); else its
+        values, refused as `armijo` when their merit is above `(1 − 2 c α)` times `merit`, and
+        accepted (reason None) otherwise."""
+        if evaluation.status != "ok" or evaluation.values is None:
+            return "invalid_trial", None
+        if another_signature(
+            self.signature, evaluation.signature, compare_empty=self.compare_empty
+        ):
+            return "phase_update_required", None
+        trial_values = evaluation.values
+        trial_merit = self.problem.scaling.merit(trial_values, self.problem.row_ids)
+        if trial_merit > (1.0 - 2.0 * self.policy.armijo_c * alpha) * merit:
+            return "armijo", trial_values
+        return None, trial_values
+
+    def _reject(
+        self,
+        iteration: int,
+        trial: _Trial,
+        reason: RejectionReason,
+        trial_values: tuple[float, ...] | None,
+    ) -> None:
+        """Writes the rejected `trial` event (its norm and merit from `trial_values`, nan without
+        them) and tells the observer."""
+        self.trace.record(
+            kind="trial",
+            attempt=self.attempt,
+            iteration=iteration,
+            signature=trial.evaluation.signature or self.signature,
+            state_sha256=self.digest(trial.point),
+            residual_inf_unscaled=(
+                float(np.max(np.abs(trial_values))) if trial_values else float("nan")
+            ),
+            merit=(
+                self.problem.scaling.merit(trial_values, self.problem.row_ids)
+                if trial_values
+                else float("nan")
+            ),
+            counters=self.running,
+            alpha=trial.alpha,
+            step_inf_scaled=trial.step_inf,
+            trial_status="rejected",
+            rejection_reason=reason,
+            message=trial.evaluation.message,
+        )
+        if self.observer is not None:
+            self.observer.rejected(
+                iteration, trial.alpha, trial.point, reason, trial.evaluation.signature
+            )
+
+    def _accept(
+        self, iteration: int, trial: _Trial, trial_values: tuple[float, ...], merit: float
+    ) -> None:
+        """Moves `x` and `values` to the accepted trial: appends its merit ratio against `merit`
+        (0.0 when `merit` is 0) to `merits`, sets `accepted_any` and writes the `step_accepted`
+        event."""
+        next_merit = self.problem.scaling.merit(trial_values, self.problem.row_ids)
+        self.merits.append(next_merit / merit if merit > 0.0 else 0.0)
+        self.x = trial.point
+        self.values = trial_values
+        self.accepted_any = True
+        self.trace.record(
+            kind="step_accepted",
+            attempt=self.attempt,
+            iteration=iteration,
+            signature=self.signature,
+            state_sha256=self.digest(self.x),
+            residual_inf_unscaled=float(np.max(np.abs(np.asarray(self.values)))),
+            merit=next_merit,
+            counters=self.running,
+            alpha=trial.alpha,
+            step_inf_scaled=trial.step_inf,
+            trial_status="accepted",
+        )
+
+    def _closed_by_observer(self, iteration: int, accepted: bool) -> NewtonResult | None:
+        """The observer's close after the line search at `iteration` (§9.3), through `finish`,
+        counting the accepted step when there was one. None without an observer or a request."""
+        if self.observer is not None:
+            requested = self.observer.should_close(iteration)
+            if requested is not None:
+                return self.finish(
+                    requested,
+                    self.values,
+                    message=(
+                        "the attempt controller closed the attempt: a persistent phase wall, "
+                        "not an overshoot (§9.3)"
+                    ),
+                    iterations=iteration + (1 if accepted else 0),
+                    accepted_any=self.accepted_any,
+                )
+        return None
+
+
+class _Step(NamedTuple):
+    """One trial's bound-aware step (K03 §5.3): the unscaled direction, the scaled step, the
+    length `alpha_max` (above zero) and the indices of the bounds it lands on."""
+
+    direction: npt.NDArray[np.float64]
+    step_scaled: npt.NDArray[np.float64]
+    alpha_max: float
+    landing: tuple[int, ...]
+
+
+class _Trial(NamedTuple):
+    """One trial of `_NewtonRun._line_search`: its step length, point, evaluation and the
+    infinity norm of the scaled step it takes."""
+
+    alpha: float
+    point: npt.NDArray[np.float64]
+    evaluation: Evaluation
+    step_inf: float
 
 
 def _chord(
