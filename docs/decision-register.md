@@ -19962,3 +19962,28 @@ The test-only `X as X` re-exports at revision_binding.py:46, :78, :79 go in I-13
 - *All ~150 cross-module privates in orchestrator, verify and models.syn001:* not the builder kit S17 review 11
   item 5 names ("the private pin readers and signature constants in model_signatures").
 - *Public names for `_CONTEXT` and `_declared_default`:* the tests have a public entry or an independent expectation.
+
+## R-1046: The derivative witness refuses a non-finite term as `non_finite`, not as a failed value (WITNF; 2026-11-18)
+
+| | |
+| --- | --- |
+| Date | 2026-11-18 |
+| Decided by | design lane (S19 design batch 1, ruling `c29e1cf1`, Q2 / R-W3-G5-8); landing before S19's close approved on Decision Desk `ofs-s19-oq1b-nan-witness-early` (answer A, verified) |
+| Normative text | `docs/briefs/S19-D-batch1-ruling.md` Q2 ("The change, after S19", steps 1-3); K04 §4.8 and §4.8.3 (a), (c) and (d), and T06 §(A2), amendment 2026-11-18 (with the review fix round of the same day) |
+| Evidence | `tests/test_wit_witness.py` Q2.A1-Q2.A8; `evidence/X10c/` (package WITNF, filed as X10c as WIT was as X10a) |
+| Affected packages | WITNF (K04 §4.8, `verify/checks.py`) |
+
+**Decision.** `_discrepancies` returns None when any term it folds (`|D-hat_ij|` off-pattern, `|J-hat_ij - D-hat_ij|`
+on-pattern) fails `math.isfinite`, and is bitwise unchanged otherwise. `_column_witness` maps None to refusal
+`non_finite` with on = off = 0.0 at both call sites. §4.8.3 escalation then applies to a class-5 component column with
+x_j > 0; an unresolved column ends the witness with both checks `unsupported`, reason
+`witness_stencil_non_finite(<column id>)`, and the verdict is `UNVERIFIED` with `unsupported_check` and
+`derivative_limitation`. A registered pair refused as `non_finite` (both points evaluated `ok`) stays the coarser
+reference of §4.8.3 (c)'s flat rule (review fix round, 2026-11-18): with no reference, a column whose levels 0 and 1
+are inadmissible could resolve on a flat-quantized finer level (Q2.A8).
+
+**Rejected alternatives, and why.**
+- *Leave it (the backend refuses non-finite values):* the `CompiledProblem` protocol carries no finiteness contract,
+  and the witness's own arithmetic overflows from finite `ok` values; a NaN term was silently dropped by the max fold.
+- *`evaluated(value=inf)`:* breaks K04 A30 (inf serializes to null), puts inf into `witness_max_diff`, and a NaN in
+  its place would be dropped again by the outer fold.
