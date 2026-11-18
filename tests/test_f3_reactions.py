@@ -26,8 +26,11 @@ from openflowsheet.registry.tokens import Coded
 
 #: D7: 4ε, ε = 2⁻⁵².
 TOLERANCE = 4 * Fraction(1, 2**52)
-AMMONIA = {"id": "ammonia_synthesis", "stoichiometry": {"N2": -1, "H2": -3, "NH3": 2}}
-WATER = {"id": "water_formation", "stoichiometry": {"H2": -2, "O2": -1, "H2O": 2}}
+AMMONIA: dict[str, Any] = {
+    "id": "ammonia_synthesis",
+    "stoichiometry": {"N2": -1, "H2": -3, "NH3": 2},
+}
+WATER: dict[str, Any] = {"id": "water_formation", "stoichiometry": {"H2": -2, "O2": -1, "H2O": 2}}
 #: E-F3-10: one atomic-weight table per file.
 GENERATED_FILES = ("m01", "l01", "s10")
 GENERATED = 1000
@@ -160,7 +163,7 @@ def test_e_f3_10_generated_balanced_reactions_within_one_file_pass() -> None:
     """[gen] 10³ balanced reactions, each within the `m01`, the `l01` or the `s10` records (one
     atomic-weight table each), pass all three checks; none over `s07` is asserted."""
     rng = random.Random(20261118)
-    reactions = {profile: [] for profile in GENERATED_FILES}
+    reactions: dict[str, list[dict[str, Any]]] = {profile: [] for profile in GENERATED_FILES}
     for number in range(GENERATED):
         profile = GENERATED_FILES[number % len(GENERATED_FILES)]
         reactions[profile].append(_balanced(profile, rng, number))
