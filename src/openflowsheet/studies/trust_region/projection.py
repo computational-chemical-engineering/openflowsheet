@@ -422,7 +422,9 @@ def project(
     `variable_bounds` tightens named variables' bounds beyond their kind's (§7.1: a truth's hard
     domain on its inlet T and P): each bound is the intersection, and the source map records the
     result. A name that is not a variable, or an eliminated zero flow (R-300 E5), is a
-    `ValueError`."""
+    `ValueError`.
+
+    §6.1 steps 5 to 7 (rows, inequalities, objective) are `_add_constraints_and_objective`'s."""
     spec.validate()
     _check_call(spec, x0, decisions, external_links)
     scaling = projection_scaling(spec)
@@ -472,38 +474,11 @@ def project(
         )
     model = assembly.model
     output_rows, output_scales = assembly.output_rows, assembly.output_scales
-    symbols, block_outputs, parameters = (
-        assembly.symbols,
-        assembly.block_outputs,
-        assembly.parameters,
-    )
 
     # 5. Rows: the certified alias rows (R-274) and the zero-flow pins (R-296) are not projected.
     row_ids = tuple(name for name in spec.equation_ids if name not in omitted and name not in pins)
-    expressions = [assembly.built[name] for name in row_ids]
-    model.row = pyo.Constraint(range(len(expressions)), rule=lambda m, i: expressions[i] == 0)
-
-    # 6. Inequalities.
-    inequality_expressions = [
-        _build(item.inequality_id, item.build, symbols, block_outputs, parameters, spec)
-        for item in inequalities
-    ]
-
-    def inequality_rule(m: Any, k: int) -> Any:
-        item = inequalities[k]
-        if item.sense == "<=":
-            return inequality_expressions[k] <= item.tightened()
-        return inequality_expressions[k] >= item.tightened()
-
-    model.ineq = pyo.Constraint(range(len(inequalities)), rule=inequality_rule)
-
-    # 7. Objective.
-    objective_expression = _build(
-        objective.objective_id, objective.build, symbols, block_outputs, parameters, spec
-    )
-    model.obj = pyo.Objective(
-        expr=objective_expression,
-        sense=pyo.minimize if objective.sense == "minimize" else pyo.maximize,
+    expressions, inequality_expressions, objective_expression = _add_constraints_and_objective(
+        assembly, spec, row_ids, inequalities, objective
     )
 
     # Scaling (Ipopt `user-scaling`).
@@ -657,6 +632,62 @@ def _assemble(
 
 
 # -- helpers --------------------------------------------------------------------------------------
+
+
+class _Expressions(NamedTuple):
+    """`_add_constraints_and_objective`'s result: the projected rows' expressions in `row_ids`
+    order, the inequalities' expressions in their order, and the objective's expression."""
+
+    rows: list[Any]
+    inequalities: list[Any]
+    objective: Any
+
+
+def _add_constraints_and_objective(
+    assembly: _Assembly,
+    spec: ProblemSpec,
+    row_ids: tuple[str, ...],
+    inequalities: Sequence[InequalitySpec],
+    objective: ObjectiveSpec,
+) -> _Expressions:
+    """§6.1 steps 5 to 7 on `assembly`'s model: the rows `row_ids` as `model.row` (each built
+    expression `== 0`), `inequalities` built and added as `model.ineq` against their tightened
+    bounds, and `objective` built and added as `model.obj` with its sense. `_build` raises
+    `PARAMETER_NOT_DIFFERENTIABLE` for an inequality or the objective, in that order."""
+    model = assembly.model
+    symbols, block_outputs, parameters = (
+        assembly.symbols,
+        assembly.block_outputs,
+        assembly.parameters,
+    )
+
+    # 5. Rows.
+    expressions = [assembly.built[name] for name in row_ids]
+    model.row = pyo.Constraint(range(len(expressions)), rule=lambda m, i: expressions[i] == 0)
+
+    # 6. Inequalities.
+    inequality_expressions = [
+        _build(item.inequality_id, item.build, symbols, block_outputs, parameters, spec)
+        for item in inequalities
+    ]
+
+    def inequality_rule(m: Any, k: int) -> Any:
+        item = inequalities[k]
+        if item.sense == "<=":
+            return inequality_expressions[k] <= item.tightened()
+        return inequality_expressions[k] >= item.tightened()
+
+    model.ineq = pyo.Constraint(range(len(inequalities)), rule=inequality_rule)
+
+    # 7. Objective.
+    objective_expression = _build(
+        objective.objective_id, objective.build, symbols, block_outputs, parameters, spec
+    )
+    model.obj = pyo.Objective(
+        expr=objective_expression,
+        sense=pyo.minimize if objective.sense == "minimize" else pyo.maximize,
+    )
+    return _Expressions(expressions, inequality_expressions, objective_expression)
 
 
 def projection_scaling(spec: ProblemSpec) -> Scaling:
