@@ -2459,3 +2459,8 @@
   below 7.0. Old lane wp/S19-g3 superseded (its step ported). G3 run 4 launched: `wp/S19-g3d` from 8cb44f62, brief
   `S19-W3-G3-4.md` (run_study second RC step per R-W3-G3-3, _shape_check, _recomputed_chain, _assemble and
   _eliminate_zero_flows within the S1 cap, optimize_revision).
+- **2026-11-18, F3-WO4 done (opus-engineer, Opus, 231k):** a4272c16 on wp/F3; WO4-0 (WO3-1 default) moved all 149
+  index SHAs; lock, rights (11 seed rows), A32 v2 clause; battery 2002 passed 0 failed; F0 PASS; ADR unchanged.
+  Design-lane ruling round 1 on the 43 build decisions WO1-WO4 launched (reviewer, Fable; brief
+  `docs/briefs/F3-rulings-1.md`, db516cdf): rulings file + ADR edits in one commit; then a build fix round, then hub
+  re-pins card ofs-f3-accept-adr0061, then WO5.
