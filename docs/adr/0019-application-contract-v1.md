@@ -272,8 +272,8 @@ Amendment 8 is decided in ADR 0061 D13 (F3-WO5b); this paragraph points at it. A
   request location continued by the refusal's own pointer (R-1052)), `not_found` (a record SHA no layer holds, `detail.record_sha256`, with
   `reason: data_unavailable` when the committed legacy index names it), `unsupported` and `internal_error` by the
   catalogue kind of a record refusal (F3 decision WO5b-1), `forbidden` (`assess_rights` without `policy`). A record
-  naming a `legacy.` source that is not an indexed legacy record is refused `reserved_namespace(legacy)` (ADR 0060's
-  code). D5's `ApiError` and `API_EXIT_CODES` are unchanged.
+  naming a `legacy.` source, or carrying a `legacy` member, whose SHA is not in the committed legacy index is refused
+  `reserved_namespace(legacy)` (ADR 0060's code), in the code's record variant (R-1056). D5's `ApiError` and `API_EXIT_CODES` are unchanged.
 - **Schemas.** `application-results.schema.json` gains eight `$defs` (`record_page`, `record_view`,
   `record_registration_result`, `record_validation_report`, `rights_assessment_result`, `effective_rights`,
   `rights_row`, `record_finding`), each a bare `$ref` to the `$def` of the same name in the new
