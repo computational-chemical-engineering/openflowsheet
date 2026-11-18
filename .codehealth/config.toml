@@ -12,7 +12,7 @@ include = ["src/openflowsheet/*"]
 
 [gate]
 # F0's 35 M9 modules (benchmarks/f0/corpus.json): run in the base tree, so the registered list.
-# S19 W5 (WO-1): with S19_W5_BATCH set (gate_queue.py --mode w5) it leaves out the batch's admitted paths.
+# S19 W5 (WO-1): with S19_W5_BATCH set (gate_queue.py --batch) it leaves out the batch's admitted paths.
 frozen_cmd = "python3 scripts/codehealth_frozen.py"
 frozen = [
     "schemas/*",
@@ -47,7 +47,7 @@ MKL_NUM_THREADS = "1"
 # `tests` has the widest limit: a fallback runs the
 # full suite (about 15 min with 12 workers).
 #
-# S19 W5 gate mode (ruling docs/briefs/S19-W5-ruling.md 6.2, WO-1): `gate_queue.py enqueue --mode w5
+# S19 W5 gate mode (ruling docs/briefs/S19-W5-ruling.md 6.2, WO-1): `gate_queue.py enqueue --mode M
 # --batch FILE` sets S19_W5_BATCH to a copy of the batch file. Then `w5_scope` (W5-S1), `w5_coverage`
 # (W5-S7) and `w5_registry` (W5-S4) judge the step against the batch base B, `tests` passes when its
 # failures lie in the batch's expected and standing failures (W5-S6) and `f0` checks F0's moved keys

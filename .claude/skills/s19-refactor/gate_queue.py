@@ -24,15 +24,17 @@ State in <git-common-dir>/codehealth/queue/: pending/, running/, done/<label>.js
       tests tier), F0 and the MCP digest; no static checks, debt reported not gated, nothing
       written to the run log. It closes the holes of the step-relative selection
       (docs/test-impact.md) and gates interface lanes as one range.
-  enqueue --mode w5 --batch FILE ... (otherwise as --mode step)
-      A W5 step (docs/briefs/S19-W5-ruling.md 6.2): gated and logged as a step (require-gain),
-      with S19_W5_BATCH set in the gate's environment to a copy of FILE taken at enqueue
+  enqueue --batch FILE ... (with --mode step, no-gain, restructure, interface or merge-check)
+      A W5 job (docs/briefs/S19-W5-ruling.md 6.2): gated and logged as its mode says, with
+      S19_W5_BATCH set in the gate's environment to a copy of FILE taken at enqueue
       (<queue>/batches/<seq>-<label>.json). The tiers then judge the step against the batch base
       B (scripts/w5_gate.py: W5-S1, S3, S4, S6, S7) and the frozen list leaves out the batch's
-      admitted paths. FILE is validated first by the worktree's `scripts/w5_gate.py validate`
-      (the keys, B an ancestor of the head, the admitted set in R at B with no tier 4 file;
-      batch P, which needs the pin W5-S2, is refused); a refusal exits 2 and queues nothing.
-      Without --mode w5, S19_W5_BATCH is never set.
+      admitted paths; a merge-check with --batch runs the full suite with the W5 verdicts (the
+      batch close's non-vacuity run). FILE is validated first by the worktree's
+      `scripts/w5_gate.py validate` (the keys, B an ancestor of the head, the admitted set in R
+      at B with no tier 4 file; batch P, which needs the pin W5-S2, is refused); a refusal exits
+      2 and queues nothing. --mode revert takes no batch. Without --batch, S19_W5_BATCH is never
+      set. (`--mode w5` of WO-1 is gone: write `--mode step --batch FILE`.)
   run [--detach] [--log-out JSONL]
       The runner: FIFO, at most SLOTS jobs at a time, one job per worktree at a time. It refuses a
       job whose worktree HEAD or tree changed since enqueue, runs gate.sh in the worktree, then
@@ -69,7 +71,8 @@ HERE = Path(__file__).resolve().parent
 GATE = HERE / "gate.sh"
 CAMPAIGN = "s19"
 SLOTS = 2  # gate.sh holds one of the clone's two gate slots per run
-MODES = ("step", "no-gain", "restructure", "interface", "revert", "merge-check", "w5")
+MODES = ("step", "no-gain", "restructure", "interface", "revert", "merge-check")
+BATCH_MODES = ("step", "no-gain", "restructure", "interface", "merge-check")  # may take --batch
 PLAN_MODES = ("restructure", "interface")
 SCRATCH = "gq-"  # scratch worktrees of snapshot jobs: <repo>/.claude/worktrees/gq-<label>
 LABEL = re.compile(r"[A-Za-z0-9._-]+")
@@ -90,7 +93,7 @@ COMMON = Path(git("rev-parse", "--path-format=absolute", "--git-common-dir", cwd
 QUEUE = COMMON / "codehealth" / "queue"
 CODEHEALTH = COMMON.parent / ".venv-codehealth" / "bin" / "codehealth"
 PENDING, RUNNING, DONE = QUEUE / "pending", QUEUE / "running", QUEUE / "done"
-BATCHES = QUEUE / "batches"  # the W5 batch files of --mode w5 jobs, copied at enqueue
+BATCHES = QUEUE / "batches"  # the W5 batch files of --batch jobs, copied at enqueue
 W5_VARIABLE = "S19_W5_BATCH"
 W5_REFUSED = 2
 RESULTS, PIDFILE, RUNLOG = QUEUE / "results.log", QUEUE / "runner.pid", QUEUE / "runner.log"
@@ -199,8 +202,8 @@ def enqueue(a: argparse.Namespace) -> int:
         raise SystemExit(f"--mode {a.mode} needs --plan")
     if a.plan and a.mode not in PLAN_MODES:
         raise SystemExit("--plan is only for --mode restructure or interface")
-    if (a.mode == "w5") != bool(a.batch):
-        raise SystemExit("--mode w5 needs --batch FILE, and --batch is only for --mode w5")
+    if a.batch and a.mode not in BATCH_MODES:
+        raise SystemExit(f"--batch is only for --mode {', '.join(BATCH_MODES)}")
     if a.mode == "merge-check":
         if a.rerun_of is not None:
             raise SystemExit("--mode merge-check is not logged: no --rerun-of")
@@ -266,7 +269,7 @@ def enqueue(a: argparse.Namespace) -> int:
 
 def gate_command(job: dict) -> list[str]:
     mode, base, label = job["mode"], job["base"], job["label"]
-    if mode in ("step", "w5"):  # a W5 step is a step; S19_W5_BATCH carries the batch
+    if mode == "step":
         return ["bash", str(GATE), base, label]
     if mode in PLAN_MODES:
         return ["bash", str(GATE), f"--{mode}", base, job["plan"], label]
@@ -387,7 +390,7 @@ class Runner:
         environment.pop(W5_VARIABLE, None)
         if job["mode"] == "merge-check":
             environment["S19_GATE_FULL"] = "1"
-        if job["mode"] == "w5":
+        if job.get("batch"):  # any mode with a batch; S19_W5_BATCH is popped above otherwise
             environment[W5_VARIABLE] = job["batch"]
         gate = subprocess.Popen(
             gate_command(job),
@@ -628,7 +631,7 @@ def main(argv: list[str] | None = None) -> int:
     e.add_argument("--base", required=True)
     e.add_argument("--mode", required=True, choices=MODES)
     e.add_argument("--plan")
-    e.add_argument("--batch", help="--mode w5: the W5 batch file (copied at enqueue)")
+    e.add_argument("--batch", help="a W5 job's batch file (copied at enqueue)")
     e.add_argument("--label", required=True)
     e.add_argument("--target")
     e.add_argument("--recipe")

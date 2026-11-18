@@ -9,8 +9,8 @@
 #        gate.sh --interface <plan commit> <plan path> [label]  an ADR 0076 W4 interface step (the plan committed at the base)
 #        gate.sh --behaviour-only <wp/S19 sha> [label]  a lane's merge-check: the base's behaviour tiers over base..HEAD,
 #                                                       the FULL suite, no static checks, debt reported not gated, not loggable
-# W5 gate mode: with S19_W5_BATCH set to a batch file (gate_queue.py --mode w5 sets it for a W5 step, any mode
-# above otherwise unchanged), the base's tiers judge the step against the batch base (scripts/w5_gate.py) and the
+# W5 gate mode: with S19_W5_BATCH set to a batch file (gate_queue.py --batch sets it for a W5 job of any mode
+# above but --revert), the base's tiers judge the step against the batch base (scripts/w5_gate.py) and the
 # frozen list leaves out the batch's admitted paths. The batch file is checked first: batch P (W5-S2) exits 2.
 # The map base MB (docs/S19_STATE.md) is passed as --ref-base: the tests tier's map (D13).
 # Stop a run with: kill -INT "$(cat <tag>.pid)"

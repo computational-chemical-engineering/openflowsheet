@@ -7,7 +7,7 @@ the base tree, so the list is the registered one, not the change's. Standard lib
 under any Python 3, without the project installed.
 
 S19 W5 (ruling R3, work order WO-1): with `S19_W5_BATCH` set to a batch file (the gate queue's
-`--mode w5`, `scripts/w5_gate.py`), the batch's `admitted` paths are left out: a W5 step may
+`--batch`, `scripts/w5_gate.py`), the batch's `admitted` paths are left out: a W5 step may
 change them, and the W5 tiers judge what that moves.
 
     python3 scripts/codehealth_frozen.py

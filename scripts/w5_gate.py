@@ -1,6 +1,6 @@
 """S19 W5: the gate mode's verdicts (`docs/briefs/S19-W5-ruling.md` sections 5, 6.2 and 9, WO-1).
 
-The orchestrator writes one batch file per W5 batch. `gate_queue.py enqueue --mode w5 --batch FILE`
+The orchestrator writes one batch file per W5 batch. `gate_queue.py enqueue --mode M --batch FILE`
 validates it, keeps a copy, and the runner passes the copy's absolute path to the gate as
 `S19_W5_BATCH`. The tiers of `.codehealth/config.toml` call this script only when that variable is
 set; unset, every tier and the frozen list behave as before the W5 mode. B below is the batch
