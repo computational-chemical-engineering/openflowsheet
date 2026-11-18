@@ -313,3 +313,48 @@ unmoved). `pyproject.toml` package data and A32's `SHIPPED_DATA` gain the regist
 **Left for WO5.** `assess_rights` (D13: `policy` right, `not_found`, `invalid_request`, one audit row) and E-F3-5's
 grant clause (skipped here); the `reserved_namespace(legacy)` refusal on every non-importer path (D11); `effective_rights`
 in `search_records`/`get_record`; wiring the project register into `LocalApplication`.
+
+## F3 ruling round 1 build changes (`docs/reviews/F3-rulings-1.md`, B1 to B7), 2026-11-18
+
+Brief `docs/briefs/F3-rulings-1-fix.md`. One commit per item:
+
+- **B1** `d3ec37bd`: `legacy._parameter_set` carries its components' `sources` entry (`_File.sources`: `version`, the
+  profile's `citation`, `licence_stated` and `url` null), so the import gives one `source_sha256` per legacy source over
+  components and sets, 7 in all. Index regenerated (`scripts/records_legacy_index.py --write`); exactly two `sha256`
+  values move, no component's and no finding:
+  - `s10` `S10-wilson-ig-real-v1`: `3ed3a9d0d475de5261cc1277ec2a46089f6f78bc9519c4928b0310d2835e6588` →
+    `6634ea271566e5acc59d87a55dfa2d6dc973fab7e7073190da369b5444fbd114`;
+  - `s10-verification` `S10-verification-v1`: `76d2bcb75fd26b775de08cbea0871e1ecfe02bc8035ebe07f0c1a0ed2f0f022b` →
+    `c13d5aaab92879e92a0c45a50be134164691fb504e69c23cc61bc22a30133c9e`.
+  The register loses the two set seed rows (`86410eaa…`, `e7943cc1…`) and the second R-880 row (`86410eaa…`).
+- **B2** `2ebeff0a`: `test_b2_templated_citations_equal_the_files_but_for_each_fluids_eos` pins m01, l01, s07 and s10's
+  citations to the files (departures exactly `{"l01": {"O2"}}`); one word changed outside the placeholder fails it (also
+  checked by hand on the file). The `legacy_profiles.yaml` comment corrected; no SHA moves.
+- **B3** `33915046`: a dropped identifier must be a `cas` or `inchikey` whose stated value D3's reader refuses, else
+  `LegacyImportError`. D3's reader `validate._identifier_ok` is now public as `validate.identifier_ok` (its one caller
+  updated) so the importer imports no private name. The index is unchanged.
+- **B4** `16318358`: D8's repair on write, file and in-memory branch. `_write_object` returns `created`, `kept` or
+  `repaired`; `register` returns `created` false and adds `store_object_repaired(<sha>)` to the findings it returns,
+  never to `registrations`. `RecordStore.add` keeps `(sha, created)`. New catalogue notice `store_object_repaired`;
+  `store_object_corrupt`'s why and action no longer say a file is never rewritten or must be deleted by hand.
+  Catalogue sha256 re-taken in the two `message_entry` fixtures: `dd487916…` →
+  `787017d4e34450a65a87a74641015dca7d5e8502dce59c76ee718457d06aff5f`; `docs-site/messages/{notices,refusals}.md`
+  regenerated (`scripts/doc_pages.py`). New tests: a Windows replace failing over a corrupt object, `adopt` over a corrupt
+  project object (both stay `store_object_corrupt`).
+- **B5** `abdde572`: the `legacy.s07` condition row appended after R-880 (seed `source_sha256` `e27b8e71…`). The register
+  now holds **nine rows**: seven seeds (`legacy.syn001`, `m01`, `l01`, `s05`, `s07`, `s10`, `s10-verification`), the
+  R-880 row for `legacy.s10`, the `s07` row. The register test pins it and that it decides every `s07` record.
+- **B6** `7b742cda`: A32's v2 scan takes every `record_format: openflowsheet-record-v2` mapping of any `record_type`;
+  inside `tests/fixtures/records/` a record's `sources` must be a non-empty object of `fixture.` keys (no `identify`).
+- **DECISION R1-B6. A32's vetted-file branch holds for components only** (`da41b295`, isolated). B6's acceptance (a line
+  for the imported `s10` set at `benchmarks/x/sets.json` with an empty register) contradicts its "(b) the three branches
+  as built": the set carries `benchmarks/s10/records.yaml`'s `legacy.file_sha256`, a vetted file, and passed (measured:
+  no line). A vetted file's vetting (`records-vetting.json`, S10 spec §18 A5-1) vets its registered components, not its
+  Wilson block, whose basis is the R-880 row; so a parameter set is judged by the register. Alternative: keep the branch
+  as built and drop that acceptance line. Reversible by reverting `da41b295`. **For the design lane.**
+- **B7**: this entry.
+
+**Correction to WO4-0's entry.** "The varying part (the reference EOS of each fluid)" is wrong for one record: l01's O2
+also states "formation enthalpy: zero by definition" where the profile citation states "ATcT 1.112". O2's own text is
+whole in its molar mass's note, so nothing is lost (ruling: keep one citation per file). The WO4-0 and WO4-2 counts
+("9 in all", nine seed rows) are superseded by B1: 7 `source_sha256` values, 7 seed rows.
