@@ -468,6 +468,54 @@ def test_wo4_0_one_citation_and_one_source_sha_per_legacy_source() -> None:
     assert len(shas) == 7
 
 
+#: F3 ruling round 1 (B2): each templated profile citation's placeholder phrase, which stands for
+#: the component's own reference EOS text; written out here from `legacy_profiles.yaml`.
+PLACEHOLDERS = {
+    "m01": "the reference EOS of each fluid (named in its molar mass note)",
+    "l01": "the reference EOS of each fluid (named in its molar mass note)",
+    "s07": "the equation of state of each fluid is named in its molar mass note",
+    "s10": "the equation of state of each fluid is named in its molar mass note",
+}
+
+
+def _departures(citations: Mapping[str, str]) -> dict[str, set[str]]:
+    """By templated profile, the components whose v1 `rights.source` is not `citations[profile]`
+    with its placeholder phrase replaced by a non-empty text of the component's own."""
+    found: dict[str, set[str]] = {}
+    for profile, phrase in PLACEHOLDERS.items():
+        assert citations[profile].count(phrase) == 1, profile
+        head, tail = citations[profile].split(phrase)
+        for component in _yaml(profile)["components"]:
+            text = component["rights"]["source"]
+            own = text[len(head) : len(text) - len(tail)]
+            if not (text.startswith(head) and text.endswith(tail) and own and own != phrase):
+                found.setdefault(profile, set()).add(component["id"])
+    return found
+
+
+def test_b2_templated_citations_equal_the_files_but_for_each_fluids_eos() -> None:
+    """F3 ruling round 1 (B2, WO4-0): in the four templated profiles every component's own
+    `rights.source` is the citation with the placeholder replaced by its own EOS text, except
+    l01's O2 ("formation enthalpy: zero by definition"); a file whose components cite one text is
+    no templated profile. One word changed outside the placeholder makes every component of that
+    profile depart."""
+    citations = {profile: legacy.profile_named(profile).citation for profile in D12_FILES}
+    assert _departures(citations) == {"l01": {"O2"}}
+    for profile in D12_FILES:
+        texts = {c["rights"]["source"] for c in _yaml(profile)["components"]}
+        assert (len(texts) > 1) == (profile in PLACEHOLDERS), profile
+    for profile, phrase in PLACEHOLDERS.items():
+        head, tail = citations[profile].split(phrase)
+        word, upper = re.compile(r"\b[a-z]{4,}\b"), lambda m: m.group().upper()
+        if word.search(tail):
+            tail = word.sub(upper, tail, count=1)
+        else:
+            head = word.sub(upper, head, count=1)
+        edited = {**citations, profile: head + phrase + tail}
+        everyone = {c["id"] for c in _yaml(profile)["components"]}
+        assert _departures(edited)[profile] == everyone, profile
+
+
 def test_d12_mapping_of_the_s10_parameter_set_and_a_syn001_record() -> None:
     v1 = _yaml("s10")
     found = _parameter_set("s10")

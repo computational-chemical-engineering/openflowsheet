@@ -15,12 +15,15 @@
 # committed constant (`--check` recomputes it from the checkout). `dropped_identifiers` lists,
 # by component id, the v1 identifiers D3 refuses, which the import leaves out.
 #
-# `citation` is the file's citation, the `citation` of every component's `sources` entry (F3
-# decision WO4-0: one citation per legacy file, so one `source_sha256` per legacy source, D11).
-# Where the file's components cite the same text it is that text verbatim; where they differ
-# (m01, l01, s07, s10: the reference EOS of each fluid) it is their shared text, and each
-# component's own v1 `rights.source` is the last line of its molar mass's `note`. Identity, as
-# `provenance` is.
+# `citation` is the file's citation, the `citation` of every record's `sources` entry, the
+# parameter set's included (F3 decisions WO4-0 and WO3-5 as ruled in F3 ruling round 1: one
+# citation per legacy file, so one `source_sha256` per legacy source, D11). Where the file's
+# components cite the same text it is that text verbatim. Where they differ (m01, l01, s07, s10)
+# it is their text with each fluid's reference EOS replaced by a phrase naming the molar mass
+# note, and it differs from a component's text there only, except l01's O2, which states
+# "formation enthalpy: zero by definition" where the citation states "ATcT 1.112"
+# (`tests/test_f3_legacy.py` pins both). Each component's own v1 `rights.source` is the last line
+# of its molar mass's `note`, so its whole text is kept. Identity, as `provenance` is.
 profiles_format: openflowsheet-legacy-profiles-v1
 profiles:
   - profile: syn001
