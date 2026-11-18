@@ -160,9 +160,7 @@
       "required": [
         "profile",
         "file",
-        "file_sha256",
-        "position",
-        "file_fields"
+        "file_sha256"
       ],
       "properties": {
         "profile": {

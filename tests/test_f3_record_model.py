@@ -354,6 +354,16 @@ def test_e_f3_4_absent_null_and_empty_optional_members_give_one_sha(
     assert outcome.record_sha256 == base.record_sha256
 
 
+@pytest.mark.parametrize("member", ["position", "file_fields"])
+def test_e_f3_4_legacy_position_and_file_fields_have_one_empty_spelling(member: str) -> None:
+    """Review M4: `legacy.position` and `legacy.file_fields` are optional, so absent, `null` and
+    `{}` give one SHA (D1 does not make them required)."""
+    document = _fixture("component-maximal")
+    del document["legacy"][member]
+    spellings = {_sha(_set(document, ("legacy", member), empty)) for empty in (None, {}, [])}
+    assert spellings == {_sha(document)}
+
+
 def test_e_f3_4_a_required_empty_member_is_kept() -> None:
     """Required members keep their values: an empty `origin` stays and is `provenance_invalid`
     (D7), not a missing member."""
