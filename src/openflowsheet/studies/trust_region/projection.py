@@ -588,21 +588,14 @@ def _assemble(
 ) -> _Assembly:
     """§6.1 steps 1-4 and the row expressions, with `constants` (the eliminated zero flows, by
     variable id) in place of their variables and the rows in `skip` (their pins) not built.
-    Step 2's decision coordinates are `_decision_coordinates`'s."""
+    Step 1's bounds are `_tightened_bounds`'s, step 2's decision coordinates
+    `_decision_coordinates`'s."""
     model = pyo.ConcreteModel(name=spec.label)
 
     # 1. Variables.
     variable_ids = spec.variable_ids
     variable_index = {name: index for index, name in enumerate(variable_ids)}
-    bounds = [_variable_bounds(spec, name, float(x0[name]), domain) for name in variable_ids]
-    for name, (low, high) in (variable_bounds or {}).items():
-        if name not in variable_index:
-            raise ValueError(f"variable_bounds names {name!r}, which is not a variable")
-        before_low, before_high = bounds[variable_index[name]]
-        bounds[variable_index[name]] = (
-            float(low) if before_low is None else max(before_low, float(low)),
-            float(high) if before_high is None else min(before_high, float(high)),
-        )
+    bounds = _tightened_bounds(spec, x0, domain, variable_bounds, variable_index)
     projected = [index for index, name in enumerate(variable_ids) if name not in constants]
     model.x = pyo.Var(
         projected if constants else range(len(variable_ids)),
@@ -805,6 +798,30 @@ def _check_call(
         strangers = [name for name in link.inlet_variable_ids if name not in known]
         if strangers:
             raise ValueError(f"link {link.unit_id!r}: {strangers} are not variables")
+
+
+def _tightened_bounds(
+    spec: ProblemSpec,
+    x0: Mapping[str, float],
+    domain: Mapping[str, tuple[float, float]],
+    variable_bounds: Mapping[str, tuple[float, float]] | None,
+    variable_index: Mapping[str, int],
+) -> list[tuple[float | None, float | None]]:
+    """§6.1 step 1's bounds of every variable in `spec.variable_ids` order, pure: each
+    variable's own (`_variable_bounds` at its `x0` value), then intersected with the caller's
+    `variable_bounds` (a missing side takes the given value; else the tighter of the two), in
+    that mapping's order. A name in `variable_bounds` that is not a variable is a `ValueError`;
+    `variable_index` maps each variable id to its position."""
+    bounds = [_variable_bounds(spec, name, float(x0[name]), domain) for name in spec.variable_ids]
+    for name, (low, high) in (variable_bounds or {}).items():
+        if name not in variable_index:
+            raise ValueError(f"variable_bounds names {name!r}, which is not a variable")
+        before_low, before_high = bounds[variable_index[name]]
+        bounds[variable_index[name]] = (
+            float(low) if before_low is None else max(before_low, float(low)),
+            float(high) if before_high is None else min(before_high, float(high)),
+        )
+    return bounds
 
 
 def _variable_bounds(
