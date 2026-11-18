@@ -91,7 +91,8 @@ T08_MANIFEST = "evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.j
 #: S17's manifest (`3612749…`, `implemented`, 6 and 0) moves it on `wp/S17`.
 #: S19's manifest (`17967cc…`, `implemented`, 6 and 0) moves it on `wp/S19`.
 #: S19's second manifest (`4f9f2c3…`, `implemented`, 8 and 3) moves it on `wp/S19-ev`.
-HARVEST_SIZE = (97, 1126, 146)
+#: WITNF's manifest (X10c, `8067229…`, `implemented`, 3 and 0) moves it on `wp/WITNF`.
+HARVEST_SIZE = (98, 1129, 146)
 #: The 0.2.0 release candidate C′ (M07 spec §25, R-485).
 C_PRIME = "ce993651ce37c1343e771b276160bd6623e43500"
 #: The commit tagged v0.2.0.
