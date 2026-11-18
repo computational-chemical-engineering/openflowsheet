@@ -176,7 +176,12 @@ def _registered(
         entry_point=source.entry_point,
         effective_status=effective,
         evidence_class=evidence_class(effective, builtin=source.builtin, attested=attested),
-        stability=stability(normal["kind"], builtin=source.builtin, legacy_form=source.legacy_form),
+        stability=stability(
+            normal["kind"],
+            builtin=source.builtin,
+            legacy_form=source.legacy_form,
+            identifier=normal["id"],
+        ),
     )
 
 

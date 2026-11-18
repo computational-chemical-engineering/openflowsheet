@@ -3,8 +3,8 @@
     python scripts/registry_builtin.py --write   # writes the tables and the two digests
     python scripts/registry_builtin.py --check   # regenerates them in memory and compares
 
-The tables are package data under `src/openflowsheet/registry/builtin/`: `legacy.json` (D6) and
-`core.json` (D7: the E01 contributors). `--check` fails with the JSON pointers at which a
+The tables are package data under `src/openflowsheet/registry/builtin/`: `legacy.json` (D6),
+`core.json` (D7: the E01 contributors) and `records.json` (ADR 0061, F3-WO1). `--check` fails with the JSON pointers at which a
 committed table differs from the regenerated one.
 
 Two digests are written beside them and held by `--check`:
@@ -41,6 +41,12 @@ It never reads `MODEL_BASES`, so E-F1-1's comparison of the admitted set with it
 `register_contributor(<name>, <factory>)` call (by AST, so nothing is registered or constructed);
 the implementation set is every `*.py` under the directory of the module defining the factory
 (D6). They are listed only: the registry never calls `register_contributor` (D1, risk 4).
+
+`records.json` holds ADR 0061's built-in `record_type` (D1: `component`, `parameter_set`,
+`assay`), `correlation_form` (D4: the two forms) and `data_source` (D12: `legacy-yaml`,
+`user-file`) descriptors, read from `openflowsheet.records.model`'s tables. Their modules are
+empty (a record type's or a form's descriptor is its whole content, ADR 0060 D9; the importers
+are F3-WO3's and WO5's) and their status is `implemented` until F3's close-out.
 """
 
 from __future__ import annotations
@@ -61,6 +67,7 @@ ROOT: Final = Path(__file__).resolve().parent.parent
 SOURCE: Final = ROOT / "src"
 TABLE: Final = SOURCE / "openflowsheet" / "registry" / "builtin" / "legacy.json"
 CORE_TABLE: Final = SOURCE / "openflowsheet" / "registry" / "builtin" / "core.json"
+RECORDS_TABLE: Final = SOURCE / "openflowsheet" / "registry" / "builtin" / "records.json"
 #: SF-8: each table's `discovery.table_sha256`, package data beside the tables.
 DIGEST_RECORD: Final = SOURCE / "openflowsheet" / "registry" / "builtin" / "tables.sha256"
 #: E-F1-5: the built-in registry's `registry_sha256`.
@@ -174,14 +181,16 @@ def _descriptor(
     factory: Mapping[str, Any] | None,
     payload: Mapping[str, Any],
     pip_extra: str | None = None,
+    version: str = VERSION,
+    status: str = STATUS,
 ) -> dict[str, Any]:
     return {
         "descriptor_format": "openflowsheet-extension-v1",
         "kind": kind,
         "id": identifier,
-        "version": VERSION,
+        "version": version,
         "title": title,
-        "status": STATUS,
+        "status": status,
         "requires": [list(clause) for clause in requires],
         "provides": list(provides),
         "limitations": [],
@@ -496,6 +505,63 @@ def contributors() -> list[dict[str, Any]]:
     return found
 
 
+# -- records (ADR 0061) ----------------------------------------------------------------------
+
+#: F3-WO1: the status of ADR 0061's built-ins until F3's close-out.
+RECORDS_STATUS: Final = "implemented"
+#: ADR 0061 D1: the schema file of the built-in record types' payloads, in the package.
+RECORD_SCHEMA_PATH: Final = "_data/schemas/record-v2.schema.json"
+
+
+def _payload_only(
+    kind: str, identifier: str, title: str, payload: Mapping[str, Any], version: str = VERSION
+) -> dict[str, Any]:
+    return _descriptor(
+        kind,
+        identifier,
+        title,
+        requires=[],
+        provides=[],
+        modules=[],
+        factory=None,
+        payload=payload,
+        version=version,
+        status=RECORDS_STATUS,
+    )
+
+
+def records() -> list[dict[str, Any]]:
+    """ADR 0061's built-in record types (D1), correlation forms (D4) and data sources (D12)."""
+    from openflowsheet.records.model import CORRELATION_FORMS, DATA_SOURCES, RECORD_TYPES
+
+    found = []
+    for name, record_type in RECORD_TYPES.items():
+        schema = (
+            None
+            if record_type.pointer is None
+            else {
+                "package": "openflowsheet",
+                "path": RECORD_SCHEMA_PATH,
+                "pointer": record_type.pointer,
+            }
+        )
+        found.append(
+            _payload_only(
+                "record_type",
+                name,
+                record_type.title,
+                {"payload_schema": schema},
+                record_type.version,
+            )
+        )
+    for name, form in CORRELATION_FORMS.items():
+        found.append(_payload_only("correlation_form", name, form.title, form.payload))
+    for name, source in DATA_SOURCES.items():
+        payload = {"record_types": source["record_types"], "formats": source["formats"]}
+        found.append(_payload_only("data_source", name, source["title"], payload))
+    return found
+
+
 # -- the tables ------------------------------------------------------------------------------
 
 
@@ -513,9 +579,14 @@ def core_table() -> list[dict[str, Any]]:
     return _sorted(contributors())
 
 
+def records_table() -> list[dict[str, Any]]:
+    """The records table (`records.json`), sorted by (kind, id)."""
+    return _sorted(records())
+
+
 def tables() -> dict[Path, list[dict[str, Any]]]:
     """Each built-in table's file and its regenerated rows."""
-    return {TABLE: table(), CORE_TABLE: core_table()}
+    return {TABLE: table(), CORE_TABLE: core_table(), RECORDS_TABLE: records_table()}
 
 
 def render(rows: Sequence[Mapping[str, Any]]) -> str:

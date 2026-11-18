@@ -1,0 +1,258 @@
+[
+  {
+    "data_rights": null,
+    "descriptor_format": "openflowsheet-extension-v1",
+    "id": "cp_ig_poly4_theta",
+    "implementation": {
+      "factory": null,
+      "modules": []
+    },
+    "kind": "correlation_form",
+    "limitations": [],
+    "payload": {
+      "coefficients": [
+        {
+          "kind": "dimensionless",
+          "name": "b0",
+          "unit": "1"
+        },
+        {
+          "kind": "dimensionless",
+          "name": "b1",
+          "unit": "1"
+        },
+        {
+          "kind": "dimensionless",
+          "name": "b2",
+          "unit": "1"
+        },
+        {
+          "kind": "dimensionless",
+          "name": "b3",
+          "unit": "1"
+        },
+        {
+          "kind": "dimensionless",
+          "name": "b4",
+          "unit": "1"
+        }
+      ],
+      "evaluator": null,
+      "expression": "c_p^ig = R Σ_{k=0}^{4} b_k θ^k (per mol); θ = T / (1000 K); R = 8.31446261815324 J/(mol K) exactly",
+      "result": {
+        "kind": "molar_heat_capacity",
+        "per_amount": true
+      },
+      "variables": [
+        {
+          "kind": "temperature",
+          "name": "T",
+          "unit": "K"
+        }
+      ]
+    },
+    "pip_extra": null,
+    "platforms": [
+      "any"
+    ],
+    "provides": [],
+    "requires": [],
+    "status": "implemented",
+    "title": "Ideal-gas heat capacity, quartic in T over 1000 K",
+    "version": "1.0.0"
+  },
+  {
+    "data_rights": null,
+    "descriptor_format": "openflowsheet-extension-v1",
+    "id": "ln_psat_abcd_theta",
+    "implementation": {
+      "factory": null,
+      "modules": []
+    },
+    "kind": "correlation_form",
+    "limitations": [],
+    "payload": {
+      "coefficients": [
+        {
+          "kind": "dimensionless",
+          "name": "a",
+          "unit": "1"
+        },
+        {
+          "kind": "dimensionless",
+          "name": "b",
+          "unit": "1"
+        },
+        {
+          "kind": "dimensionless",
+          "name": "c",
+          "unit": "1"
+        },
+        {
+          "kind": "dimensionless",
+          "name": "d",
+          "unit": "1"
+        }
+      ],
+      "evaluator": null,
+      "expression": "ln(P_sat / Pa) = a + b/θ + c ln θ + d θ²; θ = T / (1000 K)",
+      "result": {
+        "kind": "pressure",
+        "per_amount": false
+      },
+      "variables": [
+        {
+          "kind": "temperature",
+          "name": "T",
+          "unit": "K"
+        }
+      ]
+    },
+    "pip_extra": null,
+    "platforms": [
+      "any"
+    ],
+    "provides": [],
+    "requires": [],
+    "status": "implemented",
+    "title": "Vapour pressure, ln P_sat in T over 1000 K",
+    "version": "1.0.0"
+  },
+  {
+    "data_rights": null,
+    "descriptor_format": "openflowsheet-extension-v1",
+    "id": "legacy-yaml",
+    "implementation": {
+      "factory": null,
+      "modules": []
+    },
+    "kind": "data_source",
+    "limitations": [],
+    "payload": {
+      "formats": [
+        "component-record-v1-yaml"
+      ],
+      "record_types": [
+        "component",
+        "parameter_set"
+      ]
+    },
+    "pip_extra": null,
+    "platforms": [
+      "any"
+    ],
+    "provides": [],
+    "requires": [],
+    "status": "implemented",
+    "title": "Legacy benchmark record files",
+    "version": "1.0.0"
+  },
+  {
+    "data_rights": null,
+    "descriptor_format": "openflowsheet-extension-v1",
+    "id": "user-file",
+    "implementation": {
+      "factory": null,
+      "modules": []
+    },
+    "kind": "data_source",
+    "limitations": [],
+    "payload": {
+      "formats": [
+        "component-record-v1-yaml",
+        "record-v2-json",
+        "record-v2-yaml"
+      ],
+      "record_types": [
+        "component",
+        "parameter_set"
+      ]
+    },
+    "pip_extra": null,
+    "platforms": [
+      "any"
+    ],
+    "provides": [],
+    "requires": [],
+    "status": "implemented",
+    "title": "User record files",
+    "version": "1.0.0"
+  },
+  {
+    "data_rights": null,
+    "descriptor_format": "openflowsheet-extension-v1",
+    "id": "assay",
+    "implementation": {
+      "factory": null,
+      "modules": []
+    },
+    "kind": "record_type",
+    "limitations": [],
+    "payload": {
+      "payload_schema": null
+    },
+    "pip_extra": null,
+    "platforms": [
+      "any"
+    ],
+    "provides": [],
+    "requires": [],
+    "status": "implemented",
+    "title": "Assay record",
+    "version": "0.1.0"
+  },
+  {
+    "data_rights": null,
+    "descriptor_format": "openflowsheet-extension-v1",
+    "id": "component",
+    "implementation": {
+      "factory": null,
+      "modules": []
+    },
+    "kind": "record_type",
+    "limitations": [],
+    "payload": {
+      "payload_schema": {
+        "package": "openflowsheet",
+        "path": "_data/schemas/record-v2.schema.json",
+        "pointer": "/$defs/component"
+      }
+    },
+    "pip_extra": null,
+    "platforms": [
+      "any"
+    ],
+    "provides": [],
+    "requires": [],
+    "status": "implemented",
+    "title": "Component record",
+    "version": "1.0.0"
+  },
+  {
+    "data_rights": null,
+    "descriptor_format": "openflowsheet-extension-v1",
+    "id": "parameter_set",
+    "implementation": {
+      "factory": null,
+      "modules": []
+    },
+    "kind": "record_type",
+    "limitations": [],
+    "payload": {
+      "payload_schema": {
+        "package": "openflowsheet",
+        "path": "_data/schemas/record-v2.schema.json",
+        "pointer": "/$defs/parameter_set"
+      }
+    },
+    "pip_extra": null,
+    "platforms": [
+      "any"
+    ],
+    "provides": [],
+    "requires": [],
+    "status": "implemented",
+    "title": "Parameter set record",
+    "version": "1.0.0"
+  }
+]

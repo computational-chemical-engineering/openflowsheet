@@ -28,12 +28,14 @@ import subprocess
 import sys
 from collections.abc import Mapping, Sequence
 from pathlib import Path
+from types import MappingProxyType
 from typing import Any
 
 import pytest
 from conftest import REPO_ROOT
 from jsonschema import Draft202012Validator
 
+import openflowsheet.registry.descriptor as descriptor_module
 from openflowsheet.application.documents import published_schemas
 from openflowsheet.registry import (
     Attestation,
@@ -432,24 +434,69 @@ def test_a_package_is_registered_whole_with_its_computed_fields() -> None:
     assert "unresolved" not in document
 
 
-def test_an_extension_of_a_core_kind_without_a_payload_schema_is_preview() -> None:
+def test_an_extension_of_a_core_kind_without_a_payload_schema_is_preview(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     """F1 review SF-4: `record_type`, `correlation_form` and `data_source` are core kinds whose
     payload schemas arrive with ADR 0061's WO; until then an extension of one is `preview`, with
-    `preview_kind`. It becomes core when `PAYLOAD_DEFS` gains the kind."""
+    `preview_kind`. It becomes core when `PAYLOAD_DEFS` gains the kind (ADR 0060 D1, erratum F-5).
+    F3-WO1 installed the three schemas, so the rule is exercised here with them removed."""
     kinds = ("record_type", "correlation_form", "data_source")
+    without = {kind: name for kind, name in PAYLOAD_DEFS.items() if kind not in kinds}
+    monkeypatch.setattr(descriptor_module, "PAYLOAD_DEFS", MappingProxyType(without))
     package = _package(
         "acme",
         [_descriptor(kind, f"acme.{kind}", payload={"anything": True}) for kind in kinds],
     )
     registry = _build(packages=[package])
     for kind in kinds:
-        assert kind not in PAYLOAD_DEFS
         entry = registry.resolve(kind, f"acme.{kind}")
         assert entry.stability == "preview", kind
         assert Coded("preview_kind", {"kind": kind, "id": entry.id}) in entry.evidence_notices()
     assert stability("message_entries", builtin=False, legacy_form=False) == "core"
     for kind in kinds:
         assert stability(kind, builtin=True, legacy_form=False) == "core"
+
+
+#: F3-WO1: a valid payload of each of ADR 0061's three core kinds (ADR 0061 D1, D4, D12).
+CORE_PAYLOADS: dict[str, dict[str, Any]] = {
+    "record_type": {"payload_schema": None},
+    "correlation_form": {
+        "variables": [{"name": "T", "kind": "temperature", "unit": "K"}],
+        "coefficients": [{"name": "a", "kind": "dimensionless", "unit": "1"}],
+        "result": {"kind": "pressure", "per_amount": False},
+        "expression": "ln(P / Pa) = a",
+        "evaluator": None,
+    },
+    "data_source": {"record_types": ["component"], "formats": ["record-v2-json"]},
+}
+
+
+@pytest.mark.parametrize("kind", sorted(CORE_PAYLOADS))
+def test_an_extension_of_a_core_kind_is_core_once_its_payload_schema_is_installed(
+    kind: str,
+) -> None:
+    """ADR 0060 D1, erratum F-5, after F3-WO1: with the kind's payload schema installed, an
+    extension with a valid payload is `core`, with no `preview_kind`; a payload the schema
+    refuses quarantines its package (`extension_invalid` at the payload). A built-in `record_type`
+    `assay` stays `preview` (ADR 0061 D1)."""
+    assert kind in PAYLOAD_DEFS
+    registry = _build(
+        packages=[_package("acme", [_descriptor(kind, "acme.x", payload=CORE_PAYLOADS[kind])])]
+    )
+    entry = registry.resolve(kind, "acme.x")
+    assert entry.stability == "core"
+    assert Coded("preview_kind", {"kind": kind, "id": "acme.x"}) not in entry.evidence_notices()
+    refused = _build(
+        packages=[_package("bad", [_descriptor(kind, "bad.x", payload={"anything": True})])]
+    )
+    [quarantine] = refused.quarantined
+    assert quarantine.reason.code == "extension_invalid"
+    assert quarantine.reason.params["pointer"].startswith("/descriptors/0/payload")
+    assert (
+        stability("record_type", builtin=True, legacy_form=False, identifier="assay") == "preview"
+    )
+    assert stability("record_type", builtin=False, legacy_form=False, identifier="assay") == "core"
 
 
 def test_an_unregistered_name_is_never_satisfied_and_is_flagged() -> None:
