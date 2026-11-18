@@ -463,16 +463,19 @@ class RecordsService:
             )
 
     def _refuse_coded(self, name: str, coded: Coded, at: str, **detail: Any) -> NoReturn:
+        """A record refusal as an `ApiError` (WO5b-1). The refusal's params travel as `detail`
+        members too, where no member of the error's own has the name, so MSG renders the
+        `reason` link with them (F3 decision WO5b-9); `detail.refusal` holds them all."""
         entry = CATALOGUE.entry(coded.code)
         code = API_ERROR_OF_KIND.get(entry.kind if entry is not None else "bug", "internal_error")
+        members = {"operation": name, "pointer": at, "reason": coded.code, **detail}
+        params = {key: value for key, value in coded.params.items() if key not in members}
         self._core.refuse(
             code,
             f"the record is refused: {coded.code}",
-            operation=name,
-            pointer=at,
-            reason=coded.code,
+            **params,
+            **members,
             refusal=coded.as_document(),
-            **detail,
         )
 
     def _refuse_store(self, name: str, error: RecordStoreError) -> NoReturn:

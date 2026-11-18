@@ -527,3 +527,13 @@ Brief `docs/briefs/F3-WO5b-2.md` (continuation of `docs/briefs/F3-WO5b.md`).
   is renamed `API_ERROR_OF_KIND`; the scan is unchanged.
 - Part 1's `_decode_cursor` raised `TypeError` for a cursor decoding to a JSON scalar (it called
   `set()` on it before the type check); fixed in the surface commit.
+- **DECISION WO5b-9. A record refusal's params also travel as `detail` members** (where the
+  error has no member of that name; `detail.refusal` keeps them all). Found by MSG-G3 in
+  `tests/test_f3_operations.py`: `reserved_namespace`'s explanation lacked its param `namespace`,
+  because `detail.reason` (WO5b-1) carries the bare code and MSG reads a `reason` link's params
+  from the chain text's args or from declared `detail` members only. WO5b-1's `detail.reason`
+  stays the code. A colliding name keeps the error's value: `record_schema_invalid`'s `pointer`
+  renders the API pointer (`/record`), not the record's (`detail.refusal.params.pointer`).
+  Alternative (I would take it, for the design lane): `detail.reason` as the chain text with
+  args, `record_schema_invalid(/name)`, so the inner link renders its own pointer; it changes
+  WO5b-1's stated form. Reversible by: one function, `RecordsService._refuse_coded`.
