@@ -46,7 +46,7 @@ two to a page) and its first item, `capability_descriptor`, and `admission_repor
 (`check_admission` of `thermal.heater` with `wilson-ig-v2`, refused `capability_missing`); the
 registry's identity, an implementation's self-hash and the distribution's version change with the
 code, not the shape, and are masked like the timestamps.
-F3 (ADR 0061 D13) adds the `Records` responses on one user record
+F3 (ADR 0061 D13) adds the `Records` responses on one synthetic user record
 (`tests/f3_schema_support.user_component`): `record_registration_result` and its first finding,
 `record_finding`; `record_page` (`search_records` of `water`, two legacy records) and the first
 item's first `effective_rights`; `rights_assessment_result` (the record assessed `permitted`);
@@ -301,7 +301,7 @@ def application_results_documents() -> dict[str, Any]:
             pair = {"unit": "thermal.heater", "method": "wilson-ig-v2"}
             responses["admission_report"] = call("check_admission", {"pair": pair})
             # F3 (ADR 0061 D13): the record store, on one user record.
-            record = user_component()
+            record = user_component(synthetic=True)  # T08.A32: a committed record is synthetic
             registered = call("register_record", {"record": record})
             sha = registered["results"][0]["record_sha256"]
             responses["record_registration_result"] = registered

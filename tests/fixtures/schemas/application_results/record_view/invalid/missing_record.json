@@ -1,10 +1,10 @@
 {
   "expect_error": "'record' is a required property",
   "document": {
-    "record_sha256": "13e2678939e745ba9f754e8e836ec7c7a4648ca922ec8d5ad20bb4e31bf44e3c",
+    "record_sha256": "289976bf185d64a133576e1ee019af373e584101cab2d433edb366109c1d7072",
     "registrations": [
       {
-        "at": "2026-11-18T07:56:01.348352Z",
+        "at": "2026-11-18T08:32:56.670825Z",
         "findings": [
           {
             "code": "anchor_defaulted",
@@ -35,7 +35,7 @@
           "date": "2026-11-18",
           "decided_by": "local-owner",
           "layer": "project",
-          "record_sha256": "13e2678939e745ba9f754e8e836ec7c7a4648ca922ec8d5ad20bb4e31bf44e3c",
+          "record_sha256": "289976bf185d64a133576e1ee019af373e584101cab2d433edb366109c1d7072",
           "sequence": 1,
           "source_id": "user.lab",
           "source_sha256": "da23d5243a74596a64d68e202e451a8115ea9d596a46ba287f7c4d0136f6b274"

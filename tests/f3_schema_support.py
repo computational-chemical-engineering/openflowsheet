@@ -38,11 +38,16 @@ def without_f3(node: Any) -> Any:
 
 
 def user_component(
-    ident: str = "user.xenonol", name: str = "xenonol", *, source: str = "user.lab"
+    ident: str = "user.xenonol",
+    name: str = "xenonol",
+    *,
+    source: str = "user.lab",
+    synthetic: bool = False,
 ) -> dict[str, Any]:
     """A valid D2 `mol` component of a user source, with one identifier (a CAS number no
-    committed record carries)."""
-    return {
+    committed record carries); `synthetic`, without it, as a committed file must hold a record
+    no vetted file or permitted source covers (T08.A32)."""
+    record: dict[str, Any] = {
         "record_format": "openflowsheet-record-v2",
         "record_type": "component",
         "type_version": "1.0.0",
@@ -61,6 +66,10 @@ def user_component(
             "provenance": {"origin": ["measured"], "derivation": "direct", "source": source},
         },
     }
+    if synthetic:
+        del record["identifiers"]
+        record["synthetic"] = True
+    return record
 
 
 def records_requests(record_sha256: str) -> list[tuple[str, dict[str, Any]]]:
