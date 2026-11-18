@@ -2703,3 +2703,15 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   suite covers them again, and R-W3-G3-8 reads them (the engineer's swap controls). Alternative: re-gate as a step
   (impossible without a config change, rejected). Reversible by: reverting f3996448 before the merge. Steps 2-8 gate
   against f3996448 as base, unaffected.
+- **2026-11-18, R-W3-G3-8 (reviewer, Opus, 98k): merge after one test fix.** Steps 2-8 sound (verifier independence:
+  new imports `Decision`, `Matrix` from modules already imported; orders of active rows, regimes, request problems,
+  floor rungs, split findings and `add` calls equal the base). Step 1 (a) an adequate pin (the real join at
+  phase.py:296 runs; fails under a swap or a name sort; no cache poisoned). Fix 1 (b): a32's names could not tell
+  box-first from a sort by name -> applied by the orchestrator, 29f9518c (test-only; `recovery_A` renamed
+  "A-recovery" in the capped formulation; 21 passed; negative control: verification.py:643 sorted by name fails a32).
+  Optional, not taken: `_check_starts` takes the whole request; `_split_keys`/`_split_indices` read like getters.
+  DECISION (step 6, playbook.md:137 "lift every family of a dispatch or none"): read as "lift every table-backed
+  family or none"; one-line families may stay in the caller (3402aa9d lifts kkt and checks, keeps slacks/
+  constraint_values and active_set inline). Alternative: lift all four (rejected: one-line helpers add no
+  structure). Reversible by: a playbook edit and a later step lifting the two. Engineer ae24a3c3 stopped after
+  delivery (it kept waking on its own gate waits).
