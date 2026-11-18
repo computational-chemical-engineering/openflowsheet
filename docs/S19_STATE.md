@@ -56,58 +56,35 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 - Held until the scale probe reports: G1 (orchestrator/, numerics/). Open: ptc.py 6.8 (P3, P4).
 - G-END (below) stays the end criterion for the whole repository.
 
-## Next actions (2026-11-18 ~11:30; earlier: the blocking set for 0.5 done 2026-11-17)
+## Next actions (2026-11-18 ~14:00; earlier: the blocking set for 0.5 done 2026-11-17)
 
-**Position:** G5 run 12 and G6 run 7 merged into wp/S19 as 517ab610 (review R-W3-G5-12, merge-check job 264 PASS).
-Scan 517ab610: debt 4670.7, health 8.24, brain 26, file smells 53, 27 files below 7.0; arch 0 violations, 0 cycles
-(4100 imports). MB stays 14c6d414 (refactor steps only since; DECISION in S19_DECISIONS). Runner PID 2763884 (queue
-idle, results up to 264). No agent, no serial run, no background job. Design batch 1 ruled
-(`docs/briefs/S19-D-batch1-ruling.md`): Q1 no bug, pinned by `tests/test_s19_component_order.py`; Q2 (NaN witness
-refusal) lands after S19 (Decision Desk ofs-s19-oq1-nan-witness, A, VERIFIED; write `executed` on the card when it
-lands, then tell hub).
-**Blocking set (Frank, 2026-11-15) done:** W4 (ADR 0076), 0 cycles and 0 violations, G5 and G6 to the end W3 allows.
-What stays below 9.0 there, each with its owner: verify twins gamma_phi_units 6.4 / pr_c1 7.7 and table.py's
-duplication (twin merge: addendum for Frank); certificate, checks, split_checks 8.7 (public signatures, test-pinned
-`_project`, rule 10; many_args at its cap); render 8.5 (ladder, judged); store 8.6 (R-237 interface); compare 8.6
-(frozen v1); thermo/ frozen files (W5).
-**Next (four desk cards signed A and VERIFIED, 2026-11-17 ~20:10):**
-1. DONE 2026-11-18: wp/S19 (0f4a1d0e) merged into main as a88655a2 and pushed (card ofs-s19-w3w4-merge-main-2,
-   executed; the first card superseded, unexecuted). CI 44194354064 green, F0 PASS on main. MB moved to 756e1c12
-   (G-MAP 6 PASS). Still to do: re-pin cce-code-health
-   to 9a4605f (optional, stricter new-brain matching, no score change).
-2. DONE 2026-11-18: WITNF on main (a283925c, pushed; both NaN cards executed; main merged into wp/S19 as 170709bc).
-3. 0.5 STARTED 2026-11-18: F3 on `wp/F3` (worktree `f3`, from main a283925c; build log `docs/F3_DECISIONS.md`,
-   briefs `docs/briefs/F3-*.md`). Done and ruled: WO1 (+review, fix1), WO2, WO3, WO4, ruling round 1
-   (`docs/reviews/F3-rulings-1.md`, ADR edits 5d085f05) and its B1-B7 (head 270b6534; 65-file battery 2010/0, F0
-   PASS; battery list `<git-common-dir>/codehealth/briefs/F3-battery.txt`, 62 files, plus `tests/test_f3_*.py`).
-   **ADR 0061 ACCEPTED** (card ofs-f3-accept-adr0061 signed A, VERIFIED, executed 2026-11-18; wp/F3 0f6dafb5, R-1050;
-   F3 reserves R-1050..1059). Card (desk v3) was pinned to ADR 0061 at 5d085f05, option A verbatim: "accept ADR 0061 (F3
-   component data) as on wp/F3 at 5d085f05 (with the F3-WO1 review and F3 ruling round 1 applied), with ADR 0019
-   Amendment 8 (Records interface, five operations), so that F3 can merge into main". ADR frozen until signed.
-   WO5a done (02889a00; S19_DECISIONS). WO5b done (50e6ca04). Review 2 done (68ca5b98, `docs/reviews/F3-review-2.md`; R-1052..1057).
-   Fix round 2 done (afde8883; S19_DECISIONS). **Next (F3):** (i) check the four C11 description files equal the
-   texts `docs/reviews/F3-review-2.md` section "The five MCP descriptions" gives (get_record accepted unchanged); if
-   so, record the design-lane reviews in `bindings/descriptions/REVIEW.json` (reviewer = the F3 review 2 pass, Fable,
-   68ca5b98) and send hub a DECISION-REQUEST for Frank's human review of the five served texts (paths + sha256);
-   (ii) brief WO7 close-out (Sonnet-able: `sonnet-implementer`): R-1051 heading and Decision to f7ec3c94, the
-   Amendment 8 `reserved_namespace` sentence (record variant, per R-105x), evidence manifest
-   `evidence/F3/<commit>/manifest.json` (form of `evidence/F1/a423093f`), push `wp/F3`, CI on both legs; manifest
-   `tested` only on CI green; (iii) then a merge card for Frank (via hub). Card ofs-f3-qf1-rational-coefficients
-   open (default A; nothing to build). Open for the design lane: `molar_mass_inconsistent`
-   signature clash ADR 0061 vs 0062. **Then:** WO5b (five operations on four transports,
-   assess_rights, LocalApplication wiring, every "Left for WO5" item in F3_DECISIONS; E-F3-11, MCP digest
-   re-take), WO7 close-out (manifest, CI both legs), one package `reviewer` (open: R1-B6 da41b295, fix1 and WO2-WO4
-   choices already ruled). Card for ADR 0062 (F2) near close-out.
-4. Trailing S19 at one lane (ofs-s19-trailing-order): G3 run 4 merged (43236b56; scan debt 4496.2, health 8.28,
-   brain 20, 25 files < 7.0). G3 run 5 merged (4fc833d9). G3 run 6 (`wp/S19-g3f`,
-   4fc833d9..f10dbf31, 8 steps, 4 S1) delivered; gate jobs 289-296 running at reset (a `wait --since 274 --idle
-   .../s19-g3f` shell may wake the session; else `$Q status`). nlp rule met (engineer ran it at every step).
-   **Next:** when 289-296 pass: gate report, launch `reviewer` with the written brief
-   `<git-common-dir>/codehealth/briefs/S19-R-W3-G3-6.md`, fixes, merge-check (base 4fc833d9 if wp/S19 changed only
-   docs), merge. Then G3 run 7 (projection.py `project` 27.6, `_source_map` 15 params; trf `_run` 38.0;
-   revision_host `decision_map` 31.0; phase_rows 25.8) or G4. Rule: lanes touching studies/ also need the nlp-marked suite at
-   head with failures a subset of base (script pattern `<git-common-dir>/codehealth/tools/nlp_suite_at.sh`, edit its commit list and scratch paths: .venv-nlp env plus mpmath; base 2 failures
-   test_opt_cost_lca_nlp g19, g20). Then G4, G2 (non-legacy), W5, G1 after the scale probe, docs.
+**Position:** wp/S19 = G3 run 5 merged (4fc833d9) plus docs. Scan at G3 run 6's head 55bad42e: debt 4313.9, health
+8.31, brain 18, 20 files below 7.0; studies/ 774.8, below 7.0 only nlp/verification.py 5.6. MB 756e1c12. Runner PID
+2763884. No agent running. Background shell (may wake the session): `gate_queue.py wait --since 288 --idle
+.../s19-g3f` for jobs 303 (g3r6-revfix, no-gain) and 304 (g3r6-mc, merge-check, base 4fc833d9).
+**Blocking set (Frank, 2026-11-15) done** (W4, 0 cycles/violations, G5, G6; residues and owners as in S19_DECISIONS
+2026-11-17).
+**Next:**
+1. G3 run 6 (`wp/S19-g3f`, 4fc833d9..55bad42e): all 8 steps PASS, review R-W3-G3-6 merge (notes 1-2 applied
+   55bad42e, note 3 rejected). On 303 and 304 PASS: gate report, merge `wp/S19-g3f` into `wp/S19` (merge commit,
+   `git merge -F`), log. Then G3 run 7: brief ready `<git-common-dir>/codehealth/briefs/S19-W3-G3-7.md`; replace
+   `@@BASE@@` with the new wp/S19 tip, launch `opus-engineer`; on delivery, `wait --since <N> --idle .../s19-g3g`.
+   On a FAIL: an environment kill (no failure line, SIGTERM) is re-queued with `--rerun-of <run-log step> --reason`.
+2. F3 (0.5, `wp/F3`, worktree `f3`): WO7 done (6800a65f, manifest `evidence/F3/ebdff46f/` implemented, pushed).
+   CI 44283813577 FAILED: besides the expected red (Frank's human review), 6 full-suite tests the battery missed
+   (A21 manifest checks, G20 five `@cache`, M07a A50 harvest size, no_broad_except, Q26 stoichiometry map, E-F3-8
+   sqlite locked on x86) and codehealth (local.py duplication; the 26 arch lines are a base-config artefact, head 0
+   violations; job informational). **Launch fix round 3**: `opus-engineer` with brief `docs/briefs/F3-fix3.md` (wp/F3
+   e73368c2; evidence `<git-common-dir>/codehealth/briefs/F3-ci-44283813577.txt`). Then one design-lane ruling round
+   on its DECISIONs F3-3-n (G20 allowlist, Q26 map, broad except), CI green, manifest `tested`, merge card via hub.
+   **Waits for Frank:** card ofs-f3-mcp-descriptions-human signed A and VERIFIED, but the agent's REVIEW.json edit
+   recording it was refused by the permission system (oversight); the orchestrator did not work around it. Frank
+   allows it or edits the five `human` reviews himself (status reviewed, by "Frank Peters (Decision Desk
+   ofs-f3-mcp-descriptions-human)", 2026-11-18); then write `executed` on that card. Card ofs-f3-qf1 executed (F2 owes
+   `[p, q]` in validate_record when ADR 0062 is accepted). Open for the design lane: `molar_mass_inconsistent`
+   signature clash ADR 0061 vs 0062. Re-pin cce-code-health to 9a4605f (optional).
+3. Trailing after G3: G4, G2 (non-legacy), W5, G1 after the scale probe, docs. Rule: lanes touching studies/ also need
+   the nlp-marked suite at head, failures a subset of base (g19, g20).
 **Open build-lane items:** `benchmarks/m03/nlp-test.lock` lacks mpmath (m03_nlp_check.sh fails collection); test_opt_cost_lca_nlp g19, g20 fail; no CI or gate runs nlp-marked tests (add an nlp gate tier).
 **Open for Frank (not blocking):** proposal 2 (selection widening; selected gates ~600 s vs 300 s); R-1042 option C;
 STOP 1 alternative; verify twins addendum; thermo/ below 7.0 only in W5; optional forbid rule cli/serving -> services;
