@@ -84,18 +84,18 @@ duplication (twin merge: addendum for Frank); certificate, checks, split_checks 
    F3 reserves R-1050..1059). Card (desk v3) was pinned to ADR 0061 at 5d085f05, option A verbatim: "accept ADR 0061 (F3
    component data) as on wp/F3 at 5d085f05 (with the F3-WO1 review and F3 ruling round 1 applied), with ADR 0019
    Amendment 8 (Records interface, five operations), so that F3 can merge into main". ADR frozen until signed.
-   WO5a done (02889a00; S19_DECISIONS). WO5b done (50e6ca04; S19_DECISIONS). **Running:** package review + ruling round 2 (reviewer,
-   Fable, brief `docs/briefs/F3-review-2.md` at c7e942a7; output `docs/reviews/F3-review-2.md`). Then: build-lane
-   changes C1.., the five MCP description reviews recorded (design lane from the review; Frank's via a card), WO7. Open for the design lane: `molar_mass_inconsistent`
+   WO5a done (02889a00; S19_DECISIONS). WO5b done (50e6ca04). Review 2 done (68ca5b98, `docs/reviews/F3-review-2.md`; R-1052..1057).
+   **Running:** fix round 2 C1-C12 (opus-engineer, brief `docs/briefs/F3-fix2.md` at bb45b09e). Then: record the
+   design-lane description reviews (review file section) in `REVIEW.json`, Frank's five via a card, WO7. Card
+   ofs-f3-qf1-rational-coefficients open (default A; nothing to build). Open for the design lane: `molar_mass_inconsistent`
    signature clash ADR 0061 vs 0062. **Then:** WO5b (five operations on four transports,
    assess_rights, LocalApplication wiring, every "Left for WO5" item in F3_DECISIONS; E-F3-11, MCP digest
    re-take), WO7 close-out (manifest, CI both legs), one package `reviewer` (open: R1-B6 da41b295, fix1 and WO2-WO4
    choices already ruled). Card for ADR 0062 (F2) near close-out.
 4. Trailing S19 at one lane (ofs-s19-trailing-order): G3 run 4 merged (43236b56; scan debt 4496.2, health 8.28,
-   brain 20, 25 files < 7.0). G3 run 5 (`wp/S19-g3e`, 43236b56..d6781922): jobs 285-287
-   PASS, nlp rule met. **Running:** reviewer R-W3-G3-5 (brief `S19-R-W3-G3-5.md`). **Next:** fixes, merge-check
-   (base 43236b56 if wp/S19 changed only docs), merge, then G3 run 6 per the review's rulings on
-   `_eliminate_zero_flows` and `verify_candidate`. Rule: lanes touching studies/ also need the nlp-marked suite at
+   brain 20, 25 files < 7.0). G3 run 5 merged (4fc833d9). **Running:** G3 run 6
+   (opus-engineer, `wp/S19-g3f` from 4fc833d9, brief `S19-W3-G3-6.md`, labels g3r6-*). **Next:** on delivery
+   `$Q wait --since 274 --idle .../s19-g3f`, gate report, nlp suite at head, reviewer, merge-check, merge. Rule: lanes touching studies/ also need the nlp-marked suite at
    head with failures a subset of base (script pattern `<git-common-dir>/codehealth/tools/nlp_suite_at.sh`, edit its commit list and scratch paths: .venv-nlp env plus mpmath; base 2 failures
    test_opt_cost_lca_nlp g19, g20). Then G4, G2 (non-legacy), W5, G1 after the scale probe, docs.
 **Open build-lane items:** `benchmarks/m03/nlp-test.lock` lacks mpmath (m03_nlp_check.sh fails collection); test_opt_cost_lca_nlp g19, g20 fail; no CI or gate runs nlp-marked tests (add an nlp gate tier).
