@@ -429,9 +429,9 @@
       "reviews": [
         {
           "review_kind": "design-lane",
-          "status": "pending_design_review",
-          "reviewed_by": null,
-          "reviewed_at": null
+          "status": "reviewed",
+          "reviewed_by": "reviewer (design lane), docs/reviews/F3-review-2.md (approved with edits, applied in 0ae27230; review at 68ca5b98)",
+          "reviewed_at": "2026-11-18"
         },
         {
           "review_kind": "human",
@@ -449,9 +449,9 @@
       "reviews": [
         {
           "review_kind": "design-lane",
-          "status": "pending_design_review",
-          "reviewed_by": null,
-          "reviewed_at": null
+          "status": "reviewed",
+          "reviewed_by": "reviewer (design lane), docs/reviews/F3-review-2.md (accepted as served; review at 68ca5b98)",
+          "reviewed_at": "2026-11-18"
         },
         {
           "review_kind": "human",
@@ -469,9 +469,9 @@
       "reviews": [
         {
           "review_kind": "design-lane",
-          "status": "pending_design_review",
-          "reviewed_by": null,
-          "reviewed_at": null
+          "status": "reviewed",
+          "reviewed_by": "reviewer (design lane), docs/reviews/F3-review-2.md (approved with edits, applied in 0ae27230; review at 68ca5b98)",
+          "reviewed_at": "2026-11-18"
         },
         {
           "review_kind": "human",
@@ -489,9 +489,9 @@
       "reviews": [
         {
           "review_kind": "design-lane",
-          "status": "pending_design_review",
-          "reviewed_by": null,
-          "reviewed_at": null
+          "status": "reviewed",
+          "reviewed_by": "reviewer (design lane), docs/reviews/F3-review-2.md (approved with edits, applied in 0ae27230; review at 68ca5b98)",
+          "reviewed_at": "2026-11-18"
         },
         {
           "review_kind": "human",
@@ -509,9 +509,9 @@
       "reviews": [
         {
           "review_kind": "design-lane",
-          "status": "pending_design_review",
-          "reviewed_by": null,
-          "reviewed_at": null
+          "status": "reviewed",
+          "reviewed_by": "reviewer (design lane), docs/reviews/F3-review-2.md (approved with edits, applied in 0ae27230; review at 68ca5b98)",
+          "reviewed_at": "2026-11-18"
         },
         {
           "review_kind": "human",
