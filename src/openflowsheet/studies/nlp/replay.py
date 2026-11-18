@@ -147,7 +147,9 @@ def replay_optimization(
 
     `stage` is called as `reproduce_bundle` calls it (T07 §6.4): `integrity` on entry, `rerun`
     before the bundles are re-run, `compare` before the report is built; a job's `reproduce`
-    passes its stage boundary (OPT design §4.9)."""
+    passes its stage boundary (OPT design §4.9).
+
+    Step 2 is `_rerun_bundles`, steps 3 and 4 `_recomputed_chain`."""
     at = stage if stage is not None else (lambda _: None)
     directory = Path(directory)
     at("integrity")
@@ -170,30 +172,8 @@ def replay_optimization(
             current_environment=current_environment,
             reasons=(reason,),
         )
-    found: list[str] = []
-    reasons: list[str] = []
-    modes: list[str] = []
-    near: list[str] = []
     at("rerun")
-    for index in _starts(directory):
-        for name in BUNDLES:
-            bundle = directory / "starts" / str(index) / name
-            if not (bundle / MANIFEST_NAME).is_file():
-                continue
-            prefix = f"starts/{index}/{name}: "
-            run_id = read_manifest(bundle)[0].run_id
-            report = routes.reproduce(
-                bundle,
-                rerun=True,
-                rerun_directory=Path(rerun_directory) / "starts" / str(index) / name,
-                run_id=run_id,
-            ).report
-            modes.append(report.mode)
-            if report.verdict != "MATCH":
-                found.append(f"{prefix}verdict {report.verdict}")
-            found += [prefix + item for item in report.differences]
-            reasons += [prefix + item for item in report.reasons]
-            near += [prefix + item for item in report.verdict_changed_near_threshold]
+    found, reasons, modes, near = _rerun_bundles(directory, routes, rerun_directory)
     chain, chain_reasons, chain_near = _recomputed_chain(directory, routes)
     found += chain
     reasons += chain_reasons
@@ -221,6 +201,49 @@ def replay_optimization(
         differences=tuple(found),
         verdict_changed_near_threshold=tuple(near),
     )
+
+
+class _BundleReruns(NamedTuple):
+    """Step 2 over the starts' bundles (`_rerun_bundles`), each entry prefixed
+    `starts/<k>/<start|resolve>: `: the differences (a verdict other than `MATCH`, then the
+    bundle's differences), the reasons, each re-run bundle's replay mode, and the entries changed
+    near their threshold, in start order and `BUNDLES` order within a start."""
+
+    differences: list[str]
+    reasons: list[str]
+    modes: list[str]
+    near: list[str]
+
+
+def _rerun_bundles(directory: Path, routes: RevisionRoutes, rerun_directory: Path) -> _BundleReruns:
+    """Step 2: `routes.reproduce` with `rerun=True` on every `starts/<k>/<start|resolve>` bundle
+    of the record at `directory` that has a manifest, under its recorded `run_id`, writing the
+    rerun under `rerun_directory` at the same relative path; a start's missing bundle is
+    skipped. Returns what the bundles' reports found (`_BundleReruns`)."""
+    found: list[str] = []
+    reasons: list[str] = []
+    modes: list[str] = []
+    near: list[str] = []
+    for index in _starts(directory):
+        for name in BUNDLES:
+            bundle = directory / "starts" / str(index) / name
+            if not (bundle / MANIFEST_NAME).is_file():
+                continue
+            prefix = f"starts/{index}/{name}: "
+            run_id = read_manifest(bundle)[0].run_id
+            report = routes.reproduce(
+                bundle,
+                rerun=True,
+                rerun_directory=Path(rerun_directory) / "starts" / str(index) / name,
+                run_id=run_id,
+            ).report
+            modes.append(report.mode)
+            if report.verdict != "MATCH":
+                found.append(f"{prefix}verdict {report.verdict}")
+            found += [prefix + item for item in report.differences]
+            reasons += [prefix + item for item in report.reasons]
+            near += [prefix + item for item in report.verdict_changed_near_threshold]
+    return _BundleReruns(found, reasons, modes, near)
 
 
 def _near_active(slack: Any) -> bool:
