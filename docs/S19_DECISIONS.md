@@ -2865,3 +2865,13 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   branch; the tooling lane changes no `src/` file, so L_N carries over to B_N, and W5-S6's non-vacuity check at K
   re-tests it. Alternative: build the mode inside the W5 lane. Rejected: the config is read from B. Reversible by:
   re-measuring L_N at B_N.
+- **2026-11-18 ~22:25 CET, job 344 `g1n3-mc` (full suite) PASS 7/7 (lane debt 316.7 -> 188.4); job 343 `g1n3-fix`
+  no-gain PASS 15/15. `wp/S19-g1n3` merged into wp/S19 (6722d919).** wp/S19 had gained one non-docs change since the
+  merge-check's base 8d31b89e: the W5 tool merge (`scripts/w5_identity.py`, its tests), disjoint from the lane's three
+  `numerics/` files. DECISION: merge without a combined merge-check; spot-check `tests/test_s19_w5_identity.py` at
+  6722d919 (the tool hashes F0 files; numerics is outside R). Alternative: a combined merge-check first. Reversible
+  by: a merge-check of 6722d919 if the spot-check fails. Gate report at the wake: OK, no ALERT.
+  Lane N run 4 launched (opus-engineer, brief `S19-W3-G1N-4.md`, base 6722d919). L_N probes started detached
+  (`$GC/codehealth/runs/w5/w5-LN-{edited,base}.log`; scratch branch `scratch/S19-w5-LN` 03d49438 = 6722d919 plus a
+  comment line in each of the 17 batch-N hashed files; control: detached worktree `s19-w5ln0` at 6722d919); each
+  takes a gate slot, so lane N run 4's gates queue behind them.
