@@ -2607,3 +2607,14 @@
   `validate_record` keeps JSON-number coefficients in F3; ADR 0062's `[p, q]` rational coefficients join
   `validate_record` when ADR 0062 is accepted. **Standing obligation on F2** (ADR 0062's package): its close-out adds
   `[p, q]` to `validate_record`'s request schema and checks, under an ADR 0019 amendment; the F2 brief must name it.
+- **2026-11-18, G3 run 6 step 3 (job 291, run-log step 322) FAIL, environment:** tests tier exit 241, pytest
+  SIGTERM (exit -15) at 250.9 s with 71% of 79 selected tests done and no failure or error line
+  (`~/.cache/openflowsheet/tmp-gates/test-impact-7530a88b.log`); no gate timeout near 250 s, so an external kill,
+  most likely the WO7 engineer stopping its own pytest battery at that moment. Steps 4-8 SKIPPED by the queue.
+  Re-queued unchanged: 301 (g3r6-3r, `--rerun-of 322`), 297-300 (steps 4-7), 302 (step 8, no-gain). Gate report
+  (6 h, 23 gates, 1 failed = this one): `ALERT selected share 55% < 75% of step gates`, `ALERT queue wait median
+  16 min > 15 min`: the standing studies/ import-time fallbacks (proposal 2) and one 8-step burst on 2 slots, as at
+  runs 3-5; no action.
+- **2026-11-18, WO7 human-review commit denied by the permission system** (the engineer's REVIEW.json edit recording
+  Frank's review, card ofs-f3-mcp-descriptions-human A VERIFIED, refused as undermining oversight). Not worked around
+  by the orchestrator: parked for Frank. WO7 finishes with the human review `pending` (one expected red).
