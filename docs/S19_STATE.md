@@ -63,8 +63,10 @@ nlp/verification.py 6.1, ruled). Orchestrator scan at 9f41b5ed: debt 4060.5, hea
 7.0 (assessment/cost contributor 2.8, sets 4.7; thermo pr_c1 4.6, iapws95 6.2, coolprop_heos 6.4, pr_lib, wilson_ig
 6.9; models/syn001 column_unit 4.9, cascade_solve 6.6, conversion_reactor 6.6, kinetic_cstr 6.8, column_rows 6.9,
 mixer 6.9; models/revision_flowsheet 6.5; orchestrator executor 5.5, region 5.6, region_screen 6.3; numerics/ptc
-6.8; verify/gamma_phi_units 6.4). MB 756e1c12. Runner PID 2763884, queue empty at result 318. No agent of this
-session running; no background shell owed.
+6.8; verify/gamma_phi_units 6.4). MB 756e1c12. Runner PID 2763884, queue empty at result 332.
+**Running (2026-11-18 ~19:10):** `specifier` on the W5 ruling (brief `S19-W5-ruling.md`, branch `wp/S19-w5r`);
+`opus-engineer` on G1 lane N run 3 (brief `S19-W3-G1N-3.md`, `wp/S19-g1n3`, steps A3, N3, P3, labels `g1n3-*`).
+On a fresh context: these agents' reports are lost; read `git log wp/S19-w5r`, `git log wp/S19-g1n3` and `$Q status`.
 **Blocking set (Frank, 2026-11-15) done.** G4 done except W5 files. G2 (non-legacy) empty: revision_flowsheet.py
 counted as legacy (S19_DECISIONS 2026-11-18 ~19:00), waits for Frank's legacy ruling.
 **Next:**

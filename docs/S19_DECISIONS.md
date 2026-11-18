@@ -2766,3 +2766,12 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   registry_sha256 re-registration for a batch of behaviour-identical edits, and how that squares with G-END's "F0
   identical"); W5's models/ part also waits for Frank's legacy ruling. G1 (hold lifted 2026-11-16) can run beside
   the W5 ruling.
+- **2026-11-18 ~19:10, W5 ruling and G1 lane N run 3 launched.** Gate report (6 h): 28 gates, 0 failed; ALERT
+  selected share 71% (standing, proposal 2 for Frank); ALERT queue wait median 28 min (the G3 run 9 chain enqueued at
+  once; the queue is empty now, no action). Two agents (the agent budget's cap): `specifier`, brief
+  `<git-common-dir>/codehealth/briefs/S19-W5-ruling.md` (Q1 identity re-registration, the never-run comment-only
+  experiment of architecture note Q1, G-END's F0 clause, B7, W5 order; deliverable `docs/briefs/S19-W5-ruling.md` on
+  `wp/S19-w5r`); `opus-engineer`, brief `S19-W3-G1N-3.md` (A3, N3, P3 on `wp/S19-g1n3` from 8d31b89e; S1, one step
+  per solver, reviewer before run 4). DECISION: lane N before lane O's region run 3 (R1, S1, C2), since the
+  "one lane beside 0.5" order (ofs-s19-trailing-order) allows one engineer lane and ptc.py 6.8 is an open review item.
+  Alternative: region first (largest debt, 227.4). Reversible by: briefing lane O next instead of lane N run 4.
