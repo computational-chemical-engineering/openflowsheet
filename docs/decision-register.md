@@ -20012,3 +20012,30 @@ digest identical" is replaced by E1 to E5. `thermo/syn001.py` is not edited in S
 - *Keep the literal G-END F0 clause (FR-3 B):* it fails at W5's first byte change to a registry-hashed file.
 - The ADR's other rejected alternatives (per-step re-registration, declared versions, AST hashing, textual
   substitution, re-registering M7, an identity override switch) are listed in ADR 0077.
+
+## R-1060: S10 A26's oracle is F0's registered M9 value, not `main` (S19 W5 ruling R7, finding F-2; 2026-11-19)
+
+| | |
+| --- | --- |
+| Date | 2026-11-19 |
+| Decided by | design lane (`specifier`) ruling R7, under ADR 0077 (R-1059); implemented by WO-1b, read by `reviewer` (accept) |
+| Normative text | `docs/briefs/S19-W5-ruling.md` finding F-2 (ruling R7) and table row WO-1b |
+| Evidence | merge 9a607a3a (commit 3377087d): `tests/test_s10_provider.py` 87 passed; a comment line appended to `thermo/pr_lib.py` fails A26 naming the path |
+| Affected packages | S10 (A26, `docs/derivations/S10-spec.md` row amended); S19 W5 (batch N edits `thermo/pr_lib.py`) |
+
+**Decision.** For each of `syn001.py`, `pr_c1.py`, `pr_lib.py`, `iapws95.py`, `coolprop_heos.py` under
+`src/openflowsheet/thermo/`, A26 asserts that the file's SHA-256 equals `benchmarks/f0/corpus.json`
+`measures.M9[path]`, exact bytes; a missing key fails naming the path. The skip without a `main` ref goes. The test
+is `test_a26_the_other_providers_are_byte_identical_to_their_f0_registration`.
+
+**Why.** With `main` as the oracle, a branch that edits one of the files is red until it reaches `main`, and reaching
+`main` requires CI green: circular. On `main` the old check compared the tree with itself, and it skipped in a clone
+without `main`. The registered value is exact byte equality and moves only with a re-registration.
+
+**Limit (review note).** Nothing mechanical pins `corpus.json`: `scripts/corpus_identity.py --record` rewrites the
+registry from the working tree. Inside W5 the judgement is procedural (W5-K2 on every commit touching
+`benchmarks/f0/`, ruling E2); outside W5 it is review of the `corpus.json` diff. The old oracle moved with every merge
+without any judgement.
+
+**Rejected.** *Keep `main` as the oracle:* blocks W5 batch N (circular, above). *List the test as a standing
+failure:* hides a guard the batch needs.
