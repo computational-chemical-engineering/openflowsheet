@@ -2529,3 +2529,8 @@
   design lane; WO5b-1 (a refused record refuses the whole `register_record` call, code by catalogue kind) needs a
   ruling. 57 surface tests red (planned moves, not re-taken yet; two in test_f1_operations unexplained). Part 2
   (opus-engineer) launched, brief `docs/briefs/F3-WO5b-2.md` at bc409bd8.
+- **2026-11-18, G3 run 4 merged into wp/S19 as 43236b56** (jobs 283 no-gain PASS, 284 merge-check PASS, debt
+  392.7 -> 297.2 over the touched files). Scan 43236b56: debt 4496.2, health 8.28, brain 20, file smells 53, 25 files
+  below 7.0; studies/ 957.1, 6 files below 7.0. G3 run 5 (opus-engineer) launched, brief
+  `<git-common-dir>/codehealth/briefs/S19-W3-G3-5.md`: optimize_revision by the RC recipe, projection_zero_flows (S1),
+  verify_candidate.
