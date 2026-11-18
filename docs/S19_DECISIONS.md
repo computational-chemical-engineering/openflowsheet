@@ -2875,3 +2875,7 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   (`$GC/codehealth/runs/w5/w5-LN-{edited,base}.log`; scratch branch `scratch/S19-w5-LN` 03d49438 = 6722d919 plus a
   comment line in each of the 17 batch-N hashed files; control: detached worktree `s19-w5ln0` at 6722d919); each
   takes a gate slot, so lane N run 4's gates queue behind them.
+- **2026-11-18 ~22:50 CET, spot-check of the g1n3 merge: `tests/test_s19_w5_identity.py` at 6722d919, 47 passed
+  serially (655 s).** A first run with `-n 4` gave 1 failed and 2 errors, all `git worktree add/remove` exit 128,
+  while this session added two worktrees at the same moment: git's worktree lock, not the merge. Note for WO-0's
+  tests: they create git worktrees, so they can flake beside concurrent worktree operations in the same clone.
