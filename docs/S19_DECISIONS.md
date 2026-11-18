@@ -2986,3 +2986,13 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   52bb085d).** Gate report: "ALERT selected gates take 674 s > 300 s (tests tier)", "ALERT selected/full time ratio
   0.58 > 0.4: selection saves little" (the standing pair; proposal 2 with Frank, no new action). Review brief
   `S19-R-W3-G1O-4.md` written (nine deviations), launched once jobs 356, 357 pass.
+- **2026-11-19 ~00:45 CET, job 355 `w5gm-mc` PASS 8/8; wp/S19-w5gm-mc merged into wp/S19 (9e8b3baf).** wp/S19 had only
+  docs since 5733e206. Runner restart (for `--batch`) waits for the queue to drain (jobs 356, 357). Batch N file
+  validated at 9e8b3baf (`w5_gate.py validate`: admitted 17, expected 10) and `w5_identity.py sets --check` PASS
+  (|R| 51, |F| 35, tiers 16/28/6/1), but B_N is not yet cut:
+  DECISION: where WO-1b's test commit goes -> on wp/S19 before B_N (lane `wp/S19-wo1b` from 9e8b3baf, reviewer read,
+  merged), then B_N = that tip and the batch file re-validated. Reason: `w5_gate.py scope` admits only the batch's
+  admitted/generator/retarget paths, so a test edit inside the batch lane fails W5-S1, and the ruling's check "at
+  B_N, A26 passes" then holds by construction. Alternative: list the test in the batch's `retarget`. Reversible by:
+  reverting the WO-1b merge and adding the path to `retarget`. WO-1b launched (sonnet-implementer, brief
+  `S19-W5-WO1b.md`).
