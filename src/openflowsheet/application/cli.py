@@ -51,7 +51,7 @@ import os
 import sys
 import textwrap
 import traceback
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Final, get_args
 
@@ -761,7 +761,7 @@ def command_admission(arguments: argparse.Namespace) -> int:
     return _registry_operation("check_admission", {"pair": pair})
 
 
-def _project_operation(project: str, name: str, request: Mapping[str, Any]) -> int:
+def _project_operation(project: str, name: str, request: Any) -> int:
     """ADR 0061 D13's CLI conveniences (`records ...`): `name` with `request` through `dispatch`
     on the project opened as `LOCAL_OWNER`, as `api` sends it, so the document is the
     operation's on every transport. The response as canonical JSON on stdout, exit 0; a refusal
@@ -779,52 +779,68 @@ def _project_operation(project: str, name: str, request: Mapping[str, Any]) -> i
         return 1
     with application:
         try:
-            response = dispatch(application, name, dict(request))
+            response = dispatch(application, name, request)
         except ApplicationError as refused:
             return _print_refusal(refused.error)
     _print_document(response)
     return 0
 
 
-def _records_request(arguments: argparse.Namespace) -> tuple[str, dict[str, Any]]:
-    """The operation and request document of one `records` subcommand (`OSError`,
-    `ValueError` or a YAML error when a named file cannot be read)."""
-    action = arguments.records_command
-    if action == "search":
-        request: dict[str, Any] = {"limit": arguments.limit}
-        for member in ("key", "scheme", "record_type", "cursor"):
-            if getattr(arguments, member) is not None:
-                request[member] = getattr(arguments, member)
-        return "search_records", request
-    if action == "get":
-        return "get_record", {"record_sha256": arguments.record_sha256}
-    if action == "register":
-        if arguments.record is not None:
-            return "register_record", {"record": _load(Path(arguments.record))}
-        path = Path(arguments.file)
-        file = {
-            "format": arguments.format,
-            "content": path.read_text(encoding="utf-8"),
-            "local_path": str(path.resolve()),
-        }
-        request = {"file": file}
-        if arguments.defaults is not None:
-            request["defaults"] = _load(Path(arguments.defaults))
-        return "register_record", request
-    if action == "validate":
-        if arguments.record is not None:
-            return "validate_record", {"record": _load(Path(arguments.record))}
-        return "validate_record", _load(Path(arguments.request))
-    request = {
+def _present(arguments: argparse.Namespace, *members: str) -> dict[str, Any]:
+    """The named arguments that were given, under the same names."""
+    return {
+        name: getattr(arguments, name) for name in members if getattr(arguments, name) is not None
+    }
+
+
+def _search_request(arguments: argparse.Namespace) -> dict[str, Any]:
+    return {
+        "limit": arguments.limit,
+        **_present(arguments, "key", "scheme", "record_type", "cursor"),
+    }
+
+
+def _register_request(arguments: argparse.Namespace) -> dict[str, Any]:
+    """`{record}` from `--record FILE`, or `{file, defaults?}` from `--file FILE --format F`
+    (`local_path`: the file's resolved path, F3 decision WO5b-3)."""
+    if arguments.record is not None:
+        return {"record": _load(Path(arguments.record))}
+    path = Path(arguments.file)
+    content = path.read_text(encoding="utf-8")
+    request: dict[str, Any] = {
+        "file": {"format": arguments.format, "content": content, "local_path": str(path.resolve())}
+    }
+    if arguments.defaults is not None:
+        request["defaults"] = _load(Path(arguments.defaults))
+    return request
+
+
+def _validate_request(arguments: argparse.Namespace) -> Any:
+    """`{record}` from `--record FILE`, or the whole request document `--request FILE` holds."""
+    if arguments.record is not None:
+        return {"record": _load(Path(arguments.record))}
+    return _load(Path(arguments.request))
+
+
+def _rights_request(arguments: argparse.Namespace) -> dict[str, Any]:
+    return {
         "source_id": arguments.source,
         "record_sha256": arguments.record_sha256,
         "scope": arguments.scope,
         "assessment": arguments.assessment,
         "basis": arguments.basis,
+        **_present(arguments, "conditions"),
     }
-    if arguments.conditions is not None:
-        request["conditions"] = arguments.conditions
-    return "assess_rights", request
+
+
+#: `records <action>`: its operation and the request it sends (ADR 0061 D13).
+RECORDS_ACTIONS: Final[Mapping[str, tuple[str, Callable[[argparse.Namespace], Any]]]] = {
+    "search": ("search_records", _search_request),
+    "get": ("get_record", lambda arguments: {"record_sha256": arguments.record_sha256}),
+    "register": ("register_record", _register_request),
+    "validate": ("validate_record", _validate_request),
+    "rights": ("assess_rights", _rights_request),
+}
 
 
 def command_records(arguments: argparse.Namespace) -> int:
@@ -833,8 +849,9 @@ def command_records(arguments: argparse.Namespace) -> int:
     `assess_rights`)."""
     import yaml
 
+    name, build = RECORDS_ACTIONS[arguments.records_command]
     try:
-        name, request = _records_request(arguments)
+        request = build(arguments)
     except (OSError, UnicodeDecodeError, ValueError, yaml.YAMLError) as error:
         print(f"cannot read the input: {error}", file=sys.stderr)
         return 1
