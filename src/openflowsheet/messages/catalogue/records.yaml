@@ -1,0 +1,217 @@
+# F3, component data (ADR 0061, "New catalogue codes"; F3-WO1): the refusals and notices of the
+# record normaliser and validator. Params are strings: `<component>` is the record's id, `<entry>`
+# and `<pointer>` RFC 6901 pointers into the normalised record (F3 build decision WO1-9). Emitters:
+# `records/normalize.py` (D2 steps 1 to 5, D6) and `records/validate.py` (D2 step 6, D7). The
+# codes of the store, resolution, the data lock and reaction consistency come with their work
+# orders.
+catalogue: openflowsheet-messages-v1
+namespace: null
+entries:
+  # D2 steps 1, 3, 6; D7: the record does not match the record format.
+  - code: record_schema_invalid
+    family: refusal
+    kind: input
+    complete: true
+    title: A record does not match the record format
+    args: [pointer]
+    params: {pointer: {type: text, label: location in the record}}
+    summary: "The record is not valid at {pointer!raw}."
+    why: "A record is checked against the record format before it is stored or hashed: its members and their types, every object closed, phase and identifier spellings, and the rules the format adds, such as one entry per property and phase and one formation entry per phase. The location is a JSON pointer into the record after normalisation; an empty location is the whole record, for example text that is not one JSON or YAML object."
+    action: "Correct the record at the location given and submit it again."
+    examples:
+      - params: {pointer: /entries/0/phase}
+
+  # D7: a unit or quantity kind that is not the registered pair.
+  - code: record_unit_invalid
+    family: refusal
+    kind: input
+    complete: true
+    title: A record value has an unknown kind or a unit other than its SI unit
+    args: [entry]
+    params: {entry: {type: text, label: entry}}
+    summary: "The value at {entry!raw} has a quantity kind that is not registered, or a unit that is not that kind's SI unit."
+    why: "Records store every value in the SI unit of a registered quantity kind, and a core property has a fixed kind. A kind that is not registered, such as a molar entropy before it is added, cannot be stored yet."
+    action: "State the value in the SI unit of the kind the property needs, or leave out a value whose kind is not registered yet."
+    examples:
+      - params: {entry: /entries/1}
+
+  # D7, Q7.R1/R2: the amount basis and its molar mass and charge disagree.
+  - code: amount_basis_invalid
+    family: refusal
+    kind: input
+    complete: true
+    title: A component's amount basis does not fit its molar mass or charge
+    args: [component, rule]
+    params:
+      component: {type: text, label: component}
+      rule:      {type: text, label: rule}
+    summary: "The component {component!raw} breaks the amount-basis rule {rule!raw}."
+    why: "A component on a molar basis states its molar mass, of the kind its basis needs; a component on a mass basis states none and carries no charge. The rule names which of these the record breaks: molar_mass_present, molar_mass_absent, molar_mass_kind or charge_nonzero."
+    action: "Add, remove or correct the molar mass or the charge so the record fits its amount basis."
+    examples:
+      - params: {component: H2O, rule: molar_mass_absent}
+
+  # D7, risk 4: `kg` and `segment_mol` wait for ADR-F2's quantity kinds.
+  - code: amount_basis_unsupported
+    family: refusal
+    kind: not_supported
+    complete: true
+    title: Records on this amount basis cannot be stored yet
+    args: [basis]
+    params: {basis: {type: text, label: amount basis}}
+    summary: "Records on the amount basis {basis!raw} cannot be stored yet."
+    why: "A component on a mass or segment basis needs quantity kinds that are not registered yet. The rules for these bases are fixed; only their kinds are missing."
+    action: "Store the component on the molar basis if that describes it, or wait for the release that registers the kinds of this basis."
+    gap: {limitation: null, capability: "the quantity kinds of the mass and segment amount bases"}
+    examples:
+      - params: {basis: kg}
+
+  # D7: a malformed identifier, or any identifier on a synthetic component.
+  - code: identifier_invalid
+    family: refusal
+    kind: input
+    complete: true
+    title: A component identifier is malformed or not allowed
+    args: [component, scheme]
+    params:
+      component: {type: text, label: component}
+      scheme:    {type: text, label: identifier scheme}
+    summary: "The {scheme!raw} identifier of component {component!raw} is malformed, or the component is synthetic and may carry none."
+    why: "A CAS number must have a valid check digit and an InChIKey the standard 27-character form. A synthetic component has no chemical identity, so it may carry no identifier at all."
+    action: "Correct the identifier, or remove it if the component is synthetic."
+    examples:
+      - params: {component: H2O, scheme: cas}
+
+  # D7: a molar record whose formula disagrees with its elements.
+  - code: formula_elements_invalid
+    family: refusal
+    kind: input
+    complete: true
+    title: A component's formula does not match its elements
+    args: [component]
+    params: {component: {type: text, label: component}}
+    summary: "The formula of component {component!raw} does not match its elemental composition."
+    why: "On a molar basis the formula and the element amounts describe the same molecule. The formula is read as element symbols with counts, and its counts must equal the stated element amounts exactly."
+    action: "Correct the formula or the element amounts so that they agree."
+    examples:
+      - params: {component: CH3OH}
+
+  # D6: a stated anchor phase the rules do not allow.
+  - code: anchor_phase_invalid
+    family: refusal
+    kind: input
+    complete: true
+    title: A component's anchor phase is not allowed
+    args: [component, phase]
+    params:
+      component: {type: text, label: component}
+      phase:     {type: text, label: phase}
+    summary: "The anchor phase {phase!raw} of component {component!raw} is not allowed."
+    why: "The anchor phase is where a component's formation data fix its enthalpy and entropy. A stated anchor must be a phase with formation data when the record gives any, and a charged component is anchored in aqueous solution."
+    action: "State an anchor phase in which the record gives formation data, aq for a charged component, or leave the anchor out so that it is derived."
+    examples:
+      - params: {component: H2O, phase: "s:ice-Ih"}
+
+  # D7: an entry names a correlation form that is not registered.
+  - code: correlation_form_unknown
+    family: refusal
+    kind: input
+    complete: true
+    title: A record entry names an unknown correlation form
+    args: [entry, form]
+    params:
+      entry: {type: text, label: entry}
+      form:  {type: text, label: correlation form}
+    summary: "The entry at {entry!raw} uses the correlation form {form!raw}, which is not registered."
+    why: "A correlation entry stores coefficients of a registered correlation form, which fixes their names, the variables and the result. An entry of an unregistered form cannot be checked or evaluated."
+    action: "Use a registered correlation form, or install the extension that registers this one. The list_capabilities operation lists the registered forms."
+    examples:
+      - params: {entry: /entries/2, form: acme.antoine}
+
+  # D7: the coefficients are not exactly the form's.
+  - code: correlation_coefficients_invalid
+    family: refusal
+    kind: input
+    complete: true
+    title: A record entry's coefficients do not match its correlation form
+    args: [entry, form]
+    params:
+      entry: {type: text, label: entry}
+      form:  {type: text, label: correlation form}
+    summary: "The coefficients of the entry at {entry!raw} are not exactly those of the correlation form {form!raw}."
+    why: "A correlation entry gives every coefficient its form defines and no other."
+    action: "Give exactly the coefficients the form names."
+    examples:
+      - params: {entry: /entries/2, form: cp_ig_poly4_theta}
+
+  # D7: a validity range with a variable the form lacks, or lower bound not below upper.
+  - code: validity_range_invalid
+    family: refusal
+    kind: input
+    complete: true
+    title: A record's validity range is not valid
+    args: [entry, variable]
+    params:
+      entry:    {type: text, label: entry}
+      variable: {type: text, label: variable}
+    summary: "The validity range of {variable!raw} at {entry!raw} is not valid."
+    why: "A validity range names a variable of the entry's form (T or P for a constant) and gives a lower bound below its upper bound."
+    action: "Use a variable of the form and order the bounds from low to high."
+    examples:
+      - params: {entry: /entries/2, variable: T}
+
+  # D7, Q9.R4: an empty origin, or a source the record does not list.
+  - code: provenance_invalid
+    family: refusal
+    kind: input
+    complete: true
+    title: A record value has incomplete provenance
+    args: [entry]
+    params: {entry: {type: text, label: entry}}
+    summary: "The provenance of the value at {entry!raw} has no origin, or names a source the record does not list."
+    why: "Every stored value says where it came from: at least one origin (measured, computed, estimated or synthetic) and a source listed in the record's sources."
+    action: "Give the value an origin and a source listed in the record."
+    examples:
+      - params: {entry: /molar_mass}
+
+  # D6 step 4, Q2.R9: the anchor defaulted to the ideal gas.
+  - code: anchor_defaulted
+    family: notice
+    kind: notice
+    complete: true
+    title: A component's anchor phase was defaulted to the ideal gas
+    args: [component]
+    params: {component: {type: text, label: component}}
+    summary: "Component {component!raw} gives no formation data and no phase-specific data, so it is anchored in the ideal gas by default."
+    why: "Every component has one anchor phase, where its formation data fix its enthalpy and entropy. A molar record that states none, is uncharged and gives nothing phase-specific takes the ideal gas. This record and one that states the ideal gas are the same record."
+    action: "Nothing is needed; state an anchor phase in the record if another phase is meant."
+    examples:
+      - params: {component: Methanol}
+
+  # D6 step 5, Q2.R9: no anchor could be derived.
+  - code: anchor_undetermined
+    family: notice
+    kind: notice
+    complete: true
+    title: A component has no anchor phase
+    args: [component]
+    params: {component: {type: text, label: component}}
+    summary: "Component {component!raw} has no anchor phase."
+    why: "A record on a mass or segment basis that states no anchor phase, gives no formation data and nothing phase-specific has none. Its energy reference cannot be fixed, so it is refused for an elemental reference until the record states an anchor."
+    action: "State an anchor phase in the record."
+    examples:
+      - params: {component: bitumen}
+
+  # D4, R-924: a fitted or generated value whose inputs are not hashed.
+  - code: fit_inputs_unhashed
+    family: notice
+    kind: notice
+    complete: true
+    title: A fitted value does not identify the data it was fitted to
+    args: [entry]
+    params: {entry: {type: text, label: entry}}
+    summary: "The value at {entry!raw} was fitted or generated, but its input data are not identified by hash."
+    why: "A fitted or generated value names the data it came from by hash, so that a change of those data is a change of the value. This one names none, usually because its inputs are not in the repository."
+    action: "Add the hashes of the input data to the value's provenance if they are available."
+    examples:
+      - params: {entry: /entries/1}

@@ -213,6 +213,7 @@ order = [
     "openflowsheet.graph",
     "openflowsheet.numerics",
     "openflowsheet.compile",
+    "openflowsheet.records",
     "openflowsheet.registry",
     "openflowsheet.messages",
     "openflowsheet.units",
