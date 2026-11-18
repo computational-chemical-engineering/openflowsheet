@@ -78,7 +78,7 @@ def _shape_check(
     variable but the decisions, with the link-EF outputs fixed and the property relations kept,
     and whether it has a perfect matching. Called after the DOF check, so it is square. The
     unknowns are the projection's: `x` at the spec positions `projected` (R-296), `y` and `w`.
-    On a failure, the refusal names the under-determined block (`_undetermined_columns`)."""
+    On a failure, the refusal is `_implicit_ef_input_error`'s."""
     import scipy.sparse as sp
     from scipy.sparse.csgraph import maximum_bipartite_matching
 
@@ -121,7 +121,23 @@ def _shape_check(
     matched = int(np.count_nonzero(row_match >= 0))
     if matched == size:
         return _ShapeVerdict(matched, size, None)
+    refusal = _implicit_ef_input_error(equations, unknown_names, links, row_match, matched)
+    return _ShapeVerdict(matched, size, refusal)
 
+
+def _implicit_ef_input_error(
+    equations: Sequence[tuple[str, list[int]]],
+    unknown_names: Sequence[str],
+    links: Sequence[ExternalLinkSpec],
+    row_match: npt.NDArray[Any],
+    matched: int,
+) -> ProjectionRefusedError:
+    """The shape check's refusal (R-278) when the maximum matching `row_match` (row -> column,
+    -1 when unmatched) pairs only `matched` of the `len(unknown_names)` equations and unknowns,
+    pure: `PROJECTION_IMPLICIT_EF_INPUT` naming the structurally under-determined variables
+    (`_undetermined_columns`, in column order), with the unmatched equations and variables and
+    the under-determined ones that are link-EF inputs."""
+    size = len(unknown_names)
     column_match = np.full(size, -1, dtype=np.int64)
     for r, c in enumerate(row_match):
         if c >= 0:
@@ -140,7 +156,7 @@ def _shape_check(
         f"variables {unmatched_variables}; structurally undetermined variables {under}, of which "
         f"link-EF inputs {flagged}",
     )
-    return _ShapeVerdict(matched, size, refusal)
+    return refusal
 
 
 def _undetermined_columns(
