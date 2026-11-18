@@ -187,18 +187,11 @@ def evaluate(
     centre) and the verdict of a run plan (spec §3.4, §6, §7).
 
     `observations` holds every request of the plan in plan order: one per draw of the training,
-    calibration and test splits, and 14 per gradient centre (`SamplePlan.requests`' order).
+    calibration and test splits, and 14 per gradient centre (`SamplePlan.requests`' order);
+    `_check_counts` raises `ValueError` otherwise. The test errors are `_test_errors`'s.
     """
     rows = {split: tuple(found) for split, found in observations.items()}
-    expected = plan.counts
-    for split in ("training", "calibration", "test"):
-        if len(rows[split]) != expected[split]:
-            raise ValueError(
-                f"{split}: {len(rows[split])} observations for {expected[split]} draws"
-            )
-    stencils = len(plan.gradient[0].stencil) if plan.gradient else 0
-    if len(rows["gradient"]) != stencils * len(plan.gradient):
-        raise ValueError("gradient: one observation per stencil experiment")
+    _check_counts(plan, rows)
 
     training = [o for o in rows["training"] if o.status == "ok"]
     fit = fit_quadratic(
@@ -214,14 +207,7 @@ def evaluate(
     )
     test_scores, bad_test, test_margins = _scored(rows["test"], surrogate)
     margins = calibration_margins + test_margins
-    test_errors: tuple[tuple[float, float], ...] = ()
-    if surrogate is not None:
-        test_errors = tuple(
-            (abs(o.x - x_hat), abs(o.dt - dt_hat))
-            for o in rows["test"]
-            if o.status == "ok" and o.x is not None and o.dt is not None
-            for x_hat, dt_hat in (surrogate.predict(o.z(surrogate.scaling)),)
-        )
+    test_errors = _test_errors(rows["test"], surrogate)
 
     centres = []
     width = len(plan.gradient[0].stencil) if plan.gradient else 0
@@ -265,6 +251,21 @@ def evaluate(
     )
 
 
+def _check_counts(plan: SamplePlan, rows: Mapping[Split, Sequence[Observation]]) -> None:
+    """`evaluate`'s count check of `rows` against `plan`: raises `ValueError` for the first of
+    the training, calibration and test splits whose observations are not one per draw, then for
+    gradient observations that are not one per stencil experiment of every centre."""
+    expected = plan.counts
+    for split in ("training", "calibration", "test"):
+        if len(rows[split]) != expected[split]:
+            raise ValueError(
+                f"{split}: {len(rows[split])} observations for {expected[split]} draws"
+            )
+    stencils = len(plan.gradient[0].stencil) if plan.gradient else 0
+    if len(rows["gradient"]) != stencils * len(plan.gradient):
+        raise ValueError("gradient: one observation per stencil experiment")
+
+
 class _SplitScores(NamedTuple):
     """`_scored`'s result for one split: the scores in observation order (`None` where the
     parent returned no usable point, every one `None` without a surrogate), the count of
@@ -298,6 +299,21 @@ def _scored(found: Sequence[Observation], surrogate: QuadraticSurrogate | None) 
         else:
             scores.append(None)
     return _SplitScores(tuple(scores), inadmissible, margins)
+
+
+def _test_errors(
+    found: Sequence[Observation], surrogate: QuadraticSurrogate | None
+) -> tuple[tuple[float, float], ...]:
+    """The test split's absolute errors (|x - x̂|, |ΔT - ΔT̂|), pure, in observation order, for
+    each observation of `found` that is ok with both outputs; none without a surrogate."""
+    if surrogate is None:
+        return ()
+    return tuple(
+        (abs(o.x - x_hat), abs(o.dt - dt_hat))
+        for o in found
+        if o.status == "ok" and o.x is not None and o.dt is not None
+        for x_hat, dt_hat in (surrogate.predict(o.z(surrogate.scaling)),)
+    )
 
 
 def _centre_evidence(

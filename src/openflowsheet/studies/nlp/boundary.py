@@ -257,7 +257,7 @@ def judge(
 ) -> BoundaryVerdict:
     """(e1)–(e6) in order; the first failing clause fails the basis. `boundary` gives A (or why
     the rows cannot be evaluated at x̂) and `target` the certificate's target; each is called only
-    once the clauses before it hold."""
+    once the clauses before it hold. (e4) is `_e4_refusal`'s."""
     status = certificate.verification_status if certificate is not None else None
 
     def fail(clause: str, reason: str, **found: Any) -> BoundaryVerdict:
@@ -295,21 +295,8 @@ def judge(
         return fail("e3", "no guarded LIQUID/VAPOR split's phase row is active at the re-solve")
     # (e4)
     certified = target()
-    for split, regime in found:
-        pinned, dropped = split.pinned(regime), split.dropped(regime)
-        if len(pinned) != len(dropped):
-            return fail("e4", f"{split.unit}: |P| = {len(pinned)} ≠ |D| = {len(dropped)}")
-        nonzero = [name for name in pinned if not state[name] == 0.0]
-        if nonzero:
-            return fail("e4", f"{split.unit}: pinned columns not 0.0 at the re-solve: {nonzero}")
-        aliased = sorted(set(dropped) & certified.eliminated)
-        if aliased:
-            return fail("e4", f"{split.unit}: dropped rows are alias-eliminated: {aliased}")
-        missing = sorted(
-            (set(dropped) - set(certified.row_ids)) | (set(pinned) - set(certified.column_ids))
-        )
-        if missing:
-            return fail("e4", f"{split.unit}: ids not in the certificate's matrix: {missing}")
+    if (refused := _e4_refusal(found, state, certified, status)) is not None:
+        return refused
     # (e5)
     form = boundary_form(certified, found)
     if form.regularity.status != "NO_RANK_LOSS_DETECTED":
@@ -347,3 +334,42 @@ def judge(
             form=form,
         )
     return BoundaryVerdict(True, None, "", status, target_regularity, form)
+
+
+def _e4_refusal(
+    found: Sequence[tuple[LiftedSplit, Regime]],
+    state: Mapping[str, float],
+    certified: CertificateTarget,
+    status: str | None,
+) -> BoundaryVerdict | None:
+    """`judge`'s clause (e4) over the active splits `found`, in order: for each, |P| = |D|, every
+    pinned column exactly 0.0 in `state`, no dropped row alias-eliminated in `certified`, and
+    every dropped row and pinned column in the certificate's matrix. The first failure is the
+    clause's verdict, with the certificate's `status`; None when every split holds."""
+    for split, regime in found:
+        pinned, dropped = split.pinned(regime), split.dropped(regime)
+        if len(pinned) != len(dropped):
+            return BoundaryVerdict(
+                False, "e4", f"{split.unit}: |P| = {len(pinned)} ≠ |D| = {len(dropped)}", status
+            )
+        nonzero = [name for name in pinned if not state[name] == 0.0]
+        if nonzero:
+            return BoundaryVerdict(
+                False,
+                "e4",
+                f"{split.unit}: pinned columns not 0.0 at the re-solve: {nonzero}",
+                status,
+            )
+        aliased = sorted(set(dropped) & certified.eliminated)
+        if aliased:
+            return BoundaryVerdict(
+                False, "e4", f"{split.unit}: dropped rows are alias-eliminated: {aliased}", status
+            )
+        missing = sorted(
+            (set(dropped) - set(certified.row_ids)) | (set(pinned) - set(certified.column_ids))
+        )
+        if missing:
+            return BoundaryVerdict(
+                False, "e4", f"{split.unit}: ids not in the certificate's matrix: {missing}", status
+            )
+    return None

@@ -90,20 +90,15 @@ def _read(directory: Path, relative: str) -> Any:
 
 
 def record_integrity(directory: Path) -> BundleIntegrity:
-    """Step 1: every member against the manifest, and the manifest's identity."""
+    """Step 1: every member against the manifest (`_member_findings`), and the manifest's
+    identity."""
     from openflowsheet.studies.nlp.request import OptimizationRequest
     from openflowsheet.studies.nlp.revision import REQUEST, REVISION, optimization_sha256
 
     directory = Path(directory)
     manifest = _read(directory, MANIFEST)
     members: Mapping[str, str] = manifest.get("members", {})
-    missing, tampered = [], []
-    for relative, sha in sorted(members.items()):
-        path = directory / relative
-        if not path.is_file():
-            missing.append(relative)
-        elif hashlib.sha256(path.read_bytes()).hexdigest() != sha:
-            tampered.append(relative)
+    missing, tampered = _member_findings(directory, members)
     present = {
         path.relative_to(directory).as_posix() for path in directory.rglob("*") if path.is_file()
     }
@@ -127,6 +122,19 @@ def record_integrity(directory: Path) -> BundleIntegrity:
             tampered.append(f"{MANIFEST}#/revision_sha256")
     ok = not (missing or tampered or unexpected)
     return BundleIntegrity(ok, tuple(missing), tuple(tampered), tuple(unexpected))
+
+
+def _member_findings(directory: Path, members: Mapping[str, str]) -> tuple[list[str], list[str]]:
+    """The manifest's `members` (relative path -> SHA-256) checked in `directory`, in path order:
+    the missing ones, then the ones whose bytes do not hash to their recorded SHA-256."""
+    missing, tampered = [], []
+    for relative, sha in sorted(members.items()):
+        path = directory / relative
+        if not path.is_file():
+            missing.append(relative)
+        elif hashlib.sha256(path.read_bytes()).hexdigest() != sha:
+            tampered.append(relative)
+    return missing, tampered
 
 
 def _starts(directory: Path) -> list[int]:
