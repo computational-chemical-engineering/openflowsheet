@@ -2409,3 +2409,10 @@
   4591.7, health 8.23 -> 8.25, brain 26 -> 23. Step 5's message misstates `_preflight_phase` debt (3.0, not 0); left
   (rewording changes queued shas; step 7 records it). projection_zero_flows treated as S1 (one step, no arithmetic
   moved). Reviewer reads the chain (run_study RC step) after the gates.
+- **2026-11-18, F3-WO1 delivered (opus-engineer, Opus, 317k tokens, over the 150k cap):** 8 commits on `wp/F3`
+  (839ea892..78425613); test_f3_record_model 96/96 (E-F3-3, -4, -13 synthetic); ruff/mypy clean; records/*.py
+  health 10.0 (validate.py 9.5), no brain; F0 PASS (M1-M9 equal); registry_sha256 moved (E-F1-5 f251447d ->
+  ee9e6b9d, 7 descriptors), 4 F1 tests adapted, 2 message_entry fixtures re-taken; no R4-G3 or MCP digest move. Open
+  for the design lane: WO1-11 (record_type/data_source payload fields), WO1-15 (A32 skips v2 records). The engineer
+  did not re-run its 73-file set after the fixes: orchestrator re-runs the touched + catalogue/registry tests, then a
+  `reviewer` (fable, identity) with brief `docs/briefs/F3-WO1-review.md` on wp/F3.
