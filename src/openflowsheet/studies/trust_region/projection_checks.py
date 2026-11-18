@@ -168,7 +168,13 @@ def _undetermined_columns(
     """The shape check's structurally under-determined block (R-278), pure: the columns of the
     `size` unknowns that alternating paths reach from the unmatched ones (`column_match` -1),
     given the equations' incidence and the maximum matching `row_match` (row -> column, -1 when
-    unmatched)."""
+    unmatched).
+
+    Twin (rule 15): this is the `C-` side of `graph.matching.dulmage_mendelsohn(...).under_cols`
+    (and of the worklist in `numerics.newton`'s released-set search), which, like this walk, does
+    not depend on the matching found. It is not merged because the twins differ in form: integer
+    columns from SciPy's matching here, string ids with `frozenset` incidence there; a merge changes
+    the iteration order and so waits for a change that may alter behaviour."""
     incident: list[list[int]] = [[] for _ in range(size)]
     for r, (_, cols) in enumerate(equations):
         for c in cols:
