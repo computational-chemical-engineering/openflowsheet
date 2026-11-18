@@ -551,15 +551,18 @@ def test_a32_no_third_party_data_in_the_sdist_or_the_wheel(built: dict[str, Path
         assert [name for name in python if not re.match(source, name)] == [], kind
 
 
-def _component_records() -> list[tuple[str, dict[str, Any]]]:
-    """Every component-record-shaped mapping in a tracked YAML or JSON file.
+#: ADR 0061 D1: the record format a v1 reader refuses (ADR 0002 D7.5).
+RECORD_V2 = "openflowsheet-record-v2"
+#: F3 decision WO1-15 as narrowed by the design lane: the one directory a v2 record may sit in
+#: until WO4 gives A32 its v2 clause.
+RECORD_V2_HOME = "tests/fixtures/records/"
 
-    The schema's negative fixtures (`tests/fixtures/schemas/component_record/invalid/`) are
-    excluded: they are invalid by construction and ship nowhere. So is a v2 record (ADR 0061,
-    `record_format: openflowsheet-record-v2`): it is not a v1 ComponentRecord, a v1 reader refuses
-    it (ADR 0002 D7.5), its rights live in F3's rights register (D11), and F3 validates it (F3
-    build decision WO1-15).
-    """
+
+def _record_mappings() -> list[tuple[str, dict[str, Any]]]:
+    """Every component-record-shaped mapping (`elemental_verification` and a string `id`) in a
+    tracked YAML or JSON file, v1 or v2. The schema's negative fixtures
+    (`tests/fixtures/schemas/component_record/invalid/`) are excluded: they are invalid by
+    construction and ship nowhere."""
     found = []
     for path in _tracked():
         if not path.endswith((".yaml", ".yml", ".json")) or "/invalid/" in path:
@@ -572,16 +575,23 @@ def _component_records() -> list[tuple[str, dict[str, Any]]]:
         while stack:
             item = stack.pop()
             if isinstance(item, dict):
-                if (
-                    "elemental_verification" in item
-                    and isinstance(item.get("id"), str)
-                    and "record_format" not in item
-                ):
+                if "elemental_verification" in item and isinstance(item.get("id"), str):
                     found.append((path, item))
                 stack.extend(item.values())
             elif isinstance(item, list):
                 stack.extend(item)
     return found
+
+
+def _component_records() -> list[tuple[str, dict[str, Any]]]:
+    """Every v1 component record (`_record_mappings` without the v2 records). A v2 record
+    (`record_format: openflowsheet-record-v2`, ADR 0061) is not a v1 ComponentRecord, its rights
+    live in F3's rights register (D11) and F3 validates it (F3 decision WO1-15, narrowed by the
+    design lane to that exact value); `test_v2_records_sit_only_in_the_f3_fixture_directory`
+    keeps them where A32 may skip them. Any other `record_format` value is judged as v1."""
+    return [
+        (path, item) for path, item in _record_mappings() if item.get("record_format") != RECORD_V2
+    ]
 
 
 def _m01_vetted(vetting: dict[str, Any], component: str, path: str) -> bool:
@@ -903,6 +913,16 @@ def test_a32_every_component_record_is_synthetic_or_a_vetted_real_record_with_ri
     problems, compared = _a32_problems(records, _vetted_conventions())
     assert problems == []
     assert compared == CAS_COMPARED_IDS
+
+
+def test_v2_records_sit_only_in_the_f3_fixture_directory() -> None:
+    """F3 decision WO1-15 as narrowed by the design lane: A32 skips a mapping only when its
+    `record_format` is `openflowsheet-record-v2`, and every such mapping is a fixture under
+    `tests/fixtures/records/` until WO4 adds A32's v2 clause (identify, and synthetic, or a vetted
+    v1 file's hash, or a permitting rights-register row for each source)."""
+    v2 = {path for path, item in _record_mappings() if item.get("record_format") == RECORD_V2}
+    assert v2 >= {RECORD_V2_HOME + "component-maximal.json"}
+    assert {path for path in v2 if not path.startswith(RECORD_V2_HOME)} == set()
 
 
 def test_a32_one_datum_rule_within_and_across_conventions() -> None:
