@@ -319,13 +319,14 @@ SNAPSHOT_F1: dict[str, str | None] = {
     "check_admission": "d04b98395b96b33e94de4dd48678bd31c24ddb1cf7c42b1ca9455e27f25da43f",
 }
 #: F3 (ADR 0061 D13, ADR 0019 Amendment 8; R-1051): the protocol `Records`, five new rows, each
-#: its own `$def`. Taken at F3-WO5b; no other snapshot moves (`f3_schema_support`), so every
-#: earlier test below skips these five rows as it skips F1's.
+#: its own `$def`. Taken at F3-WO5b (`validate_record` re-taken at the F3 review 2 fix round, C6:
+#: `900b2712…` -> `eb6a1cfa…`, the report items' `at`); no other snapshot moves
+#: (`f3_schema_support`), so every earlier test below skips these five rows as it skips F1's.
 SNAPSHOT_F3: dict[str, str | None] = {
     "search_records": "e52240dd9b11ea74a2e2dd6be1e622b0a889afc8ea4f02cdbf2accd9c5ebae43",
     "get_record": "4ec84cbffa730be82cf3e66eda167b8d2ca48c8dafba6345b49890d131fe409a",
     "register_record": "59785fe388c3f7a54885c7c761e1c2909aca2c649289a385d3a008219e9d4f94",
-    "validate_record": "900b2712de7ccfef7af06e1c41f4cc68fa96b31b62f927b03b424663d3bc5b32",
+    "validate_record": "eb6a1cfac1228e68222dea0d162a130ffd885746a821d28e74c89252863b5ac0",
     "assess_rights": "75d3f1093dd2a4e564d3e77763f5e2c4487f4f29bf147a0e68be192d524364ee",
 }
 #: The rows later than X04, each with its own snapshot (F1's and F3's).

@@ -3,6 +3,7 @@
   "document": {
     "findings": [
       {
+        "at": "/record",
         "code": "anchor_defaulted",
         "params": {
           "component": "user.xenonol"

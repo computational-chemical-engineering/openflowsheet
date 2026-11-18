@@ -149,9 +149,9 @@ X04_SERVED_SHA256 = "6be1c002592524126617af8dd65d331513f4a96355f5381dba020ad561a
 #: (`scripts/m07a_rc.py`'s `D_9`). Without them it is `X04_SERVED_SHA256` (c_9).
 F1_SERVED_SHA256 = "e2c44b6b9c2a7f5689ed4f2fd96b6e9804d1a63e60a5c620d29b5b5d594bcebb"
 #: F3 (ADR 0061 D13, R-1051): the served digest with F3's five `Records` tools over F1's list,
-#: measured at F3-WO5b on `wp/F3` (`scripts/m07a_rc.py`'s `D_10`). Without them it is
-#: `F1_SERVED_SHA256` (c_10).
-F3_SERVED_SHA256 = "248c2e74baebcf489e012e14dff04fb0d14601d2df5d3ad88d51d0ad11e8a884"
+#: measured at F3-WO5b on `wp/F3` and re-taken at the F3 review 2 fix round (C6: the report
+#: items' `at`; `scripts/m07a_rc.py`'s `D_10`). Without them it is `F1_SERVED_SHA256` (c_10).
+F3_SERVED_SHA256 = "153b892e92546cbad8fabb17771ef5f9e949938da5f0457e4522fb4460c2429e"
 #: The files N1 and N2 changed; the only difference from `v17-c2`'s served texts.
 CHANGED = ("commit_change", "validate")
 #: Each description's SHA-256 as `v17-c2` served it: the table of

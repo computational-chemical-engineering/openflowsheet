@@ -88,6 +88,13 @@ def refusals(outcome: RecordOutcome) -> tuple[Coded, ...]:
     return reserved + outcome.errors
 
 
+def report_items(found: Sequence[tuple[Coded, str]]) -> list[dict[str, Any]]:
+    """`validate_record`'s report items `{code, params, at}`, `at` the request member each
+    concerns, sorted by code, params, then `at` (UTF-8; R-1053)."""
+    ordered = sorted(found, key=lambda item: (item[0].sort_key(), item[1].encode("utf-8")))
+    return [{**coded.as_document(), "at": at} for coded, at in ordered]
+
+
 def effective_document(found: rights.Effective) -> dict[str, Any]:
     """An effective assessment as a response carries it: assessment, conditions, layer."""
     return {"assessment": found.assessment, "conditions": found.conditions, "layer": found.layer}
@@ -321,17 +328,18 @@ class RecordsService:
             _present(record=record, records=records, components=components, reactions=reactions),
         )
         self._core.authorize(name)
-        errors: list[Coded] = []
-        findings: list[Coded] = []
+        errors: list[tuple[Coded, str]] = []
+        findings: list[tuple[Coded, str]] = []
         known: dict[str, Mapping[str, Any]] = {}
         own: str | None = None
         if record is not None:
-            own = self._identified(identify(record), errors, findings, known)
+            own = self._identified(identify(record), "/record", errors, findings, known)
         for index, item in enumerate(records or ()):
+            at = pointer("/records", index)
             if isinstance(item, str):
-                known[item] = self._read(item, name, pointer("/records", index))
+                known[item] = self._read(item, name, at)
             else:
-                self._identified(identify(item), errors, findings, known)
+                self._identified(identify(item), at, errors, findings, known)
         named = {
             key: known.get(sha) or self._read(sha, name, pointer("/components", key))
             for key, sha in (components or {}).items()
@@ -340,24 +348,21 @@ class RecordsService:
             more_errors, more_findings = self._reactions(name, reactions, named)
             errors += more_errors
             findings += more_findings
-        return RecordValidationReport(
-            [item.as_document() for item in sorted(errors, key=Coded.sort_key)],
-            [item.as_document() for item in sorted(findings, key=Coded.sort_key)],
-            own,
-        )
+        return RecordValidationReport(report_items(errors), report_items(findings), own)
 
     @staticmethod
     def _identified(
         outcome: RecordOutcome,
-        errors: list[Coded],
-        findings: list[Coded],
+        at: str,
+        errors: list[tuple[Coded, str]],
+        findings: list[tuple[Coded, str]],
         known: dict[str, Mapping[str, Any]],
     ) -> str | None:
         """The outcome's errors, `register_record`'s `reserved_namespace` among them (R-1056), and
-        findings; its SHA when nothing refuses it."""
+        findings, each at `at`; its SHA when nothing refuses it."""
         refused = refusals(outcome)
-        errors += refused
-        findings += outcome.findings
+        errors += [(coded, at) for coded in refused]
+        findings += [(coded, at) for coded in outcome.findings]
         if refused:
             return None
         assert outcome.record_sha256 is not None
@@ -369,9 +374,10 @@ class RecordsService:
         name: str,
         reactions: Sequence[Mapping[str, Any]],
         named: Mapping[str, Mapping[str, Any]],
-    ) -> tuple[tuple[Coded, ...], tuple[Coded, ...]]:
-        """D7's reaction checks, after the screening WO5a-3 asks of the request: every
-        stoichiometry key a `components` key naming a component record."""
+    ) -> tuple[list[tuple[Coded, str]], list[tuple[Coded, str]]]:
+        """D7's reaction checks, each finding at its reaction, after the screening WO5a-3 asks of
+        the request: every stoichiometry key a `components` key naming a component record, and
+        reaction ids distinct (R-1054)."""
         for key, found in named.items():
             if found["record_type"] != "component":
                 self._core.refuse(
@@ -380,7 +386,16 @@ class RecordsService:
                     operation=name,
                     pointer=pointer("/components", key),
                 )
+        seen: set[str] = set()
         for index, reaction in enumerate(reactions):
+            if reaction["id"] in seen:
+                self._core.refuse(
+                    "invalid_request",
+                    f"reaction id {reaction['id']!r} is repeated",
+                    operation=name,
+                    pointer=f"/reactions/{index}/id",
+                )
+            seen.add(reaction["id"])
             for key in reaction["stoichiometry"]:
                 if key not in named:
                     self._core.refuse(
@@ -389,15 +404,21 @@ class RecordsService:
                         operation=name,
                         pointer=pointer(f"/reactions/{index}/stoichiometry", key),
                     )
+        errors: list[tuple[Coded, str]] = []
+        findings: list[tuple[Coded, str]] = []
         try:
-            return check_reactions(reactions, named)
-        except (ValueError, KeyError) as error:  # a record without molar_mass or charge
+            for index, reaction in enumerate(reactions):
+                found_errors, found_findings = check_reactions([reaction], named)
+                errors += [(coded, f"/reactions/{index}") for coded in found_errors]
+                findings += [(coded, f"/reactions/{index}") for coded in found_findings]
+        except ValueError as error:  # a record without molar_mass (review 2, N1)
             self._core.refuse(
                 "invalid_request",
                 f"the reactions cannot be checked: {error}",
                 operation=name,
                 pointer="/reactions",
             )
+        return errors, findings
 
     def assess_rights(
         self,

@@ -690,3 +690,50 @@ def test_c5_without_a_key_every_record_is_listed_by_sha_and_resolution_is_none(
         "fe78ba0ce4ff0fddfd709ddc1c295605259030fada8cbab4371a5ac73b582219"
     )
     assert water["status"] == "ambiguous_identity"
+
+
+def test_c6_each_report_item_names_the_request_member_it_concerns(app: LocalApplication) -> None:
+    """R-1053 (S4): items are `{code, params, at}`, sorted by code, params, then `at`."""
+    unnamed = {**SECOND, "name": ""}
+    report = dispatch(app, "validate_record", {"records": [unnamed, unnamed]})
+    assert report["errors"] == [
+        {"code": "record_schema_invalid", "params": {"pointer": "/name"}, "at": "/records/0"},
+        {"code": "record_schema_invalid", "params": {"pointer": "/name"}, "at": "/records/1"},
+    ]
+    assert {item["at"] for item in report["findings"]} <= {"/records/0", "/records/1"}
+    own = dispatch(app, "validate_record", {"record": unnamed})
+    assert [item["at"] for item in own["errors"]] == ["/record"]
+
+
+def _ammonia(app: LocalApplication, *nus: float) -> dict[str, Any]:
+    """`validate_record` of N2 + 3 H2 -> 2 NH3 (or the given ν) on `m01`'s legacy records."""
+    (entry,) = [e for e in legacy.committed_index()["files"] if e["profile"] == "m01"]
+    shas = {item["id"]: item["sha256"] for item in entry["records"]}
+    components = {"n2": shas["N2"], "h2": shas["H2"], "nh3": shas["NH3"]}
+    stoichiometry = dict(zip(components, nus or (-1, -3, 2), strict=True))
+    reactions = [{"id": "haber", "stoichiometry": stoichiometry}]
+    return {"components": components, "reactions": reactions}
+
+
+def test_c6_a_reaction_finding_carries_its_reaction_and_a_repeated_id_is_refused(
+    app: LocalApplication,
+) -> None:
+    request = _ammonia(app)
+    assert dispatch(app, "validate_record", request) == {
+        "errors": [],
+        "findings": [],
+        "record_sha256": None,
+    }
+    unbalanced = _ammonia(app, -1, -4, 2)
+    unbalanced["reactions"].insert(0, {**request["reactions"][0], "id": "first"})
+    report = dispatch(app, "validate_record", unbalanced)
+    assert report["errors"] == [
+        {
+            "code": "reaction_element_imbalance",
+            "params": {"reaction": "haber", "element": "H"},
+            "at": "/reactions/1",
+        }
+    ]
+    repeated = {**request, "reactions": request["reactions"] * 2}
+    refused = _refusal(app, "validate_record", repeated)
+    assert (refused["code"], refused["detail"]["pointer"]) == ("invalid_request", "/reactions/1/id")

@@ -73,10 +73,11 @@ function, a registered digest and Frank's carry extended to name it):
   no existing text; its two files are pinned at their own hashes (`F1_FILE_SHA256`).
 - c_10, R-1051 (ADR 0061 D13, ADR 0019 Amendment 8): F3's five tools of the protocol `Records`
   (`search_records`, `get_record`, `register_record`, `validate_record`, `assess_rights`),
-  stripped by `tests/f3_schema_support.py`'s `without_f3`; `D_10` = `248c2e74…`, measured at
-  F3-WO5b on `wp/F3` (`tests/test_t08_w2_surface_digest.py`'s `F3_SERVED_SHA256`; re-taken if
-  the design lane's review edits the five texts). F3 changed no existing text; its five files are
-  pinned at their own hashes (`F3_FILE_SHA256`).
+  stripped by `tests/f3_schema_support.py`'s `without_f3`; `D_10` = `153b892e…`, measured at
+  F3-WO5b on `wp/F3` (`248c2e74…`) and re-taken at the F3 review 2 fix round, whose C6 gave
+  `validate_record`'s report items `at` (`tests/test_t08_w2_surface_digest.py`'s
+  `F3_SERVED_SHA256`; re-taken if the design lane's review edits the five texts). F3 changed no
+  existing text; its five files are pinned at their own hashes (`F3_FILE_SHA256`).
 
 The released 0.2.0a1 ran the two-link chain (its committed record at `C_α²`); a re-run of the
 alpha's step 8 uses this script at the tag.
@@ -362,7 +363,7 @@ LINKS: Final = (
         "c_10",
         "R-1051",
         strip_f3,
-        "248c2e74baebcf489e012e14dff04fb0d14601d2df5d3ad88d51d0ad11e8a884",
+        "153b892e92546cbad8fabb17771ef5f9e949938da5f0457e4522fb4460c2429e",
     ),
 )
 
