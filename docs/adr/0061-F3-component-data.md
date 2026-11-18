@@ -760,3 +760,24 @@ by the design lane. The build lane's code changes are numbered in the review fil
 | WO4-0, for F3-WO5 | D11: a submitted record is the importer's exactly when its `record_sha256` is in the committed legacy index; any other record naming a `legacy.` source is `reserved_namespace(legacy)`. |
 
 Confirmed without an ADR edit: fix1-1 to fix1-4. Ruled outside this ADR (T08.A32's v2 clause, a test): WO4-7.
+
+## F3 ruling round 2 applied (`docs/reviews/F3-review-2.md`, 2026-11-18)
+
+Status stays Accepted (R-1050). Design-lane rulings on the build decisions of F3-WO5a and WO5b
+(`docs/F3_DECISIONS.md`). Every row is a **clarification** of a point the accepted text leaves open, recorded in the
+decision register; no section above is edited and nothing accepted is changed. The build lane's code changes are
+numbered C1 to C12 in the review file.
+
+| Of | Clarification | Register |
+| --- | --- | --- |
+| D7, reaction consistency | `<component>` in `reaction_element_unchecked(<reaction>, <component>)` is the stoichiometry's component key (two keys of one reaction may name records with one `id`). A component whose `elements` is null leaves that reaction's element balance unjudged: one notice per such component and no `reaction_element_imbalance` for the reaction; charge and molar mass are still checked. ν is an integer, a finite binary64 value or an exact rational (`fractions.Fraction` for a Python caller, the carrier of ADR 0062's `[p, q]`). Reaction ids are distinct; `validate_record` refuses a repeated one as `invalid_request`. | R-1054 |
+| D7, code table | `molar_mass_inconsistent(<reaction>)` is this ADR's code. Q3.R7's species check is another check and takes the name `group_molar_mass_inconsistent(<S>, <species>)` in ADR 0062. | R-1055 |
+| D1, D11 | The `legacy` member is reserved as the `legacy.` source prefix is: a submitted record carrying one is the importer's exactly when its `record_sha256` is in the committed legacy index; any other is refused `reserved_namespace(legacy)`. `validate_record` reports that refusal among its `errors`. | R-1056 |
+| D12, user-file adapter | YAML text that uses an alias, and a file that holds no record, are refused `record_schema_invalid` (the empty pointer; `/components` for a v1 file with no component). D13's `file` carries the client's optional `local_path`, which only the volatile block holds. | R-1057, R-1053 |
+| D13, `register_record` | A refused record refuses the whole call and nothing is stored. The `ApiError` code follows the catalogue kind of the first refusal (`invalid_request`, `unsupported`, `internal_error`); `detail.reason` is its bare code, `detail.refusal` its `{code, params}`, `detail.pointer` the place in the request (`/record` or `/file/content`, followed by the refusal's own `pointer` when it has one), `detail.record_index` the record's position in a file, and `detail.errors` every error of every record (`[{record_index?, code, params}]`, at most 200, with `detail.errors_total`). | R-1052 |
+| D13, D9, `search_records` | Without a key every stored record is listed by SHA and `resolution` is `{status: none, classes: []}`: resolution answers a key. | R-1053 |
+| D13, responses | Rights: `effective` = `{assessment, conditions, layer}` (`layer` null for `unknown`); a row carries its `layer` and `sequence`. An item of `RecordValidationReport`'s `errors` and `findings` is `{code, params, at}`, `at` the request member it concerns. The response `$defs` are in `schemas/record-results.schema.json` (R-1032's form). | R-1053 |
+
+Ruled outside this ADR (T08.A32, a test): R1-B6, confirmed and tightened (the vetted-file branch is decided by the
+committed legacy index). Open with Frank, not applied: whether `validate_record`'s `reactions` take ADR 0062's `[p, q]`
+beside JSON numbers (review file, Q-F1); until then, JSON numbers only.
