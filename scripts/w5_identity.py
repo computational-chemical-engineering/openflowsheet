@@ -24,11 +24,14 @@ The ruling decides what a byte change of a registry-hashed file moves; this tool
   `--files`), every predicted value must change, and `format`, `reference_platform`, `corpus`
   and `archived_outputs` must stay equal.
 - `coverage`: R4 and W5-S7. For each file of R at BASE that the working tree changes, every
-  `openflowsheet` module it imports now must have been imported at BASE or lie in its hash
-  scope now: the intersection of every identity set that holds the file (its provider hash sets
-  from M9's scan, a unit's own `artifact_hash`, and the regenerated registry implementation
-  sets). The one other admitted new edge is a retarget: every name taken from the new module was
-  taken at BASE from a module M0 with `M0.name is M.name` there. Also M9's key set must be BASE's.
+  (`openflowsheet` module, name) pair it imports now must have been imported at BASE or lie in
+  its hash scope now: the intersection of every identity set that holds the file (its provider
+  hash sets from M9's scan, a unit's own `artifact_hash`, and the regenerated registry
+  implementation sets), so one contributor's hash does not cover another's directory.
+  A new name from a module the file imported at BASE is admitted only if it was importable from
+  that module at BASE (code moved into it since is a hole). A new module is admitted only as a
+  retarget: every name taken from it was taken at BASE from a module M0 with `M0.name is M.name`
+  there. Also M9's key set must be BASE's.
 
 A revision's facts are measured in a subprocess on an extracted copy (`git archive`), with that
 revision's own `corpus_identity.py` and `registry_builtin.py`; the working tree's with `--tree`.
@@ -181,7 +184,8 @@ def measure_facts(root: Path, legacy: Path | None, core: Path | None) -> Facts:
 
 def same_objects(queries: Sequence[Sequence[str]]) -> list[bool]:
     """R4's object-identity test, at the subprocess's revision: `old.name is new.name` for each
-    (old module, new module, name)."""
+    (old module, new module, name). With old equal to new it asks whether `name` is importable
+    from that module."""
     found = []
     for old, new, name in queries:
         try:
@@ -611,26 +615,58 @@ def hash_scope(head: Facts, file: str) -> set[str]:
 
 def new_edges(
     edited: Sequence[str], base_root: Path, head_root: Path, head: Facts
-) -> tuple[list[tuple[str, str, list[str]]], list[tuple[str, str, str, str]]]:
-    """Per edited file, the new edges outside its scope: (file, module, names); and the
-    retarget candidates (file, name, old module, new module) whose names all came from a module
-    at base."""
+) -> tuple[
+    list[tuple[str, str, list[str]]],
+    list[tuple[str, str, str, str]],
+    list[tuple[str, str, str]],
+]:
+    """Per edited file, its new (module, name) import pairs outside its scope, sorted three ways:
+    the holes (file, module, names); the retarget candidates (file, name, old module, new module)
+    of a module the file did not import at base, whose names all came from a module at base; and
+    the new names (file, module, name) taken from a module the file did import at base, each
+    admitted only if it was importable from that module at base. A module newly taken whole
+    (name None) is a hole either way: every later name of it would be reachable."""
     holes: list[tuple[str, str, list[str]]] = []
     candidates: list[tuple[str, str, str, str]] = []
+    names_taken: list[tuple[str, str, str]] = []
     for file in edited:
         before = import_edges(base_root, file)
         after = import_edges(head_root, file) if (head_root / file).is_file() else set()
         scope = hash_scope(head, file)
         old_modules = {module for module, _ in before}
-        for module in sorted({m for m, _ in after} - old_modules - scope):
-            taken = {n for m, n in after if m == module}
+        for module in sorted({m for m, _ in after - before} - scope):
+            taken = {n for m, n in after - before if m == module}
             names = sorted(n for n in taken if n is not None)
+            if module in old_modules:
+                if None in taken:
+                    holes.append((file, module, [*names, "(module)"]))
+                else:
+                    names_taken += [(file, module, n) for n in names]
+                continue
             sources = {n: sorted(m for m, old in before if old == n) for n in names}
             if None in taken or not all(sources[n] for n in names):
                 holes.append((file, module, [*names, *(["(module)"] if None in taken else [])]))
                 continue
             candidates += [(file, n, source, module) for n in names for source in sources[n]]
-    return holes, candidates
+    return holes, candidates, names_taken
+
+
+def importable(
+    holes: list[tuple[str, str, list[str]]],
+    names_taken: Sequence[tuple[str, str, str]],
+    found: Sequence[bool],
+) -> tuple[list[tuple[str, str, list[str]]], list[tuple[str, str, str]]]:
+    """Split the new names of an already imported module by `found` (the name was importable
+    from that module at base): admitted, or a hole of its (file, module)."""
+    missing: dict[tuple[str, str], list[str]] = {}
+    admitted = []
+    for entry, ok in zip(names_taken, found, strict=True):
+        if ok:
+            admitted.append(entry)
+        else:
+            missing.setdefault(entry[:2], []).append(entry[2])
+    holes += [(file, module, sorted(names)) for (file, module), names in sorted(missing.items())]
+    return holes, admitted
 
 
 def retargets(
@@ -752,21 +788,27 @@ def command_judge(arguments: argparse.Namespace, tree: Path) -> int:
 
 def command_coverage(arguments: argparse.Namespace, tree: Path) -> int:
     base = resolve(tree, arguments.base)
-    with revision_tree(tree, base) as base_root:
+    with contextlib.ExitStack() as stack:
+        base_root = stack.enter_context(revision_tree(tree, base))
+        head_root = tree
         before = _subprocess_facts(base_root)
-        head = _subprocess_facts(tree)
+        after = _subprocess_facts(head_root)
         changed = set(_git(tree, "diff", "--name-only", base).split())
         edited = sorted(changed & set(registry_set(before)))
-        holes, candidates = new_edges(edited, base_root, tree, head)
+        holes, candidates, names_taken = new_edges(edited, base_root, head_root, after)
         queries = [[_dotted(old), _dotted(new), name] for _, name, old, new in candidates]
-        same = _subprocess_facts(base_root, queries=queries) if candidates else []
-    holes, listed = retargets(holes, candidates, same)
+        queries += [[_dotted(module), _dotted(module), name] for _, module, name in names_taken]
+        same = _subprocess_facts(base_root, queries=queries) if queries else []
+    holes, listed = retargets(holes, candidates, same[: len(candidates)])
+    holes, admitted = importable(holes, names_taken, same[len(candidates) :])
     for file, module, names in holes:
         print(f"EDGE {file} -> {module} ({', '.join(str(n) for n in names)}): outside its scope")
     for file, name, old, new in listed:
         print(f"RETARGET {file}: {name} from {_dotted(old)} -> {_dotted(new)}")
+    for file, module, name in admitted:
+        print(f"NAME {file}: {name} from {_dotted(module)}, importable from it at base")
     m9_base = set(before["frozen"])
-    m9_head = set(head["frozen"])
+    m9_head = set(after["frozen"])
     m9 = (
         "equal to base"
         if m9_head == m9_base

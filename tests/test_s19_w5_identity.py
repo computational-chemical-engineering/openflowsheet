@@ -357,3 +357,42 @@ def test_t7_a_name_that_was_not_re_exported_is_a_hole(scratch: Path) -> None:
     done = _tool("--tree", str(scratch), "coverage", "--base", BASE)
     assert done.returncode == 1
     assert done.stdout.splitlines()[-1].startswith("coverage: 1 new edge(s)")
+
+
+INDEX = "src/openflowsheet/assessment/cost/index.py"
+PROGRAM = "src/openflowsheet/assessment/program.py"
+MOVED = '\n\ndef w5_moved() -> None:\n    """Moved out of a hashed file."""\n'
+
+
+def _summary(edges: int, retargets: int = 0, edited: int = 1) -> str:
+    return (
+        f"coverage: {edges} new edge(s) outside a hash scope, {retargets} retarget(s), "
+        f"{edited} edited hashed file(s); M9 key set equal to base (35)"
+    )
+
+
+def test_t7_a_function_moved_into_an_imported_module_is_a_hole(scratch: Path) -> None:
+    """Review R-W5-WO0, fix 1: `index.py` imports from `program.py` at the base; a function
+    `program.py` gains and `index.py` now imports is a new (module, name) pair outside its hash
+    scope, not importable from that module at the base: a hole."""
+    _append(scratch, PROGRAM, MOVED)
+    _append(scratch, INDEX, "from openflowsheet.assessment.program import w5_moved\n")
+    done = _tool("--tree", str(scratch), "coverage", "--base", BASE)
+    assert done.returncode == 1, done.stdout
+    assert done.stdout.splitlines() == [
+        f"EDGE {INDEX} -> {PROGRAM} (w5_moved): outside its scope",
+        _summary(1),
+    ]
+
+
+def test_t7_a_name_importable_at_the_base_from_an_imported_module_is_admitted(
+    scratch: Path,
+) -> None:
+    _append(scratch, INDEX, "from openflowsheet.assessment.program import CONTRIBUTOR_ORDER\n")
+    done = _tool("--tree", str(scratch), "coverage", "--base", BASE)
+    assert done.returncode == 0, done.stdout
+    assert done.stdout.splitlines() == [
+        f"NAME {INDEX}: CONTRIBUTOR_ORDER from openflowsheet.assessment.program, "
+        "importable from it at base",
+        _summary(0),
+    ]
