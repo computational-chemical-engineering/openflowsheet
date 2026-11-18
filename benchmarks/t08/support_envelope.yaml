@@ -9729,40 +9729,33 @@ harvest:
   class: P
   to: []
   note: 'provenance note: witness tolerances and escalation numerics not re-examined (ruling scope)'
-- manifest: evidence/F3/ebdff46fad6b39803b57ad3446b67d9b1f6421c4/manifest.json
+- manifest: evidence/F3/05ccf8805bf0970a9677d47a5ab221963a73d087/manifest.json
   item: limitations[0]
-  sha256: 22b2d2fbdb951673d8405379b1cc3564dc19aa68388544490b8f3f1d63702613
+  sha256: 938dfe4c075fc462f8805b6e4b67fc413b94930dd8f7b339d3185341882925d1
   class: P
   to: []
   note: 'provenance note: software verification of the component-data records and their five MCP operations; implemented until CI, not reviewed'
-- manifest: evidence/F3/ebdff46fad6b39803b57ad3446b67d9b1f6421c4/manifest.json
+- manifest: evidence/F3/05ccf8805bf0970a9677d47a5ab221963a73d087/manifest.json
   item: limitations[1]
-  sha256: 77d9d64eb781c1cf2ae6eff395aeab00a1fdad1109ac2b080ab90a7811f6567b
+  sha256: 3ffa6a60ff1fd0b20f0a7c91ea6b6443a5272e2a4f9676081092a247c971cc77
   class: P
   to: []
-  note: 'process note: the five human description reviews wait for Frank (REVIEW.json); the one expected red'
-- manifest: evidence/F3/ebdff46fad6b39803b57ad3446b67d9b1f6421c4/manifest.json
+  note: 'process note: review records; the five human description reviews wait for Frank (REVIEW.json); the one expected red'
+- manifest: evidence/F3/05ccf8805bf0970a9677d47a5ab221963a73d087/manifest.json
   item: limitations[2]
   sha256: d52be78a2744fe8e56971c095a4ec4b349b819d3c290624b26d91a72b4878613
   class: P
   to: []
   note: 'process note: card ofs-f3-qf1-rational-coefficients signed A; rational coefficients an obligation on F2 (ADR 0062)'
-- manifest: evidence/F3/ebdff46fad6b39803b57ad3446b67d9b1f6421c4/manifest.json
+- manifest: evidence/F3/05ccf8805bf0970a9677d47a5ab221963a73d087/manifest.json
   item: limitations[3]
-  sha256: 8ff326bdaa43c42916afbbf8b13a91bfddc39be4100ebf5fafe5e06d4f8d26f2
+  sha256: da235cc9068c11951b4bb51cdbaea83305cd8b72232a4f9f163f7dc75bd0d16c
   class: P
   to: []
-  note: 'process note: open question for the design lane (molar_mass_inconsistent signature, ADR 0061 vs 0062), none blocking'
-- manifest: evidence/F3/ebdff46fad6b39803b57ad3446b67d9b1f6421c4/manifest.json
+  note: 'process note: the full suite''s second failure was the WO7 manifest''s schema check, removed with that manifest'
+- manifest: evidence/F3/05ccf8805bf0970a9677d47a5ab221963a73d087/manifest.json
   item: limitations[4]
-  sha256: 098a99a56f2fd076e5f01e56b8ecd696e0d392baabb91ea7b7bc6fb254a31287
+  sha256: 3121b69b7630e7b4ea8485e0918b25c408f682e45e952d99444535816bb6d946
   class: P
   to: []
-  note: 'provenance note: status follows CI'
-- manifest: evidence/F3/ebdff46fad6b39803b57ad3446b67d9b1f6421c4/manifest.json
-  item: checks[0]
-  check_id: F3.CI
-  sha256: 1cf70c87fdf1fdc7ae1904af5ae1036075e6f865242cfcea61f6f455449930fe
-  class: P
-  to: []
-  note: 'process note: merge condition, CI pending at this commit'
+  note: 'process note: open questions for the design lane (molar_mass_inconsistent signature; fix round 3 DECISIONs F3-3-1 to F3-3-4), none blocking'

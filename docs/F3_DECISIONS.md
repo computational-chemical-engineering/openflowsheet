@@ -744,3 +744,14 @@ records as limitation text; `review` keeps `numerical` and `process_model` only.
 **Item 6, codehealth (`codehealth diff --base main --head HEAD` at `3a43dd75`).** Debt over touched files 51.60 ->
 62.70, unchanged by this round (the store's helper and the `finally` add no debt); the `local.py` duplication smell
 stays (F3-3-4); the 26 `repo-layers` lines are the base-config artefact the brief names.
+
+**Item 7, full suite at `05ccf880`** (serial: `pytest-xdist` and `pytest-timeout` are not installed in `.venv`, so
+`-n 8 --timeout=900` were dropped): 2 failed, 20771 passed, 107 skipped, 220 deselected, 3 xfailed in 6747 s. The
+failures: the expected red `test_every_description_is_reviewed_by_both_lanes`, and `test_manifest_validates` on the WO7
+manifest (below), removed by item 8. ruff, ruff format (1292 files), mypy (409 files), `registry_builtin --check`,
+`records_legacy_index --check` (149 records), F0 `corpus_identity --check` PASS, `t08_support_matrix --check` clean.
+
+**Item 8.** The manifest moves to `evidence/F3/05ccf880…/manifest.json`, status `implemented`: CI pending is a
+limitation, not a check; the review records are limitation text; `review` holds `numerical` and `process_model`
+only. Harvest rows re-mapped (5 limitations, class P), `HARVEST_SIZE = (99, 1134, 146)`. In that commit:
+`test_evidence_manifests.py`, `test_t08_w2_support_envelope.py`, `test_m07a_harvest.py`: 657 passed, 19 skipped.
