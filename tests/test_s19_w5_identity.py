@@ -644,3 +644,112 @@ def test_s4_a_removed_unit_module_is_unpredicted(scratch: Path) -> None:
     pointer = opened.removeprefix("TABLE ").removesuffix(": open")
     assert f"{pointer}: unpredicted (openflowsheet/models/c1/sink.py removed; " in done.stdout
     assert lines[-1].startswith("predict FAIL: 1 unpredicted table pointer(s); ")
+
+
+# -- review R-W5-WO0, fix 5 ------------------------------------------------------------------------
+
+
+def test_t2_against_log_through_the_command(facts: w5.Facts, tmp_path: Path) -> None:
+    """`predict --against-log` as the gate runs it: PASS on the predicted keys and line; a key
+    the log moved that was not predicted; a summary line that differs."""
+    moved, _ = w5.predict(facts, [PR_C1])
+    lines = [w5.f0_line(facts, moved), "platform ref-x86-64"]
+    lines += [f"{m}: {k}: registered 'a', now 'b'" for m, ks in moved.items() for k in sorted(ks)]
+    log = tmp_path / "f0.log"
+    arguments = ("predict", "--base", BASE, "--files", "thermo/pr_c1.py", "--against-log", str(log))
+    log.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    done = _tool(*arguments)
+    assert done.returncode == 0, done.stdout
+    assert done.stdout.splitlines()[-1] == (
+        f"predict --against-log PASS: M2 1, M3 1, M6 2, M9 1; log {lines[0]}"
+    )
+    extra = f"M9: {PR_LIB}: registered 'a', now 'b'"
+    log.write_text("\n".join([*lines, extra]) + "\n", encoding="utf-8")
+    done = _tool(*arguments)
+    assert done.returncode == 1, done.stdout
+    assert done.stdout.splitlines()[-2:] == [
+        f"M9: {PR_LIB}: moved, not predicted",
+        f"predict --against-log FAIL (1 difference(s)): M2 1, M3 1, M6 2, M9 1; log {lines[0]}",
+    ]
+    wrong = lines[0].replace("M9 FAIL 1/35", "M9 35/35")
+    log.write_text("\n".join([wrong, *lines[1:]]) + "\n", encoding="utf-8")
+    done = _tool(*arguments)
+    assert done.returncode == 1, done.stdout
+    assert done.stdout.splitlines()[-2] == (
+        f"summary line: log {wrong!r}, predicted {'predicted ' + lines[0]!r}"
+    )
+
+
+def test_t1_falsifiers_s3(facts: w5.Facts) -> None:
+    """S3, falsified: a hash site without a provider id; a provider with two values."""
+    broken = copy.deepcopy(facts)
+    site = next(path for path in sorted(broken["sites"]) if path.endswith("/pr_lib.py"))
+    broken["sites"][site]["provider_id"] = None
+    problems = w5.assertions(broken)["S3 attribution"]
+    assert f"{site}: hash site without PROVIDER_ID" in problems
+    broken = copy.deepcopy(facts)
+    broken["prefixes"]["pr-c1-v1"].append("0" * 12)
+    problems = w5.assertions(broken)["S3 attribution"]
+    assert any(p.startswith("pr-c1-v1: 2 implementation_sha256 values") for p in problems)
+    with pytest.raises(w5.RuleError, match="S3 attribution"):
+        w5.checked(broken)
+
+
+def test_t1_falsifiers_s6(facts: w5.Facts, monkeypatch: pytest.MonkeyPatch) -> None:
+    """S6, falsified on the check itself (the tier rules partition R by construction): a file
+    dropped, a file of F placed in tier 1, an unattributed file placed in tier 3."""
+    right = w5.tiers(facts)
+    unit = "src/openflowsheet/models/c1/flash.py"
+    cases = [
+        ({**right, 1: right[1][1:]}, "tiers hold 50 files, R 51"),
+        ({**right, 1: [*right[1], unit], 2: [f for f in right[2] if f != unit]}, "not F"),
+        ({**right, 2: [f for f in right[2] if f != unit], 3: [*right[3], unit]}, "no provider"),
+    ]
+    for tiered, expected in cases:
+        monkeypatch.setattr(w5, "tiers", lambda _facts, tiered=tiered: tiered)
+        problems = w5.assertions(facts)["S6 the tiers partition R"]
+        assert any(expected in p for p in problems), problems
+
+
+def test_t7_a_cost_file_importing_from_lca_is_a_hole(scratch: Path) -> None:
+    """Reading (b) of R4's hash scope: the intersection of the identity sets holding the file,
+    so the cost contributors' hash does not cover `lca/`."""
+    sets = "src/openflowsheet/assessment/cost/sets.py"
+    _append(scratch, sets, "from openflowsheet.assessment.lca.impact import categories_of\n")
+    done = _tool("--tree", str(scratch), "coverage", "--base", BASE)
+    assert done.returncode == 1, done.stdout
+    assert done.stdout.splitlines() == [
+        f"EDGE {sets} -> src/openflowsheet/assessment/lca/impact.py (categories_of): "
+        "outside its scope",
+        _summary(1),
+    ]
+
+
+def test_t7_a_unit_module_importing_a_sibling_unit_is_a_hole(scratch: Path) -> None:
+    """Reading (b): a unit module's own `artifact_hash` holds only the file."""
+    heater = "src/openflowsheet/models/c1/heater.py"
+    _append(scratch, heater, "from openflowsheet.models.c1.feed import PORTS as FEED_PORTS\n")
+    done = _tool("--tree", str(scratch), "coverage", "--base", BASE)
+    assert done.returncode == 1, done.stdout
+    assert done.stdout.splitlines() == [
+        f"EDGE {heater} -> src/openflowsheet/models/c1/feed.py (PORTS): outside its scope",
+        _summary(1),
+    ]
+
+
+def test_t7_a_changed_m9_key_set_exits_1(scratch: Path) -> None:
+    """W5-S7: a new unit module (it hashes its own `__file__`) adds an M9 key; no hashed file is
+    edited, and coverage still exits 1."""
+    unit = "src/openflowsheet/models/c1/w5_unit.py"
+    (scratch / unit).write_text(
+        '"""A new unit module."""\n\nfrom pathlib import Path\n\n'
+        "from openflowsheet.canonical import file_sha256\n\n\n"
+        "def _artifact_hash() -> str:\n    return file_sha256(Path(__file__))\n",
+        encoding="utf-8",
+    )
+    done = _tool("--tree", str(scratch), "coverage", "--base", BASE)
+    assert done.returncode == 1, done.stdout
+    assert done.stdout.splitlines() == [
+        "coverage: 0 new edge(s) outside a hash scope, 0 retarget(s), 0 edited hashed file(s); "
+        f"M9 key set DIFFERS: added ['{unit}'], removed [] (36)"
+    ]
