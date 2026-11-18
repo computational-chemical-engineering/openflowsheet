@@ -71,20 +71,18 @@ duplication (twin merge: addendum for Frank); certificate, checks, split_checks 
 `_project`, rule 10; many_args at its cap); render 8.5 (ladder, judged); store 8.6 (R-237 interface); compare 8.6
 (frozen v1); thermo/ frozen files (W5).
 **Next (four desk cards signed A and VERIFIED, 2026-11-17 ~20:10):**
-1. Merge wp/S19 into main: card ofs-s19-w3w4-merge-main stopped by its step-3 clause (CI 44158387592 failed; K05
-   hash test fixed in b716feb7 + 4bef2608, reviewed ACCEPT WITH FIXES). It stays UNEXECUTED. Manifest at 4f9f2c3d is
-   `tested` (9649de4c, CI 44173756567). F0 PASS on a local merge; local main reset to 218e7a73 (= origin/main).
-   **Waiting: CI 44194354064 on b36fa2a6, and a new card (DECISION-REQUEST sent to hub 2026-11-17, suggested id
-   ofs-s19-w3w4-merge-main-2).** On a VERIFIED A: add the new run to the manifest's G-END-CI, merge commit into
-   main, F0 on main, push main, `executed` on the new card (note the old one as superseded), tell hub, rebuild map.
-2. WITNF (ofs-s19-oq1b-nan-witness-early): brief WITNF-engineer.md ready (fill BASE_SHA_HERE with main after step 1),
-   then `reviewer` (design lane), CI, merge into main, `executed` on both NaN cards.
+1. DONE 2026-11-18: wp/S19 (0f4a1d0e) merged into main as a88655a2 and pushed (card ofs-s19-w3w4-merge-main-2,
+   executed; the first card superseded, unexecuted). CI 44194354064 green, F0 PASS on main. Still to do: rebuild the
+   map (MB) at the wp/S19 tip once WITNF's engineer is done (no heavy job beside a map build); re-pin cce-code-health
+   to 9a4605f (optional, stricter new-brain matching, no score change).
+2. WITNF (ofs-s19-oq1b-nan-witness-early): opus-engineer RUNNING (brief WITNF-engineer.md, base a88655a2, worktree
+   .claude/worktrees/witnf, branch wp/WITNF). Then `reviewer` (design lane), push wp/WITNF, CI, merge into main (WITNF
+   needs its own merge card unless ofs-s19-oq1b's action covers the merge: check its text), `executed` on both NaN cards.
 3. 0.5 (ofs-s19-start-05): starts after step 1; Frank's roadmap ADR 0057 (X07a, X01, F3, F2, F8, X06). Write
    `executed` when the first 0.5 package is started.
 4. Trailing S19 at one lane (ofs-s19-trailing-order): G3, G4, G2 (non-legacy), W5, G1 after the scale probe, docs.
 **Open for Frank (not blocking):** proposal 2 (selection widening; selected gates ~600 s vs 300 s); R-1042 option C;
 STOP 1 alternative; verify twins addendum; thermo/ below 7.0 only in W5; optional forbid rule cli/serving -> services;
-merge of wp/S19 into main (main = 218e7a73 shows health 7.7).
 **Notes:** as before (STOP 1 no-gain; ruff before a merge-check; helper merge only if wp/S19 changed only docs since;
 `enqueue` needs `--target --recipe --model`; repo `.venv`, `PYTHONPATH=<worktree>/src`, no `-n`). Two lanes can share
 one merge-check helper (done for G5 r12 + G6 r7). Rule-6 precedent: helpers writing `LaunchProgress` (R-W3-G5-12).
