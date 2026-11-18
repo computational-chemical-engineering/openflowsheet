@@ -1,7 +1,7 @@
 """F3's component data core (ADR 0061), introduced by package F3: v2 records, their identity and
 their validation (F3-WO1); the store and resolution (F3-WO2); the legacy import and the loader
-views (F3-WO3); the data lock and the rights register (F3-WO4). The user-file importer and the
-operations follow in F3-WO5.
+views (F3-WO3); the data lock and the rights register (F3-WO4); reaction consistency and the
+user-file adapter (F3-WO5a). The operations follow in F3-WO5b.
 
 - `model`: D1 to D5's tables (core property ids, the built-in correlation forms, record types and
   data sources) and the outcome type; the record's shape is `schemas/record-v2.schema.json`.
@@ -13,6 +13,8 @@ operations follow in F3-WO5.
 - `stack`: the store stack, project store over legacy store (D8).
 - `resolve`: lookup keys, identity classes and resolution (D9).
 - `importers.legacy`: the legacy importer, its profiles and the committed legacy index (D12).
+- `importers.user_file`: the user-file adapter (D12), a library function `register_record` calls.
+- `reactions`: reaction consistency (D7, Q7.A3), for `validate_record` and F2's validator.
 - `legacy_views`: the legacy loaders' dataclasses rebuilt from imported records (D12).
 - `lock`: the data lock, its builder and `data_lock_sha256` (D10); the lock's shape is
   `schemas/data-lock.schema.json`.
