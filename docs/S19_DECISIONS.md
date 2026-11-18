@@ -3009,3 +3009,13 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   731 s over the last three reports; proposal 2 with Frank). Queue idle: runner restarted for `--batch`, old PID
   2763884 killed, new PID 1341562. Launched: review R-W3-G1O-4 (reviewer, Opus) and WO-N1 (opus-engineer, brief
   `S19-W5-N1.md`, worktree `s19-w5n`).
+- **2026-11-19 ~01:35 CET, review R-W3-G1O-4 (reviewer, Opus, ~102k tokens): merge, no fixes.** The nine deviations
+  accepted (dev 5 not a deviation: RC5 says `run.record(` 7). Notes for the next runs: (1) C2's message says five
+  unread frame fields, it is six (`block` too); C3/C4 must move the loop's reads to `self.<frame>`; (2) region.py:397
+  the local `current` stays bound after the constructor: R2 reruns rc_check (RC3 (ii)); (3) `_Outer`'s docstring
+  describes the class after C4: recheck at C4. Helper `wp/S19-g1o4-mc` (worktree `s19-g1o4-mc`) = de16626f + merge
+  of wp/S19-g1o4 (6d8985b1; ruff clean), merge-check job 359 queued (wp/S19 gained code since 030288b4: the W5
+  tooling and WO-1b).
+  DECISION: lane O run 5's steps -> R2, S2, C3 (brief `S19-W3-G1O-5.md`). Plan section 6 lists run 4 as R2, S2, E2,
+  but run 3 took E2 and E3 and run 4 took R1, S1, C2, so each function's next step follows. Alternative: R2, S2 and
+  an X step. Reversible by: a different run 5 brief before launch.
