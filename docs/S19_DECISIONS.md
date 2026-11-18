@@ -2932,3 +2932,13 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   inside `_solve_region`, which spans 324-962 at 6722d919; the plan's region.py:737 predates the RS split) at the
   wp/S19 tip, label `g1o-self-region`. Brief `S19-W3-G1O-4.md` (R1, S1, C2; branch `wp/S19-g1o4` from the tip after the
   g1n4 merge). It launches after the g1n4 merge and a region self-test PASS.
+- **2026-11-19 ~01:15 CET, W5 gate-mode lane delivered (opus-engineer, ~215k tokens, over the ~150k guide; let
+  finish):** `wp/S19-w5gm` 94840fb3..15e27084 (mode, tests, test fix). A1 job 350 PASS 19/19; A2 37 passed; A3 (a) to
+  (c2) as specified (scratch branches `scratch/w5gm-*`). Batch P refused; `max_tier` 1 or 2. The runner (PID 2763884)
+  must be restarted when idle before the first `--mode w5` job (it predates the mode). Review R-W5-WO1gm launched
+  (reviewer, Opus). Open, with defaults until the review or a design ruling: (1) WO-N4's `scripts/registry_builtin.py`
+  edit is outside codehealth's scope `src/openflowsheet/*`: default, WO-N4 is an orchestrator-authorised commit
+  outside the gate, judged by W5-S4 (`predict --against-tables`) and F0 run by hand; (2) a tier 1 split's new files
+  cannot be in an admitted set fixed at B: default, the batch file is amended before the split step to name the new
+  paths (one logged commit of the batch file, the reviewer reads it); W5-S4 already predicts the contributor's
+  `modules` pointer for such a split.
