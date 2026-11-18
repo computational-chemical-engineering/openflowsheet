@@ -33,7 +33,10 @@ file's `base`, not the step's `{base}`.
                                           failures outside that set and which expected failures
                                           failed (the batch close reads them: L_B is not vacuous).
                                           Each pytest call of L (a `$ ` header) must end in its
-                                          closing counts line, else FAIL naming the call
+                                          closing counts line, else FAIL naming the call. An
+                                          expected failure that did not fail is reported as
+                                          EXPECTED-NOT-SELECTED (not in the calls' `@<log>.N.args`
+                                          listings) or EXPECTED-NOT-FAILED (selected, passed)
 
 The batch file: `{"batch": "N", "base": "<40-hex B>", "max_tier": 2, "admitted": [...],
 "generator": [...], "retarget": [...], "expected_failures": [...], "standing_failures": [...]}`.
@@ -45,6 +48,7 @@ Standard library only: gate.sh runs `batch` under any Python 3.
 from __future__ import annotations
 
 import argparse
+import contextlib
 import fnmatch
 import hashlib
 import json
@@ -323,22 +327,49 @@ def unclosed_calls(text: str) -> list[str]:
     ]
 
 
+def selection(text: str) -> set[str] | None:
+    """The node ids and test files the calls of a test_impact.py log ran: their `@<log>.N.args`
+    listings. None when a call takes no listing: a full suite or a fallback ran everything. An
+    unreadable listing adds nothing, so its tests read as not selected, never as run."""
+    found: set[str] = set()
+    for header, _ in calls(text):
+        last = header.rsplit(" ", 1)[-1]
+        if not last.startswith("@"):
+            return None
+        with contextlib.suppress(OSError):
+            found.update(Path(last[1:]).read_text(encoding="utf-8").split())
+    return found
+
+
+def selected(node: str, entries: set[str] | None) -> bool:
+    """Whether a node id was run: it, its test file or a node id that contains it is listed."""
+    if entries is None:
+        return True
+    return any(node == entry or node.startswith((f"{entry}::", f"{entry}[")) for entry in entries)
+
+
 def tests_verdict(
     code: int,
     failed: set[str],
     document: Mapping[str, Any],
     unclosed: Sequence[str] = (),
+    entries: set[str] | None = None,
 ) -> tuple[int, list[str]]:
     """W5-S6: (exit code, report lines). Exit 1 passes iff its failures lie in L_B + standing and
-    every pytest call closed with its counts line."""
+    every pytest call closed with its counts line. `entries` is the run's selection (None: all):
+    an expected failure that did not fail is reported as not selected or as selected and passed;
+    neither fails a step (the batch close reads them: L_B is not vacuous)."""
     expected = set(document["expected_failures"])
     standing = set(document["standing_failures"])
     hit = sorted(failed & expected)
+    missed = sorted(expected - failed)
+    unselected = [node for node in missed if not selected(node, entries)]
     lines = [f"EXPECTED-FAILED {node}" for node in hit]
-    lines += [f"EXPECTED-NOT-FAILED {node}" for node in sorted(expected - failed)]
+    lines += [f"EXPECTED-NOT-SELECTED {node}" for node in unselected]
+    lines += [f"EXPECTED-NOT-FAILED {node}" for node in missed if node not in unselected]
     lines += [f"STANDING-FAILED {node}" for node in sorted(failed & standing - expected)]
     lines += [f"NO-PYTEST-SUMMARY {call}" for call in unclosed]
-    tally = f"expected failures failed {len(hit)}/{len(expected)}"
+    tally = f"expected failures failed {len(hit)}/{len(expected)}, not selected {len(unselected)}"
     if unclosed:
         return code if code not in (0, 1) else 1, [
             *lines,
@@ -492,7 +523,9 @@ def command_tests(arguments: argparse.Namespace) -> int:
     log = Path(arguments.log)
     code = subprocess.call(command, cwd=ROOT)
     text = log.read_text(encoding="utf-8", errors="replace") if log.is_file() else ""
-    result, lines = tests_verdict(code, failed_nodes(text), document, unclosed_calls(text))
+    result, lines = tests_verdict(
+        code, failed_nodes(text), document, unclosed_calls(text), selection(text)
+    )
     print("\n".join(lines))
     return result
 

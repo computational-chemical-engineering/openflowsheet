@@ -144,6 +144,41 @@ def test_s6_a_call_without_its_closing_counts_line_fails_naming_it(
     assert gate.tests_verdict(1, failed, batch, gate.unclosed_calls(closed))[0] == 0
 
 
+def test_s6_an_expected_failure_not_selected_is_told_from_one_that_passed(
+    batch: dict[str, Any], tmp_path: Path
+) -> None:
+    """test_impact's `@<log>.N.args` listings are the selection: tests/test_b.py's node is in a
+    listed file (selected, passed), tests/test_a.py is not listed. Neither fails the step; a call
+    without a listing (a full suite or a fallback) selects everything."""
+    (tmp_path / "run.0.args").write_text("tests/test_b.py\ntests/test_c.py::test_standing\n")
+    (tmp_path / "run.1.args").write_text("tests/test_d.py::test_serial[p]\n")
+    log = (
+        f"$ python -m pytest -q -n 8 @{tmp_path}/run.0.args\n3 passed in 1.00s\n"
+        f"$ python -m pytest -q @{tmp_path}/run.1.args\n1 passed in 0.10s\n"
+    )
+    entries = gate.selection(log)
+    assert entries == {
+        "tests/test_b.py",
+        "tests/test_c.py::test_standing",
+        "tests/test_d.py::test_serial[p]",
+    }
+    assert gate.selected("tests/test_b.py::test_hash[x - y]", entries)
+    assert not gate.selected("tests/test_bb.py::test_x", entries)
+    assert not gate.selected("tests/test_d.py::test_serial[q]", entries)
+    code, lines = gate.tests_verdict(0, set(), batch, gate.unclosed_calls(log), entries)
+    assert code == 0, lines
+    assert "EXPECTED-NOT-SELECTED tests/test_a.py::test_identity" in lines
+    assert "EXPECTED-NOT-FAILED tests/test_b.py::test_hash[x - y]" in lines
+    assert lines[-1].endswith("expected failures failed 0/2, not selected 1")
+    full = "$ python -m pytest -q -n 8 --ignore=tests/test_s.py\n9 passed in 9.00s\n"
+    assert gate.selection(full) is None
+    lines = gate.tests_verdict(0, set(), batch, [], gate.selection(full))[1]
+    assert [line for line in lines if line.startswith("EXPECTED-NOT-")] == [
+        "EXPECTED-NOT-FAILED tests/test_a.py::test_identity",
+        "EXPECTED-NOT-FAILED tests/test_b.py::test_hash[x - y]",
+    ]
+
+
 def test_s6_the_node_ids_of_a_real_pytest_short_summary(tmp_path: Path) -> None:
     """pytest's own `-rsfE` output: FAILED and ERROR entries, a parameter id holding ' - ', and
     a captured log line starting with ERROR outside the summary, which is not a node."""
