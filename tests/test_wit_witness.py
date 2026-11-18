@@ -514,3 +514,90 @@ def test_f_a_resolved_refusal_does_not_end_the_witness_a_later_final_refusal_doe
         check = checks[f"derivative_witness.{which}"]
         assert check.result == "unsupported"
         assert check.reason == "witness_stencil_invalid_trial_state(S1.T)"
+
+
+# -- S19 design batch 1, Q2: a non-finite term has no difference (K04 §4.8, §4.8.3 (a)) -----------
+
+
+def _injected(
+    residual: Callable[[Sequence[float]], list[float] | None],
+    base: Sequence[float],
+    column: int,
+    injections: Mapping[tuple[float, int], float],
+) -> Callable[[Sequence[float]], list[float] | None]:
+    """`residual` with row `i` replaced by `value` at every point whose `column` coordinate is
+    exactly `base[column] + s h`, h = `FD_RELATIVE_STEP` S_x, computed as `_stencil` does, for each
+    `(s, i): value` of `injections`."""
+    h = FD_RELATIVE_STEP * COLUMN_SCALE[COLUMNS[column]]
+    keyed = {}
+    for (shift, row), value in injections.items():
+        point = np.array(base, dtype=float)
+        point[column] += shift * h
+        keyed[(float(point[column]), row)] = value
+
+    def wrapped(x: Sequence[float]) -> list[float] | None:
+        values = residual(x)
+        if values is None:
+            return None
+        for (coordinate, row), value in keyed.items():
+            if x[column] == coordinate:
+                values[row] = value
+        return values
+
+    return wrapped
+
+
+def _w0() -> tuple[dict[str, float], Callable[..., Any], dict[Any, float], list[float]]:
+    state, residual, jacobian = smooth_case("0.3", "2", "5", "600")
+    return state, residual, jacobian, [state[c] for c in COLUMNS]
+
+
+def _assert_non_finite(checks: Mapping[str, Any], column: str) -> None:
+    for which in ("on_pattern", "off_pattern"):
+        check = checks[f"derivative_witness.{which}"]
+        assert check.result == "unsupported"
+        assert check.reason == f"witness_stencil_non_finite({column})"
+
+
+def test_q2_a1_a_nan_on_pattern_term_is_refused_as_non_finite() -> None:
+    state, residual, jacobian, base = _w0()
+    injected = _injected(residual, base, 2, {(1.0, 2): math.nan})
+    checks, _ = run(tear(injected, jacobian), state, components=())
+    _assert_non_finite(checks, "S1.T")
+
+
+def test_q2_a2_a_nan_off_pattern_term_is_refused_as_non_finite() -> None:
+    state, residual, jacobian, base = _w0()
+    injected = _injected(residual, base, 2, {(1.0, 0): math.nan})
+    checks, _ = run(tear(injected, jacobian), state, components=())
+    _assert_non_finite(checks, "S1.T")
+
+
+def test_q2_a3_an_overflowing_difference_is_refused_not_failed_with_inf() -> None:
+    state, residual, jacobian, base = _w0()
+    injected = _injected(residual, base, 2, {(1.0, 2): 1e308, (-1.0, 2): -1e308})
+    checks, _ = run(tear(injected, jacobian), state, components=())
+    _assert_non_finite(checks, "S1.T")
+
+
+def test_q2_a4_a_non_finite_component_column_escalates_and_resolves() -> None:
+    state, residual, jacobian, base = _w0()
+    injected = _injected(residual, base, 0, {(1.0, 0): math.nan})
+    checks, escalations = run(tear(injected, jacobian), state, components=("A", "B"))
+    assert "S1.n.A" in escalations
+    assert escalations["S1.n.A"].scaled is not None
+    for which in ("on_pattern", "off_pattern"):
+        assert checks[f"derivative_witness.{which}"].result == "pass"
+
+
+def test_q2_a5_a_nan_ad_entry_is_refused_as_non_finite() -> None:
+    state, residual, jacobian, _ = _w0()
+    checks, _ = run(tear(residual, {**jacobian, ("R3", "S1.T"): math.nan}), state, components=())
+    _assert_non_finite(checks, "S1.T")
+
+
+def test_q2_a6_without_injection_the_witness_is_bitwise_unchanged() -> None:
+    state, residual, jacobian, _ = _w0()
+    checks, _ = run(tear(residual, jacobian), state)
+    assert checks["derivative_witness.on_pattern"].value == 2.3646862246096134e-09  # bitwise
+    assert checks["derivative_witness.off_pattern"].value == 0.0  # bitwise

@@ -12,6 +12,7 @@ that satisfies all 49 assembled rows.
 
 from __future__ import annotations
 
+import math
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Final
@@ -1147,17 +1148,24 @@ def _discrepancies(
     exact: Mapping[tuple[int, int], float],
     row_ids: Sequence[str],
     row_scale: Mapping[str, float],
-) -> tuple[float, float]:
+) -> tuple[float, float] | None:
     """§4.8's two maxima for one differenced column: on-pattern `|J-hat_ij - D-hat_ij|` and
-    off-pattern `|D-hat_ij|`."""
+    off-pattern `|D-hat_ij|`; None when a term is not finite (the column has no difference, S19
+    design batch 1 Q2)."""
     on, off = 0.0, 0.0
     for row, row_id in enumerate(row_ids):
         entry = exact.get((row, column))
         if entry is None:
-            off = max(off, abs(scaled[row]))
+            term = abs(scaled[row])
+            if not math.isfinite(term):
+                return None
+            off = max(off, term)
         else:
             scaled_exact = entry * column_scale / row_scale[row_id]
-            on = max(on, abs(scaled_exact - scaled[row]))
+            term = abs(scaled_exact - scaled[row])
+            if not math.isfinite(term):
+                return None
+            on = max(on, term)
     return on, off
 
 
@@ -1295,8 +1303,9 @@ class _WitnessFrame:
 @dataclass(frozen=True)
 class _ColumnWitness:
     """One differenced column's part of §4.8: its on-pattern and off-pattern maxima (both 0.0 when
-    `refusal` is set), the status of the stencil point that refused (None when the column
-    evaluated), and its §4.8.3 `Escalation` (None when none was triggered)."""
+    `refusal` is set), the status of the stencil point that refused, or `non_finite` when a term of
+    the difference is not finite (None when the column evaluated), and its §4.8.3 `Escalation`
+    (None when none was triggered)."""
 
     on: float
     off: float
@@ -1324,9 +1333,13 @@ def _column_witness(frame: _WitnessFrame, column: int, name: str, forward: bool)
             / frame.scaling_row[row_id]
             for row, row_id in enumerate(frame.row_ids)
         ]
-        on, off = _discrepancies(
+        maxima = _discrepancies(
             scaled, column, column_scale, frame.exact, frame.row_ids, frame.scaling_row
         )
+        if maxima is None:
+            refusal = "non_finite"
+        else:
+            on, off = maxima
     # §4.8.3 (a): a class-5 component column with x_j > 0 whose central result is not a pass.
     if (
         not forward
@@ -1345,8 +1358,7 @@ def _column_witness(frame: _WitnessFrame, column: int, name: str, forward: bool)
             registered=points if refusal is None else None,
         )
         if escalation.scaled is not None:
-            refusal = None
-            on, off = _discrepancies(
+            maxima = _discrepancies(
                 escalation.scaled,
                 column,
                 column_scale,
@@ -1354,6 +1366,11 @@ def _column_witness(frame: _WitnessFrame, column: int, name: str, forward: bool)
                 frame.row_ids,
                 frame.scaling_row,
             )
+            if maxima is None:
+                refusal, on, off = "non_finite", 0.0, 0.0
+            else:
+                refusal = None
+                on, off = maxima
         return _ColumnWitness(on, off, refusal, escalation)
     return _ColumnWitness(on, off, refusal, None)
 
