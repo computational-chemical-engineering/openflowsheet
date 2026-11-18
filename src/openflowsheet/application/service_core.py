@@ -1,7 +1,8 @@
 """`ServiceCore`: what the services behind `LocalApplication` share (ADR 0076 I-12d).
 
-One core per caller: the store, the record stack (ADR 0061 D8), the project policy, the caller's capability, the owner instance,
-the executor and an in-memory project's scratch directory, with the cross-cutting steps every
+One core per caller: the store, the record stack (ADR 0061 D8), the project policy, the
+caller's capability, the owner instance, the executor and an in-memory project's scratch
+directory, with the cross-cutting steps every
 operation takes: who the caller is (`caller`), whether it may (`authorize`), and an audited
 refusal (`refuse`, `refuse_error`, `audit_refusal`). `LocalApplication.authenticated` acts as
 another grant through `acting_as`: the same store, policy, executor and owner, another

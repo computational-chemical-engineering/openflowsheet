@@ -33,7 +33,7 @@ from t07_corpus import CORPUS
 from t07_jobs_support import commit, lifecycle_violations
 
 from openflowsheet.application.authz import OPERATION_RIGHTS, grant
-from openflowsheet.application.contract import Application, Inspection, JobControl
+from openflowsheet.application.contract import Application, Inspection, JobControl, Records
 from openflowsheet.application.documents import validate_inline
 from openflowsheet.application.errors import ApplicationError
 from openflowsheet.application.job_requests import JobRequest, SolveBody
@@ -109,6 +109,12 @@ TABLE: dict[str, tuple[str, tuple[str, str] | None, str | None, tuple[str, ...]]
     # ADR 0060 D11 (F1; ADR 0019 Amendment 7): the extension registry, on all four transports.
     "list_capabilities": ("read", ("GET", "/v1/capabilities"), "list_capabilities", ALL),
     "check_admission": ("read", ("POST", "/v1/admission/check"), "check_admission", ALL),
+    # ADR 0061 D13 (F3, ADR 0019 Amendment 8): the protocol `Records`
+    "search_records": ("read", ("POST", "/v1/records/search"), "search_records", ALL),
+    "get_record": ("read", ("GET", "/v1/records/{record_sha256}"), "get_record", ALL),
+    "register_record": ("draft", ("POST", "/v1/records"), "register_record", ALL),
+    "validate_record": ("read", ("POST", "/v1/records/validate"), "validate_record", ALL),
+    "assess_rights": ("policy", ("POST", "/v1/records/rights"), "assess_rights", ALL),
     "artifact_bytes": (
         "read",
         ("GET", "/v1/artifacts/{artifact_id}/raw"),
@@ -140,11 +146,12 @@ def test_every_protocol_method_is_exactly_one_row() -> None:
         *_protocol_methods(Application),
         *_protocol_methods(JobControl),
         *_protocol_methods(Inspection),
+        *_protocol_methods(Records),
     ]
     # Inspection's ninth is `list_audit` (ADR 0019 Amendment 3), its tenth `explain` (ADR 0058 D7),
     # its eleventh `get_stream_table` (ADR 0068), its twelfth and thirteenth `list_capabilities`
-    # and `check_admission` (ADR 0060 D11).
-    assert len(methods) == len(set(methods)) == 4 + 7 + 13
+    # and `check_admission` (ADR 0060 D11); Records' five are ADR 0061 D13's.
+    assert len(methods) == len(set(methods)) == 4 + 7 + 13 + 5
     rows = [operation.method for operation in OPERATIONS.values()]
     assert sorted(rows) == sorted([*methods, "artifact_bytes"])
     for name, operation in OPERATIONS.items():
@@ -165,8 +172,8 @@ def test_the_table_is_section_4_3s() -> None:
     tools = [op.mcp_tool for op in OPERATIONS.values() if op.mcp_tool is not None]
     # 19 routes with ADR 0019 Amendment 3's `list_audit`, which has no MCP tool (17 stay); ADR 0058
     # D7's `explain` adds one of each, ADR 0068's `get_stream_table` one more, and ADR 0060
-    # D11's `list_capabilities` and `check_admission` two more.
-    assert len(http) == len(set(http)) == 23 and len(tools) == len(set(tools)) == 21
+    # D11's `list_capabilities` and `check_admission` two more, ADR 0061 D13's Records five.
+    assert len(http) == len(set(http)) == 28 and len(tools) == len(set(tools)) == 26
     for operation in OPERATIONS.values():
         assert ("http" in operation.transports) == (operation.http is not None)
         assert ("mcp" in operation.transports) == (operation.mcp_tool is not None)
