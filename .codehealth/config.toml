@@ -209,6 +209,9 @@ order = [
     "openflowsheet.orchestrator",
     "openflowsheet.run.solution_state",
     "openflowsheet.models",
+    # ADR 0061 D12 (F3 decision WO3-4): the loader views build the thermo loaders' dataclasses
+    # from records, so this one module of `records` sits above `thermo`.
+    "openflowsheet.records.legacy_views",
     "openflowsheet.thermo",
     "openflowsheet.graph",
     "openflowsheet.numerics",
