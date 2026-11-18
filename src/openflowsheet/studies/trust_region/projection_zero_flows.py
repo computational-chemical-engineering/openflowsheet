@@ -127,7 +127,8 @@ def _eliminate_zero_flows(
     """`M05-zero-flow-v2` (module docstring) on the model with every variable: the candidates
     Z₀; §17.1's single pins, found by repeated passes over the kept rows in spec order; §18.1's
     joint stage on the flows they leave, alternating with the passes until neither adds anything;
-    and the refusals. Returns the eliminated flows in variable order and the certified blocks."""
+    and the refusals, in this order: `_check_unpinned`, `_check_redundant`, `_check_link_inputs`.
+    Returns the eliminated flows in variable order and the certified blocks."""
     variable_ids = spec.variable_ids
     candidates = [
         name
@@ -189,37 +190,9 @@ def _eliminate_zero_flows(
             pins.update(rows)
             for name in variables:
                 found[name] = ZeroEliminated(name, None, None, None, block.block)
-    unpinned = [name for name in candidates if name not in found]
-    if unpinned:
-        raise ProjectionRefusedError(
-            "PROJECTION_ZERO_FLOW",
-            f"{unpinned[0]}:unpinned",
-            f"the flows {unpinned} are exactly 0.0 at x0 and no kept row pins them alone with a "
-            "zero residual, a nonzero pivot and a zero decision tangent at x0 (R-296), nor does "
-            "a certified block of rows pin them jointly (R-326)",
-        )
-    redundant = [
-        row
-        for row in spec.equation_ids
-        if row not in omitted
-        and row not in pins
-        and incidence[row] & found.keys()
-        and not incidence[row] - found.keys()
-    ]
-    if redundant:
-        raise ProjectionRefusedError(
-            "PROJECTION_ZERO_FLOW",
-            f"{redundant[0]}:redundant_row",
-            f"the rows {redundant} have no unknown left once the zero flows are eliminated (R-296)",
-        )
-    inputs = [name for link in links for name in link.inlet_variable_ids if name in found]
-    if inputs:
-        raise ProjectionRefusedError(
-            "PROJECTION_ZERO_FLOW",
-            f"{inputs[0]}:link_input",
-            f"the eliminated flows {inputs} are inlet arguments of an external link; the FD policy "
-            "has no rule for a constant inlet coordinate (R-296)",
-        )
+    _check_unpinned(candidates, found)
+    _check_redundant(spec, omitted, pins, incidence, found)
+    _check_link_inputs(links, found)
     return tuple(found[name] for name in variable_ids if name in found), tuple(blocks)
 
 
@@ -423,3 +396,59 @@ def _persistence_rows(
         else:
             parameters[name] = moved(start, 1.0, k)
     return _float_rows(spec, state, outputs, parameters, rows)
+
+
+def _check_unpinned(candidates: Sequence[str], found: Mapping[str, ZeroEliminated]) -> None:
+    """R-296, R-326: every candidate flow (Z₀, in variable order) is in `found`, pinned alone by
+    a kept row or jointly by a certified block; else `PROJECTION_ZERO_FLOW` naming the first
+    one that is not (`<flow>:unpinned`)."""
+    unpinned = [name for name in candidates if name not in found]
+    if unpinned:
+        raise ProjectionRefusedError(
+            "PROJECTION_ZERO_FLOW",
+            f"{unpinned[0]}:unpinned",
+            f"the flows {unpinned} are exactly 0.0 at x0 and no kept row pins them alone with a "
+            "zero residual, a nonzero pivot and a zero decision tangent at x0 (R-296), nor does "
+            "a certified block of rows pin them jointly (R-326)",
+        )
+
+
+def _check_redundant(
+    spec: ProblemSpec,
+    omitted: Collection[str],
+    pins: Collection[str],
+    incidence: Mapping[str, frozenset[str]],
+    found: Mapping[str, ZeroEliminated],
+) -> None:
+    """R-296: no kept row in spec order, neither omitted nor a pin, whose incidence meets the
+    eliminated flows (`found`) and has no unknown left without them; else
+    `PROJECTION_ZERO_FLOW` naming the first such row (`<row>:redundant_row`)."""
+    redundant = [
+        row
+        for row in spec.equation_ids
+        if row not in omitted
+        and row not in pins
+        and incidence[row] & found.keys()
+        and not incidence[row] - found.keys()
+    ]
+    if redundant:
+        raise ProjectionRefusedError(
+            "PROJECTION_ZERO_FLOW",
+            f"{redundant[0]}:redundant_row",
+            f"the rows {redundant} have no unknown left once the zero flows are eliminated (R-296)",
+        )
+
+
+def _check_link_inputs(
+    links: Sequence[ExternalLinkSpec], found: Mapping[str, ZeroEliminated]
+) -> None:
+    """R-296: no eliminated flow (`found`) is an inlet argument of an external link, in link
+    and inlet order; else `PROJECTION_ZERO_FLOW` naming the first (`<flow>:link_input`)."""
+    inputs = [name for link in links for name in link.inlet_variable_ids if name in found]
+    if inputs:
+        raise ProjectionRefusedError(
+            "PROJECTION_ZERO_FLOW",
+            f"{inputs[0]}:link_input",
+            f"the eliminated flows {inputs} are inlet arguments of an external link; the FD policy "
+            "has no rule for a constant inlet coordinate (R-296)",
+        )
