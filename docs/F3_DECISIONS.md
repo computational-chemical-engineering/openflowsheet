@@ -652,3 +652,29 @@ test_a09_qualification_field, test_doc_pages, test_e01_a_core, test_e01_b_nlp, t
 `application/`; touched files `records_service.py` 9.6, `user_file.py` 9.8, `normalize.py`, `reactions.py`,
 `records/__init__.py` 10.0. F0 `corpus_identity.py --check` PASS (M1 50/50, M2 61/61, M3 61/61, M4 61/61, M5 61/61,
 M6 85/85, M7 52/52, M8 105/105, M9 35/35).
+
+## WO7 (close-out), 2026-11-18
+
+Brief `docs/briefs/F3-WO7.md`, build lane.
+
+**Commits.** `f4f000a2` (`test_t07_w6c_descriptions.py` counts 26 MCP operations; the only stale hit of
+`grep "== 19\|== 21\|== 42" tests/*.py`: the other hits are unrelated counts, and `test_t08_w2_description_reviews:35`,
+`test_t07_w5a_operations:177` already count F3's five), `a7b8ca0d` (R-1051 names `f7ec3c94…`), `2062ea23` (ADR 0019
+Amendment 8 states R-1056's `reserved_namespace` rule), `ebdff46f` (`RECORDS_STATUS = "tested"`, D10: status is an
+evidence field). The manifest is `evidence/F3/ebdff46fad6b39803b57ad3446b67d9b1f6421c4/manifest.json`.
+
+**DECISION (orchestrator): `tested`, not `released`, not `implemented`.** Reversible by reverting `ebdff46f`.
+
+**Moved.** `tables.sha256`: only the `records` line, `5a368bf0bf1178f368a4ad128e63364e30520bcee8746692ae8eab8c3eae7285`
+-> `6e48244d3aff503ae0cca36af22ff6abd5922bc34cecc7241402fe15221307ee`, because that file hashes each table's bytes and
+`records.json` holds the status values (D10 excludes status from the descriptor and registry hashes, not from the file
+bytes). `tests/fixtures/registry/builtin-sha256.txt` is byte-identical (`fc0af96b…`); core and legacy lines identical.
+
+**Not done.** Frank signed Decision Desk card `ofs-f3-mcp-descriptions-human`, choice A; recording the human review in
+`REVIEW.json` waits for Frank's permission (the agent edit was denied), so the five human reviews stay open and
+`test_every_description_is_reviewed_by_both_lanes` stays red. Card `ofs-f3-qf1-rational-coefficients` is signed A.
+
+**Acceptance (at `d5468d19`, then one comment line wrapped for ruff E501).** Battery, 76 files, serial: 1 failed
+(the expected red, five human reviews open), 2358 passed, 14 skipped, 22 deselected, 3 xfailed, 581.62 s.
+`registry_builtin.py --check` clean; `records_legacy_index.py --check` clean (149 records); F0 `corpus_identity.py
+--check` PASS; `ruff check` passed, `ruff format --check` 1292 files, `mypy` no issues in 409 files.

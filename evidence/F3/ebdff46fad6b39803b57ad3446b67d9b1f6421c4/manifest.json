@@ -1,0 +1,76 @@
+{
+  "work_package": "F3",
+  "commit": "ebdff46fad6b39803b57ad3446b67d9b1f6421c4",
+  "requirements": [],
+  "status": "implemented",
+  "inputs": {
+    "case_id": "ADR 0061 (Accepted, R-1050); F3 review 2 docs/reviews/F3-review-2.md (68ca5b98) and fix round 2 (afde8883); ruling round 1 docs/reviews/F3-rulings-1.md; build decisions docs/F3_DECISIONS.md; register R-1050 to R-1057; surface c_10, D_10 f7ec3c94233d30506ec2082a13c4e54d57bd540e43e97fdf877b1e3c75fed467; built-in registry_sha256 fc0af96b7ba9b7259ce3c1336cf408f41c1805259859a788c4804502c5c7bcee",
+    "case_hash": "539d6de44da8d841f4c6dc02ca5c124c3854fcdbdc9824ef42b411cbfd95a447",
+    "environment_lock_hash": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+  },
+  "commands": [
+    {
+      "cmd": "PYTHONPATH=src .venv/bin/python -m pytest -q -p no:cacheprovider, the 62 files of F3-battery.txt plus tests/test_f3_*.py, test_m04_study_job, test_m07a_surface_chain, test_t08_w2_description_reviews, test_t07_w6c_descriptions and every file matching the MCP_OPERATIONS/len(OPERATIONS)/REVIEW.json/records.json/list_tools grep (76 files), serial (at d5468d19, the head before a comment-only line wrap: 1 failed, 2358 passed, 14 skipped, 22 deselected, 3 xfailed in 581.62 s; the one failure is the expected red test_every_description_is_reviewed_by_both_lanes, the five human reviews open)",
+      "cwd": ".claude/worktrees/f3",
+      "exit_code": 1
+    },
+    {
+      "cmd": "PYTHONPATH=src .venv/bin/python scripts/registry_builtin.py --check (clean, 49 descriptors in 3 tables; table digests held; registry_sha256 fc0af96b7ba9b7259ce3c1336cf408f41c1805259859a788c4804502c5c7bcee, unchanged by the status change)",
+      "cwd": ".claude/worktrees/f3",
+      "exit_code": 0
+    },
+    {
+      "cmd": "PYTHONPATH=src .venv/bin/python scripts/records_legacy_index.py --check (clean, 149 records in 7 files)",
+      "cwd": ".claude/worktrees/f3",
+      "exit_code": 0
+    },
+    {
+      "cmd": "PYTHONPATH=src .venv/bin/python scripts/corpus_identity.py --check (F0 PASS: M1 50/50, M2 61/61, M3 61/61, M4 61/61, M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 35/35)",
+      "cwd": ".claude/worktrees/f3",
+      "exit_code": 0
+    },
+    {
+      "cmd": ".venv/bin/ruff check . (all checks passed, after wrapping one over-long comment line); .venv/bin/ruff format --check . (1292 files formatted); .venv/bin/mypy (no issues in 409 source files)",
+      "cwd": ".claude/worktrees/f3",
+      "exit_code": 0
+    }
+  ],
+  "checks": [
+    {
+      "id": "F3.CI",
+      "description": "merge condition: CI green on both architectures",
+      "result": "pending",
+      "value": "no CI result yet at this commit"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "docs/adr/0061-F3-component-data.md",
+      "sha256": "539d6de44da8d841f4c6dc02ca5c124c3854fcdbdc9824ef42b411cbfd95a447",
+      "description": "ADR 0061, Accepted (R-1050)"
+    },
+    {
+      "path": "docs/reviews/F3-rulings-1.md",
+      "sha256": "95bb58a671241601ac9c5d992d18d89e0861567ab21b42e2fd1f2563c33cfa5e",
+      "description": "design-lane ruling round 1"
+    },
+    {
+      "path": "docs/reviews/F3-review-2.md",
+      "sha256": "5d9811c521146d87958db1208e627aea9f1c8ba022289df52b71003e5e1f5ef8",
+      "description": "design-lane review 2"
+    }
+  ],
+  "limitations": [
+    "Evidence class: software verification of the component-data records and their five MCP operations against independent expectations. Status is implemented, not tested: the orchestrator sets tested on CI green. No reviewed status is claimed by the build lane.",
+    "Frank signed Decision Desk card ofs-f3-mcp-descriptions-human, choice A; recording it in REVIEW.json waits for Frank's permission, since the agent edit was denied. Until then test_every_description_is_reviewed_by_both_lanes is the one expected red, reporting the five human reviews open.",
+    "Card ofs-f3-qf1-rational-coefficients signed A: JSON numbers only in F3; ADR 0062's [p, q] coefficients join validate_record when ADR 0062 is accepted, an obligation on F2.",
+    "The molar_mass_inconsistent signature differs between ADR 0061 and ADR 0062; open for the design lane.",
+    "No CI result yet."
+  ],
+  "review": {
+    "design_lane": "recorded: WO1 review, ruling round 1 (docs/reviews/F3-rulings-1.md), review 2 (68ca5b98) and fix round 2 (afde8883); design-lane review of the five MCP descriptions recorded in REVIEW.json at c1cee7e1",
+    "human": "pending",
+    "numerical": "pending",
+    "process_model": "pending"
+  }
+}
