@@ -2541,3 +2541,14 @@
   passed, 2 failed (g19, g20, base failures); zero-flow files 157 passed. Not taken: `_eliminate_zero_flows` (phases
   need >= 6 inputs; proposal: an RC-like `_ZeroFlowStage`), `verify_candidate` (twin early returns drop literals
   under rule 15; phases need >= 9 locals). Both for the review to rule.
+- **2026-11-18, G3 run 5 gated: jobs 285-287 all PASS** (steps 317-319). nlp-marked suite at d6781922: 210 passed,
+  2 skipped, 2 failed (g19, g20), as at the base: nlp rule met. Gate report (6 h, 23 gates, 0 failed): `ALERT
+  selected share 67% < 75% of step gates`: studies/ import-time fallbacks as before (proposal 2); no action. Review
+  R-W3-G3-5 (reviewer, Opus) launched.
+- **2026-11-18, F3-WO5b part 2 done (opus-engineer, Opus, 388k):** wp/F3 a66116d9..50e6ca04: surface (link c_10
+  R-1051, D_9 e2c44b6b -> D_10 248c2e74, stripped gives D_9), SNAPSHOT_F3 five rows (no earlier snapshot moved), CLI
+  `records`, descriptors (records.json 2ec2ab3f -> 8f0fc8fb, registry_sha256 affa126f -> c8d191de), catalogue
+  afa8e493 -> ff50954d, Amendment 8 (Accepted), test_f3_operations, E-F3-5 grant clause. F3 tests 282 passed; 71-file
+  battery 2132 passed, 1 failed (expected red: the five descriptions' reviews pending); F0 PASS; mypy clean; arch 0/0.
+  DECISIONs WO5b-7..9. Next for F3: package reviewer pass (WO5a, WO5b; rulings WO5a-1..9, WO5b-1..9, R1-B6;
+  reactions.py numerics), the five description reviews (design lane, then Frank), WO7 close-out.
