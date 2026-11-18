@@ -2477,3 +2477,11 @@
   --no-inventory` at the lane head with failures a subset of the base's, before merge. Run now at 226ca985 (base of
   run 3), 8cb44f62 (run 3 merged, retroactive) and 8eedd642 (run 4 head). Alternative: add an nlp tier to gate.sh
   (better; a tools change for a later tools lane). Reversible by: dropping the rule.
+- **2026-11-18, F3 ruling round 1 (reviewer, Fable, 222k): sound to build WO5 on after B1-B7.** Review
+  `docs/reviews/F3-rulings-1.md`, ADR 0061 edits in 5d085f05 (+74/-19, "F3 ruling round 1 applied", Proposed).
+  Keep: WO3-1/WO4-0 (one citation per legacy file), WO3-2, WO2-7, WO4-3, WO3-3; confirm fix1-1..4, WO2-2. Change:
+  WO3-5/WO4-2 (sets take the file's source entry: 7 seed rows, one R-880 row), WO2-1 (repair a corrupt target on
+  registration, notice `store_object_repaired`; reads refuse), WO4-7 (fixture branch). For WO5: `reserved_namespace
+  (legacy)` by legacy-index membership; `store_object_repaired` in findings and audit row. B1-B7 engineer running
+  (brief `docs/briefs/F3-rulings-1-fix.md`, f92430bb). Hub asked to re-pin card ofs-f3-accept-adr0061 to 5d085f05
+  (the one re-pin); the ADR stays frozen from here to signing.
