@@ -2722,3 +2722,15 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   import-time code); proposal 2 waits for Frank, no other action. "ALERT queue wait median 19 min > 15 min": one
   lane's 8 snapshot steps enqueued in a burst behind run 7's tail, 2 slots 45% busy; no action (a single lane;
   waits do not hold an engineer, which ends after enqueueing). Next: G3 run 9 (brief S19-W3-G3-9.md).
+- **2026-11-18, G3 run 9 delivered (opus-engineer, Opus):** wp/S19-g3i 50bc8c6a..4c029931; test-only c7088769
+  (`not_run` list order at its three skip sites, tests/test_opt_request.py 44 passed; negative controls: two codes
+  swapped, and unprobed skip moved, each fail); 8 steps queued as jobs 323-330: 1 request.static_readiness
+  extract-phase 15.5 -> 0 (closure `skip` gone: each phase returns its `not_run` in write order), 2 projection.project
+  (S1) 21.5 -> 11.5, 3 projection_checks._certify, 4 trf._run, 5 holders.EFHolder._values_request
+  (consolidate-duplicate), 6 surrogate/study.evaluate, 7 nlp/boundary.judge (S1), 8 replay.record_integrity (S2).
+  Scan 4134.8 -> 4060.5, health 8.35, brain 18; studies/ below 7.0 only verification.py 6.1; projection.py 7.4.
+  nlp-marked at head: g19, g20 only.
+  DECISION (engineer's open question, a `_Projected(rows, columns)` parameter object for project's scaling block
+  and zero-flow reassembly and `_source_map`'s 15 parameters): no. The values come from different phases, and
+  S19_RULES rejects bundling unrelated parameters; projection.py at 7.4 meets G-END's file floor. Alternative: the
+  object (rejected, rule above). Reversible by: a later step if a design pass finds a cohesive type.
