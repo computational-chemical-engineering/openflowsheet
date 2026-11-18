@@ -136,19 +136,7 @@ def _eliminate_zero_flows(
     ]
     if not candidates:
         return (), ()
-    model = assembly.model
-    # A row's structural incidence: the unknowns of the shape check (x, y, w) its expression
-    # contains — never the decisions, whose derivative is criterion (iii).
-    unknowns = {
-        **{name: model.x[i] for i, name in enumerate(variable_ids)},
-        **{f"y[{g}]": model.y[g] for g in range(len(assembly.output_rows))},
-        **{f"w[{k}]": model.w[k] for k in range(len(assembly.link_rows))},
-    }
-    column = ComponentMap((variable, name) for name, variable in unknowns.items())
-    incidence = {
-        name: frozenset(column[v] for v in identify_variables(expression) if v in column)
-        for name, expression in assembly.built.items()
-    }
+    unknowns, incidence = _structural_incidence(variable_ids, assembly)
     position = {name: i for i, name in enumerate(spec.equation_ids)}
     index = {name: i for i, name in enumerate(variable_ids)}
     zero = set(candidates)
@@ -233,6 +221,28 @@ def _eliminate_zero_flows(
             "has no rule for a constant inlet coordinate (R-296)",
         )
     return tuple(found[name] for name in variable_ids if name in found), tuple(blocks)
+
+
+def _structural_incidence(
+    variable_ids: Sequence[str], assembly: _Assembly
+) -> tuple[dict[str, Any], dict[str, frozenset[str]]]:
+    """The unknowns of the shape check by name (`x` by variable id in `variable_ids` order, then
+    `y[g]`, then `w[k]`) and each built row's structural incidence over them, by equation id (the
+    rows of `assembly.built`). Pure: it reads `assembly.model` and walks each expression."""
+    model = assembly.model
+    # A row's structural incidence: the unknowns of the shape check (x, y, w) its expression
+    # contains — never the decisions, whose derivative is criterion (iii).
+    unknowns = {
+        **{name: model.x[i] for i, name in enumerate(variable_ids)},
+        **{f"y[{g}]": model.y[g] for g in range(len(assembly.output_rows))},
+        **{f"w[{k}]": model.w[k] for k in range(len(assembly.link_rows))},
+    }
+    column = ComponentMap((variable, name) for name, variable in unknowns.items())
+    incidence = {
+        name: frozenset(column[v] for v in identify_variables(expression) if v in column)
+        for name, expression in assembly.built.items()
+    }
+    return unknowns, incidence
 
 
 def _joint_blocks(
