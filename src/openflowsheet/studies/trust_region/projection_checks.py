@@ -313,9 +313,40 @@ def _certify(
 ) -> tuple[OmittedRow, ...]:
     """R-274's fact 3, M03's Q3 in the projection's scales: Ĵ_K X̂ = −F̂_d,K at x₀ (one ADR 0004
     solve for every decision), and every decision's tangent residual Ĵ_E X̂ + F̂_d,E on each
-    eliminated row within τ_alias. Called after the DOF check, so Ĵ_K is square."""
+    eliminated row within τ_alias. Called after the DOF check, so Ĵ_K is square. The tangent
+    residuals are `_tangent_residuals`'s."""
     if not eliminated:
         return ()
+    tangent = _tangent_residuals(spec, scaling, decisions, eliminated, derivatives)
+    origins = {equation.equation_id: equation.origin for equation in spec.equations}
+    certified = []
+    for i, row in enumerate(eliminated):
+        residuals = {
+            decision.parameter_id: float(tangent[i, j]) for j, decision in enumerate(decisions)
+        }
+        over = sorted(name for name, value in residuals.items() if not abs(value) <= TAU_ALIAS)
+        if over:
+            raise ProjectionRefusedError(
+                "PROJECTION_OMITTED_ROW_UNCERTIFIED",
+                row.row_id,
+                f"the tangent residual of decisions {over} on it exceeds tau_alias "
+                f"{TAU_ALIAS:g}: {residuals}",
+            )
+        certified.append(OmittedRow(row, origins[row.row_id], residuals_x0[row.row_id], residuals))
+    return tuple(certified)
+
+
+def _tangent_residuals(
+    spec: ProblemSpec,
+    scaling: Scaling,
+    decisions: Sequence[DecisionSpec],
+    eliminated: Sequence[EliminatedRow],
+    derivatives: _RowDerivatives,
+) -> npt.NDArray[np.float64]:
+    """`_certify`'s tangent, pure but for its refusal: Ĵ_E X̂ + F̂_d,E in the projection's scales,
+    one row per `eliminated` row and one column per decision, where X̂ solves Ĵ_K X̂ = −F̂_d,K on
+    the retained rows (one ADR 0004 solve); zeros with no decision. Raises
+    PROJECTION_OMITTED_ROW_UNCERTIFIED, on the first eliminated row, when that solve fails."""
     position = {name: i for i, name in enumerate(spec.equation_ids)}
     removed = [row.row_id for row in eliminated]
     kept = [name for name in spec.equation_ids if name not in set(removed)]
@@ -344,19 +375,4 @@ def _certify(
                 f"the tangent of the retained rows at x0 is not defined: {error}",
             ) from error
         tangent = j_removed @ solution.reshape(len(kept), len(decisions)) + d_removed
-    origins = {equation.equation_id: equation.origin for equation in spec.equations}
-    certified = []
-    for i, row in enumerate(eliminated):
-        residuals = {
-            decision.parameter_id: float(tangent[i, j]) for j, decision in enumerate(decisions)
-        }
-        over = sorted(name for name, value in residuals.items() if not abs(value) <= TAU_ALIAS)
-        if over:
-            raise ProjectionRefusedError(
-                "PROJECTION_OMITTED_ROW_UNCERTIFIED",
-                row.row_id,
-                f"the tangent residual of decisions {over} on it exceeds tau_alias "
-                f"{TAU_ALIAS:g}: {residuals}",
-            )
-        certified.append(OmittedRow(row, origins[row.row_id], residuals_x0[row.row_id], residuals))
-    return tuple(certified)
+    return tangent
