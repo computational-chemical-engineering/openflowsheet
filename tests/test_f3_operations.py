@@ -69,6 +69,25 @@ RIGHTS_ROW = {
     "assessment": "permitted",
     "basis": "the lab's own measurement",
 }
+
+
+def _legacy_shas(profile: str) -> dict[str, str]:
+    """The committed legacy index's record SHAs of `profile`, by record id."""
+    (entry,) = [e for e in legacy.committed_index()["files"] if e["profile"] == profile]
+    return {item["id"]: item["sha256"] for item in entry["records"]}
+
+
+M01, L01, S10 = _legacy_shas("m01"), _legacy_shas("l01"), _legacy_shas("s10")
+#: F3 review 2, C8a: `validate_record`'s reaction checks on legacy SHAs. Ammonia on `m01`; water
+#: over `l01`'s H2 and O2 and `s10`'s H2O, two atomic-weight tables (D7: a notice, no error).
+AMMONIA = {
+    "components": {"n2": M01["N2"], "h2": M01["H2"], "nh3": M01["NH3"]},
+    "reactions": [{"id": "haber", "stoichiometry": {"n2": -1, "h2": -3, "nh3": 2}}],
+}
+WATER = {
+    "components": {"h2": L01["H2"], "o2": L01["O2"], "h2o": S10["H2O"]},
+    "reactions": [{"id": "water", "stoichiometry": {"h2": -2, "o2": -1, "h2o": 2}}],
+}
 #: E-F3-11's scenario, in order: `(label, operation, request, refused)`.
 SCENARIO: tuple[tuple[str, str, dict[str, Any], bool], ...] = (
     ("register", "register_record", {"record": user_component()}, False),
@@ -94,6 +113,32 @@ SCENARIO: tuple[tuple[str, str, dict[str, Any], bool], ...] = (
     ("validate", "validate_record", {"record": user_component()}, False),
     ("validate a refused record", "validate_record", {"record": {**SECOND, "name": ""}}, False),
     ("validate absent", "validate_record", {"records": [ABSENT]}, True),
+    ("validate ammonia", "validate_record", AMMONIA, False),
+    ("validate water over two tables", "validate_record", WATER, False),
+    (
+        "validate ammonia with H2 at -4",
+        "validate_record",
+        {
+            **AMMONIA,
+            "reactions": [{"id": "haber", "stoichiometry": {"n2": -1, "h2": -4, "nh3": 2}}],
+        },
+        False,
+    ),
+    (
+        "validate a key outside components",
+        "validate_record",
+        {
+            **AMMONIA,
+            "reactions": [{"id": "haber", "stoichiometry": {"n2": -1, "h2": -3, "ammonia": 2}}],
+        },
+        True,
+    ),
+    (
+        "validate a parameter set as a component",
+        "validate_record",
+        {**AMMONIA, "components": {**AMMONIA["components"], "nh3": S10["S10-wilson-ig-real-v1"]}},
+        True,
+    ),
     ("assess", "assess_rights", RIGHTS_ROW, False),
     ("assess the source", "assess_rights", {**RIGHTS_ROW, "scope": "source"}, False),
     ("assess a foreign source", "assess_rights", {**RIGHTS_ROW, "source_id": "user.x"}, True),
@@ -211,6 +256,28 @@ def test_e_f3_11_the_scenarios_documents_are_d13s(outcomes: Outcomes) -> None:
     assert python["validate"] == {**python["validate"], "errors": [], "record_sha256": SHA}
     assert python["validate a refused record"]["record_sha256"] is None
     assert python["validate a refused record"]["errors"][0]["code"] == "record_schema_invalid"
+    # C8a: D7's reaction checks through the operation, each finding at its reaction.
+    assert python["validate ammonia"] == {"errors": [], "findings": [], "record_sha256": None}
+    water = python["validate water over two tables"]
+    assert water["errors"] == []
+    assert water["findings"] == [
+        {"code": "molar_mass_inconsistent", "params": {"reaction": "water"}, "at": "/reactions/0"}
+    ]
+    assert python["validate ammonia with H2 at -4"]["errors"] == [
+        {
+            "code": "reaction_element_imbalance",
+            "params": {"reaction": "haber", "element": "H"},
+            "at": "/reactions/0",
+        }
+    ]
+    for label, at in (
+        ("validate a key outside components", "/reactions/0/stoichiometry/ammonia"),
+        ("validate a parameter set as a component", "/components/nh3"),
+    ):
+        assert (python[label]["code"], python[label]["detail"]["pointer"]) == (
+            "invalid_request",
+            at,
+        ), label
     rows = python["get assessed"]["rights"]["rows"]
     assert [(row["sequence"], row["layer"], row["record_sha256"]) for row in rows] == [
         (1, "project", SHA),

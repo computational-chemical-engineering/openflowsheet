@@ -21,7 +21,7 @@ import yaml
 from conftest import REPO_ROOT
 
 from openflowsheet.records.importers import legacy
-from openflowsheet.records.reactions import check_reactions
+from openflowsheet.records.reactions import check_reactions, molar_mass_consistent
 from openflowsheet.registry.tokens import Coded
 
 #: D7: 4ε, ε = 2⁻⁵².
@@ -257,3 +257,12 @@ def test_a_rational_coefficient_is_taken_exactly_and_its_double_is_not() -> None
     doubles = {"id": "third", "stoichiometry": {k: float(v) for k, v in rational.items()}}
     errors, _ = check_reactions([doubles], _components("m01"))
     assert errors == (Coded("reaction_element_imbalance", {"reaction": "third", "element": "H"}),)
+
+
+def test_the_molar_mass_tolerance_is_four_epsilon_inclusive() -> None:
+    """F3 review 2, C8c: |Σ ν M| = 2 = 4ε · 2⁵¹ exactly at M = 2⁵⁰ ∓ 1 is consistent (pins both
+    the 4 and the `≤`: 3ε or `<` refuse it); 2⁵⁰ + 1.25 (|Σ| = 2.25) is not (5ε would pass it)."""
+    low, high = Fraction(2.0**50 - 1), Fraction(2.0**50 + 1)
+    assert abs(high - low) == TOLERANCE * (low + high)
+    assert molar_mass_consistent([(Fraction(-1), low), (Fraction(1), high)])
+    assert not molar_mass_consistent([(Fraction(-1), low), (Fraction(1), Fraction(2.0**50 + 1.25))])
