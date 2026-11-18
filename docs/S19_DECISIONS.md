@@ -2942,3 +2942,17 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   cannot be in an admitted set fixed at B: default, the batch file is amended before the split step to name the new
   paths (one logged commit of the batch file, the reviewer reads it); W5-S4 already predicts the contributor's
   `modules` pointer for such a split.
+- **2026-11-19 ~01:40 CET, review R-W5-WO1gm (reviewer, Opus, ~153k tokens): merge after fixes 1-5.** No-op when unset
+  proven on the code; S1, S3, S4, S7 verdicts right; B checked as an ancestor at enqueue and per tier; the gate reads
+  the queue's copy of the batch file. Fixes: (1) must: a killed pytest call is hidden by `test_impact.py`'s
+  `exit_code = max(ran)` (codes [0, -9] read PASS), in every gate, not only W5; (2) must: w5_scope refuses a tier 1
+  split's new module and the restructure plan file; (3) `--batch` only with `--mode w5` blocks WO-N4 (interface mode,
+  `scripts/registry_builtin.py`), splits and the full-suite W5 run at batch close; (4) one batch file per B;
+  (5) expected-not-selected vs expected-not-failed; notes: dirty worktree, generator/retarget validation, mktemp leak,
+  realpath. Timing: the w5_gate/frozen/config fixes must land before B_N. DECISION on (3): the tool change (the
+  reviewer's recommendation); this also settles open item (1) of ~01:15 (WO-N4 runs as `--mode interface --batch`) in
+  place of its default. Open item (2) (tier 1 split) is settled in the tool by fix 2; the one-line amendment of W5-S1's
+  text goes to the design lane in batch N's close review (default: the tool's rule stands). Exposure check for (1):
+  of 245 finished test-impact logs in `~/.cache/openflowsheet/tmp-gates`, none has a `$ ` call header without its
+  closing counts line (the two that do are the region self-test and job 352, still running), so no gate is known to
+  have passed on a killed call. Fix round 1 launched (opus-engineer, brief `S19-W5-WO1gm-fix1.md`).
