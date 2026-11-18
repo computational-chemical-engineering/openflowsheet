@@ -4,7 +4,7 @@
   "requirements": [
     "A08"
   ],
-  "status": "implemented",
+  "status": "tested",
   "inputs": {
     "case_id": "WITNF (filed as X10c, as WIT was filed as X10a: the schema's work_package pattern admits no WITNF): the derivative witness refuses a non-finite term as non_finite. S19 design batch 1 ruling c29e1cf1 (docs/briefs/S19-D-batch1-ruling.md, Q2 / R-W3-G5-8, steps 1-3, tests Q2.A1-Q2.A6); design-lane review fix round 1 of 2026-11-18 (a non_finite registered pair stays the section 4.8.3 (c) reference; tests Q2.A7, Q2.A8); landing approved on Decision Desk ofs-s19-oq1b-nan-witness-early (answer A, verified); K04 section 4.8 and 4.8.3 (a), (c), (d) and T06 (A2) amended 2026-11-18; register R-1046; base main a88655a2",
     "case_hash": "0cd276041b404a186f473be198138198946c7bfe7696b8e5ccebeba8a957a090",
@@ -43,6 +43,11 @@
     },
     {
       "cmd": "OMP_NUM_THREADS=1 PYTHONPATH=$PWD/src .venv/bin/python scripts/corpus_identity.py --check",
+      "cwd": ".claude/worktrees/witnf",
+      "exit_code": 0
+    },
+    {
+      "cmd": "gh run watch 44215779298 --exit-status",
       "cwd": ".claude/worktrees/witnf",
       "exit_code": 0
     }
@@ -113,6 +118,18 @@
       "description": "F0 corpus identity (scripts/corpus_identity.py --check)",
       "result": "pass",
       "value": "F0 PASS: M1 50/50, M2 61/61, M3 61/61, M4 61/61, M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 35/35 (at 8067229f)"
+    },
+    {
+      "id": "WITNF.REVIEW",
+      "description": "design-lane review (reviewer) of a07f0ff0/95e1e16c against docs/briefs/S19-D-batch1-ruling.md Q2",
+      "result": "pass",
+      "value": "ACCEPT WITH FIXES; fixes applied in 8067229f/9836a04c (a non_finite registered pair stays the flat rule's reference; Q2.A7, Q2.A8; spec status text; docstring). The `review` fields stay pending: no agent sets reviewed on this package"
+    },
+    {
+      "id": "WITNF.CI",
+      "description": "CI green on ubuntu-latest and ubuntu-24.04-arm at the branch commit to be merged (default-install and identity jobs green too)",
+      "result": "pass",
+      "value": "run 44215779298 at 9836a04c; the informational codehealth job (continue-on-error) reports failure"
     }
   ],
   "artifacts": [
