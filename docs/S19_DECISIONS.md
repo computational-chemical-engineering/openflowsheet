@@ -2656,3 +2656,12 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   24 gates, 1 failed = job 291): `ALERT selected share 52% < 75% of step gates` (studies/ import-time fallbacks,
   proposal 2), `ALERT queue wait median 19 min > 15 min` (8-step bursts on 2 slots): standing, no action. Review
   R-W3-G3-7 (reviewer, Opus) launched, brief `.../briefs/S19-R-W3-G3-7.md`.
+- **2026-11-18, R-W3-G3-7 (reviewer, Opus, 126k): merge, no fixes.** Steps 1-2: try/except/else/finally moved whole,
+  handler, level, propagate restored and `end_run` on every exit; `box_bound_exempt` pure (tuple field, bool|None).
+  3: rung order, refusal tuples, probes kept. 4 (S1): no arithmetic moved, Pyomo order `row`, `ineq`, `obj`, alias of
+  `expressions` kept. 5 (S1): split-before-port equals base order. 6: rule order kept, flags exact equivalents. 7: dict
+  key order kept. 8: box before inequality; only `NamedTuple` imported; verifier independent. **Owed (rule 16,
+  follow-up, G3 run 8):** a pinning test in tests/test_opt_phase_rows.py (guarded split row plus declared port,
+  assert `rows.ids`), and one `verify_candidate` case with a box side and an inequality both active (assert
+  `active_set`). Placement notes (projection.py helper above `# -- helpers` :634; closure.py `_check_hessian` :469,
+  `_assessment_theta` :484) left to a later no-gain pass. Ruff clean; merge-check 313 (g3r7-mc, base a8109c80) queued.
