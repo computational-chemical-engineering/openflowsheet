@@ -495,10 +495,16 @@ def static_readiness(
     reasons.extend(_request_reasons(parsed, revision, named))
 
     # The revision: its route, then the decision probes and the state names on its binding.
-    found = _revision_findings(parsed, revision, named, routes, surrogates)
-    reasons.extend(found.reasons)
+    revision_rows = _revision_findings(parsed, revision, named, routes, surrogates)
+    reasons.extend(revision_rows.reasons)
     return _finish(
-        problems, reasons, found.not_run, solver, parsed, found.mapping, found.revision_values
+        problems,
+        reasons,
+        revision_rows.not_run,
+        solver,
+        parsed,
+        revision_rows.mapping,
+        revision_rows.revision_values,
     )
 
 
@@ -571,8 +577,8 @@ def _request_reasons(
 
 class _RevisionFindings(NamedTuple):
     """What design §4.5's revision rows found: their failing reasons and the checks they could
-    not run, each in the order found, and the decision map and the revision's decision values
-    (None unless every decision was probed and mapped)."""
+    not run, each in the order found, the decision map (None unless the probes mapped) and the
+    revision's decision values (None unless every decision was probed and mapped)."""
 
     reasons: list[ReadinessReason]
     not_run: dict[ReadinessCode, str]
