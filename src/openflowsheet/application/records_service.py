@@ -168,18 +168,20 @@ class RecordsService:
             )
         try:
             shas = self._matches(key, scheme, record_type)
-            records = {sha: self.stack.record(sha) for sha in shas}
+            page = [sha for sha in shas if after is None or sha > after][:limit]
+            # Resolution answers a key (D9): without one only the page's records are read.
+            records = {sha: self.stack.record(sha) for sha in (page if key is None else shas)}
             project = self.stack.project.rights_rows()
             held = {row.sha for row in self.stack.project.objects()}
         except RecordStoreError as error:
             self._refuse_store(name, error)
-        page = [sha for sha in shas if after is None or sha > after][:limit]
         more = bool(page) and page[-1] != shas[-1]
         items = tuple(
             self._item(sha, records[sha], "project" if sha in held else "legacy", project)
             for sha in page
         )
-        return RecordPage(items, resolution(records), _encode_cursor(page[-1]) if more else None)
+        found = resolution({} if key is None else records)
+        return RecordPage(items, found, _encode_cursor(page[-1]) if more else None)
 
     def _matches(self, key: str | None, scheme: str | None, record_type: str | None) -> list[str]:
         """The SHAs `key` matches (D9; in `scheme` when given), or every stored SHA, sorted."""

@@ -653,3 +653,40 @@ def test_c4_a_file_with_no_record_is_refused(
     assert detail["record_index"] == 0
     rows = [row for row in app.store.audit_rows() if row["operation"] == "register_record"]
     assert [row["outcome"] for row in rows if row["outcome"] == "allowed"] == []
+
+
+def test_c5_without_a_key_every_record_is_listed_by_sha_and_resolution_is_none(
+    app: LocalApplication,
+) -> None:
+    """R-1053 (S3): resolution answers a key; without one the list pages through every record,
+    each once, ascending by SHA (C8b)."""
+    first = dispatch(app, "search_records", {"limit": 1})
+    assert len(first["items"]) == 1 and first["next_cursor"] is not None
+    assert first["resolution"] == {"status": "none", "classes": []}
+    every = {
+        sha
+        for e in legacy.committed_index()["files"]
+        for sha in (r["sha256"] for r in e["records"])
+    }
+    pages: list[dict[str, Any]] = []
+    request: dict[str, Any] = {"limit": 50}
+    while True:
+        pages.append(dispatch(app, "search_records", request))
+        if pages[-1]["next_cursor"] is None:
+            break
+        request = {"limit": 50, "cursor": pages[-1]["next_cursor"]}
+    listed = [item["record_sha256"] for page in pages for item in page["items"]]
+    assert (len(pages), len(listed)) == (3, 149)
+    assert listed == sorted(every)
+    assert {canonical_json(page["resolution"]) for page in pages} == {
+        canonical_json({"status": "none", "classes": []})
+    }
+    # A cursor of other text is the caller's error, at its member.
+    refused = _refusal(app, "search_records", {"cursor": "not-a-cursor"})
+    assert (refused["code"], refused["detail"]["pointer"]) == ("invalid_request", "/cursor")
+    # With a key the resolution is the one before the change (taken at 04a119e3).
+    water = dispatch(app, "search_records", {"key": "water"})["resolution"]
+    assert hashlib.sha256(canonical_json(water)).hexdigest() == (
+        "fe78ba0ce4ff0fddfd709ddc1c295605259030fada8cbab4371a5ac73b582219"
+    )
+    assert water["status"] == "ambiguous_identity"
