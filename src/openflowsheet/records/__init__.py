@@ -1,6 +1,7 @@
 """F3's component data core (ADR 0061), introduced by package F3: v2 records, their identity and
-their validation (F3-WO1); the store and resolution (F3-WO2). The data lock, the rights register
-and the importers follow in later work orders.
+their validation (F3-WO1); the store and resolution (F3-WO2); the legacy import and the loader
+views (F3-WO3). The data lock, the rights register and the user-file importer follow in later
+work orders.
 
 - `model`: D1 to D5's tables (core property ids, the built-in correlation forms, record types and
   data sources) and the outcome type; the record's shape is `schemas/record-v2.schema.json`.
@@ -11,6 +12,8 @@ and the importers follow in later work orders.
 - `store`: the content-addressed object store and `records.sqlite3` (D8).
 - `stack`: the store stack, project store over legacy store (D8).
 - `resolve`: lookup keys, identity classes and resolution (D9).
+- `importers.legacy`: the legacy importer, its profiles and the committed legacy index (D12).
+- `legacy_views`: the legacy loaders' dataclasses rebuilt from imported records (D12).
 """
 
 from __future__ import annotations
