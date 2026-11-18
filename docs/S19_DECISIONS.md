@@ -2422,3 +2422,14 @@
   accept a trailing newline, M3 step 2a strips undescribed members and map entries, M4 `legacy.file_fields`
   null/{} two SHAs; S1-S8 should-fix; rulings WO1-11 accept with three changes, WO1-15 accept narrowed (A32 v2
   clause in WO4). Fix round 1: fresh opus-engineer, brief `docs/briefs/F3-WO1-fix1.md` (bc5bd499).
+- **2026-11-18, G3 run 3 gated: jobs 265-272 all PASS** (steps 299-306 accepted). Gate report 05:59: `ALERT queue
+  wait median 19 min > 15 min`. Cause: one chain of 8 steps enqueued within 7 min onto 2 slots (gate time 1.3 h of
+  6 h, 11% busy); a burst, not a capacity shortfall. No action. Review R-W3-G3-3 (reviewer, Opus) running.
+- **2026-11-18, F3-WO1 fix round 1 done (opus-engineer, Opus, 263k):** 17 commits bc5bd499..8ca21576; M1-M4, S1-S8,
+  WO1-11, WO1-15 applied, each with a failing-then-passing test; test_f3 130 passed (orchestrator spot-run: 130
+  passed), 62-file battery 1923 passed 0 failed, F0 PASS; registry_sha256 ee9e6b9d -> affa126f (WO1-11 payload
+  sha256). ADR 0061 text amended (+30/-4, "F3-WO1 review applied"). Card ofs-f3-accept-adr0061 re-pinned by hub
+  (desk version 2), option A verbatim: "accept ADR 0061 (F3 component data) as on wp/F3 at 8ca21576 (with the
+  F3-WO1 review applied), with ADR 0019 Amendment 8 (Records interface, five operations), so that F3 can merge into
+  main". The ADR text stays as at 8ca21576 until signed (else tell hub to re-pin). Fix1 choices fix1-1..4 wait for
+  the package's design-lane pass.
