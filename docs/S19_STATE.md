@@ -75,9 +75,7 @@ duplication (twin merge: addendum for Frank); certificate, checks, split_checks 
    executed; the first card superseded, unexecuted). CI 44194354064 green, F0 PASS on main. MB moved to 756e1c12
    (G-MAP 6 PASS). Still to do: re-pin cce-code-health
    to 9a4605f (optional, stricter new-brain matching, no score change).
-2. WITNF (ofs-s19-oq1b-nan-witness-early): opus-engineer RUNNING (brief WITNF-engineer.md, base a88655a2, worktree
-   .claude/worktrees/witnf, branch wp/WITNF). Then `reviewer` (design lane), push wp/WITNF, CI, merge into main (WITNF
-   needs its own merge card unless ofs-s19-oq1b's action covers the merge: check its text), `executed` on both NaN cards.
+2. DONE 2026-11-18: WITNF on main (a283925c, pushed; both NaN cards executed; main merged into wp/S19 as 170709bc).
 3. 0.5 (ofs-s19-start-05): starts after step 1; Frank's roadmap ADR 0057 (X07a, X01, F3, F2, F8, X06). Write
    `executed` when the first 0.5 package is started.
 4. Trailing S19 at one lane (ofs-s19-trailing-order): G3, G4, G2 (non-legacy), W5, G1 after the scale probe, docs.
