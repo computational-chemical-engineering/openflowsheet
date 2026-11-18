@@ -579,3 +579,76 @@ scan`: no brain function in `records/` or `application/`; the 17 F3-new files th
 >= 9.5 (`records/validate.py` 9.5, `records_service.py` 9.6); `cli.py` 8.7 as before the order.
 F0 `corpus_identity.py --check` PASS (M1 50/50 … M9 35/35). `git diff 5d085f05 HEAD -- docs/adr`:
 the Amendment 8 paragraph and ADR 0061's status paragraph (the acceptance commit `0f6dafb5`).
+
+## F3 fix round 2 (C1 to C12 of `docs/reviews/F3-review-2.md`), 2026-11-18
+
+Brief `docs/briefs/F3-fix2.md`, build lane. One commit per C item, each test red before (run with the item's `src/`
+change reverted) and green after.
+
+**Commits.** C1 `fbe3968e` (the loader refuses a YAML alias where it is composed; the merge-key test of
+`test_f3_record_model.py` now uses an inline mapping, a merge through an alias is refused) and `bfd2d7e6` (E-F1-5's
+constant, see Moved); C2 `dab85f8e`; C3 `74a65bd2`; C4 `04a119e3`; C5 `6a6264eb` (its test also covers C8b); C6
+`e2e3675f` and `d5290d39` (the screening as `reaction_defects`, for codehealth: `_reactions` had reached cognitive 17,
+the file health 8.6; refusals unchanged); C7 `02925979`; C8 `918d8bdf`; C9 `c5caf401`; C10 `6a799762`; C11 `0ae27230`
+and `97cbe41c` (R-1051's Evidence, DECISION F2-3); C12 `a12efe97` and this entry.
+
+**Measured.** M1's 24-alias file (519 characters here: the aliases and one record member) is refused
+`record_schema_invalid` in 41 ms as `record-v2-yaml` and 1 ms as `component-record-v1-yaml`; with C1 reverted the test
+did not finish in 90 s (`timeout` exit 124; the review measured 292 s). `search_records {"limit": 1}`: 714 bytes (was
+25 796), resolution `none`; paging at `limit: 50` gives the 149 legacy SHAs in 3 pages. The 4ε test: with 3ε the
+pair gives (False, False), with 5ε (True, True), with 4ε (True, False).
+
+- **DECISION F2-1. `detail.pointer` in the file form is `/file/content` continued by the refusal's own pointer, as
+  R-1052 states it, also for a v2 list**, where that pointer is into the record `record_index` names (so record 1's
+  `/name` is `/file/content/name`, not `/file/content/1/name`). The literal reading changes no other byte; a v1 file's
+  pointers are into the file (`/file/content/components`, C4). Alternative: insert `/<record_index>` for a v2 list.
+  Reversible by: `RecordsService._refuse_coded`.
+- **DECISION F2-2. `detail.errors` lists each record's errors in the outcome's own order** (the normaliser's, then
+  D7's sorted), so `errors[0]` is the refusal `detail.refusal` held before (no byte of an existing refusal moves).
+  Alternative: re-sort by `Coded.sort_key`, which could change the first refusal. Reversible by: `refusals()`.
+- **DECISION F2-3. R-1051's register Evidence row gains the re-taken D_10.** The brief forbids register edits beyond
+  C12, but R-1051 itself ("the edit re-takes D_10 and this entry's digest within F3"), C11 ("R-1051's digest") and
+  `test_f3_link_c_10_is_f3s_strip_and_digest` (which reads the full digest from the entry) require it. One row,
+  isolated in `97cbe41c`; the heading and the Decision paragraph keep `248c2e74…`. For the orchestrator to confirm.
+- **DECISION F2-4. The record variant of `reserved_namespace` is selected by `detail.carrier: record`**, a new
+  optional param (`carrier`, text) sent only by `RecordsService._refuse_coded`, never in `detail.refusal.params`, so
+  `refusal` and `validate_record`'s item stay `reserved_namespace(legacy)`. The three extension renderings measured
+  before and after are byte-identical. Reversible by: the catalogue entry and one line of `_refuse_coded`.
+- **DECISION F2-5. A merge key with an inline mapping (`<<: {k: 1}`) is still accepted**; only aliases are refused
+  (R-1057 refuses "an alias (and so a merge key)", read as the merge keys that use one). Reversible by: the loader.
+- **DECISION F2-6. `REVIEW.json`'s `sha256` and `characters` of the four edited texts are re-taken, their reviews left
+  pending** (no review recorded), so the description-review test fails only on the pending reviews.
+- **N1 applied** (the review asks for it when the function is next touched): `_reactions` catches `ValueError` only.
+
+**Moved (old -> new).** E-F1-5 `registry_sha256` (`tests/fixtures/registry/builtin-sha256.txt`; the user-file data
+source's implementation set is `user_file.py`, so its bytes move it): `c8d191de…` -> `3684c201…` (C1) ->
+`fc0af96b7ba9b7259ce3c1336cf408f41c1805259859a788c4804502c5c7bcee` (C4); no builtin table moved. Catalogue sha256 (the
+two `message_entry` fixtures) `ff50954d…` -> `9ac09855e54566b090283dbe279492778bd9febe17623dee9c631c4f6befec21` (C3);
+`docs-site/messages/refusals.md` regenerated. `SNAPSHOT_F3` `validate_record` `900b2712…` ->
+`eb6a1cfac1228e68222dea0d162a130ffd885746a821d28e74c89252863b5ac0` (C6); no other R4-G3 snapshot moved. The two
+`record_validation_report` fixtures regenerated (C6). D_10 `248c2e74…` -> `153b892e…` (C6) ->
+`f7ec3c94233d30506ec2082a13c4e54d57bd540e43e97fdf877b1e3c75fed467` (C11); `without_f3` leaves D_9 `e2c44b6b…`
+exactly at both. `F3_FILE_SHA256` and `REVIEW.json`: `search_records` `03031fcb…` -> `3e906768…`, `register_record`
+`de47ccb9…` -> `de9cb3b5…`, `validate_record` `2cdb2e5d…` -> `7661ac4d…`, `assess_rights` `4fa0c2c0…` -> `b9c5a7f5…`,
+`get_record` `eaf900f8…` unmoved; lengths 1332, 862, 1327, 1358, 1263. `record-results.schema.json` gains
+`record_report_item`. Numerical policy v2 unmoved.
+
+**Expected red.** `test_every_description_is_reviewed_by_both_lanes`: "10 open", the design-lane
+(`pending_design_review`) and human (`pending`) reviews of `assess_rights`, `get_record`, `register_record`,
+`search_records`, `validate_record`.
+
+**Left for WO7.** Recording the five reviews in `REVIEW.json` (design lane's per the review file; Frank's pending);
+Q-F1 (rational ν through the operation) with Frank; Amendment 8's `reserved_namespace` sentence still names only the
+prefix (C12 changed only what the review stated); R-1051's heading and Decision paragraph still show `248c2e74…`
+(F2-3); the package's evidence manifest; the descriptors' `status`.
+
+**Acceptance (at `d5290d39`, clean tree but this entry).** `tests/test_f3_*.py` (7 files) within the battery, all
+passed. `records_legacy_index.py --check`: clean, 149 records in 7 files. `ruff check`: all passed; `ruff format
+--check`: 1292 files formatted; `mypy`: no issues in 409 files. Battery, the same 71 files as WO5b's (the 62 of
+`F3-battery.txt`, the six `test_f3_*.py` not in it, `test_m04_study_job`, `test_m07a_surface_chain`,
+`test_t08_w2_description_reviews`), serial, `PYTHONPATH=src`, the repo `.venv`: **2147 passed, 1 failed** (the expected
+red above), 14 skipped, 22 deselected, 3 xfailed, 644 s (WO5b: 2132 passed, 1 failed; 15 tests added). The files:
+test_a09_qualification_field, test_doc_pages, test_e01_a_core, test_e01_b_nlp, test_f1_builtin_identity, test_f1_discovery, test_f1_draft_admission, test_f1_legacy_builtins, test_f1_operations, test_f1_registry_core, test_f3_legacy, test_f3_lock_rights, test_f3_operations, test_f3_reactions, test_f3_record_model, test_f3_store, test_f3_user_file, test_k03_schemas, test_k04_failure, test_k04_schemas, test_k05_replay, test_k05_schemas, test_m02_experiments, test_m02_schemas, test_m02_wo10_coupled, test_m03_nlp_greybox, test_m03_schemas, test_m04_numerical_policy, test_m04_schemas, test_m04_study_job, test_m05_study_record, test_m07a_harvest, test_m07a_surface_chain, test_msg_api_error_caller, test_msg_corpus, test_msg_coverage, test_msg_docs, test_msg_engine, test_msg_explain, test_msg_surfaces, test_p02_composition, test_package_imports, test_rel_evidence_manifest, test_rel_rc_local, test_s16_test_impact, test_s19_i14_freeze_order, test_st_core, test_t04_schemas, test_t05b_literal, test_t05_manifests, test_t07_adr0008_jobs, test_t07_authz, test_t07_conformance, test_t07_w3e_solution_state, test_t07_w5a_operations, test_t07_w5b_cli, test_t07_w5e_application_results, test_t07_w6a_http, test_t07_w6b_mcp, test_t08_evidence_manifest, test_t08_reference_generators, test_t08_rename_substitution, test_t08_w1_d2_replay_identity, test_t08_w1_d3_counters, test_t08_w2_description_reviews, test_t08_w2_inventory, test_t08_w2_support_envelope, test_t08_w2_surface_digest, test_x02_wo4_external, test_x04_messages, test_x04_shell_and_docs. `codehealth arch`: 0 violations, 0 cycles; `codehealth scan`: no brain function in `records/` or
+`application/`; touched files `records_service.py` 9.6, `user_file.py` 9.8, `normalize.py`, `reactions.py`,
+`records/__init__.py` 10.0. F0 `corpus_identity.py --check` PASS (M1 50/50, M2 61/61, M3 61/61, M4 61/61, M5 61/61,
+M6 85/85, M7 52/52, M8 105/105, M9 35/35).
