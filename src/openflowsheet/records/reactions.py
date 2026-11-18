@@ -73,7 +73,8 @@ def check_reactions(
 def molar_mass_consistent(terms: Iterable[tuple[Fraction, Fraction]]) -> bool:
     """D7: |Σ ν M| ≤ 4ε Σ |ν M| over the exact `(ν, M)` pairs, both sums exact."""
     products = [nu * mass for nu, mass in terms]
-    return abs(sum(products)) <= MOLAR_MASS_TOLERANCE * sum(abs(p) for p in products)
+    total = sum(products, Fraction(0))
+    return abs(total) <= MOLAR_MASS_TOLERANCE * sum((abs(p) for p in products), Fraction(0))
 
 
 def exact(value: object, where: str) -> Fraction:
