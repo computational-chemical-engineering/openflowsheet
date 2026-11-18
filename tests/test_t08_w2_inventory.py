@@ -385,7 +385,10 @@ SHIPPED_DATA = re.compile(
     # F1 (ADR 0060 D6): the registry's built-in tables, generated from the project's own code by
     # `scripts/registry_builtin.py` (ids, signatures, record-source paths; no third-party data),
     # and since F1-WO5 (review SF-8) its record of their digests, `tables.sha256`.
-    r"|registry/builtin/([a-z_-]+\.json|tables\.sha256))$"
+    r"|registry/builtin/([a-z_-]+\.json|tables\.sha256)"
+    # F3 (ADR 0061 D12): the legacy importer's profiles (the project's own mapping and
+    # classification) and the legacy record index generated from them (ids, positions, SHAs).
+    r"|records/legacy_(profiles\.yaml|index\.json))$"
 )
 PACKAGING = re.compile(
     r"^(PKG-INFO|setup\.cfg|pyproject\.toml|README\.md|MANIFEST\.in|LICENSE|NOTICE|"

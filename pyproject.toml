@@ -128,6 +128,9 @@ openflowsheet = [
 # F1 (ADR 0060 D6, D7): the generated built-in tables and their digest record (SF-8),
 # written by `scripts/registry_builtin.py`.
 "openflowsheet.registry" = ["builtin/*.json", "builtin/tables.sha256"]
+# F3 (ADR 0061 D12): the legacy importer's profiles and the legacy record index it is held to,
+# written by `scripts/records_legacy_index.py`.
+"openflowsheet.records" = ["legacy_profiles.yaml", "legacy_index.json"]
 
 [tool.ruff]
 line-length = 100
