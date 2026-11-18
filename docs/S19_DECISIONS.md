@@ -2910,3 +2910,6 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   holds P3 (ptc.py 105.6 -> 33.9) as steps 359 (the real one), 362 (gate-fail) and 363 (accepted). Steps 362 and 363
   are tool checks, not campaign steps; the gate report's "debt removed" counts 363 a second time. Recorded here so the
   trend is read with it; a later queue mode for tool checks (not logged) would avoid it.
+- **2026-11-19 ~00:20 CET, N4 (job 347, 113.7 -> 69.1 over touched files) and P4 (job 348, ptc.py 33.9 -> 23.2) PASS
+  16/16.** Review R-W3-G1N-4 launched (reviewer, Opus; brief `S19-R-W3-G1N-4.md`) over 6722d919..19c3cb62, N5's gate
+  (job 349) still running; the reviewer reads its result.
