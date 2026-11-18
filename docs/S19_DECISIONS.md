@@ -2485,3 +2485,9 @@
   (legacy)` by legacy-index membership; `store_object_repaired` in findings and audit row. B1-B7 engineer running
   (brief `docs/briefs/F3-rulings-1-fix.md`, f92430bb). Hub asked to re-pin card ofs-f3-accept-adr0061 to 5d085f05
   (the one re-pin); the ADR stays frozen from here to signing.
+- **2026-11-18, nlp-marked suite at three commits: no regression.** `scripts/m03_nlp_check.sh` as committed fails
+  at collection (4 modules: `mpmath` missing from `benchmarks/m03/nlp-test.lock`, needed since OPT WO-5 e8311348):
+  a pre-existing tooling defect on main, open for the build lane. Run in the same env with `mpmath` added from
+  `.venv` (script in the orchestrator scratchpad): 226ca985 (base), 8cb44f62 (G3 run 3 merged) and 8eedd642 (G3 run
+  4 head) each 210 passed, 2 skipped, 2 failed, the same two (test_opt_cost_lca_nlp g19, g20; also at base, so
+  pre-existing). G3 run 3 confirmed retroactively; G3 run 4 meets the nlp rule.
