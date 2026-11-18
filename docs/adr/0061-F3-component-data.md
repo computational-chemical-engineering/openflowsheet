@@ -234,22 +234,32 @@ verification verdict.
   (integrity is a file hash, as in git). Write-once.
 - `records.sqlite3` (WAL, `busy_timeout` 30 s; schema id `f3-records-v1`, independent of the T07 store): `objects`
   (sha, record_type, id, name, amount_basis) and `keys` (sha, scheme, value), both rebuildable from the object files;
-  `registrations` (sha, volatile_sha, volatile JSON, at, principal), the volatile blocks; `rights` (D11). The T07
+  `registrations` (sequence, sha, volatile_sha, volatile JSON, findings, at, principal), unique on (sha, volatile_sha):
+  the volatile blocks in insertion order, each with the notices (D7) of the submission that first brought it. An absent
+  block is stored as `{}`. A later submission of the same record and block adds no row; its own findings are returned
+  to its caller (`anchor_defaulted` belongs to a submission, not to a record). `rights` (D11). The T07
   `project.sqlite3` is not changed.
 
 **Write protocol (N12, all platforms):**
 ```
 target = objects/aa/bb/<sha>.json
-if target exists: verify(target); return created=False
+if target exists and sha256(its bytes) == <sha>: return created=False
+repair = target exists                                # its bytes do not hash to <sha>
 tmp = objects/aa/bb/.tmp-<16 random hex>.json ; write, flush, fsync
 try: os.replace(tmp, target)
 except PermissionError or FileExistsError:            # Windows: a reader holds target open
     if target exists: verify(target); unlink(tmp); return created=False
     raise
-fsync(objects/aa/bb) on POSIX; return created=True
+fsync(objects/aa/bb) on POSIX
+return created=False with the notice store_object_repaired(<sha>) if repair, else created=True
 verify(p): sha256(bytes of p) == <sha>, else store_object_corrupt(<sha>)
 ```
-Concurrent writers of one object are safe: both produce the same bytes.
+Concurrent writers of one object are safe: both produce the same bytes. A target that fails verification is replaced
+by the write: the writer holds bytes that hash to the name, so the repair is exact, and registering the record again is
+the repair every transport reaches (C1). The registration reports it with the notice `store_object_repaired(<sha>)`,
+returned with the call's findings and never stored in `registrations`; the record was not created by that call, so
+`created` is false. Every read of a corrupt object stays `store_object_corrupt(<sha>)`. So does a write whose replace
+fails while the target is still corrupt, and a copy made for a data lock, which reads the project store first.
 
 **Path length (Windows):** the store is opened lazily, at its first operation, never as part of project open, so a v1
 project with a deep path keeps opening. At that first operation, if the platform is Windows, long paths are not enabled
@@ -278,8 +288,12 @@ an InChIKey or a CAS"; a record with neither is its own class. So `l01`'s H2O (I
 H2O records (CAS only) are one class. **Resolution** (what F2's edits and the data-lock builder call) returns one record SHA, or
 `component_ambiguous(<key>)` with `detail.ambiguity` = `identity` (more than one class; for example formula `C2H6O`)
 or `source` (one class, several records: the same compound from two sources), and `detail.candidates` =
-`[{class, records: [{sha, source ids, name}]}]` sorted. No origin or source is ranked (Q9's rejected alternative): the
-caller chooses by SHA. `search_records` lists the same matches without refusing.
+`[{class, records: [{sha, source_ids, name}]}]`. `class` is the sorted list of the `cas:<value>` and `inchikey:<value>`
+keys the class's records carry (`[]` for a record with neither); `records` are sorted by SHA, each with its `source_ids`
+sorted; the classes are sorted by their canonical-JSON bytes. The value says why the records are grouped and does not
+depend on registration order. No origin or source is ranked (Q9's rejected alternative): the
+caller chooses by SHA. `search_records` lists the same matches without refusing, its `resolution.classes` in the same
+form.
 
 ### D10. Data lock (`schemas/data-lock.schema.json`)
 
@@ -311,21 +325,29 @@ source. **A whole-source row (`record_sha256: null`) is keyed by `source_sha256`
 chosen by each record, so a key by id would let any record claim a source's assessment (a user file declaring
 `source_id: legacy.m01` would inherit `permitted`, and F8 would embed it). The source-id prefix `legacy.` is reserved for
 the legacy importer (D12); a record from any other path naming a `legacy.` source is refused
-`reserved_namespace(legacy)` (ADR 0060's code). Two layers:
+`reserved_namespace(legacy)` (ADR 0060's code). A submitted record is the importer's exactly when its `record_sha256`
+is in the committed legacy index: registering such a record copies it into the project store (D8) and is not refused;
+any other record naming a `legacy.` source is. Two layers:
 - **Repository register** `src/openflowsheet/records/rights-register.json` (package data, hand-maintained under the lane
   rules), seeded with one whole-source row per legacy source, carrying the `source_sha256` of the importer's entry
-  (`scripts/records_legacy_index.py --check` fails if a seed row's SHA differs). The assessment is read from the v1
-  `redistribution` text: beginning `permitted` or `synthetic` → `permitted` (`conditions` = the text after `permitted
+  (a legacy source has one entry, which the file's components and its parameter set carry alike, D12;
+  `scripts/records_legacy_index.py --check` fails if a seed row's SHA differs). The assessment is read from the v1
+  `redistribution` text, of which a file states one (the importer refuses a file whose components state several):
+  beginning `permitted` or `synthetic` → `permitted` (`conditions` = the text after `permitted
   with conditions:`); `unresolved` or `unknown` → `unknown`; `refused` or `not permitted` → `refused`; anything else →
   `unknown`. A later register decision on a source is added as its own row citing it: for S10, the row `legacy.s10`,
   `permitted`, conditions "NOTICE Wilson block", basis R-880 (the seed row reads `unknown` from S10's `unresolved` text).
+  A condition a v1 file states outside its `redistribution` text is carried the same way: for `s07`, a whole-source row
+  after the seed repeats its assessment and adds to its conditions the IAPWS attribution that the H2O record's v1
+  `rights.notes` states.
 - **Project register**: table `rights` in `records.sqlite3`, append-only with an insertion sequence, written by
   `assess_rights` (right `policy`, audited).
 
 **"Latest"** is the highest insertion sequence (the project table's sequence; the repository file's row order), never
 `date`. **Effective assessment** of (source, record): latest project row for (source, record) → latest project whole-source
 row for the record's `source_sha256` → latest repository row for (source, record) → latest repository whole-source row for
-the record's `source_sha256` → `unknown`. The bundle writer (F8)
+the record's `source_sha256` → `unknown`. A (source, record) row matches on (`source_sha256`, `record_sha256`); a row's
+`source_id` is descriptive and decides nothing. The bundle writer (F8)
 embeds a record only when every source of the record is `permitted`, else references it by SHA (Q9.R7). Packaging reads
 the repository layer only, and still needs Frank's decision (R-706). No layer enters any hash.
 
@@ -348,7 +370,17 @@ the repository layer only, and still needs Frank's decision (R-706). No layer en
 **Mapping: a closed table.** Every v1 key in the seven files is mapped or explicitly dropped; a key not in this table,
 in any file, fails index generation. Set for every component: `amount_basis: mol`; `charge: 0`; `legacy = {profile,
 file, file_sha256 (SHA-256 of the LF-normalised bytes), position (index in components), file_fields: null}`; `sources =
-{<source id>: {version: file_sha256, citation: v1 rights.source, licence_stated: null, url: null}}`.
+{<source id>: {version: file_sha256, citation: the profile's citation, licence_stated: null, url: null}}`.
+
+**The profile's citation** is the file's citation, fixed per profile in `legacy_profiles.yaml` and identity-bearing as
+the provenance classification is. Where the file's components state one `rights.source` text it is that text (`syn001`,
+`s05`, `s10-verification`). Where they differ (`m01`, `l01`, `s07`, `s10`) it is the text they share, with the part that
+varies by component (the reference EOS of each fluid) replaced by a reference to the molar mass's note. A legacy source
+so has one `sources` entry and one `source_sha256` (D11), which the file's components and its parameter set carry
+alike. A component's own `rights.source` is kept whole as the last line of its molar mass's `note`, and it governs
+where it departs from the file's citation in another part (`l01`'s O2 states "formation enthalpy: zero by definition").
+The alternative, each component's text as its `citation`, gives 99 `source_sha256` values over seven source ids, so a
+decision on a source (R-880) would need a row per text.
 
 | v1 key | v2 target |
 | --- | --- |
@@ -356,13 +388,13 @@ file, file_sha256 (SHA-256 of the LF-normalised bytes), position (index in compo
 | file `reference_convention` | the index's `reference_convention`; for `s10`, `s10-verification` also `legacy.file_fields` of the parameter set |
 | file `data_set`, `synthetic`, `uncertainty`, `domain`, `data_provenance`, `wilson_lambda` (`s10`, `s10-verification`) | the parameter set (below) |
 | component `id`, `name`, `synthetic`, `elemental_verification` | copied |
-| component `identifiers` (`cas`, `inchi`, `inchikey`, `formula`) | copied; any other identifier key fails index generation |
+| component `identifiers` (`cas`, `inchi`, `inchikey`, `formula`) | copied; any other identifier key fails index generation. An identifier D3 refuses is left out where the profile names it (`dropped_identifiers`, by component id): CoolProp's three `s07` spin-isomer labels `7782-39-0o`, `1333-74-0o`, `7782-39-0p` are not CAS numbers, and stripping the suffix would join the isomers to normal deuterium's and hydrogen's identity class (D9). The records keep their id and name. Naming an identifier the record does not state, or one D3 accepts, fails index generation |
 | component `elemental_composition` | `elements` |
 | component `molecular_weight` | `molar_mass` (a Constant, by the parameter rule) |
 | component `parameters` | entries and `formation`, by profile (below); a parameter name a profile does not list fails index generation |
-| component `rights.source` | `sources.<source id>.citation` |
+| component `rights.source` | the last line of the `note` of its `molar_mass`, after the molar mass's own provenance text (the note rule below); `sources.<source id>.citation` is the profile's citation (above) |
 | component `rights.redistribution` | the rights register's seed row (D11); not identity |
-| component `rights.notes` | dropped: rights commentary, or (`s07`) the fluid's EOS references, which the source file keeps and `legacy.file` with `file_sha256` identifies; copying it into `sources` would give each record its own `source_sha256` (D11) |
+| component `rights.notes` | dropped: rights commentary, or (`s07`) the fluid's EOS references, which the source file keeps and `legacy.file` with `file_sha256` identifies; copying it into `sources` would give each record its own `source_sha256` (D11). A condition it states (the IAPWS attribution on `s07`'s H2O) goes to the rights register (D11) |
 | parameter `value`, `unit`, `kind` | `value`, `unit`, `kind` (coefficients of a correlation entry: the coefficient value) |
 | parameter `meaning` | `meaning` of a Constant or entry built from one parameter; `null` for an entry merged from several |
 | parameter `provenance` | `note`: the distinct v1 provenance texts of the parameters an entry or Constant is built from, joined by a newline in parameter order (one text for a single parameter) |
@@ -378,7 +410,8 @@ identity. Parameters:
   [lower, upper]}`); `standard_formation_enthalpy` → `formation: [{phase: ig, h, s: null}]`.
 - `s10`, `s10-verification`: `ideal_gas_cp_b0…b4` → `ideal_gas_cp` (validity null); `vapour_pressure_a…d` →
   `vapour_pressure`; `standard_formation_enthalpy` → `formation` `ig`. The file's `wilson_lambda` → one `parameter_set`
-  (id = `data_set`; `components` matched by the component records' SHAs; entries `wilson_lambda` with indices [i, j];
+  (id and name = `data_set`; `sources` the file's entry, as its components carry it;
+  `components` matched by the component records' SHAs; entries `wilson_lambda` with indices [i, j];
   `validity` from `domain` {T, P}; `synthetic` and `data_set` from the file; `uncertainty_statement` from `uncertainty`;
   `legacy.file_fields = {reference_convention, data_provenance}`).
 - `syn001`: each parameter `p` → constant entry `syn001.p`, phase null.
@@ -410,8 +443,8 @@ repository-relative). An input file not in the repository leaves `inputs` empty 
 
 **Legacy index** `src/openflowsheet/records/legacy_index.json` (package data): `{index_format:
 "openflowsheet-legacy-record-index-v1", files: [{path, profile, file_sha256, reference_convention, records:
-[{record_type, id, position, sha256, findings: [code…]}]}]}`, files sorted by path; `findings` pins each record's
-findings (the 17 `fit_inputs_unhashed` among them). `scripts/records_legacy_index.py --write | --check`
+[{record_type, id, position, sha256, findings: [{code, params}…]}]}]}`, files sorted by path; `findings` pins each
+record's findings with their params, D6's notices before step 6's (the 17 `fit_inputs_unhashed` among them). `scripts/records_legacy_index.py --write | --check`
 regenerates it; `--check` also fails if a tracked YAML declaring `record_schema: schemas/component-record.schema.json` has
 no profile. One summary line.
 
@@ -518,7 +551,9 @@ and `segment_mol` waits only for ADR-F2's kinds; the rules are core now.
   committed fixture lock's SHA equals `tests/fixtures/records/data-lock-sha256.txt` on every leg; an absent record gives
   `data_unavailable`; an unmatched set key gives `parameter_set_component_missing`.
 - **E-F3-8 Store.** Registering a record twice gives one object (`created` false the second time); object bytes hash to
-  the name; a flipped byte gives `store_object_corrupt`; two processes registering 200 overlapping records concurrently
+  the name; a flipped byte gives `store_object_corrupt` on every read, and registering the record again repairs the
+  object (`created` false, the notice `store_object_repaired`, no `registrations` row for a known volatile block), after
+  which reads succeed; two processes registering 200 overlapping records concurrently
   raise nothing and leave only valid objects; a simulated Windows `PermissionError` on replace with a valid target is
   success, with a corrupt target an error; `store_path_too_long` at root length 168 and not at 167 (simulated Windows,
   long paths off).
@@ -553,7 +588,7 @@ and `segment_mol` waits only for ADR-F2's kinds; the rules are core now.
 | `component_ambiguous(<key>)`, `record_schema_invalid(<pointer>)`, `record_unit_invalid(<entry>)`, `amount_basis_invalid(<component>, <rule>)`, `identifier_invalid(<component>, <scheme>)`, `formula_elements_invalid(<component>)`, `anchor_phase_invalid(<component>, <phase>)`, `correlation_form_unknown(<entry>, <form>)`, `correlation_coefficients_invalid(<entry>, <form>)`, `validity_range_invalid(<entry>, <variable>)`, `provenance_invalid(<entry>)`, `parameter_set_component_missing(<set>, <key>)`, `reaction_element_imbalance(<reaction>, <element>)`, `reaction_charge_imbalance(<reaction>)`, `data_unavailable(<sha>)` | refusal | `input` |
 | `molar_mass_inconsistent(<reaction>)` | notice | `notice` (explicit override of MSG's `*_inconsistent` → bug rule; `review: false`) |
 | `amount_basis_unsupported(<basis>)`, `store_path_too_long(<root>)` | refusal | `not_supported` |
-| `anchor_defaulted(<component>)`, `anchor_undetermined(<component>)`, `fit_inputs_unhashed(<entry>)`, `reaction_element_unchecked(<reaction>, <component>)` | notice | `notice` |
+| `anchor_defaulted(<component>)`, `anchor_undetermined(<component>)`, `fit_inputs_unhashed(<entry>)`, `reaction_element_unchecked(<reaction>, <component>)`, `store_object_repaired(<sha>)` | notice | `notice` |
 | `store_object_corrupt(<sha>)`, `legacy_record_drift(<file>, <id>)` | refusal | `bug` |
 
 `data_unavailable` is Q9.R7's code; F8 reuses this entry.
@@ -702,3 +737,23 @@ Status stays Proposed. Design-lane rulings of the F3-WO1 review, applied by the 
 | S4 | D6 step 3: among `s:` forms, the smallest token by canonical-JSON bytes (entries are a set); formation keeps record order (step 2). |
 | WO1-11 | D1: the three-row core payload table (`payload_schema.sha256` required; `null` only for a preview type; `data_source.formats` at least one). |
 | N10 | D1: envelope member names are reserved against every payload. |
+
+## F3 ruling round 1 applied (`docs/reviews/F3-rulings-1.md`, 2026-11-18)
+
+Status stays Proposed. Design-lane rulings on the build decisions of F3-WO1 to WO4 (`docs/F3_DECISIONS.md`), applied
+by the design lane. The build lane's code changes are numbered in the review file.
+
+| Ruling | Applied to |
+| --- | --- |
+| WO3-1, WO4-0 (kept) | D12: the `sources` sentence takes the profile's citation; new paragraph "The profile's citation" (one entry and one `source_sha256` per legacy source; the component's own `rights.source` is the last line of its molar mass's `note`; `l01`'s O2 departure; the rejected per-component alternative). Mapping table, row `rights.source`. |
+| WO3-5 (changed) | D12, `s10` bullet: the parameter set's name is its `data_set` and its `sources` entry is the file's, as its components carry it. D11: a legacy source has one entry. |
+| WO3-2 (kept, one guard) | D12 mapping table, row `identifiers`: an identifier D3 refuses is left out where the profile names it; naming one D3 accepts, or one not stated, fails index generation. |
+| WO3-3 (kept) | D12, legacy index: `findings: [{code, params}…]`, D6's notices before step 6's. |
+| WO2-1 (changed) | D8 write protocol: a target that fails verification is replaced by the write, `created` false, notice `store_object_repaired(<sha>)`; reads, a failed Windows replace and a lock copy stay `store_object_corrupt`. E-F3-8: the flipped-byte clause. Code table: `store_object_repaired(<sha>)` in the notice row. |
+| WO2-2 (confirmed) | D8: the `registrations` columns (`sequence`, `findings`), unique on (sha, volatile_sha), the first submission's notices kept, the call's own findings returned. |
+| WO2-7 (kept) | D9: the `class` value, the orders of `records` and of the classes, `source_ids`; `search_records`' `resolution.classes` in the same form. |
+| WO4-2 (changed) | D11: one seed row per legacy source (seven); a file states one `redistribution` text; the `s07` row carrying the H2O record's IAPWS attribution. D12 mapping table, row `rights.notes`: a condition it states goes to the register. |
+| WO4-3 (kept) | D11: a (source, record) row matches on (`source_sha256`, `record_sha256`); `source_id` is descriptive. |
+| WO4-0, for F3-WO5 | D11: a submitted record is the importer's exactly when its `record_sha256` is in the committed legacy index; any other record naming a `legacy.` source is `reserved_namespace(legacy)`. |
+
+Confirmed without an ADR edit: fix1-1 to fix1-4. Ruled outside this ADR (T08.A32's v2 clause, a test): WO4-7.
