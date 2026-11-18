@@ -80,6 +80,16 @@
       "basis": "R-880 (V03 spec §9.1, Q-F3: Wilson's records and the Kurihara 1993 points ship, with their attribution in NOTICE)",
       "decided_by": "Frank",
       "date": "2026-10-29"
+    },
+    {
+      "source_id": "legacy.s07",
+      "source_sha256": "e27b8e7155133c2a50f57ce0e8d9879544348f093d4e7ae36209459b9f743719",
+      "record_sha256": null,
+      "assessment": "permitted",
+      "conditions": "cite CoolProp with its MIT notice and the equation of state's source (R-715); for the H2O record: attribution to the International Association for the Properties of Water and Steam (S05 spec §16.3)",
+      "basis": "benchmarks/s07/components.yaml: v1 rights.notes of H2O; docs/reviews/F3-rulings-1.md",
+      "decided_by": "design lane (reviewer), F3 ruling round 1",
+      "date": "2026-11-18"
     }
   ]
 }

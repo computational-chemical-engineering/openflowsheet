@@ -410,6 +410,17 @@ S05_CONDITIONS = (
     "given to the International Association for the Properties of Water and Steam"
 )
 S07_CONDITIONS = "cite CoolProp with its MIT notice and the equation of state's source (R-715)"
+#: F3 ruling round 1 (B5): the `s07` row carrying H2O's v1 `rights.notes` condition.
+S07_ROW = {
+    "source_id": "legacy.s07",
+    "record_sha256": None,
+    "assessment": "permitted",
+    "conditions": S07_CONDITIONS + "; for the H2O record: attribution to the International "
+    "Association for the Properties of Water and Steam (S05 spec §16.3)",
+    "basis": "benchmarks/s07/components.yaml: v1 rights.notes of H2O; docs/reviews/F3-rulings-1.md",
+    "decided_by": "design lane (reviewer), F3 ruling round 1",
+    "date": "2026-11-18",
+}
 #: The seed's (assessment, conditions) per legacy source, from the files' texts by D11's rule.
 SEEDS = {
     "legacy.syn001": ("permitted", None),
@@ -434,8 +445,9 @@ def _imported() -> list[legacy.ImportedFile]:
 def test_d11_the_register_holds_one_seed_row_per_legacy_source_and_r880() -> None:
     """Seven seed rows, one per legacy source (a parameter set carries its components' `sources`
     entry, F3 decisions WO4-0 and WO3-5 as ruled in F3 ruling round 1), then D11's one S10 row
-    (R-880); every legacy record's every source is effectively `permitted`, S10's by the R-880
-    row."""
+    (R-880), then the `s07` row of H2O's condition (ruling round 1, B5); nine in all. Every
+    legacy record's every source is effectively `permitted`, S10's by the R-880 row and S07's by
+    the `s07` row."""
     rows = rights.repository_rows()
     seeds = [row for row in rows if row["decided_by"] == rights.SEED_DECIDED_BY]
     assert len(seeds) == 7 and rows[: len(seeds)] == tuple(seeds)
@@ -459,12 +471,16 @@ def test_d11_the_register_holds_one_seed_row_per_legacy_source_and_r880() -> Non
             "permitted",
             "NOTICE Wilson block",
         )
+    (s07,) = {sha for ident, sha in pairs if ident == "legacy.s07"}
+    assert len(rows) == 9 and rows[7] == r880[0]
+    assert rows[8] == {**S07_ROW, "source_sha256": s07}
+    deciding = {"s10": r880[0], "s07": rows[8]}
     for item in imported:
         for outcome in item.records:
             assessed = rights.record_rights(outcome.record, outcome.record_sha256)
             assert rights.embeddable(assessed), outcome.record["id"]
-            if item.profile == "s10":
-                assert {a.row["basis"][:5] for a in assessed.values() if a.row} == {"R-880"}
+            if item.profile in deciding:
+                assert [a.row for a in assessed.values()] == [deciding[item.profile]]
 
 
 def test_d11_the_check_fails_when_a_seed_row_is_stale() -> None:
