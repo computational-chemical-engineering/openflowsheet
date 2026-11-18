@@ -77,7 +77,8 @@ def _shape_check(
     """R-278 (module docstring): the structural incidence of the projected equations on every
     variable but the decisions, with the link-EF outputs fixed and the property relations kept,
     and whether it has a perfect matching. Called after the DOF check, so it is square. The
-    unknowns are the projection's: `x` at the spec positions `projected` (R-296), `y` and `w`."""
+    unknowns are the projection's: `x` at the spec positions `projected` (R-296), `y` and `w`.
+    On a failure, the refusal names the under-determined block (`_undetermined_columns`)."""
     import scipy.sparse as sp
     from scipy.sparse.csgraph import maximum_bipartite_matching
 
@@ -125,6 +126,33 @@ def _shape_check(
     for r, c in enumerate(row_match):
         if c >= 0:
             column_match[c] = r
+    undetermined = _undetermined_columns(equations, row_match, column_match, size)
+    link_inputs = {name for link in links for name in link.inlet_variable_ids}
+    under = [unknown_names[c] for c in sorted(undetermined)]
+    flagged = [name for name in under if name in link_inputs]
+    unmatched_equations = [equations[r][0] for r in range(size) if row_match[r] < 0]
+    unmatched_variables = [unknown_names[c] for c in range(size) if column_match[c] < 0]
+    refusal = ProjectionRefusedError(
+        "PROJECTION_IMPLICIT_EF_INPUT",
+        ",".join(under),
+        f"with the decisions and the link-EF outputs fixed, a maximum matching pairs {matched} of "
+        f"the {size} equations and unknowns; unmatched equations {unmatched_equations}, unmatched "
+        f"variables {unmatched_variables}; structurally undetermined variables {under}, of which "
+        f"link-EF inputs {flagged}",
+    )
+    return _ShapeVerdict(matched, size, refusal)
+
+
+def _undetermined_columns(
+    equations: Sequence[tuple[str, list[int]]],
+    row_match: npt.NDArray[Any],
+    column_match: npt.NDArray[np.int64],
+    size: int,
+) -> set[int]:
+    """The shape check's structurally under-determined block (R-278), pure: the columns of the
+    `size` unknowns that alternating paths reach from the unmatched ones (`column_match` -1),
+    given the equations' incidence and the maximum matching `row_match` (row -> column, -1 when
+    unmatched)."""
     incident: list[list[int]] = [[] for _ in range(size)]
     for r, (_, cols) in enumerate(equations):
         for c in cols:
@@ -142,20 +170,7 @@ def _shape_check(
                     undetermined.add(partner)
                     reached.append(partner)
         frontier = reached
-    link_inputs = {name for link in links for name in link.inlet_variable_ids}
-    under = [unknown_names[c] for c in sorted(undetermined)]
-    flagged = [name for name in under if name in link_inputs]
-    unmatched_equations = [equations[r][0] for r in range(size) if row_match[r] < 0]
-    unmatched_variables = [unknown_names[c] for c in range(size) if column_match[c] < 0]
-    refusal = ProjectionRefusedError(
-        "PROJECTION_IMPLICIT_EF_INPUT",
-        ",".join(under),
-        f"with the decisions and the link-EF outputs fixed, a maximum matching pairs {matched} of "
-        f"the {size} equations and unknowns; unmatched equations {unmatched_equations}, unmatched "
-        f"variables {unmatched_variables}; structurally undetermined variables {under}, of which "
-        f"link-EF inputs {flagged}",
-    )
-    return _ShapeVerdict(matched, size, refusal)
+    return undetermined
 
 
 # -- the omitted rows (R-274) ---------------------------------------------------------------------
