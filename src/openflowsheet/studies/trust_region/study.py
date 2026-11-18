@@ -680,7 +680,8 @@ def run_study(
     `stage_a_reference` as P2's reference; then up to `K_MAX` stage-C iterations, each from the
     best parent-checked point (`_stage_a_best`, `_best_feasible`), retried once with radius × ¼
     after an abort. The budget is judged before every run and check: `BUDGET_EXHAUSTED`, never
-    stable."""
+    stable. Each stage's candidate goes through `_StudyRun.settle`, which ends the call on an
+    unchecked or parent-local candidate."""
     sense = parent.sense
     result = StudyResult(status="", budget=budget, sense=sense)
     readiness = framework()
@@ -726,12 +727,8 @@ def run_study(
             result.stage_a["outcome"] = stopped
         else:
             candidate = study.check(staged, "A", stage_a_reference)
-            result.produced_by[candidate.candidate_id] = ids
-            if candidate.status == NOT_CHECKED:
-                return study.stop(BUDGET_EXHAUSTED)
-            if candidate.status == PARENT_LOCAL_EVIDENCE:
-                result.best = candidate.targeted
-                return study.stop(DECISION_STABLE)
+            if (ended := study.settle(candidate, ids)) is not None:
+                return ended
             result.best = _stage_a_best(sense, s0, candidate, result.best)
 
     # Stage C (§7.3).
@@ -741,12 +738,8 @@ def run_study(
             assert stopped is not None
             return study.stop(stopped)
         candidate = study.check(staged, "C")
-        result.produced_by[candidate.candidate_id] = ids
-        if candidate.status == NOT_CHECKED:
-            return study.stop(BUDGET_EXHAUSTED)
-        if candidate.status == PARENT_LOCAL_EVIDENCE:
-            result.best = candidate.targeted
-            return study.stop(DECISION_STABLE)
+        if (ended := study.settle(candidate, ids)) is not None:
+            return ended
         if candidate.status != NOT_STATIONARY_AT_DELTA:
             return study.stop(failed(candidate.status))
         result.best = _best_feasible(sense, candidate)
@@ -758,8 +751,8 @@ class _StudyRun:
     """One call of `run_study`: its fixed frame and S0's regimes, the reference of every check.
 
     Frame: the parent, the decisions, the budget, the caller's limitations and the result the
-    methods fill (`runs`, `candidates`, `status`). State: `reference_regimes`, assigned once
-    after S0, read by `check`.
+    methods fill (`runs`, `candidates`, `produced_by`, `best`, `status`). State:
+    `reference_regimes`, assigned once after S0, read by `check`.
     """
 
     parent: Parent
@@ -830,6 +823,20 @@ class _StudyRun:
         )
         self.result.candidates.append(checked)
         return checked
+
+    def settle(self, candidate: CandidateCheck, ids: list[str]) -> StudyResult | None:
+        """Records `ids` as the runs that produced `candidate` (`result.produced_by`), then ends
+        the call when the candidate settles the study, as both stages do: `NOT_CHECKED` (the
+        budget ran out during the check) stops with `BUDGET_EXHAUSTED`; `PARENT_LOCAL_EVIDENCE`
+        sets `result.best` to its targeted point and stops with `DECISION_STABLE` (`stop` writes
+        `result.status`). None: the call goes on with the candidate."""
+        self.result.produced_by[candidate.candidate_id] = ids
+        if candidate.status == NOT_CHECKED:
+            return self.stop(BUDGET_EXHAUSTED)
+        if candidate.status == PARENT_LOCAL_EVIDENCE:
+            self.result.best = candidate.targeted
+            return self.stop(DECISION_STABLE)
+        return None
 
 
 def _stage_a_best(
