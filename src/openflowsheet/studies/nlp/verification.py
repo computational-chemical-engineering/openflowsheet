@@ -85,6 +85,7 @@ from openflowsheet.studies.sensitivity import (
     Matrix,
     OutputFunctional,
     SensitivityResult,
+    SplitRegime,
     StudyParameter,
 )
 
@@ -757,15 +758,10 @@ def _regimes(
     start's and the re-solve's zero subsystem (OPT §9 A-2): unequal as id sets →
     `ZERO_SUBSYSTEM_CHANGED`; recorded under `zero_subsystem` only where either is non-empty.
     `not_closure_test` names the guarded splits whose row is no longer their closure's test at the
-    re-solve (OPT §9 A-3): each fails V4 as `phase_row_not_closure_test(<unit>)`."""
+    re-solve (OPT §9 A-3): each fails V4 as `phase_row_not_closure_test(<unit>)`. The per-split
+    judgement is `_split_regimes`'s."""
     splits = record.splits
-    changed = [split.unit_id for split in splits if declared.get(split.unit_id) != split.regime]
-    exempt = set(phase_active or ())
-    near = [
-        split.unit_id
-        for split in splits
-        if (split.margin is None or not split.margin >= TAU_REGIME) and split.unit_id not in exempt
-    ]
+    changed, near = _split_regimes(splits, declared, set(phase_active or ()))
     detail: dict[str, Any] = {
         "splits": [split.as_document() for split in splits],
         "declared": dict(declared),
@@ -790,6 +786,20 @@ def _regimes(
         ]
     failed = changed or near or moved or zero_changed or bool(not_closure_test)
     return VerificationCheck("V4", "fail" if failed else "pass", detail)
+
+
+def _split_regimes(
+    splits: Sequence[SplitRegime], declared: Mapping[str, str], exempt: set[str]
+) -> tuple[list[str], list[str]]:
+    """V4's per-split part, each list in `splits` order: the units whose regime is not their
+    `declared` one, and the units not in `exempt` whose margin is missing or below `τ_regime`."""
+    changed = [split.unit_id for split in splits if declared.get(split.unit_id) != split.regime]
+    near = [
+        split.unit_id
+        for split in splits
+        if (split.margin is None or not split.margin >= TAU_REGIME) and split.unit_id not in exempt
+    ]
+    return changed, near
 
 
 def _not_closure_test(
