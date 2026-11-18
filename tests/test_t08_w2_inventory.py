@@ -951,11 +951,12 @@ def _a32_v2_problems(
     round 1, B6) on the v2 records (`record_format: openflowsheet-record-v2`) of `mappings`. Inside
     `RECORD_V2_HOME` a record's `sources` must be a non-empty object whose every key begins
     `fixture.` (its records are invented, some refused by construction, so D2 is not run).
-    Outside it a record must pass D2 (`records.identify`) and then be `synthetic: true`, or
-    carry the `legacy.file_sha256` of a file of `VETTED_RECORD_FILES` (the D12 SHA of its
-    LF-normalised bytes), or have each of its sources `permitted` in the repository rights
-    register `register` (ADR 0061 D11's precedence over the repository layer: packaging reads
-    that layer only). Returns one line per failing record."""
+    Outside it a record must pass D2 (`records.identify`) and then be `synthetic: true`, or be a
+    component carrying the `legacy.file_sha256` of a file of `VETTED_RECORD_FILES` (the D12 SHA
+    of its LF-normalised bytes; the vetting vets a file's components, not its parameter set,
+    F3-rulings-1 B6 build decision), or have each of its sources `permitted` in the repository
+    rights register `register` (ADR 0061 D11's precedence over the repository layer: packaging
+    reads that layer only). Returns one line per failing record."""
     vetted = {legacy.file_sha256((REPO_ROOT / path).read_bytes()) for path in VETTED_RECORD_FILES}
     found = []
     for path, item in mappings:
@@ -972,7 +973,8 @@ def _a32_v2_problems(
         record = outcome.record
         if record.get("synthetic") is True:
             continue
-        if record.get("legacy", {}).get("file_sha256") in vetted:
+        legacy_file = record.get("legacy", {}).get("file_sha256")
+        if record["record_type"] == "component" and legacy_file in vetted:
             continue
         assessed = rights.record_rights(record, outcome.record_sha256, repository=register)
         if not rights.embeddable(assessed):
@@ -1003,7 +1005,10 @@ def test_a32_v2_records_pass_the_v2_clause() -> None:
 def test_a32_v2_clause_refuses_each_defect() -> None:
     """Each branch of the v2 clause decides one record: a synthetic record, an imported `m01`
     record (a vetted file's SHA) and an imported `s07` record (its source permitted by its seed
-    row) pass; the `s07` record with no register row, and a record D2 refuses, fail."""
+    row) pass; the `s07` record with no register row, and a record D2 refuses, fail. The
+    imported `s10` parameter set fails with no register row and passes with the packaged one
+    (R-880): the vetted-file branch holds for components only. In `RECORD_V2_HOME` only the
+    `fixture.` sources decide."""
     imported = {
         item.profile: item
         for item in legacy.import_all(lambda path: (REPO_ROOT / path).read_bytes())
@@ -1024,6 +1029,15 @@ def test_a32_v2_clause_refuses_each_defect() -> None:
     assert _a32_v2_problems([(RECORD_V2_HOME + "x.json", refused)], ()) == [
         f"{RECORD_V2_HOME}x.json: {s07['id']} names a source that is not fixture.*"
     ]
+    s10_set = dict(imported["s10"].records[-1].record)
+    assert s10_set["record_type"] == "parameter_set"
+    sets = "benchmarks/x/sets.json"
+    assert _a32_v2_problems([(sets, s10_set)], ()) == [
+        f"{sets}: {s10_set['id']} is real, from no vetted file, not permitted"
+    ]
+    assert _a32_v2_problems([(sets, s10_set)], register) == []  # R-880
+    s10 = dict(imported["s10"].records[0].record)
+    assert _a32_v2_problems([(sets, s10)], ()) == []  # a vetted file's component
     invented = {**refused, "sources": {"fixture.x": {"version": "1"}}}
     assert _a32_v2_problems([(RECORD_V2_HOME + "x.json", invented)], ()) == []
     for sources in ({}, None, {"fixture.x": {}, "other": {}}):
