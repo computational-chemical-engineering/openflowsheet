@@ -220,7 +220,8 @@ def decision_map(
 
     A probe may move at most one parameter, to the written value bitwise, and nothing else; a
     probe at the base value moves none. Across a decision's probes exactly one parameter is
-    named, and at every probe it holds the written value."""
+    named, and at every probe it holds the written value. The specification clause is
+    `_specification_refusal`, the probes at the box's ends `_end_probes`."""
     base = routes.bind(ROUTE, document, surrogates=surrogates)
     if not routes.is_route(base):
         raise RevisionUnboundError(base)
@@ -229,41 +230,11 @@ def decision_map(
     refusals: list[DecisionRefusal] = []
     for decision in decisions:
         name = decision.specification_id
-
-        def refuse(code: DecisionCode, detail: str, name: str = name) -> None:
-            refusals.append(DecisionRefusal(code, name, detail))
-
-        entry = _specification(document, name)
-        if entry is None or entry.get("role") != "fixed" or "value" not in entry:
-            refuse("UNKNOWN_DECISION", f"{name} is not a role: fixed specification with a value")
+        refused = _specification_refusal(document, decision)
+        if refused is not None:
+            refusals.append(refused)
             continue
-        try:
-            unit = si_unit(entry["kind"])
-        except KeyError:
-            refuse("DECISION_UNIT_NOT_INTERNAL", f"{name}: no SI unit for kind {entry['kind']!r}")
-            continue
-        if decision.unit != unit:
-            refuse(
-                "DECISION_UNIT_NOT_INTERNAL",
-                f"{name}: the box is in {decision.unit!r}, the internal unit is {unit!r}",
-            )
-            continue
-        ends = [v for v in (decision.lower, decision.upper) if v is not None and math.isfinite(v)]
-        probes: list[tuple[float, list[str], Mapping[str, float]]] = []
-        why = ""
-        for value in ends:
-            probe = routes.bind(ROUTE, document_at(document, {name: value}), surrogates=surrogates)
-            if not routes.is_route(probe):
-                why = f"{probe.kind}({probe.detail})"
-                break
-            structural, moved = _moved(binding, probe.binding)
-            if structural:
-                why = f"the probe at {value!r} changed {','.join(structural)}"
-                break
-            if len(moved) > 1:
-                why = f"the probe at {value!r} moved {','.join(moved)}"
-                break
-            probes.append((value, moved, probe.binding.spec.parameters))
+        probes, why = _end_probes(document, decision, binding, routes, surrogates)
         named = sorted({parameter for _, moved, _ in probes for parameter in moved})
         if not why and len(named) != 1:
             why = (
@@ -282,10 +253,72 @@ def decision_map(
             else:
                 parameters[name] = parameter
                 continue
-        refuse("DECISION_NOT_CONTINUOUS", f"DECISION_NOT_CONTINUOUS({name}): {why}")
+        refusals.append(
+            DecisionRefusal(
+                "DECISION_NOT_CONTINUOUS", name, f"DECISION_NOT_CONTINUOUS({name}): {why}"
+            )
+        )
     if refusals:
         return tuple(refusals)
     return DecisionMap(MappingProxyType(parameters))
+
+
+def _specification_refusal(
+    document: Mapping[str, Any], decision: DecisionBox
+) -> DecisionRefusal | None:
+    """§4.2.2's specification clause: `UNKNOWN_DECISION` unless `decision`'s specification in
+    `document` is `role: fixed` with a value, `DECISION_UNIT_NOT_INTERNAL` when its kind has no SI
+    unit or the box is not in that unit; `None` when the clause holds."""
+    name = decision.specification_id
+    entry = _specification(document, name)
+    if entry is None or entry.get("role") != "fixed" or "value" not in entry:
+        return DecisionRefusal(
+            "UNKNOWN_DECISION", name, f"{name} is not a role: fixed specification with a value"
+        )
+    try:
+        unit = si_unit(entry["kind"])
+    except KeyError:
+        return DecisionRefusal(
+            "DECISION_UNIT_NOT_INTERNAL", name, f"{name}: no SI unit for kind {entry['kind']!r}"
+        )
+    if decision.unit != unit:
+        return DecisionRefusal(
+            "DECISION_UNIT_NOT_INTERNAL",
+            name,
+            f"{name}: the box is in {decision.unit!r}, the internal unit is {unit!r}",
+        )
+    return None
+
+
+def _end_probes(
+    document: Mapping[str, Any],
+    decision: DecisionBox,
+    binding: Any,
+    routes: RevisionRoutes,
+    surrogates: Any,
+) -> tuple[list[tuple[float, list[str], Mapping[str, float]]], str]:
+    """§4.2.2's bind probes of `decision` at its box's finite ends (lower, then upper), against the
+    base `binding`: each probe as (value, the parameters it moved, its parameters), and why the
+    probing stopped (`""` when every end was probed): the first probe that does not bind, changes
+    a structural member, or moves more than one parameter ends it, unrecorded."""
+    name = decision.specification_id
+    ends = [v for v in (decision.lower, decision.upper) if v is not None and math.isfinite(v)]
+    probes: list[tuple[float, list[str], Mapping[str, float]]] = []
+    why = ""
+    for value in ends:
+        probe = routes.bind(ROUTE, document_at(document, {name: value}), surrogates=surrogates)
+        if not routes.is_route(probe):
+            why = f"{probe.kind}({probe.detail})"
+            break
+        structural, moved = _moved(binding, probe.binding)
+        if structural:
+            why = f"the probe at {value!r} changed {','.join(structural)}"
+            break
+        if len(moved) > 1:
+            why = f"the probe at {value!r} moved {','.join(moved)}"
+            break
+        probes.append((value, moved, probe.binding.spec.parameters))
+    return probes, why
 
 
 def two_phase_margin(

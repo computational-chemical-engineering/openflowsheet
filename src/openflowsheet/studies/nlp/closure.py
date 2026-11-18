@@ -45,7 +45,7 @@ import platform
 import sys
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
-from typing import Any, Final, Literal
+from typing import TYPE_CHECKING, Any, Final, Literal
 
 import numpy as np
 
@@ -70,6 +70,9 @@ from openflowsheet.studies.nlp.host import CertifiedPoint, DecisionRefusedError,
 from openflowsheet.studies.nlp.tolerances import TAU_FEAS
 from openflowsheet.studies.nlp.verification import CHECKS, CandidateVerification, CheckOutcome
 from openflowsheet.studies.sensitivity import TAU_ALIAS, OutputFunctional, StudyParameter
+
+if TYPE_CHECKING:
+    from openflowsheet.compile.spec import ProblemSpec
 
 SCHEMA_VERSION: Final = "optimization-report-v1"
 #: The [A10] audit of the optional NLP path (spec §9): the document, its gate and its verdict.
@@ -346,7 +349,9 @@ def optimization_readiness(
 
     `flowsheet` is an NLP host or a SYN-001 flowsheet (`as_host`). `solver_probe` decides
     `NLP_SOLVER_UNAVAILABLE`; it is replaceable so that a test can check each other reason alone,
-    and READY, without the audited environment."""
+    and READY, without the audited environment. The rules before the starts are
+    `_check_decisions`, `_check_bounds`, `_check_start_bounds`, `_check_variables`,
+    `_assessment_outputs` and `_check_hessian`, in that order."""
     host = as_host(flowsheet)
     reasons: list[ReadinessReason] = []
     try:
@@ -357,60 +362,17 @@ def optimization_readiness(
 
     known_decisions = True
     if spec is not None:
-        for decision_id in formulation.decision_ids:
-            theta = _assessment_theta(formulation, decision_id)
-            if theta is not None:
-                known_decisions = False
-                reasons.append(theta)
-            elif decision_id not in spec.parameter_ids:
-                known_decisions = False
-                reasons.append(
-                    ReadinessReason(
-                        "UNKNOWN_DECISION",
-                        f"{decision_id!r} is not a pinned input of {spec.label!r}",
-                        decision_id,
-                    )
-                )
-    bounded = True
-    for decision in formulation.decisions:
-        if not decision.bounded:
-            bounded = False
-            reasons.append(
-                ReadinessReason(
-                    "BOUNDS_UNDECLARED",
-                    f"{decision.parameter_id}: the box [{decision.lower}, {decision.upper}] is "
-                    "not finite with lower < upper",
-                    decision.parameter_id,
-                )
-            )
-    for index, start in enumerate(formulation.starts):
-        for decision, value in zip(formulation.decisions, start, strict=True):
-            if decision.bounded and not decision.lower <= value <= decision.upper:  # type: ignore[operator]
-                reasons.append(
-                    ReadinessReason(
-                        "START_OUTSIDE_BOUNDS",
-                        f"start {index}: {decision.parameter_id} = {value!r} is outside "
-                        f"[{decision.lower!r}, {decision.upper!r}]",
-                        decision.parameter_id,
-                    )
-                )
+        undecidable = _check_decisions(formulation, spec)
+        known_decisions = not undecidable
+        reasons.extend(undecidable)
+    unbounded = _check_bounds(formulation)
+    bounded = not unbounded
+    reasons.extend(unbounded)
+    reasons.extend(_check_start_bounds(formulation))
     if spec is not None:
-        for name in formulation.variables:
-            if name not in spec.variable_ids:
-                reasons.append(
-                    ReadinessReason(
-                        "UNKNOWN_VARIABLE", f"{name!r} is not a variable of {spec.label!r}", name
-                    )
-                )
+        reasons.extend(_check_variables(formulation, spec))
     reasons.extend(_assessment_outputs(formulation))
-    if formulation.hessian != HESSIAN_APPROXIMATION:
-        reasons.append(
-            ReadinessReason(
-                "HESSIAN_UNAVAILABLE",
-                f"Hessian {formulation.hessian!r} requested; Capabilities.hessian is absent and "
-                f"the only policy is Ipopt's {HESSIAN_APPROXIMATION} approximation",
-            )
-        )
+    reasons.extend(_check_hessian(formulation))
 
     starts: list[StartReadiness] = []
     if spec is not None and known_decisions:
@@ -433,6 +395,90 @@ def optimization_readiness(
         solver=solver,
         starts=tuple(starts),
     )
+
+
+def _check_decisions(formulation: NlpFormulation, spec: ProblemSpec) -> list[ReadinessReason]:
+    """§8.7's decision rule, per decision in order: an assessment θ (`_assessment_theta`), else
+    `UNKNOWN_DECISION` when it is not a pinned input of `spec`. Empty when every decision is
+    known."""
+    found: list[ReadinessReason] = []
+    for decision_id in formulation.decision_ids:
+        theta = _assessment_theta(formulation, decision_id)
+        if theta is not None:
+            found.append(theta)
+        elif decision_id not in spec.parameter_ids:
+            found.append(
+                ReadinessReason(
+                    "UNKNOWN_DECISION",
+                    f"{decision_id!r} is not a pinned input of {spec.label!r}",
+                    decision_id,
+                )
+            )
+    return found
+
+
+def _check_bounds(formulation: NlpFormulation) -> list[ReadinessReason]:
+    """§8.7's `BOUNDS_UNDECLARED`, per decision whose box is not finite with lower < upper, in
+    order. Empty when every decision is bounded."""
+    found: list[ReadinessReason] = []
+    for decision in formulation.decisions:
+        if not decision.bounded:
+            found.append(
+                ReadinessReason(
+                    "BOUNDS_UNDECLARED",
+                    f"{decision.parameter_id}: the box [{decision.lower}, {decision.upper}] is "
+                    "not finite with lower < upper",
+                    decision.parameter_id,
+                )
+            )
+    return found
+
+
+def _check_start_bounds(formulation: NlpFormulation) -> list[ReadinessReason]:
+    """§8.7's `START_OUTSIDE_BOUNDS`, per start and, within it, per bounded decision whose start
+    value is outside its box, in order."""
+    found: list[ReadinessReason] = []
+    for index, start in enumerate(formulation.starts):
+        for decision, value in zip(formulation.decisions, start, strict=True):
+            if decision.bounded and not decision.lower <= value <= decision.upper:  # type: ignore[operator]
+                found.append(
+                    ReadinessReason(
+                        "START_OUTSIDE_BOUNDS",
+                        f"start {index}: {decision.parameter_id} = {value!r} is outside "
+                        f"[{decision.lower!r}, {decision.upper!r}]",
+                        decision.parameter_id,
+                    )
+                )
+    return found
+
+
+def _check_variables(formulation: NlpFormulation, spec: ProblemSpec) -> list[ReadinessReason]:
+    """§8.7's `UNKNOWN_VARIABLE`, per formulation variable that is not a variable of `spec`, in
+    order."""
+    found: list[ReadinessReason] = []
+    for name in formulation.variables:
+        if name not in spec.variable_ids:
+            found.append(
+                ReadinessReason(
+                    "UNKNOWN_VARIABLE", f"{name!r} is not a variable of {spec.label!r}", name
+                )
+            )
+    return found
+
+
+def _check_hessian(formulation: NlpFormulation) -> list[ReadinessReason]:
+    """§8.7's `HESSIAN_UNAVAILABLE` when the formulation asks for a Hessian other than Ipopt's
+    approximation (the only policy); empty otherwise."""
+    found: list[ReadinessReason] = []
+    if formulation.hessian != HESSIAN_APPROXIMATION:
+        found.append(
+            ReadinessReason(
+                "HESSIAN_UNAVAILABLE",
+                f"Hessian {formulation.hessian!r} requested; Capabilities.hessian is absent and "
+                f"the only policy is Ipopt's {HESSIAN_APPROXIMATION} approximation",
+            )
+        )
+    return found
 
 
 def _assessment_theta(formulation: NlpFormulation, decision_id: str) -> ReadinessReason | None:

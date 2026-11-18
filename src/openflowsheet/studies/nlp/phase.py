@@ -36,7 +36,7 @@ import math
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from types import MappingProxyType
-from typing import Any, Final, Literal
+from typing import Any, Final, Literal, NamedTuple
 
 import numpy as np
 import numpy.typing as npt
@@ -289,7 +289,42 @@ def phase_rows(
 ) -> PhaseRows:
     """§4.7's rows at a start (§9 A-3: split rows only where guarded): `splits` are each lifted
     split's regime record with its feed flow ids, temperature and pressure ids; the declared
-    ports are the spec's `PhaseFlowBlock`s."""
+    ports are the spec's `PhaseFlowBlock`s. The split rows are `_split_entries`'s, the port rows
+    `_port_entries`'s; each list keeps the split rows before the port rows."""
+    split_rows = _split_entries(spec, state, splits, components)
+    port_rows = _port_entries(spec, state, provider, components, context)
+    entries = split_rows.entries + port_rows.entries
+    undefined = split_rows.undefined + port_rows.undefined
+    unguarded = split_rows.unguarded
+    if not entries:
+        return PhaseRows((), tuple(undefined), None, tuple(unguarded))
+    return PhaseRows(
+        tuple(entry.row for entry in entries),
+        tuple(undefined),
+        _functional(spec, entries),
+        tuple(unguarded),
+    )
+
+
+class _SplitEntries(NamedTuple):
+    """`_split_entries`'s result: the guarded split rows' entries, the split units whose margin is
+    undefined, and the split units with no lnK block or an unguarded row, each in `splits` order."""
+
+    entries: list[_Entry]
+    undefined: list[str]
+    unguarded: list[str]
+
+
+def _split_entries(
+    spec: ProblemSpec,
+    state: Mapping[str, float],
+    splits: Sequence[tuple[SplitRegime, tuple[str, ...], str, str]],
+    components: Sequence[str],
+) -> _SplitEntries:
+    """§4.7's split rows (§9 A-3): for each lifted split in a `LIQUID` or `VAPOR` regime with a
+    margin, the bubble or dew row on the spec's lnK block at its temperature and pressure, kept
+    where `_guarded` holds at `state`. A `ZERO_FLOW` split or another regime is skipped. Raises
+    `ValueError` when a split's feed flows do not match `components`."""
     entries: list[_Entry] = []
     undefined: list[str] = []
     unguarded: list[str] = []
@@ -342,6 +377,29 @@ def phase_rows(
             entries.append(entry)
         else:
             unguarded.append(record.unit_id)
+    return _SplitEntries(entries, undefined, unguarded)
+
+
+class _PortEntries(NamedTuple):
+    """`_port_entries`'s result: the declared ports' entries, and the streams whose saturation
+    temperature is not defined at the port pressure (`DomainError`), each in spec block order."""
+
+    entries: list[_Entry]
+    undefined: list[str]
+
+
+def _port_entries(
+    spec: ProblemSpec,
+    state: Mapping[str, float],
+    provider: PropertyProvider,
+    components: Sequence[str],
+    context: EvaluationContext,
+) -> _PortEntries:
+    """§4.7's port rows: for each declared port (a `PhaseFlowBlock` ending in `_liquid` or
+    `_vapor`), the subcooled or superheated row against its stream's saturation temperature from
+    `provider` at the port pressure in `state`; a `DomainError` there makes the stream undefined."""
+    entries: list[_Entry] = []
+    undefined: list[str] = []
     ports = [
         block
         for block in spec.blocks
@@ -383,11 +441,4 @@ def phase_rows(
                 ((saturation, (pressure,)),),
             )
         )
-    if not entries:
-        return PhaseRows((), tuple(undefined), None, tuple(unguarded))
-    return PhaseRows(
-        tuple(entry.row for entry in entries),
-        tuple(undefined),
-        _functional(spec, entries),
-        tuple(unguarded),
-    )
+    return _PortEntries(entries, undefined)
