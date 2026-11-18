@@ -4,7 +4,8 @@
 # `records/normalize.py` (D2 steps 1 to 5, D6) and `records/validate.py` (D2 step 6, D7); the
 # store's and resolution's (F3-WO2) from `records/store.py`, `records/stack.py` (D8) and
 # `records/resolve.py` (D9); the legacy import's (F3-WO3) from `records/importers/legacy.py`
-# (D12). The codes of the data lock and reaction consistency come with their work orders.
+# (D12); the data lock's (F3-WO4) from `records/lock.py` (D10, D5). The codes of reaction
+# consistency come with their work order.
 catalogue: openflowsheet-messages-v1
 namespace: null
 entries:
@@ -244,6 +245,20 @@ entries:
     action: "Register the record in this project, or open the project where its record files are available."
     examples:
       - params: {sha: 0f4c2e6a9b1d3c5e7f80a2b4c6d8e0f1a3b5c7d9e1f3a5b7c9d1e3f5a7b9c1d3}
+
+  # D5, D10: a parameter set's component matches no record the data lock binds.
+  - code: parameter_set_component_missing
+    family: refusal
+    kind: input
+    complete: true
+    title: A parameter set names a component the selection lacks
+    args: [set, key]
+    params: {set: {type: text, label: parameter set}, key: {type: text, label: component key}}
+    summary: "The parameter set {set!raw} has the component {key!raw}, which matches none of the selected component records."
+    why: "A parameter set states which component each of its keys belongs to: either one exact record, by its SHA, or any record of a compound, by its InChIKey. A set fitted to one record's data matches only that record, so selecting another record of the same compound does not satisfy it."
+    action: "Select the record the parameter set names for that component, or use a parameter set made for the records you selected."
+    examples:
+      - params: {set: S10-wilson-ig-real-v1, key: CH3OH}
 
   # D8: a project path too long for the record store on Windows without long paths.
   - code: store_path_too_long

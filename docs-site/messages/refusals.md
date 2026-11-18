@@ -1899,6 +1899,28 @@ The solve stopped: no step along its search direction reduced the error.
 
 - **Summary:** Refused: parameter quantity invalid.
 
+<a id="parameter_set_component_missing"></a>
+
+## `parameter_set_component_missing`: A parameter set names a component the selection lacks
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+- **Summary:** The parameter set &lt;set&gt; has the component &lt;key&gt;, which matches none of the selected component records.
+- **Why:** A parameter set states which component each of its keys belongs to: either one exact record, by its SHA, or any record of a compound, by its InChIKey. A set fitted to one record's data matches only that record, so selecting another record of the same compound does not satisfy it.
+- **Do:** Select the record the parameter set names for that component, or use a parameter set made for the records you selected.
+- **Parameters:** `set` (text), `key` (text)
+
+Example:
+
+```text
+The parameter set S10-wilson-ig-real-v1 has the component CH3OH, which matches none of the selected component records.
+  Why:     A parameter set states which component each of its keys belongs to: either one exact record, by its SHA, or any record of a compound, by its InChIKey. A set fitted to one record's data matches only that record, so selecting another record of the same compound does not satisfy it.
+  Do:      Select the record the parameter set names for that component, or use a parameter set made for the records you selected.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    parameter_set_component_missing (openflowsheet explain parameter_set_component_missing)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#parameter_set_component_missing
+```
+
 <a id="parameter_unit_unsupported"></a>
 
 ## `parameter_unit_unsupported`: Parameter unit unsupported
