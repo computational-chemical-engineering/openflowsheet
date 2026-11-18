@@ -56,29 +56,33 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 - G1 (orchestrator/, numerics/) running since 2026-11-18 (hold lifted 2026-11-16); ptc.py item met (8.3 after P3).
 - G-END (below) stays the end criterion for the whole repository.
 
-## Next actions (2026-11-19 ~02:05)
+## Next actions (2026-11-19 ~02:45; self-reset)
 
-**Position:** wp/S19 = 030288b4 + docs (lane N run 4 merged; W5 WO-0 merged b70f8dea; ADR 0077 accepted, R-1059).
-Lane N (numerics) done: anderson 13.2 (9.0), newton 28.7, ptc 23.2. MB 756e1c12. Runner PID 2763884 (predates the W5
-mode: restart it when idle before the first `--batch` job; `kill $(cat <queue>/runner.pid)`, then `$Q run --detach`).
-**Agents running (both opus-engineer):** (a) W5 gate-mode fix round 1 on `wp/S19-w5gm` (brief `S19-W5-WO1gm-fix1.md`;
-review R-W5-WO1gm fixes 1-5 + notes; enqueues one A1 re-gate `w5gm-a1c`); (b) G1 lane O run 4 on `wp/S19-g1o4` from
-030288b4 (brief `S19-W3-G1O-4.md`: R1 region, S1 region_screen, C2 coupling; jobs `g1o4-*`). Region self-test PASS
-(2/3, region.py:663); coupling's 2026-11-15.
-**On wake:**
-1. Fix round (a) reports: spot-check one fix (fix 1(a) killed-call line), then merge-check `wp/S19-w5gm` (full suite,
-   base 94840fb3) -> merge into wp/S19 -> restart the runner -> cut B_N = the tip; write the batch JSON
-   (`<git-common-dir>/codehealth/briefs/S19-W5-batchN.json`: base B_N, max_tier 2, admitted = the 17 files of
-   `S19-W5-batchN.md`, expected_failures = its 10 L_N ids, standing_failures []), run `w5_identity.py sets --check` at
-   B_N (W5-T1), branch `wp/S19-w5n` from B_N.
-2. Then WO-1b (sonnet-implementer: S10 A26's oracle -> F0's registered M9 value; one test commit outside the gate;
-   reviewer reads it) and WO-N1 (`assessment/cost/contributor.py` 2.8, then `sets.py` 4.7, Refusal retargets in
-   cost/{contributor,derived,index,operating}.py; gated `--batch`), WO-N2 (lca), WO-N3 (pr_lib, S1), WO-N4 (registry
-   factory switch, `--mode interface --batch`), WO-N5 (close: K, judge, review), merge batch N into wp/S19 (FR-2 B).
-3. Lane O run 4 reports: review R-W3-G1O-4 (S1; brief from `S19-R-W3-G1N-4.md`), fixes, merge-check, merge. Then lane
-   O run 5 per plan section 6 (R2, S2, E2).
-4. Open for the design lane at batch N's close review: W5-S1's text vs fix 2 (a tier 1 split's new module admitted by
-   the tool; default: the tool's rule stands).
+**Position:** wp/S19 = 4ac9ef80 (030288b4 + docs; lane N done; W5 WO-0 merged; ADR 0077 accepted, R-1059). MB
+756e1c12. Runner PID 2763884 predates the `--batch` mode. No agent of this session running. Background
+`gate_queue.py wait` shells may wake the new context without saying why: run `$Q status`.
+**In the queue (act in this order on results):**
+- job 355 `w5gm-mc`: merge-check of helper `wp/S19-w5gm-mc` (worktree `s19-w5gm-mc`) = 5733e206 + merge of
+  `wp/S19-w5gm` (390e84fe; lane 94840fb3..cae3849c: W5 gate mode + R-W5-WO1gm fix round 1). PASS -> `git merge --no-ff
+  wp/S19-w5gm-mc` into wp/S19 (wp/S19 has only docs since 5733e206), log; then, with the queue idle, restart the runner
+  (`kill $(cat <git-common-dir>/codehealth/queue/runner.pid)`; `$Q run --detach` from the s19 worktree) and check
+  `$Q status` names the new PID. FAIL -> read failed checks; a real failure to a fresh engineer.
+- jobs 354, 356, 357 `g1o4-1..3` (lane O run 4: R1 52bb085d, S1 1042fe5e, C2 89275e75 on `wp/S19-g1o4`, worktree
+  `s19-g1o4`, base 030288b4). All PASS -> review R-W3-G1O-4 (reviewer, Opus; write the brief from
+  `<git-common-dir>/codehealth/briefs/S19-R-W3-G1N-4.md`'s form with the nine deviations in S19_DECISIONS
+  2026-11-19 ~02:40) -> fixes -> merge-check (`--base` the wp/S19 tip at that time; helper if wp/S19 gained code) ->
+  merge. Then lane O run 5 per plan section 6 (R2, S2, E2).
+**Then W5 batch N** (after the w5gm merge and the runner restart): cut B_N = the wp/S19 tip; write
+`<git-common-dir>/codehealth/briefs/S19-W5-batchN.json` (`{"batch":"N","base":B_N,"max_tier":2,"admitted":[the 17 files
+of S19-W5-batchN.md],"generator":[],"retarget":[],"expected_failures":[its 10 L_N ids],"standing_failures":[]}`;
+`scripts/w5_gate.py` validates it); `w5_identity.py sets --check` at B_N (W5-T1); branch `wp/S19-w5n` from B_N. Then
+WO-1b (sonnet-implementer: S10 A26's oracle -> F0's registered M9 value; one test commit outside the gate; reviewer
+reads it), WO-N1 (cost/contributor.py 2.8, sets.py 4.7; Refusal retargets in cost/{contributor,derived,index,operating}),
+WO-N2 (lca), WO-N3 (pr_lib, S1), WO-N4 (registry factory switch: `--mode interface --batch`, `scripts/registry_builtin.py`
+in the batch's `retarget`), WO-N5 (close: K, `judge`, `batch-check`, review), merge batch N into wp/S19 (FR-2 B).
+Every W5 enqueue adds `--batch <json>`.
+**Open for the design lane at batch N's close review:** W5-S1's text vs fix 2 (the tool admits a tier 1 split's new
+`.py` in the admitted file's directory; default: the tool's rule stands).
 4. F3 (0.5, `wp/F3`, worktree `f3`): ready except Frank's human review. **Waits for Frank:** card
    ofs-f3-mcp-descriptions-human signed A and VERIFIED, but the REVIEW.json edit recording it was refused by the
    permission system; Frank allows it or edits the five `human` reviews himself; then `executed` on that card, CI
