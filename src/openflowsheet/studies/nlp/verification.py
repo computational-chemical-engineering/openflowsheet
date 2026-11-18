@@ -934,7 +934,8 @@ def _kkt(
 ) -> tuple[SensitivityResult | None, KktEvidence | None, VerificationCheck]:
     """V5, from M03's adjoint sensitivities at `x_sim` (plus `∂G/∂d` for assessment terms);
     `held` are the splits whose phase row is active (Q4's held mode, OPT §4.7). Each output is
-    `_functional`'s linearization; their scaled gradients are `_output_gradients`'s."""
+    `_functional`'s linearization; their scaled gradients are `_output_gradients`'s, the active
+    constraints' rows `_active_rows`'s."""
     if not all(decision.bounded for decision in formulation.decisions):
         return None, None, VerificationCheck("V5", "not_evaluated", {"reason": "bounds_undeclared"})
     parameters = tuple(
@@ -976,17 +977,7 @@ def _kkt(
         constraint.constraint_id: rows[index]
         for index, constraint in enumerate(constraints, start=1)
     }
-    position_of = {
-        decision.parameter_id: index for index, decision in enumerate(formulation.decisions)
-    }
-    active_rows = []
-    for item in active:
-        if item.kind == "bound":
-            row: npt.NDArray[np.float64] = np.zeros(n)
-            row[position_of[item.target]] = 1.0
-        else:
-            row = gradients[item.target].copy()
-        active_rows.append(row if item.side == "lower" else -row)
+    active_rows = _active_rows(active, gradients, formulation.decisions)
     kkt = _stationarity(objective_gradient, active_rows, active, gradients)
     passed = kkt.stationarity_residual <= TAU_KKT and kkt.multipliers_nonnegative and kkt.licq
     return (
@@ -1028,6 +1019,26 @@ def _output_gradients(
             row = np.zeros(len(decisions))
         rows.append(row if direct is None else row + direct * scales)
     return rows
+
+
+def _active_rows(
+    active: Sequence[ActiveConstraint],
+    gradients: Mapping[str, npt.NDArray[np.float64]],
+    decisions: Sequence[Decision],
+) -> list[npt.NDArray[np.float64]]:
+    """The scaled gradient of each active side `ĉ_i ≥ 0` of `active`, in order, over `decisions`:
+    a box side's unit row at its decision, an inequality side's row of `gradients` (a copy), each
+    negated on an upper side."""
+    position_of = {decision.parameter_id: index for index, decision in enumerate(decisions)}
+    active_rows = []
+    for item in active:
+        if item.kind == "bound":
+            row: npt.NDArray[np.float64] = np.zeros(len(decisions))
+            row[position_of[item.target]] = 1.0
+        else:
+            row = gradients[item.target].copy()
+        active_rows.append(row if item.side == "lower" else -row)
+    return active_rows
 
 
 def _stationarity(
