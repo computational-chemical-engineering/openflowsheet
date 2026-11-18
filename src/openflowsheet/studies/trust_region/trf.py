@@ -273,8 +273,8 @@ def _run(
     check, the basis, `_preflight`), whose refusal is the run's outcome
     `TRF_TRUTH_REFUSED(<code>)` without a solve; else Pyomo's TRF solve with its log and stdout
     captured and the θ recheck (`_solve_phase`), its log read back with the holder refusals
-    (`_run_log`), R-401's final step (`_final_step`), and the outcome classified
-    (`_classify_run`) into the returned `TrfRun`."""
+    (`_run_log`), R-401's final step (`_final_step`), the outcome classified (`_classify_run`),
+    and the records at the model it returns (`_final_records`), into the returned `TrfRun`."""
     solver = SolverFactory("trustregion")
     effective = solver.config(dict(config))
     run = RunState(run_id)
@@ -325,24 +325,12 @@ def _run(
         theta_logged = log.iterations[-1].theta if log.iterations else None
         same_point = _returned_at_last_points(projection, solved.returned, solved.last_points)
     trf_map: tuple[Mapping[str, str], ...] = ()
-    final = None
     if model is not None:
         try:
             trf_map = _trf_map(projection, model)
         except ValueError as error:
             outcome, model, error_text = trf_error("trf_map"), None, str(error)
-    if model is not None:
-        accepted = last_accepted(log.iterations)
-        assert accepted is not None  # classify_exit refused an empty log
-        sign = -1.0 if projection.source_map["objective"]["sense"] == "maximize" else 1.0
-        final = TrfFinal(
-            decisions=projection.decision_parameters(model),
-            objective=sign * accepted.objective,
-            theta=accepted.theta,
-        )
-    omitted_rows_final = projection.omitted_rows_at(model) if model is not None else None
-    zero_pins_final = projection.zero_pins_at(model) if model is not None else None
-    final_state = projection.state_of(model) if model is not None else None
+    at_model = _final_records(projection, model, log.iterations)
     return TrfRun(
         feasibility_termination=float(effective.feasibility_termination),
         run_id=run_id,
@@ -357,7 +345,7 @@ def _run(
         warnings=tuple(handler.warnings),
         log=tuple(handler.messages),
         config=dict(config),
-        final=final,
+        final=at_model.final,
         model=model,
         trf_map=trf_map,
         refusal=refusal,
@@ -367,9 +355,9 @@ def _run(
         basis_record=basis_record,
         basis_limitations=basis_limitations,
         theta_recheck=solved.theta_recheck,
-        omitted_rows_final=omitted_rows_final,
-        zero_pins_final=zero_pins_final,
-        final_state=final_state,
+        omitted_rows_final=at_model.omitted_rows,
+        zero_pins_final=at_model.zero_pins,
+        final_state=at_model.state,
         exit_claim=claim,
         theta_logged=theta_logged,
         final_state_is_last_truth_point=same_point,
@@ -642,6 +630,42 @@ def _classify_run(
             box_bound_exempt=final_step.box_bound_exempt,
         )
     return _RunOutcome(outcome, refusal, error_text)
+
+
+class _FinalRecords(NamedTuple):
+    """`_final_records`'s result: the run's `TrfFinal`, R-274's fact 4 on the omitted rows,
+    R-296's zero-flow pins and the state mapped back to every spec variable, each at the model
+    the run returns."""
+
+    final: TrfFinal | None
+    omitted_rows: OmittedRowsCheck | None
+    zero_pins: OmittedRowsCheck | None
+    state: Mapping[str, float] | None
+
+
+def _final_records(
+    projection: Projection, model: Any, iterations: Sequence[IterationRecord]
+) -> _FinalRecords:
+    """The records at the `model` the run returns, in this order: the `TrfFinal` (the decisions
+    at `model`, the last accepted iterate's objective in the objective's sense, and its θ), then
+    `projection`'s omitted-row check, zero-pin check and final state at `model`. All None when
+    `model` is None (the outcome returns no model, or `_trf_map` failed)."""
+    if model is None:
+        return _FinalRecords(None, None, None, None)
+    accepted = last_accepted(iterations)
+    assert accepted is not None  # classify_exit refused an empty log
+    sign = -1.0 if projection.source_map["objective"]["sense"] == "maximize" else 1.0
+    final = TrfFinal(
+        decisions=projection.decision_parameters(model),
+        objective=sign * accepted.objective,
+        theta=accepted.theta,
+    )
+    return _FinalRecords(
+        final,
+        projection.omitted_rows_at(model),
+        projection.zero_pins_at(model),
+        projection.state_of(model),
+    )
 
 
 def _preflight(projection: Projection) -> TruthRefused | None:
