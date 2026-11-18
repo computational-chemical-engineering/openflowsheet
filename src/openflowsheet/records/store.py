@@ -33,6 +33,7 @@ import secrets
 import sqlite3
 import sys
 import threading
+import time
 from collections.abc import Iterator, Mapping
 from contextlib import contextmanager
 from datetime import UTC, datetime
@@ -241,7 +242,7 @@ class RecordStore:
             raise RecordStoreError(refusal)
         (root / RECORDS_DIR / OBJECTS_DIR).mkdir(parents=True, exist_ok=True)
         with self._file_connection() as connection:
-            mode = connection.execute("PRAGMA journal_mode = WAL").fetchone()[0]
+            mode = _journal_mode_wal(connection)
             if str(mode).lower() != "wal":
                 raise RecordStoreError(None, f"{root} cannot hold a WAL database ({mode})")
             self._create(connection)
@@ -561,3 +562,18 @@ def _fsync_directory(directory: Path) -> None:
         os.fsync(handle)
     finally:
         os.close(handle)
+
+
+def _journal_mode_wal(connection: sqlite3.Connection) -> str:
+    """`PRAGMA journal_mode = WAL`, retried while busy until `BUSY_TIMEOUT_S`. The switch takes
+    an exclusive lock without calling SQLite's busy handler, so two processes opening a new store
+    at once see `database is locked` from it (E-F3-8 on CI); a database already in WAL answers
+    at once."""
+    deadline = time.monotonic() + BUSY_TIMEOUT_S
+    while True:
+        try:
+            return str(connection.execute("PRAGMA journal_mode = WAL").fetchone()[0])
+        except sqlite3.OperationalError as error:
+            if error.sqlite_errorcode != sqlite3.SQLITE_BUSY or time.monotonic() > deadline:
+                raise
+        time.sleep(0.005)
