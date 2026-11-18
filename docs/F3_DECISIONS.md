@@ -200,3 +200,52 @@ registry table, `registry_sha256`, R4-G3 snapshot, MCP digest or F0 measure move
 `LocalApplication` (`in_memory()` gets `RecordStore.in_memory()`), the `register_record` and `search_records`
 operations and their mapping of `RecordStoreError` and of `resolve`'s `None`. Windows behaviour stays simulated until
 X07a's legs (risk 9).
+
+## F3-WO3 (legacy import), 2026-11-18
+
+Files: `src/openflowsheet/records/importers/{__init__,legacy}.py`, `records/legacy_profiles.yaml`,
+`records/legacy_index.json`, `records/legacy_views.py`, `scripts/records_legacy_index.py`, `tests/test_f3_legacy.py`;
+`legacy_record_drift` in `messages/catalogue/records.yaml`. Commits `16bf8248` (importer, profiles, generator),
+`2d50d0ea` (WO3-2), `274d8edb` (index, package data), `6e038c7c` (views, WO3-4), `b8680e9f` (catalogue), `8fe44cfc`
+(tests; E-F3-9 methanol unskipped). Import: 149 records (147 components, 2 sets), 127 `anchor_defaulted`, 17
+`fit_inputs_unhashed(/molar_mass)`, every anchor `ig`, as D12 states.
+
+- **DECISION WO3-1. `sources.<id>.citation` is each component's v1 `rights.source`** (D12's table, literally).
+  **For the design lane:** the texts differ per component in m01 (5), l01 (9), s07 (77), s10 (3), so the import gives
+  99 distinct `source_sha256` values over 7 sources (the two sets add one each, WO3-5), while D11 seeds "one
+  whole-source row per legacy source, carrying the `source_sha256` of the importer's entry". WO4 cannot meet both. The
+  review's reason for dropping `rights.notes` (one `source_sha256` per source) applies equally to `rights.source`.
+  Proposed D12 text, if the design lane wants one row per source: "`citation`: the file's citation, fixed per
+  profile in `legacy_profiles.yaml`; the component's `rights.source` goes to `note` of its molar mass" (or is dropped
+  like `rights.notes`). Either change regenerates the index (risk 1's cost). Lives in `legacy._component`.
+- **DECISION WO3-2. s07's spin-isomer labels are dropped** (`2d50d0ea`): `OrthoDeuterium`, `OrthoHydrogen`,
+  `ParaDeuterium` carry CoolProp's `7782-39-0o`, `1333-74-0o`, `7782-39-0p`, which D3 refuses
+  (`identifier_invalid`); D12 copies identifiers, so the import failed. The profile's `dropped_identifiers` names
+  them; each must be stated in the file. Alternative: strip the suffix (joins them to normal H2's and D2's class).
+  **For the design lane:** D12 text "an identifier D3 refuses is dropped where the profile names it".
+- **DECISION WO3-3. Index findings are `{code, params}`** (`Coded.as_document`, in D2's order): D12 writes
+  `findings: [code…]` but pins `anchor_defaulted(<id>)` with its param. Alternative: code strings only.
+- **DECISION WO3-4. `records.legacy_views` sits above `thermo`** in `.codehealth/config.toml`'s repo layers (its own
+  module entry): D12 puts the views in `records` and they construct `thermo`'s dataclasses. `codehealth arch`: 0
+  violations. Alternative: move the views to `thermo` (contradicts D12's module name).
+- **DECISION WO3-5. The parameter set's `name` is its `data_set`, and its source entry is `{version: file_sha256}`**
+  (no citation): D12 names neither; `data_provenance` goes to `legacy.file_fields` as D12 says.
+- **DECISION WO3-6. The `legacy-yaml` descriptor stays payload-only** (`modules` empty, `factory` null; WO1-13 left it
+  to WO3). Filling it moves `records.json`, `tables.sha256` and `registry_sha256`; batched with WO5's `user-file`
+  (review N11). Nothing in `registry/builtin` moved in WO3.
+- **DECISION WO3-7. The drift check** compares a file's `file_sha256` first (drift at its first indexed record), then
+  each record's (id, SHA) in index order. A file neither packaged nor in a checkout contributes nothing (a wheel: m01
+  and s10 only). The first legacy-store access imports the available files: 0.74 s cold for all seven (measured).
+- **N9 not applied.** Profiled warm import of all seven files: 1.83 s under cProfile, of which `yaml.safe_load` about
+  0.95 s, schema validation 0.53 s, `strip_empty` (the `if` validators) 0.06 s. Caching them saves under 4 %.
+- **Note (E-F3-1).** D2 sorts object keys, so `elemental_composition` keeps its members but not the YAML's key order;
+  the views equal the loaders under dataclass equality and field by field with mappings by key set, floats by
+  `struct.pack("<d")` bytes, also after a store round trip.
+
+**Moved.** Catalogue sha256 `3aa34e6d…` → `89f77348…` in the two `message_entry` fixtures; `docs-site/messages/refusals.md`
+regenerated. `pyproject.toml` package data and T08.A32's `SHIPPED_DATA` gain the profiles and the index. No registry
+table, `registry_sha256`, R4-G3 snapshot, MCP digest or F0 measure moved.
+
+**Left for later work orders.** WO4: the rights register's seed rows (after the design lane rules on WO3-1), A32's v2
+clause (WO1-15). WO5: wiring `LegacyStore(legacy.available_records)` into `LocalApplication`, the `legacy-yaml` and
+`user-file` descriptors' implementation sets (WO3-6), the user-file adapter's v1 path reusing D12's mapping.
