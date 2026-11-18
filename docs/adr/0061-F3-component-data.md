@@ -781,3 +781,18 @@ numbered C1 to C12 in the review file.
 Ruled outside this ADR (T08.A32, a test): R1-B6, confirmed and tightened (the vetted-file branch is decided by the
 committed legacy index). Open with Frank, not applied: whether `validate_record`'s `reactions` take ADR 0062's `[p, q]`
 beside JSON numbers (review file, Q-F1); until then, JSON numbers only.
+
+## F3 ruling round 2 applied: fix round 3 (`docs/reviews/F3-rulings-2.md`, 2026-11-18)
+
+Status stays Accepted (R-1050). Design-lane rulings on fix round 3's build decisions F3-3-1 to F3-3-4
+(`docs/F3_DECISIONS.md`). The one row is a **clarification** recorded in the decision register; no section above is
+edited and nothing accepted is changed. The build lane's changes are numbered C1 to C5 in the review file. (The
+section "F3 ruling round 2 applied" above holds the rulings of F3 review 2.)
+
+| Of | Clarification | Register |
+| --- | --- | --- |
+| D7, reaction consistency; R-088 Q26 | `validate_record`'s `reactions/*/stoichiometry`, the map `{component key: ν}`, is a reaction's definition, a model input: its coefficients are checked for element, charge and molar-mass balance; nothing is stored and nothing is solved. It is the one numeric container R-088 Q26 admits in the `Records` requests, by that full path and only there (`tests/test_t07_q26.py`, `ALLOWED_BY_PATH`), as M02's inlet and OPT's request are admitted. Any other numeric array or map in a `Records` request, ADR 0062's `[p, q]` coefficient included when it joins, needs a row of its own. | R-1058 |
+
+Ruled without an ADR edit: F3-3-1 (the six package-data caches stay on G20's allowlist), F3-3-3 (the store's
+`finally` rollback kept; T07 §8.1's lint gains a `finally` check), F3-3-4 (the facade's duplication left), the E-F3-8
+first-opening fix (sound; a deterministic test added), the manifest form (no schema change).

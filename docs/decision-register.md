@@ -20167,3 +20167,25 @@ document: one refused outcome `record_schema_invalid("")`. A request's work stay
 timeout (it bounds the caller's wait, not the work: the worker stays busy).
 
 **Watch for.** Another operation that parses client YAML.
+
+## R-1058: R-088 Q26 admits `validate_record`'s `reactions/*/stoichiometry` map, by full path (F3 decision F3-3-2)
+
+| | |
+| --- | --- |
+| Date | 2026-11-18 |
+| Decided by | design lane (`reviewer`), F3 ruling round 2 (fix round 3), on build decision F3-3-2 (`b2399a2a`), clarifying ADR 0061 D7 (Accepted, R-1050) against R-088 Q26. Number from F3's block R-1050…R-1059 |
+| Normative text | ADR 0061, section "F3 ruling round 2 applied: fix round 3"; `docs/reviews/F3-rulings-2.md` (ruling 2) |
+| Evidence | CI 44283813577: the Q26 scan found `Finding(operation='validate_record', path=('reactions', '*', 'stoichiometry'), kind='map')` and no other numeric container in the `Records` requests; ADR 0061 D7 fixes the form `{id, stoichiometry: {component key: ν}}` |
+| Affected packages | F3 (`tests/test_t07_q26.py`); F2 (ADR 0062's `[p, q]` coefficient, when it joins `validate_record`) |
+
+**Decision.** A `validate_record` reaction's stoichiometry map is a model input, the reaction's definition: its
+coefficients are checked for balance; nothing is stored, nothing is solved, and no path leads to a solver start.
+R-088 Q26 admits it by full path and only there, as it admits M02's `body/inlet/n` and OPT's request containers. The
+exception is stated in ADR 0061; the Q26 test implements it and cites this entry.
+
+**Rejected alternatives.** A list of `{component, nu}` items (still a numeric container, and ADR 0061 names the map).
+The exception stated only in the test's docstring (every earlier Q26 exception is in an authority document: M02's
+design note §14 B2, ADR 0070, ADR 0071).
+
+**Watch for.** ADR 0062's `[p, q]` coefficient adds an integer array under the map (`reactions/*/stoichiometry/*`):
+a new path, a new row.
