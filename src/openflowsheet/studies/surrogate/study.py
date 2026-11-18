@@ -183,7 +183,8 @@ def admissibility_distance(x: float, dt: float, h2_n2: float) -> float:
 def evaluate(
     plan: SamplePlan, observations: Mapping[Split, Sequence[Observation]]
 ) -> SurrogateEvaluation:
-    """The fit, the scores, the gradient check and the verdict of a run plan (spec §3.4, §6, §7).
+    """The fit, the scores (`_scored`, per split), the gradient check (`_centre_evidence`, per
+    centre) and the verdict of a run plan (spec §3.4, §6, §7).
 
     `observations` holds every request of the plan in plan order: one per draw of the training,
     calibration and test splits, and 14 per gradient centre (`SamplePlan.requests`' order).

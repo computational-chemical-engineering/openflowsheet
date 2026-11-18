@@ -272,7 +272,8 @@ def _run(
     """One TRF run on `projection`, inside its holders' run: `_preflight_phase` (the gradient
     check, the basis, `_preflight`), whose refusal is the run's outcome
     `TRF_TRUTH_REFUSED(<code>)` without a solve; else Pyomo's TRF solve with its log and stdout
-    captured, the θ recheck, and the outcome classified into the returned `TrfRun`."""
+    captured, its log read back with the holder refusals (`_run_log`), the θ recheck, and the
+    outcome classified into the returned `TrfRun`."""
     solver = SolverFactory("trustregion")
     effective = solver.config(dict(config))
     run = RunState(run_id)
