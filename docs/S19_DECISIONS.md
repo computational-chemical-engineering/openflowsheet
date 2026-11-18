@@ -2996,3 +2996,10 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   B_N, A26 passes" then holds by construction. Alternative: list the test in the batch's `retarget`. Reversible by:
   reverting the WO-1b merge and adding the path to `retarget`. WO-1b launched (sonnet-implementer, brief
   `S19-W5-WO1b.md`).
+- **2026-11-19 ~01:10 CET, WO-1b merged (9a607a3a; 3377087d) and B_N cut at 605d332f.** Review (reviewer, Opus, ~81k
+  tokens): accept; notes: `corpus_identity.py --record` can move M9 without judgement (procedural guard only, said
+  in R-1060), and `docs/derivations/S10-spec.md` A26 row needed an amendment pointer (done, 605d332f, with register
+  R-1060). Batch file rewritten with A26's new node id (`..._byte_identical_to_their_f0_registration`; also in
+  S19-W5-batchN.md L_N), validated at 605d332f (sha256 4f7e1232...), `sets --check` PASS (W5-T1), A26 passes at B_N.
+  Branch `wp/S19-w5n` at 605d332f. WO-N1 brief `S19-W5-N1.md` written; launch waits for the runner restart (the old
+  runner does not pass `S19_W5_BATCH`).
