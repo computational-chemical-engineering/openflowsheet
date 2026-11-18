@@ -2913,3 +2913,11 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
 - **2026-11-19 ~00:20 CET, N4 (job 347, 113.7 -> 69.1 over touched files) and P4 (job 348, ptc.py 33.9 -> 23.2) PASS
   16/16.** Review R-W3-G1N-4 launched (reviewer, Opus; brief `S19-R-W3-G1N-4.md`) over 6722d919..19c3cb62, N5's gate
   (job 349) still running; the reviewer reads its result.
+- **2026-11-19 ~00:35 CET, review R-W3-G1N-4 (reviewer, Opus, ~109k tokens): merge after fixes 1-3, once job 349
+  passes; no step reverted.** All five commits OK on the code (A4's status-first branches exact: the signature test
+  sat inside the ok branch at base and has no side effects; N4 has no stale `trial` read; the newton -> ptc `_Step`
+  import accepted, ptc already imports newton privates; N5 exact code motion, ValueError before `_NewtonRun`);
+  rc_check OK on A4 and N5. Fixes: (1) N5's message lacks the Codehealth trailers (S19_RULES:44-46): reword after
+  job 349, tree equality checked; (2) `_opened`'s docstring names its ValueError; (3) newton.py:766 grammar; note
+  `_Step`'s docstring "one iteration's (PTC: one trial's)". (2), (3) and the note: one orchestrator docstring commit,
+  gated no-gain, prepared in the lane worktree.
