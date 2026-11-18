@@ -17,7 +17,7 @@ from __future__ import annotations
 import base64
 import binascii
 import json
-from collections.abc import Mapping, Sequence
+from collections.abc import Iterator, Mapping, Sequence
 from datetime import UTC, datetime
 from functools import cache
 from typing import Any, Final, NoReturn
@@ -86,6 +86,30 @@ def refusals(outcome: RecordOutcome) -> tuple[Coded, ...]:
     forged (D11), then its D2 errors in their order (the normaliser's, then D7's sorted)."""
     reserved = (Coded("reserved_namespace", {"namespace": "legacy"}),) if forged(outcome) else ()
     return reserved + outcome.errors
+
+
+def reaction_defects(
+    reactions: Sequence[Mapping[str, Any]], named: Mapping[str, Mapping[str, Any]]
+) -> Iterator[tuple[str, str]]:
+    """`validate_record`'s reaction request defects as `(pointer, message)`, in request order:
+    a `components` key naming a record that is not a component, then per reaction a repeated
+    `id` (R-1054) and each stoichiometry key that is not a `components` key (WO5a-3)."""
+    for key, found in named.items():
+        if found["record_type"] != "component":
+            kind = found["record_type"]
+            yield (
+                pointer("/components", key),
+                f"components {key!r} is a {kind} record, not a component",
+            )
+    seen: set[str] = set()
+    for index, reaction in enumerate(reactions):
+        if reaction["id"] in seen:
+            yield f"/reactions/{index}/id", f"reaction id {reaction['id']!r} is repeated"
+        seen.add(reaction["id"])
+        for key in reaction["stoichiometry"]:
+            if key not in named:
+                at = pointer(f"/reactions/{index}/stoichiometry", key)
+                yield at, f"stoichiometry key {key!r} is not a components key"
 
 
 def report_items(found: Sequence[tuple[Coded, str]]) -> list[dict[str, Any]]:
@@ -376,34 +400,11 @@ class RecordsService:
         named: Mapping[str, Mapping[str, Any]],
     ) -> tuple[list[tuple[Coded, str]], list[tuple[Coded, str]]]:
         """D7's reaction checks, each finding at its reaction, after the screening WO5a-3 asks of
-        the request: every stoichiometry key a `components` key naming a component record, and
-        reaction ids distinct (R-1054)."""
-        for key, found in named.items():
-            if found["record_type"] != "component":
-                self._core.refuse(
-                    "invalid_request",
-                    f"components {key!r} is a {found['record_type']} record, not a component",
-                    operation=name,
-                    pointer=pointer("/components", key),
-                )
-        seen: set[str] = set()
-        for index, reaction in enumerate(reactions):
-            if reaction["id"] in seen:
-                self._core.refuse(
-                    "invalid_request",
-                    f"reaction id {reaction['id']!r} is repeated",
-                    operation=name,
-                    pointer=f"/reactions/{index}/id",
-                )
-            seen.add(reaction["id"])
-            for key in reaction["stoichiometry"]:
-                if key not in named:
-                    self._core.refuse(
-                        "invalid_request",
-                        f"stoichiometry key {key!r} is not a components key",
-                        operation=name,
-                        pointer=pointer(f"/reactions/{index}/stoichiometry", key),
-                    )
+        the request: its first defect (`reaction_defects`) is refused `invalid_request`."""
+        defect = next(reaction_defects(reactions, named), None)
+        if defect is not None:
+            at, message = defect
+            self._core.refuse("invalid_request", message, operation=name, pointer=at)
         errors: list[tuple[Coded, str]] = []
         findings: list[tuple[Coded, str]] = []
         try:
