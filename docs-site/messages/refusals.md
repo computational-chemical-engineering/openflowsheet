@@ -786,6 +786,28 @@ The capability flash:PH is not known, so the extension that declares it is not l
 
 - **Summary:** Refused: closure type unknown.
 
+<a id="component_ambiguous"></a>
+
+## `component_ambiguous`: A component key matches more than one record
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+- **Summary:** The key &lt;key&gt; matches more than one stored record.
+- **Why:** A key such as a name, a formula, a CAS number or an InChIKey can match several records: different compounds (records that share no CAS number or InChIKey, for example two compounds of one formula) or one compound from several sources. No source is preferred over another, so the choice is yours. The error's detail lists the candidates, grouped by compound, with each record's SHA, sources and name.
+- **Do:** Choose one of the candidates and refer to it by its SHA (sha256:&lt;sha&gt;), or use a key that matches only that record.
+- **Parameters:** `key` (text)
+
+Example:
+
+```text
+The key C2H6O matches more than one stored record.
+  Why:     A key such as a name, a formula, a CAS number or an InChIKey can match several records: different compounds (records that share no CAS number or InChIKey, for example two compounds of one formula) or one compound from several sources. No source is preferred over another, so the choice is yours. The error's detail lists the candidates, grouped by compound, with each record's SHA, sources and name.
+  Do:      Choose one of the candidates and refer to it by its SHA (sha256:<sha>), or use a key that matches only that record.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    component_ambiguous (openflowsheet explain component_ambiguous)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#component_ambiguous
+```
+
 <a id="component_unknown"></a>
 
 ## `component_unknown`: Component unknown
@@ -868,6 +890,28 @@ The entry at /entries/2 uses the correlation form acme.antoine, which is not reg
   Kind:    Input problem: something in the flowsheet or the request needs to change.
   Code:    correlation_form_unknown (openflowsheet explain correlation_form_unknown)
   Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#correlation_form_unknown
+```
+
+<a id="data_unavailable"></a>
+
+## `data_unavailable`: A record is not available here
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+- **Summary:** The record &lt;sha&gt; is not in this project's record store or in the records this installation provides.
+- **Why:** A record is found by its SHA in the project's record store and then in the records that come with OpenFlowsheet. Some of those come only with a source checkout, not with an installed package, and a record registered in another project is not in this one.
+- **Do:** Register the record in this project, or open the project where its record files are available.
+- **Parameters:** `sha` (text)
+
+Example:
+
+```text
+The record 0f4c2e6a9b1d3c5e7f80a2b4c6d8e0f1a3b5c7d9e1f3a5b7c9d1e3f5a7b9c1d3 is not in this project's record store or in the records this installation provides.
+  Why:     A record is found by its SHA in the project's record store and then in the records that come with OpenFlowsheet. Some of those come only with a source checkout, not with an installed package, and a record registered in another project is not in this one.
+  Do:      Register the record in this project, or open the project where its record files are available.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    data_unavailable (openflowsheet explain data_unavailable)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#data_unavailable
 ```
 
 <a id="declaration_mismatch"></a>
@@ -2920,6 +2964,51 @@ Specification 'boiler-T' gives its value in a unit its quantity kind does not ta
 *No plain-language explanation is written yet; the summary is the technical one.*
 
 - **Summary:** Refused: stoichiometry not mass conserving.
+
+<a id="store_object_corrupt"></a>
+
+## `store_object_corrupt`: A stored record file is damaged
+
+**Kind:** Internal error in OpenFlowsheet: please report it.
+
+- **Summary:** The stored file of record &lt;sha&gt; does not hold that record: its bytes do not hash to its name.
+- **Why:** Each record file is named by the SHA-256 of its bytes and is never rewritten, so a file whose bytes hash otherwise was changed or damaged after it was written, by something other than OpenFlowsheet or by a disk fault.
+- **Do:** Report it. If you have the record, delete the damaged file under the project's records/objects directory and register the record again.
+- **Parameters:** `sha` (text)
+
+Example:
+
+```text
+The stored file of record 0f4c2e6a9b1d3c5e7f80a2b4c6d8e0f1a3b5c7d9e1f3a5b7c9d1e3f5a7b9c1d3 does not hold that record: its bytes do not hash to its name.
+  Why:     Each record file is named by the SHA-256 of its bytes and is never rewritten, so a file whose bytes hash otherwise was changed or damaged after it was written, by something other than OpenFlowsheet or by a disk fault.
+  Do:      Report it. If you have the record, delete the damaged file under the project's records/objects directory and register the record again.
+  Kind:    Internal error in OpenFlowsheet: please report it.
+  Code:    store_object_corrupt (openflowsheet explain store_object_corrupt)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#store_object_corrupt
+```
+
+<a id="store_path_too_long"></a>
+
+## `store_path_too_long`: The project path is too long for the record store on this computer
+
+**Kind:** Not supported in this version: a limitation of OpenFlowsheet, not an error in your flowsheet.
+
+- **Summary:** The project directory &lt;root&gt; is too long a path for the record store: its record files would pass Windows's 260-character limit.
+- **Why:** The record store keeps each record in a file under the project directory, up to 92 characters below it. Windows without long paths enabled cannot open a path longer than 259 characters, so the store refuses before it writes a file it could not read back. The project itself still opens.
+- **Do:** Move the project to a shorter path, or enable long paths in Windows (the LongPathsEnabled setting) and try again.
+- **Parameters:** `root` (text)
+- **Not supported:** missing capability: long paths on this Windows installation
+
+Example:
+
+```text
+The project directory C:\Users\me\projects\plant is too long a path for the record store: its record files would pass Windows's 260-character limit.
+  Why:     The record store keeps each record in a file under the project directory, up to 92 characters below it. Windows without long paths enabled cannot open a path longer than 259 characters, so the store refuses before it writes a file it could not read back. The project itself still opens.
+  Do:      Move the project to a shorter path, or enable long paths in Windows (the LongPathsEnabled setting) and try again.
+  Kind:    Not supported in this version: a limitation of OpenFlowsheet, not an error in your flowsheet.
+  Code:    store_path_too_long (openflowsheet explain store_path_too_long)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#store_path_too_long
+```
 
 <a id="surrogate_input_undefined"></a>
 
