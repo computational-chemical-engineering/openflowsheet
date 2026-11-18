@@ -1,0 +1,43 @@
+{
+  "lock_format": "openflowsheet-data-lock-v1",
+  "components": [
+    {
+      "id": "solvent",
+      "record": "ebbb5323d876eae394356ab9bc53a75ff9f9c79b85e2916bf402b5a1eae32c51"
+    },
+    {
+      "id": "feed-water",
+      "record": "c7482421f315477d78522e3787ee30c20e9a5156f9e28f8c0335e00b1f285f7e"
+    }
+  ],
+  "parameter_sets": [
+    "388dd68a5dd1a2e6acb416966b85620b4de6674dc5cc7e1094159adcccbd0517",
+    "8ecd6613cd17ecfdb6cb7a0b0a010355ab59d84cff120e16b25ac2ebfe90315d"
+  ],
+  "methods": [
+    {
+      "substream": "gas",
+      "method": "fixture.ideal",
+      "version": "1.0.0",
+      "implementation_sha256": "2222222222222222222222222222222222222222222222222222222222222222"
+    },
+    {
+      "substream": "liquid",
+      "method": "fixture.wilson",
+      "version": "1.2.0",
+      "implementation_sha256": "3333333333333333333333333333333333333333333333333333333333333333"
+    },
+    {
+      "substream": "liquid",
+      "method": "fixture.wilson",
+      "version": "1.10.0",
+      "implementation_sha256": "1111111111111111111111111111111111111111111111111111111111111111"
+    }
+  ],
+  "method_options": {
+    "fixture.wilson": {
+      "tolerance": 0.5,
+      "label": "Λ fixture"
+    }
+  }
+}
