@@ -2854,3 +2854,5 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   changed); register R-1059 (R-1047 to R-1058 are taken or skipped on wp/F3, so the next free number); G-END's F0
   clause in S19_STATE now reads by E1 to E5. Batch N may merge into wp/S19 after its K; batch P follows N. The
   FR-1 conditions (pin, close before the 0.5.0 RC cut, release note) are W5-P obligations, recorded in ADR 0077.
+- **2026-11-18 ~21:35 CET, job 342 `w5wo0-mc` (full suite) PASS, 7/7; `wp/S19-w5` merged into wp/S19 (b70f8dea).**
+  wp/S19 had only docs commits since the lane's base 444b230d. W5 WO-0 is done; WO-1 (orchestrator) is next.
