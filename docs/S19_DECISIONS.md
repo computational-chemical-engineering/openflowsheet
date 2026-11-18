@@ -2574,3 +2574,11 @@
   F2 is to take `group_molar_mass_inconsistent(<S>, <species>)`. Q-F1 ([p, q] coefficients in validate_record) sent
   to hub as a DECISION-REQUEST (default A: with ADR 0062, JSON numbers until then). Fix round 2 (opus-engineer)
   launched, brief `docs/briefs/F3-fix2.md` at bb45b09e.
+- **2026-11-18, G3 run 6 delivered (opus-engineer, Opus):** 8 steps on `wp/S19-g3f` (4fc833d9..f10dbf31), jobs
+  289-296: ruling (a) as `_ZeroFlowRows` + `_add_single_pins` (_eliminate_zero_flows 35.4 -> 7.0, no longer brain;
+  `_joint_blocks` 10 -> 5 params), replay `_compared_starts`, `_rerun_bundles`, projection_checks `_incident_rows`
+  (twin of `dulmage_mendelsohn`'s `by_column`), `_assemble` (S1) `_add_property_blocks`, `_add_external_links`
+  (35.9 -> 3.0), revision docstrings (no-gain). 4 S1 steps (cap). All five studies files >= 7.0 except
+  verification.py (ruled residual). Engineer's scan 4414.3 -> 4313.9, health 8.31, brain 18. nlp-marked suite at
+  every step 210 passed, 2 failed (g19, g20), as at its own base run: nlp rule met. Left: `project` 27.6,
+  `_source_map` 15 params.
