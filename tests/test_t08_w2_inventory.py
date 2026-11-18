@@ -952,12 +952,19 @@ def _a32_v2_problems(
     `RECORD_V2_HOME` a record's `sources` must be a non-empty object whose every key begins
     `fixture.` (its records are invented, some refused by construction, so D2 is not run).
     Outside it a record must pass D2 (`records.identify`) and then be `synthetic: true`, or be a
-    component carrying the `legacy.file_sha256` of a file of `VETTED_RECORD_FILES` (the D12 SHA
-    of its LF-normalised bytes; the vetting vets a file's components, not its parameter set,
-    F3-rulings-1 B6 build decision), or have each of its sources `permitted` in the repository
+    component whose record SHA the committed legacy index lists under a file of
+    `VETTED_RECORD_FILES` (the vetting vets a file's components, not its parameter set,
+    F3-rulings-1 B6 build decision; decided by the index, not by the record's own `legacy`
+    member, F3 review 2 C10), or have each of its sources `permitted` in the repository
     rights register `register` (ADR 0061 D11's precedence over the repository layer: packaging
     reads that layer only). Returns one line per failing record."""
-    vetted = {legacy.file_sha256((REPO_ROOT / path).read_bytes()) for path in VETTED_RECORD_FILES}
+    vetted = {
+        item["sha256"]
+        for entry in legacy.committed_index()["files"]
+        if entry["path"] in VETTED_RECORD_FILES
+        for item in entry["records"]
+        if item["record_type"] == "component"
+    }
     found = []
     for path, item in mappings:
         if item.get("record_format") != RECORD_V2:
@@ -973,8 +980,7 @@ def _a32_v2_problems(
         record = outcome.record
         if record.get("synthetic") is True:
             continue
-        legacy_file = record.get("legacy", {}).get("file_sha256")
-        if record["record_type"] == "component" and legacy_file in vetted:
+        if record["record_type"] == "component" and outcome.record_sha256 in vetted:
             continue
         assessed = rights.record_rights(record, outcome.record_sha256, repository=register)
         if not rights.embeddable(assessed):
@@ -1043,6 +1049,22 @@ def test_a32_v2_clause_refuses_each_defect() -> None:
     for sources in ({}, None, {"fixture.x": {}, "other": {}}):
         mapping = {**invented, "sources": sources}
         assert len(_a32_v2_problems([(RECORD_V2_HOME + "x.json", mapping)], ())) == 1
+
+
+def test_a32_v2_the_vetted_branch_is_decided_by_the_committed_index() -> None:
+    """F3 review 2, S8 (C10; R1-B6 tightened): a copy of a vetted component with one value
+    changed and another source keeps its `legacy` member, so the record's own
+    `legacy.file_sha256` cannot decide the branch; the committed legacy index's SHAs do."""
+    imported = legacy.import_all(lambda path: (REPO_ROOT / path).read_bytes())
+    h2 = dict(next(item for item in imported if item.profile == "m01").records[0].record)
+    assert h2["id"] == "H2" and "legacy" in h2
+    copy_ = json.loads(json.dumps(h2).replace('"legacy.m01"', '"user.copy"'))
+    copy_["molar_mass"]["value"] *= 2.0
+    at = "benchmarks/x/h2.json"
+    assert _a32_v2_problems([(at, h2)], ()) == []
+    assert _a32_v2_problems([(at, copy_)], ()) == [
+        f"{at}: H2 is real, from no vetted file, not permitted"
+    ]
 
 
 def test_a32_one_datum_rule_within_and_across_conventions() -> None:
