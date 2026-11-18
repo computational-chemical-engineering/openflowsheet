@@ -2898,3 +2898,10 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   wait median 19 min > 15 min". Cause of the second: this session's two L_N probes held both gate slots for ~29 min
   (21:29 to 21:58), so jobs 345 to 348 queued behind them. Action: none beyond not running probes beside a busy queue;
   later probes go through the queue or wait for an empty one.
+- **2026-11-18 ~23:50 CET, N5 delivered (sonnet-implementer, ~58k tokens):** 19c3cb62 on `wp/S19-g1n4`, job 349
+  `g1n4-4` (base edc8a144). `solve_newton` cognitive 34 -> 28 (cap 30 met), `_opened` 3; rc_check OK, RC5 equal;
+  patch_noop 0/266; newton's importers 558 passed at both ends. Job 345 `w5gm-a1` (the W5 gate-mode lane's A1
+  re-gate of P3) FAIL tests: `test_s16_test_impact.py::test_no_test_reads_campaign_tooling` finds a `.claude/`
+  literal in the lane's new `tests/test_s19_w5_gate.py:322` (S16's premise: no test reads campaign tooling, so
+  tooling edits select no test). The lane's engineer still waits on this result and owns the fix; it is not an
+  environment failure.
