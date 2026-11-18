@@ -9729,33 +9729,39 @@ harvest:
   class: P
   to: []
   note: 'provenance note: witness tolerances and escalation numerics not re-examined (ruling scope)'
-- manifest: evidence/F3/05ccf8805bf0970a9677d47a5ab221963a73d087/manifest.json
+- manifest: evidence/F3/361c62077359aa8efb5cacbcfa0d4b020c0d5d71/manifest.json
   item: limitations[0]
-  sha256: 938dfe4c075fc462f8805b6e4b67fc413b94930dd8f7b339d3185341882925d1
+  sha256: 1637384a8ed3f22d5af14c963fc063a597a9280f0624a89b488bce8a7803e11c
   class: P
   to: []
   note: 'provenance note: software verification of the component-data records and their five MCP operations; implemented until CI, not reviewed'
-- manifest: evidence/F3/05ccf8805bf0970a9677d47a5ab221963a73d087/manifest.json
+- manifest: evidence/F3/361c62077359aa8efb5cacbcfa0d4b020c0d5d71/manifest.json
   item: limitations[1]
-  sha256: 3ffa6a60ff1fd0b20f0a7c91ea6b6443a5272e2a4f9676081092a247c971cc77
+  sha256: 5a98007e503545477b60db80d867d466ce0cf7391334fd4bb0c318e85e7507f5
   class: P
   to: []
   note: 'process note: review records; the five human description reviews wait for Frank (REVIEW.json); the one expected red'
-- manifest: evidence/F3/05ccf8805bf0970a9677d47a5ab221963a73d087/manifest.json
+- manifest: evidence/F3/361c62077359aa8efb5cacbcfa0d4b020c0d5d71/manifest.json
   item: limitations[2]
   sha256: d52be78a2744fe8e56971c095a4ec4b349b819d3c290624b26d91a72b4878613
   class: P
   to: []
   note: 'process note: card ofs-f3-qf1-rational-coefficients signed A; rational coefficients an obligation on F2 (ADR 0062)'
-- manifest: evidence/F3/05ccf8805bf0970a9677d47a5ab221963a73d087/manifest.json
+- manifest: evidence/F3/361c62077359aa8efb5cacbcfa0d4b020c0d5d71/manifest.json
   item: limitations[3]
-  sha256: da235cc9068c11951b4bb51cdbaea83305cd8b72232a4f9f163f7dc75bd0d16c
+  sha256: 2a9ce256bab3c7ab7349114a8ced69078da2db09b9b2addb03045b7960e7f153
   class: P
   to: []
   note: 'process note: the full suite''s second failure was the WO7 manifest''s schema check, removed with that manifest'
-- manifest: evidence/F3/05ccf8805bf0970a9677d47a5ab221963a73d087/manifest.json
+- manifest: evidence/F3/361c62077359aa8efb5cacbcfa0d4b020c0d5d71/manifest.json
   item: limitations[4]
-  sha256: 3121b69b7630e7b4ea8485e0918b25c408f682e45e952d99444535816bb6d946
+  sha256: 4dd459ff512bacf31b596e07ceebe1aafe1d5433d093a1eaf22283c6f348e0a1
   class: P
   to: []
-  note: 'process note: open questions for the design lane (molar_mass_inconsistent signature; fix round 3 DECISIONs F3-3-1 to F3-3-4), none blocking'
+  note: 'process note: open question for the design lane (molar_mass_inconsistent signature), none blocking; fix round 3 DECISIONs ruled in F3-rulings-2'
+- manifest: evidence/F3/361c62077359aa8efb5cacbcfa0d4b020c0d5d71/manifest.json
+  item: limitations[5]
+  sha256: fc6aa1292f6e8ac8f92671e4b6158fb2ac1c6167087701bbc1519b01a7951452
+  class: P
+  to: []
+  note: 'provenance note: requirements empty, F3 maps to no D/A requirement (0.5 foundation package)'

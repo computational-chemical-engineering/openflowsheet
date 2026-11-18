@@ -755,3 +755,46 @@ manifest (below), removed by item 8. ruff, ruff format (1292 files), mypy (409 f
 limitation, not a check; the review records are limitation text; `review` holds `numerical` and `process_model`
 only. Harvest rows re-mapped (5 limitations, class P), `HARVEST_SIZE = (99, 1134, 146)`. In that commit:
 `test_evidence_manifests.py`, `test_t08_w2_support_envelope.py`, `test_m07a_harvest.py`: 657 passed, 19 skipped.
+
+## F3 fix round 4: ruling round 2 applied (C1 to C5 of `docs/reviews/F3-rulings-2.md`), 2026-11-18
+
+Brief `docs/briefs/F3-fix4.md`, build lane (`opus-engineer`). No new DECISION: every change is the ruling's spec. Runs:
+`PYTHONPATH=src`, the repo `.venv`, serial.
+
+**C1 (`78555814`), a deterministic E-F3-8 test.** Three file-store tests in `tests/test_f3_store.py`: the WAL switch
+waits for a write lock released after 0.3 s by a `threading.Timer` (`register` succeeds after at least 0.25 s, the
+database reads `wal`); it gives up at `BUSY_TIMEOUT_S` patched to 0.3 s with plain `SQLITE_BUSY` (0.3 s <= elapsed <
+5 s); a WAL database answers `_journal_mode_wal` in under 0.5 s with the write lock held. `_journal_mode_wal`'s
+docstring now names the read-to-write lock upgrade as the step SQLite does not hand to the busy handler. Results: 3
+passed; with the body reduced locally to the bare pragma (not committed) tests 1 and 2 fail (`database is locked`;
+the deadline test at 0.0018 s), test 3 passes; the three, 20 times in a loop: 20 of 20.
+
+**C2 (`504b5ca7`), the §8.1 lint covers `finally`.** `test_no_finally_exits` in `tests/test_t07_interrupt.py`
+(`ast.Try`, `ast.TryStar`; a `return`, or a `break`/`continue` outside a loop of the `finally`'s own; nested `def`,
+`class`, `lambda` skipped; a loop's `else` counts as outside that loop). `test_lint_detects` gains the ruling's five
+cases; `test_no_broad_except`'s docstring names `_writing`'s `finally` form. Results: 3 passed, 0 hits in `src/`;
+with `return` added locally to `_writing`'s `finally`, the test fails at `records/store.py:297`.
+
+**C3 (`758244c7`), keep the original exception.** `_writing` rolls back only `if not completed and
+connection.in_transaction`. New test, file and memory: the body runs `ROLLBACK` then raises `ValueError`, which
+propagates, and a following `register` succeeds. Before the change 2 failed (`cannot rollback - no transaction is
+active`), after it 2 passed; `tests/test_f3_*.py` with `tests/test_t07_interrupt.py`: 318 passed.
+
+**C4 (`361c6207`), the Q26 citation.** The F3 docstring paragraph and the comment above `ALLOWED_BY_PATH` cite ADR
+0061's section "F3 ruling round 2 applied: fix round 3" and R-1058. `tests/test_t07_q26.py` 6 passed; `grep -c R-1058`
+gives 2.
+
+**Pre-push at `361c6207`.** ruff check clean; ruff format 1292 files formatted; mypy no issues in 409 files; the F3
+battery (`tests/test_f3_*.py`, `test_t07_q26.py`, `test_t07_interrupt.py`) 324 passed; `registry_builtin --check`
+clean (49 descriptors); `records_legacy_index --check` clean (149 records); F0 `corpus_identity --check` PASS (M1
+50/50, M2 to M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 35/35). The full suite was not re-run (last at `05ccf880`).
+
+**C5 (this commit), the manifest move.** `evidence/F3/361c6207…/manifest.json`, status `implemented`. `limitations`
+gains "Requirements empty: F3 maps to no D/A requirement; …" (checked against the target architecture's F3 row, §3,
+whose exit is its own, no D/A id); the open-items line points to `docs/reviews/F3-rulings-2.md`; `limitations[0]`
+says that `commands` names the CI run ID and the commit CI ran when `tested` is set; `limitations[3]` names
+`db59c345` as the commit that removed the WO7 manifest. `artifacts` re-hashes ADR 0061 (`1b763ed1…`, also
+`case_hash`) and adds the rulings file; three `pass` checks record C1 to C3. Harvest: 6 limitations, class P, re-mapped;
+`HARVEST_SIZE = (99, 1135, 146)`; `docs/support-matrix.md` re-emitted (1281 items). `test_evidence_manifests.py`,
+`test_t08_w2_support_envelope.py`, `test_m07a_harvest.py`: 657 passed, 19 skipped; `t08_support_matrix --check`: 0
+problems.

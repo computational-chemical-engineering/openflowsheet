@@ -94,7 +94,8 @@ T08_MANIFEST = "evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.j
 #: WITNF's manifest (X10c, `8067229…`, `implemented`, 3 and 0) moves it on `wp/WITNF`.
 #: F3's manifest (`ebdff46…`, `implemented`, 5 and 1) moves it on `wp/F3`.
 #: Its fix-round-3 move (`05ccf88…`, `implemented`, 5 and 0) moves it again on `wp/F3`.
-HARVEST_SIZE = (99, 1134, 146)
+#: Its fix-round-4 move (`361c620…`, `implemented`, 6 and 0) moves it again on `wp/F3`.
+HARVEST_SIZE = (99, 1135, 146)
 #: The 0.2.0 release candidate C′ (M07 spec §25, R-485).
 C_PRIME = "ce993651ce37c1343e771b276160bd6623e43500"
 #: The commit tagged v0.2.0.
