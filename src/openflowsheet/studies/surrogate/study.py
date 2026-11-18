@@ -34,7 +34,7 @@ from __future__ import annotations
 import math
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
-from typing import Any, Final
+from typing import Any, Final, NamedTuple
 
 from openflowsheet.adapters.experiments.runner import ExperimentOutcome, ExperimentRunner
 from openflowsheet.adapters.variants import Variant, hard_domain
@@ -50,6 +50,7 @@ from openflowsheet.studies.surrogate.conformal import (
 )
 from openflowsheet.studies.surrogate.plan import (
     PLAN_N_TUBES,
+    GradientCentre,
     SamplePlan,
     Split,
     check_plan,
@@ -182,7 +183,8 @@ def admissibility_distance(x: float, dt: float, h2_n2: float) -> float:
 def evaluate(
     plan: SamplePlan, observations: Mapping[Split, Sequence[Observation]]
 ) -> SurrogateEvaluation:
-    """The fit, the scores, the gradient check and the verdict of a run plan (spec §3.4, §6, §7).
+    """The fit, the scores (`_scored`, per split), the gradient check (`_centre_evidence`, per
+    centre) and the verdict of a run plan (spec §3.4, §6, §7).
 
     `observations` holds every request of the plan in plan order: one per draw of the training,
     calibration and test splits, and 14 per gradient centre (`SamplePlan.requests`' order).
@@ -207,30 +209,11 @@ def evaluate(
     )
     surrogate = fit.surrogate
 
-    margins: list[float] = []
-
-    def scored(found: Sequence[Observation]) -> tuple[tuple[float | None, ...], int]:
-        scores: list[float | None] = []
-        inadmissible = 0
-        for o in found:
-            if surrogate is None:
-                scores.append(None)
-                continue
-            u = coordinates(o.request, PLAN_N_TUBES)
-            assert u is not None
-            x_hat, dt_hat = surrogate.predict(scaled(u, surrogate.scaling))
-            # Every calibration and test prediction is judged, whatever the parent returned
-            # (spec §7.1 item 6): an inadmissible prediction in the box is the predictor's defect.
-            inadmissible += bool(inadmissible_outputs(x_hat, dt_hat, u[2]))
-            margins.append(admissibility_distance(x_hat, dt_hat, u[2]))
-            if o.status == "ok" and o.x is not None and o.dt is not None:
-                scores.append(score(o.x, o.dt, x_hat, dt_hat))
-            else:
-                scores.append(None)
-        return tuple(scores), inadmissible
-
-    calibration_scores, bad_calibration = scored(rows["calibration"])
-    test_scores, bad_test = scored(rows["test"])
+    calibration_scores, bad_calibration, calibration_margins = _scored(
+        rows["calibration"], surrogate
+    )
+    test_scores, bad_test, test_margins = _scored(rows["test"], surrogate)
+    margins = calibration_margins + test_margins
     test_errors: tuple[tuple[float, float], ...] = ()
     if surrogate is not None:
         test_errors = tuple(
@@ -244,20 +227,7 @@ def evaluate(
     width = len(plan.gradient[0].stencil) if plan.gradient else 0
     for j, centre in enumerate(plan.gradient):
         stencil = rows["gradient"][j * width : (j + 1) * width]
-        status: CentreStatus
-        errors = None
-        if any(o.status == "incomplete" for o in stencil):
-            status = "incomplete"
-        elif any(o.status == "failed" for o in stencil):
-            status = "parent_failed"
-        elif surrogate is None:
-            status = "not_evaluated"
-        else:
-            status = "ok"
-            u = coordinates(centre.request, PLAN_N_TUBES)
-            assert u is not None
-            errors = _gradient_errors(surrogate, scaled(u, surrogate.scaling), stencil)
-        centres.append(CentreEvidence(centre.index, status, tuple(stencil), errors))
+        centres.append(_centre_evidence(centre, stencil, surrogate))
 
     extrapolated = sum(1 for found in rows.values() for o in found if o.extrapolated)
     plan_complete = all(o.status != "incomplete" for found in rows.values() for o in found)
@@ -293,6 +263,64 @@ def evaluate(
         centres=tuple(centres),
         verdict=verdict,
     )
+
+
+class _SplitScores(NamedTuple):
+    """`_scored`'s result for one split: the scores in observation order (`None` where the
+    parent returned no usable point, every one `None` without a surrogate), the count of
+    inadmissible predictions, and each prediction's admissibility margin in observation order."""
+
+    scores: tuple[float | None, ...]
+    inadmissible: int
+    margins: list[float]
+
+
+def _scored(found: Sequence[Observation], surrogate: QuadraticSurrogate | None) -> _SplitScores:
+    """The surrogate's prediction at each observation of a calibration or test split, judged
+    (spec §7.1): its conformal score against the parent's point, whether it is inadmissible, and
+    its admissibility distance (`_SplitScores`). Without a surrogate nothing is predicted. Pure."""
+    scores: list[float | None] = []
+    inadmissible = 0
+    margins: list[float] = []
+    for o in found:
+        if surrogate is None:
+            scores.append(None)
+            continue
+        u = coordinates(o.request, PLAN_N_TUBES)
+        assert u is not None
+        x_hat, dt_hat = surrogate.predict(scaled(u, surrogate.scaling))
+        # Every calibration and test prediction is judged, whatever the parent returned
+        # (spec §7.1 item 6): an inadmissible prediction in the box is the predictor's defect.
+        inadmissible += bool(inadmissible_outputs(x_hat, dt_hat, u[2]))
+        margins.append(admissibility_distance(x_hat, dt_hat, u[2]))
+        if o.status == "ok" and o.x is not None and o.dt is not None:
+            scores.append(score(o.x, o.dt, x_hat, dt_hat))
+        else:
+            scores.append(None)
+    return _SplitScores(tuple(scores), inadmissible, margins)
+
+
+def _centre_evidence(
+    centre: GradientCentre, stencil: Sequence[Observation], surrogate: QuadraticSurrogate | None
+) -> CentreEvidence:
+    """One gradient centre's evidence (spec §6) from its `stencil` observations: `incomplete`
+    when any is incomplete, else `parent_failed` when any failed, else `not_evaluated` without a
+    surrogate (errors `None` in all three); else `ok` with the surrogate's gradient errors at
+    the centre's scaled coordinates (`_gradient_errors`). Pure."""
+    status: CentreStatus
+    errors = None
+    if any(o.status == "incomplete" for o in stencil):
+        status = "incomplete"
+    elif any(o.status == "failed" for o in stencil):
+        status = "parent_failed"
+    elif surrogate is None:
+        status = "not_evaluated"
+    else:
+        status = "ok"
+        u = coordinates(centre.request, PLAN_N_TUBES)
+        assert u is not None
+        errors = _gradient_errors(surrogate, scaled(u, surrogate.scaling), stencil)
+    return CentreEvidence(centre.index, status, tuple(stencil), errors)
 
 
 # -- the study ------------------------------------------------------------------------------------

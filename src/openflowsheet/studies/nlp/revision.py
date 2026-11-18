@@ -257,18 +257,9 @@ def optimize_revision(
             sink.target = (record.path(f"starts/{index}/start"), f"opt-{sha[:16]}-s{index}")  # type: ignore[union-attr]
         readiness, found = _start(formulation, host, index, start, True, spec)
         starts.append(readiness)
-        if found or readiness.state is None:
-            code = readiness.outcome if readiness.state is None else found[0].code
-            failures[index] = f"{START_NOT_CERTIFIED}({index}, {code})"
-            detail = "; ".join(reason.detail for reason in found) or readiness.message
-            failures[index] += f": {detail}"
-        elif readiness.point is not None:
-            # §4.7: a held regime no phase row (and no bound) can hold refuses the start.
-            undefined = host.phase_rows(readiness.point).undefined
-            if undefined:
-                failures[index] = f"{START_NOT_CERTIFIED}({index}, {REGIME_MARGIN_UNDEFINED}): " + (
-                    "; ".join(f"{REGIME_MARGIN_UNDEFINED}({unit})" for unit in undefined)
-                )
+        failure = _start_failure(host, index, readiness, found)
+        if failure is not None:
+            failures[index] = failure
     bound = _Bound(formulation, (), None)
     if parsed.assessment is not None:
         bound = _bind_assessment(parsed.assessment, formulation, host, starts, failures)
@@ -409,6 +400,31 @@ def optimize_revision(
         for readiness, run in zip(starts, runs, strict=True)
     )
     return finish(report, points)
+
+
+def _start_failure(
+    host: RevisionNlpHost, index: int, readiness: StartReadiness, found: list[ReadinessReason]
+) -> str | None:
+    """Why start `index` is not certified, `START_NOT_CERTIFIED(<k>, <code>): <detail>`, from
+    what readiness found there (`readiness`, `found`): the first reason's code (the outcome when
+    the start has no state) with every reason's detail (else the readiness message); else, at a
+    certified point, every held regime no phase row can hold, read from `host.phase_rows`
+    (`REGIME_MARGIN_UNDEFINED`, §4.7). `None` when the start passes: no reason, a state, and
+    either no point or no such regime."""
+    if found or readiness.state is None:
+        code = readiness.outcome if readiness.state is None else found[0].code
+        failure = f"{START_NOT_CERTIFIED}({index}, {code})"
+        detail = "; ".join(reason.detail for reason in found) or readiness.message
+        failure += f": {detail}"
+        return failure
+    if readiness.point is not None:
+        # §4.7: a held regime no phase row (and no bound) can hold refuses the start.
+        undefined = host.phase_rows(readiness.point).undefined
+        if undefined:
+            return f"{START_NOT_CERTIFIED}({index}, {REGIME_MARGIN_UNDEFINED}): " + (
+                "; ".join(f"{REGIME_MARGIN_UNDEFINED}({unit})" for unit in undefined)
+            )
+    return None
 
 
 def _start_options(
