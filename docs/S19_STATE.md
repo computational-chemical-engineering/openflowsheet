@@ -84,8 +84,8 @@ duplication (twin merge: addendum for Frank); certificate, checks, split_checks 
    F3 reserves R-1050..1059). Card (desk v3) was pinned to ADR 0061 at 5d085f05, option A verbatim: "accept ADR 0061 (F3
    component data) as on wp/F3 at 5d085f05 (with the F3-WO1 review and F3 ruling round 1 applied), with ADR 0019
    Amendment 8 (Records interface, five operations), so that F3 can merge into main". ADR frozen until signed.
-   WO5a done (02889a00; S19_DECISIONS). **Running:** F3-WO5b (opus-engineer, brief `docs/briefs/F3-WO5b.md` at
-   c3c0fee0; may end at its cap with a continuation needed). Open for the design lane: `molar_mass_inconsistent`
+   WO5a done (02889a00; S19_DECISIONS). WO5b part 1 at 880249b2 (S19_DECISIONS). **Running:** WO5b part 2 (opus-engineer,
+   brief `docs/briefs/F3-WO5b-2.md` at bc409bd8). Open for the design lane: `molar_mass_inconsistent`
    signature clash ADR 0061 vs 0062. **Then:** WO5b (five operations on four transports,
    assess_rights, LocalApplication wiring, every "Left for WO5" item in F3_DECISIONS; E-F3-11, MCP digest
    re-take), WO7 close-out (manifest, CI both legs), one package `reviewer` (open: R1-B6 da41b295, fix1 and WO2-WO4

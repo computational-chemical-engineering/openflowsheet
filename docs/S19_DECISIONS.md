@@ -2523,3 +2523,9 @@
   action text (VERIFIED, key 032ee0a5ae620a90, signed 07:24:52Z). wp/F3 0f6dafb5 (ADR status line, register R-1050;
   F3 reserves R-1050..R-1059), fcb65f94 (option B text verbatim). `executed` written on the card (v5); hub told.
   WO5b engineer told to head Amendment 8 as Accepted and take R-1051 onward.
+- **2026-11-18, F3-WO5b part 1 (opus-engineer, Opus, 227k, stopped at cap):** wp/F3 363f38f8..880249b2: wiring
+  (`ServiceCore.records`), protocol `Records` with five operations and rights, `application/records_service.py`,
+  `record_types.py`, five `$defs`, five MCP descriptions (reviews pending, as F1-WO4a). DECISIONs WO5b-1..6 for the
+  design lane; WO5b-1 (a refused record refuses the whole `register_record` call, code by catalogue kind) needs a
+  ruling. 57 surface tests red (planned moves, not re-taken yet; two in test_f1_operations unexplained). Part 2
+  (opus-engineer) launched, brief `docs/briefs/F3-WO5b-2.md` at bc409bd8.
