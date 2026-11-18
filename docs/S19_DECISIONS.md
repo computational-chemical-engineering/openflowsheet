@@ -2965,3 +2965,19 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   tier)" and "selected/full time ratio 0.52 > 0.4: selection saves little" (the standing pair; proposal 2 with Frank),
   "queue wait median 19 min > 15 min" (this session's L_N probes and the region self-test held slots, ~21:29 to
   ~00:30). Lane O run 4 launched (opus-engineer, brief `S19-W3-G1O-4.md`, base 030288b4).
+- **2026-11-19 ~02:40 CET, W5 gate-mode fix round 1 delivered (opus-engineer, ~190k tokens):** 09e6c781..cae3849c, one
+  commit per fix (1a test_impact killed call -> exit 3, 1b one summary per call, 2 w5_scope admits a tier 1 split's
+  new `.py` and `--plans`, 3 `--batch` with step/no-gain/restructure/interface/merge-check and `--mode w5` removed,
+  4 batch sha256 + `batch-check`, 5 EXPECTED-NOT-SELECTED, 6 notes). 178 tests passed; A1 job 353 PASS 19/19 (run-log
+  step 368, a tool check); 1(a) live: `TEST-IMPACT FAIL (exit 3) ... killed: call 1 signal 9`. Spot-check (orchestrator):
+  09e6c781's diff maps any negative code to 3 and names it. wp/S19 had gained code since the lane's base 94840fb3 (the
+  g1n3 and g1n4 merges), so a helper `wp/S19-w5gm-mc` (worktree `s19-w5gm-mc`) = 5733e206 + merge of the lane
+  (390e84fe); merge-check job 355 over 5733e206..390e84fe.
+- **2026-11-19 ~02:40 CET, G1 lane O run 4 delivered (opus-engineer, ~179k tokens):** R1 52bb085d (job 354;
+  `_solve_region` 206.4 -> 200.7, region.py 227.4 -> 221.7, still brain: enabling step), S1 1042fe5e (job 356;
+  `_build_screen` 61.0 -> 42.0, no longer brain; region_screen.py 6.3 -> 7.6), C2 89275e75 (job 357; `couple` 78.4 ->
+  72.3). rc_check OK on R1 and C2 (R1 against a hand-lifted base: the true base gives one CHECK line "new_context: no
+  method", the closure lifted to module `_new_context`, ast-equal body, same two call sites); RC5 equal; patch_noop 0.
+  Nine deviations for review R-W3-G1O-4 in the report (instance `solve`, frame only what `closed` reads, ledger
+  initialisers before the start, C2's `entry(` count 4 not the plan's 7, end-site regex, five unread frame fields
+  for C3/C4).
