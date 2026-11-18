@@ -2484,6 +2484,50 @@ The provenance of the value at /molar_mass has no origin, or names a source the 
 
 - **Summary:** Refused: reactant exhausted.
 
+<a id="reaction_charge_imbalance"></a>
+
+## `reaction_charge_imbalance`: A reaction does not conserve charge
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+- **Summary:** Reaction &lt;reaction&gt; does not conserve charge: its stoichiometric coefficients times the charges of its components do not sum to zero.
+- **Why:** Charge is conserved by every reaction. The sum over the reaction's components of the stoichiometric coefficient times the component's charge number must be exactly zero.
+- **Do:** Correct the reaction's stoichiometric coefficients, or the charge of the component record that is wrong.
+- **Parameters:** `reaction` (text)
+
+Example:
+
+```text
+Reaction water_dissociation does not conserve charge: its stoichiometric coefficients times the charges of its components do not sum to zero.
+  Why:     Charge is conserved by every reaction. The sum over the reaction's components of the stoichiometric coefficient times the component's charge number must be exactly zero.
+  Do:      Correct the reaction's stoichiometric coefficients, or the charge of the component record that is wrong.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    reaction_charge_imbalance (openflowsheet explain reaction_charge_imbalance)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#reaction_charge_imbalance
+```
+
+<a id="reaction_element_imbalance"></a>
+
+## `reaction_element_imbalance`: A reaction does not conserve an element
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+- **Summary:** Reaction &lt;reaction&gt; does not conserve &lt;element&gt;: its stoichiometric coefficients times the element counts of its components do not sum to zero.
+- **Why:** A reaction rearranges atoms; it neither makes nor destroys them. For every element, the sum over the reaction's components of the stoichiometric coefficient times the number of atoms of that element in the component must be exactly zero. The sum is computed exactly from the stored numbers.
+- **Do:** Correct the reaction's stoichiometric coefficients, or the elemental composition of the component record that is wrong.
+- **Parameters:** `reaction` (text), `element` (text)
+
+Example:
+
+```text
+Reaction ammonia_synthesis does not conserve H: its stoichiometric coefficients times the element counts of its components do not sum to zero.
+  Why:     A reaction rearranges atoms; it neither makes nor destroys them. For every element, the sum over the reaction's components of the stoichiometric coefficient times the number of atoms of that element in the component must be exactly zero. The sum is computed exactly from the stored numbers.
+  Do:      Correct the reaction's stoichiometric coefficients, or the elemental composition of the component record that is wrong.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    reaction_element_imbalance (openflowsheet explain reaction_element_imbalance)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#reaction_element_imbalance
+```
+
 <a id="reactor_not_accepted"></a>
 
 ## `reactor_not_accepted`: Reactor not accepted
@@ -2501,7 +2545,7 @@ The provenance of the value at /molar_mass has no origin, or names a source the 
 **Kind:** Input problem: something in the flowsheet or the request needs to change.
 
 - **Summary:** The record is not valid at &lt;pointer&gt;.
-- **Why:** A record is checked against the record format before it is stored or hashed: its members and their types, every object closed, phase and identifier spellings, and the rules the format adds, such as one entry per property and phase and one formation entry per phase. The location is a JSON pointer into the record after normalisation; an empty location is the whole record, for example text that is not one JSON or YAML object.
+- **Why:** A record is checked against the record format before it is stored or hashed: its members and their types, every object closed, phase and identifier spellings, and the rules the format adds, such as one entry per property and phase and one formation entry per phase. The location is a JSON pointer into the record after normalisation; an empty location is the whole record, for example text that is not one JSON or YAML object. In a record file of the older (version 1) component format, the location points into the file.
 - **Do:** Correct the record at the location given and submit it again.
 - **Parameters:** `pointer` (text)
 
@@ -2509,7 +2553,7 @@ Example:
 
 ```text
 The record is not valid at /entries/0/phase.
-  Why:     A record is checked against the record format before it is stored or hashed: its members and their types, every object closed, phase and identifier spellings, and the rules the format adds, such as one entry per property and phase and one formation entry per phase. The location is a JSON pointer into the record after normalisation; an empty location is the whole record, for example text that is not one JSON or YAML object.
+  Why:     A record is checked against the record format before it is stored or hashed: its members and their types, every object closed, phase and identifier spellings, and the rules the format adds, such as one entry per property and phase and one formation entry per phase. The location is a JSON pointer into the record after normalisation; an empty location is the whole record, for example text that is not one JSON or YAML object. In a record file of the older (version 1) component format, the location points into the file.
   Do:      Correct the record at the location given and submit it again.
   Kind:    Input problem: something in the flowsheet or the request needs to change.
   Code:    record_schema_invalid (openflowsheet explain record_schema_invalid)

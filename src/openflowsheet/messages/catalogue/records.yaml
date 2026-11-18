@@ -4,8 +4,8 @@
 # `records/normalize.py` (D2 steps 1 to 5, D6) and `records/validate.py` (D2 step 6, D7); the
 # store's and resolution's (F3-WO2) from `records/store.py`, `records/stack.py` (D8) and
 # `records/resolve.py` (D9); the legacy import's (F3-WO3) from `records/importers/legacy.py`
-# (D12); the data lock's (F3-WO4) from `records/lock.py` (D10, D5). The codes of reaction
-# consistency come with their work order.
+# (D12); the data lock's (F3-WO4) from `records/lock.py` (D10, D5); reaction consistency's (D7,
+# Q7.A3; F3-WO5a) from `records/reactions.py`, where `<component>` is the reaction's component key.
 catalogue: openflowsheet-messages-v1
 namespace: null
 entries:
@@ -18,7 +18,7 @@ entries:
     args: [pointer]
     params: {pointer: {type: text, label: location in the record}}
     summary: "The record is not valid at {pointer!raw}."
-    why: "A record is checked against the record format before it is stored or hashed: its members and their types, every object closed, phase and identifier spellings, and the rules the format adds, such as one entry per property and phase and one formation entry per phase. The location is a JSON pointer into the record after normalisation; an empty location is the whole record, for example text that is not one JSON or YAML object."
+    why: "A record is checked against the record format before it is stored or hashed: its members and their types, every object closed, phase and identifier spellings, and the rules the format adds, such as one entry per property and phase and one formation entry per phase. The location is a JSON pointer into the record after normalisation; an empty location is the whole record, for example text that is not one JSON or YAML object. In a record file of the older (version 1) component format, the location points into the file."
     action: "Correct the record at the location given and submit it again."
     examples:
       - params: {pointer: /entries/0/phase}
@@ -316,3 +316,62 @@ entries:
     action: "Report it. Restore the record file from the release or the repository, or reinstall OpenFlowsheet."
     examples:
       - params: {file: benchmarks/m01/components.yaml, id: H2}
+
+  # D7, Q7.A3 (F3-WO5a, `records/reactions.py`): an element not conserved by a reaction.
+  - code: reaction_element_imbalance
+    family: refusal
+    kind: input
+    complete: true
+    title: A reaction does not conserve an element
+    args: [reaction, element]
+    params: {reaction: {type: text, label: reaction}, element: {type: text, label: element}}
+    summary: "Reaction {reaction!raw} does not conserve {element!raw}: its stoichiometric coefficients times the element counts of its components do not sum to zero."
+    why: "A reaction rearranges atoms; it neither makes nor destroys them. For every element, the sum over the reaction's components of the stoichiometric coefficient times the number of atoms of that element in the component must be exactly zero. The sum is computed exactly from the stored numbers."
+    action: "Correct the reaction's stoichiometric coefficients, or the elemental composition of the component record that is wrong."
+    examples:
+      - params: {reaction: ammonia_synthesis, element: H}
+
+  # D7, Q7.A3: the charge of a reaction's components is not conserved.
+  - code: reaction_charge_imbalance
+    family: refusal
+    kind: input
+    complete: true
+    title: A reaction does not conserve charge
+    args: [reaction]
+    params: {reaction: {type: text, label: reaction}}
+    summary: "Reaction {reaction!raw} does not conserve charge: its stoichiometric coefficients times the charges of its components do not sum to zero."
+    why: "Charge is conserved by every reaction. The sum over the reaction's components of the stoichiometric coefficient times the component's charge number must be exactly zero."
+    action: "Correct the reaction's stoichiometric coefficients, or the charge of the component record that is wrong."
+    examples:
+      - params: {reaction: water_dissociation}
+
+  # D7, Q7.A3: a component without elemental composition, so the element balance is not judged.
+  - code: reaction_element_unchecked
+    family: notice
+    kind: notice
+    complete: true
+    title: A reaction's element balance could not be checked
+    args: [reaction, component]
+    params: {reaction: {type: text, label: reaction}, component: {type: text, label: component}}
+    summary: "The element balance of reaction {reaction!raw} was not checked, because component {component!raw} has no elemental composition."
+    why: "Element balance needs the number of atoms of each element in every component of the reaction. A pseudo-component, such as a petroleum fraction, has no elemental formula, so the balance cannot be decided and is not claimed. Charge and molar mass are still checked."
+    action: "Nothing is needed. Give the component an elemental composition if it has one, and the balance will be checked."
+    examples:
+      - params: {reaction: cracking, component: NBP_350}
+
+  # D7, Q7.A3: the molar masses of a reaction's components do not balance. A notice by the ADR's
+  # code table: an explicit override of MSG §4.2.1's `*_inconsistent` -> `bug` rule (the cause is
+  # in the data, typically two atomic-weight conventions in one reaction, not in OpenFlowsheet).
+  - code: molar_mass_inconsistent
+    family: notice
+    kind: notice
+    complete: true
+    review: false
+    title: A reaction's molar masses do not balance
+    args: [reaction]
+    params: {reaction: {type: text, label: reaction}}
+    summary: "The molar masses of the components of reaction {reaction!raw} do not balance to within the rounding of the stored values."
+    why: "A balanced reaction conserves mass, so the sum of the stoichiometric coefficients times the molar masses is zero up to the rounding of the stored numbers: at most four times the double-precision machine epsilon of the sum of their magnitudes. A larger sum usually means the component records take their molar masses from different atomic-weight tables. The reaction is not refused; a mass balance over it carries this imbalance."
+    action: "Use component records whose molar masses come from one atomic-weight table, or accept the stated imbalance."
+    examples:
+      - params: {reaction: water_formation}

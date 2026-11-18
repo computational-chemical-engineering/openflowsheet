@@ -137,6 +137,28 @@ The value at /entries/1 was fitted or generated, but its input data are not iden
   Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/notices/#fit_inputs_unhashed
 ```
 
+<a id="molar_mass_inconsistent"></a>
+
+## `molar_mass_inconsistent`: A reaction's molar masses do not balance
+
+**Kind:** Notice: not a failure.
+
+- **Summary:** The molar masses of the components of reaction &lt;reaction&gt; do not balance to within the rounding of the stored values.
+- **Why:** A balanced reaction conserves mass, so the sum of the stoichiometric coefficients times the molar masses is zero up to the rounding of the stored numbers: at most four times the double-precision machine epsilon of the sum of their magnitudes. A larger sum usually means the component records take their molar masses from different atomic-weight tables. The reaction is not refused; a mass balance over it carries this imbalance.
+- **Do:** Use component records whose molar masses come from one atomic-weight table, or accept the stated imbalance.
+- **Parameters:** `reaction` (text)
+
+Example:
+
+```text
+The molar masses of the components of reaction water_formation do not balance to within the rounding of the stored values.
+  Why:     A balanced reaction conserves mass, so the sum of the stoichiometric coefficients times the molar masses is zero up to the rounding of the stored numbers: at most four times the double-precision machine epsilon of the sum of their magnitudes. A larger sum usually means the component records take their molar masses from different atomic-weight tables. The reaction is not refused; a mass balance over it carries this imbalance.
+  Do:      Use component records whose molar masses come from one atomic-weight table, or accept the stated imbalance.
+  Kind:    Notice: not a failure.
+  Code:    molar_mass_inconsistent (openflowsheet explain molar_mass_inconsistent)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/notices/#molar_mass_inconsistent
+```
+
 <a id="preview_kind"></a>
 
 ## `preview_kind`: A result used an extension of a kind still in preview
@@ -157,6 +179,28 @@ The functional_contributor acme.cost is of a kind whose format is still in previ
   Kind:    Notice: not a failure.
   Code:    preview_kind (openflowsheet explain preview_kind)
   Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/notices/#preview_kind
+```
+
+<a id="reaction_element_unchecked"></a>
+
+## `reaction_element_unchecked`: A reaction's element balance could not be checked
+
+**Kind:** Notice: not a failure.
+
+- **Summary:** The element balance of reaction &lt;reaction&gt; was not checked, because component &lt;component&gt; has no elemental composition.
+- **Why:** Element balance needs the number of atoms of each element in every component of the reaction. A pseudo-component, such as a petroleum fraction, has no elemental formula, so the balance cannot be decided and is not claimed. Charge and molar mass are still checked.
+- **Do:** Nothing is needed. Give the component an elemental composition if it has one, and the balance will be checked.
+- **Parameters:** `reaction` (text), `component` (text)
+
+Example:
+
+```text
+The element balance of reaction cracking was not checked, because component NBP_350 has no elemental composition.
+  Why:     Element balance needs the number of atoms of each element in every component of the reaction. A pseudo-component, such as a petroleum fraction, has no elemental formula, so the balance cannot be decided and is not claimed. Charge and molar mass are still checked.
+  Do:      Nothing is needed. Give the component an elemental composition if it has one, and the balance will be checked.
+  Kind:    Notice: not a failure.
+  Code:    reaction_element_unchecked (openflowsheet explain reaction_element_unchecked)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/notices/#reaction_element_unchecked
 ```
 
 <a id="store_object_repaired"></a>
