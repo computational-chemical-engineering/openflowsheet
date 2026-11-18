@@ -15,7 +15,10 @@ from __future__ import annotations
 
 import re
 from collections.abc import Iterator, Mapping
+from functools import cache
 from typing import TYPE_CHECKING, Any
+
+from jsonschema import Draft202012Validator
 
 from openflowsheet.records.model import (
     ADMITTED_BASES,
@@ -24,15 +27,14 @@ from openflowsheet.records.model import (
     CORE_PROPERTIES,
     FORMATION_KINDS,
     MOLAR_MASS_KINDS,
-    SCHEMA_NAME,
     VOLATILE,
     CoreProperty,
     element_symbols,
     pointer,
+    record_schema,
 )
 from openflowsheet.records.normalize import quantities, schema_invalid
 from openflowsheet.registry.tokens import Coded
-from openflowsheet.schema_check import DocumentSchemaError, validate_document
 from openflowsheet.units import KIND_SI_UNITS
 
 if TYPE_CHECKING:
@@ -59,10 +61,9 @@ def validate(
     `registry` registers it (`record_type`, `correlation_form`); a stated anchor is checked, a
     derived one (`anchor_derived`) is D6's own."""
     document = dict(record) if volatile is None else {**record, VOLATILE: volatile}
-    try:
-        validate_document(SCHEMA_NAME, document)
-    except DocumentSchemaError as error:
-        return (schema_invalid(error.pointer),), ()
+    refused = _schema_pointer(document)
+    if refused is not None:
+        return (schema_invalid(refused),), ()
     errors = _record_type_errors(record, registry)
     if record["record_type"] == "component":
         errors += _component_errors(record, anchor_derived)
@@ -70,6 +71,23 @@ def validate(
         errors += _entry_errors(record, _forms(registry))
     findings = _fit_findings(record) if record["record_type"] in CORE_PROPERTIES else []
     return _sorted(errors), _sorted(findings)
+
+
+def _schema_pointer(document: Mapping[str, Any]) -> str | None:
+    """The pointer of the record schema's first error by path, `None` when there is none. An
+    `unevaluatedProperties` error counts only when it is the only kind: a member that fails its
+    branch is also reported unevaluated at the record's root, which would hide where it fails."""
+    errors = sorted(_validator().iter_errors(document), key=lambda error: list(error.absolute_path))
+    primary = [error for error in errors if error.validator != "unevaluatedProperties"] or errors
+    if not primary:
+        return None
+    return "".join(pointer("", part) for part in primary[0].absolute_path)
+
+
+@cache
+def _validator() -> Draft202012Validator:
+    """The record schema's validator (the schema holds only local references)."""
+    return Draft202012Validator(record_schema())
 
 
 def _sorted(found: list[Coded]) -> tuple[Coded, ...]:
@@ -155,7 +173,7 @@ def _formation_unit_errors(record: Mapping[str, Any]) -> list[Coded]:
 
 
 def _unit_ok(quantity: Mapping[str, Any], kind: str) -> bool:
-    return quantity["kind"] == kind and KIND_SI_UNITS.get(kind) == quantity["unit"]
+    return bool(quantity["kind"] == kind and KIND_SI_UNITS.get(kind) == quantity["unit"])
 
 
 def _unit_invalid(at: str) -> Coded:
@@ -263,7 +281,7 @@ def _entry_errors(record: Mapping[str, Any], forms: Mapping[str, Mapping[str, An
 
 def _si(quantity: Mapping[str, Any]) -> bool:
     """Whether the quantity's kind is registered and its unit is the kind's SI unit."""
-    return KIND_SI_UNITS.get(quantity["kind"]) == quantity["unit"]
+    return bool(KIND_SI_UNITS.get(quantity["kind"]) == quantity["unit"])
 
 
 def _entry_key(entry: Mapping[str, Any]) -> tuple[Any, ...]:

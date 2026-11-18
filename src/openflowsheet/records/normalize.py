@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import json
 import unicodedata
+from collections import Counter
 from collections.abc import Callable, Iterator, Mapping
 from typing import Any, NamedTuple
 
@@ -81,19 +82,21 @@ def _parsed(source: str | bytes | Mapping[str, Any]) -> dict[str, Any] | Coded:
     object; JSON with a repeated key) or at the first node outside the JSON data model (a YAML
     date, a non-finite float; `canonical.first_noncanonical`). JSON is text starting with `{`;
     anything else is YAML (`yaml.safe_load`)."""
-    if isinstance(source, bytes):
-        source = source.decode("utf-8")
-    if isinstance(source, str):
+    document: object = source
+    if isinstance(document, bytes):
+        document = document.decode("utf-8")
+    if isinstance(document, str):
         try:
-            source = _loaded(source)
+            document = _loaded(document)
         except (ValueError, yaml.YAMLError):
             return schema_invalid("")
-    if not isinstance(source, Mapping):
+    if not isinstance(document, Mapping):
         return schema_invalid("")
-    bad = first_noncanonical(source)
+    bad = first_noncanonical(document)
     if bad is not None:
         return schema_invalid(bad)
-    return json.loads(canonical_json(source))  # type: ignore[no-any-return]
+    copied: dict[str, Any] = json.loads(canonical_json(document))
+    return copied
 
 
 def _loaded(text: str) -> object:
@@ -217,22 +220,23 @@ def _admits(schema: Any, node: object) -> bool:
 
 
 def nfc(node: Any, at: str) -> tuple[Any, list[str]]:
-    """Step 3: `node` with every string value and key in Unicode NFC, and the pointers of the keys
-    that collide after NFC. A colliding key is kept as written, so step 6 sees both members."""
+    """Step 3: `node` with every string value and key in Unicode NFC, and the pointers (by the
+    NFC spelling) of the keys that collide after NFC. Colliding keys are all kept as written, so
+    step 6 sees every member."""
     if isinstance(node, str):
         return unicodedata.normalize("NFC", node), []
     if isinstance(node, list):
         items = [nfc(item, pointer(at, index)) for index, item in enumerate(node)]
-        return [item for item, _ in items], [found for _, found in items for found in found]
+        return [item for item, _ in items], [at for _, found in items for at in found]
     if not isinstance(node, dict):
         return node, []
+    names = Counter(unicodedata.normalize("NFC", key) for key in node)
+    clashing = sorted(name for name, count in names.items() if count > 1)
     members: dict[str, Any] = {}
-    collisions: list[str] = []
+    collisions = [pointer(at, name) for name in clashing]
     for key, value in node.items():
         name = unicodedata.normalize("NFC", key)
-        if name in members:
-            collisions.append(pointer(at, name))
-            name = key
+        name = key if name in clashing else name
         members[name], found = nfc(value, pointer(at, name))
         collisions.extend(found)
     return members, collisions
