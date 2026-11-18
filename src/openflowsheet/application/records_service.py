@@ -6,8 +6,10 @@ register (D11). Each operation first checks its request as `dispatch` does (the 
 then the operation's request schema), so the Python transport refuses what the others refuse
 (rule C1), then authorizes. A record refusal travels as an `ApiError` by its catalogue kind
 (`input` → `invalid_request`, `not_supported` → `unsupported`, `bug` → `internal_error`), its
-code in `detail.reason` and its `{code, params}` in `detail.refusal` (F3 decision WO5b-1).
-`register_record` and `assess_rights` write one audit row each.
+code in `detail.reason` and its `{code, params}` in `detail.refusal` (F3 decision WO5b-1), its
+place in `detail.pointer` (the request member continued by the refusal's own `pointer`), and a
+refused submission's every error in `detail.errors` (R-1052). `register_record` and
+`assess_rights` write one audit row each.
 """
 
 from __future__ import annotations
@@ -54,6 +56,9 @@ API_ERROR_OF_KIND: Final[Mapping[str, ApiErrorCode]] = {
 }
 #: D11: the source-id prefix only the legacy importer writes.
 LEGACY_PREFIX: Final = "legacy."
+#: R-1052: the most errors a refused submission lists in `detail.errors` (`errors_total` counts
+#: them all).
+MAX_LISTED_ERRORS: Final = 200
 
 
 @cache
@@ -69,6 +74,13 @@ def forged(outcome: RecordOutcome) -> bool:
     sources = outcome.record.get("sources") or {}
     claims = any(str(ident).startswith(LEGACY_PREFIX) for ident in sources)
     return claims and outcome.record_sha256 not in legacy_shas()
+
+
+def refusals(outcome: RecordOutcome) -> tuple[Coded, ...]:
+    """Every reason `register_record` refuses `outcome`: `reserved_namespace(legacy)` when it is
+    forged (D11), then its D2 errors in their order (the normaliser's, then D7's sorted)."""
+    reserved = (Coded("reserved_namespace", {"namespace": "legacy"}),) if forged(outcome) else ()
+    return reserved + outcome.errors
 
 
 def effective_document(found: rights.Effective) -> dict[str, Any]:
@@ -257,14 +269,17 @@ class RecordsService:
             )
             where = "/file/content"
         # Every record is judged before any is stored: a refused submission stores nothing.
-        for index, outcome in enumerate(outcomes):
-            at_record = {} if record is not None else {"record_index": index}
-            if forged(outcome):
-                self._refuse_coded(
-                    name, Coded("reserved_namespace", {"namespace": "legacy"}), where, **at_record
-                )
-            if outcome.refused:
-                self._refuse_coded(name, outcome.errors[0], where, **at_record)
+        refused = [
+            ({} if record is not None else {"record_index": index}, coded)
+            for index, outcome in enumerate(outcomes)
+            for coded in refusals(outcome)
+        ]
+        if refused:
+            at_record, first = refused[0]
+            listed = [{**rec, **coded.as_document()} for rec, coded in refused[:MAX_LISTED_ERRORS]]
+            self._refuse_coded(
+                name, first, where, **at_record, errors=listed, errors_total=len(refused)
+            )
         try:
             stored = [
                 self.stack.register(outcome, principal=caller.principal_id, at=at)
@@ -465,9 +480,11 @@ class RecordsService:
     def _refuse_coded(self, name: str, coded: Coded, at: str, **detail: Any) -> NoReturn:
         """A record refusal as an `ApiError` (WO5b-1). The refusal's params travel as `detail`
         members too, where no member of the error's own has the name, so MSG renders the
-        `reason` link with them (F3 decision WO5b-9); `detail.refusal` holds them all."""
+        `reason` link with them (F3 decision WO5b-9); `detail.refusal` holds them all. The one
+        colliding name, `pointer`, continues: `at` followed by the refusal's own (R-1052)."""
         entry = CATALOGUE.entry(coded.code)
         code = API_ERROR_OF_KIND.get(entry.kind if entry is not None else "bug", "internal_error")
+        at = at + str(coded.params.get("pointer", ""))
         members = {"operation": name, "pointer": at, "reason": coded.code, **detail}
         params = {key: value for key, value in coded.params.items() if key not in members}
         self._core.refuse(

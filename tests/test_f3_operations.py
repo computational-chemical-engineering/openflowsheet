@@ -536,3 +536,53 @@ def test_c1_a_yaml_alias_is_refused_before_it_expands(
     refused = _refusal(app, "register_record", {"file": {"format": file_format, "content": small}})
     assert refused["detail"]["reason"] == "record_schema_invalid"
     assert [i for i in app.search_records(limit=200).items if i["store"] == "project"] == []
+
+
+def test_c2_the_pointer_continues_into_the_record(app: LocalApplication) -> None:
+    """R-1052: `detail.pointer` is the request member followed by the refusal's own pointer;
+    `detail.refusal` keeps the bare one, and the explanation names the place (M2)."""
+    refused = _refusal(app, "register_record", {"record": {**SECOND, "name": ""}})
+    detail = refused["detail"]
+    assert (refused["code"], detail["reason"]) == ("invalid_request", "record_schema_invalid")
+    assert detail["pointer"] == "/record/name"
+    assert detail["refusal"] == {"code": "record_schema_invalid", "params": {"pointer": "/name"}}
+    assert detail["explanation"]["summary"] == "The record is not valid at /record/name."
+    assert (detail["errors"], detail["errors_total"]) == ([detail["refusal"]], 1)
+
+
+def test_c2_detail_errors_lists_every_error_of_a_v1_file_without_defaults(
+    app: LocalApplication,
+) -> None:
+    """S2: `m01` without `defaults` is E-F3-12's six `M01_VALUES` for each of its 5 components,
+    every one `provenance_invalid`, in one call."""
+    content = (REPO_ROOT / "benchmarks" / "m01" / "components.yaml").read_text(encoding="utf-8")
+    file = {"format": "component-record-v1-yaml", "content": content}
+    detail = _refusal(app, "register_record", {"file": file})["detail"]
+    assert detail["errors_total"] == 30 == len(detail["errors"])
+    assert {item["code"] for item in detail["errors"]} == {"provenance_invalid"}
+    indices = [item["record_index"] for item in detail["errors"]]
+    assert indices == sorted(indices) and set(indices) == set(range(5))
+    assert detail["record_index"] == 0
+    assert detail["refusal"] == {k: detail["errors"][0][k] for k in ("code", "params")}
+
+
+def test_c2_detail_errors_names_the_record_of_each_error(app: LocalApplication) -> None:
+    second = user_component("user.b", "b")
+    second["identifiers"] = {"cas": "999-99-4"}  # its check digit is 5
+    second["molar_mass"]["provenance"]["origin"] = []
+    file = {"format": "record-v2-json", "content": json.dumps([SECOND, second])}
+    detail = _refusal(app, "register_record", {"file": file})["detail"]
+    assert detail["errors"] == [
+        {
+            "record_index": 1,
+            "code": "identifier_invalid",
+            "params": {"component": "user.b", "scheme": "cas"},
+        },
+        {"record_index": 1, "code": "provenance_invalid", "params": {"entry": "/molar_mass"}},
+    ]
+    assert (detail["errors_total"], detail["record_index"], detail["pointer"]) == (
+        2,
+        1,
+        "/file/content",
+    )
+    assert app.search_records(key="yenonol").items == (), "a refused file stores nothing"
