@@ -755,6 +755,15 @@ def test_d7_parameter_set_keys_and_domain() -> None:
     ]
 
 
+def test_d7_a_set_component_matched_by_inchikey_has_d3_pattern() -> None:
+    """Review S8: `components[].match.inchikey` carries D3's InChIKey pattern."""
+    base = _fixture("parameter-set-maximal")
+    outcome = identify(_with({("components", "1", "match", "inchikey"): "x"}, base))
+    assert _codes(outcome.errors) == [
+        ("record_schema_invalid", {"pointer": "/components/1/match/inchikey"})
+    ]
+
+
 def test_d7_fit_inputs_unhashed_is_a_finding() -> None:
     document = _water()
     del document["entries"][1]["provenance"]["inputs"]

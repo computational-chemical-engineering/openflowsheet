@@ -876,8 +876,9 @@
               "$ref": "#/$defs/sha256"
             },
             "inchikey": {
+              "description": "D3's InChIKey pattern.",
               "type": "string",
-              "minLength": 1
+              "pattern": "^[A-Z]{14}-[A-Z]{10}-[A-Z]$(?!\\n)"
             }
           }
         }
