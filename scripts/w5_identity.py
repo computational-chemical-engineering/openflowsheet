@@ -4,8 +4,8 @@ The ruling decides what a byte change of a registry-hashed file moves; this tool
 
     w5_identity.py sets [--check] [--step] [--base REV] [--legacy PATH] [--core PATH]
                         [--json PATH]
-    w5_identity.py predict --base REV [--files PATH ...] [--against-log F0LOG] [--json PATH]
-                           [--max-tier N]
+    w5_identity.py predict --base REV [--files PATH ...] [--against-log F0LOG]
+                           [--against-tables] [--json PATH] [--max-tier N]
     w5_identity.py judge --before REV --after REV [--files PATH ...] [--max-tier N]
     w5_identity.py coverage --base REV [--head REV]
 
@@ -25,13 +25,22 @@ The ruling decides what a byte change of a registry-hashed file moves; this tool
   moves, by section 3.2's reach rules, and whether `registry_sha256` moves. `--files` defaults
   to `git diff --name-only BASE..HEAD`; files outside R move nothing. `--against-log` compares
   the prediction with an unpinned F0 `--check` log, both ways, and its summary line (W5-S3).
+  The prediction also names the table pointers E moves (W5-S4: a contributor's implementation
+  `modules` after a tier 1 split adds or removes a module in its directory, coolprop-heos-v1's
+  for B7's seven group modules, the units' factory `module` when the generator is in E, WO-N4),
+  each with its expected value; a pointer whose value the ruling leaves open is `unpredicted` and
+  fails. `tables.sha256` moves exactly when a table pointer does, `builtin-sha256.txt` when E
+  meets R or a table pointer moves. `--against-tables` compares HEAD's generator output with
+  BASE's committed registry by pointer, both ways (W5-S4 at a step).
   `predict` and `judge` refuse, exit 1 naming it, an E with a tier 4 file, a file above
   `--max-tier N` (default 3; batch N runs with 2 until FR-1 is signed) or a nonempty M7
   prediction (R1).
 - `judge`: W5-K2. The changed (measure, key) pairs of `benchmarks/f0/corpus.json` from BEFORE to
   AFTER must equal `predict --base BEFORE` for E = `git diff --name-only BEFORE AFTER` (or
   `--files`), every predicted value must change, and `format`, `reference_platform`, `corpus`
-  and `archived_outputs` must stay equal.
+  and `archived_outputs` must stay equal. The committed registry (`legacy.json`, `core.json`,
+  `tables.sha256`, `builtin-sha256.txt`) is diffed from BEFORE to AFTER by pointer against the
+  table prediction, both ways, as `--against-tables` does at a step.
 - `coverage`: R4 and W5-S7. For each file of R at BASE that HEAD (default: the working tree)
   changes, every (`openflowsheet` module, name) pair it imports at HEAD must have been imported
   at BASE or lie in its hash scope at HEAD: the intersection of every identity set that holds
@@ -69,8 +78,9 @@ from typing import Any, Final
 
 ROOT: Final = Path(__file__).resolve().parent.parent
 #: What a revision's facts read: the package and the data it loads at import (`benchmarks`),
-#: both generators, F0's registry and M7's corpus, and the extras table.
-ARCHIVED: Final = ("src", "scripts", "benchmarks", "tests/fixtures/f0", "pyproject.toml")
+#: both generators, F0's registry and M7's corpus, the extras table, and the descriptor schema
+#: the table digests hash (`_data/schemas` links to `schemas`).
+ARCHIVED: Final = ("src", "scripts", "benchmarks", "schemas", "tests/fixtures/f0", "pyproject.toml")
 TABLES: Final = ("legacy", "core")
 REGISTRY_CONSTANT: Final = "tests/fixtures/registry/builtin-sha256.txt"
 CORPUS_FILE: Final = "benchmarks/f0/corpus.json"
@@ -82,6 +92,30 @@ TIER_NAMES: Final = {
     3: "run identity",
     4: "excluded",
 }
+#: The built-in registry's files (W5-S4, W5-K1): the two tables, their digests, E-F1-5's constant.
+TABLE_FILES: Final = {
+    "legacy": "src/openflowsheet/registry/builtin/legacy.json",
+    "core": "src/openflowsheet/registry/builtin/core.json",
+}
+DIGEST_FILE: Final = "src/openflowsheet/registry/builtin/tables.sha256"
+GENERATOR: Final = "scripts/registry_builtin.py"
+#: Ruling section 9, WO-N4: the units' factory (module, attribute) the generator moves, and the
+#: module it moves to. Only the units move; the methods' `basis_provider` stays.
+FACTORY_SWITCH: Final = (
+    "openflowsheet.application.revision_binding",
+    "MODEL_BUILDERS",
+    "openflowsheet.application.model_builders",
+)
+#: Ruling section 8, B7: the seven group modules the CoolProp fluid table is split into, which
+#: the generator attributes to `coolprop-heos-v1`.
+B7_PROVIDER: Final = "coolprop-heos-v1"
+B7_MODULES: Final = tuple(
+    f"src/openflowsheet/thermo/_coolprop_heos_fluids_{group}.py"
+    for group in ("a", "b1", "b2", "b3", "b4", "b5", "b6")
+)
+#: A JSON pointer's value where the document has none.
+ABSENT: Final = "(absent)"
+
 #: One F0 log line for a judged key that moved (`corpus_identity.compare`).
 F0_KEY_LINE: Final = re.compile(r"^(M[1-9]): (\S+): (?:registered|measured)")
 
@@ -90,6 +124,9 @@ MEASURES: Final = ("M1", "M2", "M3", "M4", "M5", "M6", "M7", "M8", "M9")
 
 Facts = dict[str, Any]
 Moved = dict[str, set[str]]
+#: A revision's built-in registry: the `legacy` and `core` rows, the `digest` record
+#: (`tables.sha256`) and the `constant` (`builtin-sha256.txt`), stripped.
+Tables = dict[str, Any]
 
 
 def corpus_identity(root: Path = ROOT) -> Any:
@@ -193,6 +230,21 @@ def measure_facts(root: Path, legacy: Path | None, core: Path | None) -> Facts:
     }
 
 
+def measure_tables() -> Tables:
+    """The registry the generator of the subprocess's revision writes (`--write` in memory)."""
+    import registry_builtin  # noqa: PLC0415
+
+    texts = {
+        path.stem: registry_builtin.render(rows) for path, rows in registry_builtin.tables().items()
+    }
+    rows = {stem: json.loads(text) for stem, text in texts.items()}
+    return {
+        **rows,
+        "digest": registry_builtin.digest_record(texts),
+        "constant": registry_builtin.registry_constant(rows),
+    }
+
+
 def same_objects(queries: Sequence[Sequence[str]]) -> list[bool]:
     """R4's object-identity test, at the subprocess's revision: `old.name is new.name` for each
     (old module, new module, name). With old equal to new it asks whether `name` is importable
@@ -215,6 +267,8 @@ def _facts_main(arguments: argparse.Namespace) -> int:
     corpus_identity(root)
     if arguments.queries:
         result: Any = same_objects(json.loads(Path(arguments.queries).read_text(encoding="utf-8")))
+    elif arguments.tables:
+        result = measure_tables()
     else:
         result = measure_facts(root, arguments.legacy, arguments.core)
     Path(arguments.out).write_text(json.dumps(result, sort_keys=True), encoding="utf-8")
@@ -227,6 +281,7 @@ def _subprocess_facts(
     legacy: Path | None = None,
     core: Path | None = None,
     queries: Sequence[Sequence[str]] | None = None,
+    tables: bool = False,
 ) -> Any:
     with tempfile.TemporaryDirectory(prefix="w5-identity-") as scratch:
         out = Path(scratch) / "facts.json"
@@ -239,6 +294,8 @@ def _subprocess_facts(
         if queries is not None:
             (Path(scratch) / "queries.json").write_text(json.dumps(queries), encoding="utf-8")
             command += ["--queries", str(Path(scratch) / "queries.json")]
+        if tables:
+            command += ["--tables"]
         environment = {**os.environ, "PYTHONPATH": str(root / "src")}
         done = subprocess.run(  # noqa: S603
             command, cwd=root, env=environment, capture_output=True, text=True, check=False
@@ -466,8 +523,9 @@ def sets_report(facts: Facts) -> tuple[str, list[str], dict[str, Any]]:
 
 
 def normalise(name: str) -> str:
-    """A file named from the repository, the import root or the package -> `src/...`."""
-    if name.startswith("src/"):
+    """A file named from the repository, the import root or the package -> `src/...`; a file of
+    the repository outside the package (the generator, a table) as it is."""
+    if name.split("/", 1)[0] in ("src", "scripts", "tests", "benchmarks", "docs"):
         return name
     if name.startswith("openflowsheet/"):
         return f"src/{name}"
@@ -565,6 +623,142 @@ def refusals(facts: Facts, files: Iterable[str], moved: Moved, max_tier: int) ->
 
 def counts(moved: Moved) -> str:
     return ", ".join(f"{m} {len(keys)}" for m, keys in moved.items() if keys) or "none"
+
+
+# -- the registry tables (W5-S4, W5-K2) -----------------------------------------------------------
+
+
+def _utf8_sorted(modules: Iterable[str]) -> list[str]:
+    return sorted(modules, key=lambda path: path.encode("utf-8"))
+
+
+def predict_tables(
+    tables: Tables, files: Iterable[str], base_files: set[str], head_files: set[str]
+) -> tuple[dict[str, Any], dict[str, str]]:
+    """The table pointers E moves, by ruling 6.2 W5-S4: pointer -> its expected value, and the
+    pointers whose value the ruling leaves open -> why. `base_files` and `head_files` are the
+    revisions' file lists (an added or removed file of E). A pointer is `<table>.json:<pointer>`.
+
+    - A contributor's implementation `modules` (`core.json`): every `*.py` under the directory of
+      its factory's module (the generator's D6 rule), so a tier 1 split that adds or removes a
+      module there moves it, to B's set plus the added minus the removed.
+    - `coolprop-heos-v1`'s implementation `modules` (B7, section 8): plus its seven group modules.
+    - With the generator in E (WO-N4): the units' factory `module`, to `FACTORY_SWITCH`'s target.
+    - A file of R removed outside those rules: its rows' `modules`, open.
+    """
+    files = set(files)
+    added = {f for f in files if f not in base_files and f in head_files}
+    removed = {f for f in files if f in base_files and f not in head_files}
+    expected: dict[str, Any] = {}
+    for index, row in enumerate(tables["core"]):
+        modules = set(row["implementation"]["modules"])
+        home = row["implementation"]["factory"]["module"].replace(".", "/")
+        directory = f"src/{home.rsplit('/', 1)[0]}/"
+        if f"{home}/__init__.py" in modules:
+            directory = f"src/{home}/"
+        inside = {f.removeprefix("src/") for f in added | removed if f.startswith(directory)}
+        inside = {f for f in inside if f.endswith(".py")}
+        if inside:
+            gained = {f.removeprefix("src/") for f in added} & inside
+            expected[f"core.json:/{index}/implementation/modules"] = _utf8_sorted(
+                (modules | gained) - {f.removeprefix("src/") for f in removed}
+            )
+    for index, row in enumerate(tables["legacy"]):
+        groups = {f.removeprefix("src/") for f in added if f in B7_MODULES}
+        if row["id"] == B7_PROVIDER and groups:
+            expected[f"legacy.json:/{index}/implementation/modules"] = _utf8_sorted(
+                {*row["implementation"]["modules"], *groups}
+            )
+    still_open: dict[str, str] = {}
+    for stem in TABLES:
+        for index, row in enumerate(tables[stem]):
+            pointer = f"{stem}.json:/{index}/implementation/modules"
+            gone = sorted(m for m in row["implementation"]["modules"] if f"src/{m}" in removed)
+            if gone and pointer not in expected:
+                still_open[pointer] = f"{', '.join(gone)} removed; the ruling admits no such move"
+    if GENERATOR in files:
+        source, attribute, target = FACTORY_SWITCH
+        for index, row in enumerate(tables["legacy"]):
+            factory = row["implementation"]["factory"]
+            if factory and (factory["module"], factory["attribute"]) == (source, attribute):
+                expected[f"legacy.json:/{index}/implementation/factory/module"] = target
+    return expected, still_open
+
+
+def at_pointer(document: Any, pointer: str) -> Any:
+    """The value at a JSON pointer, `ABSENT` where there is none."""
+    value = document
+    for part in pointer.split("/")[1:]:
+        part = part.replace("~1", "/").replace("~0", "~")
+        if isinstance(value, list) and part.isdigit() and int(part) < len(value):
+            value = value[int(part)]
+        elif isinstance(value, dict) and part in value:
+            value = value[part]
+        else:
+            return ABSENT
+    return value
+
+
+def table_problems(
+    expected: Mapping[str, Any],
+    still_open: Mapping[str, str],
+    registry: bool,
+    before: Tables,
+    after: Tables,
+) -> list[str]:
+    """W5-S4 (AFTER regenerated at a step) and W5-K2's table half (AFTER committed at K), both
+    ways: every pointer at which the tables differ lies under a predicted one, every predicted
+    pointer holds its expected value, an open one fails, `tables.sha256` moves exactly when a
+    table pointer is predicted and `builtin-sha256.txt` exactly when `registry`."""
+    corpus_identity()  # this tree's scripts on `sys.path`
+    import registry_builtin  # noqa: PLC0415
+
+    problems = [f"{pointer}: unpredicted ({why})" for pointer, why in sorted(still_open.items())]
+    predicted = {*expected, *still_open}
+    for stem in TABLES:
+        for pointer in registry_builtin.differences(before[stem], after[stem]):
+            name = f"{stem}.json:{pointer}"
+            if not any(name == p or name.startswith(f"{p}/") for p in predicted):
+                problems.append(f"{name}: moved, not predicted")
+    for name, value in sorted(expected.items()):
+        stem, pointer = name.split(".json:", 1)
+        old, new = at_pointer(before[stem], pointer), at_pointer(after[stem], pointer)
+        if new == old:
+            problems.append(f"{name}: predicted, not moved")
+        elif new != value:
+            problems.append(f"{name}: predicted {json.dumps(value)}, found {json.dumps(new)}")
+    for label, key, moves in (
+        ("tables.sha256", "digest", bool(predicted)),
+        ("builtin-sha256.txt", "constant", registry),
+    ):
+        changed = before[key] != after[key]
+        if changed != moves:
+            problems.append(
+                f"{label}: {'moved, not predicted' if changed else 'predicted, not moved'}"
+            )
+    return problems
+
+
+def held_tables(tree: Path, revision: str) -> Tables:
+    """The built-in registry committed at `revision`."""
+    rows = {
+        stem: json.loads(_git(tree, "show", f"{revision}:{path}"))
+        for stem, path in TABLE_FILES.items()
+    }
+    return {
+        **rows,
+        "digest": _git(tree, "show", f"{revision}:{DIGEST_FILE}"),
+        "constant": _git(tree, "show", f"{revision}:{REGISTRY_CONSTANT}").strip(),
+    }
+
+
+def tracked(tree: Path, revision: str) -> set[str]:
+    return set(_git(tree, "ls-tree", "-r", "--name-only", revision).split())
+
+
+def table_lines(expected: Mapping[str, Any], still_open: Mapping[str, str]) -> list[str]:
+    lines = [f"TABLE {pointer}: {json.dumps(value)}" for pointer, value in sorted(expected.items())]
+    return lines + [f"TABLE {pointer}: open" for pointer in sorted(still_open)]
 
 
 # -- judge (W5-K2) ---------------------------------------------------------------------------------
@@ -761,6 +955,18 @@ def _edited(tree: Path, base: str, files: Sequence[str] | None, head: str = "HEA
     return sorted(_git(tree, "diff", "--name-only", f"{base}..{head}").split())
 
 
+def tables_at(tree: Path, revision: str) -> Tables:
+    """The registry `revision`'s generator writes, measured on an extracted copy."""
+    with revision_tree(tree, revision) as root:
+        tables: Tables = _subprocess_facts(root, tables=True)
+        return tables
+
+
+def _table_part(expected: Mapping[str, Any], still_open: Mapping[str, str]) -> str:
+    n = len(expected) + len(still_open)
+    return f"; tables {n} pointer(s)" if n else ""
+
+
 def command_predict(arguments: argparse.Namespace, tree: Path) -> int:
     base = resolve(tree, arguments.base)
     facts = facts_at(tree, base)
@@ -771,20 +977,28 @@ def command_predict(arguments: argparse.Namespace, tree: Path) -> int:
         return 1
     files = _edited(tree, base, arguments.files)
     r_set = set(registry_set(facts))
-    moved, registry = predict(facts, files)
+    moved, edited = predict(facts, files)
     refused = refusals(facts, files, moved, arguments.max_tier)
     if refused:
         for problem in refused:
             print(f"REFUSED {problem}")
         print(f"predict FAIL: E refused ({len(refused)} problem(s))")
         return 1
+    base_tables = held_tables(tree, base)
+    expected, still_open = predict_tables(
+        base_tables, files, tracked(tree, base), tracked(tree, "HEAD")
+    )
+    registry = edited or bool(expected) or bool(still_open)
     line = f"predicted {f0_line(facts, moved)}"
     for name in files:
         print(f"{'E' if name in r_set else 'not in R (moves nothing)'}: {name}")
     for measure, keys in moved.items():
         for key in sorted(keys):
             print(f"{measure}: {key}")
+    for table_line in table_lines(expected, still_open):
+        print(table_line)
     print(f"registry: {REGISTRY_CONSTANT} {'moves' if registry else 'unchanged'}")
+    print(f"registry: {DIGEST_FILE} {'moves' if expected or still_open else 'unchanged'}")
     _write_json(
         arguments.json,
         {
@@ -793,19 +1007,39 @@ def command_predict(arguments: argparse.Namespace, tree: Path) -> int:
             "moved": {m: sorted(keys) for m, keys in moved.items()},
             "registry_sha256_moves": registry,
             "f0_line": line.removeprefix("predicted "),
+            "tables": expected,
+            "tables_open": still_open,
+            "tables_sha256_moves": bool(expected or still_open),
         },
     )
-    if arguments.against_log is None:
-        print(f"predict: base {base[:12]}, |E| {len(set(files) & r_set)}; {line}")
-        return 0
-    held_line, actual = log_moved(arguments.against_log)
-    problems = differences(moved, actual, "moved")
-    if held_line != line.removeprefix("predicted "):
-        problems.append(f"summary line: log {held_line!r}, predicted {line!r}")
+    checks: list[str] = []
+    problems: list[str] = []
+    held_line = ""
+    if arguments.against_log is not None:
+        checks.append("--against-log")
+        held_line, actual = log_moved(arguments.against_log)
+        problems += differences(moved, actual, "moved")
+        if held_line != line.removeprefix("predicted "):
+            problems.append(f"summary line: log {held_line!r}, predicted {line!r}")
+    if arguments.against_tables:
+        checks.append("--against-tables")
+        problems += table_problems(
+            expected, still_open, registry, base_tables, tables_at(tree, "HEAD")
+        )
+    else:
+        problems += [f"{pointer}: unpredicted ({why})" for pointer, why in still_open.items()]
     for problem in problems:
         print(problem)
+    tables = _table_part(expected, still_open)
+    if not checks:
+        if problems:
+            print(f"predict FAIL: {len(problems)} unpredicted table pointer(s); {line}")
+            return 1
+        print(f"predict: base {base[:12]}, |E| {len(set(files) & r_set)}; {line}{tables}")
+        return 0
     verdict = "PASS" if not problems else f"FAIL ({len(problems)} difference(s))"
-    print(f"predict --against-log {verdict}: {counts(moved)}; log {held_line}")
+    log = f"; log {held_line}" if arguments.against_log is not None else ""
+    print(f"predict {' '.join(checks)} {verdict}: {counts(moved)}{tables}{log}")
     return 0 if not problems else 1
 
 
@@ -818,21 +1052,30 @@ def command_judge(arguments: argparse.Namespace, tree: Path) -> int:
         print(f"judge FAIL: the base's rules fail: {error}")
         return 1
     files = _edited(tree, before, arguments.files, after)
-    predicted, _ = predict(facts, files)
+    predicted, edited = predict(facts, files)
     refused = refusals(facts, files, predicted, arguments.max_tier)
     if refused:
         for problem in refused:
             print(f"REFUSED {problem}")
         print(f"judge FAIL: E refused ({len(refused)} problem(s))")
         return 1
+    base_tables = held_tables(tree, before)
+    expected, still_open = predict_tables(
+        base_tables, files, tracked(tree, before), tracked(tree, after)
+    )
+    registry = edited or bool(expected) or bool(still_open)
     held = json.loads(_git(tree, "show", f"{after}:{CORPUS_FILE}"))
     problems = judge(facts["registry"], held, predicted)
+    problems += table_problems(
+        expected, still_open, registry, base_tables, held_tables(tree, after)
+    )
     for problem in problems:
         print(problem)
-    edited = len(set(files) & set(registry_set(facts)))
+    n_edited = len(set(files) & set(registry_set(facts)))
     verdict = "PASS" if not problems else f"FAIL ({len(problems)} problem(s))"
     print(
-        f"judge {verdict}: {before[:12]}..{after[:12]}, |E| {edited}; predicted {counts(predicted)}"
+        f"judge {verdict}: {before[:12]}..{after[:12]}, |E| {n_edited}; "
+        f"predicted {counts(predicted)}{_table_part(expected, still_open)}"
     )
     return 0 if not problems else 1
 
@@ -890,6 +1133,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     prediction.add_argument("--base", required=True)
     prediction.add_argument("--files", nargs="+")
     prediction.add_argument("--against-log", type=Path)
+    prediction.add_argument(
+        "--against-tables", action="store_true", help="W5-S4: HEAD's generator against BASE"
+    )
     prediction.add_argument("--json", type=Path)
     prediction.add_argument("--max-tier", type=int, choices=(1, 2, 3), default=3)
     judgement = commands.add_parser("judge")
@@ -906,6 +1152,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     facts.add_argument("--legacy", type=Path)
     facts.add_argument("--core", type=Path)
     facts.add_argument("--queries")
+    facts.add_argument("--tables", action="store_true")
     arguments = parser.parse_args(argv)
     if arguments.command == "_facts":
         return _facts_main(arguments)

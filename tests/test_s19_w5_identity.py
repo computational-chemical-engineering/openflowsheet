@@ -11,9 +11,10 @@ from __future__ import annotations
 
 import copy
 import json
+import os
 import subprocess
 import sys
-from collections.abc import Iterator
+from collections.abc import Iterator, Sequence
 from pathlib import Path
 from typing import Any
 
@@ -278,8 +279,8 @@ def test_t6_judge_on_synthetic_registries(facts: w5.Facts) -> None:
 
 def test_t6_judge_between_revisions(scratch: Path) -> None:
     """The command line over three synthetic commits on the base: a comment edit of `pr_lib.py`
-    with its M9 value re-registered (PASS), with one more value changed (FAIL naming it), and
-    with nothing re-registered (FAIL, predicted, not moved)."""
+    with its M9 value and `builtin-sha256.txt` re-registered (PASS), with one more value changed
+    (FAIL naming it), and with nothing re-registered (FAIL, predicted, not moved)."""
     pr_lib = f"{THERMO}/pr_lib.py"
     corpus = scratch / w5.CORPUS_FILE
     registered = json.loads(corpus.read_text(encoding="utf-8"))
@@ -290,7 +291,10 @@ def test_t6_judge_between_revisions(scratch: Path) -> None:
         document = copy.deepcopy(registered)
         document["measures"]["M9"].update(values)
         corpus.write_text(json.dumps(document, indent=1, sort_keys=True) + "\n", encoding="utf-8")
-        return _commit(scratch, "synthetic re-registration", pr_lib, w5.CORPUS_FILE)
+        if values:
+            (scratch / w5.REGISTRY_CONSTANT).write_text("2" * 64 + "\n", encoding="utf-8")
+        paths = (pr_lib, w5.CORPUS_FILE, w5.REGISTRY_CONSTANT)
+        return _commit(scratch, "synthetic re-registration", *paths)
 
     other = "src/openflowsheet/models/c1/feed.py"
     cases = [
@@ -500,3 +504,143 @@ def test_r1_judge_refuses_a_k_re_registering_m7(facts: w5.Facts, scratch: Path) 
         f"REFUSED {PR_C1}: tier 3 (run identity), above --max-tier 2",
         "judge FAIL: E refused (1 problem(s))",
     ]
+
+
+# -- W5-S4 and the K-side table diff (review R-W5-WO0, fix 4) --------------------------------------
+
+PR_LIB = f"{THERMO}/pr_lib.py"
+#: `PrLibProvider.describe()`'s reference convention, and the changed string.
+DESCRIBE = (
+    "data_sha256=load_records().sha256,\n            reference_convention=REFERENCE_CONVENTION,"
+)
+CHANGED = 'data_sha256=load_records().sha256,\n            reference_convention="w5",'
+REGISTRY = (*w5.TABLE_FILES.values(), w5.DIGEST_FILE, w5.REGISTRY_CONSTANT)
+
+
+def _write_registry(tree: Path) -> None:
+    """The tree's own generator, `--write`."""
+    subprocess.run(
+        [sys.executable, "scripts/registry_builtin.py", "--write"],
+        cwd=tree,
+        env={**os.environ, "PYTHONPATH": str(tree / "src")},
+        capture_output=True,
+        check=True,
+    )
+
+
+def _replace(tree: Path, name: str, old: str, new: str) -> None:
+    path = tree / name
+    text = path.read_text(encoding="utf-8")
+    assert text.count(old) == 1
+    path.write_text(text.replace(old, new), encoding="utf-8")
+
+
+def _k(scratch: Path, edited: Sequence[str], m9: Sequence[str] = ()) -> str:
+    """K: the edits made, the registry regenerated, the M9 values of `m9` re-registered."""
+    _write_registry(scratch)
+    corpus = scratch / w5.CORPUS_FILE
+    document = json.loads(corpus.read_text(encoding="utf-8"))
+    document["measures"]["M9"].update(dict.fromkeys(m9, "3" * 64))
+    corpus.write_text(json.dumps(document, indent=1, sort_keys=True) + "\n", encoding="utf-8")
+    return _commit(scratch, "synthetic K", *edited, *REGISTRY, w5.CORPUS_FILE)
+
+
+def _judge(scratch: Path, after: str) -> subprocess.CompletedProcess[str]:
+    return _tool("--tree", str(scratch), "judge", "--before", BASE, "--after", after)
+
+
+def test_s4_a_describe_change_regenerated_fails_judge(scratch: Path) -> None:
+    """The reviewer's falsifier: a `describe()` string changed in a batch N file, the generator's
+    `--write` run, M9 re-registered: K moves a payload pointer no rule predicts. Tier 1
+    contributors have no `describe()` the generator reads (their payload is `{}`), so the file is
+    `pr_lib.py`, the batch N file whose `describe()` is a table row."""
+    _replace(scratch, PR_LIB, DESCRIBE, CHANGED)
+    done = _judge(scratch, _k(scratch, [PR_LIB], [PR_LIB]))
+    assert done.returncode == 1, done.stdout
+    assert done.stdout.splitlines()[:-1] == [
+        "legacy.json:/4/payload/reference_convention: moved, not predicted",
+        "tables.sha256: moved, not predicted",
+    ]
+
+
+def test_s4_the_describe_change_at_a_step_fails_against_tables(scratch: Path) -> None:
+    """The same change at a step (committed, not regenerated): HEAD's generator differs from the
+    committed registry on the payload pointer. A comment edit passes."""
+    _append(scratch, PR_LIB, COMMENT)
+    _commit(scratch, "a comment", PR_LIB)
+    arguments = ("--tree", str(scratch), "predict", "--base", BASE, "--against-tables")
+    done = _tool(*arguments)
+    assert done.returncode == 0, done.stdout
+    assert done.stdout.splitlines()[-1] == "predict --against-tables PASS: M9 1"
+    _replace(scratch, PR_LIB, DESCRIBE, CHANGED)
+    _commit(scratch, "a describe change", PR_LIB)
+    done = _tool(*arguments)
+    assert done.returncode == 1, done.stdout
+    assert "legacy.json:/4/payload/reference_convention: moved, not predicted" in done.stdout
+    assert "tables.sha256: moved, not predicted" in done.stdout
+
+
+def test_s4_wo_n4s_factory_switch_is_predicted(scratch: Path) -> None:
+    """WO-N4: the units' factory constant switched in the generator. Regenerated: PASS on 30
+    factory pointers; not regenerated: each predicted, not moved."""
+    _replace(
+        scratch,
+        w5.GENERATOR,
+        '{"module": BINDER, "attribute": "MODEL_BUILDERS"',
+        '{"module": "openflowsheet.application.model_builders", "attribute": "MODEL_BUILDERS"',
+    )
+    _commit(scratch, "the switch, not regenerated", w5.GENERATOR)
+    stale = _judge(scratch, "HEAD")
+    assert stale.returncode == 1, stale.stdout
+    assert (
+        sum(
+            line.endswith("/factory/module: predicted, not moved")
+            for line in stale.stdout.splitlines()
+        )
+        == 30
+    )
+    done = _judge(scratch, _k(scratch, []))
+    assert done.returncode == 0, done.stdout
+    assert done.stdout.splitlines()[-1].endswith("|E| 0; predicted none; tables 30 pointer(s)")
+
+
+def test_s4_a_tier_1_split_moves_the_contributors_modules(scratch: Path) -> None:
+    """A new module in `cost/` (a tier 1 split): `core.json`'s cost and derived `modules` gain it;
+    a wrong expected value fails."""
+    split = "src/openflowsheet/assessment/cost/w5_split.py"
+    (scratch / split).write_text('"""A tier 1 split\'s new module."""\n', encoding="utf-8")
+    done = _judge(scratch, _k(scratch, [split]))
+    assert done.returncode == 0, done.stdout
+    assert done.stdout.splitlines()[-1].endswith("tables 2 pointer(s)")
+    tables = w5.held_tables(scratch, BASE)
+    expected, still_open = w5.predict_tables(tables, [split], set(), {split})
+    assert sorted(expected) == [f"core.json:/{i}/implementation/modules" for i in (0, 1)]
+    assert (
+        "openflowsheet/assessment/cost/w5_split.py"
+        in expected["core.json:/0/implementation/modules"]
+    )
+    assert not still_open
+    after = w5.held_tables(scratch, "HEAD")
+    wrong = {**expected, "core.json:/0/implementation/modules": []}
+    assert w5.table_problems(wrong, {}, True, tables, after) == [
+        f"core.json:/0/implementation/modules: predicted [], found "
+        f"{json.dumps(after['core'][0]['implementation']['modules'])}"
+    ]
+
+
+def test_s4_a_removed_unit_module_is_unpredicted(scratch: Path) -> None:
+    """A file of R removed outside the ruling's rules: its row's `modules` is open, and predict
+    fails naming it."""
+    sink = "src/openflowsheet/models/c1/sink.py"
+    _git("rm", "-q", sink, cwd=scratch)
+    _git("-c", "user.name=w5", "-c", "user.email=w5@invalid", "commit", "-qm", "rm", cwd=scratch)
+    done = _tool("--tree", str(scratch), "predict", "--base", BASE)
+    assert done.returncode == 1, done.stdout
+    lines = done.stdout.splitlines()
+    (opened,) = [line for line in lines if line.startswith("TABLE ")]
+    assert opened.startswith("TABLE legacy.json:/") and opened.endswith(
+        "/implementation/modules: open"
+    )
+    pointer = opened.removeprefix("TABLE ").removesuffix(": open")
+    assert f"{pointer}: unpredicted (openflowsheet/models/c1/sink.py removed; " in done.stdout
+    assert lines[-1].startswith("predict FAIL: 1 unpredicted table pointer(s); ")
