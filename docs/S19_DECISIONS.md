@@ -2959,3 +2959,9 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
 - **2026-11-19 ~01:50 CET, region self-test `g1o-self-region` PASS: 2/3 behaviour tiers detected the mutation**
   (`region.py:663` in `_solve_region`, at wp/S19 14a8491b). Plan 7.1 met for region; lane O run 4 launches after the
   g1n4 merge.
+- **2026-11-19 ~02:00 CET, job 352 `g1n4-fix` no-gain PASS 15/15; `wp/S19-g1n4` merged into wp/S19 (030288b4).**
+  wp/S19 had only docs since 6722d919. Lane N's four runs are done (anderson 109.0 -> 13.2, newton 102.1 -> 28.7,
+  ptc 105.6 -> 23.2 from run 3's bases). Gate report ALERTs at this wake: "selected gates take 577 s > 300 s (tests
+  tier)" and "selected/full time ratio 0.52 > 0.4: selection saves little" (the standing pair; proposal 2 with Frank),
+  "queue wait median 19 min > 15 min" (this session's L_N probes and the region self-test held slots, ~21:29 to
+  ~00:30). Lane O run 4 launched (opus-engineer, brief `S19-W3-G1O-4.md`, base 030288b4).
