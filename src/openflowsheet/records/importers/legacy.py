@@ -222,6 +222,19 @@ class _File:
             "name": name,
         }
 
+    def sources(self) -> dict[str, Any]:
+        """D1's `sources` member of every record of this file, its components' and its parameter
+        set's alike (F3 decisions WO4-0, WO3-5 as ruled in F3 ruling round 1: one `source_sha256`
+        per legacy source): the profile's source id with `version` the `file_sha256`, the
+        profile's `citation`, `licence_stated` and `url` null."""
+        entry = {
+            "version": self.file_sha256,
+            "citation": self.profile.citation,
+            "licence_stated": None,
+            "url": None,
+        }
+        return {self.profile.source: entry}
+
     def legacy(self, position: int | None, file_fields: Mapping[str, Any] | None) -> dict[str, Any]:
         """D12's `legacy` member."""
         return {
@@ -253,22 +266,16 @@ class _File:
 
 def _component(context: _File, record: Mapping[str, Any], position: int) -> dict[str, Any]:
     """D12's component rows on the v1 record at `position`: `amount_basis` `mol`, `charge` 0,
-    the profile's citation (F3 decision WO4-0: one per file, so one `source_sha256` per legacy
-    source), the molar mass a Constant whose `note` ends with the component's v1
+    the file's `sources` entry (F3 decision WO4-0: one citation per file, so one `source_sha256`
+    per legacy source), the molar mass a Constant whose `note` ends with the component's v1
     `rights.source`, and the entries and formation of the profile's mapping."""
     where = f"{context.profile.file}: components[{position}]"
     _known(record, _COMPONENT_KEYS | {"identifiers"}, where)
     identifiers = _identifiers(context.profile, record, f"{where}.identifiers")
     _known(record["rights"], _RIGHTS_KEYS, f"{where}.rights")
-    source = {
-        "version": context.file_sha256,
-        "citation": context.profile.citation,
-        "licence_stated": None,
-        "url": None,
-    }
     return {
         **context.envelope("component", record["id"], record["name"]),
-        "sources": {context.profile.source: source},
+        "sources": context.sources(),
         "legacy": context.legacy(position, None),
         "synthetic": record["synthetic"],
         "identifiers": identifiers,
@@ -484,8 +491,9 @@ _MAPPINGS: Final[
 def _parameter_set(
     context: _File, document: Mapping[str, Any], components: tuple[RecordOutcome, ...]
 ) -> dict[str, Any]:
-    """D12: the file's `wilson_lambda` as one `parameter_set`, id and name its `data_set`, its
-    components matched by the component records' SHAs, `validity` from `domain`, `synthetic`
+    """D12: the file's `wilson_lambda` as one `parameter_set`, id and name its `data_set`, the
+    `sources` entry of its components (one per legacy source), its components matched by the
+    component records' SHAs, `validity` from `domain`, `synthetic`
     and `data_set` from the file, `uncertainty_statement` from `uncertainty`, and
     `legacy.file_fields` `{reference_convention, data_provenance}`."""
     file_fields = {
@@ -495,7 +503,7 @@ def _parameter_set(
     where = f"{context.profile.file}: wilson_lambda"
     return {
         **context.envelope("parameter_set", document["data_set"], document["data_set"]),
-        "sources": {context.profile.source: {"version": context.file_sha256}},
+        "sources": context.sources(),
         "legacy": context.legacy(None, file_fields),
         "uncertainty_statement": document["uncertainty"],
         "components": [

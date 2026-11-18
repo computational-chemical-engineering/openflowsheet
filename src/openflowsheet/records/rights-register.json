@@ -62,16 +62,6 @@
       "date": "2026-11-18"
     },
     {
-      "source_id": "legacy.s10",
-      "source_sha256": "86410eaa4a36e654a86033fa99878be59ac3ef9a56d64dab19c0d5f8532a86cf",
-      "record_sha256": null,
-      "assessment": "unknown",
-      "conditions": null,
-      "basis": "benchmarks/s10/records.yaml: v1 rights.redistribution 'unresolved: see docs/s10-rights-check.md (S10-RC-01..08); repository only, not shipped (S10 spec 9.1, Q-F3)'",
-      "decided_by": "ADR 0061 D11 seed",
-      "date": "2026-11-18"
-    },
-    {
       "source_id": "legacy.s10-verification",
       "source_sha256": "7a28054aa55fc4d4be79a350ef3d494628c9884ff000b0db510a33af0de4887d",
       "record_sha256": null,
@@ -82,28 +72,8 @@
       "date": "2026-11-18"
     },
     {
-      "source_id": "legacy.s10-verification",
-      "source_sha256": "e7943cc1cde0f2e10a0157f26663eaf6380889488320beeb93d8e7d0585fc5de",
-      "record_sha256": null,
-      "assessment": "permitted",
-      "conditions": null,
-      "basis": "benchmarks/s10/verification-records.yaml: v1 rights.redistribution 'permitted: project-authored synthetic values'",
-      "decided_by": "ADR 0061 D11 seed",
-      "date": "2026-11-18"
-    },
-    {
       "source_id": "legacy.s10",
       "source_sha256": "b82ab55f0d1752a162067524a1761d6405d1734ca37bccc757b12cbb66a13a71",
-      "record_sha256": null,
-      "assessment": "permitted",
-      "conditions": "NOTICE Wilson block",
-      "basis": "R-880 (V03 spec §9.1, Q-F3: Wilson's records and the Kurihara 1993 points ship, with their attribution in NOTICE)",
-      "decided_by": "Frank",
-      "date": "2026-10-29"
-    },
-    {
-      "source_id": "legacy.s10",
-      "source_sha256": "86410eaa4a36e654a86033fa99878be59ac3ef9a56d64dab19c0d5f8532a86cf",
       "record_sha256": null,
       "assessment": "permitted",
       "conditions": "NOTICE Wilson block",

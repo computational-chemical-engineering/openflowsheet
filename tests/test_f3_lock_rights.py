@@ -432,13 +432,13 @@ def _imported() -> list[legacy.ImportedFile]:
 
 
 def test_d11_the_register_holds_one_seed_row_per_legacy_source_and_r880() -> None:
-    """Nine seed rows (seven sources; the two parameter sets' entries are their own
-    `source_sha256`, F3 decisions WO3-5 and WO4-0), then D11's S10 row for each of S10's two
-    `source_sha256` values; every legacy record's every source is effectively `permitted`, S10's
-    by the R-880 row."""
+    """Seven seed rows, one per legacy source (a parameter set carries its components' `sources`
+    entry, F3 decisions WO4-0 and WO3-5 as ruled in F3 ruling round 1), then D11's one S10 row
+    (R-880); every legacy record's every source is effectively `permitted`, S10's by the R-880
+    row."""
     rows = rights.repository_rows()
     seeds = [row for row in rows if row["decided_by"] == rights.SEED_DECIDED_BY]
-    assert len(seeds) == 9 and rows[: len(seeds)] == tuple(seeds)
+    assert len(seeds) == 7 and rows[: len(seeds)] == tuple(seeds)
     imported = _imported()
     pairs = {
         pair
@@ -450,16 +450,15 @@ def test_d11_the_register_holds_one_seed_row_per_legacy_source_and_r880() -> Non
     for row in seeds:
         assert row["record_sha256"] is None
         assert (row["assessment"], row["conditions"]) == SEEDS[row["source_id"]]
-    later = rows[len(seeds) :]
-    s10 = {sha for ident, sha in pairs if ident == "legacy.s10"}
-    assert len(later) == 2 and {row["source_sha256"] for row in later} == s10
-    for row in later:
+    (s10,) = {sha for ident, sha in pairs if ident == "legacy.s10"}
+    r880 = [row for row in rows[len(seeds) :] if row["basis"].startswith("R-880")]
+    assert len(r880) == 1 and r880[0]["source_sha256"] == s10
+    for row in r880:
         assert (row["source_id"], row["assessment"], row["conditions"]) == (
             "legacy.s10",
             "permitted",
             "NOTICE Wilson block",
         )
-        assert row["basis"].startswith("R-880")
     for item in imported:
         for outcome in item.records:
             assessed = rights.record_rights(outcome.record, outcome.record_sha256)

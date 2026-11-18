@@ -223,8 +223,9 @@ def embeddable(rights: Mapping[str, Effective]) -> bool:
 
 def seed_rows(imported: Iterable[ImportedFile], *, date: str) -> list[dict[str, Any]]:
     """D11's seed: one whole-source row per legacy source, in import order, for each distinct
-    `source_sha256` of a file's records (its components', then its parameter set's, F3 decisions
-    WO3-5, WO4-0), assessed from the file's v1 `redistribution` text (`seed_assessment`)."""
+    `source_sha256` of a file's records (its components' and its parameter set's are one, F3
+    decisions WO4-0 and WO3-5 as ruled in F3 ruling round 1), assessed from the file's v1
+    `redistribution` text (`seed_assessment`)."""
     rows = []
     for item in imported:
         assessment, conditions = seed_assessment(item.redistribution)
