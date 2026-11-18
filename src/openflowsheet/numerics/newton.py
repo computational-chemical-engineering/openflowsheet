@@ -245,6 +245,18 @@ class Problem:
         )
 
 
+def _opened(
+    x: npt.NDArray[np.float64], opening: Sequence[float] | npt.NDArray[np.float64] | None
+) -> npt.NDArray[np.float64]:
+    """The opening state, normalised; the start's copy when there is no opening."""
+    if opening is None:
+        return x.copy()
+    opened = np.array([normalize_zero(float(value)) for value in opening], dtype=np.float64)
+    if opened.shape != x.shape:
+        raise ValueError(f"opening has {opened.size} components, the start {x.size}")
+    return opened
+
+
 def solve_newton(
     problem: Problem,
     x0: Sequence[float] | npt.NDArray[np.float64],
@@ -273,12 +285,7 @@ def solve_newton(
     each free column that has one, by column id; a column it omits is never judged. `None` — every
     caller but an EO region under `eo_core = "newton_refined"` — is K03 §5's core unchanged."""
     x = np.array([normalize_zero(float(value)) for value in x0], dtype=np.float64)
-    if opening is None:
-        opened = x.copy()
-    else:
-        opened = np.array([normalize_zero(float(value)) for value in opening], dtype=np.float64)
-        if opened.shape != x.shape:
-            raise ValueError(f"opening has {opened.size} components, the start {x.size}")
+    opened = _opened(x, opening)
     run = _NewtonRun(
         problem=problem,
         policy=policy,
