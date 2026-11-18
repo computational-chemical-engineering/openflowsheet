@@ -2403,3 +2403,9 @@
   Trailing lane: G3 run 3 (`wp/S19-g3c` from 226ca985, brief `S19-W3-G3-3.md`): ports de77fa37 and the five
   g3-run2 drafts, then trf `_run`, `optimize_revision`, `_eliminate_zero_flows`; at most 8 steps. Old lane
   `wp/S19-g3` superseded once the port lands.
+- **2026-11-18, G3 run 3 delivered (opus-engineer, Opus):** 8 steps on `wp/S19-g3c` (226ca985..06e39f72), jobs
+  265-272 queued with `--snapshot`: run_study RC first step (carried de77fa37, rc_check OK at 226ca985), five drafts
+  ported (0004+0005 folded), trf `_run_log`, zero_flows `_structural_incidence`. Engineer's scan: repo debt 4672.7 ->
+  4591.7, health 8.23 -> 8.25, brain 26 -> 23. Step 5's message misstates `_preflight_phase` debt (3.0, not 0); left
+  (rewording changes queued shas; step 7 records it). projection_zero_flows treated as S1 (one step, no arithmetic
+  moved). Reviewer reads the chain (run_study RC step) after the gates.
