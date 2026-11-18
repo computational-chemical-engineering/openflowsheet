@@ -2844,3 +2844,13 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   DECISION (reviewer's recommendation): N4 defines `_Step` once in newton.py and ptc imports it (ptc already imports
   `_bound_aware_alpha`, `_trial_point` from newton), no twin. Alternative: two NamedTuples. Reversible by: a local
   copy in ptc. `_accepted_trial`'s 3-tuple stays unless P4 reads it awkwardly.
+- **2026-11-18 ~21:15 CET, W5 cards signed and VERIFIED** (hub doorbell; fetched by ArtifactData into the scratchpad,
+  `decision_desk_verify.py` VERIFIED on each, key 50ad2f710ab1ebe8): ofs-s19-w5-fr1-providers A "All of tier 3,
+  pinned" (action: "W5 may edit all tier-3 provider files (pr_c1, iapws95, wilson_ig, wilson_ig_v2, coolprop_heos
+  and the CoolProp table) under the identity pin (F0 9/9 with identity reads served from batch-base bytes), closed
+  before the 0.5.0 RC cut, with a release note naming the moved providers"); ofs-s19-w5-fr2-reregister B "Once per
+  batch"; ofs-s19-w5-fr3-gend-clause A "Approve E1 to E5". Acted: ADR 0077 filed as accepted
+  (`docs/adr/0077-S19-W5-identity-reregistration.md`, the ruling's section 11 draft with only the status line
+  changed); register R-1059 (R-1047 to R-1058 are taken or skipped on wp/F3, so the next free number); G-END's F0
+  clause in S19_STATE now reads by E1 to E5. Batch N may merge into wp/S19 after its K; batch P follows N. The
+  FR-1 conditions (pin, close before the 0.5.0 RC cut, release note) are W5-P obligations, recorded in ADR 0077.

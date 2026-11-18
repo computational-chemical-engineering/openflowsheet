@@ -19987,3 +19987,28 @@ are inadmissible could resolve on a flat-quantized finer level (Q2.A8).
   and the witness's own arithmetic overflows from finite `ok` values; a NaN term was silently dropped by the max fold.
 - *`evaluated(value=inf)`:* breaks K04 A30 (inf serializes to null), puts inf into `witness_max_diff`, and a NaN in
   its place would be dropped again by the outer fold.
+
+## R-1059: S19 W5 re-registers identities once per batch, admits the tier-3 providers under the identity pin, and judges G-END's F0 clause by E1 to E5 (ADR 0077; 2026-11-18)
+
+| | |
+| --- | --- |
+| Date | 2026-11-18 |
+| Decided by | Frank Peters, Decision Desk cards `ofs-s19-w5-fr1-providers` (A), `ofs-s19-w5-fr2-reregister` (B), `ofs-s19-w5-fr3-gend-clause` (A), each verified with `decision_desk_verify.py`; design lane (`specifier`) ruling |
+| Normative text | `docs/adr/0077-S19-W5-identity-reregistration.md`; `docs/briefs/S19-W5-ruling.md` sections 4 to 9 (section 7: E1 to E5) |
+| Evidence | the ruling's 13 comment-only probe trees and two full suites (section 3); W5-T1 to W5-T7 (WO-0, `scripts/w5_identity.py`) |
+| Affected packages | S19 (W5, G-END); F0 (`benchmarks/f0/corpus.json` M9 per batch, M2, M3 and M6 in batch P); E-F1-5 (`tests/fixtures/registry/builtin-sha256.txt`); S10 A26, S11 A75, L01 A22 (amended by the routes the ADR names) |
+
+**Decision.** W5 re-registers exactly the identity values that are functions of the edited files' bytes, in one
+commit per batch (N, P, L) against a predicted key set and a judged diff. W5 may edit all tier-3 provider files
+(`pr_c1`, `iapws95`, `wilson_ig`, `wilson_ig_v2`, `coolprop_heos` and the CoolProp table) under the identity pin,
+closed before the 0.5.0 release-candidate cut, with a release note naming the moved providers. G-END's "F0 and MCP
+digest identical" is replaced by E1 to E5. `thermo/syn001.py` is not edited in S19.
+
+**Rejected alternatives, and why.**
+- *Re-register once for all of W5 (FR-2 A):* batch N would wait unmerged for batch P and the legacy ruling; one
+  re-registration per batch keeps each identity change reviewable.
+- *Admit only B7 and `coolprop_heos.py`, or no tier-3 file (FR-1 B, C):* four providers would stay below health 7.0
+  as G-END misses; the pin proves the change is identity only.
+- *Keep the literal G-END F0 clause (FR-3 B):* it fails at W5's first byte change to a registry-hashed file.
+- The ADR's other rejected alternatives (per-step re-registration, declared versions, AST hashing, textual
+  substitution, re-registering M7, an identity override switch) are listed in ADR 0077.

@@ -79,18 +79,18 @@ check `$Q status`).
    mode applying W5-S2..S4, S6 and the frozen-rule exemption for batch N's admitted set; delegate the queue-mode code
    to an engineer with a spec) and WO-1b (S10 A26 oracle -> F0's registered M9 value; sonnet-implementer, reviewer
    reads it). Then WO-N1 (cost contributor 2.8, sets 4.7), WO-N2 (lca), WO-N3 (pr_lib), WO-N4, close N (WO-N5)
-   with `--max-tier 2`. Batch N's MERGE into wp/S19 waits for card FR-2. Batch P waits for FR-1, batch L for the
+   with `--max-tier 2`. Batch N merges into wp/S19 after its K (FR-2 B). Batch P after N (FR-1 A), batch L waits for the
    legacy ruling.
-3. Desk cards (hub filed 2026-11-18, version 2): ofs-s19-w5-fr1-providers (A/B/C), ofs-s19-w5-fr2-reregister (A/B),
-   ofs-s19-w5-fr3-gend-clause (A/B). Action texts verbatim in S19_DECISIONS (grep "W5 cards filed") and hub's
-   message; on a doorbell: ArtifactData get + verify with `decision_desk_verify.py`, act only on VERIFIED.
+3. W5 cards signed and VERIFIED (2026-11-18): FR-1 A (all tier 3, pinned, closed before the 0.5.0 RC cut, release
+   note), FR-2 B (re-register once per batch: batch N may merge into wp/S19 after its K), FR-3 A (G-END F0 by E1-E5).
+   ADR 0077 accepted, register R-1059. Batch P is unblocked after WO-N5 (WO-P0 first).
 4. F3 (0.5, `wp/F3`, worktree `f3`): ready except Frank's human review. **Waits for Frank:** card
    ofs-f3-mcp-descriptions-human signed A and VERIFIED, but the REVIEW.json edit recording it was refused by the
    permission system; Frank allows it or edits the five `human` reviews himself; then `executed` on that card, CI
    green, manifest `tested`, merge card via hub. Open for the design lane: `molar_mass_inconsistent` signature clash
    ADR 0061 vs 0062.
 5. Rule: lanes touching studies/ also need the nlp-marked suite at head, failures a subset of base (g19, g20).
-**Open for Frank (new):** the three W5 cards (item 3); the legacy models/ engine ruling (S19_DECISIONS 2026-11-15 item 5): G2's remainder and
+**Open for Frank (new):** the legacy models/ engine ruling (S19_DECISIONS 2026-11-15 item 5): G2's remainder and
 W5 batch L wait for it.
 **Open build-lane items:** `benchmarks/m03/nlp-test.lock` lacks mpmath (m03_nlp_check.sh fails collection); test_opt_cost_lca_nlp g19, g20 fail; no CI or gate runs nlp-marked tests (add an nlp gate tier); the f3 worktree's `.venv` lacks pytest-xdist and pytest-timeout (fix round 3 ran the full suite serially, 6747 s).
 **Open for Frank (not blocking):** proposal 2 (selection widening; selected gates ~600 s vs 300 s; standing ALERT
@@ -113,5 +113,5 @@ one merge-check helper (done for G5 r12 + G6 r7). Rule-6 precedent: helpers writ
 | W4-DOCS | end of W4 (Frank, Decision Desk ofs-s19-w4-docs-scope, 2026-11-17, A) | `codehealth docs` with the [docs] records list of ADR 0076 rule 5 (card ofs-s19-w4-docs-records, A): 0 broken references introduced by S19 (diff of the tip against CB d90b498f); pre-S19 broken references (232 unique at 91af908f) are a trailing item behind 0.5 || PASS (2026-11-17, after the I-19 merge a758cbbe and 26d343f6): 0 introduced by S19; 232 pre-S19 trailing; 286 broken in living docs (repo config) |
 | G-STEP | every step | gate exit 0; refactor: touched files' debt strictly lower; restructure: the plan's arch numbers (table 4.1) met exactly | run log |
 | G-REVIEW | S1 files every 3 accepted steps, S2 and S1/S2 splits every 4, others every 8 (design note 5) | fresh `reviewer`; rejects reverted and logged | |
-| G-END | campaign end, at the merged tip | repo scan (scope `src/openflowsheet/*`): debt <= 1900; health >= 9.0 (binding); brain functions 0; no file below health 7.0; no `huge_file`; `codehealth arch`: 0 cycles at depth 4, 0 violations on every rule; F0 and MCP digest identical; full suite and CI green on both legs | |
+| G-END | campaign end, at the merged tip | repo scan (scope `src/openflowsheet/*`): debt <= 1900; health >= 9.0 (binding); brain functions 0; no file below health 7.0; no `huge_file`; `codehealth arch`: 0 cycles at depth 4, 0 violations on every rule; F0 and MCP digest by E1 to E5 (`docs/briefs/S19-W5-ruling.md` section 7; ADR 0077, card ofs-s19-w5-fr3-gend-clause A, 2026-11-18); full suite and CI green on both legs | |
 | G-END-CI | before each merge | CI green on both legs; F0 on `main` after the merge | |
