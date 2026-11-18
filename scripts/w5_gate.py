@@ -23,7 +23,9 @@ file's `base`, not the step's `{base}`.
                                           node ids of L's short summaries must lie in
                                           expected_failures + standing_failures. It prints the
                                           failures outside that set and which expected failures
-                                          failed (the batch close reads them: L_B is not vacuous)
+                                          failed (the batch close reads them: L_B is not vacuous).
+                                          Each pytest call of L (a `$ ` header) must end in its
+                                          closing counts line, else FAIL naming the call
 
 The batch file: `{"batch": "N", "base": "<40-hex B>", "max_tier": 2, "admitted": [...],
 "generator": [...], "retarget": [...], "expected_failures": [...], "standing_failures": [...]}`.
@@ -60,6 +62,12 @@ F0_FAIL: Final = re.compile(r"(M[1-9]) FAIL \d+/\d+")
 #: pytest's `-r` section and the section rule that ends it.
 SHORT_SUMMARY: Final = re.compile(r"^=+ short test summary info =+$")
 SECTION: Final = re.compile(r"^=+ .* =+$")
+#: test_impact.py's header of each pytest call in its log, and pytest's closing counts line
+#: (test_impact's SUMMARY, or a call that collected nothing).
+CALL: Final = "$ "
+CLOSING: Final = re.compile(
+    r"^=*\s*(?:\d+ (?:passed|failed|error|skipped|deselected)|no tests ran)\b.* in [\d.]+s"
+)
 
 
 class BatchRefusedError(Exception):
@@ -244,17 +252,49 @@ def failed_nodes(text: str) -> set[str]:
     return found
 
 
+def calls(text: str) -> list[tuple[str, list[str]]]:
+    """(header, output lines) of each pytest call in a test_impact.py log."""
+    found: list[tuple[str, list[str]]] = []
+    for line in text.splitlines():
+        if line.startswith(CALL):
+            found.append((line[len(CALL) :], []))
+        elif found:
+            found[-1][1].append(line)
+    return found
+
+
+def unclosed_calls(text: str) -> list[str]:
+    """The calls of a test_impact.py log without a pytest closing counts line (a crashed or killed
+    pytest), as `call N: COMMAND`."""
+    return [
+        f"call {index}: {header}"
+        for index, (header, output) in enumerate(calls(text))
+        if not any(CLOSING.match(line) for line in output)
+    ]
+
+
 def tests_verdict(
-    code: int, failed: set[str], document: Mapping[str, Any]
+    code: int,
+    failed: set[str],
+    document: Mapping[str, Any],
+    unclosed: Sequence[str] = (),
 ) -> tuple[int, list[str]]:
-    """W5-S6: (exit code, report lines). Exit 1 passes iff its failures lie in L_B + standing."""
+    """W5-S6: (exit code, report lines). Exit 1 passes iff its failures lie in L_B + standing and
+    every pytest call closed with its counts line."""
     expected = set(document["expected_failures"])
     standing = set(document["standing_failures"])
     hit = sorted(failed & expected)
     lines = [f"EXPECTED-FAILED {node}" for node in hit]
     lines += [f"EXPECTED-NOT-FAILED {node}" for node in sorted(expected - failed)]
     lines += [f"STANDING-FAILED {node}" for node in sorted(failed & standing - expected)]
+    lines += [f"NO-PYTEST-SUMMARY {call}" for call in unclosed]
     tally = f"expected failures failed {len(hit)}/{len(expected)}"
+    if unclosed:
+        return code if code not in (0, 1) else 1, [
+            *lines,
+            f"w5 tests (W5-S6) FAIL: exit {code}, {len(unclosed)} pytest call(s) without a "
+            f"closing counts line ({unclosed[0]}); {tally}",
+        ]
     if code == 0:
         return 0, [*lines, f"w5 tests (W5-S6) PASS: exit 0; {tally}"]
     if code != 1:
@@ -383,7 +423,7 @@ def command_tests(arguments: argparse.Namespace) -> int:
     log = Path(arguments.log)
     code = subprocess.call(command, cwd=ROOT)
     text = log.read_text(encoding="utf-8", errors="replace") if log.is_file() else ""
-    result, lines = tests_verdict(code, failed_nodes(text), document)
+    result, lines = tests_verdict(code, failed_nodes(text), document, unclosed_calls(text))
     print("\n".join(lines))
     return result
 

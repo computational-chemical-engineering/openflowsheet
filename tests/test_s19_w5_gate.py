@@ -114,6 +114,36 @@ def test_s6_exit_1_without_a_node_id_fails(batch: dict[str, Any]) -> None:
     assert code == 1 and "no failed node id" in lines[-1]
 
 
+TWO_CALLS = (
+    "$ python -m pytest -q -n 8 @/tmp/run.0.args\n"
+    "........F\n"
+    "FAILED tests/test_a.py::test_identity - assert 1 == 2\n"
+    "1 failed, 8 passed in 4.20s\n"
+    "$ python -m pytest -q @/tmp/run.1.args\n"
+    "....\n"
+)
+
+
+def test_s6_a_call_without_its_closing_counts_line_fails_naming_it(
+    batch: dict[str, Any],
+) -> None:
+    """A crashed or killed pytest leaves no counts line: exit 1 with expected failures only, or
+    exit 0, still fails, and so does test_impact's exit 3 for a killed call."""
+    assert gate.unclosed_calls(TWO_CALLS) == ["call 1: python -m pytest -q @/tmp/run.1.args"]
+    closed = TWO_CALLS + "4 passed in 0.10s\n"
+    assert gate.unclosed_calls(closed) == []
+    assert gate.unclosed_calls("$ pytest -q -k nothing\nno tests ran in 0.01s\n") == []
+    failed = gate.failed_nodes(
+        "=== short test summary info ===\n" + TWO_CALLS.splitlines()[2] + "\n"
+    )
+    for code in (0, 1, 3):
+        result, lines = gate.tests_verdict(code, failed, batch, gate.unclosed_calls(TWO_CALLS))
+        assert result == (code or 1), lines
+        assert "NO-PYTEST-SUMMARY call 1: python -m pytest -q @/tmp/run.1.args" in lines
+        assert lines[-1].startswith(f"w5 tests (W5-S6) FAIL: exit {code}, 1 pytest call(s)")
+    assert gate.tests_verdict(1, failed, batch, gate.unclosed_calls(closed))[0] == 0
+
+
 def test_s6_the_node_ids_of_a_real_pytest_short_summary(tmp_path: Path) -> None:
     """pytest's own `-rsfE` output: FAILED and ERROR entries, a parameter id holding ' - ', and
     a captured log line starting with ERROR outside the summary, which is not a node."""
@@ -145,6 +175,7 @@ def test_s6_the_node_ids_of_a_real_pytest_short_summary(tmp_path: Path) -> None:
         "test_sample.py::test_param[x - y]",
         "test_sample.py::test_error",
     }
+    assert gate.unclosed_calls(f"$ pytest -q\n{done.stdout}") == []  # pytest's own counts line
 
 
 # -- W5-S1: the scope rule -------------------------------------------------------------------------
