@@ -941,6 +941,33 @@ def test_run_with_workers_makes_two_calls_and_one_line(
     assert ("PASS" if expected == 0 else f"FAIL (exit {expected})") in out[0]
 
 
+@pytest.mark.parametrize(
+    ("codes", "killed"),
+    [((0, -9), "call 1 signal 9"), ((1, -11), "call 1 signal 11"), ((-9, 5), "call 0 signal 9")],
+)
+def test_a_killed_call_fails_the_run_as_exit_3_naming_it(
+    repo, tmp_path: Path, monkeypatch, capsys, codes: tuple[int, int], killed: str
+) -> None:
+    """A call killed by a signal (subprocess returns -signal) was read by `max`: [0, -9] passed
+    and [1, -11] exited 1. Any killed call makes the run exit 3, pytest's INTERNAL_ERROR."""
+    root, base, map_dir = repo
+    monkeypatch.setattr(ti, "XDIST_SERIAL", ("tests/test_a.py",))
+    _edit(root, "src/pkg/mod.py", "LIMIT = 3", "LIMIT = 4")  # a fallback: both calls run
+    calls: list[list[str]] = []
+
+    def fake_call(command: list[str], *, stdout, **_: object) -> int:
+        calls.append(command)
+        if codes[len(calls) - 1] >= 0:
+            stdout.write("2 passed in 0.5s\n")
+            stdout.flush()
+        return codes[len(calls) - 1]
+
+    monkeypatch.setattr(ti.subprocess, "call", fake_call)
+    assert ti.run(base, map_dir, tmp_path / "run.log", [], root, workers=3) == ti.INTERNAL_ERROR
+    out = capsys.readouterr().out.splitlines()
+    assert len(out) == 1 and "FAIL (exit 3)" in out[0] and f"killed: {killed}," in out[0]
+
+
 def test_run_full_runs_the_suite_and_since_reaches_the_selection(
     repo, tmp_path: Path, monkeypatch, capsys
 ) -> None:

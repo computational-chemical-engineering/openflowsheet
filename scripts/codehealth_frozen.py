@@ -6,17 +6,23 @@ bytes fails `codehealth gate`'s frozen rule (docs/code-health.md). The gate runs
 the base tree, so the list is the registered one, not the change's. Standard library only: it runs
 under any Python 3, without the project installed.
 
+S19 W5 (ruling R3, work order WO-1): with `S19_W5_BATCH` set to a batch file (the gate queue's
+`--batch`, `scripts/w5_gate.py`), the batch's `admitted` paths are left out: a W5 step may
+change them, and the W5 tiers judge what that moves.
+
     python3 scripts/codehealth_frozen.py
 """
 
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 from typing import Final
 
 ROOT: Final = Path(__file__).resolve().parent.parent
 CORPUS: Final = ROOT / "benchmarks" / "f0" / "corpus.json"
+BATCH_VARIABLE: Final = "S19_W5_BATCH"
 
 
 def frozen_paths() -> list[str]:
@@ -25,11 +31,21 @@ def frozen_paths() -> list[str]:
     return sorted(registry["measures"]["M9"])
 
 
+def admitted() -> set[str]:
+    """The W5 batch's admitted paths when `S19_W5_BATCH` names a batch file, else none."""
+    name = os.environ.get(BATCH_VARIABLE)
+    if not name:
+        return set()
+    batch = json.loads(Path(name).read_text(encoding="utf-8"))
+    return set(batch["admitted"])
+
+
 def main() -> int:
     paths = frozen_paths()
     if not paths:
         raise SystemExit(f"{CORPUS}: measure M9 registers no paths")
-    print("\n".join(paths))
+    exempt = admitted()
+    print("\n".join(path for path in paths if path not in exempt))
     return 0
 
 
