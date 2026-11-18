@@ -68,8 +68,9 @@ in this order:
 1. Parse (JSON, or YAML through `yaml.safe_load`). A value outside the JSON data model (a YAML date, a non-finite float)
    is `record_schema_invalid(<pointer>)`.
 2. Detach `volatile`.
-   2a. Remove every optional member (one the schema does not list as `required`) whose value is `null`, `[]` or `{}`,
-   recursively; required members keep their values. Absent, `null`, `[]` and `{}` then give one SHA, so a fetcher that
+   2a. Remove every optional member (one the schema names in `properties` and does not list as `required`; the entries
+   of a map (`additionalProperties`) and members the schema does not describe stay in place for step 6) whose value is
+   `null`, `[]` or `{}`, recursively; required members keep their values. Absent, `null`, `[]` and `{}` then give one SHA, so a fetcher that
    emits `synonyms: []` in one version and omits it in the next produces the same record. A derived `anchor_phase: null`
    is re-inserted by step 5, so normalisation stays idempotent.
 3. Every string value and key → Unicode NFC.
@@ -676,3 +677,11 @@ Status stays Proposed.
 | --- | --- |
 | (b) first item | D10: the `data_lock_sha256` sentence replaced by the narrowed per-provider `data_sha256` (ADR 0063 D2). |
 | (b) second item | Risk 8: text after the title replaced by the resolution. |
+
+## F3-WO1 review applied (`docs/reviews/F3-WO1-review.md`, 2026-11-18)
+
+Status stays Proposed. Design-lane rulings of the F3-WO1 review, applied by the build lane in fix round 1.
+
+| Review item | Applied to |
+| --- | --- |
+| M3 | D2 step 2a: an optional member is one the schema names in `properties` and does not require; map entries and undescribed members stay for step 6. |

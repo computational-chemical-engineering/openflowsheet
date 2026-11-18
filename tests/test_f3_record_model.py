@@ -372,6 +372,26 @@ def test_e_f3_4_a_required_empty_member_is_kept() -> None:
     assert _codes(identify(document).errors) == [("provenance_invalid", {"entry": "/molar_mass"})]
 
 
+@pytest.mark.parametrize(
+    ("base", "changes", "at"),
+    [
+        ("water", {("elements", "H"): None}, "/elements/H"),
+        ("water", {("entries", "1", "validity", "T"): []}, "/entries/1/validity/T"),
+        ("minimal", {("colour",): None}, ""),
+        ("minimal", {("sources", "ghost"): None}, "/sources/ghost"),
+    ],
+)
+def test_e_f3_4_step_2a_keeps_map_entries_and_undescribed_members(
+    base: str, changes: dict[tuple[str, ...], Any], at: str
+) -> None:
+    """Review M3: step 2a removes only members the schema names and does not require; an empty
+    map entry or an undescribed member stays and step 6 refuses it, never another content's
+    SHA."""
+    outcome = identify(_with(changes, _water() if base == "water" else None))
+    assert _codes(outcome.errors) == [("record_schema_invalid", {"pointer": at})]
+    assert outcome.record_sha256 is None
+
+
 def test_e_f3_4_permuting_two_solid_forms_changes_the_sha_and_the_anchor() -> None:
     """`formation` is sorted by phase class stably (D2 step 4): two solid forms keep record order,
     so permuting them is a different record with a different anchor (D6 step 2)."""

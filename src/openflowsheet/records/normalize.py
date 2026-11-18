@@ -117,10 +117,11 @@ def _unique_members(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
 
 
 def strip_empty(node: Any, schema: Any) -> Any:
-    """Step 2a: `node` without its optional members (those no applicable `required` lists) equal
-    to `null`, `[]` or `{}`, recursively and bottom-up, so a member emptied by the removal goes
-    too. Required members keep their values. `schema` is the node's schema in the record
-    schema; a member it does not describe is treated as optional."""
+    """Step 2a: `node` without its optional members equal to `null`, `[]` or `{}`, recursively
+    and bottom-up, so a member emptied by the removal goes too. An optional member is one an
+    applicable subschema names in `properties` and none lists as `required`; required members,
+    the entries of a map (`additionalProperties`) and members the schema does not describe stay
+    in place for step 6 (review M3). `schema` is the node's schema in the record schema."""
     if isinstance(node, list):
         return [
             strip_empty(item, _item_schema(schema, index, item)) for index, item in enumerate(node)
@@ -131,7 +132,7 @@ def strip_empty(node: Any, schema: Any) -> Any:
     kept = {}
     for key, value in node.items():
         child = strip_empty(value, members.get(key, other))
-        if key in required or not _empty(child):
+        if key in required or key not in members or not _empty(child):
             kept[key] = child
     return kept
 
