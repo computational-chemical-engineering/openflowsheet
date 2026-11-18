@@ -83,8 +83,8 @@ duplication (twin merge: addendum for Frank); certificate, checks, split_checks 
    Card ofs-f3-accept-adr0061 (desk v3) pinned to ADR 0061 at 5d085f05, option A verbatim: "accept ADR 0061 (F3
    component data) as on wp/F3 at 5d085f05 (with the F3-WO1 review and F3 ruling round 1 applied), with ADR 0019
    Amendment 8 (Records interface, five operations), so that F3 can merge into main". ADR frozen until signed.
-   **Next:** write and launch F3-WO5a (reactions.py + user-file importer, E-F3-10, E-F3-12; opus-engineer; brief in
-   the form of `docs/briefs/F3-WO4.md`, ADR not to be edited), then WO5b (five operations on four transports,
+   **Running:** F3-WO5a (opus-engineer, launched 2026-11-18 ~09:00; brief `docs/briefs/F3-WO5a.md` at a4eefc4a:
+   reactions.py + user-file importer, E-F3-10, E-F3-12). **Next:** WO5b (five operations on four transports,
    assess_rights, LocalApplication wiring, every "Left for WO5" item in F3_DECISIONS; E-F3-11, MCP digest
    re-take), WO7 close-out (manifest, CI both legs), one package `reviewer` (open: R1-B6 da41b295, fix1 and WO2-WO4
    choices already ruled). Card for ADR 0062 (F2) near close-out.
