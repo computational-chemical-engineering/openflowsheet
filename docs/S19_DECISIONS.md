@@ -2856,3 +2856,12 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   FR-1 conditions (pin, close before the 0.5.0 RC cut, release note) are W5-P obligations, recorded in ADR 0077.
 - **2026-11-18 ~21:35 CET, job 342 `w5wo0-mc` (full suite) PASS, 7/7; `wp/S19-w5` merged into wp/S19 (b70f8dea).**
   wp/S19 had only docs commits since the lane's base 444b230d. W5 WO-0 is done; WO-1 (orchestrator) is next.
+- **2026-11-18 ~21:55 CET, W5 WO-1 started (orchestrator).** At 94840fb3: `w5_identity.py sets --check` PASS (|R| 51,
+  |F| 35, tiers 16/28/6/1, T-2a holds); `i19_scan.py` 36 W5 rows (MODEL_BUILDERS, assessment.program.Refusal, the 34
+  column_unit bindings) and no other W5 row: WO-1's scan item met. DECISION: the W5 gate mode is built first on a
+  tooling lane `wp/S19-w5gm` (opus-engineer, brief `S19-W5-WO1-gatemode.md`), because the gate reads its config and
+  frozen list from the base tree, so B_N must contain it; B_N = the wp/S19 tip after that lane and the g1n3 merge.
+  L_N (method 3.1) is measured at the g1n3 merge tip with the 17 batch-N hashed files comment-edited on a scratch
+  branch; the tooling lane changes no `src/` file, so L_N carries over to B_N, and W5-S6's non-vacuity check at K
+  re-tests it. Alternative: build the mode inside the W5 lane. Rejected: the config is read from B. Reversible by:
+  re-measuring L_N at B_N.
