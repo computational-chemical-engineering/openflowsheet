@@ -80,7 +80,8 @@ duplication (twin merge: addendum for Frank); certificate, checks, split_checks 
    briefs `docs/briefs/F3-*.md`). Done and ruled: WO1 (+review, fix1), WO2, WO3, WO4, ruling round 1
    (`docs/reviews/F3-rulings-1.md`, ADR edits 5d085f05) and its B1-B7 (head 270b6534; 65-file battery 2010/0, F0
    PASS; battery list `<git-common-dir>/codehealth/briefs/F3-battery.txt`, 62 files, plus `tests/test_f3_*.py`).
-   Card ofs-f3-accept-adr0061 (desk v3) pinned to ADR 0061 at 5d085f05, option A verbatim: "accept ADR 0061 (F3
+   **ADR 0061 ACCEPTED** (card ofs-f3-accept-adr0061 signed A, VERIFIED, executed 2026-11-18; wp/F3 0f6dafb5, R-1050;
+   F3 reserves R-1050..1059). Card (desk v3) was pinned to ADR 0061 at 5d085f05, option A verbatim: "accept ADR 0061 (F3
    component data) as on wp/F3 at 5d085f05 (with the F3-WO1 review and F3 ruling round 1 applied), with ADR 0019
    Amendment 8 (Records interface, five operations), so that F3 can merge into main". ADR frozen until signed.
    WO5a done (02889a00; S19_DECISIONS). **Running:** F3-WO5b (opus-engineer, brief `docs/briefs/F3-WO5b.md` at

@@ -2519,3 +2519,7 @@
   `molar_mass_inconsistent(<S>, <species>)`, ADR 0061 registers `(<reaction>)`: one name or one signature needed
   (raise with the ADR 0062 card). reactions.py's numerics review folds into the package `reviewer` pass.
   F3-WO5b (opus-engineer) launched, brief `docs/briefs/F3-WO5b.md` at c3c0fee0 (may need a continuation).
+- **2026-11-18, ADR 0061 Accepted.** Hub doorbell; card ofs-f3-accept-adr0061 fetched and verified with the option A
+  action text (VERIFIED, key 032ee0a5ae620a90, signed 07:24:52Z). wp/F3 0f6dafb5 (ADR status line, register R-1050;
+  F3 reserves R-1050..R-1059), fcb65f94 (option B text verbatim). `executed` written on the card (v5); hub told.
+  WO5b engineer told to head Amendment 8 as Accepted and take R-1051 onward.
