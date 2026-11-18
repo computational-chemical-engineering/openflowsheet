@@ -24,6 +24,7 @@ from test_opt_revision_optimize import AVAILABLE, _case, _optimize
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models.thermal.kernel import saturation
 from openflowsheet.schema_check import schema_errors
+from openflowsheet.studies.nlp import phase as phase_module
 from openflowsheet.studies.nlp.formulation import (
     Decision,
     FullSpaceNlp,
@@ -142,6 +143,50 @@ def test_a_held_single_phase_split_without_a_margin_is_undefined() -> None:
         _context(host, point),
     )
     assert rows.rows == () and rows.undefined == ("U-PHF",)
+
+
+def test_split_rows_come_before_port_rows(monkeypatch: pytest.MonkeyPatch) -> None:
+    """§4.7: with a guarded split row and declared ports, `ids` lists the split rows first, then
+    the port rows (`phase_rows` joins `_split_entries`'s before `_port_entries`'s). No benchmark
+    case has both (ports are pure-fluid, split rows need an lnK block), so the port entries are
+    TH-C1's, over the same stream ids as PHF's spec."""
+    ported, ported_point, _ = _certified("TH-C1")
+    route = ported.route
+    assert route is not None and ported_point.spec is not None and ported_point.state is not None
+    port_entries = phase_module._port_entries(
+        ported_point.spec,
+        ported_point.state,
+        route.binding.flowsheet.provider,
+        route.binding.flowsheet.components,
+        _context(ported, ported_point),
+    )
+    assert [entry.row.row_id for entry in port_entries.entries] == [
+        "phase.S1.subcooled",
+        "phase.S2.subcooled",
+        "phase.S3.superheated",
+    ]
+    monkeypatch.setattr(phase_module, "_port_entries", lambda *_: port_entries)
+    host, point, _ = _certified("PHF")
+    (split,) = host.regimes(point).splits
+    route = host.route
+    assert route is not None and point.spec is not None and point.state is not None
+    flowsheet = route.binding.flowsheet
+    feed = tuple(f"S1.n.{c}" for c in flowsheet.components)
+    rows = phase_rows(
+        point.spec,
+        point.state,
+        [(split, feed, "S2.T", "S2.P")],
+        flowsheet.provider,
+        flowsheet.components,
+        _context(host, point),
+    )
+    assert rows.ids == (
+        "phase.U-PHF.bubble",
+        "phase.S1.subcooled",
+        "phase.S2.subcooled",
+        "phase.S3.superheated",
+    )
+    assert rows.undefined == ()
 
 
 def test_the_gray_box_holds_the_phase_rows_as_its_second_block() -> None:
