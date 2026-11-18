@@ -79,8 +79,8 @@ duplication (twin merge: addendum for Frank); certificate, checks, split_checks 
 3. 0.5 STARTED 2026-11-18: F3-WO1 (record model) on `wp/F3` (worktree `f3`, from main a283925c, brief
    `docs/briefs/F3-WO1.md`, build log `docs/F3_DECISIONS.md`), opus-engineer running, built on ADR 0061's Proposed
    text. DECISION-REQUEST to hub: accept ADR 0061 (card suggested ofs-f3-accept-adr0061); F3 merges only after it.
-   Then: design-lane `reviewer` on WO1, F3-WO2/WO3, card for ADR 0062 (F2) near F3 close-out. Write `executed` on
-   ofs-s19-start-05 (not yet done: needs ArtifactData on the desk).
+   Then: design-lane `reviewer` on WO1, F3-WO2/WO3, card for ADR 0062 (F2) near F3 close-out. `executed` written on
+   ofs-s19-start-05 (2026-11-18).
 4. Trailing S19 at one lane (ofs-s19-trailing-order): G3 run 3 running (`wp/S19-g3c` from 226ca985, brief
    `S19-W3-G3-3.md`; ports de77fa37 + drafts g3-run2, then trf `_run`, `optimize_revision`); on its report: `$Q wait
    --since 264` in the background, reviewer (run_study RC step), merge-check, merge. Then G4, G2 (non-legacy), W5,
