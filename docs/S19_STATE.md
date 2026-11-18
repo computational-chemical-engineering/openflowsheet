@@ -81,7 +81,7 @@ duplication (twin merge: addendum for Frank); certificate, checks, split_checks 
    brief `docs/briefs/F3-WO4.md`), first commit the orchestrator default for WO3-1 (one citation per legacy file).
    Next: one design-lane ruling round on all F3 choices (fix1-1..4, WO2-1..9, WO3-1..7, WO4-*), then hub re-pins
    card ofs-f3-accept-adr0061 once with the ruled ADR text; then WO5 (operations), WO7 close-out and the package
-   reviewer. Ruling round 1 done (5d085f05); B1-B7 running; card re-pin to 5d085f05 requested (ADR frozen). Card for
+   reviewer. Ruling round 1 done (5d085f05); B1-B7 running; card re-pinned (desk v3), option A verbatim: "accept ADR 0061 (F3 component data) as on wp/F3 at 5d085f05 (with the F3-WO1 review and F3 ruling round 1 applied), with ADR 0019 Amendment 8 (Records interface, five operations), so that F3 can merge into main" (ADR frozen). Card for
    ADR 0062 (F2) near F3 close-out.
 4. Trailing S19 at one lane (ofs-s19-trailing-order): G3 run 3 merged (8cb44f62; scan 4591.7 / 8.25 / brain 23).
    G3 run 4 running (`wp/S19-g3d` from 8cb44f62, brief `S19-W3-G3-4.md`); on its report: `$Q wait --since 274`,
