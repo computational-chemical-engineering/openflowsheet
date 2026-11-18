@@ -2816,3 +2816,11 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   tiers 16/28/6/1, falsifiers exit 1); W5-T2 13/13 probe re-runs match both ways; W5-T6, W5-T7 as specified. Three
   interpretations for the reviewer (T1 assertions S1-S6, R4 hash scope as intersection, coverage on the working
   tree). Review R-W5-WO0 launched (reviewer, Opus; brief `S19-R-W5-WO0.md`).
+- **2026-11-18 ~21:50, review R-W5-WO0 (reviewer, Opus, ~134k tokens): merge after fixes.** `predict` is derived from
+  code and registry (no table), errors in its measure model surface as W5-S3/K2 failures, never a silent pass;
+  interpretations (a), (b), (c) kept. Should-fix: (1) coverage at module granularity misses a new name from an
+  already-imported module; (2) predict/judge accept a tier-4 file and would PASS a K re-registering all 52 M7 keys
+  (add a refusal and `--max-tier`); (3) W5-S4 / K-side table diff unimplemented (falsifier: a `describe()` change
+  plus `--write` passes judge); (4) test gaps; (5) the 13 probe re-runs not recorded. DECISION: table-pointer
+  prediction and diff go in `w5_identity.py` (reviewer's recommendation), not in the gate mode. Alternative: WO-1's
+  gate mode. Reversible by: moving the check into the gate. Fix round brief `S19-W5-WO0-fix1.md` (opus-engineer).
