@@ -129,8 +129,8 @@ openflowsheet = [
 # written by `scripts/registry_builtin.py`.
 "openflowsheet.registry" = ["builtin/*.json", "builtin/tables.sha256"]
 # F3 (ADR 0061 D12): the legacy importer's profiles and the legacy record index it is held to,
-# written by `scripts/records_legacy_index.py`.
-"openflowsheet.records" = ["legacy_profiles.yaml", "legacy_index.json"]
+# written by `scripts/records_legacy_index.py`; (D11) the repository rights register.
+"openflowsheet.records" = ["legacy_profiles.yaml", "legacy_index.json", "rights-register.json"]
 
 [tool.ruff]
 line-length = 100

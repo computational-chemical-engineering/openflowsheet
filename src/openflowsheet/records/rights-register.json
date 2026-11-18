@@ -1,0 +1,115 @@
+{
+  "register_format": "openflowsheet-rights-register-v1",
+  "rows": [
+    {
+      "source_id": "legacy.syn001",
+      "source_sha256": "c4fc8d6d4b00f1cd991dbcc5e4db37a0bdbc60b8d8d73c2770f5bcf2969ce919",
+      "record_sha256": null,
+      "assessment": "permitted",
+      "conditions": null,
+      "basis": "benchmarks/syn001/components.yaml: v1 rights.redistribution 'synthetic; no restrictions'",
+      "decided_by": "ADR 0061 D11 seed",
+      "date": "2026-11-18"
+    },
+    {
+      "source_id": "legacy.m01",
+      "source_sha256": "c92508500c67bef5ab42d64c32c109a39983bdcc1cda0d5f9f94e08ca55fcaae",
+      "record_sha256": null,
+      "assessment": "permitted",
+      "conditions": null,
+      "basis": "benchmarks/m01/components.yaml: v1 rights.redistribution 'permitted: published numerical constants quoted with their citations (a handful of values per component, not an extraction of any database); NASA TM-4513 is a work of the United States Government; the retrieval tools are MIT (chemicals) and BSD-3-Clause (Cantera)'",
+      "decided_by": "ADR 0061 D11 seed",
+      "date": "2026-11-18"
+    },
+    {
+      "source_id": "legacy.l01",
+      "source_sha256": "375b906fcd00796f3ae36eec5d8d301a831639946d578a87d4e6daf2c27a8022",
+      "record_sha256": null,
+      "assessment": "permitted",
+      "conditions": null,
+      "basis": "benchmarks/l01/components.yaml: v1 rights.redistribution 'permitted: published numerical constants quoted with their citations (a handful of values per component, not an extraction of any database); NASA TM-4513 is a work of the United States Government; the retrieval tools are MIT (chemicals) and BSD-3-Clause (Cantera)'",
+      "decided_by": "ADR 0061 D11 seed",
+      "date": "2026-11-18"
+    },
+    {
+      "source_id": "legacy.s05",
+      "source_sha256": "6b6bbd5db8ab8b88dd99fdc0b6c1fcce79e353cc67132f4d08f1cebfb4930ca6",
+      "record_sha256": null,
+      "assessment": "permitted",
+      "conditions": "Publication in whole or in part is allowed in all countries provided that attribution is given to the International Association for the Properties of Water and Steam",
+      "basis": "benchmarks/s05/components.yaml: v1 rights.redistribution 'permitted with conditions: Publication in whole or in part is allowed in all countries provided that attribution is given to the International Association for the Properties of Water and Steam'",
+      "decided_by": "ADR 0061 D11 seed",
+      "date": "2026-11-18"
+    },
+    {
+      "source_id": "legacy.s07",
+      "source_sha256": "e27b8e7155133c2a50f57ce0e8d9879544348f093d4e7ae36209459b9f743719",
+      "record_sha256": null,
+      "assessment": "permitted",
+      "conditions": "cite CoolProp with its MIT notice and the equation of state's source (R-715)",
+      "basis": "benchmarks/s07/components.yaml: v1 rights.redistribution \"permitted with conditions: cite CoolProp with its MIT notice and the equation of state's source (R-715)\"",
+      "decided_by": "ADR 0061 D11 seed",
+      "date": "2026-11-18"
+    },
+    {
+      "source_id": "legacy.s10",
+      "source_sha256": "b82ab55f0d1752a162067524a1761d6405d1734ca37bccc757b12cbb66a13a71",
+      "record_sha256": null,
+      "assessment": "unknown",
+      "conditions": null,
+      "basis": "benchmarks/s10/records.yaml: v1 rights.redistribution 'unresolved: see docs/s10-rights-check.md (S10-RC-01..08); repository only, not shipped (S10 spec 9.1, Q-F3)'",
+      "decided_by": "ADR 0061 D11 seed",
+      "date": "2026-11-18"
+    },
+    {
+      "source_id": "legacy.s10",
+      "source_sha256": "86410eaa4a36e654a86033fa99878be59ac3ef9a56d64dab19c0d5f8532a86cf",
+      "record_sha256": null,
+      "assessment": "unknown",
+      "conditions": null,
+      "basis": "benchmarks/s10/records.yaml: v1 rights.redistribution 'unresolved: see docs/s10-rights-check.md (S10-RC-01..08); repository only, not shipped (S10 spec 9.1, Q-F3)'",
+      "decided_by": "ADR 0061 D11 seed",
+      "date": "2026-11-18"
+    },
+    {
+      "source_id": "legacy.s10-verification",
+      "source_sha256": "7a28054aa55fc4d4be79a350ef3d494628c9884ff000b0db510a33af0de4887d",
+      "record_sha256": null,
+      "assessment": "permitted",
+      "conditions": null,
+      "basis": "benchmarks/s10/verification-records.yaml: v1 rights.redistribution 'permitted: project-authored synthetic values'",
+      "decided_by": "ADR 0061 D11 seed",
+      "date": "2026-11-18"
+    },
+    {
+      "source_id": "legacy.s10-verification",
+      "source_sha256": "e7943cc1cde0f2e10a0157f26663eaf6380889488320beeb93d8e7d0585fc5de",
+      "record_sha256": null,
+      "assessment": "permitted",
+      "conditions": null,
+      "basis": "benchmarks/s10/verification-records.yaml: v1 rights.redistribution 'permitted: project-authored synthetic values'",
+      "decided_by": "ADR 0061 D11 seed",
+      "date": "2026-11-18"
+    },
+    {
+      "source_id": "legacy.s10",
+      "source_sha256": "b82ab55f0d1752a162067524a1761d6405d1734ca37bccc757b12cbb66a13a71",
+      "record_sha256": null,
+      "assessment": "permitted",
+      "conditions": "NOTICE Wilson block",
+      "basis": "R-880 (V03 spec §9.1, Q-F3: Wilson's records and the Kurihara 1993 points ship, with their attribution in NOTICE)",
+      "decided_by": "Frank",
+      "date": "2026-10-29"
+    },
+    {
+      "source_id": "legacy.s10",
+      "source_sha256": "86410eaa4a36e654a86033fa99878be59ac3ef9a56d64dab19c0d5f8532a86cf",
+      "record_sha256": null,
+      "assessment": "permitted",
+      "conditions": "NOTICE Wilson block",
+      "basis": "R-880 (V03 spec §9.1, Q-F3: Wilson's records and the Kurihara 1993 points ship, with their attribution in NOTICE)",
+      "decided_by": "Frank",
+      "date": "2026-10-29"
+    }
+  ]
+}

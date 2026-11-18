@@ -5,7 +5,7 @@ A project's store is `<project>/records/`: write-once object files
 so `sha256(file bytes) == name` (integrity is a file hash, as in git), and `records.sqlite3`
 (WAL, `busy_timeout` 30 s, schema id `f3-records-v1`, independent of T07's `project.sqlite3`)
 with the tables `objects` and `keys` (both rebuildable from the object files), `registrations`
-(the volatile blocks) and `rights` (D11's project register, written by F3-WO4).
+(the volatile blocks) and `rights` (D11's project register, `append_rights`, `rights_rows`).
 
 **Write protocol (N12).** An object is written to a temporary file beside its target, flushed,
 `fsync`ed and moved over the target with `os.replace`; a target that exists is verified and kept.
@@ -39,6 +39,7 @@ from typing import Any, Final, NamedTuple
 from openflowsheet.canonical import canonical_json, document_sha256
 from openflowsheet.records.model import RecordOutcome
 from openflowsheet.records.resolve import lookup_keys
+from openflowsheet.records.rights import ROW_FIELDS, check_row
 from openflowsheet.registry.tokens import Coded
 
 #: D8: the store's directory below the project root, its database and its schema id.
@@ -439,6 +440,30 @@ class RecordStore:
             }
             for sequence, volatile_sha, volatile, findings, at, principal in rows
         ]
+
+    # -------------------------------------------------------------------------------- rights
+
+    def append_rights(self, row: Mapping[str, Any]) -> int:
+        """Append one D11 row to the project register (the `rights` table, append-only), checked
+        as a repository row is (`rights.check_row`, `RightsRegisterError`), and return its
+        insertion sequence: D11's "latest" is the highest."""
+        checked = check_row(row, "rights row")
+        with self._writing() as connection:
+            cursor = connection.execute(
+                f"INSERT INTO rights ({', '.join(ROW_FIELDS)})"
+                f" VALUES ({', '.join('?' for _ in ROW_FIELDS)})",
+                tuple(checked[name] for name in ROW_FIELDS),
+            )
+        return int(cursor.lastrowid or 0)
+
+    def rights_rows(self) -> list[dict[str, Any]]:
+        """The project register's rows in insertion order, each D11's fields and its
+        `sequence`."""
+        with self._connect() as connection:
+            rows = connection.execute(
+                f"SELECT sequence, {', '.join(ROW_FIELDS)} FROM rights ORDER BY sequence"
+            ).fetchall()
+        return [dict(zip(("sequence", *ROW_FIELDS), row, strict=True)) for row in rows]
 
     # ------------------------------------------------------------------------------ rebuilding
 

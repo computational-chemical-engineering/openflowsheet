@@ -13,7 +13,11 @@ position, SHA and findings (`records.importers.legacy.index_document`).
   LF-normalised bytes in the checkout;
 - a tracked YAML file declaring `record_schema: schemas/component-record.schema.json` has no
   profile. A tracked symbolic link (the package's `_data/` copies, `openflowsheet.resources`)
-  counts as the file it points to.
+  counts as the file it points to;
+- the rights register `records/rights-register.json` no longer holds the import's seed rows
+  (ADR 0061 D11: a seed row's `source_sha256` differs, or a `legacy.` row names a
+  `source_sha256` the import does not give; `records.rights.seed_problems`). The register is
+  hand-maintained: `--write` never touches it.
 
 Each mode prints one summary line and exits 0 only on success.
 """
@@ -24,7 +28,7 @@ import argparse
 import json
 import subprocess
 import sys
-from collections.abc import Iterable, Mapping
+from collections.abc import Iterable, Mapping, Sequence
 from pathlib import Path
 from typing import Any, Final
 
@@ -34,6 +38,7 @@ ROOT: Final = Path(__file__).resolve().parent.parent
 if str(ROOT / "src") not in sys.path:
     sys.path.insert(0, str(ROOT / "src"))
 
+from openflowsheet.records import rights  # noqa: E402
 from openflowsheet.records.importers import legacy  # noqa: E402
 
 INDEX: Final = ROOT / "src" / "openflowsheet" / "records" / "legacy_index.json"
@@ -44,10 +49,14 @@ def render(document: Mapping[str, Any]) -> str:
     return json.dumps(document, indent=2, sort_keys=True, ensure_ascii=False) + "\n"
 
 
+def imported_files(root: Path = ROOT) -> list[legacy.ImportedFile]:
+    """The profiled files below `root`, imported."""
+    return legacy.import_all(lambda path: root.joinpath(*path.split("/")).read_bytes())
+
+
 def regenerated(root: Path = ROOT) -> str:
     """The index regenerated from the files below `root`."""
-    imported = legacy.import_all(lambda path: root.joinpath(*path.split("/")).read_bytes())
-    return render(legacy.index_document(imported))
+    return render(legacy.index_document(imported_files(root)))
 
 
 def stale_inputs(root: Path = ROOT) -> list[str]:
@@ -104,10 +113,16 @@ def tracked_files(root: Path = ROOT) -> list[str]:
     return [path for path in listed.split("\0") if path]
 
 
-def problems(root: Path = ROOT, tracked: Iterable[str] | None = None) -> list[str]:
-    """Every reason `--check` fails, in the order the module docstring lists them."""
+def problems(
+    root: Path = ROOT,
+    tracked: Iterable[str] | None = None,
+    register: Sequence[Mapping[str, Any]] | None = None,
+) -> list[str]:
+    """Every reason `--check` fails, in the order the module docstring lists them; `register`
+    is the rights register's rows (the packaged register when `None`)."""
     found = []
-    text = regenerated(root)
+    imported = imported_files(root)
+    text = render(legacy.index_document(imported))
     if not INDEX.is_file() or INDEX.read_text(encoding="utf-8") != text:
         found.append(f"{INDEX.relative_to(ROOT)} is missing or stale")
     found += stale_inputs(root)
@@ -115,6 +130,8 @@ def problems(root: Path = ROOT, tracked: Iterable[str] | None = None) -> list[st
         f"{path} declares {legacy.V1_RECORD_SCHEMA} and has no profile"
         for path in unprofiled(root, tracked_files(root) if tracked is None else tracked)
     ]
+    rows = rights.repository_rows() if register is None else register
+    found += [f"{rights.REGISTER_NAME}: {line}" for line in rights.seed_problems(imported, rows)]
     return found
 
 

@@ -33,6 +33,8 @@ import yaml
 from conftest import REPO_ROOT, load_json, sha256_of
 from test_schemas_p01 import validator_for
 
+from openflowsheet.records import identify, rights
+from openflowsheet.records.importers import legacy
 from openflowsheet.thermo import iapws95
 from openflowsheet.thermo._coolprop_heos_fluids import FLUIDS
 
@@ -387,8 +389,9 @@ SHIPPED_DATA = re.compile(
     # and since F1-WO5 (review SF-8) its record of their digests, `tables.sha256`.
     r"|registry/builtin/([a-z_-]+\.json|tables\.sha256)"
     # F3 (ADR 0061 D12): the legacy importer's profiles (the project's own mapping and
-    # classification) and the legacy record index generated from them (ids, positions, SHAs).
-    r"|records/legacy_(profiles\.yaml|index\.json))$"
+    # classification) and the legacy record index generated from them (ids, positions, SHAs);
+    # (D11) the repository rights register (the project's own assessments, keyed by SHA).
+    r"|records/legacy_(profiles\.yaml|index\.json)|records/rights-register\.json)$"
 )
 PACKAGING = re.compile(
     r"^(PKG-INFO|setup\.cfg|pyproject\.toml|README\.md|MANIFEST\.in|LICENSE|NOTICE|"
@@ -556,8 +559,8 @@ def test_a32_no_third_party_data_in_the_sdist_or_the_wheel(built: dict[str, Path
 
 #: ADR 0061 D1: the record format a v1 reader refuses (ADR 0002 D7.5).
 RECORD_V2 = "openflowsheet-record-v2"
-#: F3 decision WO1-15 as narrowed by the design lane: the one directory a v2 record may sit in
-#: until WO4 gives A32 its v2 clause.
+#: F3 decision WO1-15 as narrowed by the design lane: the directory of the v2 schema fixtures
+#: (some refused by construction; they ship nowhere), which A32's v2 clause skips (F3-WO4).
 RECORD_V2_HOME = "tests/fixtures/records/"
 
 
@@ -590,8 +593,8 @@ def _component_records() -> list[tuple[str, dict[str, Any]]]:
     """Every v1 component record (`_record_mappings` without the v2 records). A v2 record
     (`record_format: openflowsheet-record-v2`, ADR 0061) is not a v1 ComponentRecord, its rights
     live in F3's rights register (D11) and F3 validates it (F3 decision WO1-15, narrowed by the
-    design lane to that exact value); `test_v2_records_sit_only_in_the_f3_fixture_directory`
-    keeps them where A32 may skip them. Any other `record_format` value is judged as v1."""
+    design lane to that exact value); A32's v2 clause judges them (`_a32_v2_problems`, F3-WO4).
+    Any other `record_format` value is judged as v1."""
     return [
         (path, item) for path, item in _record_mappings() if item.get("record_format") != RECORD_V2
     ]
@@ -918,14 +921,67 @@ def test_a32_every_component_record_is_synthetic_or_a_vetted_real_record_with_ri
     assert compared == CAS_COMPARED_IDS
 
 
-def test_v2_records_sit_only_in_the_f3_fixture_directory() -> None:
-    """F3 decision WO1-15 as narrowed by the design lane: A32 skips a mapping only when its
-    `record_format` is `openflowsheet-record-v2`, and every such mapping is a fixture under
-    `tests/fixtures/records/` until WO4 adds A32's v2 clause (identify, and synthetic, or a vetted
-    v1 file's hash, or a permitting rights-register row for each source)."""
-    v2 = {path for path, item in _record_mappings() if item.get("record_format") == RECORD_V2}
+def _a32_v2_problems(
+    mappings: list[tuple[str, dict[str, Any]]], register: tuple[dict[str, Any], ...]
+) -> list[str]:
+    """T08.A32's v2 clause (F3 decision WO1-15, the design lane's narrowing; F3-WO4): a v2 record
+    (`record_format: openflowsheet-record-v2`) outside `RECORD_V2_HOME` must pass D2
+    (`records.identify`) and then be `synthetic: true`, or carry the `legacy.file_sha256` of a
+    file of `VETTED_RECORD_FILES` (the D12 SHA of its LF-normalised bytes), or have each of its
+    sources `permitted` in the repository rights register `register` (ADR 0061 D11's precedence
+    over the repository layer: packaging reads that layer only). Returns one line per failing
+    record."""
+    vetted = {legacy.file_sha256((REPO_ROOT / path).read_bytes()) for path in VETTED_RECORD_FILES}
+    found = []
+    for path, item in mappings:
+        if item.get("record_format") != RECORD_V2 or path.startswith(RECORD_V2_HOME):
+            continue
+        outcome = identify(item)
+        if outcome.record_sha256 is None:
+            found.append(f"{path}: {item['id']} is refused {[e.code for e in outcome.errors]}")
+            continue
+        record = outcome.record
+        if record.get("synthetic") is True:
+            continue
+        if record.get("legacy", {}).get("file_sha256") in vetted:
+            continue
+        assessed = rights.record_rights(record, outcome.record_sha256, repository=register)
+        if not rights.embeddable(assessed):
+            found.append(f"{path}: {item['id']} is real, from no vetted file, not permitted")
+    return found
+
+
+def test_a32_v2_records_pass_the_v2_clause() -> None:
+    """T08.A32's v2 clause (`_a32_v2_problems`) over every tracked v2 mapping, against the
+    packaged rights register; the schema fixtures stay where the clause skips them."""
+    mappings = _record_mappings()
+    v2 = {path for path, item in mappings if item.get("record_format") == RECORD_V2}
     assert v2 >= {RECORD_V2_HOME + "component-maximal.json"}
-    assert {path for path in v2 if not path.startswith(RECORD_V2_HOME)} == set()
+    assert _a32_v2_problems(mappings, rights.repository_rows()) == []
+
+
+def test_a32_v2_clause_refuses_each_defect() -> None:
+    """Each branch of the v2 clause decides one record: a synthetic record, an imported `m01`
+    record (a vetted file's SHA) and an imported `s07` record (its source permitted by its seed
+    row) pass; the `s07` record with no register row, and a record D2 refuses, fail."""
+    imported = {
+        item.profile: item
+        for item in legacy.import_all(lambda path: (REPO_ROOT / path).read_bytes())
+    }
+    m01 = dict(imported["m01"].records[0].record)
+    s07 = dict(imported["s07"].records[0].record)
+    synthetic = dict(imported["syn001"].records[0].record)
+    register = rights.repository_rows()
+    at = "benchmarks/x/records.json"
+    assert _a32_v2_problems([(at, m01), (at, s07), (at, synthetic)], register) == []
+    assert _a32_v2_problems([(at, s07)], ()) == [
+        f"{at}: {s07['id']} is real, from no vetted file, not permitted"
+    ]
+    refused = {**s07, "amount_basis": "kg"}
+    assert _a32_v2_problems([(at, refused)], register)[0].startswith(
+        f"{at}: {s07['id']} is refused"
+    )
+    assert _a32_v2_problems([(RECORD_V2_HOME + "x.json", refused)], ()) == []
 
 
 def test_a32_one_datum_rule_within_and_across_conventions() -> None:

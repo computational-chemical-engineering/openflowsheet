@@ -104,14 +104,16 @@ class Profile:
 @dataclass(frozen=True)
 class ImportedFile:
     """One imported file: its D12 SHA-256 (of the LF-normalised bytes), its
-    `reference_convention` (`None` when it states none), and its records' D2 outcomes, the
-    components in file order and then the parameter set, if the file has one."""
+    `reference_convention` (`None` when it states none), its records' D2 outcomes, the
+    components in file order and then the parameter set, if the file has one, and the v1
+    `rights.redistribution` text its components share (not identity: D11's seed row reads it)."""
 
     profile: str
     path: str
     file_sha256: str
     reference_convention: str | None
     records: tuple[RecordOutcome, ...]
+    redistribution: str
 
     def projections(self) -> list[Mapping[str, Any]]:
         """The records' normalised identity projections, in `records` order."""
@@ -162,7 +164,17 @@ def import_file(profile: Profile, data: bytes, *, registry: Registry | None = No
         context.file_sha256,
         document.get("reference_convention"),
         records,
+        _redistribution(document["components"], profile.file),
     )
+
+
+def _redistribution(components: Iterable[Mapping[str, Any]], where: str) -> str:
+    """The one v1 `rights.redistribution` text of a file's components (D11 seeds one row per
+    legacy source); `LegacyImportError` when they state several."""
+    texts = {component["rights"]["redistribution"] for component in components}
+    if len(texts) != 1:
+        raise LegacyImportError(f"{where}: the components state {len(texts)} redistribution texts")
+    return str(texts.pop())
 
 
 def _check_envelope(document: Mapping[str, Any], profile: Profile) -> None:
@@ -262,9 +274,7 @@ def _component(context: _File, record: Mapping[str, Any], position: int) -> dict
         "identifiers": identifiers,
         "amount_basis": "mol",
         "charge": 0,
-        "molar_mass": _constant(
-            context, "molar_mass", record["molecular_weight"], where, record["rights"]["source"]
-        ),
+        "molar_mass": _molar_mass(context, record, where),
         "elements": record["elemental_composition"],
         "elemental_verification": record["elemental_verification"],
         **_MAPPINGS[context.profile.mapping](context, record["parameters"], where),
@@ -282,11 +292,19 @@ def _identifiers(profile: Profile, record: Mapping[str, Any], where: str) -> dic
     return {scheme: value for scheme, value in identifiers.items() if scheme not in dropped}
 
 
+def _molar_mass(context: _File, record: Mapping[str, Any], where: str) -> dict[str, Any]:
+    """The Constant of `molecular_weight`, its `note` ending with the component's v1
+    `rights.source` (F3 decision WO4-0)."""
+    constant = _constant(context, "molar_mass", record["molecular_weight"], where)
+    constant["note"] = _note([record["molecular_weight"]], record["rights"]["source"])
+    return constant
+
+
 def _constant(
-    context: _File, field: str, parameter: Mapping[str, Any], where: str, *texts: str
+    context: _File, field: str, parameter: Mapping[str, Any], where: str
 ) -> dict[str, Any]:
     """A Constant from one v1 parameter (D12's parameter rows): `value`, `unit`, `kind`,
-    `meaning`, the provenance text and then `texts` as `note`, `uncertainty` null."""
+    `meaning`, the provenance text as `note`, `uncertainty` null."""
     _parameter(parameter, where)
     return {
         "value": parameter["value"],
@@ -295,7 +313,7 @@ def _constant(
         "uncertainty": None,
         "provenance": context.provenance(field),
         "meaning": parameter.get("meaning"),
-        "note": _note([parameter], *texts),
+        "note": _note([parameter]),
     }
 
 
