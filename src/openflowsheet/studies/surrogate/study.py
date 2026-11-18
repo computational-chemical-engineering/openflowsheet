@@ -34,7 +34,7 @@ from __future__ import annotations
 import math
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
-from typing import Any, Final
+from typing import Any, Final, NamedTuple
 
 from openflowsheet.adapters.experiments.runner import ExperimentOutcome, ExperimentRunner
 from openflowsheet.adapters.variants import Variant, hard_domain
@@ -208,30 +208,11 @@ def evaluate(
     )
     surrogate = fit.surrogate
 
-    margins: list[float] = []
-
-    def scored(found: Sequence[Observation]) -> tuple[tuple[float | None, ...], int]:
-        scores: list[float | None] = []
-        inadmissible = 0
-        for o in found:
-            if surrogate is None:
-                scores.append(None)
-                continue
-            u = coordinates(o.request, PLAN_N_TUBES)
-            assert u is not None
-            x_hat, dt_hat = surrogate.predict(scaled(u, surrogate.scaling))
-            # Every calibration and test prediction is judged, whatever the parent returned
-            # (spec §7.1 item 6): an inadmissible prediction in the box is the predictor's defect.
-            inadmissible += bool(inadmissible_outputs(x_hat, dt_hat, u[2]))
-            margins.append(admissibility_distance(x_hat, dt_hat, u[2]))
-            if o.status == "ok" and o.x is not None and o.dt is not None:
-                scores.append(score(o.x, o.dt, x_hat, dt_hat))
-            else:
-                scores.append(None)
-        return tuple(scores), inadmissible
-
-    calibration_scores, bad_calibration = scored(rows["calibration"])
-    test_scores, bad_test = scored(rows["test"])
+    calibration_scores, bad_calibration, calibration_margins = _scored(
+        rows["calibration"], surrogate
+    )
+    test_scores, bad_test, test_margins = _scored(rows["test"], surrogate)
+    margins = calibration_margins + test_margins
     test_errors: tuple[tuple[float, float], ...] = ()
     if surrogate is not None:
         test_errors = tuple(
@@ -281,6 +262,41 @@ def evaluate(
         centres=tuple(centres),
         verdict=verdict,
     )
+
+
+class _SplitScores(NamedTuple):
+    """`_scored`'s result for one split: the scores in observation order (`None` where the
+    parent returned no usable point, every one `None` without a surrogate), the count of
+    inadmissible predictions, and each prediction's admissibility margin in observation order."""
+
+    scores: tuple[float | None, ...]
+    inadmissible: int
+    margins: list[float]
+
+
+def _scored(found: Sequence[Observation], surrogate: QuadraticSurrogate | None) -> _SplitScores:
+    """The surrogate's prediction at each observation of a calibration or test split, judged
+    (spec §7.1): its conformal score against the parent's point, whether it is inadmissible, and
+    its admissibility distance (`_SplitScores`). Without a surrogate nothing is predicted. Pure."""
+    scores: list[float | None] = []
+    inadmissible = 0
+    margins: list[float] = []
+    for o in found:
+        if surrogate is None:
+            scores.append(None)
+            continue
+        u = coordinates(o.request, PLAN_N_TUBES)
+        assert u is not None
+        x_hat, dt_hat = surrogate.predict(scaled(u, surrogate.scaling))
+        # Every calibration and test prediction is judged, whatever the parent returned
+        # (spec §7.1 item 6): an inadmissible prediction in the box is the predictor's defect.
+        inadmissible += bool(inadmissible_outputs(x_hat, dt_hat, u[2]))
+        margins.append(admissibility_distance(x_hat, dt_hat, u[2]))
+        if o.status == "ok" and o.x is not None and o.dt is not None:
+            scores.append(score(o.x, o.dt, x_hat, dt_hat))
+        else:
+            scores.append(None)
+    return _SplitScores(tuple(scores), inadmissible, margins)
 
 
 def _centre_evidence(
