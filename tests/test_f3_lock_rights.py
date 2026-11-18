@@ -22,6 +22,7 @@ import json
 import random
 import sys
 from collections.abc import Mapping
+from pathlib import Path
 from typing import Any
 
 import pytest
@@ -364,9 +365,39 @@ def test_d11_latest_is_insertion_order_and_a_source_is_its_sha_not_its_id() -> N
     assert not rights.embeddable(assessed)
 
 
-@pytest.mark.skip(reason="needs F3-WO5 operations: assess_rights and its default agent grant")
-def test_e_f3_5_assess_rights_with_the_default_agent_grant_is_forbidden() -> None:
-    """E-F3-5's third clause (D13: the right `policy`, which the default agent grant lacks)."""
+def test_e_f3_5_assess_rights_with_the_default_agent_grant_is_forbidden(tmp_path: Path) -> None:
+    """E-F3-5's third clause (D13: the right `policy`, which the default agent grant lacks): the
+    call is refused `forbidden` naming `policy`, writes no rights row, and is audited."""
+    from openflowsheet.application.authz import grant
+    from openflowsheet.application.errors import ApplicationError
+    from openflowsheet.application.local import LocalApplication
+    from openflowsheet.application.operations import dispatch
+
+    owner = LocalApplication.create(tmp_path / "project")
+    sha = owner.register_record(record=_component("fixture.agent")).results[0]["record_sha256"]
+    owner.close()
+    capability, _ = grant(tmp_path / "project", principal_id="agent")  # the default grant
+    request = {
+        "source_id": "fixture.lock",
+        "record_sha256": sha,
+        "scope": "record",
+        "assessment": "permitted",
+        "basis": "an agent vetting data",
+    }
+    with LocalApplication.open(tmp_path / "project", capability=capability) as agent:
+        with pytest.raises(ApplicationError) as refused:
+            dispatch(agent, "assess_rights", request)
+        assert refused.value.code == "forbidden"
+        assert refused.value.error.detail["required"] == ["policy"]
+        assert agent.get_record(sha).rows == ()
+    with LocalApplication.open(tmp_path / "project") as reopened:
+        rows = reopened.store.audit_rows()
+    last = rows[-1]
+    assert (last["operation"], last["outcome"], last["code"]) == (
+        "assess_rights",
+        "refused",
+        "forbidden",
+    )
 
 
 def test_d11_rows_off_the_shape_are_refused() -> None:
