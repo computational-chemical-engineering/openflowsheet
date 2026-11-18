@@ -9,6 +9,7 @@
   "checkpoint.schema.json",
   "compiled-problem-metadata.schema.json",
   "component-record.schema.json",
+  "data-lock.schema.json",
   "evaluation-result.schema.json",
   "evidence-manifest.schema.json",
   "execution-plan.schema.json",

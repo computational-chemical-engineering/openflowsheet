@@ -9,6 +9,8 @@ numerical_policy_external:
   id: F3-numerical-policy-external-v1
   schemas:
   - record-v2.schema.json
+  # F3-WO4 (D10): the data lock. Its `implementation_sha256` is classified exact by ST's table.
+  - data-lock.schema.json
   # An exact digest (ADR 0007 D1, digest row; ADR 0025 D2): its preimage is file bytes.
   # - `file_sha256`: SHA-256 of a legacy source file's LF-normalised bytes (D1 `legacy`, D12).
   # `sha256` (a record SHA or an input file's SHA, D4 `provenance.inputs`; D5 `match.record`'s
