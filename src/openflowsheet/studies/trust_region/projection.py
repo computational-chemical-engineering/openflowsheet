@@ -116,7 +116,7 @@ from __future__ import annotations
 import math
 from collections.abc import Callable, Collection, Mapping, Sequence
 from dataclasses import dataclass
-from typing import Any, Final, Literal
+from typing import Any, Final, Literal, NamedTuple
 
 import pyomo.environ as pyo
 from pyomo.common.collections import ComponentSet
@@ -587,21 +587,15 @@ def _assemble(
     skip: Collection[str],
 ) -> _Assembly:
     """§6.1 steps 1-4 and the row expressions, with `constants` (the eliminated zero flows, by
-    variable id) in place of their variables and the rows in `skip` (their pins) not built."""
+    variable id) in place of their variables and the rows in `skip` (their pins) not built.
+    Step 1's bounds are `_tightened_bounds`'s, step 2's decision coordinates
+    `_decision_coordinates`'s."""
     model = pyo.ConcreteModel(name=spec.label)
 
     # 1. Variables.
     variable_ids = spec.variable_ids
     variable_index = {name: index for index, name in enumerate(variable_ids)}
-    bounds = [_variable_bounds(spec, name, float(x0[name]), domain) for name in variable_ids]
-    for name, (low, high) in (variable_bounds or {}).items():
-        if name not in variable_index:
-            raise ValueError(f"variable_bounds names {name!r}, which is not a variable")
-        before_low, before_high = bounds[variable_index[name]]
-        bounds[variable_index[name]] = (
-            float(low) if before_low is None else max(before_low, float(low)),
-            float(high) if before_high is None else min(before_high, float(high)),
-        )
+    bounds = _tightened_bounds(spec, x0, domain, variable_bounds, variable_index)
     projected = [index for index, name in enumerate(variable_ids) if name not in constants]
     model.x = pyo.Var(
         projected if constants else range(len(variable_ids)),
@@ -614,23 +608,7 @@ def _assemble(
     }
 
     # 2. Decisions.
-    centers: list[float] = []
-    half_widths: list[float] = []
-    starts: list[float] = []
-    for decision in decisions:
-        center, half_width = decision.center_half_width()
-        start = float(spec.parameters[decision.parameter_id])
-        if decision.bounded:
-            if not decision.lower <= start <= decision.upper:  # type: ignore[operator]
-                raise ValueError(
-                    f"decision {decision.parameter_id!r} starts at {start!r}, outside "
-                    f"[{decision.lower!r}, {decision.upper!r}]"
-                )
-            starts.append((start - center) / half_width)
-        else:
-            starts.append(start)
-        centers.append(center)
-        half_widths.append(half_width)
+    centers, half_widths, starts = _decision_coordinates(spec, decisions)
     model.d = pyo.Var(
         range(len(decisions)),
         initialize=dict(enumerate(starts)),
@@ -822,6 +800,30 @@ def _check_call(
             raise ValueError(f"link {link.unit_id!r}: {strangers} are not variables")
 
 
+def _tightened_bounds(
+    spec: ProblemSpec,
+    x0: Mapping[str, float],
+    domain: Mapping[str, tuple[float, float]],
+    variable_bounds: Mapping[str, tuple[float, float]] | None,
+    variable_index: Mapping[str, int],
+) -> list[tuple[float | None, float | None]]:
+    """§6.1 step 1's bounds of every variable in `spec.variable_ids` order, pure: each
+    variable's own (`_variable_bounds` at its `x0` value), then intersected with the caller's
+    `variable_bounds` (a missing side takes the given value; else the tighter of the two), in
+    that mapping's order. A name in `variable_bounds` that is not a variable is a `ValueError`;
+    `variable_index` maps each variable id to its position."""
+    bounds = [_variable_bounds(spec, name, float(x0[name]), domain) for name in spec.variable_ids]
+    for name, (low, high) in (variable_bounds or {}).items():
+        if name not in variable_index:
+            raise ValueError(f"variable_bounds names {name!r}, which is not a variable")
+        before_low, before_high = bounds[variable_index[name]]
+        bounds[variable_index[name]] = (
+            float(low) if before_low is None else max(before_low, float(low)),
+            float(high) if before_high is None else min(before_high, float(high)),
+        )
+    return bounds
+
+
 def _variable_bounds(
     spec: ProblemSpec, name: str, start: float, domain: Mapping[str, tuple[float, float]]
 ) -> tuple[float | None, float | None]:
@@ -836,6 +838,41 @@ def _variable_bounds(
     if kind == "molar_flow":
         return (None, None) if start == 0.0 else (0.0, None)
     return None, None
+
+
+class _DecisionCoordinates(NamedTuple):
+    """§6.1 step 2's scaling of the decisions, in declaration order: each decision's centre and
+    half-width (`DecisionSpec.center_half_width`) and its start in the model's coordinate."""
+
+    centers: list[float]
+    half_widths: list[float]
+    starts: list[float]
+
+
+def _decision_coordinates(
+    spec: ProblemSpec, decisions: Sequence[DecisionSpec]
+) -> _DecisionCoordinates:
+    """§6.1 step 2 before the model's `d` exists, pure: a bounded decision's start is the
+    parameter's value in `spec`, checked inside [lower, upper] (`ValueError` otherwise) and
+    scaled to (start − c)/h; an unbounded decision's start is the value itself."""
+    centers: list[float] = []
+    half_widths: list[float] = []
+    starts: list[float] = []
+    for decision in decisions:
+        center, half_width = decision.center_half_width()
+        start = float(spec.parameters[decision.parameter_id])
+        if decision.bounded:
+            if not decision.lower <= start <= decision.upper:  # type: ignore[operator]
+                raise ValueError(
+                    f"decision {decision.parameter_id!r} starts at {start!r}, outside "
+                    f"[{decision.lower!r}, {decision.upper!r}]"
+                )
+            starts.append((start - center) / half_width)
+        else:
+            starts.append(start)
+        centers.append(center)
+        half_widths.append(half_width)
+    return _DecisionCoordinates(centers, half_widths, starts)
 
 
 def _build(
