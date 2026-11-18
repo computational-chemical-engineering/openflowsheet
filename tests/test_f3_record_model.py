@@ -880,6 +880,25 @@ def test_step_1_refuses_a_repeated_key_in_yaml_and_behind_a_byte_order_mark() ->
     assert (merged.errors, merged.record) == ((), {"a": {"k": 1}, "b": {"k": 2}})
 
 
+def test_step_1_refuses_and_never_raises_on_undecodable_or_unbounded_input() -> None:
+    """Review S3: bytes that are not UTF-8, a recursive YAML alias, and JSON text or a parsed
+    document nested beyond the recursion limit are `record_schema_invalid("")`."""
+    nested: list[Any] = []
+    deep = {**_minimal(), "x": nested}
+    for _ in range(100_000):
+        nested.append([])
+        nested = nested[0]
+    for source in (
+        b"\xff\xfe{",
+        "a: &x [*x]\n",
+        '{"a": ' + "[" * 100_000 + "]" * 100_000 + "}",
+        deep,
+    ):
+        outcome = identify(source)
+        assert _codes(outcome.errors) == [("record_schema_invalid", {"pointer": ""})]
+        assert outcome.record_sha256 is None
+
+
 def test_text_and_document_give_one_sha() -> None:
     import yaml
 

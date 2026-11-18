@@ -79,28 +79,26 @@ def _parsed(source: str | bytes | Mapping[str, Any]) -> dict[str, Any] | Coded:
     object; a repeated key) or at the first node outside the JSON data model (a YAML
     date, a non-finite float; `canonical.first_noncanonical`). JSON is text starting with `{`
     after an optional byte-order mark; anything else is YAML (`yaml.safe_load`'s loader). A
-    repeated key is refused in either."""
-    document: object = source
-    if isinstance(document, bytes):
-        document = document.decode("utf-8")
-    if isinstance(document, str):
-        try:
-            document = _loaded(document)
-        except (ValueError, yaml.YAMLError):
+    repeated key is refused in either. Bytes that are not UTF-8, a recursive YAML alias and
+    nesting deeper than the interpreter's recursion limit are `record_schema_invalid("")`."""
+    try:
+        document = _loaded(source) if isinstance(source, str | bytes) else source
+        if not isinstance(document, Mapping):
             return schema_invalid("")
-    if not isinstance(document, Mapping):
+        bad = first_noncanonical(document)
+        if bad is not None:
+            return schema_invalid(bad)
+        copied: dict[str, Any] = json.loads(canonical_json(document))
+    except (ValueError, yaml.YAMLError, RecursionError):  # review S3: refused, never raised
         return schema_invalid("")
-    bad = first_noncanonical(document)
-    if bad is not None:
-        return schema_invalid(bad)
-    copied: dict[str, Any] = json.loads(canonical_json(document))
     return copied
 
 
-def _loaded(text: str) -> object:
-    """JSON or YAML text, parsed, a leading byte-order mark ignored; a repeated key raises
-    (`ValueError` in JSON, `yaml.YAMLError` in YAML, review S2)."""
-    text = text.removeprefix("\ufeff")
+def _loaded(source: str | bytes) -> object:
+    """JSON or YAML text (bytes as UTF-8; `UnicodeDecodeError` is a `ValueError`), parsed, a
+    leading byte-order mark ignored; a repeated key raises (`ValueError` in JSON,
+    `yaml.YAMLError` in YAML, review S2)."""
+    text = (source.decode("utf-8") if isinstance(source, bytes) else source).removeprefix("\ufeff")
     if text.lstrip().startswith("{"):
         return json.loads(text, object_pairs_hook=_unique_members)
     return yaml.load(text, Loader=_UniqueKeySafeLoader)  # noqa: S506 (a SafeLoader subclass)
