@@ -267,8 +267,9 @@ Amendment 8 is decided in ADR 0061 D13 (F3-WO5b); this paragraph points at it. A
   tools of the same names; CLI `api`, plus `openflowsheet records search|get|register|validate|rights`). Their rows
   follow `check_admission`. `register_record` and `assess_rights` write one audit row each.
 - **Refusals, existing codes only.** `invalid_request` (the schema; a cursor this list did not issue; a `source_id`
-  that is not a source of the record; a record or user file D7 refuses, with the record code in `detail.reason` and
-  `{code, params}` in `detail.refusal`), `not_found` (a record SHA no layer holds, `detail.record_sha256`, with
+  that is not a source of the record; a record or user file D7 or D11 refuses: the first refusal's code in
+  `detail.reason` and its `{code, params}` in `detail.refusal`, every error in `detail.errors`, `detail.pointer` the
+  request location continued by the refusal's own pointer (R-1052)), `not_found` (a record SHA no layer holds, `detail.record_sha256`, with
   `reason: data_unavailable` when the committed legacy index names it), `unsupported` and `internal_error` by the
   catalogue kind of a record refusal (F3 decision WO5b-1), `forbidden` (`assess_rights` without `policy`). A record
   naming a `legacy.` source that is not an indexed legacy record is refused `reserved_namespace(legacy)` (ADR 0060's
@@ -276,7 +277,8 @@ Amendment 8 is decided in ADR 0061 D13 (F3-WO5b); this paragraph points at it. A
 - **Schemas.** `application-results.schema.json` gains eight `$defs` (`record_page`, `record_view`,
   `record_registration_result`, `record_validation_report`, `rights_assessment_result`, `effective_rights`,
   `rights_row`, `record_finding`), each a bare `$ref` to the `$def` of the same name in the new
-  `record-results.schema.json` (R-1032's structure, F3 decision WO5b-8); no existing `$def` changes.
+  `record-results.schema.json` (R-1032's structure, F3 decision WO5b-8); the report's items are a `$def` of its own
+  there, `record_report_item` (`{code, params, at}`, R-1053); no existing `$def` changes.
 - **Not unchanged:** the served MCP tool list, widened by the five tools; with them removed (`tests/f3_schema_support.py`)
   it is F1's `e2c44b6b…` (R-1030) exactly. The surface link is c_10, R-1051 (`F3_SERVED_SHA256` in
   `tests/test_t08_w2_surface_digest.py`). No other R4-G3 response moves.

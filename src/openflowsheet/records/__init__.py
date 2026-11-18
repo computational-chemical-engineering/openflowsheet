@@ -1,7 +1,7 @@
 """F3's component data core (ADR 0061), introduced by package F3: v2 records, their identity and
 their validation (F3-WO1); the store and resolution (F3-WO2); the legacy import and the loader
 views (F3-WO3); the data lock and the rights register (F3-WO4); reaction consistency and the
-user-file adapter (F3-WO5a). The operations follow in F3-WO5b.
+user-file adapter (F3-WO5a). The operations are `application.records_service` (F3-WO5b).
 
 - `model`: D1 to D5's tables (core property ids, the built-in correlation forms, record types and
   data sources) and the outcome type; the record's shape is `schemas/record-v2.schema.json`.
