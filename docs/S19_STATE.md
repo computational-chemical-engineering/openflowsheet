@@ -64,9 +64,11 @@ nlp/verification.py 6.1, ruled). Orchestrator scan at 9f41b5ed: debt 4060.5, hea
 6.9; models/syn001 column_unit 4.9, cascade_solve 6.6, conversion_reactor 6.6, kinetic_cstr 6.8, column_rows 6.9,
 mixer 6.9; models/revision_flowsheet 6.5; orchestrator executor 5.5, region 5.6, region_screen 6.3; numerics/ptc
 6.8; verify/gamma_phi_units 6.4). MB 756e1c12. Runner PID 2763884, queue empty at result 332.
-**Running (2026-11-18 ~19:10):** `specifier` on the W5 ruling (brief `S19-W5-ruling.md`, branch `wp/S19-w5r`);
-`opus-engineer` on G1 lane N run 3 (brief `S19-W3-G1N-3.md`, `wp/S19-g1n3`, steps A3, N3, P3, labels `g1n3-*`).
-On a fresh context: these agents' reports are lost; read `git log wp/S19-w5r`, `git log wp/S19-g1n3` and `$Q status`.
+**Running (2026-11-18 ~20:40):** G1 lane N run 3 rebuilt (A3 2be11ee8 with the T08.A33 label fix, N3 b7895be0,
+P3 7e29bf7b on `wp/S19-g1n3`), gating as jobs 336-338 (g1n3b-*); on PASS: `reviewer` (S1, brief from
+`S19-R-W3-G1N-2.md`), then merge-check, merge. `opus-engineer` on W5 WO-0 (brief `S19-W5-WO0.md`, `wp/S19-w5`,
+`scripts/w5_identity.py`). W5 ruling merged (2b5c1d13); card request FR-1/FR-2/FR-3 sent to hub (batch P and any
+W5 merge wait). On a fresh context agent reports are lost: read `git log wp/S19-w5`, `$Q status`.
 **Blocking set (Frank, 2026-11-15) done.** G4 done except W5 files. G2 (non-legacy) empty: revision_flowsheet.py
 counted as legacy (S19_DECISIONS 2026-11-18 ~19:00), waits for Frank's legacy ruling.
 **Next:**
