@@ -535,30 +535,12 @@ class StudyResult:
 
     def accounting(self) -> dict[str, Any]:
         """§8.3's totals: TRF cold requests by run, and parent executions by solve, summed by
-        stage, by study iteration and by candidate."""
+        stage, by study iteration and by candidate. The stage and iteration tables are
+        `_stage_and_iteration_counts`'s."""
         solves = ([self.s0] if self.s0 is not None else []) + [
             solve for candidate in self.candidates for solve in candidate.solves
         ]
-        by_stage: dict[str, dict[str, int]] = {}
-        by_iteration: dict[str, dict[str, int]] = {}
-
-        def add(table: dict[str, dict[str, int]], key: str, name: str, count: int) -> None:
-            row = table.setdefault(key, {"trf_cold": 0, "parent_executions": 0, "store_hits": 0})
-            row[name] += count
-
-        for run in self.runs:
-            add(by_stage, run["stage"], "trf_cold", run["cold"])
-            add(by_iteration, str(run["study_iteration"]), "trf_cold", run["cold"])
-        if self.s0 is not None:
-            for table, key in ((by_stage, "S0"), (by_iteration, "0")):
-                add(table, key, "parent_executions", self.s0.executions)
-                add(table, key, "store_hits", self.s0.store_hits)
-        for candidate in self.candidates:
-            iteration = str(self._iteration_of(candidate))
-            for solve in candidate.solves:
-                for table, key in ((by_stage, "B"), (by_iteration, iteration)):
-                    add(table, key, "parent_executions", solve.executions)
-                    add(table, key, "store_hits", solve.store_hits)
+        by_stage, by_iteration = self._stage_and_iteration_counts()
         cold_by_run = {run["run_id"]: run["cold"] for run in self.runs}
         by_candidate = {
             candidate.candidate_id: {
@@ -584,6 +566,35 @@ class StudyResult:
             "budgets": self.budget.as_document(),
             "exhausted": self.status == BUDGET_EXHAUSTED,
         }
+
+    def _stage_and_iteration_counts(
+        self,
+    ) -> tuple[dict[str, dict[str, int]], dict[str, dict[str, int]]]:
+        """§8.3's counts by stage and by study iteration (unsorted): each run's TRF cold requests
+        at its stage and iteration, then S0's parent executions and store hits at `S0` and `0`,
+        then each candidate solve's at `B` and its candidate's iteration; a row starts at zero
+        for all three counts."""
+        by_stage: dict[str, dict[str, int]] = {}
+        by_iteration: dict[str, dict[str, int]] = {}
+
+        def add(table: dict[str, dict[str, int]], key: str, name: str, count: int) -> None:
+            row = table.setdefault(key, {"trf_cold": 0, "parent_executions": 0, "store_hits": 0})
+            row[name] += count
+
+        for run in self.runs:
+            add(by_stage, run["stage"], "trf_cold", run["cold"])
+            add(by_iteration, str(run["study_iteration"]), "trf_cold", run["cold"])
+        if self.s0 is not None:
+            for table, key in ((by_stage, "S0"), (by_iteration, "0")):
+                add(table, key, "parent_executions", self.s0.executions)
+                add(table, key, "store_hits", self.s0.store_hits)
+        for candidate in self.candidates:
+            iteration = str(self._iteration_of(candidate))
+            for solve in candidate.solves:
+                for table, key in ((by_stage, "B"), (by_iteration, iteration)):
+                    add(table, key, "parent_executions", solve.executions)
+                    add(table, key, "store_hits", solve.store_hits)
+        return by_stage, by_iteration
 
     def _iteration_of(self, candidate: CandidateCheck) -> int:
         for run in self.runs:
