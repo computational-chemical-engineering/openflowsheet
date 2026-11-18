@@ -864,6 +864,22 @@ def test_step_1_refuses_text_outside_the_json_data_model(text: str) -> None:
     assert outcome.record_sha256 is None
 
 
+def test_step_1_refuses_a_repeated_key_in_yaml_and_behind_a_byte_order_mark() -> None:
+    """Review S2: YAML refuses a repeated key as JSON does; JSON text behind a BOM is JSON."""
+    import yaml
+
+    as_yaml = yaml.safe_dump(_minimal()) + "name: other\n"
+    as_json = "\ufeff" + json.dumps(_minimal())[:-1] + ', "name": "other"}'
+    for text in (as_yaml, as_json, as_json.encode("utf-8")):
+        outcome = identify(text)
+        assert _codes(outcome.errors) == [("record_schema_invalid", {"pointer": ""})]
+        assert outcome.record_sha256 is None
+    base = identify(_minimal()).record_sha256
+    assert identify("\ufeff" + json.dumps(_minimal())).record_sha256 == base is not None
+    merged = normalize("a: &x {k: 1}\nb:\n  <<: *x\n  k: 2\n")  # a merge key is no repeat
+    assert (merged.errors, merged.record) == ((), {"a": {"k": 1}, "b": {"k": 2}})
+
+
 def test_text_and_document_give_one_sha() -> None:
     import yaml
 

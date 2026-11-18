@@ -76,9 +76,10 @@ def normalize(source: str | bytes | Mapping[str, Any]) -> Normalized:
 
 def _parsed(source: str | bytes | Mapping[str, Any]) -> dict[str, Any] | Coded:
     """Step 1: the record as a fresh `dict`, or `record_schema_invalid` at the root (not an
-    object; JSON with a repeated key) or at the first node outside the JSON data model (a YAML
-    date, a non-finite float; `canonical.first_noncanonical`). JSON is text starting with `{`;
-    anything else is YAML (`yaml.safe_load`)."""
+    object; a repeated key) or at the first node outside the JSON data model (a YAML
+    date, a non-finite float; `canonical.first_noncanonical`). JSON is text starting with `{`
+    after an optional byte-order mark; anything else is YAML (`yaml.safe_load`'s loader). A
+    repeated key is refused in either."""
     document: object = source
     if isinstance(document, bytes):
         document = document.decode("utf-8")
@@ -97,10 +98,33 @@ def _parsed(source: str | bytes | Mapping[str, Any]) -> dict[str, Any] | Coded:
 
 
 def _loaded(text: str) -> object:
-    """JSON (a repeated key raises `ValueError`) or YAML text, parsed."""
+    """JSON or YAML text, parsed, a leading byte-order mark ignored; a repeated key raises
+    (`ValueError` in JSON, `yaml.YAMLError` in YAML, review S2)."""
+    text = text.removeprefix("\ufeff")
     if text.lstrip().startswith("{"):
         return json.loads(text, object_pairs_hook=_unique_members)
-    return yaml.safe_load(text)
+    return yaml.load(text, Loader=_UniqueKeySafeLoader)  # noqa: S506 (a SafeLoader subclass)
+
+
+class _UniqueKeySafeLoader(yaml.SafeLoader):
+    """`yaml.SafeLoader` that refuses a mapping with a repeated key, as the JSON path does,
+    instead of keeping the last value. A merge key (`<<`) is not a member."""
+
+    def construct_mapping(self, node: yaml.MappingNode, deep: bool = False) -> dict[Any, Any]:
+        keys = [
+            self.construct_object(key, deep=True)
+            for key, _ in node.value
+            if key.tag != "tag:yaml.org,2002:merge"
+        ]
+        try:
+            repeated = len(set(keys)) != len(keys)
+        except TypeError:  # an unhashable key: the base constructor refuses it
+            repeated = False
+        if repeated:
+            raise yaml.constructor.ConstructorError(
+                None, None, "a repeated mapping key", node.start_mark
+            )
+        return super().construct_mapping(node, deep=deep)
 
 
 def _unique_members(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
