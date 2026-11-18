@@ -230,6 +230,12 @@ def nfc(node: Any, at: str) -> tuple[Any, list[str]]:
         return [item for item, _ in items], [at for _, found in items for at in found]
     if not isinstance(node, dict):
         return node, []
+    return _nfc_members(node, at)
+
+
+def _nfc_members(node: dict[str, Any], at: str) -> tuple[dict[str, Any], list[str]]:
+    """Step 3 on an object at `at`: its keys and members in NFC, a key that collides with another
+    after NFC kept as written, and the collision pointers, those of this object first."""
     names = Counter(unicodedata.normalize("NFC", key) for key in node)
     clashing = sorted(name for name, count in names.items() if count > 1)
     members: dict[str, Any] = {}
@@ -257,14 +263,21 @@ def sort_sets(record: dict[str, Any]) -> dict[str, Any]:
         if isinstance(record.get(name), list):
             record[name] = _as_set(record[name], key)
     for _, holder in quantities(record):
-        provenance = holder.get("provenance")
-        if isinstance(provenance, dict):
-            for name in ("origin", "inputs"):
-                if isinstance(provenance.get(name), list):
-                    provenance[name] = _as_set(provenance[name], _whole)
+        if isinstance(holder.get("provenance"), dict):
+            holder["provenance"] = _provenance_sets(holder["provenance"])
     if isinstance(record.get("formation"), list):
         record["formation"] = sorted(record["formation"], key=_formation_class)
     return record
+
+
+def _provenance_sets(provenance: dict[str, Any]) -> dict[str, Any]:
+    """A provenance with its `origin` and `inputs` as sets (`_as_set` by whole element)."""
+    return {
+        name: _as_set(value, _whole)
+        if name in ("origin", "inputs") and isinstance(value, list)
+        else value
+        for name, value in provenance.items()
+    }
 
 
 def _whole(element: object) -> object:
@@ -320,16 +333,21 @@ def quantities(record: Mapping[str, Any]) -> Iterator[tuple[str, dict[str, Any]]
     them)."""
     if isinstance(record.get("molar_mass"), dict):
         yield "/molar_mass", record["molar_mass"]
-    for name in ("formation", "transitions"):
-        for index, item in _objects(record.get(name)):
-            for part in ("h", "s"):
-                if isinstance(item.get(part), dict):
-                    yield f"/{name}/{index}/{part}", item[part]
+    yield from _members(record, "formation", ("h", "s"))
+    yield from _members(record, "transitions", ("h", "s"))
     for index, item in _objects(record.get("entries")):
         yield f"/entries/{index}", item
-    for index, item in _objects(record.get("segment_types")):
-        if isinstance(item.get("molar_mass"), dict):
-            yield f"/segment_types/{index}/molar_mass", item["molar_mass"]
+    yield from _members(record, "segment_types", ("molar_mass",))
+
+
+def _members(
+    record: Mapping[str, Any], name: str, parts: tuple[str, ...]
+) -> Iterator[tuple[str, dict[str, Any]]]:
+    """The object members `parts` of each object element of `record[name]`, with pointers."""
+    for index, item in _objects(record.get(name)):
+        for part in parts:
+            if isinstance(item.get(part), dict):
+                yield f"/{name}/{index}/{part}", item[part]
 
 
 def _objects(value: object) -> Iterator[tuple[int, dict[str, Any]]]:
