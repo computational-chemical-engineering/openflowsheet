@@ -2396,3 +2396,10 @@
 - **2026-11-18 03:37, G-MAP 6 (map at 756e1c12): PASS; MB moved to 756e1c12.** 20516 tests, 20403 passed, 109
   skipped, 4 failed = the B-6 four (test_m04_wo9 a25, a29; test_x02_wo4 g4e x2); f6 passed; wall 4168 s, 25.9 MB.
   map6 worktree removed; runner restarted.
+- **2026-11-18, 0.5 started and the trailing lane resumed (cards ofs-s19-start-05, ofs-s19-trailing-order).**
+  DECISION: F3-WO1 (record model) is built on ADR 0061's Proposed text on `wp/F3` (worktree `f3`, from main
+  a283925c; brief `docs/briefs/F3-WO1.md` there), schema marked DRAFT as F1 did; nothing merges before Frank accepts
+  ADR 0061 (DECISION-REQUEST to hub). Alternative: wait for acceptance first. Reversible by: dropping `wp/F3`.
+  Trailing lane: G3 run 3 (`wp/S19-g3c` from 226ca985, brief `S19-W3-G3-3.md`): ports de77fa37 and the five
+  g3-run2 drafts, then trf `_run`, `optimize_revision`, `_eliminate_zero_flows`; at most 8 steps. Old lane
+  `wp/S19-g3` superseded once the port lands.
