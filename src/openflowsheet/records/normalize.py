@@ -38,14 +38,13 @@ from openflowsheet.registry.tokens import Coded
 class Normalized(NamedTuple):
     """Steps 1 to 5's result: the identity projection (`record`), the detached `volatile` block
     (`None` when absent, `null` or `{}`), the refusals found while normalising (`errors`: a parse
-    failure or an NFC key collision), D6's notices (`findings`) and whether D6 derived the anchor
-    (`anchor_derived`; a stated anchor is checked by step 6, a derived one is not)."""
+    failure or an NFC key collision) and D6's notices (`findings`). Step 6 checks the anchor
+    whether stated or derived, so validity is a function of the normalised record (review M1)."""
 
     record: dict[str, Any]
     volatile: Any
     errors: tuple[Coded, ...]
     findings: tuple[Coded, ...]
-    anchor_derived: bool
 
 
 def schema_invalid(at: str) -> Coded:
@@ -59,21 +58,19 @@ def normalize(source: str | bytes | Mapping[str, Any]) -> Normalized:
     its `record_schema_invalid` error (step 1)."""
     document = _parsed(source)
     if isinstance(document, Coded):
-        return Normalized({}, None, (document,), (), False)
+        return Normalized({}, None, (document,), ())
     volatile = document.pop(VOLATILE, None)
     stripped = strip_empty(document, record_schema())
     record, collisions = nfc(stripped, "")
     record = sort_sets(record)
-    anchor_derived = record.get("record_type") == "component" and ANCHOR not in record
     findings: tuple[Coded, ...] = ()
-    if anchor_derived:
+    if record.get("record_type") == "component" and ANCHOR not in record:
         record[ANCHOR], findings = derive_anchor(record)
     return Normalized(
         record,
         None if volatile in (None, {}) else volatile,
         tuple(schema_invalid(at) for at in collisions),
         findings,
-        anchor_derived,
     )
 
 

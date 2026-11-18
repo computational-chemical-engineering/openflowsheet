@@ -522,11 +522,41 @@ def test_e_f3_13_a_stated_anchor_the_rules_refuse(
     assert ("anchor_phase_invalid", {"component": "M", "phase": stated}) in _codes(outcome.errors)
 
 
+def _assert_idempotent(outcome: Any) -> None:
+    """Review M1: the normalised record of an accepted record is accepted, with the same SHA and
+    anchor (validity is a function of the normalised record)."""
+    again = identify(outcome.record)
+    assert again.errors == (), again.errors
+    assert again.record_sha256 == outcome.record_sha256
+    assert again.record.get("anchor_phase") == outcome.record.get("anchor_phase")
+
+
+def test_e_f3_13_a_derived_anchor_obeys_the_stated_anchor_rule() -> None:
+    """Review M1: `charge` 1 with formation in `ig` only derives `aq` (D6 step 1), which has no
+    formation entry: refused at first submission, as the same record stating `aq` is."""
+    derived = identify(_anchor_record(1, "mol", ["ig"], []))
+    stated = identify(_anchor_record(1, "mol", ["ig"], [], stated="aq"))
+    invalid = [("anchor_phase_invalid", {"component": "M", "phase": "aq"})]
+    assert _codes(derived.errors) == _codes(stated.errors) == invalid
+    assert derived.record_sha256 is None
+
+
+@pytest.mark.parametrize("name", ["water", "minimal", "parameter-set-maximal"])
+def test_d2_an_accepted_record_s_normal_form_is_accepted_with_its_sha(name: str) -> None:
+    document = {"water": _water, "minimal": _minimal}.get(name, lambda: _fixture(name))()
+    outcome = identify(document)
+    assert outcome.errors == ()
+    _assert_idempotent(outcome)
+
+
 def test_e_f3_13_generated_anchors_follow_d6() -> None:
     """[gen] 300 random records (charge, basis, formation phases and entry phase tags in random
-    order) against the D6 oracle, anchor and notice."""
+    order) against the D6 oracle: anchor, notice, and D6's anchor rule on the derived anchor
+    (review M1: a charged component with formation data and none in `aq` is refused). Every
+    accepted record's normal form is accepted with the same SHA and anchor."""
     rng = random.Random(61)
     pool = ["ig", "aq", "l", "s:I", "s:II", "s:III"]
+    accepted = 0
     for _ in range(300):
         charge = rng.choice([0, 0, 0, 1, -1])
         basis = rng.choice(["mol", "mol", "kg", "segment_mol"])
@@ -540,6 +570,13 @@ def test_e_f3_13_generated_anchors_follow_d6() -> None:
             code for code, _ in _codes(outcome.findings) if code.startswith("anchor_")
         ]
         assert anchor_notices == ([] if notice is None else [notice])
+        refused = charge != 0 and bool(formation) and "aq" not in formation
+        invalid = ("anchor_phase_invalid", {"component": "M", "phase": "aq"})
+        assert (invalid in _codes(outcome.errors)) == refused
+        if outcome.record_sha256 is not None:
+            accepted += 1
+            _assert_idempotent(outcome)
+    assert accepted >= 50
 
 
 # -- D7, rule by rule -----------------------------------------------------------------------------

@@ -178,7 +178,7 @@ At normalisation, when `anchor_phase` is absent:
 5. Else `null`, with the finding `anchor_undetermined(<component>)`; F4 refuses the component on `ELEMENTAL-ref-v1` with
    that code until its record states an anchor.
 
-A stated anchor must be a phase with a formation entry when the record has any (else `anchor_phase_invalid(<component>,
+The anchor, stated or derived, must be a phase with a formation entry when the record has any (else `anchor_phase_invalid(<component>,
 <phase>)`), and a charged component's anchor must be `aq`. No method enters the derivation, so adding or removing a
 method never re-anchors. Steps 4 and 5 are Q2.R9 (foundation rulings, Amendment 3); a stated `ig` and a defaulted one give the same record,
 and only the defaulted one carries the notice.
@@ -685,3 +685,4 @@ Status stays Proposed. Design-lane rulings of the F3-WO1 review, applied by the 
 | Review item | Applied to |
 | --- | --- |
 | M3 | D2 step 2a: an optional member is one the schema names in `properties` and does not require; map entries and undescribed members stay for step 6. |
+| M1 | D6: "A stated anchor must be" becomes "The anchor, stated or derived, must be"; validity is a function of the normalised record, so a charged component with formation data and none in `aq` is refused at first submission. |

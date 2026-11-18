@@ -34,12 +34,7 @@ def identify(
         from openflowsheet.registry import default_registry
 
         registry = default_registry()
-    errors, findings = validate(
-        normalized.record,
-        normalized.volatile,
-        anchor_derived=normalized.anchor_derived,
-        registry=registry,
-    )
+    errors, findings = validate(normalized.record, normalized.volatile, registry=registry)
     errors = normalized.errors + errors
     return RecordOutcome(
         normalized.record,

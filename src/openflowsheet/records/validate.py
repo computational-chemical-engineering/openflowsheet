@@ -53,21 +53,19 @@ def validate(
     record: Mapping[str, Any],
     volatile: object,
     *,
-    anchor_derived: bool,
     registry: Registry,
 ) -> tuple[tuple[Coded, ...], tuple[Coded, ...]]:
     """Step 6 on a normalised record and its detached `volatile` block (`None` when absent):
     `(errors, findings)`. The schema reads the record with `volatile` re-attached, so a member
     outside the closed volatile set refuses. A record type or correlation form is known when
-    `registry` registers it (`record_type`, `correlation_form`); a stated anchor is checked, a
-    derived one (`anchor_derived`) is D6's own."""
+    `registry` registers it (`record_type`, `correlation_form`)."""
     document = dict(record) if volatile is None else {**record, VOLATILE: volatile}
     refused = _schema_pointer(document)
     if refused is not None:
         return (schema_invalid(refused),), ()
     errors = _record_type_errors(record, registry)
     if record["record_type"] == "component":
-        errors += _component_errors(record, anchor_derived)
+        errors += _component_errors(record)
     if record["record_type"] in CORE_PROPERTIES:
         errors += _entry_errors(record, _forms(registry))
     findings = _fit_findings(record) if record["record_type"] in CORE_PROPERTIES else []
@@ -113,18 +111,18 @@ def _forms(registry: Registry) -> dict[str, Mapping[str, Any]]:
 # -- a component (D3, D6, D7) ---------------------------------------------------------------------
 
 
-def _component_errors(record: Mapping[str, Any], anchor_derived: bool) -> list[Coded]:
+def _component_errors(record: Mapping[str, Any]) -> list[Coded]:
     """D7's component rules in its order: amount basis, units of the formation and transition
-    data, identifiers, formula against elements, `elemental_verification`, a stated anchor
-    (`_anchor_errors`, skipped when D6 derived it), and the uniqueness of formation phases and
-    transitions."""
+    data, identifiers, formula against elements, `elemental_verification`, the anchor
+    (`_anchor_errors`, stated or derived; a `null` one is D6 step 5's), and the uniqueness of
+    formation phases and transitions."""
     errors = _basis_errors(record)
     errors += _formation_unit_errors(record)
     errors += _identifier_errors(record)
     errors += _formula_errors(record)
     if (record.get("elements") is None) != (record["elemental_verification"] == "NOT_APPLICABLE"):
         errors.append(schema_invalid("/elemental_verification"))
-    if not anchor_derived:
+    if record.get(ANCHOR) is not None:
         errors += _anchor_errors(record)
     errors += _duplicates(record.get("formation", []), "formation", lambda item: item["phase"])
     errors += _duplicates(
@@ -235,9 +233,10 @@ def _formula_counts(formula: str) -> dict[str, int] | None:
 
 
 def _anchor_errors(record: Mapping[str, Any]) -> list[Coded]:
-    """D6 on a stated anchor: `anchor_phase_invalid(<component>, <phase>)` when the component is
-    charged and the anchor is not `aq`, or the record has formation data and none in the
-    anchor's phase. A stated `null` never reaches here (step 2a removes it; D6 derives)."""
+    """D6 on the anchor, stated or derived: `anchor_phase_invalid(<component>, <phase>)` when the
+    component is charged and the anchor is not `aq`, or the record has formation data and none
+    in the anchor's phase. Steps 2 to 5 of D6 satisfy the rule by construction; a charged
+    component with formation data and none in `aq` (step 1) is refused here."""
     anchor = record[ANCHOR]
     phases = {item["phase"] for item in record.get("formation", [])}
     if (record["charge"] != 0 and anchor != "aq") or (phases and anchor not in phases):
