@@ -1,0 +1,464 @@
+{
+  "record_format": "openflowsheet-record-v2",
+  "record_type": "component",
+  "type_version": "1.0.0",
+  "id": "fixture.water",
+  "name": "Water, maximal fixture record",
+  "sources": {
+    "fixture.handbook": {
+      "version": "2026-03",
+      "citation": "Fixture handbook of water data, 3rd edition",
+      "licence_stated": "CC-BY-4.0",
+      "url": "https://example.org/handbook/water"
+    },
+    "fixture.fit": {
+      "version": "1.2.0",
+      "citation": "Fixture fit of saturation points",
+      "licence_stated": "CC0-1.0",
+      "url": "https://example.org/fit"
+    }
+  },
+  "legacy": {
+    "profile": "fixture",
+    "file": "benchmarks/fixture/components.yaml",
+    "file_sha256": "b62a52052b6d9294695602994bd32db41de0d3c71d85ab711551874740eaf0fe",
+    "position": 2,
+    "file_fields": {
+      "reference_convention": "FIXTURE-ref-v1",
+      "data_provenance": "fixture text"
+    }
+  },
+  "uncertainty_statement": "Values within the stated uncertainties of the handbook.",
+  "volatile": {
+    "retrieved_at": "2026-11-18T10:15:30.25Z",
+    "request": {
+      "url": "https://example.org/api/water?format=json",
+      "method": "GET",
+      "query": [
+        [
+          "format",
+          "json"
+        ],
+        [
+          "fields",
+          "all"
+        ]
+      ],
+      "headers": {
+        "Accept": "application/json",
+        "User-Agent": "fixture-client/1.0"
+      }
+    },
+    "response": {
+      "status": 200,
+      "headers": {
+        "Content-Type": "application/json",
+        "ETag": "abc123"
+      }
+    },
+    "mirror_url": "https://mirror.example.org/water",
+    "fetch_duration_s": 0.75,
+    "local_path": "/tmp/fixture/water.json",
+    "adapter_version": "0.3.1",
+    "host": "fixture-host"
+  },
+  "synthetic": false,
+  "synonyms": [
+    "oxidane",
+    "dihydrogen monoxide"
+  ],
+  "identifiers": {
+    "cas": "7732-18-5",
+    "inchi": "InChI=1S/H2O/h1H2",
+    "inchikey": "XLYOFNOQVPJJNP-UHFFFAOYSA-N",
+    "formula": "H2O",
+    "smiles": "O"
+  },
+  "amount_basis": "mol",
+  "charge": 0,
+  "molar_mass": {
+    "value": 0.01801528,
+    "unit": "kg/mol",
+    "kind": "molar_mass",
+    "uncertainty": {
+      "type": "expanded",
+      "absolute": 0.5,
+      "relative": 0.002,
+      "coverage_factor": 2.0
+    },
+    "provenance": {
+      "origin": [
+        "measured"
+      ],
+      "derivation": "generated",
+      "source": "fixture.handbook",
+      "inputs": [
+        {
+          "scheme": "file",
+          "sha256": "fbd3aaf5c12efe7997c721c1a2475ee032a40e7c97d975da020c0d4313e25b55",
+          "path": "benchmarks/fixture/nasa7-low.json"
+        },
+        {
+          "scheme": "record",
+          "sha256": "d4a5f1e26780d4bd463d906ebc3396d7f41d5d00d1c91513674461c0e380b3a4"
+        }
+      ],
+      "transformation": "sum of standard atomic weights"
+    },
+    "meaning": "Molar mass of water",
+    "note": "IUPAC 2021 weights"
+  },
+  "elements": {
+    "H": 2,
+    "O": 1
+  },
+  "elemental_verification": "VERIFIED",
+  "anchor_phase": "l",
+  "formation": [
+    {
+      "phase": "l",
+      "h": {
+        "value": -285830.0,
+        "unit": "J/mol",
+        "kind": "molar_enthalpy",
+        "uncertainty": {
+          "type": "expanded",
+          "absolute": 0.5,
+          "relative": 0.002,
+          "coverage_factor": 2.0
+        },
+        "provenance": {
+          "origin": [
+            "measured",
+            "computed"
+          ],
+          "derivation": "direct",
+          "source": "fixture.handbook",
+          "inputs": [
+            {
+              "scheme": "file",
+              "sha256": "5d319c82597e4f088ec39424268538da41483fe41d02353b509b138737b6822f",
+              "path": "benchmarks/fixture/table.csv"
+            }
+          ],
+          "transformation": "copied from the source table"
+        },
+        "meaning": "Formation enthalpy, liquid",
+        "note": "CODATA key value"
+      },
+      "s": {
+        "value": 69.95,
+        "unit": "J/(mol K)",
+        "kind": "molar_entropy",
+        "uncertainty": {
+          "type": "expanded",
+          "absolute": 0.5,
+          "relative": 0.002,
+          "coverage_factor": 2.0
+        },
+        "provenance": {
+          "origin": [
+            "measured"
+          ],
+          "derivation": "direct",
+          "source": "fixture.handbook",
+          "inputs": [
+            {
+              "scheme": "file",
+              "sha256": "5d319c82597e4f088ec39424268538da41483fe41d02353b509b138737b6822f",
+              "path": "benchmarks/fixture/table.csv"
+            }
+          ],
+          "transformation": "copied from the source table"
+        },
+        "meaning": "Standard entropy, liquid",
+        "note": "third-law value"
+      }
+    },
+    {
+      "phase": "ig",
+      "h": {
+        "value": -241826.0,
+        "unit": "J/mol",
+        "kind": "molar_enthalpy",
+        "uncertainty": {
+          "type": "expanded",
+          "absolute": 0.5,
+          "relative": 0.002,
+          "coverage_factor": 2.0
+        },
+        "provenance": {
+          "origin": [
+            "measured",
+            "computed"
+          ],
+          "derivation": "direct",
+          "source": "fixture.handbook",
+          "inputs": [
+            {
+              "scheme": "file",
+              "sha256": "5d319c82597e4f088ec39424268538da41483fe41d02353b509b138737b6822f",
+              "path": "benchmarks/fixture/table.csv"
+            }
+          ],
+          "transformation": "copied from the source table"
+        },
+        "meaning": "Formation enthalpy, ideal gas",
+        "note": "CODATA key value"
+      },
+      "s": {
+        "value": 188.835,
+        "unit": "J/(mol K)",
+        "kind": "molar_entropy",
+        "uncertainty": {
+          "type": "expanded",
+          "absolute": 0.5,
+          "relative": 0.002,
+          "coverage_factor": 2.0
+        },
+        "provenance": {
+          "origin": [
+            "measured"
+          ],
+          "derivation": "direct",
+          "source": "fixture.handbook",
+          "inputs": [
+            {
+              "scheme": "file",
+              "sha256": "5d319c82597e4f088ec39424268538da41483fe41d02353b509b138737b6822f",
+              "path": "benchmarks/fixture/table.csv"
+            }
+          ],
+          "transformation": "copied from the source table"
+        },
+        "meaning": "Standard entropy, ideal gas",
+        "note": "third-law value"
+      }
+    }
+  ],
+  "transitions": [
+    {
+      "from": "l",
+      "to": "ig",
+      "h": {
+        "value": 44004.0,
+        "unit": "J/mol",
+        "kind": "molar_enthalpy",
+        "uncertainty": {
+          "type": "expanded",
+          "absolute": 0.5,
+          "relative": 0.002,
+          "coverage_factor": 2.0
+        },
+        "provenance": {
+          "origin": [
+            "computed"
+          ],
+          "derivation": "direct",
+          "source": "fixture.handbook",
+          "inputs": [
+            {
+              "scheme": "file",
+              "sha256": "5d319c82597e4f088ec39424268538da41483fe41d02353b509b138737b6822f",
+              "path": "benchmarks/fixture/table.csv"
+            }
+          ],
+          "transformation": "copied from the source table"
+        },
+        "meaning": "Vaporisation enthalpy at T°",
+        "note": "difference of formation enthalpies"
+      },
+      "s": {
+        "value": 118.885,
+        "unit": "J/(mol K)",
+        "kind": "molar_entropy",
+        "uncertainty": {
+          "type": "expanded",
+          "absolute": 0.5,
+          "relative": 0.002,
+          "coverage_factor": 2.0
+        },
+        "provenance": {
+          "origin": [
+            "computed"
+          ],
+          "derivation": "direct",
+          "source": "fixture.handbook",
+          "inputs": [
+            {
+              "scheme": "file",
+              "sha256": "5d319c82597e4f088ec39424268538da41483fe41d02353b509b138737b6822f",
+              "path": "benchmarks/fixture/table.csv"
+            }
+          ],
+          "transformation": "copied from the source table"
+        },
+        "meaning": "Vaporisation entropy at T°",
+        "note": "difference of entropies"
+      }
+    }
+  ],
+  "entries": [
+    {
+      "property": "critical_temperature",
+      "form": "constant",
+      "value": 647.096,
+      "unit": "K",
+      "kind": "temperature",
+      "uncertainty": {
+        "type": "expanded",
+        "absolute": 0.5,
+        "relative": 0.002,
+        "coverage_factor": 2.0
+      },
+      "provenance": {
+        "origin": [
+          "measured"
+        ],
+        "derivation": "direct",
+        "source": "fixture.handbook",
+        "inputs": [
+          {
+            "scheme": "file",
+            "sha256": "5d319c82597e4f088ec39424268538da41483fe41d02353b509b138737b6822f",
+            "path": "benchmarks/fixture/table.csv"
+          }
+        ],
+        "transformation": "copied from the source table"
+      },
+      "meaning": "Critical temperature",
+      "note": "IAPWS-95"
+    },
+    {
+      "property": "ideal_gas_cp",
+      "phase": "ig",
+      "form": "cp_ig_poly4_theta",
+      "coefficients": {
+        "b0": 4.19864,
+        "b1": -2.0364,
+        "b2": 6.5204,
+        "b3": -5.4879,
+        "b4": 1.7718
+      },
+      "validity": {
+        "T": [
+          200.0,
+          1000.0
+        ]
+      },
+      "uncertainty": {
+        "type": "expanded",
+        "absolute": 0.5,
+        "relative": 0.002,
+        "coverage_factor": 2.0
+      },
+      "provenance": {
+        "origin": [
+          "computed"
+        ],
+        "derivation": "fitted",
+        "source": "fixture.fit",
+        "inputs": [
+          {
+            "scheme": "file",
+            "sha256": "fbd3aaf5c12efe7997c721c1a2475ee032a40e7c97d975da020c0d4313e25b55",
+            "path": "benchmarks/fixture/nasa7-low.json"
+          },
+          {
+            "scheme": "record",
+            "sha256": "d4a5f1e26780d4bd463d906ebc3396d7f41d5d00d1c91513674461c0e380b3a4"
+          }
+        ],
+        "transformation": "least squares on NASA-7 points"
+      },
+      "meaning": "Ideal-gas heat capacity",
+      "note": "low range"
+    },
+    {
+      "property": "user.surface_tension",
+      "phase": "l",
+      "form": "constant",
+      "value": 0.0728,
+      "unit": "1",
+      "kind": "dimensionless",
+      "validity": {
+        "T": [
+          273.16,
+          373.15
+        ],
+        "P": [
+          1000.0,
+          1000000.0
+        ]
+      },
+      "uncertainty": {
+        "type": "expanded",
+        "absolute": 0.5,
+        "relative": 0.002,
+        "coverage_factor": 2.0
+      },
+      "provenance": {
+        "origin": [
+          "estimated"
+        ],
+        "derivation": "direct",
+        "source": "fixture.handbook",
+        "inputs": [
+          {
+            "scheme": "file",
+            "sha256": "5d319c82597e4f088ec39424268538da41483fe41d02353b509b138737b6822f",
+            "path": "benchmarks/fixture/table.csv"
+          }
+        ],
+        "transformation": "copied from the source table"
+      },
+      "meaning": "Surface tension ratio, dimensionless fixture",
+      "note": "user parameter"
+    },
+    {
+      "property": "vapour_pressure",
+      "phase": "l",
+      "form": "ln_psat_abcd_theta",
+      "coefficients": {
+        "a": 25.6,
+        "b": -5.2,
+        "c": -3.1,
+        "d": 0.5
+      },
+      "validity": {
+        "T": [
+          273.16,
+          647.0
+        ]
+      },
+      "uncertainty": {
+        "type": "expanded",
+        "absolute": 0.5,
+        "relative": 0.002,
+        "coverage_factor": 2.0
+      },
+      "provenance": {
+        "origin": [
+          "measured",
+          "estimated"
+        ],
+        "derivation": "fitted",
+        "source": "fixture.fit",
+        "inputs": [
+          {
+            "scheme": "file",
+            "sha256": "fbd3aaf5c12efe7997c721c1a2475ee032a40e7c97d975da020c0d4313e25b55",
+            "path": "benchmarks/fixture/nasa7-low.json"
+          },
+          {
+            "scheme": "record",
+            "sha256": "d4a5f1e26780d4bd463d906ebc3396d7f41d5d00d1c91513674461c0e380b3a4"
+          }
+        ],
+        "transformation": "fit to saturation points"
+      },
+      "meaning": "Vapour pressure",
+      "note": "fitted"
+    }
+  ]
+}

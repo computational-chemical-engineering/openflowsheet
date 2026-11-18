@@ -4,8 +4,8 @@
     python scripts/registry_builtin.py --check   # regenerates them in memory and compares
 
 The tables are package data under `src/openflowsheet/registry/builtin/`: `legacy.json` (D6),
-`core.json` (D7: the E01 contributors) and `records.json` (ADR 0061, F3-WO1). `--check` fails with the JSON pointers at which a
-committed table differs from the regenerated one.
+`core.json` (D7: the E01 contributors) and `records.json` (ADR 0061, F3-WO1). `--check` fails
+with the JSON pointers at which a committed table differs from the regenerated one.
 
 Two digests are written beside them and held by `--check`:
 
