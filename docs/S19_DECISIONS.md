@@ -2624,3 +2624,9 @@
   (sonnet-implementer, Sonnet, 89k): wp/F3 6800a65f pushed, manifest `evidence/F3/ebdff46f/` implemented, battery
   2358 passed / 1 expected red (human reviews), F0 PASS; CI 44283813577 will be red on that test until Frank's review
   is recorded. Review R-W3-G3-6 (reviewer, Opus) launched.
+- **2026-11-18, R-W3-G3-6 (reviewer, Opus, 100k): merge, no fixes.** Steps 1-2 meet ruling (a) (fixpoint verbatim with
+  read-own-writes, `_ZeroFlowRows` never written, `unknowns` the same object); 3-4 verbatim, no new solver-path
+  import; 6-7 same float operands, Pyomo component order `w`, `ef_ext_k`, `link`, `ef_g`, `y`/`ydef`, merges keep
+  order and overwrite. Optional notes 1-2 applied by the orchestrator (55bad42e, docstrings; gate 303 no-gain);
+  note 3 rejected: `replay.py:152` assigns steps 3 and 4 to `_recomputed_chain` and :420 names step 4, so "Step 4"
+  at :588 is consistent. Merge-check 304 (base 4fc833d9: wp/S19 changed only docs since).
