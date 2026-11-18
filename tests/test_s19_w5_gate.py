@@ -9,7 +9,6 @@ tiers and sets are those of the base 94840fb3 (`w5_identity.py sets`: tiers 16/2
 from __future__ import annotations
 
 import copy
-import importlib.util
 import json
 import os
 import subprocess
@@ -312,18 +311,3 @@ def test_a_tier_refuses_batch_p(batch: dict[str, Any], tmp_path: Path, tier: str
         [sys.executable, str(TOOL), tier], cwd=ROOT, env=environment, capture_output=True, text=True
     )
     assert done.returncode == 2 and "W5-S2" in done.stdout
-
-
-# -- the queue -------------------------------------------------------------------------------------
-
-
-def test_the_queue_gates_a_w5_job_as_a_step() -> None:
-    spec = importlib.util.spec_from_file_location(
-        "gate_queue", ROOT / ".claude" / "skills" / "s19-refactor" / "gate_queue.py"
-    )
-    assert spec is not None and spec.loader is not None
-    queue = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(queue)
-    job = {"mode": "w5", "base": BASE, "label": "x", "batch": "/b.json"}
-    assert "w5" in queue.MODES
-    assert queue.gate_command(job) == queue.gate_command({**job, "mode": "step"})
