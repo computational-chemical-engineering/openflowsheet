@@ -248,7 +248,8 @@ class Problem:
 def _opened(
     x: npt.NDArray[np.float64], opening: Sequence[float] | npt.NDArray[np.float64] | None
 ) -> npt.NDArray[np.float64]:
-    """The opening state, normalised; the start's copy when there is no opening."""
+    """The opening state, normalised; the start's copy when there is no opening. Raises
+    `ValueError` when `opening`'s shape differs from `x`'s."""
     if opening is None:
         return x.copy()
     opened = np.array([normalize_zero(float(value)) for value in opening], dtype=np.float64)
@@ -763,9 +764,9 @@ class _NewtonRun:
         """K03 §5.4's halving search along `step` from `x`, whose residual has the merit `merit`:
         evaluates each trial (`_trial_point`, landing on the bounds only at the full step); an
         `error` trial writes its rejected `trial` event and closes as `EVALUATION_ERROR` through
-        `finish`; one `_rejection` refuses goes to `_reject`; the first other is `_accept`ed, and
-        the observer hears of a landing at the full step. True when a trial was accepted, False
-        when `step_halvings_max` halvings found none."""
+        `finish`; a trial `_rejection` refuses goes to `_reject`; the first other is
+        `_accept`ed, and the observer hears of a landing at the full step. True when a trial was
+        accepted, False when `step_halvings_max` halvings found none."""
         for halving in range(self.policy.step_halvings_max + 1):
             alpha = step.alpha_max / (2.0**halving)
             point = _trial_point(
@@ -907,8 +908,9 @@ class _NewtonRun:
 
 
 class _Step(NamedTuple):
-    """One trial's bound-aware step (K03 §5.3): the unscaled direction, the scaled step, the
-    length `alpha_max` (above zero) and the indices of the bounds it lands on."""
+    """One iteration's (PTC: one trial's) bound-aware step (K03 §5.3): the unscaled direction,
+    the scaled step, the length `alpha_max` (above zero) and the indices of the bounds it lands
+    on."""
 
     direction: npt.NDArray[np.float64]
     step_scaled: npt.NDArray[np.float64]
