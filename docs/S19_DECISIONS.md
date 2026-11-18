@@ -2879,3 +2879,11 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   serially (655 s).** A first run with `-n 4` gave 1 failed and 2 errors, all `git worktree add/remove` exit 128,
   while this session added two worktrees at the same moment: git's worktree lock, not the merge. Note for WO-0's
   tests: they create git worktrees, so they can flake beside concurrent worktree operations in the same clone.
+- **2026-11-18 ~23:00 CET, G1 lane N run 4 delivered (opus-engineer, ~165k tokens):** retarget d1326452 (the
+  acceleration event's label in `docs/recovery-edges.yaml`, not gated by the rule), A4 e736c6ba, N4 dccb05d7, P4
+  edc8a144 (jobs 346-348). anderson 74.7 -> 13.2 (health 9.0), newton 79.8 -> 35.2 (8.6), ptc 33.9 -> 23.2 (8.3);
+  repo debt 3932.2 -> 3815.4, brain 17 -> 15. Miss: `solve_newton` cognitive 34 against the cap 30 (plan section 7
+  item 5). DECISION: approve a 4th S1 step N5 (`_opened` out of `solve_newton`, measured 34 -> 28), within the common
+  cap of 4; brief `S19-W3-G1N-4b.md` (sonnet-implementer: the edit is fully specified). Alternative: accept the
+  miss. Reversible by: dropping N5 before the merge-check. Nine deviations for review R-W3-G1N-4 in the report
+  (`_Step` shared, ptc imports it; `_Trial`, `_Taken`, `_AcceptedTrial` NamedTuples; A4 `_search` branch order).
