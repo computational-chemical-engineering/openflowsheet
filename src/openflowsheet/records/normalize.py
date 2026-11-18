@@ -382,18 +382,25 @@ def _objects(value: object) -> Iterator[tuple[int, dict[str, Any]]]:
 def derive_anchor(record: Mapping[str, Any]) -> tuple[str | None, tuple[Coded, ...]]:
     """D6 on a normalised component without `anchor_phase`: `aq` when charged (1); else the first
     phase, in class order and then record order, with a formation entry (2); else the first
-    phase-tagged entry's (3); else `ig` with `anchor_defaulted` on the `mol` basis (4); else
-    `None` with `anchor_undetermined` (5). Steps 2 and 3 read the arrays as step 4 sorted them."""
+    phase-tagged entry's in class order, of several `s:` forms the one with the smallest
+    canonical-JSON bytes, so the anchor is a function of the set of tagged phases (3, review
+    S4); else `ig` with `anchor_defaulted` on the `mol` basis (4); else `None` with
+    `anchor_undetermined` (5)."""
     component = {"component": str(record.get("id", ""))}
     charge = record.get("charge")
     if isinstance(charge, int | float) and not isinstance(charge, bool) and charge != 0:
         return "aq", ()
-    for name in ("formation", "entries"):
-        phases = [
-            item["phase"] for _, item in _objects(record.get(name)) if is_phase(item.get("phase"))
-        ]
-        if phases:
-            return min(phases, key=phase_class), ()  # `min` keeps the first of the lowest class
+    formation = _phases(record.get("formation"))
+    if formation:
+        return min(formation, key=phase_class), ()  # `min` keeps the first of the lowest class
+    tagged = _phases(record.get("entries"))
+    if tagged:
+        return min(tagged, key=lambda phase: (phase_class(phase), canonical_json(phase))), ()
     if record.get("amount_basis") == "mol":
         return "ig", (Coded("anchor_defaulted", component),)
     return None, (Coded("anchor_undetermined", component),)
+
+
+def _phases(value: object) -> list[str]:
+    """The phase tokens of the object elements of `value`, in array order."""
+    return [item["phase"] for _, item in _objects(value) if is_phase(item.get("phase"))]

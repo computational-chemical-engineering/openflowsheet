@@ -421,8 +421,15 @@ def _formation(phase: str) -> dict[str, Any]:
 
 
 def _anchor_record(
-    charge: int, basis: str, formation: list[str], tagged: list[str], stated: str | None = None
+    charge: int,
+    basis: str,
+    formation: list[str],
+    tagged: list[str],
+    stated: str | None = None,
+    names: list[str] | None = None,
 ) -> dict[str, Any]:
+    """A component with formation in `formation` and one entry tagged with each of `tagged`,
+    named by `names` (default `user.p0`, `user.p1`, ... in list order)."""
     document = _minimal()
     document["charge"] = charge
     document["amount_basis"] = basis
@@ -431,7 +438,7 @@ def _anchor_record(
     document["formation"] = [_formation(phase) for phase in formation]
     document["entries"] = [
         {
-            "property": f"user.p{index}",
+            "property": f"user.p{index}" if names is None else names[index],
             "phase": phase,
             "form": "constant",
             "value": 1.0,
@@ -450,8 +457,9 @@ def _oracle(
     charge: int, basis: str, formation: list[str], tagged: list[str]
 ) -> tuple[str | None, str | None]:
     """D6 transcribed: (anchor, notice code). Order: `ig`, `aq`, `l`, then `s:` forms; the
-    formation's solid forms in record order; the entries' as step 4 sorts entries (by property
-    here, `user.p0`, `user.p1`, ... in list order)."""
+    formation's solid forms in record order; of the entries' solid forms the smallest token
+    (review S4; for these ASCII tokens `str` order is canonical-JSON byte order), whatever the
+    entries' order or property names."""
     if charge != 0:
         return "aq", None
     for phases in (formation, tagged):
@@ -460,7 +468,7 @@ def _oracle(
                 return wanted, None
         solids = [phase for phase in phases if phase.startswith("s:")]
         if solids:
-            return solids[0], None
+            return (solids[0] if phases is formation else min(solids)), None
     if basis == "mol":
         return "ig", "anchor_defaulted"
     return None, "anchor_undetermined"
@@ -472,6 +480,7 @@ ANCHOR_CASES = [
     ("formation in ig and l", 0, "mol", ["l", "ig"], [], "ig"),
     ("two solid forms", 0, "mol", ["s:II", "s:I"], [], "s:II"),
     ("a phase-tagged entry", 0, "mol", [], ["aq"], "aq"),
+    ("two tagged solid forms", 0, "mol", [], ["s:beta", "s:alpha"], "s:alpha"),
     ("nothing phase-tagged, mol", 0, "mol", [], [], "ig"),
     ("nothing phase-tagged, kg", 0, "kg", [], [], None),
 ]
@@ -488,6 +497,19 @@ def test_e_f3_13_anchor_derivation(
     outcome = identify(_anchor_record(charge, basis, formation, tagged))
     assert outcome.record["anchor_phase"] == anchor
     assert _oracle(charge, basis, formation, tagged)[0] == anchor
+
+
+def test_e_f3_13_tagged_solid_forms_anchor_on_the_smallest_token() -> None:
+    """Review S4: with entries tagged `s:alpha` and `s:beta`, one more entry on `s:beta` whose
+    property sorts first does not re-anchor: the anchor is a function of the set of phases."""
+    two = identify(_anchor_record(0, "mol", [], ["s:alpha", "s:beta"]))
+    three = identify(
+        _anchor_record(
+            0, "mol", [], ["s:alpha", "s:beta", "s:beta"], names=["user.p0", "user.p1", "user.aa"]
+        )
+    )
+    assert two.record["anchor_phase"] == three.record["anchor_phase"] == "s:alpha"
+    assert two.errors == three.errors == ()
 
 
 def test_e_f3_13_a_defaulted_ig_is_the_record_that_states_ig() -> None:
@@ -551,9 +573,10 @@ def test_d2_an_accepted_record_s_normal_form_is_accepted_with_its_sha(name: str)
 
 def test_e_f3_13_generated_anchors_follow_d6() -> None:
     """[gen] 300 random records (charge, basis, formation phases and entry phase tags in random
-    order) against the D6 oracle: anchor, notice, and D6's anchor rule on the derived anchor
-    (review M1: a charged component with formation data and none in `aq` is refused). Every
-    accepted record's normal form is accepted with the same SHA and anchor."""
+    order, entries under shuffled property names, review S5) against the D6 oracle: anchor,
+    notice, and D6's anchor rule on the derived anchor (review M1: a charged component with
+    formation data and none in `aq` is refused). Every accepted record's normal form is
+    accepted with the same SHA and anchor."""
     rng = random.Random(61)
     pool = ["ig", "aq", "l", "s:I", "s:II", "s:III"]
     accepted = 0
@@ -562,8 +585,12 @@ def test_e_f3_13_generated_anchors_follow_d6() -> None:
         basis = rng.choice(["mol", "mol", "kg", "segment_mol"])
         formation = rng.sample(pool, rng.randint(0, 3))
         tagged = rng.sample(pool, rng.randint(0, 3))
-        document = _anchor_record(charge, basis, formation, tagged)
+        names = [f"user.p{index}" for index in rng.sample(range(10), len(tagged))]
+        document = _anchor_record(charge, basis, formation, tagged, names=names)
         outcome = identify(document)
+        if charge == 0 and not formation:  # step 3 or later: entries are a set (E-F3-4)
+            permuted = _set(document, ("entries",), list(reversed(document["entries"])))
+            assert identify(permuted).record == outcome.record
         anchor, notice = _oracle(charge, basis, formation, tagged)
         assert outcome.record["anchor_phase"] == anchor, (charge, basis, formation, tagged)
         anchor_notices = [

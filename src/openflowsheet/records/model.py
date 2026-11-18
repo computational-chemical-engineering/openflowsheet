@@ -40,7 +40,8 @@ FORMATION_KINDS: Final[Mapping[str, str]] = MappingProxyType(
 )
 #: D4: the variables a constant entry's validity may name.
 CONSTANT_VARIABLES: Final = ("T", "P")
-#: D6: the phase classes in anchor order; `s:<form>` forms keep record order among themselves.
+#: D6: the phase classes in anchor order. Among `s:<form>` forms, formation keeps record order
+#: (step 2) and phase-tagged entries take the smallest token (step 3).
 PHASE_CLASSES: Final = ("ig", "aq", "l", "s:")
 
 

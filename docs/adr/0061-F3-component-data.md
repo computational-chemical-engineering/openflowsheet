@@ -173,7 +173,8 @@ At normalisation, when `anchor_phase` is absent:
 1. `charge ≠ 0` → `aq`.
 2. Else the first of `ig`, `aq`, `l`, then the `s:` forms in record order, in which `formation` has an entry.
 3. Else the first phase in that order in which an entry is phase-tagged (the ruling's "any property correlation";
-   the component datum of Q2.R4 then applies in F4).
+   the component datum of Q2.R4 then applies in F4). Among the `s:` forms, step 3 takes the form whose token has the
+   smallest canonical-JSON bytes, so the anchor is a function of the set of tagged phases (entries are a set, E-F3-4).
 4. Else, when `amount_basis` is `mol`, `ig`, with the notice `anchor_defaulted(<component>)` (Q2.R9).
 5. Else `null`, with the finding `anchor_undetermined(<component>)`; F4 refuses the component on `ELEMENTAL-ref-v1` with
    that code until its record states an anchor.
@@ -686,3 +687,4 @@ Status stays Proposed. Design-lane rulings of the F3-WO1 review, applied by the 
 | --- | --- |
 | M3 | D2 step 2a: an optional member is one the schema names in `properties` and does not require; map entries and undescribed members stay for step 6. |
 | M1 | D6: "A stated anchor must be" becomes "The anchor, stated or derived, must be"; validity is a function of the normalised record, so a charged component with formation data and none in `aq` is refused at first submission. |
+| S4 | D6 step 3: among `s:` forms, the smallest token by canonical-JSON bytes (entries are a set); formation keeps record order (step 2). |
