@@ -2440,3 +2440,8 @@
   (cog 29, NLOC 76): first the twin rungs both stages share as one method returning `StudyResult | None` (RC4,
   rule 15), then Stage A whole only if cog still > 15; the stage-C loop stays in the caller (rule 11). Notes:
   `_Linearization.n` duplicates `len(decision_ids)`, keep; `_run_log` could be `_after_solve` (optional).
+- **2026-11-18, F3-WO2 done (opus-engineer, Opus, 185k):** 1dfbfb5b on wp/F3; store/stack/resolve + records.sqlite3
+  (`f3-records-v1`); test_f3_store 26 passed, 1 skipped (methanol, needs WO3); 62+1 files 1949 passed 0 failed; F0
+  PASS; ADR untouched since 8ca21576 (checked). Decisions WO2-1..9 for the package design pass (WO2-1 refuses, not
+  replaces, a corrupt object against review N7; WO2-7 candidate `class` value needs a ruling). Catalogue SHA in two
+  message_entry fixtures re-taken. F3-WO3 (legacy import) launched, brief `docs/briefs/F3-WO3.md` (b8a65811).
