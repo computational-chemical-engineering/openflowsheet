@@ -88,13 +88,14 @@ class LegacyImportError(ValueError):
 
 @dataclass(frozen=True)
 class Profile:
-    """One `legacy_profiles.yaml` profile: its file, source id, D12 parameter rule (`mapping`),
-    provenance classification by field, and the identifiers it drops by component id (F3
-    decision WO3-2: a v1 identifier D3 refuses)."""
+    """One `legacy_profiles.yaml` profile: its file, source id, the file's citation (F3 decision
+    WO4-0), D12 parameter rule (`mapping`), provenance classification by field, and the
+    identifiers it drops by component id (F3 decision WO3-2: a v1 identifier D3 refuses)."""
 
     profile: str
     file: str
     source: str
+    citation: str
     mapping: str
     provenance: Mapping[str, Mapping[str, Any]]
     dropped_identifiers: Mapping[str, list[str]] = field(default_factory=dict)
@@ -240,15 +241,16 @@ class _File:
 
 def _component(context: _File, record: Mapping[str, Any], position: int) -> dict[str, Any]:
     """D12's component rows on the v1 record at `position`: `amount_basis` `mol`, `charge` 0,
-    the citation from `rights.source`, the molar mass a Constant, and the entries and
-    formation of the profile's mapping."""
+    the profile's citation (F3 decision WO4-0: one per file, so one `source_sha256` per legacy
+    source), the molar mass a Constant whose `note` ends with the component's v1
+    `rights.source`, and the entries and formation of the profile's mapping."""
     where = f"{context.profile.file}: components[{position}]"
     _known(record, _COMPONENT_KEYS | {"identifiers"}, where)
     identifiers = _identifiers(context.profile, record, f"{where}.identifiers")
     _known(record["rights"], _RIGHTS_KEYS, f"{where}.rights")
     source = {
         "version": context.file_sha256,
-        "citation": record["rights"]["source"],
+        "citation": context.profile.citation,
         "licence_stated": None,
         "url": None,
     }
@@ -260,7 +262,9 @@ def _component(context: _File, record: Mapping[str, Any], position: int) -> dict
         "identifiers": identifiers,
         "amount_basis": "mol",
         "charge": 0,
-        "molar_mass": _constant(context, "molar_mass", record["molecular_weight"], where),
+        "molar_mass": _constant(
+            context, "molar_mass", record["molecular_weight"], where, record["rights"]["source"]
+        ),
         "elements": record["elemental_composition"],
         "elemental_verification": record["elemental_verification"],
         **_MAPPINGS[context.profile.mapping](context, record["parameters"], where),
@@ -279,10 +283,10 @@ def _identifiers(profile: Profile, record: Mapping[str, Any], where: str) -> dic
 
 
 def _constant(
-    context: _File, field: str, parameter: Mapping[str, Any], where: str
+    context: _File, field: str, parameter: Mapping[str, Any], where: str, *texts: str
 ) -> dict[str, Any]:
     """A Constant from one v1 parameter (D12's parameter rows): `value`, `unit`, `kind`,
-    `meaning`, the provenance text as `note`, `uncertainty` null."""
+    `meaning`, the provenance text and then `texts` as `note`, `uncertainty` null."""
     _parameter(parameter, where)
     return {
         "value": parameter["value"],
@@ -291,7 +295,7 @@ def _constant(
         "uncertainty": None,
         "provenance": context.provenance(field),
         "meaning": parameter.get("meaning"),
-        "note": _note([parameter]),
+        "note": _note([parameter], *texts),
     }
 
 
@@ -307,10 +311,11 @@ def _parameter(parameter: object, where: str) -> None:
         raise LegacyImportError(f"{where}: role {parameter['role']!r} is not fixed")
 
 
-def _note(parameters: Iterable[Mapping[str, Any]]) -> str | None:
-    """D12's `note`: the distinct provenance texts of `parameters`, in their order, joined by a
-    newline; `None` when none states one."""
-    texts = dict.fromkeys(p["provenance"] for p in parameters if "provenance" in p)
+def _note(parameters: Iterable[Mapping[str, Any]], *more: str) -> str | None:
+    """D12's `note`: the distinct provenance texts of `parameters`, in their order, then the
+    distinct texts of `more` (F3 decision WO4-0: a component's `rights.source`), joined by a
+    newline; `None` when there is none."""
+    texts = dict.fromkeys([*(p["provenance"] for p in parameters if "provenance" in p), *more])
     return "\n".join(texts) if texts else None
 
 

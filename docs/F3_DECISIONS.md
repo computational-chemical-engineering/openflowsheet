@@ -249,3 +249,21 @@ table, `registry_sha256`, R4-G3 snapshot, MCP digest or F0 measure moved.
 **Left for later work orders.** WO4: the rights register's seed rows (after the design lane rules on WO3-1), A32's v2
 clause (WO1-15). WO5: wiring `LegacyStore(legacy.available_records)` into `LocalApplication`, the `legacy-yaml` and
 `user-file` descriptors' implementation sets (WO3-6), the user-file adapter's v1 path reusing D12's mapping.
+
+## F3-WO4 (data lock and rights), 2026-11-18
+
+- **DECISION WO4-0. One citation per legacy file** (the orchestrator's default for WO3-1, brief F3-WO4). Each profile
+  in `legacy_profiles.yaml` carries `citation`, the `citation` of every component's `sources` entry: the file's text
+  verbatim where all its components cite one (syn001, s05, s10-verification), else their shared text with the varying
+  part (the reference EOS of each fluid: m01, l01, s07, s10) replaced by "named in its molar mass note". Each
+  component's v1 `rights.source` is appended as the last line of its molar mass's `note` (D12's note rule: distinct
+  texts joined by a newline, the provenance text first). The import now gives one `source_sha256` per source for the
+  components (7) and one per parameter set (2, `{version: file_sha256}`, WO3-5), 9 in all
+  (`test_wo4_0_one_citation_and_one_source_sha_per_legacy_source`). All 149 index SHAs moved (the parameter sets match
+  the components by SHA); no other index field moved; no test or fixture outside F3 named an old SHA. Alternative: D12
+  literal (`citation` = each component's `rights.source`, 99 `source_sha256`), with D11's seed rows per component
+  (`record_sha256` set) instead of whole-source rows. Lives in `legacy._component`, `legacy._note`, `Profile.citation`.
+  **Proposed D12 text** (mapping table, row `rights.source`): "component `rights.source` | the last line of the
+  `note` of its `molar_mass`; `sources.<source id>.citation` is the file's citation, fixed per profile in
+  `legacy_profiles.yaml` (one `source_sha256` per legacy source, D11)", and in the "Set for every component" sentence
+  `citation: v1 rights.source` becomes `citation: the profile's citation`.

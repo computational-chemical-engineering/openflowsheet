@@ -29,6 +29,7 @@ import pytest
 import yaml
 from conftest import REPO_ROOT
 
+from openflowsheet.canonical import document_sha256
 from openflowsheet.models.revision_flowsheet import selectable_bases
 from openflowsheet.records.importers import legacy
 from openflowsheet.records.importers.legacy import ImportedFile, LegacyImportError
@@ -398,7 +399,7 @@ def test_d12_mapping_of_an_m01_record() -> None:
     assert source_id == "legacy.m01"
     assert source == {
         "version": record["legacy"]["file_sha256"],
-        "citation": v1["rights"]["source"],
+        "citation": legacy.profile_named("m01").citation,
     }
     assert (record["amount_basis"], record["charge"], record["synthetic"]) == ("mol", 0, False)
     assert record["identifiers"] == v1["identifiers"]
@@ -439,6 +440,32 @@ def test_d12_mapping_of_an_m01_record() -> None:
         "derivation": "generated",
         "source": "legacy.m01",
     }
+    assert record["molar_mass"]["note"] == "\n".join(
+        (v1["molecular_weight"]["provenance"], v1["rights"]["source"])
+    )
+
+
+def test_wo4_0_one_citation_and_one_source_sha_per_legacy_source() -> None:
+    """F3 decision WO4-0: each file's components carry its profile's citation, so the import gives
+    one `source_sha256` per legacy source for the components and one for each parameter set (no
+    citation, WO3-5), nine in all; a file whose components cite one text cites it verbatim, and
+    every component's own `rights.source` ends its molar mass's `note`."""
+    shas: dict[tuple[str, str], set[str]] = {}
+    for profile, imported in _imported().items():
+        v1 = _yaml(profile)["components"]
+        texts = {component["rights"]["source"] for component in v1}
+        if len(texts) == 1:
+            assert {legacy.profile_named(profile).citation} == texts
+        for outcome in imported.records:
+            ((source_id, entry),) = outcome.record["sources"].items()
+            assert source_id == legacy.profile_named(profile).source
+            kind = outcome.record["record_type"]
+            shas.setdefault((source_id, kind), set()).add(document_sha256({source_id: entry}))
+        for component, outcome in zip(v1, imported.records, strict=False):
+            note = outcome.record["molar_mass"]["note"]
+            assert note.split("\n")[-1] == component["rights"]["source"]
+    assert {key: len(found) for key, found in shas.items()} == dict.fromkeys(shas, 1)
+    assert len(shas) == 9
 
 
 def test_d12_mapping_of_the_s10_parameter_set_and_a_syn001_record() -> None:
