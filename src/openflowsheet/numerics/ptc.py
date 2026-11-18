@@ -57,6 +57,7 @@ from openflowsheet.numerics.newton import (
     Problem,
     _bound_aware_alpha,
     _scale_matrix,
+    _Step,
     _trial_point,
     another_signature,
 )
@@ -294,71 +295,12 @@ def solve_ptc(
             return frozen
 
         taken = run._accepted_trial(k, frozen)
-        if not isinstance(taken[0], _Accepted):
+        if not isinstance(taken, _Taken):
             return taken
-        accepted, tau_try, retry = taken
-
-        # §7.3.6 and §7.4: accepted; SER on accepted iterates only, unless the stop test holds.
-        trial, trial_values, alpha_max, accepted_step_inf, landed = accepted
-        before, residual_before = run.x, run.values
-        run.x, run.values = trial, trial_values
-        next_scaled = problem.scaling.scale_residual(run.values, problem.row_ids)
-        phi_next = _norm(next_scaled)
-        tau_next: float | None = None
-        ratio: float | None = None
-        if not run.met(run.values):
-            ratio = min(
-                max(phi / max(phi_next, settings.phi_floor), settings.gamma_min),
-                settings.gamma_max,
-            )
-            tau_next = min(max(tau_try * ratio, settings.tau_min_s), settings.tau_max_s)
-            run.tau = tau_next
-        run.steps.append(
-            PseudoStep(
-                index=k,
-                tau=tau_try,
-                alpha=alpha_max,
-                retries=retry,
-                phi_before=phi,
-                phi=phi_next,
-                tau_next=tau_next,
-                ser_ratio=ratio,
-                x_before=before,
-                x=run.x,
-                residual_before=residual_before,
-                residual=run.values,
-                landing=landed,
-            )
-        )
-        trace.record(
-            kind="step_accepted",
-            attempt=attempt,
-            iteration=k,
-            signature=signature,
-            state_sha256=run.digest(run.x),
-            residual_inf_unscaled=float(np.max(np.abs(np.asarray(run.values)))),
-            merit=0.5 * phi_next * phi_next,
-            counters=run.running,
-            alpha=alpha_max,
-            step_inf_scaled=accepted_step_inf,
-            trial_status="accepted",
-            pseudo_step=tau_try,
-            pseudo_step_next=tau_next,
-            ser_ratio=ratio,
-        )
-        if observer is not None:
-            requested = observer.should_close(k)
-            if requested is not None:
-                return run.close(
-                    requested,
-                    run.values,
-                    iterations=k + 1,
-                    tau_end=run.tau,
-                    message=(
-                        "the attempt controller closed the attempt: a persistent phase wall, "
-                        "not an overshoot (§9.3)"
-                    ),
-                )
+        run._accept(k, taken, phi)
+        closed = run._closed_by_observer(k)
+        if closed is not None:
+            return closed
 
     raise AssertionError("unreachable: the pseudo-step budget is checked inside the loop")
 
@@ -551,7 +493,7 @@ class _PtcRun:
         rhs = -(self.sigma * scaled_residual)
         return _Frozen(jacobian, mass, rhs, infinity, merit)
 
-    def _accepted_trial(self, k: int, frozen: _Frozen) -> tuple[_Accepted, float, int] | _Closed:
+    def _accepted_trial(self, k: int, frozen: _Frozen) -> _Taken | _Closed:
         """Pseudo-step `k`'s retry loop (§7.3.2, §7.3.5) from `tau`: the accepted trial with the
         pseudo-step it was taken at and its retry index.
 
@@ -565,7 +507,7 @@ class _PtcRun:
         while True:
             tried = self._trial(k, tau_try, frozen)
             if isinstance(tried, _Accepted):
-                return tried, tau_try, retry
+                return _Taken(tried, tau_try, retry)
             if not isinstance(tried, _Rejected):
                 return tried
             self._reject(k, retry, tau_try, tried)
@@ -740,6 +682,80 @@ class _PtcRun:
                 trial_evaluation.signature if trial_evaluation is not None else None,
             )
 
+    def _accept(self, k: int, taken: _Taken, phi: float) -> None:
+        """Takes pseudo-step `k`'s accepted trial (§7.3.6): moves `x` and `values` to it, and
+        unless the stop test holds at the new iterate, sets `tau` by SER (§7.4) from the
+        pseudo-step it was taken at and the ratio of `phi` to the new norm; appends the
+        `PseudoStep` to `steps` and writes the `step_accepted` event."""
+        accepted, tau_try, retry = taken
+
+        # §7.3.6 and §7.4: accepted; SER on accepted iterates only, unless the stop test holds.
+        trial, trial_values, alpha_max, accepted_step_inf, landed = accepted
+        before, residual_before = self.x, self.values
+        self.x, self.values = trial, trial_values
+        next_scaled = self.problem.scaling.scale_residual(self.values, self.problem.row_ids)
+        phi_next = _norm(next_scaled)
+        tau_next: float | None = None
+        ratio: float | None = None
+        if not self.met(self.values):
+            ratio = min(
+                max(phi / max(phi_next, self.settings.phi_floor), self.settings.gamma_min),
+                self.settings.gamma_max,
+            )
+            tau_next = min(max(tau_try * ratio, self.settings.tau_min_s), self.settings.tau_max_s)
+            self.tau = tau_next
+        self.steps.append(
+            PseudoStep(
+                index=k,
+                tau=tau_try,
+                alpha=alpha_max,
+                retries=retry,
+                phi_before=phi,
+                phi=phi_next,
+                tau_next=tau_next,
+                ser_ratio=ratio,
+                x_before=before,
+                x=self.x,
+                residual_before=residual_before,
+                residual=self.values,
+                landing=landed,
+            )
+        )
+        self.trace.record(
+            kind="step_accepted",
+            attempt=self.attempt,
+            iteration=k,
+            signature=self.signature,
+            state_sha256=self.digest(self.x),
+            residual_inf_unscaled=float(np.max(np.abs(np.asarray(self.values)))),
+            merit=0.5 * phi_next * phi_next,
+            counters=self.running,
+            alpha=alpha_max,
+            step_inf_scaled=accepted_step_inf,
+            trial_status="accepted",
+            pseudo_step=tau_try,
+            pseudo_step_next=tau_next,
+            ser_ratio=ratio,
+        )
+
+    def _closed_by_observer(self, k: int) -> _Closed | None:
+        """The observer's close after accepted pseudo-step `k` (§9.3), through `close`, counting
+        that step. None without an observer or a request."""
+        if self.observer is not None:
+            requested = self.observer.should_close(k)
+            if requested is not None:
+                return self.close(
+                    requested,
+                    self.values,
+                    iterations=k + 1,
+                    tau_end=self.tau,
+                    message=(
+                        "the attempt controller closed the attempt: a persistent phase wall, "
+                        "not an overshoot (§9.3)"
+                    ),
+                )
+        return None
+
 
 type _Closed = tuple[NewtonResult, PtcRecord]
 
@@ -765,6 +781,14 @@ class _Accepted(NamedTuple):
     landed: tuple[str, ...]
 
 
+class _Taken(NamedTuple):
+    """Pseudo-step k's accepted trial with the pseudo-step it was taken at and its retry index."""
+
+    accepted: _Accepted
+    tau_try: float
+    retry: int
+
+
 class _Rejected(NamedTuple):
     """A rejected trial (§7.3.5): its reason, the step length when a step was taken, the
     variables that blocked it, the trial point (`x` when none was formed), its evaluation, the
@@ -778,16 +802,6 @@ class _Rejected(NamedTuple):
     evaluation: Evaluation | None
     step_inf: float | None
     message: str
-
-
-class _Step(NamedTuple):
-    """One trial's bound-aware step (K03 §5.3): the unscaled direction, the scaled step, the
-    length `alpha_max` (above zero) and the indices of the bounds it lands on."""
-
-    direction: npt.NDArray[np.float64]
-    step_scaled: npt.NDArray[np.float64]
-    alpha_max: float
-    landing: tuple[int, ...]
 
 
 @dataclass(frozen=True)

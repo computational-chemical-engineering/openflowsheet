@@ -81,7 +81,7 @@ rows:
       - tests/test_t08_w2_edge_identity.py::test_e1_e2_no_offered_policy_or_unit_reaches_a_recycle_iteration
     labels:
       - event:restart@openflowsheet.numerics.anderson._RecycleRun._stagnation
-      - event:acceleration@openflowsheet.numerics.anderson.solve_recycle
+      - event:acceleration@openflowsheet.numerics.anderson._RecycleRun._accelerated_step
     failure_tests:
       - tests/test_t02_recycle.py::test_a14_rec_05_with_the_tail_stagnates_under_substitution
       - tests/test_t02_recycle.py::test_a15_rcy_div_the_stagnation_rule_is_the_divergence_rule
