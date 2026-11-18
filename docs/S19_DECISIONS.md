@@ -2905,3 +2905,8 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   literal in the lane's new `tests/test_s19_w5_gate.py:322` (S16's premise: no test reads campaign tooling, so
   tooling edits select no test). The lane's engineer still waits on this result and owns the fix; it is not an
   environment failure.
+- **2026-11-19 ~00:00 CET, job 350 `w5gm-a1b` PASS 19/19** (the W5 gate-mode lane's A1 after its fix: P3 re-gated with
+  the lane's config, the three new tiers no-op). Note: A1's re-gates of P3 went in as `--mode step`, so the run log
+  holds P3 (ptc.py 105.6 -> 33.9) as steps 359 (the real one), 362 (gate-fail) and 363 (accepted). Steps 362 and 363
+  are tool checks, not campaign steps; the gate report's "debt removed" counts 363 a second time. Recorded here so the
+  trend is read with it; a later queue mode for tool checks (not logged) would avoid it.
