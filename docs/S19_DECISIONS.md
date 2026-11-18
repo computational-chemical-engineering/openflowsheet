@@ -2416,3 +2416,9 @@
   for the design lane: WO1-11 (record_type/data_source payload fields), WO1-15 (A32 skips v2 records). The engineer
   did not re-run its 73-file set after the fixes: orchestrator re-runs the touched + catalogue/registry tests, then a
   `reviewer` (fable, identity) with brief `docs/briefs/F3-WO1-review.md` on wp/F3.
+- **2026-11-18, F3-WO1 re-run and review.** Orchestrator re-run of 62 touched/catalogue/registry test files at the
+  WO1 head: 1882 passed, 0 failed (654 s). Review (reviewer, Fable, `docs/reviews/F3-WO1-review.md`, 75ec382c on
+  wp/F3): fix first. Must fix M1 derived anchor exempt from the stated-anchor rule (not idempotent), M2 patterns
+  accept a trailing newline, M3 step 2a strips undescribed members and map entries, M4 `legacy.file_fields`
+  null/{} two SHAs; S1-S8 should-fix; rulings WO1-11 accept with three changes, WO1-15 accept narrowed (A32 v2
+  clause in WO4). Fix round 1: fresh opus-engineer, brief `docs/briefs/F3-WO1-fix1.md` (bc5bd499).
