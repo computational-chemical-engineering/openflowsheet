@@ -589,7 +589,8 @@ def _assemble(
     """§6.1 steps 1-4 and the row expressions, with `constants` (the eliminated zero flows, by
     variable id) in place of their variables and the rows in `skip` (their pins) not built.
     Step 1's bounds are `_tightened_bounds`'s, step 2's decision coordinates
-    `_decision_coordinates`'s, step 4's blocks `_add_property_blocks`'s."""
+    `_decision_coordinates`'s, step 3's links `_add_external_links`'s, step 4's blocks
+    `_add_property_blocks`'s."""
     model = pyo.ConcreteModel(name=spec.label)
 
     # 1. Variables.
@@ -621,61 +622,11 @@ def _assemble(
         )
 
     # 3. External links.
-    holders: list[EFHolder] = []
-    holder_inputs: list[tuple[int, ...]] = []
-    ef_names: dict[Callable[..., float], str] = {}
-    link_starts = [
-        float(spec.parameters[parameter])
-        for link in external_links
-        for parameter in (link.x_param_id, link.dt_param_id)
-    ]
-    link_scales = [output_scale(value) for value in link_starts]
-    model.w = pyo.Var(
-        range(len(link_starts)),
-        initialize=dict(enumerate(link_starts)),
-        bounds=lambda m, k: LINK_BOUNDS[LINK_COORDINATES[k % 2]],
-    )
-    link_calls: list[Any] = []
-    link_rows: list[dict[str, Any]] = []
-    for position, link in enumerate(external_links):
-        box = TruthBox(link.truth)
-        scales = link_scales[2 * position : 2 * position + 2]
-        holder = EFHolder(f"link:{link.unit_id}", box, scales, kind="truth")
-        holders.append(holder)
-        holder_inputs.append(tuple(variable_index[name] for name in link.inlet_variable_ids))
-        inlet = [symbols[name] for name in link.inlet_variable_ids]
-        for coordinate, parameter in enumerate((link.x_param_id, link.dt_param_id)):
-            k = 2 * position + coordinate
-            name = f"ef_ext_{k}"
-            value = holder.value_callback(coordinate)
-            function = pyo.ExternalFunction(
-                function=value, gradient=holder.gradient_callback(coordinate)
-            )
-            model.add_component(name, function)
-            ef_names[value] = name
-            link_calls.append(function(*inlet))
-            parameters[parameter] = model.w[k]
-            link_rows.append(
-                {
-                    "pyomo_var": f"w[{k}]",
-                    "ef": name,
-                    "unit_id": link.unit_id,
-                    "parameter_id": parameter,
-                    "coordinate": LINK_COORDINATES[coordinate],
-                    "input_variable_ids": list(link.inlet_variable_ids),
-                    "truth": {key: box.identity.get(key) for key in ("kind", "id", "sha256")},
-                    "output_scale": scales[coordinate],
-                }
-            )
-    model.link = pyo.Constraint(
-        range(len(link_calls)), rule=lambda m, k: m.w[k] == link_scales[k] * link_calls[k]
-    )
+    links = _add_external_links(model, spec, external_links, symbols, variable_index)
+    parameters.update(links.parameters)
 
     # 4. Property blocks.
     blocks = _add_property_blocks(model, spec, x0, symbols, variable_index)
-    holders.extend(blocks.holders)
-    holder_inputs.extend(blocks.holder_inputs)
-    ef_names.update(blocks.ef_names)
 
     # 5. The rows' expressions (the constraints are made once the projected rows are known).
     built = {
@@ -690,11 +641,11 @@ def _assemble(
         bounds=bounds,
         centers=centers,
         half_widths=half_widths,
-        holders=holders,
-        holder_inputs=holder_inputs,
-        ef_names=ef_names,
-        link_rows=link_rows,
-        link_scales=link_scales,
+        holders=links.holders + blocks.holders,
+        holder_inputs=links.holder_inputs + blocks.holder_inputs,
+        ef_names={**links.ef_names, **blocks.ef_names},
+        link_rows=links.link_rows,
+        link_scales=links.link_scales,
         output_rows=blocks.output_rows,
         output_starts=blocks.output_starts,
         output_scales=blocks.output_scales,
@@ -837,6 +788,86 @@ def _decision_coordinates(
         centers.append(center)
         half_widths.append(half_width)
     return _DecisionCoordinates(centers, half_widths, starts)
+
+
+class _ExternalLinks(NamedTuple):
+    """§6.1 step 3's product (`_add_external_links`), in link order and each link's coordinate
+    order (x, dt): the links' holders with their inlets' variable positions, each value
+    callback's external-function name, the coordinates' source-map rows (`w[k]`) and scales, and
+    each link parameter's `w` by parameter id."""
+
+    holders: list[EFHolder]
+    holder_inputs: list[tuple[int, ...]]
+    ef_names: dict[Callable[..., float], str]
+    link_rows: list[dict[str, Any]]
+    link_scales: list[float]
+    parameters: dict[str, Any]
+
+
+def _add_external_links(
+    model: Any,
+    spec: ProblemSpec,
+    external_links: Sequence[ExternalLinkSpec],
+    symbols: Mapping[str, Any],
+    variable_index: Mapping[str, int],
+) -> _ExternalLinks:
+    """§6.1 step 3: each external link's two coordinates, started at their parameters' values in
+    `spec` and scaled, become the variable `w` with one `EFHolder` per link and one external
+    function `ef_ext_<k>` per coordinate over the link's inlets (`symbols`), added to `model`
+    with the constraints `link` (w[k] = s_k · ef_ext_k(inlets)). Writes those components into
+    `model`; returns the rest (`_ExternalLinks`), the link parameters' `w` among it for the
+    caller's parameter table."""
+    holders: list[EFHolder] = []
+    holder_inputs: list[tuple[int, ...]] = []
+    ef_names: dict[Callable[..., float], str] = {}
+    link_starts = [
+        float(spec.parameters[parameter])
+        for link in external_links
+        for parameter in (link.x_param_id, link.dt_param_id)
+    ]
+    link_scales = [output_scale(value) for value in link_starts]
+    model.w = pyo.Var(
+        range(len(link_starts)),
+        initialize=dict(enumerate(link_starts)),
+        bounds=lambda m, k: LINK_BOUNDS[LINK_COORDINATES[k % 2]],
+    )
+    link_calls: list[Any] = []
+    link_rows: list[dict[str, Any]] = []
+    link_parameters: dict[str, Any] = {}
+    for position, link in enumerate(external_links):
+        box = TruthBox(link.truth)
+        scales = link_scales[2 * position : 2 * position + 2]
+        holder = EFHolder(f"link:{link.unit_id}", box, scales, kind="truth")
+        holders.append(holder)
+        holder_inputs.append(tuple(variable_index[name] for name in link.inlet_variable_ids))
+        inlet = [symbols[name] for name in link.inlet_variable_ids]
+        for coordinate, parameter in enumerate((link.x_param_id, link.dt_param_id)):
+            k = 2 * position + coordinate
+            name = f"ef_ext_{k}"
+            value = holder.value_callback(coordinate)
+            function = pyo.ExternalFunction(
+                function=value, gradient=holder.gradient_callback(coordinate)
+            )
+            model.add_component(name, function)
+            ef_names[value] = name
+            link_calls.append(function(*inlet))
+            link_parameters[parameter] = model.w[k]
+            link_rows.append(
+                {
+                    "pyomo_var": f"w[{k}]",
+                    "ef": name,
+                    "unit_id": link.unit_id,
+                    "parameter_id": parameter,
+                    "coordinate": LINK_COORDINATES[coordinate],
+                    "input_variable_ids": list(link.inlet_variable_ids),
+                    "truth": {key: box.identity.get(key) for key in ("kind", "id", "sha256")},
+                    "output_scale": scales[coordinate],
+                }
+            )
+    model.link = pyo.Constraint(
+        range(len(link_calls)), rule=lambda m, k: m.w[k] == link_scales[k] * link_calls[k]
+    )
+    return _ExternalLinks(holders, holder_inputs, ef_names, link_rows, link_scales, link_parameters)
 
 
 class _PropertyBlocks(NamedTuple):
