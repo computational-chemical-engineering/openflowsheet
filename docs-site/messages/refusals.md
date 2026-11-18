@@ -3016,16 +3016,16 @@ Specification 'boiler-T' gives its value in a unit its quantity kind does not ta
 **Kind:** Internal error in OpenFlowsheet: please report it.
 
 - **Summary:** The stored file of record &lt;sha&gt; does not hold that record: its bytes do not hash to its name.
-- **Why:** Each record file is named by the SHA-256 of its bytes and is never rewritten, so a file whose bytes hash otherwise was changed or damaged after it was written, by something other than OpenFlowsheet or by a disk fault.
-- **Do:** Report it. If you have the record, delete the damaged file under the project's records/objects directory and register the record again.
+- **Why:** Each record file is named by the SHA-256 of its bytes and is never changed once it holds them, so a file whose bytes hash otherwise was changed or damaged after it was written, by something other than OpenFlowsheet or by a disk fault.
+- **Do:** Report it. If you have the record, register it again: the registration replaces the damaged file.
 - **Parameters:** `sha` (text)
 
 Example:
 
 ```text
 The stored file of record 0f4c2e6a9b1d3c5e7f80a2b4c6d8e0f1a3b5c7d9e1f3a5b7c9d1e3f5a7b9c1d3 does not hold that record: its bytes do not hash to its name.
-  Why:     Each record file is named by the SHA-256 of its bytes and is never rewritten, so a file whose bytes hash otherwise was changed or damaged after it was written, by something other than OpenFlowsheet or by a disk fault.
-  Do:      Report it. If you have the record, delete the damaged file under the project's records/objects directory and register the record again.
+  Why:     Each record file is named by the SHA-256 of its bytes and is never changed once it holds them, so a file whose bytes hash otherwise was changed or damaged after it was written, by something other than OpenFlowsheet or by a disk fault.
+  Do:      Report it. If you have the record, register it again: the registration replaces the damaged file.
   Kind:    Internal error in OpenFlowsheet: please report it.
   Code:    store_object_corrupt (openflowsheet explain store_object_corrupt)
   Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#store_object_corrupt

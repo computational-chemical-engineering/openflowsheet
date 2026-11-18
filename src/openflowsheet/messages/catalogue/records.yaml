@@ -284,8 +284,22 @@ entries:
     args: [sha]
     params: {sha: {type: text, label: record SHA}}
     summary: "The stored file of record {sha!raw} does not hold that record: its bytes do not hash to its name."
-    why: "Each record file is named by the SHA-256 of its bytes and is never rewritten, so a file whose bytes hash otherwise was changed or damaged after it was written, by something other than OpenFlowsheet or by a disk fault."
-    action: "Report it. If you have the record, delete the damaged file under the project's records/objects directory and register the record again."
+    why: "Each record file is named by the SHA-256 of its bytes and is never changed once it holds them, so a file whose bytes hash otherwise was changed or damaged after it was written, by something other than OpenFlowsheet or by a disk fault."
+    action: "Report it. If you have the record, register it again: the registration replaces the damaged file."
+    examples:
+      - params: {sha: 0f4c2e6a9b1d3c5e7f80a2b4c6d8e0f1a3b5c7d9e1f3a5b7c9d1e3f5a7b9c1d3}
+
+  # D8 (F3 ruling round 1): a registration replaced a stored record file that was damaged.
+  - code: store_object_repaired
+    family: notice
+    kind: notice
+    complete: true
+    title: A damaged stored record file was repaired
+    args: [sha]
+    params: {sha: {type: text, label: record SHA}}
+    summary: "The stored file of record {sha!raw} was damaged; registering the record replaced it with the record's bytes."
+    why: "Each record file is named by the SHA-256 of its bytes. This file's bytes no longer hashed to its name, so it had been changed or damaged after it was written, by something other than OpenFlowsheet or by a disk fault. The registration held bytes that hash to the name and wrote them in its place."
+    action: "Nothing is needed for this record. Report it, and check the disk and anything else that writes to the project's records directory."
     examples:
       - params: {sha: 0f4c2e6a9b1d3c5e7f80a2b4c6d8e0f1a3b5c7d9e1f3a5b7c9d1e3f5a7b9c1d3}
 

@@ -8,12 +8,15 @@ with the tables `objects` and `keys` (both rebuildable from the object files), `
 (the volatile blocks) and `rights` (D11's project register, `append_rights`, `rights_rows`).
 
 **Write protocol (N12).** An object is written to a temporary file beside its target, flushed,
-`fsync`ed and moved over the target with `os.replace`; a target that exists is verified and kept.
-On Windows a reader holding the target open makes the replace fail with `PermissionError`: a
-target that then exists and verifies is success. Concurrent writers of one object are safe: both
-write the same bytes. The object is written before its rows (W1 P1 review N7), so a row never
-names a missing object; the rows are one `BEGIN IMMEDIATE` transaction. A file whose bytes do not
-hash to its name is `store_object_corrupt(<sha>)` wherever it is read.
+`fsync`ed and moved over the target with `os.replace`; a target that exists and verifies is kept.
+A target whose bytes do not hash to its name is replaced by the write (F3 decision WO2-1 as ruled
+in F3 ruling round 1): the writer holds bytes that hash to the name, so the repair is exact, and
+`register` reports it with the notice `store_object_repaired(<sha>)`. On Windows a reader holding
+the target open makes the replace fail with `PermissionError`: a target that then exists and
+verifies is success, a corrupt one stays `store_object_corrupt`. Concurrent writers of one object
+are safe: both write the same bytes. The object is written before its rows (W1 P1 review N7), so
+a row never names a missing object; the rows are one `BEGIN IMMEDIATE` transaction. A file whose
+bytes do not hash to its name is `store_object_corrupt(<sha>)` wherever it is read.
 
 **Opened lazily.** Constructing a store touches nothing; its first operation checks the path
 length (Windows without long paths: `store_path_too_long(<root>)`), creates the directory and the
@@ -34,7 +37,7 @@ from collections.abc import Iterator, Mapping
 from contextlib import contextmanager
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Final, NamedTuple
+from typing import Any, Final, Literal, NamedTuple
 
 from openflowsheet.canonical import canonical_json, document_sha256
 from openflowsheet.records.model import RecordOutcome
@@ -56,6 +59,10 @@ MAX_PATH: Final = 259
 LONG_PATHS_KEY: Final = r"SYSTEM\CurrentControlSet\Control\FileSystem"
 #: D8: the prefix of a temporary object file; a rebuild skips such files (W1 P1 review N7).
 TMP_PREFIX: Final = ".tmp-"
+
+#: What D8's write protocol did with one object: wrote a new one, kept a valid one, or replaced
+#: one whose bytes did not hash to its name.
+Written = Literal["created", "kept", "repaired"]
 
 _TABLES: Final = """
 CREATE TABLE IF NOT EXISTS meta (key TEXT PRIMARY KEY, value TEXT NOT NULL);
@@ -107,8 +114,9 @@ class RecordStoreError(RuntimeError):
 
 
 class Registration(NamedTuple):
-    """One registration's result: the record's SHA, whether this call wrote its object, and the
-    findings (notices) of this submission."""
+    """One registration's result: the record's SHA, whether this call created its object (false
+    when the object existed, valid or repaired, D8), and the findings (notices) of this
+    submission, `store_object_repaired` included."""
 
     record_sha256: str
     created: bool
@@ -128,6 +136,12 @@ class ObjectRow(NamedTuple):
 def corrupt(sha: str) -> Coded:
     """D8's `store_object_corrupt(<sha>)`: a stored file's bytes do not hash to its name."""
     return Coded("store_object_corrupt", {"sha": sha})
+
+
+def repaired(sha: str) -> Coded:
+    """D8's notice `store_object_repaired(<sha>)`: a registration replaced a stored file whose
+    bytes did not hash to its name."""
+    return Coded("store_object_repaired", {"sha": sha})
 
 
 def path_too_long(root: Path, *, windows: bool, long_paths: bool) -> Coded | None:
@@ -292,11 +306,14 @@ class RecordStore:
         object (written once), its `objects` and `keys` rows, and a `registrations` row holding
         its volatile block and this submission's findings (F3-WO1 review N1). The first
         registration of one (record, volatile block) pair is kept; a later one adds no row.
-        Raises `RecordStoreError` with the outcome's first error when it is refused, and
-        `store_object_corrupt` when the object exists with other bytes."""
+        An object whose bytes do not hash to its name is replaced (D8): `created` is false and
+        the returned findings carry `store_object_repaired(<sha>)`, which the `registrations`
+        row never holds. Raises `RecordStoreError` with the outcome's first error when it is
+        refused, and `store_object_corrupt` when a corrupt object cannot be replaced (D8,
+        Windows)."""
         if outcome.refused or outcome.record_sha256 is None:
             raise RecordStoreError(outcome.errors[0] if outcome.errors else None)
-        sha, created = self.add(outcome.record, expected=outcome.record_sha256)
+        sha, written = self._add(outcome.record, expected=outcome.record_sha256)
         volatile = dict(outcome.volatile or {})
         findings = sorted(outcome.findings, key=Coded.sort_key)
         row = (
@@ -314,35 +331,41 @@ class RecordStore:
                 " VALUES (?, ?, ?, ?, ?, ?)",
                 row,
             )
-        return Registration(sha, created, tuple(findings))
+        notices = [repaired(sha)] if written == "repaired" else []
+        returned = tuple(sorted([*findings, *notices], key=Coded.sort_key))
+        return Registration(sha, written == "created", returned)
 
     def add(self, record: Mapping[str, Any], *, expected: str | None = None) -> tuple[str, bool]:
         """Store a normalised identity projection without a registration (a copy from another
         store, D8): its object, then its `objects` and `keys` rows. Returns its SHA and whether
-        this call wrote the object. Raises `store_object_corrupt` when the object exists with
-        other bytes; an `expected` SHA that is not the record's is a bug (`AssertionError`)."""
+        this call wrote the object. A copy for a data lock reads the project store first
+        (`StoreStack.adopt`), so a corrupt object there is refused before this is reached. An
+        `expected` SHA that is not the record's is a bug (`AssertionError`)."""
+        sha, written = self._add(record, expected=expected)
+        return sha, written == "created"
+
+    def _add(self, record: Mapping[str, Any], *, expected: str | None) -> tuple[str, Written]:
+        """`add`, returning what the write protocol did with the object."""
         sha, data = object_bytes(record)
         if expected is not None and sha != expected:
             raise AssertionError(f"record SHA {expected} does not match its bytes ({sha})")
-        created = self._write_object(sha, data)
+        written = self._write_object(sha, data)
         self._index(sha, record)
-        return sha, created
+        return sha, written
 
-    def _write_object(self, sha: str, data: bytes) -> bool:
-        """D8's write protocol for one object; returns `created`."""
+    def _write_object(self, sha: str, data: bytes) -> Written:
+        """D8's write protocol for one object (`data` hashes to `sha`): a valid object is kept, a
+        missing one created, one whose bytes do not hash to `sha` replaced (`repaired`)."""
         self._open()
         if self.directory is None:
             with self._lock:
                 stored = self._memory_objects.get(sha)
-                if stored is None:
-                    self._memory_objects[sha] = data
-            if stored is not None:
-                _verified(sha, stored)
-            return stored is None
+                self._memory_objects[sha] = data
+            return _written(sha, stored)
         target = self._object_path(sha)
-        if target.exists():
-            _verified(sha, target.read_bytes())
-            return False
+        found = _written(sha, target.read_bytes() if target.exists() else None)
+        if found == "kept":
+            return found
         target.parent.mkdir(parents=True, exist_ok=True)
         temporary = target.with_name(f"{TMP_PREFIX}{secrets.token_hex(8)}.json")
         _write_synced(temporary, data)
@@ -355,10 +378,10 @@ class RecordStore:
                 raise
             _verified(sha, target.read_bytes())
             _unlink_quietly(temporary)
-            return False
+            return "kept"
         if os.name != "nt":
             _fsync_directory(target.parent)
-        return True
+        return found
 
     def _index(self, sha: str, record: Mapping[str, Any]) -> None:
         """The record's `objects` row and its D9 lookup keys, written once."""
@@ -497,6 +520,14 @@ class RecordStore:
         for path in sorted((self.directory / OBJECTS_DIR).glob("*/*/*.json")):
             if not path.name.startswith(TMP_PREFIX):
                 yield path.stem, path.read_bytes()
+
+
+def _written(sha: str, stored: bytes | None) -> Written:
+    """What writing object `sha` does over the `stored` bytes (`None`: no object): `created`,
+    `kept` when they hash to `sha`, else `repaired`."""
+    if stored is None:
+        return "created"
+    return "kept" if hashlib.sha256(stored).hexdigest() == sha else "repaired"
 
 
 def _verified(sha: str, data: bytes) -> bytes:

@@ -159,6 +159,28 @@ The functional_contributor acme.cost is of a kind whose format is still in previ
   Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/notices/#preview_kind
 ```
 
+<a id="store_object_repaired"></a>
+
+## `store_object_repaired`: A damaged stored record file was repaired
+
+**Kind:** Notice: not a failure.
+
+- **Summary:** The stored file of record &lt;sha&gt; was damaged; registering the record replaced it with the record's bytes.
+- **Why:** Each record file is named by the SHA-256 of its bytes. This file's bytes no longer hashed to its name, so it had been changed or damaged after it was written, by something other than OpenFlowsheet or by a disk fault. The registration held bytes that hash to the name and wrote them in its place.
+- **Do:** Nothing is needed for this record. Report it, and check the disk and anything else that writes to the project's records directory.
+- **Parameters:** `sha` (text)
+
+Example:
+
+```text
+The stored file of record 0f4c2e6a9b1d3c5e7f80a2b4c6d8e0f1a3b5c7d9e1f3a5b7c9d1e3f5a7b9c1d3 was damaged; registering the record replaced it with the record's bytes.
+  Why:     Each record file is named by the SHA-256 of its bytes. This file's bytes no longer hashed to its name, so it had been changed or damaged after it was written, by something other than OpenFlowsheet or by a disk fault. The registration held bytes that hash to the name and wrote them in its place.
+  Do:      Nothing is needed for this record. Report it, and check the disk and anything else that writes to the project's records directory.
+  Kind:    Notice: not a failure.
+  Code:    store_object_repaired (openflowsheet explain store_object_repaired)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/notices/#store_object_repaired
+```
+
 <a id="stream_enthalpy_absent"></a>
 
 ## `stream_enthalpy_absent`: An energy total is not given because a stream's enthalpy flow is missing

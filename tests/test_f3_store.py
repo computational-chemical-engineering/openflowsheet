@@ -156,21 +156,45 @@ def _flip_one_byte(path: Path) -> None:
     path.write_bytes(bytes(data))
 
 
-def test_e_f3_8_a_flipped_byte_is_store_object_corrupt(tmp_path: Path) -> None:
-    store = RecordStore.at(tmp_path)
-    record = _component("W", "Water", cas=WATER_CAS)
-    sha = _register(store, record)
-    _flip_one_byte(_object_files(tmp_path)[0])
+@pytest.mark.parametrize("where", ["file", "memory"])
+def test_e_f3_8_a_flipped_byte_is_store_object_corrupt_and_registering_repairs_it(
+    tmp_path: Path, where: str
+) -> None:
+    """D8 (F3 ruling round 1, B4): every read of a flipped-byte object refuses it; registering
+    the record again replaces it, `created` false with the notice `store_object_repaired`, and
+    adds no `registrations` row; then reads succeed and a further registration has no notice."""
+    store = RecordStore.at(tmp_path) if where == "file" else RecordStore.in_memory()
+    outcome = identify(_component("W", "Water", cas=WATER_CAS))
+    first = store.register(outcome, principal="a", at="2026-11-18T00:00:00.000000Z")
+    sha = first.record_sha256
+    if where == "file":
+        _flip_one_byte(_object_files(tmp_path)[0])
+    else:
+        data = bytearray(store._memory_objects[sha])
+        data[len(data) // 2] ^= 0x01
+        store._memory_objects[sha] = bytes(data)
     expected = ("store_object_corrupt", {"sha": sha})
     for read in (store.object_bytes, store.record, StoreStack(store).record):
         with pytest.raises(RecordStoreError) as caught:
             read(sha)
         assert _code(caught.value) == expected
-    with pytest.raises(RecordStoreError) as caught:
-        _register(store, record)  # D8: an existing target is verified, not replaced
-    assert _code(caught.value) == expected
-    assert store.rebuild() == (Coded("store_object_corrupt", {"sha": sha}),)
-    assert store.objects() == []
+    if where == "file":
+        assert store.rebuild() == (Coded("store_object_corrupt", {"sha": sha}),)
+        assert store.objects() == []
+    rows = store.registrations(sha)
+    again = store.register(outcome, principal="b")
+    assert (again.record_sha256, again.created) == (sha, False)
+    assert again.findings == (*first.findings, Coded("store_object_repaired", {"sha": sha}))
+    for read in (store.object_bytes, store.record, StoreStack(store).record):
+        assert read(sha) is not None
+    assert store.record(sha) == outcome.record
+    if where == "file":
+        (path,) = _object_files(tmp_path)
+        assert path.name == f"{sha}.json"
+        assert hashlib.sha256(path.read_bytes()).hexdigest() == sha
+        assert [row.sha for row in store.objects()] == [sha]
+    assert len(rows) == 1 and store.registrations(sha) == rows
+    assert store.register(outcome, principal="c").findings == first.findings
 
 
 _WORKER = textwrap.dedent(
@@ -288,6 +312,42 @@ def test_e_f3_8_windows_replace_failure_with_a_corrupt_target_is_an_error(
         store.register(outcome, principal="p")
     assert _code(caught.value) == ("store_object_corrupt", {"sha": outcome.record_sha256})
     assert store.objects() == []  # the object is written before its rows (N7)
+
+
+@pytest.mark.parametrize("exception", [PermissionError, FileExistsError])
+def test_e_f3_8_windows_replace_failure_over_a_corrupt_object_is_an_error(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, exception: type[OSError]
+) -> None:
+    """D8 (F3 ruling round 1, B4): a repair whose replace fails while the target is still
+    corrupt stays `store_object_corrupt`, and the object stays corrupt."""
+    outcome = identify(_component("W", "Water"))
+    store = RecordStore.at(tmp_path, windows=True, long_paths=False)
+    sha = store.register(outcome, principal="p").record_sha256
+    (path,) = _object_files(tmp_path)
+    _flip_one_byte(path)
+    damaged = path.read_bytes()
+    monkeypatch.setattr(os, "replace", _replace_failing(exception, damaged))
+    with pytest.raises(RecordStoreError) as caught:
+        store.register(outcome, principal="p")
+    assert _code(caught.value) == ("store_object_corrupt", {"sha": sha})
+    assert path.read_bytes() == damaged
+
+
+def test_d8_a_lock_copy_over_a_corrupt_project_object_is_refused(tmp_path: Path) -> None:
+    """D8 (F3 ruling round 1, B4): `StoreStack.adopt` reads the project store first, so a
+    corrupt project object refuses a lock copy `store_object_corrupt` and is not repaired."""
+    outcome = identify(_component("W", "Water", cas=WATER_CAS))
+    project = RecordStore.at(tmp_path)
+    sha = project.register(outcome, principal="p").record_sha256
+    (path,) = _object_files(tmp_path)
+    _flip_one_byte(path)
+    damaged = path.read_bytes()
+    stack = StoreStack(project, LegacyStore(lambda: [outcome.record]))
+    assert stack.layers()[1].record(sha) == outcome.record  # a lower layer holds it
+    with pytest.raises(RecordStoreError) as caught:
+        stack.adopt(sha)
+    assert _code(caught.value) == ("store_object_corrupt", {"sha": sha})
+    assert path.read_bytes() == damaged
 
 
 def test_e_f3_8_windows_replace_failure_without_a_target_is_raised(
