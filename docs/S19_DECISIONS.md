@@ -2601,3 +2601,9 @@
   test_t08_w2_description_reviews.py and the 62-file battery lacks the file. WO7 brief `docs/briefs/F3-WO7.md`
   (2f31fe98) fixes it and greps for other counts. DECISION: built-in records descriptors -> `tested` at close-out.
   Alternative: `released` (F1's legacy rows) or `implemented`. Reversible by: reverting WO7 commit 4.
+- **2026-11-18, two Decision Desk cards VERIFIED (orchestrator, `decision_desk_verify.py`):**
+  ofs-f3-mcp-descriptions-human A (Frank's human review of F3's five MCP descriptions at c1cee7e1's sha256): handed to
+  the running WO7 engineer as a commit before its battery and manifest. ofs-f3-qf1-rational-coefficients A:
+  `validate_record` keeps JSON-number coefficients in F3; ADR 0062's `[p, q]` rational coefficients join
+  `validate_record` when ADR 0062 is accepted. **Standing obligation on F2** (ADR 0062's package): its close-out adds
+  `[p, q]` to `validate_record`'s request schema and checks, under an ADR 0019 amendment; the F2 brief must name it.
