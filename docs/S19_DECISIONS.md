@@ -2676,3 +2676,9 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   touched files 325.6 -> 202.5. Gate report (6 h, 24 gates, 1 failed = job 291): the two standing ALERTs (selected
   52%, queue wait 19 min), no action. G3 run 8 launched (opus-engineer, brief S19-W3-G3-8.md, base c7945474, lane
   wp/S19-g3h; step 1 the two pinning tests R-W3-G3-7 owes).
+- **2026-11-18, F3 ruling round 2 (reviewer, Opus, 163k), wp/F3 576f7eab (not pushed):** F3-3-1 to F3-3-4 accepted
+  (F3-3-2 owned by ADR 0061 + register R-1058; F3-3-4 accepted debt); E-F3-8 fix sound (mechanism sentence
+  corrected: busy handler skipped on the read-to-write upgrade); manifest form acceptable but `requirements` empty
+  without reason. Build-lane changes C1-C5 (WAL tests, finally-exit lint, rollback only if in_transaction, Q26 cites
+  R-1058, manifest fix). F3 fix round 4 (opus-engineer, Opus) launched, brief wp/F3 docs/briefs/F3-fix4.md
+  (f2fe606c). CI 44322172910 on db59c345 running (codehealth job failed, informational, F3-3-4).
