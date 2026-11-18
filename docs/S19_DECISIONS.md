@@ -2504,3 +2504,9 @@
   full-suite fallbacks are all import-time code (studies/ modules with module-level code; inherent to these targets,
   proposal 2 covers it); the wait is one 8-step chain enqueued in a burst onto 2 slots (26% busy), as at run 3. No
   action. Review R-W3-G3-4 (reviewer, Opus) launched, brief `<git-common-dir>/codehealth/briefs/S19-R-W3-G3-4.md`.
+- **2026-11-18, R-W3-G3-4 (reviewer, Opus, 102k): merge after one fix.** All 8 steps keep behaviour and arithmetic
+  (S1 steps 5-7: operands, order, dtypes verbatim; `settle` rung order and fall-through `None` as before; verifier
+  independence kept). Fix 1: `_undetermined_columns` docstring names its twin (`graph.matching.dulmage_mendelsohn`
+  `under_cols`, and `numerics.newton`'s released-set worklist) and why it is not merged; applied by the orchestrator
+  as ea758842, gated no-gain (job 283). Optional notes not applied. Merge-check job 284 at base 8cb44f62 (wp/S19
+  changed only docs since).
