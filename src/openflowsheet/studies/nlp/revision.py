@@ -291,8 +291,8 @@ class _OptimizationRun:
     ) -> OptimizationOutcome:
         """The closing stage of every path that ends the call: `check`, the `record` progress
         with the report's status, then `_finish`, which writes the record's report and manifest
-        when the run has a record and returns the outcome with the record's directory and the
-        starts' `points`."""
+        when the run has a record and returns the outcome with the record's directory (None
+        without a record) and the starts' `points`."""
         # §4.10: the `record` stage begins before the report and the manifest are written, so
         # an interruption there leaves neither.
         self.check()

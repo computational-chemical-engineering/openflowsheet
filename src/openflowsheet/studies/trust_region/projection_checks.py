@@ -174,8 +174,8 @@ def _undetermined_columns(
     (and of the worklist in `numerics.newton`'s released-set search), which, like this walk, does
     not depend on the matching found. It is not merged because the twins differ in form: integer
     columns from SciPy's matching here, string ids with `frozenset` incidence there; a merge changes
-    the iteration order and so waits for a change that may alter behaviour. Each unknown's
-    equations are `_incident_rows`'."""
+    the iteration order and so waits for a change that may alter behaviour. The equations of
+    each unknown come from `_incident_rows`."""
     incident = _incident_rows(equations, size)
     # Alternating paths from the unmatched variables: variable → any incident equation → the
     # variable that equation is matched to. What they reach is the under-determined block.
