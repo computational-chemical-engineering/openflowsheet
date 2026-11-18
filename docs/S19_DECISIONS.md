@@ -2887,3 +2887,9 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   cap of 4; brief `S19-W3-G1N-4b.md` (sonnet-implementer: the edit is fully specified). Alternative: accept the
   miss. Reversible by: dropping N5 before the merge-check. Nine deviations for review R-W3-G1N-4 in the report
   (`_Step` shared, ptc imports it; `_Trial`, `_Taken`, `_AcceptedTrial` NamedTuples; A4 `_search` branch order).
+- **2026-11-18 ~23:25 CET, L_N measured (WO-1, method 3.1).** Scratch `scratch/S19-w5-LN` 03d49438 (6722d919 + a
+  comment line in each of the 17 admitted files, committed): full suite 10 failed, 20459 passed, 1680 s; F0
+  `M9 FAIL 1/35` (pr_lib), M1 to M8 PASS; registry check fails on `builtin-sha256.txt` only. Control 6722d919: 0
+  failed, 20469 passed. The 10 are the ruling's 3.3 groups G1 (5), G2 (4), G3 S10 A26 (1); no surprise. Recorded with
+  the admitted set in `<git-common-dir>/codehealth/briefs/S19-W5-batchN.md` (B_N still to fix after the w5gm merge).
+  Scratch worktrees removed; the scratch branch is kept (never merged).
