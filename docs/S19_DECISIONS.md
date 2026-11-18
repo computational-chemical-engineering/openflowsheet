@@ -2593,3 +2593,11 @@
   the prefix; REVIEW.json reviews; manifest; CI.
 - 2026-11-18 ~11:30, gate report before the self-reset (6 h, 21 gates, 0 failed): `ALERT selected share 56% < 75%
   of step gates`: the studies/ steps fall back on import-time code (as runs 3-5; proposal 2); no action.
+- **2026-11-18, F3 close-out started (orchestrator; sonnet-implementer, Sonnet, launched):** the four C11 description
+  files equal F3 review 2's replacements applied to their pre-0ae27230 text, byte for byte (script check; lengths
+  1332, 1327, 1358, 1263); get_record accepted as served. Design-lane review recorded in REVIEW.json (wp/F3
+  c1cee7e1). Human review: DECISION-REQUEST to hub, filed as card ofs-f3-mcp-descriptions-human (open). Found:
+  `tests/test_t07_w6c_descriptions.py:48` still asserts 21 MCP operations (26 now); C9 fixed only the twin in
+  test_t08_w2_description_reviews.py and the 62-file battery lacks the file. WO7 brief `docs/briefs/F3-WO7.md`
+  (2f31fe98) fixes it and greps for other counts. DECISION: built-in records descriptors -> `tested` at close-out.
+  Alternative: `released` (F1's legacy rows) or `implemented`. Reversible by: reverting WO7 commit 4.
