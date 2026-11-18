@@ -2921,3 +2921,8 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   job 349, tree equality checked; (2) `_opened`'s docstring names its ValueError; (3) newton.py:766 grammar; note
   `_Step`'s docstring "one iteration's (PTC: one trial's)". (2), (3) and the note: one orchestrator docstring commit,
   gated no-gain, prepared in the lane worktree.
+- **2026-11-19 ~00:50 CET, job 349 `g1n4-4` (N5) PASS 16/16, newton 35.2 -> 28.7 (run-log step 366, head 19c3cb62).**
+  R-W3-G1N-4 fix 1: N5 reworded with the Codehealth trailers as 97bf5467, `HEAD^{tree}` equal to 19c3cb62's (tree
+  identical, so step 366's evidence holds). Fixes 2, 3 and the `_Step` note: d2589f2a (docstrings only), job 352
+  `g1n4-fix` no-gain. Merge-check job 351 `g1n4-mc` over 6722d919..d2589f2a (full suite). Both PASS -> merge
+  `wp/S19-g1n4` into wp/S19.
