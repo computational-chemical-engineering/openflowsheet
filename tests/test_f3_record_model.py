@@ -23,6 +23,7 @@ from typing import Any
 
 import pytest
 from conftest import REPO_ROOT
+from jsonschema import Draft202012Validator
 
 from openflowsheet.records import identify, record_sha256
 from openflowsheet.records.normalize import normalize
@@ -212,7 +213,9 @@ def test_e_f3_3_the_fixtures_are_refused_only_as_the_adr_says() -> None:
 def test_e_f3_3_volatile_closure(name: str) -> None:
     """Q9.A1 [gen]: a change to any `/volatile/...` leaf leaves the SHA; a change to any other
     leaf (one ulp, a character, an enum value, an origin, a validity bound, a source version,
-    `licence_stated`) changes it."""
+    `licence_stated`) changes it. Limits (review S5): the leaves are values, not map keys; leaf
+    patterns merge across record types; and the SHA is `normalize` plus `record_sha256`, since
+    two fixtures are refused by design."""
     document = _fixture(name)
     base = _sha(document)
     changed = unchanged = 0
@@ -362,6 +365,155 @@ def test_e_f3_4_legacy_position_and_file_fields_have_one_empty_spelling(member: 
     del document["legacy"][member]
     spellings = {_sha(_set(document, ("legacy", member), empty)) for empty in (None, {}, [])}
     assert spellings == {_sha(document)}
+
+
+def _validator(schema: Any) -> Draft202012Validator:
+    """A validator of a subschema of the record schema (its `$ref`s are local `$defs`)."""
+    return Draft202012Validator({**schema, "$defs": SCHEMA["$defs"]})
+
+
+def _applying(schema: Any, instance: Any) -> Iterator[dict[str, Any]]:
+    """The test's own applicability (not the normaliser's): the schema, its `$ref` target, its
+    `allOf` parts, the `if` branch the instance selects, and the `anyOf`/`oneOf` branches it is
+    valid against. `not` describes no member."""
+    node = _resolve(schema)
+    yield node
+    for part in node.get("allOf", ()):
+        yield from _applying(part, instance)
+    if "if" in node:
+        branch = "then" if _validator(node["if"]).is_valid(instance) else "else"
+        yield from _applying(node.get(branch, {}), instance)
+    for part in (*node.get("anyOf", ()), *node.get("oneOf", ())):
+        if _validator(part).is_valid(instance):
+            yield from _applying(part, instance)
+
+
+def member_slots(
+    document: Any, schema: Any = SCHEMA, at: tuple[str, ...] = ()
+) -> Iterator[tuple[tuple[str, ...], str, list[Any], bool]]:
+    """Every (object path, member name, member schemas, required) the schema names at an object
+    of `document`, whether the member is present or not, walking the document's own members."""
+    parts = list(_applying(schema, document))
+    if isinstance(document, dict):
+        required = {name for part in parts for name in part.get("required", ())}
+        named: dict[str, list[Any]] = {}
+        for part in parts:
+            for name, member in part.get("properties", {}).items():
+                named.setdefault(name, []).append(member)
+        for name, members in named.items():
+            yield at, name, members, name in required
+        other = [
+            part["additionalProperties"]
+            for part in parts
+            if isinstance(part.get("additionalProperties"), dict)
+        ]
+        for key, value in document.items():
+            for member in named.get(key, other):
+                yield from member_slots(value, member, (*at, key))
+    elif isinstance(document, list):
+        for index, value in enumerate(document):
+            for part in parts:
+                prefix = part.get("prefixItems", [])
+                item = prefix[index] if index < len(prefix) else part.get("items")
+                if isinstance(item, dict):
+                    yield from member_slots(value, item, (*at, str(index)))
+
+
+def _slot_pattern(at: tuple[str, ...], name: str) -> tuple[str, ...]:
+    return (*("*" if part.isdigit() else part for part in at), name)
+
+
+SLOT_DOCUMENTS = ("minimal", *MAXIMAL)
+
+
+def _slot_document(name: str) -> dict[str, Any]:
+    return _minimal() if name == "minimal" else _fixture(name)
+
+
+@pytest.mark.parametrize("name", SLOT_DOCUMENTS)
+def test_e_f3_4_every_optional_member_has_one_empty_spelling(name: str) -> None:
+    """D2 step 2a, review S5: every optional member the schema names at an object of the
+    fixture (derived from the schema, not a hand list) gives one SHA absent, `null`, `[]` and
+    `{}`, once per (path pattern, member)."""
+    document = _slot_document(name)
+    seen: set[tuple[str, ...]] = set()
+    for at, member, _, required in member_slots(document):
+        pattern = _slot_pattern(at, member)
+        if required or pattern in seen or at[:1] == ("volatile",):
+            continue
+        seen.add(pattern)
+        absent = copy.deepcopy(document)
+        _get(absent, at).pop(member, None)
+        spellings = {_sha(_set(absent, (*at, member), empty)) for empty in (None, [], {})}
+        assert spellings == {_sha(absent)}, pattern
+    assert len(seen) > {"minimal": 10, "parameter-set-maximal": 20}.get(name, 30)
+
+
+@pytest.mark.parametrize("name", SLOT_DOCUMENTS)
+def test_e_f3_4_no_required_member_has_two_empty_spellings(name: str) -> None:
+    """Review S5 (it would have caught M4): a required member keeps its value at step 2a, so
+    its schema admits at most one of `null`, `[]` and `{}`."""
+    checked = 0
+    for at, member, schemas, required in member_slots(_slot_document(name)):
+        if required:
+            admitted = [
+                empty
+                for empty in (None, [], {})
+                if all(_validator(schema).is_valid(empty) for schema in schemas)
+            ]
+            assert len(admitted) <= 1, (at, member, admitted)
+            checked += 1
+    assert checked > 0
+
+
+#: The keywords `normalize._applicable` and step 2a interpret, and those that only assert or
+#: annotate. A keyword outside both (`patternProperties`, `dependentRequired`, ...) would change
+#: what step 2a strips, so SHAs, without failing a test: it must be classified here first.
+STEP_2A_KEYWORDS = frozenset(
+    {
+        "$ref", "allOf", "if", "then", "else", "anyOf", "oneOf",
+        "properties", "additionalProperties", "prefixItems", "items", "required",
+    }
+)  # fmt: skip
+ASSERTION_KEYWORDS = frozenset(
+    {
+        "$defs", "$id", "$schema", "title", "description", "type", "enum", "const", "pattern",
+        "minLength", "maxLength", "minimum", "exclusiveMinimum", "minItems", "minProperties",
+        "maxProperties", "propertyNames", "unevaluatedProperties", "not",
+    }
+)  # fmt: skip
+
+
+def _keywords(node: Any) -> set[str]:
+    """Every keyword of every subschema of `node`, through every applicator."""
+    if not isinstance(node, dict):
+        return set()
+    found = set(node)
+    for name in ("properties", "$defs"):
+        for child in node.get(name, {}).values():
+            found |= _keywords(child)
+    for name in ("additionalProperties", "items", "if", "then", "else", "not", "propertyNames"):
+        found |= _keywords(node.get(name))
+    for name in ("allOf", "anyOf", "oneOf", "prefixItems"):
+        for child in node.get(name, ()):
+            found |= _keywords(child)
+    return found
+
+
+def test_d2_step_2a_reads_a_closed_keyword_set() -> None:
+    """Review S5: the record schema uses no keyword step 2a does not classify."""
+    assert _keywords(SCHEMA) <= STEP_2A_KEYWORDS | ASSERTION_KEYWORDS
+    assert "if" in _keywords(SCHEMA)
+
+
+def test_e_f3_4_permuting_transitions_gives_one_sha() -> None:
+    """E-F3-4 on `transitions` (review S5: the fixture has one, so it is never permuted)."""
+    document = _fixture("component-maximal")
+    second = copy.deepcopy(document["transitions"][0])
+    second["from"], second["to"] = "s:I", "l"
+    document["transitions"].append(second)
+    permuted = _set(document, ("transitions",), list(reversed(document["transitions"])))
+    assert _sha(permuted) == _sha(document)
 
 
 def test_e_f3_4_a_required_empty_member_is_kept() -> None:
