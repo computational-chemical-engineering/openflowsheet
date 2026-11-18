@@ -1545,6 +1545,28 @@ The solve stopped before its first iteration: unit 'T' could not compute its out
 
 - **Summary:** Refused: kernel refused.
 
+<a id="legacy_record_drift"></a>
+
+## `legacy_record_drift`: A built-in record no longer matches its index
+
+**Kind:** Internal error in OpenFlowsheet: please report it.
+
+- **Summary:** The record &lt;id&gt; of the built-in record file &lt;file&gt; differs from the record this release was built with.
+- **Why:** The record files that come with OpenFlowsheet are fixed, and the identity of each record they give is recorded when the release is built. A file whose bytes changed after that, or an importer that now reads it differently, would give records with other identities under the same names.
+- **Do:** Report it. Restore the record file from the release or the repository, or reinstall OpenFlowsheet.
+- **Parameters:** `file` (text), `id` (text)
+
+Example:
+
+```text
+The record H2 of the built-in record file benchmarks/m01/components.yaml differs from the record this release was built with.
+  Why:     The record files that come with OpenFlowsheet are fixed, and the identity of each record they give is recorded when the release is built. A file whose bytes changed after that, or an importer that now reads it differently, would give records with other identities under the same names.
+  Do:      Report it. Restore the record file from the release or the repository, or reinstall OpenFlowsheet.
+  Kind:    Internal error in OpenFlowsheet: please report it.
+  Code:    legacy_record_drift (openflowsheet explain legacy_record_drift)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#legacy_record_drift
+```
+
 <a id="legacy_route_not_admitted"></a>
 
 ## `legacy_route_not_admitted`: Legacy route not admitted

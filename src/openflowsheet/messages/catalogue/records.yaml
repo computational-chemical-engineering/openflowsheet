@@ -3,8 +3,8 @@
 # and `<pointer>` RFC 6901 pointers into the normalised record (F3 build decision WO1-9). Emitters:
 # `records/normalize.py` (D2 steps 1 to 5, D6) and `records/validate.py` (D2 step 6, D7); the
 # store's and resolution's (F3-WO2) from `records/store.py`, `records/stack.py` (D8) and
-# `records/resolve.py` (D9). The codes of the data lock and reaction consistency come with their
-# work orders.
+# `records/resolve.py` (D9); the legacy import's (F3-WO3) from `records/importers/legacy.py`
+# (D12). The codes of the data lock and reaction consistency come with their work orders.
 catalogue: openflowsheet-messages-v1
 namespace: null
 entries:
@@ -273,3 +273,17 @@ entries:
     action: "Report it. If you have the record, delete the damaged file under the project's records/objects directory and register the record again."
     examples:
       - params: {sha: 0f4c2e6a9b1d3c5e7f80a2b4c6d8e0f1a3b5c7d9e1f3a5b7c9d1e3f5a7b9c1d3}
+
+  # D12: a legacy record file, or the import of it, no longer gives the committed legacy index.
+  - code: legacy_record_drift
+    family: refusal
+    kind: bug
+    complete: true
+    title: A built-in record no longer matches its index
+    args: [file, id]
+    params: {file: {type: text, label: record file}, id: {type: text, label: record id}}
+    summary: "The record {id!raw} of the built-in record file {file!raw} differs from the record this release was built with."
+    why: "The record files that come with OpenFlowsheet are fixed, and the identity of each record they give is recorded when the release is built. A file whose bytes changed after that, or an importer that now reads it differently, would give records with other identities under the same names."
+    action: "Report it. Restore the record file from the release or the repository, or reinstall OpenFlowsheet."
+    examples:
+      - params: {file: benchmarks/m01/components.yaml, id: H2}
