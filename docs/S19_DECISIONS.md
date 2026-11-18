@@ -2715,3 +2715,10 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   constraint_values and active_set inline). Alternative: lift all four (rejected: one-line helpers add no
   structure). Reversible by: a playbook edit and a later step lifting the two. Engineer ae24a3c3 stopped after
   delivery (it kept waking on its own gate waits).
+- **2026-11-18 ~16:50, G3 run 8 merged into wp/S19 (3edcf23b):** steps 2-8 PASS (jobs 315-321), merge-check g3r8-mc
+  (job 322) PASS at 29f9518c (touched-file debt 197.1 -> 141.1); wp/S19 changed only docs since c7945474. Worktree
+  s19-g3h removed. Gate report (6 h): 27 gates, 1 failed (g3r8-1, test-only, above); 23 of 25 steps accepted, debt
+  removed 253.1. "ALERT selected share 62% < 75% of step gates": the standing alert (8 of 9 full-suite falls are
+  import-time code); proposal 2 waits for Frank, no other action. "ALERT queue wait median 19 min > 15 min": one
+  lane's 8 snapshot steps enqueued in a burst behind run 7's tail, 2 slots 45% busy; no action (a single lane;
+  waits do not hold an engineer, which ends after enqueueing). Next: G3 run 9 (brief S19-W3-G3-9.md).
