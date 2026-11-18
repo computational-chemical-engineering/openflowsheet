@@ -2464,3 +2464,16 @@
   Design-lane ruling round 1 on the 43 build decisions WO1-WO4 launched (reviewer, Fable; brief
   `docs/briefs/F3-rulings-1.md`, db516cdf): rulings file + ADR edits in one commit; then a build fix round, then hub
   re-pins card ofs-f3-accept-adr0061, then WO5.
+- **2026-11-18, G3 run 4 delivered (opus-engineer, Opus, 178k):** 8 steps on `wp/S19-g3d` (8cb44f62..8eedd642),
+  jobs 275-282 queued: run_study `settle` and `run_stage_a` (RC follow-up per R-W3-G3-3; 21.6 -> 5.0), _shape_check
+  (40.1 -> 5.0, two steps), _recomputed_chain (36.6 -> 23.0), _assemble (S1, two steps, 57.3 -> 35.9),
+  _eliminate_zero_flows (S1, 50.2 -> 35.4); 3 S1 steps of 4. Engineer's scan: 4591.7 -> 4496.2, health 8.28, brain
+  20. optimize_revision not taken (phases need `finish`, > 5 params, or < 2).
+- **2026-11-18, coverage hole found: gates and CI never run `nlp`-marked tests** (pyproject addopts
+  `-m 'not nlp and not pymrm'`; no workflow runs `scripts/m03_nlp_check.sh`). Most tests of studies/trust_region
+  projection, run_study and replay are nlp-marked, so G3 steps were gated without them. The engineer ran them in
+  `.venv-nlp` (projection 191 passed, shape-check 125, run_study 45; 5 test_opt_replay_nlp failures also at base).
+  DECISION: G3 lanes (and any lane touching studies/ or code nlp tests reach) need `m03_nlp_check.sh
+  --no-inventory` at the lane head with failures a subset of the base's, before merge. Run now at 226ca985 (base of
+  run 3), 8cb44f62 (run 3 merged, retroactive) and 8eedd642 (run 4 head). Alternative: add an nlp tier to gate.sh
+  (better; a tools change for a later tools lane). Reversible by: dropping the rule.
