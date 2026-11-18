@@ -424,8 +424,8 @@
     "search_records": {
       "tool": "search_records",
       "file": "search_records.md",
-      "sha256": "03031fcb72e0ad40118a678662a3fc6d7c99018d583e8438004f82701ae05932",
-      "characters": 1281,
+      "sha256": "3e9067682714ce53c370d643c345f920fa3f22755abf2a604485202437b9059d",
+      "characters": 1332,
       "reviews": [
         {
           "review_kind": "design-lane",
@@ -464,8 +464,8 @@
     "register_record": {
       "tool": "register_record",
       "file": "register_record.md",
-      "sha256": "de47ccb9e84666fbe76b40bc70160d982f0c269ec25a8367accacf7866a39cf3",
-      "characters": 1252,
+      "sha256": "de9cb3b51546e2a35836dd67771fbb439ab57a84a34655ad4ec87db881aedc20",
+      "characters": 1327,
       "reviews": [
         {
           "review_kind": "design-lane",
@@ -484,8 +484,8 @@
     "validate_record": {
       "tool": "validate_record",
       "file": "validate_record.md",
-      "sha256": "2cdb2e5da19dea1e5ba7ef2d02e43c206e0975cc90315700f4c9dde122a3648f",
-      "characters": 1079,
+      "sha256": "7661ac4dbef2a2c9c881c2d35eab35b2393dfec0265689e2c45315a1447fb502",
+      "characters": 1358,
       "reviews": [
         {
           "review_kind": "design-lane",
@@ -504,8 +504,8 @@
     "assess_rights": {
       "tool": "assess_rights",
       "file": "assess_rights.md",
-      "sha256": "4fa0c2c004d91548a0024838503f879bd332771dd50088d9611b1d62f6777e3c",
-      "characters": 1121,
+      "sha256": "b9c5a7f5d2853dbf927946515fcfac5db6e2ca0c7de133d99d459345d8e11a53",
+      "characters": 1263,
       "reviews": [
         {
           "review_kind": "design-lane",

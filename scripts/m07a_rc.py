@@ -73,11 +73,11 @@ function, a registered digest and Frank's carry extended to name it):
   no existing text; its two files are pinned at their own hashes (`F1_FILE_SHA256`).
 - c_10, R-1051 (ADR 0061 D13, ADR 0019 Amendment 8): F3's five tools of the protocol `Records`
   (`search_records`, `get_record`, `register_record`, `validate_record`, `assess_rights`),
-  stripped by `tests/f3_schema_support.py`'s `without_f3`; `D_10` = `153b892e…`, measured at
+  stripped by `tests/f3_schema_support.py`'s `without_f3`; `D_10` = `f7ec3c94…`, measured at
   F3-WO5b on `wp/F3` (`248c2e74…`) and re-taken at the F3 review 2 fix round, whose C6 gave
-  `validate_record`'s report items `at` (`tests/test_t08_w2_surface_digest.py`'s
-  `F3_SERVED_SHA256`; re-taken if the design lane's review edits the five texts). F3 changed no
-  existing text; its five files are pinned at their own hashes (`F3_FILE_SHA256`).
+  `validate_record`'s report items `at` (`153b892e…`) and whose C11 applied the design lane's
+  edits to four of the five texts (`tests/test_t08_w2_surface_digest.py`'s `F3_SERVED_SHA256`).
+  F3 changed no existing text; its five files are pinned at their own hashes (`F3_FILE_SHA256`).
 
 The released 0.2.0a1 ran the two-link chain (its committed record at `C_α²`); a re-run of the
 alpha's step 8 uses this script at the tag.
@@ -155,14 +155,15 @@ F1_FILE_SHA256: Final = {
     "check_admission": "e758eeb60054cb4dbc200a0106d5919edd8e3ede618a58e46345bda509d03a65",
     "list_capabilities": "4999ee1af99efa6261ce1a4524a42b65a975704d3a7f1edd0ae73964e337fd5e",
 }
-#: c_10 (R-1051, ADR 0061 D13): the five tools F3 added, their files pinned as F1's are. Their
-#: reviews (design lane; Frank's) are pending in `REVIEW.json`.
+#: c_10 (R-1051, ADR 0061 D13): the five tools F3 added, their files pinned as F1's are, at the
+#: texts of the F3 review 2 fix round (C11, the design lane's edits). Their reviews (design lane;
+#: Frank's) are pending in `REVIEW.json`.
 F3_FILE_SHA256: Final = {
-    "assess_rights": "4fa0c2c004d91548a0024838503f879bd332771dd50088d9611b1d62f6777e3c",
+    "assess_rights": "b9c5a7f5d2853dbf927946515fcfac5db6e2ca0c7de133d99d459345d8e11a53",
     "get_record": "eaf900f8d831cd9e7723d39787d8839728da10a94f517551baed6ad0334c9219",
-    "register_record": "de47ccb9e84666fbe76b40bc70160d982f0c269ec25a8367accacf7866a39cf3",
-    "search_records": "03031fcb72e0ad40118a678662a3fc6d7c99018d583e8438004f82701ae05932",
-    "validate_record": "2cdb2e5da19dea1e5ba7ef2d02e43c206e0975cc90315700f4c9dde122a3648f",
+    "register_record": "de9cb3b51546e2a35836dd67771fbb439ab57a84a34655ad4ec87db881aedc20",
+    "search_records": "3e9067682714ce53c370d643c345f920fa3f22755abf2a604485202437b9059d",
+    "validate_record": "7661ac4dbef2a2c9c881c2d35eab35b2393dfec0265689e2c45315a1447fb502",
 }
 #: The two changed files as R-133 carried them: their reviewed hashes in `REVIEW.json` as v0.1.0
 #: released it (`PUBLIC_ROOT`).
@@ -363,7 +364,7 @@ LINKS: Final = (
         "c_10",
         "R-1051",
         strip_f3,
-        "153b892e92546cbad8fabb17771ef5f9e949938da5f0457e4522fb4460c2429e",
+        "f7ec3c94233d30506ec2082a13c4e54d57bd540e43e97fdf877b1e3c75fed467",
     ),
 )
 
