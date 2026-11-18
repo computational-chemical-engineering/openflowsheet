@@ -2652,3 +2652,7 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   phase.phase_rows (S1), closure.optimization_readiness, manifest.build_records, verification._feasibility. Engineer's
   scan 4313.9 -> 4190.8, health 8.31 -> 8.32, brain 18. nlp-marked at each step: failures g19, g20 only (base same).
   verification.py stays 5.6 (next: _kkt 17.1, _regimes 9.0). Review R-W3-G3-7 due (S1 steps 4, 5; S2 cadence).
+- **2026-11-18 ~14:55, G3 run 7 gated: jobs 305-312 all PASS** (run-log steps 330-337 accepted). Gate report (6 h,
+  24 gates, 1 failed = job 291): `ALERT selected share 52% < 75% of step gates` (studies/ import-time fallbacks,
+  proposal 2), `ALERT queue wait median 19 min > 15 min` (8-step bursts on 2 slots): standing, no action. Review
+  R-W3-G3-7 (reviewer, Opus) launched, brief `.../briefs/S19-R-W3-G3-7.md`.
