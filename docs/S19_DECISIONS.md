@@ -3707,3 +3707,18 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   STOP: cascade_solve's 87-line duplication twins column_compile/acceptance/solve.py: an interface step with a plan
   (shared helper, literal moves), ~+1.0 health. Left: `_read` cognitive 27 (rule-6 writes), many_args on public
   signatures. S1 review R-W5-G2-8 launched (reviewer, Opus; brief `S19-R-W5-G2-8.md`).
+- **2026-11-19, review R-W5-G2-8 (reviewer, Opus, ~138k): merge all four steps, no code fixes**
+  (`docs/reviews/S19-R-W5-G2-8.md`). Q1 bitwise identical by reading (moves verbatim; only non-raising initialiser and
+  f-string reorders; `_Traversal` keeps the closure's semantics). Q2 reviewer re-checked the kept records: multisets
+  equal, per-test sequences equal but one threaded test; branches of `_initialization_cause` reached with asserted
+  cause texts; cache note a recorder risk only. Q3 6a6fce78 + c2566314 gated as one job (509) accepted: 6a6fce78 has
+  no gate of its own; revert the two only as a pair. Q4 rules 5, 6 hold. E1 (tooling, before reuse): `cmp.py`'s
+  filter is asymmetric (base drops collection-time `?` records, head keeps them: "mismatches 112" is the filter).
+  I1: the reviewer ran `codehealth scan --json <path>`, which overwrote cascade_solve.py with JSON for ~1 min; restored
+  (`git restore`), blob 24fe1fac = HEAD verified by the orchestrator; no job was running. Note for briefs: `--json`
+  takes the report path; scan the file as a positional argument without a path after `--json`.
+  Q5 DECISION: the cascade/column duplication deferred -> an interface step (`--plan`, one plan per family, public
+  helper, literals by file:line, recorded-call equivalence) after `_RegionCall` merges and after a design-lane ruling
+  that S01 and S02 share one function; not G-END-blocking (8.4). Alternative: batch L. Reversible by: scheduling it.
+  Merge: lane took the wp/S19 tip e9fdf99f (57e141ac; diff to the tip: the two models files, ruff clean) -> job 511
+  g2d-mc (merge-check).
