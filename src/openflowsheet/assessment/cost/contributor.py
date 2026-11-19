@@ -16,7 +16,7 @@ import json
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field, replace
 from pathlib import Path
-from typing import Any, Final
+from typing import Any, Final, NamedTuple
 
 from openflowsheet.assessment.cost import capital, forms, operating, quotes, sets
 from openflowsheet.assessment.cost.index import (
@@ -202,6 +202,14 @@ def _item_document(
 
 def _covered(target: str, excluded: Mapping[str, str]) -> bool:
     return any(target == x or target.startswith(x + ".") for x in excluded)
+
+
+class _MaterialCosts(NamedTuple):
+    """The material lines of `_Planner._material_costs`, by the sum each one joins."""
+
+    lines: list[str]
+    revenues: list[str]
+    blocked: list[str]
 
 
 class _Planner:
@@ -820,10 +828,44 @@ class _Planner:
         )
 
     def opex(self) -> None:
+        """§4.7.2: the operating cost lines and their sums `opex.total` and `revenue.total`.
+
+        The lines come in phase order: utilities (`_utility_costs`), materials
+        (`_material_costs`), fixed lines (`_fixed_costs`). `opex.total` is blocked by the items
+        whose operating cost was refused (`opex_refused`), the refused utility lines, a missing
+        electricity utility, and the refused material and fixed lines; `revenue.total` by the
+        refused revenue lines.
+        """
         cur = f"{self.target.currency}/yr"
         h = self.op["hours_per_year"].theta_id
-        lines: list[str] = []
         blocked: list[str] = list(self.opex_refused)
+        lines, utilities_blocked = self._utility_costs(cur, h)
+        blocked += utilities_blocked
+        electric = {i.item_id for i in self.sizing.items if i.electricity is not None}
+        if electric and not any(u["kind"] == "electricity" for u in self.doc.get("utilities", ())):
+            blocked.append("electricity")
+            self.unavailable["opex.utility.electricity"] = "no utility of kind electricity declared"
+        materials = self._material_costs(cur, h)
+        lines += materials.lines
+        blocked += materials.blocked
+        fixed_lines, fixed_blocked = self._fixed_costs(cur)
+        lines += fixed_lines
+        blocked += fixed_blocked
+        self._sum("opex.total", lines, cur, blocked)
+        revenues = materials.revenues
+        unpriced = [r for r in revenues if r in self.unavailable]
+        self._sum(
+            "revenue.total", [r for r in revenues if r not in self.unavailable], cur, unpriced
+        )
+
+    def _utility_costs(self, cur: str, h: str) -> tuple[list[str], list[str]]:
+        """The utility lines `opex.utility.<id>`: (the costed line ids, the refused line ids).
+
+        A utility no sized item uses has no line. A line is refused when its price, or its
+        declared export price, is refused (recorded in `unavailable`).
+        """
+        lines: list[str] = []
+        blocked: list[str] = []
         for utility in self.doc.get("utilities", ()):
             u = str(utility["utility_id"])
             if utility["kind"] == "electricity":
@@ -865,11 +907,17 @@ class _Planner:
                 )
             )
             lines.append(output_id)
-        electric = {i.item_id for i in self.sizing.items if i.electricity is not None}
-        if electric and not any(u["kind"] == "electricity" for u in self.doc.get("utilities", ())):
-            blocked.append("electricity")
-            self.unavailable["opex.utility.electricity"] = "no utility of kind electricity declared"
+        return lines, blocked
+
+    def _material_costs(self, cur: str, h: str) -> _MaterialCosts:
+        """The priced material lines: `opex.material.<s>`, `opex.waste.<s>` and `revenue.<s>`.
+
+        Emissions and unpriced materials have no line. A refused price is recorded in
+        `unavailable`; a refused revenue line stays in `revenues`, the others go to `blocked`.
+        """
+        lines: list[str] = []
         revenues: list[str] = []
+        blocked: list[str] = []
         masses = self.ctx.view.molar_masses()
         for material in self.doc.get("materials", ()):
             role, s_id = str(material["role"]), str(material["connection"])
@@ -889,6 +937,16 @@ class _Planner:
             flow = self._flow(s_id, basis, material.get("component"), price.unit, masses)
             self.outputs.append(OutputDef(output_id, cur, _flow_cost(flow, price.theta_id, h)))
             (revenues if prefix == "revenue" else lines).append(output_id)
+        return _MaterialCosts(lines, revenues, blocked)
+
+    def _fixed_costs(self, cur: str) -> tuple[list[str], list[str]]:
+        """The fixed lines `opex.fixed.<line>`: (the costed line ids, the refused line ids).
+
+        A line declared as a fraction of a capital output that is unavailable is refused
+        (recorded in `unavailable`). No fixed line at all is limitation `FIXED_OPEX_UNDECLARED`.
+        """
+        lines: list[str] = []
+        blocked: list[str] = []
         fixed = list(self.doc.get("fixed_opex", ()))
         if not fixed:
             self.limitations.append(Limitation("FIXED_OPEX_UNDECLARED"))
@@ -916,11 +974,7 @@ class _Planner:
                 )
                 self.outputs.append(OutputDef(output_id, cur, _scaled(t.theta_id, of)))
             lines.append(output_id)
-        self._sum("opex.total", lines, cur, blocked)
-        unpriced = [r for r in revenues if r in self.unavailable]
-        self._sum(
-            "revenue.total", [r for r in revenues if r not in self.unavailable], cur, unpriced
-        )
+        return lines, blocked
 
     def _flow(
         self, stream: str, basis: str, component: str | None, unit: str, masses: Mapping[str, float]
