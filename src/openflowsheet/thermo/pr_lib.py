@@ -533,15 +533,7 @@ def _derivatives(mix: _Mixture, z: float) -> dict[str, tuple[float, float, tuple
     b_p = big_b / p
     b_y = tuple(b[k] * p / rt for k in range(NC))
 
-    f_z = 3.0 * z * z - 2.0 * (1.0 - big_b) * z + (big_a - 3.0 * big_b * big_b - 2.0 * big_b)
-    f_a = z - big_b
-    f_b = z * z - (6.0 * big_b + 2.0) * z - big_a + 2.0 * big_b + 3.0 * big_b * big_b
-
-    def dz(da: float, db: float) -> float:
-        return -(f_a * da + f_b * db) / f_z
-
-    z_t, z_p = dz(a_t, b_t), dz(a_p, b_p)
-    z_y = tuple(dz(a_y[k], b_y[k]) for k in range(NC))
+    z_t, z_p, z_y = _root_derivatives(mix, z, (a_t, a_p, a_y), (b_t, b_p, b_y))
 
     plus, minus = z + _C_PLUS * big_b, z + _C_MINUS * big_b
     log_term = math.log(plus / minus)
@@ -625,6 +617,32 @@ def _mixing_rule_terms(
     )
     a_ij = tuple(tuple(_ONE_MINUS_K[i][j] * g[i] * g[j] for j in range(NC)) for i in range(NC))
     return d, d2a_m, a_ij
+
+
+def _root_derivatives(
+    mix: _Mixture,
+    z: float,
+    a_derivatives: tuple[float, float, tuple[float, ...]],
+    b_derivatives: tuple[float, float, tuple[float, ...]],
+) -> tuple[float, float, tuple[float, ...]]:
+    """(∂Z/∂T, ∂Z/∂P, ∂Z/∂y_k) of the root z, from A's and B's (∂/∂T, ∂/∂P, ∂/∂y_k).
+
+    The root differentiated through the cubic F(Z, A, B) = 0: dZ = −(F_A dA + F_B dB)/F_Z
+    (M01 spec §4.6).
+    """
+    big_a, big_b = mix.big_a, mix.big_b
+    a_t, a_p, a_y = a_derivatives
+    b_t, b_p, b_y = b_derivatives
+    f_z = 3.0 * z * z - 2.0 * (1.0 - big_b) * z + (big_a - 3.0 * big_b * big_b - 2.0 * big_b)
+    f_a = z - big_b
+    f_b = z * z - (6.0 * big_b + 2.0) * z - big_a + 2.0 * big_b + 3.0 * big_b * big_b
+
+    def dz(da: float, db: float) -> float:
+        return -(f_a * da + f_b * db) / f_z
+
+    z_t, z_p = dz(a_t, b_t), dz(a_p, b_p)
+    z_y = tuple(dz(a_y[k], b_y[k]) for k in range(NC))
+    return z_t, z_p, z_y
 
 
 # -- the vapour root rule (spec §4.2, ADR 0043 D5) ----------------------------------------------
