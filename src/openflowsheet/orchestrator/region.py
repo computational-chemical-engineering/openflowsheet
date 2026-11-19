@@ -354,22 +354,15 @@ def _solve_region(
     identity = (compiled.metadata.model_version, compiled.metadata.constants_sha256)
 
     # T04 §7.1–§7.2: the PTC core's mass mapping, refused before any call when it is invalid.
-    region_mass: RegionMass | None = None
-    if policy.globalization.eo_core == "ptc" and recovery is None:
-        resolved = resolve_mass(
-            mass_mapping,
-            spec=spec,
-            rows=region.row_ids,
-            residence_time=policy.globalization.ptc.residence_time_s,
+    resolved = _resolved_mass(policy, recovery, mass_mapping, spec, region)
+    if isinstance(resolved, MappingRefusal):
+        return RegionResult(
+            outcome="PTC_MAPPING_INVALID",
+            state={name: float(state[name]) for name in spec.variable_ids},
+            attempts=(),
+            message=resolved.message,
         )
-        if isinstance(resolved, MappingRefusal):
-            return RegionResult(
-                outcome="PTC_MAPPING_INVALID",
-                state={name: float(state[name]) for name in spec.variable_ids},
-                attempts=(),
-                message=resolved.message,
-            )
-        region_mass = resolved
+    region_mass: RegionMass | None = resolved
 
     context = _new_context(identity)
     scaling = Scaling.from_spec(spec)
@@ -387,11 +380,7 @@ def _solve_region(
     forms: Mapping[str, ZeroFlowForm] = zero_flow_forms or {}
     vapour: Mapping[str, VapourOnlyForm] = vapour_only_forms or {}
     temperatures: Mapping[str, tuple[str, ...]] = split_temperatures or {}
-    for split in active_splits:
-        if split.unit in ph_units and split.unit not in temperatures:
-            raise ValueError(
-                f"defect: {split.unit} is PH-type and the region has no temperature columns for it"
-            )
+    _check_ph_columns(active_splits, ph_units, temperatures)
     # T05b spec §7.8, §7.10: the dormancy forms of the region's units, read only under v2.
     units = set(region.units)
     dormancy = tuple(form for form in dormancy_forms if form.unit in units) if v2 else ()
@@ -1297,8 +1286,41 @@ class _CoreRun(NamedTuple):
     ptc: PtcRecord | None
 
 
+def _resolved_mass(
+    policy: SolvePolicy,
+    recovery: RecoveryStart | None,
+    mass_mapping: MassMapping | None,
+    spec: ProblemSpec,
+    region: Region,
+) -> RegionMass | MappingRefusal | None:
+    """T04 §7.1–§7.2: the PTC core's mass mapping for `region`'s rows, or the first failing
+    check (`MappingRefusal`); `None` for a Newton core or a recovery. Pure."""
+    if policy.globalization.eo_core == "ptc" and recovery is None:
+        return resolve_mass(
+            mass_mapping,
+            spec=spec,
+            rows=region.row_ids,
+            residence_time=policy.globalization.ptc.residence_time_s,
+        )
+    return None
+
+
 def _new_context(identity: tuple[str, str]) -> EvaluationContext:
     # T03 §4.2: every attempt constructs its own context objects (field-equal on this path).
     return EvaluationContext(
         model_version=identity[0], constants_sha256=identity[1], phase_signature=None
     )
+
+
+def _check_ph_columns(
+    active_splits: Sequence[LiftedSplit],
+    ph_units: frozenset[str],
+    temperatures: Mapping[str, tuple[str, ...]],
+) -> None:
+    """T05b spec §6.6: every PH-type active split has temperature columns in the region; one
+    without raises a `ValueError` naming the defect."""
+    for split in active_splits:
+        if split.unit in ph_units and split.unit not in temperatures:
+            raise ValueError(
+                f"defect: {split.unit} is PH-type and the region has no temperature columns for it"
+            )
