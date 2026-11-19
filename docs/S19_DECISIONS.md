@@ -3183,3 +3183,7 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
 - Job 372 `w5n1-14` (sets.py chain, e251586d) PASS, 19/19, debt 88.4 -> 67.4. Batch N: 358-372 PASS; 373-384 pending.
 - Job 399 `g1o8b-3` (R5 replayed, c11f3d66) PASS, 19/19, debt 106.5 -> 76.0, no large_file smell: the fallback move
   cured job 394's FAIL. Lane O run 8b: 397-399 PASS; 400, 401 pending.
+- Gate report after 399: the four standing ALERTs, two worse: "selected gates take 1006 s > 300 s", "selected/full
+  time ratio 0.75 > 0.4" (were 754 s, 0.56). Cause to check at the next quiet wake: lane O's region.py steps select
+  most of the orchestrator tests (region is imported widely), so a selected gate is nearly a full run. No new ALERT
+  type; proposal 2 (Frank) still covers it.
