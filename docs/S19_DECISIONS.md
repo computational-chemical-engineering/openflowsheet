@@ -3609,3 +3609,14 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   G2 run 8 brief `S19-W5-G2-8.md` written (lane wp/S19-g2d from C, launched after the merge).
 - 2026-11-19, job 481 (g2b-fix4, R-W5-G2-6+7 fix 4, method move) PASS (step 447 accepted-neutral, 18/18). gate_report: the
   four ALERTs (63%; 907 s; 0.56; wait 58 min); action unchanged. G2 runs 6+7 merge waits for merge-check 482.
+- **2026-11-19, job 483 (w5n2-8i, interface, `Refusal` re-export removal) FAIL w5_scope (step 448)**: ".codehealth/
+  interface/w5n2-refusal-reexport.toml: outside the batch's admitted, generator and retarget sets" (W5-S1 admits only
+  restructure plans via `--plans .codehealth/restructure/*.toml`). Jobs 484-494 SKIPPED (snapshot rule). A real
+  failure of the batch file, not of the code. DECISION: admit the plan through the batch file's `retarget` list, as for
+  program.py at 11:15 -> `S19-W5-batchN.json` sha 49f4c9e3 -> e7c318e4 (prior copy `.json.pre-plan`); `w5_gate.py
+  validate --head 6e86b173` valid (retarget 2); `scope` at the lane head: old file FAIL (that one path), new PASS (13
+  paths). Alternative: a tool change letting W5-S1 accept `.codehealth/interface/*.toml` (needs a batch base move;
+  for batch N's close review with the open W5-S1 item; batch L will hit it). Reversible by: restoring `.json.pre-plan`.
+  DECISION: re-enqueue 483-494 (suffix `u`, 483's as `--rerun-of 448`; script in the session scratchpad) only after
+  G2 runs 6+7 merge and the wall-time budget tests ran at C with the queue idle -> held. Alternative: enqueue now and
+  hold the runner later. Reversible by: enqueueing now.
