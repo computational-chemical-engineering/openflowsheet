@@ -3496,3 +3496,7 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   test_s03_ours.py is on proposal 2's list: lanes from 222122df skip it on selected gates.
 - 2026-11-19, job 459 (i20-1, interface `i20a-judging`) PASS (step 433 accepted, 61.6 -> 35.1, 20/20). gate_report:
   the four ALERTs (45%; 1096 s; 0.73; 38 min); action unchanged.
+- 2026-11-19, job 455 (g2c-1, revision_flowsheet.py `_read` checks) PASS (step 434 accepted, 84.8 -> 67.4), first gate
+  of a lane with proposal 2: the tier log printed "step-gate exclusion list ...: not applied, the full suite runs"
+  (fallback: revision_flowsheet.py:467 runs at import time), 20519 passed, wall 2325 s. Condition (a) holds; no
+  saving on a fallback, as designed. gate_report: the four ALERTs (45%; 1096 s; 0.69; 38 min).
