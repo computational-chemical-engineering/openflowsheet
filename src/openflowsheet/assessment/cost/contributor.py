@@ -239,19 +239,10 @@ class _Planner:
     # -- basis (§4.6) ----------------------------------------------------------------------------
 
     def basis(self) -> None:
+        """The cost basis: the target basis (`_target_basis`), the exchange rates, the
+        index series (shipped, plus declared ones whose sha256 matches) and the operation θ."""
         basis = dict(self.doc["basis"])
-        escalation = dict(basis.get("escalation_series", {}))
-        for currency in ("USD", "EUR"):
-            if currency not in escalation:
-                escalation[currency] = str(default(f"escalation_series.{currency}").value)
-                self._defaulted(f"escalation_series.{currency}", escalation[currency])
-        lf_doc = basis.get("location_factor")
-        if lf_doc is None:
-            lf = float(default("basis.location_factor").value)
-            self._defaulted("basis.location_factor", lf)
-        else:
-            lf = float(lf_doc["value"])
-        self.target = TargetBasis(str(basis["currency"]), int(basis["year"]), escalation, lf)
+        self.target = self._target_basis(basis)
         rates_id = basis.get("exchange_rates")
         if rates_id is None:
             rates_id = str(default("exchange_rates").value)
@@ -279,6 +270,22 @@ class _Planner:
                 value, provenance = float(entry.value), f"default {entry.key}: {entry.text}"
                 self._defaulted(f"operation.{key}", value)
             self.op[key] = self._theta(f"asm:operation.{key}", value, unit, provenance, structural)
+
+    def _target_basis(self, basis: Mapping[str, Any]) -> TargetBasis:
+        """The target basis of the declared `basis`: currency, year, the escalation series per
+        currency and the location factor, each series and the factor defaulted when missing."""
+        escalation = dict(basis.get("escalation_series", {}))
+        for currency in ("USD", "EUR"):
+            if currency not in escalation:
+                escalation[currency] = str(default(f"escalation_series.{currency}").value)
+                self._defaulted(f"escalation_series.{currency}", escalation[currency])
+        lf_doc = basis.get("location_factor")
+        if lf_doc is None:
+            lf = float(default("basis.location_factor").value)
+            self._defaulted("basis.location_factor", lf)
+        else:
+            lf = float(lf_doc["value"])
+        return TargetBasis(str(basis["currency"]), int(basis["year"]), escalation, lf)
 
     def _defaulted(self, key: str, value: Any, target: str = "") -> None:
         self.defaulted.append({"key": key, "value": value, "target": target})
