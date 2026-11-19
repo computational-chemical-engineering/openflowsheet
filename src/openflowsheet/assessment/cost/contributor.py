@@ -882,21 +882,11 @@ class _Planner:
                 continue
             consume = [i for i in users if i.electricity != "generation"]
             generate = [i for i in users if i.electricity == "generation"]
-            export = price
-            if generate:
-                if "export_price" in utility:
-                    got = self._price(
-                        f"utility.{u}.export_price", utility["export_price"], operating.ENERGY_PER
-                    )
-                    if got is None:
-                        blocked.append(output_id)
-                        self.unavailable[output_id] = "export price refused"
-                        continue
-                    export = got
-                else:
-                    self.limitations.append(Limitation("ELECTRICITY_NETTED", u))
-                    self._defaulted("electricity_export_price", "import", u)
-
+            export = self._export_price(utility, u, price) if generate else price
+            if export is None:
+                blocked.append(output_id)
+                self.unavailable[output_id] = "export price refused"
+                continue
             self.outputs.append(
                 OutputDef(
                     output_id,
@@ -908,6 +898,20 @@ class _Planner:
             )
             lines.append(output_id)
         return lines, blocked
+
+    def _export_price(self, utility: Mapping[str, Any], u: str, price: Theta) -> Theta | None:
+        """The export price of utility `u`, which has generating users.
+
+        Its declared `export_price`, or None when `_price` refuses that; without one, the
+        import `price` (limitation `ELECTRICITY_NETTED`, `electricity_export_price` defaulted).
+        """
+        if "export_price" in utility:
+            return self._price(
+                f"utility.{u}.export_price", utility["export_price"], operating.ENERGY_PER
+            )
+        self.limitations.append(Limitation("ELECTRICITY_NETTED", u))
+        self._defaulted("electricity_export_price", "import", u)
+        return price
 
     def _material_costs(self, cur: str, h: str) -> _MaterialCosts:
         """The priced material lines: `opex.material.<s>`, `opex.waste.<s>` and `revenue.<s>`.
