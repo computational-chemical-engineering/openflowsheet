@@ -397,9 +397,7 @@ def _pr_admissibility(
     admissibility: list[CheckResult] = []
     for split in splits:
         admissibility += pr_c1.split_checks(split, judging)
-    admissibility += pr_c1.declared_port_checks(
-        view, {model: entry.declared_ports for model, entry in MODEL_CHECKS.items()}, judging
-    )
+    admissibility += pr_c1.declared_port_checks(view, _declared_ports(), judging)
     return admissibility
 
 
@@ -421,8 +419,14 @@ def _syn_admissibility(
             degenerate.splits.get(split.unit),
             unresolved=split.unit in degenerate.unresolved,
         )
-    admissibility += _declared_port_checks(view, enthalpy, degenerate, judging)
+    admissibility += _declared_port_checks(view, _declared_ports(), enthalpy, degenerate, judging)
     return admissibility
+
+
+def _declared_ports() -> dict[str, tuple[tuple[str, bool], ...]]:
+    """Each model's declared ports (`ModelChecks.declared_ports`), by model id in `MODEL_CHECKS`
+    order: the ports whose declared phase the PR and SYN-001 forms judge."""
+    return {model: entry.declared_ports for model, entry in MODEL_CHECKS.items()}
 
 
 def revision_phase_branch(

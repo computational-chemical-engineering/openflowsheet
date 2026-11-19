@@ -55,7 +55,6 @@ from openflowsheet.thermo import FlashRequest, Phase, PropertyProvider, StreamSt
 from openflowsheet.thermo.stability import StabilityReport
 from openflowsheet.verify import CheckResult, dormant, evaluated, forms, unsupported
 from openflowsheet.verify.checks import (
-    KIND_REFERENCE,
     VerifierError,
     bounds_checks,
     qualification,
@@ -74,6 +73,8 @@ from openflowsheet.verify.table_kit import (
     Judging,
     ModelChecks,
     Unit,
+    degenerate_split_rows,
+    independent_split_rows,
 )
 from openflowsheet.verify.unit_checks import MODEL_CHECKS
 
@@ -296,23 +297,9 @@ def split_checks(
     name = f"{split.unit}.{split.stream}"
     subject = split.stream
     if distance is not None:
-        return [
-            evaluated(
-                id=f"phase_admissibility.{name}.saturation",
-                category="phase_admissibility",
-                subject=subject,
-                value=distance,
-                tolerance=judging.tolerances["temperature"],
-                reference=KIND_REFERENCE["temperature"],
-                independence_qualification=judging.note + BAND_NOTE,
-            ),
-            dormant(
-                id=f"independent_split.{name}",
-                category="independent_split",
-                subject=subject,
-                reason="temperature_degenerate",
-            ),
-        ]
+        return degenerate_split_rows(
+            name, subject, distance, judging.tolerances, judging.note + BAND_NOTE
+        )
     vapor, liquid = _flows(judging.state, split.vapor), _flows(judging.state, split.liquid)
     checks: list[CheckResult] = []
     if sum(vapor) + sum(liquid) == 0.0:
@@ -331,31 +318,13 @@ def split_checks(
     fresh_vapor, fresh_liquid = _fresh_split(
         judging.provider, split, judging.state, judging.context
     )
-    checks.append(
-        evaluated(
-            id=f"independent_split.{name}.total",
-            category="independent_split",
-            subject=subject,
-            value=judging.state[split.vapor_total] - sum(fresh_vapor.n),
-            tolerance=judging.tolerances["molar_flow"],
-            reference=KIND_REFERENCE["molar_flow"],
-            independence_qualification=judging.note,
-        )
-    )
-    for index, component in enumerate(judging.components):
+    total = judging.state[split.vapor_total] - sum(fresh_vapor.n)
+    differences: list[float] = []
+    for index in range(len(judging.components)):
         by_vapor = vapor[index] - fresh_vapor.n[index]
         by_liquid = liquid[index] - fresh_liquid.n[index]
-        checks.append(
-            evaluated(
-                id=f"independent_split.{name}.{component}",
-                category="independent_split",
-                subject=subject,
-                value=by_vapor if abs(by_vapor) >= abs(by_liquid) else by_liquid,
-                tolerance=judging.tolerances["molar_flow"],
-                reference=KIND_REFERENCE["molar_flow"],
-                independence_qualification=judging.note,
-            )
-        )
+        differences.append(by_vapor if abs(by_vapor) >= abs(by_liquid) else by_liquid)
+    checks += independent_split_rows(name, subject, total, differences, judging)
     return checks
 
 

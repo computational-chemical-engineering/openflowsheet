@@ -8,14 +8,14 @@ re-exports its public names."""
 
 from __future__ import annotations
 
-from collections.abc import Callable, Mapping, Sequence
+from collections.abc import Callable, Iterator, Mapping, Sequence
 from dataclasses import dataclass, field
-from typing import Final
+from typing import Final, NamedTuple
 
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models import flow_id
-from openflowsheet.models.revision_flowsheet import InstanceView
-from openflowsheet.thermo import PropertyProvider
+from openflowsheet.models.revision_flowsheet import InstanceView, RevisionView
+from openflowsheet.thermo import Phase, PropertyProvider
 from openflowsheet.verify import (
     NEAR_THRESHOLD_MARGIN,
     CheckCategory,
@@ -251,3 +251,106 @@ class ModelChecks:
     #: The model's own `phase_admissibility` rows, judged where the splits' are, after the
     #: declared ports, on every form (S11 design §4.8: the column's stage items).
     admissibility: Rule = _nothing
+
+
+# -- the split family's rows (K04 §4.7; T05b spec §9.1) --------------------------------------------
+
+
+def degenerate_split_rows(
+    name: str, subject: str, distance: float, tolerances: Mapping[str, float], note: str
+) -> list[CheckResult]:
+    """T05b spec §9.1's two checks of the temperature-degenerate split `name` (`<U>.<S>`), both on
+    `subject`: `phase_admissibility.<U>.<S>.saturation` with value `distance` (its feed's `δ` at
+    the split's `(T, P)`, spec §4.4), judged at the temperature kind's tolerance of `tolerances`
+    and qualified by `note`, then `independent_split.<U>.<S>` `not_applicable`
+    (`temperature_degenerate`)."""
+    return [
+        evaluated(
+            id=f"phase_admissibility.{name}.saturation",
+            category="phase_admissibility",
+            subject=subject,
+            value=distance,
+            tolerance=tolerances["temperature"],
+            reference=KIND_REFERENCE["temperature"],
+            independence_qualification=note,
+        ),
+        dormant(
+            id=f"independent_split.{name}",
+            category="independent_split",
+            subject=subject,
+            reason="temperature_degenerate",
+        ),
+    ]
+
+
+def independent_split_rows(
+    name: str,
+    subject: str,
+    total: float,
+    differences: Sequence[float],
+    judging: Judging,
+) -> list[CheckResult]:
+    """K04 §4.7's independent split of the split `name` (`<U>.<S>`), all on `subject`:
+    `independent_split.<U>.<S>.total` with value `total`, then one
+    `independent_split.<U>.<S>.<c>` per component in `judging.components` order with its value
+    in `differences`, each judged at the molar-flow kind's tolerance and qualified by
+    `judging.note`. The form computes the values (its own fresh flash)."""
+    rows = [
+        evaluated(
+            id=f"independent_split.{name}.total",
+            category="independent_split",
+            subject=subject,
+            value=total,
+            tolerance=judging.tolerances["molar_flow"],
+            reference=KIND_REFERENCE["molar_flow"],
+            independence_qualification=judging.note,
+        )
+    ]
+    for component, difference in zip(judging.components, differences, strict=True):
+        rows.append(
+            evaluated(
+                id=f"independent_split.{name}.{component}",
+                category="independent_split",
+                subject=subject,
+                value=difference,
+                tolerance=judging.tolerances["molar_flow"],
+                reference=KIND_REFERENCE["molar_flow"],
+                independence_qualification=judging.note,
+            )
+        )
+    return rows
+
+
+class DeclaredStream(NamedTuple):
+    """A stream at a port whose phase its model declares, and the id of its admissibility check."""
+
+    #: `phase_admissibility.<U>.<port>`, or `phase_admissibility.<U>.<port>.<S>` for a port
+    #: that carries several streams.
+    identifier: str
+    stream: str
+    #: The port's declared phase.
+    phase: Phase
+
+
+def declared_streams(
+    view: RevisionView, declared_ports: Mapping[str, tuple[tuple[str, bool], ...]]
+) -> Iterator[DeclaredStream]:
+    """Each stream of each declared port that has a declared phase, by instance in
+    `view.instances` order, then port in the entry's order. `declared_ports` maps a model id to
+    its entry's `(port, several)` pairs (`ModelChecks.declared_ports`); an instance whose model
+    has none contributes none."""
+    for instance in view.instances:
+        ports = declared_ports.get(instance.model_id)
+        if ports is None:
+            continue
+        for port, several in ports:
+            phase = instance.phases.get(port)
+            if phase is None:
+                continue
+            for stream in instance.ports.get(port, ()):
+                identifier = (
+                    f"phase_admissibility.{instance.unit_id}.{port}.{stream}"
+                    if several
+                    else f"phase_admissibility.{instance.unit_id}.{port}"
+                )
+                yield DeclaredStream(identifier, stream, phase)
