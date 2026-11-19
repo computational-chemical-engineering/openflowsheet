@@ -3551,3 +3551,17 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
 - 2026-11-19, job 463 (g2b-5r, `_stage_failures` rungs) PASS (step 440 accepted, 16.0 -> 11.0): lane wp/S19-g2b fully
   gated. DECISION: launch R-W5-G2-6+7 now, with g2c-4 (job 458) still gating -> reviewer (Opus) launched. Alternative:
   wait for 458 (~40 min). Reversible by: a 458 FAIL that changes e784f03a sends that step back for re-review.
+- **2026-11-19, review R-W5-G2-6+7 (reviewer, Opus, ~174k): lane 1 (wp/S19-g2b) merge after fixes 1, 2, 4; lane 2
+  (wp/S19-g2c) merge after fix 3 on job 458 PASS** (cce26d7b, `docs/reviews/S19-R-W5-G2-6+7.md`). Bitwise identical
+  by reading at every step; rc_check RESULT OK on column_rows (356ee519 vs lane head); Q2 reading covers both failing
+  branches of `_stage_failures` (no test needed); Q3 `conversions.append` move unobservable (local read only in the
+  final `InputMapping`, no `try`); Q4 lazy `_outlet_states` keeps order and first exception; Q5 the three masks
+  justified (shard 02: test_t07_r6_replays.py:69 `time.monotonic_ns()` suffix). Not checked: lane-2 head record files
+  were deleted, so the zero mismatch counts rest on the engineer's account.
+  Fixes 1-3 (docstrings) applied by the orchestrator: g2b 3156c4a3 (job 479 g2b-fix), g2c 04ab9edb (job 480 g2c-fix).
+  DECISION: fix 4 (`_ContributionBuilder` method order, rule 5) -> applied literally (slot + five helpers after
+  `_stage_pressure_row`; `column`, `row`, `pin` after `inlet_pin_rows`), by sonnet-implementer as a move-only commit
+  gated no-gain (g2b-fix4). Alternative: accept "append methods before phases" as a builder form. Reversible by:
+  reverting that commit.
+  Merge plan: g2b after 479 + g2b-fix4 PASS, merge-check; g2c after 458 + 480 PASS, merge-check (one helper may serve
+  both lanes).
