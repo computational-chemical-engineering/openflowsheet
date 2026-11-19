@@ -184,69 +184,9 @@ def plan_inventory(
 ) -> InventoryPlan:
     """The exchanges the document declares, in construction order (§4.2.4 step 6)."""
     doc = ctx.spec.document
-    plan = InventoryPlan()
-    used: dict[str, int] = {}
+    run = _Inventory(doc, tables, refused_tables)
     sctx = SizingContext(ctx, state)
     cost: ContributionPlan | None = ctx.earlier.get("cost")
-
-    def exchange_id(base: str) -> str:
-        used[base] = used.get(base, 0) + 1
-        return base if used[base] == 1 else f"{base}.{used[base]}"
-
-    def table_of(table_id: str, wanted: type, target: str, code: str) -> Any:
-        if table_id in refused_tables:
-            r = refused_tables[table_id]
-            plan.refusals.append(Refusal(r.code, target, r.detail))
-            return None
-        table = tables.get(table_id)
-        if not isinstance(table, wanted):
-            listing = "lca.tables" if wanted is UnitScoreTable else "lca.direct_factors"
-            plan.refusals.append(Refusal(code, target, f"table {table_id!r} is not in {listing}"))
-            return None
-        return table
-
-    def technosphere(
-        path: str,
-        base: str,
-        body: Mapping[str, Any],
-        phi: FunctionalBuilder | None,
-        kinds: frozenset[str],
-        why: str,
-    ) -> None:
-        k = exchange_id(f"{base}.{body['activity']}")
-        target = f"{body['table']}.{body['activity']}"
-        table = table_of(str(body["table"]), UnitScoreTable, target, "LCA_ACTIVITY_UNKNOWN")
-        if table is None:
-            plan.withheld.append((k, f"table {body['table']} unusable"))
-            return
-        activity = table.activity(str(body["activity"]))
-        if activity is None:
-            plan.refusals.append(Refusal("LCA_ACTIVITY_UNKNOWN", target, "not in the table"))
-            plan.withheld.append((k, f"{target} unknown"))
-            return
-        per = str(body["per"])
-        if per not in kinds:
-            plan.refusals.append(
-                Refusal("LCA_ACTIVITY_UNKNOWN", f"{path}.per", f"`per: {per}` does not fit {why}")
-            )
-            plan.withheld.append((k, f"`per: {per}` does not fit"))
-            return
-        if phi is None:
-            plan.withheld.append((k, why))
-            return
-        alpha = _alpha(doc, k, float(body["amount"]), per, activity.unit, path)
-        plan.theta.append(alpha)
-        plan.exchanges.append(
-            Exchange(
-                k,
-                "technosphere",
-                table.table_id,
-                activity.activity_id,
-                f"{activity.unit}/s",
-                phi,
-                alpha,
-            )
-        )
 
     utilities = [u for u in doc.get("utilities", ()) if u.get("lca")]
     items: tuple[SizedItem, ...] = ()
@@ -263,7 +203,7 @@ def plan_inventory(
                 net = _Electricity(items, cost_outputs)
                 phi = net.build if net else None
                 if net.generate:
-                    plan.limitations.append(Limitation("ELECTRICITY_NETTED", f"lca.{u}"))
+                    run.plan.limitations.append(Limitation("ELECTRICITY_NETTED", f"lca.{u}"))
             else:
                 users = [i.duty for i in items if i.utility == u and i.duty is not None]
                 phi = _fold(users) if users else None
@@ -271,7 +211,7 @@ def plan_inventory(
         for j, body in enumerate(utility["lca"]):
             if phi is None and cost is not None:
                 continue  # no item uses the utility: no exchange (as the operating cost)
-            technosphere(f"utilities.{u}.lca[{j}]", f"utility.{u}", body, phi, ENERGY_PER, why)
+            run.technosphere(f"utilities.{u}.lca[{j}]", f"utility.{u}", body, phi, ENERGY_PER, why)
     for material in doc.get("materials", ()):
         s_id, basis = str(material["connection"]), str(material["basis"])
         component = material.get("component")
@@ -283,7 +223,7 @@ def plan_inventory(
                 if per in MASS_PER | MOLAR_PER
                 else None
             )
-            technosphere(
+            run.technosphere(
                 f"materials.{s_id}.lca[{j}]",
                 f"material.{s_id}",
                 body,
@@ -296,18 +236,18 @@ def plan_inventory(
         emission = material["emission"]
         table_id = str(emission["table"])
         for c, flow in emission["flows"].items():
-            k = exchange_id(f"emission.{s_id}.{c}")
+            k = run.exchange_id(f"emission.{s_id}.{c}")
             target = f"{table_id}.{flow}"
-            table = table_of(table_id, DirectFactorTable, target, "LCA_FLOW_UNKNOWN")
+            table = run.table_of(table_id, DirectFactorTable, target, "LCA_FLOW_UNKNOWN")
             if table is None:
-                plan.withheld.append((k, f"table {table_id} unusable"))
+                run.plan.withheld.append((k, f"table {table_id} unusable"))
                 continue
             if flow not in table.columns or c not in ctx.view.components:
                 detail = "not in the table" if flow not in table.columns else f"no component {c}"
-                plan.refusals.append(Refusal("LCA_FLOW_UNKNOWN", target, detail))
-                plan.withheld.append((k, f"{target}: {detail}"))
+                run.plan.refusals.append(Refusal("LCA_FLOW_UNKNOWN", target, detail))
+                run.plan.withheld.append((k, f"{target}: {detail}"))
                 continue
-            plan.exchanges.append(
+            run.plan.exchanges.append(
                 Exchange(
                     k,
                     "biosphere",
@@ -317,4 +257,77 @@ def plan_inventory(
                     stream_flow(sctx, s_id, "component", str(c), False),
                 )
             )
-    return plan
+    return run.plan
+
+
+@dataclass
+class _Inventory:
+    """`plan_inventory`'s run: the plan being built and the exchange ids taken so far."""
+
+    doc: Mapping[str, Any]
+    tables: Mapping[str, LcaTable]
+    refused_tables: Mapping[str, Refusal]
+    plan: InventoryPlan = field(default_factory=InventoryPlan)
+    used: dict[str, int] = field(default_factory=dict)
+
+    def technosphere(
+        self,
+        path: str,
+        base: str,
+        body: Mapping[str, Any],
+        phi: FunctionalBuilder | None,
+        kinds: frozenset[str],
+        why: str,
+    ) -> None:
+        k = self.exchange_id(f"{base}.{body['activity']}")
+        target = f"{body['table']}.{body['activity']}"
+        table = self.table_of(str(body["table"]), UnitScoreTable, target, "LCA_ACTIVITY_UNKNOWN")
+        if table is None:
+            self.plan.withheld.append((k, f"table {body['table']} unusable"))
+            return
+        activity = table.activity(str(body["activity"]))
+        if activity is None:
+            self.plan.refusals.append(Refusal("LCA_ACTIVITY_UNKNOWN", target, "not in the table"))
+            self.plan.withheld.append((k, f"{target} unknown"))
+            return
+        per = str(body["per"])
+        if per not in kinds:
+            self.plan.refusals.append(
+                Refusal("LCA_ACTIVITY_UNKNOWN", f"{path}.per", f"`per: {per}` does not fit {why}")
+            )
+            self.plan.withheld.append((k, f"`per: {per}` does not fit"))
+            return
+        if phi is None:
+            self.plan.withheld.append((k, why))
+            return
+        alpha = _alpha(self.doc, k, float(body["amount"]), per, activity.unit, path)
+        self.plan.theta.append(alpha)
+        self.plan.exchanges.append(
+            Exchange(
+                k,
+                "technosphere",
+                table.table_id,
+                activity.activity_id,
+                f"{activity.unit}/s",
+                phi,
+                alpha,
+            )
+        )
+
+    def exchange_id(self, base: str) -> str:
+        self.used[base] = self.used.get(base, 0) + 1
+        return base if self.used[base] == 1 else f"{base}.{self.used[base]}"
+
+    def table_of(self, table_id: str, wanted: type, target: str, code: str) -> Any:
+        if table_id in self.refused_tables:
+            r = self.refused_tables[table_id]
+            self.plan.refusals.append(Refusal(r.code, target, r.detail))
+            return None
+        table = self.tables.get(table_id)
+        if not isinstance(table, wanted):
+            listing = "lca.tables" if wanted is UnitScoreTable else "lca.direct_factors"
+            self.plan.refusals.append(
+                Refusal(code, target, f"table {table_id!r} is not in {listing}")
+            )
+            return None
+        return table
