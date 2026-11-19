@@ -3342,3 +3342,6 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   waits for Frank's ruling) calls it. Form as PR-1b: red adapt of the two t08 spies, then `--mode step`. Alternative:
   change `solve_region` too and adapt 18 callers. Reversible by: a later step once the legacy ruling lands.
   region.py at 1497bcf9: health 7.8, debt 44.1, smell duplication. PR-2 (opus-engineer) launched from 1497bcf9.
+- 11:30: job 425 (pr1b-1, step 417) PASS, executor.py debt 51.2 -> 16.0. Gate report: the four standing ALERTs only
+  ("selected share 46% < 75%", "selected gates take 1147 s > 300 s", "selected/full time ratio 0.84 > 0.4", "queue
+  wait median 46 min > 15 min"); action stays proposal 2 (Frank). R-W4-PR-1b waits for job 426.
