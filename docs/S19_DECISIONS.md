@@ -3439,3 +3439,11 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   0.79 > 0.4: selection saves little"; "ALERT queue wait median 29 min > 15 min" (28 jobs, 2 slots 89% busy). Action:
   proposal 2 (222122df) targets the selected-gate time; no new tooling change until gates on lanes from 222122df
   are measured. Queued lanes predate it (snapshots fixed).
+- 2026-11-19, code_health: cce-code-health 34a30bf closes the tool gap (interface mode: a private function or method
+  in `changed`, checked on its def; new key `adapted` for fakes/spies/wrappers, body equal to base once inputs are
+  read alike; conservative failures: `kw.get("k", default)`, a fake param named like an import, a ctx built in a new
+  statement before the call). Checked read-only on PR-1 272011be..ebc42227 and PR-2 1497bcf9..82ad61ec: pass.
+  DECISION: when to re-pin -> after the batch N jobs now queued (433-449) are gated and CI on 34a30bf is green, and
+  before the `_RegionCall` interface step (S19_STATE item 3b) and I-20's interface step, which then use `changed` +
+  `adapted` instead of the red-adapt workaround. Alternative: re-pin now (a tool change under queued gates).
+  Reversible by: pinning back.
