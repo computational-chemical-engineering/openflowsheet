@@ -47,6 +47,7 @@ from openflowsheet.orchestrator.execution import Region
 from openflowsheet.orchestrator.phase_contract import (
     Candidate,
     Conversion,
+    Decision,
     OpeningNotSettledError,
     OpeningRefusal,
     OpeningRequirement,
@@ -723,3 +724,37 @@ class _LiftedOps:
             OpeningState(values=state, model_version=model_version, constants_sha256=constants),
             requirement,
         )
+
+
+def _swapped_row_test(
+    compiled: CompiledProblem,
+    context: EvaluationContext,
+    spec: ProblemSpec,
+    state: Mapping[str, float],
+    swapped: Sequence[str],
+) -> Decision | None:
+    """T05b spec §7.8 (iv) 2: each swapped row, in signature order, at the final state against its
+    kind's tolerance (K03 §5.2's per-row test). The first that fails closes the region
+    `SPECIFICATION_CONFLICT`, `zero_flow_conflict(<row id>)`, its value in the non-R0
+    observations; no restart is proposed (the retained rows fix the row's value). `None` when
+    every one holds."""
+    vector = np.array([state[name] for name in spec.variable_ids], dtype=np.float64)
+    result = compiled.residual(vector, context)
+    if result.status != "ok" or result.values is None:
+        return Decision(
+            "terminal",
+            "EVALUATION_ERROR",
+            f"the swapped rows could not be evaluated at the final state: {result.status}: "
+            f"{result.message}",
+        )
+    at = {name: index for index, name in enumerate(spec.equation_ids)}
+    for row in swapped:
+        value = float(result.values[at[row]])
+        if not abs(value) <= KIND_TOLERANCE[spec.row_kinds[row]]:
+            return Decision(
+                "terminal",
+                "SPECIFICATION_CONFLICT",
+                f"zero_flow_conflict({row})",
+                observations={f"swapped_row:{row}": value},
+            )
+    return None
