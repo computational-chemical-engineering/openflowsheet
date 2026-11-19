@@ -153,12 +153,13 @@ class _Derivation:
 
     def add(self, doc: Mapping[str, Any]) -> None:
         """Plan one declared ratio `doc`: refused `ASSESSMENT_OUTPUT_UNKNOWN` when declared
-        twice; refused per term and withheld when a term names no earlier output; withheld when
-        a term is unavailable; with a denominator, refused `ASSESSMENT_EVALUATION_FAILED` and
-        withheld when the earlier outputs do not evaluate at the planning state, refused
-        `METRIC_UNDEFINED` and withheld when the denominator there is ≤ 0, else its `domain`
-        entry appended. A kept ratio's value joins `y` (once evaluated), and its output joins
-        the outputs, the earlier outputs, `known` and the ratios."""
+        twice; refused per term and withheld when a term names no earlier output, withheld when
+        a term is unavailable (`references_available`); with a denominator, refused
+        `ASSESSMENT_EVALUATION_FAILED` and withheld when the earlier outputs do not evaluate at
+        the planning state, refused `METRIC_UNDEFINED` and withheld when the denominator there
+        is ≤ 0, else its `domain` entry appended (`denominator_admitted`). A kept ratio's value
+        joins `y` (once evaluated), and its output joins the outputs, the earlier outputs,
+        `known` and the ratios."""
         output_id = PREFIX + str(doc["id"])
         if output_id in self.ratios or output_id in self.withheld:
             self.refusals.append(Refusal("ASSESSMENT_OUTPUT_UNKNOWN", output_id, "declared twice"))
@@ -166,6 +167,24 @@ class _Derivation:
         numerator = Affine.of(doc["numerator"])
         given = Affine.of(doc.get("denominator"))
         denominator = None if given.zero else given
+        if not self.references_available(output_id, numerator, denominator):
+            return
+        if denominator is not None and not self.denominator_admitted(output_id, denominator):
+            return
+        if self.y is not None:
+            n = numerator.value(self.y)
+            self.y[output_id] = n if denominator is None else n / denominator.value(self.y)
+        self.outputs.append(OutputDef(output_id, str(doc["unit"]), _ratio(numerator, denominator)))
+        self.earlier.append(self.outputs[-1])
+        self.known.add(output_id)
+        self.ratios[output_id] = (numerator, denominator)
+
+    def references_available(
+        self, output_id: str, numerator: Affine, denominator: Affine | None
+    ) -> bool:
+        """True when every term of ratio `output_id` names an earlier output that is available.
+        False, with the output withheld, when a term names no earlier output (one refusal
+        `ASSESSMENT_OUTPUT_UNKNOWN` per such term, in sorted order) or an unavailable one."""
         refs = [n for n, _ in numerator.terms]
         refs += [n for n, _ in denominator.terms] if denominator is not None else []
         bad = sorted({r for r in refs if r not in self.known and r not in self.unavailable})
@@ -180,21 +199,13 @@ class _Derivation:
             )
             self.withheld[output_id] = f"references unknown outputs {bad}"
             self.unavailable[output_id] = self.withheld[output_id]
-            return
+            return False
         missing = sorted({r for r in refs if r in self.unavailable})
         if missing:
             self.withheld[output_id] = f"depends on {missing}"
             self.unavailable[output_id] = self.withheld[output_id]
-            return
-        if denominator is not None and not self.denominator_admitted(output_id, denominator):
-            return
-        if self.y is not None:
-            n = numerator.value(self.y)
-            self.y[output_id] = n if denominator is None else n / denominator.value(self.y)
-        self.outputs.append(OutputDef(output_id, str(doc["unit"]), _ratio(numerator, denominator)))
-        self.earlier.append(self.outputs[-1])
-        self.known.add(output_id)
-        self.ratios[output_id] = (numerator, denominator)
+            return False
+        return True
 
     def denominator_admitted(self, output_id: str, denominator: Affine) -> bool:
         """True once ratio `output_id`'s `domain` entry is appended (`_domain_entry`): the
