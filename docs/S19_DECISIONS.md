@@ -3591,3 +3591,11 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   3 xfailed, wall 1612 s). gate_report: the four ALERTs (58%; 947 s; 0.59; wait 58 min); action unchanged. I-20 merges
   on 478 (i20-fix) PASS.
 - 2026-11-19, job 480 (g2c-fix, R-W5-G2-6+7 fix 3, docstring) PASS (step 445 accepted-neutral, 18/18). gate_report: the four ALERTs (59%; 927 s; 0.57; wait 58 min); action unchanged.
+- **2026-11-19 17:20, I-20 merged into wp/S19 (d7e9b014; card ofs-s19-verify-twins A, VERIFIED at 3407).** Job 478
+  (i20-fix) PASS (step 446 accepted-neutral, 18/18); merge-check 477 PASS; wp/S19 changed only docs since e7fd7065
+  (helper rule: S19_DECISIONS, S19_STATE, two review files). `codehealth arch --depth 4` at d7e9b014: 329 files, 4106
+  imports, 0 violations, 0 cycles. Card `executed` written (version 3). Hub told: the 0.5 blocking set (W4, 0/0, G5,
+  G6, I-20) is done on wp/S19; 0.5 start is Frank's; main is at the 11-18 merge, so a wp/S19 -> main merge card is
+  next (manifest, wall-time budget tests, CI, DECISION-REQUEST). gate_report: "ALERT selected share 61% < 75%";
+  "ALERT selected gates take 907 s > 300 s"; "ALERT selected/full time ratio 0.56 > 0.4"; "ALERT queue wait median
+  58 min > 15 min"; action unchanged. Worktree s19-i20 and branch wp/S19-i20 can go.
