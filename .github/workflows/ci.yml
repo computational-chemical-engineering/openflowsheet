@@ -98,10 +98,14 @@ jobs:
     steps:
       # X07a: the Windows image sets `core.autocrlf=true`; the checkout must be the repository's
       # bytes on every leg (`.gitattributes` pins `eol=lf` for the identity-bearing types only;
-      # scripts, web files and fixtures of other types would otherwise be CRLF there).
-      - name: Check out without line-ending conversion
+      # scripts, web files and fixtures of other types would otherwise be CRLF there). Python's
+      # UTF-8 mode, because tests and scripts read text files with the locale's encoding, which
+      # is cp1252 there (`src` names `utf-8` at every text read).
+      - name: Check out without line-ending conversion; Python UTF-8 mode
         if: ${{ runner.os == 'Windows' }}
-        run: git config --global core.autocrlf false
+        run: |
+          git config --global core.autocrlf false
+          echo "PYTHONUTF8=1" >> "$GITHUB_ENV"
 
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -154,7 +158,9 @@ jobs:
       # A test whose machine precondition fails here skips with its reason (M04 E39-E41); -rs
       # prints every reason in the log, so what the hosted runners did not check is on record.
       # S07 (spec §17.4): CoolProp is installed above, so its tests must run, not skip.
+      # X07a: also after a failed G19, so that a leg's licence finding does not hide its tests.
       - name: Run checks
+        if: ${{ !cancelled() }}
         env:
           PYTEST_ADDOPTS: -rs
           OPENFLOWSHEET_REQUIRE_COOLPROP: "1"

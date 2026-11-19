@@ -837,7 +837,7 @@ def test_n3_old_version_with_a_platform_pinned_pair_fails(tmp_path: Path, runnin
 HOSTMOVE = ROOT / "docs" / "derivations" / "scripts" / "hostmove_host_leaves.py"
 #: The committed side's host, set synthetically, and the re-take's: made-up literals (§11.0).
 OLD_HOST = {"machine": "host-hm-committed", "cpu": "cpu-hm-committed", "cpu_count": 96}
-NEW_HOST = {"machine": "host-hm02", "cpu": "cpu-hm02", "cpu_count": 3}
+NEW_HOST = {"machine": "host-hm02", "cpu": "cpu-hm02", "cpu_count": 7}
 OLD_FLAGS, NEW_FLAGS = "d" * 64, "e" * 64
 OLD_ROOT, NEW_ROOT = "/home/hm-committed/.cache/openflowsheet/external", Path("/home/hm02/external")
 ENV_DIR = "pymrm-0000000-hm0000000000"
