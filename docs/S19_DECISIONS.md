@@ -3641,3 +3641,11 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
 - 2026-11-19, job 496 (w5n2-8u, interface, `Refusal` re-export removal, rerun of step 448 with batch sha e7c318e4) PASS
   (step 449 accepted, 20/20): the batch-file amendment holds. gate_report: the four ALERTs (65%; 869 s; 0.54; wait
   57 min); action unchanged.
+- **2026-11-19, evidence engineer reported (opus-engineer, Opus, ~142k): third manifest at C = e3e95520 committed as
+  605a2d64 (wp/S19-ev2), status implemented; 11 checks pass** (G-STEP 101 accepted/neutral + 1 no-gain, 3 gate-fails
+  each re-run or explained; G-REVIEW 21 verdicts; G-MAP-6; W4-DOCS 288 living-doc broken refs, as the I-20 head; ARCH
+  329 files, 4107 imports, 0/0; PATCH-NOOP 0 of 262; F0 PASS M1-M9; MCP digest 40 passed; budget f6 116.61 s, t07c
+  31.79 s). Scan at C: debt 3221.7, health 8.53, brain 10, 12 files below 7.0, 1 huge_file (G-END not met, a
+  limitation). Harvest 9 rows (P), HARVEST_SIZE (99, 1138, 146); envelope tests 775 + 657 passed. Departure: G-MAP 6
+  only (3-5 are in the second manifest) -> accepted. Merged as 5c48391b; worktree and branch removed; wp/S19 pushed
+  (e22ac093..5c48391b), CI 44576885441 running. Card step 1 done pending `tested` after CI.
