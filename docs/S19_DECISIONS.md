@@ -3469,3 +3469,5 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   (brief `S19-W4-I20.md`, wp/S19-i20 from the tip).
 - 2026-11-19, job 433 (w5n2-5) PASS (step 427 accepted, 35.2 -> 11.0). gate_report: the four ALERTs as before (42%;
   1160 s; 0.81; 25 min); action unchanged.
+- 2026-11-19, job 451 (g2b-2) PASS (step 428 accepted, 85.3 -> 42.2). gate_report: the four ALERTs (46%; 1171 s;
+  0.82; 29 min); action unchanged. G2 run 7 enqueued 455-458 (wp/S19-g2c, first lane with proposal 2).
