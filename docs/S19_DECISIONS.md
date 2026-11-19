@@ -3638,3 +3638,6 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   e7c318e4. Engineers launched (opus-engineer, Opus, two at a time): G2 run 8 (wp/S19-g2d from e3e95520, brief
   `S19-W5-G2-8.md`) and the third evidence manifest (wp/S19-ev2 from C, brief `S19-EV-blocking.md`, budget results
   handed in, not re-run).
+- 2026-11-19, job 496 (w5n2-8u, interface, `Refusal` re-export removal, rerun of step 448 with batch sha e7c318e4) PASS
+  (step 449 accepted, 20/20): the batch-file amendment holds. gate_report: the four ALERTs (65%; 869 s; 0.54; wait
+  57 min); action unchanged.
