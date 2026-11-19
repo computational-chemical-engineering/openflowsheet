@@ -3653,3 +3653,5 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   gate_report: the four ALERTs (64%; 834 s; 0.51; wait 58 min); action unchanged.
 - 2026-11-19, job 508 (g2d-1, G2 run 8 step 1, revision_flowsheet.py) PASS (step 451 accepted, 15.6 -> 15.0, 19/19).
   gate_report: the four ALERTs (64%; 834 s; 0.53; wait 57 min); action unchanged.
+- 2026-11-19, job 498 (w5n3-2u) PASS (step 452 accepted, 18.7 -> 8.7, 19/19). gate_report: the four ALERTs (62%;
+  834 s; 0.54; wait 56 min); action unchanged.
