@@ -359,38 +359,22 @@ class _Planner:
         doc = self._item_doc(item)
         if "quote" in doc:
             return self._quote(item, record, values, quotes.quote_from(doc["quote"]))
-        if item.family == "machine.drive":
-            machine = machines.get(item.unit_id)
-            if machine is not None and machine.item_id in self.included_drive:
-                record.included_in = machine.item_id
-                record.source = {"included_in": machine.item_id}
-                purchased = f"capex.purchased.{item.item_id}"
-                self.outputs.append(OutputDef(purchased, self.target.currency, lambda s, a: 0.0))
-                record.purchased = purchased
-                record.bare_module = f"capex.bare_module.{item.item_id}"
-                self.outputs.append(
-                    OutputDef(record.bare_module, self.target.currency, lambda s, a: 0.0)
-                )
-                return None
+        included_in = self._including_machine(item, machines)
+        if included_in is not None:
+            self._record_included(item, record, included_in)
+            return None
         found = self._entry(item, doc)
         if isinstance(found, Refusal):
             return found
         cost_set, e = found
         form = forms.FORMS[e.form]
-        x_float: dict[str, Any] = {}
-        x_build: dict[str, FunctionalBuilder] = {}
-        for name in form.inputs:
-            got = self._input(item, record, e, name, values)
-            if got is None:
-                if already:
-                    return None
-                return Refusal("SIZING_INPUT_UNAVAILABLE", f"{item.item_id}.{name}")
-            x_float[name], x_build[name] = got
-        units = 1
-        if form.inherits_units:
-            machine = machines.get(item.unit_id)
-            if machine is not None and machine.item_id in self.selections:
-                units = self.selections[machine.item_id].n
+        inputs = self._form_inputs(item, record, e, form, values)
+        if isinstance(inputs, str):
+            if already:
+                return None
+            return Refusal("SIZING_INPUT_UNAVAILABLE", f"{item.item_id}.{inputs}")
+        x_float, x_build = inputs
+        units = self._units(item, form, machines)
         allow = bool(doc.get("allow_extrapolation", False))
         sel = forms.select(form, e, x_float, allow_extrapolation=allow, units=units)
         if isinstance(sel, forms.OutOfRange):
@@ -403,15 +387,7 @@ class _Planner:
         self.selections[item.item_id] = sel
         if e.includes_drive:
             self.included_drive.add(item.item_id)
-        for name, (value, low, high) in sel.extrapolated.items():
-            record.extrapolated = True
-            self.limitations.append(
-                Limitation(
-                    "CORRELATION_EXTRAPOLATED",
-                    f"{item.item_id}.{form.target(name)}",
-                    {"value": value, "range": [low, high]},
-                )
-            )
+        self._record_extrapolated(item.item_id, form, sel, record)
         self._regime(item.item_id, form, e, sel, x_build, record)
         source = SourceBasis(
             str(cost_set.document["basis"]["currency"]),
@@ -437,6 +413,75 @@ class _Planner:
             return form.cost(e, x, sel, a)
 
         return self._capital(item, record, base, factor, doc, entry_doc)
+
+    def _including_machine(self, item: SizedItem, machines: Mapping[str, SizedItem]) -> str | None:
+        """The item id of the machine whose cost entry includes drive `item` (§9.2.7).
+
+        None when `item` is not a `machine.drive`, its unit has no costed machine yet, or that
+        machine's entry does not include the drive.
+        """
+        if item.family == "machine.drive":
+            machine = machines.get(item.unit_id)
+            if machine is not None and machine.item_id in self.included_drive:
+                return machine.item_id
+        return None
+
+    def _record_included(self, item: SizedItem, record: ItemCost, included_in: str) -> None:
+        """Record drive `item` as included in machine `included_in`: zero purchased and
+        bare-module outputs, and `record`'s source naming the machine."""
+        record.included_in = included_in
+        record.source = {"included_in": included_in}
+        purchased = f"capex.purchased.{item.item_id}"
+        self.outputs.append(OutputDef(purchased, self.target.currency, lambda s, a: 0.0))
+        record.purchased = purchased
+        record.bare_module = f"capex.bare_module.{item.item_id}"
+        self.outputs.append(OutputDef(record.bare_module, self.target.currency, lambda s, a: 0.0))
+
+    def _form_inputs(
+        self,
+        item: SizedItem,
+        record: ItemCost,
+        e: forms.ResolvedEntry,
+        form: forms.Form,
+        values: Mapping[str, float],
+    ) -> tuple[dict[str, Any], dict[str, FunctionalBuilder]] | str:
+        """The form's inputs from `_input`, in `form.inputs` order: (floats, builders).
+
+        The name of the first input `_input` has no value for, when there is one; the inputs
+        after it are not read.
+        """
+        x_float: dict[str, Any] = {}
+        x_build: dict[str, FunctionalBuilder] = {}
+        for name in form.inputs:
+            got = self._input(item, record, e, name, values)
+            if got is None:
+                return name
+            x_float[name], x_build[name] = got
+        return x_float, x_build
+
+    def _units(self, item: SizedItem, form: forms.Form, machines: Mapping[str, SizedItem]) -> int:
+        """The number of units the form prices: the selected count of the item's machine when
+        the form inherits units and that machine has a selection, else 1."""
+        if form.inherits_units:
+            machine = machines.get(item.unit_id)
+            if machine is not None and machine.item_id in self.selections:
+                return self.selections[machine.item_id].n
+        return 1
+
+    def _record_extrapolated(
+        self, item_id: str, form: forms.Form, sel: forms.Selection, record: ItemCost
+    ) -> None:
+        """Per input the selection extrapolates, in its order: mark `record` extrapolated and
+        add limitation `CORRELATION_EXTRAPOLATED` with the value and the range."""
+        for name, (value, low, high) in sel.extrapolated.items():
+            record.extrapolated = True
+            self.limitations.append(
+                Limitation(
+                    "CORRELATION_EXTRAPOLATED",
+                    f"{item_id}.{form.target(name)}",
+                    {"value": value, "range": [low, high]},
+                )
+            )
 
     @staticmethod
     def _entry_source(
