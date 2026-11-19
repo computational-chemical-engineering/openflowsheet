@@ -3661,3 +3661,6 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   ALERTs (67%; 797 s; 0.50; wait 50 min); action unchanged.
 - 2026-11-19, job 499 (w5n3-3u) PASS (step 455 accepted, 8.7 -> 0.6, 19/19). gate_report: the four ALERTs (64%;
   797 s; 0.51; wait 55 min); action unchanged.
+- 2026-11-19, job 500 (w5n3-4u) PASS (step 456 accepted, 0.6 -> 0, 19/19): WO-N3 (496-500) fully gated. S1 review
+  R-W5-N3 launched (reviewer, Opus; brief job numbers updated to 497-500). gate_report: the four ALERTs (63%; 796 s;
+  0.52; wait 55 min); action unchanged. Agents running: G2 run 8 engineer, R-W5-N3 reviewer (two).
