@@ -94,7 +94,7 @@ from openflowsheet.models.lifted import (
 )
 from openflowsheet.models.lifted import StagedSplits as StagedSplits
 from openflowsheet.models.lifted_tolerance import KIND_TOLERANCE
-from openflowsheet.numerics.newton import solve_newton
+from openflowsheet.numerics.newton import NewtonResult, solve_newton
 from openflowsheet.numerics.ptc import PtcRecord
 from openflowsheet.numerics.scaling import REGISTERED_NOMINALS, Scaling
 from openflowsheet.numerics.solve_record import (
@@ -402,6 +402,8 @@ def _solve_region(
     order = _opening_order(active_splits, dormancy, region.units, owners) if v2 else ()
     supplied_items = frozenset(item for item, _ in _items(dormancy, current))
     solve = _RegionSolve(
+        compiled=compiled,
+        compile_level=compile_level,
         spec=spec,
         region=region,
         splits=splits,
@@ -447,107 +449,12 @@ def _solve_region(
         record: HomotopyRecord | None = None
         ptc_record: PtcRecord | None = None
         if attempt_open.continuing:
-            assert recovery is not None and compile_level is not None
-            last, record = _homotopy(
-                recovery=recovery,
-                compiled=compiled,
-                compile_level=compile_level,
-                spec=spec,
-                scaling=scaling,
-                opening_state=dict(solve.current),
-                free=layout.free,
-                rows=layout.rows,
-                splits=active_splits,
-                regimes=solve.regimes,
-                provider=provider,
-                policy=policy,
-                attempt_context=attempt_open.attempt_context,
-                trace=run,
-                attempt_index=attempt_index,
-                signature=layout.opening,
-                counters=solve.counters,
-                x0=attempt_open.x0,
-                ph_units=ph_units,
-                v2=v2,
-                labels=layout.labels,
-                dormancy=dormancy,
-            )
-            solve.homotopy = record
+            last, record = solve._run_homotopy(attempt_index, layout, attempt_open)
         elif region_mass is not None:
-            last, ptc_record = _ptc_attempt(
-                temperatures=temperatures,
-                memo=attempt_open.memo,
-                region_mass=region_mass,
-                compiled=compiled,
-                spec=spec,
-                scaling=scaling,
-                base=solve.current,
-                free=layout.free,
-                rows=layout.rows,
-                splits=active_splits,
-                regimes=solve.regimes,
-                provider=provider,
-                policy=policy,
-                attempt_context=attempt_open.attempt_context,
-                trace=run,
-                attempt_index=attempt_index,
-                signature=layout.opening,
-                counters=solve.counters,
-                wall=attempt_open.wall,
-                x0=attempt_open.x0,
-                ph_units=ph_units,
-                v2=v2,
-                labels=layout.labels,
-                dormancy=dormancy,
-            )
+            last, ptc_record = solve._run_ptc(attempt_index, layout, attempt_open)
         else:
-            screen = _attempt_screen(
-                splits=active_splits,
-                regimes=solve.regimes,
-                provider=provider,
-                context=attempt_open.attempt_context,
-                epsilon=policy.admissibility_epsilon,
-                ph_units=ph_units,
-                v2=v2,
-                dormancy=dormancy,
-                temperatures=temperatures,
-                memo=attempt_open.memo,
-            )
-            problem = _region_problem(
-                compiled,
-                attempt_open.attempt_context,
-                spec,
-                scaling,
-                solve.current,
-                layout.free,
-                layout.rows,
-                screen,
-                attempt_open.x0,
-                **_with_labels(layout.labels),
-            )
-            last = solve_newton(
-                problem,
-                attempt_open.x0,
-                policy,
-                trace=run,
-                signature=layout.opening,
-                attempt=attempt_index,
-                counters=solve.counters,
-                observer=attempt_open.wall,
-                # T05b spec §7.8 (iii) (Q-S4 (6)): every trial of a v2 attempt in a region with a
-                # dormancy-form outlet is screened, an empty signature included; `dormancy` is
-                # empty under v1.
-                compare_empty=bool(dormancy),
-                # ADR 0018 D1: the target's Newton attempts only — never the homotopy corrector
-                # (`_homotopy`) or the PTC core.
-                refinement=_refinement(policy, spec, layout.free),
-            )
-        solve.counters = last.counters
-        for position, name in enumerate(layout.free):
-            solve.current[name] = float(last.x[position])
-        for name in layout.pinned:
-            solve.current[name] = 0.0
-        ended = dict(solve.current)
+            last = solve._run_newton(attempt_index, layout, attempt_open)
+        ended = solve._take_end_state(layout, last)
 
         ops = _LiftedOps(
             splits=active_splits,
@@ -693,18 +600,21 @@ def _solve_region(
 
 @dataclass
 class _RegionSolve:
-    """One `_solve_region` call: what its start, openings and closing read, and its ledger.
+    """One `_solve_region` call: what its start, openings, cores and closing read, and its ledger.
 
-    Frame: `spec`, the `region`, `splits` (every lifted split of the declaration, for the root's
-    branch), the `provider`, `policy`, the trace `run`, `identity`, the `scaling`, the compiled
-    `structure` and the PTC core's `region_mass`, phase B's contract setting (`active_splits`,
-    `v2`, `ph_units`, the zero-flow `forms`, the `vapour` forms, `temperatures`, the `dormancy`
-    forms, the opening `order`), the `recovery` start and `warm_start`. State: the opening state
+    Frame: the `compiled` problem and the recovery's λ-level compiler `compile_level`, `spec`, the
+    `region`, `splits` (every lifted split of the declaration, for the root's branch), the
+    `provider`, `policy`, the trace `run`, `identity`, the `scaling`, the compiled `structure` and
+    the PTC core's `region_mass`, phase B's contract setting (`active_splits`, `v2`, `ph_units`,
+    the zero-flow `forms`, the `vapour` forms, `temperatures`, the `dormancy` forms, the opening
+    `order`), the `recovery` start and `warm_start`. State: the opening state
     `current` and `regimes`, the start's `projections`, and the ledger (counters, used signatures,
     attempts, provenance, checkpoint, contexts, the next attempt's opening message, source and
     trial, attempt 0's opening, the budget kind and the homotopy record).
     """
 
+    compiled: CompiledProblem
+    compile_level: Callable[[ProblemSpec], CompiledProblem] | None
     spec: ProblemSpec
     region: Region
     splits: Sequence[LiftedSplit]
@@ -1120,6 +1030,131 @@ class _RegionSolve:
             opening_hash=opening_hash,
             wall=wall,
         )
+
+    def _run_homotopy(
+        self, attempt_index: int, layout: _Layout, opened: _Opened
+    ) -> tuple[NewtonResult, HomotopyRecord]:
+        """Runs a recovery's attempt 0 (T04 §4.5): `_homotopy` from a copy of `current`, its
+        records into `run`; the record is kept in `homotopy` and returned with the result.
+        """
+        assert self.recovery is not None and self.compile_level is not None
+        last, record = _homotopy(
+            recovery=self.recovery,
+            compiled=self.compiled,
+            compile_level=self.compile_level,
+            spec=self.spec,
+            scaling=self.scaling,
+            opening_state=dict(self.current),
+            free=layout.free,
+            rows=layout.rows,
+            splits=self.active_splits,
+            regimes=self.regimes,
+            provider=self.provider,
+            policy=self.policy,
+            attempt_context=opened.attempt_context,
+            trace=self.run,
+            attempt_index=attempt_index,
+            signature=layout.opening,
+            counters=self.counters,
+            x0=opened.x0,
+            ph_units=self.ph_units,
+            v2=self.v2,
+            labels=layout.labels,
+            dormancy=self.dormancy,
+        )
+        self.homotopy = record
+        return last, record
+
+    def _run_ptc(
+        self, attempt_index: int, layout: _Layout, opened: _Opened
+    ) -> tuple[NewtonResult, PtcRecord]:
+        """Runs a PTC attempt (T04 §7.1): `_ptc_attempt` on `current` itself (`base=`, not a
+        copy), its records into `run`; returns its result and its `PtcRecord`.
+        """
+        assert self.region_mass is not None
+        return _ptc_attempt(
+            temperatures=self.temperatures,
+            memo=opened.memo,
+            region_mass=self.region_mass,
+            compiled=self.compiled,
+            spec=self.spec,
+            scaling=self.scaling,
+            base=self.current,
+            free=layout.free,
+            rows=layout.rows,
+            splits=self.active_splits,
+            regimes=self.regimes,
+            provider=self.provider,
+            policy=self.policy,
+            attempt_context=opened.attempt_context,
+            trace=self.run,
+            attempt_index=attempt_index,
+            signature=layout.opening,
+            counters=self.counters,
+            wall=opened.wall,
+            x0=opened.x0,
+            ph_units=self.ph_units,
+            v2=self.v2,
+            labels=layout.labels,
+            dormancy=self.dormancy,
+        )
+
+    def _run_newton(self, attempt_index: int, layout: _Layout, opened: _Opened) -> NewtonResult:
+        """Runs a Newton attempt: the attempt's screen and region problem on `current` itself (not
+        a copy), then `solve_newton` with its records into `run`; returns its result.
+        """
+        screen = _attempt_screen(
+            splits=self.active_splits,
+            regimes=self.regimes,
+            provider=self.provider,
+            context=opened.attempt_context,
+            epsilon=self.policy.admissibility_epsilon,
+            ph_units=self.ph_units,
+            v2=self.v2,
+            dormancy=self.dormancy,
+            temperatures=self.temperatures,
+            memo=opened.memo,
+        )
+        problem = _region_problem(
+            self.compiled,
+            opened.attempt_context,
+            self.spec,
+            self.scaling,
+            self.current,
+            layout.free,
+            layout.rows,
+            screen,
+            opened.x0,
+            **_with_labels(layout.labels),
+        )
+        return solve_newton(
+            problem,
+            opened.x0,
+            self.policy,
+            trace=self.run,
+            signature=layout.opening,
+            attempt=attempt_index,
+            counters=self.counters,
+            observer=opened.wall,
+            # T05b spec §7.8 (iii) (Q-S4 (6)): every trial of a v2 attempt in a region with a
+            # dormancy-form outlet is screened, an empty signature included; `dormancy` is
+            # empty under v1.
+            compare_empty=bool(self.dormancy),
+            # ADR 0018 D1: the target's Newton attempts only — never the homotopy corrector
+            # (`_homotopy`) or the PTC core.
+            refinement=_refinement(self.policy, self.spec, layout.free),
+        )
+
+    def _take_end_state(self, layout: _Layout, last: NewtonResult) -> dict[str, float]:
+        """Takes an attempt's end: `counters` becomes `last`'s, `current` gets `last.x` on the free
+        columns and `+0.0` on the pinned ones; returns a copy of `current` (the end state).
+        """
+        self.counters = last.counters
+        for position, name in enumerate(layout.free):
+            self.current[name] = float(last.x[position])
+        for name in layout.pinned:
+            self.current[name] = 0.0
+        return dict(self.current)
 
     def closed(
         self, outcome: SolveOutcome, text: str = "", system: AttemptSystem | None = None
