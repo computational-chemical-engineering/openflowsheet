@@ -61,14 +61,16 @@ has a `VapourOnlyForm`: in a TWO_PHASE attempt their liquid flows are pinned at 
 zero rows dropped. Every other provider runs the code above, unchanged.
 
 **Where the code is** (S19 B1, RS). This module holds SYN-001's lifted splits and the attempt
-loop (`solve_region`, `_solve_region`, with `_swapped_row_test` and `_external_opening`). The
-region's records (`RegionResult`, `RegionAttempt`, `AttemptSystem`, `RecoveryStart`) are in
+loop (`solve_region`, `_solve_region`, with `_external_opening`). The region's records
+(`RegionResult`, `RegionAttempt`, `AttemptSystem`, `RecoveryStart`) are in
 `orchestrator.region_result`; the trial screen (`_attempt_screen`) in `orchestrator.region_screen`;
 the PTC and homotopy attempts (`region_ptc_problem`, `_ptc_attempt`, `_homotopy`) in
 `orchestrator.region_attempts`; the phase-policy kernel (the kernel, the PH closure, the
 admissibility screens and their refusals) in `orchestrator.region_phase`; the Newton problem over
-lifted splits (labels, the opening fixed point, dormancy outlets, `_LiftedOps`) in
-`orchestrator.region_problem`. Callers and tests import those names from their modules.
+lifted splits (labels, the opening fixed point, dormancy outlets, `_LiftedOps`, the swapped-row
+test `_swapped_row_test`) in `orchestrator.region_problem`. Callers and tests import those names
+from their modules, except `_swapped_row_test`: the loop calls it, and tests patch it, through
+this module, which imports it back.
 """
 
 from __future__ import annotations

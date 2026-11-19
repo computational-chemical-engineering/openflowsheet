@@ -3,9 +3,10 @@
 `_region_problem` builds an attempt's square system (its rows over its free columns, K03's
 Newton problem) with the label rows `T_out − T_label` of the swapped energy rows (`_labels`,
 `_label_matrix`, T05b §7.2); the opening fixed point (`_opening_order`, `_settle`,
-`_rederive`) with its dormancy-outlet resets (`_reset_outlet`, T05b §7.8 (ii)); and
+`_rederive`) with its dormancy-outlet resets (`_reset_outlet`, T05b §7.8 (ii));
 `_LiftedOps`, the lifted EO path's side of the phase contract for one attempt (T03 §4.3, §4.6,
-§4.7).
+§4.7); and the swapped-row test at a converged attempt's final state (`_swapped_row_test`, T05b
+§7.8 (iv) 2), moved from `orchestrator.region` (S19 RS fallback 1), which imports it back.
 
 Split from `orchestrator.region` (S19 B1), which re-exports what its callers and tests read here.
 Of the region solver this module imports only `region_phase`.
