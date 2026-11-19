@@ -820,9 +820,10 @@ def _traversal_refusal(
 def _warm_start(
     ctx: _PlanRun, index: int, region: Region, spent: Counters
 ) -> tuple[tuple[StepResult, Counters, dict[str, float] | None] | None, WarmStartRecord, Counters]:
-    """ADR 0024 D3 (T08 build-first spec §B2): source 2. The region solved from the candidate
-    when every check holds — the step as `_solve_revision_region` would return it — else `None`
-    and the next source; with the record, and the counters after the checks' evaluation.
+    """ADR 0024 D3 (T08 build-first spec §B2): source 2. The region solved from the plan's
+    candidate (`ctx.warm_start`) when every check holds — the step as `_solve_revision_region`
+    would return it — else `None` and the next source; with the record, and the counters after
+    the checks' evaluation.
 
     The candidate enters where a `user_start` does, recorded `compatible_warm_start`. A failed
     solve from it keeps the policy's recovery edges and gains none (§B2, "No new fallback")."""
@@ -930,10 +931,10 @@ def _eo_recovery(
     `unsupported(no_continuation_parameter)` is recorded and the failed outcome stands, under
     `"homotopy_or_sequential_restart"` the sequential restart's preconditions decide (ADR 0015;
     `_sequential_restart`), and under `"homotopy_or_revision_continuation_or_sequential_restart"`
-    the revision continuation comes first (ADR 0072; `_revision_continuation`), from
-    `revision_source`, which no other value reads. The count of one is structural: this runs once
-    per region step, on the region solve the step ran, and never on its own recovery. A recovery
-    solve is the step's outcome (`_recovery_taken`).
+    the revision continuation comes first (ADR 0072; `_revision_continuation`), from the plan's
+    `revision_continuation` (`_PlanRun`), which no other value reads. The count of one is
+    structural: this runs once per region step, on the region solve the step ran, and never on its
+    own recovery. A recovery solve is the step's outcome (`_recovery_taken`).
     """
     failed = step.detail
     if ctx.policy.globalization.eo_recovery not in (
@@ -1000,15 +1001,15 @@ def _revision_continuation(
     """ADR 0072 (RRC design note §5.5): edge 3's revision continuation, reached when the region
     has no specification continuation and the policy names it.
 
-    R3: the flowsheet is revision-built, else `absent(not_revision_built)`. R4: a source was
-    supplied, else `absent(not_supplied)`; a supplied refusal is that refusal. R5–R9a:
-    `revision_continuation`'s pure checks. R9b: one region solve, a recovery whose attempt 0 is
-    the homotopy from the ancestor's root in the ancestor's signature, over `D`; its opening is
-    held to T03 §5.1's checks first (`solve_region`), and a refusal there opens no attempt and is
-    `rejected(opening(<check>:<subject>))`. Every refusal is recorded as one
-    `initializer_rejected` event and the step's record, and the ADR 0015 restart then runs exactly
-    as under `homotopy_or_sequential_restart`. A solve that opened an attempt is the step's
-    outcome, whatever it is (FQ3: one recovery per step; `_revision_continuation_taken`).
+    R3: the flowsheet is revision-built, else `absent(not_revision_built)`. R4: the plan's source
+    (`ctx.revision_continuation`) was supplied, else `absent(not_supplied)`; a supplied refusal is
+    that refusal. R5–R9a: `revision_continuation`'s pure checks. R9b: one region solve, a recovery
+    whose attempt 0 is the homotopy from the ancestor's root in the ancestor's signature, over
+    `D`; its opening is held to T03 §5.1's checks first (`solve_region`), and a refusal there
+    opens no attempt and is `rejected(opening(<check>:<subject>))`. Every refusal is recorded as
+    one `initializer_rejected` event and the step's record, and the ADR 0015 restart then runs
+    exactly as under `homotopy_or_sequential_restart`. A solve that opened an attempt is the
+    step's outcome, whatever it is (FQ3: one recovery per step; `_revision_continuation_taken`).
     """
     failed = step.detail
     source = ctx.revision_continuation
