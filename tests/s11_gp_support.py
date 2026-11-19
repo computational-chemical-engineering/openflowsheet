@@ -5,9 +5,9 @@ since WO-D5), built here and committed as `benchmarks/s11/gp/<name>.json` (regen
 `python tests/s11_gp_support.py`; a test asserts the committed file is the generated one).
 
 Since I1b `MODEL_BASES` admits the five K02/T05 units and the Wilson compressor and turbine on
-`wilson-ig-v2`, and `table.revision_checks` dispatches the v2 basis to
-`gamma_phi_units.revision_checks`; `count_gamma_phi` counts those calls, so a test can see the
-form was used.
+`wilson-ig-v2`, and `table.revision_checks` runs the γ–φ form for the v2 basis;
+`count_gamma_phi` counts the form's admissibility rows of each check set
+(`gamma_phi_units.admissibility_checks`), so a test can see the form was used.
 """
 
 from __future__ import annotations
@@ -273,9 +273,10 @@ def committed_case(name: str) -> Document:
 
 
 def count_gamma_phi(monkeypatch: pytest.MonkeyPatch) -> list[int]:
-    """`gamma_phi_units.revision_checks` wrapped to record the number of checks of each call that
-    `table.revision_checks` dispatches to it (I1b's hook), so a test can see the form was used."""
-    original = gamma_phi_units.revision_checks
+    """`gamma_phi_units.admissibility_checks` wrapped to record the number of the γ–φ form's
+    admissibility rows of each check set `table.revision_checks` builds, so a test can see the
+    form was used."""
+    original = gamma_phi_units.admissibility_checks
     calls: list[int] = []
 
     def counted(*args: Any, **kwargs: Any) -> list[CheckResult]:
@@ -283,7 +284,7 @@ def count_gamma_phi(monkeypatch: pytest.MonkeyPatch) -> list[int]:
         calls.append(len(found))
         return found
 
-    monkeypatch.setattr(gamma_phi_units, "revision_checks", counted)
+    monkeypatch.setattr(gamma_phi_units, "admissibility_checks", counted)
     return calls
 
 

@@ -3565,3 +3565,58 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   reverting that commit.
   Merge plan: g2b after 479 + g2b-fix4 PASS, merge-check; g2c after 458 + 480 PASS, merge-check (one helper may serve
   both lanes).
+- 2026-11-19, job 458 (g2c-4, `traverse` stream-state helpers) PASS (step 441 accepted, 27.6 -> 15.6): G2 run 7's four
+  steps all accepted. gate_report: the four ALERTs (58%; 947 s; 0.58; wait 58 min); action unchanged.
+  Fix 4 done (sonnet-implementer, ~53k): 27d138cc move only (ast segments identical, ruff clean, 719 tests in the 11
+  column_rows files passed), job 481 g2b-fix4.
+  DECISION: one merge-check helper for both G2 lanes -> wp/S19-g2-mc (worktree s19-g2-mc) = wp/S19-g2c 04ab9edb +
+  wp/S19 6a588841 (7a412814) + wp/S19-g2b 27d138cc (a9a5cbf6), clean, disjoint files; job 482 g2-mc (merge-check,
+  base 6a588841). Alternative: one merge-check per lane (two full suites). Reversible by: per-lane merge-checks.
+  Merge on 479, 480, 481, 482 PASS: merge wp/S19-g2-mc into wp/S19 (wp/S19 changes only docs meanwhile: helper rule).
+- 2026-11-19, job 464 (w5n2-7r, inventory.py `plan_inventory`, rerun of the load-timeout job 435) PASS (step 442
+  accepted, 16.0 -> 2.0). gate_report: the four ALERTs (56%; 947 s; 0.59; wait 64 min); action unchanged.
+- **2026-11-19, job 465 (w5n2-8s, WO-N2's `Refusal` re-export removal c418b1e3) FAIL literals, public_api: a real
+  failure, a wrong mode.** The step drops "Refusal" from `assessment/program.py`'s `__all__`, an interface change, but
+  was enqueued as no-gain (job 436 by the engineer; never gated, skipped after 435). Jobs 466-476 SKIPPED.
+  DECISION: re-gate as an interface step (form of i8g) -> plan `.codehealth/interface/w5n2-refusal-reexport.toml`
+  committed on 0d2b57d4 (89527267); c418b1e3..3979f326 cherry-picked unchanged onto it (trees identical to the old
+  ones except the plan file; old tip kept as branch wp/S19-w5n-pre-plan). Jobs 483 w5n2-8i (interface, --plan,
+  --batch), 484-494 (the eleven steps, suffix `t`, same batch file 000465 sha 49f4c9e3). New shas: cbefdc7e (removal),
+  WO-N3 50a740f0, fd0294af, 2c5d81f6, 0844ba88; WO-N3b f1fed8be .. 6e86b173. R-W5-N3 brief updated to the new shas.
+  Alternative: a fresh engineer. Reversible by: `git reset --hard wp/S19-w5n-pre-plan` in s19-w5n.
+  Note for briefs: a re-export removal is `--mode interface --plan`, never no-gain.
+- 2026-11-19, job 479 (g2b-fix, R-W5-G2-6+7 fixes 1-2, docstrings) PASS (step 444 accepted-neutral, 18/18).
+  gate_report: "ALERT selected share 58% < 75% of step gates";"ALERT selected gates take 947 s > 300 s (tests tier)";"ALERT selected/full time ratio 0.58 > 0.4: selection saves little";"ALERT queue wait median 64 min > 15 min"; action unchanged.
+- 2026-11-19, job 477 (i20-mc, merge-check e7fd7065..b035293a) PASS (10/10; full suite 20519 passed, 107 skipped,
+  3 xfailed, wall 1612 s). gate_report: the four ALERTs (58%; 947 s; 0.59; wait 58 min); action unchanged. I-20 merges
+  on 478 (i20-fix) PASS.
+- 2026-11-19, job 480 (g2c-fix, R-W5-G2-6+7 fix 3, docstring) PASS (step 445 accepted-neutral, 18/18). gate_report: the four ALERTs (59%; 927 s; 0.57; wait 58 min); action unchanged.
+- **2026-11-19 17:20, I-20 merged into wp/S19 (d7e9b014; card ofs-s19-verify-twins A, VERIFIED at 3407).** Job 478
+  (i20-fix) PASS (step 446 accepted-neutral, 18/18); merge-check 477 PASS; wp/S19 changed only docs since e7fd7065
+  (helper rule: S19_DECISIONS, S19_STATE, two review files). `codehealth arch --depth 4` at d7e9b014: 329 files, 4106
+  imports, 0 violations, 0 cycles. Card `executed` written (version 3). Hub told: the 0.5 blocking set (W4, 0/0, G5,
+  G6, I-20) is done on wp/S19; 0.5 start is Frank's; main is at the 11-18 merge, so a wp/S19 -> main merge card is
+  next (manifest, wall-time budget tests, CI, DECISION-REQUEST). gate_report: "ALERT selected share 61% < 75%";
+  "ALERT selected gates take 907 s > 300 s"; "ALERT selected/full time ratio 0.56 > 0.4"; "ALERT queue wait median
+  58 min > 15 min"; action unchanged. Worktree s19-i20 and branch wp/S19-i20 can go.
+- 2026-11-19 17:40, hub filed ofs-s19-blocking-merge-main (rec A, hub agrees; action A verbatim in S19_STATE item 2).
+  Asked hub to keep "a test that must change to pass comes back as a new card" in the context. Doorbell on signing.
+- **2026-11-19, card ofs-s19-blocking-merge-main VERIFIED** (hub doorbell; card v2, keys listed, `decision_desk_verify.py`
+  with the verbatim A text): "chose A Merge now ... signed 2026-11-19T16:28:51.656Z key 032ee0a5ae620a90". Approval for
+  exactly that action, once. Order: G2 runs 6+7 merge (jobs 481, 482) -> C = that wp/S19 tip -> evidence engineer
+  (brief `S19-EV-blocking.md`, lane wp/S19-ev2) -> budget tests alone with the runner held -> push wp/S19, CI both legs,
+  manifest `tested` -> merge commit on main, F0 -> push main -> `executed`. Any failure in steps 1-4: stop, no push.
+  G2 run 8 brief `S19-W5-G2-8.md` written (lane wp/S19-g2d from C, launched after the merge).
+- 2026-11-19, job 481 (g2b-fix4, R-W5-G2-6+7 fix 4, method move) PASS (step 447 accepted-neutral, 18/18). gate_report: the
+  four ALERTs (63%; 907 s; 0.56; wait 58 min); action unchanged. G2 runs 6+7 merge waits for merge-check 482.
+- **2026-11-19, job 483 (w5n2-8i, interface, `Refusal` re-export removal) FAIL w5_scope (step 448)**: ".codehealth/
+  interface/w5n2-refusal-reexport.toml: outside the batch's admitted, generator and retarget sets" (W5-S1 admits only
+  restructure plans via `--plans .codehealth/restructure/*.toml`). Jobs 484-494 SKIPPED (snapshot rule). A real
+  failure of the batch file, not of the code. DECISION: admit the plan through the batch file's `retarget` list, as for
+  program.py at 11:15 -> `S19-W5-batchN.json` sha 49f4c9e3 -> e7c318e4 (prior copy `.json.pre-plan`); `w5_gate.py
+  validate --head 6e86b173` valid (retarget 2); `scope` at the lane head: old file FAIL (that one path), new PASS (13
+  paths). Alternative: a tool change letting W5-S1 accept `.codehealth/interface/*.toml` (needs a batch base move;
+  for batch N's close review with the open W5-S1 item; batch L will hit it). Reversible by: restoring `.json.pre-plan`.
+  DECISION: re-enqueue 483-494 (suffix `u`, 483's as `--rerun-of 448`; script in the session scratchpad) only after
+  G2 runs 6+7 merge and the wall-time budget tests ran at C with the queue idle -> held. Alternative: enqueue now and
+  hold the runner later. Reversible by: enqueueing now.

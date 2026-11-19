@@ -1,0 +1,31 @@
+# ADR 0076 I-20 step a of 3 (brief S19-W4-I20, WO-2): the parameter object Judging; the split family
+# takes it. Design: docs/briefs/S19-I20-design.md sections 5.1, 5.2 (rows a), 7.
+# `codehealth gate --mode interface` reads this plan from the plan commit.
+id = "i20a-judging"
+approved_by = "Frank Peters, 2026-11-19, Decision Desk ofs-s19-verify-twins choice A (ADR 0076 addendum I-20)"
+reason = """ADR 0076 addendum I-20, step a (docs/briefs/S19-I20-design.md sections 5.1, 5.2 rows a, \
+6 WO-2, 7). New frozen dataclass table_kit.Judging (state, components, provider, context, \
+tolerances, note), built by keyword once in table.revision_checks (before the degeneracy ladder) \
+and once in gamma_phi_units.revision_checks; it replaces table._Judging (NamedTuple, removed; its \
+reaction_note goes to _instance_rows as a parameter, design D6). Signatures (judging last \
+positional): gamma_phi_units.split_checks(split, judging, distance=None), \
+pr_c1.split_checks(split, judging), pr_c1.declared_port_checks(view, declared_ports, judging); \
+private: gamma_phi_units._admissibility -> _split_admissibility(split, judging), _stability, \
+pr_c1._fresh_dew, _closure (tolerance read as judging.tolerances["temperature"]), \
+split_checks._split_checks, _split_admissibility, _declared_phase, _declared_port_checks, \
+table._stream_enthalpies, _instance_rows; table._mixture/_pr/_syn_admissibility read fields \
+instead of the positional unpack. New gamma_phi_units.require_composition_dependent(provider) (the \
+guard, same message) and admissibility_checks(view, splits, declared, degenerate, judging) (the \
+registry split rows, then forms.stream_admissibility), both called by gamma_phi_units.revision_checks \
+(removed in step c). Bodies change only by a parameter replaced by its judging field (AST \
+comparison per function). Callers follow: tests/test_m02_wo8_verifier.py, three statements \
+rewritten onto its _judging helper (WO-1). No string literal is added; literals dropped only by \
+consolidation (the static trial decides). Expected codehealth arch --depth 4 (measured on the step \
+applied to this base): 0 / 0 violations, 0 / 0 cycles, files 329 -> 329, imports 4107 -> 4108 \
+(pr_c1 -> table_kit)."""
+removed = []
+renamed = {}
+changed = ["src/openflowsheet/verify/gamma_phi_units.py:split_checks", "src/openflowsheet/verify/pr_c1.py:split_checks", "src/openflowsheet/verify/pr_c1.py:declared_port_checks"]
+added = ["src/openflowsheet/verify/table_kit.py:Judging", "src/openflowsheet/verify/gamma_phi_units.py:admissibility_checks", "src/openflowsheet/verify/gamma_phi_units.py:require_composition_dependent"]
+new_files = []
+callers = ["tests/test_m02_wo8_verifier.py"]
