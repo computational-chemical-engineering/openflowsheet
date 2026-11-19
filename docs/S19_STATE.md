@@ -88,7 +88,7 @@ per result, CLAUDE.md "Agent budget" for the rest).
    `i19_scan` rows for column_unit.py), WO-L1 (column_unit 4.9: retarget the 34 bindings, drop the 34 re-exports),
    WO-L2 (conversion_reactor 6.6, kinetic_cstr 6.8, mixer 6.9), WO-L3 close (ruling section 9). Frozen models files:
    `scripts/codehealth_frozen.py`. `executed` on the card when (a) to (c) are done.
-4. **Batch N:** on jobs 437, 440-442 PASS: S1 review R-W5-N3 (brief `S19-R-W5-N3.md` written; add the gate results).
+4. **Batch N:** (re-enqueued 2026-11-19 after two load timeouts: WO-N2 464-465, WO-N3 466-469, WO-N3b 470-476) on jobs 466-469 PASS: S1 review R-W5-N3 (brief `S19-R-W5-N3.md` written; add the gate results).
    Then WO-N4 (factory switch, `--mode interface`; ruling section 9 row), WO-N5 (close: K, judge, batch-check, one
    review of the WO-N2, N3b, N4 chains), merge batch N into wp/S19 (FR-2 B), WO-N6.
 **Tool gap closed:** cce-code-health 34a30bf (`changed` takes private defs; `adapted` key for fakes/spies; README

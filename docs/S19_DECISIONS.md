@@ -3487,3 +3487,10 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   docstring change. Job 454 (g2b-5) SKIPPED by the snapshot rule. Re-enqueued unchanged: 462 g2b-4r (`--rerun-of
   431`), 463 g2b-5r. gate_report: the four ALERTs (48%; 1150 s; 0.79; 38 min). Note for briefs: an engineer's
   behaviour recorder must not run the reference generators while gates run (or must run them with fewer workers).
+- 2026-11-19, job 435 (w5n2-7, inventory.py `plan_inventory`, debt 16.0 -> 2.0) FAIL tests: full-suite fallback
+  (inventory.py runs at collection time), W5-S6 "1 failure(s) outside L_B and the standing failures; expected
+  failures failed 5/10" (5/10 as in the passing w5n2-6); the one: tests/test_s03_ours.py::test_a16, the same 900 s
+  timeout as job 453 in the same window (G2 run 7's recorders ran s02/s06_reference.py --check, two at a time).
+  Environment failure. Jobs 436-449 SKIPPED. Re-enqueued: 464 w5n2-7r (`--rerun-of 432`), 465-476 (the 13 skipped,
+  suffix `s`, same batch file sha 49f4c9e3). Batch N's S1 review R-W5-N3 now waits for 466-469.
+  test_s03_ours.py is on proposal 2's list: lanes from 222122df skip it on selected gates.
