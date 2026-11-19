@@ -3142,3 +3142,16 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
 - Merge-check job 393 `g1o7-mc` PASS 10/10 (debt 172.0 -> 157.7). wp/S19-g1o7-mc merged into wp/S19 as 0e58c106.
 - Gate report (6 h): selected share 58%, selected 790 s, ratio 0.59, queue wait median 23 min: the same four as
   ~04:45 (batch N's W5-mode full-suite falls and its 23-step burst); standing, no action.
+
+## 2026-11-19 ~05:45 CET: lane O run 8 R5 gate FAIL (large_file), fallback move pulled forward
+
+- Job 394 `g1o8-1` (R5 d7e2bdc1) FAIL on `debt` only: "106.5 -> 76.0; src/openflowsheet/orchestrator/region.py: new
+  file smell(s) large_file (nloc 1018)". `_solve_region` 85.5 -> 55.0. Job 395 `g1o8-2` SKIPPED (built on it). A real
+  failure, not the environment: the gate refuses a new file smell, so R-W3-G1O-7's "crossing 1000 fails no gate" was
+  wrong (the step-debt check counts new file smells, not only debt).
+- DECISION: region.py over the cap at R5 -> take plan 4's first fallback move (`_swapped_row_test`, 24 NLOC,
+  one-statement restructure plan, no retarget) as its own restructure commit BEFORE R5, then replay R5 (994 NLOC
+  expected) and the rest of run 8 on top, in a new branch from 805c69f6. The second move (`_external_opening`, 34
+  NLOC, `check_opening` retarget) goes before R6 if R5's replayed head plus R6's ~4-10 would cross 1000.
+  Alternative: shrink R5 (fewer methods) or fold the move after R6 with R5 held. Reversible by: dropping the
+  restructure commit; the plan already authorises the move, only its timing changes.
