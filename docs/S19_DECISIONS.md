@@ -3521,3 +3521,13 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   unchanged; patch_noop 0 of 262. Its recorders loaded the machine (jobs 453, 435 timed out on test_s03_ours a16).
   Left for a run 8: `_read` cognitive 27 / NLOC 76 (`_instance_views`), `traverse`'s `fail` closure (closures-to-class),
   to ~9.8. Reviewer R-W5-G2-6+7 (runs 6 and 7 together) on PASS of 456-458 and 462-463.
+- **2026-11-19, review R-W4-I20 (reviewer, Opus, ~188k): merge after fixes** (f7f4e306, `docs/reviews/S19-R-W4-I20.md`).
+  Three docstring fixes (pr_c1.py:273, :354; table_kit.py module docstring), applied by the orchestrator as 10ce869d,
+  gated no-gain (i20-fix). Answers: bitwise identical by reading at every step; branch coverage at the head over G3's
+  13 files covers every touched branch except PR's dormant-feed vapour split (pr_c1.py:334, the one append -> return,
+  equivalent since every earlier rung returns) and textually unchanged refusal/dormant paths; the dropped describe
+  calls are unobservable; `MODEL_CHECKS.items()` importing verify.thermal is inert; independence kept; plans exact.
+  F1 confirmed (A73 compared f(x) with f(x)); the post-S19 test targets `_routing`'s gamma-phi rung,
+  `admissibility_checks` and pr_c1.py:334. WO-6 docs: `codehealth docs` names two drifted anchors (S11-design.md:1236,
+  V02-alpha-release-spec.md:1322): pre-S19 or I-20? checked at the merge.
+  Merge plan: merge-check 477 (b035293a) PASS + i20-fix PASS -> merge (docstring-only follow-up, helper rule).
