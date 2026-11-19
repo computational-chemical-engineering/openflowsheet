@@ -329,8 +329,11 @@ axes:
     title: Platforms
     statement: >-
       Linux x86-64 and aarch64, Python 3.13, the one lock (L15). The C1 reactor's runs are
-      measured on x86-64 only (L44).
-    architectures: [aarch64, x86-64]
+      measured on x86-64 only (L44). Windows x86-64 and macOS arm64 run the same CI checks (X07a)
+      with the platform limits of docs/X07a_DECISIONS.md: external models are refused on Windows,
+      the nlp and reactor environments and the coolprop extra are Linux only, and F0's M7 replay
+      verdicts there await a ruling.
+    architectures: [aarch64, macos-arm64, windows-x86-64, x86-64]
     python: "3.13"
     lock_sha256: ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4
     evidence:
