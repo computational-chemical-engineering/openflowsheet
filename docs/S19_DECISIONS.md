@@ -3053,3 +3053,13 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
 - **2026-11-19 02:02 CET, job 374 PASS (g1o5-1, R2, region.py 221.7 -> 176.1); gate report:** "ALERT selected gates
   take 700 s > 300 s (tests tier)"; "ALERT selected/full time ratio 0.54 > 0.4: selection saves little". The standing
   ALERT, parked with Frank as proposal 2 (selection widening); no new action. Review brief R-W5-N1 written.
+- **2026-11-19 ~02:50 CET, jobs 378 (g1o5-2 S2, 47.0 -> 10.0), 381 (g1o5-3 C3, 72.3 -> 38.9), 361, 362 (w5n1-3, -4)
+  PASS; review R-W3-G1O-5 (reviewer, Opus, ~102k tokens): merge, no required fixes.** All four declared deviations
+  accepted (R2's two extra methods and hoisted reads, S2 `eq=False` and kept frame names for
+  test_t03_contract.py:894-896, C3's `_trial_at_u` and `_FailedTrial`). Notes: A (docstrings: `_project_start` says
+  answers go to `current` and `regimes`, a PH split writes `regimes` only; `_RegionSolve` summary wraps) folded into
+  run 6's R3; B (say in `reported_signature`'s docstring that a test reads its name) not taken, the test catches a
+  rename. Merge-check job 385 `g1o5-mc` queued on the lane itself (wp/S19 had only docs since a92f0290; ruff clean).
+  DECISION: lane O run 6 -> R3, C4, X4 (X1 to X3 done in run 3; brief `S19-W3-G1O-6.md`), launched (opus-engineer)
+  from d3c509dd before run 5's merge. Alternative: wait for job 385 (hours behind the W5 queue). Reversible by:
+  merging wp/S19 into the run 6 lane, or rebasing it, before its merge-check.

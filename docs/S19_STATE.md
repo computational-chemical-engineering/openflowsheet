@@ -75,8 +75,9 @@ A26's new node id); branch `wp/S19-w5n`, worktree `s19-w5n`. W5-mode gates fall 
   interface`), WO-N5 (close: K, judge, batch-check, review), merge batch N into wp/S19 (FR-2 B). Every W5 enqueue adds
   `--batch <json>`. contributor.py's split toward 9.0 deferred (S19_DECISIONS 02:10).
 **G1 lane O run 5** (`wp/S19-g1o5`, worktree `s19-g1o5`, base a92f0290): R2 4478d96f (job 374), S2 9551f5d1 (378),
-C3 d3c509dd (381). All PASS -> review R-W3-G1O-5 (brief written, reviewer Opus) -> fixes -> merge-check (helper if
-wp/S19 gained code) -> merge. Then run 6 per plan section 6 adjusted (R3, C4 and an X step: S19_DECISIONS 01:35).
+C3 d3c509dd (381). All PASS; review R-W3-G1O-5: merge, no fixes; merge-check job 385 `g1o5-mc` queued -> on PASS
+merge wp/S19-g1o5 into wp/S19. **Run 6** (R3, C4, X4; brief `S19-W3-G1O-6.md`, opus-engineer, branch `wp/S19-g1o6`
+from d3c509dd) launched 02:50: on delivery, review per cadence (S1).
 **Open for the design lane at batch N's close review:** W5-S1's text vs fix 2 (the tool admits a tier 1 split's new
 `.py` in the admitted file's directory; default: the tool's rule stands).
 4. F3 (0.5, `wp/F3`, worktree `f3`): ready except Frank's human review. **Waits for Frank:** card
