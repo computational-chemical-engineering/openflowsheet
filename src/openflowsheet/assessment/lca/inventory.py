@@ -268,19 +268,29 @@ class _Inventory:
         phi: FunctionalBuilder | None = None
         why = "no cost plan defines the utility's users"
         if cost is not None:
-            if utility["kind"] == "electricity":
-                net = _Electricity(items, cost_outputs)
-                phi = net.build if net else None
-                if net.generate:
-                    self.plan.limitations.append(Limitation("ELECTRICITY_NETTED", f"lca.{u}"))
-            else:
-                users = [i.duty for i in items if i.utility == u and i.duty is not None]
-                phi = _fold(users) if users else None
+            phi = self.utility_phi(u, utility["kind"], items, cost_outputs)
             why = "the utility has no users"
         for j, body in enumerate(utility["lca"]):
             if phi is None and cost is not None:
                 continue  # no item uses the utility: no exchange (as the operating cost)
             self.technosphere(f"utilities.{u}.lca[{j}]", f"utility.{u}", body, phi, ENERGY_PER, why)
+
+    def utility_phi(
+        self, u: str, kind: Any, items: tuple[SizedItem, ...], cost_outputs: frozenset[str]
+    ) -> FunctionalBuilder | None:
+        """Utility `u`'s energy rate over the cost plan's items that use it: electricity net
+        (appending `ELECTRICITY_NETTED` to the plan when an item generates), else the sum of the
+        users' duties; `None` when no item uses it."""
+        phi: FunctionalBuilder | None
+        if kind == "electricity":
+            net = _Electricity(items, cost_outputs)
+            phi = net.build if net else None
+            if net.generate:
+                self.plan.limitations.append(Limitation("ELECTRICITY_NETTED", f"lca.{u}"))
+        else:
+            users = [i.duty for i in items if i.utility == u and i.duty is not None]
+            phi = _fold(users) if users else None
+        return phi
 
     def technosphere(
         self,
