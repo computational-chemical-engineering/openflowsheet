@@ -341,47 +341,10 @@ def couple(
     while True:
         if on_iteration is not None:
             on_iteration(run.k, block.max_outer)
-        halvings = 0
-        while True:  # the trial at u, halved back towards `base` on a failure
-            w = _w_of(run.u, units, scales)
-            inner = solve_inner(w, None if run.base is None else run.base.inner.state)
-            failure: str | None = None
-            accepted: tuple[Vector, float, dict[str, ExternalAnswer], dict[str, Any]] | None
-            accepted = None
-            if not inner.converged:
-                item = run.entry(run.u, inner, {})
-                if run.base is None:
-                    # §4.4: an inner failure at k = 0 passes its own outcome through.
-                    return run.end(inner.outcome, None, inner, run.u)
-                failure = "inner_failed"
-            else:
-                answers, unit_entries, r_hat, rho, failure, transient = _experiments(
-                    units, inner, evaluate, w, block
-                )
-                if transient is not None:
-                    run.entry(run.u, inner, unit_entries)
-                    return run.end("EVALUATION_ERROR", transient, inner, run.u)
-                item = run.entry(run.u, inner, unit_entries)
-                if failure is None:
-                    item["rho"] = rho
-                    accepted = (r_hat, rho, answers, item)
-                elif run.base is None:
-                    # No iterate to halve back towards: a refusal at the start ends the run.
-                    return run.end("COUPLING_NOT_CONVERGED", failure, inner, run.u)
-            if accepted is not None:
-                break
-            assert run.base is not None and failure is not None
-            if halvings == BACKTRACKS:
-                return run.end("COUPLING_NOT_CONVERGED", failure, inner, run.u)
-            halvings += 1
-            run.u = run.base.u + 0.5 * (run.u - run.base.u)
-            item["step"] = {
-                "kind": "backtrack",
-                "du": [float(v) for v in run.u - run.base.u],
-                "B": None,
-            }
-
-        r_hat, rho, answers, item = accepted
+        trial = run._trial()
+        if isinstance(trial, CouplingRun):
+            return trial
+        inner, r_hat, rho, answers, item = trial
         run.accepted_count += 1
         point = _Point(k=run.k, u=run.u.copy(), inner=inner, r_hat=r_hat, rho=rho)
         if rho <= 1.0:
@@ -452,6 +415,59 @@ class _Outer:
     accepted_count: int = 0
     record: list[dict[str, Any]] = field(default_factory=list)
 
+    def _trial(self) -> _Trial | CouplingRun:
+        """§4.3's trial at `u` (`_trial_at_u`), halved back towards `base` on a failure, at most
+        `BACKTRACKS` times; each halving writes `u` and the failed entry's backtrack step.
+        Returns the accepted trial, or the run's end: `_trial_at_u`'s, or the failure after the
+        last halving."""
+        halvings = 0
+        while True:  # the trial at u, halved back towards `base` on a failure
+            tried = self._trial_at_u()
+            if not isinstance(tried, _FailedTrial):
+                return tried
+            failure, inner, item = tried
+            assert self.base is not None and failure is not None
+            if halvings == BACKTRACKS:
+                return self.end("COUPLING_NOT_CONVERGED", failure, inner, self.u)
+            halvings += 1
+            self.u = self.base.u + 0.5 * (self.u - self.base.u)
+            item["step"] = {
+                "kind": "backtrack",
+                "du": [float(v) for v in self.u - self.base.u],
+                "B": None,
+            }
+
+    def _trial_at_u(self) -> _Trial | CouplingRun | _FailedTrial:
+        """One trial at `u`: the inner solve at w (`solve_inner`, from the base's inner solution)
+        and, when it converged, the units' experiments (`_experiments`); writes the trial's entry
+        into `record` (`entry`). Returns the accepted trial; the run's end on an inner failure
+        at k = 0, a transient answer (`EVALUATION_ERROR`) or a refusal with no base to halve
+        towards; else the failed trial, to be halved back."""
+        w = _w_of(self.u, self.units, self.scales)
+        inner = self.solve_inner(w, None if self.base is None else self.base.inner.state)
+        failure: str | None = None
+        if not inner.converged:
+            item = self.entry(self.u, inner, {})
+            if self.base is None:
+                # §4.4: an inner failure at k = 0 passes its own outcome through.
+                return self.end(inner.outcome, None, inner, self.u)
+            failure = "inner_failed"
+        else:
+            answers, unit_entries, r_hat, rho, failure, transient = _experiments(
+                self.units, inner, self.evaluate, w, self.block
+            )
+            if transient is not None:
+                self.entry(self.u, inner, unit_entries)
+                return self.end("EVALUATION_ERROR", transient, inner, self.u)
+            item = self.entry(self.u, inner, unit_entries)
+            if failure is None:
+                item["rho"] = rho
+                return _Trial(inner, r_hat, rho, answers, item)
+            elif self.base is None:
+                # No iterate to halve back towards: a refusal at the start ends the run.
+                return self.end("COUPLING_NOT_CONVERGED", failure, inner, self.u)
+        return _FailedTrial(failure, inner, item)
+
     def entry(
         self, u_at: Vector, inner: InnerSolve, unit_entries: Mapping[str, Any]
     ) -> dict[str, Any]:
@@ -485,6 +501,26 @@ class _Outer:
             answers=dict(answers or {}),
             outer_iterations=self.accepted_count,
         )
+
+
+class _Trial(NamedTuple):
+    """An accepted trial: its converged inner solve, r̂ and ρ over the units, their answers, and
+    its record entry (its `step` still to be written)."""
+
+    inner: InnerSolve
+    r_hat: Vector
+    rho: float
+    answers: dict[str, ExternalAnswer]
+    item: dict[str, Any]
+
+
+class _FailedTrial(NamedTuple):
+    """A trial that failed (the inner solve or a unit's refusal) with a base to halve back
+    towards: the failure, its inner solve and its record entry."""
+
+    failure: str
+    inner: InnerSolve
+    item: dict[str, Any]
 
 
 class _Experiments(NamedTuple):
