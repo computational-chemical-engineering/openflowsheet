@@ -3286,3 +3286,9 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   `_run_steps`, then `_solve_revision_region` and `_eo_recovery` each to NLOC <= 70, cog <= 15. Target executor.py
   >= 7.0. `_solve_region`'s parameter object (t08 spy) is a later run. No architect pass: plan 5.9 and Q4 fix the
   record's shape. Launch after job 424 PASS and the merge.
+- **2026-11-19 ~11:30 CET, job 424 PASS (g1o9-mc, full suite, 10/10, 121.0 -> 94.1); lane O run 9 merged into wp/S19
+  as 272011be** (wp/S19 changed only S19_DECISIONS and S19_RULES since d24f38d0; src, tests, scripts identical to the
+  helper e39bff0b). Worktrees s19-g1o9, s19-g1o9-mc and their branches removed. G1's W3 lanes N and O are closed;
+  executor.py's 7.0 goes to W4 run PR-1. Gate report (6 h): the four standing ALERTs ("selected gates take 1123 s >
+  300 s (tests tier)", "selected/full time ratio 0.82 > 0.4", share 48%, wait median 39 min). Job 415 PASS (w5n1-21s,
+  step 414, 29.1 -> 27.1). PR-1 launched (opus-engineer) from 272011be.
