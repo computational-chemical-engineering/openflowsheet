@@ -390,158 +390,6 @@ class _ContributionBuilder:
         self.column(stage_pressure_id(self.unit, 1), "pressure")
         self.column(stage_duty_id(self.unit, 1), "heat_rate")
 
-    def column(self, name: str, kind: QuantityKind | None) -> None:
-        self.variables.append(name)
-        if kind is not None:
-            self.variable_kinds[name] = kind
-
-    def row(
-        self,
-        equation_id: str,
-        build: RowBuilder,
-        accumulation: RowAccumulation,
-        family: str,
-        kind: QuantityKind,
-    ) -> None:
-        self.equations.append(
-            EquationSpec(
-                equation_id=equation_id,
-                build=build,
-                accumulation=accumulation,
-                origin=origin(MODEL_ID, family),
-            )
-        )
-        self.row_kinds[equation_id] = kind
-
-    def pin(self, name: str, value: float) -> str:
-        self.parameter_ids.append(name)
-        self.parameters[name] = normalize_zero(float(value))
-        return name
-
-    def slot(self, stage: int) -> None:
-        """Stage j's slot row: `Q_j − Q_j*` (S01's id, `_duty_row`) or the column specification
-        (§2.1, its builder from `_slot_build`), then a `purity` end's definition row
-        (`_purity_definition`) or, in a flowsheet, a `recovery` end's (`_recovery_definition`)."""
-        end = self.slots.get(stage)
-        if end is None:
-            self._duty_row(stage)
-            return
-        given = _specification(self.spec, end)
-        build = self._slot_build(stage, end, given)
-        self.row(
-            slot_row_id(self.unit, stage, given.kind),
-            build,
-            "algebraic",
-            _SLOT_FAMILY[given.kind],
-            _INVERSE_ROW_KIND.get(
-                given.kind, "heat_rate" if given.kind == "duty" else "molar_flow"
-            ),
-        )
-        if given.kind == "purity":
-            self._purity_definition(stage, end, given)
-        if given.kind == "recovery" and self.links is not None:
-            self._recovery_definition(stage, end, given)
-
-    def _duty_row(self, stage: int) -> None:
-        """S01's `Q_j − Q_j*` at a stage without a column specification; pins `Q_j*`."""
-        duty = self.spec.duties[stage - 1]
-        assert duty is not None
-        self.row(
-            stage_row_id(self.unit, stage, "Q"),
-            specification_row(
-                stage_duty_id(self.unit, stage),
-                self.pin(_parameter(stage_duty_id(self.unit, stage)), duty),
-            ),
-            "algebraic",
-            "CAS-Q",
-            "heat_rate",
-        )
-
-    def _slot_build(self, stage: int, end: str, given: EndSpecification) -> RowBuilder:
-        """The slot row of end `end` at stage j for its specification `given`: a ratio
-        (`_ratio_build`), an inverse end's `variable − parameter` (S11 §4.7.4 in a flowsheet,
-        S06 §2 otherwise) or `variable − value`; pins its parameter."""
-        if given.kind in RATIO_KINDS:
-            return self._ratio_build(stage, given)
-        if given.kind in INVERSE_KINDS and self.links is not None:
-            # S11 §4.7.4: `T_s − T*`, `w − ν*` or `u − π*` with `F_REF` for `F` and `F_c`.
-            pinned = (
-                recovery_flow_id(self.unit, stage)
-                if given.kind == "recovery"
-                else slot_column(self.spec, end, given.kind)
-            )
-            value = given.value if given.kind == "temperature" else given.value * F_REF
-            return specification_row(pinned, self.pin(_parameter(pinned), value))
-        if given.kind in INVERSE_KINDS:
-            # S06 §2: `T_s − T*`, `n_c − ν*` or `u − π*`, each `variable − parameter`.
-            pinned = slot_column(self.spec, end, given.kind)
-            return specification_row(
-                pinned, self.pin(_parameter(pinned), inverse_parameter(self.spec, end))
-            )
-        pinned = slot_column(self.spec, end, given.kind)
-        return specification_row(pinned, self.pin(_parameter(pinned), given.value))
-
-    def _ratio_build(self, stage: int, given: EndSpecification) -> RowBuilder:
-        """A ratio slot at stage j: the boilup ratio `V_j / L_j`, or the reflux ratio over the
-        total condenser's `r` and `D` or over `L_1` and `V_1`; pins the ratio."""
-        ratio = self.pin(ratio_parameter(self.unit, stage, given.kind), given.value)
-        if given.kind == "boilup_ratio":
-            return ratio_row(
-                (vapor_total_id(self.unit, stage),), ratio, liquid_total_id(self.unit, stage)
-            )
-        if self.total:
-            return ratio_row(
-                tuple(reflux_id(self.unit, c) for c in self.components),
-                ratio,
-                distillate_total_id(self.unit),
-            )
-        return ratio_row((liquid_total_id(self.unit, 1),), ratio, vapor_total_id(self.unit, 1))
-
-    def _purity_definition(self, stage: int, end: str, given: EndSpecification) -> None:
-        """S06 §2: a `purity` end's column `u` and its definition `F n_c − u P`, after the slot
-        row; `F` is `F_REF` in a flowsheet (S11 §4.7.4)."""
-        assert given.component is not None
-        scaled = purity_flow_id(self.unit, stage)
-        self.column(scaled, "molar_flow")
-        self.row(
-            stage_row_id(self.unit, stage, "spec", "purity_definition"),
-            scaled_definition_row(
-                product_flow_id(self.spec, end, given.component),
-                self.pin(
-                    purity_reference_parameter(self.unit, stage),
-                    purity_reference(self.spec) if self.links is None else F_REF,
-                ),
-                scaled,
-                product_total_id(self.spec, end),
-            ),
-            "algebraic",
-            "COL-purity-definition",
-            "molar_flow_squared",
-        )
-
-    def _recovery_definition(self, stage: int, end: str, given: EndSpecification) -> None:
-        """S11 §4.7.4: a flowsheet `recovery` end's column `w` and its definition
-        `F_REF n_c − w Σ_k n_{k,c}`, after the slot row; the sum over the inlet columns in
-        `inlets()` order."""
-        assert given.component is not None
-        scaled = recovery_flow_id(self.unit, stage)
-        self.column(scaled, "molar_flow")
-        self.row(
-            stage_row_id(self.unit, stage, "spec", "recovery_definition"),
-            scaled_sum_definition_row(
-                product_flow_id(self.spec, end, given.component),
-                self.pin(recovery_reference_parameter(self.unit, stage), F_REF),
-                scaled,
-                tuple(
-                    flow_id(inlet_stream(self.unit, inlet.port), given.component)
-                    for inlet in self.inlets
-                ),
-            ),
-            "algebraic",
-            "COL-recovery-definition",
-            "molar_flow_squared",
-        )
-
     def stage_rows(self, stage: int, keys: _BlockKeys, sides: list[PlacedInlet]) -> None:
         """Equilibrium stage j's columns and rows, S01's, in S01's order, over the block keys
         `keys` and the side inlets `sides` at the stage: its columns (`_stage_columns`), the
@@ -667,6 +515,130 @@ class _ContributionBuilder:
             "pressure",
         )
 
+    def slot(self, stage: int) -> None:
+        """Stage j's slot row: `Q_j − Q_j*` (S01's id, `_duty_row`) or the column specification
+        (§2.1, its builder from `_slot_build`), then a `purity` end's definition row
+        (`_purity_definition`) or, in a flowsheet, a `recovery` end's (`_recovery_definition`)."""
+        end = self.slots.get(stage)
+        if end is None:
+            self._duty_row(stage)
+            return
+        given = _specification(self.spec, end)
+        build = self._slot_build(stage, end, given)
+        self.row(
+            slot_row_id(self.unit, stage, given.kind),
+            build,
+            "algebraic",
+            _SLOT_FAMILY[given.kind],
+            _INVERSE_ROW_KIND.get(
+                given.kind, "heat_rate" if given.kind == "duty" else "molar_flow"
+            ),
+        )
+        if given.kind == "purity":
+            self._purity_definition(stage, end, given)
+        if given.kind == "recovery" and self.links is not None:
+            self._recovery_definition(stage, end, given)
+
+    def _duty_row(self, stage: int) -> None:
+        """S01's `Q_j − Q_j*` at a stage without a column specification; pins `Q_j*`."""
+        duty = self.spec.duties[stage - 1]
+        assert duty is not None
+        self.row(
+            stage_row_id(self.unit, stage, "Q"),
+            specification_row(
+                stage_duty_id(self.unit, stage),
+                self.pin(_parameter(stage_duty_id(self.unit, stage)), duty),
+            ),
+            "algebraic",
+            "CAS-Q",
+            "heat_rate",
+        )
+
+    def _slot_build(self, stage: int, end: str, given: EndSpecification) -> RowBuilder:
+        """The slot row of end `end` at stage j for its specification `given`: a ratio
+        (`_ratio_build`), an inverse end's `variable − parameter` (S11 §4.7.4 in a flowsheet,
+        S06 §2 otherwise) or `variable − value`; pins its parameter."""
+        if given.kind in RATIO_KINDS:
+            return self._ratio_build(stage, given)
+        if given.kind in INVERSE_KINDS and self.links is not None:
+            # S11 §4.7.4: `T_s − T*`, `w − ν*` or `u − π*` with `F_REF` for `F` and `F_c`.
+            pinned = (
+                recovery_flow_id(self.unit, stage)
+                if given.kind == "recovery"
+                else slot_column(self.spec, end, given.kind)
+            )
+            value = given.value if given.kind == "temperature" else given.value * F_REF
+            return specification_row(pinned, self.pin(_parameter(pinned), value))
+        if given.kind in INVERSE_KINDS:
+            # S06 §2: `T_s − T*`, `n_c − ν*` or `u − π*`, each `variable − parameter`.
+            pinned = slot_column(self.spec, end, given.kind)
+            return specification_row(
+                pinned, self.pin(_parameter(pinned), inverse_parameter(self.spec, end))
+            )
+        pinned = slot_column(self.spec, end, given.kind)
+        return specification_row(pinned, self.pin(_parameter(pinned), given.value))
+
+    def _ratio_build(self, stage: int, given: EndSpecification) -> RowBuilder:
+        """A ratio slot at stage j: the boilup ratio `V_j / L_j`, or the reflux ratio over the
+        total condenser's `r` and `D` or over `L_1` and `V_1`; pins the ratio."""
+        ratio = self.pin(ratio_parameter(self.unit, stage, given.kind), given.value)
+        if given.kind == "boilup_ratio":
+            return ratio_row(
+                (vapor_total_id(self.unit, stage),), ratio, liquid_total_id(self.unit, stage)
+            )
+        if self.total:
+            return ratio_row(
+                tuple(reflux_id(self.unit, c) for c in self.components),
+                ratio,
+                distillate_total_id(self.unit),
+            )
+        return ratio_row((liquid_total_id(self.unit, 1),), ratio, vapor_total_id(self.unit, 1))
+
+    def _purity_definition(self, stage: int, end: str, given: EndSpecification) -> None:
+        """S06 §2: a `purity` end's column `u` and its definition `F n_c − u P`, after the slot
+        row; `F` is `F_REF` in a flowsheet (S11 §4.7.4)."""
+        assert given.component is not None
+        scaled = purity_flow_id(self.unit, stage)
+        self.column(scaled, "molar_flow")
+        self.row(
+            stage_row_id(self.unit, stage, "spec", "purity_definition"),
+            scaled_definition_row(
+                product_flow_id(self.spec, end, given.component),
+                self.pin(
+                    purity_reference_parameter(self.unit, stage),
+                    purity_reference(self.spec) if self.links is None else F_REF,
+                ),
+                scaled,
+                product_total_id(self.spec, end),
+            ),
+            "algebraic",
+            "COL-purity-definition",
+            "molar_flow_squared",
+        )
+
+    def _recovery_definition(self, stage: int, end: str, given: EndSpecification) -> None:
+        """S11 §4.7.4: a flowsheet `recovery` end's column `w` and its definition
+        `F_REF n_c − w Σ_k n_{k,c}`, after the slot row; the sum over the inlet columns in
+        `inlets()` order."""
+        assert given.component is not None
+        scaled = recovery_flow_id(self.unit, stage)
+        self.column(scaled, "molar_flow")
+        self.row(
+            stage_row_id(self.unit, stage, "spec", "recovery_definition"),
+            scaled_sum_definition_row(
+                product_flow_id(self.spec, end, given.component),
+                self.pin(recovery_reference_parameter(self.unit, stage), F_REF),
+                scaled,
+                tuple(
+                    flow_id(inlet_stream(self.unit, inlet.port), given.component)
+                    for inlet in self.inlets
+                ),
+            ),
+            "algebraic",
+            "COL-recovery-definition",
+            "molar_flow_squared",
+        )
+
     def contribution(self) -> Contribution:
         """The `Contribution` of the tables built so far (pure: reads them, in field order of the
         `Contribution`'s keywords as at the base)."""
@@ -719,6 +691,34 @@ class _ContributionBuilder:
             "CAS-inlet-P",
             "pressure",
         )
+
+    def column(self, name: str, kind: QuantityKind | None) -> None:
+        self.variables.append(name)
+        if kind is not None:
+            self.variable_kinds[name] = kind
+
+    def row(
+        self,
+        equation_id: str,
+        build: RowBuilder,
+        accumulation: RowAccumulation,
+        family: str,
+        kind: QuantityKind,
+    ) -> None:
+        self.equations.append(
+            EquationSpec(
+                equation_id=equation_id,
+                build=build,
+                accumulation=accumulation,
+                origin=origin(MODEL_ID, family),
+            )
+        )
+        self.row_kinds[equation_id] = kind
+
+    def pin(self, name: str, value: float) -> str:
+        self.parameter_ids.append(name)
+        self.parameters[name] = normalize_zero(float(value))
+        return name
 
 
 class _BlockKeys(NamedTuple):
