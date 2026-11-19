@@ -3107,3 +3107,8 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   for the loop now (a second `_PlanRun`-shaped object, later merged). Reversible by: a step in run 8 or 9.
 - executor.py's long smells left: `execute_plan`, `_solve_revision_region`, `_eo_recovery` (all Q4); plan 5.9's 7.0
   waits for W4.
+
+## 2026-11-19 ~04:45 CET: lane O run 6 merged
+
+- Merge-check job 390 `g1o6-mc` PASS 10/10 (debt 267.6 -> 181.0). wp/S19-g1o6-mc merged into wp/S19 as
+  6e1a23ad. Run 7's merge-check goes on the wp/S19 tip after its review.
