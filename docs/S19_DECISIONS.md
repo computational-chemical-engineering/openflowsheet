@@ -3155,3 +3155,8 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   NLOC, `check_opening` retarget) goes before R6 if R5's replayed head plus R6's ~4-10 would cross 1000.
   Alternative: shrink R5 (fewer methods) or fold the move after R6 with R5 held. Reversible by: dropping the
   restructure commit; the plan already authorises the move, only its timing changes.
+- Run 8 delivered (wp/S19-g1o8): R5 d7e2bdc1 (job 394 FAIL as above), K2 f871af74 (job 395 SKIPPED; splits.py 20.0 ->
+  10.0, health 8.1 -> 8.6), E4 3eba2c7f (job 396, will be SKIPPED; execution.py 36.2 -> 35.2, health 7.2 -> 7.7). Six
+  deviations declared (in the commits) for the review of the replayed chain. Run 8b (brief `S19-W3-G1O-8b.md`): the
+  move as its own restructure commit from 805c69f6, then R5, K2, E4 cherry-picked. Tests patch
+  `region_module._swapped_row_test`; a re-import into region keeps them valid (the call resolves via region's globals).
