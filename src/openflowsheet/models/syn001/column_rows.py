@@ -11,6 +11,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass, field
+from typing import NamedTuple
 
 from openflowsheet.canonical import normalize_zero
 from openflowsheet.compile.spec import EquationSpec, QuantityKind, RowBuilder
@@ -137,116 +138,9 @@ def declared_rows(
         slots=slots,
     )
 
-    # Blocks, as S01: one lnK and one enthalpy block per (stage, phase) outlet, one per inlet; at
-    # a total condenser one lnK (the bubble row) and one liquid block each for `r` and `d`.
-    vapor_keys: dict[int, tuple[str, ...]] = {}
-    liquid_keys: dict[int, tuple[str, ...]] = {}
-    lnk_keys: dict[int, str] = {}
-    reflux_keys: tuple[str, ...] = ()
-    distillate_keys: tuple[str, ...] = ()
+    keys = builder.property_blocks(stages)
     if total:
-        t_c, p_c = stage_temperature_id(unit, 1), stage_pressure_id(unit, 1)
-        lnk_keys[1] = builder.lnk_block(
-            f"{unit}_s1", t_c, p_c, tuple(vapor_id(unit, 2, c) for c in components)
-        )
-        reflux_keys = builder.enthalpy_block(
-            f"{unit}_s1_r", "LIQUID", tuple(reflux_id(unit, c) for c in components), t_c, p_c
-        )
-        distillate_keys = builder.enthalpy_block(
-            f"{unit}_s1_d", "LIQUID", tuple(distillate_id(unit, c) for c in components), t_c, p_c
-        )
-    for stage in stages:
-        token = f"{unit}_s{stage}"
-        t, p = stage_temperature_id(unit, stage), stage_pressure_id(unit, stage)
-        lnk_keys[stage] = builder.lnk_block(
-            token, t, p, tuple(liquid_id(unit, stage, c) for c in components)
-        )
-        vapor_keys[stage] = builder.enthalpy_block(
-            token, "VAPOR", tuple(vapor_id(unit, stage, c) for c in components), t, p
-        )
-        liquid_keys[stage] = builder.enthalpy_block(
-            token, "LIQUID", tuple(liquid_id(unit, stage, c) for c in components), t, p
-        )
-    inlet_keys: dict[str, tuple[str, ...]] = {}
-    for inlet in inlets:
-        stream = inlet_stream(unit, inlet.port)
-        inlet_keys[inlet.port] = builder.enthalpy_block(
-            f"{unit}_in_{inlet.port}",
-            _phase(inlet.state),
-            tuple(flow_id(stream, c) for c in components),
-            temperature_id(stream),
-            pressure_id(stream),
-        )
-
-    if total:
-        # §2.2: columns r_i, d_i, phi, D, T_c, P_c, Q_c; rows bal_i, split_i, Ddef, bubble,
-        # energy, P, slot.
-        for c in components:
-            builder.column(reflux_id(unit, c), "molar_flow")
-        for c in components:
-            builder.column(distillate_id(unit, c), "molar_flow")
-        # `phi` is a pure number: the column-only kind `dimensionless`, nominal 1 (§17 item 1).
-        builder.column(reflux_fraction_id(unit), "dimensionless")
-        builder.column(distillate_total_id(unit), "molar_flow")
-        builder.column(stage_temperature_id(unit, 1), "temperature")
-        builder.column(stage_pressure_id(unit, 1), "pressure")
-        builder.column(stage_duty_id(unit, 1), "heat_rate")
-        for c in components:
-            builder.row(
-                stage_row_id(unit, 1, "bal", c),
-                balance_row((vapor_id(unit, 2, c),), (reflux_id(unit, c), distillate_id(unit, c))),
-                "holdup_balance",
-                "COL-tc-bal",
-                "molar_flow",
-            )
-        for c in components:
-            builder.row(
-                stage_row_id(unit, 1, "split", c),
-                fraction_row(reflux_id(unit, c), reflux_fraction_id(unit), vapor_id(unit, 2, c)),
-                "algebraic",
-                "COL-tc-split",
-                "molar_flow",
-            )
-        builder.row(
-            stage_row_id(unit, 1, "Ddef"),
-            definition_row(
-                distillate_total_id(unit), tuple(distillate_id(unit, c) for c in components)
-            ),
-            "algebraic",
-            "COL-tc-Ddef",
-            "molar_flow",
-        )
-        builder.row(
-            stage_row_id(unit, 1, "bubble"),
-            bubble_row(
-                tuple(vapor_id(unit, 2, c) for c in components),
-                tuple(f"{lnk_keys[1]}.lnK_{c}" for c in components),
-                vapor_total_id(unit, 2),
-            ),
-            "algebraic",
-            "COL-tc-bubble",
-            "molar_flow",
-        )
-        builder.row(
-            energy_row_id(unit, 1),
-            energy_row(
-                vapor_keys[2], (*reflux_keys, *distillate_keys), source=stage_duty_id(unit, 1)
-            ),
-            "holdup_balance",
-            "COL-tc-energy",
-            "heat_rate",
-        )
-        builder.row(
-            stage_row_id(unit, 1, "P"),
-            specification_row(
-                stage_pressure_id(unit, 1),
-                builder.pin(_parameter(stage_pressure_id(unit, 1)), spec.pressures[0]),
-            ),
-            "algebraic",
-            "COL-tc-P",
-            "pressure",
-        )
-        builder.slot(1)
+        builder.total_condenser_rows(keys)
 
     sides_at: dict[int, list[PlacedInlet]] = {}
     for inlet in inlets:
@@ -294,7 +188,7 @@ def declared_rows(
                     liquid_id(unit, stage, c),
                     vapor_total_id(unit, stage),
                     liquid_total_id(unit, stage),
-                    f"{lnk_keys[stage]}.lnK_{c}",
+                    f"{keys.lnk[stage]}.lnK_{c}",
                 ),
                 "algebraic",
                 "CAS-equilibrium",
@@ -320,21 +214,21 @@ def declared_rows(
         )
         above: tuple[str, ...]
         if stage == 1:
-            above = inlet_keys[TOP] if spec.top is not None else ()
+            above = keys.inlet[TOP] if spec.top is not None else ()
         elif stage == 2 and total:
-            above = reflux_keys
+            above = keys.reflux
         else:
-            above = liquid_keys[stage - 1]
+            above = keys.liquid[stage - 1]
         below: tuple[str, ...]
         if stage == count:
-            below = inlet_keys[BOTTOM] if spec.bottom is not None else ()
+            below = keys.inlet[BOTTOM] if spec.bottom is not None else ()
         else:
-            below = vapor_keys[stage + 1]
+            below = keys.vapor[stage + 1]
         builder.row(
             energy_row_id(unit, stage),
             energy_row(
-                (*above, *below, *(key for s in sides for key in inlet_keys[s.port])),
-                (*vapor_keys[stage], *liquid_keys[stage]),
+                (*above, *below, *(key for s in sides for key in keys.inlet[s.port])),
+                (*keys.vapor[stage], *keys.liquid[stage]),
                 source=stage_duty_id(unit, stage),
             ),
             "holdup_balance",
@@ -450,6 +344,85 @@ class _ContributionBuilder:
     parameter_ids: list[str] = field(default_factory=list)
     parameters: dict[str, float] = field(default_factory=dict)
 
+    def property_blocks(self, stages: tuple[int, ...]) -> _BlockKeys:
+        """The blocks, as S01: at a total condenser first its three (`_condenser_blocks`), then
+        one lnK and one enthalpy block per (stage, phase) outlet of the equilibrium `stages`
+        (`_stage_blocks`), then one per inlet. Returns their output keys."""
+        vapor_keys: dict[int, tuple[str, ...]] = {}
+        liquid_keys: dict[int, tuple[str, ...]] = {}
+        lnk_keys: dict[int, str] = {}
+        reflux_keys: tuple[str, ...] = ()
+        distillate_keys: tuple[str, ...] = ()
+        if self.total:
+            lnk_keys[1], reflux_keys, distillate_keys = self._condenser_blocks()
+        for stage in stages:
+            lnk_keys[stage], vapor_keys[stage], liquid_keys[stage] = self._stage_blocks(stage)
+        inlet_keys: dict[str, tuple[str, ...]] = {}
+        for inlet in self.inlets:
+            stream = inlet_stream(self.unit, inlet.port)
+            inlet_keys[inlet.port] = self.enthalpy_block(
+                f"{self.unit}_in_{inlet.port}",
+                _phase(inlet.state),
+                tuple(flow_id(stream, c) for c in self.components),
+                temperature_id(stream),
+                pressure_id(stream),
+            )
+
+        return _BlockKeys(
+            lnk=lnk_keys,
+            vapor=vapor_keys,
+            liquid=liquid_keys,
+            reflux=reflux_keys,
+            distillate=distillate_keys,
+            inlet=inlet_keys,
+        )
+
+    def _condenser_blocks(self) -> tuple[str, tuple[str, ...], tuple[str, ...]]:
+        """A total condenser's blocks at `(T_c, P_c)`: one lnK over `v_2` (the bubble row) and one
+        liquid enthalpy block each for `r` and `d`. Returns (lnK id, `r` keys, `d` keys)."""
+        t_c, p_c = stage_temperature_id(self.unit, 1), stage_pressure_id(self.unit, 1)
+        lnk = self.lnk_block(
+            f"{self.unit}_s1",
+            t_c,
+            p_c,
+            tuple(vapor_id(self.unit, 2, c) for c in self.components),
+        )
+        reflux = self.enthalpy_block(
+            f"{self.unit}_s1_r",
+            "LIQUID",
+            tuple(reflux_id(self.unit, c) for c in self.components),
+            t_c,
+            p_c,
+        )
+        distillate = self.enthalpy_block(
+            f"{self.unit}_s1_d",
+            "LIQUID",
+            tuple(distillate_id(self.unit, c) for c in self.components),
+            t_c,
+            p_c,
+        )
+        return lnk, reflux, distillate
+
+    def _stage_blocks(self, stage: int) -> tuple[str, tuple[str, ...], tuple[str, ...]]:
+        """Equilibrium stage j's blocks at `(T_j, P_j)`: one lnK over `l_j` and one vapor and one
+        liquid enthalpy block. Returns (lnK id, vapor keys, liquid keys)."""
+        token = f"{self.unit}_s{stage}"
+        t, p = stage_temperature_id(self.unit, stage), stage_pressure_id(self.unit, stage)
+        lnk = self.lnk_block(
+            token, t, p, tuple(liquid_id(self.unit, stage, c) for c in self.components)
+        )
+        vapor = self.enthalpy_block(
+            token, "VAPOR", tuple(vapor_id(self.unit, stage, c) for c in self.components), t, p
+        )
+        liquid = self.enthalpy_block(
+            token,
+            "LIQUID",
+            tuple(liquid_id(self.unit, stage, c) for c in self.components),
+            t,
+            p,
+        )
+        return lnk, vapor, liquid
+
     def lnk_block(self, token: str, t: str, p: str, liquid: tuple[str, ...]) -> str:
         """`liquid`: the flows K is evaluated at (read by a composition-dependent form only)."""
         if self.composition_dependent:
@@ -480,6 +453,88 @@ class _ContributionBuilder:
         self.blocks.append(block)
         self.block_inputs[block.block_id] = (*flows, t, p)
         return tuple(f"{block.block_id}.{out}" for out in block.output_ids)
+
+    def total_condenser_rows(self, keys: _BlockKeys) -> None:
+        """A total condenser's block (§2.2), over the block keys `keys`: its columns
+        (`_condenser_columns`), then rows bal_i, split_i, Ddef, bubble, energy, P, slot."""
+        self._condenser_columns()
+        for c in self.components:
+            self.row(
+                stage_row_id(self.unit, 1, "bal", c),
+                balance_row(
+                    (vapor_id(self.unit, 2, c),),
+                    (reflux_id(self.unit, c), distillate_id(self.unit, c)),
+                ),
+                "holdup_balance",
+                "COL-tc-bal",
+                "molar_flow",
+            )
+        for c in self.components:
+            self.row(
+                stage_row_id(self.unit, 1, "split", c),
+                fraction_row(
+                    reflux_id(self.unit, c),
+                    reflux_fraction_id(self.unit),
+                    vapor_id(self.unit, 2, c),
+                ),
+                "algebraic",
+                "COL-tc-split",
+                "molar_flow",
+            )
+        self.row(
+            stage_row_id(self.unit, 1, "Ddef"),
+            definition_row(
+                distillate_total_id(self.unit),
+                tuple(distillate_id(self.unit, c) for c in self.components),
+            ),
+            "algebraic",
+            "COL-tc-Ddef",
+            "molar_flow",
+        )
+        self.row(
+            stage_row_id(self.unit, 1, "bubble"),
+            bubble_row(
+                tuple(vapor_id(self.unit, 2, c) for c in self.components),
+                tuple(f"{keys.lnk[1]}.lnK_{c}" for c in self.components),
+                vapor_total_id(self.unit, 2),
+            ),
+            "algebraic",
+            "COL-tc-bubble",
+            "molar_flow",
+        )
+        self.row(
+            energy_row_id(self.unit, 1),
+            energy_row(
+                keys.vapor[2], (*keys.reflux, *keys.distillate), source=stage_duty_id(self.unit, 1)
+            ),
+            "holdup_balance",
+            "COL-tc-energy",
+            "heat_rate",
+        )
+        self.row(
+            stage_row_id(self.unit, 1, "P"),
+            specification_row(
+                stage_pressure_id(self.unit, 1),
+                self.pin(_parameter(stage_pressure_id(self.unit, 1)), self.spec.pressures[0]),
+            ),
+            "algebraic",
+            "COL-tc-P",
+            "pressure",
+        )
+        self.slot(1)
+
+    def _condenser_columns(self) -> None:
+        """A total condenser's columns (§2.2): r_i, d_i, phi, D, T_c, P_c, Q_c."""
+        for c in self.components:
+            self.column(reflux_id(self.unit, c), "molar_flow")
+        for c in self.components:
+            self.column(distillate_id(self.unit, c), "molar_flow")
+        # `phi` is a pure number: the column-only kind `dimensionless`, nominal 1 (§17 item 1).
+        self.column(reflux_fraction_id(self.unit), "dimensionless")
+        self.column(distillate_total_id(self.unit), "molar_flow")
+        self.column(stage_temperature_id(self.unit, 1), "temperature")
+        self.column(stage_pressure_id(self.unit, 1), "pressure")
+        self.column(stage_duty_id(self.unit, 1), "heat_rate")
 
     def column(self, name: str, kind: QuantityKind | None) -> None:
         self.variables.append(name)
@@ -632,6 +687,19 @@ class _ContributionBuilder:
             "COL-recovery-definition",
             "molar_flow_squared",
         )
+
+
+class _BlockKeys(NamedTuple):
+    """`_ContributionBuilder.property_blocks`'s output keys: `lnk` the lnK block id per stage
+    (stage 1 a total condenser's), `vapor` and `liquid` the enthalpy outputs per equilibrium
+    stage, `reflux` and `distillate` a total condenser's (empty without one), `inlet` per port."""
+
+    lnk: dict[int, str]
+    vapor: dict[int, tuple[str, ...]]
+    liquid: dict[int, tuple[str, ...]]
+    reflux: tuple[str, ...]
+    distillate: tuple[str, ...]
+    inlet: dict[str, tuple[str, ...]]
 
 
 def _link_rows(spec: ColumnSpec, links: FlowsheetLinks, builder: _ContributionBuilder) -> None:
