@@ -56,33 +56,39 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 - G1 (orchestrator/, numerics/) running since 2026-11-18 (hold lifted 2026-11-16); ptc.py item met (8.3 after P3).
 - G-END (below) stays the end criterion for the whole repository.
 
-## Next actions (2026-11-19 ~03:25 CET; self-reset)
+## Next actions (2026-11-19 ~06:35 CET; self-reset)
 
-**Since the 02:50 reset:** jobs 358-363, 374, 378, 381 PASS; R-W5-N1 and R-W3-G1O-6 review briefs written; lane O
-run 5 reviewed (merge), merge-check job 385 queued; run 6 delivered (jobs 386-388). No agent running. Queue ~20 deep
-(results COUNT 352). Gate report: only the standing ALERTs (proposal 2).
+**Since the 03:25 reset:** lane O runs 5, 6, 7 merged into wp/S19 (4e5ca326, 6e1a23ad, 0e58c106; merge-checks 385,
+390, 393 PASS; reviews R-W3-G1O-6 merge + docstring fix 8fde69eb, R-W3-G1O-7 merge, no fixes). X5 `execute_plan`
+deferred to W4's `_PlanRun`. Run 8's R5 (job 394) FAILED on a new large_file smell (region.py 1018 NLOC); run 8b
+replays it after plan 4's first fallback move. Batch N jobs through 370 PASS. Gate report: the standing ALERTs only
+(selected share ~58%, queue wait ~23 min: batch N's W5-mode full-suite falls and burst; proposal 2). No agent
+running. `arch --depth 4` measures 0 violations / 0 cycles (run 8b's base).
 
-**Position:** wp/S19 = a92f0290 + docs (lane O run 4 merged; W5 gate mode merged 9e8b3baf; WO-1b merged 9a607a3a,
-R-1060). MB 756e1c12. Runner PID 1341562 (restarted 2026-11-19 with `--batch`; stop `kill $(cat
-<git-common-dir>/codehealth/queue/runner.pid)`). Background `gate_queue.py wait` shells may wake the new context
-without saying why: run `$Q status`.
+**Position:** wp/S19 = 0e58c106 + docs (lane O run 7 merged). MB 756e1c12. Runner PID 1341562 (`--batch`; stop `kill
+$(cat <git-common-dir>/codehealth/queue/runner.pid)`). Background `gate_queue.py wait` shells may wake the new
+context without saying why: run `$Q status`, then `$Q wait --since <COUNT>` in the background.
+**G1 lane O run 8b** (`wp/S19-g1o8b`, worktree `s19-g1o8b`, base 805c69f6; brief `S19-W3-G1O-8b.md`): plan 416c4215
+(split-region-3), restructure 37a380db (job 397, `_swapped_row_test` -> region_problem.py), no-gain fd457e63 (398), R5
+c11f3d66 (399; region.py 991 NLOC), K2 b695efce (400), E4 8ae8528f (401). On all PASS: review R-W3-G1O-8 (reviewer,
+Opus; brief `S19-R-W3-G1O-8.md` written), fixes, merge-check helper `wp/S19-g1o8b-mc` = wp/S19 tip + merge of the
+lane (worktree `s19-g1o8b-mc`; as g1o7-mc: `$Q enqueue --snapshot --worktree W --base <tip> --mode merge-check
+--label g1o8b-mc --target src/openflowsheet/orchestrator --recipe closures-to-class --model claude-opus-5-5`), merge
+(merge commit, `git merge -F`). wp/S19-g1o8 (the failed R5 chain) is kept for the record, never merged.
+**Run 9 next** (after R-W3-G1O-8): the second plan-4 move `_external_opening` (34 NLOC, `check_opening` retarget
+commit first) as a restructure step, then R6 (plan 5.1; region.py must stay <= 1000 NLOC: the gate refuses a new
+large_file smell), then R7 (optional, Q5 scan rule). Template: brief `S19-W3-G1O-8b.md` / `-8.md`. After R6/R7, lane
+O's remaining G1 items are review notes only; `_solve_revision_region`, `_eo_recovery`, `execute_plan` wait for W4's
+`_PlanRun` (Q4).
 **W5 batch N:** B_N = 605d332f; gate file `<git-common-dir>/codehealth/briefs/S19-W5-batchN.json` (sha256 4f7e1232...,
 A26's new node id); branch `wp/S19-w5n`, worktree `s19-w5n`. W5-mode gates fall back to the full suite (~1500 s).
-- WO-N1 part 1 (brief `S19-W5-N1.md`): retarget 3cd5ff50 (job 358 PASS) and contributor.py 23b62a68..a3d7ba21 (jobs
-  360 PASS, 361 to 369 pending; health 2.8 -> 7.9).
-- WO-N1b (brief `S19-W5-N1b.md`) delivered: 95596562 docstrings no-gain (job 370), sets.py b671925e..b73142ef
-  (jobs 371-373, 375-377, 379, 380, 382-384; health 4.7 -> 9.2). Three deviations and `_resolve`'s open design
-  (S19_DECISIONS 02:50) go to the N1 review.
-- After WO-N1(b)'s jobs PASS: review (reviewer, Opus; S2 cadence every 4 steps, so one review over the whole N1 chain
-  (3cd5ff50..b73142ef, 23 steps) is due: brief `S19-R-W5-N1.md` written 2026-11-19 02:00, launch when the jobs PASS), fixes, then WO-N2 (lca retargets, lca health,
-  remove `program.Refusal` re-export, its eight importers), WO-N3 (pr_lib, S1), WO-N4 (factory switch, `--mode
-  interface`), WO-N5 (close: K, judge, batch-check, review), merge batch N into wp/S19 (FR-2 B). Every W5 enqueue adds
-  `--batch <json>`. contributor.py's split toward 9.0 deferred (S19_DECISIONS 02:10).
-**G1 lane O run 5** (`wp/S19-g1o5`, worktree `s19-g1o5`, base a92f0290): R2 4478d96f (job 374), S2 9551f5d1 (378),
-C3 d3c509dd (381). All PASS; review R-W3-G1O-5: merge, no fixes; merge-check job 385 `g1o5-mc` queued -> on PASS
-merge wp/S19-g1o5 into wp/S19. **Run 6** (R3, C4, X4; brief `S19-W3-G1O-6.md`, opus-engineer, branch `wp/S19-g1o6`
-from d3c509dd) delivered: R3 a00639aa, C4 0d642512, X4 8d8b6949 (jobs 386-388) -> on PASS review R-W3-G1O-6 (brief
-written), merge-check after run 5's merge (base the wp/S19 tip), merge. Run 7 next (R4, X5, X6 per plan 6).
+- WO-N1 (brief `S19-W5-N1.md`) and WO-N1b (`S19-W5-N1b.md`): jobs 358 to 370 PASS; 371 to 384 pending (sets.py
+  chain b671925e..b73142ef). Three deviations and `_resolve`'s open design (S19_DECISIONS 02:50) go to the N1 review.
+- After all N1(b) jobs PASS: review R-W5-N1 (reviewer, Opus; one review over 3cd5ff50..b73142ef, 23 steps; brief
+  `S19-R-W5-N1.md` written), fixes, then WO-N2 (lca retargets, lca health, remove `program.Refusal` re-export, its
+  eight importers), WO-N3 (pr_lib, S1), WO-N4 (factory switch, `--mode interface`), WO-N5 (close: K, judge,
+  batch-check, review), merge batch N into wp/S19 (FR-2 B). Every W5 enqueue adds `--batch <json>`. contributor.py's
+  split toward 9.0 deferred (S19_DECISIONS 02:10).
 **Open for the design lane at batch N's close review:** W5-S1's text vs fix 2 (the tool admits a tier 1 split's new
 `.py` in the admitted file's directory; default: the tool's rule stands).
 4. F3 (0.5, `wp/F3`, worktree `f3`): ready except Frank's human review. **Waits for Frank:** card
