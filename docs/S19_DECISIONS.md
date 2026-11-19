@@ -3876,3 +3876,12 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   `codehealth --version` 0.4.1.dev18+g34a30bf47) with the queue idle (decision of 2026-11-19, line "when to re-pin").
   Check: `codehealth arch --depth 4` at the wp/S19 tip: 0 violations, 0 cycles (329 files). Reversible by pinning
   back to cf152455.
+- **2026-11-20 ~00:40, W4 RegionCall delivered (opus-engineer, Opus, ~134k).** wp/S19-rc from 04dc0249: ac98d5d8
+  retarget (test_t06_f4_edge3.py test_wo4 reads `region.RegionCall`'s signature; red alone), 859532c2 plan
+  `.codehealth/interface/w4-region-call.toml` (`renamed`, `added` RegionCall, `changed` solve_region,
+  `literals_removed` "initializer" x2, "eo_recovery_start" x1; no `adapted`: every fake takes *args/**kwargs),
+  21315b02 step (`RegionCall` frozen kw_only dataclass, public in `__all__`, field docs moved onto it,
+  `solve_region(call)`, 20 call sites wrapped). Engineer's checks: F0 PASS 9/9; 78 test files 2356 passed, 2 skipped;
+  patch_noop 0/262; local interface gate (34a30bf export) PASS 20/20, debt 46.0 -> 30.0; arch 0/0; ruff, mypy clean.
+  Enqueued job 518 (rc-1i, interface, 859532c2..21315b02). Next: on PASS, a reviewer over wp/S19-rc and the WO-N6
+  retarget f8e10957, then one helper merge-check and the merges.
