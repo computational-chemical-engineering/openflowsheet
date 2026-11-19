@@ -3422,3 +3422,4 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   median 23 min; heaviest selected files t07_v17_reference 40720 s, s09_references 19748 s, t07_identity 9717 s.
   Proposal 2's exact file list asked of session OpenFlowsheet-check (its author).
 - 16:00: OpenFlowsheet-check builds proposal 2 on wp/S19-tools5 (spec in S19_STATE item 2); no parallel build here; we merge and write executed.
+- 13:07 by the clock (`date`): the clock times in this session's entries since "13:05" (13:20 to 16:00) were estimates and run ahead; the real times are about 12:15 to 13:06. Order of events unchanged.
