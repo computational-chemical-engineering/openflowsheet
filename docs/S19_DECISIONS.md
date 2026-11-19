@@ -3756,3 +3756,9 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   Reversible by: re-enqueueing N4 after 507. DECISION: builtin-sha256.txt not regenerated in N4 (K re-records it).
   Alternative: regenerate all generator outputs. Reversible by: running the generator at K, which it does anyway.
   Agents running: X07a-WO1, WO-N4 (2 of 2).
+- 2026-11-19, WO-N4 delivered (opus-engineer, Opus): 8ac4511c (plan w5n4-factory-switch.toml, empty lists: no
+  `__all__` touched), 30f705d9 (`UNIT_BUILDERS = "openflowsheet.application.model_builders"` for the units' factory
+  only, METHOD_FACTORY keeps BINDER; legacy.json 30 lines, all units' factory `module`; tables.sha256; builtin-sha256.txt
+  kept). Measured: --check fails on builtin-sha256.txt only; test_e_f1_3 fails at :373 on `module` only; test_f1_* +
+  s10_provider 7 failed (all L_N), 363 passed; W5-S1 PASS (17 paths); W5-S4 PASS (M9 1 pr_lib, 30 TABLE pointers);
+  F0 M9 FAIL 1/35 as WO-N3; patch_noop 0/266. Job 512 (w5n4-1i, interface, `--recipe interface` as job 496).
