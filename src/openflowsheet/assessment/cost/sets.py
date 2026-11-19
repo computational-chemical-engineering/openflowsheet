@@ -536,17 +536,25 @@ def _amendments(node: Any, path: str, basis: float, out: dict[str, Mapping[str, 
     elif isinstance(node, Mapping) and "value" in node:
         amended = node.get("amended")
         if isinstance(amended, Mapping):
-            record: dict[str, Any] = {"value": float(node["value"])}
-            record["effective_value"] = effective_value(node, basis)
-            for key in ("replaces", "index_basis", "scale"):
-                if key in amended:
-                    record[key] = amended[key]
-            record["citation"] = amended["citation"]
-            record["ruling"] = amended["ruling"]
-            out[path] = MappingProxyType(record)
+            out[path] = _amendment(node, amended, basis)
     elif isinstance(node, Mapping):
         for key, item in node.items():
             _amendments(item, f"{path}.{key}", basis, out)
+
+
+def _amendment(
+    node: Mapping[str, Any], amended: Mapping[str, Any], basis: float
+) -> Mapping[str, Any]:
+    """§10.4.8: the record of amended number `node`: its value, its effective value at `basis`,
+    the `replaces`, `index_basis` and `scale` its `amended` declares, its citation and ruling."""
+    record: dict[str, Any] = {"value": float(node["value"])}
+    record["effective_value"] = effective_value(node, basis)
+    for key in ("replaces", "index_basis", "scale"):
+        if key in amended:
+            record[key] = amended[key]
+    record["citation"] = amended["citation"]
+    record["ruling"] = amended["ruling"]
+    return MappingProxyType(record)
 
 
 def _resolve(
