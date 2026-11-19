@@ -3575,3 +3575,13 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   Merge on 479, 480, 481, 482 PASS: merge wp/S19-g2-mc into wp/S19 (wp/S19 changes only docs meanwhile: helper rule).
 - 2026-11-19, job 464 (w5n2-7r, inventory.py `plan_inventory`, rerun of the load-timeout job 435) PASS (step 442
   accepted, 16.0 -> 2.0). gate_report: the four ALERTs (56%; 947 s; 0.59; wait 64 min); action unchanged.
+- **2026-11-19, job 465 (w5n2-8s, WO-N2's `Refusal` re-export removal c418b1e3) FAIL literals, public_api: a real
+  failure, a wrong mode.** The step drops "Refusal" from `assessment/program.py`'s `__all__`, an interface change, but
+  was enqueued as no-gain (job 436 by the engineer; never gated, skipped after 435). Jobs 466-476 SKIPPED.
+  DECISION: re-gate as an interface step (form of i8g) -> plan `.codehealth/interface/w5n2-refusal-reexport.toml`
+  committed on 0d2b57d4 (89527267); c418b1e3..3979f326 cherry-picked unchanged onto it (trees identical to the old
+  ones except the plan file; old tip kept as branch wp/S19-w5n-pre-plan). Jobs 483 w5n2-8i (interface, --plan,
+  --batch), 484-494 (the eleven steps, suffix `t`, same batch file 000465 sha 49f4c9e3). New shas: cbefdc7e (removal),
+  WO-N3 50a740f0, fd0294af, 2c5d81f6, 0844ba88; WO-N3b f1fed8be .. 6e86b173. R-W5-N3 brief updated to the new shas.
+  Alternative: a fresh engineer. Reversible by: `git reset --hard wp/S19-w5n-pre-plan` in s19-w5n.
+  Note for briefs: a re-export removal is `--mode interface --plan`, never no-gain.
