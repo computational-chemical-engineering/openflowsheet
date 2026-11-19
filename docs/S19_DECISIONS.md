@@ -3690,3 +3690,8 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   main. Options A (X07a, X01 rest, X06, F2 now; F8 after F2+F3), B (X07a + X01 rest now; F2, X06 after F3 merges;
   rec), C (B + X06 architect pass only), D (F3 only). Cost per lane estimated, not measured. Hub: ADR 0061 accepted
   11-18 (card ofs-f3-accept-adr0061, R-1050); F3 waits only on ofs-f3-mcp-descriptions-human and its merge card.
+- 2026-11-19, hub filed ofs-05-widen with one action per option (verbatim, for `--action` when signed):
+  A "open the 0.5 lanes X07a, X01 rest, X06 and F2, each as wp/<ID> with its own brief, beside S19 at one lane (ofs-s19-trailing-order)";
+  B "open the 0.5 lanes X07a and X01 rest, each as wp/<ID> with its own brief, beside S19 at one lane (ofs-s19-trailing-order)";
+  C "open the 0.5 lanes X07a and X01 rest, plus an X06 architect pass (design note only, no code), each as wp/<ID> with its own brief, beside S19 at one lane (ofs-s19-trailing-order)";
+  D "open no further 0.5 lanes; keep F3 only until it lands". Wording accepted (F8 needs its own card later).
