@@ -388,7 +388,8 @@ def parse_set(document: Mapping[str, Any]) -> CostSet:
 
     The top-level source is checked by `_checked_against_reasons`, an entry of a known form by
     `_check_generic` or `_sslw_entry_reasons`, the compressor's drive by
-    `_compressor_drive_reasons`."""
+    `_compressor_drive_reasons`, and the floors of a set with no other reason by
+    `_floor_reasons`."""
     set_id = str(document.get("set_id", "<no set_id>"))
     reasons: list[str] = []
     if document.get("schema") != SCHEMA:
@@ -427,9 +428,7 @@ def parse_set(document: Mapping[str, Any]) -> CostSet:
         )
     reasons += _compressor_drive_reasons(entries)
     if not reasons:
-        for entry in document.get("entries", []):
-            if entry["form"] != "generic-v1":
-                _check_floors(set_id, entry, reasons, set_index)
+        reasons += _floor_reasons(set_id, document.get("entries", []), set_index)
     if reasons:
         raise CostSetError(set_id, reasons)
     return CostSet(set_id, MappingProxyType(dict(document)), tuple(entries))
@@ -499,6 +498,16 @@ def _compressor_drive_reasons(entries: Sequence[CostEntry]) -> list[str]:
                 "an sslw-compressor-v1 entry needs the set's machine.drive entry of form "
                 "sslw-motor-v1 (§10.4.4)"
             )
+    return found
+
+
+def _floor_reasons(set_id: str, entries: Any, set_index: float) -> list[str]:
+    """§9.2.3: the floors of every SSLW-form entry of the document's `entries`, on its
+    default options (`_check_floors`), in file order."""
+    found: list[str] = []
+    for entry in entries:
+        if entry["form"] != "generic-v1":
+            _check_floors(set_id, entry, found, set_index)
     return found
 
 
