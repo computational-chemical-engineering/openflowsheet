@@ -3481,3 +3481,9 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   0.82; wait 37 min); action unchanged.
 - 2026-11-19, job 452 (g2b-3) PASS (step 430 accepted, 42.2 -> 0: `declared_rows` brain gone). gate_report: the four
   ALERTs (46%; 1150 s; 0.80; wait 38 min); action unchanged.
+- 2026-11-19, job 453 (g2b-4, no-gain docstrings) FAIL tests: 1 failed of 6043, tests/test_s03_ours.py::
+  test_a16_the_s02_and_s06_generators_still_check timed out at 900 s (s09 a20[s02_reference.py] 717 s in the same
+  run) while G2 run 7's recorder ran s02/s06_reference.py --check in parallel: an environment failure far from a
+  docstring change. Job 454 (g2b-5) SKIPPED by the snapshot rule. Re-enqueued unchanged: 462 g2b-4r (`--rerun-of
+  431`), 463 g2b-5r. gate_report: the four ALERTs (48%; 1150 s; 0.79; 38 min). Note for briefs: an engineer's
+  behaviour recorder must not run the reference generators while gates run (or must run them with fewer workers).
