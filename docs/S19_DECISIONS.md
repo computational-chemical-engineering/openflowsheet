@@ -3136,3 +3136,7 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   from 805c69f6.
   DECISION: run 8's companions -> the optional K2 and E4 under Q5's scan rule (the X steps are done or deferred to
   W4). Alternative: R5 alone. Reversible by: dropping the K2/E4 commits before merge.
+
+## 2026-11-19 ~05:25 CET: lane O run 7 merged
+
+- Merge-check job 393 `g1o7-mc` PASS 10/10 (debt 172.0 -> 157.7). wp/S19-g1o7-mc merged into wp/S19 as 0e58c106.
