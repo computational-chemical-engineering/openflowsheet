@@ -3505,3 +3505,9 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   Proposal 2's first selected gate: "11 files listed, 7 of them selected and not run here" (f0_corpus_identity,
   k05_replay, m04_wo9, t07_identity, t07_v17_reference, t08_w1, t08_w2), selected 154 files, 4002 passed, wall 757 s
   (6 h selected median 1041-1186 s). Condition (a) holds.
+- 2026-11-19, job 461 (i20-3, interface `i20c-merge`) PASS (step 436 accepted, 15.7 -> 7.0, 20/20): all three I-20
+  steps accepted. Reviewer R-W4-I20 (Opus) launched. gate_report: four ALERTs (48%; 1035 s; 0.65; wait 58 min).
+  DECISION: I-20 merge-check now, in parallel with the review -> enqueued 477 i20-mc (e7fd7065..b035293a; wp/S19 has
+  only docs since e7fd7065). Alternative: after the review fixes (adds ~1 h of queue wait on the 0.5 path).
+  Reversible by: a fresh merge-check if a fix touches code (docstring fixes are gated no-gain and merged on the
+  helper rule).
