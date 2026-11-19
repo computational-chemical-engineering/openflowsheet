@@ -3807,3 +3807,9 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   for the design lane). FR-2 authorisation: card ofs-s19-w5-fr2-reregister B "Once per batch" (VERIFIED 2026-11-18).
   WO-N6 acceptance: a real test (revision_binding has no MODEL_BUILDERS; test_t07_w5a_inspection.py:130 patches
   model_builders). Remaining at merge: patch_noop once on the merge commit.
+- **2026-11-19, job 515 (w5n-mc2) PASS (full suite, 10/10): batch N merged into wp/S19 (d0c5b1f9, helper
+  wp/S19-w5n-mc).** wp/S19 changed only docs since 05d98499; the merge differs from 2ddc18f2 only under docs/.
+  patch_noop on the merge: 0 of 262. Worktrees s19-w5n, s19-w5n-mc and branches wp/S19-w5n, -w5n-mc, -w5n-pre-plan
+  removed. Next for W5: WO-N6 (revision_binding.MODEL_BUILDERS removed, test_t07_w5a_inspection.py:130 patches
+  model_builders; acceptance a real test, R-W5-N-close 3), the tooling work order (a)-(d) before B_L, then
+  `_RegionCall` (re-pin cce-code-health 34a30bf) and batch L.

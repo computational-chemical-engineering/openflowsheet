@@ -57,33 +57,30 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 - G1 (orchestrator/, numerics/): W3 lanes N and O closed 2026-11-19 (272011be); residuals executor.py (PR-1b, 6.1 -> 9.0, gating) and `_solve_region`'s parameter object (W4).
 - G-END (below) stays the end criterion for the whole repository.
 
-## Next actions (2026-11-19 21:25 CET; self-reset)
+## Next actions (2026-11-19 ~23:59 CET)
 
-**Position:** main = c4a91a75 (the 0.5 blocking set, pushed 20:20; card ofs-s19-blocking-merge-main executed v3).
-wp/S19 = docs after it. MB 756e1c12. Runner PID 1341562. Results COUNT 485 (a fresh context re-arms `$Q wait --since
-<COUNT from $Q status>` in the background). Agent running: X07a-WO1 engineer. Queue: 504 running, 505-507 pending
-(batch N WO-N3b, batch sha e7c318e4); 511 g2d-mc running (merge-check of G2 run 8, e9fdf99f..57e141ac). On each
-result: gate_report, log (the four ALERTs).
+**Position:** main = c4a91a75. wp/S19 = batch N merged (d0c5b1f9) + docs. MB 756e1c12. Runner PID 1341562. Results
+COUNT 494 (a fresh context re-arms `$Q wait --since <COUNT from $Q status>` in the background). Queue empty. Agent
+running: X07a-WO1 engineer (0.5 lane, worktree x07a, waiting on its CI run; over its context cap). On each result:
+gate_report, log.
 
-1. **G2 run 8 merge:** review R-W5-G2-8 = merge, no fixes (S19_DECISIONS). On 511 PASS: if wp/S19 changed only docs
-   since e9fdf99f (`git diff --name-only e9fdf99f HEAD`), merge wp/S19-g2d (57e141ac) into wp/S19 (merge commit,
-   `git merge -F`), log, remove worktree s19-g2d and branch. Revert 6a6fce78 + c2566314 only as a pair.
-   E1 (tooling) before the recorder is reused: `g2d-records/cmp.py` filters base and head asymmetrically.
-2. **Batch N:** WO-N3 reviewed (R-W5-N3: merge with batch N, no fixes). WO-N3b gating (501-503 PASS; 504-507). On
-   507 PASS: WO-N4 (factory switch, `--mode interface --plan`; ruling section 9 row), WO-N5 (close: K, judge,
-   batch-check, one review of the WO-N2, N3b, N4 chains), merge batch N into wp/S19 (FR-2 B), WO-N6. Every W5 enqueue
-   `--batch` the current `S19-W5-batchN.json`. Old tip wp/S19-w5n-pre-plan: delete after batch N merges. For the
-   close review: W5-S1 should accept `.codehealth/interface/*.toml` plans (job 483); batch L will hit it.
-3. **Legacy models/ (card ofs-s19-legacy-models A):** (a) G2 runs 6-8 (run 8 merges in item 1); (b) `solve_region`
-   takes `_RegionCall` (`--mode interface --plan`; callers executor.py:1316, cascade_solve.py:345, 12 tests, 3
-   scripts, benchmarks/t04/basin.py) after re-pinning cce-code-health to 34a30bf (after batch N is gated); (c) W5 batch
-   L after batch N merges (WO-L0 to WO-L3). Deferred: cascade/column 87-line duplication (R-W5-G2-8 Q5: interface step
-   after `_RegionCall`, design-lane ruling first). `executed` on the card when (a) to (c) are done.
-4. **0.5:** card ofs-05-widen B verified and executed (card v3, 2026-11-19 22:05). Lanes from main c4a91a75:
-   wp/X07a (worktree x07a, brief docs/briefs/X07a-WO1.md; opus-engineer running) and wp/X01 (worktree x01, brief
-   docs/briefs/X01-WO1.md, plugin docs + example plugin; launch when an agent slot frees). One 0.5 engineer and one S19
-   engineer at a time. X01 selectability blocked on F2/F4/F6; ADR 0052 D11 amendment open for the design lane. F3: ADR
-   0061 accepted (R-1050); waits on ofs-f3-mcp-descriptions-human, then its merge card.
+1. **G2 run 8:** merged (0d1e325e). Card ofs-s19-legacy-models: (a) done; (b) `_RegionCall`; (c) batch L.
+2. **Batch N:** merged into wp/S19 (d0c5b1f9; K 4178e4bc; review `docs/reviews/S19-R-W5-N-close.md`: merge, no
+   fixes). Next: **WO-N6** (remove `revision_binding.MODEL_BUILDERS`; retarget the patch at
+   test_t07_w5a_inspection.py:130 to model_builders; acceptance a real test, not i19_scan) on a lane from the wp/S19
+   tip; and a **tooling work order** before B_L (review item 4: (a) repeatable `--plans` admitting added
+   `.codehealth/interface/*.toml`; (b) generator-only steps gated `--behaviour-only --batch`; (c) W5-S1 text amendment,
+   design lane; (d) `w5_gate.py close --k`, `gate_queue.py` refuses `--batch` once the head contains K; a K
+   merge-check runs without `--batch` and needs F0 9/9 and L_N passing).
+3. **Legacy models/:** (b) `solve_region` takes `_RegionCall` (`--mode interface --plan`; callers executor.py:1316,
+   cascade_solve.py:345, 12 tests, 3 scripts, benchmarks/t04/basin.py) after re-pinning cce-code-health to 34a30bf
+   (batch N is gated: unblocked); (c) W5 batch L (WO-L0 to WO-L3) after the tooling work order. Deferred:
+   cascade/column 87-line duplication (design-lane ruling first). E1 (tooling) before the g2d recorder is reused.
+4. **0.5:** card ofs-05-widen B executed (card v3). Lanes from main c4a91a75: wp/X07a (worktree x07a, brief
+   docs/briefs/X07a-WO1.md; engineer running) and wp/X01 (worktree x01, brief docs/briefs/X01-WO1.md, plugin docs +
+   example plugin; launch when an agent slot frees: one 0.5 engineer and one S19 engineer at a time). X01
+   selectability blocked on F2/F4/F6; ADR 0052 D11 amendment open for the design lane. F3: ADR 0061 accepted
+   (R-1050); waits on ofs-f3-mcp-descriptions-human, then its merge card.
 5. Rule: lanes touching studies/ also need the nlp-marked suite at head, failures a subset of base (g19, g20).
 6. Brief rule (I1): `codehealth scan --json PATH` writes TO PATH; use `--repo <wt> --json <scratch>/scan.json`.
 **Open after S19 (F1):** restore the S11.A73 gamma-phi vs PR comparison (`forms._FORMS`), targeting `_routing`'s
