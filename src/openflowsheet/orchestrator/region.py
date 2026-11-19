@@ -433,67 +433,16 @@ def _solve_region(
         return start_refusal
 
     for attempt_index in range(policy.max_attempts):
-        if v2:
-            solve._check_dormancy(attempt_index)
-        layout = solve._layout()
-        solve.used.append(layout.opening)
-        if len(layout.free) != len(layout.attempt_rows):
-            return solve.closed(
-                "UNSUPPORTED_RANK_STRUCTURE",
-                f"the region with signature {layout.opening} is {len(layout.attempt_rows)} x "
-                f"{len(layout.free)}, not square",
-            )
-        external_refusal = solve._external_refusal(attempt_index, layout)
-        if external_refusal is not None:
-            return external_refusal
-        attempt_open = solve._open(attempt_index, layout)
-        record: HomotopyRecord | None = None
-        ptc_record: PtcRecord | None = None
-        if attempt_open.continuing:
-            last, record = solve._run_homotopy(attempt_index, layout, attempt_open)
-        elif region_mass is not None:
-            last, ptc_record = solve._run_ptc(attempt_index, layout, attempt_open)
-        else:
-            last = solve._run_newton(attempt_index, layout, attempt_open)
-        ran = _CoreRun(last, record, ptc_record)
-        ended = solve._take_end_state(layout, last)
-        decision = solve._decision(attempt_index, layout, attempt_open, last, ended)
-        solve._append_attempt(layout, ran, decision, ended)
-        solve._checkpoint_and_provenance(attempt_index, layout, attempt_open, ran, decision)
-        if decision.kind == "converged":
-            # OPT design §4.2.1: the system this attempt solved — its rows, free columns and label
-            # rows, and every other column at the value it held (the end state's: the attempt
-            # wrote only its free columns, and re-pinned its pinned ones at +0.0).
-            kept = set(layout.free)
-            return solve.closed(
-                "CONVERGED",
-                system=AttemptSystem(
-                    rows=tuple(layout.rows),
-                    free=tuple(layout.free),
-                    held={
-                        name: solve.current[name] for name in spec.variable_ids if name not in kept
-                    },
-                    labels=tuple(layout.labels),
-                    signature=layout.opening,
-                ),
-            )
-        if decision.kind == "terminal":
-            return solve.closed(decision.outcome, decision.message)
-        conversion = decision.conversion
-        assert conversion is not None
-        opened, new_regimes = conversion.opening
-        solve.current = dict(opened)
-        solve.regimes = dict(new_regimes)
-        solve.message = decision.message
-        solve.source = conversion.source
-        solve.trial = conversion.trial
+        result = solve.attempt(attempt_index)
+        if result is not None:
+            return result
 
     raise AssertionError("unreachable: the restart gate ends the solve at max_attempts")
 
 
 @dataclass
 class _RegionSolve:
-    """One `_solve_region` call: what its start, openings, cores, end states and closing share.
+    """One `_solve_region` call: what `attempt`, decisions and attempt records read, and its ledger.
 
     Frame: the `compiled` problem and the recovery's λ-level compiler `compile_level`, `spec`, the
     `region`, `splits` (every lifted split of the declaration, for the root's branch), the
@@ -727,6 +676,71 @@ class _RegionSolve:
                 counters=Counters(),
                 message=f"the start with {len(band_routes)} closure(s) from the band route",
             )
+
+    def attempt(self, attempt_index: int) -> RegionResult | None:
+        """Attempt `attempt_index`: its opening checks, layout, core, end state, decision and
+        records. Returns the call's result when the attempt ends it (a refusal, `CONVERGED` with
+        the system it solved, a terminal decision); on a restart it rebinds the next opening
+        (`current` and `regimes` as new dicts from the conversion, `message`, `source`, `trial`)
+        and returns None.
+        """
+        if self.v2:
+            self._check_dormancy(attempt_index)
+        layout = self._layout()
+        self.used.append(layout.opening)
+        if len(layout.free) != len(layout.attempt_rows):
+            return self.closed(
+                "UNSUPPORTED_RANK_STRUCTURE",
+                f"the region with signature {layout.opening} is {len(layout.attempt_rows)} x "
+                f"{len(layout.free)}, not square",
+            )
+        external_refusal = self._external_refusal(attempt_index, layout)
+        if external_refusal is not None:
+            return external_refusal
+        attempt_open = self._open(attempt_index, layout)
+        record: HomotopyRecord | None = None
+        ptc_record: PtcRecord | None = None
+        if attempt_open.continuing:
+            last, record = self._run_homotopy(attempt_index, layout, attempt_open)
+        elif self.region_mass is not None:
+            last, ptc_record = self._run_ptc(attempt_index, layout, attempt_open)
+        else:
+            last = self._run_newton(attempt_index, layout, attempt_open)
+        ran = _CoreRun(last, record, ptc_record)
+        ended = self._take_end_state(layout, last)
+        decision = self._decision(attempt_index, layout, attempt_open, last, ended)
+        self._append_attempt(layout, ran, decision, ended)
+        self._checkpoint_and_provenance(attempt_index, layout, attempt_open, ran, decision)
+        if decision.kind == "converged":
+            # OPT design §4.2.1: the system this attempt solved — its rows, free columns and label
+            # rows, and every other column at the value it held (the end state's: the attempt
+            # wrote only its free columns, and re-pinned its pinned ones at +0.0).
+            kept = set(layout.free)
+            return self.closed(
+                "CONVERGED",
+                system=AttemptSystem(
+                    rows=tuple(layout.rows),
+                    free=tuple(layout.free),
+                    held={
+                        name: self.current[name]
+                        for name in self.spec.variable_ids
+                        if name not in kept
+                    },
+                    labels=tuple(layout.labels),
+                    signature=layout.opening,
+                ),
+            )
+        if decision.kind == "terminal":
+            return self.closed(decision.outcome, decision.message)
+        conversion = decision.conversion
+        assert conversion is not None
+        opened, new_regimes = conversion.opening
+        self.current = dict(opened)
+        self.regimes = dict(new_regimes)
+        self.message = decision.message
+        self.source = conversion.source
+        self.trial = conversion.trial
+        return None
 
     def _check_dormancy(self, attempt_index: int) -> None:
         """T05b spec §7.1 under v2 (the caller's test): `ZERO_FLOW` exactly when the feed is
