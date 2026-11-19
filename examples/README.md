@@ -22,6 +22,11 @@ notebook's closing cell states in bold with the value it computes.
 An example is a demonstration, never gate evidence by itself: release claims come from the
 registered benchmark cases and the evidence manifests (plan §5.1, §6).
 
+**The example plugin (X01).** `plugins/demo/` is a minimal installable extension distribution:
+one entry point in `openflowsheet.extensions` and one message catalogue. The documentation site's
+"Plugins (extensions)" page (`docs-site/guide/plugins.md`) explains it, and
+`tests/test_x01_example_plugin.py` discovers it through the registry's entry-point discovery.
+
 **The reference journey (M07).** `scripts/m07_journey.py run` writes the journey's record and
 `render` its report, `journey.md` (M07 spec §6.2, ADR 0041): one decision taken through four
 rungs of fidelity, with its limits stated. The report is a demonstration of a workflow on a
