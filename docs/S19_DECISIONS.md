@@ -3748,3 +3748,11 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   534 s; 0.41; wait 55 min); action unchanged.
 - 2026-11-19, job 506 (w5n3b-6u) PASS (step 462 accepted, 15.0 -> 6.0, 19/19). gate_report: three ALERTs (46%;
   420 s; wait 55 min; the time ratio is back under 0.4); action unchanged.
+- **2026-11-19 ~22:40, WO-N4 briefed and launched (opus-engineer, Opus; brief `S19-W5-N4.md`).** Batch file amended
+  for it (S19-W5-batchN.md "Amendment 2026-11-19 (orchestrator, WO-N4)"): generator = registry_builtin.py, legacy.json,
+  tables.sha256; retarget += `.codehealth/interface/w5n4-factory-switch.toml`; L_N += test_f1_legacy_builtins
+  test_e_f1_3 (factory ref :373); sha e7c318e4 -> 86e1b2eb (`.json.pre-n4`), validate PASS. DECISION: launch before
+  job 507 reports -> yes (the snapshot rule skips N4 if 507 fails; one small step). Alternative: wait for 507.
+  Reversible by: re-enqueueing N4 after 507. DECISION: builtin-sha256.txt not regenerated in N4 (K re-records it).
+  Alternative: regenerate all generator outputs. Reversible by: running the generator at K, which it does anyway.
+  Agents running: X07a-WO1, WO-N4 (2 of 2).
