@@ -3679,3 +3679,7 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
 - CI 44576885441 at 5c48391b green (check ubuntu-latest and ubuntu-24.04-arm, default-install, codehealth); manifest
   at e3e95520 set `tested` with G-END-CI (c3ffe008). Since 5c48391b only docs and the manifest changed
   (S19_DECISIONS, the R-W5-N3 review, the manifest). Step 4: merge commit on main, F0 on the merge result; on PASS push.
+- **2026-11-19 20:20 CET, wp/S19 merged into main and pushed (card ofs-s19-blocking-merge-main A, executed, v3).** Merge
+  commit c4a91a75 (main a283925c + wp/S19 6c945fe1, 86 files); F0 on c4a91a75 PASS: M1 50/50, M2 61/61, M3 61/61,
+  M4 61/61, M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 35/35; `git push origin main` a283925c..c4a91a75. wp/S19
+  fast-forwarded to main. The 0.5 blocking set is on main; 0.5 start is Frank's call (hub).
