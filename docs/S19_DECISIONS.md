@@ -3573,3 +3573,5 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   wp/S19 6a588841 (7a412814) + wp/S19-g2b 27d138cc (a9a5cbf6), clean, disjoint files; job 482 g2-mc (merge-check,
   base 6a588841). Alternative: one merge-check per lane (two full suites). Reversible by: per-lane merge-checks.
   Merge on 479, 480, 481, 482 PASS: merge wp/S19-g2-mc into wp/S19 (wp/S19 changes only docs meanwhile: helper rule).
+- 2026-11-19, job 464 (w5n2-7r, inventory.py `plan_inventory`, rerun of the load-timeout job 435) PASS (step 442
+  accepted, 16.0 -> 2.0). gate_report: the four ALERTs (56%; 947 s; 0.59; wait 64 min); action unchanged.
