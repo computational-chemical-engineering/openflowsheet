@@ -3117,3 +3117,22 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   the full suite, ~1500 s each); "ALERT queue wait median 19 min > 15 min": batch N's 23 snapshot steps enqueued in a
   burst, serialised by gate.sh's clone-wide lock (as 2722 and 2756). No action: engineers end after enqueueing, so
   waits hold no agent.
+
+## 2026-11-19 ~05:10 CET: lane O run 7 reviewed (R-W3-G1O-7: merge, no fixes), run 8 briefed
+
+- Jobs 391 (R4 744918d3) and 392 (X6 805c69f6) PASS. R-W3-G1O-7 (reviewer, Opus): merge both, no fixes. R4's
+  keywords, object identity (`base=`/`current` same dict, `opening_state` still a copy), `self.homotopy`, order and
+  RC3 (ii) verified; `_RegionSolve`'s docstring matches. Deviations 1 to 5 accepted (`_run_ptc` assert equivalent to
+  the dispatch test; `compiled`/`compile_level` true frame fields; X6 as a step for the long smell; the t08 counters
+  test's docstring still true, no retarget; `_evaluates` not a twin). X5 deferral to W4's `_PlanRun` agreed. Notes:
+  (a) region.py class summary omits the end state (docstring, folded into R5); (b) `_region_metering`'s 4-tuple
+  accepted (one call site).
+- Region NLOC ruling: neither R5 nor R6 takes a plan-4 move (plan 4 triggers after R6; a restructure is its own
+  commit). The cap holds after the two moves while R6's head <= 1058; a third move to the design lane only if R5's
+  head exceeds ~1045. Above 1000 the large-file penalty (1.0) returns until the moves.
+- Merge-check: helper wp/S19-g1o7-mc (worktree s19-g1o7-mc) = 95b61682 + merge of wp/S19-g1o7, 2ececa00; job 393
+  `g1o7-mc`. On PASS: merge the helper into wp/S19.
+- Run 8 (brief `S19-W3-G1O-8.md`): R5, then K2 (splits.py) and E4 (execution.py) only if plan Q5's scan needs them;
+  from 805c69f6.
+  DECISION: run 8's companions -> the optional K2 and E4 under Q5's scan rule (the X steps are done or deferred to
+  W4). Alternative: R5 alone. Reversible by: dropping the K2/E4 commits before merge.
