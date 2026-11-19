@@ -3337,3 +3337,8 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   ruling's "eight importers" are the 4 cost + 4 lca. Health at a059b9a0: lca inventory 7.5, tables 7.7, impact 8.5,
   brightway 8.8; cost derived 7.7, forms 7.2 (not in a work order yet).
 - WO-N2 (opus-engineer, brief `S19-W5-N2.md`) launched on `wp/S19-w5n` from a059b9a0.
+- DECISION: `_solve_region`'s parameter object (W4 residual, brief `S19-W4-PR-2.md`) -> the private function only;
+  public `solve_region` keeps its 21 keywords (debt 16.0) because `models/syn001/cascade_solve.py:345` (legacy engine,
+  waits for Frank's ruling) calls it. Form as PR-1b: red adapt of the two t08 spies, then `--mode step`. Alternative:
+  change `solve_region` too and adapt 18 callers. Reversible by: a later step once the legacy ruling lands.
+  region.py at 1497bcf9: health 7.8, debt 44.1, smell duplication. PR-2 (opus-engineer) launched from 1497bcf9.
