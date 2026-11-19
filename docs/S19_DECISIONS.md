@@ -3380,3 +3380,10 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
 - 13:20: arch at wp/S19 tip 0 violations, 0 cycles. DECISION: WO-N3b (cost/derived.py 7.7, forms.py 7.2; brains `DerivedContributor.plan`, `select`) after WO-N3 in batch N -> G-END brain 0. Alternative: leave them to a later batch. Reversible by: dropping WO-N3b. State rewritten.
 - 13:30: job 438 (pr1b-fix, step 422) PASS accepted-neutral: R-W4-PR-1b+2 fix 1 done. Merge waits for job 439.
 - 13:45: job 429 (w5n2-2, step 423) PASS, inventory 71.7 -> 50.0 (W5 gate mode). Gate report: the four standing ALERTs.
+- 13:55: WO-N3 delivered (opus-engineer): pr_lib.py 6.9 -> 9.0, debt 28.3 -> 0, four S1 steps 91139682, 094e8e90,
+  6062bf15, e7183050 (jobs 437, 440, 441, 442). FP check per step: the 137 arithmetic `ast.dump`s equal as a set;
+  bitwise dump (float.hex) of evaluate_phase/_derivatives/_values, 14922 records over 528 states, sha256 d934f55c... at
+  c418b1e3 and every step. F0 at e7183050 `... M9 FAIL 1/35` (pr_lib.py); registry `builtin-sha256.txt` only; W5-S7
+  0 edges, M9 keys 35. Deviation: step 4 gains 0.6 (< the playbook's ~2): its own commit, for the S1 review. Left:
+  `duplication` (231 of 582 lines shared with tier 3 `pr_c1.py`; R4 keeps them apart until batch P).
+  S1 review R-W5-N3 after jobs 437-442 PASS. WO-N3b launched meanwhile on the same branch from e7183050.
