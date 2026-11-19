@@ -3350,3 +3350,5 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   Scan A -> B: `_solve_region` debt 28.1 -> 10.0 (params 21 -> 1), region.py 44.1 -> 26.0, health 7.8 -> 9.3,
   duplication smell gone; repo 3492.8 -> 3474.7. No C (docstring in B). patch_noop 0 of 262; touched tests 1675
   passed serially. Next: on PASS, review R-W4-PR-2 (S2 cadence, can share a reviewer with PR-1b), merge-check, merge.
+- 11:50: job 427 (w5n1-fix, step 418) PASS accepted-neutral: R-W5-N1 fix 1 done; WO-N1 closed. Gate report: the
+  same four standing ALERTs.
