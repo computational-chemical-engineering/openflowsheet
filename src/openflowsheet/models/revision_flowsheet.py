@@ -25,7 +25,7 @@ import re
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 from types import MappingProxyType
-from typing import Any, Literal, overload
+from typing import Any, Literal, NamedTuple, overload
 
 from openflowsheet.canonical import document_sha256
 from openflowsheet.compile.spec import ProblemSpec
@@ -466,8 +466,8 @@ def _read(
 
     Phases, in order: `_read_instances` (R1), the material connections (R1, R3), each checked
     by `_stream_capability` and at each end by `_endpoint`, `_port_phases` (R4), then the fixed
-    specifications (R5), whose targets `_connection_columns` and `_instance_columns` resolve to
-    columns.
+    specifications (R5), each read by `_fixed_specification`, whose targets `_connection_columns`
+    and `_instance_columns` resolve to columns.
     """
     declared_components = tuple((document.get("component_set") or {}).get("components") or ())
     basis = component_basis(document)
@@ -497,54 +497,24 @@ def _read(
 
     phases = _port_phases(instances)
 
-    # R5: fixed specifications become pins, routed to the owner of the column they fix. Each
-    # value is read in SI by `unit-conversion-v2` (ADR 0016 D5, reader R2), after its component:
-    # a component outside the set is refused as such whatever the unit (ADR 0016 D5).
+    # R5: fixed specifications become pins, routed to the owner of the column they fix.
     sources: dict[str, list[str]] = {}
     conversions: list[UnitConversion] = []
+    frame = _TargetFrame(components, component_set, basis.molecular_weights, targets)
     for entry in document.get("specifications") or ():
         name = str(entry.get("id", ""))
-        if entry.get("role") != "fixed":
-            raise RevisionError("unsupported", f"specification_role_unsupported({name})")
-        target = entry.get("target") or {}
-        object_type, object_id = target.get("object_type"), str(target.get("object_id", ""))
-        path = str(target.get("path", ""))
-        if target.get("component") is not None and target.get("component") not in components:
-            raise RevisionError(
-                "unsupported",
-                f"specification_unsupported({name})",
-                f"Component {target.get('component')} is not in the component set {component_set}.",
-            )
-        value, conversion = convert_specification(
-            entry,
-            _number(entry.get("value"), f"specification_value_unreadable({name})"),
-            basis.molecular_weights,
+        owner, value, conversion, columns, parameter = _fixed_specification(
+            entry, name, frame, producers, instances
         )
         if conversion is not None:
             conversions.append(conversion)
-        if object_type == "connection":
-            if object_id not in producers:
-                raise RevisionError("incomplete", f"specification_target_unknown({name})")
-            owner = producers[object_id]
-            columns = _connection_columns(
-                name, object_id, path, target.get("component"), components, component_set
-            )
-        elif object_type == "instance":
-            if object_id not in instances:
-                raise RevisionError("incomplete", f"specification_target_unknown({name})")
-            owner = object_id
-            record = instances[owner]
-            if path.startswith("parameters."):
-                parameter = path.removeprefix("parameters.")
-                declared = record["parameters"].setdefault(parameter, value)
-                if declared != value:
-                    raise RevisionError(
-                        "conflict", f"specification_conflict({name}, {owner}.{parameter})"
-                    )
-                continue
-            columns = _instance_columns(name, owner, path, record, targets)
-        else:
-            raise RevisionError("unsupported", f"specification_unsupported({name})")
+        if parameter is not None:
+            declared = instances[owner]["parameters"].setdefault(parameter, value)
+            if declared != value:
+                raise RevisionError(
+                    "conflict", f"specification_conflict({name}, {owner}.{parameter})"
+                )
+            continue
         pins: dict[str, float] = instances[owner]["pins"]
         for column in columns:
             if column in pins and pins[column] != value:
@@ -664,18 +634,88 @@ def _port_phases(instances: Mapping[str, Mapping[str, Any]]) -> dict[str, dict[s
     return phases
 
 
-def _connection_columns(
+class _TargetFrame(NamedTuple):
+    """What R5 reads every fixed specification against, fixed for the call before R1: the
+    canonical `components`, the declared `component_set` as written (for hints), the basis's
+    `molecular_weights` (`unit-conversion-v2`, ADR 0016 D5) and the builder table's instance
+    `targets` (ruling round 6, B2)."""
+
+    components: tuple[str, ...]
+    component_set: str
+    molecular_weights: Mapping[str, float]
+    targets: Mapping[str, str]
+
+
+class _FixedSpecification(NamedTuple):
+    """R5: what one fixed specification fixes, read before anything is written."""
+
+    #: The instance that owns what it fixes: a connection's producer, or the instance itself.
+    owner: str
+    #: Its value in SI.
+    value: float
+    #: The `unit-conversion-v2` conversion that read `value`, `None` for none.
+    conversion: UnitConversion | None
+    #: The columns it pins on `owner`; empty for a parameter target.
+    columns: tuple[str, ...]
+    #: The `owner` parameter a `parameters.<name>` target fixes, `None` for a column target.
+    parameter: str | None
+
+
+def _fixed_specification(
+    entry: Mapping[str, Any],
     name: str,
-    stream: str,
-    path: str,
-    component: Any,
-    components: tuple[str, ...],
-    component_set: str,
+    frame: _TargetFrame,
+    producers: Mapping[str, str],
+    instances: Mapping[str, Mapping[str, Any]],
+) -> _FixedSpecification:
+    """R5: specification `entry`, whose id is `name`, as what it fixes. Its value is read in SI by
+    `unit-conversion-v2` (ADR 0016 D5, reader R2), after its component: a component outside the set
+    is refused as such whatever the unit (ADR 0016 D5). A `connection` target resolves through
+    `producers` and `_connection_columns`, an `instance` target through `instances` and, unless it
+    names a parameter, `_instance_columns`. Raises `specification_role_unsupported` for a role other
+    than `fixed`, `specification_unsupported` for a component outside the set or an object type
+    other than these two, and `specification_target_unknown` for an object not in `producers` or
+    `instances`; `_number`, the conversion and the column helpers raise their own. Reads only."""
+    if entry.get("role") != "fixed":
+        raise RevisionError("unsupported", f"specification_role_unsupported({name})")
+    target = entry.get("target") or {}
+    object_type, object_id = target.get("object_type"), str(target.get("object_id", ""))
+    path = str(target.get("path", ""))
+    if target.get("component") is not None and target.get("component") not in frame.components:
+        raise RevisionError(
+            "unsupported",
+            f"specification_unsupported({name})",
+            f"Component {target.get('component')} is not in the component set "
+            f"{frame.component_set}.",
+        )
+    value, conversion = convert_specification(
+        entry,
+        _number(entry.get("value"), f"specification_value_unreadable({name})"),
+        frame.molecular_weights,
+    )
+    if object_type == "connection":
+        if object_id not in producers:
+            raise RevisionError("incomplete", f"specification_target_unknown({name})")
+        columns = _connection_columns(name, object_id, path, target.get("component"), frame)
+        return _FixedSpecification(producers[object_id], value, conversion, columns, None)
+    if object_type == "instance":
+        if object_id not in instances:
+            raise RevisionError("incomplete", f"specification_target_unknown({name})")
+        if path.startswith("parameters."):
+            parameter = path.removeprefix("parameters.")
+            return _FixedSpecification(object_id, value, conversion, (), parameter)
+        columns = _instance_columns(name, object_id, path, instances[object_id], frame.targets)
+        return _FixedSpecification(object_id, value, conversion, columns, None)
+    raise RevisionError("unsupported", f"specification_unsupported({name})")
+
+
+def _connection_columns(
+    name: str, stream: str, path: str, component: Any, frame: _TargetFrame
 ) -> tuple[str, ...]:
     """R5: the column a `connection` target fixes on `stream`: `state.n` with a `component` in
-    `components`, or `state.T` or `state.P` without one; any other path refuses specification
-    `name` as unsupported, with the connection hint over `component_set`."""
-    if path == "state.n" and component in components:
+    `frame.components`, or `state.T` or `state.P` without one; any other path refuses
+    specification `name` as unsupported, with the connection hint over `frame.component_set`."""
+    if path == "state.n" and component in frame.components:
         return (flow_id(stream, str(component)),)
     if path == "state.T" and component is None:
         return (temperature_id(stream),)
@@ -684,7 +724,7 @@ def _connection_columns(
     raise RevisionError(
         "unsupported",
         f"specification_unsupported({name})",
-        _CONNECTION_HINT.format(components=component_set),
+        _CONNECTION_HINT.format(components=frame.component_set),
     )
 
 
