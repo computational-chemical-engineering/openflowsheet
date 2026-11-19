@@ -3722,3 +3722,7 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   that S01 and S02 share one function; not G-END-blocking (8.4). Alternative: batch L. Reversible by: scheduling it.
   Merge: lane took the wp/S19 tip e9fdf99f (57e141ac; diff to the tip: the two models files, ruff clean) -> job 511
   g2d-mc (merge-check).
+- 2026-11-19, root cause of I1: the orchestrator's G2 brief template (runs 6, 7, 8) said "`codehealth scan --json F`",
+  and `--json` takes the report path (`codehealth scan --help`: "write the full report to this file"), so the template
+  told every reader to overwrite F. Fixed in S19-W5-G2-6/7/8.md; a "codehealth scan" section added to
+  S19-W3-common.md and S19-R-W3-common.md (binding for every engineer and reviewer). Other briefs only name the command.
