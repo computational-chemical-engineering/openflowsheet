@@ -3395,3 +3395,10 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   S19 lane worktrees (branches kept). Not removed: s19-g1o8 and s19-g3 (branches not ancestors of wp/S19), s19-w5n.
   Blocking set for 0.5 (Frank 2026-11-15): W4 items and residuals done, arch 0 violations / 0 cycles at depth 4, G5 and
   G6 W3 parts done; open only the verify twins (`verify/gamma_phi_units.py` 6.4, waits for Frank's addendum).
+- 14:50: job 431 (w5n2-3, step 424) PASS, inventory 50.0 -> 23.0; gate report: four standing ALERTs. Hub told (14:30)
+  the blocking set is done except the verify twins. Hub asked for the F3 cards: ofs-f3-qf1-rational-coefficients
+  already carries `executed` (2026-11-18); ofs-f3-mcp-descriptions-human is not executable by an agent (REVIEW.json
+  edit refused; Frank allows it or edits the five `human` entries). DECISION-REQUESTs sent to hub: ofs-s19-verify-twins
+  (rec A: ADR 0076 I-20 before 0.5), ofs-s19-legacy-models (rec A: lift the hold, batch L, G-END unchanged),
+  ofs-s19-gate-proposal-2 (rec A: adopt with the three conditions). cce steward (code_health) asked for the gap's
+  details: answered (commits, names, spy shapes, the refusal lines; `--mode step` = gate.sh refactor mode).
