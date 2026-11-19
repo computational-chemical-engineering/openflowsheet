@@ -373,7 +373,8 @@ def parse_set(document: Mapping[str, Any]) -> CostSet:
     """Check a set document (§9.2.3) and return it; `CostSetError` lists every failed check.
 
     The top-level source is checked by `_checked_against_reasons`, an entry of a known form by
-    `_check_generic` or `_sslw_entry_reasons`."""
+    `_check_generic` or `_sslw_entry_reasons`, the compressor's drive by
+    `_compressor_drive_reasons`."""
     set_id = str(document.get("set_id", "<no set_id>"))
     reasons: list[str] = []
     if document.get("schema") != SCHEMA:
@@ -410,13 +411,7 @@ def parse_set(document: Mapping[str, Any]) -> CostSet:
                 at, str(form), tuple(entry.get("family", ())), entry.get("orientation"), entry
             )
         )
-    if any(e.form == "sslw-compressor-v1" for e in entries):
-        drive = next((e for e in entries if "machine.drive" in e.family), None)
-        if drive is None or drive.form != "sslw-motor-v1":
-            reasons.append(
-                "an sslw-compressor-v1 entry needs the set's machine.drive entry of form "
-                "sslw-motor-v1 (§10.4.4)"
-            )
+    reasons += _compressor_drive_reasons(entries)
     if not reasons:
         for entry in document.get("entries", []):
             if entry["form"] != "generic-v1":
@@ -476,6 +471,20 @@ def _sslw_entry_reasons(entry: Mapping[str, Any], at: str) -> list[str]:
         if isinstance(amended, Mapping) and {"index_basis", "scale"} & set(amended):
             found.append(f"{where}.amended: a basis carries no index_basis or scale")
     _check_ranges(entry.get("ranges", {}), f"{at}.ranges", found)
+    return found
+
+
+def _compressor_drive_reasons(entries: Sequence[CostEntry]) -> list[str]:
+    """§10.4.4: a set with an `sslw-compressor-v1` entry has its `machine.drive` entry (the
+    first in `entries`) of form `sslw-motor-v1`."""
+    found: list[str] = []
+    if any(e.form == "sslw-compressor-v1" for e in entries):
+        drive = next((e for e in entries if "machine.drive" in e.family), None)
+        if drive is None or drive.form != "sslw-motor-v1":
+            found.append(
+                "an sslw-compressor-v1 entry needs the set's machine.drive entry of form "
+                "sslw-motor-v1 (§10.4.4)"
+            )
     return found
 
 
