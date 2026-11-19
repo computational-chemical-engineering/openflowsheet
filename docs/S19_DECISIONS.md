@@ -3367,3 +3367,13 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   ("selected share 50% < 75%", "1171 s > 300 s", "ratio 0.83 > 0.4", "queue wait median 39 min > 15 min"); proposal 2.
   Review R-W4-PR-1b+2 (reviewer, Opus; brief `S19-R-W4-PR-1b-2.md`) launched.
 - 12:45: job 428 (w5n2-1, step 421) PASS accepted-neutral (lca Refusal retarget). Gate report: the four standing ALERTs.
+- 13:05: review R-W4-PR-1b+2 (reviewer, Opus, ~129k; `docs/reviews/S19-R-W4-PR-1b-2.md`, 79e07265): PR-1b merge after
+  fixes 1, 2 (no code); PR-2 merge as is. Rulings: red-commit form accepted for a call adaptation; `_PlanRun` keeps
+  its seven fields; the cast and `_evaluates` widening sound. Note: `solve_region` should take `_RegionCall` once the
+  legacy ruling frees it.
+  Fix 2 (orchestrator, precedent R-W3-G1N-4 fix 1): B reworded as ddb2e96a (refactor, parameter-object, 51.2 -> 16.0,
+  superseded paragraph dropped), C re-parented as 7cdee3ca (note 3: hash corrected); trees equal to 53484cf0 and
+  d65497b4, so jobs 425, 426 hold; old chain on `backup/S19-pr1b-pre-fix2`. Fix 1: db304c0f (docstrings, one
+  comment; AST without docstrings identical), job 438 `pr1b-fix` no-gain.
+  Merge-check helper `wp/S19-w4r-mc` (worktree s19-w4r-mc) = 79e07265 + merge pr1b + merge pr2 (ba040641; wp/S19 docs
+  only since 272011be; ruff clean): job 439 `w4r-mc`. Both PASS -> merge both lanes into wp/S19.
