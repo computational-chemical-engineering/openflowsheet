@@ -141,6 +141,7 @@ from openflowsheet.orchestrator.region_phase import (
     _zero_flow_answer,
 )
 from openflowsheet.orchestrator.region_problem import (
+    OpeningEntry,
     _branch_found,
     _items,
     _label_entries,
@@ -402,136 +403,21 @@ def _solve_region(
     solve = _RegionSolve(
         spec=spec,
         splits=splits,
+        provider=provider,
+        run=run,
         identity=identity,
+        active_splits=active_splits,
+        v2=v2,
+        ph_units=ph_units,
+        temperatures=temperatures,
+        order=order,
+        recovery=recovery,
         current=current,
         source=item0_opening_source if recovery is None else "eo_recovery_start",
     )
-    if recovery is not None:
-        # T04 §5.3: the failed solve's item-0 opening, projected and pinned already.
-        solve.current = {name: float(recovery.state[name]) for name in spec.variable_ids}
-        solve.regimes = {split.unit: recovery.regimes[split.unit] for split in active_splits}
-    # §6.2: every lifted split of x⁰ is the kernel's; a supplied split that disagrees is
-    # overwritten and the overwrite recorded, which is what keeps EO-TRIV off its trivial root.
-    for split in active_splits if recovery is None else ():
-        regime: Regime
-        if v2 and _dormant_feed(split, solve.current):
-            # T05b spec §7.1: selected by exact dormancy, for either closure type; §7.4: its
-            # lifted flows are pinned at `+0.0` (an overwritten supplied split is recorded).
-            regime, kernel = "ZERO_FLOW", _zero_flow_answer(split).values
-        elif split.unit in ph_units and _branch_found(split, solve.current) != "ZERO_FLOW":
-            # §6.4 (ADR 0012 D4 (b)): a PH-type split is not re-projected; it opens with the
-            # traversal closure's split (D5), in the regime of its branch. An empty split of a
-            # flowing feed carries no enthalpy, so it leaves `ZERO_FLOW` by the TP flash below
-            # (§7.4), projected as a TP-type split is.
-            solve.regimes[split.unit] = _branch_found(split, solve.current)
-            continue
-        else:
-            regime, kernel = _kernel(provider, context, split, solve.current)
-        if any(
-            abs(solve.current[name] - value) > 1e-12 * max(1.0, abs(value))
-            for name, value in kernel.items()
-        ):
-            solve.projections.append(split.stream)
-            # ADR 0009 D3's grammar, on existing kinds (K03 A08's precedent for a projected
-            # guess): the candidate names what was supplied and what the kernel says.
-            run.record(
-                kind="initializer_candidate",
-                attempt=0,
-                iteration=0,
-                signature=(),
-                state_sha256="",
-                residual_inf_unscaled=float("nan"),
-                merit=float("nan"),
-                counters=Counters(),
-                message=f"projected({split.stream}, {_branch(split, solve.current, v2)}, {regime})",
-            )
-        solve.current.update(kernel)
-        solve.regimes[split.unit] = regime
-    if order and recovery is None:
-        # T05b spec §7.8 (ii) as amended (Q-S9, R-065; review M1): after the start rules, one fixed
-        # point over the lifted splits' `ZERO_FLOW` membership and the items, so that a projection
-        # of an earlier split that changes a later one's feed (or a trigger) is carried through,
-        # in any declaration order. Each split change is recorded as a projection (§6.4); an item
-        # change by the signature alone. (A recovery start is a settled attempt-0 opening.)
-        try:
-            solve.current, solve.regimes, _, changes = _settle(
-                solve.current,
-                solve.regimes,
-                order=order,
-                reference=supplied_items,
-                leave=lambda split, at: _contract_kernel(
-                    provider,
-                    context,
-                    split,
-                    at,
-                    ph_units,
-                    v2=True,
-                    regime="ZERO_FLOW",
-                    temperatures=temperatures.get(split.unit),
-                ),
-            )
-        except OpeningNotSettledError as unsettled:
-            # §7.8 (ii) 2: the contract's cycling refusal, before any attempt opened.
-            refusal = opening_not_settled(unsettled)
-            return RegionResult(
-                outcome=refusal.outcome,
-                state=dict(solve.current),
-                attempts=(),
-                projections=tuple(solve.projections),
-                message=refusal.message,
-            )
-        for change in changes:
-            if change.split.stream not in solve.projections:
-                solve.projections.append(change.split.stream)
-            run.record(
-                kind="initializer_candidate",
-                attempt=0,
-                iteration=0,
-                signature=(),
-                state_sha256="",
-                residual_inf_unscaled=float("nan"),
-                merit=float("nan"),
-                counters=Counters(),
-                message=f"projected({change.split.stream}, {change.branch}, {change.regime})",
-            )
-    if solve.projections:
-        run.record(
-            kind="initializer_accepted",
-            attempt=0,
-            iteration=0,
-            signature=(),
-            state_sha256="",
-            residual_inf_unscaled=float("nan"),
-            merit=float("nan"),
-            counters=Counters(),
-            message=f"the start with {len(solve.projections)} split(s) projected onto the kernel's",
-        )
-    if v2 and recovery is None and band_routes:
-        # §6.5 (ADR 0012 D10 F1): the traversal's band routes, after §6.2's projection records,
-        # in declaration order, on T02 §6.2's existing pair of kinds.
-        for unit in band_routes:
-            run.record(
-                kind="initializer_candidate",
-                attempt=0,
-                iteration=0,
-                signature=(),
-                state_sha256="",
-                residual_inf_unscaled=float("nan"),
-                merit=float("nan"),
-                counters=Counters(),
-                message=f"closure_route({unit}, band)",
-            )
-        run.record(
-            kind="initializer_accepted",
-            attempt=0,
-            iteration=0,
-            signature=(),
-            state_sha256="",
-            residual_inf_unscaled=float("nan"),
-            merit=float("nan"),
-            counters=Counters(),
-            message=f"the start with {len(band_routes)} closure(s) from the band route",
-        )
+    start_refusal = solve._open_start(context, supplied_items, band_routes)
+    if start_refusal is not None:
+        return start_refusal
 
     for attempt_index in range(policy.max_attempts):
         if v2:
@@ -929,10 +815,13 @@ def _solve_region(
 
 @dataclass
 class _RegionSolve:
-    """One `_solve_region` call: what its closing reads, and the ledger its attempts hand on.
+    """One `_solve_region` call: what its start and closing read, and the ledger its attempts hand
+    on.
 
-    Frame: `spec`, `splits` (every lifted split of the declaration, for the root's branch) and
-    `identity`. State: the opening state `current` and `regimes`, the start's `projections`, and the
+    Frame: `spec`, `splits` (every lifted split of the declaration, for the root's branch), the
+    `provider`, the trace `run`, `identity`, and phase B's contract setting the start reads
+    (`active_splits`, `v2`, `ph_units`, `temperatures`, the opening `order`) with the `recovery`
+    start. State: the opening state `current` and `regimes`, the start's `projections`, and the
     ledger (counters, used signatures, attempts, provenance, checkpoint, contexts, the next
     attempt's opening message, source and trial, attempt 0's opening, the budget kind and the
     homotopy record).
@@ -940,7 +829,15 @@ class _RegionSolve:
 
     spec: ProblemSpec
     splits: Sequence[LiftedSplit]
+    provider: PropertyProvider
+    run: Trace
     identity: tuple[str, str]
+    active_splits: list[LiftedSplit]
+    v2: bool
+    ph_units: frozenset[str]
+    temperatures: Mapping[str, tuple[str, ...]]
+    order: tuple[OpeningEntry, ...]
+    recovery: RecoveryStart | None
     current: dict[str, float]
     source: OpeningSource
     projections: list[str] = field(default_factory=list)
@@ -956,6 +853,188 @@ class _RegionSolve:
     opened_at: tuple[Mapping[str, float], Mapping[str, Regime]] | None = None
     budget: str | None = None
     homotopy: HomotopyRecord | None = None
+
+    def _open_start(
+        self, context: EvaluationContext, reference: frozenset[str], band_routes: Sequence[str]
+    ) -> RegionResult | None:
+        """Attempt 0's start: a recovery's opening, or the supplied state projected onto the
+        kernel's (`_project_start`) and settled by §7.8 (ii)'s fixed point (`_settle_start`); then
+        the start's records (`_record_start`).
+
+        Writes `current`, `regimes` and `projections`, and records into `run` through
+        `_project_start`, `_settle_start` and `_record_start`. `reference` is attempt 0's item
+        reference, the items of the start as supplied; `band_routes` are §6.5's. Returns
+        `_settle_start`'s refusal when the fixed point cycles, else None: attempt 0 may open.
+        """
+        if self.recovery is not None:
+            # T04 §5.3: the failed solve's item-0 opening, projected and pinned already.
+            self.current = {
+                name: float(self.recovery.state[name]) for name in self.spec.variable_ids
+            }
+            self.regimes = {
+                split.unit: self.recovery.regimes[split.unit] for split in self.active_splits
+            }
+        self._project_start(context)
+        if self.order and self.recovery is None:
+            start_refusal = self._settle_start(context, reference)
+            if start_refusal is not None:
+                return start_refusal
+        self._record_start(band_routes)
+        return None
+
+    def _project_start(self, context: EvaluationContext) -> None:
+        """T05b spec §6.2 on the supplied start (none for a recovery start): each lifted split's
+        answer (`_start_answer`) written into `current` and `regimes`; a split the kernel's values
+        overwrite is appended to `projections` and recorded into `run` after its own kernel call,
+        before the next split's.
+        """
+        # §6.2: every lifted split of x⁰ is the kernel's; a supplied split that disagrees is
+        # overwritten and the overwrite recorded, which is what keeps EO-TRIV off its trivial root.
+        for split in self.active_splits if self.recovery is None else ():
+            regime, kernel = self._start_answer(context, split)
+            if kernel is not None:
+                if any(
+                    abs(self.current[name] - value) > 1e-12 * max(1.0, abs(value))
+                    for name, value in kernel.items()
+                ):
+                    self.projections.append(split.stream)
+                    # ADR 0009 D3's grammar, on existing kinds (K03 A08's precedent for a projected
+                    # guess): the candidate names what was supplied and what the kernel says.
+                    branch = _branch(split, self.current, self.v2)
+                    self.run.record(
+                        kind="initializer_candidate",
+                        attempt=0,
+                        iteration=0,
+                        signature=(),
+                        state_sha256="",
+                        residual_inf_unscaled=float("nan"),
+                        merit=float("nan"),
+                        counters=Counters(),
+                        message=f"projected({split.stream}, {branch}, {regime})",
+                    )
+                self.current.update(kernel)
+            self.regimes[split.unit] = regime
+
+    def _start_answer(
+        self, context: EvaluationContext, split: LiftedSplit
+    ) -> tuple[Regime, Mapping[str, float] | None]:
+        """§6.2's answer for one lifted split of the start at `current`: its regime and the
+        kernel's values for it, or None for the values when the split is PH-type and not
+        re-projected (§6.4). Pure: it writes nothing of the run (the kernel is a provider call).
+        """
+        if self.v2 and _dormant_feed(split, self.current):
+            # T05b spec §7.1: selected by exact dormancy, for either closure type; §7.4: its
+            # lifted flows are pinned at `+0.0` (an overwritten supplied split is recorded).
+            return "ZERO_FLOW", _zero_flow_answer(split).values
+        if split.unit in self.ph_units and _branch_found(split, self.current) != "ZERO_FLOW":
+            # §6.4 (ADR 0012 D4 (b)): a PH-type split is not re-projected; it opens with the
+            # traversal closure's split (D5), in the regime of its branch. An empty split of a
+            # flowing feed carries no enthalpy, so it leaves `ZERO_FLOW` by the TP flash below
+            # (§7.4), projected as a TP-type split is.
+            return _branch_found(split, self.current), None
+        return _kernel(self.provider, context, split, self.current)
+
+    def _settle_start(
+        self, context: EvaluationContext, reference: frozenset[str]
+    ) -> RegionResult | None:
+        """T05b spec §7.8 (ii) as amended (Q-S9, R-065; review M1): after the start rules, one
+        fixed point over the lifted splits' `ZERO_FLOW` membership and the items, so that a
+        projection of an earlier split that changes a later one's feed (or a trigger) is carried
+        through, in any declaration order. Each split change is recorded as a projection (§6.4);
+        an item change by the signature alone. (A recovery start is a settled attempt-0 opening.)
+
+        Writes `current`, `regimes`, `projections` and the projection records into `run`;
+        `reference` is attempt 0's item reference. Returns §7.8 (ii) 2's cycling refusal (with the
+        state before the fixed point and the projections so far) when the opening does not
+        settle, else None.
+        """
+        try:
+            self.current, self.regimes, _, changes = _settle(
+                self.current,
+                self.regimes,
+                order=self.order,
+                reference=reference,
+                leave=lambda split, at: _contract_kernel(
+                    self.provider,
+                    context,
+                    split,
+                    at,
+                    self.ph_units,
+                    v2=True,
+                    regime="ZERO_FLOW",
+                    temperatures=self.temperatures.get(split.unit),
+                ),
+            )
+        except OpeningNotSettledError as unsettled:
+            # §7.8 (ii) 2: the contract's cycling refusal, before any attempt opened.
+            refusal = opening_not_settled(unsettled)
+            return RegionResult(
+                outcome=refusal.outcome,
+                state=dict(self.current),
+                attempts=(),
+                projections=tuple(self.projections),
+                message=refusal.message,
+            )
+        for change in changes:
+            if change.split.stream not in self.projections:
+                self.projections.append(change.split.stream)
+            self.run.record(
+                kind="initializer_candidate",
+                attempt=0,
+                iteration=0,
+                signature=(),
+                state_sha256="",
+                residual_inf_unscaled=float("nan"),
+                merit=float("nan"),
+                counters=Counters(),
+                message=f"projected({change.split.stream}, {change.branch}, {change.regime})",
+            )
+        return None
+
+    def _record_start(self, band_routes: Sequence[str]) -> None:
+        """The start's records into `run`: the accepted start when a split was projected, then
+        under v2 (not for a recovery start) §6.5's band routes (`band_routes`) and their accepted
+        start.
+        """
+        if self.projections:
+            projected = len(self.projections)
+            self.run.record(
+                kind="initializer_accepted",
+                attempt=0,
+                iteration=0,
+                signature=(),
+                state_sha256="",
+                residual_inf_unscaled=float("nan"),
+                merit=float("nan"),
+                counters=Counters(),
+                message=f"the start with {projected} split(s) projected onto the kernel's",
+            )
+        if self.v2 and self.recovery is None and band_routes:
+            # §6.5 (ADR 0012 D10 F1): the traversal's band routes, after §6.2's projection records,
+            # in declaration order, on T02 §6.2's existing pair of kinds.
+            for unit in band_routes:
+                self.run.record(
+                    kind="initializer_candidate",
+                    attempt=0,
+                    iteration=0,
+                    signature=(),
+                    state_sha256="",
+                    residual_inf_unscaled=float("nan"),
+                    merit=float("nan"),
+                    counters=Counters(),
+                    message=f"closure_route({unit}, band)",
+                )
+            self.run.record(
+                kind="initializer_accepted",
+                attempt=0,
+                iteration=0,
+                signature=(),
+                state_sha256="",
+                residual_inf_unscaled=float("nan"),
+                merit=float("nan"),
+                counters=Counters(),
+                message=f"the start with {len(band_routes)} closure(s) from the band route",
+            )
 
     def closed(
         self, outcome: SolveOutcome, text: str = "", system: AttemptSystem | None = None
