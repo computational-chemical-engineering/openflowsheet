@@ -2736,7 +2736,7 @@ def _a27(ref: Mapping[str, Any]) -> tuple[bool, Any, Any]:
     from openflowsheet.numerics.solve_record import Trace
     from openflowsheet.orchestrator.executor import execute_plan
     from openflowsheet.orchestrator.mass import residence_time
-    from openflowsheet.orchestrator.region import solve_region
+    from openflowsheet.orchestrator.region import RegionCall, solve_region
     from openflowsheet.orchestrator.revision import (
         InitialStateFailure,
         initial_state,
@@ -2758,16 +2758,18 @@ def _a27(ref: Mapping[str, Any]) -> tuple[bool, Any, Any]:
         trace = Trace()
         spied = SpiedCompiled(compile_problem(spec), trace)
         result = solve_region(
-            compiled=spied,
-            spec=spec,
-            region=step.region,
-            state=start,
-            splits=lifted_splits(instances_of(flowsheet), flowsheet.components),
-            provider=flowsheet.provider,
-            policy=policy,
-            trace=trace,
-            initializer_source="traversal-G0-v1",
-            mass_mapping=residence_time(flowsheet.wiring, flowsheet.components),
+            RegionCall(
+                compiled=spied,
+                spec=spec,
+                region=step.region,
+                state=start,
+                splits=lifted_splits(instances_of(flowsheet), flowsheet.components),
+                provider=flowsheet.provider,
+                policy=policy,
+                trace=trace,
+                initializer_source="traversal-G0-v1",
+                mass_mapping=residence_time(flowsheet.wiring, flowsheet.components),
+            )
         )
         spies: list[Any] = []
 

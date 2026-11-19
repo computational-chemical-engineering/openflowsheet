@@ -22,7 +22,7 @@ from openflowsheet.numerics.solve_record import SolvePolicy
 from openflowsheet.orchestrator import revision
 from openflowsheet.orchestrator.execution import ExecutionPlan, PlanStep
 from openflowsheet.orchestrator.mass import residence_time
-from openflowsheet.orchestrator.region import solve_region
+from openflowsheet.orchestrator.region import RegionCall, solve_region
 from openflowsheet.orchestrator.region_result import RegionResult
 from openflowsheet.orchestrator.splits import lifted_splits
 
@@ -58,15 +58,17 @@ def solve_from(
     assert not missing, f"the start has no value for {missing}"
     assert step.region is not None
     result = solve_region(
-        compiled=compile_problem(spec),
-        spec=spec,
-        region=step.region,
-        state={column: state[column] for column in spec.variable_ids},
-        splits=lifted_splits(revision.instances_of(flowsheet), flowsheet.components),
-        provider=flowsheet.provider,
-        policy=policy,
-        initializer_source="user_guess",
-        mass_mapping=residence_time(flowsheet.wiring, flowsheet.components),
+        RegionCall(
+            compiled=compile_problem(spec),
+            spec=spec,
+            region=step.region,
+            state={column: state[column] for column in spec.variable_ids},
+            splits=lifted_splits(revision.instances_of(flowsheet), flowsheet.components),
+            provider=flowsheet.provider,
+            policy=policy,
+            initializer_source="user_guess",
+            mass_mapping=residence_time(flowsheet.wiring, flowsheet.components),
+        )
     )
     return result, step
 

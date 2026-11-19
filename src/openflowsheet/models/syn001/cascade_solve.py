@@ -86,7 +86,7 @@ from openflowsheet.orchestrator.recovery import (
     recovered_provenance,
     solver_outcomes,
 )
-from openflowsheet.orchestrator.region import solve_region
+from openflowsheet.orchestrator.region import RegionCall, solve_region
 from openflowsheet.orchestrator.region_result import RecoveryStart, RegionResult
 from openflowsheet.thermo import Phase, PropertyProvider, StreamState
 
@@ -343,20 +343,22 @@ def run_region(
 ) -> RegionResult:
     """`solve_region`, unchanged, on one compiled problem of the cascade."""
     return solve_region(
-        compiled=target.compiled,
-        spec=target.spec,
-        region=target.region,
-        state={name: float(state[name]) for name in target.spec.variable_ids},
-        splits=target.splits,
-        provider=provider,
-        policy=policy,
-        trace=trace,
-        initializer_source=initializer_source,
-        recovery=recovery,
-        compile_level=compile_problem if recovery is not None else None,
-        closure_types=target.types,
-        zero_flow_forms=target.forms,
-        split_temperatures=target.temperatures,
+        RegionCall(
+            compiled=target.compiled,
+            spec=target.spec,
+            region=target.region,
+            state={name: float(state[name]) for name in target.spec.variable_ids},
+            splits=target.splits,
+            provider=provider,
+            policy=policy,
+            trace=trace,
+            initializer_source=initializer_source,
+            recovery=recovery,
+            compile_level=compile_problem if recovery is not None else None,
+            closure_types=target.types,
+            zero_flow_forms=target.forms,
+            split_temperatures=target.temperatures,
+        )
     )
 
 

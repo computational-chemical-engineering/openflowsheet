@@ -47,7 +47,7 @@ from openflowsheet.orchestrator.homotopy import (
     level_values,
     rebind,
 )
-from openflowsheet.orchestrator.region import solve_region, syn001_lifted_splits
+from openflowsheet.orchestrator.region import RegionCall, solve_region, syn001_lifted_splits
 from openflowsheet.orchestrator.region_result import RecoveryStart, RegionResult
 from openflowsheet.orchestrator.tear import solve_tear
 
@@ -167,14 +167,16 @@ def direct(
     splits = syn001_lifted_splits(flowsheet.components)
     target = compile_problem(spec)
     failed = solve_region(
-        compiled=target,
-        spec=spec,
-        region=region,
-        state=dict(pre.final_state),
-        splits=splits,
-        provider=flowsheet.provider,
-        policy=policy,
-        initializer_source="user_guess",
+        RegionCall(
+            compiled=target,
+            spec=spec,
+            region=region,
+            state=dict(pre.final_state),
+            splits=splits,
+            provider=flowsheet.provider,
+            policy=policy,
+            initializer_source="user_guess",
+        )
     )
     continuation = continuation_parameter(
         specification_rows=region.specification_rows,
@@ -194,17 +196,19 @@ def direct(
         return Spied(compile_problem(level_spec), f"level-{len(seen.levels)}", seen.calls, trace)
 
     seen.recovery = solve_region(
-        compiled=Spied(target, "target", seen.calls, trace),  # type: ignore[arg-type]
-        spec=spec,
-        region=region,
-        state=dict(state),
-        splits=splits,
-        provider=flowsheet.provider,
-        policy=policy,
-        trace=trace,
-        initializer_source=None,
-        recovery=RecoveryStart(state, regimes, continuation, "user_guess"),
-        compile_level=compile_level,
+        RegionCall(
+            compiled=Spied(target, "target", seen.calls, trace),  # type: ignore[arg-type]
+            spec=spec,
+            region=region,
+            state=dict(state),
+            splits=splits,
+            provider=flowsheet.provider,
+            policy=policy,
+            trace=trace,
+            initializer_source=None,
+            recovery=RecoveryStart(state, regimes, continuation, "user_guess"),
+            compile_level=compile_level,
+        )
     )
     return seen
 

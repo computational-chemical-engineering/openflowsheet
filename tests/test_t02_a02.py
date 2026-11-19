@@ -39,7 +39,7 @@ from openflowsheet.orchestrator.execution import (
     plan_or_refusal,
     specification_regions,
 )
-from openflowsheet.orchestrator.region import solve_region, syn001_lifted_splits
+from openflowsheet.orchestrator.region import RegionCall, solve_region, syn001_lifted_splits
 from openflowsheet.orchestrator.region_result import RegionResult
 from openflowsheet.orchestrator.tear import solve_tear
 from openflowsheet.thermo.syn001 import Syn001Provider
@@ -124,14 +124,16 @@ def solve(case_id: str) -> RegionResult:
     pre, _ = solve_tear(flowsheet)
     assert pre.final_state is not None
     return solve_region(
-        compiled=compile_problem(item.binding.spec),
-        spec=item.binding.spec,
-        region=the_region(item),
-        state=dict(pre.final_state),
-        splits=syn001_lifted_splits(flowsheet.components),
-        provider=flowsheet.provider,
-        policy=POLICY,
-        initializer_source="user_guess",
+        RegionCall(
+            compiled=compile_problem(item.binding.spec),
+            spec=item.binding.spec,
+            region=the_region(item),
+            state=dict(pre.final_state),
+            splits=syn001_lifted_splits(flowsheet.components),
+            provider=flowsheet.provider,
+            policy=POLICY,
+            initializer_source="user_guess",
+        )
     )
 
 

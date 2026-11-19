@@ -77,7 +77,7 @@ from openflowsheet.orchestrator.recovery import (
     recovered_provenance,
     solver_outcomes,
 )
-from openflowsheet.orchestrator.region import solve_region, syn001_lifted_splits
+from openflowsheet.orchestrator.region import RegionCall, solve_region, syn001_lifted_splits
 from openflowsheet.orchestrator.region_result import RecoveryStart, RegionResult
 from openflowsheet.orchestrator.revision_continuation import (
     REVISION_CONTINUATION_REJECTED,
@@ -1232,31 +1232,33 @@ def _region(
     meter.cap, meter.refused = ctx.policy.max_property_calls, None
     try:
         result = solve_region(
-            compiled=compiled,
-            spec=ctx.spec,
-            region=region,
-            state=start,
-            splits=_splits(ctx.flowsheet),
-            provider=ctx.flowsheet.provider,
-            policy=ctx.policy,
-            trace=inner,
-            initializer_source=initializer_source,
-            recovery=recovery,
-            compile_level=compile_problem,
-            # T04 §7.2: the PTC core's holdups, read only under `eo_core = "ptc"`.
-            mass_mapping=_mass_mapping(ctx.flowsheet),
-            # T05b spec §6.1–§6.5: read only under `T05b-phase-contract-v2`.
-            closure_types=_closure_types(ctx.flowsheet),
-            band_routes=band_routes,
-            zero_flow_forms=_zero_flow_forms(ctx.flowsheet),
-            dormancy_forms=_dormancy_forms(ctx.flowsheet),
-            split_temperatures=_split_temperatures(ctx.flowsheet),
-            item0_opening_source=item0_opening_source,
-            warm_start=warm_start,
-            # M02 design note §14.2 B13: read in every TWO_PHASE attempt; none for SYN-001.
-            vapour_only_forms=_vapour_only_forms(ctx.flowsheet),
-            # S11 §10.2: a staged unit's split keys → their owner; none without a staged unit.
-            split_owners=_split_owners(ctx.flowsheet),
+            RegionCall(
+                compiled=compiled,
+                spec=ctx.spec,
+                region=region,
+                state=start,
+                splits=_splits(ctx.flowsheet),
+                provider=ctx.flowsheet.provider,
+                policy=ctx.policy,
+                trace=inner,
+                initializer_source=initializer_source,
+                recovery=recovery,
+                compile_level=compile_problem,
+                # T04 §7.2: the PTC core's holdups, read only under `eo_core = "ptc"`.
+                mass_mapping=_mass_mapping(ctx.flowsheet),
+                # T05b spec §6.1–§6.5: read only under `T05b-phase-contract-v2`.
+                closure_types=_closure_types(ctx.flowsheet),
+                band_routes=band_routes,
+                zero_flow_forms=_zero_flow_forms(ctx.flowsheet),
+                dormancy_forms=_dormancy_forms(ctx.flowsheet),
+                split_temperatures=_split_temperatures(ctx.flowsheet),
+                item0_opening_source=item0_opening_source,
+                warm_start=warm_start,
+                # M02 design note §14.2 B13: read in every TWO_PHASE attempt; none for SYN-001.
+                vapour_only_forms=_vapour_only_forms(ctx.flowsheet),
+                # S11 §10.2: a staged unit's split keys → their owner; none without a staged unit.
+                split_owners=_split_owners(ctx.flowsheet),
+            )
         )
     except BudgetExhaustedError:
         result = RegionResult(
