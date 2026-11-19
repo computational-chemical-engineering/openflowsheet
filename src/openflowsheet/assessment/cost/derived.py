@@ -186,28 +186,8 @@ class _Derivation:
             self.withheld[output_id] = f"depends on {missing}"
             self.unavailable[output_id] = self.withheld[output_id]
             return
-        if denominator is not None:
-            if self.y is None and self.failed is None:
-                try:
-                    self.y = self.ctx.evaluate(self.state, self.earlier, self.theta, self.blocks)
-                except TwinEvaluationError as error:
-                    self.failed = str(error)
-            if self.y is None:
-                self.refusals.append(
-                    Refusal("ASSESSMENT_EVALUATION_FAILED", output_id, str(self.failed))
-                )
-                self.withheld[output_id] = "earlier outputs not evaluable at the planning state"
-                self.unavailable[output_id] = self.withheld[output_id]
-                return
-            d = denominator.value(self.y)
-            if not d > 0.0:
-                self.refusals.append(
-                    Refusal("METRIC_UNDEFINED", output_id, f"denominator {d!r} ≤ 0")
-                )
-                self.withheld[output_id] = "non-positive denominator"
-                self.unavailable[output_id] = self.withheld[output_id]
-                return
-            self.entries.append(_domain_entry(output_id, denominator, d))
+        if denominator is not None and not self.denominator_admitted(output_id, denominator):
+            return
         if self.y is not None:
             n = numerator.value(self.y)
             self.y[output_id] = n if denominator is None else n / denominator.value(self.y)
@@ -215,6 +195,33 @@ class _Derivation:
         self.earlier.append(self.outputs[-1])
         self.known.add(output_id)
         self.ratios[output_id] = (numerator, denominator)
+
+    def denominator_admitted(self, output_id: str, denominator: Affine) -> bool:
+        """True once ratio `output_id`'s `domain` entry is appended (`_domain_entry`): the
+        earlier outputs evaluated at the planning state (`y`, evaluated by the first call, or
+        `failed` with why not) and `denominator` > 0 there. False, with the output withheld,
+        when they do not evaluate (refusal `ASSESSMENT_EVALUATION_FAILED`, each call after a
+        failure too) or the denominator is ≤ 0 (refusal `METRIC_UNDEFINED`)."""
+        if self.y is None and self.failed is None:
+            try:
+                self.y = self.ctx.evaluate(self.state, self.earlier, self.theta, self.blocks)
+            except TwinEvaluationError as error:
+                self.failed = str(error)
+        if self.y is None:
+            self.refusals.append(
+                Refusal("ASSESSMENT_EVALUATION_FAILED", output_id, str(self.failed))
+            )
+            self.withheld[output_id] = "earlier outputs not evaluable at the planning state"
+            self.unavailable[output_id] = self.withheld[output_id]
+            return False
+        d = denominator.value(self.y)
+        if not d > 0.0:
+            self.refusals.append(Refusal("METRIC_UNDEFINED", output_id, f"denominator {d!r} ≤ 0"))
+            self.withheld[output_id] = "non-positive denominator"
+            self.unavailable[output_id] = self.withheld[output_id]
+            return False
+        self.entries.append(_domain_entry(output_id, denominator, d))
+        return True
 
 
 def _domain_entry(output_id: str, denominator: Affine, d: float) -> RegimeEntry:
