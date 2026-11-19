@@ -3366,3 +3366,4 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
 - 12:30: job 430 (pr2-1, step 420) PASS 19/19, region.py debt 44.1 -> 26.0. Gate report: the four standing ALERTs
   ("selected share 50% < 75%", "1171 s > 300 s", "ratio 0.83 > 0.4", "queue wait median 39 min > 15 min"); proposal 2.
   Review R-W4-PR-1b+2 (reviewer, Opus; brief `S19-R-W4-PR-1b-2.md`) launched.
+- 12:45: job 428 (w5n2-1, step 421) PASS accepted-neutral (lca Refusal retarget). Gate report: the four standing ALERTs.
