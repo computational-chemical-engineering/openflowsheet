@@ -239,32 +239,9 @@ class RegionCall:
     staged unit's split keys to the instance that owns them: a split is active iff its owner is
     one of `region.units`, and opens at its owner's position; a key it omits is its own owner.
 
-    Under `policy.globalization.eo_core = "ptc"` (T04 §7.1) every attempt runs the PTC core on
-    `mass_mapping`'s holdups, validated before anything is evaluated: a mapping that fails T04
-    §7.2 — `None` included, which maps nothing — ends the solve `PTC_MAPPING_INVALID` with no
-    attempt opened. A recovery solve is the exception: its attempt 0 is the homotopy, and every
-    later attempt Newton's (T04 §4.5).
-
     `item0_opening_source` is item 0's `opening_source` when there is no `recovery`: the
     registered `initializer`, or `eo_recovery_start` for edge 3's sequential restart (ADR 0015
     D3), a fresh initializer output that §6.2 projects as any other start.
-
-    `warm_start` (ADR 0024 D3; T08 build-first spec §B2) says `state` is a compatible warm start:
-    attempt 0's opening, after §6.2 and before its pinned columns are set, is held to T03 §5.1's
-    six checks (`check_opening`) in place of the silent pin a `user_start` gets. A refusal ends the
-    solve `INITIALIZATION_FAILED`, `warm_start_rejected(opening:<check>)`, with no attempt opened,
-    and the caller takes the next source; a pass records `initializer_accepted`
-    (`compatible_warm_start`) before the attempt opens. Not read with `recovery`.
-
-    With `recovery` (T04 §5.3) it is edge 3's recovery solve: attempt 0 opens at the failed solve's
-    item-0 opening (already projected, so §6.2 does not run again) and runs the homotopy core,
-    whose λ < 1 levels `compile_level` compiles from the re-bound declaration; every attempt the
-    contract opens after it runs the Newton core on the target (T04 §4.5). A recovery with a
-    `reported_signature` (RRC design note §5.7, a revision continuation) opens attempt 0 the same
-    way, at the ancestor's root, and holds that opening to the six checks first, with the reported
-    signature as the source's: a refusal ends the solve `INITIALIZATION_FAILED`,
-    `revision_continuation_rejected(opening:<check>:<subject>)`, with no attempt opened and no
-    event, and the caller records it and takes the restart.
     """
 
     compiled: CompiledProblem
@@ -294,6 +271,29 @@ def solve_region(call: RegionCall) -> RegionResult:
     """§6's region solve from `call.state`, a full state over `call.spec.variable_ids` (the
     initializer), under ADR 0005's contract (T03 §4) as the policy's `phase_contract` states it.
     Its arguments are the fields of `call`, documented on `RegionCall`.
+
+    Under `policy.globalization.eo_core = "ptc"` (T04 §7.1) every attempt runs the PTC core on
+    `mass_mapping`'s holdups, validated before anything is evaluated: a mapping that fails T04
+    §7.2 — `None` included, which maps nothing — ends the solve `PTC_MAPPING_INVALID` with no
+    attempt opened. A recovery solve is the exception: its attempt 0 is the homotopy, and every
+    later attempt Newton's (T04 §4.5).
+
+    `warm_start` (ADR 0024 D3; T08 build-first spec §B2) says `state` is a compatible warm start:
+    attempt 0's opening, after §6.2 and before its pinned columns are set, is held to T03 §5.1's
+    six checks (`check_opening`) in place of the silent pin a `user_start` gets. A refusal ends the
+    solve `INITIALIZATION_FAILED`, `warm_start_rejected(opening:<check>)`, with no attempt opened,
+    and the caller takes the next source; a pass records `initializer_accepted`
+    (`compatible_warm_start`) before the attempt opens. Not read with `recovery`.
+
+    With `recovery` (T04 §5.3) it is edge 3's recovery solve: attempt 0 opens at the failed solve's
+    item-0 opening (already projected, so §6.2 does not run again) and runs the homotopy core,
+    whose λ < 1 levels `compile_level` compiles from the re-bound declaration; every attempt the
+    contract opens after it runs the Newton core on the target (T04 §4.5). A recovery with a
+    `reported_signature` (RRC design note §5.7, a revision continuation) opens attempt 0 the same
+    way, at the ancestor's root, and holds that opening to the six checks first, with the reported
+    signature as the source's: a refusal ends the solve `INITIALIZATION_FAILED`,
+    `revision_continuation_rejected(opening:<check>:<subject>)`, with no attempt opened and no
+    event, and the caller records it and takes the restart.
 
     A provider that will not split a lifted stream — at the start, at an admissibility check or at
     a kernel verdict — ends the solve `EVALUATION_ERROR` naming the stream and the provider's
