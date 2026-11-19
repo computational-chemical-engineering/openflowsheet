@@ -270,8 +270,8 @@ def _closure(
 
 def split_checks(split: LiftedSplit, judging: Judging) -> list[CheckResult]:
     """K04 §4.7 on one `pr-c1-v1` split (B15 item 4): the branch's admissibility, then the
-    independent split by SYN-001's formula (written again here; `table._split_checks` is not
-    edited)."""
+    independent split by SYN-001's formula, whose rows come from
+    `table_kit.independent_split_rows`; only what differs from PR's own flash is computed here."""
     name = f"{split.unit}.{split.stream}"
     subject = split.stream
     vapor = tuple(judging.state[column] for column in split.vapor)
@@ -351,7 +351,7 @@ def declared_port_checks(
     declared_ports: Mapping[str, tuple[tuple[str, bool], ...]],
     judging: Judging,
 ) -> list[CheckResult]:
-    """B15 item 5, with `table._declared_port_checks`' iteration and ids: by model id, the ports
+    """B15 item 5, with `table_kit.declared_streams`' iteration and ids: by model id, the ports
     whose declared phase is judged (`declared_ports`, the table's entries). A declared vapour by
     the τ_dew test on a fresh flash of the stream's own `(n, T, P)`; a declared liquid
     `unsupported` (`pr_declared_liquid_unsupported`); a dormant stream `not_applicable`."""

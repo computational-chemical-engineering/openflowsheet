@@ -1,10 +1,13 @@
 """The check table's kit: what an entry reads and returns (T05 design note §4, register R-046).
 
-`Unit` is one instance as an entry reads it, `ModelChecks` one model's rows by category (each a
-`Rule`), `blocked_check` and `stream_notes` the rows on a stream whose enthalpy the state does
-not determine, and the four notes the suffixes a qualification carries. The family tables
-(`verify.unit_checks`, `verify.thermal`, `verify.gamma_phi_units`) build on it; `verify.table`
-re-exports its public names."""
+`Unit` is one instance as an entry reads it, `Judging` what a split-family check judges with
+(state, components, provider, context, tolerances, note: `Unit`'s names), `ModelChecks` one
+model's rows by category (each a `Rule`), `blocked_check` and `stream_notes` the rows on a stream
+whose enthalpy the state does not determine, and the four notes the suffixes a qualification
+carries. The split family's shared rows: `degenerate_split_rows`, `independent_split_rows`, and
+`DeclaredStream`/`declared_streams` for the declared ports. The family tables
+(`verify.unit_checks`, `verify.thermal`, `verify.gamma_phi_units`, `verify.split_checks`,
+`verify.pr_c1`) build on it; `verify.table` re-exports its public names."""
 
 from __future__ import annotations
 
