@@ -53,39 +53,47 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 - In parallel: the scale probe (R-1034).
 - Behind development: G3 studies, G4 assessment, G2 models (legacy engine untouched until Frank rules), W5.
 - Trailing behind 0.5 (Frank, ofs-s19-w4-docs-scope A, 2026-11-17): pre-S19 broken references in living docs.
-- G1 (orchestrator/, numerics/) running since 2026-11-18 (hold lifted 2026-11-16); ptc.py item met (8.3 after P3).
+- G1 (orchestrator/, numerics/): W3 lanes N and O closed 2026-11-19 (272011be); residuals executor.py (PR-1b, 6.1 -> 9.0, gating) and `_solve_region`'s parameter object (W4).
 - G-END (below) stays the end criterion for the whole repository.
 
-## Next actions (2026-11-19 ~08:25 CET; self-reset)
+## Next actions (2026-11-19 ~11:05 CET; self-reset)
 
-**Since the 06:40 reset:** lane O run 8b merged into wp/S19 (7e1cf39e; jobs 397-401 PASS, merge-check 418 PASS;
-review R-W3-G1O-8 merge all five, fixes 1 and 2 folded into run 9). Run 9 delivered (jobs 419-422). Batch N job 373
-FAILED on the m06 browser cancel timing (environment, as job 235): re-run 402 PASS, 403 PASS, both hand-logged (run-log
-steps 403, 404) because my `--rerun-of` used queue numbers; 404-410 withdrawn, re-queued as 411-417 without
-`--rerun-of`. **`enqueue --rerun-of` takes the RUN-LOG step from the failed result line, never the queue job.** Gate
-report: the four standing ALERTs only (selected 857 s, ratio 0.64, wait median ~33 min; proposal 2). No agent running.
+**Since the 08:25 reset:** lane O run 9 reviewed (R-W3-G1O-9: merge after fix 1), fix a527c201 (job 423), merge-check
+424 PASS, **merged into wp/S19 as 272011be**; G1's W3 lanes N and O closed, their worktrees and branches removed.
+G1 end numbers (scan e39bff0b): 0 brain in orchestrator/ and numerics/, every file >= 7.0 except executor.py 6.1.
+**PR-1** (opus-engineer) took executor.py 6.1 -> 9.0 (debt 51.2 -> 16.0, no file smell; repo 3492.8 -> 3457.6,
+health 8.45) but the interface tool refuses a private `changed` entry and a spy edit; I also found one behaviour
+change (`_converge`'s `_eo_recovery` call read the plan's revision continuation; it passed None before). Rebuilt as
+**PR-1b** (sonnet-implementer) with the None restored. Batch N WO-N1/N1b all PASS (jobs 411-417), **review R-W5-N1:
+merge, fix 1 docstring** applied as a059b9a0 (job 427). S19_RULES' retarget rule gained the red-retarget clause.
+Gate report: the four standing ALERTs only (selected 1147 s, ratio 0.84, share 44%, wait median 48 min; proposal 2).
+No agent running.
 
-**Position:** wp/S19 = 7e1cf39e + docs. MB 756e1c12. Runner PID 1341562 (`--batch`; stop `kill
+**Position:** wp/S19 = 272011be + docs. MB 756e1c12. Runner PID 1341562 (`--batch`; stop `kill
 $(cat <git-common-dir>/codehealth/queue/runner.pid)`). Background `gate_queue.py wait` shells may wake the new
-context without saying why: run `$Q status`, then `$Q wait --since <COUNT>` in the background (COUNT 390 at reset).
-**G1 lane O run 9** (`wp/S19-g1o9`, worktree `s19-g1o9`, base 366ba54e = run 8b's merged head; brief
-`S19-W3-G1O-9.md`): retarget e871b756, plan e6ab9537 (split-region-4), restructure 4b32e4e2 (job 419), no-gain
-bb5f7320 (420), R6 87539700 (421), R7 e8d8d556 (422). region.py 975 NLOC, health 7.8 at R7. On all PASS: review
-R-W3-G1O-9 (reviewer, Opus; brief `S19-R-W3-G1O-9.md` written; add the gate results to the launch message), fixes,
-merge-check helper `wp/S19-g1o9-mc` = wp/S19 tip + merge of the lane (worktree `s19-g1o9-mc`; ruff first; `$Q
-enqueue --snapshot --worktree W --base <tip> --mode merge-check --label g1o9-mc --target
-src/openflowsheet/orchestrator --recipe closures-to-class --model claude-opus-5-5`), merge (merge commit, `git merge
--F`). After run 9, lane O's G1 items are review notes only (and whatever R-W3-G1O-9 rules on `_solve_region`'s
-remainder, 28.1); `_solve_region`'s plan run, `_eo_recovery`, `execute_plan` wait for W4's `_PlanRun` (Q4). Then:
-check the G1 end numbers (plan 7) and decide lane N/O close.
+context without saying why: run `$Q status`, then `$Q wait --since <COUNT>` in the background (COUNT 403 at reset).
+**`enqueue --rerun-of` takes the RUN-LOG step from the failed result line, never the queue job.**
+**W4 residual PR-1b** (`wp/S19-pr1b`, worktree `s19-pr1b`, base 272011be; briefs `S19-W4-PR-1.md`, `S19-W4-PR-1b.md`):
+A dcd1b9a4 (adapt, red alone: test_t04_edge3.py::test_a09_rcy_stalls_linear_solve_failure_is_not_a_trigger), B 53484cf0
+(step, job 425), C d65497b4 (no-gain, job 426). On both PASS: review R-W4-PR-1b (reviewer, Opus; brief
+`S19-R-W4-PR-1b.md` written; add the gate results), fixes, merge-check helper `wp/S19-pr1b-mc` = wp/S19 tip + merge of
+the lane (ruff first; `--mode merge-check --label pr1b-mc --target src/openflowsheet/orchestrator/executor.py
+--recipe interface --model claude-opus-5-5`), merge. Then remove worktrees s19-pr1 (superseded, keep branch
+`wp/S19-pr1` until then) and s19-pr1b. After it: `_solve_region`'s parameter object (region.py, the t08
+`solving(**kwargs)` spy) is the last G1/W4 residual; brief it (same red-adapt + step form).
+**Tool gap (not blocking; tell the cce-code-health steward via hub):** interface mode cannot gate a private signature
+change with its caller adaptations (`changed` refuses a private name; no plan key for a spy edit).
 **W5 batch N:** B_N = 605d332f; gate file `<git-common-dir>/codehealth/briefs/S19-W5-batchN.json` (sha256 4f7e1232...);
-branch `wp/S19-w5n`, worktree `s19-w5n`. W5-mode gates fall back to the full suite (~1400 s).
-- WO-N1 / N1b: jobs 358-372, 402, 403 PASS; 411-417 pending (steps 17-23, sets.py chain to b73142ef).
-- After all PASS: review R-W5-N1 (reviewer, Opus; one review over 3cd5ff50..b73142ef, 23 steps; brief
-  `S19-R-W5-N1.md` written; add job 373's env failure and the hand logs), fixes, then WO-N2 (lca retargets, lca
-  health, remove `program.Refusal` re-export, its eight importers), WO-N3 (pr_lib, S1), WO-N4 (factory switch,
-  `--mode interface`), WO-N5 (close: K, judge, batch-check, review), merge batch N into wp/S19 (FR-2 B). Every W5
-  enqueue adds `--batch <json>`. contributor.py's split toward 9.0 deferred (S19_DECISIONS 02:10).
+branch `wp/S19-w5n`, worktree `s19-w5n`, tip a059b9a0. Every W5 enqueue adds `--batch <json>`.
+- WO-N1 / N1b done and reviewed (R-W5-N1: all 23 steps merge; job 427 = fix 1). Reviewer notes, no action:
+  step 15's message overstates "same order" (unobservable); trailers carry file debt (contributor) vs function debt
+  (sets). DECISION: `_resolve` as `_EntryTables` (reviewer shape, R-W5-N1 Q5) -> not taken, sets.py is at 9.2.
+  Reversible by: a step in a later batch. contributor.py split: needs a prep step first (four staticmethods to module
+  functions: `_entry_source` :509, `_set_entry` :667, `_size_input` :733, `_n_act_input` :786), still deferred.
+- Next: **write brief `S19-W5-N2.md` and launch WO-N2** (lca retargets, lca health, remove the `program.Refusal`
+  re-export and adapt its eight importers; template `S19-W5-N1.md`, the batch's admitted set, ruling
+  `docs/briefs/S19-W5-ruling.md` sections 4 to 6.2), then WO-N3 (pr_lib, S1), WO-N4 (factory switch, `--mode
+  interface`), WO-N5 (close: K, judge, batch-check, review), merge batch N into wp/S19 (FR-2 B).
 - Weekly budget reset Thu 19 Nov 13:00: after it, more than 2 engineer runs at a time as the queue serves.
 **Open for the design lane at batch N's close review:** W5-S1's text vs fix 2 (the tool admits a tier 1 split's new
 `.py` in the admitted file's directory; default: the tool's rule stands).

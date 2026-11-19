@@ -3319,3 +3319,10 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   (605d332f..b73142ef, 23 steps; job 373 environment failure re-run as 402). Review R-W5-N1 launched (reviewer, Opus).
   Gate report (6 h): the four standing ALERTs ("selected gates take 1147 s > 300 s (tests tier)", "selected/full
   time ratio 0.84 > 0.4", share 44%, wait median 48 min).
+- **2026-11-19 ~11:05 CET, review R-W5-N1 (reviewer, Opus, 170k tokens): all 23 steps merge; fix 1 (sets.py:408
+  parse_set docstring, both 1.0 cases) applied by the orchestrator as a059b9a0, job 427 (no-gain, `--batch`).** Q1 the
+  reasons lists keep elements and order on every path (proven on the code); Q2 steps 21-23 and a3d7ba21 accepted;
+  Q3 the wrong `Codehealth-Debt` trailer is not read by the tool (run-log step 405 has the gate's 16.0 -> 6.0); the
+  hand-logged steps 403, 404 match gate JSONs 15r, 16r. DECISION: `_resolve` as `_EntryTables` -> not taken (sets.py
+  9.2). Alternative: a step now. Reversible by: a later step. Contributor split needs a staticmethod prep step first
+  (S19_STATE). State rewritten; self-reset at the next commit.
