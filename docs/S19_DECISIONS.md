@@ -3022,3 +3022,6 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
 - **2026-11-19 ~01:55 CET, job 359 `g1o4-mc` PASS 10/10; wp/S19-g1o4-mc merged into wp/S19 (a92f0290).** wp/S19 had
   only docs since de16626f. Lane O run 5 launched (opus-engineer, brief `S19-W3-G1O-5.md`, R2, S2, C3, branch
   `wp/S19-g1o5` from a92f0290). WO-N1 has enqueued jobs 358 (retarget) and 360 to 363.
+- **2026-11-19 ~02:00 CET, job 358 `w5n1-1` (WO-N1 Refusal retarget, no-gain) PASS 18/18: the first W5-mode gate.**
+  W5-S1 scope PASS (4 paths), W5-S7 coverage 0 new edges, 4 retargets, M9 key set equal (35), W5-S4 registry PASS,
+  W5-S6 tests PASS: full suite (selection fell back to all), 5 failed, all in L_N (expected failures failed 5/10).
