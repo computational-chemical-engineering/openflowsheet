@@ -61,7 +61,7 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 
 **Position:** main = c4a91a75 (the 0.5 blocking set, pushed 20:20; card ofs-s19-blocking-merge-main executed v3).
 wp/S19 = docs after it. MB 756e1c12. Runner PID 1341562. Results COUNT 485 (a fresh context re-arms `$Q wait --since
-<COUNT from $Q status>` in the background). No agent of this session running. Queue: 504 running, 505-507 pending
+<COUNT from $Q status>` in the background). Agent running: X07a-WO1 engineer. Queue: 504 running, 505-507 pending
 (batch N WO-N3b, batch sha e7c318e4); 511 g2d-mc running (merge-check of G2 run 8, e9fdf99f..57e141ac). On each
 result: gate_report, log (the four ALERTs).
 
@@ -79,9 +79,11 @@ result: gate_report, log (the four ALERTs).
    scripts, benchmarks/t04/basin.py) after re-pinning cce-code-health to 34a30bf (after batch N is gated); (c) W5 batch
    L after batch N merges (WO-L0 to WO-L3). Deferred: cascade/column 87-line duplication (R-W5-G2-8 Q5: interface step
    after `_RegionCall`, design-lane ruling first). `executed` on the card when (a) to (c) are done.
-4. **0.5:** card ofs-05-widen filed by hub (A/B/C/D, rec B: X07a + X01 rest; verbatim actions in S19_DECISIONS); on
-   the doorbell verify with the chosen option's text and brief the lanes (one lane beside S19). F3: ADR 0061 accepted
-   (R-1050); waits on ofs-f3-mcp-descriptions-human, then its merge card. ofs-s19-start-05 already executed 11-18.
+4. **0.5:** card ofs-05-widen B verified and executed (card v3, 2026-11-19 22:05). Lanes from main c4a91a75:
+   wp/X07a (worktree x07a, brief docs/briefs/X07a-WO1.md; opus-engineer running) and wp/X01 (worktree x01, brief
+   docs/briefs/X01-WO1.md, plugin docs + example plugin; launch when an agent slot frees). One 0.5 engineer and one S19
+   engineer at a time. X01 selectability blocked on F2/F4/F6; ADR 0052 D11 amendment open for the design lane. F3: ADR
+   0061 accepted (R-1050); waits on ofs-f3-mcp-descriptions-human, then its merge card.
 5. Rule: lanes touching studies/ also need the nlp-marked suite at head, failures a subset of base (g19, g20).
 6. Brief rule (I1): `codehealth scan --json PATH` writes TO PATH; use `--repo <wt> --json <scratch>/scan.json`.
 **Open after S19 (F1):** restore the S11.A73 gamma-phi vs PR comparison (`forms._FORMS`), targeting `_routing`'s
