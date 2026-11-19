@@ -1209,7 +1209,8 @@ def _inlet_states(
     unit: UnitModel, value: Mapping[str, StreamState], connected: Mapping[str, tuple[str, ...]]
 ) -> dict[str, tuple[StreamState, ...]]:
     """`unit`'s inlets as `evaluate` takes them: per material inlet port in `ports()` order, the
-    values in `value` of its `connected` streams, in R1 order. Reads only."""
+    values in `value` of its `connected` streams, in R1 order; a repeated port name keeps the
+    last. Reads only."""
     return {
         port: tuple(value[s] for s in connected.get(port, ())) for port in _material(unit, "inlet")
     }
