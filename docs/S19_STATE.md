@@ -94,7 +94,7 @@ per result, CLAUDE.md "Agent budget" for the rest).
    Then WO-N4 (factory switch, `--mode interface`; ruling section 9 row), WO-N5 (close: K, judge, batch-check, one
    review of the WO-N2, N3b, N4 chains), merge batch N into wp/S19 (FR-2 B), WO-N6.
 **Tool gap closed:** cce-code-health 34a30bf (`changed` takes private defs; `adapted` key for fakes/spies; README
-"Interface steps"). Re-pin after jobs 433-449 drain and CI on 34a30bf is green, before items 1 and 3b interface steps.
+"Interface steps"). CI green on 34a30bf (code_health, 2026-11-19). Re-pin to 34a30bf after jobs 433-449 drain, before items 1 and 3b interface steps.
 Until then the workaround: red adapt commit, then `--mode step` with base = the adapt commit.
 **Open for the design lane at batch N's close review:** W5-S1's text vs fix 2 (the tool admits a tier 1 split's new
 `.py` in the admitted file's directory; default: the tool's rule stands).
