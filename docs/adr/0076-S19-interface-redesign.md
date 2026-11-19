@@ -347,6 +347,39 @@ the migration table below.
   `assessment.program.Refusal` and `application.revision_binding.MODEL_BUILDERS`, as lines 33-34 anticipate. The
   names are listed in `docs/briefs/S19-I19-inventory.md` (W5 rows); the W5 base recomputes the list against it.
 
+### Addendum I-20 (2026-11-19): the verify twins under one parameter object
+
+*Added by the design lane (`architect`, brief S19-A-I20) on Frank's Decision Desk card `ofs-s19-verify-twins`, choice
+A (2026-11-19, verified): "add ADR 0076 item I-20 (merge the verify twins of gamma_phi_units.py and pr_c1.py under one
+verify parameter object; public names change, no shims) and run it in S19 before the 0.5 line starts". Normative like
+I-1 to I-19. Inventory, evaluation-order ledger, work orders and gates: `docs/briefs/S19-I20-design.md`.*
+
+- **I-20** One parameter object, `openflowsheet.verify.table_kit.Judging`: a frozen dataclass, built by keyword, with
+  the fields `state` (the point the fresh-flash checks read: `judged_at`, or the certified state when that is `None`),
+  `components` (the revision's component order), `provider`, `context`, `tolerances` and `note`
+  (`checks.qualification(provider)`), named and typed as `Unit`'s fields for the same values. Every check of the split
+  family takes it as its last positional parameter. `verify.table.revision_checks` runs the γ–φ form itself: the
+  form, resolved from the basis as today, is read at two sites (the routing phase and the admissibility rows), and
+  `verify.gamma_phi_units` supplies the form's own pieces (`require_composition_dependent`, `degeneracy`,
+  `admissibility_checks`). Each form keeps its own split checks (different physics); what they share, their rows,
+  moves to the kit.
+  - removed: `gamma_phi_units.revision_checks`;
+  - changed (signature only): `gamma_phi_units.split_checks(split, judging, distance=None)`,
+    `pr_c1.split_checks(split, judging)`, `pr_c1.declared_port_checks(view, declared_ports, judging)`;
+  - added: `table_kit.Judging`, `table_kit.DeclaredStream`, `table_kit.declared_streams`,
+    `table_kit.degenerate_split_rows`, `table_kit.independent_split_rows`, `gamma_phi_units.admissibility_checks`,
+    `gamma_phi_units.require_composition_dependent`.
+
+  No shims: no alias, re-export, wrapper or `__getattr__` keeps a removed or changed name, and the test callers are
+  retargeted. Behaviour is bitwise identical; the one change in calls is that a γ–φ check set no longer makes the two
+  `provider.describe()` calls of the removed entry's own prelude (metadata reads that `verify.table` has already made
+  for the same values; gate G3 of the design note measures it). No frozen M9 module and no registry-hashed file imports
+  either module, so nothing of I-20 waits for W5. Not taken: one entry point per form over a shared core (a new module
+  under both, two copies of the prelude and of the category-major assembly); a per-form table of callables (one
+  signature over rungs that read different routing results); one split-check function with a method flag (three bodies
+  behind a kind flag); absorbing `verify.table._Routing` into `Judging` (its fields are the routing phase's results,
+  built after provider evaluations; it is built by keyword in the new routing phase instead).
+
 ## Alternatives rejected
 
 - **Keep every old path as a permanent re-export.** Contradicts D19, and a re-export keeps the old module on every
@@ -431,6 +464,7 @@ the migration table below.
 | I-14 | interface (after I-9); fresh-interpreter tests outside gate after | `added` (catalogue.py: `set_before_freeze`; yaml_io.py: `yaml_load`), `new_files` | after: the `messages.catalogue -> registry` adoption line goes |
 | I-15 | forced-refusal tests outside gate before (asserting all but the `exception` detail); interface; tests outside gate after (`exception == "AdmissibilityRefusal"`, the K pin) | `added` (models/lifted.py: `AdmissibilityRefusal`), `callers` (tests that expect `VerifierError` from a region path, listed at the base) | after: the `orchestrator.region -> verify.checks` adoption line goes |
 | I-19 | sweep commits outside gate (docs, refusals.yaml:1378); interface for any re-export left | `removed` | none |
+| I-20 (addendum) | test commit outside gate before a (tests/test_m02_wo8_verifier.py: the `_judging` helper); interface a; interface b; retarget outside gate before c (tests/test_s11_gp_verifier.py: four calls; tests/s11_gp_support.py: the spy); interface c | a: `added` (table_kit.py: `Judging`; gamma_phi_units.py: `admissibility_checks`, `require_composition_dependent`), `changed` (gamma_phi_units.py: `split_checks`; pr_c1.py: `split_checks`, `declared_port_checks`), `callers` (tests/test_m02_wo8_verifier.py); b: `added` (table_kit.py: `DeclaredStream`, `declared_streams`, `degenerate_split_rows`, `independent_split_rows`); c: `removed` (gamma_phi_units.py: `revision_checks`) | none (no new module; `openflowsheet.verify` is one layer entry) |
 
 Recommended W4 order: I-6, I-3, I-1, I-2, I-7, I-8, I-5, I-4, I-5b, I-9, I-14, I-10, I-11, I-15, I-13, I-12a, I-12b,
 I-12c, I-12d, I-19. Hard constraints: I-14 after I-9; I-5 before I-12a; I-5b before I-9 (R-1044); I-10 before I-12c; I-11 before I-12d.
