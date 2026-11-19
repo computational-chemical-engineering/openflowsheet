@@ -543,21 +543,43 @@ def _stage_failures(
     state: Mapping[str, float],
     regimes: Sequence[Regime],
 ) -> list[str]:
-    """Spec §8, stage by stage: on a `TWO_PHASE` stage each of `V_j`, `L_j` that is not `> 0`; on a
-    `LIQUID` or `VAPOR` stage a failed `admissibility`."""
+    """Spec §8, stage by stage: on a `TWO_PHASE` stage each of `V_j`, `L_j` that is not `> 0`
+    (`_two_phase_failures`); on a `LIQUID` or `VAPOR` stage a failed `admissibility`
+    (`_single_phase_failures`)."""
     failures: list[str] = []
     unit = spec.unit_id
     for stage, regime in enumerate(regimes, start=1):
         if regime == "TWO_PHASE":
-            for total in (vapor_total_id(unit, stage), liquid_total_id(unit, stage)):
-                if not state[total] > 0.0:
-                    failures.append(f"TWO_PHASE stage {stage}: {total} = {state[total]!r}")
+            failures += _two_phase_failures(unit, state, stage)
         elif regime in ("LIQUID", "VAPOR"):
-            phase: Phase = "LIQUID" if regime == "LIQUID" else "VAPOR"
-            admissible, detail = admissibility(spec, provider, state, stage, phase)
-            if not admissible:
-                failures.append(f"{regime} stage {stage} inadmissible: {detail}")
+            failures += _single_phase_failures(spec, provider, state, stage, regime)
     return failures
+
+
+def _two_phase_failures(unit: str, state: Mapping[str, float], stage: int) -> list[str]:
+    """A `TWO_PHASE` stage's totals `V_j`, `L_j` (in that order) whose `state` value is not
+    `> 0`."""
+    failures: list[str] = []
+    for total in (vapor_total_id(unit, stage), liquid_total_id(unit, stage)):
+        if not state[total] > 0.0:
+            failures.append(f"TWO_PHASE stage {stage}: {total} = {state[total]!r}")
+    return failures
+
+
+def _single_phase_failures(
+    spec: CascadeSpec,
+    provider: PropertyProvider,
+    state: Mapping[str, float],
+    stage: int,
+    regime: Regime,
+) -> list[str]:
+    """A `LIQUID` or `VAPOR` stage's failed `admissibility` in that phase: one failure, or
+    none."""
+    phase: Phase = "LIQUID" if regime == "LIQUID" else "VAPOR"
+    admissible, detail = admissibility(spec, provider, state, stage, phase)
+    if not admissible:
+        return [f"{regime} stage {stage} inadmissible: {detail}"]
+    return []
 
 
 def _saturation_failures(
