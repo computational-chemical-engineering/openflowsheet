@@ -321,7 +321,7 @@ def main() -> int:
     parser.add_argument("--workers", type=int, default=6)
     arguments = parser.parse_args()
     variant = variants.registered_variant(VARIANT_ID)
-    load_before = os.getloadavg()
+    load_before = _load_average()
     started = time.perf_counter()
     todo = points()
     context = multiprocessing.get_context("spawn")
@@ -362,7 +362,7 @@ def main() -> int:
             "cpu_count": os.cpu_count(),
             # The host is shared: wall times scale with its load, the numerics do not.
             "loadavg_before": list(load_before),
-            "loadavg_after": list(os.getloadavg()),
+            "loadavg_after": _load_average(),
         },
         "summary": {
             "a_Q-F4": {
@@ -419,6 +419,15 @@ def main() -> int:
     arguments.out.write_text(json.dumps(record, indent=1, ensure_ascii=False) + "\n", "utf-8")
     print(json.dumps(record["summary"]))
     return 0
+
+
+def _load_average() -> list[float]:
+    """`os.getloadavg()` as a list; empty on Windows, which has none (X07a: the campaign runs on
+    POSIX hosts)."""
+    if sys.platform == "win32":
+        return []
+    else:
+        return list(os.getloadavg())
 
 
 if __name__ == "__main__":

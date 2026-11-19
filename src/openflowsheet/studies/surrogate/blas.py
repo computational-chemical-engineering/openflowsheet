@@ -31,6 +31,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Final
 
+from openflowsheet._platform import LOADED_LIBRARY_MODE
+
 __all__ = ["BlasLibrary", "controlled", "single_blas_thread"]
 
 _PREFIXES: Final = ("scipy_openblas", "openblas")
@@ -63,7 +65,7 @@ def _loaded_openblas() -> list[str]:
 
 def _library(path: str) -> BlasLibrary | None:
     try:
-        handle = ctypes.CDLL(path, mode=os.RTLD_NOLOAD | os.RTLD_LAZY)
+        handle = ctypes.CDLL(path, mode=LOADED_LIBRARY_MODE)
     except OSError:
         return None
     for prefix in _PREFIXES:
