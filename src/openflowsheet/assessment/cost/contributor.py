@@ -616,7 +616,9 @@ class _Planner:
     def _entry(
         self, item: SizedItem, doc: Mapping[str, Any]
     ) -> tuple[sets.CostSet, forms.ResolvedEntry] | Refusal:
-        """§4.5.3: the item's `correlation`, else the set's first entry of its family."""
+        """§4.5.3: the item's `correlation`, else the set's first entry of its family.
+
+        The entry comes from `_set_entry`, its options from `_options`."""
         declared = doc.get("correlation")
         set_id = declared["set"] if declared else self.doc.get("correlation_set")
         if set_id is None:
@@ -628,17 +630,9 @@ class _Planner:
         for ref in dict(self.doc.get("data", {})).get("sets", ()):
             if ref["id"] == set_id and ref["sha256"] != document_sha256(cost_set.document):
                 return Refusal("NO_CORRELATION", item.item_id, f"{set_id}: sha256 mismatch")
-        if declared:
-            try:
-                entry = cost_set.entry(str(declared["entry"]))
-            except KeyError as error:
-                return Refusal("NO_CORRELATION", item.item_id, str(error))
-        else:
-            orientation = item.options.get("orientation")
-            found = sets.entry_for(cost_set, item.family, orientation)
-            if found is None:
-                return Refusal("NO_CORRELATION", item.item_id, f"{set_id} has no {item.family}")
-            entry = found
+        entry = self._set_entry(item, cost_set, declared, set_id)
+        if isinstance(entry, Refusal):
+            return entry
         if entry.form == "generic-v1":
             return Refusal(
                 "NO_CORRELATION",
@@ -653,6 +647,24 @@ class _Planner:
         if isinstance(resolved, sets.NoCorrelation):
             return Refusal("NO_CORRELATION", item.item_id, resolved.detail)
         return cost_set, resolved
+
+    @staticmethod
+    def _set_entry(
+        item: SizedItem, cost_set: sets.CostSet, declared: Any, set_id: Any
+    ) -> sets.CostEntry | Refusal:
+        """The item's entry of `cost_set`: the `declared` correlation's entry, else the set's
+        first entry of the item's family and orientation (§4.5.3); NO_CORRELATION when absent."""
+        if declared:
+            try:
+                return cost_set.entry(str(declared["entry"]))
+            except KeyError as error:
+                return Refusal("NO_CORRELATION", item.item_id, str(error))
+        else:
+            orientation = item.options.get("orientation")
+            found = sets.entry_for(cost_set, item.family, orientation)
+            if found is None:
+                return Refusal("NO_CORRELATION", item.item_id, f"{set_id} has no {item.family}")
+            return found
 
     def _options(
         self, item: SizedItem, doc: Mapping[str, Any], entry: sets.CostEntry
