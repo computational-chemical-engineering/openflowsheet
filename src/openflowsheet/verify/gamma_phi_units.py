@@ -1,10 +1,11 @@
 """The verifier's γ–φ form for the K02/T05 units' lifted splits (S11 units design §4.8; ADR 0051;
 WO-D3).
 
-Since I1b `verify.table.revision_checks` sends `wilson-ig-v2` revisions here (`GAMMA_PHI_UNITS`).
-It is the first pass's `DECLARED_MIXTURE` form (`verify.forms`,
-`verify.table.revision_checks`) with one addition, so that the five γ–φ-faced units of WO-D1 are
-verified rather than blocked:
+Since I1b `verify.table.revision_checks` runs this form for `wilson-ig-v2` revisions
+(`GAMMA_PHI_UNITS`); this module supplies the form's guard (`require_composition_dependent`), its
+routing (`degeneracy`) and its admissibility rows (`admissibility_checks`). It is the first pass's
+`DECLARED_MIXTURE` form (`verify.forms`, `verify.table.revision_checks`) with one addition, so
+that the five γ–φ-faced units of WO-D1 are verified rather than blocked:
 
 - **Identity with the first pass.** Every stream and unit `DECLARED_MIXTURE` handles gets the
   checks it gets there, built by the same functions: declared streams (`n·h(T, P, phase)` and
@@ -56,27 +57,16 @@ from openflowsheet.thermo.stability import StabilityReport
 from openflowsheet.verify import CheckResult, dormant, evaluated, forms, unsupported
 from openflowsheet.verify.checks import (
     VerifierError,
-    bounds_checks,
-    qualification,
     stream_of,
 )
 from openflowsheet.verify.column import _SHARED_STABILITY, _STABLE
-from openflowsheet.verify.flowsheet_rows import (
-    REACTING_MODELS,
-    _envelope_energy,
-    _envelope_material,
-)
 from openflowsheet.verify.split_checks import Degeneracy
 from openflowsheet.verify.table_kit import (
-    REACTION_DATUM_NOTE,
     SPLIT_ENTHALPY_NOTE,
     Judging,
-    ModelChecks,
-    Unit,
     degenerate_split_rows,
     independent_split_rows,
 )
-from openflowsheet.verify.unit_checks import MODEL_CHECKS
 
 if TYPE_CHECKING:
     from openflowsheet.models.lifted import LiftedSplit
@@ -88,12 +78,11 @@ __all__ = [
     "degeneracy",
     "registry_splits",
     "require_composition_dependent",
-    "revision_checks",
     "split_checks",
 ]
 
 #: The form's name: `verify.forms.form_of("wilson-ig-v2")`, which `verify.table.revision_checks`
-#: dispatches here (I1b).
+#: runs with this module's pieces (I1b).
 GAMMA_PHI_UNITS: Final = forms.GAMMA_PHI_UNITS
 #: A09, as A3's `verify.forms._SHARED` for the admissibility criterion: the band is the units' own.
 BAND_NOTE: Final = (
@@ -326,119 +315,6 @@ def split_checks(
         differences.append(by_vapor if abs(by_vapor) >= abs(by_liquid) else by_liquid)
     checks += independent_split_rows(name, subject, total, differences, judging)
     return checks
-
-
-def revision_checks(
-    view: RevisionView,
-    splits: Sequence[LiftedSplit],
-    state: Mapping[str, float],
-    *,
-    provider: PropertyProvider,
-    context: EvaluationContext,
-    tolerances: Mapping[str, float],
-    judged_at: Mapping[str, float] | None = None,
-    owners: Mapping[str, str] | None = None,
-) -> list[CheckResult]:
-    """`verify.table.revision_checks`'s `DECLARED_MIXTURE` branch, argument for argument, with
-    §4.8's registry splits: their lifted streams' enthalpies in the one map every energy check
-    reads, and their `split_checks` before the declared streams' admissibility.
-
-    `owners` is accepted for the same signature; the staged splits it resolves are not registry
-    splits, and the column's rows are its own `ModelChecks` (as in the first pass)."""
-    del owners
-    require_composition_dependent(provider)
-    at = state if judged_at is None else judged_at
-    note = qualification(provider)
-    reacting = any(i.model_id in REACTING_MODELS for i in view.instances)
-    reaction_note = note + REACTION_DATUM_NOTE.format(
-        convention=provider.describe().reference_convention
-    )
-    components = view.components
-    judging = Judging(
-        state=at,
-        components=components,
-        provider=provider,
-        context=context,
-        tolerances=tolerances,
-        note=note,
-    )
-    declared = forms.declared_phases(view)
-    degenerate = degeneracy(view, splits, at, provider, context)
-
-    energy: list[CheckResult] = []
-    enthalpy: dict[str, float] = {}
-    for stream in view.streams:
-        carried = stream_of(at, stream, components)
-        if stream in degenerate.enthalpy:
-            enthalpy[stream] = degenerate.enthalpy[stream]
-        elif carried.is_dormant:
-            enthalpy[stream] = 0.0
-            energy.append(
-                dormant(
-                    id=f"energy_balance.enthalpy.{stream}",
-                    category="energy_balance",
-                    subject=stream,
-                )
-            )
-        else:
-            phase = declared[stream]
-            # An unlifted stream's value is never judged: every check reading it is blocked.
-            enthalpy[stream] = (
-                0.0 if phase is None else forms.enthalpy_flow(provider, carried, phase, context)
-            )
-
-    units: list[tuple[Unit, ModelChecks | None]] = [
-        (
-            Unit(
-                view=instance,
-                state=at,
-                enthalpy=enthalpy,
-                tolerances=tolerances,
-                energy_note=reaction_note if instance.model_id in REACTING_MODELS else note,
-                provider=provider,
-                context=context,
-                notes=degenerate.notes,
-                unlifted=degenerate.unlifted,
-                components=tuple(components),
-            ),
-            MODEL_CHECKS.get(instance.model_id),
-        )
-        for instance in view.instances
-    ]
-
-    material: list[CheckResult] = []
-    specification: list[CheckResult] = []
-    own_admissibility: list[CheckResult] = []
-    bounds: list[CheckResult] = bounds_checks(
-        provider, state, streams=view.streams, components=components
-    )
-    for judged, entry in units:
-        certified = judged if at is state else replace(judged, state=state)
-        if entry is None:
-            material.append(
-                unsupported(
-                    id=f"material_balance.{certified.id}.all",
-                    category="material_balance",
-                    subject=certified.id,
-                    reason=f"model_unsupported({certified.view.model_id})",
-                )
-            )
-            continue
-        material += entry.material(certified, components)
-        energy += entry.energy(judged, components)
-        specification += entry.specification(certified, components)
-        bounds += entry.bounds(certified, components)
-        own_admissibility += entry.admissibility(judged, components)
-    material += _envelope_material(view, state, tolerances)
-    energy.append(
-        _envelope_energy(
-            view, at, enthalpy, tolerances, reaction_note if reacting else note, degenerate
-        )
-    )
-
-    admissibility = admissibility_checks(view, splits, declared, degenerate, judging)
-    admissibility += own_admissibility
-    return [*material, *energy, *specification, *bounds, *admissibility]
 
 
 def require_composition_dependent(provider: PropertyProvider) -> None:

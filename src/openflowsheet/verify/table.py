@@ -110,11 +110,14 @@ def revision_checks(
     forms; material balances, specifications and bounds stay at `state`. `None` is `state`.
 
     `owners` (S11 design §10.11): a staged split's key → its instance (`degeneracy`); `None`
-    when no instance is staged. A model's own admissibility rows (`ModelChecks.admissibility`)
-    follow the declared ports on every form; the form's own rows come from
-    `_mixture_admissibility`, `_pr_admissibility` or `_syn_admissibility`. Each category's
-    instance rows come from `_instance_rows`, after the stream rows and before the flowsheet
-    rows."""
+    when no instance is staged. The form, resolved from the basis, routes the streams
+    (`_routing`, which raises `VerifierError` for a `wilson-ig-v2` revision whose provider is not
+    composition-dependent) and picks the form's own admissibility rows:
+    `gamma_phi_units.admissibility_checks` for the γ–φ form (units design §4.8), else
+    `_mixture_admissibility`, `_pr_admissibility` or `_syn_admissibility`. A model's own
+    admissibility rows (`ModelChecks.admissibility`) follow the declared ports on every form.
+    Each category's instance rows come from `_instance_rows`, after the stream rows and before
+    the flowsheet rows."""
     at = state if judged_at is None else judged_at
     note = qualification(provider)
     reacting = any(i.model_id in REACTING_MODELS for i in view.instances)
@@ -122,24 +125,11 @@ def revision_checks(
         convention=provider.describe().reference_convention
     )
     # S11 design §4.6 (ADR 0050 D5): the form is resolved from the basis. M02 design note §14.2
-    # B15: a `pr-c1-v1` revision takes `verify.pr_c1`'s forms at the sites below, SYN-001's runs
-    # SYN-001's lines, and every other basis the declared-phase mixture form (`verify.forms`).
+    # B15: a `pr-c1-v1` revision takes `verify.pr_c1`'s forms at the sites below, a
+    # `wilson-ig-v2` one the γ–φ form (units design §4.8, I1b; `verify.gamma_phi_units`),
+    # SYN-001's runs SYN-001's lines, and every other basis the declared-phase mixture form
+    # (`verify.forms`). The form is read at two sites: `_routing` and the admissibility rows.
     form = forms.form_of(view.basis.provider_id)
-    if form == forms.GAMMA_PHI_UNITS:
-        # Units design §4.8 (I1b): `wilson-ig-v2` revisions take the γ–φ form, which imports this
-        # module.
-        from openflowsheet.verify import gamma_phi_units  # noqa: PLC0415
-
-        return gamma_phi_units.revision_checks(
-            view,
-            splits,
-            state,
-            provider=provider,
-            context=context,
-            tolerances=tolerances,
-            judged_at=judged_at,
-            owners=owners,
-        )
     judging = Judging(
         state=at,
         components=view.components,
@@ -148,39 +138,34 @@ def revision_checks(
         tolerances=tolerances,
         note=note,
     )
-    pr = form == forms.PR
-    mixture = form == forms.DECLARED_MIXTURE
-    declared = forms.declared_phases(view) if mixture else {}
-    saturated = (
-        _saturated_outlets(view) if mixture and forms.pure_fluid_provider(provider) else frozenset()
-    )
-    if mixture:
-        degenerate = _mixture_degeneracy(view, at, declared, saturated)
-    elif pr:
-        degenerate = Degeneracy()
-    else:
-        degenerate = degeneracy(view, splits, at, provider, context, tolerances, owners)
-
-    enthalpy, energy = _stream_enthalpies(
-        view, _Routing(pr, mixture, declared, saturated, degenerate), judging
-    )
+    routing = _routing(form, view, splits, owners, judging)
+    enthalpy, energy = _stream_enthalpies(view, routing, judging)
 
     stream_bounds = bounds_checks(provider, state, streams=view.streams, components=view.components)
-    instance_rows = _instance_rows(view, state, enthalpy, degenerate, reaction_note, judging)
+    instance_rows = _instance_rows(
+        view, state, enthalpy, routing.degenerate, reaction_note, judging
+    )
     material = [*instance_rows.material, *_envelope_material(view, state, tolerances)]
     energy += instance_rows.energy
     energy.append(
         _envelope_energy(
-            view, at, enthalpy, tolerances, reaction_note if reacting else note, degenerate
+            view, at, enthalpy, tolerances, reaction_note if reacting else note, routing.degenerate
         )
     )
 
-    if mixture:
-        admissibility = _mixture_admissibility(view, declared, saturated, judging)
-    elif pr:
+    if form == forms.GAMMA_PHI_UNITS:
+        # Loaded by `_routing`'s γ–φ rung earlier in this call: the import binds the name only.
+        from openflowsheet.verify import gamma_phi_units  # noqa: PLC0415
+
+        admissibility = gamma_phi_units.admissibility_checks(
+            view, splits, routing.declared, routing.degenerate, judging
+        )
+    elif form == forms.DECLARED_MIXTURE:
+        admissibility = _mixture_admissibility(view, routing.declared, routing.saturated, judging)
+    elif form == forms.PR:
         admissibility = _pr_admissibility(view, splits, judging)
     else:
-        admissibility = _syn_admissibility(view, splits, enthalpy, degenerate, judging)
+        admissibility = _syn_admissibility(view, splits, enthalpy, routing.degenerate, judging)
     return [
         *material,
         *energy,
@@ -190,6 +175,57 @@ def revision_checks(
         *admissibility,
         *instance_rows.admissibility,
     ]
+
+
+def _routing(
+    form: forms.Form,
+    view: RevisionView,
+    splits: Sequence[LiftedSplit],
+    owners: Mapping[str, str] | None,
+    judging: Judging,
+) -> _Routing:
+    """The routing phase of `revision_checks` (S11 design §4.6; units design §4.8): how `form`
+    reads its streams, at `judging.state`. The γ–φ form first refuses a provider that is not
+    composition-dependent (`gamma_phi_units.require_composition_dependent`, `VerifierError`),
+    then reads every stream in its declared phase with its registry splits' degeneracy
+    (`gamma_phi_units.degeneracy`; no saturated outlets). The other forms: the declared phases
+    and saturated outlets of the mixture form, and the degeneracy of the form (none on PR)."""
+    if form == forms.GAMMA_PHI_UNITS:
+        from openflowsheet.verify import gamma_phi_units  # noqa: PLC0415
+
+        gamma_phi_units.require_composition_dependent(judging.provider)
+        declared = forms.declared_phases(view)
+        degenerate = gamma_phi_units.degeneracy(
+            view, splits, judging.state, judging.provider, judging.context
+        )
+        return _Routing(
+            pr=False, mixture=True, declared=declared, saturated=frozenset(), degenerate=degenerate
+        )
+    pr = form == forms.PR
+    mixture = form == forms.DECLARED_MIXTURE
+    declared = forms.declared_phases(view) if mixture else {}
+    saturated = (
+        _saturated_outlets(view)
+        if mixture and forms.pure_fluid_provider(judging.provider)
+        else frozenset()
+    )
+    if mixture:
+        degenerate = _mixture_degeneracy(view, judging.state, declared, saturated)
+    elif pr:
+        degenerate = Degeneracy()
+    else:
+        degenerate = degeneracy(
+            view,
+            splits,
+            judging.state,
+            judging.provider,
+            judging.context,
+            judging.tolerances,
+            owners,
+        )
+    return _Routing(
+        pr=pr, mixture=mixture, declared=declared, saturated=saturated, degenerate=degenerate
+    )
 
 
 def _saturated_outlets(view: RevisionView) -> frozenset[str]:
@@ -236,7 +272,9 @@ class _Routing(NamedTuple):
 
     #: A `pr-c1-v1` basis: `verify.pr_c1`'s enthalpy flow.
     pr: bool
-    #: The declared-phase mixture form (`verify.forms`).
+    #: The declared-phase mixture route (`verify.forms`): the DECLARED_MIXTURE form and the γ–φ
+    #: form, whose streams outside the registry splits are read as the first pass reads them
+    #: (units design §4.8).
     mixture: bool
     #: Each stream's declared phase (`forms.declared_phases`); empty outside the mixture form.
     declared: Mapping[str, Phase | None]
