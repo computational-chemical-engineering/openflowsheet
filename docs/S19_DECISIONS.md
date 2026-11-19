@@ -3813,3 +3813,15 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   removed. Next for W5: WO-N6 (revision_binding.MODEL_BUILDERS removed, test_t07_w5a_inspection.py:130 patches
   model_builders; acceptance a real test, R-W5-N-close 3), the tooling work order (a)-(d) before B_L, then
   `_RegionCall` (re-pin cce-code-health 34a30bf) and batch L.
+- **2026-11-20 ~00:10, X07a-WO1 delivered partly (opus-engineer, Opus, ~248k, over the cap; 0.5 lane, not S19).**
+  wp/X07a pushed, head 37049c8a: `src/openflowsheet/_platform.py` (locks flock/msvcrt, process tree setpgid+killpg /
+  kill-on-close Job Object, atomic replace with bounded Windows retry; below `_files`), 7 call sites moved; mypy
+  --platform win32 clean; CI legs windows-latest and macos-latest, F0 on every leg; CI fixes; docs; manifest
+  `implemented` (evidence/X07a/d2fb0252.../manifest.json). Linux: 104 importing test files + test_x07a_platform 4409
+  passed; F0 PASS 9/9; arch 0/0; touched files' health unchanged, _platform.py 9.5. CI 44615939688: ubuntu 1 failure
+  of 20522 (fixed d2fb0252); Windows/macOS F0 M2, M3, M5 equal (no float difference). Runs 44629325836 (d2fb0252) and
+  44629506428 (37049c8a) unread at the cap. Open for the design lane (batched, one ruling round): Q-1 G19 licence gate
+  fails on Windows on pywin32 312 (PSF, compiled; mcp's Windows-only dependency, missing from requirements.lock): licence
+  ruling (rights: Frank) and a per-platform lock decision; Q-2 F0 M7 fails on macOS and Windows (52 bundles NOT_RUN vs
+  registered MATCH; run/replay.py:239 inspects a Linux-written bundle only): per-platform M7 reference (ADR 0067 D7).
+  Both left failing. Log `docs/X07a_DECISIONS.md` on wp/X07a (D-1 to D-12, platform-limit rows).

@@ -61,8 +61,7 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 
 **Position:** main = c4a91a75. wp/S19 = batch N merged (d0c5b1f9) + docs. MB 756e1c12. Runner PID 1341562. Results
 COUNT 494 (a fresh context re-arms `$Q wait --since <COUNT from $Q status>` in the background). Queue empty. Agent
-running: X07a-WO1 engineer (0.5 lane, worktree x07a, waiting on its CI run; over its context cap). On each result:
-gate_report, log.
+running: none. On each result: gate_report, log.
 
 1. **G2 run 8:** merged (0d1e325e). Card ofs-s19-legacy-models: (a) done; (b) `_RegionCall`; (c) batch L.
 2. **Batch N:** merged into wp/S19 (d0c5b1f9; K 4178e4bc; review `docs/reviews/S19-R-W5-N-close.md`: merge, no
@@ -76,8 +75,10 @@ gate_report, log.
    cascade_solve.py:345, 12 tests, 3 scripts, benchmarks/t04/basin.py) after re-pinning cce-code-health to 34a30bf
    (batch N is gated: unblocked); (c) W5 batch L (WO-L0 to WO-L3) after the tooling work order. Deferred:
    cascade/column 87-line duplication (design-lane ruling first). E1 (tooling) before the g2d recorder is reused.
-4. **0.5:** card ofs-05-widen B executed (card v3). Lanes from main c4a91a75: wp/X07a (worktree x07a, brief
-   docs/briefs/X07a-WO1.md; engineer running) and wp/X01 (worktree x01, brief docs/briefs/X01-WO1.md, plugin docs +
+4. **0.5:** card ofs-05-widen B executed (card v3). Lanes from main c4a91a75: wp/X07a (worktree x07a, WO1 delivered
+   partly, head 37049c8a pushed, manifest implemented; next X07a-WO2: read CI runs 44629325836 and 44629506428, fix the
+   Windows/macOS test failures, `docs/X07a_DECISIONS.md` has the position; design-lane round for Q-1 pywin32 licence
+   (G19, rights: Frank) and Q-2 F0 M7 per-platform reference, both left failing; S19_DECISIONS 2026-11-20 00:10) and wp/X01 (worktree x01, brief docs/briefs/X01-WO1.md, plugin docs +
    example plugin; launch when an agent slot frees: one 0.5 engineer and one S19 engineer at a time). X01
    selectability blocked on F2/F4/F6; ADR 0052 D11 amendment open for the design lane. F3: ADR 0061 accepted
    (R-1050); waits on ofs-f3-mcp-descriptions-human, then its merge card.
