@@ -3531,3 +3531,7 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   `admissibility_checks` and pr_c1.py:334. WO-6 docs: `codehealth docs` names two drifted anchors (S11-design.md:1236,
   V02-alpha-release-spec.md:1322): pre-S19 or I-20? checked at the merge.
   Merge plan: merge-check 477 (b035293a) PASS + i20-fix PASS -> merge (docstring-only follow-up, helper rule).
+  WO-6 docs check (orchestrator): `codehealth docs` at e7fd7065 and at the lane head 10ce869d: 288 broken in living
+  docs both (records 1252 -> 1251): I-20 introduces 0 broken references (W4-DOCS criterion). The two anchors the
+  review names (S11-design.md:1236 `split_checks.py:443`, V02-alpha-release-spec.md:1322 `test_m02_wo8_verifier.py:339`)
+  resolve but point at moved lines: trailing living-doc item behind 0.5 (card ofs-s19-w4-docs-scope A).
