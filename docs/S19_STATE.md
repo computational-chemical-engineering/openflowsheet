@@ -85,6 +85,9 @@ log (quote the four ALERT lines).
    the engineer's run only if the queue is empty, else the orchestrator runs them alone later with the runner stopped
    between jobs. Then push wp/S19 (work-package branch), CI on both legs, manifest `tested`. Merge into main only on a
    VERIFIED card ofs-s19-blocking-merge-main (exact action text), then F0 on main, push main, `executed`.
+   Card filed by hub; verify with `--action` = A verbatim: "merge the wp/S19 tip (after G2 runs 6+7) into main following
+   steps 1-5 (evidence manifest tested at the merge tip; wall-time budget tests alone with the gate queue held; CI green
+   on both legs; merge commit on main with F0 PASS; push main), stopping without a push on any failure in steps 1-4".
 3. **Batch N:** on 484-487 PASS: S1 review R-W5-N3 (brief `S19-R-W5-N3.md`, shas updated to the rebased lane; add the
    gate results). Then WO-N4 (factory switch, `--mode interface`; ruling section 9 row), WO-N5 (close: K, judge,
    batch-check, one review of the WO-N2, N3b, N4 chains), merge batch N into wp/S19 (FR-2 B), WO-N6. Old lane tip kept

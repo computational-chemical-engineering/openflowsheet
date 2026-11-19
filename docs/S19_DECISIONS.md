@@ -3599,3 +3599,5 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   next (manifest, wall-time budget tests, CI, DECISION-REQUEST). gate_report: "ALERT selected share 61% < 75%";
   "ALERT selected gates take 907 s > 300 s"; "ALERT selected/full time ratio 0.56 > 0.4"; "ALERT queue wait median
   58 min > 15 min"; action unchanged. Worktree s19-i20 and branch wp/S19-i20 can go.
+- 2026-11-19 17:40, hub filed ofs-s19-blocking-merge-main (rec A, hub agrees; action A verbatim in S19_STATE item 2).
+  Asked hub to keep "a test that must change to pass comes back as a new card" in the context. Doorbell on signing.
