@@ -79,6 +79,11 @@ pytestmark = [
     pytest.mark.filterwarnings("ignore:Using `httpx` with `starlette.testclient` is deprecated"),
 ]
 
+if sys.platform == "win32":
+    # X07a platform limit (docs/X07a_DECISIONS.md): the browser is driven over
+    # `--remote-debugging-pipe`, its fds 3 and 4 passed by `dup2` (POSIX).
+    pytest.skip("X07a: the browser driver's fd 3/4 pipe is POSIX-only", allow_module_level=True)
+
 BINARY: Final[str | None] = find_browser()
 if BINARY is None:
     _REASON = f"no browser: set {BROWSER_VARIABLE} or put one of {', '.join(CANDIDATES)} on PATH"
