@@ -3731,3 +3731,8 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
 - 2026-11-19, job 511 (g2d-mc merge-check) PASS (full suite, 10/10, debt 26.6 -> 16.0). wp/S19 changed only docs
   since e9fdf99f: wp/S19-g2d (57e141ac) merged into wp/S19 (0d1e325e); worktree s19-g2d and branch removed. Card
   ofs-s19-legacy-models item (a) done (G2 runs 6-8); (b) `_RegionCall` and (c) batch L remain. gate_report: the four ALERTs (52%; 648 s; 0.49; wait 56 min); action unchanged.
+- **2026-11-19 ~21:50, card ofs-05-widen signed B by Frank (doorbell from hub), VERIFIED by `decision_desk_verify.py`
+  (key 032ee0a5ae620a90, signed 20:33:54Z) against the verbatim B action:** "open the 0.5 lanes X07a and X01 rest,
+  each as wp/<ID> with its own brief, beside S19 at one lane (ofs-s19-trailing-order)". Execution: recon digest of
+  both packages (recon, read-only), then briefs and branches wp/X07a and wp/X01 from main; with the 2-agent budget,
+  one 0.5 engineer and one S19 engineer at a time. `executed` on the card once both lanes are opened.
