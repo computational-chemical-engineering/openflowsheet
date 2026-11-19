@@ -3095,3 +3095,15 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
 - Merge-check: helper wp/S19-g1o6-mc (worktree s19-g1o6-mc) = 9d4726d1 + merge of wp/S19-g1o6 at 8fde69eb, 1b8b5aa3;
   job 390 `g1o6-mc`. On PASS of 389 and 390: merge the helper into wp/S19.
 - Run 7 (R4, X5, X6; brief `S19-W3-G1O-7.md`) launched from 8fde69eb, as run 6 was from run 5's head.
+
+## 2026-11-19 ~04:40 CET: lane O run 7 delivered
+
+- R4 744918d3 (job 391 `g1o7-1`): `_solve_region` 99.3 -> 85.5 (still brain, NLOC 333 -> 245), region.py 120.3 ->
+  106.5, 962 -> 980 NLOC (under the cap: no design-lane move before R5). X6 805c69f6 (job 392 `g1o7-2`): `_region`
+  8.5 -> 8.0, NLOC 75 -> 64, executor.py 51.7 -> 51.2, health 5.8 -> 6.1. Five deviations to R-W3-G1O-7 (brief
+  written; launch when 391 and 392 PASS).
+- DECISION: X5 `execute_plan` (77 NLOC, cog 9; its only 10+ NLOC phase, the step loop, needs 8 inputs) -> deferred
+  to W4's `_PlanRun` (plan Q4), as `_run_steps(ctx, plan)`; the brief's STOP rule. Alternative: a W3 parameter object
+  for the loop now (a second `_PlanRun`-shaped object, later merged). Reversible by: a step in run 8 or 9.
+- executor.py's long smells left: `execute_plan`, `_solve_revision_region`, `_eo_recovery` (all Q4); plan 5.9's 7.0
+  waits for W4.
