@@ -443,11 +443,16 @@ def test_a09_rcy_stalls_linear_solve_failure_is_not_a_trigger() -> None:
         detail=RegionResult(outcome="LINEAR_SOLVE_FAILED", state={}, attempts=()),
     )
     unchanged = executor_module._eo_recovery(
+        executor_module._PlanRun(
+            None,  # type: ignore[arg-type]
+            None,  # type: ignore[arg-type]
+            SolvePolicy(policy_id="T04", residual_tolerances={}, scales={}),
+            None,  # type: ignore[arg-type]
+            None,
+            None,
+            None,
+        ),
         step,
-        None,  # type: ignore[arg-type]
-        None,  # type: ignore[arg-type]
-        None,  # type: ignore[arg-type]
-        SolvePolicy(policy_id="T04", residual_tolerances={}, scales={}),
         None,  # type: ignore[arg-type]
         None,  # type: ignore[arg-type]
         {},
