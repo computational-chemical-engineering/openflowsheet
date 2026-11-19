@@ -78,7 +78,8 @@ logs; agents of a dead session are gone, so re-brief from the commit logs.
    benchmarks/t04/basin.py) after re-pinning cce-code-health to 34a30bf (after batch N is gated); (c) W5 batch L
    after batch N merges (WO-L0 to WO-L3). `executed` on the card when (a) to (c) are done.
 5. Rule: lanes touching studies/ also need the nlp-marked suite at head, failures a subset of base (g19, g20).
-6. F3 (0.5, `wp/F3`, worktree `f3`): waits for Frank (card ofs-f3-mcp-descriptions-human).
+6. F3 (0.5, `wp/F3`, worktree `f3`): ADR 0061 accepted (R-1050); waits for Frank on card ofs-f3-mcp-descriptions-human,
+   then its merge card. DECISION-REQUEST ofs-05-widen (rec B: X07a + X01 rest now) with hub.
 **Open after S19 (F1):** restore the S11.A73 gamma-phi vs PR comparison (`forms._FORMS`), targeting `_routing`'s
 gamma-phi rung, `admissibility_checks`, a test for pr_c1.py:334. For Frank (not blocking): P1 the seven new public
 names of I-20 (default as written).

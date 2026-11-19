@@ -3686,3 +3686,7 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
 - 2026-11-19, hub doorbell on ofs-s19-start-05 (signed A 11-17): card fetched (v3); `executed` already written
   2026-11-18 (0.5 started with F3-WO1 on wp/F3); verifier: "FAIL card already executed". Nothing done. Hub told; the
   open 0.5 question (widen beyond F3 now the blocking set is on main) is a scope call for Frank via hub.
+- 2026-11-19, DECISION-REQUEST ofs-05-widen sent to hub (hub asked): widen 0.5 beyond F3 now the blocking set is on
+  main. Options A (X07a, X01 rest, X06, F2 now; F8 after F2+F3), B (X07a + X01 rest now; F2, X06 after F3 merges;
+  rec), C (B + X06 architect pass only), D (F3 only). Cost per lane estimated, not measured. Hub: ADR 0061 accepted
+  11-18 (card ofs-f3-accept-adr0061, R-1050); F3 waits only on ofs-f3-mcp-descriptions-human and its merge card.
