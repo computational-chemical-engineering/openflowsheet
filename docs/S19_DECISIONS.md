@@ -3187,3 +3187,10 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   time ratio 0.75 > 0.4" (were 754 s, 0.56). Cause to check at the next quiet wake: lane O's region.py steps select
   most of the orchestrator tests (region is imported widely), so a selected gate is nearly a full run. No new ALERT
   type; proposal 2 (Frank) still covers it.
+- Job 373 `w5n1-15` (sets.py `_resolve`, 1bdda7cf) FAIL tests: W5-S6 "1 failure(s) outside L_B and the standing
+  failures": UNEXPECTED tests/test_m06_browser_smoke.py::test_cancel_stops_a_running_job (full suite, 20511 passed,
+  1365 s, two gates running). The other five failures are batch N's expected set (5/10 failed, 5 expected-not-failed,
+  as in the passed jobs). Environment: the step changes only assessment/cost/sets.py (+38/-18); the same test failed
+  on timing under load in job 235 (2026-11-17 06:30) and passed alone and serially. Jobs 375-384 SKIPPED behind it.
+  Re-enqueued unchanged: 402 (w5n1-15r, `--rerun-of 373`), 403-410 (steps 16-23, `--rerun-of` 375..384), same
+  batch file (sha256 4f7e1232...).
