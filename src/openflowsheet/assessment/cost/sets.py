@@ -137,7 +137,8 @@ def _check_number(node: Any, where: str, reasons: list[str]) -> None:
 
 
 def _check_amended(amended: Any, value: Any, where: str, reasons: list[str]) -> None:
-    """§10.4.1's five refusals of an `amended` object."""
+    """§10.4.1's five refusals of an `amended` object; a declared `replaces` is checked by
+    `_replaces_reasons`."""
     if not isinstance(amended, Mapping):
         reasons.append(f"{where}: must be an object")
         return
@@ -147,10 +148,7 @@ def _check_amended(amended: Any, value: Any, where: str, reasons: list[str]) -> 
     if "replaces" not in amended and "index_basis" not in amended:
         reasons.append(f"{where}: neither replaces nor index_basis")
     if "replaces" in amended:
-        if not _is_number(amended["replaces"]):
-            reasons.append(f"{where}: replaces is not a number")
-        elif amended["replaces"] == value:
-            reasons.append(f"{where}: replaces {amended['replaces']!r} equals value")
+        reasons += _replaces_reasons(amended, value, where)
     if ("scale" in amended) != ("index_basis" in amended):
         reasons.append(f"{where}: scale and index_basis go together")
     if "index_basis" in amended and not (
@@ -159,6 +157,16 @@ def _check_amended(amended: Any, value: Any, where: str, reasons: list[str]) -> 
         reasons.append(f"{where}: index_basis is not a positive number")
     if "scale" in amended and amended["scale"] not in _SCALES:
         reasons.append(f"{where}: scale {amended['scale']!r} is not one of {list(_SCALES)}")
+
+
+def _replaces_reasons(amended: Mapping[str, Any], value: Any, where: str) -> list[str]:
+    """§10.4.1: the `replaces` of `amended` (at `where`) is a number other than the `value`
+    it amends."""
+    if not _is_number(amended["replaces"]):
+        return [f"{where}: replaces is not a number"]
+    if amended["replaces"] == value:
+        return [f"{where}: replaces {amended['replaces']!r} equals value"]
+    return []
 
 
 def effective_value(node: Mapping[str, Any], basis: float) -> float:
@@ -200,6 +208,9 @@ def _check_choice(body: Any, where: str, reasons: list[str]) -> None:
 
 
 def _check_option(name: str, option: Any, where: str, reasons: list[str]) -> None:
+    """Option `name` (at `where`): an object with a `default_source_line`; its `choices`, or
+    its `choices_by` with a `depends_on`, checked by `_choice_tables_reasons`; without
+    `choices_by`, a default that is one of its `choices`."""
     if not isinstance(option, Mapping):
         reasons.append(f"{where}: an option must be an object")
         return
@@ -215,14 +226,22 @@ def _check_option(name: str, option: Any, where: str, reasons: list[str]) -> Non
             tables.append((f"{where}.choices_by.{key}", table))
     else:
         tables.append((f"{where}.choices", option.get("choices", {})))
-    for table_where, table in tables:
-        if not isinstance(table, Mapping) or not table:
-            reasons.append(f"{table_where}: no choices")
-            continue
-        for key, body in table.items():
-            _check_choice(body, f"{table_where}.{key}", reasons)
+    reasons += _choice_tables_reasons(tables)
     if "choices_by" not in option and default not in dict(option.get("choices", {})):
         reasons.append(f"{where}: default {default!r} is not one of its choices")
+
+
+def _choice_tables_reasons(tables: Sequence[tuple[str, Mapping[str, Any]]]) -> list[str]:
+    """Each `(where, table)` of an option is a nonempty object whose choices `_check_choice`
+    checks, in table order."""
+    found: list[str] = []
+    for table_where, table in tables:
+        if not isinstance(table, Mapping) or not table:
+            found.append(f"{table_where}: no choices")
+            continue
+        for key, body in table.items():
+            _check_choice(body, f"{table_where}.{key}", found)
+    return found
 
 
 def _check_source(source: Any, where: str, reasons: list[str]) -> None:
@@ -244,6 +263,8 @@ def _check_source(source: Any, where: str, reasons: list[str]) -> None:
 
 
 def _check_ranges(ranges: Any, where: str, reasons: list[str]) -> None:
+    """Every range of `ranges` is an object with a source (`_check_source`) and a role: `size`
+    (`_size_range_reasons`) or `input` (`_input_range_reasons`)."""
     if not isinstance(ranges, Mapping):
         reasons.append(f"{where}: ranges must be an object")
         return
@@ -255,42 +276,71 @@ def _check_ranges(ranges: Any, where: str, reasons: list[str]) -> None:
         _check_source(r.get("source"), at, reasons)
         role = r.get("role")
         if role == "size":
-            low, high = r.get("min"), r.get("max")
-            if not (_is_number(low) and _is_number(high) and low > 0):
-                reasons.append(f"{at}: size range needs positive numbers min and max")
-            elif high < 2.0 * low:
-                reasons.append(f"{at}: size range max {high!r} < 2·min {low!r} (§4.3.2)")
-            elif name == "consumed_power_hp" and high < _CONSUMED_RATIO * low:
-                reasons.append(f"{at}: consumed-power range max {high!r} < 3·min {low!r} (§10.4.4)")
-            if "below" in r or "above" in r:
-                reasons.append(f"{at}: a size range declares no below/above")
+            reasons += _size_range_reasons(name, r, at)
         elif role == "input":
-            if r.get("below") not in ("floor", "refuse"):
-                reasons.append(f"{at}: below must be 'floor' or 'refuse'")
-            if r.get("above") != "refuse":
-                reasons.append(f"{at}: above must be 'refuse'")
-            if "pieces" in r:
-                pieces = r["pieces"]
-                bounds = [(p.get("min"), p.get("max")) for p in pieces if isinstance(p, Mapping)]
-                if (
-                    len(bounds) != len(pieces)
-                    or not bounds
-                    or not all(_is_number(lo) and _is_number(hi) and lo < hi for lo, hi in bounds)
-                ):
-                    reasons.append(f"{at}: pieces need numbers min < max")
-                elif any(bounds[i][1] != bounds[i + 1][0] for i in range(len(bounds) - 1)):
-                    reasons.append(f"{at}: pieces are not contiguous: {bounds}")
-            else:
-                low, high = r.get("min"), r.get("max")
-                highs = high if isinstance(high, list) else [high]
-                if not (
-                    _is_number(low) and highs and all(_is_number(h) and h > low for h in highs)
-                ):
-                    reasons.append(f"{at}: input range needs numbers min < max")
-                if isinstance(high, list) and not isinstance(r.get("pieces_of"), str):
-                    reasons.append(f"{at}: a maximum per piece needs pieces_of")
+            reasons += _input_range_reasons(r, at)
         else:
             reasons.append(f"{at}: role {role!r} is neither 'size' nor 'input'")
+
+
+def _size_range_reasons(name: str, r: Mapping[str, Any], at: str) -> list[str]:
+    """Size range `name` (at `at`): positive numbers `min` and `max` with `max >= 2·min`
+    (§4.3.2), `max >= 3·min` for `consumed_power_hp` (§10.4.4), and no `below` or `above`."""
+    found: list[str] = []
+    low, high = r.get("min"), r.get("max")
+    if not (_is_number(low) and _is_number(high) and low > 0):
+        found.append(f"{at}: size range needs positive numbers min and max")
+    elif high < 2.0 * low:
+        found.append(f"{at}: size range max {high!r} < 2·min {low!r} (§4.3.2)")
+    elif name == "consumed_power_hp" and high < _CONSUMED_RATIO * low:
+        found.append(f"{at}: consumed-power range max {high!r} < 3·min {low!r} (§10.4.4)")
+    if "below" in r or "above" in r:
+        found.append(f"{at}: a size range declares no below/above")
+    return found
+
+
+def _input_range_reasons(r: Mapping[str, Any], at: str) -> list[str]:
+    """Input range `r` (at `at`): `below` is `floor` or `refuse`, `above` is `refuse`, and its
+    `pieces` (`_pieces_reasons`) or, without pieces, its bounds (`_bounds_reasons`)."""
+    found: list[str] = []
+    if r.get("below") not in ("floor", "refuse"):
+        found.append(f"{at}: below must be 'floor' or 'refuse'")
+    if r.get("above") != "refuse":
+        found.append(f"{at}: above must be 'refuse'")
+    if "pieces" in r:
+        found += _pieces_reasons(r["pieces"], at)
+    else:
+        found += _bounds_reasons(r, at)
+    return found
+
+
+def _pieces_reasons(pieces: Any, at: str) -> list[str]:
+    """The `pieces` of an input range (at `at`): objects with numbers `min < max`, each
+    starting where the one before ends."""
+    found: list[str] = []
+    bounds = [(p.get("min"), p.get("max")) for p in pieces if isinstance(p, Mapping)]
+    if (
+        len(bounds) != len(pieces)
+        or not bounds
+        or not all(_is_number(lo) and _is_number(hi) and lo < hi for lo, hi in bounds)
+    ):
+        found.append(f"{at}: pieces need numbers min < max")
+    elif any(bounds[i][1] != bounds[i + 1][0] for i in range(len(bounds) - 1)):
+        found.append(f"{at}: pieces are not contiguous: {bounds}")
+    return found
+
+
+def _bounds_reasons(r: Mapping[str, Any], at: str) -> list[str]:
+    """The bounds of input range `r` without pieces (at `at`): numbers `min < max`, where a
+    list `max` (a maximum per piece) is nonempty and needs `pieces_of`."""
+    found: list[str] = []
+    low, high = r.get("min"), r.get("max")
+    highs = high if isinstance(high, list) else [high]
+    if not (_is_number(low) and highs and all(_is_number(h) and h > low for h in highs)):
+        found.append(f"{at}: input range needs numbers min < max")
+    if isinstance(high, list) and not isinstance(r.get("pieces_of"), str):
+        found.append(f"{at}: a maximum per piece needs pieces_of")
+    return found
 
 
 def _range(name: str, r: Mapping[str, Any]) -> Range:
@@ -353,7 +403,13 @@ def _check_floors(
 
 
 def parse_set(document: Mapping[str, Any]) -> CostSet:
-    """Check a set document (§9.2.3) and return it; `CostSetError` lists every failed check."""
+    """Check a set document (§9.2.3) and return it; `CostSetError` lists every failed check.
+
+    The set's index value comes from `_basis_index_value` (1.0 when `basis.index` is missing, or
+    its value is not a number object). The top-level source is checked by
+    `_checked_against_reasons`, an entry of a known form by `_check_generic` or
+    `_sslw_entry_reasons`, the compressor's drive by `_compressor_drive_reasons`, and the floors of
+    a set with no other reason by `_floor_reasons`."""
     set_id = str(document.get("set_id", "<no set_id>"))
     reasons: list[str] = []
     if document.get("schema") != SCHEMA:
@@ -364,18 +420,8 @@ def parse_set(document: Mapping[str, Any]) -> CostSet:
         set_index = 1.0
     else:
         _check_number(basis["index"].get("value"), "basis.index.value", reasons)
-        set_index = (
-            _number(basis["index"]["value"])
-            if _is_number(dict(basis["index"].get("value") or {}).get("value"))
-            else 1.0
-        )
-    source = document.get("source")
-    if isinstance(source, Mapping) and "checked_against" in source:
-        checked = source["checked_against"]
-        if not isinstance(checked, Mapping) or not all(
-            isinstance(checked.get(k), str) and checked[k] for k in ("citation", "scope")
-        ):
-            reasons.append("source.checked_against needs a citation and a scope")
+        set_index = _basis_index_value(basis)
+    reasons += _checked_against_reasons(document.get("source"))
     entries: list[CostEntry] = []
     seen: set[str] = set()
     for position, entry in enumerate(document.get("entries", [])):
@@ -390,38 +436,40 @@ def parse_set(document: Mapping[str, Any]) -> CostSet:
         if form == "generic-v1":
             _check_generic(entry, at, reasons)
         else:
-            for name, option in dict(entry.get("options", {})).items():
-                _check_option(name, option, f"{at}.options.{name}", reasons)
-            _check_numbers(entry.get("coefficients", {}), f"{at}.coefficients", reasons)
-            for name, theta in dict(entry.get("continuous", {})).items():
-                _check_number(theta.get("default"), f"{at}.continuous.{name}.default", reasons)
-            if "index_basis" in entry:
-                where = f"{at}.index_basis.value"
-                value = entry["index_basis"].get("value")
-                _check_number(value, where, reasons)
-                amended = value.get("amended") if isinstance(value, Mapping) else None
-                if isinstance(amended, Mapping) and {"index_basis", "scale"} & set(amended):
-                    reasons.append(f"{where}.amended: a basis carries no index_basis or scale")
-            _check_ranges(entry.get("ranges", {}), f"{at}.ranges", reasons)
+            reasons += _sslw_entry_reasons(entry, at)
         entries.append(
             CostEntry(
                 at, str(form), tuple(entry.get("family", ())), entry.get("orientation"), entry
             )
         )
-    if any(e.form == "sslw-compressor-v1" for e in entries):
-        drive = next((e for e in entries if "machine.drive" in e.family), None)
-        if drive is None or drive.form != "sslw-motor-v1":
-            reasons.append(
-                "an sslw-compressor-v1 entry needs the set's machine.drive entry of form "
-                "sslw-motor-v1 (§10.4.4)"
-            )
+    reasons += _compressor_drive_reasons(entries)
     if not reasons:
-        for entry in document.get("entries", []):
-            if entry["form"] != "generic-v1":
-                _check_floors(set_id, entry, reasons, set_index)
+        reasons += _floor_reasons(set_id, document.get("entries", []), set_index)
     if reasons:
         raise CostSetError(set_id, reasons)
     return CostSet(set_id, MappingProxyType(dict(document)), tuple(entries))
+
+
+def _basis_index_value(basis: Mapping[str, Any]) -> float:
+    """The value of the set's `basis.index` (an object), 1.0 when it is not a number object."""
+    return (
+        _number(basis["index"]["value"])
+        if _is_number(dict(basis["index"].get("value") or {}).get("value"))
+        else 1.0
+    )
+
+
+def _checked_against_reasons(source: Any) -> list[str]:
+    """The set's top-level `source`: its `checked_against`, when declared, is an object with a
+    `citation` and a `scope`."""
+    found: list[str] = []
+    if isinstance(source, Mapping) and "checked_against" in source:
+        checked = source["checked_against"]
+        if not isinstance(checked, Mapping) or not all(
+            isinstance(checked.get(k), str) and checked[k] for k in ("citation", "scope")
+        ):
+            found.append("source.checked_against needs a citation and a scope")
+    return found
 
 
 def _check_generic(entry: Mapping[str, Any], at: str, reasons: list[str]) -> None:
@@ -441,6 +489,51 @@ def _check_generic(entry: Mapping[str, Any], at: str, reasons: list[str]) -> Non
     for index, factor in enumerate(entry.get("factors", [])):
         if not (isinstance(factor.get("source_line"), str) and factor["source_line"]):
             reasons.append(f"{at}.factors[{index}]: missing source_line")
+
+
+def _sslw_entry_reasons(entry: Mapping[str, Any], at: str) -> list[str]:
+    """An SSLW-form entry `at`: its options (`_check_option`), coefficients, continuous
+    defaults, `index_basis.value` (a number whose `amended` carries no `index_basis` or
+    `scale`, §10.10.5.2) and ranges (`_check_ranges`), in that order."""
+    found: list[str] = []
+    for name, option in dict(entry.get("options", {})).items():
+        _check_option(name, option, f"{at}.options.{name}", found)
+    _check_numbers(entry.get("coefficients", {}), f"{at}.coefficients", found)
+    for name, theta in dict(entry.get("continuous", {})).items():
+        _check_number(theta.get("default"), f"{at}.continuous.{name}.default", found)
+    if "index_basis" in entry:
+        where = f"{at}.index_basis.value"
+        value = entry["index_basis"].get("value")
+        _check_number(value, where, found)
+        amended = value.get("amended") if isinstance(value, Mapping) else None
+        if isinstance(amended, Mapping) and {"index_basis", "scale"} & set(amended):
+            found.append(f"{where}.amended: a basis carries no index_basis or scale")
+    _check_ranges(entry.get("ranges", {}), f"{at}.ranges", found)
+    return found
+
+
+def _compressor_drive_reasons(entries: Sequence[CostEntry]) -> list[str]:
+    """§10.4.4: a set with an `sslw-compressor-v1` entry has its `machine.drive` entry (the
+    first in `entries`) of form `sslw-motor-v1`."""
+    found: list[str] = []
+    if any(e.form == "sslw-compressor-v1" for e in entries):
+        drive = next((e for e in entries if "machine.drive" in e.family), None)
+        if drive is None or drive.form != "sslw-motor-v1":
+            found.append(
+                "an sslw-compressor-v1 entry needs the set's machine.drive entry of form "
+                "sslw-motor-v1 (§10.4.4)"
+            )
+    return found
+
+
+def _floor_reasons(set_id: str, entries: Any, set_index: float) -> list[str]:
+    """§9.2.3: the floors of every SSLW-form entry of the document's `entries`, on its
+    default options (`_check_floors`), in file order."""
+    found: list[str] = []
+    for entry in entries:
+        if entry["form"] != "generic-v1":
+            _check_floors(set_id, entry, found, set_index)
+    return found
 
 
 def _plain(node: Any, basis: float | None = None) -> Any:
@@ -468,17 +561,25 @@ def _amendments(node: Any, path: str, basis: float, out: dict[str, Mapping[str, 
     elif isinstance(node, Mapping) and "value" in node:
         amended = node.get("amended")
         if isinstance(amended, Mapping):
-            record: dict[str, Any] = {"value": float(node["value"])}
-            record["effective_value"] = effective_value(node, basis)
-            for key in ("replaces", "index_basis", "scale"):
-                if key in amended:
-                    record[key] = amended[key]
-            record["citation"] = amended["citation"]
-            record["ruling"] = amended["ruling"]
-            out[path] = MappingProxyType(record)
+            out[path] = _amendment(node, amended, basis)
     elif isinstance(node, Mapping):
         for key, item in node.items():
             _amendments(item, f"{path}.{key}", basis, out)
+
+
+def _amendment(
+    node: Mapping[str, Any], amended: Mapping[str, Any], basis: float
+) -> Mapping[str, Any]:
+    """§10.4.8: the record of amended number `node`: its value, its effective value at `basis`,
+    the `replaces`, `index_basis` and `scale` its `amended` declares, its citation and ruling."""
+    record: dict[str, Any] = {"value": float(node["value"])}
+    record["effective_value"] = effective_value(node, basis)
+    for key in ("replaces", "index_basis", "scale"):
+        if key in amended:
+            record[key] = amended[key]
+    record["citation"] = amended["citation"]
+    record["ruling"] = amended["ruling"]
+    return MappingProxyType(record)
 
 
 def _resolve(
@@ -488,6 +589,13 @@ def _resolve(
     set_index: float,
     drive: ResolvedEntry | None = None,
 ) -> ResolvedEntry | NoCorrelation:
+    """Entry `entry` of set `set_id` with the item's `options` applied (§9.2.3 "Options"), its
+    numbers at their effective values on its basis (`index_basis.value`, else `set_index`,
+    §10.4.1); `drive` is a compressor's resolved drive entry (§10.4.4).
+
+    `NO_CORRELATION` for an option the entry does not have, an option given where its
+    `applies_when` does not hold, a choice `_choice` does not find, or a coefficient that a
+    choice or the coefficients repeat."""
     entry_id = str(entry["entry_id"])
     index = entry.get("index_basis")
     basis = set_index if index is None else _number(index["value"])
@@ -529,25 +637,12 @@ def _resolve(
         else:
             key = str(option["default"])
             defaulted.append(name)
-        if "choices_by" in option:
-            by = chosen.get(option["depends_on"], "")
-            table = dict(option["choices_by"]).get(by, {})
-            prefix = f"options.{name}.choices_by.{by}.{key}"
-        else:
-            table = dict(option["choices"])
-            prefix = f"options.{name}.choices.{key}"
-        if key not in table:
-            return NoCorrelation(
-                entry_id,
-                f"{name} = {key!r} is not one of {sorted(table)}"
-                + (
-                    f" for {option['depends_on']} = {chosen.get(option['depends_on'])!r}"
-                    if "choices_by" in option
-                    else ""
-                ),
-            )
+        choice = _choice(entry_id, name, option, key, chosen)
+        if isinstance(choice, NoCorrelation):
+            return choice
+        prefix, body = choice
         chosen[name] = key
-        refused = take(prefix, table[key])
+        refused = take(prefix, body)
         if refused is not None:
             return refused
     refused = take("coefficients", dict(entry.get("coefficients", {})))
@@ -578,6 +673,32 @@ def _resolve(
         amended=amended,
         drive=drive,
     )
+
+
+def _choice(
+    entry_id: str, name: str, option: Mapping[str, Any], key: str, chosen: Mapping[str, str]
+) -> tuple[str, Any] | NoCorrelation:
+    """Choice `key` of option `name`: (its set path prefix, its body), from `choices`, or from
+    `choices_by` under the option's `depends_on` choice in `chosen`; `NO_CORRELATION` when
+    the table has no `key`."""
+    if "choices_by" in option:
+        by = chosen.get(option["depends_on"], "")
+        table = dict(option["choices_by"]).get(by, {})
+        prefix = f"options.{name}.choices_by.{by}.{key}"
+    else:
+        table = dict(option["choices"])
+        prefix = f"options.{name}.choices.{key}"
+    if key not in table:
+        return NoCorrelation(
+            entry_id,
+            f"{name} = {key!r} is not one of {sorted(table)}"
+            + (
+                f" for {option['depends_on']} = {chosen.get(option['depends_on'])!r}"
+                if "choices_by" in option
+                else ""
+            ),
+        )
+    return prefix, table[key]
 
 
 def resolve(

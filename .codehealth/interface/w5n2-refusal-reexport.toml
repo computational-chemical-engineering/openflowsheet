@@ -1,0 +1,21 @@
+# ADR 0076 W5 batch N, WO-N2's last step (docs/briefs/S19-W5-ruling.md, WO-N2 row; R-1043):
+# assessment/program.py stops re-exporting Refusal, whose home is assessment/linearization.py.
+# `codehealth gate --mode interface` reads this plan from the plan commit.
+id = "w5n2-refusal-reexport"
+approved_by = "Frank Peters, 2026-11-14, ADR 0076 accepted (Decision Desk ofs-adr0076-accept); W5 ruling WO-N2 (cards ofs-s19-w5-fr1-providers, ofs-s19-w5-fr2-reregister, 2026-11-18)"
+reason = """ADR 0076 (no shims) and R-1043: with all eight contributor files (cost/{contributor, \
+derived, index, operating}, WO-N1; lca/{brightway, impact, inventory, tables}, WO-N2) importing \
+Refusal from its home openflowsheet.assessment.linearization, the re-export in \
+assessment/program.py goes: `from ...linearization import Refusal as Refusal` joins the plain \
+linearization import (program.py still uses Refusal), and "Refusal" leaves `__all__`. Imports \
+and `__all__` only. No src, test, script or benchmark imports Refusal through \
+assessment.program (importer grep in the step's commit message). program.py is not \
+registry-hashed and not frozen. cce-code-health counts imports as API only in __init__.py, so \
+the __all__ list is the listed change (STOP 1 ruling, as i8g). Gated first as no-gain by \
+mistake (job 465: literals and public_api failed, as an interface step must be gated)."""
+removed = []
+renamed = {}
+changed = ["src/openflowsheet/assessment/program.py:__all__"]
+added = []
+new_files = []
+callers = []

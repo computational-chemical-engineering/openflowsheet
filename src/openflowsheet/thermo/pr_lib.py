@@ -508,34 +508,22 @@ def _values(mix: _Mixture, z: float) -> dict[str, float]:
 def _derivatives(mix: _Mixture, z: float) -> dict[str, tuple[float, float, tuple[float, ...]]]:
     """(∂X/∂T, ∂X/∂P, ∂X/∂y_k) of every property, the root differentiated through the cubic.
 
-    The y_k are treated as independent (the caller projects onto the simplex). With F(Z, A, B) the
-    cubic, dZ = −(F_A dA + F_B dB)/F_Z; every other derivative is the chain rule on the closed
-    forms (M01 spec §4.6).
+    The y_k are treated as independent (`_requested_derivatives` projects onto the simplex).
+    With F(Z, A, B) the cubic, dZ = −(F_A dA + F_B dB)/F_Z; every other derivative is the chain
+    rule on the closed forms (M01 spec §4.6).
     """
     par = parameters()
     b, t, p, y = par.b, mix.temperature, mix.pressure, mix.y
-    big_a, big_b, a_m, b_m, da_m, s, g = (
+    big_a, big_b, a_m, b_m, da_m, s = (
         mix.big_a,
         mix.big_b,
         mix.a_m,
         mix.b_m,
         mix.da_m,
         mix.s,
-        mix.g,
     )
     rt = R * t
-    dg, d2g = _dg(t), _d2g(t)
-    # Σ_j y_j da_ij/dT and d²a_m/dT².
-    d = tuple(
-        sum(y[j] * _ONE_MINUS_K[i][j] * (dg[i] * g[j] + g[i] * dg[j]) for j in range(NC))
-        for i in range(NC)
-    )
-    d2a_m = sum(
-        y[i] * y[j] * _ONE_MINUS_K[i][j] * (d2g[i] * g[j] + 2.0 * dg[i] * dg[j] + g[i] * d2g[j])
-        for i in range(NC)
-        for j in range(NC)
-    )
-    a_ij = tuple(tuple(_ONE_MINUS_K[i][j] * g[i] * g[j] for j in range(NC)) for i in range(NC))
+    d, d2a_m, a_ij = _mixing_rule_terms(mix)
 
     # A and B: (T, P, y_k).
     a_t = p * da_m / (rt * rt) - 2.0 * big_a / t
@@ -545,15 +533,7 @@ def _derivatives(mix: _Mixture, z: float) -> dict[str, tuple[float, float, tuple
     b_p = big_b / p
     b_y = tuple(b[k] * p / rt for k in range(NC))
 
-    f_z = 3.0 * z * z - 2.0 * (1.0 - big_b) * z + (big_a - 3.0 * big_b * big_b - 2.0 * big_b)
-    f_a = z - big_b
-    f_b = z * z - (6.0 * big_b + 2.0) * z - big_a + 2.0 * big_b + 3.0 * big_b * big_b
-
-    def dz(da: float, db: float) -> float:
-        return -(f_a * da + f_b * db) / f_z
-
-    z_t, z_p = dz(a_t, b_t), dz(a_p, b_p)
-    z_y = tuple(dz(a_y[k], b_y[k]) for k in range(NC))
+    z_t, z_p, z_y = _root_derivatives(mix, z, (a_t, a_p, a_y), (b_t, b_p, b_y))
 
     plus, minus = z + _C_PLUS * big_b, z + _C_MINUS * big_b
     log_term = math.log(plus / minus)
@@ -614,6 +594,55 @@ def _derivatives(mix: _Mixture, z: float) -> dict[str, tuple[float, float, tuple
         tuple(rt * z_y[k] / p for k in range(NC)),
     )
     return out
+
+
+def _mixing_rule_terms(
+    mix: _Mixture,
+) -> tuple[tuple[float, ...], float, tuple[tuple[float, ...], ...]]:
+    """(d, d²a_m/dT², a_ij) of the mixture: d_i = Σ_j y_j da_ij/dT, a_ij = (1 − k_ij) √a_i √a_j.
+
+    The terms of the mixing rule a_m = Σ_i Σ_j y_i y_j a_ij that `_Mixture` does not carry.
+    """
+    t, y, g = mix.temperature, mix.y, mix.g
+    dg, d2g = _dg(t), _d2g(t)
+    # Σ_j y_j da_ij/dT and d²a_m/dT².
+    d = tuple(
+        sum(y[j] * _ONE_MINUS_K[i][j] * (dg[i] * g[j] + g[i] * dg[j]) for j in range(NC))
+        for i in range(NC)
+    )
+    d2a_m = sum(
+        y[i] * y[j] * _ONE_MINUS_K[i][j] * (d2g[i] * g[j] + 2.0 * dg[i] * dg[j] + g[i] * d2g[j])
+        for i in range(NC)
+        for j in range(NC)
+    )
+    a_ij = tuple(tuple(_ONE_MINUS_K[i][j] * g[i] * g[j] for j in range(NC)) for i in range(NC))
+    return d, d2a_m, a_ij
+
+
+def _root_derivatives(
+    mix: _Mixture,
+    z: float,
+    a_derivatives: tuple[float, float, tuple[float, ...]],
+    b_derivatives: tuple[float, float, tuple[float, ...]],
+) -> tuple[float, float, tuple[float, ...]]:
+    """(∂Z/∂T, ∂Z/∂P, ∂Z/∂y_k) of the root z, from A's and B's (∂/∂T, ∂/∂P, ∂/∂y_k).
+
+    The root differentiated through the cubic F(Z, A, B) = 0: dZ = −(F_A dA + F_B dB)/F_Z
+    (M01 spec §4.6).
+    """
+    big_a, big_b = mix.big_a, mix.big_b
+    a_t, a_p, a_y = a_derivatives
+    b_t, b_p, b_y = b_derivatives
+    f_z = 3.0 * z * z - 2.0 * (1.0 - big_b) * z + (big_a - 3.0 * big_b * big_b - 2.0 * big_b)
+    f_a = z - big_b
+    f_b = z * z - (6.0 * big_b + 2.0) * z - big_a + 2.0 * big_b + 3.0 * big_b * big_b
+
+    def dz(da: float, db: float) -> float:
+        return -(f_a * da + f_b * db) / f_z
+
+    z_t, z_p = dz(a_t, b_t), dz(a_p, b_p)
+    z_y = tuple(dz(a_y[k], b_y[k]) for k in range(NC))
+    return z_t, z_p, z_y
 
 
 # -- the vapour root rule (spec §4.2, ADR 0043 D5) ----------------------------------------------
@@ -743,30 +772,19 @@ class PrLibProvider:
     def evaluate_phase(
         self, request: PropertyRequest, context: EvaluationContext
     ) -> PropertyResult:
-        del context
-        undeclared = [name for name in request.derivatives if name not in DERIVATIVE_INPUTS]
-        if undeclared:
-            return _refused("unsupported", f"undeclared_derivative_input: {undeclared[0]}")
-        unknown = [name for name in request.properties if name not in PROPERTIES]
-        if unknown:
-            return _refused("unsupported", f"unknown_property: {unknown}")
-        state = request.state
-        if len(state.n) != NC:
-            return _refused(
-                "error", f"state_length: {len(state.n)} flows for the components {COMPONENTS}"
-            )
-        if request.phase != "VAPOR":
-            return _refused(
-                "unsupported",
-                f"phase_unsupported: {request.phase}; {PROVIDER_ID} is vapour-only "
-                "(L01 spec §4.2, ADR 0043 D5)",
-            )
-        outside = _domain_violation(state)
-        if outside is not None:
-            return _refused("out_of_domain", outside)
-        if state.is_dormant:
-            return _refused("unsupported", "dormant_state: composition undefined")
+        """The requested values and derivatives of the vapour at the request's state.
 
+        Refused, in order: by `_request_refusal` (a request no state could answer, or a state
+        outside the domain or dormant); then by the vapour root's guards (`_vapour_root`:
+        `vapour_root_metastable`, `vapour_root_liquid_like`); then `vapour_unstable` when a
+        pure-component trial phase has tangent-plane distance below `TM_THRESHOLD`.
+        """
+        del context
+        refusal_of_request = _request_refusal(request)
+        if refusal_of_request is not None:
+            return refusal_of_request
+
+        state = request.state
         t, p = state.temperature, state.pressure
         total = state.total_flow
         mix = _mixture(t, p, tuple(value / total for value in state.n))
@@ -796,20 +814,7 @@ class PrLibProvider:
         values = {name: everything[name] for name in request.properties}
         derivatives: dict[str, dict[str, float]] = {}
         if request.derivatives:
-            raw = _derivatives(mix, z)
-            for name in request.properties:
-                by_t, by_p, by_y = raw[name]
-                mean = sum(mix.y[k] * by_y[k] for k in range(NC))
-                entry: dict[str, float] = {}
-                for wanted in request.derivatives:
-                    if wanted == "T":
-                        entry[wanted] = by_t
-                    elif wanted == "P":
-                        entry[wanted] = by_p
-                    else:
-                        k = COMPONENTS.index(wanted.removeprefix("n_"))
-                        entry[wanted] = (by_y[k] - mean) / total
-                derivatives[name] = entry
+            derivatives = _requested_derivatives(request, mix, z, total)
 
         return PropertyResult(
             status="ok",
@@ -838,6 +843,65 @@ class PrLibProvider:
                 "VAPOR, so there is nothing to split (L01 spec §4.2)"
             ),
         )
+
+
+def _request_refusal(request: PropertyRequest) -> PropertyResult | None:
+    """The refusal of a request `evaluate_phase` does not evaluate, or None.
+
+    In order: an undeclared derivative input, an unknown property (`unsupported`), a flow vector
+    whose length is not the component count (`error`), a phase other than VAPOR (`unsupported`),
+    a state outside the domain (`_domain_violation`, `out_of_domain`), and a dormant state
+    (`unsupported`).
+    """
+    undeclared = [name for name in request.derivatives if name not in DERIVATIVE_INPUTS]
+    if undeclared:
+        return _refused("unsupported", f"undeclared_derivative_input: {undeclared[0]}")
+    unknown = [name for name in request.properties if name not in PROPERTIES]
+    if unknown:
+        return _refused("unsupported", f"unknown_property: {unknown}")
+    state = request.state
+    if len(state.n) != NC:
+        return _refused(
+            "error", f"state_length: {len(state.n)} flows for the components {COMPONENTS}"
+        )
+    if request.phase != "VAPOR":
+        return _refused(
+            "unsupported",
+            f"phase_unsupported: {request.phase}; {PROVIDER_ID} is vapour-only "
+            "(L01 spec §4.2, ADR 0043 D5)",
+        )
+    outside = _domain_violation(state)
+    if outside is not None:
+        return _refused("out_of_domain", outside)
+    if state.is_dormant:
+        return _refused("unsupported", "dormant_state: composition undefined")
+    return None
+
+
+def _requested_derivatives(
+    request: PropertyRequest, mix: _Mixture, z: float, total: float
+) -> dict[str, dict[str, float]]:
+    """Each requested property's derivatives with respect to the requested inputs.
+
+    ∂/∂T and ∂/∂P are `_derivatives`' own; ∂/∂n_k projects its composition derivatives onto the
+    simplex, (∂X/∂y_k − Σ_j y_j ∂X/∂y_j)/n_tot. Keyed by property, then input, in request order.
+    """
+    raw = _derivatives(mix, z)
+    derivatives: dict[str, dict[str, float]] = {}
+    for name in request.properties:
+        by_t, by_p, by_y = raw[name]
+        mean = sum(mix.y[k] * by_y[k] for k in range(NC))
+        entry: dict[str, float] = {}
+        for wanted in request.derivatives:
+            if wanted == "T":
+                entry[wanted] = by_t
+            elif wanted == "P":
+                entry[wanted] = by_p
+            else:
+                k = COMPONENTS.index(wanted.removeprefix("n_"))
+                entry[wanted] = (by_y[k] - mean) / total
+        derivatives[name] = entry
+    return derivatives
 
 
 def _refused(status: PropertyStatus, message: str) -> PropertyResult:
