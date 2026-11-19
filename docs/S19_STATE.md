@@ -61,7 +61,7 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 **Since the 03:25 reset:** lane O runs 5, 6, 7 merged into wp/S19 (4e5ca326, 6e1a23ad, 0e58c106; merge-checks 385,
 390, 393 PASS; reviews R-W3-G1O-6 merge + docstring fix 8fde69eb, R-W3-G1O-7 merge, no fixes). X5 `execute_plan`
 deferred to W4's `_PlanRun`. Run 8's R5 (job 394) FAILED on a new large_file smell (region.py 1018 NLOC); run 8b
-replays it after plan 4's first fallback move. Batch N jobs through 370 PASS. Gate report: the standing ALERTs only
+replays it after plan 4's first fallback move. Batch N jobs through 371 PASS. Gate report: the standing ALERTs only
 (selected share ~58%, queue wait ~23 min: batch N's W5-mode full-suite falls and burst; proposal 2). No agent
 running. `arch --depth 4` measures 0 violations / 0 cycles (run 8b's base).
 
@@ -82,7 +82,7 @@ O's remaining G1 items are review notes only; `_solve_revision_region`, `_eo_rec
 `_PlanRun` (Q4).
 **W5 batch N:** B_N = 605d332f; gate file `<git-common-dir>/codehealth/briefs/S19-W5-batchN.json` (sha256 4f7e1232...,
 A26's new node id); branch `wp/S19-w5n`, worktree `s19-w5n`. W5-mode gates fall back to the full suite (~1500 s).
-- WO-N1 (brief `S19-W5-N1.md`) and WO-N1b (`S19-W5-N1b.md`): jobs 358 to 370 PASS; 371 to 384 pending (sets.py
+- WO-N1 (brief `S19-W5-N1.md`) and WO-N1b (`S19-W5-N1b.md`): jobs 358 to 371 PASS; 372 to 384 pending (sets.py
   chain b671925e..b73142ef). Three deviations and `_resolve`'s open design (S19_DECISIONS 02:50) go to the N1 review.
 - After all N1(b) jobs PASS: review R-W5-N1 (reviewer, Opus; one review over 3cd5ff50..b73142ef, 23 steps; brief
   `S19-R-W5-N1.md` written), fixes, then WO-N2 (lca retargets, lca health, remove `program.Refusal` re-export, its

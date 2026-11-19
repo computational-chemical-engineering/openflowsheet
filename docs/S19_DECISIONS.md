@@ -3172,3 +3172,5 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
 - DECISION: R6 against the cap (991 + R6's +4 to +10; R4, R5 overran) -> the second plan-4 move (`_external_opening`,
   34 NLOC, `check_opening` retarget) before R6, in run 9, subject to R-W3-G1O-8. Alternative: R6 first and move only
   on a gate fail. Reversible by: the review's ruling or run 9's brief.
+- Gate report before the 06:40 reset (6 h): selected share 52%, selected 754 s, ratio 0.56, queue wait median 23 min:
+  the same four standing ALERTs (batch N's W5-mode full-suite falls and its burst; proposal 2). No new ALERT.
