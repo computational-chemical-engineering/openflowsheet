@@ -3447,3 +3447,10 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   before the `_RegionCall` interface step (S19_STATE item 3b) and I-20's interface step, which then use `changed` +
   `adapted` instead of the red-adapt workaround. Alternative: re-pin now (a tool change under queued gates).
   Reversible by: pinning back.
+- 2026-11-19, G2 run 6 delivered (opus-engineer, ~150k): wp/S19-g2b from 356ee519, jobs 450-454: column_rows.py
+  6.9 -> 10.0 (`declared_rows` brain gone, debt 85.3 -> 0; brain count 12 -> 11), docstrings (no-gain), cascade_solve.py
+  6.6 -> 7.6 (`_stage_failures`). Behaviour: `declared_rows` 577 recorded calls identical at base and steps 1-3
+  (run 5's 1342 not reproduced: recorder scope); rc_check OK; `_stage_failures` 29 records identical (only 2 reach a
+  failing branch: thin); patch_noop 0 of 262. 4 accepted S1 steps (the common brief's cap wins over my brief's 6).
+  Left: revision_flowsheet.py (G2 run 7, wp/S19-g2c from a7414044, brief `S19-W5-G2-7.md`), cascade_solve's 87-line
+  duplication and `solve_cascade` toward 9.0. Reviewer R-W5-G2-6 on PASS of 450-454.
