@@ -194,9 +194,10 @@ class _PlanRun:
     """One plan run's frame (S19 plan Q4): built once by `execute_plan` and read by every step
     function below it. The flowsheet, the declaration and the policy the plan runs under, the
     plan's trace (`run`), and the three sources the caller supplied, each as `execute_plan`
-    received it: `user_start`, `warm_start` and `revision_continuation`. What changes from step
-    to step (the counters spent, the state, the next attempt index) is never a field: it is
-    passed and returned."""
+    received it: `user_start`, `warm_start` and `revision_continuation`. One call runs with a
+    copy that carries no `revision_continuation`: `_converge`'s edge 3 of a merged region. What
+    changes from step to step (the counters spent, the state, the next attempt index) is never a
+    field: it is passed and returned."""
 
     flowsheet: Flowsheet
     spec: ProblemSpec
@@ -597,7 +598,8 @@ def _converge(
     merged_step = _merged_step(base, result, region_result)
     # T04 §5.1: a merged region is a region solve, so edge 3 follows it too. It has no promoted
     # specification, so in v0.1 the edge after edge 2 is always `unsupported` — recorded.
-    # Edge 3 of a merged region never read the plan's revision continuation (as at 272011be).
+    # A merged region is a SYN-001 tear, never a revision-built flowsheet, so its edge 3 reads no
+    # revision continuation: the frame passed carries none.
     return _eo_recovery(
         replace(ctx, revision_continuation=None),
         merged_step,
@@ -931,8 +933,9 @@ def _eo_recovery(
     `unsupported(no_continuation_parameter)` is recorded and the failed outcome stands, under
     `"homotopy_or_sequential_restart"` the sequential restart's preconditions decide (ADR 0015;
     `_sequential_restart`), and under `"homotopy_or_revision_continuation_or_sequential_restart"`
-    the revision continuation comes first (ADR 0072; `_revision_continuation`), from the plan's
-    `revision_continuation` (`_PlanRun`), which no other value reads. The count of one is
+    the revision continuation comes first (ADR 0072; `_revision_continuation`), from
+    `ctx.revision_continuation` (the plan's, or none for a merged region's edge 3, `_converge`),
+    which no other value reads. The count of one is
     structural: this runs once per region step, on the region solve the step ran, and never on its
     own recovery. A recovery solve is the step's outcome (`_recovery_taken`).
     """
@@ -1001,8 +1004,9 @@ def _revision_continuation(
     """ADR 0072 (RRC design note §5.5): edge 3's revision continuation, reached when the region
     has no specification continuation and the policy names it.
 
-    R3: the flowsheet is revision-built, else `absent(not_revision_built)`. R4: the plan's source
-    (`ctx.revision_continuation`) was supplied, else `absent(not_supplied)`; a supplied refusal is
+    R3: the flowsheet is revision-built, else `absent(not_revision_built)`. R4: the frame's source
+    (`ctx.revision_continuation`; none on a merged region's edge 3) was supplied, else
+    `absent(not_supplied)`; a supplied refusal is
     that refusal. R5–R9a: `revision_continuation`'s pure checks. R9b: one region solve, a recovery
     whose attempt 0 is the homotopy from the ancestor's root in the ancestor's signature, over
     `D`; its opening is held to T03 §5.1's checks first (`solve_region`), and a refusal there
