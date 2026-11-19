@@ -860,7 +860,7 @@ def _check_vapour_only_forms(
     row_units: Mapping[str, str],
     declaration: Declaration,
 ) -> None:
-    """`check_agreement` (h)."""
+    """`check_agreement` (h); each declared split's form columns by `_check_vapour_only_columns`."""
     declared = {split.unit: split for split in splits if _rule(models, split).vapour_only}
     for unit in forms:
         if unit not in declared:
@@ -871,23 +871,7 @@ def _check_vapour_only_forms(
         form = forms.get(unit)
         if form is None:
             raise ValueError(f"vapour_only_form_disagrees({unit}): no form")
-        zero = _vapour_only_rows(split, _rule(models, split))
-        expected = tuple(
-            liquid
-            for row, liquid in zip(split.equilibrium_rows, split.liquid, strict=True)
-            if row in zero
-        )
-        absent = [name for name in form.columns if name not in columns]
-        if absent or form.columns != expected:
-            raise ValueError(
-                f"vapour_only_form_disagrees({unit}): the form names {list(form.columns)}, the "
-                f"split's vapour-only liquid flows are {list(expected)}; not columns: {absent}"
-            )
-        if len(form.rows) != len(form.columns):
-            raise ValueError(
-                f"vapour_only_form_disagrees({unit}): {len(form.rows)} rows for "
-                f"{len(form.columns)} columns"
-            )
+        _check_vapour_only_columns(split, models, form, columns)
         for row, column in zip(form.rows, form.columns, strict=True):
             traced = declaration.rows.get(row)
             if row_units.get(row) != unit or traced is None or set(traced.columns) != {column}:
@@ -895,6 +879,32 @@ def _check_vapour_only_forms(
                     f"vapour_only_form_disagrees({unit}, {row}): not a row of {unit} reading "
                     f"exactly {column}"
                 )
+
+
+def _check_vapour_only_columns(
+    split: LiftedSplit, models: Mapping[str, str], form: VapourOnlyForm, columns: set[str]
+) -> None:
+    """`check_agreement` (h) for one split's form: it names exactly the split's vapour-only liquid
+    flows (the liquid of each equilibrium row of a vapour-only component of its rule, in row
+    order), each a column of the region, and has one row per column.
+    """
+    zero = _vapour_only_rows(split, _rule(models, split))
+    expected = tuple(
+        liquid
+        for row, liquid in zip(split.equilibrium_rows, split.liquid, strict=True)
+        if row in zero
+    )
+    absent = [name for name in form.columns if name not in columns]
+    if absent or form.columns != expected:
+        raise ValueError(
+            f"vapour_only_form_disagrees({split.unit}): the form names {list(form.columns)}, the "
+            f"split's vapour-only liquid flows are {list(expected)}; not columns: {absent}"
+        )
+    if len(form.rows) != len(form.columns):
+        raise ValueError(
+            f"vapour_only_form_disagrees({split.unit}): {len(form.rows)} rows for "
+            f"{len(form.columns)} columns"
+        )
 
 
 def _check_dormancy_form(

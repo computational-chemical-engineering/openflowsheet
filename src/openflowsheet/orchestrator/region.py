@@ -61,14 +61,16 @@ has a `VapourOnlyForm`: in a TWO_PHASE attempt their liquid flows are pinned at 
 zero rows dropped. Every other provider runs the code above, unchanged.
 
 **Where the code is** (S19 B1, RS). This module holds SYN-001's lifted splits and the attempt
-loop (`solve_region`, `_solve_region`, with `_swapped_row_test` and `_external_opening`). The
-region's records (`RegionResult`, `RegionAttempt`, `AttemptSystem`, `RecoveryStart`) are in
+loop (`solve_region`, `_solve_region`, with `_external_opening`). The region's records
+(`RegionResult`, `RegionAttempt`, `AttemptSystem`, `RecoveryStart`) are in
 `orchestrator.region_result`; the trial screen (`_attempt_screen`) in `orchestrator.region_screen`;
 the PTC and homotopy attempts (`region_ptc_problem`, `_ptc_attempt`, `_homotopy`) in
 `orchestrator.region_attempts`; the phase-policy kernel (the kernel, the PH closure, the
 admissibility screens and their refusals) in `orchestrator.region_phase`; the Newton problem over
-lifted splits (labels, the opening fixed point, dormancy outlets, `_LiftedOps`) in
-`orchestrator.region_problem`. Callers and tests import those names from their modules.
+lifted splits (labels, the opening fixed point, dormancy outlets, `_LiftedOps`, the swapped-row
+test `_swapped_row_test`) in `orchestrator.region_problem`. Callers and tests import those names
+from their modules, except `_swapped_row_test`: the loop calls it, and tests patch it, through
+this module, which imports it back.
 """
 
 from __future__ import annotations
@@ -93,7 +95,6 @@ from openflowsheet.models.lifted import (
     ZeroFlowForm,
 )
 from openflowsheet.models.lifted import StagedSplits as StagedSplits
-from openflowsheet.models.lifted_tolerance import KIND_TOLERANCE
 from openflowsheet.numerics.newton import NewtonResult, solve_newton
 from openflowsheet.numerics.ptc import PtcRecord
 from openflowsheet.numerics.scaling import REGISTERED_NOMINALS, Scaling
@@ -152,6 +153,7 @@ from openflowsheet.orchestrator.region_problem import (
     _refinement,
     _region_problem,
     _settle,
+    _swapped_row_test,
     _with_labels,
 )
 from openflowsheet.orchestrator.region_result import (
@@ -423,6 +425,7 @@ def _solve_region(
         dormancy=dormancy,
         order=order,
         recovery=recovery,
+        initializer_source=initializer_source,
         warm_start=warm_start,
         current=current,
         source=item0_opening_source if recovery is None else "eo_recovery_start",
@@ -454,119 +457,11 @@ def _solve_region(
             last, ptc_record = solve._run_ptc(attempt_index, layout, attempt_open)
         else:
             last = solve._run_newton(attempt_index, layout, attempt_open)
+        ran = _CoreRun(last, record, ptc_record)
         ended = solve._take_end_state(layout, last)
-
-        ops = _LiftedOps(
-            splits=active_splits,
-            regimes=solve.regimes,
-            end_state=ended,
-            free=layout.free,
-            provider=provider,
-            context=attempt_open.attempt_context,
-            policy=policy,
-            region=region,
-            spec=spec,
-            identity=identity,
-            ph_units=ph_units,
-            v2=v2,
-            forms=forms,
-            dormancy=dormancy,
-            items=frozenset(item for item, _ in layout.items),
-            order=order,
-            temperatures=temperatures,
-            memo=attempt_open.memo,
-            vapour_only=vapour,
-        )
-        try:
-            decision = decide(
-                last,
-                attempt_index=attempt_index,
-                frozen=layout.opening,
-                wall=attempt_open.wall,
-                ops=ops,
-                policy=policy,
-                used=solve.used,
-            )
-        except BudgetExhaustedError as exhausted:
-            # The closure's kernel calls (an end-state verdict, a restart point) are provider calls
-            # outside the compiled residual (review S1). A refusal there closes this attempt: its
-            # end state, checkpoint and provenance are kept, never discarded with the loop.
-            decision = Decision("terminal", "BUDGET_EXHAUSTED", str(exhausted))
-            solve.budget = "property_calls"
-        except _KernelRefusedError as refused:
-            decision = Decision("terminal", "EVALUATION_ERROR", str(refused))
-        except OpeningNotSettledError as unsettled:
-            # T05b spec §7.8 (ii) 2: a restart opening whose fixed point does not settle.
-            decision = opening_not_settled(unsettled)
-        if decision.kind == "converged" and v2:
-            # T05b spec §7.8 (iv) 2 (finding F6): after the contract's closure found the root
-            # admissible and its items in agreement, every row a zero-flow form swapped out —
-            # lifted, then non-lifted, in signature order — must hold there.
-            swapped = (
-                *(
-                    _form(split, forms).swapped
-                    for split in active_splits
-                    if solve.regimes[split.unit] == "ZERO_FLOW" and _form(split, forms).swapped
-                ),
-                *(form.swapped for form in layout.running),
-            )
-            if swapped:
-                decision = (
-                    _swapped_row_test(compiled, attempt_open.attempt_context, spec, ended, swapped)
-                    or decision
-                )
-        outcome: SolveOutcome = decision.outcome
-        if outcome == "BUDGET_EXHAUSTED" and solve.budget is None:
-            solve.budget = last.budget
-        solve.attempts.append(
-            RegionAttempt(
-                layout.opening,
-                outcome,
-                last.iterations,
-                decision.cause if decision.kind == "restart" else "",
-                solver_outcome=last.outcome,
-                end_state=ended,
-                observations=dict(decision.observations),
-                ptc=ptc_record,
-            )
-        )
-        # K03 §9: a checkpoint for an attempt that accepted a step or converged. Only an attempt
-        # the region *kept* is a candidate root; one converged on an inadmissible branch is not.
-        if last.accepted_any or last.converged:
-            solve.checkpoint = Checkpoint(
-                checkpoint_id=f"region-attempt-{attempt_index}",
-                attempt_index=attempt_index,
-                iteration=last.iterations,
-                variable_ids=layout.free,
-                state_sha256=state_sha256(last.x, layout.free),
-                signature=layout.opening,
-                residual_inf_unscaled=last.residual_inf,
-                merit=last.merit,
-                label="candidate_root" if decision.kind == "converged" else "partial",
-                # T04 §4.4: a homotopy checkpoint names its level; below λ = 1 it is a state of a
-                # modified problem, and the dataclass refuses to call it anything but partial.
-                continuation_lambda=(
-                    fraction_string(record.lambda_reached) if record is not None else None
-                ),
-            )
-        solve.provenance.append(
-            provenance_item(
-                attempt=attempt_index,
-                signature=layout.opening,
-                core=attempt_open.core,
-                source=solve.source,
-                initializer_source=(
-                    (recovery.initializer_source if recovery is not None else initializer_source)
-                    if attempt_index == 0
-                    else None
-                ),
-                trial=solve.trial,
-                opening_state_sha256=attempt_open.opening_hash,
-                result=last,
-                decision=decision,
-                continuation=record.provenance() if record is not None else None,
-            )
-        )
+        decision = solve._decision(attempt_index, layout, attempt_open, last, ended)
+        solve._append_attempt(layout, ran, decision, ended)
+        solve._checkpoint_and_provenance(attempt_index, layout, attempt_open, ran, decision)
         if decision.kind == "converged":
             # OPT design §4.2.1: the system this attempt solved — its rows, free columns and label
             # rows, and every other column at the value it held (the end state's: the attempt
@@ -600,17 +495,17 @@ def _solve_region(
 
 @dataclass
 class _RegionSolve:
-    """One `_solve_region` call: what its start, openings, cores and closing read, and its ledger.
+    """One `_solve_region` call: what its start, openings, cores, end states and closing share.
 
     Frame: the `compiled` problem and the recovery's λ-level compiler `compile_level`, `spec`, the
     `region`, `splits` (every lifted split of the declaration, for the root's branch), the
     `provider`, `policy`, the trace `run`, `identity`, the `scaling`, the compiled `structure` and
-    the PTC core's `region_mass`, phase B's contract setting (`active_splits`, `v2`, `ph_units`,
-    the zero-flow `forms`, the `vapour` forms, `temperatures`, the `dormancy` forms, the opening
-    `order`), the `recovery` start and `warm_start`. State: the opening state
-    `current` and `regimes`, the start's `projections`, and the ledger (counters, used signatures,
-    attempts, provenance, checkpoint, contexts, the next attempt's opening message, source and
-    trial, attempt 0's opening, the budget kind and the homotopy record).
+    the PTC core's `region_mass`, phase B's contract setting (`active_splits`, `v2`, `ph_units`, the
+    zero-flow `forms`, the `vapour` forms, `temperatures`, the `dormancy` forms, the opening
+    `order`), the `recovery` start, the call's `initializer_source` and `warm_start`. State: the
+    opening state `current` and `regimes`, the start's `projections`, and the ledger (counters, used
+    signatures, attempts, provenance, checkpoint, contexts, the next attempt's opening message,
+    source and trial, attempt 0's opening, the budget kind and the homotopy record).
     """
 
     compiled: CompiledProblem
@@ -634,6 +529,7 @@ class _RegionSolve:
     dormancy: tuple[DormancyForm, ...]
     order: tuple[OpeningEntry, ...]
     recovery: RecoveryStart | None
+    initializer_source: str | None
     warm_start: bool
     current: dict[str, float]
     source: OpeningSource
@@ -1156,6 +1052,164 @@ class _RegionSolve:
             self.current[name] = 0.0
         return dict(self.current)
 
+    def _decision(
+        self,
+        attempt_index: int,
+        layout: _Layout,
+        opened: _Opened,
+        last: NewtonResult,
+        ended: dict[str, float],
+    ) -> Decision:
+        """Decides an attempt from its core's result `last` and its end state `ended`: `decide`
+        with the attempt's `_LiftedOps`, or, when its kernel calls refuse, the terminal decision of
+        a budget refusal (which sets `budget`) or of a kernel refusal, or `opening_not_settled`'s
+        decision for a restart opening whose fixed point does not settle (§7.8 (ii) 2). Under v2 a
+        converged decision then meets the swapped-row test (§7.8 (iv) 2), which may replace it.
+        """
+        ops = _LiftedOps(
+            splits=self.active_splits,
+            regimes=self.regimes,
+            end_state=ended,
+            free=layout.free,
+            provider=self.provider,
+            context=opened.attempt_context,
+            policy=self.policy,
+            region=self.region,
+            spec=self.spec,
+            identity=self.identity,
+            ph_units=self.ph_units,
+            v2=self.v2,
+            forms=self.forms,
+            dormancy=self.dormancy,
+            items=frozenset(item for item, _ in layout.items),
+            order=self.order,
+            temperatures=self.temperatures,
+            memo=opened.memo,
+            vapour_only=self.vapour,
+        )
+        try:
+            decision = decide(
+                last,
+                attempt_index=attempt_index,
+                frozen=layout.opening,
+                wall=opened.wall,
+                ops=ops,
+                policy=self.policy,
+                used=self.used,
+            )
+        except BudgetExhaustedError as exhausted:
+            # The closure's kernel calls (an end-state verdict, a restart point) are provider calls
+            # outside the compiled residual (review S1). A refusal there closes this attempt: its
+            # end state, checkpoint and provenance are kept, never discarded with the loop.
+            decision = Decision("terminal", "BUDGET_EXHAUSTED", str(exhausted))
+            self.budget = "property_calls"
+        except _KernelRefusedError as refused:
+            decision = Decision("terminal", "EVALUATION_ERROR", str(refused))
+        except OpeningNotSettledError as unsettled:
+            # T05b spec §7.8 (ii) 2: a restart opening whose fixed point does not settle.
+            decision = opening_not_settled(unsettled)
+        if decision.kind == "converged" and self.v2:
+            # T05b spec §7.8 (iv) 2 (finding F6): after the contract's closure found the root
+            # admissible and its items in agreement, every row a zero-flow form swapped out —
+            # lifted, then non-lifted, in signature order — must hold there.
+            swapped = (
+                *(
+                    _form(split, self.forms).swapped
+                    for split in self.active_splits
+                    if self.regimes[split.unit] == "ZERO_FLOW" and _form(split, self.forms).swapped
+                ),
+                *(form.swapped for form in layout.running),
+            )
+            if swapped:
+                decision = (
+                    _swapped_row_test(
+                        self.compiled, opened.attempt_context, self.spec, ended, swapped
+                    )
+                    or decision
+                )
+        return decision
+
+    def _append_attempt(
+        self, layout: _Layout, ran: _CoreRun, decision: Decision, ended: dict[str, float]
+    ) -> None:
+        """Appends the attempt's `RegionAttempt` to `attempts` (its signature, outcome, the core's
+        iterations and outcome, a restart's cause, the end state `ended`, the decision's
+        observations, the PTC record of `ran`); before it, a budget-exhausted outcome with no
+        `budget` kind yet takes the core's.
+        """
+        outcome: SolveOutcome = decision.outcome
+        if outcome == "BUDGET_EXHAUSTED" and self.budget is None:
+            self.budget = ran.last.budget
+        self.attempts.append(
+            RegionAttempt(
+                layout.opening,
+                outcome,
+                ran.last.iterations,
+                decision.cause if decision.kind == "restart" else "",
+                solver_outcome=ran.last.outcome,
+                end_state=ended,
+                observations=dict(decision.observations),
+                ptc=ran.ptc,
+            )
+        )
+
+    def _checkpoint_and_provenance(
+        self,
+        attempt_index: int,
+        layout: _Layout,
+        opened: _Opened,
+        ran: _CoreRun,
+        decision: Decision,
+    ) -> None:
+        """Records the attempt in the ledger: `checkpoint` becomes its checkpoint when the core
+        accepted a step or converged (K03 §9; a candidate root only when `decision` converged, with
+        the homotopy's λ level when `ran` has one), and its provenance item is appended to
+        `provenance` (attempt 0 names the recovery's initializer source, else the call's).
+        """
+        # K03 §9: a checkpoint for an attempt that accepted a step or converged. Only an attempt
+        # the region *kept* is a candidate root; one converged on an inadmissible branch is not.
+        if ran.last.accepted_any or ran.last.converged:
+            self.checkpoint = Checkpoint(
+                checkpoint_id=f"region-attempt-{attempt_index}",
+                attempt_index=attempt_index,
+                iteration=ran.last.iterations,
+                variable_ids=layout.free,
+                state_sha256=state_sha256(ran.last.x, layout.free),
+                signature=layout.opening,
+                residual_inf_unscaled=ran.last.residual_inf,
+                merit=ran.last.merit,
+                label="candidate_root" if decision.kind == "converged" else "partial",
+                # T04 §4.4: a homotopy checkpoint names its level; below λ = 1 it is a state of a
+                # modified problem, and the dataclass refuses to call it anything but partial.
+                continuation_lambda=(
+                    fraction_string(ran.homotopy.lambda_reached)
+                    if ran.homotopy is not None
+                    else None
+                ),
+            )
+        self.provenance.append(
+            provenance_item(
+                attempt=attempt_index,
+                signature=layout.opening,
+                core=opened.core,
+                source=self.source,
+                initializer_source=(
+                    (
+                        self.recovery.initializer_source
+                        if self.recovery is not None
+                        else self.initializer_source
+                    )
+                    if attempt_index == 0
+                    else None
+                ),
+                trial=self.trial,
+                opening_state_sha256=opened.opening_hash,
+                result=ran.last,
+                decision=decision,
+                continuation=ran.homotopy.provenance() if ran.homotopy is not None else None,
+            )
+        )
+
     def closed(
         self, outcome: SolveOutcome, text: str = "", system: AttemptSystem | None = None
     ) -> RegionResult:
@@ -1220,45 +1274,21 @@ class _Opened(NamedTuple):
     wall: WallObserver
 
 
+class _CoreRun(NamedTuple):
+    """An attempt's core run (the dispatch in `_solve_region`): its result `last`, with the
+    `homotopy` record of a recovery's attempt 0 or the `ptc` record of a PTC attempt (else None).
+    """
+
+    last: NewtonResult
+    homotopy: HomotopyRecord | None
+    ptc: PtcRecord | None
+
+
 def _new_context(identity: tuple[str, str]) -> EvaluationContext:
     # T03 §4.2: every attempt constructs its own context objects (field-equal on this path).
     return EvaluationContext(
         model_version=identity[0], constants_sha256=identity[1], phase_signature=None
     )
-
-
-def _swapped_row_test(
-    compiled: CompiledProblem,
-    context: EvaluationContext,
-    spec: ProblemSpec,
-    state: Mapping[str, float],
-    swapped: Sequence[str],
-) -> Decision | None:
-    """T05b spec §7.8 (iv) 2: each swapped row, in signature order, at the final state against its
-    kind's tolerance (K03 §5.2's per-row test). The first that fails closes the region
-    `SPECIFICATION_CONFLICT`, `zero_flow_conflict(<row id>)`, its value in the non-R0
-    observations; no restart is proposed (the retained rows fix the row's value). `None` when
-    every one holds."""
-    vector = np.array([state[name] for name in spec.variable_ids], dtype=np.float64)
-    result = compiled.residual(vector, context)
-    if result.status != "ok" or result.values is None:
-        return Decision(
-            "terminal",
-            "EVALUATION_ERROR",
-            f"the swapped rows could not be evaluated at the final state: {result.status}: "
-            f"{result.message}",
-        )
-    at = {name: index for index, name in enumerate(spec.equation_ids)}
-    for row in swapped:
-        value = float(result.values[at[row]])
-        if not abs(value) <= KIND_TOLERANCE[spec.row_kinds[row]]:
-            return Decision(
-                "terminal",
-                "SPECIFICATION_CONFLICT",
-                f"zero_flow_conflict({row})",
-                observations={f"swapped_row:{row}": value},
-            )
-    return None
 
 
 def _external_opening(
