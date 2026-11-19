@@ -3388,3 +3388,10 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   `duplication` (231 of 582 lines shared with tier 3 `pr_c1.py`; R4 keeps them apart until batch P).
   S1 review R-W5-N3 after jobs 437-442 PASS. WO-N3b launched meanwhile on the same branch from e7183050.
 - 14:05: WO-N3b (opus-engineer, brief `S19-W5-N3b.md`: forms.py `select`, `rows`; derived.py `DerivedContributor.plan`) launched on wp/S19-w5n from e7183050. Review brief `S19-R-W5-N3.md` written (S1; launch on jobs 437-442 PASS).
+- **14:25, W4 residuals merged into wp/S19:** merge-check job 439 `w4r-mc` PASS 10/10 (full suite, debt 95.3 -> 42.0);
+  wp/S19 changed only docs since 79e07265, so the helper's evidence holds. `wp/S19-pr1b` merged as 47ceb7bf,
+  `wp/S19-pr2` as e6cefaf9 (tree = helper ba040641 + docs). G1/W4 residuals closed except `solve_region`'s own 21
+  keywords (legacy ruling). Worktrees removed: s19-pr1, s19-pr1b, s19-pr2, s19-w4r-mc, and 25 older merged and clean
+  S19 lane worktrees (branches kept). Not removed: s19-g1o8 and s19-g3 (branches not ancestors of wp/S19), s19-w5n.
+  Blocking set for 0.5 (Frank 2026-11-15): W4 items and residuals done, arch 0 violations / 0 cycles at depth 4, G5 and
+  G6 W3 parts done; open only the verify twins (`verify/gamma_phi_units.py` 6.4, waits for Frank's addendum).
