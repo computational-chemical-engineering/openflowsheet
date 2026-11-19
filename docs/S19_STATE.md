@@ -59,17 +59,14 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 
 ## Next actions (2026-11-19 18:15 CET)
 
-**Position:** wp/S19 = docs after e3e95520 (G2 runs 6+7 merged; = C of card ofs-s19-blocking-merge-main, VERIFIED, A).
+**Position:** main = c4a91a75 (blocking set merged and pushed, 20:20); wp/S19 = docs after it (cc77b847).
 MB 756e1c12. Runner PID 1341562. Queue: batch N jobs 496-507 (re-enqueued after job 483's w5_scope FAIL; batch file
 amended, sha e7c318e4, prior `.json.pre-plan`). Results COUNT 474 at 18:13. Two engineers running (opus-engineer):
 G2 run 8 (wp/S19-g2d) and the evidence manifest (wp/S19-ev2). A fresh context: check `git worktree list` and the lane
 logs; agents of a dead session are gone, so re-brief from the commit logs.
 
-1. **Main merge (card ofs-s19-blocking-merge-main, A):** step 2 (budget tests at C) PASS (S19_DECISIONS 18:12).
-   On the evidence engineer's report: spot-check the manifest, merge wp/S19-ev2 into wp/S19 (docs and tests only;
-   gate the envelope tests it touched), push wp/S19, CI on both legs, manifest `tested` commit, then merge commit on
-   main, `scripts/corpus_identity.py --check` (F0) on main, push main, `executed` on the card (ArtifactData update,
-   with the result). Stop without a push on any failure in steps 1-4 and tell hub.
+1. **Main merge: DONE** 2026-11-19 20:20 (c4a91a75 pushed; card executed v3; F0 PASS on main). Next main merge:
+   after batch N + G2 run 8 (or at 0.5 start, Frank), the same five steps under a fresh card.
 2. **G2 run 8:** on its report, gates PASS -> S1 reviewer (R-W5-G2-8), fixes, merge-check, merge.
 3. **Batch N:** on 496-500 PASS: S1 review R-W5-N3 (brief `S19-R-W5-N3.md`; update shas to the rebased lane and add
    the gate results). Then WO-N4 (factory switch, `--mode interface`; ruling section 9 row), WO-N5 (close: K, judge,
