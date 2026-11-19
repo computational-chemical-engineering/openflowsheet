@@ -3736,3 +3736,11 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   each as wp/<ID> with its own brief, beside S19 at one lane (ofs-s19-trailing-order)". Execution: recon digest of
   both packages (recon, read-only), then briefs and branches wp/X07a and wp/X01 from main; with the 2-agent budget,
   one 0.5 engineer and one S19 engineer at a time. `executed` on the card once both lanes are opened.
+- **2026-11-19 ~22:05, ofs-05-widen B executed (card v3).** Recon (read-only, Haiku-class): X07a partly buildable (no
+  platform module; fcntl/killpg/setpgid call sites; CI ubuntu x86+arm only); X01 rest selectability blocked on F2/F4/F6
+  (ADR 0060 risk 1 default stands), plugin docs + example plugin buildable on merged F1. Lanes from main c4a91a75:
+  wp/X07a (worktree x07a, brief docs/briefs/X07a-WO1.md 8df45792; opus-engineer launched) and wp/X01 (worktree x01,
+  brief docs/briefs/X01-WO1.md aec9d347; waits for a free agent slot). DECISION: "beside S19 at one lane" with the
+  2-agent cap -> one 0.5 engineer and one S19 engineer at a time, X07a first (three-OS base for every later
+  foundation). Alternative: X01 docs first (smaller). Reversible by: launching X01-WO1 before X07a's next WO. Both
+  lanes may push their wp branch for CI; ADR 0052 D11 amendment (X01 part C) open for the design lane.
