@@ -172,8 +172,9 @@ class _ContributionBuilder:
     `parameters` by `pin`, `blocks` and `block_inputs` by `lnk_block` and `enthalpy_block`.
     On a repeated id (none after `validate`) the lists keep every entry, in append order, and
     the dicts the last one written.
-    The phases (`property_blocks`, `total_condenser_rows`, `stage_rows`, `slot`,
-    `inlet_pin_rows`) and their helpers write only through these; `contribution` reads them.
+    The phases (`property_blocks`, `total_condenser_rows`, `stage_rows`, `inlet_pin_rows`,
+    `contribution`), the helper `slot` they share and `_link_rows` write only through these
+    append methods; `contribution` reads the tables last.
     """
 
     spec: ColumnSpec
@@ -723,7 +724,8 @@ class _ContributionBuilder:
 class _BlockKeys(NamedTuple):
     """`_ContributionBuilder.property_blocks`'s output keys: `lnk` the lnK block id per stage
     (stage 1 a total condenser's), `vapor` and `liquid` the enthalpy outputs per equilibrium
-    stage, `reflux` and `distillate` a total condenser's (empty without one), `inlet` per port."""
+    stage, `reflux` and `distillate` a total condenser's (empty without one), `inlet` per port.
+    A repeated stage or inlet port keeps the entry written last."""
 
     lnk: dict[int, str]
     vapor: dict[int, tuple[str, ...]]
