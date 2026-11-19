@@ -119,12 +119,8 @@ from openflowsheet.orchestrator.phase_contract import (
     Candidate,
     Decision,
     OpeningNotSettledError,
-    OpeningRefusal,
-    OpeningRequirement,
     OpeningSource,
-    OpeningState,
     WallObserver,
-    check_opening,
     decide,
     jacobian_pattern,
     opening_not_settled,
@@ -145,6 +141,7 @@ from openflowsheet.orchestrator.region_phase import (
 from openflowsheet.orchestrator.region_problem import (
     OpeningEntry,
     _branch_found,
+    _external_opening,
     _items,
     _label_entries,
     _labels,
@@ -1288,45 +1285,4 @@ def _new_context(identity: tuple[str, str]) -> EvaluationContext:
     # T03 §4.2: every attempt constructs its own context objects (field-equal on this path).
     return EvaluationContext(
         model_version=identity[0], constants_sha256=identity[1], phase_signature=None
-    )
-
-
-def _external_opening(
-    current: Mapping[str, float],
-    opening: AttemptSignature,
-    identity: tuple[str, str],
-    free: Sequence[str],
-    splits: Sequence[LiftedSplit],
-    regimes: Mapping[str, Regime],
-    forms: Mapping[str, ZeroFlowForm],
-    vapour: Mapping[str, VapourOnlyForm],
-    spec: ProblemSpec,
-    *,
-    reported: AttemptSignature | None = None,
-) -> OpeningRefusal | None:
-    """T03 §5.1's six checks on attempt 0's opening from an external start (a compatible warm
-    start, ADR 0024 D3; a revision continuation's ancestor root, RRC §5.7), before its pinned
-    columns are set: the opening's own identity, its signature's pinned columns in signature
-    order, and a zero lower bound on every free molar flow. `reported` is the signature the
-    source reported for the state, `None` for a source that reports none."""
-    held = tuple(
-        name for split in splits for name in _pinned(split, regimes[split.unit], forms, vapour)
-    )
-    return check_opening(
-        OpeningState(
-            values=current,
-            model_version=identity[0],
-            constants_sha256=identity[1],
-            reported=reported,
-        ),
-        OpeningRequirement(
-            signature=opening,
-            model_version=identity[0],
-            constants_sha256=identity[1],
-            free=free,
-            pinned=held,
-            lower_bounds={
-                name: 0.0 for name in free if spec.variable_kinds.get(name) == "molar_flow"
-            },
-        ),
     )
