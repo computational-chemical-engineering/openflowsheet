@@ -3229,3 +3229,6 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
 - Job 403 `w5n1-16r` (sets.py `parse_set`, cd6f071a) PASS 19/19, LOG-ERROR as expected ("--rerun-of 375: campaign
   s19 has no step for this tree and base"). Logged by hand without `--rerun-of` (`--head cd6f071a`): run-log step 404
   accepted, 63.1 -> 56.1. Batch N: 358-372, 402, 403 PASS; 411-417 pending.
+- Merge-check job 418 `g1o8b-mc` PASS 10/10 (full suite; debt 207.7 -> 166.2). wp/S19 changed only docs since
+  18752068: wp/S19-g1o8b-mc merged into wp/S19 as 7e1cf39e. Run 9's base 366ba54e is that merge's second parent,
+  so no rebase is needed. Lane O run 8b done.
