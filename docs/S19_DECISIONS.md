@@ -3203,3 +3203,26 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   (w5n1-16r) was already running: it will LOG-ERROR; log it by hand without `--rerun-of`.
 - Job 401 `g1o8b-5` (E4 8ae8528f) PASS 19/19, 36.2 -> 35.2. Lane O run 8b: 397-401 all PASS. Review R-W3-G1O-8
   launched (reviewer, Opus; brief `S19-R-W3-G1O-8.md`).
+
+## 2026-11-19 ~07:40 CET: R-W3-G1O-8 merge; merge-check 418; run 9 launched
+
+- Review R-W3-G1O-8 (reviewer, Opus): **merge all five steps** (37a380db, fd457e63, c11f3d66, b695efce, 8ae8528f),
+  no blockers; the seven deviations accepted (4 subject to fix 2). Fixes, docstring only: (1) region.py:1167
+  `_checkpoint_and_provenance` "(attempt 0 names the recovery's initializer source, else the call's)" -> "attempt 0
+  names the recovery's initializer source, or without a recovery the call's; later attempts none"; (2) the class
+  summary line region.py:498 names the decision and attempt records and keeps "and its ledger" (<= 100 chars), folded
+  into R6. Notes: (a) for R6, `ran.homotopy` is this attempt's record, `self.homotopy` attempt 0's: never swap them;
+  (b) `_decision` takes `last` per the plan's signature. Agrees with the second move before R6 (991 + 4..10 NLOC).
+  Not examined: gate logs, rc_check internals, splits.py's other rules, whether a test pins `continuation_lambda`
+  from attempt 1 on.
+- DECISION: review fixes 1 and 2 -> folded into run 9 (fix 1 in its no-gain step, fix 2 in R6), not a separate
+  orchestrator no-gain gate now. Alternative: an orchestrator docstring commit gated no-gain before the merge-check.
+  Reversible by: an orchestrator commit on wp/S19 if run 9 drops them. The reviewer said they can go into the next
+  commit on region.py.
+- Merge-check helper wp/S19-g1o8b-mc (worktree s19-g1o8b-mc) = 18752068 + merge of wp/S19-g1o8b, 366ba54e; ruff and
+  ruff format clean; job 418 `g1o8b-mc`. On PASS: merge the helper into wp/S19 (only if wp/S19 changed only docs).
+- DECISION: run 9 base -> 366ba54e (the helper head, before merge-check 418 reports) so the engineer starts now.
+  Alternative: wait for 418 and branch from the merged wp/S19 tip. Reversible by: rebasing wp/S19-g1o9 onto the
+  wp/S19 tip; if 418 fails, run 9 waits for the fix. Brief `S19-W3-G1O-9.md`: retarget (check_opening), plan
+  split-region-4 + move `_external_opening`, no-gain (+ fix 1), R6 (+ fix 2, note a), R7 only per Q5. Engineer
+  launched (opus-engineer, Opus).
