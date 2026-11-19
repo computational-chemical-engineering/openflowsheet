@@ -371,7 +371,7 @@ def test_e_f1_3_unit_payloads_are_the_list_models_entries(registry: Registry) ->
         assert payload["bindable"] is True
         assert payload["signature"] == listed[entry.id]
         assert entry.document["implementation"]["factory"] == {
-            "module": "openflowsheet.application.revision_binding",
+            "module": "openflowsheet.application.model_builders",
             "attribute": "MODEL_BUILDERS",
             "key": entry.id,
         }
