@@ -3728,3 +3728,6 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   S19-W3-common.md and S19-R-W3-common.md (binding for every engineer and reviewer). Other briefs only name the command.
 - 2026-11-19, job 504 (w5n3b-4u) PASS (step 460 accepted, 10.0 -> 1.0, 19/19). gate_report: the four ALERTs (54%;
   662 s; 0.50; wait 59 min); action unchanged.
+- 2026-11-19, job 511 (g2d-mc merge-check) PASS (full suite, 10/10, debt 26.6 -> 16.0). wp/S19 changed only docs
+  since e9fdf99f: wp/S19-g2d (57e141ac) merged into wp/S19 (0d1e325e); worktree s19-g2d and branch removed. Card
+  ofs-s19-legacy-models item (a) done (G2 runs 6-8); (b) `_RegionCall` and (c) batch L remain.
