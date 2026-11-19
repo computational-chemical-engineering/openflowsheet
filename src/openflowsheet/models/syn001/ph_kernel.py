@@ -860,8 +860,8 @@ def _region_route(
 
 
 class _RegionEnds(NamedTuple):
-    """`_region_route`'s band ends, `bubble` (β = 0) and `dew` (β = 1), and step 1's TP
-    enthalpies `h_lo`, `h_hi` at the domain's ends `T_min`, `T_max`."""
+    """`_region_route`'s ends of both kinds: the band ends, `bubble` (β = 0) and `dew` (β = 1),
+    and at the domain's ends `T_min`, `T_max` step 1's TP enthalpies `h_lo`, `h_hi`."""
 
     bubble: BandTemperature
     dew: BandTemperature
@@ -876,9 +876,10 @@ def _region_ends(
     domain: tuple[float, float],
     context: EvaluationContext,
 ) -> _RegionEnds | PHState:
-    """`_region_route`'s band ends, `gamma_phi.band_point` at β = 0 and β = 1, then step 1 on
-    `domain`. A `BandError` from either band end is returned as its typed failure (`_surfaced`,
-    "band end"), before any enthalpy is evaluated."""
+    """`_region_route`'s ends of both kinds (`_RegionEnds`): the band ends,
+    `gamma_phi.band_point` at β = 0 and β = 1, then step 1's enthalpies at the ends of `domain`.
+    A `BandError` from either band end is returned as its typed failure (`_surfaced`, "band
+    end"), before any enthalpy is evaluated."""
     t_min, t_max = domain
     try:
         bubble = gamma_phi.band_point(provider, n, pressure, 0.0, context)
