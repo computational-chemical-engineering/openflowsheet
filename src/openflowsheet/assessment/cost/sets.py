@@ -244,6 +244,8 @@ def _check_source(source: Any, where: str, reasons: list[str]) -> None:
 
 
 def _check_ranges(ranges: Any, where: str, reasons: list[str]) -> None:
+    """Every range of `ranges` is an object with a source (`_check_source`) and a role: `size`
+    (`_size_range_reasons`) or `input` (`_input_range_reasons`)."""
     if not isinstance(ranges, Mapping):
         reasons.append(f"{where}: ranges must be an object")
         return
@@ -255,42 +257,57 @@ def _check_ranges(ranges: Any, where: str, reasons: list[str]) -> None:
         _check_source(r.get("source"), at, reasons)
         role = r.get("role")
         if role == "size":
-            low, high = r.get("min"), r.get("max")
-            if not (_is_number(low) and _is_number(high) and low > 0):
-                reasons.append(f"{at}: size range needs positive numbers min and max")
-            elif high < 2.0 * low:
-                reasons.append(f"{at}: size range max {high!r} < 2·min {low!r} (§4.3.2)")
-            elif name == "consumed_power_hp" and high < _CONSUMED_RATIO * low:
-                reasons.append(f"{at}: consumed-power range max {high!r} < 3·min {low!r} (§10.4.4)")
-            if "below" in r or "above" in r:
-                reasons.append(f"{at}: a size range declares no below/above")
+            reasons += _size_range_reasons(name, r, at)
         elif role == "input":
-            if r.get("below") not in ("floor", "refuse"):
-                reasons.append(f"{at}: below must be 'floor' or 'refuse'")
-            if r.get("above") != "refuse":
-                reasons.append(f"{at}: above must be 'refuse'")
-            if "pieces" in r:
-                pieces = r["pieces"]
-                bounds = [(p.get("min"), p.get("max")) for p in pieces if isinstance(p, Mapping)]
-                if (
-                    len(bounds) != len(pieces)
-                    or not bounds
-                    or not all(_is_number(lo) and _is_number(hi) and lo < hi for lo, hi in bounds)
-                ):
-                    reasons.append(f"{at}: pieces need numbers min < max")
-                elif any(bounds[i][1] != bounds[i + 1][0] for i in range(len(bounds) - 1)):
-                    reasons.append(f"{at}: pieces are not contiguous: {bounds}")
-            else:
-                low, high = r.get("min"), r.get("max")
-                highs = high if isinstance(high, list) else [high]
-                if not (
-                    _is_number(low) and highs and all(_is_number(h) and h > low for h in highs)
-                ):
-                    reasons.append(f"{at}: input range needs numbers min < max")
-                if isinstance(high, list) and not isinstance(r.get("pieces_of"), str):
-                    reasons.append(f"{at}: a maximum per piece needs pieces_of")
+            reasons += _input_range_reasons(r, at)
         else:
             reasons.append(f"{at}: role {role!r} is neither 'size' nor 'input'")
+
+
+def _size_range_reasons(name: str, r: Mapping[str, Any], at: str) -> list[str]:
+    """Size range `name` (at `at`): positive numbers `min` and `max` with `max >= 2·min`
+    (§4.3.2), `max >= 3·min` for `consumed_power_hp` (§10.4.4), and no `below` or `above`."""
+    found: list[str] = []
+    low, high = r.get("min"), r.get("max")
+    if not (_is_number(low) and _is_number(high) and low > 0):
+        found.append(f"{at}: size range needs positive numbers min and max")
+    elif high < 2.0 * low:
+        found.append(f"{at}: size range max {high!r} < 2·min {low!r} (§4.3.2)")
+    elif name == "consumed_power_hp" and high < _CONSUMED_RATIO * low:
+        found.append(f"{at}: consumed-power range max {high!r} < 3·min {low!r} (§10.4.4)")
+    if "below" in r or "above" in r:
+        found.append(f"{at}: a size range declares no below/above")
+    return found
+
+
+def _input_range_reasons(r: Mapping[str, Any], at: str) -> list[str]:
+    """Input range `r` (at `at`): `below` is `floor` or `refuse`, `above` is `refuse`, and
+    either `pieces` with numbers `min < max`, contiguous, or numbers `min < max` where a `max`
+    per piece needs `pieces_of`."""
+    found: list[str] = []
+    if r.get("below") not in ("floor", "refuse"):
+        found.append(f"{at}: below must be 'floor' or 'refuse'")
+    if r.get("above") != "refuse":
+        found.append(f"{at}: above must be 'refuse'")
+    if "pieces" in r:
+        pieces = r["pieces"]
+        bounds = [(p.get("min"), p.get("max")) for p in pieces if isinstance(p, Mapping)]
+        if (
+            len(bounds) != len(pieces)
+            or not bounds
+            or not all(_is_number(lo) and _is_number(hi) and lo < hi for lo, hi in bounds)
+        ):
+            found.append(f"{at}: pieces need numbers min < max")
+        elif any(bounds[i][1] != bounds[i + 1][0] for i in range(len(bounds) - 1)):
+            found.append(f"{at}: pieces are not contiguous: {bounds}")
+    else:
+        low, high = r.get("min"), r.get("max")
+        highs = high if isinstance(high, list) else [high]
+        if not (_is_number(low) and highs and all(_is_number(h) and h > low for h in highs)):
+            found.append(f"{at}: input range needs numbers min < max")
+        if isinstance(high, list) and not isinstance(r.get("pieces_of"), str):
+            found.append(f"{at}: a maximum per piece needs pieces_of")
+    return found
 
 
 def _range(name: str, r: Mapping[str, Any]) -> Range:
