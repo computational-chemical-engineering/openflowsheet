@@ -3726,3 +3726,5 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   and `--json` takes the report path (`codehealth scan --help`: "write the full report to this file"), so the template
   told every reader to overwrite F. Fixed in S19-W5-G2-6/7/8.md; a "codehealth scan" section added to
   S19-W3-common.md and S19-R-W3-common.md (binding for every engineer and reviewer). Other briefs only name the command.
+- 2026-11-19, job 504 (w5n3b-4u) PASS (step 460 accepted, 10.0 -> 1.0, 19/19). gate_report: the four ALERTs (54%;
+  662 s; 0.50; wait 59 min); action unchanged.
