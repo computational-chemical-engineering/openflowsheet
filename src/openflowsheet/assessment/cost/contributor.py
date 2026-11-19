@@ -363,6 +363,21 @@ class _Planner:
         machines: Mapping[str, SizedItem],
         already: bool,
     ) -> Refusal | None:
+        """Cost `item` into `record` (§4.5), or the refusal that stops it.
+
+        A quoted item (`quote` in its document) is priced by `_quote`. A drive its machine's
+        entry includes (`_including_machine`) is recorded by `_record_included`. Otherwise the
+        entry from `_entry`, the inputs from `_form_inputs`, the unit count from `_units`, the
+        form's selection held by `_held`, its extrapolation (`_record_extrapolated`) and regime
+        (`_regime`), the escalation from `_escalation`, the source from `_entry_source`, the
+        defaulted options (`_defaulted`) and the capital outputs from `_capital`.
+
+        None when the item is costed or is an included drive, and when an input is missing and
+        `already` (a sizing refusal targets the item); `_quote` and `_capital` pass their None
+        through. The refusals: `_entry`'s, `SIZING_INPUT_UNAVAILABLE` for the first missing
+        input, `CORRELATION_OUT_OF_RANGE` for a selection out of range, `_escalation`'s, and
+        those `_quote` and `_capital` return.
+        """
         doc = self._item_doc(item)
         if "quote" in doc:
             return self._quote(item, record, values, quotes.quote_from(doc["quote"]))
@@ -986,7 +1001,9 @@ class _Planner:
         """The utility lines `opex.utility.<id>`: (the costed line ids, the refused line ids).
 
         A utility no sized item uses has no line. A line is refused when its price, or its
-        declared export price, is refused (recorded in `unavailable`).
+        declared export price, is refused (recorded in `unavailable`). The users come from
+        `_utility_users`; the export price of a utility with generating users from
+        `_export_price`.
         """
         lines: list[str] = []
         blocked: list[str] = []
