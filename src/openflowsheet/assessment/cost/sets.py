@@ -208,6 +208,9 @@ def _check_choice(body: Any, where: str, reasons: list[str]) -> None:
 
 
 def _check_option(name: str, option: Any, where: str, reasons: list[str]) -> None:
+    """Option `name` (at `where`): an object with a `default_source_line`; its `choices`, or
+    its `choices_by` with a `depends_on`, checked by `_choice_tables_reasons`; without
+    `choices_by`, a default that is one of its `choices`."""
     if not isinstance(option, Mapping):
         reasons.append(f"{where}: an option must be an object")
         return
@@ -223,14 +226,22 @@ def _check_option(name: str, option: Any, where: str, reasons: list[str]) -> Non
             tables.append((f"{where}.choices_by.{key}", table))
     else:
         tables.append((f"{where}.choices", option.get("choices", {})))
-    for table_where, table in tables:
-        if not isinstance(table, Mapping) or not table:
-            reasons.append(f"{table_where}: no choices")
-            continue
-        for key, body in table.items():
-            _check_choice(body, f"{table_where}.{key}", reasons)
+    reasons += _choice_tables_reasons(tables)
     if "choices_by" not in option and default not in dict(option.get("choices", {})):
         reasons.append(f"{where}: default {default!r} is not one of its choices")
+
+
+def _choice_tables_reasons(tables: Sequence[tuple[str, Mapping[str, Any]]]) -> list[str]:
+    """Each `(where, table)` of an option is a nonempty object whose choices `_check_choice`
+    checks, in table order."""
+    found: list[str] = []
+    for table_where, table in tables:
+        if not isinstance(table, Mapping) or not table:
+            found.append(f"{table_where}: no choices")
+            continue
+        for key, body in table.items():
+            _check_choice(body, f"{table_where}.{key}", found)
+    return found
 
 
 def _check_source(source: Any, where: str, reasons: list[str]) -> None:
