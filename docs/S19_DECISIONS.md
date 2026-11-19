@@ -3885,3 +3885,15 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   patch_noop 0/262; local interface gate (34a30bf export) PASS 20/20, debt 46.0 -> 30.0; arch 0/0; ruff, mypy clean.
   Enqueued job 518 (rc-1i, interface, 859532c2..21315b02). Next: on PASS, a reviewer over wp/S19-rc and the WO-N6
   retarget f8e10957, then one helper merge-check and the merges.
+- **2026-11-20 ~01:00, review R-W4-RC-N6 (reviewer, Opus, ~126k; `docs/reviews/S19-R-W4-RC-N6.md`, 9cfca83b):**
+  wp/S19-rc merge once job 518 passes; wp/S19-n6 merge. Fixes applied: 1 ADR 0076 addendum I-21 (f3eefffe, wp/S19);
+  3 the PTC, warm-start and recovery paragraphs back on `solve_region`'s docstring (ba657ab5, job 519 rc-2d no-gain);
+  2 three test module docstrings show the RegionCall form (8e468f46, outside the step gate, covered by the
+  merge-check). Open (fix 4, pre-existing): the patch at test_s01_cascade_wo1.py:262 targets `region.solve_region`,
+  which no caller reads through the module (a no-op patch_noop cannot see); retarget to `cascade_solve` later.
+  Reviewer's input on WO-N6: `revision_binding.MODEL_BUILDERS` is not a shim (the binder's own import, read at :706)
+  but a W27 binder-protocol attribute (snapshot.py:285-293, :153, :235; fake binders in test_m06_w27_coverage.py:554,
+  686, 790); recommend the design lane strike it from I-19's list and state the protocol in `reading_for`'s
+  docstring. Also: `c1_reactor_surrogate_of` (revision_binding.py:708) builds a unit outside the table, unguarded,
+  unreachable from list_models today. Next: jobs 518, 519; then one helper merge-check (wp/S19-rc + wp/S19-n6 from the
+  wp/S19 tip) and the merge.
