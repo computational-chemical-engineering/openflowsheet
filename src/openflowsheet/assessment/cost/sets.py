@@ -281,32 +281,46 @@ def _size_range_reasons(name: str, r: Mapping[str, Any], at: str) -> list[str]:
 
 
 def _input_range_reasons(r: Mapping[str, Any], at: str) -> list[str]:
-    """Input range `r` (at `at`): `below` is `floor` or `refuse`, `above` is `refuse`, and
-    either `pieces` with numbers `min < max`, contiguous, or numbers `min < max` where a `max`
-    per piece needs `pieces_of`."""
+    """Input range `r` (at `at`): `below` is `floor` or `refuse`, `above` is `refuse`, and its
+    `pieces` (`_pieces_reasons`) or, without pieces, its bounds (`_bounds_reasons`)."""
     found: list[str] = []
     if r.get("below") not in ("floor", "refuse"):
         found.append(f"{at}: below must be 'floor' or 'refuse'")
     if r.get("above") != "refuse":
         found.append(f"{at}: above must be 'refuse'")
     if "pieces" in r:
-        pieces = r["pieces"]
-        bounds = [(p.get("min"), p.get("max")) for p in pieces if isinstance(p, Mapping)]
-        if (
-            len(bounds) != len(pieces)
-            or not bounds
-            or not all(_is_number(lo) and _is_number(hi) and lo < hi for lo, hi in bounds)
-        ):
-            found.append(f"{at}: pieces need numbers min < max")
-        elif any(bounds[i][1] != bounds[i + 1][0] for i in range(len(bounds) - 1)):
-            found.append(f"{at}: pieces are not contiguous: {bounds}")
+        found += _pieces_reasons(r["pieces"], at)
     else:
-        low, high = r.get("min"), r.get("max")
-        highs = high if isinstance(high, list) else [high]
-        if not (_is_number(low) and highs and all(_is_number(h) and h > low for h in highs)):
-            found.append(f"{at}: input range needs numbers min < max")
-        if isinstance(high, list) and not isinstance(r.get("pieces_of"), str):
-            found.append(f"{at}: a maximum per piece needs pieces_of")
+        found += _bounds_reasons(r, at)
+    return found
+
+
+def _pieces_reasons(pieces: Any, at: str) -> list[str]:
+    """The `pieces` of an input range (at `at`): objects with numbers `min < max`, each
+    starting where the one before ends."""
+    found: list[str] = []
+    bounds = [(p.get("min"), p.get("max")) for p in pieces if isinstance(p, Mapping)]
+    if (
+        len(bounds) != len(pieces)
+        or not bounds
+        or not all(_is_number(lo) and _is_number(hi) and lo < hi for lo, hi in bounds)
+    ):
+        found.append(f"{at}: pieces need numbers min < max")
+    elif any(bounds[i][1] != bounds[i + 1][0] for i in range(len(bounds) - 1)):
+        found.append(f"{at}: pieces are not contiguous: {bounds}")
+    return found
+
+
+def _bounds_reasons(r: Mapping[str, Any], at: str) -> list[str]:
+    """The bounds of input range `r` without pieces (at `at`): numbers `min < max`, where a
+    list `max` (a maximum per piece) is nonempty and needs `pieces_of`."""
+    found: list[str] = []
+    low, high = r.get("min"), r.get("max")
+    highs = high if isinstance(high, list) else [high]
+    if not (_is_number(low) and highs and all(_is_number(h) and h > low for h in highs)):
+        found.append(f"{at}: input range needs numbers min < max")
+    if isinstance(high, list) and not isinstance(r.get("pieces_of"), str):
+        found.append(f"{at}: a maximum per piece needs pieces_of")
     return found
 
 
