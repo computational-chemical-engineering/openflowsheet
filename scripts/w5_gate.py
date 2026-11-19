@@ -29,6 +29,18 @@ file's `base`, not the step's `{base}`.
                                           file matching a GLOB (a restructure or interface step's
                                           plan; --plans repeats). A plan file that exists at B is
                                           in scope only if the batch admits it or names it
+    w5_gate.py close --k K --queue-dir DIR [--batch FILE] [--fixture PATH ...]
+                                          W5-K1 (ruling 6.3) of the batch close K, with the batch
+                                          from --batch or S19_W5_BATCH: B an ancestor of K, `git
+                                          diff --name-only K^..K` inside CLOSE_PATHS + the
+                                          --fixture paths (L_B's fixtures and constants, which the
+                                          batch file does not name), and M6_REQUESTS byte-identical
+                                          at B and K. Prints `W5-K1 PASS` or `W5-K1 FAIL` with the
+                                          offending paths (exit 0 or 1). On PASS it records K in
+                                          DIR/batches/closed-<B>.json (`k`, `batch`, `base`,
+                                          `batch_sha256`, `fixtures`); `gate_queue.py enqueue
+                                          --batch` then refuses a head that contains K. A record
+                                          of another K for B is refused (exit 2)
     w5_gate.py coverage                   W5-S7: `w5_identity.py coverage --base B --head HEAD`
     w5_gate.py tests --log L -- CMD ...   W5-S6: CMD (test_impact.py run, which writes L and
                                           reports with -rfE); on exit 1 the failed and errored
@@ -84,6 +96,16 @@ SECTION: Final = re.compile(r"^=+ .* =+$")
 #: test_impact.py's header of each pytest call in its log, and pytest's closing counts line
 #: (test_impact's SUMMARY, or a call that collected nothing).
 CALL: Final = "$ "
+#: W5-K1 (ruling 6.3): the paths a batch close K may change besides L_B's fixtures and constants,
+#: and the file `corpus_identity.py --record` rewrites that must come out byte-identical.
+CLOSE_PATHS: Final = (
+    "benchmarks/f0/corpus.json",
+    "tests/fixtures/registry/builtin-sha256.txt",
+    "src/openflowsheet/registry/builtin/legacy.json",
+    "src/openflowsheet/registry/builtin/core.json",
+    "src/openflowsheet/registry/builtin/tables.sha256",
+)
+M6_REQUESTS: Final = "benchmarks/f0/m6-requests.json"
 CLOSING: Final = re.compile(
     r"^=*\s*(?:\d+ (?:passed|failed|error|skipped|deselected)|no tests ran)\b.* in [\d.]+s"
 )
@@ -199,6 +221,11 @@ def batch_files(queue: Path, base: str) -> dict[str, list[str]]:
     return found
 
 
+def closed_record(queue: Path, base: str) -> Path:
+    """The batch close record of batch base `base` (read by `gate_queue.py enqueue --batch`)."""
+    return queue / "batches" / f"closed-{base}.json"
+
+
 def from_environment() -> dict[str, Any]:
     name = os.environ.get(VARIABLE)
     if not name:
@@ -281,6 +308,48 @@ def scope_problems(
         else:
             problems.append(f"{path}: outside the batch's admitted, generator and retarget sets")
     return problems
+
+
+def close_problems(base: str, k: str, fixtures: Iterable[str], cwd: Path = ROOT) -> list[str]:
+    """W5-K1: the paths K changes (against its first parent) outside CLOSE_PATHS and `fixtures`,
+    and M6_REQUESTS unless its blob at K is the one at B (equal blobs are equal bytes)."""
+    done = _git("diff", "--name-only", "--no-renames", f"{k}^", k, cwd=cwd)
+    if done.returncode != 0:
+        raise BatchRefusedError(f"git diff {k[:12]}^..{k[:12]}: {done.stderr.strip()}")
+    allowed = {*CLOSE_PATHS, *fixtures}
+    problems = [
+        f"{path}: outside W5-K1's list (and no --fixture)"
+        for path in sorted(set(done.stdout.split()) - allowed)
+    ]
+    blobs = [
+        _git("rev-parse", "--verify", "-q", f"{rev}:{M6_REQUESTS}", cwd=cwd) for rev in (base, k)
+    ]
+    if any(blob.returncode != 0 for blob in blobs) or blobs[0].stdout != blobs[1].stdout:
+        problems.append(f"{M6_REQUESTS}: not byte-identical between B {base[:12]} and K {k[:12]}")
+    return problems
+
+
+def record_close(
+    queue: Path, document: Mapping[str, Any], k: str, batch_sha256: str, fixtures: Sequence[str]
+) -> Path:
+    """Write the close record of `document`'s batch at K; refused if B has one for another K."""
+    path = closed_record(queue, document["base"])
+    if path.is_file():
+        recorded = read(path)
+        if not isinstance(recorded, dict) or recorded.get("k") != k:
+            raise BatchRefusedError(f"{path}: batch base already closed at another K: {recorded}")
+    path.parent.mkdir(parents=True, exist_ok=True)
+    record = {
+        "batch": document["batch"],
+        "base": document["base"],
+        "k": k,
+        "batch_sha256": batch_sha256,
+        "fixtures": sorted(fixtures),
+    }
+    temporary = path.with_name(f".{path.name}.tmp")
+    temporary.write_text(json.dumps(record, indent=1) + "\n", encoding="utf-8")
+    os.replace(temporary, path)
+    return path
 
 
 def f0_line_problems(line: str) -> list[str]:
@@ -459,6 +528,28 @@ def command_batch_check(arguments: argparse.Namespace) -> int:
     return 0 if len(found) <= 1 else 1
 
 
+def command_close(arguments: argparse.Namespace) -> int:
+    done = _git("rev-parse", "--verify", "-q", f"{arguments.k}^{{commit}}")
+    if done.returncode != 0:
+        raise BatchRefusedError(f"--k {arguments.k}: no such commit")
+    k = done.stdout.strip()
+    name = arguments.batch or os.environ.get(VARIABLE)
+    if not name:
+        raise BatchRefusedError(f"close: no --batch and {VARIABLE} is not set")
+    document = load(Path(name), k)
+    fixtures = arguments.fixture or []
+    problems = close_problems(document["base"], k, fixtures)
+    for problem in problems:
+        print(problem)
+    where = f"K {k[:12]} of batch {document['batch']} (base {document['base'][:12]})"
+    if problems:
+        print(f"W5-K1 FAIL: {where}, {len(problems)} path(s) outside the close")
+        return 1
+    record = record_close(Path(arguments.queue_dir), document, k, digest(Path(name)), fixtures)
+    print(f"W5-K1 PASS: {where}, {len(fixtures)} fixture path(s); recorded in {record}")
+    return 0
+
+
 def command_f0(_: argparse.Namespace) -> int:
     document = from_environment()
     base, tier = document["base"], str(document["max_tier"])
@@ -562,6 +653,15 @@ def main(argv: Sequence[str] | None = None) -> int:
     batch_check = commands.add_parser("batch-check")
     batch_check.add_argument("--queue-dir", required=True)
     batch_check.add_argument("--base", required=True)
+    close = commands.add_parser("close")
+    close.add_argument("--k", required=True, help="the batch close commit K")
+    close.add_argument("--queue-dir", required=True, help="the gate queue; K is recorded there")
+    close.add_argument("--batch", help=f"the batch file (default: {VARIABLE})")
+    close.add_argument(
+        "--fixture",
+        action="append",
+        help="a file of L_B's fixtures and constants that K may change (W5-K1); repeatable",
+    )
     for name in ("f0", "registry", "coverage"):
         commands.add_parser(name)
     scope = commands.add_parser("scope")
@@ -578,6 +678,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         "validate": command_validate,
         "batch": command_batch,
         "batch-check": command_batch_check,
+        "close": command_close,
         "f0": command_f0,
         "registry": command_registry,
         "scope": command_scope,
