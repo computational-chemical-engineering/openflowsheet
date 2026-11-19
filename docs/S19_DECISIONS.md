@@ -3825,3 +3825,4 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   ruling (rights: Frank) and a per-platform lock decision; Q-2 F0 M7 fails on macOS and Windows (52 bundles NOT_RUN vs
   registered MATCH; run/replay.py:239 inspects a Linux-written bundle only): per-platform M7 reference (ADR 0067 D7).
   Both left failing. Log `docs/X07a_DECISIONS.md` on wp/X07a (D-1 to D-12, platform-limit rows).
+- 2026-11-20, gate_report before self-reset: three ALERTs (selected share 25%; 401 s; wait 36 min); action unchanged.
