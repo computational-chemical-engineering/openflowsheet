@@ -3019,3 +3019,6 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   DECISION: lane O run 5's steps -> R2, S2, C3 (brief `S19-W3-G1O-5.md`). Plan section 6 lists run 4 as R2, S2, E2,
   but run 3 took E2 and E3 and run 4 took R1, S1, C2, so each function's next step follows. Alternative: R2, S2 and
   an X step. Reversible by: a different run 5 brief before launch.
+- **2026-11-19 ~01:55 CET, job 359 `g1o4-mc` PASS 10/10; wp/S19-g1o4-mc merged into wp/S19 (a92f0290).** wp/S19 had
+  only docs since de16626f. Lane O run 5 launched (opus-engineer, brief `S19-W3-G1O-5.md`, R2, S2, C3, branch
+  `wp/S19-g1o5` from a92f0290). WO-N1 has enqueued jobs 358 (retarget) and 360 to 363.
