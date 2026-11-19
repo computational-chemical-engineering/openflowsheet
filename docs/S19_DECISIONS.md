@@ -3403,3 +3403,13 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   ofs-s19-gate-proposal-2 (rec A: adopt with the three conditions). cce steward (code_health) asked for the gap's
   details: answered (commits, names, spy shapes, the refusal lines; `--mode step` = gate.sh refactor mode).
 - 15:00: hub filed ofs-s19-verify-twins, ofs-s19-legacy-models, ofs-s19-gate-proposal-2 on the Decision Desk (action texts verbatim); INDEX: qf1 executed, mcp-descriptions-human blocked on the REVIEW.json permission. Act only on a VERIFIED card (decision_desk_verify.py).
+- **15:40, three Decision Desk cards VERIFIED** (`decision_desk_verify.py`, key 032ee0a5ae620a90, all choice A):
+  "VERIFIED ofs-s19-verify-twins: chose A Merge before 0.5; action: add ADR 0076 item I-20 (merge the verify twins of
+  gamma_phi_units.py and pr_c1.py under one verify parameter object; public names change, no shims) and run it in S19
+  before the 0.5 line starts"; "VERIFIED ofs-s19-legacy-models: chose A Refactor it in S19; action: lift the legacy
+  models/ hold: S19 runs G2's remainder, W5 batch L (the 34 column_unit bindings and the frozen unit modules) and
+  solve_region's parameter object, behaviour bitwise identical, G-END unchanged"; "VERIFIED ofs-s19-gate-proposal-2:
+  chose A Adopt with the three conditions; action: adopt proposal 2: step-cadence gates exclude the end-to-end
+  reference files, under the three conditions; merge-checks and CI keep the full suite". Signed 11:56-11:58Z.
+  Each card gets `executed` when its action is done (I-20 merged; legacy hold lifted and its work orders run;
+  proposal 2 in the gate tooling).
