@@ -1438,11 +1438,16 @@ def _a09(runs: Runs, ref: Mapping[str, Any]) -> tuple[bool, Any, Any]:
         detail=RegionResult(outcome="LINEAR_SOLVE_FAILED", state={}, attempts=()),
     )
     unchanged = executor_module._eo_recovery(
+        executor_module._PlanRun(
+            None,  # type: ignore[arg-type]
+            None,  # type: ignore[arg-type]
+            SolvePolicy(policy_id="T04", residual_tolerances={}, scales={}),
+            None,  # type: ignore[arg-type]
+            None,
+            None,
+            None,
+        ),
         stalled,
-        None,  # type: ignore[arg-type]
-        None,  # type: ignore[arg-type]
-        None,  # type: ignore[arg-type]
-        SolvePolicy(policy_id="T04", residual_tolerances={}, scales={}),
         None,  # type: ignore[arg-type]
         None,  # type: ignore[arg-type]
         {},
