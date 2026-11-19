@@ -3664,3 +3664,10 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
 - 2026-11-19, job 500 (w5n3-4u) PASS (step 456 accepted, 0.6 -> 0, 19/19): WO-N3 (496-500) fully gated. S1 review
   R-W5-N3 launched (reviewer, Opus; brief job numbers updated to 497-500). gate_report: the four ALERTs (63%; 796 s;
   0.52; wait 55 min); action unchanged. Agents running: G2 run 8 engineer, R-W5-N3 reviewer (two).
+- **2026-11-19, review R-W5-N3 (reviewer, Opus): WO-N3 merges with batch N, no fixes** (`docs/reviews/S19-R-W5-N3.md`).
+  Q1 move-only (every removed line reappears verbatim but one rewrapped docstring and a dead `g` unpack); call counts
+  and operands unchanged; the 528-state dump reaches all six refusals and every touched branch (sufficient). Q2
+  `_request_refusal` is the parent ladder token for token: first refusal kept. Q3 step 4 (0.6 debt, below the
+  playbook's ~2 points) accepted as an exception: `_root_derivatives` is the spec's concept (M01 4.6), removes a
+  closure and the `long` smell. Q4 W5-S1, S3 (M9 1/35), S4, S7 confirmed. Q5 for batch P: the pr_c1.py merge is easier
+  only if pr_c1.py is cut with the same names and boundaries; a shared module needs its own R4 ruling.
