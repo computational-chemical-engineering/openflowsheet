@@ -2,7 +2,7 @@
   "work_package": "S19",
   "commit": "e3e955206a4f06d942b274c766573eecfddf8655",
   "requirements": [],
-  "status": "implemented",
+  "status": "tested",
   "inputs": {
     "case_id": "S19 (Frank, 2026-11-14: excellent code health before further development); docs/S19_RULES.md; ADR 0076 (accepted 2026-11-14); ADR 0077; this manifest covers what merged into wp/S19 since main a283925c (the W3/W4 merge plus WITNF): W4 after I-19 (I-20, the residuals PR-1b and PR-2), W3 G1 lanes N (runs 3, 4) and O (runs 4 to 9), G3 runs 3 to 9, G2 runs 6+7, W5 WO-0, WO-1 and WO-1b, and the gate tooling (gate proposal 2), for the merge into main by Frank's Decision Desk sign-off ofs-s19-blocking-merge-main (the 0.5 blocking set: W4, 0 cycles and 0 violations, G5, G6)",
     "case_hash": "e6f4bf893228dcc652d5faff6f9a3ea84c205c0139118488e1ed706456f5682f",
@@ -51,6 +51,11 @@
     },
     {
       "cmd": "PYTHONPATH=src .venv/bin/python -m pytest -q -p no:cacheprovider tests/test_t07_conformance.py::test_the_budget_of_the_scenario_runs (run by the orchestrator at e3e95520, alone, gate queue idle; 1 passed in 31.79 s, wall 32 s, load average 3.02 at the end; log git-common-dir codehealth/runs/budget-e3e95520/test_the_budget_of_the_scenario_runs.log)",
+      "cwd": ".claude/worktrees/s19",
+      "exit_code": 0
+    },
+    {
+      "cmd": "gh run watch 44576885441 --exit-status",
       "cwd": ".claude/worktrees/s19",
       "exit_code": 0
     }
@@ -115,6 +120,12 @@
       "description": "test_t07_conformance budget_of_the_scenario_runs (the five scenario runs within 120 s), run alone with the gate queue idle",
       "result": "pass",
       "value": "1 passed in 31.79 s (wall 32 s), load average 3.02 at the end; exit code 0; observation: after the pass, interpreter shutdown printed an 'Exception ignored' message from a t07_transport_support.ThreadStream object, 'ValueError: I/O operation on closed file' (tests/t07_transport_support.py:132, unchanged since main), as at 4f9f2c3d"
+    },
+    {
+      "id": "S19.G-END-CI",
+      "description": "CI green on ubuntu-latest and ubuntu-24.04-arm at the branch commit to be merged (default-install and identity jobs green too)",
+      "result": "pass",
+      "value": "run 44576885441 at 5c48391b (e3e95520 + this manifest at status implemented) green: check (ubuntu-latest) success, check (ubuntu-24.04-arm) success, default-install success, codehealth success; 12 jobs skipped by their triggers"
     }
   ],
   "artifacts": [
