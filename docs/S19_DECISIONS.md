@@ -3832,3 +3832,16 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   lane, brief `docs/briefs/X01-WO1.md` on wp/X01). X07a-WO2 waits: CI runs 44629325836 and 44629506428 were still in
   progress at 23:33. DECISION: X01 takes the 0.5 slot before X07a-WO2 -> yes, its CI need not be read first.
   Alternative: wait for X07a's CI. Reversible by: none needed (independent lanes).
+- **2026-11-20, wp/S19-tools6 merged (56dc5b64): S19 T6, review R-W5-N-close item 4 (a), (b), (d).** Orchestrator
+  review (tools-lane precedent): (a) repeatable `scope --plans`, only added plan files, config passes the restructure
+  and interface globs; (b) no code: a generator-only step is `enqueue --mode merge-check --batch FILE --base <parent>
+  --head <step>` (docstring); (d) `w5_gate.py close --k` checks W5-K1 and records K
+  (`<queue>/batches/closed-<B>.json`), `enqueue --batch` refuses a head containing K (exit 2). Tests: 140 passed
+  (engineer and orchestrator rerun). Engineer's decision accepted: `TOOLING_TESTS` in test_s16_test_impact.py exempts
+  tests/test_s19_gate_queue.py from `test_no_test_reads_campaign_tooling` (a gate_queue.py-only change selects no
+  test step-relatively; full suite and CI run it). Reversible by reverting a5259487. Batch N's K recorded in the real
+  queue: `W5-K1 PASS: K 4178e4bcd508 of batch N (base 605d332fc062), 1 fixture path(s)` (`--fixture
+  tests/test_f1_legacy_builtins.py`: K changed it, the batch file does not list it; R-W5-N-close found K1 met). Open:
+  (c) W5-S1 text for the design lane; the batch files for L and P should list their L_B fixture paths.
+- Launched opus-engineer WO-N6 (brief `<git-common-dir>/codehealth/briefs/S19-W5-N6.md`, lane wp/S19-n6 from 56dc5b64).
+  Agents: X01-WO1, WO-N6.
