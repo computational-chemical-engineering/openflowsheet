@@ -3454,3 +3454,114 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   failing branch: thin); patch_noop 0 of 262. 4 accepted S1 steps (the common brief's cap wins over my brief's 6).
   Left: revision_flowsheet.py (G2 run 7, wp/S19-g2c from a7414044, brief `S19-W5-G2-7.md`), cascade_solve's 87-line
   duplication and `solve_cascade` toward 9.0. Reviewer R-W5-G2-6 on PASS of 450-454.
+- 2026-11-19, job 450 (g2b-1) PASS (step 426 accepted, 98.0 -> 85.3). gate_report: same four ALERTs (selected share
+  43%; selected 1160 s; ratio 0.82; wait median 24 min); action unchanged (proposal 2, measured on wp/S19-g2c gates).
+- 2026-11-19, I-20 design committed (architect, Fable, ~366k): d0c8bcac, ADR 0076 "Addendum I-20" + per-item row,
+  `docs/briefs/S19-I20-design.md`. `table_kit.Judging` (frozen, by keyword: state, components, provider, context,
+  tolerances, note; Unit's names), last positional parameter of every split-family check; the gamma-phi/PR difference
+  carried by the resolved `form` read at two places in `table.revision_checks` (new `_routing`, which lands R-W3-G5-3
+  fix 1). Removed `gamma_phi_units.revision_checks`; changed `split_checks` x2, `declared_port_checks`; added 7 names.
+  WO-1 test, WO-2/3/5 interface steps (public names: current tool pin suffices), WO-4 retarget outside gate. Predicted
+  health: gamma_phi_units 6.4 -> 9.3, pr_c1 7.7 -> 9.6, table 8.8 -> 9.6, split_checks 8.7 -> 9.2. No frozen importer.
+  **Finding F1 (test validity):** the two S11.A73 tests compare the gamma-phi form with itself (Wilson records select
+  basis `wilson-ig-v2`); default: retarget call sites only, restore the comparison after S19 by patching
+  `forms._FORMS` (open item). P1 for Frank (the seven new public names): default as written. Engineer launched
+  (brief `S19-W4-I20.md`, wp/S19-i20 from the tip).
+- 2026-11-19, job 433 (w5n2-5) PASS (step 427 accepted, 35.2 -> 11.0). gate_report: the four ALERTs as before (42%;
+  1160 s; 0.81; 25 min); action unchanged.
+- 2026-11-19, job 451 (g2b-2) PASS (step 428 accepted, 85.3 -> 42.2). gate_report: the four ALERTs (46%; 1171 s;
+  0.82; 29 min); action unchanged. G2 run 7 enqueued 455-458 (wp/S19-g2c, first lane with proposal 2).
+- 2026-11-19, I-20 delivered (opus-engineer, ~272k: over the 150k brief cap but complete): wp/S19-i20 from e7fd7065:
+  WO-1 4f851438, WO-2 375e6141 (job 459), WO-3 e9b50e66 (job 460), WO-4 9b19fe2e, WO-5 b035293a (job 461). G3 0
+  mismatches each step; at c 104 fewer describe records (2 x 26 wilson-ig-v2 calls past the guard, as design 5.5).
+  Health gamma_phi_units 6.4 -> 9.3, pr_c1 7.7 -> 9.6, table 8.8 -> 9.6, split_checks 8.7 -> 9.2; repo debt 3439.5 ->
+  3393.9; arch 0/0. F2-F4 did not trip. Open for review: step b's `MODEL_CHECKS.items()` imports verify.thermal
+  lazily. Reviewer brief `S19-R-W4-I20.md` (Opus), launched on PASS of 459-461.
+- 2026-11-19, job 434 (w5n2-6) PASS (step 429 accepted, 29.0 -> 14.0). gate_report: the four ALERTs (43%; 1186 s;
+  0.82; wait 37 min); action unchanged.
+- 2026-11-19, job 452 (g2b-3) PASS (step 430 accepted, 42.2 -> 0: `declared_rows` brain gone). gate_report: the four
+  ALERTs (46%; 1150 s; 0.80; wait 38 min); action unchanged.
+- 2026-11-19, job 453 (g2b-4, no-gain docstrings) FAIL tests: 1 failed of 6043, tests/test_s03_ours.py::
+  test_a16_the_s02_and_s06_generators_still_check timed out at 900 s (s09 a20[s02_reference.py] 717 s in the same
+  run) while G2 run 7's recorder ran s02/s06_reference.py --check in parallel: an environment failure far from a
+  docstring change. Job 454 (g2b-5) SKIPPED by the snapshot rule. Re-enqueued unchanged: 462 g2b-4r (`--rerun-of
+  431`), 463 g2b-5r. gate_report: the four ALERTs (48%; 1150 s; 0.79; 38 min). Note for briefs: an engineer's
+  behaviour recorder must not run the reference generators while gates run (or must run them with fewer workers).
+- 2026-11-19, job 435 (w5n2-7, inventory.py `plan_inventory`, debt 16.0 -> 2.0) FAIL tests: full-suite fallback
+  (inventory.py runs at collection time), W5-S6 "1 failure(s) outside L_B and the standing failures; expected
+  failures failed 5/10" (5/10 as in the passing w5n2-6); the one: tests/test_s03_ours.py::test_a16, the same 900 s
+  timeout as job 453 in the same window (G2 run 7's recorders ran s02/s06_reference.py --check, two at a time).
+  Environment failure. Jobs 436-449 SKIPPED. Re-enqueued: 464 w5n2-7r (`--rerun-of 432`), 465-476 (the 13 skipped,
+  suffix `s`, same batch file sha 49f4c9e3). Batch N's S1 review R-W5-N3 now waits for 466-469.
+  test_s03_ours.py is on proposal 2's list: lanes from 222122df skip it on selected gates.
+- 2026-11-19, job 459 (i20-1, interface `i20a-judging`) PASS (step 433 accepted, 61.6 -> 35.1, 20/20). gate_report:
+  the four ALERTs (45%; 1096 s; 0.73; 38 min); action unchanged.
+- 2026-11-19, job 455 (g2c-1, revision_flowsheet.py `_read` checks) PASS (step 434 accepted, 84.8 -> 67.4), first gate
+  of a lane with proposal 2: the tier log printed "step-gate exclusion list ...: not applied, the full suite runs"
+  (fallback: revision_flowsheet.py:467 runs at import time), 20519 passed, wall 2325 s. Condition (a) holds; no
+  saving on a fallback, as designed. gate_report: the four ALERTs (45%; 1096 s; 0.69; 38 min).
+- 2026-11-19, job 460 (i20-2, interface `i20b-split-rows`) PASS (step 435 accepted, 35.1 -> 24.7, 20/20). gate_report:
+  the four ALERTs (48%; 1041 s; 0.66; 38 min).
+  Proposal 2's first selected gate: "11 files listed, 7 of them selected and not run here" (f0_corpus_identity,
+  k05_replay, m04_wo9, t07_identity, t07_v17_reference, t08_w1, t08_w2), selected 154 files, 4002 passed, wall 757 s
+  (6 h selected median 1041-1186 s). Condition (a) holds.
+- 2026-11-19, job 461 (i20-3, interface `i20c-merge`) PASS (step 436 accepted, 15.7 -> 7.0, 20/20): all three I-20
+  steps accepted. Reviewer R-W4-I20 (Opus) launched. gate_report: four ALERTs (48%; 1035 s; 0.65; wait 58 min).
+  DECISION: I-20 merge-check now, in parallel with the review -> enqueued 477 i20-mc (e7fd7065..b035293a; wp/S19 has
+  only docs since e7fd7065). Alternative: after the review fixes (adds ~1 h of queue wait on the 0.5 path).
+  Reversible by: a fresh merge-check if a fix touches code (docstring fixes are gated no-gain and merged on the
+  helper rule).
+- 2026-11-19, G2 run 7 delivered (opus-engineer, ~167k): wp/S19-g2c from c37d2245, jobs 455 (PASS), 456-458:
+  revision_flowsheet.py 6.5 -> 8.7 (debt 84.8 -> 15.6), `_read` brain gone (helpers `_stream_capability`,
+  `_endpoint`, `_fixed_specification`, private `_TargetFrame`; `traverse` `_ready_unit`, `_started_unit`,
+  `_inlet_states`, lazy `_outlet_states`); instance-record writes stay in `_read` (rule 6); one store
+  (`conversions.append`) moved past raises that leave `_read` (argued unobservable in the commit). Behaviour: full-suite
+  recorder, 80256 records (`_read` 75426, `traverse` 4830, 21466 raising), 0 mismatches at all 4 heads (shard 02 after
+  masking a varying revision-id suffix; shard 08 as a multiset; shard 11 after a quiet base rerun). Literal multiset
+  unchanged; patch_noop 0 of 262. Its recorders loaded the machine (jobs 453, 435 timed out on test_s03_ours a16).
+  Left for a run 8: `_read` cognitive 27 / NLOC 76 (`_instance_views`), `traverse`'s `fail` closure (closures-to-class),
+  to ~9.8. Reviewer R-W5-G2-6+7 (runs 6 and 7 together) on PASS of 456-458 and 462-463.
+- **2026-11-19, review R-W4-I20 (reviewer, Opus, ~188k): merge after fixes** (f7f4e306, `docs/reviews/S19-R-W4-I20.md`).
+  Three docstring fixes (pr_c1.py:273, :354; table_kit.py module docstring), applied by the orchestrator as 10ce869d,
+  gated no-gain (i20-fix). Answers: bitwise identical by reading at every step; branch coverage at the head over G3's
+  13 files covers every touched branch except PR's dormant-feed vapour split (pr_c1.py:334, the one append -> return,
+  equivalent since every earlier rung returns) and textually unchanged refusal/dormant paths; the dropped describe
+  calls are unobservable; `MODEL_CHECKS.items()` importing verify.thermal is inert; independence kept; plans exact.
+  F1 confirmed (A73 compared f(x) with f(x)); the post-S19 test targets `_routing`'s gamma-phi rung,
+  `admissibility_checks` and pr_c1.py:334. WO-6 docs: `codehealth docs` names two drifted anchors (S11-design.md:1236,
+  V02-alpha-release-spec.md:1322): pre-S19 or I-20? checked at the merge.
+  Merge plan: merge-check 477 (b035293a) PASS + i20-fix PASS -> merge (docstring-only follow-up, helper rule).
+  WO-6 docs check (orchestrator): `codehealth docs` at e7fd7065 and at the lane head 10ce869d: 288 broken in living
+  docs both (records 1252 -> 1251): I-20 introduces 0 broken references (W4-DOCS criterion). The two anchors the
+  review names (S11-design.md:1236 `split_checks.py:443`, V02-alpha-release-spec.md:1322 `test_m02_wo8_verifier.py:339`)
+  resolve but point at moved lines: trailing living-doc item behind 0.5 (card ofs-s19-w4-docs-scope A).
+- 2026-11-19 16:16, milestone self-reset (I-20 reviewed and fixed, waiting on 477/478). gate_report: "ALERT selected
+  share 50% < 75%"; "ALERT selected gates take 1035 s > 300 s"; "ALERT selected/full time ratio 0.67 > 0.4"; "ALERT
+  queue wait median 48 min > 15 min". Action: proposal 2 in effect for lanes from 222122df; reruns from load
+  timeouts avoided by the recorder rule (S19_STATE item 2).
+- 2026-11-19, job 456 (g2c-2, revision_flowsheet.py `_read` per-specification helper) PASS (step 437 accepted, 67.4 ->
+  42.6). gate_report: "ALERT selected share 48% < 75%"; "ALERT selected gates take 1035 s > 300 s"; "ALERT
+  selected/full time ratio 0.65 > 0.4"; "ALERT queue wait median 58 min > 15 min". Action unchanged (proposal 2 for
+  lanes from 222122df; g2c falls back to the full suite by design). Reviewer brief R-W5-G2-6+7 written
+  (`<git-common-dir>/codehealth/briefs/S19-R-W5-G2-6+7.md`), launched on PASS of 457-458, 462-463.
+- 2026-11-19, job 462 (g2b-4r, no-gain docstrings, rerun of the 900 s load timeout of job 453) PASS (step 438 no-gain,
+  18/18). gate_report: the four ALERTs (50%; 1038 s; 0.66; wait 56 min); action unchanged.
+- 2026-11-19, job 457 (g2c-3, `traverse` unit selection) PASS (step 439 accepted, 42.6 -> 27.6). gate_report: the four
+  ALERTs (54%; 991 s; 0.61; wait 58 min); action unchanged.
+- 2026-11-19, job 463 (g2b-5r, `_stage_failures` rungs) PASS (step 440 accepted, 16.0 -> 11.0): lane wp/S19-g2b fully
+  gated. DECISION: launch R-W5-G2-6+7 now, with g2c-4 (job 458) still gating -> reviewer (Opus) launched. Alternative:
+  wait for 458 (~40 min). Reversible by: a 458 FAIL that changes e784f03a sends that step back for re-review.
+- **2026-11-19, review R-W5-G2-6+7 (reviewer, Opus, ~174k): lane 1 (wp/S19-g2b) merge after fixes 1, 2, 4; lane 2
+  (wp/S19-g2c) merge after fix 3 on job 458 PASS** (cce26d7b, `docs/reviews/S19-R-W5-G2-6+7.md`). Bitwise identical
+  by reading at every step; rc_check RESULT OK on column_rows (356ee519 vs lane head); Q2 reading covers both failing
+  branches of `_stage_failures` (no test needed); Q3 `conversions.append` move unobservable (local read only in the
+  final `InputMapping`, no `try`); Q4 lazy `_outlet_states` keeps order and first exception; Q5 the three masks
+  justified (shard 02: test_t07_r6_replays.py:69 `time.monotonic_ns()` suffix). Not checked: lane-2 head record files
+  were deleted, so the zero mismatch counts rest on the engineer's account.
+  Fixes 1-3 (docstrings) applied by the orchestrator: g2b 3156c4a3 (job 479 g2b-fix), g2c 04ab9edb (job 480 g2c-fix).
+  DECISION: fix 4 (`_ContributionBuilder` method order, rule 5) -> applied literally (slot + five helpers after
+  `_stage_pressure_row`; `column`, `row`, `pin` after `inlet_pin_rows`), by sonnet-implementer as a move-only commit
+  gated no-gain (g2b-fix4). Alternative: accept "append methods before phases" as a builder form. Reversible by:
+  reverting that commit.
+  Merge plan: g2b after 479 + g2b-fix4 PASS, merge-check; g2c after 458 + 480 PASS, merge-check (one helper may serve
+  both lanes).
