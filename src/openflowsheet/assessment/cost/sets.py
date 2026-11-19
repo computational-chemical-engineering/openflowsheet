@@ -372,7 +372,8 @@ def _check_floors(
 def parse_set(document: Mapping[str, Any]) -> CostSet:
     """Check a set document (§9.2.3) and return it; `CostSetError` lists every failed check.
 
-    An entry of a known form is checked by `_check_generic` or `_sslw_entry_reasons`."""
+    The top-level source is checked by `_checked_against_reasons`, an entry of a known form by
+    `_check_generic` or `_sslw_entry_reasons`."""
     set_id = str(document.get("set_id", "<no set_id>"))
     reasons: list[str] = []
     if document.get("schema") != SCHEMA:
@@ -388,13 +389,7 @@ def parse_set(document: Mapping[str, Any]) -> CostSet:
             if _is_number(dict(basis["index"].get("value") or {}).get("value"))
             else 1.0
         )
-    source = document.get("source")
-    if isinstance(source, Mapping) and "checked_against" in source:
-        checked = source["checked_against"]
-        if not isinstance(checked, Mapping) or not all(
-            isinstance(checked.get(k), str) and checked[k] for k in ("citation", "scope")
-        ):
-            reasons.append("source.checked_against needs a citation and a scope")
+    reasons += _checked_against_reasons(document.get("source"))
     entries: list[CostEntry] = []
     seen: set[str] = set()
     for position, entry in enumerate(document.get("entries", [])):
@@ -429,6 +424,19 @@ def parse_set(document: Mapping[str, Any]) -> CostSet:
     if reasons:
         raise CostSetError(set_id, reasons)
     return CostSet(set_id, MappingProxyType(dict(document)), tuple(entries))
+
+
+def _checked_against_reasons(source: Any) -> list[str]:
+    """The set's top-level `source`: its `checked_against`, when declared, is an object with a
+    `citation` and a `scope`."""
+    found: list[str] = []
+    if isinstance(source, Mapping) and "checked_against" in source:
+        checked = source["checked_against"]
+        if not isinstance(checked, Mapping) or not all(
+            isinstance(checked.get(k), str) and checked[k] for k in ("citation", "scope")
+        ):
+            found.append("source.checked_against needs a citation and a scope")
+    return found
 
 
 def _check_generic(entry: Mapping[str, Any], at: str, reasons: list[str]) -> None:
