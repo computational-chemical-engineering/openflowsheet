@@ -3387,3 +3387,4 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   0 edges, M9 keys 35. Deviation: step 4 gains 0.6 (< the playbook's ~2): its own commit, for the S1 review. Left:
   `duplication` (231 of 582 lines shared with tier 3 `pr_c1.py`; R4 keeps them apart until batch P).
   S1 review R-W5-N3 after jobs 437-442 PASS. WO-N3b launched meanwhile on the same branch from e7183050.
+- 14:05: WO-N3b (opus-engineer, brief `S19-W5-N3b.md`: forms.py `select`, `rows`; derived.py `DerivedContributor.plan`) launched on wp/S19-w5n from e7183050. Review brief `S19-R-W5-N3.md` written (S1; launch on jobs 437-442 PASS).
