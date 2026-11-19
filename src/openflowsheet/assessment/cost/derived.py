@@ -27,7 +27,7 @@ is the evaluation error `METRIC_UNDEFINED(derived.<id>)` at every state
 from __future__ import annotations
 
 from collections.abc import Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 
 from openflowsheet.assessment.linearization import Refusal
@@ -37,11 +37,12 @@ from openflowsheet.assessment.program import (
     FunctionalBuilder,
     OutputDef,
     Symbols,
+    Theta,
     register_contributor,
 )
 from openflowsheet.assessment.regimes import AdmissibilityRow, RegimeEntry
 from openflowsheet.compile.casadi_backend import TwinEvaluationError
-from openflowsheet.compile.spec import Algebra, Expr
+from openflowsheet.compile.spec import Algebra, Expr, PropertyBlock
 
 __all__ = ["Affine", "DerivedContributor"]
 
@@ -98,6 +99,9 @@ class DerivedContributor:
     name = "derived"
 
     def plan(self, ctx: BuildContext, state: Mapping[str, float]) -> ContributionPlan:
+        """The declared ratios in declaration order, each planned by `_Derivation.add` against
+        the earlier contributors' outputs (§4.7.5), and the report section of the ratios kept
+        (`_undefined`). No `derived` block: an empty plan."""
         declared = list(ctx.spec.document.get("derived", ()))
         if not declared:
             return ContributionPlan()
@@ -106,80 +110,111 @@ class DerivedContributor:
         unavailable = {n: why for plan in ctx.earlier.values() for n, why in plan.unavailable}
         theta = tuple(t for plan in ctx.earlier.values() for t in plan.theta)
         blocks = tuple(b for plan in ctx.earlier.values() for b in plan.blocks)
-        outputs: list[OutputDef] = []
-        entries: list[RegimeEntry] = []
-        refusals: list[Refusal] = []
-        withheld: dict[str, str] = {}
-        ratios: dict[str, tuple[Affine, Affine | None]] = {}
-        y: dict[str, float] | None = None
-        failed: str | None = None
+        run = _Derivation(ctx, state, earlier, known, unavailable, theta, blocks)
         for doc in declared:
-            output_id = PREFIX + str(doc["id"])
-            if output_id in ratios or output_id in withheld:
-                refusals.append(Refusal("ASSESSMENT_OUTPUT_UNKNOWN", output_id, "declared twice"))
-                continue
-            numerator = Affine.of(doc["numerator"])
-            given = Affine.of(doc.get("denominator"))
-            denominator = None if given.zero else given
-            refs = [n for n, _ in numerator.terms]
-            refs += [n for n, _ in denominator.terms] if denominator is not None else []
-            bad = sorted({r for r in refs if r not in known and r not in unavailable})
-            if bad:
-                refusals.extend(
-                    Refusal(
-                        "ASSESSMENT_OUTPUT_UNKNOWN",
-                        r,
-                        f"{output_id} may reference only earlier outputs (§4.7.5)",
-                    )
-                    for r in bad
-                )
-                withheld[output_id] = f"references unknown outputs {bad}"
-                unavailable[output_id] = withheld[output_id]
-                continue
-            missing = sorted({r for r in refs if r in unavailable})
-            if missing:
-                withheld[output_id] = f"depends on {missing}"
-                unavailable[output_id] = withheld[output_id]
-                continue
-            if denominator is not None:
-                if y is None and failed is None:
-                    try:
-                        y = ctx.evaluate(state, earlier, theta, blocks)
-                    except TwinEvaluationError as error:
-                        failed = str(error)
-                if y is None:
-                    refusals.append(Refusal("ASSESSMENT_EVALUATION_FAILED", output_id, str(failed)))
-                    withheld[output_id] = "earlier outputs not evaluable at the planning state"
-                    unavailable[output_id] = withheld[output_id]
-                    continue
-                d = denominator.value(y)
-                if not d > 0.0:
-                    refusals.append(
-                        Refusal("METRIC_UNDEFINED", output_id, f"denominator {d!r} ≤ 0")
-                    )
-                    withheld[output_id] = "non-positive denominator"
-                    unavailable[output_id] = withheld[output_id]
-                    continue
-                entries.append(_domain_entry(output_id, denominator, d))
-            if y is not None:
-                n = numerator.value(y)
-                y[output_id] = n if denominator is None else n / denominator.value(y)
-            outputs.append(OutputDef(output_id, str(doc["unit"]), _ratio(numerator, denominator)))
-            earlier.append(outputs[-1])
-            known.add(output_id)
-            ratios[output_id] = (numerator, denominator)
+            run.add(doc)
 
         def section(values: Mapping[str, float]) -> dict[str, Any]:
-            undefined, withheld_at = _undefined(ratios, values)
+            undefined, withheld_at = _undefined(run.ratios, values)
             return {"undefined": undefined, "withheld": withheld_at}
 
         return ContributionPlan(
-            outputs=tuple(outputs),
-            regime_entries=tuple(entries),
-            refusals=tuple(refusals),
+            outputs=tuple(run.outputs),
+            regime_entries=tuple(run.entries),
+            refusals=tuple(run.refusals),
             section=section,
-            unavailable=tuple(withheld.items()),
+            unavailable=tuple(run.withheld.items()),
         )
+
+
+@dataclass
+class _Derivation:
+    """`DerivedContributor.plan`'s run. Frame: the build context, the planning state, the
+    earlier outputs (`derived` outputs appended as they are kept), their ids (`known`), the
+    outputs unavailable so far with why, and the earlier plans' theta and blocks. State: the
+    outputs, regime entries and refusals of this plan, the outputs it withholds with why, the
+    ratios kept, `y` the outputs' values at the planning state once evaluated (lazily, by the
+    first ratio with a denominator) and `failed` why they could not be."""
+
+    ctx: BuildContext
+    state: Mapping[str, float]
+    earlier: list[OutputDef]
+    known: set[str]
+    unavailable: dict[str, str]
+    theta: tuple[Theta, ...]
+    blocks: tuple[tuple[PropertyBlock, tuple[str, ...]], ...]
+    outputs: list[OutputDef] = field(default_factory=list)
+    entries: list[RegimeEntry] = field(default_factory=list)
+    refusals: list[Refusal] = field(default_factory=list)
+    withheld: dict[str, str] = field(default_factory=dict)
+    ratios: dict[str, tuple[Affine, Affine | None]] = field(default_factory=dict)
+    y: dict[str, float] | None = None
+    failed: str | None = None
+
+    def add(self, doc: Mapping[str, Any]) -> None:
+        """Plan one declared ratio `doc`: refused `ASSESSMENT_OUTPUT_UNKNOWN` when declared
+        twice; refused per term and withheld when a term names no earlier output; withheld when
+        a term is unavailable; with a denominator, refused `ASSESSMENT_EVALUATION_FAILED` and
+        withheld when the earlier outputs do not evaluate at the planning state, refused
+        `METRIC_UNDEFINED` and withheld when the denominator there is ≤ 0, else its `domain`
+        entry appended. A kept ratio's value joins `y` (once evaluated), and its output joins
+        the outputs, the earlier outputs, `known` and the ratios."""
+        output_id = PREFIX + str(doc["id"])
+        if output_id in self.ratios or output_id in self.withheld:
+            self.refusals.append(Refusal("ASSESSMENT_OUTPUT_UNKNOWN", output_id, "declared twice"))
+            return
+        numerator = Affine.of(doc["numerator"])
+        given = Affine.of(doc.get("denominator"))
+        denominator = None if given.zero else given
+        refs = [n for n, _ in numerator.terms]
+        refs += [n for n, _ in denominator.terms] if denominator is not None else []
+        bad = sorted({r for r in refs if r not in self.known and r not in self.unavailable})
+        if bad:
+            self.refusals.extend(
+                Refusal(
+                    "ASSESSMENT_OUTPUT_UNKNOWN",
+                    r,
+                    f"{output_id} may reference only earlier outputs (§4.7.5)",
+                )
+                for r in bad
+            )
+            self.withheld[output_id] = f"references unknown outputs {bad}"
+            self.unavailable[output_id] = self.withheld[output_id]
+            return
+        missing = sorted({r for r in refs if r in self.unavailable})
+        if missing:
+            self.withheld[output_id] = f"depends on {missing}"
+            self.unavailable[output_id] = self.withheld[output_id]
+            return
+        if denominator is not None:
+            if self.y is None and self.failed is None:
+                try:
+                    self.y = self.ctx.evaluate(self.state, self.earlier, self.theta, self.blocks)
+                except TwinEvaluationError as error:
+                    self.failed = str(error)
+            if self.y is None:
+                self.refusals.append(
+                    Refusal("ASSESSMENT_EVALUATION_FAILED", output_id, str(self.failed))
+                )
+                self.withheld[output_id] = "earlier outputs not evaluable at the planning state"
+                self.unavailable[output_id] = self.withheld[output_id]
+                return
+            d = denominator.value(self.y)
+            if not d > 0.0:
+                self.refusals.append(
+                    Refusal("METRIC_UNDEFINED", output_id, f"denominator {d!r} ≤ 0")
+                )
+                self.withheld[output_id] = "non-positive denominator"
+                self.unavailable[output_id] = self.withheld[output_id]
+                return
+            self.entries.append(_domain_entry(output_id, denominator, d))
+        if self.y is not None:
+            n = numerator.value(self.y)
+            self.y[output_id] = n if denominator is None else n / denominator.value(self.y)
+        self.outputs.append(OutputDef(output_id, str(doc["unit"]), _ratio(numerator, denominator)))
+        self.earlier.append(self.outputs[-1])
+        self.known.add(output_id)
+        self.ratios[output_id] = (numerator, denominator)
 
 
 def _domain_entry(output_id: str, denominator: Affine, d: float) -> RegimeEntry:
