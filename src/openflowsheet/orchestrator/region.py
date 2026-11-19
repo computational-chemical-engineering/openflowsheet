@@ -74,6 +74,7 @@ lifted splits (labels, the opening fixed point, dormancy outlets, `_LiftedOps`) 
 from __future__ import annotations
 
 from collections.abc import Callable, Mapping, Sequence
+from dataclasses import dataclass, field
 from typing import Any, Literal
 
 import numpy as np
@@ -368,13 +369,7 @@ def _solve_region(
             )
         region_mass = resolved
 
-    def new_context() -> EvaluationContext:
-        # T03 §4.2: every attempt constructs its own context objects (field-equal on this path).
-        return EvaluationContext(
-            model_version=identity[0], constants_sha256=identity[1], phase_signature=None
-        )
-
-    context = new_context()
+    context = _new_context(identity)
     scaling = Scaling.from_spec(spec)
     # S11 §10.2 (R-822): a split is active iff its owner is a unit of the region.
     owners: Mapping[str, str] = split_owners or {}
@@ -404,34 +399,39 @@ def _solve_region(
     # reference — the items of the start as supplied, before any projection.
     order = _opening_order(active_splits, dormancy, region.units, owners) if v2 else ()
     supplied_items = frozenset(item for item, _ in _items(dormancy, current))
-    projections: list[str] = []
-    regimes: dict[str, Regime] = {}
+    solve = _RegionSolve(
+        spec=spec,
+        splits=splits,
+        identity=identity,
+        current=current,
+        source=item0_opening_source if recovery is None else "eo_recovery_start",
+    )
     if recovery is not None:
         # T04 §5.3: the failed solve's item-0 opening, projected and pinned already.
-        current = {name: float(recovery.state[name]) for name in spec.variable_ids}
-        regimes = {split.unit: recovery.regimes[split.unit] for split in active_splits}
+        solve.current = {name: float(recovery.state[name]) for name in spec.variable_ids}
+        solve.regimes = {split.unit: recovery.regimes[split.unit] for split in active_splits}
     # §6.2: every lifted split of x⁰ is the kernel's; a supplied split that disagrees is
     # overwritten and the overwrite recorded, which is what keeps EO-TRIV off its trivial root.
     for split in active_splits if recovery is None else ():
         regime: Regime
-        if v2 and _dormant_feed(split, current):
+        if v2 and _dormant_feed(split, solve.current):
             # T05b spec §7.1: selected by exact dormancy, for either closure type; §7.4: its
             # lifted flows are pinned at `+0.0` (an overwritten supplied split is recorded).
             regime, kernel = "ZERO_FLOW", _zero_flow_answer(split).values
-        elif split.unit in ph_units and _branch_found(split, current) != "ZERO_FLOW":
+        elif split.unit in ph_units and _branch_found(split, solve.current) != "ZERO_FLOW":
             # §6.4 (ADR 0012 D4 (b)): a PH-type split is not re-projected; it opens with the
             # traversal closure's split (D5), in the regime of its branch. An empty split of a
             # flowing feed carries no enthalpy, so it leaves `ZERO_FLOW` by the TP flash below
             # (§7.4), projected as a TP-type split is.
-            regimes[split.unit] = _branch_found(split, current)
+            solve.regimes[split.unit] = _branch_found(split, solve.current)
             continue
         else:
-            regime, kernel = _kernel(provider, context, split, current)
+            regime, kernel = _kernel(provider, context, split, solve.current)
         if any(
-            abs(current[name] - value) > 1e-12 * max(1.0, abs(value))
+            abs(solve.current[name] - value) > 1e-12 * max(1.0, abs(value))
             for name, value in kernel.items()
         ):
-            projections.append(split.stream)
+            solve.projections.append(split.stream)
             # ADR 0009 D3's grammar, on existing kinds (K03 A08's precedent for a projected
             # guess): the candidate names what was supplied and what the kernel says.
             run.record(
@@ -443,10 +443,10 @@ def _solve_region(
                 residual_inf_unscaled=float("nan"),
                 merit=float("nan"),
                 counters=Counters(),
-                message=f"projected({split.stream}, {_branch(split, current, v2)}, {regime})",
+                message=f"projected({split.stream}, {_branch(split, solve.current, v2)}, {regime})",
             )
-        current.update(kernel)
-        regimes[split.unit] = regime
+        solve.current.update(kernel)
+        solve.regimes[split.unit] = regime
     if order and recovery is None:
         # T05b spec §7.8 (ii) as amended (Q-S9, R-065; review M1): after the start rules, one fixed
         # point over the lifted splits' `ZERO_FLOW` membership and the items, so that a projection
@@ -454,9 +454,9 @@ def _solve_region(
         # in any declaration order. Each split change is recorded as a projection (§6.4); an item
         # change by the signature alone. (A recovery start is a settled attempt-0 opening.)
         try:
-            current, regimes, _, changes = _settle(
-                current,
-                regimes,
+            solve.current, solve.regimes, _, changes = _settle(
+                solve.current,
+                solve.regimes,
                 order=order,
                 reference=supplied_items,
                 leave=lambda split, at: _contract_kernel(
@@ -475,14 +475,14 @@ def _solve_region(
             refusal = opening_not_settled(unsettled)
             return RegionResult(
                 outcome=refusal.outcome,
-                state=dict(current),
+                state=dict(solve.current),
                 attempts=(),
-                projections=tuple(projections),
+                projections=tuple(solve.projections),
                 message=refusal.message,
             )
         for change in changes:
-            if change.split.stream not in projections:
-                projections.append(change.split.stream)
+            if change.split.stream not in solve.projections:
+                solve.projections.append(change.split.stream)
             run.record(
                 kind="initializer_candidate",
                 attempt=0,
@@ -494,7 +494,7 @@ def _solve_region(
                 counters=Counters(),
                 message=f"projected({change.split.stream}, {change.branch}, {change.regime})",
             )
-    if projections:
+    if solve.projections:
         run.record(
             kind="initializer_accepted",
             attempt=0,
@@ -504,7 +504,7 @@ def _solve_region(
             residual_inf_unscaled=float("nan"),
             merit=float("nan"),
             counters=Counters(),
-            message=f"the start with {len(projections)} split(s) projected onto the kernel's",
+            message=f"the start with {len(solve.projections)} split(s) projected onto the kernel's",
         )
     if v2 and recovery is None and band_routes:
         # §6.5 (ADR 0012 D10 F1): the traversal's band routes, after §6.2's projection records,
@@ -533,84 +533,42 @@ def _solve_region(
             message=f"the start with {len(band_routes)} closure(s) from the band route",
         )
 
-    counters = Counters()
-    used: list[AttemptSignature] = []
-    attempts: list[RegionAttempt] = []
-    provenance: list[dict[str, Any]] = []
-    checkpoint: Checkpoint | None = None
-    contexts: list[AttemptContext] = []
-    message = "initial"
-    source: OpeningSource = item0_opening_source if recovery is None else "eo_recovery_start"
-    trial: Candidate | None = None
-    opened_at: tuple[Mapping[str, float], Mapping[str, Regime]] | None = None
-    budget: str | None = None
-    homotopy: HomotopyRecord | None = None
-
-    def closed(
-        outcome: SolveOutcome, text: str = "", system: AttemptSystem | None = None
-    ) -> RegionResult:
-        fingerprint = None
-        if outcome == "CONVERGED":
-            fingerprint = root_fingerprint(
-                model_version=identity[0],
-                constants_sha256=identity[1],
-                variable_ids=spec.variable_ids,
-                # Every lifted split of the declaration, from the state (review M1): a root's
-                # branch is where it is, not which units this region happened to hold.
-                branch_found=branch_found(splits, current),
-                full_state_sha256=state_sha256(current, spec.variable_ids),
-            )
-        return RegionResult(
-            outcome=outcome,
-            state=dict(current),
-            attempts=tuple(attempts),
-            projections=tuple(projections),
-            counters=counters,
-            message=text,
-            checkpoint=checkpoint,
-            contexts=tuple(contexts),
-            branch_provenance=tuple(provenance),
-            root_fingerprint=fingerprint,
-            opening=opened_at,
-            budget=budget if outcome == "BUDGET_EXHAUSTED" else None,
-            homotopy=homotopy,
-            final_system=system,
-        )
-
     for attempt_index in range(policy.max_attempts):
         if v2:
             # T05b spec §7.1: `ZERO_FLOW` exactly when the feed is dormant. Every opening — attempt
             # 0's start and every restart — ends in §7.8 (ii)'s fixed point (`_settle`), which makes
             # it so; this guard stays behind it (Q-S9) and a disagreement here is a defect.
             for split in active_splits:
-                if _dormant_feed(split, current) != (regimes[split.unit] == "ZERO_FLOW"):
+                if _dormant_feed(split, solve.current) != (
+                    solve.regimes[split.unit] == "ZERO_FLOW"
+                ):
                     raise RuntimeError(
                         f"defect: {split.unit} opens attempt {attempt_index} in "
-                        f"{regimes[split.unit]} with its feed "
-                        f"{'dormant' if _dormant_feed(split, current) else 'flowing'}"
+                        f"{solve.regimes[split.unit]} with its feed "
+                        f"{'dormant' if _dormant_feed(split, solve.current) else 'flowing'}"
                     )
         # T05b spec §7.8 (i)–(ii): the lifted regimes, then the items of the opening state.
-        items = _items(dormancy, current)
+        items = _items(dormancy, solve.current)
         running = [form for form in dormancy if (form.item, "ZERO_FLOW") in items]
-        opening = (*((split.unit, regimes[split.unit]) for split in active_splits), *items)
-        used.append(opening)
+        opening = (*((split.unit, solve.regimes[split.unit]) for split in active_splits), *items)
+        solve.used.append(opening)
         pinned = {
             name
             for split in active_splits
-            for name in _pinned(split, regimes[split.unit], forms, vapour)
+            for name in _pinned(split, solve.regimes[split.unit], forms, vapour)
         }
         dropped = {
             name
             for split in active_splits
-            for name in _dropped(split, regimes[split.unit], forms, vapour)
+            for name in _dropped(split, solve.regimes[split.unit], forms, vapour)
         } | {form.swapped for form in running}
-        labels = (*_labels(active_splits, regimes, forms), *(form.label for form in running))
+        labels = (*_labels(active_splits, solve.regimes, forms), *(form.label for form in running))
         free = tuple(name for name in region.variable_ids if name not in pinned)
         rows = tuple(name for name in region.row_ids if name not in dropped)
         # T05b spec §7.2: the attempt's system is its compiled rows, then its label rows.
         attempt_rows = (*rows, *(label for label, _, _ in labels))
         if len(free) != len(attempt_rows):
-            return closed(
+            return solve.closed(
                 "UNSUPPORTED_RANK_STRUCTURE",
                 f"the region with signature {opening} is {len(attempt_rows)} x {len(free)}, "
                 "not square",
@@ -621,19 +579,19 @@ def _solve_region(
             # the certificate reported, before its pinned columns are set. The identity pair is
             # the requirement's: R5 and R8 established it (`revision_continuation`).
             refused = _external_opening(
-                current,
+                solve.current,
                 opening,
                 identity,
                 free,
                 active_splits,
-                regimes,
+                solve.regimes,
                 forms,
                 vapour,
                 spec,
                 reported=recovery.reported_signature,
             )
             if refused is not None:
-                return closed(
+                return solve.closed(
                     "INITIALIZATION_FAILED",
                     f"{REVISION_CONTINUATION_REJECTED}(opening:{refused.check}:{refused.subject})",
                 )
@@ -641,10 +599,18 @@ def _solve_region(
             # ADR 0024 D3: an external start is checked, not silently pinned — T03 §5.1 on the
             # opening this attempt would take, in place of `CHECKPOINT_INCOMPATIBLE`.
             refused = _external_opening(
-                current, opening, identity, free, active_splits, regimes, forms, vapour, spec
+                solve.current,
+                opening,
+                identity,
+                free,
+                active_splits,
+                solve.regimes,
+                forms,
+                vapour,
+                spec,
             )
             if refused is not None:
-                return closed(
+                return solve.closed(
                     "INITIALIZATION_FAILED", f"{WARM_START_REJECTED}(opening:{refused.check})"
                 )
             run.record(
@@ -659,21 +625,21 @@ def _solve_region(
                 message=WARM_START_SOURCE,
             )
         for name in pinned:
-            current[name] = 0.0
+            solve.current[name] = 0.0
         if attempt_index == 0:
-            opened_at = (dict(current), dict(regimes))
+            solve.opened_at = (dict(solve.current), dict(solve.regimes))
         # T04 §4.5: a recovery's attempt 0 is the homotopy; every later attempt is Newton's.
         # T04 §7.1: otherwise the policy's EO core, PTC for every attempt when it says so.
         continuing = recovery is not None and attempt_index == 0
         core: AttemptCore = (
             "homotopy" if continuing else "ptc" if region_mass is not None else "newton"
         )
-        attempt_context = new_context()
+        attempt_context = _new_context(identity)
         # T05b spec §6.2 as amended ("carrying"): the PH closures this attempt's screen asks,
         # reused by its openings at the same state.
         memo: ClosureMemo = {}
-        x0 = np.array([current[name] for name in free], dtype=np.float64)
-        contexts.append(
+        x0 = np.array([solve.current[name] for name in free], dtype=np.float64)
+        solve.contexts.append(
             AttemptContext(
                 attempt_index=attempt_index,
                 signature=opening,
@@ -684,9 +650,9 @@ def _solve_region(
                     **{name: scaling.row[name] for name in rows},
                     **{label: REGISTERED_NOMINALS[LABEL_KIND] for label, _, _ in labels},
                 },
-                counters_at_open=counters,
+                counters_at_open=solve.counters,
                 opened_reason="initial" if attempt_index == 0 else "phase_update",
-                opened_from=checkpoint,
+                opened_from=solve.checkpoint,
                 active_phases=opening,
                 jacobian_pattern=(
                     jacobian_pattern((*structure, *_label_entries(labels)), attempt_rows, free)
@@ -710,9 +676,9 @@ def _solve_region(
             state_sha256=opening_hash,
             residual_inf_unscaled=float("nan"),
             merit=float("nan"),
-            counters=counters,
-            alpha=trial.alpha if trial is not None else None,
-            message=message,
+            counters=solve.counters,
+            alpha=solve.trial.alpha if solve.trial is not None else None,
+            message=solve.message,
         )
         wall = WallObserver(policy)
         record: HomotopyRecord | None = None
@@ -725,25 +691,25 @@ def _solve_region(
                 compile_level=compile_level,
                 spec=spec,
                 scaling=scaling,
-                opening_state=dict(current),
+                opening_state=dict(solve.current),
                 free=free,
                 rows=rows,
                 splits=active_splits,
-                regimes=regimes,
+                regimes=solve.regimes,
                 provider=provider,
                 policy=policy,
                 attempt_context=attempt_context,
                 trace=run,
                 attempt_index=attempt_index,
                 signature=opening,
-                counters=counters,
+                counters=solve.counters,
                 x0=x0,
                 ph_units=ph_units,
                 v2=v2,
                 labels=labels,
                 dormancy=dormancy,
             )
-            homotopy = record
+            solve.homotopy = record
         elif region_mass is not None:
             last, ptc_record = _ptc_attempt(
                 temperatures=temperatures,
@@ -752,18 +718,18 @@ def _solve_region(
                 compiled=compiled,
                 spec=spec,
                 scaling=scaling,
-                base=current,
+                base=solve.current,
                 free=free,
                 rows=rows,
                 splits=active_splits,
-                regimes=regimes,
+                regimes=solve.regimes,
                 provider=provider,
                 policy=policy,
                 attempt_context=attempt_context,
                 trace=run,
                 attempt_index=attempt_index,
                 signature=opening,
-                counters=counters,
+                counters=solve.counters,
                 wall=wall,
                 x0=x0,
                 ph_units=ph_units,
@@ -774,7 +740,7 @@ def _solve_region(
         else:
             screen = _attempt_screen(
                 splits=active_splits,
-                regimes=regimes,
+                regimes=solve.regimes,
                 provider=provider,
                 context=attempt_context,
                 epsilon=policy.admissibility_epsilon,
@@ -789,7 +755,7 @@ def _solve_region(
                 attempt_context,
                 spec,
                 scaling,
-                current,
+                solve.current,
                 free,
                 rows,
                 screen,
@@ -803,7 +769,7 @@ def _solve_region(
                 trace=run,
                 signature=opening,
                 attempt=attempt_index,
-                counters=counters,
+                counters=solve.counters,
                 observer=wall,
                 # T05b spec §7.8 (iii) (Q-S4 (6)): every trial of a v2 attempt in a region with a
                 # dormancy-form outlet is screened, an empty signature included; `dormancy` is
@@ -813,16 +779,16 @@ def _solve_region(
                 # (`_homotopy`) or the PTC core.
                 refinement=_refinement(policy, spec, free),
             )
-        counters = last.counters
+        solve.counters = last.counters
         for position, name in enumerate(free):
-            current[name] = float(last.x[position])
+            solve.current[name] = float(last.x[position])
         for name in pinned:
-            current[name] = 0.0
-        ended = dict(current)
+            solve.current[name] = 0.0
+        ended = dict(solve.current)
 
         ops = _LiftedOps(
             splits=active_splits,
-            regimes=regimes,
+            regimes=solve.regimes,
             end_state=ended,
             free=free,
             provider=provider,
@@ -849,14 +815,14 @@ def _solve_region(
                 wall=wall,
                 ops=ops,
                 policy=policy,
-                used=used,
+                used=solve.used,
             )
         except BudgetExhaustedError as exhausted:
             # The closure's kernel calls (an end-state verdict, a restart point) are provider calls
             # outside the compiled residual (review S1). A refusal there closes this attempt: its
             # end state, checkpoint and provenance are kept, never discarded with the loop.
             decision = Decision("terminal", "BUDGET_EXHAUSTED", str(exhausted))
-            budget = "property_calls"
+            solve.budget = "property_calls"
         except _KernelRefusedError as refused:
             decision = Decision("terminal", "EVALUATION_ERROR", str(refused))
         except OpeningNotSettledError as unsettled:
@@ -870,7 +836,7 @@ def _solve_region(
                 *(
                     _form(split, forms).swapped
                     for split in active_splits
-                    if regimes[split.unit] == "ZERO_FLOW" and _form(split, forms).swapped
+                    if solve.regimes[split.unit] == "ZERO_FLOW" and _form(split, forms).swapped
                 ),
                 *(form.swapped for form in running),
             )
@@ -879,9 +845,9 @@ def _solve_region(
                     _swapped_row_test(compiled, attempt_context, spec, ended, swapped) or decision
                 )
         outcome: SolveOutcome = decision.outcome
-        if outcome == "BUDGET_EXHAUSTED" and budget is None:
-            budget = last.budget
-        attempts.append(
+        if outcome == "BUDGET_EXHAUSTED" and solve.budget is None:
+            solve.budget = last.budget
+        solve.attempts.append(
             RegionAttempt(
                 opening,
                 outcome,
@@ -896,7 +862,7 @@ def _solve_region(
         # K03 §9: a checkpoint for an attempt that accepted a step or converged. Only an attempt
         # the region *kept* is a candidate root; one converged on an inadmissible branch is not.
         if last.accepted_any or last.converged:
-            checkpoint = Checkpoint(
+            solve.checkpoint = Checkpoint(
                 checkpoint_id=f"region-attempt-{attempt_index}",
                 attempt_index=attempt_index,
                 iteration=last.iterations,
@@ -912,18 +878,18 @@ def _solve_region(
                     fraction_string(record.lambda_reached) if record is not None else None
                 ),
             )
-        provenance.append(
+        solve.provenance.append(
             provenance_item(
                 attempt=attempt_index,
                 signature=opening,
                 core=core,
-                source=source,
+                source=solve.source,
                 initializer_source=(
                     (recovery.initializer_source if recovery is not None else initializer_source)
                     if attempt_index == 0
                     else None
                 ),
-                trial=trial,
+                trial=solve.trial,
                 opening_state_sha256=opening_hash,
                 result=last,
                 decision=decision,
@@ -935,28 +901,99 @@ def _solve_region(
             # rows, and every other column at the value it held (the end state's: the attempt
             # wrote only its free columns, and re-pinned its pinned ones at +0.0).
             kept = set(free)
-            return closed(
+            return solve.closed(
                 "CONVERGED",
                 system=AttemptSystem(
                     rows=tuple(rows),
                     free=tuple(free),
-                    held={name: current[name] for name in spec.variable_ids if name not in kept},
+                    held={
+                        name: solve.current[name] for name in spec.variable_ids if name not in kept
+                    },
                     labels=tuple(labels),
                     signature=opening,
                 ),
             )
         if decision.kind == "terminal":
-            return closed(decision.outcome, decision.message)
+            return solve.closed(decision.outcome, decision.message)
         conversion = decision.conversion
         assert conversion is not None
         opened, new_regimes = conversion.opening
-        current = dict(opened)
-        regimes = dict(new_regimes)
-        message = decision.message
-        source = conversion.source
-        trial = conversion.trial
+        solve.current = dict(opened)
+        solve.regimes = dict(new_regimes)
+        solve.message = decision.message
+        solve.source = conversion.source
+        solve.trial = conversion.trial
 
     raise AssertionError("unreachable: the restart gate ends the solve at max_attempts")
+
+
+@dataclass
+class _RegionSolve:
+    """One `_solve_region` call: what its closing reads, and the ledger its attempts hand on.
+
+    Frame: `spec`, `splits` (every lifted split of the declaration, for the root's branch) and
+    `identity`. State: the opening state `current` and `regimes`, the start's `projections`, and the
+    ledger (counters, used signatures, attempts, provenance, checkpoint, contexts, the next
+    attempt's opening message, source and trial, attempt 0's opening, the budget kind and the
+    homotopy record).
+    """
+
+    spec: ProblemSpec
+    splits: Sequence[LiftedSplit]
+    identity: tuple[str, str]
+    current: dict[str, float]
+    source: OpeningSource
+    projections: list[str] = field(default_factory=list)
+    regimes: dict[str, Regime] = field(default_factory=dict)
+    counters: Counters = field(default_factory=Counters)
+    used: list[AttemptSignature] = field(default_factory=list)
+    attempts: list[RegionAttempt] = field(default_factory=list)
+    provenance: list[dict[str, Any]] = field(default_factory=list)
+    checkpoint: Checkpoint | None = None
+    contexts: list[AttemptContext] = field(default_factory=list)
+    message: str = "initial"
+    trial: Candidate | None = None
+    opened_at: tuple[Mapping[str, float], Mapping[str, Regime]] | None = None
+    budget: str | None = None
+    homotopy: HomotopyRecord | None = None
+
+    def closed(
+        self, outcome: SolveOutcome, text: str = "", system: AttemptSystem | None = None
+    ) -> RegionResult:
+        fingerprint = None
+        if outcome == "CONVERGED":
+            fingerprint = root_fingerprint(
+                model_version=self.identity[0],
+                constants_sha256=self.identity[1],
+                variable_ids=self.spec.variable_ids,
+                # Every lifted split of the declaration, from the state (review M1): a root's
+                # branch is where it is, not which units this region happened to hold.
+                branch_found=branch_found(self.splits, self.current),
+                full_state_sha256=state_sha256(self.current, self.spec.variable_ids),
+            )
+        return RegionResult(
+            outcome=outcome,
+            state=dict(self.current),
+            attempts=tuple(self.attempts),
+            projections=tuple(self.projections),
+            counters=self.counters,
+            message=text,
+            checkpoint=self.checkpoint,
+            contexts=tuple(self.contexts),
+            branch_provenance=tuple(self.provenance),
+            root_fingerprint=fingerprint,
+            opening=self.opened_at,
+            budget=self.budget if outcome == "BUDGET_EXHAUSTED" else None,
+            homotopy=self.homotopy,
+            final_system=system,
+        )
+
+
+def _new_context(identity: tuple[str, str]) -> EvaluationContext:
+    # T03 §4.2: every attempt constructs its own context objects (field-equal on this path).
+    return EvaluationContext(
+        model_version=identity[0], constants_sha256=identity[1], phase_signature=None
+    )
 
 
 def _swapped_row_test(
