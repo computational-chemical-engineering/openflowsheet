@@ -649,7 +649,8 @@ def select(
     smallest `n ≥ n₀` with `S(n) ≤ n·S_max`, checking its domain at every `n` evaluated.
     Inputs: below `min` the floor where declared, else refused; above `max` refused; refused
     values are extrapolated on the nearest piece when `allow_extrapolation`. A non-finite or
-    non-positive quantity is refused. The inputs' pieces are `_input_pieces`'."""
+    non-positive quantity is refused. The size regime is `_size_regime`'s, the inputs' pieces
+    `_input_pieces`'."""
     guard = form.domain(e, x, units)
     if guard is not None:
         return guard
@@ -657,6 +658,46 @@ def select(
         k: float(v) if isinstance(v, int) else v
         for k, v in form.quantities(e, x, _FLOAT, units).items()
     }
+    sized = _size_regime(_Item(form, e, x, allow_extrapolation, units), q)
+    if isinstance(sized, OutOfRange):
+        return sized
+    held_pieces = _input_pieces(form, e, q, allow_extrapolation)
+    if isinstance(held_pieces, OutOfRange):
+        return held_pieces
+    return Selection(
+        sized.size,
+        sized.n,
+        MappingProxyType(held_pieces.pieces),
+        MappingProxyType({**sized.extrapolated, **held_pieces.extrapolated}),
+    )
+
+
+class _Item(NamedTuple):
+    """One item as `select` receives it: its form and resolved entry, its float state `x`, its
+    `allow_extrapolation` and `units` (the machine's N for a drive)."""
+
+    form: Form
+    e: ResolvedEntry
+    x: Inputs
+    allow_extrapolation: bool
+    units: int
+
+
+class _Size(NamedTuple):
+    """The size regime `_size_regime` holds: `size` and `n` as in `Selection`, and the size
+    range when extrapolated."""
+
+    size: str | None
+    n: int
+    extrapolated: dict[str, tuple[float, float, float]]
+
+
+def _size_regime(item: _Item, q: Mapping[str, Expr]) -> _Size | OutOfRange:
+    """The size regime of `item` at its float quantities `q` (§4.3.2 rule 4, §10.4.4), as
+    `select`'s docstring states it; for a form without a size range, `_Size(None, 1, {})` once
+    every quantity is finite and positive. Refusals: a non-finite or non-positive quantity, a
+    domain guard at a searched `n`, a size above `S_max` without `allow_extrapolation`."""
+    form, e, x, allow_extrapolation, units = item
     extrapolated: dict[str, tuple[float, float, float]] = {}
     size_name = form.size_name(e)
     size: str | None = None
@@ -721,11 +762,7 @@ def select(
                     math.inf,
                     f"{name} is not a finite positive value: {value!r}",
                 )
-    held_pieces = _input_pieces(form, e, q, allow_extrapolation)
-    if isinstance(held_pieces, OutOfRange):
-        return held_pieces
-    extrapolated.update(held_pieces.extrapolated)
-    return Selection(size, n, MappingProxyType(held_pieces.pieces), MappingProxyType(extrapolated))
+    return _Size(size, n, extrapolated)
 
 
 def _units_lower_bound(w_hp: float, s_max: float) -> int:
