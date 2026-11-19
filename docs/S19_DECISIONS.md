@@ -3746,3 +3746,5 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   lanes may push their wp branch for CI; ADR 0052 D11 amendment (X01 part C) open for the design lane.
 - 2026-11-19, job 505 (w5n3b-5u) PASS (step 461 accepted, 47.1 -> 15.0, 19/19). gate_report: the four ALERTs (50%;
   534 s; 0.41; wait 55 min); action unchanged.
+- 2026-11-19, job 506 (w5n3b-6u) PASS (step 462 accepted, 15.0 -> 6.0, 19/19). gate_report: three ALERTs (46%;
+  420 s; wait 55 min; the time ratio is back under 0.4); action unchanged.
