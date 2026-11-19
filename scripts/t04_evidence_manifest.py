@@ -1450,11 +1450,6 @@ def _a09(runs: Runs, ref: Mapping[str, Any]) -> tuple[bool, Any, Any]:
     )
     with pytest.MonkeyPatch.context() as patch:
         patch.setattr(
-            region_module,
-            "check_opening",
-            lambda state, requirement: OpeningRefusal("coverage", "S3.T"),
-        )
-        patch.setattr(
             region_problem,
             "check_opening",
             lambda state, requirement: OpeningRefusal("coverage", "S3.T"),
