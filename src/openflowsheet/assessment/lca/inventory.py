@@ -195,23 +195,7 @@ def plan_inventory(
         items = plan_sizing(ctx, state)[0].items
         cost_outputs = frozenset(o.output_id for o in cost.outputs)
     for utility in utilities:
-        u = str(utility["utility_id"])
-        phi: FunctionalBuilder | None = None
-        why = "no cost plan defines the utility's users"
-        if cost is not None:
-            if utility["kind"] == "electricity":
-                net = _Electricity(items, cost_outputs)
-                phi = net.build if net else None
-                if net.generate:
-                    run.plan.limitations.append(Limitation("ELECTRICITY_NETTED", f"lca.{u}"))
-            else:
-                users = [i.duty for i in items if i.utility == u and i.duty is not None]
-                phi = _fold(users) if users else None
-            why = "the utility has no users"
-        for j, body in enumerate(utility["lca"]):
-            if phi is None and cost is not None:
-                continue  # no item uses the utility: no exchange (as the operating cost)
-            run.technosphere(f"utilities.{u}.lca[{j}]", f"utility.{u}", body, phi, ENERGY_PER, why)
+        run.add_utility(utility, cost, items, cost_outputs)
     for material in doc.get("materials", ()):
         s_id, basis = str(material["connection"]), str(material["basis"])
         component = material.get("component")
@@ -269,6 +253,34 @@ class _Inventory:
     refused_tables: Mapping[str, Refusal]
     plan: InventoryPlan = field(default_factory=InventoryPlan)
     used: dict[str, int] = field(default_factory=dict)
+
+    def add_utility(
+        self,
+        utility: Mapping[str, Any],
+        cost: ContributionPlan | None,
+        items: tuple[SizedItem, ...],
+        cost_outputs: frozenset[str],
+    ) -> None:
+        """A utility's exchanges, one per `lca` entry, on its energy rate (electricity: net, with
+        an `ELECTRICITY_NETTED` limitation when an item generates). With a cost plan and no item
+        using the utility, none; without a cost plan, each entry is withheld."""
+        u = str(utility["utility_id"])
+        phi: FunctionalBuilder | None = None
+        why = "no cost plan defines the utility's users"
+        if cost is not None:
+            if utility["kind"] == "electricity":
+                net = _Electricity(items, cost_outputs)
+                phi = net.build if net else None
+                if net.generate:
+                    self.plan.limitations.append(Limitation("ELECTRICITY_NETTED", f"lca.{u}"))
+            else:
+                users = [i.duty for i in items if i.utility == u and i.duty is not None]
+                phi = _fold(users) if users else None
+            why = "the utility has no users"
+        for j, body in enumerate(utility["lca"]):
+            if phi is None and cost is not None:
+                continue  # no item uses the utility: no exchange (as the operating cost)
+            self.technosphere(f"utilities.{u}.lca[{j}]", f"utility.{u}", body, phi, ENERGY_PER, why)
 
     def technosphere(
         self,
