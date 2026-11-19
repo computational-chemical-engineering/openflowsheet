@@ -798,26 +798,16 @@ class _Planner:
     # -- sums and the chain (§4.7.1) -------------------------------------------------------------
 
     def chain(self) -> None:
+        """The capital sums `capex.sum_purchased` and `capex.sum_bare_module`, then the capital
+        chain (`_capital_chain`) and its outputs (`_chain_outputs`).
+
+        Without a valid chain, `capex.total` and `capex.fci` are unavailable.
+        """
         cur = self.target.currency
         purchased = [r.purchased for r in self.records if r.purchased is not None]
         bare = [r.bare_module for r in self.records if r.bare_module is not None]
         quoted_bm = [r.item_id for r in self.records if r.purchased is None]
-        capital_doc = self.doc.get("capital")
-        chain: capital.Chain | None = None
-        if capital_doc is not None:
-            try:
-                if "chain" in capital_doc:
-                    chain = capital.load_chain(str(capital_doc["chain"]))
-                else:
-                    chain = capital.chain_from(
-                        capital_doc.get("steps", ()),
-                        str(capital_doc.get("capital_total")),
-                        str(capital_doc.get("fci")),
-                    )
-            except capital.ChainError as error:
-                self.refusals.append(
-                    Refusal("ASSESSMENT_OUTPUT_UNKNOWN", "capex.total", str(error))
-                )
+        chain = self._capital_chain()
         if chain is not None and "sum_bare_module" in chain.bases:
             self.refusals.extend(Refusal("BARE_MODULE_FACTOR_MISSING", i) for i in self.missing_fbm)
         refused = self.capital_refused
@@ -838,6 +828,35 @@ class _Planner:
             self.unavailable["capex.total"] = "no capital chain declared or the chain is malformed"
             self.unavailable["capex.fci"] = self.unavailable["capex.total"]
             return
+        self._chain_outputs(chain, cur)
+
+    def _capital_chain(self) -> capital.Chain | None:
+        """The declared capital chain: a shipped `chain` by id, else one from `steps`.
+
+        None when `capital` is not declared, or when the chain is malformed (refusal
+        `ASSESSMENT_OUTPUT_UNKNOWN` on `capex.total`).
+        """
+        capital_doc = self.doc.get("capital")
+        chain: capital.Chain | None = None
+        if capital_doc is not None:
+            try:
+                if "chain" in capital_doc:
+                    chain = capital.load_chain(str(capital_doc["chain"]))
+                else:
+                    chain = capital.chain_from(
+                        capital_doc.get("steps", ()),
+                        str(capital_doc.get("capital_total")),
+                        str(capital_doc.get("fci")),
+                    )
+            except capital.ChainError as error:
+                self.refusals.append(
+                    Refusal("ASSESSMENT_OUTPUT_UNKNOWN", "capex.total", str(error))
+                )
+        return chain
+
+    def _chain_outputs(self, chain: capital.Chain, cur: str) -> None:
+        """The outputs of the chain's steps in chain order, then the aliases `capex.total` and
+        `capex.fci`; each is unavailable instead when an output it depends on is."""
         for step in chain.steps:
             output_id = f"capex.{step.name}"
             deps = [f"capex.{t.of}" for t in step.terms]
