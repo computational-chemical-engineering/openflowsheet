@@ -3423,3 +3423,7 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   Proposal 2's exact file list asked of session OpenFlowsheet-check (its author).
 - 16:00: OpenFlowsheet-check builds proposal 2 on wp/S19-tools5 (spec in S19_STATE item 2); no parallel build here; we merge and write executed.
 - 13:07 by the clock (`date`): the clock times in this session's entries since "13:05" (13:20 to 16:00) were estimates and run ahead; the real times are about 12:15 to 13:06. Order of events unchanged.
+- 13:15 (clock): resumed after the self-reset. Launched architect I-20 (brief `S19-A-I20.md`: ADR 0076 addendum item
+  I-20 + `docs/briefs/S19-I20-design.md`, committed on wp/S19) and opus-engineer G2 run 6 (brief `S19-W5-G2-6.md`,
+  wp/S19-g2b from 356ee519: column_rows.py, cascade_solve.py, revision_flowsheet.py; card ofs-s19-legacy-models
+  item (a)). Two agents. Queue: job 432 running, 433-449 pending (batch N).
