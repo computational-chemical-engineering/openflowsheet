@@ -33,7 +33,7 @@ import math
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from types import MappingProxyType
-from typing import Any, Final, Literal
+from typing import Any, Final, Literal, NamedTuple
 
 from openflowsheet.assessment.regimes import select_piece, select_size, size_units
 from openflowsheet.compile.reference import FloatAlgebra
@@ -649,7 +649,7 @@ def select(
     smallest `n ≥ n₀` with `S(n) ≤ n·S_max`, checking its domain at every `n` evaluated.
     Inputs: below `min` the floor where declared, else refused; above `max` refused; refused
     values are extrapolated on the nearest piece when `allow_extrapolation`. A non-finite or
-    non-positive quantity is refused."""
+    non-positive quantity is refused. The inputs' pieces are `_input_pieces`'."""
     guard = form.domain(e, x, units)
     if guard is not None:
         return guard
@@ -721,7 +721,40 @@ def select(
                     math.inf,
                     f"{name} is not a finite positive value: {value!r}",
                 )
+    held_pieces = _input_pieces(form, e, q, allow_extrapolation)
+    if isinstance(held_pieces, OutOfRange):
+        return held_pieces
+    extrapolated.update(held_pieces.extrapolated)
+    return Selection(size, n, MappingProxyType(held_pieces.pieces), MappingProxyType(extrapolated))
+
+
+def _units_lower_bound(w_hp: float, s_max: float) -> int:
+    """§10.4.4: n₀, the smallest integer ≥ 1 with `W ≤ n₀·S_max` in binary64 (the brake power
+    bounds the consumed power from below, since η_m ≤ 1)."""
+    units = max(1, math.ceil(w_hp / s_max))
+    while units * s_max < w_hp:
+        units += 1
+    while units > 1 and (units - 1) * s_max >= w_hp:
+        units -= 1
+    return units
+
+
+class _Pieces(NamedTuple):
+    """The pieces `_input_pieces` holds for the input ranges, and the inputs it extrapolated."""
+
+    pieces: dict[str, int]
+    extrapolated: dict[str, tuple[float, float, float]]
+
+
+def _input_pieces(
+    form: Form, e: ResolvedEntry, q: Mapping[str, Expr], allow_extrapolation: bool
+) -> _Pieces | OutOfRange:
+    """The piece of every input range of `form.active_ranges(e)` at the float quantities `q`
+    (§4.3.2 rule 5), a range's pieces before their dependants: below `min` the floor (piece 0)
+    where declared; within the pieces, the piece; outside, refused, or the nearest piece when
+    `allow_extrapolation` (then recorded in `extrapolated`). A non-finite input is refused."""
     pieces: dict[str, int] = {}
+    extrapolated: dict[str, tuple[float, float, float]] = {}
     inputs = [r for r in form.active_ranges(e) if r.role == "input"]
     inputs.sort(key=lambda r: r.pieces_of is not None)  # a range's pieces before their dependants
     for r in inputs:
@@ -747,18 +780,7 @@ def select(
             return OutOfRange(r.name, form.target(r.name), z, low, high)
         pieces[r.name] = 1 if z < low else len(intervals)
         extrapolated[r.name] = (z, low, high)
-    return Selection(size, n, MappingProxyType(pieces), MappingProxyType(extrapolated))
-
-
-def _units_lower_bound(w_hp: float, s_max: float) -> int:
-    """§10.4.4: n₀, the smallest integer ≥ 1 with `W ≤ n₀·S_max` in binary64 (the brake power
-    bounds the consumed power from below, since η_m ≤ 1)."""
-    units = max(1, math.ceil(w_hp / s_max))
-    while units * s_max < w_hp:
-        units += 1
-    while units > 1 and (units - 1) * s_max >= w_hp:
-        units -= 1
-    return units
+    return _Pieces(pieces, extrapolated)
 
 
 def _upper(r: Range, pieces: Mapping[str, int]) -> float:
