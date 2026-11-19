@@ -3624,3 +3624,8 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   wp/S19 changed code since 6a588841 (the I-20 merge, verify/ and tests). Helper s19-g2-mc merged the tip df2850d7
   (69f0b8f9; diff to the tip: 4 models/ files, ruff clean) -> job 495 g2-mc2 (merge-check df2850d7..69f0b8f9).
   Queue otherwise idle (batch N re-enqueue held, entry above). gate_report: the four ALERTs, action unchanged.
+- **2026-11-19 18:08, G2 runs 6+7 merged into wp/S19 (e3e95520).** Job 495 (g2-mc2, merge-check df2850d7..69f0b8f9)
+  PASS 10/10, debt 238.6 -> 66.4; wp/S19 changed only S19_DECISIONS since df2850d7 (helper rule). Worktrees s19-g2-mc,
+  s19-g2b, s19-g2c and their branches removed. C (card ofs-s19-blocking-merge-main) = e3e95520: the wall-time budget
+  tests run alone at C now (queue idle, batch N held; logs `<git-common-dir>/codehealth/runs/budget-e3e95520/`).
+  Card item (a) of ofs-s19-legacy-models: G2 runs 6+7 done; run 8 next (brief `S19-W5-G2-8.md`).
