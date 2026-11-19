@@ -3695,3 +3695,5 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   B "open the 0.5 lanes X07a and X01 rest, each as wp/<ID> with its own brief, beside S19 at one lane (ofs-s19-trailing-order)";
   C "open the 0.5 lanes X07a and X01 rest, plus an X06 architect pass (design note only, no code), each as wp/<ID> with its own brief, beside S19 at one lane (ofs-s19-trailing-order)";
   D "open no further 0.5 lanes; keep F3 only until it lands". Wording accepted (F8 needs its own card later).
+- 2026-11-19, job 502 (w5n3b-2u) PASS (step 458 accepted, 54.4 -> 48.0, 19/19). gate_report: the four ALERTs (58%;
+  675 s; 0.51; wait 58 min); action unchanged.
