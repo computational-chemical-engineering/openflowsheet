@@ -3683,3 +3683,6 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   commit c4a91a75 (main a283925c + wp/S19 6c945fe1, 86 files); F0 on c4a91a75 PASS: M1 50/50, M2 61/61, M3 61/61,
   M4 61/61, M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 35/35; `git push origin main` a283925c..c4a91a75. wp/S19
   fast-forwarded to main. The 0.5 blocking set is on main; 0.5 start is Frank's call (hub).
+- 2026-11-19, hub doorbell on ofs-s19-start-05 (signed A 11-17): card fetched (v3); `executed` already written
+  2026-11-18 (0.5 started with F3-WO1 on wp/F3); verifier: "FAIL card already executed". Nothing done. Hub told; the
+  open 0.5 question (widen beyond F3 now the blocking set is on main) is a scope call for Frank via hub.
