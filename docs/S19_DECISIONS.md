@@ -3379,3 +3379,4 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   only since 272011be; ruff clean): job 439 `w4r-mc`. Both PASS -> merge both lanes into wp/S19.
 - 13:20: arch at wp/S19 tip 0 violations, 0 cycles. DECISION: WO-N3b (cost/derived.py 7.7, forms.py 7.2; brains `DerivedContributor.plan`, `select`) after WO-N3 in batch N -> G-END brain 0. Alternative: leave them to a later batch. Reversible by: dropping WO-N3b. State rewritten.
 - 13:30: job 438 (pr1b-fix, step 422) PASS accepted-neutral: R-W4-PR-1b+2 fix 1 done. Merge waits for job 439.
+- 13:45: job 429 (w5n2-2, step 423) PASS, inventory 71.7 -> 50.0 (W5 gate mode). Gate report: the four standing ALERTs.
