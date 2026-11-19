@@ -3764,3 +3764,9 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   F0 M9 FAIL 1/35 as WO-N3; patch_noop 0/266. Job 512 (w5n4-1i, interface, `--recipe interface` as job 496).
 - 2026-11-19, job 507 (w5n3b-7u) PASS (step 463 accepted, 6.0 -> 0, 19/19): WO-N3b's chain is fully gated (501-507).
   gate_report: the four ALERTs (38%; 548 s; 0.43; wait 43 min); action unchanged. Next: job 512 (WO-N4), then WO-N5.
+- 2026-11-19, job 512 (w5n4-1i, interface) GATE-ERROR rc=2: "plan .codehealth/interface/w5n4-factory-switch.toml: the
+  plan lists no change". A mode mismatch, not a code failure: WO-N4 changes nothing in codehealth's scope
+  (`src/openflowsheet/*`), only `scripts/registry_builtin.py` and the registry JSON. DECISION: re-gate 6e86b173..30f705d9
+  as `--mode no-gain --batch` (job 513 w5n4-1n; the W5 verdicts S1, S3, S4 still run). Alternative: a tool change
+  letting interface mode take an empty plan for out-of-scope changes. Reversible by: re-enqueueing in that mode once
+  the tool takes it. The plan commit 8ac4511c stays (admitted via retarget, empty lists); for batch N's close review.
