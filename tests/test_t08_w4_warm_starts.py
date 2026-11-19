@@ -596,10 +596,10 @@ def test_a_warm_opening_that_ends_before_an_attempt_falls_through(
     solve only."""
     original = region_module._solve_region
 
-    def refusing(**kwargs: Any) -> RegionResult:
-        if kwargs["warm_start"]:
-            return refusal(kwargs["state"])
-        result: RegionResult = original(**kwargs)
+    def refusing(call: region_module._RegionCall) -> RegionResult:
+        if call.warm_start:
+            return refusal(call.state)
+        result: RegionResult = original(call)
         return result
 
     monkeypatch.setattr(region_module, "_solve_region", refusing)
@@ -645,10 +645,10 @@ def test_a_warm_opening_refused_by_the_opening_check_falls_through(
     warm: list[bool] = []
     refusals: list[OpeningRefusal | None] = []
 
-    def solving(**kwargs: Any) -> RegionResult:
-        warm.append(bool(kwargs["warm_start"]))
+    def solving(call: region_module._RegionCall) -> RegionResult:
+        warm.append(bool(call.warm_start))
         try:
-            result: RegionResult = real_solve(**kwargs)
+            result: RegionResult = real_solve(call)
         finally:
             warm.pop()
         return result
