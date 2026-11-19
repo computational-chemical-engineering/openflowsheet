@@ -3500,3 +3500,5 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   of a lane with proposal 2: the tier log printed "step-gate exclusion list ...: not applied, the full suite runs"
   (fallback: revision_flowsheet.py:467 runs at import time), 20519 passed, wall 2325 s. Condition (a) holds; no
   saving on a fallback, as designed. gate_report: the four ALERTs (45%; 1096 s; 0.69; 38 min).
+- 2026-11-19, job 460 (i20-2, interface `i20b-split-rows`) PASS (step 435 accepted, 35.1 -> 24.7, 20/20). gate_report:
+  the four ALERTs (48%; 1041 s; 0.66; 38 min).
