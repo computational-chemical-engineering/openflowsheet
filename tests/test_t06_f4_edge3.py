@@ -2,7 +2,7 @@
 
 Design note `docs/design/T06-F4-recovery.md` §5.2 (P0–P5), §5.4 (the action), §5.5 (records) and
 §8's gates. WO4: the seams — `recovered_provenance(first_initializer_source=...)` checks the
-restart's first item against its own initializer; `solve_region(item0_opening_source=...)`
+restart's first item against its own initializer; `RegionCall(item0_opening_source=...)`
 defaults to today's constant (the registered traces are unchanged: G5a, measured outside the
 suite and by every registered trace test). WO5: G1–G4-legacy, P4's records, and the count of
 one.

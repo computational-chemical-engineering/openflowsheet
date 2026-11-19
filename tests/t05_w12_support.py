@@ -2,9 +2,10 @@
 and the mini-revisions (feed → unit → sinks) the injections run on.
 
 Not collected as tests. Design note `docs/design/T05-generalization.md` §8 (W12): a state the
-traversal cannot reach (INJ-T2, C3X's second branch) is solved by `solve_region(...,
-state=<twin state>, initializer_source="user_guess")` over the region `plan_revision` plans —
-the call `orchestrator.executor` makes for a revision flowsheet, with no new API.
+traversal cannot reach (INJ-T2, C3X's second branch) is solved by
+`solve_region(RegionCall(..., state=<twin state>, initializer_source="user_guess"))` over
+the region `plan_revision` plans — the call `orchestrator.executor` makes for a revision
+flowsheet, with no new API.
 """
 
 from __future__ import annotations

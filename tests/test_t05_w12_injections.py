@@ -4,9 +4,10 @@ Spec `docs/derivations/T05-unit-models-spec.md` §12.5 and `ref.injections`; des
 `docs/design/T05-generalization.md` §8 (W12). Each injection runs on a mini-revision — a feed (two
 for the exchanger), the unit, a sink per outlet — written here as a test fixture, not a registry
 case. The state is obtained by a real solve: `plan_revision`/`execute_plan` where the traversal
-reaches it (INJ-T1, T3, T4), else `solve_region(..., state=<twin state>, initializer_source=
-"user_guess")` (INJ-T2: the exchanger's causal evaluator refuses HX-F1's temperature cross, which
-is the point). The injected state is then judged by `verify_revision(..., state=<injected>)`, so
+reaches it (INJ-T1, T3, T4), else
+`solve_region(RegionCall(..., state=<twin state>, initializer_source="user_guess"))`
+(INJ-T2: the exchanger's causal evaluator refuses HX-F1's temperature cross, which is the
+point). The injected state is then judged by `verify_revision(..., state=<injected>)`, so
 the solver called it `CONVERGED` and the verifier must say `FAILED`: a detected false success.
 
 Every registered number is read from `ref.injections` (or `ref.unit_cases` for the state it
