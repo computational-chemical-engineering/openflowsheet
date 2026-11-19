@@ -3697,3 +3697,5 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   D "open no further 0.5 lanes; keep F3 only until it lands". Wording accepted (F8 needs its own card later).
 - 2026-11-19, job 502 (w5n3b-2u) PASS (step 458 accepted, 54.4 -> 48.0, 19/19). gate_report: the four ALERTs (58%;
   675 s; 0.51; wait 58 min); action unchanged.
+- 2026-11-19, job 503 (w5n3b-3u) PASS (step 459 accepted, 48.0 -> 10.0, 19/19). gate_report: the four ALERTs (56%;
+  675 s; 0.51; wait 58 min); action unchanged.
