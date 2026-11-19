@@ -3762,3 +3762,5 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   kept). Measured: --check fails on builtin-sha256.txt only; test_e_f1_3 fails at :373 on `module` only; test_f1_* +
   s10_provider 7 failed (all L_N), 363 passed; W5-S1 PASS (17 paths); W5-S4 PASS (M9 1 pr_lib, 30 TABLE pointers);
   F0 M9 FAIL 1/35 as WO-N3; patch_noop 0/266. Job 512 (w5n4-1i, interface, `--recipe interface` as job 496).
+- 2026-11-19, job 507 (w5n3b-7u) PASS (step 463 accepted, 6.0 -> 0, 19/19): WO-N3b's chain is fully gated (501-507).
+  gate_report: the four ALERTs (38%; 548 s; 0.43; wait 43 min); action unchanged. Next: job 512 (WO-N4), then WO-N5.
