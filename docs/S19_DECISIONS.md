@@ -3897,3 +3897,6 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   docstring. Also: `c1_reactor_surrogate_of` (revision_binding.py:708) builds a unit outside the table, unguarded,
   unreachable from list_models today. Next: jobs 518, 519; then one helper merge-check (wp/S19-rc + wp/S19-n6 from the
   wp/S19 tip) and the merge.
+- 2026-11-20, job 518 (rc-1i, interface, cce-code-health 34a30bf) PASS 20/20, step 466 accepted, debt 46.0 -> 30.0.
+  Helper wp/S19-rcmc (worktree s19-rcmc) from c30d7d60: merges wp/S19-rc (d7fa6e6e) and wp/S19-n6 (d087d983); ruff
+  clean; job 520 (rcmc-mc, merge-check, full suite) queued beside job 519 (rc-2d). Merge into wp/S19 on both PASS.
