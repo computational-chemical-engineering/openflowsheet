@@ -3671,3 +3671,11 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   playbook's ~2 points) accepted as an exception: `_root_derivatives` is the spec's concept (M01 4.6), removes a
   closure and the `long` smell. Q4 W5-S1, S3 (M9 1/35), S4, S7 confirmed. Q5 for batch P: the pr_c1.py merge is easier
   only if pr_c1.py is cut with the same names and boundaries; a shared module needs its own R4 ruling.
+- 2026-11-19, job 501 (w5n3b-1u, WO-N3b step 1) PASS (step 457 accepted, 70.6 -> 54.4, 19/19). gate_report: the four
+  ALERTs (59%; 735 s; 0.51; wait 57 min); action unchanged.
+
+## 2026-11-19 merge into main (card ofs-s19-blocking-merge-main, A, VERIFIED)
+
+- CI 44576885441 at 5c48391b green (check ubuntu-latest and ubuntu-24.04-arm, default-install, codehealth); manifest
+  at e3e95520 set `tested` with G-END-CI (c3ffe008). Since 5c48391b only docs and the manifest changed
+  (S19_DECISIONS, the R-W5-N3 review, the manifest). Step 4: merge commit on main, F0 on the merge result; on PASS push.
