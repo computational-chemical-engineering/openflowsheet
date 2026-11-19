@@ -65,15 +65,13 @@ WO-N2 delivered (jobs 428 PASS, 429, 431-436 pending): lca inventory 9.6, tables
 needs the lca extra), `program.Refusal` re-export removed. Batch N gate file amended (retarget = program.py, sha256
 49f4c9e3). Arch at the wp/S19 tip: **0 violations, 0 cycles** (depth 4).
 
-**Position:** wp/S19 = 272011be code + docs. MB 756e1c12. Runner PID 1341562. COUNT 408 at 12:45 (`$Q wait --since
-<COUNT>` in the background). **Running agent:** WO-N3 (opus-engineer, brief `S19-W5-N3.md`, pr_lib.py S1, on
-wp/S19-w5n from c418b1e3).
-1. **Merge W4 residuals:** helper `wp/S19-w4r-mc` (worktree s19-w4r-mc, ba040641 = 79e07265 + pr1b + pr2), job 439
-   `w4r-mc` merge-check; with job 438 PASS: merge `wp/S19-pr1b` then `wp/S19-pr2` into wp/S19 (merge commits,
-   `git merge -F`), only if wp/S19 changed only docs since 79e07265. Then remove worktrees s19-pr1, s19-pr1b, s19-pr2,
-   s19-w4r-mc (branches `backup/S19-pr1b-pre-fix2`, `wp/S19-pr1` deletable after the merge). Then the blocking set
-   for 0.5 is done except the verify twins (gamma_phi_units.py 6.4, waits for Frank's addendum): tell Frank (hub).
-2. **Batch N:** WO-N3 delivers -> S1 review of its chain (reviewer, cadence S1) -> **WO-N3b** (new, DECISION 13:20):
+**Position:** wp/S19 = e6cefaf9 (PR-2 merge) + docs. MB 756e1c12. Runner PID 1341562. COUNT 411 at 14:25 (`$Q wait
+--since <COUNT>` in the background). **Running agent:** WO-N3b (opus-engineer, brief `S19-W5-N3b.md`, on wp/S19-w5n
+from e7183050).
+1. **W4 residuals merged** (14:25: 47ceb7bf PR-1b, e6cefaf9 PR-2; merge-check 439 PASS). Blocking set for 0.5 done
+   except the verify twins (Frank's addendum); hub told at 14:30 (with the tool gap for the cce steward).
+2. **Batch N:** WO-N3 delivered (pr_lib 9.0, jobs 437, 440-442) -> S1 review R-W5-N3 (brief written; launch on
+   those PASS) ; **WO-N3b** running (new, DECISION 13:20):
    cost/derived.py (7.7, brain `DerivedContributor.plan`) and forms.py (7.2, brain `select`) to health, admitted
    tier 1 files -> WO-N4 (factory switch, `--mode interface`) -> WO-N5 (close: K, judge, batch-check, review of
    N2..N4 chains) -> merge batch N into wp/S19 (FR-2 B) -> WO-N6.
