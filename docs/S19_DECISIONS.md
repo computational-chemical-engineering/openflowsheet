@@ -3252,3 +3252,16 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   Gate report (6 h): the four standing ALERTs, "selected gates take 1090 s > 300 s (tests tier)", "selected/full time
   ratio 0.80 > 0.4: selection saves little", selected share 52%, queue wait median 35 min (proposal 2 with Frank;
   the ratio rose from 0.56 with lane O's region.py steps, whose selection is near the full suite).
+- **2026-11-19 ~10:20 CET, review R-W3-G1O-9 (reviewer, Opus): merge all six commits after fix 1.** Fix 1
+  (region.py:434 `_RegionSolve` summary line, docstring) applied by the orchestrator as a527c201, job 423 (no-gain).
+  Note 2 (optional, `attempt`'s docstring under v2) not taken. Deviations accepted: the red retarget e871b756 (the
+  only green order keeps a dead `check_opening` re-export in region); 37 vs 34 NLOC (954 as the plan predicted); R7
+  under Q5. **G1's region item is met** (`_solve_region` brain false, cognitive 25 <= 30); its remaining debt (21
+  parameters, the constructor call, flat `or {}` defaults) is W4 under ADR 0076 with `_PlanRun` (Q4), since a
+  parameter object changes what the t08 `solving(**kwargs)` spy receives. R7's commit message's "phases B to E"
+  should read "A, B, constructor, loop" (not reworded: it would change queued SHAs).
+  DECISION: S19_RULES' retarget rule gains the reviewer's red-retarget clause (drop the source's patch when it loses
+  its last call site, name the failing test ids, bisect with `--first-parent`). Alternative: keep a dead re-export
+  until the step. Reversible by: reverting the S19_RULES lines.
+  Merge-check helper `wp/S19-g1o9-mc` (worktree s19-g1o9-mc) = wp/S19 d24f38d0 + merge of the lane at a527c201 =
+  e39bff0b; ruff clean; job 424 g1o9-mc (full suite).

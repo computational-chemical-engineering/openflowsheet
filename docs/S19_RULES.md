@@ -63,6 +63,9 @@
   authorises that step's retarget, and a `reviewer` reads it before the lane is merged. The inventory covers
   `setattr`/`monkeypatch` patches, plain assignments (`module.name = spy`) and spy tables in tests, scripts and
   benchmarks (R-W3-G1O-2: an AST inventory of patch calls alone missed two).
+  When the source module loses its last call site in the move, the retarget drops the source's patch (no dead
+  re-export kept to stay green) and its message names the test ids that fail at the retarget commit alone; they pass
+  again at the step. Bisect such a chain with `git bisect --first-parent` from the plan commit (R-W3-G1O-9).
 
 - Source-reading tests (S19_DECISIONS, 2026-11-14): some tests read a module's source by path (R-016 import rules,
   isolation allowlists). After a move their rule silently stops covering the moved code, which no gate tier sees.
