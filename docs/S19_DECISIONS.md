@@ -3467,3 +3467,5 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   basis `wilson-ig-v2`); default: retarget call sites only, restore the comparison after S19 by patching
   `forms._FORMS` (open item). P1 for Frank (the seven new public names): default as written. Engineer launched
   (brief `S19-W4-I20.md`, wp/S19-i20 from the tip).
+- 2026-11-19, job 433 (w5n2-5) PASS (step 427 accepted, 35.2 -> 11.0). gate_report: the four ALERTs as before (42%;
+  1160 s; 0.81; 25 min); action unchanged.
