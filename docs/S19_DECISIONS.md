@@ -3195,3 +3195,11 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   Re-enqueued unchanged: 402 (w5n1-15r, `--rerun-of 373`), 403-410 (steps 16-23, `--rerun-of` 375..384), same
   batch file (sha256 4f7e1232...).
 - Job 400 `g1o8b-4` (K2 b695efce) PASS, 19/19, debt 20.0 -> 10.0. Lane O run 8b: 397-400 PASS; 401 pending.
+- Job 402 `w5n1-15r` PASS 19/19 (debt 67.4 -> 63.1), but LOG-ERROR "--rerun-of 373: the last step for this tree and
+  base is 400": my enqueue repeated the 2026-11-16 22:23 mistake (queue job number instead of the run-log step).
+  Logged by hand (`--head 1bdda7cf --rerun-of 400`, same reason): run-log step 403 accepted, `_resolve` 28.4 -> 24.1.
+  Jobs 404-410 (same mistake, `--rerun-of` 375..384, steps without a run-log entry) withdrawn to `queue/withdrawn/`
+  and re-queued without `--rerun-of` as 411-417 (w5n1-17s..23s), as the 2026-11-18 G3 precedent. Job 403
+  (w5n1-16r) was already running: it will LOG-ERROR; log it by hand without `--rerun-of`.
+- Job 401 `g1o8b-5` (E4 8ae8528f) PASS 19/19, 36.2 -> 35.2. Lane O run 8b: 397-401 all PASS. Review R-W3-G1O-8
+  launched (reviewer, Opus; brief `S19-R-W3-G1O-8.md`).
