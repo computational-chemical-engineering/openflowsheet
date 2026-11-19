@@ -428,7 +428,26 @@ class _Planner:
         )
         rr = entry_doc.get("uncertainty", {}).get("relative_range")
         record.relative_range = None if rr is None else (float(rr[0]), float(rr[1]))
-        record.source = {
+        record.source = self._entry_source(e, cost_set, entry_doc)
+        for name in e.defaulted:
+            self._defaulted(f"option.{name}", e.options[name], item.item_id)
+
+        def base(s: Symbols, a: Algebra) -> Expr:
+            x = {name: build(s, a) for name, build in x_build.items()}
+            return form.cost(e, x, sel, a)
+
+        return self._capital(item, record, base, factor, doc, entry_doc)
+
+    @staticmethod
+    def _entry_source(
+        e: forms.ResolvedEntry, cost_set: sets.CostSet, entry_doc: Mapping[str, Any]
+    ) -> dict[str, Any]:
+        """An item's `source` record (§4.5.5) for its resolved entry `e` of `cost_set`.
+
+        `entry_doc` is the entry's document. The record carries `amended` when the entry has
+        amended numbers and `index_basis` when its cost is converted by the source's ratio.
+        """
+        source: dict[str, Any] = {
             "set": e.set_id,
             "entry": e.entry_id,
             "form": e.form,
@@ -449,21 +468,14 @@ class _Planner:
         }
         if e.amended:
             # §10.4.8: each amended number the resolved entry carries, with its effective value.
-            record.source["amended"] = {path: dict(a) for path, a in sorted(e.amended.items())}
+            source["amended"] = {path: dict(a) for path, a in sorted(e.amended.items())}
         if e.ratio != 1.0:
             index = entry_doc["index_basis"]
-            record.source["index_basis"] = (
+            source["index_basis"] = (
                 f"{index['series']} {sets._number(index['value']):g} → "
                 f"{cost_set.index_value:g} by the source's ratio"
             )
-        for name in e.defaulted:
-            self._defaulted(f"option.{name}", e.options[name], item.item_id)
-
-        def base(s: Symbols, a: Algebra) -> Expr:
-            x = {name: build(s, a) for name, build in x_build.items()}
-            return form.cost(e, x, sel, a)
-
-        return self._capital(item, record, base, factor, doc, entry_doc)
+        return source
 
     def _quote(
         self, item: SizedItem, record: ItemCost, values: Mapping[str, float], q: quotes.Quote
