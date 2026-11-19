@@ -27,12 +27,12 @@ from openflowsheet.assessment.cost.operating import annual
 from openflowsheet.assessment.defaults import default
 from openflowsheet.assessment.lca.inventory import Exchange, InventoryPlan, stream_flow
 from openflowsheet.assessment.lca.tables import LcaTable, UnitScoreTable
+from openflowsheet.assessment.linearization import Refusal
 from openflowsheet.assessment.program import (
     BuildContext,
     FunctionalBuilder,
     Limitation,
     OutputDef,
-    Refusal,
     Symbols,
     Theta,
 )

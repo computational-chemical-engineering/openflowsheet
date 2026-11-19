@@ -41,7 +41,7 @@ from openflowsheet.assessment.lca.tables import (
     UNIT_SCORE_FORMAT,
     table_sha256,
 )
-from openflowsheet.assessment.program import Refusal
+from openflowsheet.assessment.linearization import Refusal
 
 __all__ = [
     "SI_PER_UNIT",

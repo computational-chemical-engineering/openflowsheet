@@ -34,12 +34,12 @@ from openflowsheet.assessment.lca.tables import (
     LcaTable,
     UnitScoreTable,
 )
+from openflowsheet.assessment.linearization import Refusal
 from openflowsheet.assessment.program import (
     BuildContext,
     ContributionPlan,
     FunctionalBuilder,
     Limitation,
-    Refusal,
     Symbols,
     Theta,
 )

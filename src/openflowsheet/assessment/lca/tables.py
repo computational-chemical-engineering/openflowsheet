@@ -32,7 +32,7 @@ from importlib.resources import files
 from pathlib import Path
 from typing import Any, Final, Literal
 
-from openflowsheet.assessment.program import Refusal
+from openflowsheet.assessment.linearization import Refusal
 from openflowsheet.canonical import document_sha256
 
 __all__ = [
