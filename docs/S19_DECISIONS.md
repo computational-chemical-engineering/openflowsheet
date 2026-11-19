@@ -3864,3 +3864,9 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   the removal for the design lane (it changes a registered benchmark's binder protocol), batched with W5-S1 (c).
   Alternative: the snapshot reads `model_builders.MODEL_BUILDERS`. Reversible by: that change in a later step.
   The retarget goes in alone: job 517 (n6-mc, merge-check f3089ee0..f8e10957; wp/S19 changed only this log since).
+- 2026-11-20 ~00:00, launched opus-engineer W4 RegionCall (brief `<git-common-dir>/codehealth/briefs/S19-W4-RegionCall.md`,
+  lane wp/S19-rc from 201b2676; card ofs-s19-legacy-models (b)). DECISION: the parameter object becomes public
+  `RegionCall` and `solve_region(call)`. Alternative: keep `_RegionCall` private with keyword `solve_region`.
+  Reversible by: reverting the lane. The engineer hands back without enqueueing; the orchestrator re-pins
+  cce-code-health to 34a30bf (on origin/main; CI green on its descendants) once job 517 is done, then enqueues.
+  Agents: X01-WO1, RegionCall.
