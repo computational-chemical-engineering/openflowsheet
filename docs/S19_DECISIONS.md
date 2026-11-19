@@ -3246,3 +3246,9 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
 - Declared: the retarget and plan commits each fail one t08 warm-start test alone (passes from the step on; the gate
   tests the step head); R6/R7 debt above plan 5.1's estimates (38.2 vs ~24, 28.1 vs ~17). Both to the review. S1
   cap reached (4 steps on region.py): review R-W3-G1O-9 (brief written) when 419-422 PASS.
+- **2026-11-19 ~10:10 CET, lane O run 9 all PASS:** jobs 419 (restructure, step 406 neutral), 420 (no-gain, 407),
+  421 (R6, 409, 71.0 -> 54.2), 422 (R7, 411, 54.2 -> 44.1). Batch N: 411 (step 405, 56.1 -> 46.1), 412 (408,
+  46.1 -> 40.1), 413 (410, 40.1 -> 35.1) PASS; 414-417 pending. Review R-W3-G1O-9 launched (reviewer, Opus).
+  Gate report (6 h): the four standing ALERTs, "selected gates take 1090 s > 300 s (tests tier)", "selected/full time
+  ratio 0.80 > 0.4: selection saves little", selected share 52%, queue wait median 35 min (proposal 2 with Frank;
+  the ratio rose from 0.56 with lane O's region.py steps, whose selection is near the full suite).
