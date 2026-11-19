@@ -3434,3 +3434,8 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   non-test paths; the tier log names each excluded file. tests/test_s16_test_impact.py + test_s19_w5_gate.py: 132
   passed. Card ofs-s19-gate-proposal-2: `executed` written (version 3). Lanes branched before 222122df (batch N on
   wp/S19-w5n, G2 run 6 on wp/S19-g2b) gate without it until they take wp/S19.
+- 2026-11-19, job 432 (w5n2-4) PASS (step 425 accepted, 23.0 -> 16.0). gate_report --hours 6: "ALERT selected share
+  44% < 75% of step gates"; "ALERT selected gates take 1101 s > 300 s (tests tier)"; "ALERT selected/full time ratio
+  0.79 > 0.4: selection saves little"; "ALERT queue wait median 29 min > 15 min" (28 jobs, 2 slots 89% busy). Action:
+  proposal 2 (222122df) targets the selected-gate time; no new tooling change until gates on lanes from 222122df
+  are measured. Queued lanes predate it (snapshots fixed).
