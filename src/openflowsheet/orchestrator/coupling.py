@@ -340,63 +340,34 @@ def couple(
 
     while True:
         if on_iteration is not None:
-            on_iteration(run.k, block.max_outer)
+            on_iteration(run.k, run.block.max_outer)
         trial = run._trial()
         if isinstance(trial, CouplingRun):
             return trial
-        inner, r_hat, rho, answers, item = trial
         run.accepted_count += 1
-        point = _Point(k=run.k, u=run.u.copy(), inner=inner, r_hat=r_hat, rho=rho)
-        if rho <= 1.0:
-            item["step"] = {"kind": "converged", "du": None, "B": None}
-            return run.end("CONVERGED", None, inner, run.u, answers)
-        if run.k == block.max_outer - 1:
-            return run.end("COUPLING_NOT_CONVERGED", "max_outer", inner, run.u)
-        rose = run.best is not None and rho > run.best.rho
-        if run.best is not None and rose and run.k >= 2 * m2:
-            if run.reset_last:
-                return run.end("COUPLING_NOT_CONVERGED", "no_decrease", inner, run.u)
-            run.b_matrix = -np.eye(m2)
-            step_from, kind, run.reset_last = run.best, "reset", True
-        else:
-            # §14.5 D5 (R-305): a rise inside the first 2n iterations (n = 2m, Gay's bound for
-            # Broyden on an affine map) does not reset; B is updated as usual and the best
-            # iterate does not move.
-            if run.base is not None:
-                du = point.u - run.base.u
-                denominator = float(du @ du)
-                if denominator == 0.0:
-                    # A zero secant step (a step clipped back onto its base): the update is
-                    # undefined.
-                    return run.end("COUPLING_NOT_CONVERGED", "broyden_singular", inner, run.u)
-                run.b_matrix = run.b_matrix + np.outer(
-                    (point.r_hat - run.base.r_hat) - run.b_matrix @ du, du
-                ) / (denominator)
-            if not rose:
-                run.best = point
-            step_from, kind, run.reset_last = point, "broyden", False
-        try:
-            step = np.linalg.solve(run.b_matrix, -step_from.r_hat)
-        except np.linalg.LinAlgError:
-            return run.end("COUPLING_NOT_CONVERGED", "broyden_singular", inner, run.u)
-        if not np.all(np.isfinite(step)):
-            return run.end("COUPLING_NOT_CONVERGED", "broyden_singular", inner, run.u)
-        u_next = np.clip(step_from.u + step, lower, upper)
-        item["step"] = {
-            "kind": kind,
-            "du": [float(v) for v in u_next - step_from.u],
-            "B": [[float(v) for v in row] for row in run.b_matrix],
-        }
-        run.base = step_from
-        run.u = u_next
-        run.k += 1
+        point = _Point(k=run.k, u=run.u.copy(), inner=trial.inner, r_hat=trial.r_hat, rho=trial.rho)
+        if trial.rho <= 1.0:
+            trial.item["step"] = {"kind": "converged", "du": None, "B": None}
+            return run.end("CONVERGED", None, trial.inner, run.u, trial.answers)
+        if run.k == run.block.max_outer - 1:
+            return run.end("COUPLING_NOT_CONVERGED", "max_outer", trial.inner, run.u)
+        update = run._update(point, trial.inner)
+        if isinstance(update, CouplingRun):
+            return update
+        step_from, kind = update
+        step_end = run._advance(step_from, kind, trial)
+        if step_end is not None:
+            return step_end
 
 
 @dataclass
 class _Outer:
-    """One `couple` call's outer iteration: the frame its trials and updates read, and the state
-    that crosses iterations (the iterate `u`, the Broyden matrix, the best and base points, the
-    reset flag, `k`, the accepted count and the record)."""
+    """One `couple` call's outer iteration: its frame, and the state that crosses iterations.
+
+    Frame (what the trials, updates and steps read): the `units`, the coupling `block`,
+    `solve_inner`, `evaluate`, the `scales`, the scaled bounds `lower` and `upper`, and `m2`
+    (2m). State: the iterate `u`, the Broyden matrix `b_matrix`, the `best` and `base` points,
+    the reset flag `reset_last`, `k`, the accepted count and the `record`."""
 
     units: Sequence[str]
     block: CouplingBlock
@@ -467,6 +438,60 @@ class _Outer:
                 # No iterate to halve back towards: a refusal at the start ends the run.
                 return self.end("COUPLING_NOT_CONVERGED", failure, inner, self.u)
         return _FailedTrial(failure, inner, item)
+
+    def _update(self, point: _Point, inner: InnerSolve) -> tuple[_Point, str] | CouplingRun:
+        """§4.3's update at the accepted iterate `point` (its inner solve `inner`): a reset of
+        the Broyden matrix to −I at the best iterate when ρ rose above the best one's after the
+        first 2n iterations, else the Broyden update from `base` (when there is one), with `point`
+        the new best unless ρ rose. Writes `b_matrix`, `reset_last` and `best`. Returns the
+        point the step is taken from and the step's kind; the run's end on a second reset in a row
+        (`no_decrease`) or a zero secant step (`broyden_singular`)."""
+        rose = self.best is not None and point.rho > self.best.rho
+        if self.best is not None and rose and self.k >= 2 * self.m2:
+            if self.reset_last:
+                return self.end("COUPLING_NOT_CONVERGED", "no_decrease", inner, self.u)
+            self.b_matrix = -np.eye(self.m2)
+            step_from, kind, self.reset_last = self.best, "reset", True
+        else:
+            # §14.5 D5 (R-305): a rise inside the first 2n iterations (n = 2m, Gay's bound for
+            # Broyden on an affine map) does not reset; B is updated as usual and the best
+            # iterate does not move.
+            if self.base is not None:
+                du = point.u - self.base.u
+                denominator = float(du @ du)
+                if denominator == 0.0:
+                    # A zero secant step (a step clipped back onto its base): the update is
+                    # undefined.
+                    return self.end("COUPLING_NOT_CONVERGED", "broyden_singular", inner, self.u)
+                self.b_matrix = self.b_matrix + np.outer(
+                    (point.r_hat - self.base.r_hat) - self.b_matrix @ du, du
+                ) / (denominator)
+            if not rose:
+                self.best = point
+            step_from, kind, self.reset_last = point, "broyden", False
+        return step_from, kind
+
+    def _advance(self, step_from: _Point, kind: str, trial: _Trial) -> CouplingRun | None:
+        """§4.3's step from `step_from`: the Broyden step, clipped into the bounds, written into
+        the accepted `trial`'s entry with its `kind` and B; then `base`, `u` and `k` advance.
+        Returns the run's end when B is singular or the step is not finite
+        (`broyden_singular`), else None: the next outer iteration runs."""
+        try:
+            step = np.linalg.solve(self.b_matrix, -step_from.r_hat)
+        except np.linalg.LinAlgError:
+            return self.end("COUPLING_NOT_CONVERGED", "broyden_singular", trial.inner, self.u)
+        if not np.all(np.isfinite(step)):
+            return self.end("COUPLING_NOT_CONVERGED", "broyden_singular", trial.inner, self.u)
+        u_next = np.clip(step_from.u + step, self.lower, self.upper)
+        trial.item["step"] = {
+            "kind": kind,
+            "du": [float(v) for v in u_next - step_from.u],
+            "B": [[float(v) for v in row] for row in self.b_matrix],
+        }
+        self.base = step_from
+        self.u = u_next
+        self.k += 1
+        return None
 
     def entry(
         self, u_at: Vector, inner: InnerSolve, unit_entries: Mapping[str, Any]
