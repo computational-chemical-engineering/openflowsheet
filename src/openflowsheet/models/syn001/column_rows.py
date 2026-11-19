@@ -117,7 +117,6 @@ def declared_rows(
     unit, components = _token(spec.unit_id), spec.components
     form = equilibrium_form(provider)
     composition_dependent = form is not None and form.composition_dependent
-    count = spec.stage_count
     inlets = spec.inlets()
     for inlet in inlets:
         _token(inlet.port)
@@ -148,165 +147,16 @@ def declared_rows(
             sides_at.setdefault(inlet.stage, []).append(inlet)
 
     for stage in stages:
-        for c in components:
-            builder.column(liquid_id(unit, stage, c), "molar_flow")
-        for c in components:
-            builder.column(vapor_id(unit, stage, c), "molar_flow")
-        for c in components:
-            builder.column(mixed_id(unit, stage, c), "molar_flow")
-        builder.column(liquid_total_id(unit, stage), "molar_flow")
-        builder.column(vapor_total_id(unit, stage), "molar_flow")
-        builder.column(stage_temperature_id(unit, stage), "temperature")
-        builder.column(stage_pressure_id(unit, stage), "pressure")
-        builder.column(stage_duty_id(unit, stage), "heat_rate")
-
-        sides = sides_at.get(stage, [])
-        for c in components:
-            builder.row(
-                stage_row_id(unit, stage, "mix", c),
-                balance_row(_inflow(spec, stage, c), (mixed_id(unit, stage, c),)),
-                "algebraic",
-                "CAS-mix",
-                "molar_flow",
-            )
-        for c in components:
-            builder.row(
-                stage_row_id(unit, stage, "mole", c),
-                balance_row(
-                    (mixed_id(unit, stage, c),),
-                    (vapor_id(unit, stage, c), liquid_id(unit, stage, c)),
-                ),
-                "holdup_balance",
-                "CAS-mole",
-                "molar_flow",
-            )
-        for c in components:
-            builder.row(
-                stage_row_id(unit, stage, "eq", c),
-                equilibrium_row(
-                    vapor_id(unit, stage, c),
-                    liquid_id(unit, stage, c),
-                    vapor_total_id(unit, stage),
-                    liquid_total_id(unit, stage),
-                    f"{keys.lnk[stage]}.lnK_{c}",
-                ),
-                "algebraic",
-                "CAS-equilibrium",
-                "molar_flow_squared",
-            )
-        builder.row(
-            stage_row_id(unit, stage, "Ldef"),
-            definition_row(
-                liquid_total_id(unit, stage), tuple(liquid_id(unit, stage, c) for c in components)
-            ),
-            "algebraic",
-            "CAS-Ldef",
-            "molar_flow",
-        )
-        builder.row(
-            stage_row_id(unit, stage, "Vdef"),
-            definition_row(
-                vapor_total_id(unit, stage), tuple(vapor_id(unit, stage, c) for c in components)
-            ),
-            "algebraic",
-            "CAS-Vdef",
-            "molar_flow",
-        )
-        above: tuple[str, ...]
-        if stage == 1:
-            above = keys.inlet[TOP] if spec.top is not None else ()
-        elif stage == 2 and total:
-            above = keys.reflux
-        else:
-            above = keys.liquid[stage - 1]
-        below: tuple[str, ...]
-        if stage == count:
-            below = keys.inlet[BOTTOM] if spec.bottom is not None else ()
-        else:
-            below = keys.vapor[stage + 1]
-        builder.row(
-            energy_row_id(unit, stage),
-            energy_row(
-                (*above, *below, *(key for s in sides for key in keys.inlet[s.port])),
-                (*keys.vapor[stage], *keys.liquid[stage]),
-                source=stage_duty_id(unit, stage),
-            ),
-            "holdup_balance",
-            "CAS-energy",
-            "heat_rate",
-        )
-        builder.row(
-            stage_row_id(unit, stage, "P"),
-            specification_row(
-                stage_pressure_id(unit, stage),
-                builder.pin(_parameter(stage_pressure_id(unit, stage)), spec.pressures[stage - 1]),
-            ),
-            "algebraic",
-            "CAS-P",
-            "pressure",
-        )
-        builder.slot(stage)
+        builder.stage_rows(stage, keys, sides_at.get(stage, []))
 
     if links is not None:
         _link_rows(spec, links, builder)
-        return Contribution(
-            variable_ids=tuple(builder.variables),
-            equations=tuple(builder.equations),
-            blocks=tuple(builder.blocks),
-            block_inputs=builder.block_inputs,
-            parameter_ids=tuple(builder.parameter_ids),
-            parameters=builder.parameters,
-            variable_kinds=builder.variable_kinds,
-            row_kinds=builder.row_kinds,
-        )
+        return builder.contribution()
 
     for inlet in inlets:
-        stream = inlet_stream(unit, inlet.port)
-        for c in components:
-            builder.column(flow_id(stream, c), "molar_flow")
-        builder.column(temperature_id(stream), "temperature")
-        builder.column(pressure_id(stream), "pressure")
-        for c, value in zip(components, inlet.state.n, strict=True):
-            builder.row(
-                inlet_row_id(unit, inlet.port, "n", c),
-                specification_row(
-                    flow_id(stream, c), builder.pin(_parameter(flow_id(stream, c)), value)
-                ),
-                "algebraic",
-                "CAS-inlet-n",
-                "molar_flow",
-            )
-        builder.row(
-            inlet_row_id(unit, inlet.port, "T"),
-            specification_row(
-                temperature_id(stream),
-                builder.pin(_parameter(temperature_id(stream)), inlet.state.temperature),
-            ),
-            "algebraic",
-            "CAS-inlet-T",
-            "temperature",
-        )
-        builder.row(
-            inlet_row_id(unit, inlet.port, "P"),
-            specification_row(
-                pressure_id(stream),
-                builder.pin(_parameter(pressure_id(stream)), inlet.state.pressure),
-            ),
-            "algebraic",
-            "CAS-inlet-P",
-            "pressure",
-        )
+        builder.inlet_pin_rows(inlet)
 
-    return Contribution(
-        variable_ids=tuple(builder.variables),
-        equations=tuple(builder.equations),
-        blocks=tuple(builder.blocks),
-        block_inputs=builder.block_inputs,
-        parameter_ids=tuple(builder.parameter_ids),
-        parameters=builder.parameters,
-        variable_kinds=builder.variable_kinds,
-        row_kinds=builder.row_kinds,
-    )
+    return builder.contribution()
 
 
 @dataclass
@@ -320,7 +170,8 @@ class _ContributionBuilder:
     State, the product tables, each written only by its append method: `variables` and
     `variable_kinds` by `column`, `equations` and `row_kinds` by `row`, `parameter_ids` and
     `parameters` by `pin`, `blocks` and `block_inputs` by `lnk_block` and `enthalpy_block`.
-    `slot` writes through `row`, `pin` and `column`.
+    The phases (`property_blocks`, `total_condenser_rows`, `stage_rows`, `slot`,
+    `inlet_pin_rows`) and their helpers write only through these; `contribution` reads them.
     """
 
     spec: ColumnSpec
@@ -686,6 +537,184 @@ class _ContributionBuilder:
             "algebraic",
             "COL-recovery-definition",
             "molar_flow_squared",
+        )
+
+    def stage_rows(self, stage: int, keys: _BlockKeys, sides: list[PlacedInlet]) -> None:
+        """Equilibrium stage j's columns and rows, S01's, in S01's order, over the block keys
+        `keys` and the side inlets `sides` at the stage: its columns (`_stage_columns`), the
+        material and equilibrium rows (`_stage_material_rows`), the energy row
+        (`_stage_energy_row`), the pressure row (`_stage_pressure_row`), then the slot row in the
+        place of `Q_j − Q_j*`."""
+        self._stage_columns(stage)
+        self._stage_material_rows(stage, keys)
+        self._stage_energy_row(stage, keys, sides)
+        self._stage_pressure_row(stage)
+        self.slot(stage)
+
+    def _stage_columns(self, stage: int) -> None:
+        """Stage j's columns: l_i, v_i, m_i, L, V, T, P, Q."""
+        for c in self.components:
+            self.column(liquid_id(self.unit, stage, c), "molar_flow")
+        for c in self.components:
+            self.column(vapor_id(self.unit, stage, c), "molar_flow")
+        for c in self.components:
+            self.column(mixed_id(self.unit, stage, c), "molar_flow")
+        self.column(liquid_total_id(self.unit, stage), "molar_flow")
+        self.column(vapor_total_id(self.unit, stage), "molar_flow")
+        self.column(stage_temperature_id(self.unit, stage), "temperature")
+        self.column(stage_pressure_id(self.unit, stage), "pressure")
+        self.column(stage_duty_id(self.unit, stage), "heat_rate")
+
+    def _stage_material_rows(self, stage: int, keys: _BlockKeys) -> None:
+        """Stage j's rows mix_i, mole_i and eq_i (over `keys.lnk`), then Ldef and Vdef."""
+        for c in self.components:
+            self.row(
+                stage_row_id(self.unit, stage, "mix", c),
+                balance_row(_inflow(self.spec, stage, c), (mixed_id(self.unit, stage, c),)),
+                "algebraic",
+                "CAS-mix",
+                "molar_flow",
+            )
+        for c in self.components:
+            self.row(
+                stage_row_id(self.unit, stage, "mole", c),
+                balance_row(
+                    (mixed_id(self.unit, stage, c),),
+                    (vapor_id(self.unit, stage, c), liquid_id(self.unit, stage, c)),
+                ),
+                "holdup_balance",
+                "CAS-mole",
+                "molar_flow",
+            )
+        for c in self.components:
+            self.row(
+                stage_row_id(self.unit, stage, "eq", c),
+                equilibrium_row(
+                    vapor_id(self.unit, stage, c),
+                    liquid_id(self.unit, stage, c),
+                    vapor_total_id(self.unit, stage),
+                    liquid_total_id(self.unit, stage),
+                    f"{keys.lnk[stage]}.lnK_{c}",
+                ),
+                "algebraic",
+                "CAS-equilibrium",
+                "molar_flow_squared",
+            )
+        self.row(
+            stage_row_id(self.unit, stage, "Ldef"),
+            definition_row(
+                liquid_total_id(self.unit, stage),
+                tuple(liquid_id(self.unit, stage, c) for c in self.components),
+            ),
+            "algebraic",
+            "CAS-Ldef",
+            "molar_flow",
+        )
+        self.row(
+            stage_row_id(self.unit, stage, "Vdef"),
+            definition_row(
+                vapor_total_id(self.unit, stage),
+                tuple(vapor_id(self.unit, stage, c) for c in self.components),
+            ),
+            "algebraic",
+            "CAS-Vdef",
+            "molar_flow",
+        )
+
+    def _stage_energy_row(self, stage: int, keys: _BlockKeys, sides: list[PlacedInlet]) -> None:
+        """Stage j's energy row: the enthalpy flows from above (`top`, the reflux `r` below a
+        total condenser, or `l_{j−1}`), from below (`bottom` or `v_{j+1}`) and of the side
+        inlets `sides` in, the stage's vapor and liquid out, with source `Q_j`."""
+        above: tuple[str, ...]
+        if stage == 1:
+            above = keys.inlet[TOP] if self.spec.top is not None else ()
+        elif stage == 2 and self.total:
+            above = keys.reflux
+        else:
+            above = keys.liquid[stage - 1]
+        below: tuple[str, ...]
+        if stage == self.spec.stage_count:
+            below = keys.inlet[BOTTOM] if self.spec.bottom is not None else ()
+        else:
+            below = keys.vapor[stage + 1]
+        self.row(
+            energy_row_id(self.unit, stage),
+            energy_row(
+                (*above, *below, *(key for s in sides for key in keys.inlet[s.port])),
+                (*keys.vapor[stage], *keys.liquid[stage]),
+                source=stage_duty_id(self.unit, stage),
+            ),
+            "holdup_balance",
+            "CAS-energy",
+            "heat_rate",
+        )
+
+    def _stage_pressure_row(self, stage: int) -> None:
+        """Stage j's pressure row `P_j − P_j*`; pins `P_j*`."""
+        self.row(
+            stage_row_id(self.unit, stage, "P"),
+            specification_row(
+                stage_pressure_id(self.unit, stage),
+                self.pin(
+                    _parameter(stage_pressure_id(self.unit, stage)), self.spec.pressures[stage - 1]
+                ),
+            ),
+            "algebraic",
+            "CAS-P",
+            "pressure",
+        )
+
+    def contribution(self) -> Contribution:
+        """The `Contribution` of the tables built so far (pure: reads them, in field order of the
+        `Contribution`'s keywords as at the base)."""
+        return Contribution(
+            variable_ids=tuple(self.variables),
+            equations=tuple(self.equations),
+            blocks=tuple(self.blocks),
+            block_inputs=self.block_inputs,
+            parameter_ids=tuple(self.parameter_ids),
+            parameters=self.parameters,
+            variable_kinds=self.variable_kinds,
+            row_kinds=self.row_kinds,
+        )
+
+    def inlet_pin_rows(self, inlet: PlacedInlet) -> None:
+        """An inlet's owned columns n_i, T, P and its pin rows `v − v*` (outside a flowsheet);
+        pins the inlet state."""
+        stream = inlet_stream(self.unit, inlet.port)
+        for c in self.components:
+            self.column(flow_id(stream, c), "molar_flow")
+        self.column(temperature_id(stream), "temperature")
+        self.column(pressure_id(stream), "pressure")
+        for c, value in zip(self.components, inlet.state.n, strict=True):
+            self.row(
+                inlet_row_id(self.unit, inlet.port, "n", c),
+                specification_row(
+                    flow_id(stream, c), self.pin(_parameter(flow_id(stream, c)), value)
+                ),
+                "algebraic",
+                "CAS-inlet-n",
+                "molar_flow",
+            )
+        self.row(
+            inlet_row_id(self.unit, inlet.port, "T"),
+            specification_row(
+                temperature_id(stream),
+                self.pin(_parameter(temperature_id(stream)), inlet.state.temperature),
+            ),
+            "algebraic",
+            "CAS-inlet-T",
+            "temperature",
+        )
+        self.row(
+            inlet_row_id(self.unit, inlet.port, "P"),
+            specification_row(
+                pressure_id(stream),
+                self.pin(_parameter(pressure_id(stream)), inlet.state.pressure),
+            ),
+            "algebraic",
+            "CAS-inlet-P",
+            "pressure",
         )
 
 
