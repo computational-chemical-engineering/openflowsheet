@@ -3194,3 +3194,4 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   on timing under load in job 235 (2026-11-17 06:30) and passed alone and serially. Jobs 375-384 SKIPPED behind it.
   Re-enqueued unchanged: 402 (w5n1-15r, `--rerun-of 373`), 403-410 (steps 16-23, `--rerun-of` 375..384), same
   batch file (sha256 4f7e1232...).
+- Job 400 `g1o8b-4` (K2 b695efce) PASS, 19/19, debt 20.0 -> 10.0. Lane O run 8b: 397-400 PASS; 401 pending.
