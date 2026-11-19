@@ -3790,3 +3790,12 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   DECISION: merge order -> 514 PASS, review PASS, merge batch N into wp/S19, then a plain merge-check of the merge
   commit. Alternative: helper merge before 514 (W5-S1 would refuse). Reversible by: reverting the merge.
   W5-K6: review R-W5-N-close launched (reviewer, Opus; brief S19-R-W5-N-close.md).
+- 2026-11-19, job 514 (w5n-mc, merge-check --batch B_N..K) FAIL w5_scope (2/3; no test tier ran): W5-S1 refuses K's
+  own files (corpus.json, builtin-sha256.txt, test_f1_legacy_builtins.py), which W5-K1 allows only at K. A tool gap:
+  `merge-check --batch` applies the step check S1 to a range that ends in K. DECISION: W5-K4 by a plain
+  behaviour-only merge-check (no batch; static checks incl. frozen skipped, W5 tiers pass unset) of helper
+  `wp/S19-w5n-mc` (worktree s19-w5n-mc) = K + the wp/S19 tip 05d98499 (2ddc18f2; ruff clean; F0 PASS 9/9 at the
+  helper): job 515 w5n-mc2, 05d98499..2ddc18f2; at K every L_N test must pass, so failures must be a subset of the tip's.
+  K's W5 content is judged by K1/K2 by hand (above). Alternative: `merge-check --batch` at the pre-K head 30f705d9 plus
+  a plain run at K (two full suites). Reversible by: enqueueing that pair. For the close review and batches L, P:
+  `merge-check --batch` should judge B..K with W5-K1's set at the last commit (tool fix, item (d)).
