@@ -167,6 +167,7 @@ from openflowsheet.orchestrator.warm_start import WARM_START_REJECTED, WARM_STAR
 from openflowsheet.thermo import PropertyProvider
 
 __all__ = [
+    "RegionCall",
     "StagedSplits",
     "solve_region",
     "syn001_lifted_splits",
@@ -216,32 +217,11 @@ def syn001_lifted_splits(components: Sequence[str]) -> tuple[LiftedSplit, ...]:
     return heater, flash
 
 
-def solve_region(
-    *,
-    compiled: CompiledProblem,
-    spec: ProblemSpec,
-    region: Region,
-    state: Mapping[str, float],
-    splits: Sequence[LiftedSplit],
-    provider: PropertyProvider,
-    policy: SolvePolicy,
-    trace: Trace | None = None,
-    initializer_source: str | None,
-    recovery: RecoveryStart | None = None,
-    compile_level: Callable[[ProblemSpec], CompiledProblem] | None = None,
-    mass_mapping: MassMapping | None = None,
-    closure_types: Mapping[str, ClosureType] | None = None,
-    band_routes: Sequence[str] = (),
-    zero_flow_forms: Mapping[str, ZeroFlowForm] | None = None,
-    dormancy_forms: Sequence[DormancyForm] = (),
-    split_temperatures: Mapping[str, tuple[str, ...]] | None = None,
-    item0_opening_source: Literal["initializer", "eo_recovery_start"] = "initializer",
-    warm_start: bool = False,
-    vapour_only_forms: Mapping[str, VapourOnlyForm] | None = None,
-    split_owners: Mapping[str, str] | None = None,
-) -> RegionResult:
-    """§6's region solve from `state`, a full state over `spec.variable_ids` (the initializer),
-    under ADR 0005's contract (T03 §4) as the policy's `phase_contract` states it.
+@dataclass(frozen=True, kw_only=True)
+class RegionCall:
+    """One `solve_region` call's arguments, keyword-only: `state` is a full state over
+    `spec.variable_ids` (the initializer), solved on `region` of `compiled` under `policy`, with its
+    attempts on `trace` (a fresh one when `None`).
 
     `closure_types` (T05b spec §6.1) names each lifted unit's closure type; a unit it omits is
     TP-type, as every split of SYN-001's own flowsheet is. `band_routes` are the units whose
@@ -259,15 +239,44 @@ def solve_region(
     staged unit's split keys to the instance that owns them: a split is active iff its owner is
     one of `region.units`, and opens at its owner's position; a key it omits is its own owner.
 
+    `item0_opening_source` is item 0's `opening_source` when there is no `recovery`: the
+    registered `initializer`, or `eo_recovery_start` for edge 3's sequential restart (ADR 0015
+    D3), a fresh initializer output that §6.2 projects as any other start.
+    """
+
+    compiled: CompiledProblem
+    spec: ProblemSpec
+    region: Region
+    state: Mapping[str, float]
+    splits: Sequence[LiftedSplit]
+    provider: PropertyProvider
+    policy: SolvePolicy
+    trace: Trace | None = None
+    initializer_source: str | None
+    recovery: RecoveryStart | None = None
+    compile_level: Callable[[ProblemSpec], CompiledProblem] | None = None
+    mass_mapping: MassMapping | None = None
+    closure_types: Mapping[str, ClosureType] | None = None
+    band_routes: Sequence[str] = ()
+    zero_flow_forms: Mapping[str, ZeroFlowForm] | None = None
+    dormancy_forms: Sequence[DormancyForm] = ()
+    split_temperatures: Mapping[str, tuple[str, ...]] | None = None
+    item0_opening_source: Literal["initializer", "eo_recovery_start"] = "initializer"
+    warm_start: bool = False
+    vapour_only_forms: Mapping[str, VapourOnlyForm] | None = None
+    split_owners: Mapping[str, str] | None = None
+
+
+def solve_region(call: RegionCall) -> RegionResult:
+    """§6's region solve from `call.state`, a full state over `call.spec.variable_ids` (the
+    initializer), under ADR 0005's contract (T03 §4) as the policy's `phase_contract` states it.
+    Its arguments are the fields of `call`, documented on `RegionCall`.
+
     Under `policy.globalization.eo_core = "ptc"` (T04 §7.1) every attempt runs the PTC core on
     `mass_mapping`'s holdups, validated before anything is evaluated: a mapping that fails T04
     §7.2 — `None` included, which maps nothing — ends the solve `PTC_MAPPING_INVALID` with no
     attempt opened. A recovery solve is the exception: its attempt 0 is the homotopy, and every
     later attempt Newton's (T04 §4.5).
-
-    `item0_opening_source` is item 0's `opening_source` when there is no `recovery`: the
-    registered `initializer`, or `eo_recovery_start` for edge 3's sequential restart (ADR 0015
-    D3), a fresh initializer output that §6.2 projects as any other start.
 
     `warm_start` (ADR 0024 D3; T08 build-first spec §B2) says `state` is a compatible warm start:
     attempt 0's opening, after §6.2 and before its pinned columns are set, is held to T03 §5.1's
@@ -292,41 +301,17 @@ def solve_region(
     state, because no attempt's end state was kept as a point to report.
     """
     try:
-        return _solve_region(
-            _RegionCall(
-                compiled=compiled,
-                spec=spec,
-                region=region,
-                state=state,
-                splits=splits,
-                provider=provider,
-                policy=policy,
-                trace=trace,
-                initializer_source=initializer_source,
-                recovery=recovery,
-                compile_level=compile_level,
-                mass_mapping=mass_mapping,
-                closure_types=closure_types,
-                band_routes=band_routes,
-                zero_flow_forms=zero_flow_forms,
-                dormancy_forms=dormancy_forms,
-                split_temperatures=split_temperatures,
-                item0_opening_source=item0_opening_source,
-                warm_start=warm_start,
-                vapour_only_forms=vapour_only_forms,
-                split_owners=split_owners,
-            )
-        )
+        return _solve_region(call)
     except _KernelRefusedError as refused:
         return RegionResult(
             outcome="EVALUATION_ERROR",
-            state={name: float(state[name]) for name in spec.variable_ids},
+            state={name: float(call.state[name]) for name in call.spec.variable_ids},
             attempts=(),
             message=str(refused),
         )
 
 
-def _solve_region(call: _RegionCall) -> RegionResult:
+def _solve_region(call: RegionCall) -> RegionResult:
     if call.recovery is not None and call.compile_level is None:
         raise ValueError("a recovery solve compiles its λ-levels, and was given no compiler")
     run = call.trace if call.trace is not None else Trace()
@@ -408,36 +393,6 @@ def _solve_region(call: _RegionCall) -> RegionResult:
             return result
 
     raise AssertionError("unreachable: the restart gate ends the solve at max_attempts")
-
-
-@dataclass(frozen=True)
-class _RegionCall:
-    """One `solve_region` call's arguments, as it was given them: the frame `_solve_region` reads.
-
-    Each field is the `solve_region` keyword of the same name, documented there.
-    """
-
-    compiled: CompiledProblem
-    spec: ProblemSpec
-    region: Region
-    state: Mapping[str, float]
-    splits: Sequence[LiftedSplit]
-    provider: PropertyProvider
-    policy: SolvePolicy
-    trace: Trace | None
-    initializer_source: str | None
-    recovery: RecoveryStart | None = None
-    compile_level: Callable[[ProblemSpec], CompiledProblem] | None = None
-    mass_mapping: MassMapping | None = None
-    closure_types: Mapping[str, ClosureType] | None = None
-    band_routes: Sequence[str] = ()
-    zero_flow_forms: Mapping[str, ZeroFlowForm] | None = None
-    dormancy_forms: Sequence[DormancyForm] = ()
-    split_temperatures: Mapping[str, tuple[str, ...]] | None = None
-    item0_opening_source: Literal["initializer", "eo_recovery_start"] = "initializer"
-    warm_start: bool = False
-    vapour_only_forms: Mapping[str, VapourOnlyForm] | None = None
-    split_owners: Mapping[str, str] | None = None
 
 
 @dataclass

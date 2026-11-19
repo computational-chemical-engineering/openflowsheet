@@ -596,7 +596,7 @@ def test_a_warm_opening_that_ends_before_an_attempt_falls_through(
     solve only."""
     original = region_module._solve_region
 
-    def refusing(call: region_module._RegionCall) -> RegionResult:
+    def refusing(call: region_module.RegionCall) -> RegionResult:
         if call.warm_start:
             return refusal(call.state)
         result: RegionResult = original(call)
@@ -645,7 +645,7 @@ def test_a_warm_opening_refused_by_the_opening_check_falls_through(
     warm: list[bool] = []
     refusals: list[OpeningRefusal | None] = []
 
-    def solving(call: region_module._RegionCall) -> RegionResult:
+    def solving(call: region_module.RegionCall) -> RegionResult:
         warm.append(bool(call.warm_start))
         try:
             result: RegionResult = real_solve(call)
