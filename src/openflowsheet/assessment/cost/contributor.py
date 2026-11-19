@@ -679,53 +679,82 @@ class _Planner:
         name: str,
         values: Mapping[str, float],
     ) -> tuple[Any, FunctionalBuilder] | None:
+        """The value and the builder of form input `name`, by its source.
+
+        A sizing output (`_size_input`), the design pressure (`_pressure_input`), the shell
+        thickness (`_thickness_input`) or the actuator count (`_n_act_input`); None when that
+        source has no value. Raises KeyError for an input with no source.
+        """
         if name in _SIZE_INPUT:
-            quantity = _SIZE_INPUT[name]
-            if item.family == "machine.drive" and name == "power":
-                # §9.2.7: the motor reads the machine's total shaft power W, not W/η.
-                quantity_id = f"size.{item.unit_id}.power"
-                if quantity_id not in values:
-                    return None
-                return values[quantity_id], _out(quantity_id)
-            output_id = item.size.get(quantity)
-            if output_id is None or output_id not in values:
-                return None
-            return values[output_id], _out(output_id)
+            return self._size_input(item, name, values)
         if name == "design_pressure":
-            p = item.design_pressure
-            if p is None:
-                return None
-            if isinstance(p, str):
-                value = self.sctx.x(p)
-                record.inputs.append(
-                    {"name": name, "value": value, "unit": "Pa", "defaulted": False}
-                )
-                return value, lambda s, a: s.x(p)
-            record.inputs.append({"name": name, "value": p, "unit": "Pa", "defaulted": False})
-            return float(p), lambda s, a: p
+            return self._pressure_input(item, record, name)
         if name == "thickness":
-            doc = self._item_doc(item)
-            if "shell_thickness" in doc:
-                value, provenance, dflt = (
-                    float(doc["shell_thickness"]),
-                    f"items.{item.item_id}.shell_thickness",
-                    False,
-                )
-            else:
-                value = e.continuous["shell_thickness_in"] * forms.INCH_M
-                provenance, dflt = f"{e.set_id} {e.entry_id} shell_thickness_in default", True
-                self._defaulted("shell_thickness", value, item.item_id)
-            theta = self._theta(f"asm:item.{item.item_id}.t_shell", value, "m", provenance)
-            record.inputs.append(
-                {"name": "t_shell", "value": value, "unit": "m", "defaulted": dflt}
-            )
-            return value, lambda s, a: s.theta(theta.theta_id)
+            return self._thickness_input(item, record, e)
         if name == "n_act":
-            n_act = item.options.get("N_act")
-            if n_act is None:
-                return None
-            return int(n_act), lambda s, a: int(n_act)
+            return self._n_act_input(item)
         raise KeyError(f"form input {name!r} has no source")
+
+    @staticmethod
+    def _size_input(
+        item: SizedItem, name: str, values: Mapping[str, float]
+    ) -> tuple[Any, FunctionalBuilder] | None:
+        """A sizing-output input: the item's size quantity for `name`, or for a drive's `power`
+        its machine's shaft power; None when that output has no value."""
+        quantity = _SIZE_INPUT[name]
+        if item.family == "machine.drive" and name == "power":
+            # §9.2.7: the motor reads the machine's total shaft power W, not W/η.
+            quantity_id = f"size.{item.unit_id}.power"
+            if quantity_id not in values:
+                return None
+            return values[quantity_id], _out(quantity_id)
+        output_id = item.size.get(quantity)
+        if output_id is None or output_id not in values:
+            return None
+        return values[output_id], _out(output_id)
+
+    def _pressure_input(
+        self, item: SizedItem, record: ItemCost, name: str
+    ) -> tuple[Any, FunctionalBuilder] | None:
+        """The design pressure: a variable's value or a number, recorded in `record.inputs`;
+        None when the item has none."""
+        p = item.design_pressure
+        if p is None:
+            return None
+        if isinstance(p, str):
+            value = self.sctx.x(p)
+            record.inputs.append({"name": name, "value": value, "unit": "Pa", "defaulted": False})
+            return value, lambda s, a: s.x(p)
+        record.inputs.append({"name": name, "value": p, "unit": "Pa", "defaulted": False})
+        return float(p), lambda s, a: p
+
+    def _thickness_input(
+        self, item: SizedItem, record: ItemCost, e: forms.ResolvedEntry
+    ) -> tuple[Any, FunctionalBuilder]:
+        """The shell thickness θ: the item's `shell_thickness`, else the entry's default
+        `shell_thickness_in` (defaulted); recorded in `record.inputs` as `t_shell`."""
+        doc = self._item_doc(item)
+        if "shell_thickness" in doc:
+            value, provenance, dflt = (
+                float(doc["shell_thickness"]),
+                f"items.{item.item_id}.shell_thickness",
+                False,
+            )
+        else:
+            value = e.continuous["shell_thickness_in"] * forms.INCH_M
+            provenance, dflt = f"{e.set_id} {e.entry_id} shell_thickness_in default", True
+            self._defaulted("shell_thickness", value, item.item_id)
+        theta = self._theta(f"asm:item.{item.item_id}.t_shell", value, "m", provenance)
+        record.inputs.append({"name": "t_shell", "value": value, "unit": "m", "defaulted": dflt})
+        return value, lambda s, a: s.theta(theta.theta_id)
+
+    @staticmethod
+    def _n_act_input(item: SizedItem) -> tuple[Any, FunctionalBuilder] | None:
+        """The actuator count option `N_act`; None when the item has none."""
+        n_act = item.options.get("N_act")
+        if n_act is None:
+            return None
+        return int(n_act), lambda s, a: int(n_act)
 
     def _held(
         self, item_id: str, form: forms.Form, e: forms.ResolvedEntry, sel: forms.Selection
