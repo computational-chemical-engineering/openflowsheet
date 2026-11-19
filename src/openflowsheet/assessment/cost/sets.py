@@ -370,7 +370,9 @@ def _check_floors(
 
 
 def parse_set(document: Mapping[str, Any]) -> CostSet:
-    """Check a set document (§9.2.3) and return it; `CostSetError` lists every failed check."""
+    """Check a set document (§9.2.3) and return it; `CostSetError` lists every failed check.
+
+    An entry of a known form is checked by `_check_generic` or `_sslw_entry_reasons`."""
     set_id = str(document.get("set_id", "<no set_id>"))
     reasons: list[str] = []
     if document.get("schema") != SCHEMA:
@@ -407,19 +409,7 @@ def parse_set(document: Mapping[str, Any]) -> CostSet:
         if form == "generic-v1":
             _check_generic(entry, at, reasons)
         else:
-            for name, option in dict(entry.get("options", {})).items():
-                _check_option(name, option, f"{at}.options.{name}", reasons)
-            _check_numbers(entry.get("coefficients", {}), f"{at}.coefficients", reasons)
-            for name, theta in dict(entry.get("continuous", {})).items():
-                _check_number(theta.get("default"), f"{at}.continuous.{name}.default", reasons)
-            if "index_basis" in entry:
-                where = f"{at}.index_basis.value"
-                value = entry["index_basis"].get("value")
-                _check_number(value, where, reasons)
-                amended = value.get("amended") if isinstance(value, Mapping) else None
-                if isinstance(amended, Mapping) and {"index_basis", "scale"} & set(amended):
-                    reasons.append(f"{where}.amended: a basis carries no index_basis or scale")
-            _check_ranges(entry.get("ranges", {}), f"{at}.ranges", reasons)
+            reasons += _sslw_entry_reasons(entry, at)
         entries.append(
             CostEntry(
                 at, str(form), tuple(entry.get("family", ())), entry.get("orientation"), entry
@@ -458,6 +448,27 @@ def _check_generic(entry: Mapping[str, Any], at: str, reasons: list[str]) -> Non
     for index, factor in enumerate(entry.get("factors", [])):
         if not (isinstance(factor.get("source_line"), str) and factor["source_line"]):
             reasons.append(f"{at}.factors[{index}]: missing source_line")
+
+
+def _sslw_entry_reasons(entry: Mapping[str, Any], at: str) -> list[str]:
+    """An SSLW-form entry `at`: its options (`_check_option`), coefficients, continuous
+    defaults, `index_basis.value` (a number whose `amended` carries no `index_basis` or
+    `scale`, §10.10.5.2) and ranges (`_check_ranges`), in that order."""
+    found: list[str] = []
+    for name, option in dict(entry.get("options", {})).items():
+        _check_option(name, option, f"{at}.options.{name}", found)
+    _check_numbers(entry.get("coefficients", {}), f"{at}.coefficients", found)
+    for name, theta in dict(entry.get("continuous", {})).items():
+        _check_number(theta.get("default"), f"{at}.continuous.{name}.default", found)
+    if "index_basis" in entry:
+        where = f"{at}.index_basis.value"
+        value = entry["index_basis"].get("value")
+        _check_number(value, where, found)
+        amended = value.get("amended") if isinstance(value, Mapping) else None
+        if isinstance(amended, Mapping) and {"index_basis", "scale"} & set(amended):
+            found.append(f"{where}.amended: a basis carries no index_basis or scale")
+    _check_ranges(entry.get("ranges", {}), f"{at}.ranges", found)
+    return found
 
 
 def _plain(node: Any, basis: float | None = None) -> Any:
