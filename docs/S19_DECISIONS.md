@@ -3779,3 +3779,14 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   checks), which covers N4. Alternative: a gate-tool change (interface mode accepting an empty plan for out-of-scope
   generator changes). Reversible by: that tool change and a re-gate of 6e86b173..30f705d9. For batch N's close review:
   the step-gate gap for generator-only steps (batch L and P will meet it).
+- **2026-11-19 ~23:30, batch N close K = 4178e4bc (orchestrator, WO-N5).** R5 at K: `corpus_identity.py --record`
+  (corpus.json one line, M9 pr_lib; m6-requests.json byte-identical), `registry_builtin.py --write`
+  (builtin-sha256.txt 9982007b), substitution at test_f1_legacy_builtins.py:374 (revision_binding -> model_builders).
+  W5-K1: diff = those three files (legacy.json, tables.sha256 from WO-N4). W5-K2 `judge --before 605d332f --after
+  4178e4bc` PASS (|E| 11, M9 1, tables 30). W5-K3: F0 PASS 9/9 (M9 35/35), `--check` clean; mcp_digest via job 514.
+  162 passed (f1_*, s10_provider, f0). W5-K7: no w5 row for program.Refusal or revision_binding.MODEL_BUILDERS
+  (i19_scan from the lane; the s19 copy scans its own tree). W5-K4: job 514 (merge-check --batch, B_N..K): W5-S1 diffs
+  B..HEAD, so the lane does not take the wp/S19 tip first; overlap of batch N's and wp/S19's files since B_N: none.
+  DECISION: merge order -> 514 PASS, review PASS, merge batch N into wp/S19, then a plain merge-check of the merge
+  commit. Alternative: helper merge before 514 (W5-S1 would refuse). Reversible by: reverting the merge.
+  W5-K6: review R-W5-N-close launched (reviewer, Opus; brief S19-R-W5-N-close.md).
