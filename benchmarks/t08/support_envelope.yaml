@@ -9722,3 +9722,57 @@ harvest:
   class: P
   to: []
   note: 'provenance note: witness tolerances and escalation numerics not re-examined (ruling scope)'
+- manifest: evidence/S19/e3e955206a4f06d942b274c766573eecfddf8655/manifest.json
+  item: limitations[0]
+  sha256: 7b392185d6f4db1fa18ba1fff9c8a432374f4a27ba3033b578bc6a9555a94f24
+  class: P
+  to: []
+  note: 'provenance note: software verification of behaviour-preserving refactors, not validation; unpinned behaviour is covered by review only'
+- manifest: evidence/S19/e3e955206a4f06d942b274c766573eecfddf8655/manifest.json
+  item: limitations[1]
+  sha256: 91898bc2db937eb712844229949c01c90ca79e6dc2d174e2a22070a27ad9fc4c
+  class: P
+  to: []
+  note: 'provenance note: status follows CI; review pending'
+- manifest: evidence/S19/e3e955206a4f06d942b274c766573eecfddf8655/manifest.json
+  item: limitations[2]
+  sha256: 8d804ed30d7081d2ba62a6c9a4146248f2c877324aaea456d533ecfde054b137
+  class: P
+  to: []
+  note: 'provenance note: I-20 changes the public API as ADR 0076 declares; external callers not checked'
+- manifest: evidence/S19/e3e955206a4f06d942b274c766573eecfddf8655/manifest.json
+  item: limitations[3]
+  sha256: ef4f0c1dc59350d969a57b3dc666cb6f9acfd3683f22801038db72cfc8aba0b2
+  class: P
+  to: []
+  note: 'process note: G-END not met at the blocking-set merge (health 8.53, 12 files below 7.0, brain 10); trailing work in Frank''s order'
+- manifest: evidence/S19/e3e955206a4f06d942b274c766573eecfddf8655/manifest.json
+  item: limitations[4]
+  sha256: b6a284c8919dfd8f272e14222d0bc1349f46c881110758c85194ccc78e8841c1
+  class: P
+  to: []
+  note: 'provenance note: the S16 B-6 failures occur only under the test-map build; f6 over budget only under coverage'
+- manifest: evidence/S19/e3e955206a4f06d942b274c766573eecfddf8655/manifest.json
+  item: limitations[5]
+  sha256: 2bdc2151e0c20cc73ca16ed081d2b1852e70fd115c15eeca94dcd1eddb758620
+  class: P
+  to: []
+  note: 'process note: open questions for Frank, none blocking'
+- manifest: evidence/S19/e3e955206a4f06d942b274c766573eecfddf8655/manifest.json
+  item: limitations[6]
+  sha256: bd067c0e90897e431afc6cd12be82a0c182fe380934fc32cd3b7031131ee4e9e
+  class: P
+  to: []
+  note: 'process note: no CI job or gate runs the nlp-marked tests; g19, g20 known failures'
+- manifest: evidence/S19/e3e955206a4f06d942b274c766573eecfddf8655/manifest.json
+  item: limitations[7]
+  sha256: ee88ab66b75917638834de23950e85b0bd09bdfd11c1cb4918ae6a48007ce7b7
+  class: P
+  to: []
+  note: 'provenance note: test changes outside the step gate (G3 test-only commits, WO-1b oracle, R-1060); F0 M9 modules unchanged'
+- manifest: evidence/S19/e3e955206a4f06d942b274c766573eecfddf8655/manifest.json
+  item: limitations[8]
+  sha256: 796252232883103c27a13ac662d1253174664ff2911f60707091978732e1f58f
+  class: P
+  to: []
+  note: 'provenance note: requirements empty, a development-process package'
