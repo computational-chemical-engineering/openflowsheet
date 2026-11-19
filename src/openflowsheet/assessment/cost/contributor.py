@@ -868,10 +868,7 @@ class _Planner:
         blocked: list[str] = []
         for utility in self.doc.get("utilities", ()):
             u = str(utility["utility_id"])
-            if utility["kind"] == "electricity":
-                users = [i for i in self.sizing.items if i.electricity is not None and i.power]
-            else:
-                users = [i for i in self.sizing.items if i.utility == u and i.duty is not None]
+            users = self._utility_users(utility, u)
             if not users:
                 continue
             output_id = f"opex.utility.{u}"
@@ -898,6 +895,16 @@ class _Planner:
             )
             lines.append(output_id)
         return lines, blocked
+
+    def _utility_users(self, utility: Mapping[str, Any], u: str) -> list[SizedItem]:
+        """The sized items that use utility `u`, in sizing order.
+
+        For a utility of kind `electricity`, the items with an electricity role and a power;
+        otherwise the items with a duty on `u`.
+        """
+        if utility["kind"] == "electricity":
+            return [i for i in self.sizing.items if i.electricity is not None and i.power]
+        return [i for i in self.sizing.items if i.utility == u and i.duty is not None]
 
     def _export_price(self, utility: Mapping[str, Any], u: str, price: Theta) -> Theta | None:
         """The export price of utility `u`, which has generating users.
