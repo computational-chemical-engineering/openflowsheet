@@ -3770,3 +3770,12 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   as `--mode no-gain --batch` (job 513 w5n4-1n; the W5 verdicts S1, S3, S4 still run). Alternative: a tool change
   letting interface mode take an empty plan for out-of-scope changes. Reversible by: re-enqueueing in that mode once
   the tool takes it. The plan commit 8ac4511c stays (admitted via retarget, empty lists); for batch N's close review.
+- 2026-11-19, job 513 (w5n4-1n, no-gain --batch) FAIL forbid, scope (step 464 gate-fail, 8/10; no test tier ran):
+  codehealth's static checks refuse `.codehealth/interface/w5n4-factory-switch.toml` (forbid) and every WO-N4 path as
+  out of scope. Again a mode mismatch, not a code failure. DECISION: WO-N4 returns to the default registered at
+  2026-11-19 ~01:15 (open item 1): an orchestrator-authorised commit outside the step gate, judged by W5-S1 PASS,
+  W5-S4 PASS (30 units' factory pointers) and F0 `M9 FAIL 1/35` as measured by the engineer, and by batch N's close
+  merge-check (`--mode merge-check --batch`, behaviour-only: full suite with the W5 verdicts over B..K, no static
+  checks), which covers N4. Alternative: a gate-tool change (interface mode accepting an empty plan for out-of-scope
+  generator changes). Reversible by: that tool change and a re-gate of 6e86b173..30f705d9. For batch N's close review:
+  the step-gate gap for generator-only steps (batch L and P will meet it).
