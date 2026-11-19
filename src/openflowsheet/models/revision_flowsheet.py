@@ -22,10 +22,10 @@ Constructing the units is not here: the builder table is the application layer's
 from __future__ import annotations
 
 import re
-from collections.abc import Mapping
+from collections.abc import Iterator, Mapping
 from dataclasses import dataclass, field
 from types import MappingProxyType
-from typing import Any, Literal, overload
+from typing import Any, Literal, NamedTuple, overload
 
 from openflowsheet.canonical import document_sha256
 from openflowsheet.compile.spec import ProblemSpec
@@ -464,9 +464,10 @@ def _read(
     model to what its instance targets read, for the `specification_unsupported` hint. Raises
     `RevisionError` for what the rules cannot read.
 
-    Phases, in order: `_read_instances` (R1), the material connections (R1, R3), `_port_phases`
-    (R4), then the fixed specifications (R5), whose targets `_connection_columns` and
-    `_instance_columns` resolve to columns.
+    Phases, in order: `_read_instances` (R1), the material connections (R1, R3), each checked
+    by `_stream_capability` and at each end by `_endpoint`, `_port_phases` (R4), then the fixed
+    specifications (R5), each read by `_fixed_specification`, whose targets `_connection_columns`
+    and `_instance_columns` resolve to columns, and last the records' views, `_instance_views`.
     """
     declared_components = tuple((document.get("component_set") or {}).get("components") or ())
     basis = component_basis(document)
@@ -480,24 +481,10 @@ def _read(
     streams: list[str] = []
     edges: list[tuple[str, str, str]] = []
     for entry in document.get("connections") or ():
-        stream = _require_id(entry.get("id"))
-        if stream in streams:
-            raise RevisionError("conflict", f"id_duplicate({stream})")
-        if entry.get("kind") != "material":
-            raise RevisionError("unsupported", f"connection_kind_unsupported({stream})")
-        capability = entry.get("phase_capability")
-        if capability is None:
-            raise RevisionError("incomplete", f"phase_capability_missing({stream})")
-        if capability not in _DECLARED:
-            raise RevisionError("unsupported", f"phase_capability_unsupported({stream})")
+        stream, capability = _stream_capability(entry, streams)
         ends: list[str] = []
         for end, direction in (("from", "outlet"), ("to", "inlet")):
-            endpoint = entry.get(end) or {}
-            owner, port = endpoint.get("instance"), endpoint.get("port")
-            if not owner or not port:
-                raise RevisionError("incomplete", f"endpoint_missing({stream}.{end})")
-            if owner not in instances:
-                raise RevisionError("incomplete", f"instance_missing({owner})")
+            owner, port = _endpoint(entry, end, stream, instances)
             record = instances[owner]
             if record["directions"].setdefault(port, direction) != direction:
                 raise RevisionError("conflict", f"port_direction_conflict({owner}.{port})")
@@ -510,54 +497,24 @@ def _read(
 
     phases = _port_phases(instances)
 
-    # R5: fixed specifications become pins, routed to the owner of the column they fix. Each
-    # value is read in SI by `unit-conversion-v2` (ADR 0016 D5, reader R2), after its component:
-    # a component outside the set is refused as such whatever the unit (ADR 0016 D5).
+    # R5: fixed specifications become pins, routed to the owner of the column they fix.
     sources: dict[str, list[str]] = {}
     conversions: list[UnitConversion] = []
+    frame = _TargetFrame(components, component_set, basis.molecular_weights, targets)
     for entry in document.get("specifications") or ():
         name = str(entry.get("id", ""))
-        if entry.get("role") != "fixed":
-            raise RevisionError("unsupported", f"specification_role_unsupported({name})")
-        target = entry.get("target") or {}
-        object_type, object_id = target.get("object_type"), str(target.get("object_id", ""))
-        path = str(target.get("path", ""))
-        if target.get("component") is not None and target.get("component") not in components:
-            raise RevisionError(
-                "unsupported",
-                f"specification_unsupported({name})",
-                f"Component {target.get('component')} is not in the component set {component_set}.",
-            )
-        value, conversion = convert_specification(
-            entry,
-            _number(entry.get("value"), f"specification_value_unreadable({name})"),
-            basis.molecular_weights,
+        owner, value, conversion, columns, parameter = _fixed_specification(
+            entry, name, frame, producers, instances
         )
         if conversion is not None:
             conversions.append(conversion)
-        if object_type == "connection":
-            if object_id not in producers:
-                raise RevisionError("incomplete", f"specification_target_unknown({name})")
-            owner = producers[object_id]
-            columns = _connection_columns(
-                name, object_id, path, target.get("component"), components, component_set
-            )
-        elif object_type == "instance":
-            if object_id not in instances:
-                raise RevisionError("incomplete", f"specification_target_unknown({name})")
-            owner = object_id
-            record = instances[owner]
-            if path.startswith("parameters."):
-                parameter = path.removeprefix("parameters.")
-                declared = record["parameters"].setdefault(parameter, value)
-                if declared != value:
-                    raise RevisionError(
-                        "conflict", f"specification_conflict({name}, {owner}.{parameter})"
-                    )
-                continue
-            columns = _instance_columns(name, owner, path, record, targets)
-        else:
-            raise RevisionError("unsupported", f"specification_unsupported({name})")
+        if parameter is not None:
+            declared = instances[owner]["parameters"].setdefault(parameter, value)
+            if declared != value:
+                raise RevisionError(
+                    "conflict", f"specification_conflict({name}, {owner}.{parameter})"
+                )
+            continue
         pins: dict[str, float] = instances[owner]["pins"]
         for column in columns:
             if column in pins and pins[column] != value:
@@ -569,20 +526,7 @@ def _read(
 
     view = RevisionView(
         components=components,
-        instances=tuple(
-            InstanceView(
-                unit_id=unit,
-                model_id=record["model"],
-                ports={port: tuple(connected) for port, connected in record["ports"].items()},
-                directions=dict(record["directions"]),
-                phases=phases[unit],
-                parameters=dict(record["parameters"]),
-                pins=dict(record["pins"]),
-                model_version=_optional_text(record["version"]),
-                model_artifact_ref=_optional_text(record["artifact_ref"]),
-            )
-            for unit, record in instances.items()
-        ),
+        instances=_instance_views(instances, phases),
         streams=tuple(streams),
         edges=tuple(edges),
         input_mapping=InputMapping(
@@ -629,6 +573,39 @@ def _read_instances(
     return instances, parameter_conversions
 
 
+def _stream_capability(entry: Mapping[str, Any], streams: list[str]) -> tuple[str, str]:
+    """R1, R3: the stream a material connection `entry` allocates and its declared phase
+    capability. Raises the `id_duplicate` conflict for a stream already in `streams`, and
+    refuses a connection that is not `material` or whose `phase_capability` is missing or not
+    one of `_DECLARED`'s. Reads only."""
+    stream = _require_id(entry.get("id"))
+    if stream in streams:
+        raise RevisionError("conflict", f"id_duplicate({stream})")
+    if entry.get("kind") != "material":
+        raise RevisionError("unsupported", f"connection_kind_unsupported({stream})")
+    capability = entry.get("phase_capability")
+    if capability is None:
+        raise RevisionError("incomplete", f"phase_capability_missing({stream})")
+    if capability not in _DECLARED:
+        raise RevisionError("unsupported", f"phase_capability_unsupported({stream})")
+    return stream, capability
+
+
+def _endpoint(
+    entry: Mapping[str, Any], end: str, stream: str, instances: Mapping[str, Any]
+) -> tuple[str, Any]:
+    """R1: the `(instance, port)` at end `end` (`from` or `to`) of the connection `entry` that
+    allocates `stream`. Raises `endpoint_missing` for an end without an instance or a port and
+    `instance_missing` for an instance not in `instances`. Reads only."""
+    endpoint = entry.get(end) or {}
+    owner, port = endpoint.get("instance"), endpoint.get("port")
+    if not owner or not port:
+        raise RevisionError("incomplete", f"endpoint_missing({stream}.{end})")
+    if owner not in instances:
+        raise RevisionError("incomplete", f"instance_missing({owner})")
+    return owner, port
+
+
 def _port_phases(instances: Mapping[str, Mapping[str, Any]]) -> dict[str, dict[str, Phase | None]]:
     """R4: one declared phase per port, per instance in record order and per port in its
     `capabilities` order; raises `port_phase_ambiguous` for a port whose connections declare
@@ -644,18 +621,88 @@ def _port_phases(instances: Mapping[str, Mapping[str, Any]]) -> dict[str, dict[s
     return phases
 
 
-def _connection_columns(
+class _TargetFrame(NamedTuple):
+    """What R5 reads every fixed specification against, fixed for the call before R1: the
+    canonical `components`, the declared `component_set` as written (for hints), the basis's
+    `molecular_weights` (`unit-conversion-v2`, ADR 0016 D5) and the builder table's instance
+    `targets` (ruling round 6, B2)."""
+
+    components: tuple[str, ...]
+    component_set: str
+    molecular_weights: Mapping[str, float]
+    targets: Mapping[str, str]
+
+
+class _FixedSpecification(NamedTuple):
+    """R5: what one fixed specification fixes, read before anything is written."""
+
+    #: The instance that owns what it fixes: a connection's producer, or the instance itself.
+    owner: str
+    #: Its value in SI.
+    value: float
+    #: The `unit-conversion-v2` conversion that read `value`, `None` for none.
+    conversion: UnitConversion | None
+    #: The columns it pins on `owner`; empty for a parameter target.
+    columns: tuple[str, ...]
+    #: The `owner` parameter a `parameters.<name>` target fixes, `None` for a column target.
+    parameter: str | None
+
+
+def _fixed_specification(
+    entry: Mapping[str, Any],
     name: str,
-    stream: str,
-    path: str,
-    component: Any,
-    components: tuple[str, ...],
-    component_set: str,
+    frame: _TargetFrame,
+    producers: Mapping[str, str],
+    instances: Mapping[str, Mapping[str, Any]],
+) -> _FixedSpecification:
+    """R5: specification `entry`, whose id is `name`, as what it fixes. Its value is read in SI by
+    `unit-conversion-v2` (ADR 0016 D5, reader R2), after its component: a component outside the set
+    is refused as such whatever the unit (ADR 0016 D5). A `connection` target resolves through
+    `producers` and `_connection_columns`, an `instance` target through `instances` and, unless it
+    names a parameter, `_instance_columns`. Raises `specification_role_unsupported` for a role other
+    than `fixed`, `specification_unsupported` for a component outside the set or an object type
+    other than these two, and `specification_target_unknown` for an object not in `producers` or
+    `instances`; `_number`, the conversion and the column helpers raise their own. Reads only."""
+    if entry.get("role") != "fixed":
+        raise RevisionError("unsupported", f"specification_role_unsupported({name})")
+    target = entry.get("target") or {}
+    object_type, object_id = target.get("object_type"), str(target.get("object_id", ""))
+    path = str(target.get("path", ""))
+    if target.get("component") is not None and target.get("component") not in frame.components:
+        raise RevisionError(
+            "unsupported",
+            f"specification_unsupported({name})",
+            f"Component {target.get('component')} is not in the component set "
+            f"{frame.component_set}.",
+        )
+    value, conversion = convert_specification(
+        entry,
+        _number(entry.get("value"), f"specification_value_unreadable({name})"),
+        frame.molecular_weights,
+    )
+    if object_type == "connection":
+        if object_id not in producers:
+            raise RevisionError("incomplete", f"specification_target_unknown({name})")
+        columns = _connection_columns(name, object_id, path, target.get("component"), frame)
+        return _FixedSpecification(producers[object_id], value, conversion, columns, None)
+    if object_type == "instance":
+        if object_id not in instances:
+            raise RevisionError("incomplete", f"specification_target_unknown({name})")
+        if path.startswith("parameters."):
+            parameter = path.removeprefix("parameters.")
+            return _FixedSpecification(object_id, value, conversion, (), parameter)
+        columns = _instance_columns(name, object_id, path, instances[object_id], frame.targets)
+        return _FixedSpecification(object_id, value, conversion, columns, None)
+    raise RevisionError("unsupported", f"specification_unsupported({name})")
+
+
+def _connection_columns(
+    name: str, stream: str, path: str, component: Any, frame: _TargetFrame
 ) -> tuple[str, ...]:
     """R5: the column a `connection` target fixes on `stream`: `state.n` with a `component` in
-    `components`, or `state.T` or `state.P` without one; any other path refuses specification
-    `name` as unsupported, with the connection hint over `component_set`."""
-    if path == "state.n" and component in components:
+    `frame.components`, or `state.T` or `state.P` without one; any other path refuses
+    specification `name` as unsupported, with the connection hint over `frame.component_set`."""
+    if path == "state.n" and component in frame.components:
         return (flow_id(stream, str(component)),)
     if path == "state.T" and component is None:
         return (temperature_id(stream),)
@@ -664,7 +711,7 @@ def _connection_columns(
     raise RevisionError(
         "unsupported",
         f"specification_unsupported({name})",
-        _CONNECTION_HINT.format(components=component_set),
+        _CONNECTION_HINT.format(components=frame.component_set),
     )
 
 
@@ -697,6 +744,29 @@ def _instance_columns(
         "unsupported",
         f"specification_unsupported({name})",
         _instance_hint(owner, record["model"], targets),
+    )
+
+
+def _instance_views(
+    instances: Mapping[str, Mapping[str, Any]], phases: Mapping[str, dict[str, Phase | None]]
+) -> tuple[InstanceView, ...]:
+    """The `InstanceView` of each reader record in `instances`, in record (declaration) order,
+    with the unit's R4 `phases`: copies of the record's `ports` (each port's streams as a
+    tuple), `directions`, `parameters` and `pins`, and its model's `version` and
+    `artifact_ref` as text or `None`. Reads only."""
+    return tuple(
+        InstanceView(
+            unit_id=unit,
+            model_id=record["model"],
+            ports={port: tuple(connected) for port, connected in record["ports"].items()},
+            directions=dict(record["directions"]),
+            phases=phases[unit],
+            parameters=dict(record["parameters"]),
+            pins=dict(record["pins"]),
+            model_version=_optional_text(record["version"]),
+            model_artifact_ref=_optional_text(record["artifact_ref"]),
+        )
+        for unit, record in instances.items()
     )
 
 
@@ -1042,76 +1112,51 @@ class RevisionFlowsheet:
         guess, or a dormant stream labelled with that computed inlet's `(T, P)` — a legal inlet
         for every unit (ADR 0001 D3.4), and one a mixer's equal-pressure rule accepts. The
         deadlock depends only on the graph, so a second pass from the first's `computed_torn`
-        tears the same streams. Nothing is solved and nothing iterated.
+        tears the same streams. Nothing is solved and nothing iterated. `_ready_unit` picks the
+        unit that runs; when it finds none, `_started_unit` picks the unit to tear and `_tear` its
+        tears. `_inlet_states` gives the unit its inlets, and the pass's state, a `_Traversal`,
+        takes its outlets' values by `_Traversal.complete`; `_Traversal.fail` ends a failed pass.
         """
-        value: dict[str, StreamState] = {}
-        computed: set[str] = set()
-        torn: list[str] = []
-        computed_torn: dict[str, StreamState] = {}
-        evaluations: dict[str, UnitEvaluation] = {}
-        order: list[str] = []
-
-        def fail(
-            unit: str, status: PropertyStatus, code: str, diagnostic: Diagnostic | None = None
-        ) -> FlowsheetPass:
-            return FlowsheetPass(
-                status=status,
-                streams=dict(value),
-                evaluations=dict(evaluations),
-                order=tuple(order),
-                torn=tuple(torn),
-                computed_torn=dict(computed_torn),
-                failed_unit=unit,
-                code=code,
-                diagnostic=diagnostic,
-            )
-
-        pending = list(self.instances)
-        while pending:
-            ready = [u for u in pending if all(s in value for s in self._streams(u, "inlet"))]
-            if ready:
-                unit = ready[0]
-            else:
-                started = [
-                    u for u in pending if any(s in computed for s in self._streams(u, "inlet"))
-                ]
-                if not started:
-                    return fail(pending[0].unit_id, "error", "no_computed_inlet")
-                unit = started[0]
-                tears = self._tear(unit, value, computed, guesses)
-                value.update(tears)
-                torn.extend(tears)
+        run = _Traversal(pending=list(self.instances))
+        while run.pending:
+            unit = self._ready_unit(run.pending, run.value)
+            if unit is None:
+                unit = self._started_unit(run.pending, run.computed)
+                if unit is None:
+                    return run.fail(run.pending[0].unit_id, "error", "no_computed_inlet")
+                tears = self._tear(unit, run.value, run.computed, guesses)
+                run.value.update(tears)
+                run.torn.extend(tears)
 
             connected = self.wiring[unit.unit_id].streams
-            evaluation = unit.evaluate(
-                {
-                    port: tuple(value[s] for s in connected.get(port, ()))
-                    for port in _material(unit, "inlet")
-                },
-                self.context,
-            )
+            evaluation = unit.evaluate(_inlet_states(unit, run.value, connected), self.context)
             if evaluation.status != "ok":
                 lines = evaluation.message.splitlines() or [""]
-                return fail(unit.unit_id, evaluation.status, lines[0], _sidecar(lines))
-            for port in _material(unit, "outlet"):
-                for stream in connected.get(port, ()):
-                    if stream in torn:
-                        computed_torn[stream] = evaluation.outlets[port]
-                    else:
-                        value[stream] = evaluation.outlets[port]
-                    computed.add(stream)
-            evaluations[unit.unit_id] = evaluation
-            order.append(unit.unit_id)
-            pending = [u for u in pending if u is not unit]
+                return run.fail(unit.unit_id, evaluation.status, lines[0], _sidecar(lines))
+            run.complete(unit, evaluation, connected)
 
         return FlowsheetPass(
             status="ok",
-            streams=dict(value),
-            evaluations=dict(evaluations),
-            order=tuple(order),
-            torn=tuple(torn),
-            computed_torn=dict(computed_torn),
+            streams=dict(run.value),
+            evaluations=dict(run.evaluations),
+            order=tuple(run.order),
+            torn=tuple(run.torn),
+            computed_torn=dict(run.computed_torn),
         )
+
+    def _ready_unit(
+        self, pending: list[UnitModel], value: Mapping[str, StreamState]
+    ) -> UnitModel | None:
+        """§1.5: the first unit of `pending` whose every inlet stream has a value in `value`;
+        `None` when no unit has (the pass is deadlocked). Reads only."""
+        ready = [u for u in pending if all(s in value for s in self._streams(u, "inlet"))]
+        return ready[0] if ready else None
+
+    def _started_unit(self, pending: list[UnitModel], computed: set[str]) -> UnitModel | None:
+        """§1.5: the deadlocked pass's unit to tear, the first unit of `pending` with an inlet
+        stream in `computed`; `None` when no unit has one. Reads only."""
+        started = [u for u in pending if any(s in computed for s in self._streams(u, "inlet"))]
+        return started[0] if started else None
 
     def _tear(
         self,
@@ -1139,6 +1184,77 @@ class RevisionFlowsheet:
                 )
             )
         return tears
+
+
+@dataclass
+class _Traversal:
+    """The state of one `RevisionFlowsheet.traverse` pass (S19 G1 recipe `closures-to-class`):
+    no frame fields; the state is the units still `pending` (declaration order), the stream
+    values found so far (`value`), the `computed` streams, the `torn` streams in tear order and
+    the values the pass `computed_torn` for them, the units' `evaluations` and the `order` they
+    ran in. `traverse` writes the tears into `value` and `torn`, `complete` what a unit that ran
+    gives; `fail` only reads the fields."""
+
+    pending: list[UnitModel]
+    value: dict[str, StreamState] = field(default_factory=dict)
+    computed: set[str] = field(default_factory=set)
+    torn: list[str] = field(default_factory=list)
+    computed_torn: dict[str, StreamState] = field(default_factory=dict)
+    evaluations: dict[str, UnitEvaluation] = field(default_factory=dict)
+    order: list[str] = field(default_factory=list)
+
+    def fail(
+        self, unit: str, status: PropertyStatus, code: str, diagnostic: Diagnostic | None = None
+    ) -> FlowsheetPass:
+        return FlowsheetPass(
+            status=status,
+            streams=dict(self.value),
+            evaluations=dict(self.evaluations),
+            order=tuple(self.order),
+            torn=tuple(self.torn),
+            computed_torn=dict(self.computed_torn),
+            failed_unit=unit,
+            code=code,
+            diagnostic=diagnostic,
+        )
+
+    def complete(
+        self, unit: UnitModel, evaluation: UnitEvaluation, connected: Mapping[str, tuple[str, ...]]
+    ) -> None:
+        """§1.5, `unit` ran with `evaluation` (status `ok`): each stream `connected` to one of its
+        outlets takes the outlet's value, in `_outlet_states` order, into `computed_torn` for a
+        torn stream and into `value` otherwise, and is `computed`; the unit's evaluation is kept,
+        it joins `order` and leaves `pending`. Writes the run's state."""
+        for stream, state in _outlet_states(unit, evaluation, connected):
+            if stream in self.torn:
+                self.computed_torn[stream] = state
+            else:
+                self.value[stream] = state
+            self.computed.add(stream)
+        self.evaluations[unit.unit_id] = evaluation
+        self.order.append(unit.unit_id)
+        self.pending = [u for u in self.pending if u is not unit]
+
+
+def _inlet_states(
+    unit: UnitModel, value: Mapping[str, StreamState], connected: Mapping[str, tuple[str, ...]]
+) -> dict[str, tuple[StreamState, ...]]:
+    """`unit`'s inlets as `evaluate` takes them: per material inlet port in `ports()` order, the
+    values in `value` of its `connected` streams, in R1 order; a repeated port name keeps the
+    last. Reads only."""
+    return {
+        port: tuple(value[s] for s in connected.get(port, ())) for port in _material(unit, "inlet")
+    }
+
+
+def _outlet_states(
+    unit: UnitModel, evaluation: UnitEvaluation, connected: Mapping[str, tuple[str, ...]]
+) -> Iterator[tuple[str, StreamState]]:
+    """Lazily, each stream `connected` to a material outlet port of `unit` (ports in `ports()`
+    order, then R1 order) with the value `evaluation` gives that port. Reads only."""
+    for port in _material(unit, "outlet"):
+        for stream in connected.get(port, ()):
+            yield stream, evaluation.outlets[port]
 
 
 def _material(unit: UnitModel, direction: PortDirection) -> tuple[str, ...]:

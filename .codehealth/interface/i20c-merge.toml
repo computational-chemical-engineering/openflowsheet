@@ -1,0 +1,27 @@
+# ADR 0076 I-20 step c of 3 (brief S19-W4-I20, WO-5): table.revision_checks runs the gamma-phi form;
+# gamma_phi_units.revision_checks is removed. Design: docs/briefs/S19-I20-design.md sections 5.4,
+# 5.5, 7. `codehealth gate --mode interface` reads this plan from the plan commit.
+id = "i20c-merge"
+approved_by = "Frank Peters, 2026-11-19, Decision Desk ofs-s19-verify-twins choice A (ADR 0076 addendum I-20)"
+reason = """ADR 0076 addendum I-20, step c (docs/briefs/S19-I20-design.md sections 5.4, 5.5, 6 WO-5, \
+7). table.revision_checks runs the gamma-phi form itself: after its prelude (at, note, reacting, \
+reaction_note, unchanged) it resolves the form, builds Judging, and calls the new routing phase \
+table._routing(form, view, splits, owners, judging) -> _Routing, built by keyword (R-W3-G5-3 fix \
+1): the gamma-phi rung calls gamma_phi_units.require_composition_dependent, \
+forms.declared_phases and gamma_phi_units.degeneracy; the other rungs are the former inline \
+ladder. The admissibility dispatch reads the form: gamma_phi_units.admissibility_checks for the \
+gamma-phi form, else the mixture, PR and SYN rows as before. gamma_phi_units.revision_checks is \
+removed with its now unused imports (bounds_checks, qualification, REACTING_MODELS, \
+_envelope_energy, _envelope_material, REACTION_DATUM_NOTE, ModelChecks, Unit, MODEL_CHECKS); its \
+callers in tests were retargeted outside the gate (WO-4). The one change in calls: a gamma-phi \
+check set no longer makes the removed entry's two provider.describe() calls (qualification and \
+reaction_note, already computed by table.revision_checks for the same provider; design 5.5 item \
+5). No string literal is added; literals dropped only by consolidation (the static trial \
+decides). Expected codehealth arch --depth 4 (measured on the step applied to this base): 0 / 0 \
+violations, 0 / 0 cycles, files 329 -> 329, imports 4107 -> 4106."""
+removed = ["src/openflowsheet/verify/gamma_phi_units.py:revision_checks"]
+renamed = {}
+changed = []
+added = []
+new_files = []
+callers = []

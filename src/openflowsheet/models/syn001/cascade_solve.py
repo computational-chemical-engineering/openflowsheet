@@ -543,21 +543,43 @@ def _stage_failures(
     state: Mapping[str, float],
     regimes: Sequence[Regime],
 ) -> list[str]:
-    """Spec §8, stage by stage: on a `TWO_PHASE` stage each of `V_j`, `L_j` that is not `> 0`; on a
-    `LIQUID` or `VAPOR` stage a failed `admissibility`."""
+    """Spec §8, stage by stage: on a `TWO_PHASE` stage each of `V_j`, `L_j` that is not `> 0`
+    (`_two_phase_failures`); on a `LIQUID` or `VAPOR` stage a failed `admissibility`
+    (`_single_phase_failures`)."""
     failures: list[str] = []
     unit = spec.unit_id
     for stage, regime in enumerate(regimes, start=1):
         if regime == "TWO_PHASE":
-            for total in (vapor_total_id(unit, stage), liquid_total_id(unit, stage)):
-                if not state[total] > 0.0:
-                    failures.append(f"TWO_PHASE stage {stage}: {total} = {state[total]!r}")
+            failures += _two_phase_failures(unit, state, stage)
         elif regime in ("LIQUID", "VAPOR"):
-            phase: Phase = "LIQUID" if regime == "LIQUID" else "VAPOR"
-            admissible, detail = admissibility(spec, provider, state, stage, phase)
-            if not admissible:
-                failures.append(f"{regime} stage {stage} inadmissible: {detail}")
+            failures += _single_phase_failures(spec, provider, state, stage, regime)
     return failures
+
+
+def _two_phase_failures(unit: str, state: Mapping[str, float], stage: int) -> list[str]:
+    """A `TWO_PHASE` stage's totals `V_j`, `L_j` (in that order) whose `state` value is not
+    `> 0`."""
+    failures: list[str] = []
+    for total in (vapor_total_id(unit, stage), liquid_total_id(unit, stage)):
+        if not state[total] > 0.0:
+            failures.append(f"TWO_PHASE stage {stage}: {total} = {state[total]!r}")
+    return failures
+
+
+def _single_phase_failures(
+    spec: CascadeSpec,
+    provider: PropertyProvider,
+    state: Mapping[str, float],
+    stage: int,
+    regime: Regime,
+) -> list[str]:
+    """A `LIQUID` or `VAPOR` stage's failed `admissibility` in that phase: one failure, or
+    none."""
+    phase: Phase = "LIQUID" if regime == "LIQUID" else "VAPOR"
+    admissible, detail = admissibility(spec, provider, state, stage, phase)
+    if not admissible:
+        return [f"{regime} stage {stage} inadmissible: {detail}"]
+    return []
 
 
 def _saturation_failures(
@@ -742,7 +764,8 @@ def solve_cascade(
     `opening` replaces `x_K` as the pre-solve's start, and `tbar` replaces the initializer's `T̄`
     as the pre-solve's isothermal level (spec §10 A18's perturbed openings; spec §17.8, R-517).
     Both default to the initializer's. A `CONVERGED` answer that fails §8 (with Amendment 2's
-    saturation clause, S08b §5.2) raises `AcceptanceDefectError`.
+    saturation clause, S08b §5.2) raises `AcceptanceDefectError`. The pre-solve's summary is
+    `_presolve_summary`'s, and `_initialization_cause` decides whether the target solve runs.
     """
     refused = validate(spec, provider, DECLARATION_CONTEXT)
     if refused is not None:
@@ -764,21 +787,11 @@ def solve_cascade(
     presolve = run_region(
         pre, provider, start, PRESOLVE_POLICY, initializer_source=initial.initializer
     )
-    final_attempt = presolve.attempts[-1] if presolve.attempts else None
-    pre_regimes = regimes_of(spec, final_attempt.signature) if final_attempt else ()
-    summary = PresolveSummary(
-        outcome=presolve.outcome,
-        solver_outcome=None if final_attempt is None else final_attempt.solver_outcome,
-        iterations=presolve.iterations,
-        signature=pre_regimes,
-        state_sha256=state_sha256(dict(presolve.state), order),
-    )
-    two_phase = bool(pre_regimes) and all(r == "TWO_PHASE" for r in pre_regimes)
-    if presolve.outcome != "CONVERGED" or not two_phase:
-        outcome = presolve.outcome if presolve.outcome != "CONVERGED" else "not_two_phase"
+    summary = _presolve_summary(spec, presolve, order)
+    if (cause := _initialization_cause(presolve, summary.signature)) is not None:
         return CascadeSolution(
             outcome="INITIALIZATION_FAILED",
-            cause=f"initialization_failed({PRESOLVE_ID}, {outcome})",
+            cause=cause,
             signature=(),
             state=dict(presolve.state),
             initial=initial,
@@ -819,6 +832,35 @@ def solve_cascade(
         recovered_from=recovered_from,
         final_sha256=state_sha256(dict(result.state), order),
     )
+
+
+def _presolve_summary(
+    spec: CascadeSpec, presolve: RegionResult, order: tuple[str, ...]
+) -> PresolveSummary:
+    """Spec §7.7: the `PresolveSummary` of `presolve`, with its last attempt's solver outcome
+    and the regimes of that attempt's signature (`None` and `()` when it made no attempt), and
+    the SHA-256 of its state in `order`. Pure."""
+    final_attempt = presolve.attempts[-1] if presolve.attempts else None
+    pre_regimes = regimes_of(spec, final_attempt.signature) if final_attempt else ()
+    return PresolveSummary(
+        outcome=presolve.outcome,
+        solver_outcome=None if final_attempt is None else final_attempt.solver_outcome,
+        iterations=presolve.iterations,
+        signature=pre_regimes,
+        state_sha256=state_sha256(dict(presolve.state), order),
+    )
+
+
+def _initialization_cause(presolve: RegionResult, signature: tuple[Regime, ...]) -> str | None:
+    """Spec §7's pre-solve gate: the `initialization_failed` cause when `presolve` did not
+    converge (its outcome in the slot) or converged with a `signature` that is empty or has a
+    stage not `TWO_PHASE` (`not_two_phase`, S01_DECISIONS); `None` when the target solve
+    runs. Pure."""
+    two_phase = bool(signature) and all(r == "TWO_PHASE" for r in signature)
+    if presolve.outcome != "CONVERGED" or not two_phase:
+        outcome = presolve.outcome if presolve.outcome != "CONVERGED" else "not_two_phase"
+        return f"initialization_failed({PRESOLVE_ID}, {outcome})"
+    return None
 
 
 def products(spec: CascadeSpec, state: Mapping[str, float]) -> dict[str, tuple[float, ...]]:

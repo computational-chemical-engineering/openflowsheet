@@ -1,10 +1,11 @@
 """The verifier's γ–φ form for the K02/T05 units' lifted splits (S11 units design §4.8; ADR 0051;
 WO-D3).
 
-Since I1b `verify.table.revision_checks` sends `wilson-ig-v2` revisions here (`GAMMA_PHI_UNITS`).
-It is the first pass's `DECLARED_MIXTURE` form (`verify.forms`,
-`verify.table.revision_checks`) with one addition, so that the five γ–φ-faced units of WO-D1 are
-verified rather than blocked:
+Since I1b `verify.table.revision_checks` runs this form for `wilson-ig-v2` revisions
+(`GAMMA_PHI_UNITS`); this module supplies the form's guard (`require_composition_dependent`), its
+routing (`degeneracy`) and its admissibility rows (`admissibility_checks`). It is the first pass's
+`DECLARED_MIXTURE` form (`verify.forms`, `verify.table.revision_checks`) with one addition, so
+that the five γ–φ-faced units of WO-D1 are verified rather than blocked:
 
 - **Identity with the first pass.** Every stream and unit `DECLARED_MIXTURE` handles gets the
   checks it gets there, built by the same functions: declared streams (`n·h(T, P, phase)` and
@@ -55,26 +56,17 @@ from openflowsheet.thermo import FlashRequest, Phase, PropertyProvider, StreamSt
 from openflowsheet.thermo.stability import StabilityReport
 from openflowsheet.verify import CheckResult, dormant, evaluated, forms, unsupported
 from openflowsheet.verify.checks import (
-    KIND_REFERENCE,
     VerifierError,
-    bounds_checks,
-    qualification,
     stream_of,
 )
 from openflowsheet.verify.column import _SHARED_STABILITY, _STABLE
-from openflowsheet.verify.flowsheet_rows import (
-    REACTING_MODELS,
-    _envelope_energy,
-    _envelope_material,
-)
 from openflowsheet.verify.split_checks import Degeneracy
 from openflowsheet.verify.table_kit import (
-    REACTION_DATUM_NOTE,
     SPLIT_ENTHALPY_NOTE,
-    ModelChecks,
-    Unit,
+    Judging,
+    degenerate_split_rows,
+    independent_split_rows,
 )
-from openflowsheet.verify.unit_checks import MODEL_CHECKS
 
 if TYPE_CHECKING:
     from openflowsheet.models.lifted import LiftedSplit
@@ -82,14 +74,15 @@ if TYPE_CHECKING:
 __all__ = [
     "BAND_NOTE",
     "GAMMA_PHI_UNITS",
+    "admissibility_checks",
     "degeneracy",
     "registry_splits",
-    "revision_checks",
+    "require_composition_dependent",
     "split_checks",
 ]
 
 #: The form's name: `verify.forms.form_of("wilson-ig-v2")`, which `verify.table.revision_checks`
-#: dispatches here (I1b).
+#: runs with this module's pieces (I1b).
 GAMMA_PHI_UNITS: Final = forms.GAMMA_PHI_UNITS
 #: A09, as A3's `verify.forms._SHARED` for the admissibility criterion: the band is the units' own.
 BAND_NOTE: Final = (
@@ -220,21 +213,20 @@ def _model(view: RevisionView, unit: str) -> str:
 
 
 def _stability(
-    provider: PropertyProvider,
     flows: tuple[float, ...],
     temperature: float,
     pressure: float,
     phase: Phase,
-    context: EvaluationContext,
+    judging: Judging,
 ) -> tuple[bool, float, float] | str:
     """`(stable, tm, ε)`: the provider's verdict on `phase`, the other phase model's trial `tm`
     and the report's resolution; or the reason it decided nothing (`verify.column`'s rule)."""
     other: Phase = "VAPOR" if phase == "LIQUID" else "LIQUID"
-    judge = getattr(provider, "stability", None)
+    judge = getattr(judging.provider, "stability", None)
     if judge is None:
         return "stability_unavailable"
     report: StabilityReport = judge(
-        StreamState(n=flows, temperature=temperature, pressure=pressure), phase, context
+        StreamState(n=flows, temperature=temperature, pressure=pressure), phase, judging.context
     )
     distance = report.tm.get(other)
     if report.label not in (_STABLE, "UNSTABLE") or distance is None:
@@ -242,18 +234,11 @@ def _stability(
     return report.label == _STABLE, distance, report.epsilon
 
 
-def _admissibility(
-    split: LiftedSplit,
-    state: Mapping[str, float],
-    provider: PropertyProvider,
-    context: EvaluationContext,
-    tolerances: Mapping[str, float],
-    note: str,
-) -> CheckResult:
+def _split_admissibility(split: LiftedSplit, judging: Judging) -> CheckResult:
     """§4.8's admissibility under SYN-001's id for the split's branch."""
     name = f"{split.unit}.{split.stream}"
-    vapor, liquid = _flows(state, split.vapor), _flows(state, split.liquid)
-    temperature, pressure = state[split.temperature], state[split.pressure]
+    vapor, liquid = _flows(judging.state, split.vapor), _flows(judging.state, split.liquid)
+    temperature, pressure = judging.state[split.temperature], judging.state[split.pressure]
     total_vapor, total_liquid = sum(vapor), sum(liquid)
     phases: tuple[tuple[Phase, tuple[float, ...]], ...]
     if total_vapor == 0.0:
@@ -269,7 +254,7 @@ def _admissibility(
         phases = tuple((phase, flows) for phase, flows, total in flowing if total > 0.0)
     verdicts: list[tuple[bool, float, float]] = []
     for phase, flows in phases:
-        verdict = _stability(provider, flows, temperature, pressure, phase, context)
+        verdict = _stability(flows, temperature, pressure, phase, judging)
         if isinstance(verdict, str):
             return unsupported(
                 id=identifier, category="phase_admissibility", subject=split.stream, reason=verdict
@@ -277,7 +262,7 @@ def _admissibility(
         verdicts.append(verdict)
     stable = all(verdict[0] for verdict in verdicts)
     # A two-phase branch also needs both totals at or above −τ_flow (§4.8).
-    stable = stable and min(total_vapor, total_liquid) >= -tolerances["molar_flow"]
+    stable = stable and min(total_vapor, total_liquid) >= -judging.tolerances["molar_flow"]
     least = min(verdicts, key=lambda verdict: verdict[1]) if verdicts else (True, 0.0, 0.0)
     return replace(
         evaluated(
@@ -286,21 +271,14 @@ def _admissibility(
             subject=split.stream,
             value=least[1],
             tolerance=least[2],
-            independence_qualification=note + _SHARED_STABILITY,
+            independence_qualification=judging.note + _SHARED_STABILITY,
         ),
         result="pass" if stable else "fail",
     )
 
 
 def split_checks(
-    split: LiftedSplit,
-    components: Sequence[str],
-    state: Mapping[str, float],
-    provider: PropertyProvider,
-    context: EvaluationContext,
-    tolerances: Mapping[str, float],
-    note: str,
-    distance: float | None = None,
+    split: LiftedSplit, judging: Judging, distance: float | None = None
 ) -> list[CheckResult]:
     """§4.8 on one registry split under SYN-001's ids (`verify.split_checks._split_checks`): a
     flowing degenerate split (`distance` its `δ`) has `.saturation` and its independent split
@@ -308,24 +286,10 @@ def split_checks(
     name = f"{split.unit}.{split.stream}"
     subject = split.stream
     if distance is not None:
-        return [
-            evaluated(
-                id=f"phase_admissibility.{name}.saturation",
-                category="phase_admissibility",
-                subject=subject,
-                value=distance,
-                tolerance=tolerances["temperature"],
-                reference=KIND_REFERENCE["temperature"],
-                independence_qualification=note + BAND_NOTE,
-            ),
-            dormant(
-                id=f"independent_split.{name}",
-                category="independent_split",
-                subject=subject,
-                reason="temperature_degenerate",
-            ),
-        ]
-    vapor, liquid = _flows(state, split.vapor), _flows(state, split.liquid)
+        return degenerate_split_rows(
+            name, subject, distance, judging.tolerances, judging.note + BAND_NOTE
+        )
+    vapor, liquid = _flows(judging.state, split.vapor), _flows(judging.state, split.liquid)
     checks: list[CheckResult] = []
     if sum(vapor) + sum(liquid) == 0.0:
         checks.append(
@@ -334,157 +298,49 @@ def split_checks(
             )
         )
     else:
-        checks.append(_admissibility(split, state, provider, context, tolerances, note))
-    if all(flow == 0.0 for flow in _flows(state, split.feed)):
+        checks.append(_split_admissibility(split, judging))
+    if all(flow == 0.0 for flow in _flows(judging.state, split.feed)):
         checks.append(
             dormant(id=f"independent_split.{name}", category="independent_split", subject=subject)
         )
         return checks
-    fresh_vapor, fresh_liquid = _fresh_split(provider, split, state, context)
-    checks.append(
-        evaluated(
-            id=f"independent_split.{name}.total",
-            category="independent_split",
-            subject=subject,
-            value=state[split.vapor_total] - sum(fresh_vapor.n),
-            tolerance=tolerances["molar_flow"],
-            reference=KIND_REFERENCE["molar_flow"],
-            independence_qualification=note,
-        )
+    fresh_vapor, fresh_liquid = _fresh_split(
+        judging.provider, split, judging.state, judging.context
     )
-    for index, component in enumerate(components):
+    total = judging.state[split.vapor_total] - sum(fresh_vapor.n)
+    differences: list[float] = []
+    for index in range(len(judging.components)):
         by_vapor = vapor[index] - fresh_vapor.n[index]
         by_liquid = liquid[index] - fresh_liquid.n[index]
-        checks.append(
-            evaluated(
-                id=f"independent_split.{name}.{component}",
-                category="independent_split",
-                subject=subject,
-                value=by_vapor if abs(by_vapor) >= abs(by_liquid) else by_liquid,
-                tolerance=tolerances["molar_flow"],
-                reference=KIND_REFERENCE["molar_flow"],
-                independence_qualification=note,
-            )
-        )
+        differences.append(by_vapor if abs(by_vapor) >= abs(by_liquid) else by_liquid)
+    checks += independent_split_rows(name, subject, total, differences, judging)
     return checks
 
 
-def revision_checks(
-    view: RevisionView,
-    splits: Sequence[LiftedSplit],
-    state: Mapping[str, float],
-    *,
-    provider: PropertyProvider,
-    context: EvaluationContext,
-    tolerances: Mapping[str, float],
-    judged_at: Mapping[str, float] | None = None,
-    owners: Mapping[str, str] | None = None,
-) -> list[CheckResult]:
-    """`verify.table.revision_checks`'s `DECLARED_MIXTURE` branch, argument for argument, with
-    §4.8's registry splits: their lifted streams' enthalpies in the one map every energy check
-    reads, and their `split_checks` before the declared streams' admissibility.
-
-    `owners` is accepted for the same signature; the staged splits it resolves are not registry
-    splits, and the column's rows are its own `ModelChecks` (as in the first pass)."""
-    del owners
+def require_composition_dependent(provider: PropertyProvider) -> None:
+    """The form's guard (§4.8): the fresh provider is composition-dependent
+    (`models.syn001.equilibrium_form.composition_dependent`); any other raises `VerifierError`."""
     if not composition_dependent(provider):
         raise VerifierError(
             f"gamma_phi_units needs a composition-dependent provider, not "
             f"{provider.describe().provider_id}"
         )
-    at = state if judged_at is None else judged_at
-    note = qualification(provider)
-    reacting = any(i.model_id in REACTING_MODELS for i in view.instances)
-    reaction_note = note + REACTION_DATUM_NOTE.format(
-        convention=provider.describe().reference_convention
-    )
-    components = view.components
-    declared = forms.declared_phases(view)
-    degenerate = degeneracy(view, splits, at, provider, context)
 
-    energy: list[CheckResult] = []
-    enthalpy: dict[str, float] = {}
-    for stream in view.streams:
-        carried = stream_of(at, stream, components)
-        if stream in degenerate.enthalpy:
-            enthalpy[stream] = degenerate.enthalpy[stream]
-        elif carried.is_dormant:
-            enthalpy[stream] = 0.0
-            energy.append(
-                dormant(
-                    id=f"energy_balance.enthalpy.{stream}",
-                    category="energy_balance",
-                    subject=stream,
-                )
-            )
-        else:
-            phase = declared[stream]
-            # An unlifted stream's value is never judged: every check reading it is blocked.
-            enthalpy[stream] = (
-                0.0 if phase is None else forms.enthalpy_flow(provider, carried, phase, context)
-            )
 
-    units: list[tuple[Unit, ModelChecks | None]] = [
-        (
-            Unit(
-                view=instance,
-                state=at,
-                enthalpy=enthalpy,
-                tolerances=tolerances,
-                energy_note=reaction_note if instance.model_id in REACTING_MODELS else note,
-                provider=provider,
-                context=context,
-                notes=degenerate.notes,
-                unlifted=degenerate.unlifted,
-                components=tuple(components),
-            ),
-            MODEL_CHECKS.get(instance.model_id),
-        )
-        for instance in view.instances
-    ]
-
-    material: list[CheckResult] = []
-    specification: list[CheckResult] = []
-    own_admissibility: list[CheckResult] = []
-    bounds: list[CheckResult] = bounds_checks(
-        provider, state, streams=view.streams, components=components
-    )
-    for judged, entry in units:
-        certified = judged if at is state else replace(judged, state=state)
-        if entry is None:
-            material.append(
-                unsupported(
-                    id=f"material_balance.{certified.id}.all",
-                    category="material_balance",
-                    subject=certified.id,
-                    reason=f"model_unsupported({certified.view.model_id})",
-                )
-            )
-            continue
-        material += entry.material(certified, components)
-        energy += entry.energy(judged, components)
-        specification += entry.specification(certified, components)
-        bounds += entry.bounds(certified, components)
-        own_admissibility += entry.admissibility(judged, components)
-    material += _envelope_material(view, state, tolerances)
-    energy.append(
-        _envelope_energy(
-            view, at, enthalpy, tolerances, reaction_note if reacting else note, degenerate
-        )
-    )
-
+def admissibility_checks(
+    view: RevisionView,
+    splits: Sequence[LiftedSplit],
+    declared: Mapping[str, Phase | None],
+    degenerate: Degeneracy,
+    judging: Judging,
+) -> list[CheckResult]:
+    """The form's admissibility rows (§4.8): each registry split's `split_checks` in `splits`
+    order, routed by `degenerate`, then each stream's in its `declared` phase
+    (`forms.stream_admissibility`, as in the first pass)."""
     admissibility: list[CheckResult] = []
     for split in registry_splits(view, splits):
-        admissibility += split_checks(
-            split,
-            components,
-            at,
-            provider,
-            context,
-            tolerances,
-            note,
-            degenerate.splits.get(split.unit),
-        )
-    admissibility += forms.stream_admissibility(view, declared, at, provider, context, note)
-    admissibility += own_admissibility
-    return [*material, *energy, *specification, *bounds, *admissibility]
+        admissibility += split_checks(split, judging, degenerate.splits.get(split.unit))
+    admissibility += forms.stream_admissibility(
+        view, declared, judging.state, judging.provider, judging.context, judging.note
+    )
+    return admissibility

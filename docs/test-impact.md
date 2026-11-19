@@ -193,6 +193,17 @@ file. `run` therefore drops an unsure test that the same run deselects (`--desel
 in the build under load and pulled `test_t07_v17_reference.py` and `test_t07_conformance.py` into
 every selected gate.
 
+### Files left to the merge check (`--exclude-from`, S19)
+
+`run --exclude-from FILE` drops the test files listed in FILE (one path per line, `#` comments) from a
+selection and prints the list, saying for each file whether it was selected and not run. S19's step
+gates pass `.codehealth/step-gate-excluded-tests.txt`: the end-to-end and reference files that were
+selected in most gates and took most of their time. The list does nothing with `--full` or on a
+fallback to the full suite, so every merge check and CI run still runs those files. A failure in one
+of them is therefore found at the lane's merge check, not at the step that caused it: a bisect over
+the lane, not a wrong merge. The list is refused if it names a path that is not a test file of the
+checkout, or `tests/test_doc_examples.py`, which stays at step cadence.
+
 ## Limitations
 
 - Selection is an inner-loop aid only. CI on both architectures stays the merge gate.

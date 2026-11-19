@@ -1,21 +1,24 @@
 """The check table's kit: what an entry reads and returns (T05 design note §4, register R-046).
 
-`Unit` is one instance as an entry reads it, `ModelChecks` one model's rows by category (each a
-`Rule`), `blocked_check` and `stream_notes` the rows on a stream whose enthalpy the state does
-not determine, and the four notes the suffixes a qualification carries. The family tables
-(`verify.unit_checks`, `verify.thermal`, `verify.gamma_phi_units`) build on it; `verify.table`
-re-exports its public names."""
+`Unit` is one instance as an entry reads it, `Judging` what a split-family check judges with
+(state, components, provider, context, tolerances, note: `Unit`'s names), `ModelChecks` one
+model's rows by category (each a `Rule`), `blocked_check` and `stream_notes` the rows on a stream
+whose enthalpy the state does not determine, and the four notes the suffixes a qualification
+carries. The split family's shared rows: `degenerate_split_rows`, `independent_split_rows`, and
+`DeclaredStream`/`declared_streams` for the declared ports. The family tables
+(`verify.unit_checks`, `verify.thermal`, `verify.gamma_phi_units`, `verify.split_checks`,
+`verify.pr_c1`) build on it; `verify.table` re-exports its public names."""
 
 from __future__ import annotations
 
-from collections.abc import Callable, Mapping, Sequence
+from collections.abc import Callable, Iterator, Mapping, Sequence
 from dataclasses import dataclass, field
-from typing import Final
+from typing import Final, NamedTuple
 
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models import flow_id
-from openflowsheet.models.revision_flowsheet import InstanceView
-from openflowsheet.thermo import PropertyProvider
+from openflowsheet.models.revision_flowsheet import InstanceView, RevisionView
+from openflowsheet.thermo import Phase, PropertyProvider
 from openflowsheet.verify import (
     NEAR_THRESHOLD_MARGIN,
     CheckCategory,
@@ -58,7 +61,8 @@ UNRESOLVED_ENTHALPY_NOTE: Final = (
 class Unit:
     """One instance as a table entry reads it: its revision view, the state being judged, each
     stream's fresh-flash enthalpy flow, the tolerances, and the qualification its energy rows
-    carry. Ids are `<category>.<unit>.<item>` (spec §12.1)."""
+    carry. Ids are `<category>.<unit>.<item>` (spec §12.1). `state`, `components`, `provider`,
+    `context` and `tolerances` are `Judging`'s fields of the same names."""
 
     view: InstanceView
     state: Mapping[str, float]
@@ -186,6 +190,24 @@ class Unit:
         )
 
 
+@dataclass(frozen=True)
+class Judging:
+    """What a check of the split family judges with (T05 design note §4.3; ADR 0013 D1): the
+    state the fresh-flash checks read, the order a stream's flows are read in, the fresh provider
+    and the declaration's context, the tolerances by kind and the provider's qualification note.
+    Its fields carry `Unit`'s names for the same values."""
+
+    #: `judged_at` (ADR 0013 D1; K04-F9 spec §5.1), or the certified state when that is `None`.
+    state: Mapping[str, float]
+    #: The revision's component order (`RevisionView.components`; M02 design note §14.2 B15 item 1).
+    components: tuple[str, ...]
+    provider: PropertyProvider
+    context: EvaluationContext
+    tolerances: Mapping[str, float]
+    #: `checks.qualification(provider)` (A09).
+    note: str
+
+
 def stream_notes(reads: Sequence[str], notes: Mapping[str, str]) -> str:
     """The degenerate-enthalpy notes of the streams a check reads, in reading order, once each."""
     return "".join(notes[stream] for stream in dict.fromkeys(reads) if stream in notes)
@@ -232,3 +254,106 @@ class ModelChecks:
     #: The model's own `phase_admissibility` rows, judged where the splits' are, after the
     #: declared ports, on every form (S11 design §4.8: the column's stage items).
     admissibility: Rule = _nothing
+
+
+# -- the split family's rows (K04 §4.7; T05b spec §9.1) --------------------------------------------
+
+
+def degenerate_split_rows(
+    name: str, subject: str, distance: float, tolerances: Mapping[str, float], note: str
+) -> list[CheckResult]:
+    """T05b spec §9.1's two checks of the temperature-degenerate split `name` (`<U>.<S>`), both on
+    `subject`: `phase_admissibility.<U>.<S>.saturation` with value `distance` (its feed's `δ` at
+    the split's `(T, P)`, spec §4.4), judged at the temperature kind's tolerance of `tolerances`
+    and qualified by `note`, then `independent_split.<U>.<S>` `not_applicable`
+    (`temperature_degenerate`)."""
+    return [
+        evaluated(
+            id=f"phase_admissibility.{name}.saturation",
+            category="phase_admissibility",
+            subject=subject,
+            value=distance,
+            tolerance=tolerances["temperature"],
+            reference=KIND_REFERENCE["temperature"],
+            independence_qualification=note,
+        ),
+        dormant(
+            id=f"independent_split.{name}",
+            category="independent_split",
+            subject=subject,
+            reason="temperature_degenerate",
+        ),
+    ]
+
+
+def independent_split_rows(
+    name: str,
+    subject: str,
+    total: float,
+    differences: Sequence[float],
+    judging: Judging,
+) -> list[CheckResult]:
+    """K04 §4.7's independent split of the split `name` (`<U>.<S>`), all on `subject`:
+    `independent_split.<U>.<S>.total` with value `total`, then one
+    `independent_split.<U>.<S>.<c>` per component in `judging.components` order with its value
+    in `differences`, each judged at the molar-flow kind's tolerance and qualified by
+    `judging.note`. The form computes the values (its own fresh flash)."""
+    rows = [
+        evaluated(
+            id=f"independent_split.{name}.total",
+            category="independent_split",
+            subject=subject,
+            value=total,
+            tolerance=judging.tolerances["molar_flow"],
+            reference=KIND_REFERENCE["molar_flow"],
+            independence_qualification=judging.note,
+        )
+    ]
+    for component, difference in zip(judging.components, differences, strict=True):
+        rows.append(
+            evaluated(
+                id=f"independent_split.{name}.{component}",
+                category="independent_split",
+                subject=subject,
+                value=difference,
+                tolerance=judging.tolerances["molar_flow"],
+                reference=KIND_REFERENCE["molar_flow"],
+                independence_qualification=judging.note,
+            )
+        )
+    return rows
+
+
+class DeclaredStream(NamedTuple):
+    """A stream at a port whose phase its model declares, and the id of its admissibility check."""
+
+    #: `phase_admissibility.<U>.<port>`, or `phase_admissibility.<U>.<port>.<S>` for a port
+    #: that carries several streams.
+    identifier: str
+    stream: str
+    #: The port's declared phase.
+    phase: Phase
+
+
+def declared_streams(
+    view: RevisionView, declared_ports: Mapping[str, tuple[tuple[str, bool], ...]]
+) -> Iterator[DeclaredStream]:
+    """Each stream of each declared port that has a declared phase, by instance in
+    `view.instances` order, then port in the entry's order. `declared_ports` maps a model id to
+    its entry's `(port, several)` pairs (`ModelChecks.declared_ports`); an instance whose model
+    has none contributes none."""
+    for instance in view.instances:
+        ports = declared_ports.get(instance.model_id)
+        if ports is None:
+            continue
+        for port, several in ports:
+            phase = instance.phases.get(port)
+            if phase is None:
+                continue
+            for stream in instance.ports.get(port, ()):
+                identifier = (
+                    f"phase_admissibility.{instance.unit_id}.{port}.{stream}"
+                    if several
+                    else f"phase_admissibility.{instance.unit_id}.{port}"
+                )
+                yield DeclaredStream(identifier, stream, phase)

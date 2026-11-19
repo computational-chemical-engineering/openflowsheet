@@ -1,0 +1,27 @@
+# ADR 0076 I-20 step b of 3 (brief S19-W4-I20, WO-3): the split family's shared rows in the kit.
+# Design: docs/briefs/S19-I20-design.md sections 5.2 (rows b), 5.3, 7.
+# `codehealth gate --mode interface` reads this plan from the plan commit.
+id = "i20b-split-rows"
+approved_by = "Frank Peters, 2026-11-19, Decision Desk ofs-s19-verify-twins choice A (ADR 0076 addendum I-20)"
+reason = """ADR 0076 addendum I-20, step b (docs/briefs/S19-I20-design.md sections 5.2 rows b, 5.3, \
+6 WO-3, 7). table_kit.py gains, after ModelChecks under the header "the split family's rows": \
+degenerate_split_rows (split_checks._degenerate_split_checks moved verbatim, renamed), \
+independent_split_rows(name, subject, total, differences, judging) (the .total and per-component \
+independent_split rows all three forms built, today's keywords), DeclaredStream and \
+declared_streams(view, declared_ports) (split_checks._DeclaredStream and _declared_streams moved, \
+renamed; the ports come from the passed table instead of MODEL_CHECKS). SYN's _split_checks and \
+_declared_port_checks (now taking declared_ports), PR's split_checks and declared_port_checks and \
+gamma_phi_units.split_checks call them; each form computes its own total and per-component \
+differences by today's expressions in today's order. PR's admissibility ladder moves into the new \
+private pr_c1._split_admissibility(split, carried, vapor, liquid, judging). New table._declared_ports() \
+builds the ports table (today's comprehension) for _pr_admissibility and _syn_admissibility; \
+split_checks.py drops its MODEL_CHECKS import. No string literal is added; literals dropped only by \
+consolidation (the static trial decides). Expected codehealth arch --depth 4 (measured on the step \
+applied to this base): 0 / 0 violations, 0 / 0 cycles, files 329 -> 329, imports 4108 -> 4107 \
+(split_checks -> unit_checks gone)."""
+removed = []
+renamed = {}
+changed = []
+added = ["src/openflowsheet/verify/table_kit.py:DeclaredStream", "src/openflowsheet/verify/table_kit.py:declared_streams", "src/openflowsheet/verify/table_kit.py:degenerate_split_rows", "src/openflowsheet/verify/table_kit.py:independent_split_rows"]
+new_files = []
+callers = []

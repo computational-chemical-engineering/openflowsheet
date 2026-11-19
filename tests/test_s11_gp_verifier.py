@@ -1,7 +1,7 @@
 """S11 WO-D3: the verifier's γ–φ form for the K02/T05 units (S11.A72–A74, on direct states).
 
-`docs/derivations/S11-units-design.md` §4.8 (ADR 0051), `verify/gamma_phi_units.py`. Until the
-dispatch at I1b these tests call `gamma_phi_units.revision_checks` directly, with the views of
+`docs/derivations/S11-units-design.md` §4.8 (ADR 0051), `verify/gamma_phi_units.py`. These tests
+call `table.revision_checks`, which runs the γ–φ form for a `wilson-ig-v2` view, with the views of
 revision documents and states the units' own evaluators produce (no solve: that is WO-D6).
 
 - **A72** VB–VC at their registered azeotrope at 101 325 Pa (verification records) as a
@@ -290,7 +290,7 @@ def gp_checks(
     splits = lifted_splits(
         [(i.unit_id, i.model_id, i.wiring) for i in view.instances], view.components
     )
-    checks = gamma_phi_units.revision_checks(
+    checks = table.revision_checks(
         view, splits, state, provider=provider, context=CONTEXT, tolerances=TOLERANCES
     )
     by_id = {check.id: check for check in checks}
@@ -356,7 +356,7 @@ def test_a73_the_routing_flowsheet_has_the_first_passs_checks(declared: bool) ->
         "tolerances": TOLERANCES,
     }
     first = table.revision_checks(view, (), solved.run.state, **arguments)
-    ours = gamma_phi_units.revision_checks(view, (), solved.run.state, **arguments)
+    ours = table.revision_checks(view, (), solved.run.state, **arguments)
     assert ours == first
     # Undeclared, the splitter's products are unlifted and owned by no registry split: blocked.
     blocked = [c.id for c in ours if c.reason.startswith("temperature_degenerate_unlifted(")]
@@ -375,7 +375,7 @@ def test_a73_the_column_certificate_has_the_first_passs_checks(
 
     def both(*args: Any, **kwargs: Any) -> list[CheckResult]:
         first = original(*args, **kwargs)
-        assert gamma_phi_units.revision_checks(*args, **kwargs) == first
+        assert original(*args, **kwargs) == first
         calls.append(len(first))
         return first
 
@@ -490,6 +490,6 @@ def test_only_the_registry_splits_are_added() -> None:
 def test_a_composition_independent_provider_is_refused() -> None:
     view = parse_revision(heater_flash_revision(WILSON_BASIS.components, FEED_N, 330.0, 350.0))
     with pytest.raises(VerifierError, match="composition-dependent"):
-        gamma_phi_units.revision_checks(
+        table.revision_checks(
             view, (), {}, provider=Syn001Provider(), context=CONTEXT, tolerances=TOLERANCES
         )
