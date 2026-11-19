@@ -3292,3 +3292,21 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   executor.py's 7.0 goes to W4 run PR-1. Gate report (6 h): the four standing ALERTs ("selected gates take 1123 s >
   300 s (tests tier)", "selected/full time ratio 0.82 > 0.4", share 48%, wait median 39 min). Job 415 PASS (w5n1-21s,
   step 414, 29.1 -> 27.1). PR-1 launched (opus-engineer) from 272011be.
+- **2026-11-19 ~11:45 CET, PR-1 delivered (opus-engineer, Opus, 191k tokens): STOP, nothing enqueued.** On
+  `wp/S19-pr1` (272011be..ebc42227): plan 2bbc3d3d, step 7d54df32 (`_PlanRun` with all seven frame fields; nine
+  private functions take `ctx` first; callers test_t04_edge3.py:445, t04_evidence_manifest.py:1440 and the rrc timer
+  benchmarks/rrc/run_candidates.py:188 adapted), docstrings ebc42227. executor.py health 6.1 -> 9.0, debt 51.2 ->
+  16.0, NLOC 1065 -> 960, no file smell; repo 3492.8 -> 3457.6, health 8.42 -> 8.45. Steps 2 and 3 skipped (targets
+  met at step 1; X5 would gain 0). The interface tool refuses every plan form: "FAIL public_api plan changed
+  ...executor.py:_eo_recovery: its API did not change" (a private `changed` entry) and "FAIL callers
+  benchmarks/rrc/run_candidates.py:188: replace beyond the plan"; an empty `changed` is an error.
+  **Orchestrator check found one behaviour change:** at 272011be `_converge`'s `_eo_recovery` call passed no
+  `revision_source` (None); at 7d54df32 it reads `ctx.revision_continuation`, so under
+  `homotopy_or_revision_continuation_or_sequential_restart` with a supplied continuation the merged region's edge 3
+  would run a revision continuation where it recorded `absent(not_supplied)`. Must be restored.
+  DECISION: PR-1 -> option (b), rebuilt as PR-1b on `wp/S19-pr1b` from 272011be: red adapt commit (the three caller
+  edits, failing ids named), step `--mode step` (executor.py with `replace(ctx, revision_continuation=None)` at the
+  `_converge` call), no-gain docstrings; brief `S19-W4-PR-1b.md`, sonnet-implementer. Plan Q4 authorised the call
+  adaptation; the reviewer reads the red commit before the merge. Alternative: (a) ask the cce-code-health steward
+  for a private `changed` entry and a spy-edit key, then a re-pin (hours, a tool change). Reversible by: dropping
+  `wp/S19-pr1b` and gating PR-1 in interface mode after a tool fix. Tool gap noted for the steward (not blocking).
