@@ -3427,3 +3427,10 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   I-20 + `docs/briefs/S19-I20-design.md`, committed on wp/S19) and opus-engineer G2 run 6 (brief `S19-W5-G2-6.md`,
   wp/S19-g2b from 356ee519: column_rows.py, cascade_solve.py, revision_flowsheet.py; card ofs-s19-legacy-models
   item (a)). Two agents. Queue: job 432 running, 433-449 pending (batch N).
+- **2026-11-19 ~13:30, wp/S19-tools5 merged (222122df): gate proposal 2** (session OpenFlowsheet-check, f37d0ab0 tool,
+  cc95f21d cadence change alone, so one revert undoes it). Reviewed by the orchestrator (tools2/tools4 precedent, no
+  merge-check for a tools lane): an empty selection exits 0; `--full` and a full-suite fallback keep the 11 files
+  (OpenFlowsheet-check's choice, accepted: only selected gates are cut); the list refuses test_doc_examples.py and
+  non-test paths; the tier log names each excluded file. tests/test_s16_test_impact.py + test_s19_w5_gate.py: 132
+  passed. Card ofs-s19-gate-proposal-2: `executed` written (version 3). Lanes branched before 222122df (batch N on
+  wp/S19-w5n, G2 run 6 on wp/S19-g2b) gate without it until they take wp/S19.
