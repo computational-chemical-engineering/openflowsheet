@@ -3539,3 +3539,8 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   share 50% < 75%"; "ALERT selected gates take 1035 s > 300 s"; "ALERT selected/full time ratio 0.67 > 0.4"; "ALERT
   queue wait median 48 min > 15 min". Action: proposal 2 in effect for lanes from 222122df; reruns from load
   timeouts avoided by the recorder rule (S19_STATE item 2).
+- 2026-11-19, job 456 (g2c-2, revision_flowsheet.py `_read` per-specification helper) PASS (step 437 accepted, 67.4 ->
+  42.6). gate_report: "ALERT selected share 48% < 75%"; "ALERT selected gates take 1035 s > 300 s"; "ALERT
+  selected/full time ratio 0.65 > 0.4"; "ALERT queue wait median 58 min > 15 min". Action unchanged (proposal 2 for
+  lanes from 222122df; g2c falls back to the full suite by design). Reviewer brief R-W5-G2-6+7 written
+  (`<git-common-dir>/codehealth/briefs/S19-R-W5-G2-6+7.md`), launched on PASS of 457-458, 462-463.
