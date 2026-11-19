@@ -3345,3 +3345,8 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
 - 11:30: job 425 (pr1b-1, step 417) PASS, executor.py debt 51.2 -> 16.0. Gate report: the four standing ALERTs only
   ("selected share 46% < 75%", "selected gates take 1147 s > 300 s", "selected/full time ratio 0.84 > 0.4", "queue
   wait median 46 min > 15 min"); action stays proposal 2 (Frank). R-W4-PR-1b waits for job 426.
+- 11:45: PR-2 delivered (opus-engineer): A c98e8662 (t08 spies take `_RegionCall`; red 4 of 19 at A), B 82ad61ec
+  (region.py only; frozen `_RegionCall`, 21 fields, same defaults; `solve_region` unchanged), job 430 (pr2-1, step).
+  Scan A -> B: `_solve_region` debt 28.1 -> 10.0 (params 21 -> 1), region.py 44.1 -> 26.0, health 7.8 -> 9.3,
+  duplication smell gone; repo 3492.8 -> 3474.7. No C (docstring in B). patch_noop 0 of 262; touched tests 1675
+  passed serially. Next: on PASS, review R-W4-PR-2 (S2 cadence, can share a reviewer with PR-1b), merge-check, merge.
