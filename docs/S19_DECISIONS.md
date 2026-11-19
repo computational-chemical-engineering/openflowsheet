@@ -3494,3 +3494,5 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   Environment failure. Jobs 436-449 SKIPPED. Re-enqueued: 464 w5n2-7r (`--rerun-of 432`), 465-476 (the 13 skipped,
   suffix `s`, same batch file sha 49f4c9e3). Batch N's S1 review R-W5-N3 now waits for 466-469.
   test_s03_ours.py is on proposal 2's list: lanes from 222122df skip it on selected gates.
+- 2026-11-19, job 459 (i20-1, interface `i20a-judging`) PASS (step 433 accepted, 61.6 -> 35.1, 20/20). gate_report:
+  the four ALERTs (45%; 1096 s; 0.73; 38 min); action unchanged.
