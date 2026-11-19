@@ -3511,3 +3511,13 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   only docs since e7fd7065). Alternative: after the review fixes (adds ~1 h of queue wait on the 0.5 path).
   Reversible by: a fresh merge-check if a fix touches code (docstring fixes are gated no-gain and merged on the
   helper rule).
+- 2026-11-19, G2 run 7 delivered (opus-engineer, ~167k): wp/S19-g2c from c37d2245, jobs 455 (PASS), 456-458:
+  revision_flowsheet.py 6.5 -> 8.7 (debt 84.8 -> 15.6), `_read` brain gone (helpers `_stream_capability`,
+  `_endpoint`, `_fixed_specification`, private `_TargetFrame`; `traverse` `_ready_unit`, `_started_unit`,
+  `_inlet_states`, lazy `_outlet_states`); instance-record writes stay in `_read` (rule 6); one store
+  (`conversions.append`) moved past raises that leave `_read` (argued unobservable in the commit). Behaviour: full-suite
+  recorder, 80256 records (`_read` 75426, `traverse` 4830, 21466 raising), 0 mismatches at all 4 heads (shard 02 after
+  masking a varying revision-id suffix; shard 08 as a multiset; shard 11 after a quiet base rerun). Literal multiset
+  unchanged; patch_noop 0 of 262. Its recorders loaded the machine (jobs 453, 435 timed out on test_s03_ours a16).
+  Left for a run 8: `_read` cognitive 27 / NLOC 76 (`_instance_views`), `traverse`'s `fail` closure (closures-to-class),
+  to ~9.8. Reviewer R-W5-G2-6+7 (runs 6 and 7 together) on PASS of 456-458 and 462-463.
