@@ -3607,3 +3607,5 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   (brief `S19-EV-blocking.md`, lane wp/S19-ev2) -> budget tests alone with the runner held -> push wp/S19, CI both legs,
   manifest `tested` -> merge commit on main, F0 -> push main -> `executed`. Any failure in steps 1-4: stop, no push.
   G2 run 8 brief `S19-W5-G2-8.md` written (lane wp/S19-g2d from C, launched after the merge).
+- 2026-11-19, job 481 (g2b-fix4, R-W5-G2-6+7 fix 4, method move) PASS (step 447 accepted-neutral, 18/18). gate_report: the
+  four ALERTs (63%; 907 s; 0.56; wait 58 min); action unchanged. G2 runs 6+7 merge waits for merge-check 482.
