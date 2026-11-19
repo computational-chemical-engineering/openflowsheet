@@ -3744,3 +3744,5 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   2-agent cap -> one 0.5 engineer and one S19 engineer at a time, X07a first (three-OS base for every later
   foundation). Alternative: X01 docs first (smaller). Reversible by: launching X01-WO1 before X07a's next WO. Both
   lanes may push their wp branch for CI; ADR 0052 D11 amendment (X01 part C) open for the design lane.
+- 2026-11-19, job 505 (w5n3b-5u) PASS (step 461 accepted, 47.1 -> 15.0, 19/19). gate_report: the four ALERTs (50%;
+  534 s; 0.41; wait 55 min); action unchanged.
