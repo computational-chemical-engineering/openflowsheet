@@ -3620,3 +3620,7 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   DECISION: re-enqueue 483-494 (suffix `u`, 483's as `--rerun-of 448`; script in the session scratchpad) only after
   G2 runs 6+7 merge and the wall-time budget tests ran at C with the queue idle -> held. Alternative: enqueue now and
   hold the runner later. Reversible by: enqueueing now.
+- 2026-11-19, job 482 (g2-mc, merge-check 6a588841..a9a5cbf6) PASS (10/10, debt 238.6 -> 66.4). Helper rule fails:
+  wp/S19 changed code since 6a588841 (the I-20 merge, verify/ and tests). Helper s19-g2-mc merged the tip df2850d7
+  (69f0b8f9; diff to the tip: 4 models/ files, ruff clean) -> job 495 g2-mc2 (merge-check df2850d7..69f0b8f9).
+  Queue otherwise idle (batch N re-enqueue held, entry above). gate_report: the four ALERTs, action unchanged.
