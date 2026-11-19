@@ -1,0 +1,122 @@
+{
+  "work_package": "X01",
+  "commit": "a0e4c5465875af7eff910f558210cf600554ce59",
+  "requirements": [],
+  "status": "implemented",
+  "inputs": {
+    "case_id": "X01-WO1 (docs/briefs/X01-WO1.md, card ofs-05-widen option B): X01 rest part A, the plugin path ADR 0060 F1-WO3 unblocks (ADR 0060:540-541)",
+    "case_hash": "09fa174617a14e41021939749b99a9fdf46e0e17ff4681ef70e14a03860aa448",
+    "environment_lock_hash": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+  },
+  "commands": [
+    {
+      "cmd": "PYTHONPATH=src ../../../.venv/bin/python -m pytest -q -p no:cacheprovider tests/test_x01_example_plugin.py tests/test_f1_legacy_builtins.py tests/test_f1_operations.py tests/test_f1_discovery.py tests/test_f1_registry_core.py tests/test_f1_builtin_identity.py tests/test_f1_draft_admission.py tests/test_s19_w5_identity.py tests/test_s19_w5_gate.py tests/test_s19_i14_freeze_order.py tests/test_t08_w2_inventory.py tests/test_doc_pages.py (at 65c624e4 content, uncommitted then: 419 passed in 328.81 s)",
+      "cwd": ".claude/worktrees/x01",
+      "exit_code": 0
+    },
+    {
+      "cmd": "PYTHONPATH=src ../../../.venv/bin/python scripts/corpus_identity.py --check (F0 PASS: M1 50/50, M2 61/61, M3 61/61, M4 61/61, M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 35/35)",
+      "cwd": ".claude/worktrees/x01",
+      "exit_code": 0
+    },
+    {
+      "cmd": "PYTHONPATH=src ../../../.venv/bin/python scripts/registry_builtin.py --check (clean, 42 descriptors in 2 tables; table digests held; registry_sha256 f251447d06a6e8267cabc655a46dae1ae556827b295538434f7a14ba2dde7058)",
+      "cwd": ".claude/worktrees/x01",
+      "exit_code": 0
+    },
+    {
+      "cmd": "../../../.venv-codehealth/bin/codehealth docs --repo . --ref a0e4c546 (778 docs, 286 broken in living docs, 1271 in records; base c4a91a75: 776 docs, 286 living; broken-reference set unchanged)",
+      "cwd": ".claude/worktrees/x01",
+      "exit_code": 0
+    },
+    {
+      "cmd": "/usr/bin/python3 -m pip install --no-deps --no-build-isolation --no-index --target SCRATCH/site examples/plugins/demo (system Python 3.13.5, setuptools 78.1.1; one-off check that a real wheel install gives the same entry_points.txt and package data; then openflowsheet capabilities --prefix demo. and explain demo.feed_too_wet against it)",
+      "cwd": "scratch copy of examples/plugins/demo",
+      "exit_code": 0
+    }
+  ],
+  "checks": [
+    {
+      "id": "X01.A.discovered",
+      "description": "the example, installed from its own pyproject.toml, is found by discovery.entry_points and registered whole: demo.messages with entry_point demo, distribution openflowsheet-demo-plugin 0.1.0, origin installed, effective_status tested, evidence_class unreviewed, stability core; self_sha256 recomputed independently by D3; notice extension_unreviewed; demo.feed_too_wet reaches the catalogue",
+      "result": "pass",
+      "value": "test_the_example_is_discovered_and_listed_with_its_namespace_and_flags"
+    },
+    {
+      "id": "X01.A.refusals",
+      "description": "a second distribution declaring demo quarantines both (namespace_conflict); an entry point not named after the document's namespace is extension_invalid at /namespace",
+      "result": "pass",
+      "value": "test_a_second_distribution_declaring_demo_quarantines_both, test_an_entry_point_not_named_after_the_documents_namespace_is_refused"
+    },
+    {
+      "id": "X01.A.snippets",
+      "description": "every fenced block in the guide and the example README is a verbatim file part, a CLI or Python run with the example installed, or marked illustrative; three mutations (changed entry point in a file snippet, unknown code in a CLI snippet, a removed marker) each fail it",
+      "result": "pass",
+      "value": "test_every_snippet_is_checked_or_marked_illustrative[guide,readme], test_the_guides_listing_claim_is_what_the_cli_prints"
+    },
+    {
+      "id": "X01.A.identity",
+      "description": "no registry behaviour, schema, built-in table, builtin-sha256.txt, catalogue identity or MODEL_BASES change: F0 corpus identity and registry_builtin --check unchanged",
+      "result": "pass",
+      "value": "corpus_identity PASS; registry_builtin --check clean"
+    },
+    {
+      "id": "X01.CI",
+      "description": "CI green on both architectures (check ubuntu-latest, check ubuntu-24.04-arm) and the Site workflow (mkdocs build --strict)",
+      "result": "not_applicable",
+      "value": "CI runs ci 44632249060 and Site 44632249098 on a0e4c546 in progress"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "docs-site/guide/plugins.md",
+      "sha256": "c3e88b07e4ca2e7df5c3e7479f9f461431221db9464b6d565929c58c99bf8ff1",
+      "description": "the plugin-author guide (user guide, 'Plugins (extensions)')"
+    },
+    {
+      "path": "examples/plugins/demo/pyproject.toml",
+      "sha256": "4d860caae522841b1f86e99aec1209cc343e7b8a31be12db2ace0d6177472341",
+      "description": "the example plugin's distribution metadata (entry point demo)"
+    },
+    {
+      "path": "examples/plugins/demo/src/openflowsheet_demo_plugin/__init__.py",
+      "sha256": "0523ff3c6bd7ba701467d63d895c69d59cb2422f069ca7feb5af2072b4ebce49",
+      "description": "the example's package() document"
+    },
+    {
+      "path": "examples/plugins/demo/src/openflowsheet_demo_plugin/messages.yaml",
+      "sha256": "e758b8227e3dcbb61386253e3117ee09e9a74ef4d88e5af273e66d53cc39ca14",
+      "description": "the example's message catalogue"
+    },
+    {
+      "path": "examples/plugins/demo/README.md",
+      "sha256": "186b7531774b1e0b7a5fdb7ed86aff3242494d1c663e09232d47204f0f1b9a1d",
+      "description": "the example's README"
+    },
+    {
+      "path": "tests/test_x01_example_plugin.py",
+      "sha256": "fd58fcd375f7fdcef3f8dab1f53365db833dd507aa32b250ed073b1b05914af7",
+      "description": "discovery of the example through entry_points, refusals, snippet checks"
+    },
+    {
+      "path": "docs/X01_DECISIONS.md",
+      "sha256": "6e28a94a3d6fce731f45991fb7eae9fab4509726e93112d7dfad39a7bd406572",
+      "description": "build decisions A-1..A-6, open rows B and C, questions Q-1..Q-3"
+    },
+    {
+      "path": "docs/briefs/X01-WO1.md",
+      "sha256": "09fa174617a14e41021939749b99a9fdf46e0e17ff4681ef70e14a03860aa448",
+      "description": "the work order"
+    }
+  ],
+  "limitations": [
+    "Evidence class: software verification of documentation and an example against the registry's discovery; no numerics. requirements is empty: X01 part A maps to no D/A requirement.",
+    "Part B (pr-lib-v1 and syn001.cascade selectable) is blocked on F4 and F6 and part C (ADR 0052 amendment for extension contributors) is design-lane work; both are open rows in docs/X01_DECISIONS.md, not delivered here.",
+    "The test installs the example by writing its dist-info from pyproject.toml, not with an installer; a real offline wheel install was checked once by hand (commands[4]).",
+    "Status is never reviewed by the build lane; the review block stays pending."
+  ],
+  "review": {
+    "numerical": "pending",
+    "process_model": "pending"
+  }
+}
