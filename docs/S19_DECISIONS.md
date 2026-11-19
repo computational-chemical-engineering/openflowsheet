@@ -3845,3 +3845,9 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   (c) W5-S1 text for the design lane; the batch files for L and P should list their L_B fixture paths.
 - Launched opus-engineer WO-N6 (brief `<git-common-dir>/codehealth/briefs/S19-W5-N6.md`, lane wp/S19-n6 from 56dc5b64).
   Agents: X01-WO1, WO-N6.
+- 2026-11-20, job 516 (n6-1, no-gain) FAIL forbid, scope (step 465 gate-fail): the WO-N6 retarget commit f8e10957
+  (tests/test_t07_w5a_inspection.py) was enqueued as its own step. A procedure miss (my brief said "mode per the
+  common brief for a test retarget"; S19_RULES says retarget, plan, step, gate against the plan commit), not a code
+  failure. Engineer told: no re-enqueue of n6-1; enqueue n6-2 with `--base <plan commit>`. gate_report: `ALERT
+  selected share 20% < 75% of step gates` (12 full-suite fallbacks, all "collection-time code"); action unchanged (the
+  known cause, as earlier ALERTs).
