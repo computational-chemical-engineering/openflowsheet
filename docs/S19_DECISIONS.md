@@ -3071,3 +3071,11 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   against plan 7.6's cap 1000.
   DECISION: region.py NLOC vs the cap -> R4 rescans and reports; no plan-4 fallback move now. Alternative: a fallback
   move in run 7. Reversible by: the reviewer's ruling, or run 7's brief.
+
+## 2026-11-19 03:35 CET: lane O run 5 merged
+
+- Merge-check job 385 `g1o5-mc` PASS 10/10 (full suite, behaviour only; debt 341.0 -> 225.0). wp/S19-g1o5 merged
+  into wp/S19 as 4e5ca326 (direct: wp/S19 changed only docs since a92f0290). Run 6's merge-check goes on 4e5ca326's
+  tip after its jobs and review.
+- Gate report (6 h): `ALERT selected gates take 745 s > 300 s (tests tier)`; `ALERT selected/full time ratio 0.57 >
+  0.4: selection saves little`. Standing (proposal 2, open for Frank); no new ALERT.
