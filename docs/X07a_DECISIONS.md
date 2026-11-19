@@ -95,6 +95,24 @@ Brief: `docs/briefs/X07a-WO1.md`. Branch `wp/X07a`, base `main` c4a91a75. Build 
 
 Rows found by the CI legs are added below with their run id.
 
-## Position
+## Position (handoff, context cap reached 2026-11-19)
 
-Commits e897af52 (layer), 05886465 (win32 type check), 4fb8a63d (CI). First CI run 44615939688.
+Commits on `wp/X07a`: e897af52 layer, 05886465 win32 type check, 4fb8a63d CI, 8ff95818 UTF-8 /
+G19 / m05 literal, a5f53590 Windows collection, d2fb0252 envelope axis, then docs and manifest.
+
+Local (Linux x86-64): the 104 test files importing the changed modules (grep for
+`application.store`, `experiments.store`, `jobs.executor`, `jobs.worker`, `_files`, `surrogate.blas`,
+`g11_coverage`, `v17.harness`, `external.launcher`, excluding nlp) plus `tests/test_x07a_platform.py`:
+4409 passed, 26 skipped, 3 xfailed at 4fb8a63d; later changes' tests run separately (all pass).
+F0 PASS (reference platform); arch 0 cycles 0 violations; touched-file health unchanged, new
+`_platform.py` 9.5; `codehealth diff` debt 55.30 -> 58.30 (the new module; informational).
+
+CI: run 44615939688 (4fb8a63d): ubuntu-latest 1 failed (A20, fixed d2fb0252), ubuntu-arm unknown,
+windows G19 + UTF-8 (fixed 8ff95818), macOS m05 literal (fixed) and F0 M7 (Q-2).
+Run 44617827438 (8ff95818): windows 2 collection errors (fixed a5f53590). Run 44618922484
+(a5f53590) and run 44629325836 (d2fb0252) were in progress at the cap.
+
+Next: read run 44629325836. Expected: ubuntu legs green; windows red on G19 (Q-1) and F0 M7
+(Q-2) plus any pytest failures not yet seen (first full Windows suite); macOS red on F0 M7 (Q-2).
+Classify each new Windows/macOS test failure as portability bug (fix) or platform limit (row
+above, with run id). Manifest `evidence/X07a/d2fb0252.../manifest.json` stays `implemented`.
