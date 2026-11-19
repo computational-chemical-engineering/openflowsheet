@@ -137,7 +137,8 @@ def _check_number(node: Any, where: str, reasons: list[str]) -> None:
 
 
 def _check_amended(amended: Any, value: Any, where: str, reasons: list[str]) -> None:
-    """§10.4.1's five refusals of an `amended` object."""
+    """§10.4.1's five refusals of an `amended` object; a declared `replaces` is checked by
+    `_replaces_reasons`."""
     if not isinstance(amended, Mapping):
         reasons.append(f"{where}: must be an object")
         return
@@ -147,10 +148,7 @@ def _check_amended(amended: Any, value: Any, where: str, reasons: list[str]) -> 
     if "replaces" not in amended and "index_basis" not in amended:
         reasons.append(f"{where}: neither replaces nor index_basis")
     if "replaces" in amended:
-        if not _is_number(amended["replaces"]):
-            reasons.append(f"{where}: replaces is not a number")
-        elif amended["replaces"] == value:
-            reasons.append(f"{where}: replaces {amended['replaces']!r} equals value")
+        reasons += _replaces_reasons(amended, value, where)
     if ("scale" in amended) != ("index_basis" in amended):
         reasons.append(f"{where}: scale and index_basis go together")
     if "index_basis" in amended and not (
@@ -159,6 +157,16 @@ def _check_amended(amended: Any, value: Any, where: str, reasons: list[str]) -> 
         reasons.append(f"{where}: index_basis is not a positive number")
     if "scale" in amended and amended["scale"] not in _SCALES:
         reasons.append(f"{where}: scale {amended['scale']!r} is not one of {list(_SCALES)}")
+
+
+def _replaces_reasons(amended: Mapping[str, Any], value: Any, where: str) -> list[str]:
+    """§10.4.1: the `replaces` of `amended` (at `where`) is a number other than the `value`
+    it amends."""
+    if not _is_number(amended["replaces"]):
+        return [f"{where}: replaces is not a number"]
+    if amended["replaces"] == value:
+        return [f"{where}: replaces {amended['replaces']!r} equals value"]
+    return []
 
 
 def effective_value(node: Mapping[str, Any], basis: float) -> float:
