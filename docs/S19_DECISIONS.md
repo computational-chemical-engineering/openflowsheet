@@ -3279,3 +3279,10 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   first only if the brief cannot fix `_PlanRun`'s fields from the plan's 5.9 text. Alternative: keep lane O open for
   W3 steps on executor.py (none possible: STOP rule, each remaining phase needs the context record). Reversible by:
   reopening lane O. Lane N worktrees s19-g1n, -g1n3, -g1n4 removed (merged, clean); branches deleted.
+- **2026-11-19 ~11:15 CET, brief `S19-W4-PR-1.md` written (briefs dir): W4 residual `_PlanRun` run 1** (opus-engineer;
+  lane `wp/S19-pr1` from the wp/S19 tip after the run 9 merge): step 1 interface plan + `_PlanRun` frame record
+  threaded through executor.py's private plan-run functions (`execute_plan`'s public keywords unchanged; the two
+  `_eo_recovery` calls in test_t04_edge3.py:445 and scripts/t04_evidence_manifest.py:1440 adapted), then X5
+  `_run_steps`, then `_solve_revision_region` and `_eo_recovery` each to NLOC <= 70, cog <= 15. Target executor.py
+  >= 7.0. `_solve_region`'s parameter object (t08 spy) is a later run. No architect pass: plan 5.9 and Q4 fix the
+  record's shape. Launch after job 424 PASS and the merge.
