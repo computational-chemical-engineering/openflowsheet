@@ -56,7 +56,11 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 - G1 (orchestrator/, numerics/) running since 2026-11-18 (hold lifted 2026-11-16); ptc.py item met (8.3 after P3).
 - G-END (below) stays the end criterion for the whole repository.
 
-## Next actions (2026-11-19 ~02:50 CET; self-reset)
+## Next actions (2026-11-19 ~03:25 CET; self-reset)
+
+**Since the 02:50 reset:** jobs 358-363, 374, 378, 381 PASS; R-W5-N1 and R-W3-G1O-6 review briefs written; lane O
+run 5 reviewed (merge), merge-check job 385 queued; run 6 delivered (jobs 386-388). No agent running. Queue ~20 deep
+(results COUNT 352). Gate report: only the standing ALERTs (proposal 2).
 
 **Position:** wp/S19 = a92f0290 + docs (lane O run 4 merged; W5 gate mode merged 9e8b3baf; WO-1b merged 9a607a3a,
 R-1060). MB 756e1c12. Runner PID 1341562 (restarted 2026-11-19 with `--batch`; stop `kill $(cat
