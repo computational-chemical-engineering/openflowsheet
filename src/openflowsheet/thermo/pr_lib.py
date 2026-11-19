@@ -743,30 +743,19 @@ class PrLibProvider:
     def evaluate_phase(
         self, request: PropertyRequest, context: EvaluationContext
     ) -> PropertyResult:
-        del context
-        undeclared = [name for name in request.derivatives if name not in DERIVATIVE_INPUTS]
-        if undeclared:
-            return _refused("unsupported", f"undeclared_derivative_input: {undeclared[0]}")
-        unknown = [name for name in request.properties if name not in PROPERTIES]
-        if unknown:
-            return _refused("unsupported", f"unknown_property: {unknown}")
-        state = request.state
-        if len(state.n) != NC:
-            return _refused(
-                "error", f"state_length: {len(state.n)} flows for the components {COMPONENTS}"
-            )
-        if request.phase != "VAPOR":
-            return _refused(
-                "unsupported",
-                f"phase_unsupported: {request.phase}; {PROVIDER_ID} is vapour-only "
-                "(L01 spec §4.2, ADR 0043 D5)",
-            )
-        outside = _domain_violation(state)
-        if outside is not None:
-            return _refused("out_of_domain", outside)
-        if state.is_dormant:
-            return _refused("unsupported", "dormant_state: composition undefined")
+        """The requested values and derivatives of the vapour at the request's state.
 
+        Refused, in order: by `_request_refusal` (a request no state could answer, or a state
+        outside the domain or dormant); then by the vapour root's guards (`_vapour_root`:
+        `vapour_root_metastable`, `vapour_root_liquid_like`); then `vapour_unstable` when a
+        pure-component trial phase has tangent-plane distance below `TM_THRESHOLD`.
+        """
+        del context
+        refusal_of_request = _request_refusal(request)
+        if refusal_of_request is not None:
+            return refusal_of_request
+
+        state = request.state
         t, p = state.temperature, state.pressure
         total = state.total_flow
         mix = _mixture(t, p, tuple(value / total for value in state.n))
@@ -838,6 +827,39 @@ class PrLibProvider:
                 "VAPOR, so there is nothing to split (L01 spec §4.2)"
             ),
         )
+
+
+def _request_refusal(request: PropertyRequest) -> PropertyResult | None:
+    """The refusal of a request `evaluate_phase` does not evaluate, or None.
+
+    In order: an undeclared derivative input, an unknown property (`unsupported`), a flow vector
+    whose length is not the component count (`error`), a phase other than VAPOR (`unsupported`),
+    a state outside the domain (`_domain_violation`, `out_of_domain`), and a dormant state
+    (`unsupported`).
+    """
+    undeclared = [name for name in request.derivatives if name not in DERIVATIVE_INPUTS]
+    if undeclared:
+        return _refused("unsupported", f"undeclared_derivative_input: {undeclared[0]}")
+    unknown = [name for name in request.properties if name not in PROPERTIES]
+    if unknown:
+        return _refused("unsupported", f"unknown_property: {unknown}")
+    state = request.state
+    if len(state.n) != NC:
+        return _refused(
+            "error", f"state_length: {len(state.n)} flows for the components {COMPONENTS}"
+        )
+    if request.phase != "VAPOR":
+        return _refused(
+            "unsupported",
+            f"phase_unsupported: {request.phase}; {PROVIDER_ID} is vapour-only "
+            "(L01 spec §4.2, ADR 0043 D5)",
+        )
+    outside = _domain_violation(state)
+    if outside is not None:
+        return _refused("out_of_domain", outside)
+    if state.is_dormant:
+        return _refused("unsupported", "dormant_state: composition undefined")
+    return None
 
 
 def _refused(status: PropertyStatus, message: str) -> PropertyResult:
