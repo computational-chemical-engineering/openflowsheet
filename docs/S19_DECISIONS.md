@@ -3799,3 +3799,11 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   K's W5 content is judged by K1/K2 by hand (above). Alternative: `merge-check --batch` at the pre-K head 30f705d9 plus
   a plain run at K (two full suites). Reversible by: enqueueing that pair. For the close review and batches L, P:
   `merge-check --batch` should judge B..K with W5-K1's set at the last commit (tool fix, item (d)).
+- **2026-11-19, review R-W5-N-close (reviewer, Opus, ~169k): merge after job 515 PASS, no fixes first**
+  (`docs/reviews/S19-R-W5-N-close.md`). Logged deviation: WO-N4 committed legacy.json and tables.sha256, which WO-N5
+  had predicted in K's diff; net B..K the same. Tooling defaults (a)-(d) for batches L and P recorded in the review
+  (build-lane work order before B_L: repeatable `--plans` for interface plans, generator-only steps as
+  `--behaviour-only --batch`, `w5_gate.py close --k`, `gate_queue.py` refusing `--batch` at K; W5-S1 text amendment
+  for the design lane). FR-2 authorisation: card ofs-s19-w5-fr2-reregister B "Once per batch" (VERIFIED 2026-11-18).
+  WO-N6 acceptance: a real test (revision_binding has no MODEL_BUILDERS; test_t07_w5a_inspection.py:130 patches
+  model_builders). Remaining at merge: patch_noop once on the merge commit.
