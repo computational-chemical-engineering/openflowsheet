@@ -405,11 +405,11 @@ def _check_floors(
 def parse_set(document: Mapping[str, Any]) -> CostSet:
     """Check a set document (§9.2.3) and return it; `CostSetError` lists every failed check.
 
-    The set's index value comes from `_basis_index_value` (1.0 when `basis.index` is missing).
-    The top-level source is checked by `_checked_against_reasons`, an entry of a known form by
-    `_check_generic` or `_sslw_entry_reasons`, the compressor's drive by
-    `_compressor_drive_reasons`, and the floors of a set with no other reason by
-    `_floor_reasons`."""
+    The set's index value comes from `_basis_index_value` (1.0 when `basis.index` is missing, or
+    its value is not a number object). The top-level source is checked by
+    `_checked_against_reasons`, an entry of a known form by `_check_generic` or
+    `_sslw_entry_reasons`, the compressor's drive by `_compressor_drive_reasons`, and the floors of
+    a set with no other reason by `_floor_reasons`."""
     set_id = str(document.get("set_id", "<no set_id>"))
     reasons: list[str] = []
     if document.get("schema") != SCHEMA:
