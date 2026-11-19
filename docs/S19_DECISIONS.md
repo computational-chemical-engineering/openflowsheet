@@ -3226,3 +3226,6 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   wp/S19 tip; if 418 fails, run 9 waits for the fix. Brief `S19-W3-G1O-9.md`: retarget (check_opening), plan
   split-region-4 + move `_external_opening`, no-gain (+ fix 1), R6 (+ fix 2, note a), R7 only per Q5. Engineer
   launched (opus-engineer, Opus).
+- Job 403 `w5n1-16r` (sets.py `parse_set`, cd6f071a) PASS 19/19, LOG-ERROR as expected ("--rerun-of 375: campaign
+  s19 has no step for this tree and base"). Logged by hand without `--rerun-of` (`--head cd6f071a`): run-log step 404
+  accepted, 63.1 -> 56.1. Batch N: 358-372, 402, 403 PASS; 411-417 pending.
