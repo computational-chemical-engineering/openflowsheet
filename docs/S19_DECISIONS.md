@@ -3112,3 +3112,8 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
 
 - Merge-check job 390 `g1o6-mc` PASS 10/10 (debt 267.6 -> 181.0). wp/S19-g1o6-mc merged into wp/S19 as
   6e1a23ad. Run 7's merge-check goes on the wp/S19 tip after its review.
+- Gate report (6 h): "ALERT selected share 68% < 75% of step gates", "ALERT selected gates take 790 s > 300 s",
+  "ALERT selected/full time ratio 0.58 > 0.4" (standing, proposal 2 for Frank; batch N's W5-mode gates fall back to
+  the full suite, ~1500 s each); "ALERT queue wait median 19 min > 15 min": batch N's 23 snapshot steps enqueued in a
+  burst, serialised by gate.sh's clone-wide lock (as 2722 and 2756). No action: engineers end after enqueueing, so
+  waits hold no agent.
