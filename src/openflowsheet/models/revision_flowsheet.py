@@ -1114,7 +1114,8 @@ class RevisionFlowsheet:
         deadlock depends only on the graph, so a second pass from the first's `computed_torn`
         tears the same streams. Nothing is solved and nothing iterated. `_ready_unit` picks the
         unit that runs; when it finds none, `_started_unit` picks the unit to tear and `_tear` its
-        tears. `_inlet_states` gives the unit its inlets and `_outlet_states` its outlets' values.
+        tears. `_inlet_states` gives the unit its inlets, and the pass's state, a `_Traversal`,
+        takes its outlets' values by `_Traversal.complete`; `_Traversal.fail` ends a failed pass.
         """
         run = _Traversal(pending=list(self.instances))
         while run.pending:
@@ -1132,15 +1133,7 @@ class RevisionFlowsheet:
             if evaluation.status != "ok":
                 lines = evaluation.message.splitlines() or [""]
                 return run.fail(unit.unit_id, evaluation.status, lines[0], _sidecar(lines))
-            for stream, state in _outlet_states(unit, evaluation, connected):
-                if stream in run.torn:
-                    run.computed_torn[stream] = state
-                else:
-                    run.value[stream] = state
-                run.computed.add(stream)
-            run.evaluations[unit.unit_id] = evaluation
-            run.order.append(unit.unit_id)
-            run.pending = [u for u in run.pending if u is not unit]
+            run.complete(unit, evaluation, connected)
 
         return FlowsheetPass(
             status="ok",
@@ -1199,7 +1192,8 @@ class _Traversal:
     no frame fields; the state is the units still `pending` (declaration order), the stream
     values found so far (`value`), the `computed` streams, the `torn` streams in tear order and
     the values the pass `computed_torn` for them, the units' `evaluations` and the `order` they
-    ran in. `traverse` writes every field; `fail` only reads them."""
+    ran in. `traverse` writes the tears into `value` and `torn`, `complete` what a unit that ran
+    gives; `fail` only reads the fields."""
 
     pending: list[UnitModel]
     value: dict[str, StreamState] = field(default_factory=dict)
@@ -1223,6 +1217,23 @@ class _Traversal:
             code=code,
             diagnostic=diagnostic,
         )
+
+    def complete(
+        self, unit: UnitModel, evaluation: UnitEvaluation, connected: Mapping[str, tuple[str, ...]]
+    ) -> None:
+        """§1.5, `unit` ran with `evaluation` (status `ok`): each stream `connected` to one of its
+        outlets takes the outlet's value, in `_outlet_states` order, into `computed_torn` for a
+        torn stream and into `value` otherwise, and is `computed`; the unit's evaluation is kept,
+        it joins `order` and leaves `pending`. Writes the run's state."""
+        for stream, state in _outlet_states(unit, evaluation, connected):
+            if stream in self.torn:
+                self.computed_torn[stream] = state
+            else:
+                self.value[stream] = state
+            self.computed.add(stream)
+        self.evaluations[unit.unit_id] = evaluation
+        self.order.append(unit.unit_id)
+        self.pending = [u for u in self.pending if u is not unit]
 
 
 def _inlet_states(
