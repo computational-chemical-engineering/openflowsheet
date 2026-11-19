@@ -3355,3 +3355,11 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
 - 12:00: job 426 (pr1b-2, step 419) PASS accepted-neutral; PR-1b chain all PASS (425, 426).
   DECISION: review PR-1b and PR-2 with one reviewer once job 430 reports -> one context on orchestrator/ for both
   W4 residuals. Alternative: PR-1b's review now, PR-2's later. Reversible by: launching R-W4-PR-1b alone.
+- 12:20: WO-N2 delivered (opus-engineer), 8 commits a059b9a0..c418b1e3, jobs 428, 429, 431-436 (w5n2-1..8): Refusal
+  retarget fcbbec53 (`program.Refusal is linearization.Refusal` True); inventory.py 7.5 -> 9.6 (71.7 -> 2.0), tables.py
+  7.7 -> 9.0 (35.2 -> 11.0), impact.py 8.5 -> 9.0 (29.0 -> 14.0); re-export removed c418b1e3 (no importer left;
+  `program.Refusal` named only in records: S19_DECISIONS, ruling :463, ADR 0076 :334, :347). W5-S7 0 new edges, 8
+  retargets, M9 key set 35. Engineer DECISION accepted: brightway.py stays 8.8 (its tests need the `lca` extra, not
+  installed; no gate would exercise an edit). Left: `_Inventory.technosphere`, `_alpha` many_args (1.0 each).
+- WO-N3 (opus-engineer, brief `S19-W5-N3.md`): pr_lib.py 6.9 (debt 28.3, duplication; `_derivatives` 8.7,
+  `evaluate_phase` 19.6), S1 rule, launched on wp/S19-w5n from c418b1e3. S1 cadence: review its chain at close.
