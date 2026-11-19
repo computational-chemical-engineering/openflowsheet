@@ -3050,3 +3050,6 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   unlike the file's existing `_check_*` that append to a list. Left: `_resolve` (24.1, cog 38; its `take` closure
   writes four side tables: a class or thin-adapter design, for the N1 review to rule), contributor.py split, `items`,
   `_capital`, `_theta`, `_regime`. Self-reset next (no agent running).
+- **2026-11-19 02:02 CET, job 374 PASS (g1o5-1, R2, region.py 221.7 -> 176.1); gate report:** "ALERT selected gates
+  take 700 s > 300 s (tests tier)"; "ALERT selected/full time ratio 0.54 > 0.4: selection saves little". The standing
+  ALERT, parked with Frank as proposal 2 (selection widening); no new action. Review brief R-W5-N1 written.
