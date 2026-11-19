@@ -1438,22 +1438,22 @@ def _a09(runs: Runs, ref: Mapping[str, Any]) -> tuple[bool, Any, Any]:
         detail=RegionResult(outcome="LINEAR_SOLVE_FAILED", state={}, attempts=()),
     )
     unchanged = executor_module._eo_recovery(
+        executor_module._PlanRun(
+            None,  # type: ignore[arg-type]
+            None,  # type: ignore[arg-type]
+            SolvePolicy(policy_id="T04", residual_tolerances={}, scales={}),
+            None,  # type: ignore[arg-type]
+            None,
+            None,
+            None,
+        ),
         stalled,
-        None,  # type: ignore[arg-type]
-        None,  # type: ignore[arg-type]
-        None,  # type: ignore[arg-type]
-        SolvePolicy(policy_id="T04", residual_tolerances={}, scales={}),
         None,  # type: ignore[arg-type]
         None,  # type: ignore[arg-type]
         {},
         0,
     )
     with pytest.MonkeyPatch.context() as patch:
-        patch.setattr(
-            region_module,
-            "check_opening",
-            lambda state, requirement: OpeningRefusal("coverage", "S3.T"),
-        )
         patch.setattr(
             region_problem,
             "check_opening",

@@ -33,7 +33,7 @@ import math
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from functools import cache
-from typing import TYPE_CHECKING, Any, Final, Literal
+from typing import TYPE_CHECKING, Any, Final, Literal, NamedTuple
 
 from jsonschema import Draft202012Validator
 from referencing import Registry
@@ -68,6 +68,7 @@ from openflowsheet.studies.nlp.revision_host import (
 
 if TYPE_CHECKING:
     from openflowsheet.compile.spec import ProblemSpec
+    from openflowsheet.studies.nlp.revision_host import DecisionRefusal
 
 REQUEST_FORMAT: Final = "openflowsheet-optimization-request-v1"
 SCHEMA_REFERENCE: Final = "optimization-request.schema.json"
@@ -138,7 +139,8 @@ def request_problems(request: Any) -> list[tuple[str, str]]:
     """Every problem of `request` as `(pointer, message)`: none for a well-formed request.
 
     First a node with no canonical JSON form (ADR 0002, as the revision reader refuses it), then
-    the schema's errors in pointer order, then the rules the schema cannot state."""
+    the schema's errors in pointer order, then the rules the schema cannot state, in this order:
+    `_check_decisions`, `_check_starts`, `_check_constraint_ids`, `_check_expressions`."""
     pointer = first_noncanonical(request)
     if pointer is not None:
         return [(pointer, f"document_not_canonical({pointer})")]
@@ -147,9 +149,32 @@ def request_problems(request: Any) -> list[tuple[str, str]]:
         return [_split(error) for error in errors]
     problems: list[tuple[str, str]] = []
     decisions = [entry["specification_id"] for entry in request["decisions"]]
+    problems += _check_decisions(decisions)
+    problems += _check_starts(request, decisions)
+    constraints = request.get("constraints", ())
+    problems += _check_constraint_ids(constraints)
+    problems += _check_expressions(request["objective"]["expression"], constraints)
+    return problems
+
+
+def _split(error: str) -> tuple[str, str]:
+    pointer, _, message = error.partition(": ")
+    return pointer, message
+
+
+def _check_decisions(decisions: Sequence[str]) -> list[tuple[str, str]]:
+    """`request_problems`' first rule: each decision's specification id after its first use."""
+    problems: list[tuple[str, str]] = []
     for index, name in enumerate(decisions):
         if name in decisions[:index]:
             problems.append((f"/decisions/{index}", f"specification {name!r} repeats"))
+    return problems
+
+
+def _check_starts(request: Any, decisions: Sequence[str]) -> list[tuple[str, str]]:
+    """`request_problems`' second rule: each explicit start whose length is not the number of
+    `decisions`, in start order."""
+    problems: list[tuple[str, str]] = []
     for index, start in enumerate((request.get("starts") or {}).get("explicit", ())):
         if len(start) != len(decisions):
             problems.append(
@@ -158,13 +183,31 @@ def request_problems(request: Any) -> list[tuple[str, str]]:
                     f"{len(start)} values for {len(decisions)} decisions",
                 )
             )
-    expressions = [("/objective/expression", request["objective"]["expression"])]
+    return problems
+
+
+def _check_constraint_ids(constraints: Sequence[Mapping[str, Any]]) -> list[tuple[str, str]]:
+    """`request_problems`' third rule: each constraint id after its first use, in constraint
+    order."""
+    problems: list[tuple[str, str]] = []
     seen: set[str] = set()
-    for index, constraint in enumerate(request.get("constraints", ())):
+    for index, constraint in enumerate(constraints):
         if constraint["id"] in seen:
             problems.append((f"/constraints/{index}/id", f"{constraint['id']!r} repeats"))
         seen.add(constraint["id"])
+    return problems
+
+
+def _check_expressions(
+    objective: Mapping[str, Any], constraints: Sequence[Mapping[str, Any]]
+) -> list[tuple[str, str]]:
+    """`request_problems`' fourth rule, over the `objective` expression and then each of
+    `constraints`' expressions: an expression with neither linear nor quadratic terms, and each
+    quadratic pair after its first use."""
+    expressions = [("/objective/expression", objective)]
+    for index, constraint in enumerate(constraints):
         expressions.append((f"/constraints/{index}/expression", constraint["expression"]))
+    problems: list[tuple[str, str]] = []
     for where, expression in expressions:
         if not expression.get("linear") and not expression.get("quadratic"):
             problems.append((where, "an expression names at least one variable"))
@@ -173,11 +216,6 @@ def request_problems(request: Any) -> list[tuple[str, str]]:
             if pair in pairs[:index]:
                 problems.append((f"{where}/quadratic/{index}", f"the pair {list(pair)} repeats"))
     return problems
-
-
-def _split(error: str) -> tuple[str, str]:
-    pointer, _, message = error.partition(": ")
-    return pointer, message
 
 
 def request_sha256(request: Mapping[str, Any]) -> str:
@@ -437,25 +475,19 @@ def static_readiness(
     check whose input is missing (a request with problems, a revision not on `revision_eo`) is
     in `not_run`. Ready iff no problem, no reason and nothing not run; then `formulation` is the
     request's `NlpFormulation`. `routes` are the application's (`host.RevisionRoutes`). The
-    request-only rows are `_request_reasons`'s."""
+    request-only rows are `_request_reasons`'s, the revision's rows `_revision_findings`'s."""
     solver = solver_probe()
     problems = tuple(request_problems(request))
     reasons: list[ReadinessReason] = []
-    not_run: dict[ReadinessCode, str] = {}
-
-    def skip(codes: Sequence[ReadinessCode], why: str) -> None:
-        for code in codes:
-            not_run.setdefault(code, why)
-
     if not solver.available:
         reasons.append(ReadinessReason("NLP_SOLVER_UNAVAILABLE", solver.detail))
     if problems:
         pointer, message = problems[0]
-        skip(
+        skipped: dict[ReadinessCode, str] = dict.fromkeys(
             [code for code in STATIC_CODES if code != "NLP_SOLVER_UNAVAILABLE"],
             f"the request is not well formed: {pointer or '/'}: {message}",
         )
-        return StaticReadiness(problems, _ordered(reasons), not_run, solver)
+        return StaticReadiness(problems, _ordered(reasons), skipped, solver)
     parsed = OptimizationRequest.of(request)
 
     # Request-only checks: no revision binding.
@@ -463,75 +495,17 @@ def static_readiness(
     reasons.extend(_request_reasons(parsed, revision, named))
 
     # The revision: its route, then the decision probes and the state names on its binding.
-    revision_codes: list[ReadinessCode] = [
-        "UNKNOWN_DECISION",
-        "DECISION_UNIT_NOT_INTERNAL",
-        "DECISION_NOT_CONTINUOUS",
-        "UNKNOWN_VARIABLE",
-    ]
-    if parsed.include_revision:
-        revision_codes.append("START_OUTSIDE_BOUNDS")
-    route = routes.select(revision, surrogates=surrogates)
-    if not routes.is_route(route):
-        reasons.append(
-            ReadinessReason(
-                "REVISION_UNBOUND",
-                f"REVISION_UNBOUND({routes.refusal_code(route.revision.detail)}): "
-                f"{route.revision.kind}({route.revision.detail})",
-            )
-        )
-        skip(revision_codes, "the revision does not bind")
-        return _finish(problems, reasons, not_run, solver, parsed)
-    if route.solve_path != ROUTE:
-        reasons.append(
-            ReadinessReason(
-                "OPTIMIZATION_ROUTE_UNAVAILABLE",
-                f"the revision solves on {route.solve_path}; optimisation needs {ROUTE}",
-                route.solve_path,
-            )
-        )
-        skip(revision_codes, f"the revision is not on {ROUTE}")
-        return _finish(problems, reasons, not_run, solver, parsed)
-    reasons.extend(_unknown_variable_reasons(named, route.binding.spec))
-    probed = [box for box in parsed.decisions if _ends(box)]
-    unprobed = [box.specification_id for box in parsed.decisions if not _ends(box)]
-    try:
-        found = (
-            decision_map(revision, probed, routes=routes, surrogates=surrogates) if probed else None
-        )
-    except RevisionUnboundError as error:
-        unbound = error.unbound
-        reasons.append(
-            ReadinessReason(
-                "REVISION_UNBOUND",
-                f"REVISION_UNBOUND({routes.refusal_code(unbound.detail)}): {error}",
-            )
-        )
-        skip(revision_codes, "the revision does not bind")
-        return _finish(problems, reasons, not_run, solver, parsed)
-    mapping: DecisionMap | None = None
-    if isinstance(found, tuple):
-        reasons.extend(
-            ReadinessReason(refusal.code, refusal.detail, refusal.specification_id)
-            for refusal in found
-        )
-    elif found is not None:
-        mapping = found
-    if unprobed:
-        # No finite end, no probe: BOUNDS_UNDECLARED is the reason, continuity was not judged.
-        skip(
-            ["DECISION_NOT_CONTINUOUS"],
-            f"no finite box end to probe for {','.join(unprobed)} (BOUNDS_UNDECLARED)",
-        )
-    revision_values: tuple[float, ...] | None = None
-    if mapping is not None and not unprobed:
-        base = route.binding.spec.parameters
-        revision_values = tuple(base[mapping.parameters[name]] for name in parsed.specification_ids)
-        if parsed.include_revision:
-            reasons.extend(_outside(parsed, 0, revision_values))
-    elif parsed.include_revision:
-        skip(["START_OUTSIDE_BOUNDS"], "start 0 needs every decision's parameter")
-    return _finish(problems, reasons, not_run, solver, parsed, mapping, revision_values)
+    revision_rows = _revision_findings(parsed, revision, named, routes, surrogates)
+    reasons.extend(revision_rows.reasons)
+    return _finish(
+        problems,
+        reasons,
+        revision_rows.not_run,
+        solver,
+        parsed,
+        revision_rows.mapping,
+        revision_rows.revision_values,
+    )
 
 
 def _request_reasons(
@@ -599,6 +573,119 @@ def _request_reasons(
             )
         )
     return reasons
+
+
+class _RevisionFindings(NamedTuple):
+    """What design §4.5's revision rows found: their failing reasons and the checks they could
+    not run, each in the order found, the decision map (None unless the probes mapped) and the
+    revision's decision values (None unless every decision was probed and mapped)."""
+
+    reasons: list[ReadinessReason]
+    not_run: dict[ReadinessCode, str]
+    mapping: DecisionMap | None = None
+    revision_values: tuple[float, ...] | None = None
+
+
+def _revision_findings(
+    parsed: OptimizationRequest,
+    revision: Mapping[str, Any],
+    named: Sequence[str],
+    routes: RevisionRoutes,
+    surrogates: Any,
+) -> _RevisionFindings:
+    """Design §4.5's revision rows for `parsed` on `revision` (`static_readiness`'s ladder):
+    REVISION_UNBOUND or OPTIMIZATION_ROUTE_UNAVAILABLE from the route `routes` selects, then
+    UNKNOWN_VARIABLE for a name in `named` that is not a variable of the binding, then the
+    decision probes' refusals and START_OUTSIDE_BOUNDS for the revision start. A route refusal
+    or an unbound probe ends the ladder with every revision code not run."""
+    revision_codes: list[ReadinessCode] = [
+        "UNKNOWN_DECISION",
+        "DECISION_UNIT_NOT_INTERNAL",
+        "DECISION_NOT_CONTINUOUS",
+        "UNKNOWN_VARIABLE",
+    ]
+    if parsed.include_revision:
+        revision_codes.append("START_OUTSIDE_BOUNDS")
+    route = routes.select(revision, surrogates=surrogates)
+    if not routes.is_route(route):
+        return _RevisionFindings(
+            [
+                ReadinessReason(
+                    "REVISION_UNBOUND",
+                    f"REVISION_UNBOUND({routes.refusal_code(route.revision.detail)}): "
+                    f"{route.revision.kind}({route.revision.detail})",
+                )
+            ],
+            dict.fromkeys(revision_codes, "the revision does not bind"),
+        )
+    if route.solve_path != ROUTE:
+        return _RevisionFindings(
+            [
+                ReadinessReason(
+                    "OPTIMIZATION_ROUTE_UNAVAILABLE",
+                    f"the revision solves on {route.solve_path}; optimisation needs {ROUTE}",
+                    route.solve_path,
+                )
+            ],
+            dict.fromkeys(revision_codes, f"the revision is not on {ROUTE}"),
+        )
+    reasons = _unknown_variable_reasons(named, route.binding.spec)
+    probed = [box for box in parsed.decisions if _ends(box)]
+    unprobed = [box.specification_id for box in parsed.decisions if not _ends(box)]
+    try:
+        found = (
+            decision_map(revision, probed, routes=routes, surrogates=surrogates) if probed else None
+        )
+    except RevisionUnboundError as error:
+        unbound = error.unbound
+        reasons.append(
+            ReadinessReason(
+                "REVISION_UNBOUND",
+                f"REVISION_UNBOUND({routes.refusal_code(unbound.detail)}): {error}",
+            )
+        )
+        return _RevisionFindings(
+            reasons, dict.fromkeys(revision_codes, "the revision does not bind")
+        )
+    probes = _probe_findings(parsed, route.binding.spec, found, unprobed)
+    reasons.extend(probes.reasons)
+    return _RevisionFindings(reasons, probes.not_run, probes.mapping, probes.revision_values)
+
+
+def _probe_findings(
+    parsed: OptimizationRequest,
+    spec: ProblemSpec,
+    found: DecisionMap | tuple[DecisionRefusal, ...] | None,
+    unprobed: Sequence[str],
+) -> _RevisionFindings:
+    """What the decision probes' answer `found` (None: nothing probed) means for `parsed` on
+    the bound `spec` (pure): each probe refusal, in request order; DECISION_NOT_CONTINUOUS not
+    run for the `unprobed` decisions; then START_OUTSIDE_BOUNDS for the revision start, judged
+    on `spec`'s parameters when every decision was mapped, else not run."""
+    reasons: list[ReadinessReason] = []
+    mapping: DecisionMap | None = None
+    if isinstance(found, tuple):
+        reasons.extend(
+            ReadinessReason(refusal.code, refusal.detail, refusal.specification_id)
+            for refusal in found
+        )
+    elif found is not None:
+        mapping = found
+    not_run: dict[ReadinessCode, str] = {}
+    if unprobed:
+        # No finite end, no probe: BOUNDS_UNDECLARED is the reason, continuity was not judged.
+        not_run["DECISION_NOT_CONTINUOUS"] = (
+            f"no finite box end to probe for {','.join(unprobed)} (BOUNDS_UNDECLARED)"
+        )
+    revision_values: tuple[float, ...] | None = None
+    if mapping is not None and not unprobed:
+        base = spec.parameters
+        revision_values = tuple(base[mapping.parameters[name]] for name in parsed.specification_ids)
+        if parsed.include_revision:
+            reasons.extend(_outside(parsed, 0, revision_values))
+    elif parsed.include_revision:
+        not_run["START_OUTSIDE_BOUNDS"] = "start 0 needs every decision's parameter"
+    return _RevisionFindings(reasons, not_run, mapping, revision_values)
 
 
 def _unknown_variable_reasons(named: Sequence[str], spec: ProblemSpec) -> list[ReadinessReason]:

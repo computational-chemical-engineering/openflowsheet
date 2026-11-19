@@ -1,0 +1,283 @@
+{
+  "work_package": "S19",
+  "commit": "e3e955206a4f06d942b274c766573eecfddf8655",
+  "requirements": [],
+  "status": "tested",
+  "inputs": {
+    "case_id": "S19 (Frank, 2026-11-14: excellent code health before further development); docs/S19_RULES.md; ADR 0076 (accepted 2026-11-14); ADR 0077; this manifest covers what merged into wp/S19 since main a283925c (the W3/W4 merge plus WITNF): W4 after I-19 (I-20, the residuals PR-1b and PR-2), W3 G1 lanes N (runs 3, 4) and O (runs 4 to 9), G3 runs 3 to 9, G2 runs 6+7, W5 WO-0, WO-1 and WO-1b, and the gate tooling (gate proposal 2), for the merge into main by Frank's Decision Desk sign-off ofs-s19-blocking-merge-main (the 0.5 blocking set: W4, 0 cycles and 0 violations, G5, G6)",
+    "case_hash": "e6f4bf893228dcc652d5faff6f9a3ea84c205c0139118488e1ed706456f5682f",
+    "environment_lock_hash": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+  },
+  "commands": [
+    {
+      "cmd": ".venv-codehealth/bin/codehealth gate --mode restructure|refactor|interface ... (via .claude/skills/s19-refactor/gate.sh and gate_queue.py); run log git-common-dir codehealth/runs/s19.jsonl, steps 299 to 448 (150 entries since the second manifest): interface 3 accepted, 1 gate-fail; refactor 112 accepted, 21 accepted-neutral, 1 no-gain, 10 gate-fail; restructure 2 accepted-neutral. Heads in the history of e3e95520: 101 accepted or accepted-neutral (interface 3, refactor 96, restructure 2), 1 no-gain, 3 gate-fail; every one of the 105 gated against the test map at 756e1c12 (G-MAP 6). The other 45 entries are steps of lanes not merged at e3e95520 (W5 batch N) or superseded heads",
+      "cwd": ".claude/worktrees/s19 and the lane worktrees",
+      "exit_code": 0
+    },
+    {
+      "cmd": ".venv-codehealth/bin/codehealth arch --depth 4 (at e3e95520: ARCH 329 files, 4107 imports, 0 violation(s), 0 cycle(s) at depth 4; at 4f9f2c3d: 329 files, 4100 imports, 0, 0)",
+      "cwd": ".claude/worktrees/s19-ev2",
+      "exit_code": 0
+    },
+    {
+      "cmd": ".venv-codehealth/bin/codehealth scan --json git-common-dir/codehealth/runs/scan-e3e95520.json (SCAN 329 files, 103190 NLOC, debt 3221.7 (31.22/kNLOC), health 8.53, functions with debt 560/5189, brain 10, file smells 48, errors 0; at 4f9f2c3d: debt 4670.7, health 8.24, brain 26; CB d90b498f: debt 6370.9, health 7.3)",
+      "cwd": ".claude/worktrees/s19-ev2",
+      "exit_code": 0
+    },
+    {
+      "cmd": ".venv-codehealth/bin/codehealth docs --json (DOCS 775 docs, 27338 references, 22952 ok, 288 broken in living docs, 1260 in records)",
+      "cwd": ".claude/worktrees/s19-ev2",
+      "exit_code": 0
+    },
+    {
+      "cmd": "python3 .claude/skills/s19-refactor/patch_noop.py . (262 module-attribute patches; 0 where the module neither defines nor uses the name)",
+      "cwd": ".claude/worktrees/s19-ev2",
+      "exit_code": 0
+    },
+    {
+      "cmd": "PYTHONPATH=src .venv/bin/python scripts/corpus_identity.py --check (F0 PASS: M1 50/50, M2 61/61, M3 61/61, M4 61/61, M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 35/35)",
+      "cwd": ".claude/worktrees/s19-ev2",
+      "exit_code": 0
+    },
+    {
+      "cmd": "PYTHONPATH=src .venv/bin/python -m pytest -q -p no:cacheprovider tests/test_t08_w2_surface_digest.py tests/test_m07a_surface_chain.py (the mcp_digest tier of .codehealth/config.toml; 40 passed in 14.01 s)",
+      "cwd": ".claude/worktrees/s19-ev2",
+      "exit_code": 0
+    },
+    {
+      "cmd": "PYTHONPATH=src .venv/bin/python -m pytest -q -p no:cacheprovider tests/test_t07_v17_reference.py::test_f6_the_forty_runs_fit_their_budget (run by the orchestrator at e3e95520, alone, gate queue idle; 1 passed in 116.61 s, wall 117 s, load average 4.03 at the end; log git-common-dir codehealth/runs/budget-e3e95520/test_f6_the_forty_runs_fit_their_budget.log)",
+      "cwd": ".claude/worktrees/s19",
+      "exit_code": 0
+    },
+    {
+      "cmd": "PYTHONPATH=src .venv/bin/python -m pytest -q -p no:cacheprovider tests/test_t07_conformance.py::test_the_budget_of_the_scenario_runs (run by the orchestrator at e3e95520, alone, gate queue idle; 1 passed in 31.79 s, wall 32 s, load average 3.02 at the end; log git-common-dir codehealth/runs/budget-e3e95520/test_the_budget_of_the_scenario_runs.log)",
+      "cwd": ".claude/worktrees/s19",
+      "exit_code": 0
+    },
+    {
+      "cmd": "gh run watch 44576885441 --exit-status",
+      "cwd": ".claude/worktrees/s19",
+      "exit_code": 0
+    }
+  ],
+  "checks": [
+    {
+      "id": "S19.G-STEP-BLOCKING",
+      "description": "every kept step since the second manifest: gate exit 0 (refactor: touched files' debt strictly lower or accepted-neutral by rule; restructure: the plan's arch numbers; interface: the ADR 0076 plan's declared public API change)",
+      "result": "pass",
+      "value": "101 accepted or accepted-neutral steps and 1 no-gain step in the history of e3e95520, each with a passing gate; the 3 gate-fail entries in that history: step 322 (pytest killed externally at 250.9 s, no failure line) -> re-run 327 accepted on the same head; step 431 (test_s03_ours a16 timed out under load) -> re-run 438 no-gain on the same head; step 338 is the test-only commit f3996448 (R-W3-G3-7 order pins, fails the step gate's forbid/scope rule by construction), accepted outside the step gate (S19_DECISIONS 2026-11-18, G3 run 8 step 1)"
+    },
+    {
+      "id": "S19.G-REVIEW-BLOCKING",
+      "description": "fresh reviewer per the sensitivity tiers; rejects reverted and logged (docs/S19_DECISIONS.md)",
+      "result": "pass",
+      "value": "R-W3-G1N-3 (Opus): merge after one docstring fix; R-W3-G1N-4 (Opus): merge after fixes 1-3, no step reverted; R-W3-G1O-4 (Opus): merge, no fixes; R-W3-G1O-5 (Opus): merge, no required fixes; R-W3-G1O-6 (Opus): merge all three steps; R-W3-G1O-7 (Opus): merge, no fixes; R-W3-G1O-8 (Opus): merge all five steps, docstring fixes; R-W3-G1O-9 (Opus): merge all six commits after fix 1; R-W3-G3-3 (Opus): merge after fixes; R-W3-G3-4 (Opus): merge after one fix; R-W3-G3-5 (Opus): merge, no fixes; R-W3-G3-6 (Opus): merge, no fixes; R-W3-G3-7 (Opus): merge, no fixes; R-W3-G3-8 (Opus): merge after one test fix; R-W3-G3-9 (Opus): merge after fixes 1-2; R-W4-PR-1b+2 (Opus; docs/reviews/S19-R-W4-PR-1b-2.md): PR-1b merge after fixes 1, 2 (no code), PR-2 merge as is; R-W4-I20 (Opus; docs/reviews/S19-R-W4-I20.md): merge after fixes (three docstrings, 10ce869d); R-W5-WO0 (Opus): merge after fixes; R-W5-WO1gm (Opus): merge after fixes 1-5; WO-1b (reviewer, Opus, no review id): accept; R-W5-G2-6+7 (Opus; docs/reviews/S19-R-W5-G2-6+7.md): lane g2b merge after fixes 1, 2, 4, lane g2c merge after fix 3; wp/S19-tools5 (gate proposal 2): reviewed by the orchestrator, no reviewer (tools-lane precedent). Batch N's R-W5-N1 and R-W5-N3 cover a lane not merged at e3e95520"
+    },
+    {
+      "id": "S19.G-MAP-6",
+      "description": "the map at 756e1c12, the wp/S19 tip after the W3/W4 merge into main (2026-11-18), criteria as G-MAP 5 (exit 0 or 1; failures a subset of the B-6 four + f6; no unsure test in a file over about 60 s); the test-map base of every gate in this manifest",
+      "result": "pass",
+      "value": "PASS (S19_DECISIONS 2026-11-18 03:37): 20516 tests, 20403 passed, 109 skipped, 4 failed = the B-6 four (test_m04_wo9 a25, a29; test_x02_wo4 g4e x2); f6 passed; wall 4168 s, 25.9 MB"
+    },
+    {
+      "id": "S19.W4-DOCS",
+      "description": "end of W4: codehealth docs with ADR 0076 rule 5's records list, 0 broken references introduced by S19 (tip against CB d90b498f)",
+      "result": "pass",
+      "value": "2026-11-17 after the I-19 merge: 0 introduced by S19, 232 pre-S19 trailing; I-20 (orchestrator, S19_DECISIONS): 288 broken in living docs at e7fd7065 and at the lane head 10ce869d, 0 introduced; at e3e95520 (this run): 288 broken in living docs, 1260 in records"
+    },
+    {
+      "id": "S19.ARCH-BLOCKING",
+      "description": "codehealth arch --depth 4 at e3e95520 (blocking set: 0 cycles and 0 violations)",
+      "result": "pass",
+      "value": "ARCH 329 files, 4107 imports, 0 violation(s), 0 cycle(s) at depth 4 (4f9f2c3d: 0/0, 4100 imports; CB d90b498f: 14 violations, 10 cycles)"
+    },
+    {
+      "id": "S19.PATCH-NOOP",
+      "description": "no test patches a module attribute the module neither defines nor uses (ADR 0076 review)",
+      "result": "pass",
+      "value": "262 module-attribute patches; 0 flagged"
+    },
+    {
+      "id": "S19.F0",
+      "description": "scripts/corpus_identity.py --check at e3e95520",
+      "result": "pass",
+      "value": "F0 PASS: M1 50/50, M2 61/61, M3 61/61, M4 61/61, M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 35/35"
+    },
+    {
+      "id": "S19.MCP-DIGEST",
+      "description": "the mcp_digest tier (tests/test_t08_w2_surface_digest.py, tests/test_m07a_surface_chain.py) at e3e95520",
+      "result": "pass",
+      "value": "40 passed in 14.01 s"
+    },
+    {
+      "id": "S19.BUDGET-F6",
+      "description": "test_t07_v17_reference f6 (the forty runs within 300 s), run alone with the gate queue idle",
+      "result": "pass",
+      "value": "1 passed in 116.61 s (wall 117 s), load average 4.03 at the end of the run (5.80, 10.96 over 5 and 15 min); run by the orchestrator at e3e95520"
+    },
+    {
+      "id": "S19.BUDGET-T07C",
+      "description": "test_t07_conformance budget_of_the_scenario_runs (the five scenario runs within 120 s), run alone with the gate queue idle",
+      "result": "pass",
+      "value": "1 passed in 31.79 s (wall 32 s), load average 3.02 at the end; exit code 0; observation: after the pass, interpreter shutdown printed an 'Exception ignored' message from a t07_transport_support.ThreadStream object, 'ValueError: I/O operation on closed file' (tests/t07_transport_support.py:132, unchanged since main), as at 4f9f2c3d"
+    },
+    {
+      "id": "S19.G-END-CI",
+      "description": "CI green on ubuntu-latest and ubuntu-24.04-arm at the branch commit to be merged (default-install and identity jobs green too)",
+      "result": "pass",
+      "value": "run 44576885441 at 5c48391b (e3e95520 + this manifest at status implemented) green: check (ubuntu-latest) success, check (ubuntu-24.04-arm) success, default-install success, codehealth success; 12 jobs skipped by their triggers"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "docs/S19_DECISIONS.md",
+      "sha256": "0447f7428ff4b7c79f6ccbf67ad7d98c2141af198aeae754d74605514f69ccc4",
+      "description": "decisions per work order and review"
+    },
+    {
+      "path": "docs/S19_STATE.md",
+      "sha256": "e6f4bf893228dcc652d5faff6f9a3ea84c205c0139118488e1ed706456f5682f",
+      "description": "state: gates with criteria fixed before the run, and results"
+    },
+    {
+      "path": "docs/S19_RULES.md",
+      "sha256": "f9e91956f579a7ab9b68037c46f489b3d450d8dc7eac648d2571c3d277c6f0cb",
+      "description": "standing rules for every S19 worker"
+    },
+    {
+      "path": "docs/adr/0076-S19-interface-redesign.md",
+      "sha256": "aa217ae059f4917abc9a7fd856a9cf9e7dfc758404c2a4c78ebbbf385a86413a",
+      "description": "ADR 0076, accepted 2026-11-14, amended in W4 (I-20)"
+    },
+    {
+      "path": "docs/adr/0077-S19-W5-identity-reregistration.md",
+      "sha256": "ef8efc6e70537db0d7daa0ad2775e15882617cf0748a89fd75ffa40be63b1869",
+      "description": "ADR 0077 (W5 identity re-registration), added since 4f9f2c3d"
+    },
+    {
+      "path": ".codehealth/config.toml",
+      "sha256": "62ba35a17d0116870aeeea894a4708517019da0995099d57bc76af9a4c11cb5f",
+      "description": "the codehealth config: scope src/openflowsheet/*, repo-layers, the architecture ratchet, the docs records"
+    },
+    {
+      "path": ".codehealth/step-gate-excluded-tests.txt",
+      "sha256": "7bdd1e66be04ae06410397cc416ec2e3db698c455db483b740fa3e8d8ad14f6e",
+      "description": "gate proposal 2: the end-to-end files step gates leave to the merge check"
+    },
+    {
+      "path": "scripts/test_impact.py",
+      "sha256": "a5e3eea0e93578816fa958957ef74c9cf280241983ae198e03540b35db8d835b",
+      "description": "the test map and step-relative selection"
+    },
+    {
+      "path": "scripts/codehealth_frozen.py",
+      "sha256": "3f800e3c0cef8b179db7cdedc7b56e20c6cf320e486919a2275c88d6d86571fd",
+      "description": "F0's frozen modules (the gate's frozen_cmd), W5 batch admission"
+    },
+    {
+      "path": "scripts/w5_gate.py",
+      "sha256": "c06883e6a6dc65921cb043929a023059ae61b3777aa0da282df44a477cfdd4ba",
+      "description": "W5 gate mode (WO-1)"
+    },
+    {
+      "path": "scripts/w5_identity.py",
+      "sha256": "3897ab06b3b7bfa730863733332313b0b28f1e071aae8bfa8e166ddc1463df29",
+      "description": "W5 identity tool (WO-0)"
+    },
+    {
+      "path": "docs/test-impact.md",
+      "sha256": "3320cf8980216023db74e592eb3be8ef1337a1e9eacde56978376621906ed3ea",
+      "description": "test-map and selection documentation"
+    },
+    {
+      "path": ".claude/skills/s19-refactor/SKILL.md",
+      "sha256": "fdd5c2542e2c9bdb81cf3e01f1d0a2016744ffc6c5bd6e3d4b8cb23cb03420ac",
+      "description": "S19 gate tooling (changed since 4f9f2c3d)"
+    },
+    {
+      "path": ".claude/skills/s19-refactor/gate.sh",
+      "sha256": "886c37acb585f5510abfccb809ce2d781a3c481abc9c23fb3e005aeeceace702",
+      "description": "S19 gate tooling (changed since 4f9f2c3d)"
+    },
+    {
+      "path": ".claude/skills/s19-refactor/gate_queue.py",
+      "sha256": "d0875fd83cfd3e0854b53fa261dca5e1699420ff93db15f16489db8fbbcb8e05",
+      "description": "S19 gate tooling (changed since 4f9f2c3d)"
+    },
+    {
+      "path": ".codehealth/interface/i20a-judging.toml",
+      "sha256": "b3194dd8f0d882facee092a7774bb264634495d8d0654dff8bc8e01318a54f0a",
+      "description": "an approved ADR 0076 interface plan (I-20) added since 4f9f2c3d"
+    },
+    {
+      "path": ".codehealth/interface/i20b-split-rows.toml",
+      "sha256": "de096dce6e2616a836ce5277b30e13a7b60ab96839c56015ec96e4c0fd633a68",
+      "description": "an approved ADR 0076 interface plan (I-20) added since 4f9f2c3d"
+    },
+    {
+      "path": ".codehealth/interface/i20c-merge.toml",
+      "sha256": "7ec1a7d1ee75b8be038955fa4594a20060808d7bc334214da6e272891a4d249a",
+      "description": "an approved ADR 0076 interface plan (I-20) added since 4f9f2c3d"
+    },
+    {
+      "path": ".codehealth/restructure/split-region-3.toml",
+      "sha256": "a0fd39c255819041e967402fb2671dc64509a90c68e1fe667e74ef72fec52b6b",
+      "description": "an approved restructure plan (G1 lane O) added since 4f9f2c3d"
+    },
+    {
+      "path": ".codehealth/restructure/split-region-4.toml",
+      "sha256": "e7ae2fcb1e0e4964e2d3cda0d70c51719f9068a77f217f533a0d856e2df9b33d",
+      "description": "an approved restructure plan (G1 lane O) added since 4f9f2c3d"
+    },
+    {
+      "path": "docs/briefs/S19-I20-design.md",
+      "sha256": "9ab6ab3c5ed818319aa3293e552ee68f3116c15f96921fcf90d3f1bf5e9634fd",
+      "description": "a design-lane ruling or plan added since 4f9f2c3d"
+    },
+    {
+      "path": "docs/briefs/S19-W5-ruling.md",
+      "sha256": "6cec3be0ed7ffd7397d67a33c0ddd39fddaf4e4ab00ee6861b71554e210a6ddc",
+      "description": "a design-lane ruling or plan added since 4f9f2c3d"
+    },
+    {
+      "path": "docs/briefs/S19-W5-WO0-probes.md",
+      "sha256": "9f663816404feb97703138a19c4b767fde0e58f5f286a84dc56c1ebdcf446bd9",
+      "description": "a design-lane ruling or plan added since 4f9f2c3d"
+    },
+    {
+      "path": "docs/reviews/S19-R-W4-I20.md",
+      "sha256": "332423ce721e1ca2523f3dd5cdbfdfd329a69ee081ead35e413e2a9360fc55f3",
+      "description": "a reviewer report added since 4f9f2c3d"
+    },
+    {
+      "path": "docs/reviews/S19-R-W4-PR-1b-2.md",
+      "sha256": "689ca2a3f3a6f646a97b34415b1792fecb5537a75edaf614434e25f9acb04446",
+      "description": "a reviewer report added since 4f9f2c3d"
+    },
+    {
+      "path": "docs/reviews/S19-R-W5-G2-6+7.md",
+      "sha256": "4e111cc7608a5f1c1787d2ded6e880e2068a206e9a02b042d3a9846a99fb479e",
+      "description": "a reviewer report added since 4f9f2c3d"
+    },
+    {
+      "path": "git-common-dir codehealth/runs/scan-e3e95520.json (outside the tree)",
+      "sha256": "b42e8a1a948b3a351c92fb0c97797d2806e5b2610c1a389d89284d06a4b57e87",
+      "description": "scan at e3e95520: debt 3221.7, health 8.53"
+    }
+  ],
+  "limitations": [
+    "Evidence class: software verification of behaviour-preserving refactors (bitwise: literal multiset, public API, F0 corpus identity, MCP digest, test suite), not a validation of the simulator. The gates prove the tested behaviour unchanged; behaviour no test or corpus pins is covered only by the reviewers reading each step.",
+    "The status follows CI (a G-END-CI check is added when CI is green on both legs; the schema has no pending result); the review block stays pending until human sign-off.",
+    "I-20's interface steps change the public API as ADR 0076 declares it (the split family's verify twins; seven new public names, P1 for Frank, default as written); the interface gate checks that only the plan's declared names change, not that callers outside the repository are unaffected.",
+    "G-END is not met at e3e95520: debt 3221.7 (bound 1900), health 8.53 (binding bound 9.0), brain functions 10 (bound 0), 12 files below health 7.0 (bound 0), one huge_file (thermo/_coolprop_heos_fluids.py, frozen until W5). Met: 0 cycles and 0 violations at depth 4, F0 and MCP digest. Trailing work in Frank's order: W5 batch N (gating, not in this manifest) and batch L, G2 run 8, the solve_region _RegionCall interface step, the pre-S19 broken references in living docs (288 broken at e3e95520).",
+    "Known failures (S16 B-6): m04_wo9 a25, a29 and x02_wo4 g4e (2 nodes) fail under the test-map build only and pass without it, deterministic since S16; t07_v17_reference f6 exceeded its 300 s budget under coverage in G-MAP 2 and G-MAP 5 (passed in G-MAP 6) and is deselected by every gate.",
+    "Open for Frank (not blocking, docs/S19_STATE.md): R-1042 option C; the STOP 1 alternative; an optional forbid rule cli/serving -> services; re-pin cce-code-health to 9a4605f (optional); P1, the seven new public names of I-20 (default as written).",
+    "No CI job or gate runs the nlp-marked tests (S19_STATE open build-lane items); S19_STATE rule 5 requires lanes touching studies/ to run the nlp-marked suite at head with failures a subset of base; test_opt_cost_lca_nlp g19 and g20 fail, and benchmarks/m03/nlp-test.lock lacks mpmath.",
+    "Test changes outside the step gate: the G3 test-only commits (f3996448 and those of runs 8 and 9, accepted in S19_DECISIONS) and W5 WO-1b, which makes S10 A26's oracle F0's registered M9 value (ruling R7, F-2; R-1060). The 35 F0 M9 modules are unchanged since main a283925c (0 of 35 differ) and benchmarks/f0/corpus.json is unchanged.",
+    "Requirements empty: S19 maps to no D/A requirement; it is a development-process package."
+  ],
+  "review": {
+    "numerical": "pending",
+    "process_model": "pending"
+  }
+}

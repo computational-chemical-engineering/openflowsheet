@@ -535,30 +535,12 @@ class StudyResult:
 
     def accounting(self) -> dict[str, Any]:
         """§8.3's totals: TRF cold requests by run, and parent executions by solve, summed by
-        stage, by study iteration and by candidate."""
+        stage, by study iteration and by candidate. The stage and iteration tables are
+        `_stage_and_iteration_counts`'s."""
         solves = ([self.s0] if self.s0 is not None else []) + [
             solve for candidate in self.candidates for solve in candidate.solves
         ]
-        by_stage: dict[str, dict[str, int]] = {}
-        by_iteration: dict[str, dict[str, int]] = {}
-
-        def add(table: dict[str, dict[str, int]], key: str, name: str, count: int) -> None:
-            row = table.setdefault(key, {"trf_cold": 0, "parent_executions": 0, "store_hits": 0})
-            row[name] += count
-
-        for run in self.runs:
-            add(by_stage, run["stage"], "trf_cold", run["cold"])
-            add(by_iteration, str(run["study_iteration"]), "trf_cold", run["cold"])
-        if self.s0 is not None:
-            for table, key in ((by_stage, "S0"), (by_iteration, "0")):
-                add(table, key, "parent_executions", self.s0.executions)
-                add(table, key, "store_hits", self.s0.store_hits)
-        for candidate in self.candidates:
-            iteration = str(self._iteration_of(candidate))
-            for solve in candidate.solves:
-                for table, key in ((by_stage, "B"), (by_iteration, iteration)):
-                    add(table, key, "parent_executions", solve.executions)
-                    add(table, key, "store_hits", solve.store_hits)
+        by_stage, by_iteration = self._stage_and_iteration_counts()
         cold_by_run = {run["run_id"]: run["cold"] for run in self.runs}
         by_candidate = {
             candidate.candidate_id: {
@@ -584,6 +566,35 @@ class StudyResult:
             "budgets": self.budget.as_document(),
             "exhausted": self.status == BUDGET_EXHAUSTED,
         }
+
+    def _stage_and_iteration_counts(
+        self,
+    ) -> tuple[dict[str, dict[str, int]], dict[str, dict[str, int]]]:
+        """§8.3's counts by stage and by study iteration (unsorted): each run's TRF cold requests
+        at its stage and iteration, then S0's parent executions and store hits at `S0` and `0`,
+        then each candidate solve's at `B` and its candidate's iteration; a row starts at zero
+        for all three counts."""
+        by_stage: dict[str, dict[str, int]] = {}
+        by_iteration: dict[str, dict[str, int]] = {}
+
+        def add(table: dict[str, dict[str, int]], key: str, name: str, count: int) -> None:
+            row = table.setdefault(key, {"trf_cold": 0, "parent_executions": 0, "store_hits": 0})
+            row[name] += count
+
+        for run in self.runs:
+            add(by_stage, run["stage"], "trf_cold", run["cold"])
+            add(by_iteration, str(run["study_iteration"]), "trf_cold", run["cold"])
+        if self.s0 is not None:
+            for table, key in ((by_stage, "S0"), (by_iteration, "0")):
+                add(table, key, "parent_executions", self.s0.executions)
+                add(table, key, "store_hits", self.s0.store_hits)
+        for candidate in self.candidates:
+            iteration = str(self._iteration_of(candidate))
+            for solve in candidate.solves:
+                for table, key in ((by_stage, "B"), (by_iteration, iteration)):
+                    add(table, key, "parent_executions", solve.executions)
+                    add(table, key, "store_hits", solve.store_hits)
+        return by_stage, by_iteration
 
     def _iteration_of(self, candidate: CandidateCheck) -> int:
         for run in self.runs:
@@ -680,7 +691,8 @@ def run_study(
     `stage_a_reference` as P2's reference; then up to `K_MAX` stage-C iterations, each from the
     best parent-checked point (`_stage_a_best`, `_best_feasible`), retried once with radius × ¼
     after an abort. The budget is judged before every run and check: `BUDGET_EXHAUSTED`, never
-    stable."""
+    stable. Stage A is `_StudyRun.run_stage_a`; each stage's candidate goes through
+    `_StudyRun.settle`, which ends the call on an unchecked or parent-local candidate."""
     sense = parent.sense
     result = StudyResult(status="", budget=budget, sense=sense)
     readiness = framework()
@@ -689,37 +701,114 @@ def run_study(
         result.status = unsupported(result.readiness.codes)
         return result
 
-    def stop(status: str) -> StudyResult:
-        result.status = status
-        return result
+    study = _StudyRun(
+        parent=parent,
+        decisions=decisions,
+        budget=budget,
+        limitations=limitations,
+        result=result,
+    )
 
     if budget.exhausted() is not None:
-        return stop(BUDGET_EXHAUSTED)
+        return study.stop(BUDGET_EXHAUSTED)
     s0 = parent.solve(start, solve_id="S0", purpose="start")
     budget.charge_solve(s0)
     result.s0 = s0
     if not targeted_check(s0).passed:
-        return stop(failed("start_not_certified"))
+        return study.stop(failed("start_not_certified"))
     result.best = s0
     if projection_check is not None:
         refused = _projection_refusal(projection_check, s0)
         if refused is not None:
             result.readiness = StudyReadiness.of([refused])
-            return stop(unsupported(result.readiness.codes))
-    reference_regimes = dict(s0.regimes)
+            return study.stop(unsupported(result.readiness.codes))
+    study.reference_regimes = dict(s0.regimes)
+
+    if (ended := study.run_stage_a(stage_a, stage_a_reference, s0)) is not None:
+        return ended
+
+    # Stage C (§7.3).
+    for k in range(1, K_MAX + 1):
+        staged, stopped, ids = study.run(stage_c, "C", k, result.best)
+        if staged is None:
+            assert stopped is not None
+            return study.stop(stopped)
+        candidate = study.check(staged, "C")
+        if (ended := study.settle(candidate, ids)) is not None:
+            return ended
+        if candidate.status != NOT_STATIONARY_AT_DELTA:
+            return study.stop(failed(candidate.status))
+        result.best = _best_feasible(sense, candidate)
+    return study.stop(ITERATION_LIMIT)
+
+
+@dataclass
+class _StudyRun:
+    """One call of `run_study`: its fixed frame and S0's regimes, the reference of every check.
+
+    Frame: the parent, the decisions, the budget, the caller's limitations and the result the
+    methods fill (`stage_a`, `runs`, `candidates`, `produced_by`, `best`, `status`). State:
+    `reference_regimes`, assigned once after S0, read by `check`.
+    """
+
+    parent: Parent
+    decisions: Sequence[Decision]
+    budget: StudyBudget
+    limitations: Sequence[str]
+    result: StudyResult
+    reference_regimes: dict[str, str] = field(init=False)
+
+    def stop(self, status: str) -> StudyResult:
+        self.result.status = status
+        return self.result
+
+    def run_stage_a(
+        self,
+        runner: StageRunner | None,
+        reference: Callable[[ParentSolve], P2Reference] | None,
+        s0: ParentSolve,
+    ) -> StudyResult | None:
+        """Stage A of §7.3, only with a promoted surrogate of the bound parent: without `runner`
+        it records `result.stage_a` as skipped (`surrogate_not_promoted`); else a run from `s0`
+        and its one retry (`run`), recorded in `result.stage_a` with its run ids. A stop other
+        than a second abort ends the call with its status; a second abort records its status as
+        the stage's `outcome` (stage C then starts from S0). A candidate is checked against
+        `reference` as P2's (`check`) and settled (`settle`, which may end the call); otherwise
+        `result.best` becomes `_stage_a_best`'s point. None: the call goes on to stage C."""
+        if runner is None:
+            self.result.stage_a = {"executed": False, "reason": "surrogate_not_promoted"}
+        else:
+            staged, stopped, ids = self.run(runner, "A", 0, s0)
+            self.result.stage_a = {"executed": True, "runs": ids}
+            if (
+                staged is None
+                and disposition(self.result.runs[-1]["outcome"], self.budget) != "abort"
+            ):
+                assert stopped is not None
+                return self.stop(stopped)
+            if staged is None:
+                # A second stage-A abort leaves stage C to start from S0 (build log S6).
+                self.result.stage_a["outcome"] = stopped
+            else:
+                candidate = self.check(staged, "A", reference)
+                if (ended := self.settle(candidate, ids)) is not None:
+                    return ended
+                assert self.result.best is not None  # S0, set before stage A
+                self.result.best = _stage_a_best(self.result.sense, s0, candidate, self.result.best)
+        return None
 
     def run(
-        runner: StageRunner, stage: str, iteration: int, begin: ParentSolve
+        self, runner: StageRunner, stage: str, iteration: int, begin: ParentSolve
     ) -> tuple[StageRun | None, str | None, list[str]]:
         """A run and its one retry: (the run with a candidate, the stopping status, run ids)."""
         ids: list[str] = []
         for retry, factor in enumerate((1.0, RETRY_RADIUS_FACTOR)):
-            if budget.exhausted() is not None:
+            if self.budget.exhausted() is not None:
                 return None, BUDGET_EXHAUSTED, ids
             run_id = f"{stage}{iteration}" + ("-retry" if retry else "")
-            staged = runner(begin, run_id=run_id, radius_factor=factor, budget=budget)
+            staged = runner(begin, run_id=run_id, radius_factor=factor, budget=self.budget)
             ids.append(run_id)
-            result.runs.append(
+            self.result.runs.append(
                 {
                     **dict(staged.document),
                     "run_id": run_id,
@@ -732,7 +821,7 @@ def run_study(
                     "cold": staged.cold,
                 }
             )
-            kind = disposition(staged.outcome, budget)
+            kind = disposition(staged.outcome, self.budget)
             if kind == "candidate":
                 return staged, None, ids
             if kind == "budget":
@@ -741,70 +830,44 @@ def run_study(
                 return None, failed(f"trf_aborted:{staged.outcome}"), ids
         return None, failed(f"trf_aborted:{staged.outcome}"), ids
 
-    def check(staged: StageRun, stage: str, reference: Any = None) -> CandidateCheck:
+    def check(self, staged: StageRun, stage: str, reference: Any = None) -> CandidateCheck:
         assert staged.decisions is not None
         candidate_id = f"cand-{staged.run_id.removesuffix('-retry')}"
         checked = check_candidate(
-            parent,
+            self.parent,
             candidate_id=candidate_id,
             stage=stage,
-            decisions=decisions,
+            decisions=self.decisions,
             at=staged.decisions,
-            reference_regimes=reference_regimes,
-            budget=budget,
+            reference_regimes=self.reference_regimes,
+            budget=self.budget,
             run_id=staged.run_id,
             trf_point=staged.point,
             p2_reference=reference,
             # R-327: a max-iterations exit keeps its candidate, and says so; so does an
             # unverified "Optimal" exit (R-401).
             limitations=[
-                *limitations,
+                *self.limitations,
                 *_outcome_limitations(staged.outcome),
                 *staged.limitations,
             ],
         )
-        result.candidates.append(checked)
+        self.result.candidates.append(checked)
         return checked
 
-    # Stage A (§7.3): only with a promoted surrogate of the bound parent.
-    if stage_a is None:
-        result.stage_a = {"executed": False, "reason": "surrogate_not_promoted"}
-    else:
-        staged, stopped, ids = run(stage_a, "A", 0, s0)
-        result.stage_a = {"executed": True, "runs": ids}
-        if staged is None and disposition(result.runs[-1]["outcome"], budget) != "abort":
-            assert stopped is not None
-            return stop(stopped)
-        if staged is None:
-            # A second stage-A abort leaves stage C to start from S0 (build log S6).
-            result.stage_a["outcome"] = stopped
-        else:
-            candidate = check(staged, "A", stage_a_reference)
-            result.produced_by[candidate.candidate_id] = ids
-            if candidate.status == NOT_CHECKED:
-                return stop(BUDGET_EXHAUSTED)
-            if candidate.status == PARENT_LOCAL_EVIDENCE:
-                result.best = candidate.targeted
-                return stop(DECISION_STABLE)
-            result.best = _stage_a_best(sense, s0, candidate, result.best)
-
-    # Stage C (§7.3).
-    for k in range(1, K_MAX + 1):
-        staged, stopped, ids = run(stage_c, "C", k, result.best)
-        if staged is None:
-            assert stopped is not None
-            return stop(stopped)
-        candidate = check(staged, "C")
-        result.produced_by[candidate.candidate_id] = ids
+    def settle(self, candidate: CandidateCheck, ids: list[str]) -> StudyResult | None:
+        """Records `ids` as the runs that produced `candidate` (`result.produced_by`), then ends
+        the call when the candidate settles the study, as both stages do: `NOT_CHECKED` (the
+        budget ran out during the check) stops with `BUDGET_EXHAUSTED`; `PARENT_LOCAL_EVIDENCE`
+        sets `result.best` to its targeted point and stops with `DECISION_STABLE` (`stop` writes
+        `result.status`). None: the call goes on with the candidate."""
+        self.result.produced_by[candidate.candidate_id] = ids
         if candidate.status == NOT_CHECKED:
-            return stop(BUDGET_EXHAUSTED)
+            return self.stop(BUDGET_EXHAUSTED)
         if candidate.status == PARENT_LOCAL_EVIDENCE:
-            result.best = candidate.targeted
-            return stop(DECISION_STABLE)
-        if candidate.status != NOT_STATIONARY_AT_DELTA:
-            return stop(failed(candidate.status))
-        result.best = _best_feasible(sense, candidate)
-    return stop(ITERATION_LIMIT)
+            self.result.best = candidate.targeted
+            return self.stop(DECISION_STABLE)
+        return None
 
 
 def _stage_a_best(

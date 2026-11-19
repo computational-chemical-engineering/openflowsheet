@@ -185,7 +185,7 @@ def _metered(cost: Cost, watch: tuple[str, ...]) -> Iterator[None]:
         return compiled
 
     def action(*args: Any, **kwargs: Any) -> Any:
-        flowsheet = args[2]
+        flowsheet = args[0].flowsheet
         before = flowsheet.provider.calls
         cost.compiles = []
         inside["on"] = True

@@ -369,8 +369,10 @@ genuinely structural, and guessing that before measuring it is how the wrong lin
 Q2 NaN in the derivative witness: no registered path returns `ok` with a non-finite entry (CasADi backend refuses),
 but the witness cannot exclude it (no finiteness contract on `CompiledProblem`; overflow from finite values; five
 falsifiers fail today). Ruling: a non-finite term becomes `unsupported` with `witness_stencil_non_finite(<col>)`.
-Frank chose after S19 (Decision Desk `ofs-s19-oq1-nan-witness`, A, signed 2026-11-17, VERIFIED): after S19 closes,
-one commit with the K04 §4.8 amendment, tests Q2.A1 to A6 and F0; then write `executed` on the card and tell hub.
+**Landed 2026-11-18** as WITNF (Decision Desk `ofs-s19-oq1b-nan-witness-early`, which moved it ahead of S19's end;
+both NaN cards executed): merge commit a283925c on main, R-1046, evidence `evidence/X10c/8067229f…` tested (CI
+44215779298), F0 PASS on main. The design-lane review added that a `non_finite` registered pair stays the flat rule's
+reference (Q2.A7, Q2.A8).
 
 ADR 0008 registers four open questions with recommended defaults, all applied. **Q1 is closed:**
 Frank confirmed on 2026-09-16 that the SYN-001 heater is a holdup unit, so the registered

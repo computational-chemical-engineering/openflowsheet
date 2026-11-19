@@ -619,7 +619,8 @@ class EFHolder:
     def _values_request(
         self, args: Sequence[float], purpose: str | None
     ) -> tuple[BoxValues | TruthRefused, HolderRequest]:
-        """One value request, and its ledger entry (unnumbered: the caller appends it)."""
+        """One value request, and its ledger entry (unnumbered: the caller appends it). Its
+        purpose is `_choose_purpose_and_mark`'s, on a memo hit as on a cold request."""
         inputs, key = self._key(args)
         start = time.perf_counter()
         while True:
@@ -628,17 +629,11 @@ class EFHolder:
                 first_in_run = key not in self._run_value_keys
                 if held is None:
                     budgets = self._admitting_budgets()
-                    chosen = purpose
-                    if chosen is None and first_in_run:
-                        chosen = self._call_order_purpose(self._run)
-                    self._mark_in_run(key)
+                    chosen = self._choose_purpose_and_mark(key, purpose, first_in_run)
                     self._values[key] = flight = _InFlight()
                     break
                 if not isinstance(held, _InFlight):
-                    chosen = purpose
-                    if chosen is None and first_in_run:
-                        chosen = self._call_order_purpose(self._run)
-                    self._mark_in_run(key)
+                    chosen = self._choose_purpose_and_mark(key, purpose, first_in_run)
                     return held, self._entry("value", key, "memo_hit", chosen, held, start)
                 pending = held
             pending.done.wait()
@@ -702,6 +697,19 @@ class EFHolder:
         """Whether cold requests are admitted against budgets: every box but a truth that is not a
         parent experiment (a property block's budget is the WO-3 mechanism's test, G7)."""
         return not isinstance(self.box, TruthBox) or self.box.parent
+
+    def _choose_purpose_and_mark(
+        self, key: bytes, purpose: str | None, first_in_run: bool
+    ) -> str | None:
+        """Under the lock, for a value request on `key`: its purpose, the caller's `purpose`, else
+        on the key's first request in the run (`first_in_run`) the call-order purpose
+        (`_call_order_purpose`, read before `key` is marked; None outside TRF); then `key`
+        recorded in the run (`_mark_in_run`)."""
+        chosen = purpose
+        if chosen is None and first_in_run:
+            chosen = self._call_order_purpose(self._run)
+        self._mark_in_run(key)
+        return chosen
 
     @property
     def truth_identity(self) -> Mapping[str, Any]:

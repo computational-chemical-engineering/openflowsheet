@@ -39,7 +39,7 @@ import json
 import math
 from collections.abc import Callable, Mapping
 from pathlib import Path
-from typing import Any, Final
+from typing import TYPE_CHECKING, Any, Final, NamedTuple
 
 import numpy as np
 
@@ -49,6 +49,13 @@ from openflowsheet.run.compare import CURRENT_POLICY_ID, differences, floored_di
 from openflowsheet.run.manifest import environment
 from openflowsheet.run.replay import ReplayMode, ReplayReport, ReplayVerdict
 from openflowsheet.studies.nlp.host import RevisionRoutes
+
+if TYPE_CHECKING:
+    from openflowsheet.studies.nlp.closure import StartEvidence, StartReadiness
+    from openflowsheet.studies.nlp.formulation import NlpFormulation
+    from openflowsheet.studies.nlp.host import CertifiedPoint
+    from openflowsheet.studies.nlp.revision_host import RevisionNlpHost
+    from openflowsheet.studies.nlp.verification import CandidateVerification
 
 FORMAT: Final = "openflowsheet-optimization-v1"
 MANIFEST: Final = "optimization-manifest.json"
@@ -83,20 +90,15 @@ def _read(directory: Path, relative: str) -> Any:
 
 
 def record_integrity(directory: Path) -> BundleIntegrity:
-    """Step 1: every member against the manifest, and the manifest's identity."""
+    """Step 1: every member against the manifest (`_member_findings`), and the manifest's
+    identity."""
     from openflowsheet.studies.nlp.request import OptimizationRequest
     from openflowsheet.studies.nlp.revision import REQUEST, REVISION, optimization_sha256
 
     directory = Path(directory)
     manifest = _read(directory, MANIFEST)
     members: Mapping[str, str] = manifest.get("members", {})
-    missing, tampered = [], []
-    for relative, sha in sorted(members.items()):
-        path = directory / relative
-        if not path.is_file():
-            missing.append(relative)
-        elif hashlib.sha256(path.read_bytes()).hexdigest() != sha:
-            tampered.append(relative)
+    missing, tampered = _member_findings(directory, members)
     present = {
         path.relative_to(directory).as_posix() for path in directory.rglob("*") if path.is_file()
     }
@@ -122,6 +124,19 @@ def record_integrity(directory: Path) -> BundleIntegrity:
     return BundleIntegrity(ok, tuple(missing), tuple(tampered), tuple(unexpected))
 
 
+def _member_findings(directory: Path, members: Mapping[str, str]) -> tuple[list[str], list[str]]:
+    """The manifest's `members` (relative path -> SHA-256) checked in `directory`, in path order:
+    the missing ones, then the ones whose bytes do not hash to their recorded SHA-256."""
+    missing, tampered = [], []
+    for relative, sha in sorted(members.items()):
+        path = directory / relative
+        if not path.is_file():
+            missing.append(relative)
+        elif hashlib.sha256(path.read_bytes()).hexdigest() != sha:
+            tampered.append(relative)
+    return missing, tampered
+
+
 def _starts(directory: Path) -> list[int]:
     return sorted(int(path.name) for path in (directory / "starts").glob("*") if path.is_dir())
 
@@ -140,7 +155,9 @@ def replay_optimization(
 
     `stage` is called as `reproduce_bundle` calls it (T07 §6.4): `integrity` on entry, `rerun`
     before the bundles are re-run, `compare` before the report is built; a job's `reproduce`
-    passes its stage boundary (OPT design §4.9)."""
+    passes its stage boundary (OPT design §4.9).
+
+    Step 2 is `_rerun_bundles`, steps 3 and 4 `_recomputed_chain`."""
     at = stage if stage is not None else (lambda _: None)
     directory = Path(directory)
     at("integrity")
@@ -163,30 +180,8 @@ def replay_optimization(
             current_environment=current_environment,
             reasons=(reason,),
         )
-    found: list[str] = []
-    reasons: list[str] = []
-    modes: list[str] = []
-    near: list[str] = []
     at("rerun")
-    for index in _starts(directory):
-        for name in BUNDLES:
-            bundle = directory / "starts" / str(index) / name
-            if not (bundle / MANIFEST_NAME).is_file():
-                continue
-            prefix = f"starts/{index}/{name}: "
-            run_id = read_manifest(bundle)[0].run_id
-            report = routes.reproduce(
-                bundle,
-                rerun=True,
-                rerun_directory=Path(rerun_directory) / "starts" / str(index) / name,
-                run_id=run_id,
-            ).report
-            modes.append(report.mode)
-            if report.verdict != "MATCH":
-                found.append(f"{prefix}verdict {report.verdict}")
-            found += [prefix + item for item in report.differences]
-            reasons += [prefix + item for item in report.reasons]
-            near += [prefix + item for item in report.verdict_changed_near_threshold]
+    found, reasons, modes, near = _rerun_bundles(directory, routes, rerun_directory)
     chain, chain_reasons, chain_near = _recomputed_chain(directory, routes)
     found += chain
     reasons += chain_reasons
@@ -214,6 +209,49 @@ def replay_optimization(
         differences=tuple(found),
         verdict_changed_near_threshold=tuple(near),
     )
+
+
+class _BundleReruns(NamedTuple):
+    """Step 2 over the starts' bundles (`_rerun_bundles`), each entry prefixed
+    `starts/<k>/<start|resolve>: `: the differences (a verdict other than `MATCH`, then the
+    bundle's differences), the reasons, each re-run bundle's replay mode, and the entries changed
+    near their threshold, in start order and `BUNDLES` order within a start."""
+
+    differences: list[str]
+    reasons: list[str]
+    modes: list[str]
+    near: list[str]
+
+
+def _rerun_bundles(directory: Path, routes: RevisionRoutes, rerun_directory: Path) -> _BundleReruns:
+    """Step 2: `routes.reproduce` with `rerun=True` on every `starts/<k>/<start|resolve>` bundle
+    of the record at `directory` that has a manifest, under its recorded `run_id`, writing the
+    rerun under `rerun_directory` at the same relative path; a start's missing bundle is
+    skipped. Returns what the bundles' reports found (`_BundleReruns`)."""
+    found: list[str] = []
+    reasons: list[str] = []
+    modes: list[str] = []
+    near: list[str] = []
+    for index in _starts(directory):
+        for name in BUNDLES:
+            bundle = directory / "starts" / str(index) / name
+            if not (bundle / MANIFEST_NAME).is_file():
+                continue
+            prefix = f"starts/{index}/{name}: "
+            run_id = read_manifest(bundle)[0].run_id
+            report = routes.reproduce(
+                bundle,
+                rerun=True,
+                rerun_directory=Path(rerun_directory) / "starts" / str(index) / name,
+                run_id=run_id,
+            ).report
+            modes.append(report.mode)
+            if report.verdict != "MATCH":
+                found.append(f"{prefix}verdict {report.verdict}")
+            found += [prefix + item for item in report.differences]
+            reasons += [prefix + item for item in report.reasons]
+            near += [prefix + item for item in report.verdict_changed_near_threshold]
+    return _BundleReruns(found, reasons, modes, near)
 
 
 def _near_active(slack: Any) -> bool:
@@ -250,14 +288,9 @@ def _verification_floor(
     """§4.9 step (3) (OPT review M1): the floor of the float at `keys` in `verification.json`,
     with its label — the tolerance of the V-check whose verdict it feeds, as ADR 0007 D2.2 floors
     `check.value` at its own tolerance. `None` where the float compares under the registered
-    policy alone: V6's `objective` (and `assessment_values`), relative only, and `decisions`."""
-    from openflowsheet.studies.nlp.tolerances import (
-        TAU_FEAS,
-        TAU_GROSS,
-        TAU_KKT,
-        TAU_LICQ,
-        TAU_SIGN,
-    )
+    policy alone: V6's `objective` (and `assessment_values`), relative only, and `decisions`.
+    The `kkt` family is `_kkt_floor`'s, the `checks` family `_check_floor`'s."""
+    from openflowsheet.studies.nlp.tolerances import TAU_FEAS, TAU_KKT
 
     feas = (TAU_FEAS, "TAU_FEAS")
     kkt = (TAU_KKT, "TAU_KKT")
@@ -267,20 +300,50 @@ def _verification_floor(
     if head == "active_set":
         return feas if rest[-1:] == ("slack",) else None
     if head == "kkt" and rest:
-        if rest[0] in (
-            "stationarity_residual_inf",
-            "objective_gradient_scaled",
-            "constraint_gradients_scaled",
-        ):
-            return kkt
-        if rest[0] == "multipliers":
-            return TAU_SIGN, "TAU_SIGN"
-        if rest[0] == "licq_singular_values":
-            values = (recorded.get("kkt") or {}).get("licq_singular_values") or []
-            largest = max((abs(float(v)) for v in values if _number(v)), default=0.0)
-            return TAU_LICQ * largest, "TAU_LICQ times the largest"
+        return _kkt_floor(rest, recorded, kkt)
+    if head != "checks":
         return None
-    if head != "checks" or len(rest) < 2 or not isinstance(rest[0], int):
+    return _check_floor(rest, recorded, feas, kkt)
+
+
+def _kkt_floor(
+    rest: tuple[str | int, ...], recorded: Mapping[str, Any], kkt: tuple[float, str]
+) -> tuple[float, str] | None:
+    """`_verification_floor`'s `kkt` family, `rest` the keys below `kkt` (at least one): the
+    stationarity residual and the scaled gradients floor at `kkt` (`TAU_KKT`), the multipliers at
+    `TAU_SIGN`, the LICQ singular values at `TAU_LICQ` times the largest recorded one; `None`
+    for any other member."""
+    from openflowsheet.studies.nlp.tolerances import TAU_LICQ, TAU_SIGN
+
+    if rest[0] in (
+        "stationarity_residual_inf",
+        "objective_gradient_scaled",
+        "constraint_gradients_scaled",
+    ):
+        return kkt
+    if rest[0] == "multipliers":
+        return TAU_SIGN, "TAU_SIGN"
+    if rest[0] == "licq_singular_values":
+        values = (recorded.get("kkt") or {}).get("licq_singular_values") or []
+        largest = max((abs(float(v)) for v in values if _number(v)), default=0.0)
+        return TAU_LICQ * largest, "TAU_LICQ times the largest"
+    return None
+
+
+def _check_floor(
+    rest: tuple[str | int, ...],
+    recorded: Mapping[str, Any],
+    feas: tuple[float, str],
+    kkt: tuple[float, str],
+) -> tuple[float, str] | None:
+    """`_verification_floor`'s `checks` family, `rest` the keys below `checks`: a member of a
+    check's detail by the check's index in `recorded` and the member's name. V2's scaled
+    difference floors at `TAU_GROSS`, V4's split margins and V6's constraint values at `feas`,
+    V5's stationarity residual at `kkt`; `None` for any other member, a key path shorter than two
+    or not led by an index, and an index past the recorded checks."""
+    from openflowsheet.studies.nlp.tolerances import TAU_GROSS
+
+    if len(rest) < 2 or not isinstance(rest[0], int):
         return None
     checks = recorded.get("checks") or []
     check = checks[rest[0]].get("check") if rest[0] < len(checks) else None
@@ -420,16 +483,11 @@ def classification_differences(
 def _recomputed_chain(
     directory: Path, routes: RevisionRoutes
 ) -> tuple[list[str], list[str], list[str]]:
-    """Steps 3 and 4: the differences, the reasons and the near-threshold entries."""
+    """Steps 3 and 4: the differences, the reasons and the near-threshold entries. Each start's
+    recorded verification is compared by `_compared_starts`."""
     from openflowsheet.numerics.solve_record import SolvePolicy
     from openflowsheet.run.manifest import policy_sha256
-    from openflowsheet.studies.nlp.closure import (
-        SolverAvailability,
-        StartEvidence,
-        _start,
-        classify_starts,
-    )
-    from openflowsheet.studies.nlp.formulation import FullSpaceNlp
+    from openflowsheet.studies.nlp.closure import SolverAvailability, _start, classify_starts
     from openflowsheet.studies.nlp.request import OptimizationRequest, static_readiness
     from openflowsheet.studies.nlp.revision import (
         REPORT,
@@ -438,7 +496,6 @@ def _recomputed_chain(
         _bind_assessment,
     )
     from openflowsheet.studies.nlp.revision_host import RevisionNlpHost
-    from openflowsheet.studies.nlp.verification import verify_candidate
     from openflowsheet.verify.verdict import CheckPolicy
 
     manifest = _read(directory, MANIFEST)
@@ -489,6 +546,41 @@ def _recomputed_chain(
     if parsed.assessment is not None:
         bound = _bind_assessment(parsed.assessment, formulation, host, starts, failures)
         formulation = bound.formulation
+    compared = _compared_starts(directory, host, formulation, starts, report)
+    verdict = classify_starts(compared.evidence)
+    reasons = [reason.as_document() for reason in verdict.reasons]
+    real, flipped = classification_differences(
+        report, verdict.status, reasons, verdict.classifications, compared.near_starts
+    )
+    return compared.differences + real, [], compared.near + flipped
+
+
+class _StartComparison(NamedTuple):
+    """Step 3 over the starts (`_compared_starts`): the differences and the near-threshold
+    entries of every recomputed verification, the starts with a near-threshold flip, and each
+    start's evidence for `classify_starts`, in start order."""
+
+    differences: list[str]
+    near: list[str]
+    near_starts: set[int]
+    evidence: list[StartEvidence]
+
+
+def _compared_starts(
+    directory: Path,
+    host: RevisionNlpHost,
+    formulation: NlpFormulation,
+    starts: list[StartReadiness],
+    report: Mapping[str, Any],
+) -> _StartComparison:
+    """Step 3 per start, in start order: a start without `optimizer.json` gives evidence with no
+    Ipopt status and no checks; one with a recorded `verification.json` and a certified point has
+    it recomputed by `_recomputed_verification` and compared (`verification_differences`), its
+    entries prefixed `starts/<k>/verification.json: `. Each start's evidence carries the
+    report's recorded `detail` for it. Reads the record under `directory` and `report`'s
+    `starts`; it writes nothing."""
+    from openflowsheet.studies.nlp.closure import StartEvidence
+
     out: list[str] = []
     near: list[str] = []
     near_starts: set[int] = set()
@@ -503,22 +595,8 @@ def _recomputed_chain(
         optimizer = _read(base, "optimizer.json")
         checks: dict[str, Any] = {}
         if (base / "verification.json").is_file() and readiness.point is not None:
-            nlp = FullSpaceNlp(host, formulation, readiness.point, readiness.start)
-            primal = optimizer["final_primal"]
-            values = np.array([float(primal[name]) for name in nlp.primal_ids], dtype=np.float64)
-            x, decided = nlp.split(values)
-            decisions = tuple(decided[name] for name in formulation.decision_ids)
-            state = dict(zip(nlp.spec.variable_ids, (float(value) for value in x), strict=True))
-            held = nlp.system if readiness.point.signature is not None else None
-            fresh = verify_candidate(
-                host,
-                formulation,
-                decisions,
-                regimes=readiness.regimes or {},
-                optimizer_state=state,
-                closure=nlp.closure,
-                held=held,
-                phase=nlp.phase,
+            fresh = _recomputed_verification(
+                host, formulation, readiness, readiness.point, optimizer
             )
             recorded = _read(base, "verification.json")
             real, flipped = verification_differences(fresh.as_document(), recorded)
@@ -530,9 +608,38 @@ def _recomputed_chain(
         evidence.append(
             StartEvidence(optimizer.get("ipopt_status"), checks, recorded_start.get("detail"))
         )
-    verdict = classify_starts(evidence)
-    reasons = [reason.as_document() for reason in verdict.reasons]
-    real, flipped = classification_differences(
-        report, verdict.status, reasons, verdict.classifications, near_starts
+    return _StartComparison(out, near, near_starts, evidence)
+
+
+def _recomputed_verification(
+    host: RevisionNlpHost,
+    formulation: NlpFormulation,
+    readiness: StartReadiness,
+    point: CertifiedPoint,
+    optimizer: Mapping[str, Any],
+) -> CandidateVerification:
+    """Step 4 for one start: `verify_candidate` recomputed at the record's optimizer point. The
+    start's `FullSpaceNlp` at its certified `point` (`readiness.point`) splits
+    `optimizer["final_primal"]` into the state and the decisions; the start's regimes, the NLP's
+    closure and phase, and its system as the held one when `point` carries a signature. Reads
+    the record only through `optimizer`; it writes nothing."""
+    from openflowsheet.studies.nlp.formulation import FullSpaceNlp
+    from openflowsheet.studies.nlp.verification import verify_candidate
+
+    nlp = FullSpaceNlp(host, formulation, point, readiness.start)
+    primal = optimizer["final_primal"]
+    values = np.array([float(primal[name]) for name in nlp.primal_ids], dtype=np.float64)
+    x, decided = nlp.split(values)
+    decisions = tuple(decided[name] for name in formulation.decision_ids)
+    state = dict(zip(nlp.spec.variable_ids, (float(value) for value in x), strict=True))
+    held = nlp.system if point.signature is not None else None
+    return verify_candidate(
+        host,
+        formulation,
+        decisions,
+        regimes=readiness.regimes or {},
+        optimizer_state=state,
+        closure=nlp.closure,
+        held=held,
+        phase=nlp.phase,
     )
-    return out + real, [], near + flipped

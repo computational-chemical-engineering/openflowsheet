@@ -77,7 +77,8 @@ def _shape_check(
     """R-278 (module docstring): the structural incidence of the projected equations on every
     variable but the decisions, with the link-EF outputs fixed and the property relations kept,
     and whether it has a perfect matching. Called after the DOF check, so it is square. The
-    unknowns are the projection's: `x` at the spec positions `projected` (R-296), `y` and `w`."""
+    unknowns are the projection's: `x` at the spec positions `projected` (R-296), `y` and `w`.
+    On a failure, the refusal is `_implicit_ef_input_error`'s."""
     import scipy.sparse as sp
     from scipy.sparse.csgraph import maximum_bipartite_matching
 
@@ -120,28 +121,28 @@ def _shape_check(
     matched = int(np.count_nonzero(row_match >= 0))
     if matched == size:
         return _ShapeVerdict(matched, size, None)
+    refusal = _implicit_ef_input_error(equations, unknown_names, links, row_match, matched)
+    return _ShapeVerdict(matched, size, refusal)
 
+
+def _implicit_ef_input_error(
+    equations: Sequence[tuple[str, list[int]]],
+    unknown_names: Sequence[str],
+    links: Sequence[ExternalLinkSpec],
+    row_match: npt.NDArray[Any],
+    matched: int,
+) -> ProjectionRefusedError:
+    """The shape check's refusal (R-278) when the maximum matching `row_match` (row -> column,
+    -1 when unmatched) pairs only `matched` of the `len(unknown_names)` equations and unknowns,
+    pure: `PROJECTION_IMPLICIT_EF_INPUT` naming the structurally under-determined variables
+    (`_undetermined_columns`, in column order), with the unmatched equations and variables and
+    the under-determined ones that are link-EF inputs."""
+    size = len(unknown_names)
     column_match = np.full(size, -1, dtype=np.int64)
     for r, c in enumerate(row_match):
         if c >= 0:
             column_match[c] = r
-    incident: list[list[int]] = [[] for _ in range(size)]
-    for r, (_, cols) in enumerate(equations):
-        for c in cols:
-            incident[c].append(r)
-    # Alternating paths from the unmatched variables: variable → any incident equation → the
-    # variable that equation is matched to. What they reach is the under-determined block.
-    undetermined = {c for c in range(size) if column_match[c] < 0}
-    frontier = sorted(undetermined)
-    while frontier:
-        reached = []
-        for c in frontier:
-            for r in incident[c]:
-                partner = int(row_match[r])
-                if partner >= 0 and partner not in undetermined:
-                    undetermined.add(partner)
-                    reached.append(partner)
-        frontier = reached
+    undetermined = _undetermined_columns(equations, row_match, column_match, size)
     link_inputs = {name for link in links for name in link.inlet_variable_ids}
     under = [unknown_names[c] for c in sorted(undetermined)]
     flagged = [name for name in under if name in link_inputs]
@@ -155,7 +156,51 @@ def _shape_check(
         f"variables {unmatched_variables}; structurally undetermined variables {under}, of which "
         f"link-EF inputs {flagged}",
     )
-    return _ShapeVerdict(matched, size, refusal)
+    return refusal
+
+
+def _undetermined_columns(
+    equations: Sequence[tuple[str, list[int]]],
+    row_match: npt.NDArray[Any],
+    column_match: npt.NDArray[np.int64],
+    size: int,
+) -> set[int]:
+    """The shape check's structurally under-determined block (R-278), pure: the columns of the
+    `size` unknowns that alternating paths reach from the unmatched ones (`column_match` -1),
+    given the equations' incidence and the maximum matching `row_match` (row -> column, -1 when
+    unmatched).
+
+    Twin (rule 15): this is the `C-` side of `graph.matching.dulmage_mendelsohn(...).under_cols`
+    (and of the worklist in `numerics.newton`'s released-set search), which, like this walk, does
+    not depend on the matching found. It is not merged because the twins differ in form: integer
+    columns from SciPy's matching here, string ids with `frozenset` incidence there; a merge changes
+    the iteration order and so waits for a change that may alter behaviour. The equations of
+    each unknown come from `_incident_rows`."""
+    incident = _incident_rows(equations, size)
+    # Alternating paths from the unmatched variables: variable → any incident equation → the
+    # variable that equation is matched to. What they reach is the under-determined block.
+    undetermined = {c for c in range(size) if column_match[c] < 0}
+    frontier = sorted(undetermined)
+    while frontier:
+        reached = []
+        for c in frontier:
+            for r in incident[c]:
+                partner = int(row_match[r])
+                if partner >= 0 and partner not in undetermined:
+                    undetermined.add(partner)
+                    reached.append(partner)
+        frontier = reached
+    return undetermined
+
+
+def _incident_rows(equations: Sequence[tuple[str, list[int]]], size: int) -> list[list[int]]:
+    """The transpose of the equations' incidence, pure: for each of the `size` unknowns, by
+    column, the equations whose incidence holds it, in equation order."""
+    incident: list[list[int]] = [[] for _ in range(size)]
+    for r, (_, cols) in enumerate(equations):
+        for c in cols:
+            incident[c].append(r)
+    return incident
 
 
 # -- the omitted rows (R-274) ---------------------------------------------------------------------
@@ -268,9 +313,40 @@ def _certify(
 ) -> tuple[OmittedRow, ...]:
     """R-274's fact 3, M03's Q3 in the projection's scales: Ĵ_K X̂ = −F̂_d,K at x₀ (one ADR 0004
     solve for every decision), and every decision's tangent residual Ĵ_E X̂ + F̂_d,E on each
-    eliminated row within τ_alias. Called after the DOF check, so Ĵ_K is square."""
+    eliminated row within τ_alias. Called after the DOF check, so Ĵ_K is square. The tangent
+    residuals are `_tangent_residuals`'s."""
     if not eliminated:
         return ()
+    tangent = _tangent_residuals(spec, scaling, decisions, eliminated, derivatives)
+    origins = {equation.equation_id: equation.origin for equation in spec.equations}
+    certified = []
+    for i, row in enumerate(eliminated):
+        residuals = {
+            decision.parameter_id: float(tangent[i, j]) for j, decision in enumerate(decisions)
+        }
+        over = sorted(name for name, value in residuals.items() if not abs(value) <= TAU_ALIAS)
+        if over:
+            raise ProjectionRefusedError(
+                "PROJECTION_OMITTED_ROW_UNCERTIFIED",
+                row.row_id,
+                f"the tangent residual of decisions {over} on it exceeds tau_alias "
+                f"{TAU_ALIAS:g}: {residuals}",
+            )
+        certified.append(OmittedRow(row, origins[row.row_id], residuals_x0[row.row_id], residuals))
+    return tuple(certified)
+
+
+def _tangent_residuals(
+    spec: ProblemSpec,
+    scaling: Scaling,
+    decisions: Sequence[DecisionSpec],
+    eliminated: Sequence[EliminatedRow],
+    derivatives: _RowDerivatives,
+) -> npt.NDArray[np.float64]:
+    """`_certify`'s tangent, pure but for its refusal: Ĵ_E X̂ + F̂_d,E in the projection's scales,
+    one row per `eliminated` row and one column per decision, where X̂ solves Ĵ_K X̂ = −F̂_d,K on
+    the retained rows (one ADR 0004 solve); zeros with no decision. Raises
+    PROJECTION_OMITTED_ROW_UNCERTIFIED, on the first eliminated row, when that solve fails."""
     position = {name: i for i, name in enumerate(spec.equation_ids)}
     removed = [row.row_id for row in eliminated]
     kept = [name for name in spec.equation_ids if name not in set(removed)]
@@ -299,19 +375,4 @@ def _certify(
                 f"the tangent of the retained rows at x0 is not defined: {error}",
             ) from error
         tangent = j_removed @ solution.reshape(len(kept), len(decisions)) + d_removed
-    origins = {equation.equation_id: equation.origin for equation in spec.equations}
-    certified = []
-    for i, row in enumerate(eliminated):
-        residuals = {
-            decision.parameter_id: float(tangent[i, j]) for j, decision in enumerate(decisions)
-        }
-        over = sorted(name for name, value in residuals.items() if not abs(value) <= TAU_ALIAS)
-        if over:
-            raise ProjectionRefusedError(
-                "PROJECTION_OMITTED_ROW_UNCERTIFIED",
-                row.row_id,
-                f"the tangent residual of decisions {over} on it exceeds tau_alias "
-                f"{TAU_ALIAS:g}: {residuals}",
-            )
-        certified.append(OmittedRow(row, origins[row.row_id], residuals_x0[row.row_id], residuals))
-    return tuple(certified)
+    return tangent

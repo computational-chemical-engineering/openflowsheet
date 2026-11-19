@@ -37,7 +37,7 @@ from __future__ import annotations
 import math
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
-from typing import Any, Final, Literal, Protocol, cast
+from typing import Any, Final, Literal, NamedTuple, Protocol, cast
 
 import numpy as np
 import numpy.typing as npt
@@ -53,6 +53,7 @@ from openflowsheet.studies.nlp.boundary import CERTIFICATE, PHASE_BOUNDARY_FORM,
 from openflowsheet.studies.nlp.formulation import (
     AssessmentBinding,
     AssessmentClosure,
+    Decision,
     InequalityConstraint,
     NlpFormulation,
     QuadraticExpression,
@@ -81,8 +82,10 @@ from openflowsheet.studies.nlp.tolerances import (
 )
 from openflowsheet.studies.sensitivity import (
     TAU_REGIME,
+    Matrix,
     OutputFunctional,
     SensitivityResult,
+    SplitRegime,
     StudyParameter,
 )
 
@@ -632,11 +635,45 @@ def _feasibility(
     constraint_values: Mapping[str, float],
 ) -> tuple[dict[str, dict[str, float]], tuple[ActiveConstraint, ...], VerificationCheck]:
     """V3: the box exactly, `ĝ ≥ −τ_feas` on every inequality side of `constraints` (the
-    formulation's, then an assessment's admissibility rows), and the active set."""
+    formulation's, then an assessment's admissibility rows), and the active set (the box's, then
+    the inequalities'). The box part is `_box_feasibility`'s, the inequality part
+    `_constraint_feasibility`'s."""
+    box = _box_feasibility(formulation, decisions)
+    rows = _constraint_feasibility(constraints, constraint_values)
+    active = box.active + rows.active
+    return (
+        rows.slacks,
+        tuple(active),
+        VerificationCheck(
+            "V3",
+            "fail" if box.outside_box or rows.violated else "pass",
+            {
+                "outside_box": box.outside_box,
+                "violated": rows.violated,
+                "tau_feas": TAU_FEAS,
+                "tau_active": TAU_ACTIVE,
+                "active_set": [item.name for item in active],
+            },
+        ),
+    )
+
+
+class _BoxFeasibility(NamedTuple):
+    """`_box_feasibility`'s result: the `<parameter>:<side>` names of the box sides a decision is
+    outside, and the box sides it is active on, each in decision then side order."""
+
+    outside_box: list[str]
+    active: list[ActiveConstraint]
+
+
+def _box_feasibility(
+    formulation: NlpFormulation, decisions: Mapping[str, float]
+) -> _BoxFeasibility:
+    """V3's box part: per decision of `formulation` and finite side of its box (lower, then upper),
+    the scaled slack of its value in `decisions`; the side is outside when the slack is negative
+    (exactly, no tolerance) and active when `|slack| ≤ τ_active`."""
     active: list[ActiveConstraint] = []
     outside_box: list[str] = []
-    violated: list[str] = []
-    slacks: dict[str, dict[str, float]] = {}
     for decision in formulation.decisions:
         value = decisions[decision.parameter_id]
         for side, bound in (("lower", decision.lower), ("upper", decision.upper)):
@@ -655,6 +692,28 @@ def _feasibility(
                         slack,
                     )
                 )
+    return _BoxFeasibility(outside_box, active)
+
+
+class _ConstraintFeasibility(NamedTuple):
+    """`_constraint_feasibility`'s result: each constraint's slack per side, by constraint id, the
+    names of the violated sides, and the active sides, each in constraint then side order."""
+
+    slacks: dict[str, dict[str, float]]
+    violated: list[str]
+    active: list[ActiveConstraint]
+
+
+def _constraint_feasibility(
+    constraints: Sequence[InequalityConstraint], constraint_values: Mapping[str, float]
+) -> _ConstraintFeasibility:
+    """V3's inequality part: per constraint and declared side (lower, then upper), the slack of its
+    value in `constraint_values`; the side is violated when the slack is below `−τ_feas` and
+    active when `|slack| ≤ τ_active`. A one-sided constraint is named by its id, a two-sided one
+    by `<id>:<side>`."""
+    active: list[ActiveConstraint] = []
+    violated: list[str] = []
+    slacks: dict[str, dict[str, float]] = {}
     for constraint in constraints:
         value = constraint_values[constraint.constraint_id]
         sides = [
@@ -677,21 +736,7 @@ def _feasibility(
                 active.append(
                     ActiveConstraint(name, "constraint", constraint.constraint_id, side, slack)  # type: ignore[arg-type]
                 )
-    return (
-        slacks,
-        tuple(active),
-        VerificationCheck(
-            "V3",
-            "fail" if outside_box or violated else "pass",
-            {
-                "outside_box": outside_box,
-                "violated": violated,
-                "tau_feas": TAU_FEAS,
-                "tau_active": TAU_ACTIVE,
-                "active_set": [item.name for item in active],
-            },
-        ),
-    )
+    return _ConstraintFeasibility(slacks, violated, active)
 
 
 def _regimes(
@@ -713,15 +758,10 @@ def _regimes(
     start's and the re-solve's zero subsystem (OPT §9 A-2): unequal as id sets →
     `ZERO_SUBSYSTEM_CHANGED`; recorded under `zero_subsystem` only where either is non-empty.
     `not_closure_test` names the guarded splits whose row is no longer their closure's test at the
-    re-solve (OPT §9 A-3): each fails V4 as `phase_row_not_closure_test(<unit>)`."""
+    re-solve (OPT §9 A-3): each fails V4 as `phase_row_not_closure_test(<unit>)`. The per-split
+    judgement is `_split_regimes`'s."""
     splits = record.splits
-    changed = [split.unit_id for split in splits if declared.get(split.unit_id) != split.regime]
-    exempt = set(phase_active or ())
-    near = [
-        split.unit_id
-        for split in splits
-        if (split.margin is None or not split.margin >= TAU_REGIME) and split.unit_id not in exempt
-    ]
+    changed, near = _split_regimes(splits, declared, set(phase_active or ()))
     detail: dict[str, Any] = {
         "splits": [split.as_document() for split in splits],
         "declared": dict(declared),
@@ -746,6 +786,20 @@ def _regimes(
         ]
     failed = changed or near or moved or zero_changed or bool(not_closure_test)
     return VerificationCheck("V4", "fail" if failed else "pass", detail)
+
+
+def _split_regimes(
+    splits: Sequence[SplitRegime], declared: Mapping[str, str], exempt: set[str]
+) -> tuple[list[str], list[str]]:
+    """V4's per-split part, each list in `splits` order: the units whose regime is not their
+    `declared` one, and the units not in `exempt` whose margin is missing or below `τ_regime`."""
+    changed = [split.unit_id for split in splits if declared.get(split.unit_id) != split.regime]
+    near = [
+        split.unit_id
+        for split in splits
+        if (split.margin is None or not split.margin >= TAU_REGIME) and split.unit_id not in exempt
+    ]
+    return changed, near
 
 
 def _not_closure_test(
@@ -822,25 +876,32 @@ def _signature_document(signature: Any) -> list[list[str]] | None:
     ]
 
 
+@dataclass(frozen=True)
+class _Linearization:
+    """What `_kkt` linearizes every output with (`_functional`): the state, the number of
+    decisions and their ids in decision order, and the chain-rule terms of the assessment
+    outputs and of the phase rows (`None` without them)."""
+
+    state: Mapping[str, float]
+    assessment: _Assessment | None
+    n: int
+    decision_ids: Sequence[str]
+    phase: _PhaseTerms | None
+
+
 def _functional(
-    output_id: str,
-    expression: QuadraticExpression,
-    state: Mapping[str, float],
-    assessment: _Assessment | None,
-    n: int,
-    decision_ids: Sequence[str] = (),
-    phase: _PhaseTerms | None = None,
+    output_id: str, expression: QuadraticExpression, linearization: _Linearization
 ) -> tuple[OutputFunctional | None, npt.NDArray[np.float64] | None]:
-    """The expression's linearization at `state`, as a sensitivity output of scale 1: its
-    sensitivity is then the scaled gradient with respect to the decisions.
+    """The expression's linearization at `linearization.state`, as a sensitivity output of scale
+    1: its sensitivity is then the scaled gradient with respect to the decisions.
 
     An `assessment:<id>` term enters by the chain rule (E01 §4.10.3 V5): its coefficient times
     `∂y/∂x` joins the functional, and times `∂y/∂d` the direct term returned beside it (`None`
     for an expression without one, whose functional is M03's exactly). The functional is `None`
     when no state variable is left in it. A `phase:<id>` term (OPT §4.7) enters by the chain rule
     as an assessment output's does, from the phase rows' linearization."""
-    gradient = expression.gradient(state)
-    position = {name: index for index, name in enumerate(decision_ids)}
+    gradient = expression.gradient(linearization.state)
+    position = {name: index for index, name in enumerate(linearization.decision_ids)}
     named = [
         name
         for name in gradient
@@ -851,17 +912,17 @@ def _functional(
     parts: dict[str, list[float]] = {
         name: [value] for name, value in gradient.items() if name not in set(named)
     }
-    direct = np.zeros(n)
+    direct = np.zeros(linearization.n)
     for name in named:
         coefficient = gradient[name]
         if name in position:
             # OPT §4.3: a decision named in an expression; its derivative is direct.
             direct[position[name]] += coefficient
             continue
-        terms: _Assessment | _PhaseTerms | None = assessment
+        terms: _Assessment | _PhaseTerms | None = linearization.assessment
         output = name[len(ASSESSMENT_PREFIX) :]
         if name.startswith(PHASE_PREFIX):
-            terms, output = phase, name[len(PHASE_PREFIX) :]
+            terms, output = linearization.phase, name[len(PHASE_PREFIX) :]
         assert terms is not None
         for variable_id, value in terms.d_dx[output].items():
             parts.setdefault(variable_id, []).append(coefficient * value)
@@ -882,7 +943,9 @@ def _kkt(
     held: Sequence[str] = (),
 ) -> tuple[SensitivityResult | None, KktEvidence | None, VerificationCheck]:
     """V5, from M03's adjoint sensitivities at `x_sim` (plus `∂G/∂d` for assessment terms);
-    `held` are the splits whose phase row is active (Q4's held mode, OPT §4.7)."""
+    `held` are the splits whose phase row is active (Q4's held mode, OPT §4.7). Each output is
+    `_functional`'s linearization; their scaled gradients are `_output_gradients`'s, the active
+    constraints' rows `_active_rows`'s."""
     if not all(decision.bounded for decision in formulation.decisions):
         return None, None, VerificationCheck("V5", "not_evaluated", {"reason": "bounds_undeclared"})
     parameters = tuple(
@@ -891,12 +954,9 @@ def _kkt(
     )
     n = len(formulation.decisions)
     ids = formulation.decision_ids
-    built = [
-        _functional(OBJECTIVE_OUTPUT, formulation.objective, state, assessment, n, ids, phase)
-    ] + [
-        _functional(
-            constraint.constraint_id, constraint.expression, state, assessment, n, ids, phase
-        )
+    linearization = _Linearization(state, assessment, n, ids, phase)
+    built = [_functional(OBJECTIVE_OUTPUT, formulation.objective, linearization)] + [
+        _functional(constraint.constraint_id, constraint.expression, linearization)
         for constraint in constraints
     ]
     outputs = tuple(functional for functional, _ in built if functional is not None)
@@ -921,33 +981,13 @@ def _kkt(
                 },
             ),
         )
-    host = np.array(sensitivity.adjoint.scaled, dtype=np.float64)
-    scales = np.array([decision.scale for decision in formulation.decisions], dtype=np.float64)
-    rows: list[npt.NDArray[np.float64]] = []
-    position = 0
-    for functional, direct in built:
-        if functional is not None:
-            row = host[position]
-            position += 1
-        else:
-            row = np.zeros(n)
-        rows.append(row if direct is None else row + direct * scales)
+    rows = _output_gradients(built, sensitivity.adjoint.scaled, formulation.decisions)
     objective_gradient = rows[0]
     gradients = {
         constraint.constraint_id: rows[index]
         for index, constraint in enumerate(constraints, start=1)
     }
-    position_of = {
-        decision.parameter_id: index for index, decision in enumerate(formulation.decisions)
-    }
-    active_rows = []
-    for item in active:
-        if item.kind == "bound":
-            row = np.zeros(n)
-            row[position_of[item.target]] = 1.0
-        else:
-            row = gradients[item.target].copy()
-        active_rows.append(row if item.side == "lower" else -row)
+    active_rows = _active_rows(active, gradients, formulation.decisions)
     kkt = _stationarity(objective_gradient, active_rows, active, gradients)
     passed = kkt.stationarity_residual <= TAU_KKT and kkt.multipliers_nonnegative and kkt.licq
     return (
@@ -966,6 +1006,49 @@ def _kkt(
             },
         ),
     )
+
+
+def _output_gradients(
+    built: Sequence[tuple[OutputFunctional | None, npt.NDArray[np.float64] | None]],
+    scaled: Matrix,
+    decisions: Sequence[Decision],
+) -> list[npt.NDArray[np.float64]]:
+    """Each output of `built` (`_functional`'s, the objective then the constraints), its scaled
+    gradient over `decisions` in order: the next row of the adjoint's `scaled` matrix (one row
+    per output whose functional is not `None`, in order), or zeros for one without a functional;
+    plus its direct term times the decision scales where it has one."""
+    host = np.array(scaled, dtype=np.float64)
+    scales = np.array([decision.scale for decision in decisions], dtype=np.float64)
+    rows: list[npt.NDArray[np.float64]] = []
+    position = 0
+    for functional, direct in built:
+        if functional is not None:
+            row = host[position]
+            position += 1
+        else:
+            row = np.zeros(len(decisions))
+        rows.append(row if direct is None else row + direct * scales)
+    return rows
+
+
+def _active_rows(
+    active: Sequence[ActiveConstraint],
+    gradients: Mapping[str, npt.NDArray[np.float64]],
+    decisions: Sequence[Decision],
+) -> list[npt.NDArray[np.float64]]:
+    """The scaled gradient of each active side `ĉ_i ≥ 0` of `active`, in order, over `decisions`:
+    a box side's unit row at its decision, an inequality side's row of `gradients` (a copy), each
+    negated on an upper side."""
+    position_of = {decision.parameter_id: index for index, decision in enumerate(decisions)}
+    active_rows = []
+    for item in active:
+        if item.kind == "bound":
+            row: npt.NDArray[np.float64] = np.zeros(len(decisions))
+            row[position_of[item.target]] = 1.0
+        else:
+            row = gradients[item.target].copy()
+        active_rows.append(row if item.side == "lower" else -row)
+    return active_rows
 
 
 def _stationarity(

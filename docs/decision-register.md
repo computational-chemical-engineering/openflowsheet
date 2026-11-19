@@ -19987,3 +19987,55 @@ are inadmissible could resolve on a flat-quantized finer level (Q2.A8).
   and the witness's own arithmetic overflows from finite `ok` values; a NaN term was silently dropped by the max fold.
 - *`evaluated(value=inf)`:* breaks K04 A30 (inf serializes to null), puts inf into `witness_max_diff`, and a NaN in
   its place would be dropped again by the outer fold.
+
+## R-1059: S19 W5 re-registers identities once per batch, admits the tier-3 providers under the identity pin, and judges G-END's F0 clause by E1 to E5 (ADR 0077; 2026-11-18)
+
+| | |
+| --- | --- |
+| Date | 2026-11-18 |
+| Decided by | Frank Peters, Decision Desk cards `ofs-s19-w5-fr1-providers` (A), `ofs-s19-w5-fr2-reregister` (B), `ofs-s19-w5-fr3-gend-clause` (A), each verified with `decision_desk_verify.py`; design lane (`specifier`) ruling |
+| Normative text | `docs/adr/0077-S19-W5-identity-reregistration.md`; `docs/briefs/S19-W5-ruling.md` sections 4 to 9 (section 7: E1 to E5) |
+| Evidence | the ruling's 13 comment-only probe trees and two full suites (section 3); W5-T1 to W5-T7 (WO-0, `scripts/w5_identity.py`) |
+| Affected packages | S19 (W5, G-END); F0 (`benchmarks/f0/corpus.json` M9 per batch, M2, M3 and M6 in batch P); E-F1-5 (`tests/fixtures/registry/builtin-sha256.txt`); S10 A26, S11 A75, L01 A22 (amended by the routes the ADR names) |
+
+**Decision.** W5 re-registers exactly the identity values that are functions of the edited files' bytes, in one
+commit per batch (N, P, L) against a predicted key set and a judged diff. W5 may edit all tier-3 provider files
+(`pr_c1`, `iapws95`, `wilson_ig`, `wilson_ig_v2`, `coolprop_heos` and the CoolProp table) under the identity pin,
+closed before the 0.5.0 release-candidate cut, with a release note naming the moved providers. G-END's "F0 and MCP
+digest identical" is replaced by E1 to E5. `thermo/syn001.py` is not edited in S19.
+
+**Rejected alternatives, and why.**
+- *Re-register once for all of W5 (FR-2 A):* batch N would wait unmerged for batch P and the legacy ruling; one
+  re-registration per batch keeps each identity change reviewable.
+- *Admit only B7 and `coolprop_heos.py`, or no tier-3 file (FR-1 B, C):* four providers would stay below health 7.0
+  as G-END misses; the pin proves the change is identity only.
+- *Keep the literal G-END F0 clause (FR-3 B):* it fails at W5's first byte change to a registry-hashed file.
+- The ADR's other rejected alternatives (per-step re-registration, declared versions, AST hashing, textual
+  substitution, re-registering M7, an identity override switch) are listed in ADR 0077.
+
+## R-1060: S10 A26's oracle is F0's registered M9 value, not `main` (S19 W5 ruling R7, finding F-2; 2026-11-19)
+
+| | |
+| --- | --- |
+| Date | 2026-11-19 |
+| Decided by | design lane (`specifier`) ruling R7, under ADR 0077 (R-1059); implemented by WO-1b, read by `reviewer` (accept) |
+| Normative text | `docs/briefs/S19-W5-ruling.md` finding F-2 (ruling R7) and table row WO-1b |
+| Evidence | merge 9a607a3a (commit 3377087d): `tests/test_s10_provider.py` 87 passed; a comment line appended to `thermo/pr_lib.py` fails A26 naming the path |
+| Affected packages | S10 (A26, `docs/derivations/S10-spec.md` row amended); S19 W5 (batch N edits `thermo/pr_lib.py`) |
+
+**Decision.** For each of `syn001.py`, `pr_c1.py`, `pr_lib.py`, `iapws95.py`, `coolprop_heos.py` under
+`src/openflowsheet/thermo/`, A26 asserts that the file's SHA-256 equals `benchmarks/f0/corpus.json`
+`measures.M9[path]`, exact bytes; a missing key fails naming the path. The skip without a `main` ref goes. The test
+is `test_a26_the_other_providers_are_byte_identical_to_their_f0_registration`.
+
+**Why.** With `main` as the oracle, a branch that edits one of the files is red until it reaches `main`, and reaching
+`main` requires CI green: circular. On `main` the old check compared the tree with itself, and it skipped in a clone
+without `main`. The registered value is exact byte equality and moves only with a re-registration.
+
+**Limit (review note).** Nothing mechanical pins `corpus.json`: `scripts/corpus_identity.py --record` rewrites the
+registry from the working tree. Inside W5 the judgement is procedural (W5-K2 on every commit touching
+`benchmarks/f0/`, ruling E2); outside W5 it is review of the `corpus.json` diff. The old oracle moved with every merge
+without any judgement.
+
+**Rejected.** *Keep `main` as the oracle:* blocks W5 batch N (circular, above). *List the test as a standing
+failure:* hides a guard the batch needs.

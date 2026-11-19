@@ -85,6 +85,8 @@ runs it under pytest-xdist and, like `build`, keeps the `XDIST_SERIAL` files out
 they run in a second, serial call, on a fallback and whenever the selection holds them (B-12).
 `-n` after `--` is refused for that reason. The line sums both calls' counts; the exit code is
 nonzero when either call fails (a call that collected nothing, exit 5, counts only if both did).
+A call killed by a signal makes the run exit 3, pytest's internal error, and the line names it
+(`killed: call N signal S`, N as in the call's `<log>.N.args` listing).
 `--workers` needs pytest-xdist, which only the test-map venv has. `--repo DIR` (before the
 subcommand) selects in another checkout.
 
@@ -190,6 +192,17 @@ file. `run` therefore drops an unsure test that the same run deselects (`--desel
 `PYTEST_ADDOPTS` or after `--`): S19's gates deselect two wall-time budget tests, which had failed
 in the build under load and pulled `test_t07_v17_reference.py` and `test_t07_conformance.py` into
 every selected gate.
+
+### Files left to the merge check (`--exclude-from`, S19)
+
+`run --exclude-from FILE` drops the test files listed in FILE (one path per line, `#` comments) from a
+selection and prints the list, saying for each file whether it was selected and not run. S19's step
+gates pass `.codehealth/step-gate-excluded-tests.txt`: the end-to-end and reference files that were
+selected in most gates and took most of their time. The list does nothing with `--full` or on a
+fallback to the full suite, so every merge check and CI run still runs those files. A failure in one
+of them is therefore found at the lane's merge check, not at the step that caused it: a bisect over
+the lane, not a wrong merge. The list is refused if it names a path that is not a test file of the
+checkout, or `tests/test_doc_examples.py`, which stays at step cadence.
 
 ## Limitations
 

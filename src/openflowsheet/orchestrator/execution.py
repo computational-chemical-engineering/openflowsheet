@@ -210,15 +210,7 @@ def condensation_order(graph: ProcessGraph) -> tuple[tuple[str, ...], ...]:
         tuple(sorted(component, key=order.__getitem__))
         for component in _components(graph.units, edges)
     ]
-    member = {unit: index for index, component in enumerate(components) for unit in component}
-    waiting = {
-        index: {
-            member[producer]
-            for producer, consumer in edges
-            if member.get(consumer) == index and member[producer] != index
-        }
-        for index in range(len(components))
-    }
+    waiting = _condensation_predecessors(components, edges)
     placed: list[tuple[str, ...]] = []
     while waiting:
         ready = [index for index, before in waiting.items() if not before]
@@ -228,6 +220,23 @@ def condensation_order(graph: ProcessGraph) -> tuple[tuple[str, ...], ...]:
         for before in waiting.values():
             before.discard(chosen)
     return tuple(placed)
+
+
+def _condensation_predecessors(
+    components: Sequence[tuple[str, ...]], edges: Sequence[tuple[str, str]]
+) -> dict[int, set[int]]:
+    """Pure: the predecessors of each node of the condensation: for each index into `components`,
+    the indices of the other components with an edge of `edges` into one of its units.
+    """
+    member = {unit: index for index, component in enumerate(components) for unit in component}
+    return {
+        index: {
+            member[producer]
+            for producer, consumer in edges
+            if member.get(consumer) == index and member[producer] != index
+        }
+        for index in range(len(components))
+    }
 
 
 # -- tear sets for a loop no single edge breaks (T02 §3.3) ------------------------------------

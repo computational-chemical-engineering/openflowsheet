@@ -12,6 +12,7 @@ exactly 0.0.
 from __future__ import annotations
 
 import hashlib
+import json
 import math
 import re
 import subprocess
@@ -644,30 +645,22 @@ def test_a25_the_generator_rederives_every_claim_and_the_committed_bytes() -> No
     assert all(claim["holds"] is True for claim in REFERENCE["generator_claims"])
 
 
-# -- A26: the other providers are untouched --------------------------------------------------------
+# -- A26: the other providers match their F0 registration ------------------------------------------
 
 UNTOUCHED = ("syn001.py", "pr_c1.py", "pr_lib.py", "iapws95.py", "coolprop_heos.py")
 
 
-def _git(*arguments: str) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
-        ["git", *arguments], cwd=REPO_ROOT, capture_output=True, text=True, check=False
-    )
+def test_a26_the_other_providers_are_byte_identical_to_their_f0_registration() -> None:
+    """Ruling R7 (S19 W5, `docs/briefs/S19-W5-ruling.md` F-2): SHA-256 equals F0's M9 value.
 
-
-def test_a26_the_other_providers_are_byte_identical_to_main() -> None:
-    ref = next(
-        (r for r in ("main", "origin/main") if _git("rev-parse", "--verify", r).returncode == 0),
-        None,
-    )
-    if ref is None:
-        pytest.skip("no `main` ref in this checkout")
+    The registered value moves only with a judged re-registration (W5-K2).
+    """
+    m9 = json.loads((REPO_ROOT / "benchmarks/f0/corpus.json").read_text())["measures"]["M9"]
     for name in UNTOUCHED:
         path = f"src/openflowsheet/thermo/{name}"
-        on_main = _git("rev-parse", f"{ref}:{path}")
-        here = _git("hash-object", path)
-        assert on_main.returncode == 0 and here.returncode == 0, path
-        assert here.stdout.strip() == on_main.stdout.strip(), path
+        assert path in m9, f"no M9 registration for {path}"
+        here = hashlib.sha256((REPO_ROOT / path).read_bytes()).hexdigest()
+        assert here == m9[path], path
 
 
 # -- A27: library-only -----------------------------------------------------------------------------

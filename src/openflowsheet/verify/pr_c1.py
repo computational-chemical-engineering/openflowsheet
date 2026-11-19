@@ -51,6 +51,7 @@ from openflowsheet.verify import (
     unsupported,
 )
 from openflowsheet.verify.checks import KIND_REFERENCE, VerifierError, stream_of
+from openflowsheet.verify.table_kit import Judging, declared_streams, independent_split_rows
 
 if TYPE_CHECKING:
     from openflowsheet.models.lifted import LiftedSplit
@@ -204,25 +205,19 @@ def _dew(*, id: str, subject: str, value: float, note: str) -> CheckResult:
     )
 
 
-def _fresh_dew(
-    provider: PropertyProvider,
-    context: EvaluationContext,
-    stream: StreamState,
-    components: Sequence[str],
-    *,
-    id: str,
-    subject: str,
-    note: str,
-) -> CheckResult:
+def _fresh_dew(stream: StreamState, judging: Judging, *, id: str, subject: str) -> CheckResult:
     """The τ_dew test on a fresh flash of `stream`; a refusal is `unsupported` (`dew_<status>`),
     never a pass."""
-    result = _flash(provider, context, stream)
+    result = _flash(judging.provider, judging.context, stream)
     if result.status != "ok" or result.liquid is None:
         return unsupported(
             id=id, category="phase_admissibility", subject=subject, reason=f"dew_{result.status}"
         )
     return _dew(
-        id=id, subject=subject, value=liquid_fraction(result, stream, components), note=note
+        id=id,
+        subject=subject,
+        value=liquid_fraction(result, stream, judging.components),
+        note=judging.note,
     )
 
 
@@ -230,13 +225,9 @@ def _closure(
     *,
     id: str,
     subject: str,
-    provider: PropertyProvider,
-    context: EvaluationContext,
     vapor: StreamState,
     liquid: StreamState,
-    components: Sequence[str],
-    tolerance: float,
-    note: str,
+    judging: Judging,
 ) -> CheckResult:
     """B15 item 4's TWO_PHASE closure: `|g / g_T|` in kelvin, `g = ln(v_NH3 / Σv) + ln φ^V_NH3(v,
     T, P) − ln φ^L_NH3(T, P)` on the state's own phases, `g_T` its T-derivative."""
@@ -248,11 +239,11 @@ def _closure(
             reason="closure_nonpositive_phase",
         )
     lv, lv_t, refused = _phase_property(
-        provider, context, vapor, "VAPOR", "lnphi_NH3", derivatives=("T",)
+        judging.provider, judging.context, vapor, "VAPOR", "lnphi_NH3", derivatives=("T",)
     )
     if not refused:
         ll, ll_t, refused = _phase_property(
-            provider, context, liquid, "LIQUID", "lnphi_NH3", derivatives=("T",)
+            judging.provider, judging.context, liquid, "LIQUID", "lnphi_NH3", derivatives=("T",)
         )
     if refused:
         return unsupported(
@@ -264,183 +255,121 @@ def _closure(
         return unsupported(
             id=id, category="phase_admissibility", subject=subject, reason="closure_degenerate"
         )
-    fraction = _nh3(vapor, components) / sum(vapor.n)
+    fraction = _nh3(vapor, judging.components) / sum(vapor.n)
     g = (math.log(fraction) if fraction > 0.0 else -math.inf) + lv - ll
     return evaluated(
         id=id,
         category="phase_admissibility",
         subject=subject,
         value=abs(g / slope),
-        tolerance=tolerance,
+        tolerance=judging.tolerances["temperature"],
         reference=KIND_REFERENCE["temperature"],
-        independence_qualification=_form(note, CLOSURE_FORM),
+        independence_qualification=_form(judging.note, CLOSURE_FORM),
     )
 
 
-def split_checks(
-    split: LiftedSplit,
-    components: Sequence[str],
-    state: Mapping[str, float],
-    provider: PropertyProvider,
-    context: EvaluationContext,
-    tolerances: Mapping[str, float],
-    note: str,
-) -> list[CheckResult]:
+def split_checks(split: LiftedSplit, judging: Judging) -> list[CheckResult]:
     """K04 §4.7 on one `pr-c1-v1` split (B15 item 4): the branch's admissibility, then the
-    independent split by SYN-001's formula (written again here; `table._split_checks` is not
-    edited)."""
+    independent split by SYN-001's formula, whose rows come from
+    `table_kit.independent_split_rows`; only what differs from PR's own flash is computed here."""
     name = f"{split.unit}.{split.stream}"
     subject = split.stream
-    checks: list[CheckResult] = []
-    vapor = tuple(state[column] for column in split.vapor)
-    liquid = tuple(state[column] for column in split.liquid)
-    temperature = state[split.temperature]
-    pressure = state[split.pressure]
-    total_vapor, total_liquid = sum(vapor), sum(liquid)
+    vapor = tuple(judging.state[column] for column in split.vapor)
+    liquid = tuple(judging.state[column] for column in split.liquid)
+    temperature = judging.state[split.temperature]
+    pressure = judging.state[split.pressure]
     carried = StreamState(
-        n=tuple(state[column] for column in split.feed),
+        n=tuple(judging.state[column] for column in split.feed),
         temperature=temperature,
         pressure=pressure,
     )
-
-    if total_vapor + total_liquid == 0.0:
-        checks.append(
-            dormant(
-                id=f"phase_admissibility.{name}", category="phase_admissibility", subject=subject
-            )
-        )
-    elif total_vapor == 0.0:
-        checks.append(
-            unsupported(
-                id=f"phase_admissibility.{name}.bubble",
-                category="phase_admissibility",
-                subject=subject,
-                reason="pr_liquid_regime_unsupported",
-            )
-        )
-    elif total_liquid == 0.0:
-        if carried.is_dormant:
-            # A vapour split of a dormant feed has nothing to flash; the material balance judges
-            # the inconsistency, and this check says it does not apply rather than passing.
-            checks.append(
-                dormant(
-                    id=f"phase_admissibility.{name}.dew",
-                    category="phase_admissibility",
-                    subject=subject,
-                )
-            )
-        else:
-            checks.append(
-                _fresh_dew(
-                    provider,
-                    context,
-                    carried,
-                    components,
-                    id=f"phase_admissibility.{name}.dew",
-                    subject=subject,
-                    note=note,
-                )
-            )
-    else:
-        checks.append(
-            _closure(
-                id=f"phase_admissibility.{name}.closure",
-                subject=subject,
-                provider=provider,
-                context=context,
-                vapor=StreamState(n=vapor, temperature=temperature, pressure=pressure),
-                liquid=StreamState(n=liquid, temperature=temperature, pressure=pressure),
-                components=components,
-                tolerance=tolerances["temperature"],
-                note=note,
-            )
-        )
+    checks = [_split_admissibility(split, carried, vapor, liquid, judging)]
 
     if carried.is_dormant:
         checks.append(
             dormant(id=f"independent_split.{name}", category="independent_split", subject=subject)
         )
         return checks
-    flashed = _flash(provider, context, carried)
+    flashed = _flash(judging.provider, judging.context, carried)
     if flashed.status != "ok" or flashed.vapor is None:
         raise VerifierError(f"the verifier's own split of {name} returned {flashed.status}")
-    checks.append(
-        evaluated(
-            id=f"independent_split.{name}.total",
-            category="independent_split",
-            subject=subject,
-            value=state[split.vapor_total] - sum(flashed.vapor.n),
-            tolerance=tolerances["molar_flow"],
-            reference=KIND_REFERENCE["molar_flow"],
-            independence_qualification=note,
-        )
-    )
-    for index, component in enumerate(components):
-        checks.append(
-            evaluated(
-                id=f"independent_split.{name}.{component}",
-                category="independent_split",
-                subject=subject,
-                value=vapor[index] - flashed.vapor.n[index],
-                tolerance=tolerances["molar_flow"],
-                reference=KIND_REFERENCE["molar_flow"],
-                independence_qualification=note,
-            )
-        )
+    total = judging.state[split.vapor_total] - sum(flashed.vapor.n)
+    differences = [
+        vapor[index] - flashed.vapor.n[index] for index in range(len(judging.components))
+    ]
+    checks += independent_split_rows(name, subject, total, differences, judging)
     return checks
+
+
+def _split_admissibility(
+    split: LiftedSplit,
+    carried: StreamState,
+    vapor: tuple[float, ...],
+    liquid: tuple[float, ...],
+    judging: Judging,
+) -> CheckResult:
+    """K04 §4.7's admissibility of the split's branch (B15 item 4), from its `vapor` and `liquid`
+    flows and its feed `carried` at the split's `(T, P)`: `not_applicable` when both phases are
+    empty; the LIQUID branch's `.bubble` `unsupported`; the VAPOR branch's `.dew` by the τ_dew
+    test on a fresh flash of the feed (`not_applicable` for a dormant feed); the TWO_PHASE
+    `.closure` on the state's own phases."""
+    name = f"{split.unit}.{split.stream}"
+    subject = split.stream
+    total_vapor, total_liquid = sum(vapor), sum(liquid)
+    if total_vapor + total_liquid == 0.0:
+        return dormant(
+            id=f"phase_admissibility.{name}", category="phase_admissibility", subject=subject
+        )
+    if total_vapor == 0.0:
+        return unsupported(
+            id=f"phase_admissibility.{name}.bubble",
+            category="phase_admissibility",
+            subject=subject,
+            reason="pr_liquid_regime_unsupported",
+        )
+    if total_liquid == 0.0:
+        if carried.is_dormant:
+            # A vapour split of a dormant feed has nothing to flash; the material balance judges
+            # the inconsistency, and this check says it does not apply rather than passing.
+            return dormant(
+                id=f"phase_admissibility.{name}.dew",
+                category="phase_admissibility",
+                subject=subject,
+            )
+        return _fresh_dew(carried, judging, id=f"phase_admissibility.{name}.dew", subject=subject)
+    return _closure(
+        id=f"phase_admissibility.{name}.closure",
+        subject=subject,
+        vapor=StreamState(n=vapor, temperature=carried.temperature, pressure=carried.pressure),
+        liquid=StreamState(n=liquid, temperature=carried.temperature, pressure=carried.pressure),
+        judging=judging,
+    )
 
 
 def declared_port_checks(
     view: RevisionView,
-    state: Mapping[str, float],
-    provider: PropertyProvider,
-    context: EvaluationContext,
-    note: str,
     declared_ports: Mapping[str, tuple[tuple[str, bool], ...]],
+    judging: Judging,
 ) -> list[CheckResult]:
-    """B15 item 5, with `table._declared_port_checks`' iteration and ids: by model id, the ports
+    """B15 item 5, with `table_kit.declared_streams`' iteration and ids: by model id, the ports
     whose declared phase is judged (`declared_ports`, the table's entries). A declared vapour by
     the τ_dew test on a fresh flash of the stream's own `(n, T, P)`; a declared liquid
     `unsupported` (`pr_declared_liquid_unsupported`); a dormant stream `not_applicable`."""
     checks: list[CheckResult] = []
-    for instance in view.instances:
-        ports = declared_ports.get(instance.model_id)
-        if ports is None:
-            continue
-        for port, several in ports:
-            phase = instance.phases.get(port)
-            if phase is None:
-                continue
-            for stream in instance.ports.get(port, ()):
-                identifier = (
-                    f"phase_admissibility.{instance.unit_id}.{port}.{stream}"
-                    if several
-                    else f"phase_admissibility.{instance.unit_id}.{port}"
+    for declared in declared_streams(view, declared_ports):
+        identifier, stream = declared.identifier, declared.stream
+        carried = stream_of(judging.state, stream, components=view.components)
+        if carried.is_dormant:
+            checks.append(dormant(id=identifier, category="phase_admissibility", subject=stream))
+        elif declared.phase == "LIQUID":
+            checks.append(
+                unsupported(
+                    id=identifier,
+                    category="phase_admissibility",
+                    subject=stream,
+                    reason="pr_declared_liquid_unsupported",
                 )
-                carried = stream_of(state, stream, components=view.components)
-                if carried.is_dormant:
-                    checks.append(
-                        dormant(id=identifier, category="phase_admissibility", subject=stream)
-                    )
-                elif phase == "LIQUID":
-                    checks.append(
-                        unsupported(
-                            id=identifier,
-                            category="phase_admissibility",
-                            subject=stream,
-                            reason="pr_declared_liquid_unsupported",
-                        )
-                    )
-                else:
-                    checks.append(
-                        _fresh_dew(
-                            provider,
-                            context,
-                            carried,
-                            view.components,
-                            id=identifier,
-                            subject=stream,
-                            note=note,
-                        )
-                    )
+            )
+        else:
+            checks.append(_fresh_dew(carried, judging, id=identifier, subject=stream))
     return checks

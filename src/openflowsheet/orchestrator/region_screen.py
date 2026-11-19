@@ -11,6 +11,7 @@ this module imports `region_phase` and `region_problem`.
 from __future__ import annotations
 
 from collections.abc import Callable, Mapping, Sequence
+from dataclasses import dataclass
 from typing import Literal
 
 from openflowsheet.compiled import EvaluationContext, PhaseSignature
@@ -96,12 +97,13 @@ def _build_screen(
     temperatures: Mapping[str, tuple[str, ...]] | None = None,
     memo: ClosureMemo | None = None,
 ) -> Callable[[dict[str, float]], AttemptSignature | Evaluation]:
-    """`_screen`'s body. The flag is v1's under both literals; under v2 a flagged PH-type unit
-    (`ph_units`) reports its PH closure's regime, and the TP flash's only when the closure gives
-    none (T05b spec §6.2). As amended (Q-S10, R-053) the regime is read off the band's end
-    enthalpies (`_band_regime`, (s1)–(s2)); only inside a `τ_E` zone of an end, or when an
-    evaluation there is not `ok`, is the full closure asked (s3), and its answer is kept in
-    `memo` (with `temperatures`' columns, as an opening would ask it) for the opening.
+    """`_screen`'s screen, a `_TrialScreen` of the arguments. The flag is v1's under both
+    literals; under v2 a flagged PH-type unit (`ph_units`) reports its PH closure's regime, and
+    the TP flash's only when the closure gives none (T05b spec §6.2). As amended (Q-S10, R-053)
+    the regime is read off the band's end enthalpies (`_band_regime`, (s1)–(s2)); only inside a
+    `τ_E` zone of an end, or when an evaluation there is not `ok`, is the full closure asked
+    (s3), and its answer is kept in `memo` (with `temperatures`' columns, as an opening would
+    ask it) for the opening.
 
     Under v2 (`v2`) every split is first checked for T05b spec §7.3's agreement — one comparison:
     a dormant feed reports `ZERO_FLOW`; a `ZERO_FLOW` split whose feed flows reports the TP
@@ -111,112 +113,156 @@ def _build_screen(
     one comparison per outlet): an item the attempt does not run, or runs against a flowing
     trigger, makes the reported signature differ, and the trial is phase-rejected."""
 
-    def screen(state: dict[str, float]) -> AttemptSignature | Evaluation:
+    return _TrialScreen(
+        splits=splits,
+        regimes=regimes,
+        provider=provider,
+        context=context,
+        epsilon=epsilon,
+        ph_units=ph_units,
+        v2=v2,
+        dormancy=dormancy,
+        temperatures=temperatures,
+        memo=memo,
+    )
+
+
+@dataclass(frozen=True, eq=False)
+class _TrialScreen:
+    """`_build_screen`'s screen of one attempt: its ten arguments, and the trial state each call
+    screens. Identity equality and hash, as the closure it replaces had (`eq=False`)."""
+
+    splits: Sequence[LiftedSplit]
+    regimes: Mapping[str, Regime]
+    provider: PropertyProvider
+    context: EvaluationContext
+    epsilon: float
+    ph_units: frozenset[str]
+    v2: bool
+    dormancy: Sequence[DormancyForm]
+    temperatures: Mapping[str, tuple[str, ...]] | None
+    memo: ClosureMemo | None
+
+    def __call__(self, state: dict[str, float]) -> AttemptSignature | Evaluation:
         # The screen calls the provider outside the compiled residual, so it converts a refusal
         # exactly as the residual does (review S1): a spent budget is an `error` evaluation (the
         # executor reports `BUDGET_EXHAUSTED` from its meter), a provider that will not give the
         # K-values is `invalid_trial_state`. Neither may escape the attempt loop.
         try:
-            return reported_signature(state)
+            return self.reported_signature(state)
         except BudgetExhaustedError as exhausted:
             return Evaluation(status="error", message=str(exhausted))
         except AdmissibilityRefusal as refused:
             return Evaluation(status="invalid_trial_state", message=str(refused))
 
-    def reported_signature(state: dict[str, float]) -> AttemptSignature | Evaluation:
+    def reported_signature(self, state: dict[str, float]) -> AttemptSignature | Evaluation:
+        """Each split's report (`_unit_report`) in split order, then the dormancy forms' items;
+        the first `Evaluation` a split's report gives ends the screen with it."""
         reported: list[tuple[str, PhaseSignature]] = []
-        for split in splits:
-            regime = regimes[split.unit]
-            if v2 and _dormant_feed(split, state):
-                reported.append((split.unit, "ZERO_FLOW"))
-                continue
-            if v2 and regime == "ZERO_FLOW":
-                # §7.4 as amended (Q-S15 (3)): a PH-type split reports the TP flash at the
-                # leaving answer's inputs — its feed's `T` (`_contract_kernel`), not its own
-                # `T` column, the zero-flow label of an earlier feed.
-                leaving = tp_regime(split, state, leaving=split.unit in ph_units)
-                if isinstance(leaving, Evaluation):
-                    return leaving
-                reported.append((split.unit, leaving))
-                continue
-            if regime == "TWO_PHASE":
-                reported.append((split.unit, regime))
-                continue
-            ok, _ = _admissible(provider, context, split, regime, state, epsilon)
-            if ok:
-                reported.append((split.unit, regime))
-                continue
-            if split.unit in ph_units:
-                screened = screened_regime(split, state)
-                if screened is not None and screened != TP_REGIME:
-                    reported.append((split.unit, screened))
-                    continue
-                if screened is None:
-                    answer = asked(split, state)
-                    if answer is not None:
-                        reported.append((split.unit, answer.regime))
-                        continue
-            kernel = tp_regime(split, state)
-            if isinstance(kernel, Evaluation):
-                return kernel
-            reported.append((split.unit, kernel))
-        return (*reported, *_items(dormancy, state))
+        for split in self.splits:
+            unit_report = self._unit_report(split, state)
+            if isinstance(unit_report, Evaluation):
+                return unit_report
+            reported.append((split.unit, unit_report))
+        return (*reported, *_items(self.dormancy, state))
 
-    def screened_regime(
-        split: LiftedSplit, state: dict[str, float]
-    ) -> Regime | Literal["tp"] | None:
-        """§6.2 (s1)–(s2): the band ends' regime, `TP_REGIME`, or `None` for (s3)."""
-        target = _split_enthalpy(provider, context, split, state)
-        if target is None:
-            return None
-        feed = tuple(state[name] for name in split.feed)
-        return _band_regime(provider, context, feed, state[split.pressure], target)
+    def _unit_report(
+        self, split: LiftedSplit, state: dict[str, float]
+    ) -> PhaseSignature | Evaluation:
+        """One split's reported regime at the trial, the first rung that answers: a dormant feed
+        (v2), a split leaving `ZERO_FLOW` (v2, the TP flash), `TWO_PHASE`, an admissible regime,
+        a PH-type split's band answer or full closure (`asked`), else the TP flash. The two TP
+        flash rungs return the provider's refusal as an `Evaluation`."""
+        regime = self.regimes[split.unit]
+        if self.v2 and _dormant_feed(split, state):
+            return "ZERO_FLOW"
+        if self.v2 and regime == "ZERO_FLOW":
+            # §7.4 as amended (Q-S15 (3)): a PH-type split reports the TP flash at the
+            # leaving answer's inputs — its feed's `T` (`_contract_kernel`), not its own
+            # `T` column, the zero-flow label of an earlier feed.
+            return _tp_flash_regime(
+                self.provider, self.context, split, state, leaving=split.unit in self.ph_units
+            )
+        if regime == "TWO_PHASE":
+            return regime
+        ok, _ = _admissible(self.provider, self.context, split, regime, state, self.epsilon)
+        if ok:
+            return regime
+        if split.unit in self.ph_units:
+            screened = _band_screened_regime(self.provider, self.context, split, state)
+            if screened is not None and screened != TP_REGIME:
+                return screened
+            if screened is None:
+                answer = self.asked(split, state)
+                if answer is not None:
+                    return answer.regime
+        return _tp_flash_regime(self.provider, self.context, split, state)
 
-    def asked(split: LiftedSplit, state: dict[str, float]) -> _KernelAnswer | None:
-        """§6.2 (s3): the full closure, kept for an opening at the same state."""
+    def asked(self, split: LiftedSplit, state: dict[str, float]) -> _KernelAnswer | None:
+        """§6.2 (s3): the full closure, kept for an opening at the same state (writes `memo`)."""
         key = _closure_key(split, state)
-        if memo is not None and key in memo:
-            return memo[key]
-        answer = _ph_closure(provider, context, split, state, (temperatures or {}).get(split.unit))
-        if memo is not None:
-            memo[key] = answer
+        if self.memo is not None and key in self.memo:
+            return self.memo[key]
+        answer = _ph_closure(
+            self.provider, self.context, split, state, (self.temperatures or {}).get(split.unit)
+        )
+        if self.memo is not None:
+            self.memo[key] = answer
         return answer
 
-    def tp_regime(
-        split: LiftedSplit, state: dict[str, float], *, leaving: bool = False
-    ) -> PhaseSignature | Evaluation:
-        """The provider's TP flash of the split's feed at the trial, or its refusal: at the
-        split's own `T`, or — for a PH-type split `leaving` `ZERO_FLOW` — at its feed's `T`,
-        as the opening's leaving answer asks it (`_contract_kernel`)."""
-        temperature = temperature_id(split.stream) if leaving else split.temperature
-        stream = StreamState(
-            n=tuple(state[name] for name in split.feed),
-            temperature=state[temperature],
-            pressure=state[split.pressure],
-        )
-        band: PhaseSignature | None = None
-        if _pr_c1(provider):
-            # M02 design note §14.2 B14: the kernel's regime, so the dew band reads VAPOR here as
-            # in `_kernel` (build log D38).
-            band, _, flashed = classify(
-                provider, context, stream.n, stream.temperature, stream.pressure
-            )
-        else:
-            flashed = provider.flash(FlashRequest(state=stream), context)
-        if flashed.status != "ok" or flashed.phase_signature is None:
-            # The provider's own status (review N3; K03 §5.5: the unit, the status and the
-            # message). Newton halves on any of them but `error`, which ends the attempt.
-            return Evaluation(
-                status="invalid_trial_state" if flashed.status == "ok" else flashed.status,
-                message=(
-                    f"the kernel refused {split.unit}'s regime ({split.stream}) at the "
-                    f"trial: {flashed.status}: {flashed.message}"
-                ),
-            )
-        if band == "VAPOR":
-            return band
-        if flashed.phase_signature in ("LIQUID", "VAPOR"):
-            return flashed.phase_signature
-        return "TWO_PHASE"
 
-    return screen
+def _tp_flash_regime(
+    provider: PropertyProvider,
+    context: EvaluationContext,
+    split: LiftedSplit,
+    state: dict[str, float],
+    *,
+    leaving: bool = False,
+) -> PhaseSignature | Evaluation:
+    """The provider's TP flash of the split's feed at the trial, or its refusal: at the
+    split's own `T`, or — for a PH-type split `leaving` `ZERO_FLOW` — at its feed's `T`,
+    as the opening's leaving answer asks it (`_contract_kernel`)."""
+    temperature = temperature_id(split.stream) if leaving else split.temperature
+    stream = StreamState(
+        n=tuple(state[name] for name in split.feed),
+        temperature=state[temperature],
+        pressure=state[split.pressure],
+    )
+    band: PhaseSignature | None = None
+    if _pr_c1(provider):
+        # M02 design note §14.2 B14: the kernel's regime, so the dew band reads VAPOR here as
+        # in `_kernel` (build log D38).
+        band, _, flashed = classify(
+            provider, context, stream.n, stream.temperature, stream.pressure
+        )
+    else:
+        flashed = provider.flash(FlashRequest(state=stream), context)
+    if flashed.status != "ok" or flashed.phase_signature is None:
+        # The provider's own status (review N3; K03 §5.5: the unit, the status and the
+        # message). Newton halves on any of them but `error`, which ends the attempt.
+        return Evaluation(
+            status="invalid_trial_state" if flashed.status == "ok" else flashed.status,
+            message=(
+                f"the kernel refused {split.unit}'s regime ({split.stream}) at the "
+                f"trial: {flashed.status}: {flashed.message}"
+            ),
+        )
+    if band == "VAPOR":
+        return band
+    if flashed.phase_signature in ("LIQUID", "VAPOR"):
+        return flashed.phase_signature
+    return "TWO_PHASE"
+
+
+def _band_screened_regime(
+    provider: PropertyProvider,
+    context: EvaluationContext,
+    split: LiftedSplit,
+    state: dict[str, float],
+) -> Regime | Literal["tp"] | None:
+    """§6.2 (s1)–(s2): the band ends' regime, `TP_REGIME`, or `None` for (s3)."""
+    target = _split_enthalpy(provider, context, split, state)
+    if target is None:
+        return None
+    feed = tuple(state[name] for name in split.feed)
+    return _band_regime(provider, context, feed, state[split.pressure], target)

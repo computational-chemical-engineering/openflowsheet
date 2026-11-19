@@ -9,6 +9,9 @@
 #        gate.sh --interface <plan commit> <plan path> [label]  an ADR 0076 W4 interface step (the plan committed at the base)
 #        gate.sh --behaviour-only <wp/S19 sha> [label]  a lane's merge-check: the base's behaviour tiers over base..HEAD,
 #                                                       the FULL suite, no static checks, debt reported not gated, not loggable
+# W5 gate mode: with S19_W5_BATCH set to a batch file (gate_queue.py --batch sets it for a W5 job of any mode
+# above but --revert), the base's tiers judge the step against the batch base (scripts/w5_gate.py) and the
+# frozen list leaves out the batch's admitted paths. The batch file is checked first: batch P (W5-S2) exits 2.
 # The map base MB (docs/S19_STATE.md) is passed as --ref-base: the tests tier's map (D13).
 # Stop a run with: kill -INT "$(cat <tag>.pid)"
 set -u
@@ -16,6 +19,12 @@ CB=d90b498f8759b739361016cca7858f71bc647ccc
 # S19: CB is the debt baseline; MB (the map base) moves to milestone commits and is read from the state file.
 MB=$(sed -n 's/^- `MB` = `\([0-9a-f]\{40\}\)`.*/\1/p' "$(git rev-parse --show-toplevel)/docs/S19_STATE.md" | head -n 1)
 [ -n "$MB" ] || { echo "GATE no MB in docs/S19_STATE.md"; exit 2; }
+if [ -n "${S19_W5_BATCH:-}" ]; then
+    # absolute before use: every tier runs in the tree under test, not in this shell's directory
+    S19_W5_BATCH=$(realpath -e -- "$S19_W5_BATCH") || { echo "GATE S19_W5_BATCH: no such file"; exit 2; }
+    export S19_W5_BATCH
+    python3 "$(git rev-parse --show-toplevel)/scripts/w5_gate.py" batch "$S19_W5_BATCH" || exit 2
+fi
 GC=$(git rev-parse --path-format=absolute --git-common-dir)
 CH="$(dirname "$GC")/.venv-codehealth/bin/codehealth"
 OUT="$GC/codehealth/runs/s19-gates"

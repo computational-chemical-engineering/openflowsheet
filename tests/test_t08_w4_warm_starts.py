@@ -596,10 +596,10 @@ def test_a_warm_opening_that_ends_before_an_attempt_falls_through(
     solve only."""
     original = region_module._solve_region
 
-    def refusing(**kwargs: Any) -> RegionResult:
-        if kwargs["warm_start"]:
-            return refusal(kwargs["state"])
-        result: RegionResult = original(**kwargs)
+    def refusing(call: region_module._RegionCall) -> RegionResult:
+        if call.warm_start:
+            return refusal(call.state)
+        result: RegionResult = original(call)
         return result
 
     monkeypatch.setattr(region_module, "_solve_region", refusing)
@@ -641,14 +641,14 @@ def test_a_warm_opening_refused_by_the_opening_check_falls_through(
     the warm region solve. The run records `warm_start_rejected(opening:<check>)`, records no
     `initializer_accepted`, and the traversal follows to the state a run without a candidate
     reaches, bit for bit."""
-    real_check, real_solve = region_module.check_opening, region_module._solve_region
+    real_check, real_solve = region_problem.check_opening, region_module._solve_region
     warm: list[bool] = []
     refusals: list[OpeningRefusal | None] = []
 
-    def solving(**kwargs: Any) -> RegionResult:
-        warm.append(bool(kwargs["warm_start"]))
+    def solving(call: region_module._RegionCall) -> RegionResult:
+        warm.append(bool(call.warm_start))
         try:
-            result: RegionResult = real_solve(**kwargs)
+            result: RegionResult = real_solve(call)
         finally:
             warm.pop()
         return result
@@ -661,7 +661,6 @@ def test_a_warm_opening_refused_by_the_opening_check_falls_through(
         return refused
 
     monkeypatch.setattr(region_module, "_solve_region", solving)
-    monkeypatch.setattr(region_module, "check_opening", checking)
     monkeypatch.setattr(region_problem, "check_opening", checking)
     target = _binding(_child(0.95))
     run = _plan_run(target, T08_WARM_V1, _constructed(lambda values: None))

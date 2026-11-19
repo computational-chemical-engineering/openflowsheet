@@ -341,6 +341,45 @@ def test_an_ill_formed_request_runs_no_other_check() -> None:
     assert set(found.not_run) == set(STATIC_CODES) - {"NLP_SOLVER_UNAVAILABLE"}
 
 
+def test_not_run_keeps_the_order_its_checks_were_skipped_in() -> None:
+    """`not_run` is read in order (`revision.py`'s readiness records): the table's order for an
+    ill-formed request, the revision codes for an unbound revision, and the decision probe's
+    skip before the revision start's for a decision with no finite box end."""
+    ill_formed = static_readiness(
+        _fixture("invalid", "zero_scale"), _th_r1(), solver_probe=_available, routes=REVISION_ROUTES
+    )
+    assert list(ill_formed.not_run) == [
+        code for code in STATIC_CODES if code != "NLP_SOLVER_UNAVAILABLE"
+    ]
+    unbound = static_readiness(
+        _fixture("valid", "th_r1_minimal"),
+        CORPUS["SYN-001-T06-STR02"](),
+        solver_probe=_available,
+        routes=REVISION_ROUTES,
+    )
+    assert list(unbound.not_run.items()) == [
+        (code, "the revision does not bind")
+        for code in (
+            "UNKNOWN_DECISION",
+            "DECISION_UNIT_NOT_INTERNAL",
+            "DECISION_NOT_CONTINUOUS",
+            "UNKNOWN_VARIABLE",
+            "START_OUTSIDE_BOUNDS",
+        )
+    ]
+    request = _fixture("valid", "th_r1_minimal")
+    _decision(lower=None, upper=None)(request)
+    unprobed = static_readiness(request, _th_r1(), solver_probe=_available, routes=REVISION_ROUTES)
+    assert unprobed.codes == ("BOUNDS_UNDECLARED",)
+    assert list(unprobed.not_run.items()) == [
+        (
+            "DECISION_NOT_CONTINUOUS",
+            "no finite box end to probe for SPEC-H-Q (BOUNDS_UNDECLARED)",
+        ),
+        ("START_OUTSIDE_BOUNDS", "start 0 needs every decision's parameter"),
+    ]
+
+
 # -- validate(task="optimization") ---------------------------------------------------------------
 
 
