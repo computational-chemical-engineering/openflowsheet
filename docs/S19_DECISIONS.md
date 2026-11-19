@@ -3851,3 +3851,16 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   failure. Engineer told: no re-enqueue of n6-1; enqueue n6-2 with `--base <plan commit>`. gate_report: `ALERT
   selected share 20% < 75% of step gates` (12 full-suite fallbacks, all "collection-time code"); action unchanged (the
   known cause, as earlier ALERTs).
+- **2026-11-20, WO-N6 delivered partly (opus-engineer, Opus, ~110k).** f8e10957 on wp/S19-n6 (from f3089ee0): the
+  list_models no-construction patch now covers `MODEL_BUILDERS` in model_builders, revision_binding and
+  inspection_service; three mutations of list_models (registry factory, revision_binding :706, inspection_service)
+  each fail "list_models constructed a unit" (the old patch missed two); 12 passed; F0 PASS 9/9; registry --check
+  clean (42); i19_scan no MODEL_BUILDERS row; patch_noop 0/261. n6-2 (remove `revision_binding.MODEL_BUILDERS`)
+  NOT done: probe removal fails 7 tests (5 test_s11_w27_v3, test_m06_w27_coverage
+  test_s11_the_v2_snapshot_refuses_this_build, t07): `benchmarks/m06/w27/snapshot.py` takes revision_binding as its
+  default binder (:323-324) and reads `binding.MODEL_BUILDERS` (:153, :235); scripts/x10_inventory.py:215-216 reads it
+  too. The I-19 inventory and i19_scan missed this (attribute access through a module-valued variable).
+  DECISION: keep `revision_binding.MODEL_BUILDERS` as the W27 binder protocol's attribute, not a dead re-export; park
+  the removal for the design lane (it changes a registered benchmark's binder protocol), batched with W5-S1 (c).
+  Alternative: the snapshot reads `model_builders.MODEL_BUILDERS`. Reversible by: that change in a later step.
+  The retarget goes in alone: job 517 (n6-mc, merge-check f3089ee0..f8e10957; wp/S19 changed only this log since).
