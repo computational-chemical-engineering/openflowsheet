@@ -3363,3 +3363,6 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   installed; no gate would exercise an edit). Left: `_Inventory.technosphere`, `_alpha` many_args (1.0 each).
 - WO-N3 (opus-engineer, brief `S19-W5-N3.md`): pr_lib.py 6.9 (debt 28.3, duplication; `_derivatives` 8.7,
   `evaluate_phase` 19.6), S1 rule, launched on wp/S19-w5n from c418b1e3. S1 cadence: review its chain at close.
+- 12:30: job 430 (pr2-1, step 420) PASS 19/19, region.py debt 44.1 -> 26.0. Gate report: the four standing ALERTs
+  ("selected share 50% < 75%", "1171 s > 300 s", "ratio 0.83 > 0.4", "queue wait median 39 min > 15 min"); proposal 2.
+  Review R-W4-PR-1b+2 (reviewer, Opus; brief `S19-R-W4-PR-1b-2.md`) launched.
