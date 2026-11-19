@@ -3232,3 +3232,17 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
 - Merge-check job 418 `g1o8b-mc` PASS 10/10 (full suite; debt 207.7 -> 166.2). wp/S19 changed only docs since
   18752068: wp/S19-g1o8b-mc merged into wp/S19 as 7e1cf39e. Run 9's base 366ba54e is that merge's second parent,
   so no rebase is needed. Lane O run 8b done.
+
+## 2026-11-19 ~08:20 CET: lane O run 9 delivered
+
+- wp/S19-g1o9 from 366ba54e (worktree s19-g1o9): retarget e871b756 (region's `check_opening` setattrs dropped at
+  five sites that already patched region_problem's; reads of the real function to region_problem; no assertion
+  changed; falsifier: a line appended to region_problem fails test_a02), plan e6ab9537 (split-region-4), restructure
+  4b32e4e2 (job 419; `_external_opening` verbatim to region_problem.py, 37 NLOC by scan; region.py 991 -> 954,
+  region_problem 548 -> 582, arch 0/0, debt over touched files 121.0 unchanged, patch_noop 0 of 262), no-gain
+  bb5f7320 (420; + R-W3-G1O-8 fix 1), R6 87539700 (421; `_solve_region` 55.0 -> 38.2, not brain; region.py 961 NLOC,
+  health 7.3; fix 2, note a), R7 e8d8d556 (422; 28.1, cognitive 25; region.py 975, health 7.8; taken under Q5:
+  file on plan 7.6's floor and cognitive 32 > 30). rc_check OK, RC5 counts equal, literal multiset equal (133).
+- Declared: the retarget and plan commits each fail one t08 warm-start test alone (passes from the step on; the gate
+  tests the step head); R6/R7 debt above plan 5.1's estimates (38.2 vs ~24, 28.1 vs ~17). Both to the review. S1
+  cap reached (4 steps on region.py): review R-W3-G1O-9 (brief written) when 419-422 PASS.
