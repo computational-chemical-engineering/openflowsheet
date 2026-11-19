@@ -3535,3 +3535,7 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   docs both (records 1252 -> 1251): I-20 introduces 0 broken references (W4-DOCS criterion). The two anchors the
   review names (S11-design.md:1236 `split_checks.py:443`, V02-alpha-release-spec.md:1322 `test_m02_wo8_verifier.py:339`)
   resolve but point at moved lines: trailing living-doc item behind 0.5 (card ofs-s19-w4-docs-scope A).
+- 2026-11-19 16:16, milestone self-reset (I-20 reviewed and fixed, waiting on 477/478). gate_report: "ALERT selected
+  share 50% < 75%"; "ALERT selected gates take 1035 s > 300 s"; "ALERT selected/full time ratio 0.67 > 0.4"; "ALERT
+  queue wait median 48 min > 15 min". Action: proposal 2 in effect for lanes from 222122df; reruns from load
+  timeouts avoided by the recorder rule (S19_STATE item 2).

@@ -56,30 +56,33 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 - G1 (orchestrator/, numerics/): W3 lanes N and O closed 2026-11-19 (272011be); residuals executor.py (PR-1b, 6.1 -> 9.0, gating) and `_solve_region`'s parameter object (W4).
 - G-END (below) stays the end criterion for the whole repository.
 
-## Next actions (2026-11-19 13:07 CET by the clock; self-reset)
+## Next actions (2026-11-19 16:16 CET; self-reset)
 
-**Since 11:05:** W4 residuals PR-1b (executor.py 9.0) and PR-2 (region.py 9.3) reviewed (R-W4-PR-1b+2) and merged
-(47ceb7bf, e6cefaf9; merge-check 439). Arch at the wp/S19 tip: 0 violations, 0 cycles. Batch N: WO-N1 closed; WO-N2
-(lca 9.0+, `program.Refusal` re-export removed), WO-N3 (pr_lib.py 6.9 -> 9.0, S1), WO-N3b (forms.py 9.5, derived.py
-10.0) delivered, gating. **Three Decision Desk cards VERIFIED (15:40, all A; S19_DECISIONS quotes the lines):
-ofs-s19-verify-twins, ofs-s19-legacy-models, ofs-s19-gate-proposal-2.** Write `executed` on each when its action is
-done (ArtifactData update on collection `decisions`, Decision Desk https://claude.ai/artifact/AYGJBJRbCziMn7pSELMELA;
-read the card first and pin `if_version`).
+**Since 13:07:** proposal 2 merged (222122df, card executed; first selected gate 757 s vs ~1100 s median). I-20
+designed (d0c8bcac), built (wp/S19-i20, worktree s19-i20: 4f851438, 375e6141, e9b50e66, 9b19fe2e, b035293a), all
+three interface gates PASS (459-461), reviewed R-W4-I20 (f7f4e306: merge after 3 docstring fixes, applied 10ce869d,
+gated as job 478 i20-fix); docs check 0 introduced. G2 runs 6 (wp/S19-g2b) and 7 (wp/S19-g2c) delivered. Two load
+timeouts (test_s03_ours a16, from run 7's recorders) cost reruns: batch N re-enqueued as 464-476.
 
-**Position:** wp/S19 = e6cefaf9 + docs. MB 756e1c12. Runner PID 1341562. COUNT 412 at 14:50 (`$Q status`, then `$Q
-wait --since <COUNT>` in the background). No agent of this session running. Gates queued: WO-N2 432-436, WO-N3 437,
-440-442, WO-N3b 443-449 (all wp/S19-w5n, `--batch` JSON sha256 49f4c9e3).
-Budget: the weekly reset passed (13:00); more than 2 engineer runs at a time as the queue serves (still one reviewer
-per result, CLAUDE.md "Agent budget" for the rest).
+**Position:** wp/S19 = 0d5e7471 (docs only since e7fd7065). MB 756e1c12. Runner PID 1341562. COUNT 437 at 16:16
+(`$Q wait --since 437` runs in the background; a fresh context re-arms it with the COUNT from `$Q status`). No
+agent of this session running. Queue (FIFO, 2 slots, wait median ~50 min): g2c 456-458, g2b 462 (g2b-4r) 463, batch
+N 464-476, I-20 477 (i20-mc, merge-check e7fd7065..b035293a) 478 (i20-fix). On each result: gate_report, log.
 
-1. **I-20 verify twins (card A; blocks the 0.5 start):** design d0c8bcac (`docs/briefs/S19-I20-design.md`, ADR 0076
-   Addendum I-20). Engineer on wp/S19-i20 (brief `S19-W4-I20.md`: WO-1 to WO-5). Then WO-6: reviewer (Opus: verify/
-   is solver/verifier-adjacent; Fable only if a ruling is needed), merge-check, merge, `executed` on the card, tell
-   hub the blocking set is done (0.5 start: Frank's call). Open after S19: F1, restore the S11.A73 gamma-phi vs PR
-   comparison (patch `forms._FORMS`). For Frank (not blocking): P1, the seven new public names (default as written).
-2. **Proposal 2: DONE** (merged 222122df, card `executed`). Measure its effect with gate_report once lanes branched
-   from 222122df or later gate.
-3. **Legacy models/ (card A, hold lifted):** (a) G2 lane now on the non-frozen files: `models/revision_flowsheet.py`
+1. **I-20 (card ofs-s19-verify-twins A; blocks 0.5):** on 477 PASS and 478 PASS: merge wp/S19-i20 (tip 10ce869d)
+   into wp/S19 (merge commit, `git merge -F`; docstring follow-up after the merge-check, helper rule; wp/S19 changed
+   only docs since e7fd7065), log, `executed` on the card (ArtifactData `get` decisions/ofs-s19-verify-twins, then
+   `update` with `if_version`, field `executed: {at, by, result}` as on ofs-f3-qf1), then tell hub (SendMessage
+   `hub`): the blocking set for 0.5 is done (W4, 0 cycles/0 violations, G5, G6, I-20); 0.5 start is Frank's call.
+   Open after S19 (F1): restore the S11.A73 gamma-phi vs PR comparison (`forms._FORMS`), targeting `_routing`'s
+   gamma-phi rung, `admissibility_checks`, and a test for pr_c1.py:334. For Frank (not blocking): P1 the seven new
+   public names (default as written).
+2. **G2 runs 6+7 review:** on PASS of 456-458, 462, 463: one reviewer R-W5-G2-6+7 (Opus; brief to write from
+   S19_DECISIONS entries "G2 run 6 delivered", "G2 run 7 delivered"), then merge-check per lane, merge. Then G2 run 8:
+   revision_flowsheet.py `_read` (`_instance_views`), `traverse`'s `fail` closure (to ~9.8); cascade_solve.py 7.6 ->
+   9.0 (87-line duplication, `solve_cascade`). Brief rule: an engineer's recorder must not run the reference
+   generators (s02/s06/s03 `--check`) while gates run, or runs them serially.
+3. **Legacy models/ (card A, hold lifted):** (a) G2 lanes (runs 6, 7 delivered; item 2) on the non-frozen files: `models/revision_flowsheet.py`
    6.5 (brain `_read`), `models/syn001/cascade_solve.py` 6.6, `models/syn001/column_rows.py` 6.9 (brain
    `declared_rows`; R-W3-G2-5 residue: split `slot` by spec concept, pass `builder` to `_link_rows`); rule: studies/
    lanes need the nlp suite (item 5). (b) `solve_region` takes `_RegionCall` (public interface step, `--mode
@@ -92,7 +95,7 @@ per result, CLAUDE.md "Agent budget" for the rest).
    Then WO-N4 (factory switch, `--mode interface`; ruling section 9 row), WO-N5 (close: K, judge, batch-check, one
    review of the WO-N2, N3b, N4 chains), merge batch N into wp/S19 (FR-2 B), WO-N6.
 **Tool gap closed:** cce-code-health 34a30bf (`changed` takes private defs; `adapted` key for fakes/spies; README
-"Interface steps"). CI green on 34a30bf (code_health, 2026-11-19). Re-pin to 34a30bf after jobs 433-449 drain, before items 1 and 3b interface steps.
+"Interface steps"). CI green on 34a30bf (code_health, 2026-11-19). Re-pin to 34a30bf when batch N (464-476) is gated, before item 3b (`_RegionCall`; I-20 did not need it).
 Until then the workaround: red adapt commit, then `--mode step` with base = the adapt commit.
 **Open for the design lane at batch N's close review:** W5-S1's text vs fix 2 (the tool admits a tier 1 split's new
 `.py` in the admitted file's directory; default: the tool's rule stands).
