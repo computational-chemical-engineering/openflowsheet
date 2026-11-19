@@ -996,6 +996,64 @@ def test_run_full_runs_the_suite_and_since_reaches_the_selection(
     assert not calls[-1][-1].startswith("@")
 
 
+def test_run_exclude_from_thins_a_selection_and_names_what_it_left_out(
+    repo, tmp_path: Path, monkeypatch, capsys
+) -> None:
+    """S19 (Decision Desk card ofs-s19-gate-proposal-2): a step gate leaves the listed files to the
+    merge check and says so; `--full` and a fallback run everything; the list is checked."""
+    root, base, map_dir = repo
+    _edit(root, "docs/guide.md", "guide", "changed")
+    (selected,) = ti.select(base, map_dir, cwd=root).whole_files().nodes
+    other = "tests/test_b.py"  # in the map, on disk here as a file git ignores
+    (root / other).write_text("def test_three():\n    pass\n")
+    (root / ".git" / "info" / "exclude").write_text("tests/test_b.py\n")
+    calls: list[list[str]] = []
+
+    def fake_call(command: list[str], *, stdout, **_: object) -> int:
+        calls.append(command)
+        stdout.write("1 passed in 0.1s\n")
+        stdout.flush()
+        return 0
+
+    monkeypatch.setattr(ti.subprocess, "call", fake_call)
+    listing = tmp_path / "excluded.txt"
+    common = ["--repo", str(root), "run", "--base", base, "--map", str(map_dir)]
+    common += ["--log", str(tmp_path / "run.log"), "--exclude-from", str(listing)]
+
+    listing.write_text(f"# heavy files\n{other}  # not selected here\n")
+    assert ti.main(common) == 0
+    out = capsys.readouterr().out
+    assert f"excluded {other}: not selected" in out and "selected 1, fallback no" in out
+    assert len(calls) == 1
+
+    listing.write_text(f"{selected}\n{other}\n")
+    assert ti.main(common) == 0
+    out = capsys.readouterr().out
+    assert "2 files listed, 1 of them selected and not run here" in out
+    assert f"excluded {selected}: selected, not run" in out
+    assert "selected 0, fallback no, nothing to run" in out
+    assert len(calls) == 1  # pytest was not called again
+
+    assert ti.main([*common, "--full"]) == 0  # the merge check: the list is not read
+    out = capsys.readouterr().out
+    assert "excluded" not in out and "selected all, fallback yes" in out
+    assert not calls[-1][-1].startswith("@")
+
+    (root / "tests" / "test_added.py").write_text("def test_new():\n    pass\n")
+    assert ti.main(common) == 0  # a fallback to the full suite keeps every file
+    out = capsys.readouterr().out
+    assert "not applied, the full suite runs" in out and "selected all, fallback yes" in out
+    (root / "tests" / "test_added.py").unlink()
+
+    listing.write_text("tests/test_no_such_file.py\n")
+    with pytest.raises(SystemExit, match="is not a test file"):
+        ti.main(common)
+    (root / "tests" / "test_doc_examples.py").write_text("def test_docs():\n    pass\n")
+    listing.write_text("tests/test_doc_examples.py\n")
+    with pytest.raises(SystemExit, match="stays at step cadence"):
+        ti.main(common)
+
+
 def test_run_refuses_workers_after_the_separator(repo, tmp_path: Path) -> None:
     root, base, map_dir = repo
     for extra in (["-n", "4"], ["-n4"], ["--numprocesses=4"]):
