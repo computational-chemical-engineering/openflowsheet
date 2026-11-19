@@ -1,0 +1,22 @@
+# ADR 0076 I-19, W5 batch N, WO-N4 (docs/briefs/S19-W5-ruling.md, WO-N4 row): the registry factory
+# switch, part 1. The units' factory module in the built-in tables moves to the builders' home.
+# `codehealth gate --mode interface` reads this plan from the plan commit.
+id = "w5n4-factory-switch"
+approved_by = "Frank Peters, 2026-11-14, ADR 0076 accepted (Decision Desk ofs-adr0076-accept); W5 ruling WO-N4 (cards ofs-s19-w5-fr1-providers, ofs-s19-w5-fr2-reregister, 2026-11-18)"
+reason = """ADR 0076 I-19 (no shims), part 1 of 2. scripts/registry_builtin.py: the bindable units' \
+implementation.factory module becomes openflowsheet.application.model_builders, the home of \
+MODEL_BUILDERS (model_builders.py:721), through a new script constant UNIT_BUILDERS; the seven \
+property methods keep BINDER (revision_binding.basis_provider). At this base \
+model_builders.MODEL_BUILDERS is revision_binding.MODEL_BUILDERS (the same object), and the \
+registry resolves a factory lazily by getattr (registry/__init__.py:640-647), so no binding \
+changes. The regenerated legacy.json differs at the 30 bindable units' \
+/implementation/factory/module pointers only, tables.sha256 at its legacy line; \
+tests/fixtures/registry/builtin-sha256.txt keeps its bytes until K (WO-N5). revision_binding's \
+re-export stays until WO-N6. No src module and no __all__ is touched, so the plan lists no API \
+change (STOP 1 form, every list empty)."""
+removed = []
+renamed = {}
+changed = []
+added = []
+new_files = []
+callers = []
