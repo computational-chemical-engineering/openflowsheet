@@ -3181,3 +3181,5 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
 - Gate report (6 h): the same four standing ALERTs (selected share 52%, selected 754 s, ratio 0.56, queue wait median
   26 min; batch N's W5-mode full-suite falls, proposal 2). No new ALERT.
 - Job 372 `w5n1-14` (sets.py chain, e251586d) PASS, 19/19, debt 88.4 -> 67.4. Batch N: 358-372 PASS; 373-384 pending.
+- Job 399 `g1o8b-3` (R5 replayed, c11f3d66) PASS, 19/19, debt 106.5 -> 76.0, no large_file smell: the fallback move
+  cured job 394's FAIL. Lane O run 8b: 397-399 PASS; 400, 401 pending.
