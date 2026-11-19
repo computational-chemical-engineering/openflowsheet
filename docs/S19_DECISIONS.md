@@ -3160,3 +3160,15 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   deviations declared (in the commits) for the review of the replayed chain. Run 8b (brief `S19-W3-G1O-8b.md`): the
   move as its own restructure commit from 805c69f6, then R5, K2, E4 cherry-picked. Tests patch
   `region_module._swapped_row_test`; a re-import into region keeps them valid (the call resolves via region's globals).
+
+## 2026-11-19 ~06:30 CET: lane O run 8b delivered
+
+- wp/S19-g1o8b from 805c69f6: plan 416c4215 (split-region-3), restructure 37a380db (job 397; `_swapped_row_test` ->
+  region_problem.py, re-imported by region; region.py 980 -> 953 NLOC, 27 by scan vs the plan's 24), no-gain
+  fd457e63 (398), R5 c11f3d66 (399; region.py 991 NLOC, no large_file), K2 b695efce (400), E4 8ae8528f (401). arch
+  --depth 4 measures 0 violations / 0 cycles at the base (W4 done), unchanged by the move. Review brief
+  `S19-R-W3-G1O-8.md` written; launch when 397-401 PASS. wp/S19-g1o8 (d7e2bdc1, f871af74, 3eba2c7f; job 396 E4
+  PASS there) kept for the record, not merged.
+- DECISION: R6 against the cap (991 + R6's +4 to +10; R4, R5 overran) -> the second plan-4 move (`_external_opening`,
+  34 NLOC, `check_opening` retarget) before R6, in run 9, subject to R-W3-G1O-8. Alternative: R6 first and move only
+  on a gate fail. Reversible by: the review's ruling or run 9's brief.
