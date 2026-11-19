@@ -3036,3 +3036,9 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   DECISION: contributor.py's split toward 9.0 -> deferred to after batch N's other work orders (health 7.9 meets the
   floor). Alternative: a split step now (tier 1 allows it; adds a core.json pointer at K). Reversible by: a later
   WO with the split.
+- **2026-11-19 ~02:20 CET, G1 lane O run 5 delivered (opus-engineer):** R2 4478d96f (job 374; `_solve_region`
+  200.7 -> 155.1, region.py 221.7 -> 176.1, health 5.6), S2 9551f5d1 (job 378; `_build_screen` 42.0 -> 5.0,
+  region_screen.py 47.0 -> 10.0, health 7.6 -> 8.6), C3 d3c509dd (job 381; `couple` 72.3 -> 38.9, still brain). rc_check
+  OK on R2 and C3; RC5 counts equal; patch_noop 0; no docs yaml names the modules; S2 STOP grep empty. Four
+  deviations (two extra R2 methods for RC7, `eq=False`, closure names kept for test_t03_contract.py:894-896's frame
+  name, C3 split in two) go to review R-W3-G1O-5 (brief written), launched when the three gates pass.
