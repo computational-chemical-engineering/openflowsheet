@@ -28,7 +28,7 @@ the general path does not run — the tear path, a specification region — is a
 
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field, fields, replace
 from typing import TYPE_CHECKING, Any, Literal, cast
 
@@ -1302,23 +1302,10 @@ def _region(
     """One region solve, metered; also the next free attempt index of the step. `initializer_source`
     is item 0's (T03 §8.1); `None` for a merge, whose caller continues the loop's provenance list
     instead (`merged_provenance`), and for edge 3's homotopy recovery, which names the failed item
-    0's. `item0_opening_source` is item 0's opening source without `recovery` (`solve_region`)."""
-    meter = flowsheet.provider
-    if not isinstance(meter, PropertyMeter):
-        raise TypeError(
-            "a plan run meters the region's property calls, so the flowsheet's provider must be "
-            "a PropertyMeter installed before the declaration was built (its property blocks "
-            f"capture the provider); got {type(meter).__name__}"
-        )
-    before = meter.calls
-
-    def sample() -> dict[str, int]:
-        # This step's own calls; `_absorb` adds what the plan had spent before it. No cache sits
-        # on the region path, so every requested evaluation is a provider call.
-        delta = meter.calls - before
-        return {"property_calls": delta, "requested_evaluations": delta, "cache_hits": 0}
-
-    inner = Trace(property_sampler=sample)
+    0's. `item0_opening_source` is item 0's opening source without `recovery` (`solve_region`).
+    The meter, its count before the region, the step's `sample` and the inner trace are
+    `_region_metering`'s (a `TypeError` when the provider is not a `PropertyMeter`)."""
+    meter, before, sample, inner = _region_metering(flowsheet)
     compiled = compile_problem(spec)
     # Review S4: K03 §11.2's budget holds inside a region too — what the plan has left of the
     # policy's cap. The refusal is read off the meter, because the compiled residual turns a
@@ -1380,3 +1367,29 @@ def _region(
         spent, **{name: getattr(before_step, name) + count for name, count in sample().items()}
     )
     return result, spent, dict(result.state), following
+
+
+def _region_metering(
+    flowsheet: Flowsheet,
+) -> tuple[PropertyMeter, int, Callable[[], dict[str, int]], Trace]:
+    """A region solve's metering (`_region`): the flowsheet's provider as its `PropertyMeter` (a
+    `TypeError` when it is not one), the meter's call count before the region, the step's sampler
+    `sample` (the calls since then) and the inner trace that samples it. Writes nothing.
+    """
+    meter = flowsheet.provider
+    if not isinstance(meter, PropertyMeter):
+        raise TypeError(
+            "a plan run meters the region's property calls, so the flowsheet's provider must be "
+            "a PropertyMeter installed before the declaration was built (its property blocks "
+            f"capture the provider); got {type(meter).__name__}"
+        )
+    before = meter.calls
+
+    def sample() -> dict[str, int]:
+        # This step's own calls; `_absorb` adds what the plan had spent before it. No cache sits
+        # on the region path, so every requested evaluation is a provider call.
+        delta = meter.calls - before
+        return {"property_calls": delta, "requested_evaluations": delta, "cache_hits": 0}
+
+    inner = Trace(property_sampler=sample)
+    return meter, before, sample, inner
