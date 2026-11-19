@@ -1116,61 +1116,39 @@ class RevisionFlowsheet:
         unit that runs; when it finds none, `_started_unit` picks the unit to tear and `_tear` its
         tears. `_inlet_states` gives the unit its inlets and `_outlet_states` its outlets' values.
         """
-        value: dict[str, StreamState] = {}
-        computed: set[str] = set()
-        torn: list[str] = []
-        computed_torn: dict[str, StreamState] = {}
-        evaluations: dict[str, UnitEvaluation] = {}
-        order: list[str] = []
-
-        def fail(
-            unit: str, status: PropertyStatus, code: str, diagnostic: Diagnostic | None = None
-        ) -> FlowsheetPass:
-            return FlowsheetPass(
-                status=status,
-                streams=dict(value),
-                evaluations=dict(evaluations),
-                order=tuple(order),
-                torn=tuple(torn),
-                computed_torn=dict(computed_torn),
-                failed_unit=unit,
-                code=code,
-                diagnostic=diagnostic,
-            )
-
-        pending = list(self.instances)
-        while pending:
-            unit = self._ready_unit(pending, value)
+        run = _Traversal(pending=list(self.instances))
+        while run.pending:
+            unit = self._ready_unit(run.pending, run.value)
             if unit is None:
-                unit = self._started_unit(pending, computed)
+                unit = self._started_unit(run.pending, run.computed)
                 if unit is None:
-                    return fail(pending[0].unit_id, "error", "no_computed_inlet")
-                tears = self._tear(unit, value, computed, guesses)
-                value.update(tears)
-                torn.extend(tears)
+                    return run.fail(run.pending[0].unit_id, "error", "no_computed_inlet")
+                tears = self._tear(unit, run.value, run.computed, guesses)
+                run.value.update(tears)
+                run.torn.extend(tears)
 
             connected = self.wiring[unit.unit_id].streams
-            evaluation = unit.evaluate(_inlet_states(unit, value, connected), self.context)
+            evaluation = unit.evaluate(_inlet_states(unit, run.value, connected), self.context)
             if evaluation.status != "ok":
                 lines = evaluation.message.splitlines() or [""]
-                return fail(unit.unit_id, evaluation.status, lines[0], _sidecar(lines))
+                return run.fail(unit.unit_id, evaluation.status, lines[0], _sidecar(lines))
             for stream, state in _outlet_states(unit, evaluation, connected):
-                if stream in torn:
-                    computed_torn[stream] = state
+                if stream in run.torn:
+                    run.computed_torn[stream] = state
                 else:
-                    value[stream] = state
-                computed.add(stream)
-            evaluations[unit.unit_id] = evaluation
-            order.append(unit.unit_id)
-            pending = [u for u in pending if u is not unit]
+                    run.value[stream] = state
+                run.computed.add(stream)
+            run.evaluations[unit.unit_id] = evaluation
+            run.order.append(unit.unit_id)
+            run.pending = [u for u in run.pending if u is not unit]
 
         return FlowsheetPass(
             status="ok",
-            streams=dict(value),
-            evaluations=dict(evaluations),
-            order=tuple(order),
-            torn=tuple(torn),
-            computed_torn=dict(computed_torn),
+            streams=dict(run.value),
+            evaluations=dict(run.evaluations),
+            order=tuple(run.order),
+            torn=tuple(run.torn),
+            computed_torn=dict(run.computed_torn),
         )
 
     def _ready_unit(
@@ -1213,6 +1191,38 @@ class RevisionFlowsheet:
                 )
             )
         return tears
+
+
+@dataclass
+class _Traversal:
+    """The state of one `RevisionFlowsheet.traverse` pass (S19 G1 recipe `closures-to-class`):
+    no frame fields; the state is the units still `pending` (declaration order), the stream
+    values found so far (`value`), the `computed` streams, the `torn` streams in tear order and
+    the values the pass `computed_torn` for them, the units' `evaluations` and the `order` they
+    ran in. `traverse` writes every field; `fail` only reads them."""
+
+    pending: list[UnitModel]
+    value: dict[str, StreamState] = field(default_factory=dict)
+    computed: set[str] = field(default_factory=set)
+    torn: list[str] = field(default_factory=list)
+    computed_torn: dict[str, StreamState] = field(default_factory=dict)
+    evaluations: dict[str, UnitEvaluation] = field(default_factory=dict)
+    order: list[str] = field(default_factory=list)
+
+    def fail(
+        self, unit: str, status: PropertyStatus, code: str, diagnostic: Diagnostic | None = None
+    ) -> FlowsheetPass:
+        return FlowsheetPass(
+            status=status,
+            streams=dict(self.value),
+            evaluations=dict(self.evaluations),
+            order=tuple(self.order),
+            torn=tuple(self.torn),
+            computed_torn=dict(self.computed_torn),
+            failed_unit=unit,
+            code=code,
+            diagnostic=diagnostic,
+        )
 
 
 def _inlet_states(
