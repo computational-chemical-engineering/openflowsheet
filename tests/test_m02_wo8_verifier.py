@@ -39,7 +39,7 @@ from openflowsheet.orchestrator.splits import lifted_splits
 from openflowsheet.thermo import FlashRequest, StreamState
 from openflowsheet.thermo.pr_c1 import COMPONENTS, PrC1Provider
 from openflowsheet.thermo.syn001 import Syn001Provider
-from openflowsheet.verify import pr_c1
+from openflowsheet.verify import pr_c1, table_kit
 from openflowsheet.verify.certificate import FRESH_PROVIDERS, fresh_provider, verify_revision
 from openflowsheet.verify.checks import VerifierError, qualification
 from openflowsheet.verify.kind_tolerance import KIND_TOLERANCE
@@ -54,6 +54,17 @@ NOTE = qualification(PROVIDER)
 TOLERANCES = dict(KIND_TOLERANCE)
 F1 = tuple(FLASH["F1"]["n_mol_s"])
 F4 = tuple(FLASH["F4"]["n_mol_s"])
+
+
+def _judging(state: Mapping[str, float]) -> table_kit.Judging:
+    return table_kit.Judging(
+        state=state,
+        components=COMPONENTS,
+        provider=PROVIDER,
+        context=CONTEXT,
+        tolerances=TOLERANCES,
+        note=NOTE,
+    )
 
 
 def _raised(n: tuple[float, ...], delta: float) -> tuple[float, ...]:
