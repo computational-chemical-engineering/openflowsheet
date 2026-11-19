@@ -252,32 +252,8 @@ def parse_table(document: Mapping[str, Any]) -> UnitScoreTable | DirectFactorTab
     categories = _categories(document.get("categories"), errors)
     rights = _rights(document.get("rights"), errors)
     if fmt == UNIT_SCORE_FORMAT:
-        activities = []
-        for i, a in enumerate(document.get("activities") or []):
-            spu = a.get("si_per_unit") if isinstance(a, Mapping) else None
-            if (
-                not isinstance(a, Mapping)
-                or not isinstance(a.get("activity_id"), str)
-                or not _strings(a.get("key"))
-                or isinstance(spu, bool)
-                or not isinstance(spu, int | float)
-                or not spu > 0
-            ):
-                errors.append(f"activities[{i}] needs activity_id, key and si_per_unit > 0")
-                continue
-            activities.append(
-                Activity(
-                    a["activity_id"],
-                    tuple(a["key"]),
-                    str(a.get("name", "")),
-                    str(a.get("location", "")),
-                    str(a.get("unit", "")),
-                    float(spu),
-                )
-            )
-        if not activities:
-            errors.append("activities must be a non-empty list")
-        _unique("activity", [a.activity_id for a in activities], errors)
+        activities, activity_errors = _activities(document.get("activities") or [])
+        errors += activity_errors
         if not isinstance(document.get("background"), list):
             errors.append("background must be a list")
         if not isinstance(document.get("producer"), Mapping):
@@ -285,26 +261,8 @@ def parse_table(document: Mapping[str, Any]) -> UnitScoreTable | DirectFactorTab
         values = _matrix("scores", document.get("scores"), len(categories), len(activities), errors)
         columns = tuple(a.activity_id for a in activities)
     else:
-        flows = []
-        for i, f in enumerate(document.get("flows") or []):
-            if (
-                not isinstance(f, Mapping)
-                or not isinstance(f.get("flow_id"), str)
-                or not _strings(f.get("compartment"))
-            ):
-                errors.append(f"flows[{i}] needs flow_id and compartment")
-                continue
-            flows.append(
-                Flow(
-                    f["flow_id"],
-                    str(f.get("name", "")),
-                    tuple(f["compartment"]),
-                    str(f.get("unit", "")),
-                )
-            )
-        if not flows:
-            errors.append("flows must be a non-empty list")
-        _unique("flow", [f.flow_id for f in flows], errors)
+        flows, flow_errors = _flows(document.get("flows") or [])
+        errors += flow_errors
         if not isinstance(document.get("source"), Mapping):
             errors.append("source must be an object")
         values = _matrix("factors", document.get("factors"), len(categories), len(flows), errors)
@@ -323,6 +281,67 @@ def parse_table(document: Mapping[str, Any]) -> UnitScoreTable | DirectFactorTab
     if fmt == UNIT_SCORE_FORMAT:
         return UnitScoreTable(*common, activities=tuple(activities))
     return DirectFactorTable(*common, flows=tuple(flows), source=document.get("source"))
+
+
+def _activities(entries: Any) -> tuple[list[Activity], list[str]]:
+    """A unit-score table's activities, in entry order, and the errors found: one per entry
+    without activity_id, key and si_per_unit > 0 (the entry is skipped), then an empty list,
+    then repeated ids."""
+    errors: list[str] = []
+    activities = []
+    for i, a in enumerate(entries):
+        spu = a.get("si_per_unit") if isinstance(a, Mapping) else None
+        if (
+            not isinstance(a, Mapping)
+            or not isinstance(a.get("activity_id"), str)
+            or not _strings(a.get("key"))
+            or isinstance(spu, bool)
+            or not isinstance(spu, int | float)
+            or not spu > 0
+        ):
+            errors.append(f"activities[{i}] needs activity_id, key and si_per_unit > 0")
+            continue
+        activities.append(
+            Activity(
+                a["activity_id"],
+                tuple(a["key"]),
+                str(a.get("name", "")),
+                str(a.get("location", "")),
+                str(a.get("unit", "")),
+                float(spu),
+            )
+        )
+    if not activities:
+        errors.append("activities must be a non-empty list")
+    _unique("activity", [a.activity_id for a in activities], errors)
+    return activities, errors
+
+
+def _flows(entries: Any) -> tuple[list[Flow], list[str]]:
+    """A direct-factor table's flows, in entry order, and the errors found: one per entry without
+    flow_id and compartment (the entry is skipped), then an empty list, then repeated ids."""
+    errors: list[str] = []
+    flows = []
+    for i, f in enumerate(entries):
+        if (
+            not isinstance(f, Mapping)
+            or not isinstance(f.get("flow_id"), str)
+            or not _strings(f.get("compartment"))
+        ):
+            errors.append(f"flows[{i}] needs flow_id and compartment")
+            continue
+        flows.append(
+            Flow(
+                f["flow_id"],
+                str(f.get("name", "")),
+                tuple(f["compartment"]),
+                str(f.get("unit", "")),
+            )
+        )
+    if not flows:
+        errors.append("flows must be a non-empty list")
+    _unique("flow", [f.flow_id for f in flows], errors)
+    return flows, errors
 
 
 _SHIPPED: dict[str, UnitScoreTable | DirectFactorTable] = {}
