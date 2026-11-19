@@ -282,7 +282,7 @@ def _observe_region(
     real_problem = region_problem._region_problem
     real_screen = region_screen._screen
     real_admissible = region_phase._admissible
-    real_check = region_module.check_opening
+    real_check = region_problem.check_opening
     real_decide = region_module.decide
     real_blocked = region_problem._LiftedOps.blocked
     real_compiled = {
@@ -438,7 +438,6 @@ def _observe_region(
         patch.setattr(region_screen, "_admissible", admissible)
         patch.setattr(region_phase, "_admissible", admissible)
         patch.setattr(region_problem, "_admissible", admissible)
-        patch.setattr(region_module, "check_opening", opening_check)
         patch.setattr(region_problem, "check_opening", opening_check)
         patch.setattr(region_module, "decide", decide)
         patch.setattr(region_problem._LiftedOps, "blocked", blocked)

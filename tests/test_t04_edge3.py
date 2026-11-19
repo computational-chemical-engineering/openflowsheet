@@ -27,7 +27,6 @@ import yaml
 from jsonschema import Draft202012Validator
 
 import openflowsheet.orchestrator.executor as executor_module
-import openflowsheet.orchestrator.region as region_module
 import openflowsheet.orchestrator.region_attempts as region_attempts
 import openflowsheet.orchestrator.region_problem as region_problem
 from openflowsheet.application.binding import Binding, bind_revision
@@ -417,11 +416,6 @@ def test_a09_a_constructed_incompatible_opening_is_not_a_trigger(
 ) -> None:
     """T03 A16's constructed refusal, through the executor: PHS-01's restart is refused at the
     opening checks, the step ends `CHECKPOINT_INCOMPATIBLE` (a defect), and no recovery runs."""
-    monkeypatch.setattr(
-        region_module,
-        "check_opening",
-        lambda state, requirement: OpeningRefusal("coverage", "S3.T"),
-    )
     monkeypatch.setattr(
         region_problem,
         "check_opening",

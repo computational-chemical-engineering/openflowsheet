@@ -641,7 +641,7 @@ def test_a_warm_opening_refused_by_the_opening_check_falls_through(
     the warm region solve. The run records `warm_start_rejected(opening:<check>)`, records no
     `initializer_accepted`, and the traversal follows to the state a run without a candidate
     reaches, bit for bit."""
-    real_check, real_solve = region_module.check_opening, region_module._solve_region
+    real_check, real_solve = region_problem.check_opening, region_module._solve_region
     warm: list[bool] = []
     refusals: list[OpeningRefusal | None] = []
 
@@ -661,7 +661,6 @@ def test_a_warm_opening_refused_by_the_opening_check_falls_through(
         return refused
 
     monkeypatch.setattr(region_module, "_solve_region", solving)
-    monkeypatch.setattr(region_module, "check_opening", checking)
     monkeypatch.setattr(region_problem, "check_opening", checking)
     target = _binding(_child(0.95))
     run = _plan_run(target, T08_WARM_V1, _constructed(lambda values: None))
