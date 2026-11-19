@@ -3421,3 +3421,4 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   M9 keys 35; patch_noop 0 of 266. Gate report (24 h, --heavy): selected share 62%, selected 688 s, ratio 0.53, wait
   median 23 min; heaviest selected files t07_v17_reference 40720 s, s09_references 19748 s, t07_identity 9717 s.
   Proposal 2's exact file list asked of session OpenFlowsheet-check (its author).
+- 16:00: OpenFlowsheet-check builds proposal 2 on wp/S19-tools5 (spec in S19_STATE item 2); no parallel build here; we merge and write executed.

@@ -79,11 +79,11 @@ per result, CLAUDE.md "Agent budget" for the rest).
    2026-11-15 line ~405), reconciled with `Unit`'s fields; public names change, no shims; work orders + gates
    (interface mode, `--plan`). Then an engineer, a reviewer, merge-check, merge; then `executed` on the card; then
    tell hub the blocking set is done (0.5 may start: Frank's call).
-2. **Proposal 2 (card A):** waiting on session OpenFlowsheet-check's reply (asked 15:55) with the excluded file list,
-   where the cut goes (test_impact.py selection vs gate.sh deselect) and the three conditions' wording (excluded
-   files stated per gate; merge_tiers.sh named for interface lanes; test_doc_examples.py kept at step cadence for
-   --mode interface). Then a tools lane (`wp/S19-tools5`, sonnet-implementer or opus-engineer) with a falsifier
-   (a step gate's log names the excluded files; a merge-check still runs them); reviewer read; merge; `executed`.
+2. **Proposal 2 (card A):** session OpenFlowsheet-check builds it (16:00) on `wp/S19-tools5` from the wp/S19 tip; do
+   NOT build it in parallel. Spec: `.codehealth/step-gate-excluded-tests.txt` (11 heavy end-to-end/reference files;
+   never test_doc_examples.py); `scripts/test_impact.py run --exclude-from FILE`, ignored under `--full` (merge-check,
+   CI unchanged); the tests tier in config.toml passes it; tier log prints the list and per-file dropped counts. It
+   sends the commits and tests; we review (reviewer read), gate, merge, then write `executed` on the card.
 3. **Legacy models/ (card A, hold lifted):** (a) G2 lane now on the non-frozen files: `models/revision_flowsheet.py`
    6.5 (brain `_read`), `models/syn001/cascade_solve.py` 6.6, `models/syn001/column_rows.py` 6.9 (brain
    `declared_rows`; R-W3-G2-5 residue: split `slot` by spec concept, pass `builder` to `_link_rows`); rule: studies/
