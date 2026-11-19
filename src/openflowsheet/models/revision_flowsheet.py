@@ -464,9 +464,10 @@ def _read(
     model to what its instance targets read, for the `specification_unsupported` hint. Raises
     `RevisionError` for what the rules cannot read.
 
-    Phases, in order: `_read_instances` (R1), the material connections (R1, R3), `_port_phases`
-    (R4), then the fixed specifications (R5), whose targets `_connection_columns` and
-    `_instance_columns` resolve to columns.
+    Phases, in order: `_read_instances` (R1), the material connections (R1, R3), each checked
+    by `_stream_capability` and at each end by `_endpoint`, `_port_phases` (R4), then the fixed
+    specifications (R5), whose targets `_connection_columns` and `_instance_columns` resolve to
+    columns.
     """
     declared_components = tuple((document.get("component_set") or {}).get("components") or ())
     basis = component_basis(document)
@@ -480,24 +481,10 @@ def _read(
     streams: list[str] = []
     edges: list[tuple[str, str, str]] = []
     for entry in document.get("connections") or ():
-        stream = _require_id(entry.get("id"))
-        if stream in streams:
-            raise RevisionError("conflict", f"id_duplicate({stream})")
-        if entry.get("kind") != "material":
-            raise RevisionError("unsupported", f"connection_kind_unsupported({stream})")
-        capability = entry.get("phase_capability")
-        if capability is None:
-            raise RevisionError("incomplete", f"phase_capability_missing({stream})")
-        if capability not in _DECLARED:
-            raise RevisionError("unsupported", f"phase_capability_unsupported({stream})")
+        stream, capability = _stream_capability(entry, streams)
         ends: list[str] = []
         for end, direction in (("from", "outlet"), ("to", "inlet")):
-            endpoint = entry.get(end) or {}
-            owner, port = endpoint.get("instance"), endpoint.get("port")
-            if not owner or not port:
-                raise RevisionError("incomplete", f"endpoint_missing({stream}.{end})")
-            if owner not in instances:
-                raise RevisionError("incomplete", f"instance_missing({owner})")
+            owner, port = _endpoint(entry, end, stream, instances)
             record = instances[owner]
             if record["directions"].setdefault(port, direction) != direction:
                 raise RevisionError("conflict", f"port_direction_conflict({owner}.{port})")
@@ -627,6 +614,39 @@ def _read_instances(
     if not instances:
         raise RevisionError("incomplete", "instances_missing")
     return instances, parameter_conversions
+
+
+def _stream_capability(entry: Mapping[str, Any], streams: list[str]) -> tuple[str, str]:
+    """R1, R3: the stream a material connection `entry` allocates and its declared phase
+    capability. Raises the `id_duplicate` conflict for a stream already in `streams`, and
+    refuses a connection that is not `material` or whose `phase_capability` is missing or not
+    one of `_DECLARED`'s. Reads only."""
+    stream = _require_id(entry.get("id"))
+    if stream in streams:
+        raise RevisionError("conflict", f"id_duplicate({stream})")
+    if entry.get("kind") != "material":
+        raise RevisionError("unsupported", f"connection_kind_unsupported({stream})")
+    capability = entry.get("phase_capability")
+    if capability is None:
+        raise RevisionError("incomplete", f"phase_capability_missing({stream})")
+    if capability not in _DECLARED:
+        raise RevisionError("unsupported", f"phase_capability_unsupported({stream})")
+    return stream, capability
+
+
+def _endpoint(
+    entry: Mapping[str, Any], end: str, stream: str, instances: Mapping[str, Any]
+) -> tuple[str, Any]:
+    """R1: the `(instance, port)` at end `end` (`from` or `to`) of the connection `entry` that
+    allocates `stream`. Raises `endpoint_missing` for an end without an instance or a port and
+    `instance_missing` for an instance not in `instances`. Reads only."""
+    endpoint = entry.get(end) or {}
+    owner, port = endpoint.get("instance"), endpoint.get("port")
+    if not owner or not port:
+        raise RevisionError("incomplete", f"endpoint_missing({stream}.{end})")
+    if owner not in instances:
+        raise RevisionError("incomplete", f"instance_missing({owner})")
+    return owner, port
 
 
 def _port_phases(instances: Mapping[str, Mapping[str, Any]]) -> dict[str, dict[str, Phase | None]]:
