@@ -3590,3 +3590,4 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
 - 2026-11-19, job 477 (i20-mc, merge-check e7fd7065..b035293a) PASS (10/10; full suite 20519 passed, 107 skipped,
   3 xfailed, wall 1612 s). gate_report: the four ALERTs (58%; 947 s; 0.59; wait 58 min); action unchanged. I-20 merges
   on 478 (i20-fix) PASS.
+- 2026-11-19, job 480 (g2c-fix, R-W5-G2-6+7 fix 3, docstring) PASS (step 445 accepted-neutral, 18/18). gate_report: the four ALERTs (59%; 927 s; 0.57; wait 58 min); action unchanged.
