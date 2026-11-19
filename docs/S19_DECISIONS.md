@@ -3649,3 +3649,5 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   limitation). Harvest 9 rows (P), HARVEST_SIZE (99, 1138, 146); envelope tests 775 + 657 passed. Departure: G-MAP 6
   only (3-5 are in the second manifest) -> accepted. Merged as 5c48391b; worktree and branch removed; wp/S19 pushed
   (e22ac093..5c48391b), CI 44576885441 running. Card step 1 done pending `tested` after CI.
+- 2026-11-19, job 497 (w5n3-1u, pr_lib `evaluate_phase` check-ladder) PASS (step 450 accepted, 28.3 -> 18.7, 19/19).
+  gate_report: the four ALERTs (64%; 834 s; 0.51; wait 58 min); action unchanged.
