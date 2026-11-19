@@ -3063,3 +3063,11 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   DECISION: lane O run 6 -> R3, C4, X4 (X1 to X3 done in run 3; brief `S19-W3-G1O-6.md`), launched (opus-engineer)
   from d3c509dd before run 5's merge. Alternative: wait for job 385 (hours behind the W5 queue). Reversible by:
   merging wp/S19 into the run 6 lane, or rebasing it, before its merge-check.
+- **2026-11-19 ~03:20 CET, G1 lane O run 6 delivered (opus-engineer):** R3 a00639aa (job 386; `_solve_region` 155.1
+  -> 99.3, region.py 176.1 -> 120.3, health 5.6 -> 6.1, cognitive 112 -> 70), C4 0d642512 (job 387; `couple` 38.9 ->
+  9.0, not brain, cognitive 23; coupling.py health 7.5 -> 9.3), X4 8d8b6949 (job 388; `_converge` 1.9 -> 1.0, NLOC 79
+  -> 65; executor.py 5.5 -> 5.8). rc_check OK on R3 and C4, RC5 counts equal, literal multiset equal, patch_noop 0.
+  Five deviations to review R-W3-G1O-6 (brief written; launch when 386 to 388 PASS). region.py is 962 NLOC after R3
+  against plan 7.6's cap 1000.
+  DECISION: region.py NLOC vs the cap -> R4 rescans and reports; no plan-4 fallback move now. Alternative: a fallback
+  move in run 7. Reversible by: the reviewer's ruling, or run 7's brief.
