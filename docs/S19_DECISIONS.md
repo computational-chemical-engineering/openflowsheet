@@ -3326,3 +3326,14 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   hand-logged steps 403, 404 match gate JSONs 15r, 16r. DECISION: `_resolve` as `_EntryTables` -> not taken (sets.py
   9.2). Alternative: a step now. Reversible by: a later step. Contributor split needs a staticmethod prep step first
   (S19_STATE). State rewritten; self-reset at the next commit.
+
+## 2026-11-19 11:15 CET: WO-N2 launched; batch N gate file amended
+
+- DECISION: how WO-N2 may edit `assessment/program.py` (not hashed) -> added to the batch file's `retarget` list
+  (W5-S1 refuses a changed path outside admitted, generator and retarget). Gate file sha256 4f7e1232... -> 49f4c9e3...,
+  `w5_gate.py validate --head a059b9a0` valid (retarget 1); prior copy `S19-W5-batchN.json.pre-N2`; amendment in
+  `S19-W5-batchN.md`. Alternative: a second batch file for the program.py step. Reversible by: restoring the .pre-N2 copy.
+- Importers of `Refusal` through `program` at a059b9a0: the four lca files only (cost/ retargeted in WO-N1), so the
+  ruling's "eight importers" are the 4 cost + 4 lca. Health at a059b9a0: lca inventory 7.5, tables 7.7, impact 8.5,
+  brightway 8.8; cost derived 7.7, forms 7.2 (not in a work order yet).
+- WO-N2 (opus-engineer, brief `S19-W5-N2.md`) launched on `wp/S19-w5n` from a059b9a0.
