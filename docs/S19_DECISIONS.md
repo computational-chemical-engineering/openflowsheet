@@ -3352,3 +3352,6 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   passed serially. Next: on PASS, review R-W4-PR-2 (S2 cadence, can share a reviewer with PR-1b), merge-check, merge.
 - 11:50: job 427 (w5n1-fix, step 418) PASS accepted-neutral: R-W5-N1 fix 1 done; WO-N1 closed. Gate report: the
   same four standing ALERTs.
+- 12:00: job 426 (pr1b-2, step 419) PASS accepted-neutral; PR-1b chain all PASS (425, 426).
+  DECISION: review PR-1b and PR-2 with one reviewer once job 430 reports -> one context on orchestrator/ for both
+  W4 residuals. Alternative: PR-1b's review now, PR-2's later. Reversible by: launching R-W4-PR-1b alone.
