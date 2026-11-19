@@ -22,7 +22,7 @@ Constructing the units is not here: the builder table is the application layer's
 from __future__ import annotations
 
 import re
-from collections.abc import Mapping
+from collections.abc import Iterator, Mapping
 from dataclasses import dataclass, field
 from types import MappingProxyType
 from typing import Any, Literal, NamedTuple, overload
@@ -1104,7 +1104,7 @@ class RevisionFlowsheet:
         deadlock depends only on the graph, so a second pass from the first's `computed_torn`
         tears the same streams. Nothing is solved and nothing iterated. `_ready_unit` picks the
         unit that runs; when it finds none, `_started_unit` picks the unit to tear and `_tear` its
-        tears.
+        tears. `_inlet_states` gives the unit its inlets and `_outlet_states` its outlets' values.
         """
         value: dict[str, StreamState] = {}
         computed: set[str] = set()
@@ -1140,23 +1140,16 @@ class RevisionFlowsheet:
                 torn.extend(tears)
 
             connected = self.wiring[unit.unit_id].streams
-            evaluation = unit.evaluate(
-                {
-                    port: tuple(value[s] for s in connected.get(port, ()))
-                    for port in _material(unit, "inlet")
-                },
-                self.context,
-            )
+            evaluation = unit.evaluate(_inlet_states(unit, value, connected), self.context)
             if evaluation.status != "ok":
                 lines = evaluation.message.splitlines() or [""]
                 return fail(unit.unit_id, evaluation.status, lines[0], _sidecar(lines))
-            for port in _material(unit, "outlet"):
-                for stream in connected.get(port, ()):
-                    if stream in torn:
-                        computed_torn[stream] = evaluation.outlets[port]
-                    else:
-                        value[stream] = evaluation.outlets[port]
-                    computed.add(stream)
+            for stream, state in _outlet_states(unit, evaluation, connected):
+                if stream in torn:
+                    computed_torn[stream] = state
+                else:
+                    value[stream] = state
+                computed.add(stream)
             evaluations[unit.unit_id] = evaluation
             order.append(unit.unit_id)
             pending = [u for u in pending if u is not unit]
@@ -1210,6 +1203,26 @@ class RevisionFlowsheet:
                 )
             )
         return tears
+
+
+def _inlet_states(
+    unit: UnitModel, value: Mapping[str, StreamState], connected: Mapping[str, tuple[str, ...]]
+) -> dict[str, tuple[StreamState, ...]]:
+    """`unit`'s inlets as `evaluate` takes them: per material inlet port in `ports()` order, the
+    values in `value` of its `connected` streams, in R1 order. Reads only."""
+    return {
+        port: tuple(value[s] for s in connected.get(port, ())) for port in _material(unit, "inlet")
+    }
+
+
+def _outlet_states(
+    unit: UnitModel, evaluation: UnitEvaluation, connected: Mapping[str, tuple[str, ...]]
+) -> Iterator[tuple[str, StreamState]]:
+    """Lazily, each stream `connected` to a material outlet port of `unit` (ports in `ports()`
+    order, then R1 order) with the value `evaluation` gives that port. Reads only."""
+    for port in _material(unit, "outlet"):
+        for stream in connected.get(port, ()):
+            yield stream, evaluation.outlets[port]
 
 
 def _material(unit: UnitModel, direction: PortDirection) -> tuple[str, ...]:
