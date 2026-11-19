@@ -6,7 +6,9 @@ Newton problem) with the label rows `T_out − T_label` of the swapped energy ro
 `_rederive`) with its dormancy-outlet resets (`_reset_outlet`, T05b §7.8 (ii));
 `_LiftedOps`, the lifted EO path's side of the phase contract for one attempt (T03 §4.3, §4.6,
 §4.7); and the swapped-row test at a converged attempt's final state (`_swapped_row_test`, T05b
-§7.8 (iv) 2), moved from `orchestrator.region` (S19 RS fallback 1), which imports it back.
+§7.8 (iv) 2), moved from `orchestrator.region` (S19 RS fallback 1); and T03 §5.1's checks
+on attempt 0's opening from an external start (`_external_opening`), moved from
+`orchestrator.region` (S19 RS fallback 2). `orchestrator.region` imports both back.
 
 Split from `orchestrator.region` (S19 B1), which re-exports what its callers and tests read here.
 Of the region solver this module imports only `region_phase`.

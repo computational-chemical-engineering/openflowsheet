@@ -61,16 +61,17 @@ has a `VapourOnlyForm`: in a TWO_PHASE attempt their liquid flows are pinned at 
 zero rows dropped. Every other provider runs the code above, unchanged.
 
 **Where the code is** (S19 B1, RS). This module holds SYN-001's lifted splits and the attempt
-loop (`solve_region`, `_solve_region`, with `_external_opening`). The region's records
+loop (`solve_region`, `_solve_region`). The region's records
 (`RegionResult`, `RegionAttempt`, `AttemptSystem`, `RecoveryStart`) are in
 `orchestrator.region_result`; the trial screen (`_attempt_screen`) in `orchestrator.region_screen`;
 the PTC and homotopy attempts (`region_ptc_problem`, `_ptc_attempt`, `_homotopy`) in
 `orchestrator.region_attempts`; the phase-policy kernel (the kernel, the PH closure, the
 admissibility screens and their refusals) in `orchestrator.region_phase`; the Newton problem over
 lifted splits (labels, the opening fixed point, dormancy outlets, `_LiftedOps`, the swapped-row
-test `_swapped_row_test`) in `orchestrator.region_problem`. Callers and tests import those names
-from their modules, except `_swapped_row_test`: the loop calls it, and tests patch it, through
-this module, which imports it back.
+test `_swapped_row_test`, an external start's opening checks `_external_opening`) in
+`orchestrator.region_problem`. Callers and tests import those names from their modules, except
+the two the loop calls through this module, which imports them back: `_swapped_row_test`, which
+tests patch here, and `_external_opening`.
 """
 
 from __future__ import annotations
@@ -1161,7 +1162,8 @@ class _RegionSolve:
         """Records the attempt in the ledger: `checkpoint` becomes its checkpoint when the core
         accepted a step or converged (K03 §9; a candidate root only when `decision` converged, with
         the homotopy's λ level when `ran` has one), and its provenance item is appended to
-        `provenance` (attempt 0 names the recovery's initializer source, else the call's).
+        `provenance` (attempt 0 names the recovery's initializer source, or without a recovery
+        the call's; later attempts none).
         """
         # K03 §9: a checkpoint for an attempt that accepted a step or converged. Only an attempt
         # the region *kept* is a candidate root; one converged on an inadmissible branch is not.
