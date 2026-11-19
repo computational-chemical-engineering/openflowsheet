@@ -293,27 +293,29 @@ def solve_region(
     """
     try:
         return _solve_region(
-            compiled=compiled,
-            spec=spec,
-            region=region,
-            state=state,
-            splits=splits,
-            provider=provider,
-            policy=policy,
-            trace=trace,
-            initializer_source=initializer_source,
-            recovery=recovery,
-            compile_level=compile_level,
-            mass_mapping=mass_mapping,
-            closure_types=closure_types,
-            band_routes=band_routes,
-            zero_flow_forms=zero_flow_forms,
-            dormancy_forms=dormancy_forms,
-            split_temperatures=split_temperatures,
-            item0_opening_source=item0_opening_source,
-            warm_start=warm_start,
-            vapour_only_forms=vapour_only_forms,
-            split_owners=split_owners,
+            _RegionCall(
+                compiled=compiled,
+                spec=spec,
+                region=region,
+                state=state,
+                splits=splits,
+                provider=provider,
+                policy=policy,
+                trace=trace,
+                initializer_source=initializer_source,
+                recovery=recovery,
+                compile_level=compile_level,
+                mass_mapping=mass_mapping,
+                closure_types=closure_types,
+                band_routes=band_routes,
+                zero_flow_forms=zero_flow_forms,
+                dormancy_forms=dormancy_forms,
+                split_temperatures=split_temperatures,
+                item0_opening_source=item0_opening_source,
+                warm_start=warm_start,
+                vapour_only_forms=vapour_only_forms,
+                split_owners=split_owners,
+            )
         )
     except _KernelRefusedError as refused:
         return RegionResult(
@@ -324,80 +326,59 @@ def solve_region(
         )
 
 
-def _solve_region(
-    *,
-    compiled: CompiledProblem,
-    spec: ProblemSpec,
-    region: Region,
-    state: Mapping[str, float],
-    splits: Sequence[LiftedSplit],
-    provider: PropertyProvider,
-    policy: SolvePolicy,
-    trace: Trace | None,
-    initializer_source: str | None,
-    recovery: RecoveryStart | None = None,
-    compile_level: Callable[[ProblemSpec], CompiledProblem] | None = None,
-    mass_mapping: MassMapping | None = None,
-    closure_types: Mapping[str, ClosureType] | None = None,
-    band_routes: Sequence[str] = (),
-    zero_flow_forms: Mapping[str, ZeroFlowForm] | None = None,
-    dormancy_forms: Sequence[DormancyForm] = (),
-    split_temperatures: Mapping[str, tuple[str, ...]] | None = None,
-    item0_opening_source: Literal["initializer", "eo_recovery_start"] = "initializer",
-    warm_start: bool = False,
-    vapour_only_forms: Mapping[str, VapourOnlyForm] | None = None,
-    split_owners: Mapping[str, str] | None = None,
-) -> RegionResult:
-    if recovery is not None and compile_level is None:
+def _solve_region(call: _RegionCall) -> RegionResult:
+    if call.recovery is not None and call.compile_level is None:
         raise ValueError("a recovery solve compiles its λ-levels, and was given no compiler")
-    run = trace if trace is not None else Trace()
-    identity = (compiled.metadata.model_version, compiled.metadata.constants_sha256)
+    run = call.trace if call.trace is not None else Trace()
+    identity = (call.compiled.metadata.model_version, call.compiled.metadata.constants_sha256)
 
     # T04 §7.1–§7.2: the PTC core's mass mapping, refused before any call when it is invalid.
-    resolved = _resolved_mass(policy, recovery, mass_mapping, spec, region)
+    resolved = _resolved_mass(call.policy, call.recovery, call.mass_mapping, call.spec, call.region)
     if isinstance(resolved, MappingRefusal):
         return RegionResult(
             outcome="PTC_MAPPING_INVALID",
-            state={name: float(state[name]) for name in spec.variable_ids},
+            state={name: float(call.state[name]) for name in call.spec.variable_ids},
             attempts=(),
             message=resolved.message,
         )
     region_mass: RegionMass | None = resolved
 
     context = _new_context(identity)
-    scaling = Scaling.from_spec(spec)
+    scaling = Scaling.from_spec(call.spec)
     # S11 §10.2 (R-822): a split is active iff its owner is a unit of the region.
-    owners: Mapping[str, str] = split_owners or {}
-    inside = set(region.units)
-    active_splits = [split for split in splits if owners.get(split.unit, split.unit) in inside]
-    structure = compiled.structural_pattern() if hasattr(compiled, "structural_pattern") else None
+    owners: Mapping[str, str] = call.split_owners or {}
+    inside = set(call.region.units)
+    active_splits = [split for split in call.splits if owners.get(split.unit, split.unit) in inside]
+    structure = (
+        call.compiled.structural_pattern() if hasattr(call.compiled, "structural_pattern") else None
+    )
 
     # T05b spec §6.6: v2's rules (§6.2–§6.5) are gated on the literal; under v1 no split is PH-type.
-    v2 = policy.phase_contract == CONTRACT_V2
+    v2 = call.policy.phase_contract == CONTRACT_V2
     ph_units = frozenset(
-        unit for unit, kind in (closure_types or {}).items() if kind == "PH" and v2
+        unit for unit, kind in (call.closure_types or {}).items() if kind == "PH" and v2
     )
-    forms: Mapping[str, ZeroFlowForm] = zero_flow_forms or {}
-    vapour: Mapping[str, VapourOnlyForm] = vapour_only_forms or {}
-    temperatures: Mapping[str, tuple[str, ...]] = split_temperatures or {}
+    forms: Mapping[str, ZeroFlowForm] = call.zero_flow_forms or {}
+    vapour: Mapping[str, VapourOnlyForm] = call.vapour_only_forms or {}
+    temperatures: Mapping[str, tuple[str, ...]] = call.split_temperatures or {}
     _check_ph_columns(active_splits, ph_units, temperatures)
     # T05b spec §7.8, §7.10: the dormancy forms of the region's units, read only under v2.
-    units = set(region.units)
-    dormancy = tuple(form for form in dormancy_forms if form.unit in units) if v2 else ()
+    units = set(call.region.units)
+    dormancy = tuple(form for form in call.dormancy_forms if form.unit in units) if v2 else ()
 
-    current = {name: float(state[name]) for name in spec.variable_ids}
+    current = {name: float(call.state[name]) for name in call.spec.variable_ids}
     # T05b spec §7.8 (ii) as amended: the opening fixed point's pass order, and attempt 0's item
     # reference — the items of the start as supplied, before any projection.
-    order = _opening_order(active_splits, dormancy, region.units, owners) if v2 else ()
+    order = _opening_order(active_splits, dormancy, call.region.units, owners) if v2 else ()
     supplied_items = frozenset(item for item, _ in _items(dormancy, current))
     solve = _RegionSolve(
-        compiled=compiled,
-        compile_level=compile_level,
-        spec=spec,
-        region=region,
-        splits=splits,
-        provider=provider,
-        policy=policy,
+        compiled=call.compiled,
+        compile_level=call.compile_level,
+        spec=call.spec,
+        region=call.region,
+        splits=call.splits,
+        provider=call.provider,
+        policy=call.policy,
         run=run,
         identity=identity,
         scaling=scaling,
@@ -411,22 +392,52 @@ def _solve_region(
         temperatures=temperatures,
         dormancy=dormancy,
         order=order,
-        recovery=recovery,
-        initializer_source=initializer_source,
-        warm_start=warm_start,
+        recovery=call.recovery,
+        initializer_source=call.initializer_source,
+        warm_start=call.warm_start,
         current=current,
-        source=item0_opening_source if recovery is None else "eo_recovery_start",
+        source=call.item0_opening_source if call.recovery is None else "eo_recovery_start",
     )
-    start_refusal = solve._open_start(context, supplied_items, band_routes)
+    start_refusal = solve._open_start(context, supplied_items, call.band_routes)
     if start_refusal is not None:
         return start_refusal
 
-    for attempt_index in range(policy.max_attempts):
+    for attempt_index in range(call.policy.max_attempts):
         result = solve.attempt(attempt_index)
         if result is not None:
             return result
 
     raise AssertionError("unreachable: the restart gate ends the solve at max_attempts")
+
+
+@dataclass(frozen=True)
+class _RegionCall:
+    """One `solve_region` call's arguments, as it was given them: the frame `_solve_region` reads.
+
+    Each field is the `solve_region` keyword of the same name, documented there.
+    """
+
+    compiled: CompiledProblem
+    spec: ProblemSpec
+    region: Region
+    state: Mapping[str, float]
+    splits: Sequence[LiftedSplit]
+    provider: PropertyProvider
+    policy: SolvePolicy
+    trace: Trace | None
+    initializer_source: str | None
+    recovery: RecoveryStart | None = None
+    compile_level: Callable[[ProblemSpec], CompiledProblem] | None = None
+    mass_mapping: MassMapping | None = None
+    closure_types: Mapping[str, ClosureType] | None = None
+    band_routes: Sequence[str] = ()
+    zero_flow_forms: Mapping[str, ZeroFlowForm] | None = None
+    dormancy_forms: Sequence[DormancyForm] = ()
+    split_temperatures: Mapping[str, tuple[str, ...]] | None = None
+    item0_opening_source: Literal["initializer", "eo_recovery_start"] = "initializer"
+    warm_start: bool = False
+    vapour_only_forms: Mapping[str, VapourOnlyForm] | None = None
+    split_owners: Mapping[str, str] | None = None
 
 
 @dataclass
