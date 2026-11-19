@@ -3456,3 +3456,14 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   duplication and `solve_cascade` toward 9.0. Reviewer R-W5-G2-6 on PASS of 450-454.
 - 2026-11-19, job 450 (g2b-1) PASS (step 426 accepted, 98.0 -> 85.3). gate_report: same four ALERTs (selected share
   43%; selected 1160 s; ratio 0.82; wait median 24 min); action unchanged (proposal 2, measured on wp/S19-g2c gates).
+- 2026-11-19, I-20 design committed (architect, Fable, ~366k): d0c8bcac, ADR 0076 "Addendum I-20" + per-item row,
+  `docs/briefs/S19-I20-design.md`. `table_kit.Judging` (frozen, by keyword: state, components, provider, context,
+  tolerances, note; Unit's names), last positional parameter of every split-family check; the gamma-phi/PR difference
+  carried by the resolved `form` read at two places in `table.revision_checks` (new `_routing`, which lands R-W3-G5-3
+  fix 1). Removed `gamma_phi_units.revision_checks`; changed `split_checks` x2, `declared_port_checks`; added 7 names.
+  WO-1 test, WO-2/3/5 interface steps (public names: current tool pin suffices), WO-4 retarget outside gate. Predicted
+  health: gamma_phi_units 6.4 -> 9.3, pr_c1 7.7 -> 9.6, table 8.8 -> 9.6, split_checks 8.7 -> 9.2. No frozen importer.
+  **Finding F1 (test validity):** the two S11.A73 tests compare the gamma-phi form with itself (Wilson records select
+  basis `wilson-ig-v2`); default: retarget call sites only, restore the comparison after S19 by patching
+  `forms._FORMS` (open item). P1 for Frank (the seven new public names): default as written. Engineer launched
+  (brief `S19-W4-I20.md`, wp/S19-i20 from the tip).

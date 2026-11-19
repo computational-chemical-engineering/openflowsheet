@@ -72,13 +72,11 @@ wait --since <COUNT>` in the background). No agent of this session running. Gate
 Budget: the weekly reset passed (13:00); more than 2 engineer runs at a time as the queue serves (still one reviewer
 per result, CLAUDE.md "Agent budget" for the rest).
 
-1. **I-20 verify twins (card A, before 0.5; blocks the 0.5 start):** architect (Fable per the agent file) writes the
-   ADR 0076 addendum item I-20 and a design note: merge the split/revision-check twins of `verify/gamma_phi_units.py`
-   (6.4; `split_checks` :295 8 params, `revision_checks` :372 8 params, duplication) and `verify/pr_c1.py` under one
-   verify parameter object (provider, context, tolerances, note, state, components; R-W3-G5-3, S19_DECISIONS
-   2026-11-15 line ~405), reconciled with `Unit`'s fields; public names change, no shims; work orders + gates
-   (interface mode, `--plan`). Then an engineer, a reviewer, merge-check, merge; then `executed` on the card; then
-   tell hub the blocking set is done (0.5 may start: Frank's call).
+1. **I-20 verify twins (card A; blocks the 0.5 start):** design d0c8bcac (`docs/briefs/S19-I20-design.md`, ADR 0076
+   Addendum I-20). Engineer on wp/S19-i20 (brief `S19-W4-I20.md`: WO-1 to WO-5). Then WO-6: reviewer (Opus: verify/
+   is solver/verifier-adjacent; Fable only if a ruling is needed), merge-check, merge, `executed` on the card, tell
+   hub the blocking set is done (0.5 start: Frank's call). Open after S19: F1, restore the S11.A73 gamma-phi vs PR
+   comparison (patch `forms._FORMS`). For Frank (not blocking): P1, the seven new public names (default as written).
 2. **Proposal 2: DONE** (merged 222122df, card `executed`). Measure its effect with gate_report once lanes branched
    from 222122df or later gate.
 3. **Legacy models/ (card A, hold lifted):** (a) G2 lane now on the non-frozen files: `models/revision_flowsheet.py`
