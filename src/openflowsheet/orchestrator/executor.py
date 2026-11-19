@@ -544,8 +544,9 @@ def _converge(
     review M3's two identity checks; then §4.4's merge of a stalled Anderson loop, unsupported
     or re-solved as its region (`_region`, `_merged_step`) and followed by edge 3. Returns the
     step's result (a refusal for a revision flowsheet or a failed identity check), the counters
-    spent and the end state (None when refused). Raises ValueError when a merge is due and the
-    plan gives no region."""
+    spent and the end state (None when refused, or when the loop kept no final state). Raises
+    ValueError when a merge is due and the plan gives no region, or the loop gives no best
+    iterate."""
     if not isinstance(flowsheet, Syn001Flowsheet):
         # T05 §2.3 (register R-045): the tear path is SYN-001's; `plan_revision` emits no loop.
         return _refused(step, "tear_path_unsupported(revision_flowsheet)"), spent, None
