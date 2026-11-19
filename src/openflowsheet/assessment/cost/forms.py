@@ -854,18 +854,8 @@ def _upper(r: Range, pieces: Mapping[str, int]) -> float:
 def rows(form: Form, e: ResolvedEntry, sel: Selection) -> tuple[RangeRow, ...]:
     """The admissibility rows of `sel` (§4.3.1): size `units:N` `q − N·S_min`, `N·S_max − q`
     (per unit for a drive), `floor` `S_min − q`; a piece `z − lo`, `hi − z`; an input floor
-    `min − z`. An extrapolated side has no row."""
-    out: list[RangeRow] = []
-    size_name = form.size_name(e)
-    if size_name is not None and sel.size is not None:
-        r = e.ranges[size_name]
-        if sel.size == "floor":
-            out.append(RangeRow(f"{size_name}.floor", size_name, -1, r.min))
-        else:
-            scale = 1.0 if form.inherits_units else float(sel.n)
-            out.append(RangeRow(f"{size_name}.lo", size_name, 1, scale * r.min))
-            if size_name not in sel.extrapolated:
-                out.append(RangeRow(f"{size_name}.hi", size_name, -1, scale * r.max))
+    `min − z`. An extrapolated side has no row. The size rows are `_size_rows`'."""
+    out = _size_rows(form, e, sel)
     for r in form.active_ranges(e):
         if r.role != "input" or r.name not in sel.pieces:
             continue
@@ -881,3 +871,21 @@ def rows(form: Form, e: ResolvedEntry, sel: Selection) -> tuple[RangeRow, ...]:
         if value is None or value[0] <= high:
             out.append(RangeRow(f"{r.name}.hi", r.name, -1, high))
     return tuple(out)
+
+
+def _size_rows(form: Form, e: ResolvedEntry, sel: Selection) -> list[RangeRow]:
+    """The size range's rows of `sel` (§4.3.1): `floor` `S_min − q`; `units:N` `q − N·S_min`
+    and, unless the size is extrapolated, `N·S_max − q` (per unit for a drive). None for a form
+    without a size range or a selection without a size regime."""
+    out: list[RangeRow] = []
+    size_name = form.size_name(e)
+    if size_name is not None and sel.size is not None:
+        r = e.ranges[size_name]
+        if sel.size == "floor":
+            out.append(RangeRow(f"{size_name}.floor", size_name, -1, r.min))
+        else:
+            scale = 1.0 if form.inherits_units else float(sel.n)
+            out.append(RangeRow(f"{size_name}.lo", size_name, 1, scale * r.min))
+            if size_name not in sel.extrapolated:
+                out.append(RangeRow(f"{size_name}.hi", size_name, -1, scale * r.max))
+    return out
