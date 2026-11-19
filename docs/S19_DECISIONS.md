@@ -3471,3 +3471,9 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   1160 s; 0.81; 25 min); action unchanged.
 - 2026-11-19, job 451 (g2b-2) PASS (step 428 accepted, 85.3 -> 42.2). gate_report: the four ALERTs (46%; 1171 s;
   0.82; 29 min); action unchanged. G2 run 7 enqueued 455-458 (wp/S19-g2c, first lane with proposal 2).
+- 2026-11-19, I-20 delivered (opus-engineer, ~272k: over the 150k brief cap but complete): wp/S19-i20 from e7fd7065:
+  WO-1 4f851438, WO-2 375e6141 (job 459), WO-3 e9b50e66 (job 460), WO-4 9b19fe2e, WO-5 b035293a (job 461). G3 0
+  mismatches each step; at c 104 fewer describe records (2 x 26 wilson-ig-v2 calls past the guard, as design 5.5).
+  Health gamma_phi_units 6.4 -> 9.3, pr_c1 7.7 -> 9.6, table 8.8 -> 9.6, split_checks 8.7 -> 9.2; repo debt 3439.5 ->
+  3393.9; arch 0/0. F2-F4 did not trip. Open for review: step b's `MODEL_CHECKS.items()` imports verify.thermal
+  lazily. Reviewer brief `S19-R-W4-I20.md` (Opus), launched on PASS of 459-461.
