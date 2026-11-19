@@ -3699,3 +3699,11 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   675 s; 0.51; wait 58 min); action unchanged.
 - 2026-11-19, job 503 (w5n3b-3u) PASS (step 459 accepted, 48.0 -> 10.0, 19/19). gate_report: the four ALERTs (56%;
   675 s; 0.51; wait 58 min); action unchanged.
+- **2026-11-19, G2 run 8 delivered (opus-engineer, Opus, ~262k, above the 150k cap; work complete):** wp/S19-g2d from
+  e3e95520, jobs 508-510 PASS: revision_flowsheet.py 8.7 -> 9.5 (`_instance_views`; `traverse` closures-to-class RC3
+  6a6fce78 + RC4 c2566314 gated as one job), cascade_solve.py 7.6 -> 8.4 (`_presolve_summary`,
+  `_initialization_cause`); repo debt 3221.7 -> 3211.1. Behaviour: same 228 files / 4 shards at base and heads, record
+  multisets equal (80236 records; step 4 28), records kept in `<git-common-dir>/codehealth/runs/g2d-records/`.
+  STOP: cascade_solve's 87-line duplication twins column_compile/acceptance/solve.py: an interface step with a plan
+  (shared helper, literal moves), ~+1.0 health. Left: `_read` cognitive 27 (rule-6 writes), many_args on public
+  signatures. S1 review R-W5-G2-8 launched (reviewer, Opus; brief `S19-R-W5-G2-8.md`).
