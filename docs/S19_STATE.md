@@ -57,50 +57,29 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 - G1 (orchestrator/, numerics/): W3 lanes N and O closed 2026-11-19 (272011be); residuals executor.py (PR-1b, 6.1 -> 9.0, gating) and `_solve_region`'s parameter object (W4).
 - G-END (below) stays the end criterion for the whole repository.
 
-## Next actions (2026-11-19 17:35 CET; self-reset)
+## Next actions (2026-11-19 18:15 CET)
 
-**Since 16:16:** I-20 merged into wp/S19 (d7e9b014; card ofs-s19-verify-twins `executed`, v3): **the 0.5 blocking set
-is done on wp/S19** (arch depth 4: 0 violations, 0 cycles). Hub told; hub told Frank 0.5 start is his call. Hub asks:
-cards say "the user", not a first name. DECISION-REQUEST ofs-s19-blocking-merge-main sent to hub (A merge now, B after
-batch N, C not yet; rec A). Review R-W5-G2-6+7 (cce26d7b): G2 runs 6+7 merge after fixes; fixes 1-3 (docstrings,
-jobs 479, 480 PASS) and fix 4 (method move 27d138cc, job 481) applied. Job 465 FAIL (WO-N2's re-export removal gated
-no-gain by mistake): batch N lane re-applied on plan commit 89527267, jobs 483 (interface) and 484-494.
+**Position:** main = c4a91a75 (blocking set merged and pushed, 20:20); wp/S19 = docs after it (cc77b847).
+MB 756e1c12. Runner PID 1341562. Queue: batch N jobs 496-507 (re-enqueued after job 483's w5_scope FAIL; batch file
+amended, sha e7c318e4, prior `.json.pre-plan`). Results COUNT 474 at 18:13. Two engineers running (opus-engineer):
+G2 run 8 (wp/S19-g2d) and the evidence manifest (wp/S19-ev2). A fresh context: check `git worktree list` and the lane
+logs; agents of a dead session are gone, so re-brief from the commit logs.
 
-**Position:** wp/S19 = tip after 95320d69 (docs since d7e9b014). MB 756e1c12. Runner PID 1341562. Results COUNT 459
-(`$Q wait --since 459` armed in the background; a fresh context re-arms it with the COUNT from `$Q status`). No agent of
-this session running. Queue (FIFO, 2 slots, wait median ~58 min): 481 g2b-fix4, 482 g2-mc (merge-check of helper
-wp/S19-g2-mc = g2c 04ab9edb + wp/S19 6a588841 + g2b 27d138cc, a9a5cbf6), 483-494 batch N. On each result: gate_report,
-log (quote the four ALERT lines).
-
-1. **G2 runs 6+7 merge:** on 481 and 482 PASS: merge wp/S19-g2-mc into wp/S19 (merge commit, `git
-   merge -F`; helper rule: wp/S19 changed only docs since 6a588841, check `git diff --name-only 6a588841 HEAD`), log,
-   remove worktrees s19-g2-mc, s19-g2b, s19-g2c and their branches. Then G2 run 8 (brief to write; lane from the new
-   tip): revision_flowsheet.py `_read` (`_instance_views`, cognitive 27/NLOC 76) and `traverse`'s `fail` closure (to
-   ~9.8); cascade_solve.py 7.6 -> 9.0 (87-line duplication, `solve_cascade`). Brief rules: recorders must not run the
-   reference generators while gates run; a re-export removal is `--mode interface --plan`, never no-gain.
-2. **Evidence for the main merge** (start after item 1, before the card is signed: preparing is reversible): brief
-   from `<git-common-dir>/codehealth/briefs/S19-EV-W3W4.md` (copy it to `S19-EV-blocking.md`, C = the wp/S19 tip after
-   item 1, "since main a283925c", the third manifest; first two manifests 17967ccb, 4f9f2c3d), opus-engineer on lane
-   wp/S19-ev2. The budget tests (f6, t07_conformance budget_of_the_scenario_runs) need the queue idle: run them in
-   the engineer's run only if the queue is empty, else the orchestrator runs them alone later with the runner stopped
-   between jobs. Then push wp/S19 (work-package branch), CI on both legs, manifest `tested`. Merge into main only on a
-   VERIFIED card ofs-s19-blocking-merge-main (exact action text), then F0 on main, push main, `executed`.
-   **Card VERIFIED 2026-11-19 (signed A 16:28Z, key 032ee0a5; S19_DECISIONS)**: proceed after item 1; `executed` at the end.
-   Card filed by hub; verify with `--action` = A verbatim: "merge the wp/S19 tip (after G2 runs 6+7) into main following
-   steps 1-5 (evidence manifest tested at the merge tip; wall-time budget tests alone with the gate queue held; CI green
-   on both legs; merge commit on main with F0 PASS; push main), stopping without a push on any failure in steps 1-4".
-3. **Batch N:** on 484-487 PASS: S1 review R-W5-N3 (brief `S19-R-W5-N3.md`, shas updated to the rebased lane; add the
-   gate results). Then WO-N4 (factory switch, `--mode interface`; ruling section 9 row), WO-N5 (close: K, judge,
-   batch-check, one review of the WO-N2, N3b, N4 chains), merge batch N into wp/S19 (FR-2 B), WO-N6. Old lane tip kept
-   as wp/S19-w5n-pre-plan (delete after batch N merges).
-4. **Legacy models/ (card ofs-s19-legacy-models A):** (a) G2 (items 1); `models/syn001/column_rows.py` done (10.0);
-   (b) `solve_region` takes `_RegionCall` (public interface step, `--mode interface --plan`; callers: executor.py:1316,
-   cascade_solve.py:345, 12 tests, 3 scripts, benchmarks/t04/basin.py) after re-pinning cce-code-health to 34a30bf
-   (after batch N is gated); (c) W5 batch L after batch N merges: WO-L0 to WO-L3 (ruling section 9). `executed` on the
-   card when (a) to (c) are done.
+1. **Main merge: DONE** 2026-11-19 20:20 (c4a91a75 pushed; card executed v3; F0 PASS on main). Next main merge:
+   after batch N + G2 run 8 (or at 0.5 start, Frank), the same five steps under a fresh card.
+2. **G2 run 8:** on its report, gates PASS -> S1 reviewer (R-W5-G2-8), fixes, merge-check, merge.
+3. **Batch N:** on 496-500 PASS: S1 review R-W5-N3 (brief `S19-R-W5-N3.md`; update shas to the rebased lane and add
+   the gate results). Then WO-N4 (factory switch, `--mode interface`; ruling section 9 row), WO-N5 (close: K, judge,
+   batch-check, one review of the WO-N2, N3b, N4 chains), merge batch N into wp/S19 (FR-2 B), WO-N6. Old lane tip
+   wp/S19-w5n-pre-plan (delete after batch N merges). For the close review: W5-S1 should accept interface plan files
+   (job 483), batch L will hit it.
+4. **Legacy models/ (card ofs-s19-legacy-models A):** (a) G2 runs 6+7 merged, run 8 running; (b) `solve_region` takes
+   `_RegionCall` (`--mode interface --plan`; callers executor.py:1316, cascade_solve.py:345, 12 tests, 3 scripts,
+   benchmarks/t04/basin.py) after re-pinning cce-code-health to 34a30bf (after batch N is gated); (c) W5 batch L
+   after batch N merges (WO-L0 to WO-L3). `executed` on the card when (a) to (c) are done.
 5. Rule: lanes touching studies/ also need the nlp-marked suite at head, failures a subset of base (g19, g20).
-6. F3 (0.5, `wp/F3`, worktree `f3`): waits for Frank (card ofs-f3-mcp-descriptions-human blocked on the REVIEW.json
-   permission; hub put it to Frank).
+6. F3 (0.5, `wp/F3`, worktree `f3`): ADR 0061 accepted (R-1050); waits for Frank on card ofs-f3-mcp-descriptions-human,
+   then its merge card. DECISION-REQUEST ofs-05-widen (rec B: X07a + X01 rest now) with hub.
 **Open after S19 (F1):** restore the S11.A73 gamma-phi vs PR comparison (`forms._FORMS`), targeting `_routing`'s
 gamma-phi rung, `admissibility_checks`, a test for pr_c1.py:334. For Frank (not blocking): P1 the seven new public
 names of I-20 (default as written).

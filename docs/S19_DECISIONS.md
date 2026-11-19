@@ -3624,3 +3624,86 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   wp/S19 changed code since 6a588841 (the I-20 merge, verify/ and tests). Helper s19-g2-mc merged the tip df2850d7
   (69f0b8f9; diff to the tip: 4 models/ files, ruff clean) -> job 495 g2-mc2 (merge-check df2850d7..69f0b8f9).
   Queue otherwise idle (batch N re-enqueue held, entry above). gate_report: the four ALERTs, action unchanged.
+- **2026-11-19 18:08, G2 runs 6+7 merged into wp/S19 (e3e95520).** Job 495 (g2-mc2, merge-check df2850d7..69f0b8f9)
+  PASS 10/10, debt 238.6 -> 66.4; wp/S19 changed only S19_DECISIONS since df2850d7 (helper rule). Worktrees s19-g2-mc,
+  s19-g2b, s19-g2c and their branches removed. C (card ofs-s19-blocking-merge-main) = e3e95520: the wall-time budget
+  tests run alone at C now (queue idle, batch N held; logs `<git-common-dir>/codehealth/runs/budget-e3e95520/`).
+  Card item (a) of ofs-s19-legacy-models: G2 runs 6+7 done; run 8 next (brief `S19-W5-G2-8.md`).
+- 2026-11-19 18:12, wall-time budget tests at C = e3e95520, alone (queue idle, runner idle, batch N held): f6 PASS
+  "1 passed in 116.61s" (wall 117 s, load 4.03); t07_conformance `test_the_budget_of_the_scenario_runs` PASS "1 passed
+  in 31.79s" (wall 32 s, load 3.02), followed at shutdown by "Exception ignored ... ThreadStream ... ValueError: I/O
+  operation on closed file" (tests/t07_transport_support.py:132, unchanged since main): an observation, not a failure.
+  Logs `<git-common-dir>/codehealth/runs/budget-e3e95520/`. Card ofs-s19-blocking-merge-main step 2 met.
+- 2026-11-19 18:13, batch N re-enqueued: 496 w5n2-8u (`--rerun-of 448`), 497-507 (suffix `u`), all with batch sha
+  e7c318e4. Engineers launched (opus-engineer, Opus, two at a time): G2 run 8 (wp/S19-g2d from e3e95520, brief
+  `S19-W5-G2-8.md`) and the third evidence manifest (wp/S19-ev2 from C, brief `S19-EV-blocking.md`, budget results
+  handed in, not re-run).
+- 2026-11-19, job 496 (w5n2-8u, interface, `Refusal` re-export removal, rerun of step 448 with batch sha e7c318e4) PASS
+  (step 449 accepted, 20/20): the batch-file amendment holds. gate_report: the four ALERTs (65%; 869 s; 0.54; wait
+  57 min); action unchanged.
+- **2026-11-19, evidence engineer reported (opus-engineer, Opus, ~142k): third manifest at C = e3e95520 committed as
+  605a2d64 (wp/S19-ev2), status implemented; 11 checks pass** (G-STEP 101 accepted/neutral + 1 no-gain, 3 gate-fails
+  each re-run or explained; G-REVIEW 21 verdicts; G-MAP-6; W4-DOCS 288 living-doc broken refs, as the I-20 head; ARCH
+  329 files, 4107 imports, 0/0; PATCH-NOOP 0 of 262; F0 PASS M1-M9; MCP digest 40 passed; budget f6 116.61 s, t07c
+  31.79 s). Scan at C: debt 3221.7, health 8.53, brain 10, 12 files below 7.0, 1 huge_file (G-END not met, a
+  limitation). Harvest 9 rows (P), HARVEST_SIZE (99, 1138, 146); envelope tests 775 + 657 passed. Departure: G-MAP 6
+  only (3-5 are in the second manifest) -> accepted. Merged as 5c48391b; worktree and branch removed; wp/S19 pushed
+  (e22ac093..5c48391b), CI 44576885441 running. Card step 1 done pending `tested` after CI.
+- 2026-11-19, job 497 (w5n3-1u, pr_lib `evaluate_phase` check-ladder) PASS (step 450 accepted, 28.3 -> 18.7, 19/19).
+  gate_report: the four ALERTs (64%; 834 s; 0.51; wait 58 min); action unchanged.
+- 2026-11-19, job 508 (g2d-1, G2 run 8 step 1, revision_flowsheet.py) PASS (step 451 accepted, 15.6 -> 15.0, 19/19).
+  gate_report: the four ALERTs (64%; 834 s; 0.53; wait 57 min); action unchanged.
+- 2026-11-19, job 498 (w5n3-2u) PASS (step 452 accepted, 18.7 -> 8.7, 19/19). gate_report: the four ALERTs (62%;
+  834 s; 0.54; wait 56 min); action unchanged.
+- 2026-11-19, job 509 (g2d-2, G2 run 8 step 2) PASS (step 453 accepted, 15.0 -> 12.0, 19/19). gate_report: the four
+  ALERTs (63%; 799 s; 0.52; wait 55 min); action unchanged.
+- 2026-11-19, job 510 (g2d-3, G2 run 8 step 3) PASS (step 454 accepted, 11.0 -> 4.0, 19/19). gate_report: the four
+  ALERTs (67%; 797 s; 0.50; wait 50 min); action unchanged.
+- 2026-11-19, job 499 (w5n3-3u) PASS (step 455 accepted, 8.7 -> 0.6, 19/19). gate_report: the four ALERTs (64%;
+  797 s; 0.51; wait 55 min); action unchanged.
+- 2026-11-19, job 500 (w5n3-4u) PASS (step 456 accepted, 0.6 -> 0, 19/19): WO-N3 (496-500) fully gated. S1 review
+  R-W5-N3 launched (reviewer, Opus; brief job numbers updated to 497-500). gate_report: the four ALERTs (63%; 796 s;
+  0.52; wait 55 min); action unchanged. Agents running: G2 run 8 engineer, R-W5-N3 reviewer (two).
+- **2026-11-19, review R-W5-N3 (reviewer, Opus): WO-N3 merges with batch N, no fixes** (`docs/reviews/S19-R-W5-N3.md`).
+  Q1 move-only (every removed line reappears verbatim but one rewrapped docstring and a dead `g` unpack); call counts
+  and operands unchanged; the 528-state dump reaches all six refusals and every touched branch (sufficient). Q2
+  `_request_refusal` is the parent ladder token for token: first refusal kept. Q3 step 4 (0.6 debt, below the
+  playbook's ~2 points) accepted as an exception: `_root_derivatives` is the spec's concept (M01 4.6), removes a
+  closure and the `long` smell. Q4 W5-S1, S3 (M9 1/35), S4, S7 confirmed. Q5 for batch P: the pr_c1.py merge is easier
+  only if pr_c1.py is cut with the same names and boundaries; a shared module needs its own R4 ruling.
+- 2026-11-19, job 501 (w5n3b-1u, WO-N3b step 1) PASS (step 457 accepted, 70.6 -> 54.4, 19/19). gate_report: the four
+  ALERTs (59%; 735 s; 0.51; wait 57 min); action unchanged.
+
+## 2026-11-19 merge into main (card ofs-s19-blocking-merge-main, A, VERIFIED)
+
+- CI 44576885441 at 5c48391b green (check ubuntu-latest and ubuntu-24.04-arm, default-install, codehealth); manifest
+  at e3e95520 set `tested` with G-END-CI (c3ffe008). Since 5c48391b only docs and the manifest changed
+  (S19_DECISIONS, the R-W5-N3 review, the manifest). Step 4: merge commit on main, F0 on the merge result; on PASS push.
+- **2026-11-19 20:20 CET, wp/S19 merged into main and pushed (card ofs-s19-blocking-merge-main A, executed, v3).** Merge
+  commit c4a91a75 (main a283925c + wp/S19 6c945fe1, 86 files); F0 on c4a91a75 PASS: M1 50/50, M2 61/61, M3 61/61,
+  M4 61/61, M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 35/35; `git push origin main` a283925c..c4a91a75. wp/S19
+  fast-forwarded to main. The 0.5 blocking set is on main; 0.5 start is Frank's call (hub).
+- 2026-11-19, hub doorbell on ofs-s19-start-05 (signed A 11-17): card fetched (v3); `executed` already written
+  2026-11-18 (0.5 started with F3-WO1 on wp/F3); verifier: "FAIL card already executed". Nothing done. Hub told; the
+  open 0.5 question (widen beyond F3 now the blocking set is on main) is a scope call for Frank via hub.
+- 2026-11-19, DECISION-REQUEST ofs-05-widen sent to hub (hub asked): widen 0.5 beyond F3 now the blocking set is on
+  main. Options A (X07a, X01 rest, X06, F2 now; F8 after F2+F3), B (X07a + X01 rest now; F2, X06 after F3 merges;
+  rec), C (B + X06 architect pass only), D (F3 only). Cost per lane estimated, not measured. Hub: ADR 0061 accepted
+  11-18 (card ofs-f3-accept-adr0061, R-1050); F3 waits only on ofs-f3-mcp-descriptions-human and its merge card.
+- 2026-11-19, hub filed ofs-05-widen with one action per option (verbatim, for `--action` when signed):
+  A "open the 0.5 lanes X07a, X01 rest, X06 and F2, each as wp/<ID> with its own brief, beside S19 at one lane (ofs-s19-trailing-order)";
+  B "open the 0.5 lanes X07a and X01 rest, each as wp/<ID> with its own brief, beside S19 at one lane (ofs-s19-trailing-order)";
+  C "open the 0.5 lanes X07a and X01 rest, plus an X06 architect pass (design note only, no code), each as wp/<ID> with its own brief, beside S19 at one lane (ofs-s19-trailing-order)";
+  D "open no further 0.5 lanes; keep F3 only until it lands". Wording accepted (F8 needs its own card later).
+- 2026-11-19, job 502 (w5n3b-2u) PASS (step 458 accepted, 54.4 -> 48.0, 19/19). gate_report: the four ALERTs (58%;
+  675 s; 0.51; wait 58 min); action unchanged.
+- 2026-11-19, job 503 (w5n3b-3u) PASS (step 459 accepted, 48.0 -> 10.0, 19/19). gate_report: the four ALERTs (56%;
+  675 s; 0.51; wait 58 min); action unchanged.
+- **2026-11-19, G2 run 8 delivered (opus-engineer, Opus, ~262k, above the 150k cap; work complete):** wp/S19-g2d from
+  e3e95520, jobs 508-510 PASS: revision_flowsheet.py 8.7 -> 9.5 (`_instance_views`; `traverse` closures-to-class RC3
+  6a6fce78 + RC4 c2566314 gated as one job), cascade_solve.py 7.6 -> 8.4 (`_presolve_summary`,
+  `_initialization_cause`); repo debt 3221.7 -> 3211.1. Behaviour: same 228 files / 4 shards at base and heads, record
+  multisets equal (80236 records; step 4 28), records kept in `<git-common-dir>/codehealth/runs/g2d-records/`.
+  STOP: cascade_solve's 87-line duplication twins column_compile/acceptance/solve.py: an interface step with a plan
+  (shared helper, literal moves), ~+1.0 health. Left: `_read` cognitive 27 (rule-6 writes), many_args on public
+  signatures. S1 review R-W5-G2-8 launched (reviewer, Opus; brief `S19-R-W5-G2-8.md`).
