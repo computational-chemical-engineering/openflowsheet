@@ -516,6 +516,13 @@ def _resolve(
     set_index: float,
     drive: ResolvedEntry | None = None,
 ) -> ResolvedEntry | NoCorrelation:
+    """Entry `entry` of set `set_id` with the item's `options` applied (§9.2.3 "Options"), its
+    numbers at their effective values on its basis (`index_basis.value`, else `set_index`,
+    §10.4.1); `drive` is a compressor's resolved drive entry (§10.4.4).
+
+    `NO_CORRELATION` for an option the entry does not have, an option given where its
+    `applies_when` does not hold, a choice `_choice` does not find, or a coefficient that a
+    choice or the coefficients repeat."""
     entry_id = str(entry["entry_id"])
     index = entry.get("index_basis")
     basis = set_index if index is None else _number(index["value"])
@@ -557,25 +564,12 @@ def _resolve(
         else:
             key = str(option["default"])
             defaulted.append(name)
-        if "choices_by" in option:
-            by = chosen.get(option["depends_on"], "")
-            table = dict(option["choices_by"]).get(by, {})
-            prefix = f"options.{name}.choices_by.{by}.{key}"
-        else:
-            table = dict(option["choices"])
-            prefix = f"options.{name}.choices.{key}"
-        if key not in table:
-            return NoCorrelation(
-                entry_id,
-                f"{name} = {key!r} is not one of {sorted(table)}"
-                + (
-                    f" for {option['depends_on']} = {chosen.get(option['depends_on'])!r}"
-                    if "choices_by" in option
-                    else ""
-                ),
-            )
+        choice = _choice(entry_id, name, option, key, chosen)
+        if isinstance(choice, NoCorrelation):
+            return choice
+        prefix, body = choice
         chosen[name] = key
-        refused = take(prefix, table[key])
+        refused = take(prefix, body)
         if refused is not None:
             return refused
     refused = take("coefficients", dict(entry.get("coefficients", {})))
@@ -606,6 +600,32 @@ def _resolve(
         amended=amended,
         drive=drive,
     )
+
+
+def _choice(
+    entry_id: str, name: str, option: Mapping[str, Any], key: str, chosen: Mapping[str, str]
+) -> tuple[str, Any] | NoCorrelation:
+    """Choice `key` of option `name`: (its set path prefix, its body), from `choices`, or from
+    `choices_by` under the option's `depends_on` choice in `chosen`; `NO_CORRELATION` when
+    the table has no `key`."""
+    if "choices_by" in option:
+        by = chosen.get(option["depends_on"], "")
+        table = dict(option["choices_by"]).get(by, {})
+        prefix = f"options.{name}.choices_by.{by}.{key}"
+    else:
+        table = dict(option["choices"])
+        prefix = f"options.{name}.choices.{key}"
+    if key not in table:
+        return NoCorrelation(
+            entry_id,
+            f"{name} = {key!r} is not one of {sorted(table)}"
+            + (
+                f" for {option['depends_on']} = {chosen.get(option['depends_on'])!r}"
+                if "choices_by" in option
+                else ""
+            ),
+        )
+    return prefix, table[key]
 
 
 def resolve(
