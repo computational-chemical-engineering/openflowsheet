@@ -230,6 +230,7 @@ def test_s1_a_tier_2_file_outside_admitted_fails_naming_it(
 
 CONTRIBUTOR_PART = f"{SRC}/assessment/cost/contributor_terms.py"  # a new module in its directory
 PLANS = "plans/*.toml"  # config.toml passes the restructure plans' directory
+INTERFACE = "interface/*.toml"  # and the interface plans' (review R-W5-N-close item 4a)
 
 
 def test_s1_a_tier_1_split_and_a_restructure_plan_pass(
@@ -237,7 +238,7 @@ def test_s1_a_tier_1_split_and_a_restructure_plan_pass(
 ) -> None:
     files = [CONTRIBUTOR, CONTRIBUTOR_PART, "plans/r1-split.toml"]
     added = [CONTRIBUTOR_PART, "plans/r1-split.toml"]
-    assert gate.scope_problems(files, batch, sets["tiers"], added, PLANS) == []
+    assert gate.scope_problems(files, batch, sets["tiers"], added, [PLANS]) == []
 
 
 def test_s1_new_paths_outside_a_tier_1_directory_and_unadmitted_tiers_fail(
@@ -254,7 +255,7 @@ def test_s1_new_paths_outside_a_tier_1_directory_and_unadmitted_tiers_fail(
     files = [beside_feed, data, tier_1, tier_3, "plans/sub/r1.toml", "other/r1.toml"]
     added = [beside_feed, data, "plans/sub/r1.toml", "other/r1.toml"]
     outside = ": outside the batch's admitted, generator and retarget sets"
-    assert gate.scope_problems(files, batch, sets["tiers"], added, PLANS) == [
+    assert gate.scope_problems(files, batch, sets["tiers"], added, [PLANS]) == [
         f"{path}{outside}" for path in sorted(files)
     ]
     # without the plans glob, or for a file that exists at B, a plan-like path is refused too
@@ -264,6 +265,46 @@ def test_s1_new_paths_outside_a_tier_1_directory_and_unadmitted_tiers_fail(
     assert gate.scope_problems(["plans/r1.toml"], batch, sets["tiers"], ["plans/r1.toml"]) == [
         f"plans/r1.toml{outside}"
     ]
+
+
+def test_s1_an_added_plan_under_either_glob_passes_a_modified_one_fails(
+    batch: dict[str, Any], sets: dict[str, Any]
+) -> None:
+    """Item 4a: a plan file passes by glob only if absent at B; an existing plan file is in
+    scope only when the batch names it (batch N's retarget list names its interface plans)."""
+    plans = [PLANS, INTERFACE]
+    added = ["plans/r2-split.toml", "interface/w5l1.toml"]
+    assert gate.scope_problems(added, batch, sets["tiers"], added, plans) == []
+    modified = ["plans/r1-split.toml", "interface/w5n2.toml"]
+    outside = ": outside the batch's admitted, generator and retarget sets"
+    assert gate.scope_problems([*added, *modified], batch, sets["tiers"], added, plans) == [
+        f"interface/w5n2.toml{outside}",
+        f"plans/r1-split.toml{outside}",
+    ]
+    batch["retarget"].append("interface/w5n2.toml")
+    assert gate.scope_problems(modified, batch, sets["tiers"], added, plans) == [
+        f"plans/r1-split.toml{outside}"
+    ]
+
+
+def test_s1_the_scope_command_takes_plans_repeatedly(
+    batch: dict[str, Any], monkeypatch, capsys
+) -> None:
+    seen: dict[str, Any] = {}
+
+    def problems(files, document, tiers, added, plans):  # type: ignore[no-untyped-def]
+        seen.update(files=files, added=added, plans=list(plans))
+        return []
+
+    monkeypatch.setattr(gate, "from_environment", lambda: batch)
+    monkeypatch.setattr(gate, "changed", lambda base, added=False: ["b"] if added else ["a", "b"])
+    monkeypatch.setattr(gate, "sets_at", lambda base: {"tiers": {}})
+    monkeypatch.setattr(gate, "scope_problems", problems)
+    assert gate.main(["scope", "--plans", PLANS, "--plans", INTERFACE]) == 0
+    assert seen == {"files": ["a", "b"], "added": ["b"], "plans": [PLANS, INTERFACE]}
+    assert gate.main(["scope"]) == 0
+    assert seen["plans"] == []
+    assert capsys.readouterr().out.splitlines()[-1].startswith("w5 scope (W5-S1) PASS")
 
 
 def test_s1_syn001_fails_even_when_admitted(batch: dict[str, Any], sets: dict[str, Any]) -> None:

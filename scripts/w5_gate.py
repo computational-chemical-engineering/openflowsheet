@@ -22,11 +22,13 @@ file's `base`, not the step's `{base}`.
                                           --against-log L`, and the summary line fails no
                                           measure but M9
     w5_gate.py registry                   W5-S4: `predict --base B --max-tier T --against-tables`
-    w5_gate.py scope [--plans GLOB]       W5-S1: `git diff --name-only B..HEAD` is a subset of
+    w5_gate.py scope [--plans GLOB ...]   W5-S1: `git diff --name-only B..HEAD` is a subset of
                                           admitted + generator + retarget, with no tier 4 file;
-                                          also allowed: a .py file absent at B in the directory of
-                                          an admitted tier 1 file (a split, ruling R4) and a file
-                                          matching GLOB (a restructure step's plan)
+                                          also allowed, if absent at B: a .py file in the directory
+                                          of an admitted tier 1 file (a split, ruling R4) and a
+                                          file matching a GLOB (a restructure or interface step's
+                                          plan; --plans repeats). A plan file that exists at B is
+                                          in scope only if the batch admits it or names it
     w5_gate.py coverage                   W5-S7: `w5_identity.py coverage --base B --head HEAD`
     w5_gate.py tests --log L -- CMD ...   W5-S6: CMD (test_impact.py run, which writes L and
                                           reports with -rfE); on exit 1 the failed and errored
@@ -242,11 +244,12 @@ def changed(base: str, *, added: bool = False) -> list[str]:
     return sorted(done.stdout.split())
 
 
-def plan_file(path: str, plans: str | None) -> bool:
-    """Whether `path` matches the restructure plans' glob, a file pattern in one directory."""
-    return plans is not None and (
-        posixpath.dirname(path) == posixpath.dirname(plans)
-        and fnmatch.fnmatchcase(posixpath.basename(path), posixpath.basename(plans))
+def plan_file(path: str, plans: Iterable[str]) -> bool:
+    """Whether `path` matches one of the plans' globs, each a file pattern in one directory."""
+    return any(
+        posixpath.dirname(path) == posixpath.dirname(glob)
+        and fnmatch.fnmatchcase(posixpath.basename(path), posixpath.basename(glob))
+        for glob in plans
     )
 
 
@@ -255,21 +258,23 @@ def scope_problems(
     document: Mapping[str, Any],
     tiers: Mapping[str, Sequence[str]],
     added: Iterable[str] = (),
-    plans: str | None = None,
+    plans: Iterable[str] = (),
 ) -> list[str]:
     """W5-S1: every changed path is admitted, the generator's or a named retarget, and none is a
-    tier 4 file. Also allowed: a new module (in `added`, absent at B) in the directory of an
+    tier 4 file. Also allowed, if new (in `added`, absent at B): a module in the directory of an
     admitted tier 1 file, which a tier 1 split adds (ruling R4: tier 1 files may be split within
-    their directory), and a restructure step's plan file (`plans`, the glob config.toml passes)."""
+    their directory), and a restructure or interface step's plan file (`plans`, the globs
+    config.toml passes). A plan file that exists at B is not admitted by the glob."""
     allowed = {path for key in ("admitted", "generator", "retarget") for path in document[key]}
     excluded = set(tiers["4"])
     split_into = {posixpath.dirname(path) for path in set(document["admitted"]) & set(tiers["1"])}
     new = set(added)
+    plans = tuple(plans)
     problems = []
     for path in sorted(set(files)):
         if path in excluded:
             problems.append(f"{path}: tier 4 (excluded, ruling R1)")
-        elif path in allowed or plan_file(path, plans):
+        elif path in allowed or (path in new and plan_file(path, plans)):
             continue
         elif path in new and path.endswith(".py") and posixpath.dirname(path) in split_into:
             continue
@@ -521,7 +526,7 @@ def command_scope(arguments: argparse.Namespace) -> int:
     files = changed(document["base"])
     added = changed(document["base"], added=True)
     tiers = sets_at(document["base"])["tiers"]
-    problems = scope_problems(files, document, tiers, added, arguments.plans)
+    problems = scope_problems(files, document, tiers, added, arguments.plans or ())
     for problem in problems:
         print(problem)
     verdict = f"FAIL: {len(problems)} path(s) outside the batch" if problems else "PASS"
@@ -560,7 +565,11 @@ def main(argv: Sequence[str] | None = None) -> int:
     for name in ("f0", "registry", "coverage"):
         commands.add_parser(name)
     scope = commands.add_parser("scope")
-    scope.add_argument("--plans", help="the glob of the restructure plan files a W5 step may add")
+    scope.add_argument(
+        "--plans",
+        action="append",
+        help="a glob of the plan files a W5 step may add (restructure, interface); repeatable",
+    )
     tests = commands.add_parser("tests")
     tests.add_argument("--log", required=True)
     tests.add_argument("command", nargs=argparse.REMAINDER)
