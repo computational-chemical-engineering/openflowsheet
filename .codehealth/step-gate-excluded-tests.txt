@@ -1,0 +1,25 @@
+# Test files a step-cadence gate leaves out of its selection (S19 gate proposal 2; Frank's sign-off:
+# Decision Desk card ofs-s19-gate-proposal-2, choice A, 2026-11-19). Read by
+# `scripts/test_impact.py run --exclude-from` in the tests tier of .codehealth/config.toml.
+#
+# What still runs them: every merge check (`gate_queue.py --mode merge-check`, the full suite) before a
+# step lane merges; `merge_tiers.sh` before an interface lane merges, until the queue has an interface
+# merge-check mode; CI before main. A step gate that falls back to the full suite runs them too.
+#
+# Conditions of the sign-off: each gate's tests log names the files it left out (the tool prints them);
+# tests/test_doc_examples.py stays at step cadence and the tool refuses a list that names it.
+#
+# Rule for a change: an end-to-end or reference file that costs more than about 100 worker-seconds per
+# selected gate in `gate_report.py --heavy`. One commit per change, with the report lines in its message.
+# First list: `gate_report.py --hours 48 --heavy 25` on 2026-11-19 (88 selected gates with durations).
+tests/test_t07_v17_reference.py
+tests/test_s09_references.py
+tests/test_t07_identity.py
+tests/test_m04_wo9_synthetic_loop.py
+tests/test_s03_ours.py
+tests/test_t08_w1_identity_substitution.py
+tests/test_t08_w2_recovery_edges.py
+tests/test_m04_prewarm.py
+tests/test_k05_replay.py
+tests/test_s03_references.py
+tests/test_f0_corpus_identity.py
