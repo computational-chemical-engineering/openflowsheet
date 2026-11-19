@@ -87,6 +87,7 @@ its caller adaptations (`changed` refuses a private name; no plan key for a spy 
    green, manifest `tested`, merge card via hub. Open for the design lane: `molar_mass_inconsistent` signature clash
    ADR 0061 vs 0062.
 5. Rule: lanes touching studies/ also need the nlp-marked suite at head, failures a subset of base (g19, g20).
+**Desk cards filed 15:00 (act only on VERIFIED):** ofs-s19-verify-twins, ofs-s19-legacy-models, ofs-s19-gate-proposal-2.
 **Open for Frank (new):** the legacy models/ engine ruling (S19_DECISIONS 2026-11-15 item 5): G2's remainder, W5
 batch L and `solve_region`'s own 21 parameters wait for it.
 **Open build-lane items:** `benchmarks/m03/nlp-test.lock` lacks mpmath (m03_nlp_check.sh fails collection); test_opt_cost_lca_nlp g19, g20 fail; no CI or gate runs nlp-marked tests (add an nlp gate tier); the f3 worktree's `.venv` lacks pytest-xdist and pytest-timeout; brightway.py 8.8 needs an lca-extra venv to refactor.

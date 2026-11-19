@@ -3402,3 +3402,4 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   (rec A: ADR 0076 I-20 before 0.5), ofs-s19-legacy-models (rec A: lift the hold, batch L, G-END unchanged),
   ofs-s19-gate-proposal-2 (rec A: adopt with the three conditions). cce steward (code_health) asked for the gap's
   details: answered (commits, names, spy shapes, the refusal lines; `--mode step` = gate.sh refactor mode).
+- 15:00: hub filed ofs-s19-verify-twins, ofs-s19-legacy-models, ofs-s19-gate-proposal-2 on the Decision Desk (action texts verbatim); INDEX: qf1 executed, mcp-descriptions-human blocked on the REVIEW.json permission. Act only on a VERIFIED card (decision_desk_verify.py).
