@@ -3265,3 +3265,17 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   until the step. Reversible by: reverting the S19_RULES lines.
   Merge-check helper `wp/S19-g1o9-mc` (worktree s19-g1o9-mc) = wp/S19 d24f38d0 + merge of the lane at a527c201 =
   e39bff0b; ruff clean; job 424 g1o9-mc (full suite).
+- **2026-11-19 ~10:50 CET, job 423 PASS (g1o9-5, fix 1 a527c201, step 413 accepted-neutral, 44.1 -> 44.1, 18/18);
+  job 414 PASS (w5n1-20s, step 412, 35.1 -> 29.1).** Gate report (6 h): the four standing ALERTs ("selected gates
+  take 1112 s > 300 s (tests tier)", "selected/full time ratio 0.82 > 0.4", share 50%, wait median 39 min).
+- **G1 end numbers (plan 7 item 6), scan of the merge-check helper e39bff0b (wp/S19 + lane O run 9):** repo 329
+  files, 103384 NLOC, debt 3492.8, health 8.42, brain 12. orchestrator/ and numerics/: 0 brain functions; every file
+  >= 7.0 except **executor.py 6.1 (plan target 7.0: a miss)**; region.py 7.8 (>= 7.3), 975 NLOC (<= 1000); lowest
+  others revision.py 7.0, region_problem.py 7.2, region_attempts.py 7.4. executor.py's left long smells
+  (`execute_plan`, `_solve_revision_region`, `_eo_recovery`) all wait for `_PlanRun` (plan Q4).
+  DECISION: close G1's W3 lanes N and O after the run 9 merge; executor.py's 7.0 and `_solve_region`'s parameter
+  object become one W4-residual package `_PlanRun` (interface mode under ADR 0076, Q4 ruling: the two direct
+  `_eo_recovery` calls and the t08 `solving(**kwargs)` spy adapt), briefed by the orchestrator next, architect pass
+  first only if the brief cannot fix `_PlanRun`'s fields from the plan's 5.9 text. Alternative: keep lane O open for
+  W3 steps on executor.py (none possible: STOP rule, each remaining phase needs the context record). Reversible by:
+  reopening lane O. Lane N worktrees s19-g1n, -g1n3, -g1n4 removed (merged, clean); branches deleted.
