@@ -197,50 +197,7 @@ def plan_inventory(
     for utility in utilities:
         run.add_utility(utility, cost, items, cost_outputs)
     for material in doc.get("materials", ()):
-        s_id, basis = str(material["connection"]), str(material["basis"])
-        component = material.get("component")
-        for j, body in enumerate(material.get("lca", ())):
-            per = str(body["per"])
-            molar = per in MOLAR_PER
-            phi = (
-                stream_flow(sctx, s_id, basis, component, molar)
-                if per in MASS_PER | MOLAR_PER
-                else None
-            )
-            run.technosphere(
-                f"materials.{s_id}.lca[{j}]",
-                f"material.{s_id}",
-                body,
-                phi,
-                MASS_PER | MOLAR_PER,
-                "a stream's mass or amount",
-            )
-        if material["role"] != "emission" or "emission" not in material:
-            continue
-        emission = material["emission"]
-        table_id = str(emission["table"])
-        for c, flow in emission["flows"].items():
-            k = run.exchange_id(f"emission.{s_id}.{c}")
-            target = f"{table_id}.{flow}"
-            table = run.table_of(table_id, DirectFactorTable, target, "LCA_FLOW_UNKNOWN")
-            if table is None:
-                run.plan.withheld.append((k, f"table {table_id} unusable"))
-                continue
-            if flow not in table.columns or c not in ctx.view.components:
-                detail = "not in the table" if flow not in table.columns else f"no component {c}"
-                run.plan.refusals.append(Refusal("LCA_FLOW_UNKNOWN", target, detail))
-                run.plan.withheld.append((k, f"{target}: {detail}"))
-                continue
-            run.plan.exchanges.append(
-                Exchange(
-                    k,
-                    "biosphere",
-                    table_id,
-                    str(flow),
-                    "kg/s",
-                    stream_flow(sctx, s_id, "component", str(c), False),
-                )
-            )
+        run.add_material(ctx, sctx, material)
     return run.plan
 
 
@@ -291,6 +248,59 @@ class _Inventory:
             users = [i.duty for i in items if i.utility == u and i.duty is not None]
             phi = _fold(users) if users else None
         return phi
+
+    def add_material(
+        self, ctx: BuildContext, sctx: SizingContext, material: Mapping[str, Any]
+    ) -> None:
+        """A material's exchanges: per `lca` entry, a technosphere exchange on the stream's mass
+        or amount (`technosphere` refuses or withholds it); then, for a material with role
+        `emission` and an `emission` mapping, a biosphere exchange per mapped component (withheld
+        on an unusable table; refused and withheld for a flow the table lacks or a component the
+        flowsheet lacks)."""
+        s_id, basis = str(material["connection"]), str(material["basis"])
+        component = material.get("component")
+        for j, body in enumerate(material.get("lca", ())):
+            per = str(body["per"])
+            molar = per in MOLAR_PER
+            phi = (
+                stream_flow(sctx, s_id, basis, component, molar)
+                if per in MASS_PER | MOLAR_PER
+                else None
+            )
+            self.technosphere(
+                f"materials.{s_id}.lca[{j}]",
+                f"material.{s_id}",
+                body,
+                phi,
+                MASS_PER | MOLAR_PER,
+                "a stream's mass or amount",
+            )
+        if material["role"] != "emission" or "emission" not in material:
+            return
+        emission = material["emission"]
+        table_id = str(emission["table"])
+        for c, flow in emission["flows"].items():
+            k = self.exchange_id(f"emission.{s_id}.{c}")
+            target = f"{table_id}.{flow}"
+            table = self.table_of(table_id, DirectFactorTable, target, "LCA_FLOW_UNKNOWN")
+            if table is None:
+                self.plan.withheld.append((k, f"table {table_id} unusable"))
+                continue
+            if flow not in table.columns or c not in ctx.view.components:
+                detail = "not in the table" if flow not in table.columns else f"no component {c}"
+                self.plan.refusals.append(Refusal("LCA_FLOW_UNKNOWN", target, detail))
+                self.plan.withheld.append((k, f"{target}: {detail}"))
+                continue
+            self.plan.exchanges.append(
+                Exchange(
+                    k,
+                    "biosphere",
+                    table_id,
+                    str(flow),
+                    "kg/s",
+                    stream_flow(sctx, s_id, "component", str(c), False),
+                )
+            )
 
     def technosphere(
         self,
