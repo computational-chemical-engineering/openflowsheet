@@ -3546,3 +3546,8 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   (`<git-common-dir>/codehealth/briefs/S19-R-W5-G2-6+7.md`), launched on PASS of 457-458, 462-463.
 - 2026-11-19, job 462 (g2b-4r, no-gain docstrings, rerun of the 900 s load timeout of job 453) PASS (step 438 no-gain,
   18/18). gate_report: the four ALERTs (50%; 1038 s; 0.66; wait 56 min); action unchanged.
+- 2026-11-19, job 457 (g2c-3, `traverse` unit selection) PASS (step 439 accepted, 42.6 -> 27.6). gate_report: the four
+  ALERTs (54%; 991 s; 0.61; wait 58 min); action unchanged.
+- 2026-11-19, job 463 (g2b-5r, `_stage_failures` rungs) PASS (step 440 accepted, 16.0 -> 11.0): lane wp/S19-g2b fully
+  gated. DECISION: launch R-W5-G2-6+7 now, with g2c-4 (job 458) still gating -> reviewer (Opus) launched. Alternative:
+  wait for 458 (~40 min). Reversible by: a 458 FAIL that changes e784f03a sends that step back for re-review.
