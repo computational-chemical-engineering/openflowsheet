@@ -6,7 +6,9 @@ Newton problem) with the label rows `T_out − T_label` of the swapped energy ro
 `_rederive`) with its dormancy-outlet resets (`_reset_outlet`, T05b §7.8 (ii));
 `_LiftedOps`, the lifted EO path's side of the phase contract for one attempt (T03 §4.3, §4.6,
 §4.7); and the swapped-row test at a converged attempt's final state (`_swapped_row_test`, T05b
-§7.8 (iv) 2), moved from `orchestrator.region` (S19 RS fallback 1), which imports it back.
+§7.8 (iv) 2), moved from `orchestrator.region` (S19 RS fallback 1); and T03 §5.1's checks
+on attempt 0's opening from an external start (`_external_opening`), moved from
+`orchestrator.region` (S19 RS fallback 2). `orchestrator.region` imports both back.
 
 Split from `orchestrator.region` (S19 B1), which re-exports what its callers and tests read here.
 Of the region solver this module imports only `region_phase`.
@@ -759,3 +761,44 @@ def _swapped_row_test(
                 observations={f"swapped_row:{row}": value},
             )
     return None
+
+
+def _external_opening(
+    current: Mapping[str, float],
+    opening: AttemptSignature,
+    identity: tuple[str, str],
+    free: Sequence[str],
+    splits: Sequence[LiftedSplit],
+    regimes: Mapping[str, Regime],
+    forms: Mapping[str, ZeroFlowForm],
+    vapour: Mapping[str, VapourOnlyForm],
+    spec: ProblemSpec,
+    *,
+    reported: AttemptSignature | None = None,
+) -> OpeningRefusal | None:
+    """T03 §5.1's six checks on attempt 0's opening from an external start (a compatible warm
+    start, ADR 0024 D3; a revision continuation's ancestor root, RRC §5.7), before its pinned
+    columns are set: the opening's own identity, its signature's pinned columns in signature
+    order, and a zero lower bound on every free molar flow. `reported` is the signature the
+    source reported for the state, `None` for a source that reports none."""
+    held = tuple(
+        name for split in splits for name in _pinned(split, regimes[split.unit], forms, vapour)
+    )
+    return check_opening(
+        OpeningState(
+            values=current,
+            model_version=identity[0],
+            constants_sha256=identity[1],
+            reported=reported,
+        ),
+        OpeningRequirement(
+            signature=opening,
+            model_version=identity[0],
+            constants_sha256=identity[1],
+            free=free,
+            pinned=held,
+            lower_bounds={
+                name: 0.0 for name in free if spec.variable_kinds.get(name) == "molar_flow"
+            },
+        ),
+    )
