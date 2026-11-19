@@ -3140,3 +3140,5 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
 ## 2026-11-19 ~05:25 CET: lane O run 7 merged
 
 - Merge-check job 393 `g1o7-mc` PASS 10/10 (debt 172.0 -> 157.7). wp/S19-g1o7-mc merged into wp/S19 as 0e58c106.
+- Gate report (6 h): selected share 58%, selected 790 s, ratio 0.59, queue wait median 23 min: the same four as
+  ~04:45 (batch N's W5-mode full-suite falls and its 23-step burst); standing, no action.
