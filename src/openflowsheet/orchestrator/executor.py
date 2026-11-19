@@ -30,7 +30,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field, fields, replace
-from typing import Any, Literal, cast
+from typing import TYPE_CHECKING, Any, Literal, cast
 
 import numpy as np
 
@@ -107,6 +107,9 @@ from openflowsheet.orchestrator.warm_start import (
     intact,
     project_bounds,
 )
+
+if TYPE_CHECKING:
+    from openflowsheet.orchestrator.attempts import SolveResult
 
 __all__ = ["PlanResult", "StepResult", "execute_plan"]
 
@@ -537,6 +540,12 @@ def _converge(
     run: Trace,
     spent: Counters,
 ) -> tuple[StepResult, Counters, dict[str, float] | None]:
+    """A tear step: `solve_tear` on SYN-001's flowsheet under the step's recycle method, between
+    review M3's two identity checks; then §4.4's merge of a stalled Anderson loop, unsupported
+    or re-solved as its region (`_region`, `_merged_step`) and followed by edge 3. Returns the
+    step's result (a refusal for a revision flowsheet or a failed identity check), the counters
+    spent and the end state (None when refused). Raises ValueError when a merge is due and the
+    plan gives no region."""
     if not isinstance(flowsheet, Syn001Flowsheet):
         # T05 §2.3 (register R-045): the tear path is SYN-001's; `plan_revision` emits no loop.
         return _refused(step, "tear_path_unsupported(revision_flowsheet)"), spent, None
@@ -599,6 +608,19 @@ def _converge(
     region_result, spent, state, following = _region(
         merged.region, start, flowsheet, spec, policy, run, spent, attempts, None
     )
+    merged_step = _merged_step(base, result, region_result)
+    # T04 §5.1: a merged region is a region solve, so edge 3 follows it too. It has no promoted
+    # specification, so in v0.1 the edge after edge 2 is always `unsupported` — recorded.
+    return _eo_recovery(
+        merged_step, merged.region, flowsheet, spec, policy, run, spent, state, following
+    )
+
+
+def _merged_step(base: StepResult, result: SolveResult, region_result: RegionResult) -> StepResult:
+    """§4.4's merged step: the loop's step `base` with the outcome, message and result of the
+    region's re-solve `region_result` (its attempts continuing the loop's provenance list), the
+    loop's and the region's iterations, the merge taken, and the loop's own `result` kept as
+    `recycle`. Pure."""
     # T03 §8.1 (review S2): the region's attempts continue the loop's provenance list.
     region_result = replace(
         region_result,
@@ -606,7 +628,7 @@ def _converge(
             result.branch_provenance, region_result.branch_provenance
         ),
     )
-    merged_step = replace(
+    return replace(
         base,
         outcome=region_result.outcome,
         iterations=result.iterations + region_result.iterations,
@@ -615,11 +637,6 @@ def _converge(
         detail=region_result,
         # Review S8: the recycle's own result (attempts, checkpoint, contexts) is kept.
         recycle=result,
-    )
-    # T04 §5.1: a merged region is a region solve, so edge 3 follows it too. It has no promoted
-    # specification, so in v0.1 the edge after edge 2 is always `unsupported` — recorded.
-    return _eo_recovery(
-        merged_step, merged.region, flowsheet, spec, policy, run, spent, state, following
     )
 
 
