@@ -3079,3 +3079,19 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   tip after its jobs and review.
 - Gate report (6 h): `ALERT selected gates take 745 s > 300 s (tests tier)`; `ALERT selected/full time ratio 0.57 >
   0.4: selection saves little`. Standing (proposal 2, open for Frank); no new ALERT.
+
+## 2026-11-19 ~04:00 CET: lane O run 6 reviewed (R-W3-G1O-6: merge), run 7 briefed
+
+- Jobs 386, 387, 388 PASS (R3 a00639aa debt 176.1 -> 120.3; C4 0d642512 38.9 -> 9.0; X4 8d8b6949 52.6 -> 51.7).
+- R-W3-G1O-6 (reviewer, Opus): merge all three steps. Deviations 1 to 5 accepted (R3's `attempt_context` and
+  `attempt_open` names; `used.append` after the pure layout, no handler reads `used`; nine frame fields aliased by
+  loop locals until R6, RC6; C4 `rose` reads `point.rho`, `_Point` frozen and `trial` never rebound; X4 accepted as a
+  step below the ~2 debt stop rule because plan 5.9 targets the long smell, `SolveResult` annotation-only). C4 meets
+  plan 7.5 (brain false, cognitive 23, debt 9.0). No undeclared departures of substance. Fix 1 (docstring only,
+  executor.py `_converge`): applied by the orchestrator as 8fde69eb, job 389 `g1o6-4` no-gain.
+- Region NLOC ruling: plan Q2 MISSED (962 NLOC at R3 against 925 +- 40 expected after R6; R1 to R3 added 172 NLOC
+  against ~135 planned for R1 to R6). Projection after R6 ~1010 to 1050; plan-4's two moves remove 58. No move now:
+  R4 rescans and reports. If R4's head is above ~1000, a third move goes to the design lane before R5.
+- Merge-check: helper wp/S19-g1o6-mc (worktree s19-g1o6-mc) = 9d4726d1 + merge of wp/S19-g1o6 at 8fde69eb, 1b8b5aa3;
+  job 390 `g1o6-mc`. On PASS of 389 and 390: merge the helper into wp/S19.
+- Run 7 (R4, X5, X6; brief `S19-W3-G1O-7.md`) launched from 8fde69eb, as run 6 was from run 5's head.
