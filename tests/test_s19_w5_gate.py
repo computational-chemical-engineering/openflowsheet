@@ -288,7 +288,7 @@ def test_s1_an_added_plan_under_either_glob_passes_a_modified_one_fails(
 
 
 def test_s1_the_scope_command_takes_plans_repeatedly(
-    batch: dict[str, Any], monkeypatch, capsys
+    batch: dict[str, Any], monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
     seen: dict[str, Any] = {}
 
