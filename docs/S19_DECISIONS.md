@@ -3315,3 +3315,7 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   `_converge` call passes `replace(ctx, revision_continuation=None)`), C d65497b4 (no-gain). `git diff ebc42227
   d65497b4 -- src` is that call and its comment only. Touched tests at C 941 passed, 2 skipped; patch_noop 0.
   Jobs 425 (pr1b-1, step) and 426 (pr1b-2, no-gain). Review brief `S19-R-W4-PR-1b.md` written; launch on both PASS.
+- **2026-11-19 ~12:10 CET, job 417 PASS (w5n1-23s, step 416, 25.1 -> 24.1): batch N WO-N1/N1b all gated PASS**
+  (605d332f..b73142ef, 23 steps; job 373 environment failure re-run as 402). Review R-W5-N1 launched (reviewer, Opus).
+  Gate report (6 h): the four standing ALERTs ("selected gates take 1147 s > 300 s (tests tier)", "selected/full
+  time ratio 0.84 > 0.4", share 44%, wait median 48 min).
