@@ -3454,3 +3454,5 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   failing branch: thin); patch_noop 0 of 262. 4 accepted S1 steps (the common brief's cap wins over my brief's 6).
   Left: revision_flowsheet.py (G2 run 7, wp/S19-g2c from a7414044, brief `S19-W5-G2-7.md`), cascade_solve's 87-line
   duplication and `solve_cascade` toward 9.0. Reviewer R-W5-G2-6 on PASS of 450-454.
+- 2026-11-19, job 450 (g2b-1) PASS (step 426 accepted, 98.0 -> 85.3). gate_report: same four ALERTs (selected share
+  43%; selected 1160 s; ratio 0.82; wait median 24 min); action unchanged (proposal 2, measured on wp/S19-g2c gates).
