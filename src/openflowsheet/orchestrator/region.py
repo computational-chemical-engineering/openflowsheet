@@ -431,7 +431,7 @@ def _solve_region(
 
 @dataclass
 class _RegionSolve:
-    """One `_solve_region` call: what `attempt`, decisions and attempt records read, and its ledger.
+    """One `_solve_region` call: what its start, attempts, decisions, records and closing share.
 
     Frame: the `compiled` problem and the recovery's λ-level compiler `compile_level`, `spec`, the
     `region`, `splits` (every lifted split of the declaration, for the root's branch), the
