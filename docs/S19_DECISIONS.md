@@ -3413,3 +3413,11 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   reference files, under the three conditions; merge-checks and CI keep the full suite". Signed 11:56-11:58Z.
   Each card gets `executed` when its action is done (I-20 merged; legacy hold lifted and its work orders run;
   proposal 2 in the gate tooling).
+- 15:55: WO-N3b delivered (opus-engineer, ~206k): 7 steps 3258608e..3979f326 on wp/S19-w5n, jobs 443-449:
+  forms.py 7.2 -> 9.5 (debt 70.6 -> 1.0; `select` 61.6 -> 0 via `_input_pieces`, `_size_regime` with `_Item`, one
+  helper per size family; `rows` 9.0 -> 0), derived.py 7.7 -> 10.0 (`DerivedContributor.plan` 47.1 -> 0 via run class
+  `_Derivation`). Brain functions `select` and `DerivedContributor.plan` gone. Engineer's behaviour checks: 40200
+  random cases on select/rows, 20000 fake contexts on plan, 0 mismatches; literal multiset unchanged; W5-S7 0 edges,
+  M9 keys 35; patch_noop 0 of 266. Gate report (24 h, --heavy): selected share 62%, selected 688 s, ratio 0.53, wait
+  median 23 min; heaviest selected files t07_v17_reference 40720 s, s09_references 19748 s, t07_identity 9717 s.
+  Proposal 2's exact file list asked of session OpenFlowsheet-check (its author).
