@@ -3655,3 +3655,5 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   gate_report: the four ALERTs (64%; 834 s; 0.53; wait 57 min); action unchanged.
 - 2026-11-19, job 498 (w5n3-2u) PASS (step 452 accepted, 18.7 -> 8.7, 19/19). gate_report: the four ALERTs (62%;
   834 s; 0.54; wait 56 min); action unchanged.
+- 2026-11-19, job 509 (g2d-2, G2 run 8 step 2) PASS (step 453 accepted, 15.0 -> 12.0, 19/19). gate_report: the four
+  ALERTs (63%; 799 s; 0.52; wait 55 min); action unchanged.
