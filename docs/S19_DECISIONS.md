@@ -3025,3 +3025,14 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
 - **2026-11-19 ~02:00 CET, job 358 `w5n1-1` (WO-N1 Refusal retarget, no-gain) PASS 18/18: the first W5-mode gate.**
   W5-S1 scope PASS (4 paths), W5-S7 coverage 0 new edges, 4 retargets, M9 key set equal (35), W5-S4 registry PASS,
   W5-S6 tests PASS: full suite (selection fell back to all), 5 failed, all in L_N (expected failures failed 5/10).
+- **2026-11-19 ~02:10 CET, WO-N1 part 1 delivered (opus-engineer, ~175k tokens, stopped at the cap):** 3cd5ff50
+  retarget (job 358 PASS) and ten extract-phase steps on contributor.py 23b62a68..a3d7ba21 (jobs 360 to 369; debt
+  123.4 -> 5.0, health 2.8 -> 7.9, no split). `Refusal is` check True at B_N; `quotes.py`'s `Limitation` through
+  `program` is defined there (not a retarget). Deviations: step 6's message says 62 lines (scan 63); step 5's message
+  has a garbled parenthesis; playbook rule 7 open (`_cost_item` docstring, `_utility_costs` naming its helpers).
+  contributor.py cannot reach 9.0 without a split (size smell 1.0); left `items` (cc 16), `_capital`, `_theta`,
+  `_regime` (parameters). WO-N1b launched (opus-engineer, brief `S19-W5-N1b.md`: the rule-7 docstrings no-gain, then
+  sets.py 4.7 -> >= 7.0).
+  DECISION: contributor.py's split toward 9.0 -> deferred to after batch N's other work orders (health 7.9 meets the
+  floor). Alternative: a split step now (tier 1 allows it; adds a core.json pointer at K). Reversible by: a later
+  WO with the split.
