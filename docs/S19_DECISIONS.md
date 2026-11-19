@@ -3565,3 +3565,11 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   reverting that commit.
   Merge plan: g2b after 479 + g2b-fix4 PASS, merge-check; g2c after 458 + 480 PASS, merge-check (one helper may serve
   both lanes).
+- 2026-11-19, job 458 (g2c-4, `traverse` stream-state helpers) PASS (step 441 accepted, 27.6 -> 15.6): G2 run 7's four
+  steps all accepted. gate_report: the four ALERTs (58%; 947 s; 0.58; wait 58 min); action unchanged.
+  Fix 4 done (sonnet-implementer, ~53k): 27d138cc move only (ast segments identical, ruff clean, 719 tests in the 11
+  column_rows files passed), job 481 g2b-fix4.
+  DECISION: one merge-check helper for both G2 lanes -> wp/S19-g2-mc (worktree s19-g2-mc) = wp/S19-g2c 04ab9edb +
+  wp/S19 6a588841 (7a412814) + wp/S19-g2b 27d138cc (a9a5cbf6), clean, disjoint files; job 482 g2-mc (merge-check,
+  base 6a588841). Alternative: one merge-check per lane (two full suites). Reversible by: per-lane merge-checks.
+  Merge on 479, 480, 481, 482 PASS: merge wp/S19-g2-mc into wp/S19 (wp/S19 changes only docs meanwhile: helper rule).
