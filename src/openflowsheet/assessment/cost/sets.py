@@ -405,6 +405,7 @@ def _check_floors(
 def parse_set(document: Mapping[str, Any]) -> CostSet:
     """Check a set document (§9.2.3) and return it; `CostSetError` lists every failed check.
 
+    The set's index value comes from `_basis_index_value` (1.0 when `basis.index` is missing).
     The top-level source is checked by `_checked_against_reasons`, an entry of a known form by
     `_check_generic` or `_sslw_entry_reasons`, the compressor's drive by
     `_compressor_drive_reasons`, and the floors of a set with no other reason by
@@ -419,11 +420,7 @@ def parse_set(document: Mapping[str, Any]) -> CostSet:
         set_index = 1.0
     else:
         _check_number(basis["index"].get("value"), "basis.index.value", reasons)
-        set_index = (
-            _number(basis["index"]["value"])
-            if _is_number(dict(basis["index"].get("value") or {}).get("value"))
-            else 1.0
-        )
+        set_index = _basis_index_value(basis)
     reasons += _checked_against_reasons(document.get("source"))
     entries: list[CostEntry] = []
     seen: set[str] = set()
@@ -451,6 +448,15 @@ def parse_set(document: Mapping[str, Any]) -> CostSet:
     if reasons:
         raise CostSetError(set_id, reasons)
     return CostSet(set_id, MappingProxyType(dict(document)), tuple(entries))
+
+
+def _basis_index_value(basis: Mapping[str, Any]) -> float:
+    """The value of the set's `basis.index` (an object), 1.0 when it is not a number object."""
+    return (
+        _number(basis["index"]["value"])
+        if _is_number(dict(basis["index"].get("value") or {}).get("value"))
+        else 1.0
+    )
 
 
 def _checked_against_reasons(source: Any) -> list[str]:
