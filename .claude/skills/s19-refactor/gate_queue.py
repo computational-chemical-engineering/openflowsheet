@@ -37,6 +37,15 @@ State in <git-common-dir>/codehealth/queue/: pending/, running/, done/<label>.js
       set. (`--mode w5` of WO-1 is gone: write `--mode step --batch FILE`.) The job records the
       sha256 validate prints and B (`batch_sha256`, `batch_base`): one batch file per B is
       checked by `scripts/w5_gate.py batch-check --queue-dir <queue> --base B` (exit 1 if two).
+      A generator-only step (review R-W5-N-close 4b) is `--mode merge-check --batch FILE --base
+      <step parent> --head <step>`: gate.sh --behaviour-only over the step with the W5 verdicts
+      (W5-S1, S3, S4, S6 on the full suite, and S7, ruff, mypy, the MCP digest), no debt gate and
+      no run-log record; the orchestrator logs its PASS as the step's acceptance.
+      Batch close: `scripts/w5_gate.py close --k K --queue-dir <queue>` records K
+      (<queue>/batches/closed-<B>.json, key `k`) once W5-K1 passes. From then on a --batch job
+      whose head contains K (`git merge-base --is-ancestor K head`) is refused (exit 2, nothing
+      queued): the W5 verdicts are wrong at K. K's own merge-check runs without --batch (as job
+      515), and so does every later job of that batch's range.
   run [--detach] [--log-out JSONL]
       The runner: FIFO, at most SLOTS jobs at a time, one job per worktree at a time. It refuses a
       job whose worktree HEAD or tree changed since enqueue, runs gate.sh in the worktree, then
@@ -200,6 +209,24 @@ def w5_batch(worktree: Path, source: str, head: str) -> tuple[Path, str, str]:
     return copy, digest.group(1), json.loads(copy.read_text())["base"]
 
 
+def closed_refusal(batch_base: str, head: str, worktree: Path) -> str | None:
+    """Why a --batch job is refused if the batch base's close record (`w5_gate.py close`) names a
+    K that the head contains, or the record cannot be read; None otherwise."""
+    record = BATCHES / f"closed-{batch_base}.json"
+    if not record.is_file():
+        return None
+    try:
+        k = str(json.loads(record.read_text())["k"])
+    except (OSError, ValueError, KeyError, TypeError) as error:
+        return f"W5 batch REFUSED: {record}: {error!r}"
+    if not is_ancestor(k, head, worktree):
+        return None
+    return (
+        f"W5 batch REFUSED: batch base {batch_base[:10]} closed at K {k[:10]}, which the head "
+        f"{head[:10]} contains: gate it without --batch"
+    )
+
+
 def enqueue(a: argparse.Namespace) -> int:
     setup()
     worktree = Path(a.worktree).resolve()
@@ -236,6 +263,10 @@ def enqueue(a: argparse.Namespace) -> int:
     candidate, batch_sha256, batch_base = (
         w5_batch(worktree, a.batch, head) if a.batch else (None, None, None)
     )
+    if candidate and batch_base and (refusal := closed_refusal(batch_base, head, worktree)):
+        candidate.unlink(missing_ok=True)
+        print(refusal, file=sys.stderr)
+        raise SystemExit(W5_REFUSED)
     batch = None
     with locked():
         if a.label in labels_in_use():

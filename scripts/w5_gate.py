@@ -22,11 +22,25 @@ file's `base`, not the step's `{base}`.
                                           --against-log L`, and the summary line fails no
                                           measure but M9
     w5_gate.py registry                   W5-S4: `predict --base B --max-tier T --against-tables`
-    w5_gate.py scope [--plans GLOB]       W5-S1: `git diff --name-only B..HEAD` is a subset of
+    w5_gate.py scope [--plans GLOB ...]   W5-S1: `git diff --name-only B..HEAD` is a subset of
                                           admitted + generator + retarget, with no tier 4 file;
-                                          also allowed: a .py file absent at B in the directory of
-                                          an admitted tier 1 file (a split, ruling R4) and a file
-                                          matching GLOB (a restructure step's plan)
+                                          also allowed, if absent at B: a .py file in the directory
+                                          of an admitted tier 1 file (a split, ruling R4) and a
+                                          file matching a GLOB (a restructure or interface step's
+                                          plan; --plans repeats). A plan file that exists at B is
+                                          in scope only if the batch admits it or names it
+    w5_gate.py close --k K --queue-dir DIR [--batch FILE] [--fixture PATH ...]
+                                          W5-K1 (ruling 6.3) of the batch close K, with the batch
+                                          from --batch or S19_W5_BATCH: B an ancestor of K, `git
+                                          diff --name-only K^..K` inside CLOSE_PATHS + the
+                                          --fixture paths (L_B's fixtures and constants, which the
+                                          batch file does not name), and M6_REQUESTS byte-identical
+                                          at B and K. Prints `W5-K1 PASS` or `W5-K1 FAIL` with the
+                                          offending paths (exit 0 or 1). On PASS it records K in
+                                          DIR/batches/closed-<B>.json (`k`, `batch`, `base`,
+                                          `batch_sha256`, `fixtures`); `gate_queue.py enqueue
+                                          --batch` then refuses a head that contains K. A record
+                                          of another K for B is refused (exit 2)
     w5_gate.py coverage                   W5-S7: `w5_identity.py coverage --base B --head HEAD`
     w5_gate.py tests --log L -- CMD ...   W5-S6: CMD (test_impact.py run, which writes L and
                                           reports with -rfE); on exit 1 the failed and errored
@@ -82,6 +96,16 @@ SECTION: Final = re.compile(r"^=+ .* =+$")
 #: test_impact.py's header of each pytest call in its log, and pytest's closing counts line
 #: (test_impact's SUMMARY, or a call that collected nothing).
 CALL: Final = "$ "
+#: W5-K1 (ruling 6.3): the paths a batch close K may change besides L_B's fixtures and constants,
+#: and the file `corpus_identity.py --record` rewrites that must come out byte-identical.
+CLOSE_PATHS: Final = (
+    "benchmarks/f0/corpus.json",
+    "tests/fixtures/registry/builtin-sha256.txt",
+    "src/openflowsheet/registry/builtin/legacy.json",
+    "src/openflowsheet/registry/builtin/core.json",
+    "src/openflowsheet/registry/builtin/tables.sha256",
+)
+M6_REQUESTS: Final = "benchmarks/f0/m6-requests.json"
 CLOSING: Final = re.compile(
     r"^=*\s*(?:\d+ (?:passed|failed|error|skipped|deselected)|no tests ran)\b.* in [\d.]+s"
 )
@@ -197,6 +221,11 @@ def batch_files(queue: Path, base: str) -> dict[str, list[str]]:
     return found
 
 
+def closed_record(queue: Path, base: str) -> Path:
+    """The batch close record of batch base `base` (read by `gate_queue.py enqueue --batch`)."""
+    return queue / "batches" / f"closed-{base}.json"
+
+
 def from_environment() -> dict[str, Any]:
     name = os.environ.get(VARIABLE)
     if not name:
@@ -242,11 +271,12 @@ def changed(base: str, *, added: bool = False) -> list[str]:
     return sorted(done.stdout.split())
 
 
-def plan_file(path: str, plans: str | None) -> bool:
-    """Whether `path` matches the restructure plans' glob, a file pattern in one directory."""
-    return plans is not None and (
-        posixpath.dirname(path) == posixpath.dirname(plans)
-        and fnmatch.fnmatchcase(posixpath.basename(path), posixpath.basename(plans))
+def plan_file(path: str, plans: Iterable[str]) -> bool:
+    """Whether `path` matches one of the plans' globs, each a file pattern in one directory."""
+    return any(
+        posixpath.dirname(path) == posixpath.dirname(glob)
+        and fnmatch.fnmatchcase(posixpath.basename(path), posixpath.basename(glob))
+        for glob in plans
     )
 
 
@@ -255,27 +285,71 @@ def scope_problems(
     document: Mapping[str, Any],
     tiers: Mapping[str, Sequence[str]],
     added: Iterable[str] = (),
-    plans: str | None = None,
+    plans: Iterable[str] = (),
 ) -> list[str]:
     """W5-S1: every changed path is admitted, the generator's or a named retarget, and none is a
-    tier 4 file. Also allowed: a new module (in `added`, absent at B) in the directory of an
+    tier 4 file. Also allowed, if new (in `added`, absent at B): a module in the directory of an
     admitted tier 1 file, which a tier 1 split adds (ruling R4: tier 1 files may be split within
-    their directory), and a restructure step's plan file (`plans`, the glob config.toml passes)."""
+    their directory), and a restructure or interface step's plan file (`plans`, the globs
+    config.toml passes). A plan file that exists at B is not admitted by the glob."""
     allowed = {path for key in ("admitted", "generator", "retarget") for path in document[key]}
     excluded = set(tiers["4"])
     split_into = {posixpath.dirname(path) for path in set(document["admitted"]) & set(tiers["1"])}
     new = set(added)
+    plans = tuple(plans)
     problems = []
     for path in sorted(set(files)):
         if path in excluded:
             problems.append(f"{path}: tier 4 (excluded, ruling R1)")
-        elif path in allowed or plan_file(path, plans):
+        elif path in allowed or (path in new and plan_file(path, plans)):
             continue
         elif path in new and path.endswith(".py") and posixpath.dirname(path) in split_into:
             continue
         else:
             problems.append(f"{path}: outside the batch's admitted, generator and retarget sets")
     return problems
+
+
+def close_problems(base: str, k: str, fixtures: Iterable[str], cwd: Path = ROOT) -> list[str]:
+    """W5-K1: the paths K changes (against its first parent) outside CLOSE_PATHS and `fixtures`,
+    and M6_REQUESTS unless its blob at K is the one at B (equal blobs are equal bytes)."""
+    done = _git("diff", "--name-only", "--no-renames", f"{k}^", k, cwd=cwd)
+    if done.returncode != 0:
+        raise BatchRefusedError(f"git diff {k[:12]}^..{k[:12]}: {done.stderr.strip()}")
+    allowed = {*CLOSE_PATHS, *fixtures}
+    problems = [
+        f"{path}: outside W5-K1's list (and no --fixture)"
+        for path in sorted(set(done.stdout.split()) - allowed)
+    ]
+    blobs = [
+        _git("rev-parse", "--verify", "-q", f"{rev}:{M6_REQUESTS}", cwd=cwd) for rev in (base, k)
+    ]
+    if any(blob.returncode != 0 for blob in blobs) or blobs[0].stdout != blobs[1].stdout:
+        problems.append(f"{M6_REQUESTS}: not byte-identical between B {base[:12]} and K {k[:12]}")
+    return problems
+
+
+def record_close(
+    queue: Path, document: Mapping[str, Any], k: str, batch_sha256: str, fixtures: Sequence[str]
+) -> Path:
+    """Write the close record of `document`'s batch at K; refused if B has one for another K."""
+    path = closed_record(queue, document["base"])
+    if path.is_file():
+        recorded = read(path)
+        if not isinstance(recorded, dict) or recorded.get("k") != k:
+            raise BatchRefusedError(f"{path}: batch base already closed at another K: {recorded}")
+    path.parent.mkdir(parents=True, exist_ok=True)
+    record = {
+        "batch": document["batch"],
+        "base": document["base"],
+        "k": k,
+        "batch_sha256": batch_sha256,
+        "fixtures": sorted(fixtures),
+    }
+    temporary = path.with_name(f".{path.name}.tmp")
+    temporary.write_text(json.dumps(record, indent=1) + "\n", encoding="utf-8")
+    os.replace(temporary, path)
+    return path
 
 
 def f0_line_problems(line: str) -> list[str]:
@@ -454,6 +528,28 @@ def command_batch_check(arguments: argparse.Namespace) -> int:
     return 0 if len(found) <= 1 else 1
 
 
+def command_close(arguments: argparse.Namespace) -> int:
+    done = _git("rev-parse", "--verify", "-q", f"{arguments.k}^{{commit}}")
+    if done.returncode != 0:
+        raise BatchRefusedError(f"--k {arguments.k}: no such commit")
+    k = done.stdout.strip()
+    name = arguments.batch or os.environ.get(VARIABLE)
+    if not name:
+        raise BatchRefusedError(f"close: no --batch and {VARIABLE} is not set")
+    document = load(Path(name), k)
+    fixtures = arguments.fixture or []
+    problems = close_problems(document["base"], k, fixtures)
+    for problem in problems:
+        print(problem)
+    where = f"K {k[:12]} of batch {document['batch']} (base {document['base'][:12]})"
+    if problems:
+        print(f"W5-K1 FAIL: {where}, {len(problems)} path(s) outside the close")
+        return 1
+    record = record_close(Path(arguments.queue_dir), document, k, digest(Path(name)), fixtures)
+    print(f"W5-K1 PASS: {where}, {len(fixtures)} fixture path(s); recorded in {record}")
+    return 0
+
+
 def command_f0(_: argparse.Namespace) -> int:
     document = from_environment()
     base, tier = document["base"], str(document["max_tier"])
@@ -521,7 +617,7 @@ def command_scope(arguments: argparse.Namespace) -> int:
     files = changed(document["base"])
     added = changed(document["base"], added=True)
     tiers = sets_at(document["base"])["tiers"]
-    problems = scope_problems(files, document, tiers, added, arguments.plans)
+    problems = scope_problems(files, document, tiers, added, arguments.plans or ())
     for problem in problems:
         print(problem)
     verdict = f"FAIL: {len(problems)} path(s) outside the batch" if problems else "PASS"
@@ -557,10 +653,23 @@ def main(argv: Sequence[str] | None = None) -> int:
     batch_check = commands.add_parser("batch-check")
     batch_check.add_argument("--queue-dir", required=True)
     batch_check.add_argument("--base", required=True)
+    close = commands.add_parser("close")
+    close.add_argument("--k", required=True, help="the batch close commit K")
+    close.add_argument("--queue-dir", required=True, help="the gate queue; K is recorded there")
+    close.add_argument("--batch", help=f"the batch file (default: {VARIABLE})")
+    close.add_argument(
+        "--fixture",
+        action="append",
+        help="a file of L_B's fixtures and constants that K may change (W5-K1); repeatable",
+    )
     for name in ("f0", "registry", "coverage"):
         commands.add_parser(name)
     scope = commands.add_parser("scope")
-    scope.add_argument("--plans", help="the glob of the restructure plan files a W5 step may add")
+    scope.add_argument(
+        "--plans",
+        action="append",
+        help="a glob of the plan files a W5 step may add (restructure, interface); repeatable",
+    )
     tests = commands.add_parser("tests")
     tests.add_argument("--log", required=True)
     tests.add_argument("command", nargs=argparse.REMAINDER)
@@ -569,6 +678,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         "validate": command_validate,
         "batch": command_batch,
         "batch-check": command_batch_check,
+        "close": command_close,
         "f0": command_f0,
         "registry": command_registry,
         "scope": command_scope,

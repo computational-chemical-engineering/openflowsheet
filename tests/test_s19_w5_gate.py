@@ -230,6 +230,7 @@ def test_s1_a_tier_2_file_outside_admitted_fails_naming_it(
 
 CONTRIBUTOR_PART = f"{SRC}/assessment/cost/contributor_terms.py"  # a new module in its directory
 PLANS = "plans/*.toml"  # config.toml passes the restructure plans' directory
+INTERFACE = "interface/*.toml"  # and the interface plans' (review R-W5-N-close item 4a)
 
 
 def test_s1_a_tier_1_split_and_a_restructure_plan_pass(
@@ -237,7 +238,7 @@ def test_s1_a_tier_1_split_and_a_restructure_plan_pass(
 ) -> None:
     files = [CONTRIBUTOR, CONTRIBUTOR_PART, "plans/r1-split.toml"]
     added = [CONTRIBUTOR_PART, "plans/r1-split.toml"]
-    assert gate.scope_problems(files, batch, sets["tiers"], added, PLANS) == []
+    assert gate.scope_problems(files, batch, sets["tiers"], added, [PLANS]) == []
 
 
 def test_s1_new_paths_outside_a_tier_1_directory_and_unadmitted_tiers_fail(
@@ -254,7 +255,7 @@ def test_s1_new_paths_outside_a_tier_1_directory_and_unadmitted_tiers_fail(
     files = [beside_feed, data, tier_1, tier_3, "plans/sub/r1.toml", "other/r1.toml"]
     added = [beside_feed, data, "plans/sub/r1.toml", "other/r1.toml"]
     outside = ": outside the batch's admitted, generator and retarget sets"
-    assert gate.scope_problems(files, batch, sets["tiers"], added, PLANS) == [
+    assert gate.scope_problems(files, batch, sets["tiers"], added, [PLANS]) == [
         f"{path}{outside}" for path in sorted(files)
     ]
     # without the plans glob, or for a file that exists at B, a plan-like path is refused too
@@ -264,6 +265,46 @@ def test_s1_new_paths_outside_a_tier_1_directory_and_unadmitted_tiers_fail(
     assert gate.scope_problems(["plans/r1.toml"], batch, sets["tiers"], ["plans/r1.toml"]) == [
         f"plans/r1.toml{outside}"
     ]
+
+
+def test_s1_an_added_plan_under_either_glob_passes_a_modified_one_fails(
+    batch: dict[str, Any], sets: dict[str, Any]
+) -> None:
+    """Item 4a: a plan file passes by glob only if absent at B; an existing plan file is in
+    scope only when the batch names it (batch N's retarget list names its interface plans)."""
+    plans = [PLANS, INTERFACE]
+    added = ["plans/r2-split.toml", "interface/w5l1.toml"]
+    assert gate.scope_problems(added, batch, sets["tiers"], added, plans) == []
+    modified = ["plans/r1-split.toml", "interface/w5n2.toml"]
+    outside = ": outside the batch's admitted, generator and retarget sets"
+    assert gate.scope_problems([*added, *modified], batch, sets["tiers"], added, plans) == [
+        f"interface/w5n2.toml{outside}",
+        f"plans/r1-split.toml{outside}",
+    ]
+    batch["retarget"].append("interface/w5n2.toml")
+    assert gate.scope_problems(modified, batch, sets["tiers"], added, plans) == [
+        f"plans/r1-split.toml{outside}"
+    ]
+
+
+def test_s1_the_scope_command_takes_plans_repeatedly(
+    batch: dict[str, Any], monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    seen: dict[str, Any] = {}
+
+    def problems(files, document, tiers, added, plans):  # type: ignore[no-untyped-def]
+        seen.update(files=files, added=added, plans=list(plans))
+        return []
+
+    monkeypatch.setattr(gate, "from_environment", lambda: batch)
+    monkeypatch.setattr(gate, "changed", lambda base, added=False: ["b"] if added else ["a", "b"])
+    monkeypatch.setattr(gate, "sets_at", lambda base: {"tiers": {}})
+    monkeypatch.setattr(gate, "scope_problems", problems)
+    assert gate.main(["scope", "--plans", PLANS, "--plans", INTERFACE]) == 0
+    assert seen == {"files": ["a", "b"], "added": ["b"], "plans": [PLANS, INTERFACE]}
+    assert gate.main(["scope"]) == 0
+    assert seen["plans"] == []
+    assert capsys.readouterr().out.splitlines()[-1].startswith("w5 scope (W5-S1) PASS")
 
 
 def test_s1_syn001_fails_even_when_admitted(batch: dict[str, Any], sets: dict[str, Any]) -> None:
@@ -485,3 +526,101 @@ def test_a_tier_refuses_batch_p(batch: dict[str, Any], tmp_path: Path, tier: str
         [sys.executable, str(TOOL), tier], cwd=ROOT, env=environment, capture_output=True, text=True
     )
     assert done.returncode == 2 and "W5-S2" in done.stdout
+
+
+# -- W5-K1: the batch close K (review R-W5-N-close item 4d) ---------------------------------------
+
+B_N = "605d332fc062701ff658aaef45a31dd68c9f3739"  # batch N's base
+K_N = "4178e4bcd508dd839f11618610a55feffa578f86"  # batch N's close
+K_N_FIXTURE = "tests/test_f1_legacy_builtins.py"  # the factory's expected value (WO-N4's L_B)
+
+
+def _repository(path: Path) -> Callable[..., str]:
+    def git(*arguments: str) -> str:
+        done = subprocess.run(
+            ["git", "-c", "user.name=t", "-c", "user.email=t@t", *arguments],
+            cwd=path,
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        return done.stdout.strip()
+
+    git("init", "-q")
+    return git
+
+
+def _commit(path: Path, git: Callable[..., str], files: dict[str, str]) -> str:
+    for name, text in files.items():
+        (path / name).parent.mkdir(parents=True, exist_ok=True)
+        (path / name).write_text(text)
+    git("add", *files)
+    git("commit", "-q", "-m", "c")
+    return git("rev-parse", "HEAD")
+
+
+def test_k1_an_extra_file_or_a_moved_m6_request_fails_a_clean_close_passes(
+    tmp_path: Path,
+) -> None:
+    git = _repository(tmp_path)
+    corpus, m6, golden = gate.CLOSE_PATHS[0], gate.M6_REQUESTS, "tests/fixtures/st/golden.json"
+    base = _commit(tmp_path, git, {corpus: "0\n", m6: "r\n", golden: "g\n", "src/a.py": "a\n"})
+    clean = _commit(tmp_path, git, {corpus: "1\n", gate.CLOSE_PATHS[4]: "t\n"})
+    assert gate.close_problems(base, clean, [], tmp_path) == []
+    extra = _commit(tmp_path, git, {corpus: "2\n", golden: "h\n", "src/a.py": "b\n"})
+    assert gate.close_problems(base, extra, [golden], tmp_path) == [
+        "src/a.py: outside W5-K1's list (and no --fixture)"
+    ]
+    assert gate.close_problems(base, extra, [], tmp_path) == [
+        f"{path}: outside W5-K1's list (and no --fixture)" for path in ("src/a.py", golden)
+    ]
+    _commit(tmp_path, git, {m6: "s\n"})
+    moved = _commit(tmp_path, git, {corpus: "3\n"})  # K itself is clean, B..K moved a request
+    assert gate.close_problems(base, moved, [], tmp_path) == [
+        f"{m6}: not byte-identical between B {base[:12]} and K {moved[:12]}"
+    ]
+
+
+def test_k1_replays_batch_n_and_records_its_close(batch: dict[str, Any], tmp_path: Path) -> None:
+    """Batch N's K: without its L_B fixture it fails naming it; with it, PASS and K recorded.
+    The same K again passes; another K for the same base is refused."""
+    path = _write(tmp_path / "n.json", {**batch, "base": B_N})
+    queue = tmp_path / "queue"
+    close = ("close", "--k", K_N[:8], "--batch", str(path), "--queue-dir", str(queue))
+    failed = _cli(*close)
+    assert failed.returncode == 1, failed.stdout
+    assert failed.stdout.splitlines() == [
+        f"{K_N_FIXTURE}: outside W5-K1's list (and no --fixture)",
+        f"W5-K1 FAIL: K {K_N[:12]} of batch N (base {B_N[:12]}), 1 path(s) outside the close",
+    ]
+    assert not queue.exists()
+    passed = _cli(*close, "--fixture", K_N_FIXTURE)
+    assert passed.returncode == 0, passed.stdout
+    record = gate.closed_record(queue, B_N)
+    assert passed.stdout.strip() == (
+        f"W5-K1 PASS: K {K_N[:12]} of batch N (base {B_N[:12]}), 1 fixture path(s); "
+        f"recorded in {record}"
+    )
+    assert json.loads(record.read_text()) == {
+        "batch": "N",
+        "base": B_N,
+        "k": K_N,
+        "batch_sha256": gate.digest(path),
+        "fixtures": [K_N_FIXTURE],
+    }
+    assert _cli(*close, "--fixture", K_N_FIXTURE).returncode == 0
+    with pytest.raises(gate.BatchRefusedError, match="already closed at another K"):
+        gate.record_close(queue, {"batch": "N", "base": B_N}, "f" * 40, "a" * 64, [])
+    assert json.loads(record.read_text())["k"] == K_N
+
+
+def test_k1_needs_a_batch_and_a_k_that_descends_from_b(
+    batch: dict[str, Any], tmp_path: Path
+) -> None:
+    queue = str(tmp_path / "queue")
+    no_batch = _cli("close", "--k", K_N, "--queue-dir", queue)
+    assert no_batch.returncode == 2 and "S19_W5_BATCH is not set" in no_batch.stdout
+    path = str(_write(tmp_path / "n.json", {**batch, "base": K_N}))
+    before = _cli("close", "--k", B_N, "--batch", path, "--queue-dir", queue)
+    assert before.returncode == 2 and "not an ancestor of the head" in before.stdout
+    assert _cli("close", "--k", "0" * 40, "--batch", path, "--queue-dir", queue).returncode == 2
