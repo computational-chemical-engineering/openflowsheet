@@ -3826,3 +3826,9 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   registered MATCH; run/replay.py:239 inspects a Linux-written bundle only): per-platform M7 reference (ADR 0067 D7).
   Both left failing. Log `docs/X07a_DECISIONS.md` on wp/X07a (D-1 to D-12, platform-limit rows).
 - 2026-11-20, gate_report before self-reset: three ALERTs (selected share 25%; 401 s; wait 36 min); action unchanged.
+- 2026-11-19 23:40 (clock), resumed after the self-reset. Queue empty, runner PID 1341562, COUNT 494. Launched two
+  agents (opus-engineer, Opus): S19 T6, W5 batch tooling (brief `<git-common-dir>/codehealth/briefs/S19-T6-w5-tooling.md`,
+  lane wp/S19-tools6 from 8e6a374e; review item 4 (a), (b), (d); (c) stays with the design lane), and X01-WO1 (0.5
+  lane, brief `docs/briefs/X01-WO1.md` on wp/X01). X07a-WO2 waits: CI runs 44629325836 and 44629506428 were still in
+  progress at 23:33. DECISION: X01 takes the 0.5 slot before X07a-WO2 -> yes, its CI need not be read first.
+  Alternative: wait for X07a's CI. Reversible by: none needed (independent lanes).
