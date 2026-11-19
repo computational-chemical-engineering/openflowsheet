@@ -36,6 +36,7 @@ from openflowsheet.verify.table_kit import (
     DECLARED_ENTHALPY_NOTE,
     SPLIT_ENTHALPY_NOTE,
     UNRESOLVED_ENTHALPY_NOTE,
+    Judging,
     blocked_check,
 )
 from openflowsheet.verify.unit_checks import MODEL_CHECKS
@@ -49,16 +50,7 @@ if TYPE_CHECKING:
 
 
 def _split_checks(
-    split: LiftedSplit,
-    components: Sequence[str],
-    state: Mapping[str, float],
-    provider: PropertyProvider,
-    context: EvaluationContext,
-    tolerances: Mapping[str, float],
-    note: str,
-    distance: float | None = None,
-    *,
-    unresolved: bool = False,
+    split: LiftedSplit, judging: Judging, distance: float | None = None, *, unresolved: bool = False
 ) -> list[CheckResult]:
     """K04 §4.7 on one lifted split, read from the state at the split's `(T, P)`: K03 §8.2's
     admissibility (`_split_admissibility`), then a fresh flash of the split's feed compared with
@@ -78,20 +70,20 @@ def _split_checks(
     subject = split.stream
 
     if distance is not None:
-        return _degenerate_split_checks(name, subject, distance, tolerances, note)
+        return _degenerate_split_checks(name, subject, distance, judging.tolerances, judging.note)
 
     at = _SplitAt(
         name,
         subject,
-        vapor=tuple(state[column] for column in split.vapor),
-        liquid=tuple(state[column] for column in split.liquid),
-        temperature=state[split.temperature],
-        pressure=state[split.pressure],
+        vapor=tuple(judging.state[column] for column in split.vapor),
+        liquid=tuple(judging.state[column] for column in split.liquid),
+        temperature=judging.state[split.temperature],
+        pressure=judging.state[split.pressure],
     )
-    checks = [_split_admissibility(at, provider, context, tolerances, note)]
+    checks = [_split_admissibility(at, judging)]
 
     carried = StreamState(
-        n=tuple(state[column] for column in split.feed),
+        n=tuple(judging.state[column] for column in split.feed),
         temperature=at.temperature,
         pressure=at.pressure,
     )
@@ -111,7 +103,7 @@ def _split_checks(
         )
         return checks
 
-    flashed = provider.flash(FlashRequest(state=carried), context)
+    flashed = judging.provider.flash(FlashRequest(state=carried), judging.context)
     if flashed.status != "ok" or flashed.vapor is None:
         raise VerifierError(f"the verifier's own split of {name} returned {flashed.status}")
     checks.append(
@@ -119,22 +111,22 @@ def _split_checks(
             id=f"independent_split.{name}.total",
             category="independent_split",
             subject=subject,
-            value=state[split.vapor_total] - sum(flashed.vapor.n),
-            tolerance=tolerances["molar_flow"],
+            value=judging.state[split.vapor_total] - sum(flashed.vapor.n),
+            tolerance=judging.tolerances["molar_flow"],
             reference=KIND_REFERENCE["molar_flow"],
-            independence_qualification=note,
+            independence_qualification=judging.note,
         )
     )
-    for index, component in enumerate(components):
+    for index, component in enumerate(judging.components):
         checks.append(
             evaluated(
                 id=f"independent_split.{name}.{component}",
                 category="independent_split",
                 subject=subject,
                 value=at.vapor[index] - flashed.vapor.n[index],
-                tolerance=tolerances["molar_flow"],
+                tolerance=judging.tolerances["molar_flow"],
                 reference=KIND_REFERENCE["molar_flow"],
-                independence_qualification=note,
+                independence_qualification=judging.note,
             )
         )
     return checks
@@ -181,94 +173,75 @@ class _SplitAt(NamedTuple):
     pressure: float
 
 
-def _split_admissibility(
-    at: _SplitAt,
-    provider: PropertyProvider,
-    context: EvaluationContext,
-    tolerances: Mapping[str, float],
-    note: str,
-) -> CheckResult:
+def _split_admissibility(at: _SplitAt, judging: Judging) -> CheckResult:
     """K03 §8.2's admissibility of the split read `at` (K04 §4.7): `phase_admissibility.<U>.<S>`
     `not_applicable` when both phases are empty; else, from `k_values` at the split's `(T, P)`,
     the bubble test of an all-liquid split, the dew test of an all-vapour one, or the two-phase
-    closure (`closure_check`, at the temperature kind's tolerance of `tolerances`), each qualified
-    by `note`."""
+    closure (`closure_check`, at the temperature kind's tolerance of `judging.tolerances`), each
+    qualified by `judging.note`."""
     total_vapor, total_liquid = sum(at.vapor), sum(at.liquid)
     if total_vapor + total_liquid == 0.0:
         return dormant(
             id=f"phase_admissibility.{at.name}", category="phase_admissibility", subject=at.subject
         )
-    constants = k_values(provider, at.temperature, at.pressure, context)
+    constants = k_values(judging.provider, at.temperature, at.pressure, judging.context)
     if total_vapor == 0.0:
         return _one_sided(
             id=f"phase_admissibility.{at.name}.bubble",
             subject=at.subject,
             value=sum(x * k for x, k in zip(_fractions(at.liquid), constants, strict=True)),
-            note=note,
+            note=judging.note,
         )
     if total_liquid == 0.0:
         return _one_sided(
             id=f"phase_admissibility.{at.name}.dew",
             subject=at.subject,
             value=sum(y / k for y, k in zip(_fractions(at.vapor), constants, strict=True)),
-            note=note,
+            note=judging.note,
         )
     return closure_check(
         id=f"phase_admissibility.{at.name}.closure",
         subject=at.subject,
-        provider=provider,
+        provider=judging.provider,
         vapor=at.vapor,
         liquid=at.liquid,
         temperature=at.temperature,
         pressure=at.pressure,
-        context=context,
-        tolerance=tolerances["temperature"],
-        note=note,
+        context=judging.context,
+        tolerance=judging.tolerances["temperature"],
+        note=judging.note,
     )
 
 
 def _declared_phase(
-    stream: str,
-    phase: Phase,
-    components: Sequence[str],
-    state: Mapping[str, float],
-    enthalpy: Mapping[str, float],
-    provider: PropertyProvider,
-    context: EvaluationContext,
+    stream: str, phase: Phase, enthalpy: Mapping[str, float], judging: Judging
 ) -> float:
     """`(Ḣ(S) − Ḣ_φ(S)) / Σ_i n_i ∂h_i^φ/∂T` at the stream's `(T, P)`: how far, in kelvin, the
     stream's fresh-flash enthalpy is from the declared phase's."""
-    carried = stream_of(state, stream)
-    result = provider.evaluate_phase(
+    carried = stream_of(judging.state, stream)
+    result = judging.provider.evaluate_phase(
         PropertyRequest(state=carried, phase=phase, properties=("h",), derivatives=("T",)),
-        context,
+        judging.context,
     )
     if result.status != "ok":
         raise VerifierError(
             f"the verifier's own {phase} enthalpy of {stream} returned {result.status}"
         )
     phase_enthalpy, capacity = 0.0, 0.0
-    for component, flow in zip(components, carried.n, strict=True):
+    for component, flow in zip(judging.components, carried.n, strict=True):
         phase_enthalpy += flow * result.values[f"h_{component}"]
-    for component, flow in zip(components, carried.n, strict=True):
+    for component, flow in zip(judging.components, carried.n, strict=True):
         capacity += flow * result.derivatives[f"h_{component}"]["T"]
     return (enthalpy[stream] - phase_enthalpy) / capacity
 
 
 def _declared_port_checks(
-    view: RevisionView,
-    state: Mapping[str, float],
-    enthalpy: Mapping[str, float],
-    provider: PropertyProvider,
-    context: EvaluationContext,
-    tolerances: Mapping[str, float],
-    note: str,
-    degenerate: Degeneracy,
+    view: RevisionView, enthalpy: Mapping[str, float], degenerate: Degeneracy, judging: Judging
 ) -> list[CheckResult]:
     checks: list[CheckResult] = []
     for declared in _declared_streams(view):
         identifier, stream = declared.identifier, declared.stream
-        if stream_of(state, stream, view.components).is_dormant:
+        if stream_of(judging.state, stream, view.components).is_dormant:
             checks.append(dormant(id=identifier, category="phase_admissibility", subject=stream))
             continue
         if stream in degenerate.unlifted:
@@ -279,12 +252,10 @@ def _declared_port_checks(
                 id=identifier,
                 category="phase_admissibility",
                 subject=stream,
-                value=_declared_phase(
-                    stream, declared.phase, view.components, state, enthalpy, provider, context
-                ),
-                tolerance=tolerances["temperature"],
+                value=_declared_phase(stream, declared.phase, enthalpy, judging),
+                tolerance=judging.tolerances["temperature"],
                 reference=KIND_REFERENCE["temperature"],
-                independence_qualification=note + degenerate.notes.get(stream, ""),
+                independence_qualification=judging.note + degenerate.notes.get(stream, ""),
             )
         )
     return checks

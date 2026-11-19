@@ -178,9 +178,7 @@ def _two_phase_state(split: LiftedSplit, n: tuple[float, ...], t: float) -> dict
 
 def _admissibility(split: LiftedSplit, state: Mapping[str, float]) -> Any:
     (check,) = [
-        c
-        for c in pr_c1.split_checks(split, COMPONENTS, state, PROVIDER, CONTEXT, TOLERANCES, NOTE)
-        if c.category == "phase_admissibility"
+        c for c in pr_c1.split_checks(split, _judging(state)) if c.category == "phase_admissibility"
     ]
     return check
 
@@ -238,7 +236,7 @@ def test_g7j_a_declared_vapour_port_fails_at_1e_8_and_a_declared_liquid_is_unsup
     state = {f"S1.n.{c}": v for c, v in zip(COMPONENTS, _raised(F4, 1e-8 / 0.06155), strict=True)}
     state.update({"S1.T": t, "S1.P": 1.0e7})
     ports = {"c1.tp_flash": (("inlet", False),)}
-    (check,) = pr_c1.declared_port_checks(view, state, PROVIDER, CONTEXT, NOTE, ports)
+    (check,) = pr_c1.declared_port_checks(view, ports, _judging(state))
     assert check.id == "phase_admissibility.U.inlet"
     assert check.result == "fail" and 0.9e-8 < check.value < 1.1e-8
     liquid = {"c1.tp_flash": (("liquid", False),)}
@@ -246,7 +244,7 @@ def test_g7j_a_declared_vapour_port_fails_at_1e_8_and_a_declared_liquid_is_unsup
         {f"S3.n.{c}": v for c, v in zip(COMPONENTS, (0.0, 0.0, 1.0, 0.0, 0.0), strict=True)}
     )
     state.update({"S3.T": t, "S3.P": 1.0e7})
-    (unsupported,) = pr_c1.declared_port_checks(view, state, PROVIDER, CONTEXT, NOTE, liquid)
+    (unsupported,) = pr_c1.declared_port_checks(view, liquid, _judging(state))
     assert (unsupported.result, unsupported.reason) == (
         "unsupported",
         "pr_declared_liquid_unsupported",

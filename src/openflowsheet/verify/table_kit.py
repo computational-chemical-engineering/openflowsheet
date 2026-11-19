@@ -58,7 +58,8 @@ UNRESOLVED_ENTHALPY_NOTE: Final = (
 class Unit:
     """One instance as a table entry reads it: its revision view, the state being judged, each
     stream's fresh-flash enthalpy flow, the tolerances, and the qualification its energy rows
-    carry. Ids are `<category>.<unit>.<item>` (spec §12.1)."""
+    carry. Ids are `<category>.<unit>.<item>` (spec §12.1). `state`, `components`, `provider`,
+    `context` and `tolerances` are `Judging`'s fields of the same names."""
 
     view: InstanceView
     state: Mapping[str, float]
@@ -184,6 +185,24 @@ class Unit:
                 tolerance / NEAR_THRESHOLD_MARGIN < value <= tolerance * NEAR_THRESHOLD_MARGIN
             ),
         )
+
+
+@dataclass(frozen=True)
+class Judging:
+    """What a check of the split family judges with (T05 design note §4.3; ADR 0013 D1): the
+    state the fresh-flash checks read, the order a stream's flows are read in, the fresh provider
+    and the declaration's context, the tolerances by kind and the provider's qualification note.
+    Its fields carry `Unit`'s names for the same values."""
+
+    #: `judged_at` (ADR 0013 D1; K04-F9 spec §5.1), or the certified state when that is `None`.
+    state: Mapping[str, float]
+    #: The revision's component order (`RevisionView.components`; M02 design note §14.2 B15 item 1).
+    components: tuple[str, ...]
+    provider: PropertyProvider
+    context: EvaluationContext
+    tolerances: Mapping[str, float]
+    #: `checks.qualification(provider)` (A09).
+    note: str
 
 
 def stream_notes(reads: Sequence[str], notes: Mapping[str, str]) -> str:
