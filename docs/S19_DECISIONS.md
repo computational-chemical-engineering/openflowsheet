@@ -3479,3 +3479,5 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   lazily. Reviewer brief `S19-R-W4-I20.md` (Opus), launched on PASS of 459-461.
 - 2026-11-19, job 434 (w5n2-6) PASS (step 429 accepted, 29.0 -> 14.0). gate_report: the four ALERTs (43%; 1186 s;
   0.82; wait 37 min); action unchanged.
+- 2026-11-19, job 452 (g2b-3) PASS (step 430 accepted, 42.2 -> 0: `declared_rows` brain gone). gate_report: the four
+  ALERTs (46%; 1150 s; 0.80; wait 38 min); action unchanged.
