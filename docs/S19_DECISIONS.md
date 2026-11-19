@@ -3870,3 +3870,9 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   Reversible by: reverting the lane. The engineer hands back without enqueueing; the orchestrator re-pins
   cce-code-health to 34a30bf (on origin/main; CI green on its descendants) once job 517 is done, then enqueues.
   Agents: X01-WO1, RegionCall.
+- 2026-11-20, job 517 (n6-mc, merge-check f3089ee0..f8e10957) PASS 10/10 (full suite). The WO-N6 retarget waits for
+  a reviewer read (S19_RULES: retarget read before merge), folded into the RegionCall lane's review.
+- 2026-11-20, cce-code-health re-pinned to 34a30bf (requirements-codehealth.txt; `.venv-codehealth` reinstalled,
+  `codehealth --version` 0.4.1.dev18+g34a30bf47) with the queue idle (decision of 2026-11-19, line "when to re-pin").
+  Check: `codehealth arch --depth 4` at the wp/S19 tip: 0 violations, 0 cycles (329 files). Reversible by pinning
+  back to cf152455.
