@@ -3502,3 +3502,6 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   saving on a fallback, as designed. gate_report: the four ALERTs (45%; 1096 s; 0.69; 38 min).
 - 2026-11-19, job 460 (i20-2, interface `i20b-split-rows`) PASS (step 435 accepted, 35.1 -> 24.7, 20/20). gate_report:
   the four ALERTs (48%; 1041 s; 0.66; 38 min).
+  Proposal 2's first selected gate: "11 files listed, 7 of them selected and not run here" (f0_corpus_identity,
+  k05_replay, m04_wo9, t07_identity, t07_v17_reference, t08_w1, t08_w2), selected 154 files, 4002 passed, wall 757 s
+  (6 h selected median 1041-1186 s). Condition (a) holds.
