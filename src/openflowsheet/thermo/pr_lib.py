@@ -508,9 +508,9 @@ def _values(mix: _Mixture, z: float) -> dict[str, float]:
 def _derivatives(mix: _Mixture, z: float) -> dict[str, tuple[float, float, tuple[float, ...]]]:
     """(∂X/∂T, ∂X/∂P, ∂X/∂y_k) of every property, the root differentiated through the cubic.
 
-    The y_k are treated as independent (the caller projects onto the simplex). With F(Z, A, B) the
-    cubic, dZ = −(F_A dA + F_B dB)/F_Z; every other derivative is the chain rule on the closed
-    forms (M01 spec §4.6).
+    The y_k are treated as independent (`_requested_derivatives` projects onto the simplex).
+    With F(Z, A, B) the cubic, dZ = −(F_A dA + F_B dB)/F_Z; every other derivative is the chain
+    rule on the closed forms (M01 spec §4.6).
     """
     par = parameters()
     b, t, p, y = par.b, mix.temperature, mix.pressure, mix.y
@@ -785,20 +785,7 @@ class PrLibProvider:
         values = {name: everything[name] for name in request.properties}
         derivatives: dict[str, dict[str, float]] = {}
         if request.derivatives:
-            raw = _derivatives(mix, z)
-            for name in request.properties:
-                by_t, by_p, by_y = raw[name]
-                mean = sum(mix.y[k] * by_y[k] for k in range(NC))
-                entry: dict[str, float] = {}
-                for wanted in request.derivatives:
-                    if wanted == "T":
-                        entry[wanted] = by_t
-                    elif wanted == "P":
-                        entry[wanted] = by_p
-                    else:
-                        k = COMPONENTS.index(wanted.removeprefix("n_"))
-                        entry[wanted] = (by_y[k] - mean) / total
-                derivatives[name] = entry
+            derivatives = _requested_derivatives(request, mix, z, total)
 
         return PropertyResult(
             status="ok",
@@ -860,6 +847,32 @@ def _request_refusal(request: PropertyRequest) -> PropertyResult | None:
     if state.is_dormant:
         return _refused("unsupported", "dormant_state: composition undefined")
     return None
+
+
+def _requested_derivatives(
+    request: PropertyRequest, mix: _Mixture, z: float, total: float
+) -> dict[str, dict[str, float]]:
+    """Each requested property's derivatives with respect to the requested inputs.
+
+    ∂/∂T and ∂/∂P are `_derivatives`' own; ∂/∂n_k projects its composition derivatives onto the
+    simplex, (∂X/∂y_k − Σ_j y_j ∂X/∂y_j)/n_tot. Keyed by property, then input, in request order.
+    """
+    raw = _derivatives(mix, z)
+    derivatives: dict[str, dict[str, float]] = {}
+    for name in request.properties:
+        by_t, by_p, by_y = raw[name]
+        mean = sum(mix.y[k] * by_y[k] for k in range(NC))
+        entry: dict[str, float] = {}
+        for wanted in request.derivatives:
+            if wanted == "T":
+                entry[wanted] = by_t
+            elif wanted == "P":
+                entry[wanted] = by_p
+            else:
+                k = COMPONENTS.index(wanted.removeprefix("n_"))
+                entry[wanted] = (by_y[k] - mean) / total
+        derivatives[name] = entry
+    return derivatives
 
 
 def _refused(status: PropertyStatus, message: str) -> PropertyResult:
