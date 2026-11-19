@@ -3042,3 +3042,11 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   OK on R2 and C3; RC5 counts equal; patch_noop 0; no docs yaml names the modules; S2 STOP grep empty. Four
   deviations (two extra R2 methods for RC7, `eq=False`, closure names kept for test_t03_contract.py:894-896's frame
   name, C3 split in two) go to review R-W3-G1O-5 (brief written), launched when the three gates pass.
+- **2026-11-19 ~02:50 CET, WO-N1b delivered (opus-engineer):** 95596562 rule-7 docstrings no-gain (job 370), then
+  sets.py in 11 steps b671925e..b73142ef (jobs 371 to 384 less 374, 378, 381; debt 128.4 -> 24.1, health 4.7 -> 9.2,
+  in-file only). Deviations for the N1 review: (1) df9a31df's message and `Codehealth-Debt` trailer say parse_set
+  16.0 -> 0, the scan says 16.0 -> 6.0 (b1c827f7's message corrects it; not amended); (2) steps 21 to 23 drop only
+  1 to 2 points each, taken for the health penalty count; (3) new helpers return their reasons (playbook rule 3),
+  unlike the file's existing `_check_*` that append to a list. Left: `_resolve` (24.1, cog 38; its `take` closure
+  writes four side tables: a class or thin-adapter design, for the N1 review to rule), contributor.py split, `items`,
+  `_capital`, `_theta`, `_regime`. Self-reset next (no agent running).

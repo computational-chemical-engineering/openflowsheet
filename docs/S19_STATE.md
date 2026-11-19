@@ -56,7 +56,7 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 - G1 (orchestrator/, numerics/) running since 2026-11-18 (hold lifted 2026-11-16); ptc.py item met (8.3 after P3).
 - G-END (below) stays the end criterion for the whole repository.
 
-## Next actions (2026-11-19 ~02:25 CET)
+## Next actions (2026-11-19 ~02:50 CET; self-reset)
 
 **Position:** wp/S19 = a92f0290 + docs (lane O run 4 merged; W5 gate mode merged 9e8b3baf; WO-1b merged 9a607a3a,
 R-1060). MB 756e1c12. Runner PID 1341562 (restarted 2026-11-19 with `--batch`; stop `kill $(cat
@@ -66,10 +66,11 @@ without saying why: run `$Q status`.
 A26's new node id); branch `wp/S19-w5n`, worktree `s19-w5n`. W5-mode gates fall back to the full suite (~1500 s).
 - WO-N1 part 1 (brief `S19-W5-N1.md`): retarget 3cd5ff50 (job 358 PASS) and contributor.py 23b62a68..a3d7ba21 (jobs
   360 PASS, 361 to 369 pending; health 2.8 -> 7.9).
-- WO-N1b (brief `S19-W5-N1b.md`, opus-engineer, running at the time of writing): rule-7 docstrings no-gain on
-  contributor.py, then sets.py 4.7 -> >= 7.0, labels `w5n1-12` on.
+- WO-N1b (brief `S19-W5-N1b.md`) delivered: 95596562 docstrings no-gain (job 370), sets.py b671925e..b73142ef
+  (jobs 371-373, 375-377, 379, 380, 382-384; health 4.7 -> 9.2). Three deviations and `_resolve`'s open design
+  (S19_DECISIONS 02:50) go to the N1 review.
 - After WO-N1(b)'s jobs PASS: review (reviewer, Opus; S2 cadence every 4 steps, so one review over the whole N1 chain
-  is due: write `S19-R-W5-N1.md` from `S19-R-W3-G1O-5.md`'s form), fixes, then WO-N2 (lca retargets, lca health,
+  (3cd5ff50..b73142ef, 23 steps) is due: write `S19-R-W5-N1.md` from `S19-R-W3-G1O-5.md`'s form), fixes, then WO-N2 (lca retargets, lca health,
   remove `program.Refusal` re-export, its eight importers), WO-N3 (pr_lib, S1), WO-N4 (factory switch, `--mode
   interface`), WO-N5 (close: K, judge, batch-check, review), merge batch N into wp/S19 (FR-2 B). Every W5 enqueue adds
   `--batch <json>`. contributor.py's split toward 9.0 deferred (S19_DECISIONS 02:10).
