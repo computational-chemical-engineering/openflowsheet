@@ -170,6 +170,8 @@ class _ContributionBuilder:
     State, the product tables, each written only by its append method: `variables` and
     `variable_kinds` by `column`, `equations` and `row_kinds` by `row`, `parameter_ids` and
     `parameters` by `pin`, `blocks` and `block_inputs` by `lnk_block` and `enthalpy_block`.
+    On a repeated id (none after `validate`) the lists keep every entry, in append order, and
+    the dicts the last one written.
     The phases (`property_blocks`, `total_condenser_rows`, `stage_rows`, `slot`,
     `inlet_pin_rows`) and their helpers write only through these; `contribution` reads them.
     """
