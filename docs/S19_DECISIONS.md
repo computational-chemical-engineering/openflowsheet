@@ -3377,3 +3377,4 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   comment; AST without docstrings identical), job 438 `pr1b-fix` no-gain.
   Merge-check helper `wp/S19-w4r-mc` (worktree s19-w4r-mc) = 79e07265 + merge pr1b + merge pr2 (ba040641; wp/S19 docs
   only since 272011be; ruff clean): job 439 `w4r-mc`. Both PASS -> merge both lanes into wp/S19.
+- 13:20: arch at wp/S19 tip 0 violations, 0 cycles. DECISION: WO-N3b (cost/derived.py 7.7, forms.py 7.2; brains `DerivedContributor.plan`, `select`) after WO-N3 in batch N -> G-END brain 0. Alternative: leave them to a later batch. Reversible by: dropping WO-N3b. State rewritten.

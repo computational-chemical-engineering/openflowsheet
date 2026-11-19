@@ -56,45 +56,31 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 - G1 (orchestrator/, numerics/): W3 lanes N and O closed 2026-11-19 (272011be); residuals executor.py (PR-1b, 6.1 -> 9.0, gating) and `_solve_region`'s parameter object (W4).
 - G-END (below) stays the end criterion for the whole repository.
 
-## Next actions (2026-11-19 ~11:05 CET; self-reset)
+## Next actions (2026-11-19 ~13:20 CET)
 
-**Since the 08:25 reset:** lane O run 9 reviewed (R-W3-G1O-9: merge after fix 1), fix a527c201 (job 423), merge-check
-424 PASS, **merged into wp/S19 as 272011be**; G1's W3 lanes N and O closed, their worktrees and branches removed.
-G1 end numbers (scan e39bff0b): 0 brain in orchestrator/ and numerics/, every file >= 7.0 except executor.py 6.1.
-**PR-1** (opus-engineer) took executor.py 6.1 -> 9.0 (debt 51.2 -> 16.0, no file smell; repo 3492.8 -> 3457.6,
-health 8.45) but the interface tool refuses a private `changed` entry and a spy edit; I also found one behaviour
-change (`_converge`'s `_eo_recovery` call read the plan's revision continuation; it passed None before). Rebuilt as
-**PR-1b** (sonnet-implementer) with the None restored. Batch N WO-N1/N1b all PASS (jobs 411-417), **review R-W5-N1:
-merge, fix 1 docstring** applied as a059b9a0 (job 427). S19_RULES' retarget rule gained the red-retarget clause.
-Gate report: the four standing ALERTs only (selected 1147 s, ratio 0.84, share 44%, wait median 48 min; proposal 2).
-No agent running.
+**Since 11:05:** PR-1b's jobs 425, 426 PASS; PR-2 (`_solve_region` -> `_RegionCall`, region.py 7.8 -> 9.3) job 430
+PASS; one review R-W4-PR-1b+2 (`docs/reviews/S19-R-W4-PR-1b-2.md`): PR-2 merge, PR-1b merge after fixes 1, 2 (done
+by the orchestrator: B/C reworded as ddb2e96a/7cdee3ca, trees equal; fix 1 db304c0f job 438). WO-N1 closed (job 427).
+WO-N2 delivered (jobs 428 PASS, 429, 431-436 pending): lca inventory 9.6, tables 9.0, impact 9.0, brightway 8.8 (kept:
+needs the lca extra), `program.Refusal` re-export removed. Batch N gate file amended (retarget = program.py, sha256
+49f4c9e3). Arch at the wp/S19 tip: **0 violations, 0 cycles** (depth 4).
 
-**Position:** wp/S19 = 272011be + docs. MB 756e1c12. Runner PID 1341562 (`--batch`; stop `kill
-$(cat <git-common-dir>/codehealth/queue/runner.pid)`). Background `gate_queue.py wait` shells may wake the new
-context without saying why: run `$Q status`, then `$Q wait --since <COUNT>` in the background (COUNT 403 at reset).
-**`enqueue --rerun-of` takes the RUN-LOG step from the failed result line, never the queue job.**
-**W4 residual PR-1b** (`wp/S19-pr1b`, worktree `s19-pr1b`, base 272011be; briefs `S19-W4-PR-1.md`, `S19-W4-PR-1b.md`):
-A dcd1b9a4 (adapt, red alone: test_t04_edge3.py::test_a09_rcy_stalls_linear_solve_failure_is_not_a_trigger), B 53484cf0
-(step, job 425), C d65497b4 (no-gain, job 426). On both PASS: review R-W4-PR-1b (reviewer, Opus; brief
-`S19-R-W4-PR-1b.md` written; add the gate results), fixes, merge-check helper `wp/S19-pr1b-mc` = wp/S19 tip + merge of
-the lane (ruff first; `--mode merge-check --label pr1b-mc --target src/openflowsheet/orchestrator/executor.py
---recipe interface --model claude-opus-5-5`), merge. Then remove worktrees s19-pr1 (superseded, keep branch
-`wp/S19-pr1` until then) and s19-pr1b. After it: `_solve_region`'s parameter object (region.py, the t08
-`solving(**kwargs)` spy) is the last G1/W4 residual; brief it (same red-adapt + step form).
-**Tool gap (not blocking; tell the cce-code-health steward via hub):** interface mode cannot gate a private signature
-change with its caller adaptations (`changed` refuses a private name; no plan key for a spy edit).
-**W5 batch N:** B_N = 605d332f; gate file `<git-common-dir>/codehealth/briefs/S19-W5-batchN.json` (sha256 4f7e1232...);
-branch `wp/S19-w5n`, worktree `s19-w5n`, tip a059b9a0. Every W5 enqueue adds `--batch <json>`.
-- WO-N1 / N1b done and reviewed (R-W5-N1: all 23 steps merge; job 427 = fix 1). Reviewer notes, no action:
-  step 15's message overstates "same order" (unobservable); trailers carry file debt (contributor) vs function debt
-  (sets). DECISION: `_resolve` as `_EntryTables` (reviewer shape, R-W5-N1 Q5) -> not taken, sets.py is at 9.2.
-  Reversible by: a step in a later batch. contributor.py split: needs a prep step first (four staticmethods to module
-  functions: `_entry_source` :509, `_set_entry` :667, `_size_input` :733, `_n_act_input` :786), still deferred.
-- Next: **write brief `S19-W5-N2.md` and launch WO-N2** (lca retargets, lca health, remove the `program.Refusal`
-  re-export and adapt its eight importers; template `S19-W5-N1.md`, the batch's admitted set, ruling
-  `docs/briefs/S19-W5-ruling.md` sections 4 to 6.2), then WO-N3 (pr_lib, S1), WO-N4 (factory switch, `--mode
-  interface`), WO-N5 (close: K, judge, batch-check, review), merge batch N into wp/S19 (FR-2 B).
-- Weekly budget reset Thu 19 Nov 13:00: after it, more than 2 engineer runs at a time as the queue serves.
+**Position:** wp/S19 = 272011be code + docs. MB 756e1c12. Runner PID 1341562. COUNT 408 at 12:45 (`$Q wait --since
+<COUNT>` in the background). **Running agent:** WO-N3 (opus-engineer, brief `S19-W5-N3.md`, pr_lib.py S1, on
+wp/S19-w5n from c418b1e3).
+1. **Merge W4 residuals:** helper `wp/S19-w4r-mc` (worktree s19-w4r-mc, ba040641 = 79e07265 + pr1b + pr2), job 439
+   `w4r-mc` merge-check; with job 438 PASS: merge `wp/S19-pr1b` then `wp/S19-pr2` into wp/S19 (merge commits,
+   `git merge -F`), only if wp/S19 changed only docs since 79e07265. Then remove worktrees s19-pr1, s19-pr1b, s19-pr2,
+   s19-w4r-mc (branches `backup/S19-pr1b-pre-fix2`, `wp/S19-pr1` deletable after the merge). Then the blocking set
+   for 0.5 is done except the verify twins (gamma_phi_units.py 6.4, waits for Frank's addendum): tell Frank (hub).
+2. **Batch N:** WO-N3 delivers -> S1 review of its chain (reviewer, cadence S1) -> **WO-N3b** (new, DECISION 13:20):
+   cost/derived.py (7.7, brain `DerivedContributor.plan`) and forms.py (7.2, brain `select`) to health, admitted
+   tier 1 files -> WO-N4 (factory switch, `--mode interface`) -> WO-N5 (close: K, judge, batch-check, review of
+   N2..N4 chains) -> merge batch N into wp/S19 (FR-2 B) -> WO-N6.
+3. Nothing else is free: G3 and G4 closed; G2 remainder, batch L wait for the legacy ruling; batch P waits for FR-1;
+   G5's verify twins wait for Frank. Repo at 272011be: debt 3492.8, health 8.42, brain 12 (G-END: <= 1900, >= 9.0, 0).
+**Tool gap (tell the cce-code-health steward via hub):** interface mode cannot gate a private signature change with
+its caller adaptations (`changed` refuses a private name; no plan key for a spy edit).
 **Open for the design lane at batch N's close review:** W5-S1's text vs fix 2 (the tool admits a tier 1 split's new
 `.py` in the admitted file's directory; default: the tool's rule stands).
 4. F3 (0.5, `wp/F3`, worktree `f3`): ready except Frank's human review. **Waits for Frank:** card
@@ -103,15 +89,16 @@ branch `wp/S19-w5n`, worktree `s19-w5n`, tip a059b9a0. Every W5 enqueue adds `--
    green, manifest `tested`, merge card via hub. Open for the design lane: `molar_mass_inconsistent` signature clash
    ADR 0061 vs 0062.
 5. Rule: lanes touching studies/ also need the nlp-marked suite at head, failures a subset of base (g19, g20).
-**Open for Frank (new):** the legacy models/ engine ruling (S19_DECISIONS 2026-11-15 item 5): G2's remainder and
-W5 batch L wait for it.
-**Open build-lane items:** `benchmarks/m03/nlp-test.lock` lacks mpmath (m03_nlp_check.sh fails collection); test_opt_cost_lca_nlp g19, g20 fail; no CI or gate runs nlp-marked tests (add an nlp gate tier); the f3 worktree's `.venv` lacks pytest-xdist and pytest-timeout (fix round 3 ran the full suite serially, 6747 s).
-**Open for Frank (not blocking):** proposal 2 (selection widening; selected gates ~600 s vs 300 s; standing ALERT
-selected share ~50%); R-1042 option C; STOP 1 alternative; verify twins addendum; thermo/ below 7.0 only in W5;
-optional forbid rule cli/serving -> services; re-pin cce-code-health to 9a4605f (optional).
+**Open for Frank (new):** the legacy models/ engine ruling (S19_DECISIONS 2026-11-15 item 5): G2's remainder, W5
+batch L and `solve_region`'s own 21 parameters wait for it.
+**Open build-lane items:** `benchmarks/m03/nlp-test.lock` lacks mpmath (m03_nlp_check.sh fails collection); test_opt_cost_lca_nlp g19, g20 fail; no CI or gate runs nlp-marked tests (add an nlp gate tier); the f3 worktree's `.venv` lacks pytest-xdist and pytest-timeout; brightway.py 8.8 needs an lca-extra venv to refactor.
+**Open for Frank (not blocking):** proposal 2 (selection widening; standing ALERTs: selected share ~48%, selected
+gates ~1170 s vs 300 s, ratio 0.83, queue wait median ~35 min); R-1042 option C; STOP 1 alternative; verify twins
+addendum; thermo/ below 7.0 only in W5; optional forbid rule cli/serving -> services; re-pin cce-code-health to 9a4605f (optional).
 **Notes:** as before (STOP 1 no-gain; ruff before a merge-check; helper merge only if wp/S19 changed only docs since;
 `enqueue` needs `--target --recipe --model`; repo `.venv`, `PYTHONPATH=<worktree>/src`, no `-n`). Two lanes can share
-one merge-check helper (done for G5 r12 + G6 r7). Rule-6 precedent: helpers writing `LaunchProgress` (R-W3-G5-12).
+one merge-check helper (done for G5 r12 + G6 r7, and W4 PR-1b + PR-2). Every W5 enqueue adds `--batch <json>`.
+**`enqueue --rerun-of` takes the RUN-LOG step from the failed result line, never the queue job.**
 
 ## Gates (pass numbers fixed after A1, before step 1)
 
