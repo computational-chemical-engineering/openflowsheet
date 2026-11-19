@@ -3587,3 +3587,6 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   Note for briefs: a re-export removal is `--mode interface --plan`, never no-gain.
 - 2026-11-19, job 479 (g2b-fix, R-W5-G2-6+7 fixes 1-2, docstrings) PASS (step 444 accepted-neutral, 18/18).
   gate_report: "ALERT selected share 58% < 75% of step gates";"ALERT selected gates take 947 s > 300 s (tests tier)";"ALERT selected/full time ratio 0.58 > 0.4: selection saves little";"ALERT queue wait median 64 min > 15 min"; action unchanged.
+- 2026-11-19, job 477 (i20-mc, merge-check e7fd7065..b035293a) PASS (10/10; full suite 20519 passed, 107 skipped,
+  3 xfailed, wall 1612 s). gate_report: the four ALERTs (58%; 947 s; 0.59; wait 58 min); action unchanged. I-20 merges
+  on 478 (i20-fix) PASS.
