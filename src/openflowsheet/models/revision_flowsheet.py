@@ -467,7 +467,7 @@ def _read(
     Phases, in order: `_read_instances` (R1), the material connections (R1, R3), each checked
     by `_stream_capability` and at each end by `_endpoint`, `_port_phases` (R4), then the fixed
     specifications (R5), each read by `_fixed_specification`, whose targets `_connection_columns`
-    and `_instance_columns` resolve to columns.
+    and `_instance_columns` resolve to columns, and last the records' views, `_instance_views`.
     """
     declared_components = tuple((document.get("component_set") or {}).get("components") or ())
     basis = component_basis(document)
@@ -526,20 +526,7 @@ def _read(
 
     view = RevisionView(
         components=components,
-        instances=tuple(
-            InstanceView(
-                unit_id=unit,
-                model_id=record["model"],
-                ports={port: tuple(connected) for port, connected in record["ports"].items()},
-                directions=dict(record["directions"]),
-                phases=phases[unit],
-                parameters=dict(record["parameters"]),
-                pins=dict(record["pins"]),
-                model_version=_optional_text(record["version"]),
-                model_artifact_ref=_optional_text(record["artifact_ref"]),
-            )
-            for unit, record in instances.items()
-        ),
+        instances=_instance_views(instances, phases),
         streams=tuple(streams),
         edges=tuple(edges),
         input_mapping=InputMapping(
@@ -757,6 +744,29 @@ def _instance_columns(
         "unsupported",
         f"specification_unsupported({name})",
         _instance_hint(owner, record["model"], targets),
+    )
+
+
+def _instance_views(
+    instances: Mapping[str, Mapping[str, Any]], phases: Mapping[str, dict[str, Phase | None]]
+) -> tuple[InstanceView, ...]:
+    """The `InstanceView` of each reader record in `instances`, in record (declaration) order,
+    with the unit's R4 `phases`: copies of the record's `ports` (each port's streams as a
+    tuple), `directions`, `parameters` and `pins`, and its model's `version` and
+    `artifact_ref` as text or `None`. Reads only."""
+    return tuple(
+        InstanceView(
+            unit_id=unit,
+            model_id=record["model"],
+            ports={port: tuple(connected) for port, connected in record["ports"].items()},
+            directions=dict(record["directions"]),
+            phases=phases[unit],
+            parameters=dict(record["parameters"]),
+            pins=dict(record["pins"]),
+            model_version=_optional_text(record["version"]),
+            model_artifact_ref=_optional_text(record["artifact_ref"]),
+        )
+        for unit, record in instances.items()
     )
 
 
