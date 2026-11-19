@@ -3629,3 +3629,12 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   s19-g2b, s19-g2c and their branches removed. C (card ofs-s19-blocking-merge-main) = e3e95520: the wall-time budget
   tests run alone at C now (queue idle, batch N held; logs `<git-common-dir>/codehealth/runs/budget-e3e95520/`).
   Card item (a) of ofs-s19-legacy-models: G2 runs 6+7 done; run 8 next (brief `S19-W5-G2-8.md`).
+- 2026-11-19 18:12, wall-time budget tests at C = e3e95520, alone (queue idle, runner idle, batch N held): f6 PASS
+  "1 passed in 116.61s" (wall 117 s, load 4.03); t07_conformance `test_the_budget_of_the_scenario_runs` PASS "1 passed
+  in 31.79s" (wall 32 s, load 3.02), followed at shutdown by "Exception ignored ... ThreadStream ... ValueError: I/O
+  operation on closed file" (tests/t07_transport_support.py:132, unchanged since main): an observation, not a failure.
+  Logs `<git-common-dir>/codehealth/runs/budget-e3e95520/`. Card ofs-s19-blocking-merge-main step 2 met.
+- 2026-11-19 18:13, batch N re-enqueued: 496 w5n2-8u (`--rerun-of 448`), 497-507 (suffix `u`), all with batch sha
+  e7c318e4. Engineers launched (opus-engineer, Opus, two at a time): G2 run 8 (wp/S19-g2d from e3e95520, brief
+  `S19-W5-G2-8.md`) and the third evidence manifest (wp/S19-ev2 from C, brief `S19-EV-blocking.md`, budget results
+  handed in, not re-run).
