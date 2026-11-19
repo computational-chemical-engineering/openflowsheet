@@ -1177,18 +1177,10 @@ class _Planner:
 
     def drives(self) -> None:
         """Replace each electric drive's `W/η_drive` (θ) by `W/η_m(W/N)` when the set has a
-        `machine.drive` entry; the θ `eta_drive` is then not created (§9.2.7)."""
-        set_id = self.doc.get("correlation_set")
-        motor: forms.ResolvedEntry | None = None
-        if set_id is not None:
-            try:
-                cost_set = sets.load_set(str(set_id))
-            except KeyError:
-                cost_set = None
-            entry = None if cost_set is None else sets.entry_for(cost_set, "machine.drive")
-            if cost_set is not None and entry is not None and entry.form == "sslw-motor-v1":
-                found = sets.resolve(cost_set, entry.entry_id, {})
-                motor = found if isinstance(found, forms.ResolvedEntry) else None
+        `machine.drive` entry; the θ `eta_drive` is then not created (§9.2.7).
+
+        The motor entry is `_motor_entry`'s; without one nothing is replaced."""
+        motor = self._motor_entry()
         self.motor = motor
         if motor is None:
             return
@@ -1219,6 +1211,26 @@ class _Planner:
             outputs=tuple(outputs),
             theta=tuple(t for t in self.sizing.theta if t.theta_id not in dropped),
         )
+
+    def _motor_entry(self) -> forms.ResolvedEntry | None:
+        """The resolved `machine.drive` entry of the declared `correlation_set`, when its form
+        is `sslw-motor-v1`.
+
+        None when no set is declared, the set does not load (KeyError), it has no drive entry,
+        the entry has another form, or it does not resolve.
+        """
+        set_id = self.doc.get("correlation_set")
+        motor: forms.ResolvedEntry | None = None
+        if set_id is not None:
+            try:
+                cost_set = sets.load_set(str(set_id))
+            except KeyError:
+                cost_set = None
+            entry = None if cost_set is None else sets.entry_for(cost_set, "machine.drive")
+            if cost_set is not None and entry is not None and entry.form == "sslw-motor-v1":
+                found = sets.resolve(cost_set, entry.entry_id, {})
+                motor = found if isinstance(found, forms.ResolvedEntry) else None
+        return motor
 
     def plan(self) -> ContributionPlan:
         self.included_drive: set[str] = set()
