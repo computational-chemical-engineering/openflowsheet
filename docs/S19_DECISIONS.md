@@ -3601,3 +3601,9 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   58 min > 15 min"; action unchanged. Worktree s19-i20 and branch wp/S19-i20 can go.
 - 2026-11-19 17:40, hub filed ofs-s19-blocking-merge-main (rec A, hub agrees; action A verbatim in S19_STATE item 2).
   Asked hub to keep "a test that must change to pass comes back as a new card" in the context. Doorbell on signing.
+- **2026-11-19, card ofs-s19-blocking-merge-main VERIFIED** (hub doorbell; card v2, keys listed, `decision_desk_verify.py`
+  with the verbatim A text): "chose A Merge now ... signed 2026-11-19T16:28:51.656Z key 032ee0a5ae620a90". Approval for
+  exactly that action, once. Order: G2 runs 6+7 merge (jobs 481, 482) -> C = that wp/S19 tip -> evidence engineer
+  (brief `S19-EV-blocking.md`, lane wp/S19-ev2) -> budget tests alone with the runner held -> push wp/S19, CI both legs,
+  manifest `tested` -> merge commit on main, F0 -> push main -> `executed`. Any failure in steps 1-4: stop, no push.
+  G2 run 8 brief `S19-W5-G2-8.md` written (lane wp/S19-g2d from C, launched after the merge).

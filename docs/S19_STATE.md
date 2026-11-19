@@ -85,6 +85,7 @@ log (quote the four ALERT lines).
    the engineer's run only if the queue is empty, else the orchestrator runs them alone later with the runner stopped
    between jobs. Then push wp/S19 (work-package branch), CI on both legs, manifest `tested`. Merge into main only on a
    VERIFIED card ofs-s19-blocking-merge-main (exact action text), then F0 on main, push main, `executed`.
+   **Card VERIFIED 2026-11-19 (signed A 16:28Z, key 032ee0a5; S19_DECISIONS)**: proceed after item 1; `executed` at the end.
    Card filed by hub; verify with `--action` = A verbatim: "merge the wp/S19 tip (after G2 runs 6+7) into main following
    steps 1-5 (evidence manifest tested at the merge tip; wall-time budget tests alone with the gate queue held; CI green
    on both legs; merge commit on main with F0 PASS; push main), stopping without a push on any failure in steps 1-4".
