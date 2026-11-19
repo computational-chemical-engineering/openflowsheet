@@ -70,7 +70,7 @@ A26's new node id); branch `wp/S19-w5n`, worktree `s19-w5n`. W5-mode gates fall 
   (jobs 371-373, 375-377, 379, 380, 382-384; health 4.7 -> 9.2). Three deviations and `_resolve`'s open design
   (S19_DECISIONS 02:50) go to the N1 review.
 - After WO-N1(b)'s jobs PASS: review (reviewer, Opus; S2 cadence every 4 steps, so one review over the whole N1 chain
-  (3cd5ff50..b73142ef, 23 steps) is due: write `S19-R-W5-N1.md` from `S19-R-W3-G1O-5.md`'s form), fixes, then WO-N2 (lca retargets, lca health,
+  (3cd5ff50..b73142ef, 23 steps) is due: brief `S19-R-W5-N1.md` written 2026-11-19 02:00, launch when the jobs PASS), fixes, then WO-N2 (lca retargets, lca health,
   remove `program.Refusal` re-export, its eight importers), WO-N3 (pr_lib, S1), WO-N4 (factory switch, `--mode
   interface`), WO-N5 (close: K, judge, batch-check, review), merge batch N into wp/S19 (FR-2 B). Every W5 enqueue adds
   `--batch <json>`. contributor.py's split toward 9.0 deferred (S19_DECISIONS 02:10).
