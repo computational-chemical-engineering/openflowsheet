@@ -1102,7 +1102,9 @@ class RevisionFlowsheet:
         guess, or a dormant stream labelled with that computed inlet's `(T, P)` — a legal inlet
         for every unit (ADR 0001 D3.4), and one a mixer's equal-pressure rule accepts. The
         deadlock depends only on the graph, so a second pass from the first's `computed_torn`
-        tears the same streams. Nothing is solved and nothing iterated.
+        tears the same streams. Nothing is solved and nothing iterated. `_ready_unit` picks the
+        unit that runs; when it finds none, `_started_unit` picks the unit to tear and `_tear` its
+        tears.
         """
         value: dict[str, StreamState] = {}
         computed: set[str] = set()
@@ -1128,16 +1130,11 @@ class RevisionFlowsheet:
 
         pending = list(self.instances)
         while pending:
-            ready = [u for u in pending if all(s in value for s in self._streams(u, "inlet"))]
-            if ready:
-                unit = ready[0]
-            else:
-                started = [
-                    u for u in pending if any(s in computed for s in self._streams(u, "inlet"))
-                ]
-                if not started:
+            unit = self._ready_unit(pending, value)
+            if unit is None:
+                unit = self._started_unit(pending, computed)
+                if unit is None:
                     return fail(pending[0].unit_id, "error", "no_computed_inlet")
-                unit = started[0]
                 tears = self._tear(unit, value, computed, guesses)
                 value.update(tears)
                 torn.extend(tears)
@@ -1172,6 +1169,20 @@ class RevisionFlowsheet:
             torn=tuple(torn),
             computed_torn=dict(computed_torn),
         )
+
+    def _ready_unit(
+        self, pending: list[UnitModel], value: Mapping[str, StreamState]
+    ) -> UnitModel | None:
+        """§1.5: the first unit of `pending` whose every inlet stream has a value in `value`;
+        `None` when no unit has (the pass is deadlocked). Reads only."""
+        ready = [u for u in pending if all(s in value for s in self._streams(u, "inlet"))]
+        return ready[0] if ready else None
+
+    def _started_unit(self, pending: list[UnitModel], computed: set[str]) -> UnitModel | None:
+        """§1.5: the deadlocked pass's unit to tear, the first unit of `pending` with an inlet
+        stream in `computed`; `None` when no unit has one. Reads only."""
+        started = [u for u in pending if any(s in computed for s in self._streams(u, "inlet"))]
+        return started[0] if started else None
 
     def _tear(
         self,
