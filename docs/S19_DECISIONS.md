@@ -3959,3 +3959,14 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   still import the removed paths (not retargeted). Reviewer R-W5-L1 after jobs 524-526 (S1 cadence).
 - 2026-11-20, jobs 524 (`w5l1-2`, interface, 20/20), 525 (`w5l1-3`, 95.1 -> 44.2), 526 (`w5l1-4`, 44.2 -> 3.0) PASS,
   steps 469-471 accepted. Review R-W5-L1 launched (reviewer, Opus; brief `S19-R-W5-L1.md`). gate_report: the three standing ALERTs (selected share 10%, 623 s, ratio 0.58): W5 steps edit hashed modules whose import-time code makes selection fall back; action unchanged.
+- **2026-11-20, R-W5-L1 (reviewer, Opus, ~128k): merge with batch L, no fix.** Steps verbatim moves; FP, evaluation
+  count and refusal order unchanged; import order safe (the 87 modules have no import-time side effects); 25 `__all__`
+  entries + 9 unlisted = 34; W5-S1/S3/S4/S7 hold; stop at 9.0. Unproven by the random check (corroboration only):
+  slot-stage `parameter_unsupported` in `_duties`, `_phase_of` raising for top/bottom, non-finite R3 pressures; WO-L2
+  reports distinct (type, message) outcomes. Notes: N1 docstring `column_unit.py:487` (into WO-L2's first step); N2
+  stale text `docs/derivations/S11-design.md:426,1046` (archival, left) and `scripts/s03_references_ours.py:63`
+  comment (`cascade._TOKEN`; later sweep, outside batch L); N3 `w5_gate.py scope` without `--plans` refuses an added
+  interface plan (build-lane tool item, open). The two `docs/derivations/scripts/s08_design/` probes left: both
+  already failed at B_L for other reasons. The lane stays open until K (batch close), as batch N.
+  WO-L2 launched (opus-engineer, brief `S19-W5-L2.md`: N1 docstring, then syn001 mixer, conversion_reactor,
+  kinetic_cstr), lane head 793eff3c.
