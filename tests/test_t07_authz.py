@@ -278,11 +278,13 @@ def project(tmp_path: Path) -> Path:
 
 
 def granted(project: Path, capsys: pytest.CaptureFixture[str], *arguments: str) -> tuple[str, str]:
-    """`project grant`, returning `(capability_id, token)` from what it printed."""
+    """`project grant`, returning `(capability_id, token)` from what it printed: the token alone
+    on stdout, the capability on stderr (R-1064)."""
     assert main(["project", "grant", "--project", str(project), *arguments]) == 0
-    printed = capsys.readouterr().out.splitlines()[:4]
+    captured = capsys.readouterr()
+    printed = captured.err.splitlines()[:3]
     lines = {key: value.strip() for key, _, value in (line.partition(" ") for line in printed)}
-    return lines["capability"], lines["token"]
+    return lines["capability"], captured.out.strip()
 
 
 def opened(project: Path, capability_id: str) -> LocalApplication:

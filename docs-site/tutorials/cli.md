@@ -76,7 +76,7 @@ With the `server` extra, the same operations are served over HTTP and MCP. Both 
 token, granted once:
 
 ```bash
-openflowsheet project grant --project plant --principal me --rights read,draft,execute  # prints a token once
+openflowsheet project grant --project plant --principal me --rights read,draft,execute > token.txt  # the token, once
 openflowsheet serve-http --project plant --ui      # http://127.0.0.1:8765/v1 and the web shell at /ui/
 openflowsheet serve-mcp --project plant --token-file token.txt
 ```

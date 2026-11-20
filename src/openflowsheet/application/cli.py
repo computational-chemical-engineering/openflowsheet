@@ -374,7 +374,11 @@ def command_project_init(arguments: argparse.Namespace) -> int:
 
 
 def command_project_grant(arguments: argparse.Namespace) -> int:
-    """T07 §10.3: add a grant; print its token once — only the token's SHA-256 is stored."""
+    """T07 §10.3: add a grant; print its token once — only the token's SHA-256 is stored.
+
+    The token alone goes to standard output, so `grant ... > token.txt` writes the file
+    `serve-mcp --token-file` reads; the capability, principal and rights go to standard error
+    (R-1064)."""
     from openflowsheet.application.authz import grant
     from openflowsheet.application.policy_types import Limits
     from openflowsheet.application.store_records import StoreError
@@ -396,11 +400,14 @@ def command_project_grant(arguments: argparse.Namespace) -> int:
     except (ValueError, StoreError) as error:
         print(_human_text(error), file=sys.stderr)
         return 2
-    print(f"capability {capability.capability_id}")
-    print(f"principal  {capability.principal_id}")
-    print(f"rights     {','.join(capability.rights)}")
-    print(f"token      {token}")
-    print("(the token is shown once; the project stores only its SHA-256)")
+    print(f"capability {capability.capability_id}", file=sys.stderr)
+    print(f"principal  {capability.principal_id}", file=sys.stderr)
+    print(f"rights     {','.join(capability.rights)}", file=sys.stderr)
+    print(
+        "(the token, on standard output, is shown once; the project stores only its SHA-256)",
+        file=sys.stderr,
+    )
+    print(token)
     return 0
 
 
@@ -946,7 +953,7 @@ def build_parser() -> argparse.ArgumentParser:
     init_command.set_defaults(handler=command_project_init)
 
     grant_command = project_commands.add_parser(
-        "grant", help="grant rights to a principal and print its token once"
+        "grant", help="grant rights to a principal and print its token once, alone on stdout"
     )
     grant_command.add_argument("--project", required=True, help="the project directory")
     grant_command.add_argument("--principal", required=True)

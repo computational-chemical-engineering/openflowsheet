@@ -178,6 +178,41 @@ def single_threaded(monkeypatch: pytest.MonkeyPatch) -> None:
 PRE_OPT_U05 = REPO_ROOT / "tests" / "fixtures" / "opt" / "pre_opt_u05.json"
 
 
+#: R-1064 (wp/TOK): `project grant` prints its token alone on stdout and the capability,
+#: principal and rights on stderr, so `grant ... > token.txt` writes the file `serve-mcp` reads.
+TOK_NOTE_BEFORE = "(the token is shown once; the project stores only its SHA-256)\n"
+TOK_NOTE_AFTER = (
+    "(the token, on standard output, is shown once; the project stores only its SHA-256)\n"
+)
+
+
+def tok_reversed(pins: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """`pins` as they were before R-1064: the successful `project grant`'s three stderr lines and
+    its token on stdout again, with the note's old wording. Every other entry is returned as it
+    is."""
+    matched = [
+        index
+        for index, entry in enumerate(pins)
+        if entry["argv"][:2] == ["project", "grant"] and entry["exit"] == 0
+    ]
+    assert len(matched) == 1, matched
+    (index,) = matched
+    stdout, stderr = pins[index]["stdout"], pins[index]["stderr"]
+    assert stdout == "<TOKEN>\n", stdout
+    assert stderr.endswith(TOK_NOTE_AFTER), stderr
+    restored = [dict(entry) for entry in pins]
+    restored[index]["stdout"] = (
+        stderr.removesuffix(TOK_NOTE_AFTER) + "token      <TOKEN>\n" + TOK_NOTE_BEFORE
+    )
+    restored[index]["stderr"] = ""
+    return restored
+
+
+def tok_reversed_cli_text(text: str) -> str:
+    """The pins file's text with `tok_reversed` applied, serialized as the file is."""
+    return json.dumps(tok_reversed(json.loads(text)), indent=1, ensure_ascii=False) + "\n"
+
+
 def opt_reversed(pins: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """`pins` as they were before ADR 0071: U05's stdout and stderr its pre-OPT record, the same
     refusal (`unsupported`, exit, pointer) with OPT's message. Every other entry is returned as it
@@ -246,8 +281,8 @@ def u05_reversed(pins: list[dict[str, Any]]) -> list[dict[str, Any]]:
 
 
 @pytest.mark.usefixtures("single_threaded")
-def test_the_pins_moved_by_d1s_str05_substitution_u05_v2_recording_and_msg_only() -> None:
-    pins = json.loads(PINS.read_text(encoding="utf-8"))
+def test_the_pins_moved_by_d1s_str05_substitution_u05_v2_recording_msg_and_tok_only() -> None:
+    pins = tok_reversed(json.loads(PINS.read_text(encoding="utf-8")))
     (u05,) = (entry for entry in pins if entry["argv"] == U05_ARGV)
     assert u05["exit"] == API_EXIT_CODES["unsupported"]
     # Amended on purpose (ADR 0071, OPT design §4.11): U05's refusal is the missing solver's.
