@@ -4427,3 +4427,8 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   note. Alternative: test_s19_w5_gate.py as an orchestrator tool-test edit. Reversible by: editing the brief before K.
   Open docs-pass item: `scripts/s07_evidence_manifest.py:86,91-94,838-840` (R8.5: no S07 manifest re-take before it).
   WO-P5 (opus-engineer, Opus, brief `S19-W5-P5.md`, from a5b8fb11) launched.
+- **2026-11-20, F3 merged into main** (card ofs-f3-merge-main A, re-verified `VERIFIED` before acting): CI 44758521457
+  at 6cf2a1de green on both check legs (identity, default-install green; codehealth the informational ratchet).
+  `git merge --no-ff wp/F3` on main -> d29f1a50 (tree equal to 6cf2a1de); F0 on main `F0 PASS` 9/9 (M9 35/35); pushed
+  origin/main c4a91a75..d29f1a50. Card `executed` written (v4). Next for S19: item 3c (records/, local.py duplication)
+  when wp/S19 takes main.

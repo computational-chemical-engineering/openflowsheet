@@ -59,18 +59,14 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 
 ## Next actions (2026-11-20 ~18:40 CET)
 
-**Position:** main = c4a91a75. wp/S19 = this commit. MB 756e1c12. Runner PID 1341562. cce-code-health 34a30bf.
+**Position:** main = d29f1a50 (F3 merged). wp/S19 = this commit. MB 756e1c12. Runner PID 1341562. cce-code-health 34a30bf.
 Agents running: none. Background waits at reset (their notices reach the new context): gate queue `wait --since 535`
 (job 557 w5p4-1g gating); F3 CI 44758521457 at 6cf2a1de (`gh run watch`); X07a CI 44773324184 at 94b38dae. On each
 gate result: gate_report, log. Re-arm `$Q wait --since <COUNT from $Q status>`.
 
-0. **F3 merge into main IN FLIGHT** (card ofs-f3-merge-main A, VERIFIED 2026-11-20; act once): step 1 done (main
-   merged into wp/F3 as 6cf2a1de, pushed). Its `codehealth` job is red: the informational ratchet
-   (`continue-on-error: true`, ci.yml:325-346), not a merge condition (S19_DECISIONS 16:10). When both `check` legs of
-   CI 44758521457 are green: in a clean worktree on `main`, `git merge --no-ff wp/F3` (merge commit naming the card),
-   `PYTHONPATH=src .venv/bin/python scripts/corpus_identity.py --check` (F0) on main, push only if F0 PASS
-   (`git -c credential.helper='!gh auth git-credential' push origin main`), then ArtifactData update of
-   `decisions/ofs-f3-merge-main` with `executed: {at, by, result}`. Red check leg: do not merge; log, fix on wp/F3.
+0. **F3 merged into main** (card ofs-f3-merge-main A, executed 2026-11-20 17:00Z): main d29f1a50 (merge of wp/F3
+   6cf2a1de, CI 44758521457 green on both check legs), F0 PASS 9/9 on main, pushed. wp/S19 does not contain it yet:
+   item 3c applies when wp/S19 next takes main.
 1. **W5 batch P (FR-1, ADR 0077).** B_P 2eae72a8; gate file `<git-common-dir>/codehealth/briefs/S19-W5-batchP.json`
    now sha 91d97ce0 (amended twice today: retarget + test_s07_coolprop.py, generator + s07_reference.json, L_P 27 -> 30;
    prior copies `.pre-P4`, `.pre-P4b`; amendment section in `S19-W5-batchP.md`). Lane `wp/S19-w5p` at a5b8fb11:
