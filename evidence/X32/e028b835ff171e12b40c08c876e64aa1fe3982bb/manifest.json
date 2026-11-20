@@ -1,0 +1,79 @@
+{
+ "work_package": "X32",
+ "commit": "e028b835ff171e12b40c08c876e64aa1fe3982bb",
+ "requirements": [],
+ "status": "tested",
+ "inputs": {
+  "case_id": "X32 (formerly TOK): the Coding Agents page's recipe `openflowsheet project grant ... > token.txt`, then `serve-mcp --token-file token.txt` (docs-site/agents.md, case_hash its sha256); register R-1064",
+  "case_hash": "02a0aa9e963048a3ded84f6f81c155406e4952d454a1e7062e5e8b9dca6fad47",
+  "environment_lock_hash": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+ },
+ "commands": [
+  {
+   "cmd": "CI ci.yml run 44706297998 on wp/TOK at e028b835: check (ubuntu-latest), check (ubuntu-24.04-arm), codehealth, identity, default-install",
+   "cwd": "GitHub Actions",
+   "exit_code": 0
+  },
+  {
+   "cmd": "PYTHONPATH=src .venv/bin/python -m pytest -q -p no:cacheprovider tests/test_tok_grant_token_file.py tests/test_t07_authz.py tests/test_t07_w5b_cli.py tests/test_t08_rename_substitution.py tests/test_m06_wo14_w27_provenance.py tests/test_m06_wo3_list_audit.py tests/test_m06_wo1_structure_index.py tests/test_m06_wo2_diff_elements.py tests/test_m06_http_contract.py tests/test_t07_w6b_mcp.py tests/test_t07_adr0008_mcp.py tests/test_t07_conformance.py tests/test_t07_w7a_harness.py tests/test_m07a_changelog.py tests/test_t08_w4_changelog.py tests/test_l01_records.py",
+   "cwd": ".claude/worktrees/tok",
+   "exit_code": 0
+  },
+  {
+   "cmd": "PYTHONPATH=src .venv/bin/python scripts/corpus_identity.py --check",
+   "cwd": ".claude/worktrees/tok",
+   "exit_code": 0
+  }
+ ],
+ "checks": [
+  {
+   "id": "X32.CI",
+   "description": "CI run 44706297998 at e028b835: check on both architectures, codehealth, identity, default-install all success",
+   "result": "pass"
+  },
+  {
+   "id": "X32.recipe",
+   "description": "tests/test_tok_grant_token_file.py runs the page's own `grant ... > token.txt` and loads the written file through serving.token_capability; the file is one line, the token; stderr carries the capability and rights and not the token",
+   "result": "pass"
+  },
+  {
+   "id": "X32.pins",
+   "description": "the CLI pins regenerated for a deliberate output change; only `project grant cap-1` moved (stdout, stderr); tok_reversed restores its pre-TOK record exactly and the pins' SHA-256 chain to T07 holds (test_t07_w5b_cli, test_t08_rename_substitution)",
+   "result": "pass"
+  },
+  {
+   "id": "X32.local",
+   "description": "536 passed, 1 skipped (command 2); ruff and mypy clean on the touched files",
+   "result": "pass"
+  },
+  {
+   "id": "X32.F0",
+   "description": "F0 PASS: M1 50/50, M2 61/61, M3 61/61, M4 61/61, M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 35/35",
+   "result": "pass"
+  }
+ ],
+ "artifacts": [
+  {
+   "path": "tests/fixtures/t07/cli-existing-commands.json",
+   "sha256": "53c83f59308bba826335adab34270713eaba64308bfd9b9d66c061f4e188ae47",
+   "description": "the CLI pins after TOK"
+  },
+  {
+   "path": "tests/test_tok_grant_token_file.py",
+   "sha256": "3a5e5e5f0141f9cf4a3dd07b866b53c04e98b9e4e4ac6dfd82968ec3c7822b45",
+   "description": "the recipe tests"
+  },
+  {
+   "path": "docs-site/agents.md",
+   "sha256": "02a0aa9e963048a3ded84f6f81c155406e4952d454a1e7062e5e8b9dca6fad47",
+   "description": "the Coding Agents page the recipe test reads"
+  }
+ ],
+ "limitations": [
+  "Evidence class: software verification on ref-x86-64 and the two Linux CI legs; macOS and Windows legs are X07a's and were not run here. The recipe test runs `grant` in-process and reads the token file through serving.token_capability; it does not start a serve-mcp subprocess (a by-hand MCP probe on the workstation did: initialize and list_models answered). The full suite was not run locally; CI ran it. Not reviewed: one reviewer pass is pending. Status tested, not reviewed or released."
+ ],
+ "review": {
+  "numerical": "not_applicable",
+  "process_model": "not_applicable"
+ }
+}

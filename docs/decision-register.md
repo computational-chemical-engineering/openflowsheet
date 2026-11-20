@@ -20040,7 +20040,7 @@ without any judgement.
 **Rejected.** *Keep `main` as the oracle:* blocks W5 batch N (circular, above). *List the test as a standing
 failure:* hides a guard the batch needs.
 
-## R-1064: `project grant` prints its token alone on stdout, so the documented `> token.txt` works with `serve-mcp` (TOK; 2026-11-20)
+## R-1064: `project grant` prints its token alone on stdout, so the documented `> token.txt` works with `serve-mcp` (X32, formerly TOK; 2026-11-20)
 
 | | |
 | --- | --- |
@@ -20048,7 +20048,7 @@ failure:* hides a guard the batch needs.
 | Decided by | Frank (ship the fix with 0.5, 2026-11-20); build lane, inside T07 §10.3 ("print its token once") |
 | Normative text | this entry; `docs-site/agents.md` (Coding Agents, MCP) |
 | Evidence | `tests/test_tok_grant_token_file.py` runs the page's own `grant ... > token.txt` and loads the file through `serving.token_capability`; `tests/test_t07_w5b_cli.py` pins the new layout, and `tok_reversed` restores the pre-TOK record exactly (the pins' SHA-256 chain to T07 holds) |
-| Affected packages | T07 (the CLI's `project grant`; `tests/fixtures/t07/cli-existing-commands.json`); docs-site agents and CLI tutorial; docs/web-shell.md |
+| Affected packages | X32 (this fix; package id after X31, the evidence schema's pattern); T07 (the CLI's `project grant`; `tests/fixtures/t07/cli-existing-commands.json`); docs-site agents and CLI tutorial; docs/web-shell.md |
 
 **Decision.** `openflowsheet project grant` writes the token alone, one line, to standard output, and the
 capability id, principal, rights and the shown-once note to standard error. `serve-mcp --token-file` is unchanged:
