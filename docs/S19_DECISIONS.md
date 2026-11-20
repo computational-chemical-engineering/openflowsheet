@@ -4186,3 +4186,10 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   Reversible by: renaming again. Branch renamed wp/X32 (remote wp/TOK deleted), manifest
   `evidence/X32/e028b835.../manifest.json` tested (schema tests 622 passed), R-1064 names X32; ae0dec21 pushed.
   Reviewer pass on X32 launched (reviewer, Opus).
+- **2026-11-20, review of X32 (reviewer, Opus, ~87k): merge after fixes, docs and manifest only.** Held: no other
+  consumer of grant's stdout (W27 harness, V17 fixtures, m06_web_fixtures call the Python `grant()`); only the
+  `project grant cap-1` pin moved and `tok_reversed` is exact (both chains); the recipe test fails on main's cli.py
+  (checked by the reviewer); token once, stdout only. Fixes 1 (CHANGELOG/R-1064: the capability line moved too,
+  `--capability-id`), 2 (tutorial: token.txt private, web-shell sign-in), 4 (positive control) done in 2725fa7d
+  (187 passed, ruff and mypy clean), pushed; fix 3 (record ruff/mypy commands) with the manifest re-take at 2725fa7d
+  once its CI is green.
