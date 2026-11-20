@@ -4088,3 +4088,11 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   the lane 62cd9516, test_l01_records 98 passed. Fix 2 (batch L brief: amendment section, 7ca6eee0 -> c338d337)
   done. Notes for batches P on: run ruff before `w5_gate.py close`; the merge step asserts `git diff --name-only
   K..tip` stays inside the close paths plus fixtures; at the S19 -> main merge recheck that R-1061 is unique.
+- **2026-11-20, job 541 (w5l-mc, plain merge-check, full suite) PASS 10/10 (debt 311.4 -> 112.9): batch L merged into
+  wp/S19 (9ad50635, lane head 62cd9516).** `git diff a72b4518 9ad50635`: S19_DECISIONS.md and decision-register.md
+  only (fix 1 after the helper, docs). patch_noop on the merge: 0 of 261. Card ofs-s19-legacy-models: (a) G2
+  remainder, (b) solve_region's parameter object, (c) batch L all done; `executed` written (v3). Worktrees s19-w5l,
+  s19-w5l-mc and branches wp/S19-w5l, -w5l-mc removed (lane an ancestor of wp/S19).
+- 2026-11-20, batch P: W5-S2 (the pin) is not implemented (`scripts/w5_gate.py:130` refuses P). WO-P0 tool part
+  launched (opus-engineer, brief `S19-W5-P0-pin.md`, worktree s19-w5p0 from the wp/S19 tip): `pin` per W5-T3..T5,
+  W5-S2 and W5-K5 wiring; B_P and L_P stay the orchestrator's, after it merges. Its review is an identity ruling.
