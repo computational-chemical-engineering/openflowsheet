@@ -53,8 +53,9 @@ The ruling decides what a byte change of a registry-hashed file moves; this tool
   A new name from a module the file imported at BASE is admitted only if it was importable from
   that module at BASE (code moved into it since is a hole). A new module is admitted only as a
   retarget: every name taken from it was taken at BASE from a module M0 with `M0.name is M.name`
-  there. Also M9's key set must be BASE's. The gate passes the step's commit as `--head`, so that
-  W5-S3 and W5-S7 judge the same E.
+  there. Also M9's key set must be BASE's, plus those of B7's seven group modules the diff
+  changes (section 8, the one exception, as `predict` scopes it). The gate passes the step's
+  commit as `--head`, so that W5-S3 and W5-S7 judge the same E.
 
 A revision's facts are measured in a subprocess on an extracted copy (`git archive`), with that
 revision's own `corpus_identity.py` and `registry_builtin.py`; the working tree's with `--tree`.
@@ -807,6 +808,22 @@ def judge(before: Mapping[str, Any], after: Mapping[str, Any], predicted: Moved)
 # -- coverage (R4, W5-S7) --------------------------------------------------------------------------
 
 
+def m9_key_set(
+    base: Iterable[str], head: Iterable[str], changed: Iterable[str]
+) -> tuple[bool, str]:
+    """W5-S7's M9 rule: HEAD's key set is BASE's plus the B7 group modules in `changed` (the
+    ruling's one exception, scoped as `predict` scopes it); the verdict and its summary part."""
+    before, after = set(base), set(head)
+    b7 = set(changed) & set(B7_MODULES) - before
+    if after == before:
+        return True, f"equal to base ({len(after)})"
+    if after == before | b7:
+        return True, f"equal to base plus {len(b7)} B7 group module(s) ({len(after)})"
+    return False, (
+        f"DIFFERS: added {sorted(after - before)}, removed {sorted(before - after)} ({len(after)})"
+    )
+
+
 def import_edges(root: Path, name: str) -> set[tuple[str, str | None]]:
     """(module file, name) of every `openflowsheet` import in `root / name`, anywhere in the
     file; name None for an imported module (a submodule taken by `from`, or `import`)."""
@@ -1120,18 +1137,12 @@ def command_coverage(arguments: argparse.Namespace, tree: Path) -> int:
         print(f"RETARGET {file}: {name} from {_dotted(old)} -> {_dotted(new)}")
     for file, module, name in admitted:
         print(f"NAME {file}: {name} from {_dotted(module)}, importable from it at base")
-    m9_base = set(before["frozen"])
-    m9_head = set(after["frozen"])
-    m9 = (
-        "equal to base"
-        if m9_head == m9_base
-        else (f"DIFFERS: added {sorted(m9_head - m9_base)}, removed {sorted(m9_base - m9_head)}")
-    )
+    m9_holds, m9 = m9_key_set(before["frozen"], after["frozen"], changed)
     print(
         f"coverage: {len(holes)} new edge(s) outside a hash scope, {len(listed)} retarget(s), "
-        f"{len(edited)} edited hashed file(s); M9 key set {m9} ({len(m9_head)})"
+        f"{len(edited)} edited hashed file(s); M9 key set {m9}"
     )
-    return 0 if not holes and m9_head == m9_base else 1
+    return 0 if not holes and m9_holds else 1
 
 
 # -- the identity pin (R2, W5-S2, W5-T3 to W5-T5) -------------------------------------------------

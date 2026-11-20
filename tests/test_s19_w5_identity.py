@@ -446,6 +446,7 @@ def test_t1_s2_and_s4_run_only_at_a_base(scratch: Path) -> None:
 
 SYN001 = f"{THERMO}/syn001.py"
 PR_C1 = f"{THERMO}/pr_c1.py"
+COOLPROP = f"{THERMO}/coolprop_heos.py"
 
 
 def test_r1_predict_refuses_tier_4_and_m7() -> None:
@@ -754,6 +755,49 @@ def test_t7_a_changed_m9_key_set_exits_1(scratch: Path) -> None:
         "coverage: 0 new edge(s) outside a hash scope, 0 retarget(s), 0 edited hashed file(s); "
         f"M9 key set DIFFERS: added ['{unit}'], removed [] (36)"
     ]
+
+
+def test_s7_b7_s_group_modules_are_the_m9_key_set_s_one_exception() -> None:
+    """W5-S7's M9 rule: the key set stays the base's, except for B7's group modules the diff
+    changes (scoped as in `predict`); any other key added or removed fails."""
+    base = ["src/openflowsheet/thermo/pr_c1.py"]
+    a, b1 = w5.B7_MODULES[:2]
+    assert w5.m9_key_set(base, base, []) == (True, "equal to base (1)")
+    assert w5.m9_key_set(base, [*base, a, b1], [a, b1, base[0]]) == (
+        True,
+        "equal to base plus 2 B7 group module(s) (3)",
+    )
+    other = "src/openflowsheet/thermo/_coolprop_heos_fluids_z.py"
+    for head, changed in (
+        ([*base, a], []),
+        ([*base, other], [other]),
+        ([*base, a, other], [a, other]),
+        ([], []),
+    ):
+        holds, text = w5.m9_key_set(base, head, changed)
+        assert not holds and text.startswith("DIFFERS: "), (head, changed)
+
+
+def test_s7_a_b7_step_adding_a_group_module_passes(scratch: Path) -> None:
+    """A B7-like step at the base: `coolprop_heos.py` hashes a new group module, which M9 then
+    measures; coverage passes on the B7 exception."""
+    group = w5.B7_MODULES[0]
+    (scratch / group).write_text('"""B7 group a (a scratch stand-in)."""\n', encoding="utf-8")
+    table = '(here.parent / "_coolprop_heos_fluids.py").read_bytes()'
+    path = scratch / COOLPROP
+    path.write_text(
+        path.read_text(encoding="utf-8").replace(
+            table, f'{table} + (here.parent / "{group.rsplit("/", 1)[1]}").read_bytes()'
+        ),
+        encoding="utf-8",
+    )
+    head = _commit(scratch, "a B7 group module", group, COOLPROP)
+    done = _tool("--tree", str(scratch), "coverage", "--base", BASE, "--head", head)
+    assert done.returncode == 0, done.stdout
+    assert done.stdout.splitlines()[-1] == (
+        "coverage: 0 new edge(s) outside a hash scope, 0 retarget(s), 1 edited hashed file(s); "
+        "M9 key set equal to base plus 1 B7 group module(s) (36)"
+    )
 
 
 # -- the identity pin: W5-T3 to W5-T5 (batch P) ---------------------------------------------------
