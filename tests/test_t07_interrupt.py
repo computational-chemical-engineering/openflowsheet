@@ -458,7 +458,7 @@ def broad_handlers() -> tuple[list[str], list[str]]:
         tree = ast.parse(path.read_text(), filename=str(path))
         for node in ast.walk(tree):
             if isinstance(node, ast.ExceptHandler) and _names_base_exception(node.type):
-                where = f"{path.relative_to(REPO_ROOT)}:{node.lineno}"
+                where = f"{path.relative_to(REPO_ROOT).as_posix()}:{node.lineno}"
                 (reraising if _reraises_unconditionally(node) else swallowing).append(where)
     return swallowing, reraising
 

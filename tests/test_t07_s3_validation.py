@@ -203,7 +203,7 @@ def test_s3_6_single_node_mutations_are_typed(app: LocalApplication, name: str) 
 def test_s3_7_no_registered_report_moves() -> None:
     documents: dict[str, Any] = {name: build() for name, build in CORPUS.items()}
     for path in sorted(glob.glob(str(REPO_ROOT / "benchmarks/**/cases/*.yaml"), recursive=True)):
-        documents.setdefault(str(Path(path).relative_to(REPO_ROOT)), load_yaml(Path(path)))
+        documents.setdefault(Path(path).relative_to(REPO_ROOT).as_posix(), load_yaml(Path(path)))
     assert len(documents) == 94
     reports, reversed_d1 = {}, {}
     for name, document in documents.items():
