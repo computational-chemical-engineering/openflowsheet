@@ -250,17 +250,16 @@ if sys.platform == "win32":
 
 def loaded_libraries() -> list[str]:
     """The paths of the shared objects loaded in this process, sorted: the file names mapped in
-    `/proc/self/maps` on Linux (`[]` where it cannot be read), the dynamic loader's images on
-    macOS, the process's modules on Windows."""
+    `/proc/self/maps` on Linux, the dynamic loader's images on macOS, the process's modules on
+    Windows. Where the list cannot be read it raises (Linux: the `OSError` of reading the maps), on
+    every platform, so that a caller never mistakes an unread list for an empty one (X07a WO9
+    review W-3)."""
     if sys.platform == "win32":
         return _process_modules()
     elif sys.platform == "darwin":
         return _dyld_images()
     else:
-        try:
-            maps = Path("/proc/self/maps").read_text(encoding="utf-8")
-        except OSError:
-            return []
+        maps = Path("/proc/self/maps").read_text(encoding="utf-8")
         paths = set()
         for line in maps.splitlines():
             fields = line.split(None, 5)

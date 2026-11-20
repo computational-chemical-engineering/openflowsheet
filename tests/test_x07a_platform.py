@@ -15,7 +15,9 @@
   the same arguments and in the same order (Linux behaviour unchanged);
 - (f) `loaded_libraries` lists the shared objects the process has loaded on every leg: NumPy's
   extension module and, where NumPy is built against an OpenBLAS, that OpenBLAS (X07a review R-1:
-  the BLAS pin found its libraries in `/proc/self/maps` only).
+  the BLAS pin found its libraries in `/proc/self/maps` only); on the Linux route an unreadable
+  `/proc/self/maps` raises its `OSError` instead of giving `[]` (WO9 review W-3), and a readable one
+  is parsed as before: the sorted set of each line's sixth field.
 """
 
 from __future__ import annotations
@@ -228,3 +230,43 @@ def test_f_loaded_libraries_lists_numpys_extension_and_openblas() -> None:
     blas = numpy.show_config(mode="dicts")["Build Dependencies"]["blas"]["name"]
     if "openblas" in blas:
         assert any("openblas" in Path(path).name.lower() for path in loaded), loaded
+
+
+def _linux_maps(monkeypatch: pytest.MonkeyPatch, read: Any) -> None:
+    """The Linux route on any leg, with `/proc/self/maps` read by `read`."""
+    original = Path.read_text
+
+    def read_text(path: Path, *args: Any, **kwargs: Any) -> str:
+        if path.as_posix() == "/proc/self/maps":
+            return str(read())
+        return original(path, *args, **kwargs)
+
+    monkeypatch.setattr(sys, "platform", "linux")
+    monkeypatch.setattr(Path, "read_text", read_text)
+
+
+def test_f_an_unreadable_proc_maps_raises(monkeypatch: pytest.MonkeyPatch) -> None:
+    def refuse() -> str:
+        raise PermissionError(13, "Permission denied", "/proc/self/maps")
+
+    _linux_maps(monkeypatch, refuse)
+    with pytest.raises(PermissionError):
+        _platform.loaded_libraries()
+
+
+def test_f_a_readable_proc_maps_is_parsed_as_before(monkeypatch: pytest.MonkeyPatch) -> None:
+    maps = (
+        "7f00-7f01 r--p 00000000 08:01 42   /usr/lib/libz.so.1\n"
+        "7f01-7f02 r-xp 00001000 08:01 42   /usr/lib/libz.so.1\n"
+        "7f02-7f03 rw-p 00000000 00:00 0 \n"
+        "7f03-7f04 r--p 00000000 08:01 7    /opt/a dir/libscipy_openblas.so  \n"
+        "7ffc-7ffd rw-p 00000000 00:00 0    [stack]\n"
+        "5600-5601 r--p 00000000 08:01 9    /usr/bin/python3.13\n"
+    )
+    _linux_maps(monkeypatch, lambda: maps)
+    assert _platform.loaded_libraries() == [
+        "/opt/a dir/libscipy_openblas.so",
+        "/usr/bin/python3.13",
+        "/usr/lib/libz.so.1",
+        "[stack]",
+    ]
