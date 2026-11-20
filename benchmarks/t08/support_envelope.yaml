@@ -271,7 +271,9 @@ axes:
     statement: >-
       R0 structural identity on Linux x86-64 and aarch64; floats within the numerical policy each
       record names (`T08-numerical-policy-v2` for v0.1 records, ADR 0025); bitwise agreement
-      reported, never promised (ADR 0007 F1; L07).
+      reported, never promised (ADR 0007 F1; L07). macOS arm64 and Windows x86-64: bundles made on
+      the same platform identity replay exactly; bundles from another platform are inspected, not
+      reproduced (ADR 0007 D3.3, Amendment 3).
     evidence:
       - check:K05.G05.two_platform_structural_equality
       - check:T06.A45

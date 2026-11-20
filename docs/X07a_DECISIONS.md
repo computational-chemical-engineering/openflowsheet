@@ -97,6 +97,31 @@ Brief: `docs/briefs/X07a-WO1.md`. Branch `wp/X07a`, base `main` c4a91a75. Build 
   `src/openflowsheet/_platform.py` (0.0 -> 3.0; health 9.5). The job is `continue-on-error: true`
   by design (S17, ci.yml `codehealth`): expected for a branch that adds a module, not fixed.
 
+- D-20. DECISION (WO3): the reasons of an inspected replay off the registered set -> judged as the
+  code emits them: the `running on <machine>/<system>, which is not a registered platform` reason
+  followed by `no rerun was supplied`, the note `run.replay.replay` appends when it re-runs nothing
+  and `revision_replay._inspected` keeps (F0 M7 `M7_NOT_RERUN`; `conftest.NOT_RERUN_NOTE` for P1c).
+  The ruling (R1.4, P1c, A5) says "exactly one reason"; measured under a simulated Darwin identity,
+  every bundle M7 replays and every OPT-A2 member reports both. A lock reason, an unknown policy, a
+  foreign or a third reason, or a missing note still fail. Alternative: drop the note in
+  `_inspected` when the environment decided the mode (changes what replay reports on Linux too, so
+  not the build lane's). Reversible by: the two constants and the A5 cases.
+- D-21. DECISION (WO3): the P1c helper `assert_inspected_off_registered(report, row=...)` takes a
+  `ReplayReport` or its document (the CLI's `--json`, the G11 subprocess) and groups the reasons by
+  member: an optimization record's report prefixes each with `<member>: ` (`starts/0/start: ...`),
+  and each member must carry the `running on` reason, then at most the note of D-20. Alternative:
+  one helper per report shape. Reversible by: the helper.
+- D-22. DECISION (WO3): the M03 platform-difference row (X07a-L3) registers the five paths the macOS
+  leg measured, not F-5's one: WO2's log excerpt showed only the margin; run 44652504290's full
+  message names five (table below). Registering them is P3c's interim; classifying them is Q-4.
+- A2 (WO3, measured 2026-11-20): over the A1 grid, `decide_mode` at `bd7548e4` against C1: 288
+  environments, 82 944 ordered pairs, 82 880 identical in mode and reasons, 64 differ (every one a
+  pair of equal environments on arm64/Darwin or AMD64/Windows, inspected -> `exact_replay`), 0 with
+  both sides registered. Modes after C1: 128 exact, 4 544 compatible, 78 272 inspected. Script:
+  a scratch copy of `git show bd7548e4:src/openflowsheet/run/replay.py` against the branch module.
+- ADR 0007 Amendment 3 is **proposed**, not accepted: C1 (commit b27c69a1, revertible alone) builds
+  against it. X07a's merge into `main` waits on Frank accepting it (a Decision Desk card).
+
 ## Design-lane questions (left failing, not chosen)
 
 - Q-1 (G19 on Windows, run 44615939688): `t07_licence_inventory.py` FAILED, 30 distributions:
@@ -118,6 +143,14 @@ Brief: `docs/briefs/X07a-WO1.md`. Branch `wp/X07a`, base `main` c4a91a75. Build 
   a same-host rerun included. macOS: about 90 of 144 failures (47 `test_g8_rerun_matches_on_the_same_host`,
   `test_a16_a17_the_replay_matrix`, `test_g16*`, `test_t07_q26_*`, ...); Windows: 54 of the rest.
   Registering a platform for replay is the same ruling as Q-2.
+- Q-4 (WO3, ruling section 8, extended by D-22): are M03's `splits[].margin`,
+  `regularity.inverse_one_norm_estimate` and `regularity.solution_error_bound_scaled` compared
+  with the class and floor the policy gives them (ruling P3b)? The numbers are row X07a-L3's.
+  `solution_error_bound_scaled` moves by a factor 3.07 (relative 2.07) while its operands move by
+  about 2.3e-9 relative: it is an error bound scaled by a residual at noise level, compared with
+  its D2.2 floor 1e-8 against values of 1.8e-8 and 5.5e-8. The ruling's default (no floor for the
+  margin) does not cover the two regularity paths, which F-5 did not show. Not chosen (stop
+  condition "a P3b classification that the policy's text does not settle"); the row stands.
 - Q-3 (WO2, macOS run 44629506428): floating-point differences against Linux-recorded fixtures,
   for example `test_every_registered_call_is_bitwise_the_baseline[kernel_targets]`
   (`_same(1.9163045025588417, 1.9163045025588423)`), `test_the_fixtures_are_what_real_runs_emit_today`
@@ -141,6 +174,19 @@ Brief: `docs/briefs/X07a-WO1.md`. Branch `wp/X07a`, base `main` c4a91a75. Build 
 | `tests/test_t07_w7a_harness.py` (`fake_claude`) | Windows | the stand-in `claude` is a shebang script run with a POSIX PATH; run 44618922484 | not planned (as above) |
 
 Rows found by the CI legs are added below with their run id.
+
+### Replay and floating-point rows (WO3, ruling P1 to P5)
+
+Ids are carried by the code (`bitwise_baseline(row=...)`, `assert_inspected_off_registered(...,
+row=...)`, `conftest.PLATFORM_DIFFERENCES`); `tests/test_x07a_platform_rows.py` asserts the two sets
+of ids are equal.
+
+| Row | Test node(s) | Platform | Class | Numbers (P3a) | Run | Lifted by |
+| --- | --- | --- | --- | --- | --- | --- |
+| X07a-L1 | `tests/test_t05b_kernel_inert.py::test_the_baseline_is_what_the_generator_emits_today`, `::test_every_registered_call_is_bitwise_the_baseline` (all groups) | macOS, Windows | bitwise (P2) | `kernel_targets` 1.9163045025588417 against 1.9163045025588423: 3 ulp, 3.5e-16 relative (F-5) | 44629506428, 44652504290 | never by registration: a baseline recorded or measured bit-identical on the platform (`BITWISE_BASELINE_PLATFORMS`) |
+| X07a-L2 | `tests/test_st_cli.py::test_th_c1_golden[csv,json,text]` | macOS, Windows | bitwise (P2); companions on every leg: (a) `test_th_c1_the_goldens_are_the_formatters_image_of_the_json_golden`, (b) `test_th_c1_a_fresh_solve_is_the_json_golden_under_the_policy` | (b) measures it | 44629506428, 44652504290 | as X07a-L1 |
+| X07a-L3 | `tests/test_m03_schemas.py::test_the_fixtures_are_what_real_runs_emit_today`, fixture `study/sensitivity_result/valid/b1_forward_phase_boundary.json` | macOS | policy-bounded (P3c) | macOS against Linux, bound max(1e-9 rel, floor): `qualification.outcomes[8].splits[1].margin` and `qualification.splits[1].margin` 1.3370443359361772e-05 against 1.3370443389781883e-05, 3.04e-14, bound 1.34e-14 (no floor), ratio 2.28; `qualification.regularity.inverse_one_norm_estimate` 563097.6782451527 against 563097.6769593855, 1.29e-3, bound 5.63e-4 (its D2.2 floor, absolute 0.0), ratio 2.28; `qualification.regularity.solution_error_bound_scaled` 5.5097787861064925e-08 against 1.7963045774504667e-08, 3.71e-8, bound 1e-8 (its D2.2 floor), ratio 3.71; `refusals[0].message` float 0 of its text, the margin's numbers (ADR 0025 D6) | 44652504290 | Q-4 (classification, P3b) or the platform's registration with an ADR 0067 D7 record |
+| X07a-L4 | `tests/test_opt_replay.py::test_g13_the_committed_record_replays_to_match_without_ipopt`, `::test_g11_replay_imports_neither_pyomo_nor_cyipopt`, `::test_g13_reproduce_imports_and_replays_an_optimization_record`, `::test_g13_the_cli_replays_an_optimization_record` | macOS, Windows | replay-committed (P1c): OPT-A2 was written on x86-64 Linux | - | 44652504290 | the platform's registration (ruling E-3) |
 
 ## Position (handoff, WO2 at its context cap, 2026-11-20)
 
