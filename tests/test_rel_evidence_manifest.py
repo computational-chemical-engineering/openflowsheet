@@ -14,6 +14,7 @@ import sys
 from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import Any
+from xml.etree import ElementTree
 
 import pytest
 from conftest import frozen_windows_consequence
@@ -301,12 +302,15 @@ def test_rel_a20_over_0_3_0s_committed_records(tmp_path: Path) -> None:
     # RP.S03 differs by exactly its registered line; it is set aside and the rest judged as here.
     differs = frozen_windows_consequence(row="X07a-L12")
     set_aside = {"RP.S03"} if differs is not None else set()
+    wrong = []
     for key in rem.SAME_FORM:
         (said,) = [line for line in lines if line.startswith(f"RP.{key} same form: ")]
         if f"RP.{key}" in set_aside:
-            assert said == differs, said
-        else:
-            assert said.endswith(": equal"), said
+            if said != differs:
+                wrong.append(key)
+        elif not said.endswith(": equal"):
+            wrong.append(key)
+    assert not wrong, "\n\n".join(_same_form_diagnosis(key, lines, tmp_path) for key in wrong)
     for key in rem.CHANGED_FORM:
         assert any(line.startswith(f"RP.{key} changed form: ") for line in lines)
     written = json.loads((tmp_path / "manifest.json").read_text(encoding="utf-8"))
@@ -338,6 +342,53 @@ def test_rel_a20_over_0_3_0s_committed_records(tmp_path: Path) -> None:
     (own,) = [entry for entry in no_commands["checks"] if entry["id"] == "RP.S18"]
     own["value"]["self"]["commands"] = 0
     assert rem.rel_a20(no_commands, s13)[0] is False
+
+
+def _same_form_diagnosis(key: str, lines: Sequence[str], out: Path, limit: int = 3000) -> str:
+    """X07a WO11: why REL.A20's same-form line for `key` is not the expected one, bounded: the
+    generator's lines for `key`, its manifest entry's value, and for each pytest selection its exit
+    code, the nodes its junit names as failed, errored or skipped (with the message's first line)
+    and the last lines of its log (`release_evidence_manifest.run_tests` writes both under
+    `artifacts`)."""
+    shown = [line for line in lines if line.startswith(f"RP.{key} ")]
+    commands: list[Mapping[str, Any]] = []
+    try:
+        written = json.loads((out / "manifest.json").read_text(encoding="utf-8"))
+        commands = written["commands"]
+        (entry,) = [e for e in written["checks"] if e["id"] == f"RP.{key}"]
+        value = entry["value"]
+        for selection in value.get("tests", {}).get("selections", []):
+            shown.append(f"selection {selection['selection']}: {selection['summary']!r}")
+        rest = {name: said for name, said in value.items() if name != "tests"}
+        if rest or "tests" not in value:
+            shown.append(f"value: {json.dumps(rest, ensure_ascii=False)[:600]}")
+    except (OSError, ValueError, KeyError) as error:
+        shown.append(f"manifest unreadable: {type(error).__name__}: {error}")
+    artifacts = out / "artifacts"
+    for junit in sorted(artifacts.glob(f"RP.{key}.junit.xml")) + sorted(
+        artifacts.glob(f"RP.{key}.*.junit.xml")
+    ):
+        label = junit.name.removesuffix(".junit.xml")
+        codes = [c.get("exit_code") for c in commands if f"{label}.junit.xml" in c.get("cmd", "")]
+        shown.append(f"{label} exit code {codes}")
+        try:
+            cases = ElementTree.parse(junit).getroot().iter("testcase")
+            for case in cases:
+                for outcome in ("failure", "error", "skipped"):
+                    found = case.find(outcome)
+                    if found is not None:
+                        message = (found.get("message") or found.text or "").strip()
+                        shown.append(
+                            f"{label} {outcome}: {case.get('classname')}::{case.get('name')}: "
+                            f"{message.splitlines()[0][:300] if message else ''}"
+                        )
+        except (OSError, ElementTree.ParseError) as error:
+            shown.append(f"{label} junit unreadable: {type(error).__name__}: {error}")
+        log = artifacts / f"{label}.log"
+        if log.is_file():
+            tail = log.read_text(encoding="utf-8", errors="replace").strip().splitlines()[-8:]
+            shown.extend(f"{label} log: {line[:300]}" for line in tail)
+    return "\n".join(shown)[:limit]
 
 
 def _set_aside(manifest: Mapping[str, Any], checks: set[str]) -> dict[str, Any]:
