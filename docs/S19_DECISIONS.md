@@ -3948,3 +3948,12 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
 - 2026-11-20, job 523 (`w5l1-1`, no-gain, W5 batch L) PASS 18/18, step 468 accepted-neutral: column_unit's 34
   bindings imported from their homes (d30c0006; debt 95.1 -> 95.1). Job 524 (`w5l1-2`, interface, the re-export
   removal, plan d009d660) gating. gate_report ALERTs as at 02:45 (selection share, tests-tier time); action unchanged.
+- **2026-11-20, WO-L1 delivered (opus-engineer, Opus, ~183k).** wp/S19-w5l from B_L 69806a5a: d30c0006 retarget (34/34
+  `old is new` at B_L; job 523 PASS), d009d660 plan `.codehealth/interface/w5l1-column-reexports.toml`, 4e56ea47
+  re-exports removed (job 524, interface), 382ce4a4 `structural_refusal` 50.9 -> 0 (job 525), 793eff3c
+  `column_structure` 43.2 -> 0 (job 526). column_unit.py 4.9 -> 9.0, debt 95.1 -> 3.0. FP check: arithmetic and
+  comparison nodes in order equal (43/43, 29/29), 30000 random cases old vs new, 0 differ. F0 `M9 FAIL 1/35`
+  (column_unit); registry: sha line only; W5-S7 0 new edges + 34 retargets; i19_scan no `w5` row; patch_noop 0.
+  Deviations for review: step 2 also edits docstrings naming the removed paths; `w5_gate.py scope` without `--plans`
+  refuses the plan file (the gate passes the glob); two archival probes under `docs/derivations/scripts/s08_design/`
+  still import the removed paths (not retargeted). Reviewer R-W5-L1 after jobs 524-526 (S1 cadence).
