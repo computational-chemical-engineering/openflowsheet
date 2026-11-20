@@ -4298,3 +4298,12 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
 - 2026-11-20, job 550 (w5p2-2) PASS 20/20 (step 490, 23.0 -> 2.0). Job 552 (w5p3-1, WO-P3 step 1) queued. gate_report: standing ALERT only.
 - 2026-11-20, job 551 (w5p2-3) PASS 20/20 (step 491, 2.0 -> 1.0). WO-P2 chain all PASS; R-W5-P2 launched (reviewer, Opus). Jobs 552, 553 (WO-P3) in the queue. gate_report: standing ALERT only.
 - 2026-11-20, X32: CI 44734187451 at 083839ec green (check x2, identity, default-install, codehealth). Manifest at 2725fa7d `tested` (orchestrator, 7cf27880, pushed): CI recorded in commands and checks (X32.ci), limitation refreshed, harvest row re-hashed (t08 --check 0 problems; 663 passed); HARVEST_SIZE unchanged. X32 is ready for the 0.5 merge card.
+- **2026-11-20, R-W5-P2 (reviewer, Opus): merge with batch P, no fixes.** Own dumps (`-P`, imported file sha256
+  checked against `git show`): 59610 records, c776a58f at 65504942 and 63cead7c; per step the dump reaches every
+  changed line (3/3, 27/27; 8/8, 40/40; 2/2, 18/18). Falsifier: `-big_c * (x * x)` changes 17 lines (weak on the
+  non-analytic term); swapping refusal rows 4/5 does not change the hash (no grid state both dormant and out of
+  domain). (1) S1: every removed line verbatim; calls once per path in the old order; the solver wraps leave other
+  paths alone. (2) Refusal order proved by reading (ladder moved whole); the dump pins rows 1-3 and 4/6 overlaps, not
+  4/5, 3/5, 5/6 or Psat vs Tsat both not converged (suggests `((0.0,), 200.0, 1e5)` for later steps). (3) Dump-only
+  branches: `_phase_answer` rule-None (~:1040), `_saturation_answers` Tsat-None (~:1078). W5-S1, S4, S7 confirmed.
+  (4) m6 anchor: leaving `_requested_derivatives` inline is right (a retarget edits S05 A29's mutation evidence).
