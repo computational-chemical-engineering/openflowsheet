@@ -102,12 +102,49 @@ def _golden(form: str) -> str:
 # ==================================================================================== goldens
 
 
+@pytest.mark.bitwise_baseline(row="X07a-L2")
 @pytest.mark.parametrize("form", sorted(FORMATS))
 def test_th_c1_golden(form: str, bundle: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    """Byte identity of a fresh solve's rendering: bitwise, so it runs where the goldens were
+    recorded (X07a ruling P2). Its two platform-independent companions follow."""
     code, out, err = streams(str(bundle), "--format", form, capsys=capsys)
     assert (code, err) == (0, "")
     golden = _golden(form)
     assert out == golden
+
+
+def _golden_document() -> dict[str, Any]:
+    document: dict[str, Any] = json.loads(_golden("json"))
+    return document
+
+
+@pytest.mark.parametrize("form", sorted(FORMATS))
+def test_th_c1_the_goldens_are_the_formatters_image_of_the_json_golden(form: str) -> None:
+    """X07a ruling P2, companion (a), on every platform: formatting is a step on committed input,
+    so the text and CSV goldens are what the formatter makes of the JSON golden, byte for byte."""
+    render = {
+        "text": stream_table_format.to_text,
+        "json": stream_table_format.to_json,
+        "csv": stream_table_format.to_csv,
+    }[form]
+    assert render(_golden_document()) == _golden(form)
+
+
+def test_th_c1_a_fresh_solve_is_the_json_golden_under_the_policy(
+    bundle: Path, request: pytest.FixtureRequest
+) -> None:
+    """X07a ruling P2, companion (b), on every platform: the fresh document against the JSON
+    golden under the current numerical policy. Empty where the goldens were recorded; elsewhere
+    the beyond-policy paths are exactly the platform's registered row (P3c)."""
+    from conftest import platform_differences
+
+    from openflowsheet.run.compare import CURRENT_POLICY_ID, differences
+
+    found = differences(
+        stream_table.from_bundle(bundle), _golden_document(), policy_id=CURRENT_POLICY_ID
+    )
+    paths = {line.split(": ", 1)[0] for line in found}
+    assert paths == platform_differences(request.node.nodeid), found
 
 
 def test_the_json_form_is_the_documents_canonical_json(

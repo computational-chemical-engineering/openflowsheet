@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import platform
 import shutil
 import subprocess
 import sys
@@ -18,6 +19,97 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 #: before PATH and finds the WSL launcher (run 44618922484: "... wsl.exe --install <Distro>"), so
 #: the PATH's bash (Git's on the CI runner) is named by its full path; elsewhere the bare name.
 BASH = (shutil.which("bash") or "bash") if sys.platform == "win32" else "bash"
+
+
+# -- X07a: replay and floating-point limits off the registered platforms (ruling R2, P1 to P5) ---
+# Each use below carries the id of its row in the platform-limit table of `docs/X07a_DECISIONS.md`
+# (`X07a-L<n>`); `tests/test_x07a_platform_rows.py` asserts the two sets of ids are equal.
+
+#: This host's `(platform.machine(), platform.system())`, as `run.replay.decide_mode` sees it.
+HOST_PLATFORM: tuple[str, str] = (platform.machine(), platform.system())
+
+#: P2: where the committed bitwise baselines (`float.hex()`, `repr` or byte goldens) were recorded
+#: or measured bit-identical. Registering a replay platform never adds to it (ADR 0007 D3.2).
+BITWISE_BASELINE_PLATFORMS: frozenset[tuple[str, str]] = frozenset(
+    {("x86_64", "Linux"), ("aarch64", "Linux")}
+)
+#: The start of the skip reason of a `bitwise_baseline` node off those platforms.
+BITWISE_BASELINE_OFF_PLATFORM = "bitwise_baseline_off_platform"
+
+#: P3c: per unregistered platform and test node, the row and the exact set of paths that differ
+#: beyond the numerical policy there. An extra path fails, and so does a registered path that no
+#: longer differs. No registered platform is a key (asserted by the rows test).
+PLATFORM_DIFFERENCES: dict[tuple[str, str], dict[str, tuple[str, frozenset[str]]]] = {
+    ("arm64", "Darwin"): {
+        "tests/test_m03_schemas.py::test_the_fixtures_are_what_real_runs_emit_today": (
+            "X07a-L3",
+            frozenset(
+                {
+                    "study/sensitivity_result/valid/b1_forward_phase_boundary.json: "
+                    "<root>.qualification.outcomes[8].splits[1].margin",
+                    "study/sensitivity_result/valid/b1_forward_phase_boundary.json: "
+                    "<root>.qualification.regularity.inverse_one_norm_estimate",
+                    "study/sensitivity_result/valid/b1_forward_phase_boundary.json: "
+                    "<root>.qualification.regularity.solution_error_bound_scaled",
+                    "study/sensitivity_result/valid/b1_forward_phase_boundary.json: "
+                    "<root>.qualification.splits[1].margin",
+                    "study/sensitivity_result/valid/b1_forward_phase_boundary.json: "
+                    "<root>.refusals[0].message (float 0 of its text)",
+                }
+            ),
+        ),
+    },
+}
+
+
+def platform_differences(node: str) -> frozenset[str]:
+    """P3c: the paths registered to differ beyond the policy for `node` on this host; empty on a
+    registered platform and for a node without a row."""
+    return PLATFORM_DIFFERENCES.get(HOST_PLATFORM, {}).get(node, ("", frozenset()))[1]
+
+
+#: The note `run.replay.replay` appends when it re-runs nothing (`revision_replay._inspected`
+#: keeps it); P1c accepts it after the `running on` reason and nowhere else (X07a D-20).
+NOT_RERUN_NOTE = "no rerun was supplied"
+
+
+def assert_inspected_off_registered(report: Any, row: str) -> None:
+    """P1c: a committed bundle recorded on a registered platform, replayed on an unregistered one,
+    gets the policy's answer: inspected, `NOT_RUN`, integrity intact, and for each replayed member
+    (an optimization record prefixes `<member>: `) the `running on` reason, followed at most by
+    `NOT_RERUN_NOTE`. The comparison claim stays judged on the registered legs. `report` is a
+    `ReplayReport` or its document; `row` is the `X07a-L<n>` id of the platform-limit row."""
+    from openflowsheet.run.replay import REGISTERED_PLATFORMS
+
+    document = report.as_document() if hasattr(report, "as_document") else report
+    assert HOST_PLATFORM not in REGISTERED_PLATFORMS, (row, HOST_PLATFORM)
+    assert document["mode"] == "inspected_archived_results", (row, document["mode"])
+    assert document["verdict"] == "NOT_RUN", (row, document["verdict"])
+    assert document["integrity"]["ok"], (row, document["integrity"])
+    machine, system = HOST_PLATFORM
+    running_on = f"running on {machine}/{system}, which is not a registered platform"
+    members: dict[str, list[str]] = {}
+    for reason in document["reasons"]:
+        member, separator, text = reason.partition(": ")
+        if not separator or member.startswith("running on"):
+            member, text = "", reason
+        members.setdefault(member, []).append(text)
+    assert members, (row, document["reasons"])
+    for member, texts in members.items():
+        assert texts[0].startswith(running_on), (row, member, texts)
+        assert texts[1:] in ([], [NOT_RERUN_NOTE]), (row, member, texts)
+
+
+def pytest_runtest_setup(item: Any) -> None:
+    """P2: a `bitwise_baseline` node runs only where its baseline's bits were recorded."""
+    marker = item.get_closest_marker("bitwise_baseline")
+    if marker is not None and HOST_PLATFORM not in BITWISE_BASELINE_PLATFORMS:
+        row = marker.kwargs.get("row", "")
+        pytest.skip(
+            f"{BITWISE_BASELINE_OFF_PLATFORM}: {row}: the expectation is bitwise, recorded on "
+            f"{sorted(BITWISE_BASELINE_PLATFORMS)}; this is {HOST_PLATFORM} (X07a ruling P2)"
+        )
+
 
 #: The reason a test that reads the pre-0.1.0 development history skips where that history is not.
 ARCHIVED_HISTORY = "pre-0.1.0 development history is archived in openflowsheet-dev (R-150)"

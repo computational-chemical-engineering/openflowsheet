@@ -211,4 +211,5 @@ markers = [
     "nlp: needs the audited Ipopt environment of docs/m03-ipopt-audit.md (scripts/m03_nlp_check.sh)",
     "pymrm: needs the pinned reactor environment of M02 design note §2.4 (opt-in evidence)",
     "browser: drives a headless Chromium (M06 design note §8 A6); skipped without one, failed without one when OPENFLOWSHEET_REQUIRE_BROWSER=1",
+    "bitwise_baseline(row): the expectation is bitwise; runs on conftest.BITWISE_BASELINE_PLATFORMS only (X07a ruling P2)",
 ]

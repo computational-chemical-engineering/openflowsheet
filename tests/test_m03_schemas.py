@@ -30,7 +30,7 @@ from pathlib import Path
 from typing import Any
 
 import pytest
-from conftest import REPO_ROOT, load_json
+from conftest import REPO_ROOT, load_json, platform_differences
 from jsonschema import Draft202012Validator
 from m03_fixture_compare import fixture_differences
 
@@ -111,14 +111,17 @@ def test_every_def_has_a_valid_and_an_invalid_fixture_emitted_by_a_real_run(
         assert any(fixture["expect_error"] in error for error in errors), (path, errors)
 
 
-def test_the_fixtures_are_what_real_runs_emit_today() -> None:
+def test_the_fixtures_are_what_real_runs_emit_today(request: pytest.FixtureRequest) -> None:
     """R-015: regenerated, every fixture is what the committed one records — under
     `T08-numerical-policy-v2` and M03's rules for what that policy has no row for
     (`m03_fixture_compare`; M03 review F1), not byte for byte. Spec §3.7's bitwise reproducibility
     holds on one platform, and the default gate runs on two; a byte comparison also pinned 13
     `state_sha256` values (ADR 0008 D2.1) and FIT-U's arbitrary final iterate (spec §7.4,
     Amendment 1). The audited environment's fixtures are regenerated there
-    (`test_m03_nlp_greybox.py`); here they need only exist."""
+    (`test_m03_nlp_greybox.py`); here they need only exist.
+
+    On an unregistered platform the paths beyond the policy are exactly its registered row
+    (X07a ruling P3c, `conftest.PLATFORM_DIFFERENCES`); on a registered one there are none."""
     emitted = m03_schema_fixtures.documents()
     committed = sorted(
         str(path.relative_to(FIXTURES))
@@ -129,15 +132,20 @@ def test_the_fixtures_are_what_real_runs_emit_today() -> None:
     assert set(nlp) <= set(committed)
     assert not set(nlp) & set(emitted)
     assert sorted(emitted) == sorted(set(committed) - set(nlp))
-    for name, document in emitted.items():
-        fresh = json.loads(m03_schema_fixtures.serialize(document))
-        found = fixture_differences(fresh, load_json(FIXTURES / name))
-        assert not found, (
-            f"{name} is not what the code emits:\n  "
-            + "\n  ".join(found)
-            + "\nIf this is an intended change, regenerate with "
-            "`python scripts/m03_schema_fixtures.py --write`."
+    found = [
+        f"{name}: {line}"
+        for name, document in emitted.items()
+        for line in fixture_differences(
+            json.loads(m03_schema_fixtures.serialize(document)), load_json(FIXTURES / name)
         )
+    ]
+    paths = {line.split(": ", 2)[0] + ": " + line.split(": ", 2)[1] for line in found}
+    assert paths == platform_differences(request.node.nodeid), (
+        "the fixtures are not what the code emits:\n  "
+        + "\n  ".join(found)
+        + "\nIf this is an intended change, regenerate with "
+        "`python scripts/m03_schema_fixtures.py --write`."
+    )
 
 
 #: A change the comparison must still catch, one per rule it applies: (fixture, path, new value).
