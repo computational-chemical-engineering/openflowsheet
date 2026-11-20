@@ -435,7 +435,7 @@ def _m_harvest(inputs: Inputs) -> Part:
     excluded = _harvest_excluded_at(added[-1]) if added else t08_support_matrix.HARVEST_EXCLUDED
     at_c = t08._git("ls-tree", "-r", "--name-only", inputs.commit, "--", prefix).splitlines()
     manifests = sorted(
-        str(path.relative_to(ROOT))
+        path.relative_to(ROOT).as_posix()
         for member in excluded
         for path in (ROOT / member).glob("**/manifest.json")
     )

@@ -12,7 +12,7 @@ import os
 import subprocess
 import sys
 from collections.abc import Mapping, Sequence
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 from typing import Any
 from xml.etree import ElementTree
 
@@ -23,6 +23,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
 import release_evidence_manifest as rem  # noqa: E402
 import release_gate as rg  # noqa: E402
+import s13_evidence_manifest as s13  # noqa: E402
 import v0_2_gate as engine  # noqa: E402
 
 C = "c" * 40
@@ -520,3 +521,30 @@ def test_rp_s22_reads_harvest_excluded_where_the_manifest_was_written() -> None:
         "evidence/S13/",
     )
     assert rem._harvest_excluded_at(S13.name) == ()
+
+
+class _WindowsRoot(type(Path())):  # type: ignore[misc]
+    """`ROOT` as Windows hands it out: a path under it, made relative to it, prints with
+    backslashes (`WindowsPath.__str__`), while the files it names are this checkout's."""
+
+    def relative_to(self, *other: Any, **kwargs: Any) -> PureWindowsPath:
+        return PureWindowsPath(*super().relative_to(*other, **kwargs).parts)
+
+
+def test_rp_s16_and_s22_record_git_paths_where_windows_prints_backslashes(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """X07a-WO12: RP.S16 keys `docs/adr/` by path and RP.S22 matches and records
+    `evidence/<pkg>/<40 hex>/manifest.json`, both in git's `/` form. With `ROOT` behaving as on
+    Windows, each measure over 0.3.0's records gives the bytes it gives natively (CI 44799836309:
+    `ADR 0022: 0 files docs/adr/0022-*.md` and `evidence\\S13\\...\\manifest.json`)."""
+    inputs = rem.Inputs(rem.load_line("0.3"), S13.name, manifest_adrs=("0053", "0054"))
+    native = {"adrs": rem._m_adrs(inputs), "harvest": rem._m_harvest(inputs)}
+    assert native["adrs"][0] == "pass", native["adrs"]
+    assert native["harvest"][0] == "pass", native["harvest"]
+    root = _WindowsRoot(ROOT)
+    assert str((root / "docs" / "adr" / "x.md").relative_to(root)) == "docs\\adr\\x.md"
+    monkeypatch.setattr(s13, "ROOT", root)
+    monkeypatch.setattr(rem, "ROOT", root)
+    windows = {"adrs": rem._m_adrs(inputs), "harvest": rem._m_harvest(inputs)}
+    assert json.dumps(windows, sort_keys=True) == json.dumps(native, sort_keys=True)
