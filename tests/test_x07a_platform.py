@@ -12,7 +12,10 @@
   `PermissionError` is retried `REPLACE_ATTEMPTS` times in all, `REPLACE_RETRY_S` apart, then
   raised, and elsewhere it is raised at once;
 - (e) POSIX only, by construction: the layer makes the calls its callers made before X07a, with
-  the same arguments and in the same order (Linux behaviour unchanged).
+  the same arguments and in the same order (Linux behaviour unchanged);
+- (f) `loaded_libraries` lists the shared objects the process has loaded on every leg: NumPy's
+  extension module and, where NumPy is built against an OpenBLAS, that OpenBLAS (X07a review R-1:
+  the BLAS pin found its libraries in `/proc/self/maps` only).
 """
 
 from __future__ import annotations
@@ -209,3 +212,19 @@ def test_e_posix_calls_are_the_callers_former_calls(
         ("setpgid", 0, 0),
     ]
     assert os.RTLD_NOLOAD | os.RTLD_LAZY == _platform.LOADED_LIBRARY_MODE
+
+
+def test_f_loaded_libraries_lists_numpys_extension_and_openblas() -> None:
+    import importlib
+
+    import numpy
+
+    loaded = _platform.loaded_libraries()
+    assert loaded == sorted(set(loaded))
+    extension = Path(str(importlib.import_module("numpy._core._multiarray_umath").__file__))
+    assert any(
+        Path(path).name == extension.name and os.path.samefile(path, extension) for path in loaded
+    ), loaded
+    blas = numpy.show_config(mode="dicts")["Build Dependencies"]["blas"]["name"]
+    if "openblas" in blas:
+        assert any("openblas" in Path(path).name.lower() for path in loaded), loaded

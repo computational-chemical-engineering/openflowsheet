@@ -16,7 +16,7 @@ import math
 import os
 import subprocess
 import sys
-from collections.abc import Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from typing import Any
 
 import pytest
@@ -389,10 +389,14 @@ def test_the_predictor_refuses_malformed_coefficients() -> None:
 # -- A49: the fit does not depend on the BLAS thread count (spec §20 A3.3, R-362) -----------------
 
 #: The child: a synthetic fit of WO-11's size (141 training rows), pinned (the production path) or
-#: with the pin replaced by a no-op; it prints the 72 coefficients' binary64 patterns.
+#: with the pin replaced by a no-op; it prints the 72 coefficients' binary64 patterns, the file
+#: names of the OpenBLAS libraries the pin controls, and which of NumPy and SciPy were built
+#: against an OpenBLAS (their `show_config`; X07a review R-1).
 _A49_CHILD = """
-import contextlib, json, sys
+import contextlib, json, os, sys
 import numpy as np
+import scipy
+from openflowsheet.studies.surrogate import blas
 from openflowsheet.studies.surrogate import quadratic as q
 from openflowsheet.studies.surrogate.plan import SCALING
 if sys.argv[1] == "unpinned":
@@ -403,11 +407,20 @@ x = 0.2 + 0.05 * np.sin(z @ np.arange(1, 8)) + 0.01 * z[:, 0] * z[:, 3]
 dt = 100.0 + 30.0 * np.cos(z @ np.linspace(0.3, 1.1, 7)) + 5.0 * z[:, 2] ** 2
 fit = q.fit_quadratic(z.tolist(), x.tolist(), dt.tolist(), SCALING)
 s = fit.surrogate
-print(json.dumps([c.hex() for c in s.coefficients_x + s.coefficients_dt]))
+builds = [
+    package.__name__
+    for package in (np, scipy)
+    if "openblas" in package.show_config(mode="dicts")["Build Dependencies"]["blas"]["name"]
+]
+print(json.dumps({
+    "coefficients": [c.hex() for c in s.coefficients_x + s.coefficients_dt],
+    "controlled": [os.path.basename(library.path) for library in blas.controlled()],
+    "openblas_builds": builds,
+}))
 """
 
 
-def _a49_fit(mode: str, threads: int) -> list[str]:
+def _a49_child(mode: str, threads: int) -> dict[str, list[str]]:
     env = dict(os.environ)
     env.update(OMP_NUM_THREADS=str(threads), OPENBLAS_NUM_THREADS=str(threads))
     env["PYTHONPATH"] = os.pathsep.join(
@@ -421,13 +434,30 @@ def _a49_fit(mode: str, threads: int) -> list[str]:
         check=True,
         timeout=120,
     )
-    coefficients: list[str] = json.loads(done.stdout)
-    return coefficients
+    child: dict[str, list[str]] = json.loads(done.stdout)
+    return child
 
 
-def test_a49_the_fits_coefficients_are_bitwise_equal_at_one_and_eight_blas_threads() -> None:
-    pinned_1, pinned_8 = _a49_fit("pinned", 1), _a49_fit("pinned", 8)
-    unpinned_1, unpinned_8 = _a49_fit("unpinned", 1), _a49_fit("unpinned", 8)
+def test_a49_the_fits_coefficients_are_bitwise_equal_at_one_and_eight_blas_threads(
+    record_property: Callable[[str, object], None],
+) -> None:
+    children = {
+        (mode, threads): _a49_child(mode, threads)
+        for mode in ("pinned", "unpinned")
+        for threads in (1, 8)
+    }
+    pinned_1 = children["pinned", 1]["coefficients"]
+    pinned_8 = children["pinned", 8]["coefficients"]
+    unpinned_1 = children["unpinned", 1]["coefficients"]
+    unpinned_8 = children["unpinned", 8]["coefficients"]
+    # The pin reaches every platform's OpenBLAS (review R-1: it found none off Linux and was a
+    # no-op there): where NumPy or SciPy is built against an OpenBLAS, the child controls one.
+    child = children["pinned", 8]
+    record_property("blas_controlled", child["controlled"])
+    record_property("openblas_builds", child["openblas_builds"])
+    assert child["controlled"] or not child["openblas_builds"], (
+        f"OpenBLAS builds {child['openblas_builds']}, but the pin controls none"
+    )
     assert pinned_1 == pinned_8
     # And the pin is single-threaded OpenBLAS: the bits of a process started at one thread.
     assert pinned_8 == unpinned_1
@@ -438,5 +468,6 @@ def test_a49_the_fits_coefficients_are_bitwise_equal_at_one_and_eight_blas_threa
     if unpinned_1 == unpinned_8:
         pytest.skip(
             f"the negative control is vacuous on this host ({os.cpu_count()} CPUs): the unpinned "
-            "fit at 1 and 8 BLAS threads agrees bitwise; the pinned claims above held (E40)"
+            "fit at 1 and 8 BLAS threads agrees bitwise; the pinned claims above held (E40); "
+            f"the pin controls {child['controlled']}"
         )

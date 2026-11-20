@@ -1,23 +1,30 @@
 """The operating-system calls that differ between POSIX and Windows (X07a, roadmap 0.5).
 
-Three concerns, each a pair of functions, below every layer that uses them:
+Four concerns, each a pair of names, below every layer that uses them:
 
 - **file locks**: `lock_exclusive`, and `release_lock`, `release_lock_file` or `close_locked`: an
   exclusive lock on an open descriptor taken without blocking (`application.store` §9.3 owners,
   `adapters.experiments.store` key locks);
 - **process trees**: `isolate_process_tree` in a new worker and `kill_process_tree` in its parent
   (ADR 0033 D2 L2, the forced kill reaches the worker's children);
-- **atomic replace**: `replace_file` and `fsync_directory` (`openflowsheet._files`).
+- **atomic replace**: `replace_file` and `fsync_directory` (`openflowsheet._files`);
+- **loaded libraries**: `loaded_libraries` and `LOADED_LIBRARY_MODE`: the shared objects this
+  process has loaded, and the `ctypes` mode that opens one of them without loading anything new
+  (`studies.surrogate.blas`, the BLAS thread pin).
 
 On Linux and macOS every function makes the system calls, with the arguments and in the order,
 that its callers made before this module existed. Windows gets the documented equivalent:
 `msvcrt.locking` on one byte at offset 0 for `flock`; a Job Object for the process group; a
 bounded retry of `os.replace` while another process holds the target open, and no directory
-`fsync` (a directory cannot be opened there; ADR 0061 N12 "fsync ... on POSIX").
+`fsync` (a directory cannot be opened there; ADR 0061 N12 "fsync ... on POSIX"). The loaded
+libraries are read from `/proc/self/maps` on Linux, from the dynamic loader's image list on macOS
+(`_dyld_image_count`, `_dyld_get_image_name`) and from the process's module list on Windows
+(`K32EnumProcessModules`, `GetModuleFileNameW`).
 """
 
 from __future__ import annotations
 
+import ctypes
 import errno
 import os
 import sys
@@ -26,7 +33,6 @@ from pathlib import Path
 from typing import Final
 
 if sys.platform == "win32":
-    import ctypes
     import msvcrt
     from ctypes import wintypes
 else:
@@ -41,6 +47,7 @@ __all__ = [
     "fsync_directory",
     "isolate_process_tree",
     "kill_process_tree",
+    "loaded_libraries",
     "lock_exclusive",
     "release_lock",
     "release_lock_file",
@@ -56,8 +63,10 @@ LOCK_HELD_ERRNOS: Final = (errno.EWOULDBLOCK, errno.EAGAIN, errno.EACCES)
 REPLACE_ATTEMPTS: Final = 50
 REPLACE_RETRY_S: Final = 0.02
 #: The `ctypes.CDLL` mode that opens a shared library only if it is already loaded (the BLAS and
-#: OpenMP thread probes, which find their libraries in `/proc/self/maps`): POSIX
-#: `RTLD_NOLOAD | RTLD_LAZY`. Windows has no such mode, and no caller reaches it there.
+#: OpenMP thread probes, which find their libraries with `loaded_libraries` or in
+#: `/proc/self/maps`): POSIX `RTLD_NOLOAD | RTLD_LAZY`. Windows has no such mode and `ctypes`
+#: ignores it there; a module opened by the full path `loaded_libraries` gives is the module
+#: already loaded (`LoadLibraryExW` returns its handle), so nothing new is loaded either.
 if sys.platform == "win32":
     LOADED_LIBRARY_MODE: Final[int] = 0
 else:
@@ -234,6 +243,82 @@ if sys.platform == "win32":
         if not kernel32.AssignProcessToJobObject(job, kernel32.GetCurrentProcess()):
             raise ctypes.WinError(ctypes.get_last_error())
         return int(job)
+
+
+# ---------------------------------------------------------------------------- loaded libraries
+
+
+def loaded_libraries() -> list[str]:
+    """The paths of the shared objects loaded in this process, sorted: the file names mapped in
+    `/proc/self/maps` on Linux (`[]` where it cannot be read), the dynamic loader's images on
+    macOS, the process's modules on Windows."""
+    if sys.platform == "win32":
+        return _process_modules()
+    elif sys.platform == "darwin":
+        return _dyld_images()
+    else:
+        try:
+            maps = Path("/proc/self/maps").read_text(encoding="utf-8")
+        except OSError:
+            return []
+        paths = set()
+        for line in maps.splitlines():
+            fields = line.split(None, 5)
+            if len(fields) == 6:
+                paths.add(fields[5].strip())
+        return sorted(paths)
+
+
+if sys.platform == "win32":
+
+    def _process_modules() -> list[str]:
+        """Every module of this process (`K32EnumProcessModules`), by its full path."""
+        kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+        kernel32.GetCurrentProcess.restype = wintypes.HANDLE
+        kernel32.K32EnumProcessModules.restype = wintypes.BOOL
+        kernel32.K32EnumProcessModules.argtypes = (
+            wintypes.HANDLE,
+            ctypes.POINTER(wintypes.HMODULE),
+            wintypes.DWORD,
+            ctypes.POINTER(wintypes.DWORD),
+        )
+        kernel32.GetModuleFileNameW.restype = wintypes.DWORD
+        kernel32.GetModuleFileNameW.argtypes = (wintypes.HMODULE, wintypes.LPWSTR, wintypes.DWORD)
+        process = kernel32.GetCurrentProcess()
+        width = ctypes.sizeof(wintypes.HMODULE)
+        count = 512
+        while True:
+            modules = (wintypes.HMODULE * count)()
+            needed = wintypes.DWORD()
+            if not kernel32.K32EnumProcessModules(
+                process, modules, ctypes.sizeof(modules), ctypes.byref(needed)
+            ):
+                raise ctypes.WinError(ctypes.get_last_error())
+            if needed.value <= ctypes.sizeof(modules):
+                break
+            count = needed.value // width + 64  # a module loaded since the first call
+        name = ctypes.create_unicode_buffer(32768)  # the longest Windows path, with its NUL
+        paths = set()
+        for module in modules[: needed.value // width]:
+            if kernel32.GetModuleFileNameW(module, name, len(name)):  # 0: unloaded since
+                paths.add(name.value)
+        return sorted(paths)
+
+elif sys.platform == "darwin":
+
+    def _dyld_images() -> list[str]:
+        """Every image the dynamic loader has loaded (`_dyld_get_image_name`), by its path."""
+        dyld = ctypes.CDLL(None)
+        dyld._dyld_image_count.restype = ctypes.c_uint32
+        dyld._dyld_image_count.argtypes = []
+        dyld._dyld_get_image_name.restype = ctypes.c_char_p
+        dyld._dyld_get_image_name.argtypes = [ctypes.c_uint32]
+        paths = set()
+        for index in range(dyld._dyld_image_count()):
+            name = dyld._dyld_get_image_name(index)
+            if name is not None:  # an image unloaded since the count was read
+                paths.add(os.fsdecode(name))
+        return sorted(paths)
 
 
 # ------------------------------------------------------------------------------ atomic replace
