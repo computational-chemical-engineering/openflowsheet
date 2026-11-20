@@ -37,7 +37,14 @@ from openflowsheet.graph.analysis import analyse
 from openflowsheet.graph.report import StructuralReport
 from openflowsheet.graph.trace import trace_declaration
 from openflowsheet.messages.diagnostic import Diagnostic
-from openflowsheet.models import Wiring, duty_id, flow_id, pressure_id, temperature_id
+from openflowsheet.models import (
+    UnitEvaluation,
+    Wiring,
+    duty_id,
+    flow_id,
+    pressure_id,
+    temperature_id,
+)
 from openflowsheet.models.revision_flowsheet import FlowsheetPass, RevisionFlowsheet
 from openflowsheet.models.syn001.conversion_reactor import extent_id
 from openflowsheet.models.syn001.ph_kernel import PHState
@@ -184,38 +191,15 @@ def _start_from_pass(
     """§2.2 steps 3–6 on one successful pass: the streams, the units' reported duty, work and
     extent (and S11's `owned` columns), each lifted split re-split from its stream, and the band
     routes — or the unit whose split the kernel refused. `traversal_start` calls it on pass 2
-    (pass 1 when nothing is torn); `restart_start` on the last pass its sequence kept."""
-    wanted = set(variable_ids)
-    values: dict[str, float] = {}
-    for stream in flowsheet.streams:
-        carried = traversed.streams[stream]
-        for index, component in enumerate(flowsheet.components):
-            values[flow_id(stream, component)] = carried.n[index]
-        values[temperature_id(stream)] = carried.temperature
-        values[pressure_id(stream)] = carried.pressure
+    (pass 1 when nothing is torn); `restart_start` on the last pass its sequence kept.
 
+    Its phases, in order: `_stream_values` (the streams), `_reported_values` (per unit, what it
+    reports), `lifted_split_values` (the splits), the completeness check (`ValueError`), and
+    `_band_routes` (the record)."""
+    wanted = set(variable_ids)
+    values = _stream_values(flowsheet, traversed)
     for unit, evaluation in traversed.evaluations.items():
-        duty = duty_id(unit)
-        if duty in wanted:
-            reported = [x for x in (evaluation.duty, evaluation.transferred_duty) if x is not None]
-            if len(reported) != 1:
-                raise ValueError(
-                    f"{unit} reports duty={evaluation.duty!r} and "
-                    f"transferred_duty={evaluation.transferred_duty!r}; {duty} needs exactly one"
-                )
-            values[duty] = reported[0]
-        for name, reported_value in (
-            (work_id(unit), evaluation.work),
-            (extent_id(unit), evaluation.extent),
-        ):
-            if name in wanted:
-                if reported_value is None:
-                    raise ValueError(f"{unit} reports no value for its column {name}")
-                values[name] = reported_value
-        # S11 §4.7.5: the columns a unit owns beyond these (the embedded column's state).
-        for name, owned_value in evaluation.owned.items():
-            if name in wanted:
-                values[name] = owned_value
+        values.update(_reported_values(unit, evaluation, wanted))
 
     split_values = lifted_split_values(
         flowsheet,
@@ -230,13 +214,63 @@ def _start_from_pass(
     for name in variable_ids:
         if name not in values:
             raise ValueError(f"initial_state_incomplete({name})")
+    band_routes = _band_routes(flowsheet, traversed)
+    return TraversalStart({name: values[name] for name in variable_ids}, band_routes)
+
+
+def _stream_values(flowsheet: RevisionFlowsheet, traversed: FlowsheetPass) -> dict[str, float]:
+    """§2.2 step 3: every stream's flows, temperature and pressure as the pass carried them, in
+    the flowsheet's stream order."""
+    values: dict[str, float] = {}
+    for stream in flowsheet.streams:
+        carried = traversed.streams[stream]
+        for index, component in enumerate(flowsheet.components):
+            values[flow_id(stream, component)] = carried.n[index]
+        values[temperature_id(stream)] = carried.temperature
+        values[pressure_id(stream)] = carried.pressure
+    return values
+
+
+def _reported_values(unit: str, evaluation: UnitEvaluation, wanted: set[str]) -> dict[str, float]:
+    """§2.2 step 4 for one unit: the duty, work and extent it reports and the columns it owns,
+    each only where `wanted` (the declaration's columns) holds it. A duty column needs exactly
+    one of `duty` and `transferred_duty`, and a wanted work or extent column a value: else a
+    defect (`ValueError`). Later entries win on a repeated name, as in one dict built in order."""
+    values: dict[str, float] = {}
+    duty = duty_id(unit)
+    if duty in wanted:
+        reported = [x for x in (evaluation.duty, evaluation.transferred_duty) if x is not None]
+        if len(reported) != 1:
+            raise ValueError(
+                f"{unit} reports duty={evaluation.duty!r} and "
+                f"transferred_duty={evaluation.transferred_duty!r}; {duty} needs exactly one"
+            )
+        values[duty] = reported[0]
+    for name, reported_value in (
+        (work_id(unit), evaluation.work),
+        (extent_id(unit), evaluation.extent),
+    ):
+        if name in wanted:
+            if reported_value is None:
+                raise ValueError(f"{unit} reports no value for its column {name}")
+            values[name] = reported_value
+    # S11 §4.7.5: the columns a unit owns beyond these (the embedded column's state).
+    for name, owned_value in evaluation.owned.items():
+        if name in wanted:
+            values[name] = owned_value
+    return values
+
+
+def _band_routes(flowsheet: RevisionFlowsheet, traversed: FlowsheetPass) -> tuple[str, ...]:
+    """The units whose PH closure on this pass answered by the band route, in declaration order
+    (ADR 0012 D10 F1's record)."""
     band_routes: list[str] = []
     for model in flowsheet.units():
         answered = traversed.evaluations.get(model.unit_id)
         if answered is not None and answered.closure is not None:
             if answered.closure.route == "band":
                 band_routes.append(model.unit_id)
-    return TraversalStart({name: values[name] for name in variable_ids}, tuple(band_routes))
+    return tuple(band_routes)
 
 
 @dataclass(frozen=True)
