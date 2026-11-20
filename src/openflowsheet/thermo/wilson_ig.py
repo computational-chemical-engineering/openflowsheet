@@ -226,28 +226,38 @@ def _bounds(document: Mapping[str, Any]) -> tuple[tuple[float, float], tuple[flo
 
 
 def _lambda(entries: object, ids: tuple[str, ...]) -> tuple[tuple[float, ...], ...]:
+    """The Wilson matrix Λ over `ids` (Λ_ii = 1) from the `wilson_lambda` list, each entry checked
+    by `_lambda_entry`; `record_lambda` if an off-diagonal entry is missing."""
     if not isinstance(entries, list):
         raise _structure("wilson_lambda is not a list")
     matrix: dict[tuple[str, str], float] = {}
     for position, entry in enumerate(entries):
-        _keys(entry, _LAMBDA_REQUIRED, _LAMBDA_ALLOWED, f"wilson_lambda[{position}]")
-        assert isinstance(entry, Mapping)
-        i, j, value = entry["i"], entry["j"], entry["value"]
-        if i not in ids or j not in ids:
-            raise RecordError(f"record_lambda: entry ({i!r}, {j!r}) names an unknown component")
-        if i == j:
-            raise RecordError(f"record_lambda: diagonal entry ({i}, {j}); Lambda_ii = 1 is implied")
-        if (i, j) in matrix:
-            raise RecordError(f"record_lambda: duplicate entry ({i}, {j})")
-        if not _number(value) or not math.isfinite(value) or not value > 0.0:
-            raise RecordError(
-                f"record_lambda: ({i}, {j}) = {value!r} is not a finite positive number"
-            )
-        matrix[(i, j)] = float(value)
+        i, j, value = _lambda_entry(entry, position, ids, matrix)
+        matrix[(i, j)] = value
     missing = [(i, j) for i in ids for j in ids if i != j and (i, j) not in matrix]
     if missing:
         raise RecordError(f"record_lambda: missing entries {missing}")
     return tuple(tuple(1.0 if i == j else matrix[(i, j)] for j in ids) for i in ids)
+
+
+def _lambda_entry(
+    entry: object, position: int, ids: tuple[str, ...], matrix: Mapping[tuple[str, str], float]
+) -> tuple[str, str, float]:
+    """The `wilson_lambda[position]` entry as (i, j, Λ_ij), checked in this order: its keys, both
+    components in `ids` (`record_lambda`), off the diagonal, not already in `matrix`, and a
+    finite positive number."""
+    _keys(entry, _LAMBDA_REQUIRED, _LAMBDA_ALLOWED, f"wilson_lambda[{position}]")
+    assert isinstance(entry, Mapping)
+    i, j, value = entry["i"], entry["j"], entry["value"]
+    if i not in ids or j not in ids:
+        raise RecordError(f"record_lambda: entry ({i!r}, {j!r}) names an unknown component")
+    if i == j:
+        raise RecordError(f"record_lambda: diagonal entry ({i}, {j}); Lambda_ii = 1 is implied")
+    if (i, j) in matrix:
+        raise RecordError(f"record_lambda: duplicate entry ({i}, {j})")
+    if not _number(value) or not math.isfinite(value) or not value > 0.0:
+        raise RecordError(f"record_lambda: ({i}, {j}) = {value!r} is not a finite positive number")
+    return i, j, float(value)
 
 
 def parse_records(data: bytes) -> WilsonRecords:
