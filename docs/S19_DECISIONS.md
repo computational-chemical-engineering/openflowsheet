@@ -4181,3 +4181,8 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   Next: WO-P0's orchestrator part (B_P = the wp/S19 tip, L_P by ruling 3.1, gate file with the seven
   `_coolprop_heos_fluids_*` modules under `generator`, batch brief with the per-step `w5_hunks.py` coverage record),
   then WO-P1 `thermo/pr_c1.py`.
+- 2026-11-20, wp/TOK CI 44706297998 green (both Linux legs, codehealth, identity, default-install). Manifest: the
+  evidence schema admits no `TOK`; DECISION: package id -> X32 (next free after X31). Alternative: fold into REL050.
+  Reversible by: renaming again. Branch renamed wp/X32 (remote wp/TOK deleted), manifest
+  `evidence/X32/e028b835.../manifest.json` tested (schema tests 622 passed), R-1064 names X32; ae0dec21 pushed.
+  Reviewer pass on X32 launched (reviewer, Opus).

@@ -89,11 +89,10 @@ brief `docs/briefs/X07a-WO6.md`). Background shells: CI watches on X07a 44699040
    F1, F3, X01 plugin docs (+ parts needing no F2/F4/F6), TOK, and S19 batch P before the RC cut; F2, F8, X06 and X01
    selectability lead 0.6. Next for the line: `release/lines/0.5.json` design pass on wp/REL050. R-1064 (wp/TOK) and
    R-1065 (wp/REL050) both append to the register end: a trivial merge conflict, keep both.
-3b. **TOK (0.5, Frank 2026-11-20: "start it, ship with 0.5"):** wp/TOK (worktree tok, from main) e028b835 pushed:
-   `project grant` prints the token alone on stdout (R-1064, no ADR: T07 §10.3 holds); docs, pins (`tok_reversed`),
-   tests/test_tok_grant_token_file.py; local 536 passed, F0 9/9. CI 44706297998 running. Next: evidence manifest
-   `evidence/TOK/<commit>/manifest.json` `tested` after CI, one `reviewer` pass, then into the 0.5 merge card.
-   The user report came from a student: keep the name off every record.
+3b. **X32 (formerly TOK; 0.5, Frank 2026-11-20):** wp/X32 (worktree tok, from main), e028b835 + ae0dec21 pushed:
+   `project grant` prints the token alone on stdout (R-1064, no ADR: T07 §10.3 holds); CI 44706297998 green; manifest
+   `evidence/X32/e028b835.../manifest.json` tested. Reviewer pass running. Then into the 0.5 merge card. The user
+   report came from a student: keep the name off every record. Remote wp/TOK deleted (renamed to wp/X32).
 4. Rule: lanes touching studies/ also need the nlp-marked suite at head, failures a subset of base (g19, g20).
 5. Brief rule (I1): `codehealth scan --json PATH` writes TO PATH; use `--repo <wt> --json <scratch>/scan.json`.
    A test retarget is never enqueued alone: retarget, plan, step; gate from the plan commit (job 516's miss).
