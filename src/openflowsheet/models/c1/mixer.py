@@ -23,7 +23,7 @@ bracket. It is an initializer for the EO solve, whose row is the balance above.
 from __future__ import annotations
 
 import math
-from collections.abc import Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Final
@@ -391,7 +391,8 @@ class AdiabaticMixer:
     ) -> tuple[float | None, int, str]:
         """Solve `Ḣ_V(flows, T, pressure) = target` for T. Returns `(T, iterations, message)`,
         `T` `None` when no root was bracketed or the provider refused; never a midpoint as if it
-        were a root."""
+        were a root. The bracket is widened by `_widened_bracket`; the iteration inside the checked
+        bracket is `_bisect_newton`."""
         total = sum(flows)
 
         def residual(temperature: float) -> tuple[float, float] | None:
@@ -411,17 +412,7 @@ class AdiabaticMixer:
                 total * result.derivatives["h"]["T"],
             )
 
-        # Widen the bracket outward until it straddles: Ḣ_V rises with T, and the excess enthalpy
-        # of mixing moves the root off the inlet-temperature interval by a small amount.
-        f_low, f_high = residual(low), residual(high)
-        step = 1.0
-        while f_low is not None and f_low[0] > 0.0 and low > T_MIN:
-            low, step = max(low - step, T_MIN), 2.0 * step
-            f_low = residual(low)
-        step = 1.0
-        while f_high is not None and f_high[0] < 0.0 and high < T_MAX:
-            high, step = min(high + step, T_MAX), 2.0 * step
-            f_high = residual(high)
+        low, f_low, high, f_high = self._widened_bracket(residual, low, high)
         if f_low is None or f_high is None:
             return None, 0, "the energy closure: the provider refused a bracket endpoint"
         if f_low[0] > 0.0 or f_high[0] < 0.0:
@@ -436,6 +427,44 @@ class AdiabaticMixer:
         if f_high[0] == 0.0:
             return high, 0, ""
 
+        return self._bisect_newton(residual, low, high)
+
+    @staticmethod
+    def _widened_bracket(
+        residual: Callable[[float], tuple[float, float] | None], low: float, high: float
+    ) -> tuple[float, tuple[float, float] | None, float, tuple[float, float] | None]:
+        """`_close_energy`'s bracket `(low, f_low, high, f_high)`: the residual at both ends, then
+        each end widened outward until it straddles the root.
+
+        Widen the bracket outward until it straddles: Ḣ_V rises with T, and the excess enthalpy
+        of mixing moves the root off the inlet-temperature interval by a small amount. `low`
+        steps down while its residual is positive, `high` up while its residual is negative,
+        each by a step that doubles from 1 K, clamped to `[T_MIN, T_MAX]`. A residual is `None`
+        when the provider refused that end, which stops its widening.
+        """
+        f_low, f_high = residual(low), residual(high)
+        step = 1.0
+        while f_low is not None and f_low[0] > 0.0 and low > T_MIN:
+            low, step = max(low - step, T_MIN), 2.0 * step
+            f_low = residual(low)
+        step = 1.0
+        while f_high is not None and f_high[0] < 0.0 and high < T_MAX:
+            high, step = min(high + step, T_MAX), 2.0 * step
+            f_high = residual(high)
+        return low, f_low, high, f_high
+
+    @staticmethod
+    def _bisect_newton(
+        residual: Callable[[float], tuple[float, float] | None], low: float, high: float
+    ) -> tuple[float | None, int, str]:
+        """`_close_energy`'s iteration on a bracket `[low, high]` already checked to hold the root.
+
+        Starts at the midpoint; each iterate narrows the bracket on its residual's sign and takes
+        the Newton step when the slope is positive and the step stays strictly inside, else the
+        midpoint. Returns `(T, iterations, message)`: `T` on a zero residual, a repeated iterate
+        or a bracket collapsed to within two ulps; `T` `None` when the provider refuses an
+        iterate or after `_MAX_ITERATIONS`.
+        """
         guess = 0.5 * (low + high)
         for iteration in range(1, _MAX_ITERATIONS + 1):
             evaluated = residual(guess)
