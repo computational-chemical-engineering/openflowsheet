@@ -4447,3 +4447,13 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
 - 2026-11-20, jobs 558 (w5p5-1, step 497, debt 53.7 -> 23.3) and 559 (w5p5-2, step 498, 23.3 -> 0) PASS 20/20: WO-P5
   accepted. gate_report: "ALERT selected share 0% < 75%" (standing, W5 collection-time code). Action unchanged.
   Reviewer R-W5-P5 (reviewer, Opus, brief `S19-R-W5-P5.md`, range a5b8fb11..da75a268) launched.
+- **2026-11-20, R-W5-P5 (reviewer, Opus): merge with batch P, no fixes.** Own run of the engineer's harness (sha
+  655db838, `-P`, detached worktrees at both ends): 421790 lines, aebd9da9 at a5b8fb11 and da75a268 (the engineer's
+  dumps ran at 57c012b9/e88ca13d, same trees as f875f4d4/da75a268, messages amended). S1: every removed line back
+  verbatim; call counts per path equal (`_mechanically_stable` 5 = `stable` 5, `_reduced_gibbs` 6, `_bracketed_density`
+  4); the 4 differing AST nodes hold only calls to lifted closures with verbatim bodies, a valid normalisation.
+  CoolProp call order unchanged; the call log catches a reordering (root swap 2546 lines, Psat/Tsat swap 15859, both
+  log-only). `answer |= x` = `update` (PEP 584; `answer` a dict on every path). Refusal ladder order kept; note:
+  swapping the `near_critical` and `_rule` rungs changes 0 dump lines (that order rests on reading). Duplication 131
+  lines in 8 runs, all partners in other files: no in-file cut; a shared module would move four providers' hash
+  scopes. Batch P's chain (WO-P1 to P5) is complete; next WO-P6, the close (orchestrator).
