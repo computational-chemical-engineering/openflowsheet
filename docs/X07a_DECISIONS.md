@@ -342,21 +342,30 @@ a scoped comparison, with Q-12), `test_s07_packaging` (its A41 subprocess of the
 a34, `test_m06_wo4_serving`, `test_m07a_v0_2_gate` a07, `test_t08_w1_ledger`, `test_t07_interrupt`,
 `test_v02a_r347`, and the P3 sets on Windows (`test_st_cli` TH-C1 (b), `test_m03_schemas`).
 
-## Position (handoff, WO5, 2026-11-20)
+## Position (handoff, WO6, 2026-11-20)
 
-WO5 commits: d7bb75bc G19 `ALLOWED_FOR` (pywin32 PSF only); 3e5c6c9f R-1063, Q-1 closed, Q-12;
-bf8bb3d4 experiment-child limit (37); deb19a44 M05 retake test LF; 2bb2c157 test POSIX paths;
-e9a8a214 release_rc and t06_ensemble POSIX (D-29); a13356b1 registry_builtin LF, pymrm child;
-2fa01fbd limits and D-28, D-29; then this Position. Local: touched tests 845 + 743 passed; F0 PASS
-9/9; `codehealth diff` PASS 62.60 -> 62.60; `arch --depth 4` 0 cycles, 0 violations.
+Part 1 (card ofs-x07a-pywin32-lock A, R-1063 amended, Q-12 closed): 071815c7 `requirements-windows.lock`
+(sha256 `71f30fa7...4bff`; `pywin32==312`, cp313 win_amd64 wheel `c53e878d...aaf9`, PyPI agrees); b04d7764
+installs it before the main lock (D-30). `requirements.lock` unchanged, `ead4edf1...b9c4`. Run 44703554833:
+the Windows lock step installed pywin32 312 by hash and G19 passed on windows-latest;
+`test_the_installed_closure_is_the_recorded_one` then failed only on two CRLF licence files (D-31, ad9be51c).
 
-CI: G19 passed on windows-latest (and macos-latest) in run 44696617122 (head 3e5c6c9f, step "The
-server extra and its licences (G19)"). macOS leg of 44683830734 (head 51f7fcae) succeeded: L5's
-exact path set held and rows L6 to L10 raised nothing new. Windows legs of 44683830734 and
-44681408041 were still running at WO5's end; the WO5 push's run tests the fixes above.
+Part 2 commits (each X07a): msg_corpus, pre_push_guard, w27 v3 generator, c9 a22 drive, c2 a25c, t07
+campaign_sums, t07 interrupt and s3_7, test_impact and s16 sqlite close, s09 generator, m03 a42, m07a a07
+mode, v0_0_gate, serve-http and m06 serve check (Ctrl+Break), t08_rc console, t06 w28, m05 retake cache dir;
+limits rowed: S03 a10, c9 v2 generator check, S16 B-18, the v0_1 gate chmod case (conftest
+`FROZEN_WINDOWS_LIMITS`). ebe513d9 restores `tests/test_t08_w4_v0_1_gate.py` to its registered bytes:
+WO5's 2bb2c157 had broken M07a.A13 (red on all four legs of 44699040945: a13, rel a20, t08 generators).
 
-Stop condition hit: Q-12 (the pywin32 pin in `requirements.lock` breaks D2.2 and moves the lock
-digest; not committed). Next: read the Windows leg of the WO5 push's run (`--log-failed` or the
-jobs/logs API to a file; grep `FAILED|ERROR tests/`); the "Left" list above, largest first; Q-12's
-ruling. Open for the reviewer: D-20, D-22, D-28, D-29, Q-4, Q-10, Q-11, Q-12, D-24's companion.
-Push from this worktree: `git -c credential.helper='!gh auth git-credential' push origin wp/X07a` (no helper is configured).
+Windows counts: 44699040945 (58bdd149) 39 failed, 0 errors; 44703554833 (b04d7764) 38 failed, 0 errors;
+the linux and macOS legs of both: the same 3 (A13 family), fixed by ebe513d9. Local: touched tests pass;
+F0 PASS 9/9; `codehealth arch --depth 4` 0 cycles, 0 violations.
+
+Left on Windows after the last push (expected, unverified until its run ends): floating point, design lane
+(P3 sets): `test_st_cli` TH-C1 json (b) and `test_output_writes_the_file_and_prints_nothing` (a CSV digit),
+`test_opt_cost_lca` hand model (sizes 1.75e-12 against 1e-13), `test_m04_reference_values` a34 (reference
+JSON differs; the generator renders no paths; not diagnosed), `test_m04_quadratic` a49 (in 44699040945 only),
+`test_m03_schemas` fixtures. To confirm: Ctrl+Break serve (t07 conformance, m06 serving) and the m05 retake
+fix. Next: read the Windows leg of the run for the final head (`gh api .../jobs/<id>/logs` to a file, grep
+`Z (FAILED|ERROR) tests/`). Open for the reviewer: D-20, D-22, D-28 to D-31, Q-4, Q-10, Q-11, D-24's companion.
+Push from this worktree: `git -c credential.helper='!gh auth git-credential' push origin wp/X07a`.
