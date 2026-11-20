@@ -617,7 +617,8 @@ def _bind_assessment(
     checks (`ASSESSMENT_OUTPUT_UNKNOWN`, `_UNAVAILABLE`, `ASSESSMENT_PARAMETER_STRUCTURAL`,
     `_DECISION`) are returned as reasons that refuse the request; the per-start ones
     (`ASSESSMENT_REGIME_INADMISSIBLE`, `ASSESSMENT_OBJECTIVE_UNSCALED`) fail each start they
-    find, the planning start included. A request naming no `assessment:<id>` is not bound."""
+    find, the planning start included (`_per_start_failures`). A request naming no
+    `assessment:<id>` is not bound."""
     named = tuple(dict.fromkeys(formulation.assessment_outputs))
     if not named:
         return _Bound(formulation, (), None)
@@ -655,17 +656,7 @@ def _bind_assessment(
             if (theta := _assessment_theta(bound, decision_id)) is not None
         ]
         reasons.extend(_assessment_outputs(bound))
-        for later in range(index, len(starts)):
-            if later in failures:
-                continue
-            found = [
-                *_assessment_regime(bound, later, starts[later]),
-                *_assessment_objective_scale(bound, later, starts[later]),
-            ]
-            if found:
-                failures[later] = f"{START_NOT_CERTIFIED}({later}, {found[0].code}): " + "; ".join(
-                    reason.detail for reason in found
-                )
+        failures.update(_per_start_failures(bound, index, starts, failures))
         return _Bound(bound, tuple(reasons), index)
     return _Bound(formulation, (), None)
 
@@ -694,6 +685,33 @@ def _unbound_outputs(
                 )
             )
     return tuple(reasons)
+
+
+def _per_start_failures(
+    bound: NlpFormulation,
+    index: int,
+    starts: Sequence[StartReadiness],
+    failures: Mapping[int, str],
+) -> dict[int, str]:
+    """The per-start checks of the formulation `bound` at the planning start `index` (§4.5):
+    for each start from `index` on that `failures` does not hold yet, in start order, its
+    `START_NOT_CERTIFIED(<k>, <code>)` failure when `ASSESSMENT_REGIME_INADMISSIBLE` or
+    `ASSESSMENT_OBJECTIVE_UNSCALED` finds a reason (the first reason's code, every reason's
+    detail). Pure: it reads `failures` and returns the new entries for the caller to add."""
+    found_failures: dict[int, str] = {}
+    for later in range(index, len(starts)):
+        if later in failures:
+            continue
+        found = [
+            *_assessment_regime(bound, later, starts[later]),
+            *_assessment_objective_scale(bound, later, starts[later]),
+        ]
+        if found:
+            found_failures[later] = (
+                f"{START_NOT_CERTIFIED}({later}, {found[0].code}): "
+                + "; ".join(reason.detail for reason in found)
+            )
+    return found_failures
 
 
 def _declared(starts: Sequence[StartReadiness]) -> Mapping[str, str] | None:
