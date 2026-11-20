@@ -44,7 +44,7 @@ import numpy.typing as npt
 
 from openflowsheet.assessment.linearization import Linearization, Refusal
 from openflowsheet.assessment.quantities import ASSESSMENT_PREFIX
-from openflowsheet.compile.casadi_backend import TwinEvaluationError
+from openflowsheet.compile.casadi_backend import TwinEvaluationError, TwinMatrix
 from openflowsheet.compile.reference import state_vector
 from openflowsheet.compile.spec import ProblemSpec
 from openflowsheet.models.syn001.flowsheet import Syn001Flowsheet
@@ -502,16 +502,8 @@ def _assessment(
     if isinstance(lin, Refusal):
         return f"{lin.code}({lin.target})"
     assert isinstance(lin, Linearization)
-    rows: dict[str, dict[str, float]] = {name: {} for name in closure.output_ids}
-    matrix = lin.d_dx
-    for j, variable_id in enumerate(matrix.col_ids):
-        for k in range(matrix.indptr[j], matrix.indptr[j + 1]):
-            rows[matrix.row_ids[matrix.indices[k]]][variable_id] = float(matrix.data[k])
-    direct = {name: np.zeros(len(decision_ids)) for name in closure.output_ids}
-    matrix = lin.d_dp
-    for j in range(len(matrix.col_ids)):
-        for k in range(matrix.indptr[j], matrix.indptr[j + 1]):
-            direct[matrix.row_ids[matrix.indices[k]]][j] = float(matrix.data[k])
+    rows = _d_dx_by_output(lin.d_dx, closure.output_ids)
+    direct = _d_dd_by_output(lin.d_dp, closure.output_ids, decision_ids)
     values = {name: float(evaluated[name]) for name in closure.output_ids}
     admissibility = tuple(
         InequalityConstraint(
@@ -528,6 +520,32 @@ def _assessment(
         d_dx=rows,
         d_dd=direct,
     )
+
+
+def _d_dx_by_output(matrix: TwinMatrix, output_ids: Sequence[str]) -> dict[str, dict[str, float]]:
+    """`∂y/∂x` from the linearization's canonical CSC `matrix` (one column per variable), by
+    output as `{variable_id: value}`: every output in `output_ids` has a row, empty where its
+    row has no entry (canonical CSC repeats no position)."""
+    rows: dict[str, dict[str, float]] = {name: {} for name in output_ids}
+    for j, variable_id in enumerate(matrix.col_ids):
+        for k in range(matrix.indptr[j], matrix.indptr[j + 1]):
+            rows[matrix.row_ids[matrix.indices[k]]][variable_id] = float(matrix.data[k])
+    return rows
+
+
+def _d_dd_by_output(
+    matrix: TwinMatrix, output_ids: Sequence[str], decision_ids: Sequence[str]
+) -> dict[str, npt.NDArray[np.float64]]:
+    """`∂y/∂d` from the linearization's canonical CSC `matrix` (one column per decision, in
+    decision order), by output as a dense vector over `decision_ids`: zero where the output's
+    row has no entry (canonical CSC repeats no position)."""
+    direct: dict[str, npt.NDArray[np.float64]] = {
+        name: np.zeros(len(decision_ids)) for name in output_ids
+    }
+    for j in range(len(matrix.col_ids)):
+        for k in range(matrix.indptr[j], matrix.indptr[j + 1]):
+            direct[matrix.row_ids[matrix.indices[k]]][j] = float(matrix.data[k])
+    return direct
 
 
 @dataclass(frozen=True)
