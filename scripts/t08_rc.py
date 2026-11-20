@@ -410,6 +410,8 @@ def step_install_check(arguments: argparse.Namespace) -> int:
         )
 
     console = Path(sys.executable).parent / "openflowsheet"
+    if sys.platform == "win32":  # X07a: pip puts console scripts in `Scripts\\`, as `.exe`
+        console = Path(sysconfig.get_path("scripts")) / "openflowsheet.exe"
     with tempfile.TemporaryDirectory() as scratch:
         bundle = Path(scratch) / "bundle"
         solved = subprocess.run(
