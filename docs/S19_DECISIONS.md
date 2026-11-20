@@ -4193,3 +4193,8 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   `--capability-id`), 2 (tutorial: token.txt private, web-shell sign-in), 4 (positive control) done in 2725fa7d
   (187 passed, ruff and mypy clean), pushed; fix 3 (record ruff/mypy commands) with the manifest re-take at 2725fa7d
   once its CI is green.
+- 2026-11-20, F3: CI 44709885423 at 6c82b535 green on both legs, identity, default-install (codehealth red,
+  informational, F3-3-4). Manifest re-taken (sonnet-implementer, ~64k): 955addd4 on wp/F3, status tested at 6c82b535,
+  harvest rows re-hashed (t08 --check 0 problems; 657 passed); pushed. Review record complete (F3-review-2, fix round 3,
+  F3-rulings-2, C1-C5). DECISION-REQUEST ofs-f3-merge-main to hub (rec A: merge now after a CI run of wp/F3 + main
+  tip, F0 on main; B: hold for the RC).

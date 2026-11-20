@@ -83,8 +83,8 @@ brief `docs/briefs/X07a-WO6.md`). Background shells: CI watches on X07a 44699040
    the Windows clusters. Then the X07a reviewer round (D-20, D-22/Q-4, Q-10, Q-11), then a merge card via hub.
    X01-WO1 part A delivered, manifest `tested`, CI green; next for X01: a reviewer pass, then a merge card via hub;
    open B, C, Q-1..Q-3 for the design lane (`docs/X01_DECISIONS.md` on wp/X01). X01 selectability blocked on
-   F2/F4/F6; ADR 0052 D11 amendment open. F3: ADR 0061 accepted (R-1050); human review recorded by the user (6c82b535,
-   card ofs-f3-mcp-descriptions-human executed); pushed, CI running; next: manifest `tested`, merge card via hub.
+   F2/F4/F6; ADR 0052 D11 amendment open. F3: ADR 0061 accepted (R-1050); human review recorded (6c82b535); CI 44709885423 green;
+   manifest tested (955addd4); merge card ofs-f3-merge-main requested via hub (rec A), act on VERIFIED.
 3a. **0.5 scope (Frank, 2026-11-20, R-1065, ADR 0057 Amendment 1, on wp/REL050 84a08a84, pushed):** 0.5 is X07a,
    F1, F3, X01 plugin docs (+ parts needing no F2/F4/F6), TOK, and S19 batch P before the RC cut; F2, F8, X06 and X01
    selectability lead 0.6. Next for the line: `release/lines/0.5.json` design pass on wp/REL050. R-1064 (wp/TOK) and
