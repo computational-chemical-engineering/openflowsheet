@@ -57,12 +57,12 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 - G1 (orchestrator/, numerics/): W3 lanes N and O closed 2026-11-19 (272011be); residuals executor.py (PR-1b, 6.1 -> 9.0, gating) and `_solve_region`'s parameter object (W4).
 - G-END (below) stays the end criterion for the whole repository.
 
-## Next actions (2026-11-20 ~10:30 CET)
+## Next actions (2026-11-20 ~15:30 CET)
 
-**Position:** main = c4a91a75. wp/S19 = this commit (batch L merged 9ad50635). MB 756e1c12. Runner PID 1341562, queue
-idle (COUNT 520). cce-code-health 34a30bf. Agents running: WO-P0 pin engineer (opus-engineer, worktree s19-w5p0,
-brief `<git-common-dir>/codehealth/briefs/S19-W5-P0-pin.md`) and X07a-WO5 engineer (wp/X07a). Background shell:
-`gh run watch 44683830734` (X07a CI). On each result: gate_report, log.
+**Position:** main = c4a91a75. wp/S19 = this commit (WO-P0 tool part merged d98b2ca4). MB 756e1c12. Runner PID
+1341562, queue idle (COUNT 523). cce-code-health 34a30bf. Agents running: X07a-WO6 engineer (opus-engineer, wp/X07a,
+brief `docs/briefs/X07a-WO6.md`). Background shells: CI watches on X07a 44699040945, wp/TOK 44706297998, wp/F3 (head
+6c82b535). On each result: gate_report, log. Re-arm the queue wait with `$Q wait --since <COUNT from $Q status>`.
 
 1. **W5 batch P (after FR-1, ADR 0077).** WO-P0 tool part merged (d98b2ca4): `w5_identity.py pin` (W5-S2), `close`
    runs W5-K5 for P, gate tier `w5_pin`, `scripts/w5_hunks.py` (F0 line coverage per hunk). Next, the orchestrator's
