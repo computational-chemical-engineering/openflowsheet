@@ -9,11 +9,13 @@ itself is tested in `test_s19_w5_identity.py`). The tiers and sets are those of 
 
 from __future__ import annotations
 
+import contextlib
 import copy
 import json
 import os
 import subprocess
 import sys
+import tomllib
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any
@@ -735,3 +737,98 @@ def test_k1_needs_a_batch_and_a_k_that_descends_from_b(
     before = _cli("close", "--k", B_N, "--batch", path, "--queue-dir", queue)
     assert before.returncode == 2 and "not an ancestor of the head" in before.stdout
     assert _cli("close", "--k", "0" * 40, "--batch", path, "--queue-dir", queue).returncode == 2
+
+
+# -- W5-S2 and W5-K5 reach the gate (review R-W5-P0-pin, fix 1) -----------------------------------
+
+
+def _tier(name: str) -> dict[str, Any]:
+    config = tomllib.loads((ROOT / ".codehealth" / "config.toml").read_text(encoding="utf-8"))
+    (tier,) = [t for t in config["gate"]["tier"] if t["name"] == name]
+    return tier
+
+
+def test_s2_the_w5_pin_step_tier_runs_the_pin_and_passes_outside_a_w5_step() -> None:
+    """The gate runs W5-S2 at every step: tier `w5_pin` calls `w5_gate.py pin` when
+    S19_W5_BATCH is set (batches N and L: not applicable) and passes at once when it is not."""
+    tier = _tier("w5_pin")
+    assert tier["cadence"] == "step" and tier["detect_exit"] == [1, 124]
+    assert tier["cmd"].endswith('; PYTHONPATH=src "$V/python" scripts/w5_gate.py pin')
+    guard = _tier("w5_registry")["cmd"].split("; PYTHONPATH=src")[0]
+    assert tier["cmd"].split("; PYTHONPATH=src")[0] == guard.replace("w5_registry", "w5_pin")
+    environment = {k: v for k, v in os.environ.items() if k != gate.VARIABLE}
+    done = subprocess.run(
+        ["sh", "-c", tier["cmd"]], cwd=ROOT, env=environment, capture_output=True, text=True
+    )
+    assert done.returncode == 0 and done.stdout == (
+        "w5_pin: S19_W5_BATCH unset, not a W5 step: pass\n"
+    )
+
+
+def _close_p(
+    sets: dict[str, Any],
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    *,
+    k: str = "HEAD",
+    pin_exit: int = 0,
+    predict_exit: int = 0,
+    k1: list[str] | None = None,
+    tree: str = "",
+) -> tuple[int, list[str], list[tuple[str, ...]], Path]:
+    """`close` of a batch P at K in this tree, its K1 and the identity tool faked: (exit, the
+    lines, the identity calls, the close record's path)."""
+    tmp_path.mkdir()
+    path = _write(tmp_path / "p.json", _batch_p(sets))
+    queue = tmp_path / "queue"
+    calls: list[tuple[str, ...]] = []
+    monkeypatch.setattr(gate, "identity", _fake_identity(calls, pin_exit, [], predict_exit))
+    monkeypatch.setattr(gate, "close_problems", lambda *_: list(k1 or []))
+    monkeypatch.setattr(gate, "dirty", lambda *_: tree)
+    output = tmp_path / "out.txt"
+    with output.open("w", encoding="utf-8") as stream, contextlib.redirect_stdout(stream):
+        code = gate.main(["close", "--k", k, "--batch", str(path), "--queue-dir", str(queue)])
+    return code, output.read_text().splitlines(), calls, gate.closed_record(queue, BASE)
+
+
+def test_k5_a_batch_p_close_runs_the_pin_at_k_and_records_k_only_if_it_passes(
+    sets: dict[str, Any], tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """`close` of batch P: after W5-K1, W5-K5 (`pin --close`, F0's registry from B) in this tree;
+    K is recorded only on PASS, and a failed pin keeps its exit code."""
+    head = gate._git("rev-parse", "HEAD").stdout.strip()
+    where = f"K {head[:12]} of batch P (base {BASE[:12]})"
+    code, lines, calls, record = _close_p(sets, tmp_path / "pass", monkeypatch)
+    assert code == 0, lines
+    assert lines[0].startswith("w5 pin (W5-K5) PASS: pinned 1, none unpinned")
+    assert lines[1] == f"W5-K1 PASS: {where}, 0 fixture path(s); recorded in {record}"
+    assert json.loads(record.read_text())["k"] == head
+    assert calls[0][calls[0].index("--registry") + 1] == BASE
+    for pin_exit, predict_exit, expected in ((0, 1, 1), (3, 0, 3)):
+        code, lines, _, record = _close_p(
+            sets,
+            tmp_path / f"fail{pin_exit}",
+            monkeypatch,
+            pin_exit=pin_exit,
+            predict_exit=predict_exit,
+        )
+        assert code == expected and lines[0].startswith("w5 pin (W5-K5) FAIL: "), lines
+        assert lines[1] == f"W5-K1 PASS, W5-K5 FAIL: {where}; K not recorded"
+        assert not record.exists()
+
+
+def test_k5_needs_k_checked_out_clean_and_waits_for_k1(
+    sets: dict[str, Any], tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """W5-K5 runs F0 in this tree: K must be its HEAD and the tree clean (else refused, exit 2);
+    a W5-K1 failure stops the close before the pin."""
+    for case, options in {
+        "another K": {"k": "HEAD^"},
+        "dirty": {"tree": " M src/openflowsheet/thermo/pr_c1.py"},
+    }.items():
+        code, lines, calls, record = _close_p(sets, tmp_path / case, monkeypatch, **options)
+        assert code == gate.REFUSED and lines[-1].startswith("W5 batch REFUSED: close: W5-K5 ")
+        assert calls == [] and not record.exists(), case
+    code, lines, calls, record = _close_p(sets, tmp_path / "k1", monkeypatch, k1=["src/a.py: x"])
+    assert code == 1 and lines[-1].startswith("W5-K1 FAIL: ") and calls == []
+    assert not record.exists()

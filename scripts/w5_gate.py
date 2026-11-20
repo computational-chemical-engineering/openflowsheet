@@ -29,7 +29,8 @@ file's `base`, not the step's `{base}`.
                                           group modules> --against-log L` holds both ways: F0
                                           PASS with B's counts, or exactly the CoolProp keys.
                                           --close is W5-K5 at the batch close K: the same, with
-                                          F0's registry served from B (`pin --registry B`).
+                                          F0's registry served from B (`pin --registry B`);
+                                          `close` runs it for batch P.
                                           Batches N and L: not applicable, exit 0
     w5_gate.py registry                   W5-S4: `predict --base B --max-tier T --against-tables`
     w5_gate.py scope [--plans GLOB ...]   W5-S1: `git diff --name-only B..HEAD` is a subset of
@@ -46,7 +47,11 @@ file's `base`, not the step's `{base}`.
                                           --fixture paths (L_B's fixtures and constants, which the
                                           batch file does not name), and M6_REQUESTS byte-identical
                                           at B and K. Prints `W5-K1 PASS` or `W5-K1 FAIL` with the
-                                          offending paths (exit 0 or 1). On PASS it records K in
+                                          offending paths (exit 0 or 1). Batch P: then W5-K5
+                                          (`pin --close`), in this tree, which must be K and
+                                          clean (else exit 2); K is recorded only if it passes
+                                          (`W5-K1 PASS, W5-K5 FAIL`, the pin's exit code if it
+                                          does not). On PASS it records K in
                                           DIR/batches/closed-<B>.json (`k`, `batch`, `base`,
                                           `batch_sha256`, `fixtures`); `gate_queue.py enqueue
                                           --batch` then refuses a head that contains K. A record
@@ -571,6 +576,17 @@ def command_close(arguments: argparse.Namespace) -> int:
     if problems:
         print(f"W5-K1 FAIL: {where}, {len(problems)} path(s) outside the close")
         return 1
+    if document["batch"] == "P":
+        head = _git("rev-parse", "HEAD").stdout.strip()
+        if head != k or dirty():
+            raise BatchRefusedError(
+                f"close: W5-K5 runs F0 in this tree, which must be K {k[:12]} and clean "
+                f"(HEAD {head[:12]})"
+            )
+        pinned = pin_verdict(document, close=True)
+        if pinned != 0:
+            print(f"W5-K1 PASS, W5-K5 FAIL: {where}; K not recorded")
+            return pinned
     record = record_close(Path(arguments.queue_dir), document, k, digest(Path(name)), fixtures)
     print(f"W5-K1 PASS: {where}, {len(fixtures)} fixture path(s); recorded in {record}")
     return 0
@@ -623,16 +639,17 @@ def pin_problems(record: Mapping[str, Any]) -> list[str]:
     ]
 
 
-def command_pin(arguments: argparse.Namespace) -> int:
-    document = from_environment()
-    check = "W5-K5" if arguments.close else "W5-S2"
+def pin_verdict(document: Mapping[str, Any], close: bool) -> int:
+    """W5-S2 (a batch P step) or, with `close`, W5-K5 (its close K) of this tree; prints the
+    verdict line and returns its exit code."""
+    check = "W5-K5" if close else "W5-S2"
     if document["batch"] != "P":
         print(f"w5 pin ({check}) PASS: not applicable to batch {document['batch']} (batch P only)")
         return 0
     base = document["base"]
     with tempfile.TemporaryDirectory() as directory:
         log, out = Path(directory) / "f0.log", Path(directory) / "pin.json"
-        registry = ["--registry", base] if arguments.close else []
+        registry = ["--registry", base] if close else []
         f0 = ["scripts/corpus_identity.py", "--check", "--log", str(log)]
         code = identity("pin", "--base", base, "--json", str(out), *registry, "--", *f0).returncode
         if code not in (0, 1) or not out.is_file() or not log.is_file():
@@ -669,6 +686,10 @@ def command_pin(arguments: argparse.Namespace) -> int:
         f"prediction at {base[:12]} for {len(files)} file(s); {line}"
     )
     return 0
+
+
+def command_pin(arguments: argparse.Namespace) -> int:
+    return pin_verdict(from_environment(), arguments.close)
 
 
 def command_registry(_: argparse.Namespace) -> int:
