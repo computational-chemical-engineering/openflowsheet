@@ -622,6 +622,7 @@ def build_execution_plan(
     (`_region_step`), else `_unit_or_loop_step`'s: an `evaluate` step for a single unit with rows,
     or the loop's step (`_loop_step`). Raises `ValueError` for a report that is not structurally
     closed; `_check_specifications` and `_loop_step` raise the refusals their docstrings name.
+    The rows the steps are built from are `_retained_rows`'s.
     """
     if report.finding != "STRUCTURALLY_CLOSED" or report.tear is None:
         raise ValueError(
@@ -637,8 +638,7 @@ def build_execution_plan(
     _check_specifications(specifications, capable)
 
     loops = {tuple(loop.units): loop for loop in report.tear.loops}
-    certified = {entry.row_id for entry in report.certificates if entry.consistent}
-    retained = tuple(row for row in declaration.row_ids if row not in certified)
+    retained = _retained_rows(declaration, report)
     basis = _PlanBasis(
         label=label,
         policy=policy,
@@ -714,6 +714,13 @@ def _check_specifications(
                 f"{len(promoted.row_ids)} rows over {len(promoted.variable_ids)} columns after "
                 "certificates"
             )
+
+
+def _retained_rows(declaration: Declaration, report: StructuralReport) -> tuple[str, ...]:
+    """The declaration's rows, in its order, that no consistent certificate of `report` removes:
+    the rows every step's system is built from (pure)."""
+    certified = {entry.row_id for entry in report.certificates if entry.consistent}
+    return tuple(row for row in declaration.row_ids if row not in certified)
 
 
 @dataclass(frozen=True)
