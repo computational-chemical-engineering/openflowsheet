@@ -4590,3 +4590,13 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   nlp-marked at base, s1, s2, head: identical 7 failures: g19, g20 and 5 of test_m05_g10_replay (TR-E2, TR-E2-FAR,
   TR-E2-FD, LOOP-R, LOOP-S; source_map and provider-identity sha differences). Not in the known set: checking at
   789ed591 (before batch P) and c6957580.
+- **2026-11-20, batch P miss found: test_m05_g10_replay (nlp-marked) 5/5 PASS at 789ed591, 5/5 FAIL at c6957580.**
+  Found by WO-V's nlp run (7 base failures, not 2). Orchestrator classification (wo8.run_case + compare): 514
+  differences over the five cases, all identity (experiment_key, provider_identity_sha256 fba62dd1 -> 3aaef5a8,
+  request_sha256, source_map_sha256, artifacts, ledger/store summaries); 0 other; bijection 0. Cause: batch P's
+  re-registration changed the provider identity, and no gate or CI leg runs nlp-marked tests, so neither L_B nor K
+  listed the G10 records. The RC cut's step 14 (release_rc_local.py, nlp tier incl. M05 G10) would fail. The old
+  sha also sits in 24 benchmarks/m07/journey files and 2 schema fixtures. Work order WO-P-G10 (opus-engineer, Opus;
+  brief `<briefs>/S19-W5-P-G10.md`): a field-level proof with identity mapped, then a generator re-take (post-K,
+  generator-only, as 43dccc21), a sweep of the m07 and fixture holders; gated by the orchestrator as merge-check.
+  Rule (for S19_STATE item 4): a W5 batch close also runs the nlp-marked suite at K.
