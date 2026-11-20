@@ -84,6 +84,11 @@ brief `<git-common-dir>/codehealth/briefs/S19-W5-P0-pin.md`) and X07a-WO5 engine
    open B, C, Q-1..Q-3 for the design lane (`docs/X01_DECISIONS.md` on wp/X01). X01 selectability blocked on
    F2/F4/F6; ADR 0052 D11 amendment open. F3: ADR 0061 accepted (R-1050); waits on ofs-f3-mcp-descriptions-human,
    then its merge card.
+3b. **TOK (0.5, Frank 2026-11-20: "start it, ship with 0.5"):** wp/TOK (worktree tok, from main) e028b835 pushed:
+   `project grant` prints the token alone on stdout (R-1064, no ADR: T07 §10.3 holds); docs, pins (`tok_reversed`),
+   tests/test_tok_grant_token_file.py; local 536 passed, F0 9/9. CI 44706297998 running. Next: evidence manifest
+   `evidence/TOK/<commit>/manifest.json` `tested` after CI, one `reviewer` pass, then into the 0.5 merge card.
+   The user report came from a student: keep the name off every record.
 4. Rule: lanes touching studies/ also need the nlp-marked suite at head, failures a subset of base (g19, g20).
 5. Brief rule (I1): `codehealth scan --json PATH` writes TO PATH; use `--repo <wt> --json <scratch>/scan.json`.
    A test retarget is never enqueued alone: retarget, plan, step; gate from the plan commit (job 516's miss).
