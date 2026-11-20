@@ -93,7 +93,7 @@ T08_MANIFEST = "evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.j
 #: S19's second manifest (`4f9f2c3…`, `implemented`, 8 and 3) moves it on `wp/S19-ev`.
 #: WITNF's manifest (X10c, `8067229…`, `implemented`, 3 and 0) moves it on `wp/WITNF`.
 #: S19's third manifest (`e3e9552…`, `implemented`, 9 and 0) moves it on `wp/S19-ev2`.
-#: X07a's manifest (`d2fb025…`, `implemented`, 1 and 1) moves it on `wp/X07a`.
+#: X07a's manifest (`a24a0bf…`, `implemented`, 1 and 1) moves it on `wp/X07a`.
 HARVEST_SIZE = (100, 1139, 147)
 #: The 0.2.0 release candidate C′ (M07 spec §25, R-485).
 C_PRIME = "ce993651ce37c1343e771b276160bd6623e43500"

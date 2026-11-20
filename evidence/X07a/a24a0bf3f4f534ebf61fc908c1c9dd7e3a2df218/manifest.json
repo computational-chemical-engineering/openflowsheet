@@ -1,10 +1,10 @@
 {
   "work_package": "X07a",
-  "commit": "d2fb0252e23c6362b1460bd9ed701b6dd2714ec6",
+  "commit": "a24a0bf3f4f534ebf61fc908c1c9dd7e3a2df218",
   "requirements": [],
   "status": "implemented",
   "inputs": {
-    "case_id": "X07a-WO1 (docs/briefs/X07a-WO1.md; roadmap 0.5, ADR 0056 row 5; Decision Desk card ofs-05-widen option B); build decisions docs/X07a_DECISIONS.md D-1 to D-12, Q-1, Q-2; case_hash is the SHA-256 of docs/briefs/X07a-WO1.md",
+    "case_id": "X07a-WO1 and WO2 (docs/briefs/X07a-WO1.md, X07a-WO2.md; roadmap 0.5, ADR 0056 row 5; Decision Desk card ofs-05-widen option B); build decisions docs/X07a_DECISIONS.md D-1 to D-19, Q-1, Q-2, Q-3; case_hash is the SHA-256 of docs/briefs/X07a-WO1.md",
     "case_hash": "7388bd00bbc09d6623f606860ce0671318a6bae0c5484d5089d0454663a524ef",
     "environment_lock_hash": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
   },
@@ -28,6 +28,11 @@
       "cmd": ".venv/bin/mypy --platform win32 (0 errors, 15 at c4a91a75); mypy --platform darwin (0 errors)",
       "cwd": ".claude/worktrees/x07a",
       "exit_code": 0
+    },
+    {
+      "cmd": "PYTHONPATH=src .venv/bin/python -m pytest -q -rfE -p no:cacheprovider tests/test_release_workflows.py tests/test_pre_push_guard.py tests/test_s19_w5_gate.py tests/test_s19_w5_identity.py tests/test_t07_store.py tests/test_t07_w4c_process_executor.py tests/test_t07_w4e_error_mapping.py tests/test_t07_w3a_revision_runs.py tests/test_t07_v17_c2.py tests/test_t07_w7a_harness.py (and the 12 test files that read ci.yml) (WO2, at 9e41c79a: 656 passed in 682 s)",
+      "cwd": ".claude/worktrees/x07a",
+      "exit_code": 0
     }
   ],
   "checks": [
@@ -41,18 +46,18 @@
       "id": "X07a.kill-tree",
       "description": "forced kill ends the worker's child (falsifier: worker-only kill detected)",
       "result": "pass",
-      "value": "tests/test_x07a_platform.py (c) on Linux; Windows and macOS legs pending CI"
+      "value": "tests/test_x07a_platform.py (c) on Linux; macOS leg runs it (run 44652504290); Windows leg pending"
     },
     {
       "id": "X07a.CI",
       "description": "CI green on four legs",
       "result": "fail",
-      "value": "run 44615939688: ubuntu-latest 1 failed (A20 envelope axis, fixed in d2fb0252), windows G19 pywin32 (Q-1), macOS F0 M7 (Q-2); run 44629325836 at d2fb0252 pending"
+      "value": "run 44652504290 at a24a0bf3: ubuntu-latest, ubuntu-24.04-arm and default-install success; macos-latest failure in Run checks (155 failed: Q-2 replay platforms, Q-3 floating point) and F0 M7 (Q-2); windows-latest pending at the WO2 cap (expected red on G19, Q-1, and on open Windows clusters in docs/X07a_DECISIONS.md)"
     }
   ],
   "artifacts": [],
   "limitations": [
-    "Status implemented: CI is not green on all four legs; Q-1 (pywin32 licence, G19 on Windows) and Q-2 (F0 M7 replay verdict off Linux) await design-lane rulings and fail as recorded. No reviewed status is claimed."
+    "Status implemented: CI is not green on all four legs; Q-1 (pywin32 licence, G19 on Windows), Q-2 (replay and F0 M7 off Linux, REGISTERED_PLATFORMS) and Q-3 (floating-point fixtures on macOS) await design-lane rulings and fail as recorded; Windows failures beyond the named limits are partly unclassified. No reviewed status is claimed."
   ],
   "review": {
     "numerical": "pending",

@@ -77,7 +77,9 @@ Brief: `docs/briefs/X07a-WO1.md`. Branch `wp/X07a`, base `main` c4a91a75. Build 
   Alternative: no bound (default 360 min). Reversible by: the line. `gh run cancel` of the two
   long runs was refused by the session's permission classifier; they end on their own.
 - D-15. DECISION (WO2): the CI pytest summary names failures -> `PYTEST_ADDOPTS: -rsfE` (was
-  `-rs`), so a leg's failures are read by grep. Output only. Reversible by: the env line.
+  `-rs`), so a leg's failures are read by grep. Output only. Run 44652504290 showed it inert:
+  `check.sh`'s own `-rs` comes later on the command line and wins, so `check.sh` now passes
+  `-rsfE` itself. Reversible by: the env line and the `check.sh` flag.
 - D-16. DECISION (WO2): `bash` in tests on Windows resolved to the WSL launcher (CreateProcess
   searches System32 before PATH; 33 failures in `test_release_workflows.py`, stderr "wsl.exe
   --install <Distro>") -> `conftest.BASH`: `shutil.which("bash")` on win32, the bare name
@@ -140,24 +142,29 @@ Brief: `docs/briefs/X07a-WO1.md`. Branch `wp/X07a`, base `main` c4a91a75. Build 
 
 Rows found by the CI legs are added below with their run id.
 
-## Position (handoff, context cap reached 2026-11-19)
+## Position (handoff, WO2 at its context cap, 2026-11-20)
 
-Commits on `wp/X07a`: e897af52 layer, 05886465 win32 type check, 4fb8a63d CI, 8ff95818 UTF-8 /
-G19 / m05 literal, a5f53590 Windows collection, d2fb0252 envelope axis, then docs and manifest.
+WO2 commits: 8b1c7671 harvest rows (D-13), ba9df838 CI bound and summary (D-14, D-15),
+d0df7e9f test portability (D-16 to D-18), ae03bd40 Windows limits (rows above), 9e41c79a and
+a24a0bf3 docs (D-19), then `check.sh -rsfE` and the manifest moved to a24a0bf3.
 
-Local (Linux x86-64): the 104 test files importing the changed modules (grep for
-`application.store`, `experiments.store`, `jobs.executor`, `jobs.worker`, `_files`, `surrogate.blas`,
-`g11_coverage`, `v17.harness`, `external.launcher`, excluding nlp) plus `tests/test_x07a_platform.py`:
-4409 passed, 26 skipped, 3 xfailed at 4fb8a63d; later changes' tests run separately (all pass).
-F0 PASS (reference platform); arch 0 cycles 0 violations; touched-file health unchanged, new
-`_platform.py` 9.5; `codehealth diff` debt 55.30 -> 58.30 (the new module; informational).
+CI run 44652504290 (head a24a0bf3): ubuntu-latest, ubuntu-24.04-arm, default-install success;
+macos-latest failure in Run checks (155 failed, the same set as run 44629506428 minus the two
+harvest tests: Q-2 replay platforms and Q-3 floating point; no new class) and F0 M7 (Q-2);
+codehealth informational (D-19); windows-latest was still running at the cap. Local: touched
+tests 656 passed (9e41c79a); harvest and manifest tests 46 passed, 13 skipped; F0 PASS.
 
-CI: run 44615939688 (4fb8a63d): ubuntu-latest 1 failed (A20, fixed d2fb0252), ubuntu-arm unknown,
-windows G19 + UTF-8 (fixed 8ff95818), macOS m05 literal (fixed) and F0 M7 (Q-2).
-Run 44617827438 (8ff95818): windows 2 collection errors (fixed a5f53590). Run 44618922484
-(a5f53590) and run 44629325836 (d2fb0252) were in progress at the cap.
+Windows, open (run 44618922484, a5f53590, before the WO2 fixes): 294 failures and errors. WO2
+fixed or named about 130 (bash, ":", SIGKILL, W5 base tree, V17/W7a harness); 54 more are Q-2.
+Not yet classified, about 110 in clusters: `test_m02_experiments.py` 14 (attempts end
+`environment_unavailable` instead of `timed_out`/`environment_changed`: the experiment child does
+not start on Windows, undiagnosed), `test_t07_v17_reference.py` 12, `test_x02_wo4_external.py` 8
+(outcome None), `test_m05_retake_digest_only.py` 6 (host keys), `test_s16_test_impact.py` 4
+(WinError 32, a file held open), `test_st_cli.py` 4, `test_rel_release_gate.py` 4,
+`test_m07_journey_record.py` 4, `test_m02_wo10_coupled.py` 4, and about 40 singletons.
 
-Next: read run 44629325836. Expected: ubuntu legs green; windows red on G19 (Q-1) and F0 M7
-(Q-2) plus any pytest failures not yet seen (first full Windows suite); macOS red on F0 M7 (Q-2).
-Classify each new Windows/macOS test failure as portability bug (fix) or platform limit (row
-above, with run id). Manifest `evidence/X07a/d2fb0252.../manifest.json` stays `implemented`.
+Next: read windows-latest of the newest run (`gh api repos/{owner}/{repo}/actions/jobs/<id>/logs`,
+then `grep '^FAILED\|^ERROR'` now that `check.sh` passes `-rsfE`); classify the clusters above,
+first `test_m02_experiments.py` (one root cause likely covers M02/X02). The manifest
+`evidence/X07a/a24a0bf3f4f534ebf61fc908c1c9dd7e3a2df218/manifest.json` stays `implemented`; any change to its limitations or
+checks needs new T08 harvest rows (D-13) and `HARVEST_SIZE` unchanged unless the counts change.
