@@ -47,18 +47,24 @@ BITWISE_BASELINE_OFF_PLATFORM = "bitwise_baseline_off_platform"
 #: P3c: per unregistered platform and test node, the row and the exact set of paths that differ
 #: beyond the numerical policy there. An extra path fails, and so does a registered path that no
 #: longer differs. No registered platform is a key (asserted by the rows test).
+#: TH-C1's companion (b): the same three paths on macOS and on Windows (X07a review R-3).
+_TH_C1_POLICY_NODE = (
+    "tests/test_st_cli.py::test_th_c1_a_fresh_solve_is_the_json_golden_under_the_policy"
+)
+_TH_C1_POLICY_PATHS = (
+    "X07a-L5",
+    frozenset(
+        {
+            "<root>.certificate_id",
+            "<root>.energy.overall.closure",
+            "<root>.energy.units[0].closure",
+        }
+    ),
+)
 PLATFORM_DIFFERENCES: dict[tuple[str, str], dict[str, tuple[str, frozenset[str]]]] = {
+    ("AMD64", "Windows"): {_TH_C1_POLICY_NODE: _TH_C1_POLICY_PATHS},
     ("arm64", "Darwin"): {
-        "tests/test_st_cli.py::test_th_c1_a_fresh_solve_is_the_json_golden_under_the_policy": (
-            "X07a-L5",
-            frozenset(
-                {
-                    "<root>.certificate_id",
-                    "<root>.energy.overall.closure",
-                    "<root>.energy.units[0].closure",
-                }
-            ),
-        ),
+        _TH_C1_POLICY_NODE: _TH_C1_POLICY_PATHS,
         "tests/test_m03_schemas.py::test_the_fixtures_are_what_real_runs_emit_today": (
             "X07a-L3",
             frozenset(
