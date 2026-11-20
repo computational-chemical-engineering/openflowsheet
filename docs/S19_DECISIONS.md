@@ -4409,3 +4409,7 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   Alternative: manifest says A3.3 not exercised on macOS. Reversible by: reverting that commit. DECISION: W-3 -> an
   unreadable /proc/self/maps raises, as the other OS routes do. Alternative: keep `[]`. Reversible by: reverting.
   X07a-WO10 (opus-engineer, Opus, brief `X07a-WO10.md`) launched.
+- 2026-11-20, X07a-WO10 delivered (opus-engineer, Opus): 335c09bf..94b38dae pushed: eea7b3a3 W-1 (loaded == controlled
+  in all four a49 children), 499c54d8 W-2 (VECLIB_MAXIMUM_THREADS on darwin; skip names the BLAS), 725885fa W-3 (Linux
+  route raises on unreadable maps; two tests). Each falsified by undoing it. 41 passed (a49 not skipped), F0 PASS 9/9,
+  locks unchanged. CI 44773324184 running: all four legs green there -> manifest `tested` at its head -> merge card.
