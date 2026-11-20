@@ -4656,3 +4656,8 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   risk; unchanged logic); `_not_evaluated` replaces an existing entry silently (no collision today);
   `_d_dd_by_output` reads `d_dp`. Helper wp/S19-g3v-mc (wp/S19 0f96b649 + g3v, 514f7f74; wp/S19 gained the G10
   records since the lane base), merge-check job 603 g3v-mc.
+- **2026-11-21 ~00:30, G1R chain (584-591) and G3R chain (592-601) all PASS (run-log steps 502-520), fix job 602
+  PASS, merge-check 603 PASS: wp/S19-g3v merged into wp/S19 (d831acdf); g3v worktrees and branches removed.**
+  Gate report (6 h): 28 gates (step 24: selected 22, full suite 2), 24 of 24 accepted, debt removed 249.0;
+  "ALERT queue wait median 32 min > 15 min": the G-MAP 7 hold (no action). The selected-share ALERT is gone after the
+  new map. Reviews R-W3-G1R-1 and R-W3-G3R-1 (reviewer, Opus) launched.
