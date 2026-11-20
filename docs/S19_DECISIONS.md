@@ -4246,3 +4246,8 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   edges, patch_noop 0. Jobs 546 PASS, 547, 548 queued. Left: the pr_lib clone (a shared module needs an R4 ruling).
   S1 review R-W5-P1 due (3 steps; brief `S19-R-W5-P1.md`, reviewer Opus: S1 FP order, not an identity ruling) on
   547/548 PASS. WO-P2 brief `S19-W5-P2.md` written; launches after the review (same worktree; 2-agent cap).
+- 2026-11-20, X32 manifest re-take delivered (sonnet-implementer, ~62k): 083839ec on wp/X32 (pushed): manifest at
+  evidence/X32/2725fa7d.../ `implemented`, ruff/mypy/89 tests recorded, one class-P harvest row, support-matrix.md
+  re-emitted (as 605a2d64), HARVEST_SIZE (100, 1139, 146); t08 --check 0 problems, 663 passed. CI 44734187451 running;
+  on green: status `tested`. WO-P2 launched (opus-engineer, brief `S19-W5-P2.md`, same worktree from 65504942); the
+  R-W5-P1 review brief now reads the range through git only (its own detached worktree to run anything).
