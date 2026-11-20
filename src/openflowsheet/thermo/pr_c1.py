@@ -524,33 +524,22 @@ def _values(mix: _Mixture, z: float) -> dict[str, float]:
 def _derivatives(mix: _Mixture, z: float) -> dict[str, tuple[float, float, tuple[float, ...]]]:
     """(∂X/∂T, ∂X/∂P, ∂X/∂y_k) of every property, the root differentiated through the cubic.
 
-    The y_k are treated as independent (the caller projects onto the simplex). With F(Z, A, B) the
-    cubic, dZ = −(F_A dA + F_B dB)/F_Z; every other derivative is the chain rule on §4.4–§4.5.
+    The y_k are treated as independent (`_requested_derivatives` projects onto the simplex).
+    With F(Z, A, B) the cubic, dZ = −(F_A dA + F_B dB)/F_Z; every other derivative is the chain
+    rule on §4.4–§4.5.
     """
     par = parameters()
     b, t, p, y = par.b, mix.temperature, mix.pressure, mix.y
-    big_a, big_b, a_m, b_m, da_m, s, g = (
+    big_a, big_b, a_m, b_m, da_m, s = (
         mix.big_a,
         mix.big_b,
         mix.a_m,
         mix.b_m,
         mix.da_m,
         mix.s,
-        mix.g,
     )
     rt = R * t
-    dg, d2g = _dg(t), _d2g(t)
-    # Σ_j y_j da_ij/dT and d²a_m/dT².
-    d = tuple(
-        sum(y[j] * _ONE_MINUS_K[i][j] * (dg[i] * g[j] + g[i] * dg[j]) for j in range(5))
-        for i in range(5)
-    )
-    d2a_m = sum(
-        y[i] * y[j] * _ONE_MINUS_K[i][j] * (d2g[i] * g[j] + 2.0 * dg[i] * dg[j] + g[i] * d2g[j])
-        for i in range(5)
-        for j in range(5)
-    )
-    a_ij = tuple(tuple(_ONE_MINUS_K[i][j] * g[i] * g[j] for j in range(5)) for i in range(5))
+    d, d2a_m, a_ij = _mixing_rule_terms(mix)
 
     # A and B: (T, P, y_k).
     a_t = p * da_m / (rt * rt) - 2.0 * big_a / t
@@ -560,15 +549,7 @@ def _derivatives(mix: _Mixture, z: float) -> dict[str, tuple[float, float, tuple
     b_p = big_b / p
     b_y = tuple(b[k] * p / rt for k in range(5))
 
-    f_z = 3.0 * z * z - 2.0 * (1.0 - big_b) * z + (big_a - 3.0 * big_b * big_b - 2.0 * big_b)
-    f_a = z - big_b
-    f_b = z * z - (6.0 * big_b + 2.0) * z - big_a + 2.0 * big_b + 3.0 * big_b * big_b
-
-    def dz(da: float, db: float) -> float:
-        return -(f_a * da + f_b * db) / f_z
-
-    z_t, z_p = dz(a_t, b_t), dz(a_p, b_p)
-    z_y = tuple(dz(a_y[k], b_y[k]) for k in range(5))
+    z_t, z_p, z_y = _root_derivatives(mix, z, (a_t, a_p, a_y), (b_t, b_p, b_y))
 
     plus, minus = z + _C_PLUS * big_b, z + _C_MINUS * big_b
     log_term = math.log(plus / minus)
@@ -629,6 +610,55 @@ def _derivatives(mix: _Mixture, z: float) -> dict[str, tuple[float, float, tuple
         tuple(rt * z_y[k] / p for k in range(5)),
     )
     return out
+
+
+def _mixing_rule_terms(
+    mix: _Mixture,
+) -> tuple[tuple[float, ...], float, tuple[tuple[float, ...], ...]]:
+    """(d, d²a_m/dT², a_ij) of the mixture: d_i = Σ_j y_j da_ij/dT, a_ij = (1 − k_ij) √a_i √a_j.
+
+    The terms of the mixing rule a_m = Σ_i Σ_j y_i y_j a_ij that `_Mixture` does not carry.
+    """
+    t, y, g = mix.temperature, mix.y, mix.g
+    dg, d2g = _dg(t), _d2g(t)
+    # Σ_j y_j da_ij/dT and d²a_m/dT².
+    d = tuple(
+        sum(y[j] * _ONE_MINUS_K[i][j] * (dg[i] * g[j] + g[i] * dg[j]) for j in range(5))
+        for i in range(5)
+    )
+    d2a_m = sum(
+        y[i] * y[j] * _ONE_MINUS_K[i][j] * (d2g[i] * g[j] + 2.0 * dg[i] * dg[j] + g[i] * d2g[j])
+        for i in range(5)
+        for j in range(5)
+    )
+    a_ij = tuple(tuple(_ONE_MINUS_K[i][j] * g[i] * g[j] for j in range(5)) for i in range(5))
+    return d, d2a_m, a_ij
+
+
+def _root_derivatives(
+    mix: _Mixture,
+    z: float,
+    a_derivatives: tuple[float, float, tuple[float, ...]],
+    b_derivatives: tuple[float, float, tuple[float, ...]],
+) -> tuple[float, float, tuple[float, ...]]:
+    """(∂Z/∂T, ∂Z/∂P, ∂Z/∂y_k) of the root z, from A's and B's (∂/∂T, ∂/∂P, ∂/∂y_k).
+
+    The root differentiated through the cubic F(Z, A, B) = 0: dZ = −(F_A dA + F_B dB)/F_Z
+    (spec §4.6).
+    """
+    big_a, big_b = mix.big_a, mix.big_b
+    a_t, a_p, a_y = a_derivatives
+    b_t, b_p, b_y = b_derivatives
+    f_z = 3.0 * z * z - 2.0 * (1.0 - big_b) * z + (big_a - 3.0 * big_b * big_b - 2.0 * big_b)
+    f_a = z - big_b
+    f_b = z * z - (6.0 * big_b + 2.0) * z - big_a + 2.0 * big_b + 3.0 * big_b * big_b
+
+    def dz(da: float, db: float) -> float:
+        return -(f_a * da + f_b * db) / f_z
+
+    z_t, z_p = dz(a_t, b_t), dz(a_p, b_p)
+    z_y = tuple(dz(a_y[k], b_y[k]) for k in range(5))
+    return z_t, z_p, z_y
 
 
 # -- root and phase rules (spec §5.2) -----------------------------------------------------------
