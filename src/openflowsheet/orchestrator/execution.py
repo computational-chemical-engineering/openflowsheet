@@ -618,11 +618,11 @@ def build_execution_plan(
     `specifications` are the cross-unit specification regions (T02 §7.1), already delimited; a
     region absorbs every loop and every evaluation of a unit it contains.
 
-    Per process component in condensation order: the owning specification region's step once
-    (`_region_step`), else `_unit_or_loop_step`'s: an `evaluate` step for a single unit with rows,
-    or the loop's step (`_loop_step`). Raises `ValueError` for a report that is not structurally
-    closed; `_check_specifications` and `_loop_step` raise the refusals their docstrings name.
-    The rows the steps are built from are `_retained_rows`'s.
+    Per process component in condensation order: the step of the specification region that owns
+    it (`_owning_region`) once (`_region_step`), else `_unit_or_loop_step`'s: an `evaluate` step
+    for a single unit with rows, or the loop's step (`_loop_step`). Raises `ValueError` for a
+    report that is not structurally closed; `_check_specifications` and `_loop_step` raise the
+    refusals their docstrings name. The rows the steps are built from are `_retained_rows`'s.
     """
     if report.finding != "STRUCTURALLY_CLOSED" or report.tear is None:
         raise ValueError(
@@ -654,7 +654,7 @@ def build_execution_plan(
     placed_regions: set[int] = set()
 
     for node in condensation_order(graph):
-        owner: Region | None = next((claimed[unit] for unit in node if unit in claimed), None)
+        owner = _owning_region(claimed, node)
         if owner is not None:
             if id(owner) not in placed_regions:
                 placed_regions.add(id(owner))
@@ -739,6 +739,12 @@ class _PlanBasis:
     loops: Mapping[tuple[str, ...], LoopTear]
     #: T01's tear analysis, present on every structurally closed report (the plan's first check).
     tear: TearAnalysis
+
+
+def _owning_region(claimed: Mapping[str, Region], node: tuple[str, ...]) -> Region | None:
+    """The specification region that claims the first claimed unit of the process component
+    `node`, in its unit order (pure); None when no region claims one of its units."""
+    return next((claimed[unit] for unit in node if unit in claimed), None)
 
 
 def _region_step(basis: _PlanBasis, region: Region, index: int, suffix: str) -> PlanStep:
