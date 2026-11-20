@@ -4642,3 +4642,7 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   584-591, g3r chain by a detached script (`e9f8087c scratch/requeue.sh`) 180 s after g1r1-1r starts, so the base
   worktree is never created twice at once. Build-lane tooling item: a lock around base-worktree creation in the gate
   (two lanes from one tip will meet it again).
+- **2026-11-20 ~23:35, jobs 580-582 (g3v1-1, -2, -3b) PASS (steps 499-501; verification.py 49.8 -> 27.1), job 584
+  g1r1-1r PASS (step 502), job 583 w5pg-mc PASS 11/11: wp/S19-w5pg merged into wp/S19 (b1d2ae6a; wp/S19 changed
+  only docs since 8e4b690e); worktree and branch removed.** Review R-W3-G3V-1 (reviewer, Opus; brief
+  `<briefs>/S19-R-W3-G3V-1.md`) launched.
