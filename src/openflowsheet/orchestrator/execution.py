@@ -619,9 +619,9 @@ def build_execution_plan(
     region absorbs every loop and every evaluation of a unit it contains.
 
     Per process component in condensation order: the owning specification region's step once
-    (`_region_step`), an `evaluate` step for a single unit with rows, or the loop's step
-    (`_loop_step`). Raises `ValueError` for a report that is not structurally closed;
-    `_check_specifications` and `_loop_step` raise the refusals their docstrings name.
+    (`_region_step`), else `_unit_or_loop_step`'s: an `evaluate` step for a single unit with rows,
+    or the loop's step (`_loop_step`). Raises `ValueError` for a report that is not structurally
+    closed; `_check_specifications` and `_loop_step` raise the refusals their docstrings name.
     """
     if report.finding != "STRUCTURALLY_CLOSED" or report.tear is None:
         raise ValueError(
@@ -660,17 +660,9 @@ def build_execution_plan(
                 placed_regions.add(id(owner))
                 steps.append(_region_step(basis, owner, len(steps), f"region{len(steps)}"))
             continue
-        self_loop = any(
-            connection.producer == connection.consumer == node[0]
-            for connection in graph.connections
-        )
-        if len(node) == 1 and not self_loop:
-            # A sink owns no row and has no step (T02 §3.2).
-            if node[0] in units_with_rows:
-                steps.append(PlanStep(index=len(steps), kind="evaluate", units=node))
-            continue
-
-        steps.append(_loop_step(basis, graph, node, len(steps)))
+        step = _unit_or_loop_step(basis, graph, units_with_rows, node, len(steps))
+        if step is not None:
+            steps.append(step)
 
     return ExecutionPlan(
         plan_id=f"{label}-{policy.policy_id}-execution",
@@ -770,6 +762,28 @@ def _region_step(basis: _PlanBasis, region: Region, index: int, suffix: str) -> 
             initializer_chain=("user_guess", "sequential_pre_solve"),
         ),
     )
+
+
+def _unit_or_loop_step(
+    basis: _PlanBasis,
+    graph: ProcessGraph,
+    units_with_rows: set[str],
+    node: tuple[str, ...],
+    index: int,
+) -> PlanStep | None:
+    """The step at `index` for a process component no specification region owns (T02 §3.2): an
+    `evaluate` step for a single unit with rows (and no self-loop), None for a single unit without
+    rows, else the loop's step (`_loop_step`, which raises the refusals its docstring names)."""
+    self_loop = any(
+        connection.producer == connection.consumer == node[0] for connection in graph.connections
+    )
+    if len(node) == 1 and not self_loop:
+        # A sink owns no row and has no step (T02 §3.2).
+        if node[0] in units_with_rows:
+            return PlanStep(index=index, kind="evaluate", units=node)
+        return None
+
+    return _loop_step(basis, graph, node, index)
 
 
 def _loop_step(
