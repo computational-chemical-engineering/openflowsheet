@@ -90,11 +90,9 @@ cce-code-health 34a30bf. Agent running: WO-P1 engineer (opus-engineer, brief `S1
    F1, F3, X01 plugin docs (+ parts needing no F2/F4/F6), TOK, and S19 batch P before the RC cut; F2, F8, X06 and X01
    selectability lead 0.6. Next for the line: `release/lines/0.5.json` design pass on wp/REL050. R-1064 (wp/TOK) and
    R-1065 (wp/REL050) both append to the register end: a trivial merge conflict, keep both.
-3b. **X32 (formerly TOK; 0.5, Frank 2026-11-20):** wp/X32 (worktree tok, from main), e028b835 + ae0dec21 pushed:
-   `project grant` prints the token alone on stdout (R-1064, no ADR: T07 §10.3 holds); review: merge after fixes, fixes done 2725fa7d
-   (pushed). Next: when CI at 2725fa7d is green (watch was running at reset; re-read with `gh run list --branch wp/X32`),
-   move the manifest to evidence/X32/2725fa7d.../ with the ruff and mypy commands recorded (review fix 3). Then into the 0.5 merge card. The user
-   report came from a student: keep the name off every record. Remote wp/TOK deleted (renamed to wp/X32).
+3b. **X32 (formerly TOK; 0.5):** wp/X32 7cf27880 pushed: manifest at evidence/X32/2725fa7d.../ `tested` (CI
+   44734187451 green at 083839ec, records-only on top of 2725fa7d); review fixes done. Next: into the 0.5 merge card.
+   The user report came from a student: keep the name off every record.
 4. Rule: lanes touching studies/ also need the nlp-marked suite at head, failures a subset of base (g19, g20).
 5. Brief rule (I1): `codehealth scan --json PATH` writes TO PATH; use `--repo <wt> --json <scratch>/scan.json`.
    A test retarget is never enqueued alone: retarget, plan, step; gate from the plan commit (job 516's miss).
