@@ -142,3 +142,56 @@ Add a one-line erratum to R1.4 and P1c so that the governing text matches the ju
 
 Not examined: the Job Object path under a nested job (read only), the 37 `NEEDS_EXTERNAL_CHILD` nodes one by one, the
 docs-site and support-envelope wording, any macOS log, and CI 44764813337.
+
+## WO9 review (design lane, `reviewer`, at 335c09bf)
+
+Scope: `git diff 2f067059..335c09bf` (4f964722 to 90d53af2) and the WO9 entry of `docs/X07a_DECISIONS.md`. Run on
+Linux x86-64 (repo venv): the eight touched test files, 207 passed, none skipped (a49 passed, not skipped; a34 found
+the generator byte-identical to the committed files). CI 44770741082 was not read.
+
+**Verdict: R-1 is correct, and unchanged in effect on Linux. R-2 to R-6 match their findings. Ready for the merge card
+once W-1 is in and CI is green on all four legs; W-2 and W-3 are decisions that may be taken at the card.**
+
+1. **W-1 (should fix before the card; build lane, test only).** `tests/test_m04_quadratic.py:458` asserts that the pin
+   controls *some* OpenBLAS, not *every* one. The fit uses both: NumPy's (`np.linalg.svd`, `qr`,
+   `quadratic.py:190,194`) and SciPy's (`solve_triangular`, line 32). `blas._library` (`blas.py:61-62,71`) silently
+   drops a library that fails to open or exports no symbol pair. If it drops one of the two on a leg, the condition
+   still holds. On a runner where that library does not split the work at this size, the bitwise asserts miss it too,
+   which is R-1's vacuity again. Fix: the child also reports `[os.path.basename(p) for p in blas._loaded_openblas()]`,
+   and the test asserts it equals `controlled`. Keep the existing non-empty condition.
+2. **W-2 (needs a decision; I would take (a)).** On an Accelerate leg the pin rightly controls nothing. But
+   `_a49_child` varies only `OMP_NUM_THREADS` and `OPENBLAS_NUM_THREADS` (line 425), which Accelerate ignores, so the
+   skip at line 469 is certain, A3.3 is never exercised there, and the skip text blames the CPU count. (a) Set
+   `VECLIB_MAXIMUM_THREADS` with the other two and name the BLAS in the skip reason. If the unpinned fits then differ
+   at 1 and 8, pinned fails: that is a real A3.3 finding for a P4 row, not a WO9 defect. (b) Keep the skip and state in
+   the manifest's limitations that A3.3 is not exercised on macOS. Either way, `blas.py:16-18` ("OpenBLAS's thread
+   variables then do not reach the fit") says nothing about Accelerate's own thread count. Amend it to match the
+   choice.
+3. **W-3 (should fix; needs a decision; I would refuse).** The failure paths differ. On Linux, `_platform.py:262-263`
+   returns `[]` when `/proc/self/maps` cannot be read, so a production fit runs unpinned with no trace (the old
+   behaviour). Windows raises `WinError`, and macOS raises on a missing `_dyld_*` symbol. Let the `OSError` propagate
+   (`blas` is the only caller), so that every route refuses. Only an error path changes: a job on a Linux host without
+   `/proc` now fails instead of running unpinned.
+4. **Linux identity (sound).** `loaded_libraries` collects the same `fields[5].strip()` set. Filtering on the basename
+   of the stripped path selects the same strings, because stripping removes only trailing whitespace, which cannot
+   take part in a match of "openblas". The sorted order is the same, and `_library` and `single_blas_thread` are
+   untouched. So the same libraries get the same `get`/`set` calls in the same order. The WO-11 evidence for d65bb022
+   stands without a re-submit.
+5. **Windows and macOS routes (sound as read; unverified until the legs' logs).** `cb` and `needed` are in bytes; the
+   grow-and-retry loop and the slice `needed // sizeof(HMODULE)` are right; `GetModuleFileNameW`'s size is in
+   characters (32768), and a 0 return is skipped. On win32 `ctypes.CDLL` ignores `mode` (`winmode` governs), and
+   `LoadLibraryExW` on a loaded module's full path returns that module's handle. `CDLL(None)` reaches `_dyld_*`
+   through libSystem, and NULL names are skipped. Test (f) checks discovery on every leg against NumPy's own
+   extension module, which is a real check. Note: on Linux the list also holds pseudo-entries (`[heap]`, `[vdso]`),
+   which the docstring calls file names. This is harmless.
+6. **R-2 to R-6 (match).** R-2: the keys are relative `Path`s, so `.as_posix()` writes Linux's bytes. The test's native
+   regex follows m03 a42. `reference_values.json` is untouched, sha256 d0a23a01. R-3: `("AMD64", "Windows")` carries
+   the same three paths under L5. R-4: 1e-13 is kept, and the companion is at `V2_RELATIVE_TOLERANCE`, asserted to be
+   1e-9. R-5: the expectation is derived from the a07 key, and the rows test fails when the limit is lifted; the
+   other same-form keys on Windows stay unverified until CI, as WO9 states. R-6: the products style moved to an
+   unmarked node, with `_same` unchanged and no case removed. Nothing widened, removed or re-registered.
+7. **Merge card.** CI at the WO9 head must show, on Windows, a49 passing with `blas_controlled` naming both DLLs,
+   and on macOS what `openblas_builds` says. Record both junit properties in the manifest.
+
+Not examined: any CI log, Windows or macOS execution, `greybox`'s probes beyond the top-level `import cyipopt`
+(line 60), and the win32 branch of R-5 beyond reading it.
