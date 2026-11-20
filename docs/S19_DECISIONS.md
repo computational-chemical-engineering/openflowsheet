@@ -4023,3 +4023,13 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   registry sha line only; W5-S7 0 new edges. Deviations: private NamedTuple parameter objects (`_Bracket`,
   `_OutletPort`, `_Answer`); `iterations = 0` moved into two helpers. Review R-W5-L2b launched (two windows, as
   R-W5-L2).
+- **2026-11-20, R-W5-L2b (reviewer, Opus, ~110k): fixes first, one docstring and one evidence rerun; nothing reverted.**
+  All six steps keep S1 order, evaluation counts and refusal order; NamedTuples packed and unpacked in field order;
+  `iterations` same value on every path; W5-S1/S3/S4/S7 hold; stops accepted (heat_exchanger residual: contribute,
+  manifest, `_bisect_newton` 4.0, `_dormant` 2.0; a further step, if wanted, is `_dormant` :669-676). F1:
+  `_bisect_newton`'s RuntimeError is reachable (a creeping Newton step); the docstring said it was not. The
+  `proposed == guess` return proven unreachable. Done by the orchestrator: docstring abe8964f (job 540, no-gain,
+  --batch); evidence rerun `diff_hx_creep.py` (scratchpad w5l2b), base ca433693 vs head, 20000 cases, 0 differ,
+  RuntimeError reached 1143 times, exit sites 12/13. N1 (outside W5, design lane follow-up): at base a reachable
+  provider input raises a "this is a bug" RuntimeError where the c1 mixer returns a not-converged refusal; the message
+  is behaviour, so W5 keeps it; registered here as an open item.

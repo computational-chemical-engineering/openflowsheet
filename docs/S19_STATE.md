@@ -85,6 +85,7 @@ On each result: gate_report, log.
 directory and added plan files (R-W5-N-close 4c; default: the tool's rule stands); (ii) `revision_binding.MODEL_BUILDERS`:
 keep as the W27 binder-protocol attribute, strike from I-19's list, state the protocol in `reading_for`'s docstring
 (R-W4-RC-N6; default: kept); (iii) cascade/column 87-line duplication.
+**Open design-lane item (R-W5-L2b N1):** syn001 heat_exchanger `_bisect_newton` raises RuntimeError "this is a bug" on a creeping Newton iteration (reachable), where c1 mixer returns a not-converged refusal; behaviour, outside W5.
 **Open build-lane items:** test_s01_cascade_wo1.py:262 patches `region.solve_region`, a no-op (retarget to
 cascade_solve); `c1_reactor_surrogate_of` (revision_binding.py:708) unguarded by the list_models patch;
 `benchmarks/m03/nlp-test.lock` lacks mpmath; test_opt_cost_lca_nlp g19, g20 fail; no CI or gate runs nlp-marked
