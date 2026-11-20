@@ -4046,3 +4046,7 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   `certificate_id` and the near-zero energy closure (row L5, `run.compare` unchanged). Merge waits on cards
   ofs-x07a-adr0007-am3 and ofs-x07a-pywin32-licence.
 - 2026-11-20 ~07:00, gate_report before self-reset: three standing ALERTs (selected share 7%, 623 s, ratio 0.59); W5 steps on hashed modules fall back on import-time code; action unchanged. Jobs 536-540 pending at reset.
+- 2026-11-20 ~07:40, resume after self-reset: jobs 528-534 PASS (steps 473-479 accepted), 535 running, 536-540
+  pending; wait re-armed (`--since 513 --idle s19-w5l`). gate_report: the same three standing ALERTs (selected share
+  7%, 623 s, ratio 0.59); action unchanged. X07a-WO4 launched (opus-engineer, brief `docs/briefs/X07a-WO4.md` on
+  wp/X07a b3b66bbb): macOS rows, manifest move, Windows leg, the failed codehealth CI job of 44670029066.
