@@ -28,7 +28,9 @@ runs the same claims and writes the files only when all of them hold.
 from __future__ import annotations
 
 import argparse
+import difflib
 import hashlib
+import itertools
 import json
 import math
 import re
@@ -1767,10 +1769,11 @@ def build() -> tuple[dict[str, Any], dict[str, Any]]:
     values["constants"]["box_v2"] = box_v2_rows()
     values["constants"]["reference_distributions"] = REFERENCE_DISTRIBUTIONS
     values["amendment2"] = {
+        # POSIX keys on every platform: the bytes are the committed file's (X07a D-29, review R-2).
         "sources": {
-            str(V3_VARIANT): sha_variant,
-            str(LOOP_RECORD): sha_record,
-            str(LOOP_EDGES): sha_edges,
+            V3_VARIANT.as_posix(): sha_variant,
+            LOOP_RECORD.as_posix(): sha_record,
+            LOOP_EDGES.as_posix(): sha_edges,
         },
         "box_v2": box_summary,
         "plans_b2": b2_summary,
@@ -1836,6 +1839,16 @@ def main(argv: Sequence[str] | None = None) -> int:
             committed = path.read_bytes() if path.exists() else b""
             if committed != payload:
                 print(f"{path} differs from the generator's output", file=sys.stderr)
+                # Which bytes: a path, an order or a float (X07a review R-2), on the leg itself.
+                diff = difflib.unified_diff(
+                    committed.decode("utf-8", "replace").splitlines(),
+                    payload.decode("utf-8", "replace").splitlines(),
+                    "committed",
+                    "generated",
+                    lineterm="",
+                )
+                for line in itertools.islice(diff, 200):
+                    print(line, file=sys.stderr)
                 status = 1
             else:
                 print(f"{path} is byte-identical to the generator's output")
