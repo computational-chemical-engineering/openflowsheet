@@ -3970,3 +3970,13 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   already failed at B_L for other reasons. The lane stays open until K (batch close), as batch N.
   WO-L2 launched (opus-engineer, brief `S19-W5-L2.md`: N1 docstring, then syn001 mixer, conversion_reactor,
   kinetic_cstr), lane head 793eff3c.
+- **2026-11-20, X07a-WO2 delivered at the cap (opus-engineer, Opus, ~175k; 0.5 lane, not S19).** wp/X07a pushed, head
+  69f4703f; manifest at a24a0bf3 `implemented`. Run 44652504290 (a24a0bf3): ubuntu x2 and default-install green;
+  macOS 155 failed + F0 M7 (Q-2); windows still running; codehealth informational by design (D-19). Cause of the
+  all-legs failure at 37049c8a: the new manifest was not harvested (T08.A21, M07a.A50; D-13). The Windows "G19 hang" was
+  pytest taking 175 min after G19 failed (D-14); `gh run cancel` was refused by the permission classifier. New Windows
+  limit rows (W5 base tree fcntl, SIGKILL exit codes, V17/W7a harness). Open: about 110 Windows failures unclassified
+  (largest m02_experiments child `environment_unavailable`); Q-1 pywin32 licence (Frank); Q-2 extended
+  (`REGISTERED_PLATFORMS` makes every off-Linux rerun NOT_RUN: F0 M7, ~90 macOS and 54 Windows tests); Q-3 new (macOS
+  last-bit float differences against Linux fixtures). Design ruling on Q-2/Q-3 launched (specifier, brief
+  `docs/briefs/X07a-R-platforms.md` on wp/X07a bd7548e4); X07a-WO3 follows the ruling.
