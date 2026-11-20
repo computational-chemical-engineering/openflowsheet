@@ -90,6 +90,11 @@ Brief: `docs/briefs/X07a-WO1.md`. Branch `wp/X07a`, base `main` c4a91a75. Build 
   server kill of `test_t07_w4c_process_executor.py`; tests that judge the POSIX exit code
   `-SIGKILL` are a platform limit (row below).
 
+- D-19. DECISION (WO2): the codehealth job's "Debt ratchet against origin/main (informational)"
+  fails on `debt over touched files rose 55.30 -> 58.30`, all of it the new
+  `src/openflowsheet/_platform.py` (0.0 -> 3.0; health 9.5). The job is `continue-on-error: true`
+  by design (S17, ci.yml `codehealth`): expected for a branch that adds a module, not fixed.
+
 ## Design-lane questions (left failing, not chosen)
 
 - Q-1 (G19 on Windows, run 44615939688): `t07_licence_inventory.py` FAILED, 30 distributions:
