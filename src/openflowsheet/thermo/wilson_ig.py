@@ -430,6 +430,10 @@ def _projected(by_x: Sequence[float], x: Sequence[float], total: float) -> tuple
 # -- the provider --------------------------------------------------------------------------------
 
 
+#: Per property: its value, d/dT, d/dP and d/dx_j with x free (`_phase_rows`).
+_Rows = dict[str, tuple[float, float, float, tuple[float, ...]]]
+
+
 class WilsonIdealGasProvider:
     """A `PropertyProvider` on a Wilson liquid and an ideal-gas vapour (`wilson-ig-v1`, ADR 0047).
 
@@ -497,8 +501,45 @@ class WilsonIdealGasProvider:
     def evaluate_phase(
         self, request: PropertyRequest, context: EvaluationContext
     ) -> PropertyResult:
-        """Values and derivatives of the requested phase at the request's state (spec §5.3)."""
+        """Values and derivatives of the requested phase at the request's state (spec §5.3).
+
+        Refused by `_request_refusal` (a request no state could answer, or a state outside the
+        domain or dormant). Otherwise the values are the rows of `_phase_rows`, and the
+        derivatives, when asked, are `_requested_derivatives` of the same rows.
+        """
         del context
+        convention = self._records.reference_convention
+        refusal_of_request = self._request_refusal(request)
+        if refusal_of_request is not None:
+            return refusal_of_request
+
+        state = request.state
+        total = state.total_flow
+        x = tuple(value / total for value in state.n)
+        liquid = request.phase == "LIQUID"
+        rows = self._phase_rows(state, x, liquid)
+
+        values = {name: rows[name][0] for name in request.properties}
+        derivatives: dict[str, dict[str, float]] = {}
+        if request.derivatives:
+            derivatives = self._requested_derivatives(request, rows, x, total, liquid)
+
+        return PropertyResult(
+            status="ok",
+            phase_signature=request.phase,
+            values=values,
+            derivatives=derivatives,
+            provider_id=PROVIDER_ID,
+            reference_convention=convention,
+        )
+
+    def _request_refusal(self, request: PropertyRequest) -> PropertyResult | None:
+        """The refusal of a request `evaluate_phase` does not evaluate, or None.
+
+        In order: an undeclared derivative input, an unknown property (`unsupported`), a flow vector
+        whose length is not the component count (`error`), a state outside the domain
+        (`_domain_violation`, `out_of_domain`), and a dormant state (`unsupported`).
+        """
         convention = self._records.reference_convention
         undeclared = [name for name in request.derivatives if name not in self._derivative_inputs]
         if undeclared:
@@ -519,14 +560,18 @@ class WilsonIdealGasProvider:
             return _refused("out_of_domain", outside, convention)
         if state.is_dormant:
             return _refused("unsupported", "dormant_state: composition undefined", convention)
+        return None
 
-        size = len(ids)
-        total = state.total_flow
-        x = tuple(value / total for value in state.n)
+    def _phase_rows(self, state: StreamState, x: tuple[float, ...], liquid: bool) -> _Rows:
+        """Per property of the phase (LIQUID if `liquid`, else VAPOR) at `state`'s T and P and the
+        mole fractions `x`: its value, d/dT, d/dP and d/dx_j with x free (spec §3.5-§3.6).
+
+        The vapour's ln φ_i rows are zero (an ideal gas); `h` is the x-weighted sum of the phase's
+        pure h_i and c_p,i, with d/dx_j = h_j.
+        """
+        size = len(self._records.components)
         pure = _pure(self._records, state.temperature)
-        liquid = request.phase == "LIQUID"
-        # Per property: its value, d/dT, d/dP and d/dx_j with x free (spec §3.5-§3.6).
-        rows: dict[str, tuple[float, float, float, tuple[float, ...]]] = {}
+        rows: _Rows = {}
         if liquid:
             ln_gamma, g = _wilson(self._records.wilson_lambda, x)
             ln_p = math.log(state.pressure)
@@ -548,32 +593,39 @@ class WilsonIdealGasProvider:
             0.0,
             h_i,
         )
+        return rows
 
-        values = {name: rows[name][0] for name in request.properties}
+    def _requested_derivatives(
+        self,
+        request: PropertyRequest,
+        rows: _Rows,
+        x: tuple[float, ...],
+        total: float,
+        liquid: bool,
+    ) -> dict[str, dict[str, float]]:
+        """Each requested property's derivatives with respect to the requested inputs.
+
+        ∂/∂T and ∂/∂P are the row's own; ∂/∂n_k is its d/dx projected by `_projected`, and is 0.0
+        for a vapour (not `liquid`) ln φ_i, which is identically zero. Keyed by property, then
+        input, in request order.
+        """
+        ids = self._records.components
+        size = len(ids)
         derivatives: dict[str, dict[str, float]] = {}
-        if request.derivatives:
-            for name in request.properties:
-                value, by_t, by_p, by_x = rows[name]
-                identity_zero = not liquid and name != "h"
-                by_n = (0.0,) * size if identity_zero else _projected(by_x, x, total)
-                entry: dict[str, float] = {}
-                for wanted in request.derivatives:
-                    if wanted == "T":
-                        entry[wanted] = by_t
-                    elif wanted == "P":
-                        entry[wanted] = by_p
-                    else:
-                        entry[wanted] = by_n[ids.index(wanted.removeprefix("n_"))]
-                derivatives[name] = entry
-
-        return PropertyResult(
-            status="ok",
-            phase_signature=request.phase,
-            values=values,
-            derivatives=derivatives,
-            provider_id=PROVIDER_ID,
-            reference_convention=convention,
-        )
+        for name in request.properties:
+            value, by_t, by_p, by_x = rows[name]
+            identity_zero = not liquid and name != "h"
+            by_n = (0.0,) * size if identity_zero else _projected(by_x, x, total)
+            entry: dict[str, float] = {}
+            for wanted in request.derivatives:
+                if wanted == "T":
+                    entry[wanted] = by_t
+                elif wanted == "P":
+                    entry[wanted] = by_p
+                else:
+                    entry[wanted] = by_n[ids.index(wanted.removeprefix("n_"))]
+            derivatives[name] = entry
+        return derivatives
 
     # -- flash ---------------------------------------------------------------------------------
 
