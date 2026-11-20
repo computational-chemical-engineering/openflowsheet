@@ -4635,3 +4635,10 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   20558 passed, 109 skipped, 5 failed = the B-6 four + f6 (within the criterion); wall 4611 s, 26.6 MB; unsure-file
   note as G-MAP 3-6 (test_m04_wo9). map7 removed; runner restarted (PID 3031640); 22 jobs pending (562-583). Lanes
   g1r, g3r, g3v, w5pg keep MB 756e1c12 from their bases.
+- **2026-11-20 22:09Z, jobs 562 (g1r1-1) and 564 (g3r1-1) GATE-ERROR rc=2, environment:** both started in the same
+  second on base c6957580 and raced creating `.git/codehealth/base-c6957580...` (one "index.lock ... remove the file
+  manually", the other "cannot create directory at '.claude'"); the 16 later steps SKIPPED. No run-log step, so
+  re-enqueued unchanged without `--rerun-of` (the 2026-11-18 precedent) with labels `<label>r`: g1r chain as jobs
+  584-591, g3r chain by a detached script (`e9f8087c scratch/requeue.sh`) 180 s after g1r1-1r starts, so the base
+  worktree is never created twice at once. Build-lane tooling item: a lock around base-worktree creation in the gate
+  (two lanes from one tip will meet it again).
