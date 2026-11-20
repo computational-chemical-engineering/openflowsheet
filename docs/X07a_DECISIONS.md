@@ -296,19 +296,39 @@ B34a, TH-C1 golden. Clusters left, by class (WO2's rules; none yet fixed or rowe
   `test_t08_w1_ledger`, `test_t07_interrupt` no_broad_except, `test_s16` runtime_open_record,
   `test_p03` s9_5 and `test_v02a_r347` (both fixed or rowed by WO4 for every non-Linux leg).
 
-## Position (handoff, WO4, 2026-11-20)
+### Windows clusters after WO5 (from run 44670029066's 116 failed; 44683830734's Windows leg was still running)
 
-WO4 commits: b39ada81 codehealth (D-23); a99c510f W3a rerun directory (Windows, 179 errors);
-cab55fa8 macOS rows L6 to L10, limits s9_5 and token_placement, Q-11; ff7a1437 install-check
-(D-25); 8b6d821a A6 test; b4a28fe5 L5's third path; then the manifest move (D-26) and this
-Position. Local: touched modules pass (w3a/w3e 260, marked modules 5 + 174, rows 3, platform 6,
-replay 44 + 4); F0 PASS; `codehealth diff` PASS; `t08_support_matrix.py --check` 0 problems.
+Fixed (portability, Linux bytes unchanged, F0 PASS 9/9): M05 retake (10, test LF), path keys and
+link targets in tests (k03, k04, k05, t04, t06 w29 (2), w30 a99a, t07 w5e, t08 rename schema, x05
+a20, s05 a26, v0_1 gate chmod), t06 w31 (6, `t06_ensemble` starts_file), release_rc a items,
+f1 discovery (registry_builtin LF), pymrm child (2 CRLF stderr, 1 venv path): about 35 nodes.
+Rowed (Windows limits): the experiment child (37, ADR 0033 D2), w5b/t08-rename CLI transcripts (3),
+M07 record paths (6, D-28), pymrm SIGINT (1). Left, unread or not fixed: `test_s16_test_impact`
+(4, WinError 32), `test_t07_conformance` serve (signal 2), `test_c9_w27_v2` (2: committed-relative
+across mounts, generator check), `test_s11_w27_v3` a32 generator check, `test_msg_corpus` C04/C05
+(`<tmp>\plant` ids), `test_pre_push_guard` (native hook path), `test_s03/s09_references`
+(recompute), `test_t07_evidence_manifest` (V17 files differ), `test_c2_openidaes450_split`,
+`test_t07_server_extra` (the Windows closure has pywin32, the record does not: a Windows record or
+a scoped comparison, with Q-12), `test_s07_packaging` (its A41 subprocess of the same),
+`test_t07_s3_validation`, `test_opt_cost_lca`, `test_m03_reference` a42, `test_m04_reference_values`
+a34, `test_m06_wo4_serving`, `test_m07a_v0_2_gate` a07, `test_t08_w1_ledger`, `test_t07_interrupt`,
+`test_v02a_r347`, and the P3 sets on Windows (`test_st_cli` TH-C1 (b), `test_m03_schemas`).
 
-macOS (44670029066, 12 failed): every one is now rowed or fixed; the leg should be green at the
-WO4 head apart from anything 44681408041 (head 2d914b7d, still running at WO4's end) shows new.
-Confirm L5's three paths and L6 to L10 on the WO4 push's macOS leg.
+## Position (handoff, WO5, 2026-11-20)
 
-Next: read the WO4 push's run (both new legs); Windows clusters above in order: path separators
-and CRLF (portability fixes, Linux unchanged), then the experiment child, then WinError 32 and
-signal 2, M05 host keys, the unread rest. Open for the reviewer: D-20, D-22, Q-4, Q-10, Q-11
-(B34a class), D-24's companion. X07a's merge waits on Frank accepting Amendment 3.
+WO5 commits: d7bb75bc G19 `ALLOWED_FOR` (pywin32 PSF only); 3e5c6c9f R-1063, Q-1 closed, Q-12;
+bf8bb3d4 experiment-child limit (37); deb19a44 M05 retake test LF; 2bb2c157 test POSIX paths;
+e9a8a214 release_rc and t06_ensemble POSIX (D-29); a13356b1 registry_builtin LF, pymrm child;
+2fa01fbd limits and D-28, D-29; then this Position. Local: touched tests 845 + 743 passed; F0 PASS
+9/9; `codehealth diff` PASS 62.60 -> 62.60; `arch --depth 4` 0 cycles, 0 violations.
+
+CI: G19 passed on windows-latest (and macos-latest) in run 44696617122 (head 3e5c6c9f, step "The
+server extra and its licences (G19)"). macOS leg of 44683830734 (head 51f7fcae) succeeded: L5's
+exact path set held and rows L6 to L10 raised nothing new. Windows legs of 44683830734 and
+44681408041 were still running at WO5's end; the WO5 push's run tests the fixes above.
+
+Stop condition hit: Q-12 (the pywin32 pin in `requirements.lock` breaks D2.2 and moves the lock
+digest; not committed). Next: read the Windows leg of the WO5 push's run (`--log-failed` or the
+jobs/logs API to a file; grep `FAILED|ERROR tests/`); the "Left" list above, largest first; Q-12's
+ruling. Open for the reviewer: D-20, D-22, D-28, D-29, Q-4, Q-10, Q-11, Q-12, D-24's companion.
+Push from this worktree: `git -c credential.helper='!gh auth git-credential' push origin wp/X07a` (no helper is configured).
