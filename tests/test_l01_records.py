@@ -454,7 +454,7 @@ MOVED = {
     ),
     "src/openflowsheet/models/c1/mixer.py": (
         "970c19124478e13afb7dca61b126ed0cfd3f429185ffc882a0898d2b013e3a20",
-        "R-1061",  # S19 W5 batch L: behaviour-preserving restructuring (card ofs-s19-legacy-models, F-4)
+        "R-1061",  # S19 W5 batch L restructuring (card ofs-s19-legacy-models, F-4)
     ),
 }
 
