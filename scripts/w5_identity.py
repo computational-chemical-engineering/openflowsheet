@@ -8,6 +8,7 @@ The ruling decides what a byte change of a registry-hashed file moves; this tool
                            [--against-tables] [--json PATH] [--max-tier N]
     w5_identity.py judge --before REV --after REV [--files PATH ...] [--max-tier N]
     w5_identity.py coverage --base REV [--head REV]
+    w5_identity.py pin --base REV [--registry REV] [--json PATH] -- SCRIPT [ARGUMENT ...]
 
 - `sets`: R (the union of the implementation `modules` of `legacy.json` and `core.json`), F (F0's
   M9 set, `corpus_identity.frozen_modules`) and the four tiers of section 4, by its rules. It
@@ -23,7 +24,9 @@ The ruling decides what a byte change of a registry-hashed file moves; this tool
   one fixed at B.
 - `predict`: the (measure, key) pairs of F0's registry that a comment-only change of the files
   moves, by section 3.2's reach rules, and whether `registry_sha256` moves. `--files` defaults
-  to `git diff --name-only BASE..HEAD`; files outside R move nothing. `--against-log` compares
+  to `git diff --name-only BASE..HEAD` (`--files` with no path: E is empty); files outside R
+  move nothing, except B7's seven group modules, which M9 measures and the base does not
+  register (section 8: M9 has 42 keys at head). `--against-log` compares
   the prediction with an unpinned F0 `--check` log, both ways, and its summary line (W5-S3).
   The prediction also names the table pointers E moves (W5-S4: a contributor's implementation
   `modules` after a tier 1 split adds or removes a module in its directory, coolprop-heos-v1's
@@ -50,12 +53,26 @@ The ruling decides what a byte change of a registry-hashed file moves; this tool
   A new name from a module the file imported at BASE is admitted only if it was importable from
   that module at BASE (code moved into it since is a hole). A new module is admitted only as a
   retarget: every name taken from it was taken at BASE from a module M0 with `M0.name is M.name`
-  there. Also M9's key set must be BASE's. The gate passes the step's commit as `--head`, so that
-  W5-S3 and W5-S7 judge the same E.
+  there. Also M9's key set must be BASE's, plus those of B7's seven group modules the diff
+  changes (section 8, the one exception, as `predict` scopes it). The gate passes the step's
+  commit as `--head`, so that W5-S3 and W5-S7 judge the same E.
 
 A revision's facts are measured in a subprocess on an extracted copy (`git archive`), with that
 revision's own `corpus_identity.py` and `registry_builtin.py`; the working tree's with `--tree`.
-`pin` (batch P, W5-T3 to W5-T5) is not implemented yet.
+- `pin`: the identity pin (R2, W5-S2, W5-K5; acceptance W5-T3 to W5-T5). E is `git diff
+  --name-only BASE` of the working tree, ∩ R at BASE. Each file of E whose hash scope
+  (`hash_scope`) is BASE's is pinned: SCRIPT runs in this process, as `PYTHONPATH=<tree>/src
+  python SCRIPT ...` would run it, and every binary `pathlib` read of a pinned file
+  (`Path.read_bytes`, `Path.open` in a binary read mode) gets that file's bytes at BASE. Imports
+  do not read through `pathlib`, so the head's code runs while the identity sites read the base.
+  A file whose scope changed (B7's CoolProp files) has no base form and is left to the head
+  (`PIN UNPINNED`). Each pinned read is recorded with its caller (`PIN READ <path>
+  <reader><-<its caller>`, both `file:function`). It exits 3 (`PIN_FAILED`) with `PIN VACUOUS
+  <path>` for a pinned path never read and `PIN FOREIGN READ <path> <caller>` for a read outside
+  `PIN_SITES` (the identity sites measured at 8d31b89e); otherwise with SCRIPT's status.
+  `--registry REV` serves F0's registry (`benchmarks/f0/corpus.json`, any read mode) from REV,
+  for W5-K5 at K against the registry at B. `--json` writes the record, with `moved_files`: the
+  unpinned files and B7's group modules, whose F0 keys the pinned run moves (W5-S2's exception).
 """
 
 from __future__ import annotations
@@ -68,6 +85,7 @@ import io
 import json
 import os
 import re
+import runpy
 import subprocess
 import sys
 import tarfile
@@ -534,14 +552,15 @@ def normalise(name: str) -> str:
 
 def predict(facts: Facts, files: Iterable[str]) -> tuple[Moved, bool]:
     """The registered (measure, key) pairs a comment-only change of `files` moves, and whether
-    `registry_sha256` moves. Files outside R move nothing."""
+    `registry_sha256` moves. Files outside R move nothing, except B7's group modules, which F0
+    measures and the base does not register (M9, section 8)."""
     edited = set(files) & set(registry_set(facts))
     attributed = attribution(facts)
     providers = {p for file in edited for p in attributed.get(file, [])}
     prefixes = {prefix_of(facts, p) for p in providers}
     measures = facts["registry"]["measures"]
     moved: Moved = {measure: set() for measure in MEASURES}
-    moved["M9"] = edited & set(measures["M9"])
+    moved["M9"] = (edited & set(measures["M9"])) | (set(files) & set(B7_MODULES))
     moved["M2"] = {
         run
         for run, value in measures["M2"].items()
@@ -789,6 +808,22 @@ def judge(before: Mapping[str, Any], after: Mapping[str, Any], predicted: Moved)
 # -- coverage (R4, W5-S7) --------------------------------------------------------------------------
 
 
+def m9_key_set(
+    base: Iterable[str], head: Iterable[str], changed: Iterable[str]
+) -> tuple[bool, str]:
+    """W5-S7's M9 rule: HEAD's key set is BASE's plus the B7 group modules in `changed` (the
+    ruling's one exception, scoped as `predict` scopes it); the verdict and its summary part."""
+    before, after = set(base), set(head)
+    b7 = set(changed) & set(B7_MODULES) - before
+    if after == before:
+        return True, f"equal to base ({len(after)})"
+    if after == before | b7:
+        return True, f"equal to base plus {len(b7)} B7 group module(s) ({len(after)})"
+    return False, (
+        f"DIFFERS: added {sorted(after - before)}, removed {sorted(before - after)} ({len(after)})"
+    )
+
+
 def import_edges(root: Path, name: str) -> set[tuple[str, str | None]]:
     """(module file, name) of every `openflowsheet` import in `root / name`, anywhere in the
     file; name None for an imported module (a submodule taken by `from`, or `import`)."""
@@ -950,7 +985,7 @@ def command_sets(arguments: argparse.Namespace, tree: Path) -> int:
 
 
 def _edited(tree: Path, base: str, files: Sequence[str] | None, head: str = "HEAD") -> list[str]:
-    if files:
+    if files is not None:
         return sorted({normalise(name) for name in files})
     return sorted(_git(tree, "diff", "--name-only", f"{base}..{head}").split())
 
@@ -1102,18 +1137,297 @@ def command_coverage(arguments: argparse.Namespace, tree: Path) -> int:
         print(f"RETARGET {file}: {name} from {_dotted(old)} -> {_dotted(new)}")
     for file, module, name in admitted:
         print(f"NAME {file}: {name} from {_dotted(module)}, importable from it at base")
-    m9_base = set(before["frozen"])
-    m9_head = set(after["frozen"])
-    m9 = (
-        "equal to base"
-        if m9_head == m9_base
-        else (f"DIFFERS: added {sorted(m9_head - m9_base)}, removed {sorted(m9_base - m9_head)}")
-    )
+    m9_holds, m9 = m9_key_set(before["frozen"], after["frozen"], changed)
     print(
         f"coverage: {len(holes)} new edge(s) outside a hash scope, {len(listed)} retarget(s), "
-        f"{len(edited)} edited hashed file(s); M9 key set {m9} ({len(m9_head)})"
+        f"{len(edited)} edited hashed file(s); M9 key set {m9}"
     )
-    return 0 if not holes and m9_head == m9_base else 1
+    return 0 if not holes and m9_holds else 1
+
+
+# -- the identity pin (R2, W5-S2, W5-T3 to W5-T5) -------------------------------------------------
+
+#: W5-T5's identity sites, measured at 8d31b89e: (file, function) of each function that reads a
+#: hashed file's bytes for a registered identity. Every provider's `_implementation_sha256`, the
+#: two Wilson constructors, `registry.selfhash.file_sha` and `corpus_identity.m9`.
+PIN_SITES: Final = (
+    ("scripts/corpus_identity.py", "m9"),
+    ("src/openflowsheet/registry/selfhash.py", "file_sha"),
+    ("src/openflowsheet/thermo/coolprop_heos.py", "_implementation_sha256"),
+    ("src/openflowsheet/thermo/iapws95.py", "_implementation_sha256"),
+    ("src/openflowsheet/thermo/pr_c1.py", "_implementation_sha256"),
+    ("src/openflowsheet/thermo/pr_lib.py", "_implementation_sha256"),
+    ("src/openflowsheet/thermo/syn001.py", "_implementation_sha256"),
+    ("src/openflowsheet/thermo/wilson_ig.py", "WilsonIdealGasProvider.__init__"),
+    ("src/openflowsheet/thermo/wilson_ig_v2.py", "WilsonIdealGasProviderV2.__init__"),
+)
+#: The one site that is a site only by its caller: `canonical.file_sha256` called from a unit's
+#: `_artifact_hash`, in the 22 c1 and syn001 unit modules and the thermal units' common helper.
+PIN_UNIT_READER: Final = ("src/openflowsheet/canonical.py", "file_sha256")
+PIN_UNIT_HASH: Final = "_artifact_hash"
+PIN_UNIT_CALLERS: Final = (
+    *(
+        f"src/openflowsheet/models/c1/{name}.py"
+        for name in ("feed", "flash", "heater", "mixer", "reactor", "reactor_standin", "sink")
+    ),
+    "src/openflowsheet/models/c1/splitter.py",
+    *(
+        f"src/openflowsheet/models/syn001/{name}.py"
+        for name in (
+            "column_unit",
+            "component_separator",
+            "conversion_reactor",
+            "feed",
+            "flash",
+            "heat_exchanger",
+            "heater",
+            "kinetic_cstr",
+            "mixer",
+            "ph_flash",
+            "pump",
+            "sink",
+            "splitter",
+            "valve",
+        )
+    ),
+    "src/openflowsheet/models/thermal/common.py",
+)
+#: `pin`'s exit code when the pin itself fails (W5-T5): a pinned path never read, a foreign read.
+PIN_FAILED: Final = 3
+#: The CoolProp files that B7 gives a new hash scope (W5-S2's exception from the B7 step on).
+COOLPROP_FILES: Final = (
+    "src/openflowsheet/thermo/_coolprop_heos_fluids.py",
+    "src/openflowsheet/thermo/coolprop_heos.py",
+)
+#: A comprehension's frame name inside its function (Python before 3.12 gives it a frame).
+_COMPREHENSION: Final = re.compile(r"\.<locals>\.<(?:listcomp|dictcomp|setcomp|genexpr)>$")
+
+
+def _blob(tree: Path, revision: str, path: str) -> bytes:
+    done = subprocess.run(  # noqa: S603
+        ["git", "-C", str(tree), "show", f"{revision}:{path}"],  # noqa: S607
+        capture_output=True,
+        check=False,
+    )
+    if done.returncode != 0:
+        raise RuntimeError(f"git show {revision[:12]}:{path}: {done.stderr.decode().strip()}")
+    return done.stdout
+
+
+def pin_plan(
+    base: Facts, head: Facts, files: Iterable[str], present: set[str]
+) -> tuple[list[str], list[str]]:
+    """(pinned, unpinned) of E = `files` ∩ R at the base: a file is pinned iff it is `present` at
+    head and its hash scope (`hash_scope`) is the one it had at the base. A new scope (B7) has no
+    base form, so its files are left to the head."""
+    edited = sorted(set(files) & set(registry_set(base)))
+    pinned: list[str] = []
+    unpinned: list[str] = []
+    for file in edited:
+        same = file in present and hash_scope(base, file) == hash_scope(head, file)
+        (pinned if same else unpinned).append(file)
+    return pinned, unpinned
+
+
+class Pin:
+    """Serves the base bytes of the pinned files to every binary `pathlib` read (`Path.open` in a
+    binary read mode, `Path.read_bytes`), and records each such read with its caller: the first
+    frame outside `pathlib` and this module, and the frame that called it. Imports do not read
+    through `pathlib`, so the head's code runs. `registry` serves F0's registry (any read mode)
+    from another revision's bytes (W5-K5)."""
+
+    def __init__(
+        self, root: Path, served: Mapping[str, bytes], registry: tuple[str, bytes] | None = None
+    ) -> None:
+        self.root = root.resolve()
+        self.served = {os.path.realpath(self.root / name): data for name, data in served.items()}
+        self.names = {os.path.realpath(self.root / name): name for name in served}
+        self.registry = None
+        if registry is not None:
+            self.registry = (os.path.realpath(self.root / registry[0]), registry[1])
+            self.names[self.registry[0]] = registry[0]
+        self.reads: dict[tuple[str, str], int] = {}
+
+    def _relative(self, filename: str) -> str:
+        path = os.path.realpath(filename)
+        inside = path.startswith(str(self.root) + os.sep)
+        return Path(path).relative_to(self.root).as_posix() if inside else filename
+
+    def _frame(self, frame: Any) -> Any:
+        while frame is not None and (
+            frame.f_globals.get("__name__", "").partition(".")[0] == "pathlib"
+            or frame.f_code.co_filename == __file__
+        ):
+            frame = frame.f_back
+        return frame
+
+    def where(self, frame: Any) -> tuple[str, str]:
+        """`file:function` of the reading frame, the same of its caller ("" at the bottom)."""
+        names = []
+        for _ in range(2):
+            frame = self._frame(frame)
+            if frame is None:
+                names.append("")
+                break
+            qualname = _COMPREHENSION.sub("", frame.f_code.co_qualname)
+            names.append(f"{self._relative(frame.f_code.co_filename)}:{qualname}")
+            frame = frame.f_back
+        return names[0], names[1] if len(names) > 1 else ""
+
+    def serve(self, path: Any, mode: str) -> bytes | None:
+        """The bytes a read of `path` in `mode` gets, or None to read the file itself."""
+        real = os.path.realpath(path)
+        if self.registry is not None and real == self.registry[0] and "r" in mode:
+            data: bytes | None = self.registry[1]
+        elif real in self.served and "b" in mode and not set(mode) & set("wax+"):
+            data = self.served[real]
+        else:
+            return None
+        reader, caller = self.where(sys._getframe(1))  # noqa: SLF001
+        key = (self.names[real], f"{reader}<-{caller}")
+        self.reads[key] = self.reads.get(key, 0) + 1
+        return data
+
+    @contextlib.contextmanager
+    def installed(self) -> Iterator[Pin]:
+        import pathlib  # noqa: PLC0415
+
+        original_open, original_read_bytes = pathlib.Path.open, pathlib.Path.read_bytes
+        pin = self
+
+        def open_(  # noqa: PLR0913
+            path: pathlib.Path,
+            mode: str = "r",
+            buffering: int = -1,
+            encoding: str | None = None,
+            errors: str | None = None,
+            newline: str | None = None,
+        ) -> Any:
+            data = pin.serve(path, mode)
+            if data is None:
+                return original_open(path, mode, buffering, encoding, errors, newline)
+            if "b" in mode:
+                return io.BytesIO(data)
+            return io.TextIOWrapper(
+                io.BytesIO(data),
+                encoding=io.text_encoding(encoding),
+                errors=errors,
+                newline=newline,
+            )
+
+        def read_bytes(self: pathlib.Path) -> bytes:
+            data = pin.serve(self, "rb")
+            return original_read_bytes(self) if data is None else data
+
+        pathlib.Path.open = open_  # type: ignore[assignment,method-assign]
+        pathlib.Path.read_bytes = read_bytes  # type: ignore[method-assign]
+        try:
+            yield self
+        finally:
+            pathlib.Path.open = original_open  # type: ignore[method-assign]
+            pathlib.Path.read_bytes = original_read_bytes  # type: ignore[method-assign]
+
+
+def is_site(caller: str) -> bool:
+    """Whether a recorded `reader<-caller` is one of W5-T5's identity sites."""
+    reader, _, outer = caller.partition("<-")
+    if tuple(reader.rsplit(":", 1)) in PIN_SITES:
+        return True
+    unit, _, function = outer.rpartition(":")
+    return (
+        tuple(reader.rsplit(":", 1)) == PIN_UNIT_READER
+        and function == PIN_UNIT_HASH
+        and unit in PIN_UNIT_CALLERS
+    )
+
+
+def run_script(tree: Path, command: Sequence[str]) -> int:
+    """`command` (a script of `tree` and its arguments) in this process, as `python SCRIPT ...`
+    with `PYTHONPATH=<tree>/src` runs it; its exit status."""
+    script = (tree / command[0]).resolve()
+    if script.suffix != ".py" or not script.is_file():
+        raise RuntimeError(f"pin runs a Python script of the tree, not {command[0]!r}")
+    for name in ("openflowsheet", "corpus_identity"):
+        if name in sys.modules:
+            raise RuntimeError(f"{name} is imported before the pinned command runs")
+    source = str(tree.resolve() / "src")
+    environment = os.environ.get("PYTHONPATH")
+    os.environ["PYTHONPATH"] = os.pathsep.join([source, *([environment] if environment else [])])
+    sys.argv = [str(script), *command[1:]]
+    sys.path[:1] = [str(script.parent), source]
+    os.chdir(tree)
+    try:
+        runpy.run_path(str(script), run_name="__main__")
+    except SystemExit as stop:
+        if stop.code is None or isinstance(stop.code, int):
+            return stop.code or 0
+        print(stop.code, file=sys.stderr)
+        return 1
+    return 0
+
+
+def command_pin(arguments: argparse.Namespace, tree: Path) -> int:
+    base = resolve(tree, arguments.base)
+    command = list(arguments.argv)
+    if command[:1] == ["--"]:
+        command = command[1:]
+    if not command:
+        raise RuntimeError("pin: no command after --")
+    files = sorted(_git(tree, "diff", "--name-only", base).split())
+    with revision_tree(tree, base) as base_root:
+        before = _subprocess_facts(base_root)
+    after = _subprocess_facts(tree)
+    pinned, unpinned = pin_plan(before, after, files, {f for f in files if (tree / f).is_file()})
+    added = [f for f in files if f in B7_MODULES]
+    registry = None
+    if arguments.registry:
+        revision = resolve(tree, arguments.registry)
+        registry = (CORPUS_FILE, _blob(tree, revision, CORPUS_FILE))
+    pin = Pin(tree, {name: _blob(tree, base, name) for name in pinned}, registry)
+    sys.stdout.flush()
+    with pin.installed():
+        code = run_script(tree, command)
+    sys.stdout.flush()
+    for name in unpinned:
+        print(f"PIN UNPINNED {name} (hash scope changed since {base[:12]})")
+    for (name, caller), n in sorted(pin.reads.items()):
+        print(f"PIN {'REGISTRY' if name == CORPUS_FILE else 'READ'} {name} {caller} x{n}")
+    read = {name for name, _ in pin.reads}
+    vacuous = [name for name in pin.names.values() if name not in read]
+    foreign = sorted(
+        (name, caller) for name, caller in pin.reads if name != CORPUS_FILE and not is_site(caller)
+    )
+    for name in sorted(vacuous):
+        print(f"PIN VACUOUS {name}")
+    for name, caller in foreign:
+        print(f"PIN FOREIGN READ {name} {caller}")
+    _write_json(
+        arguments.json,
+        {
+            "base": base,
+            "files": files,
+            "pinned": pinned,
+            "unpinned": unpinned,
+            "moved_files": [*unpinned, *added],
+            "registry": arguments.registry,
+            "reads": [
+                {"path": name, "caller": caller, "count": n, "site": is_site(caller)}
+                for (name, caller), n in sorted(pin.reads.items())
+            ],
+            "vacuous": sorted(vacuous),
+            "foreign": [list(pair) for pair in foreign],
+            "exit": code,
+        },
+    )
+    failed = bool(vacuous or foreign)
+    sites = {caller for name, caller in pin.reads if name != CORPUS_FILE}
+    print(
+        f"pin {'FAIL' if failed else 'PASS'}: base {base[:12]}, |E| {len(pinned) + len(unpinned)}, "
+        f"pinned {len(pinned)} ({sum(pin.reads.values())} read(s) from {len(sites)} caller(s)), "
+        f"unpinned {len(unpinned)}, vacuous {len(vacuous)}, foreign {len(foreign)}; "
+        f"command exit {code}"
+    )
+    return PIN_FAILED if failed else code
 
 
 def main(argv: Sequence[str] | None = None) -> int:
@@ -1131,7 +1445,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     sets.add_argument("--json", type=Path)
     prediction = commands.add_parser("predict")
     prediction.add_argument("--base", required=True)
-    prediction.add_argument("--files", nargs="+")
+    prediction.add_argument("--files", nargs="*", help="E (default: the diff); none: E empty")
     prediction.add_argument("--against-log", type=Path)
     prediction.add_argument(
         "--against-tables", action="store_true", help="W5-S4: HEAD's generator against BASE"
@@ -1146,6 +1460,13 @@ def main(argv: Sequence[str] | None = None) -> int:
     coverage = commands.add_parser("coverage")
     coverage.add_argument("--base", required=True)
     coverage.add_argument("--head", help="the step's commit (default: the working tree)")
+    pinning = commands.add_parser("pin")
+    pinning.add_argument("--base", required=True)
+    pinning.add_argument(
+        "--registry", help="serve F0's registry from this revision (W5-K5: the batch base)"
+    )
+    pinning.add_argument("--json", type=Path)
+    pinning.add_argument("argv", nargs=argparse.REMAINDER, help="-- SCRIPT [ARGUMENT ...]")
     facts = commands.add_parser("_facts")
     facts.add_argument("--root", required=True)
     facts.add_argument("--out", required=True)
@@ -1162,6 +1483,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         "predict": command_predict,
         "judge": command_judge,
         "coverage": command_coverage,
+        "pin": command_pin,
     }
     try:
         return handlers[arguments.command](arguments, tree)

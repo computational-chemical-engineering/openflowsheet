@@ -810,9 +810,10 @@ TOOLING_PATH = re.compile(r"(^|/)\.(codehealth|claude)(/|$)")
 #: The selector and its tests name the prefixes; they do not read the trees.
 TOOLING_NAMERS = ("scripts/test_impact.py", "tests/test_s16_test_impact.py")
 #: Tests that do run campaign tooling under .claude/ (S19 T6: the gate queue's batch-close
-#: refusal). The selector skips a .claude/ change, so a change to that tooling alone selects none
-#: of them: they run on the full suite (merge-check, CI) and in the tooling lane's acceptance.
-TOOLING_TESTS = ("tests/test_s19_gate_queue.py",)
+#: refusal; S19 W5 WO-P0: the w5_pin tier and the pin chain read .codehealth/config.toml). The
+#: selector skips a .claude/ change, so a change to that tooling alone selects none of them:
+#: they run on the full suite (merge-check, CI) and in the tooling lane's acceptance.
+TOOLING_TESTS = ("tests/test_s19_gate_queue.py", "tests/test_s19_w5_gate.py")
 
 
 def _tooling_readers(root: Path) -> list[str]:
