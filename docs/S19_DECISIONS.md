@@ -4378,3 +4378,23 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
 - 2026-11-20, job 555 (w5p3-4) PASS 20/20 (step 495, wilson_ig 10.0 -> 3.0): WO-P3 chain all PASS (552-555), R-W5-P3
   merge already given. gate_report: "ALERT selected share 0% < 75%" (standing) and "ALERT queue wait median 22 min >
   15 min" (the WO-P1 to P3 backlog of one serial lane; the queue is empty now). Action unchanged.
+- **2026-11-20, WO-P4 delivered (opus-engineer, Opus, ~190k, over the cap).** wp/S19-w5p ae2d5f81..a5b8fb11:
+  023eb2a2 R-A28 (oracle per R8.2, A28 (d) test; at it both A28 tests fail with exactly the seven `<group>: missing`),
+  54418242 R-wheel (`test_s07_registration.py:143`), a5b8fb11 the step (generator `fluid_tables`, eight modules,
+  `coolprop_heos.py` hash scope, `s07_reference.json` C19 statement; the registry not re-emitted, at K by R3/R5).
+  B7-C1 PASS (123 entries, float.hex, EXCLUDED 13 equal); C2 `--check` exit 0, 584 s; C3 unpinned F0 `M2 FAIL 9/61, M3
+  FAIL 9/61, M6 FAIL 8/85, M9 FAIL 12/35`, legacy.json differs only at `/1/implementation/modules/1..8`; pinned F0 `M6
+  FAIL 2/85, M9 FAIL 9/35` (W5-S2 PASS); Q8.1 measured: pinned [iapws95, pr_c1, wilson_ig], unpinned [index,
+  coolprop_heos], moved_files + the seven, vacuous and foreign empty (no tool change needed); C4 `test_s07_*` 3468
+  passed, 1 skipped; S1, S7 (M9 42) PASS; F1 to F4 as R8.4; largest module 824 NLOC. CoolProp 8.0.0.
+- DECISION: L_P 27 -> 30 (three tests failing at a5b8fb11 only because M9 grows 35 -> 42 before K: m9_holds_every_
+  legacy_unit_module_d9, e_f1_4, generator_check_reports_a_changed_table_by_pointer). Measured here on a scratch tree:
+  all three fail; `registry_builtin.py --write` cures the third; the two hard-coded 35s (test_f0_corpus_identity.py:433,
+  test_f1_legacy_builtins.py:411) -> 42 cure the others, both files then fail only on L_P's G2 rows. Close K gains those
+  two `--fixture` paths (batch brief amendment). Gate file sha 2a10214c -> 91d97ce0 (prior `.json.pre-P4b`). Alternative:
+  the 35 -> 42 edits in the step (a test change outside retarget). Reversible by: restoring `.pre-P4b`.
+- 2026-11-20, job 556 (w5p4-1, no-gain) FAIL scope, literals, public_api (step 496 gate-fail), all generic S19 step
+  checks: generator files under docs/ outside the codehealth scope, the eight name literals (§16.9) and `FLUIDS` in the
+  group modules (ruling 8). DECISION: B7 is a generator step -> `merge-check --batch` (skill: behaviour-only, W5-S1 to S7
+  on the full suite, ruff, mypy, MCP digest; no debt gate, no run-log record), job 557 w5p4-1g; its PASS is logged as
+  the step's acceptance. Alternative: tool change to admit generator paths into `scope`. Reversible by: a re-gate.
