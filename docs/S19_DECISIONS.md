@@ -4263,3 +4263,4 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   followed (shown: fails at f498a3a6, passes with only that file restored). da4c03b0 (pushed): bytes restored from
   c4a91a75, the a07 node in `conftest.FROZEN_WINDOWS_LIMITS` (win32 skip), a row in X07a_DECISIONS. 436 passed in the
   four files; F0 PASS 9/9; requirements.lock ead4edf1 unchanged. CI 44736771069 running.
+- 2026-11-20, job 548 (w5p1-3, WO-P1 step 3 `_derivatives`) PASS 20/20 (step 488, 8.7 -> 0; pr_c1 debt 0). WO-P1 chain all PASS. R-W5-P1 launched (reviewer, Opus; brief `S19-R-W5-P1.md`). gate_report: standing selected-share ALERT only.
