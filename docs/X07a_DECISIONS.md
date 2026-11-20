@@ -203,6 +203,9 @@ Brief: `docs/briefs/X07a-WO1.md`. Branch `wp/X07a`, base `main` c4a91a75. Build 
 | `tests/test_t07_w7a_harness.py` (`fake_claude`) | Windows | the stand-in `claude` is a shebang script run with a POSIX PATH; run 44618922484 | not planned (as above) |
 | `tests/test_p03_a30_workload.py::test_s9_5_control_a_registered_module_failing_on_pyomo_is_recorded` | macOS, Windows | the A30 workload (`scripts/p03_binary_inventory.py` `_WORKLOAD`) reads `/proc/self/maps`; the binary inventory is a Linux measurement (the `a30-inventory` job); s9_5a to d fail before the read and run everywhere; run 44670029066 | not planned (a binary inventory per platform would be X07b's) |
 | `tests/test_m02_experiments.py` (18 tests), `tests/test_x02_wo4_external.py` (10), `tests/test_m02_wo10_coupled.py` (8), marked `conftest.NEEDS_EXTERNAL_CHILD` | Windows | the experiment child is spawned by `external-subprocess-v1`, which refuses Windows before spawn (ADR 0033 D2, the `launch` row above): every attempt ends `environment_unavailable` (37 nodes); the refusal is `test_m02_kill_chain::test_refusals_before_any_spawn`'s (on Linux, `sys.platform` patched); run 44670029066 | X07b |
+| `tests/test_t07_w5b_cli.py::test_the_existing_commands_are_unchanged_byte_for_byte`, `::test_r148_with_v1_recorded_the_commands_print_the_v1_pins`, `tests/test_t08_rename_substitution.py::test_with_the_pre_rename_self_hashes_the_cli_prints_the_pre_rename_pins` | Windows | the pinned transcripts of every CLI command were recorded on Linux and carry POSIX paths after `<ROOT>`; the CLI prints the host's native paths (`<ROOT>\broken.yaml`), which is correct there; run 44670029066 | per-platform transcripts (not planned) |
+| `tests/test_m07_journey.py::test_a00_the_generator_check_passes`, `::test_a15_r2_is_not_promotable_with_m04s_reasons_and_no_evaluation`, `tests/test_m07_journey_record.py::test_a21_r3_is_the_r3_document_of_its_m05_record` (4) | Windows | `scripts/m07_journey.py` `_relative` writes `str(path)` (backslashes); the file is a member of the M07 carry `journey_files` (`benchmarks/m07/registration.json`), so the one-word fix (`as_posix()`) is held back (D-28); run 44670029066 | the next M07 journey re-take, which may edit its carry members |
+| `tests/test_m02_pymrm_child.py::test_a_sigint_ends_the_child_by_the_signal_not_sigabrt` | Windows | `send_signal(SIGINT)` to a child and a negative return code are POSIX (`ValueError: Unsupported signal: 2`); run 44670029066 | not planned |
 | `tests/test_t07_w7a_harness.py::test_token_placement` | macOS | V17 harness (as the Windows rows): the stand-in session's cwd, empty on Linux, lists `nonexistent` on macOS (the session's `HOME` is `/nonexistent`; the stand-in runs as `/usr/bin/env python3` with `PATH=/usr/bin:/bin`, the system shim). Cause not diagnosed (no macOS host); the other `one_run` tests pass there; run 44670029066 | not planned (V17 runs on the Linux workstation, R-116) |
 
 Rows found by the CI legs are added below with their run id.
@@ -251,6 +254,20 @@ of ids are equal.
   replay platform in 0.5. The manifest's `limitations[0]` and its harvest row (sha256 bbf06597...) say accepted.
   Frank allowed pywin32 (ofs-x07a-pywin32-licence, option A, `VERIFIED`; R-1063): Q-1 is answered, its build is a
   separate work order.
+
+## WO5 decisions (2026-11-20)
+
+- D-28. DECISION (WO5): a portability fix in a file that is a member of an M07 carry
+  (`benchmarks/m07/registration.json` `journey_files`, `r3_files`: `scripts/m07_journey.py`,
+  `scripts/m05_wo8_runs.py`, `scripts/m05_wo9_real.py`) is not made: editing a carry member ends the
+  carry of the committed journey records from their anchor. The M05 retake test is fixed on the test
+  side only (its sidecars written with LF); `m05_wo8_runs` still writes text sidecars with the
+  platform's newline (a Windows re-take would write CRLF; none is planned). Alternative: fix both
+  scripts and let the next journey re-take re-derive R3. Reversible by: the fix, one line each.
+- D-29. DECISION (WO5): a path written into a record or compared as a set key is POSIX
+  (`as_posix()`), in tests and in `scripts/release_rc.py` (`records`, `output`); a generator's text
+  file is written with `newline="\n"` (`scripts/registry_builtin.py`). Linux bytes unchanged.
+  Alternative: rows. Reversible by: the commits.
 
 ## Windows classification (run 44670029066, head 9773c361: 116 failed, 179 errors)
 

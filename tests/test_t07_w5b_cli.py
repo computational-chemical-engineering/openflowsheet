@@ -260,6 +260,10 @@ def test_the_pins_moved_by_d1s_str05_substitution_u05_v2_recording_and_msg_only(
     assert hashlib.sha256(reversed_pins.encode("utf-8")).hexdigest() == PINS_T07_SHA256
 
 
+@pytest.mark.skipif(
+    sys.platform == "win32",
+    reason="X07a limit: a POSIX-recorded CLI transcript; Windows prints native paths",
+)
 @pytest.mark.usefixtures("single_threaded")
 def test_r148_with_v1_recorded_the_commands_print_the_v1_pins(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
@@ -280,6 +284,10 @@ def test_r148_with_v1_recorded_the_commands_print_the_v1_pins(
         assert now == then, " ".join(then["argv"][:2])
 
 
+@pytest.mark.skipif(
+    sys.platform == "win32",
+    reason="X07a limit: a POSIX-recorded CLI transcript; Windows prints native paths",
+)
 @pytest.mark.usefixtures("single_threaded")
 def test_the_existing_commands_are_unchanged_byte_for_byte(tmp_path: Path) -> None:
     pinned = json.loads(PINS.read_text(encoding="utf-8"))
