@@ -395,30 +395,37 @@ def _residual_jet(tau: float, delta: float, coefficients: Coefficients) -> PhiJe
         g = _leibniz(_power(tau, t), _exp((-beta * y * y, -2.0 * beta * y, -2.0 * beta, 0.0)))
         _accumulate(acc, n, f, g)
     x = delta - 1.0
-    for n, a, b, big_b, big_c, big_d, big_a, beta in coefficients.nonanalytic:
-        # θ = (1 − τ) + A[(δ − 1)²]^{1/(2β)}, Δ = θ² + B[(δ − 1)²]^a, ψ = e^{−C(δ−1)² − D(τ−1)²}.
-        q = _abs_power(x, 1.0 / beta)
-        r = _abs_power(x, 2.0 * a)
-        theta = [
-            aq + one_minus
-            for aq, one_minus in zip(
-                _separable((big_a * q[0], big_a * q[1], big_a * q[2], big_a * q[3]), _ONE),
-                _separable(_ONE, (1.0 - tau, -1.0, 0.0, 0.0)),
-                strict=True,
-            )
-        ]
-        square = _jet_mul(theta, theta)
-        rr = _separable((big_b * r[0], big_b * r[1], big_b * r[2], big_b * r[3]), _ONE)
-        big_delta = [square[k] + rr[k] for k in range(10)]
-        y = tau - 1.0
-        delta_psi = _leibniz(
-            (delta, 1.0, 0.0, 0.0), _exp((-big_c * x * x, -2.0 * big_c * x, -2.0 * big_c, 0.0))
-        )
-        psi_tau = _exp((-big_d * y * y, -2.0 * big_d * y, -2.0 * big_d, 0.0))
-        term = _jet_mul(_jet_power(big_delta, b), _separable(delta_psi, psi_tau))
+    for n, *shape in coefficients.nonanalytic:
+        term = _nonanalytic_series(tau, delta, x, shape)
         for k in range(10):
             acc[k] += n * term[k] * _FACTORIAL[k]
     return PhiJet(*acc)
+
+
+def _nonanalytic_series(tau: float, delta: float, x: float, shape: Sequence[float]) -> list[float]:
+    """The truncated Taylor series of Δ^b·δψ, one non-analytic term of φʳ without its n (spec
+    §2.3, §3.2), for `shape` = (a, b, B, C, D, A, β) and x = δ − 1."""
+    a, b, big_b, big_c, big_d, big_a, beta = shape
+    # θ = (1 − τ) + A[(δ − 1)²]^{1/(2β)}, Δ = θ² + B[(δ − 1)²]^a, ψ = e^{−C(δ−1)² − D(τ−1)²}.
+    q = _abs_power(x, 1.0 / beta)
+    r = _abs_power(x, 2.0 * a)
+    theta = [
+        aq + one_minus
+        for aq, one_minus in zip(
+            _separable((big_a * q[0], big_a * q[1], big_a * q[2], big_a * q[3]), _ONE),
+            _separable(_ONE, (1.0 - tau, -1.0, 0.0, 0.0)),
+            strict=True,
+        )
+    ]
+    square = _jet_mul(theta, theta)
+    rr = _separable((big_b * r[0], big_b * r[1], big_b * r[2], big_b * r[3]), _ONE)
+    big_delta = [square[k] + rr[k] for k in range(10)]
+    y = tau - 1.0
+    delta_psi = _leibniz(
+        (delta, 1.0, 0.0, 0.0), _exp((-big_c * x * x, -2.0 * big_c * x, -2.0 * big_c, 0.0))
+    )
+    psi_tau = _exp((-big_d * y * y, -2.0 * big_d * y, -2.0 * big_d, 0.0))
+    return _jet_mul(_jet_power(big_delta, b), _separable(delta_psi, psi_tau))
 
 
 def phi_jet(tau: float, delta: float) -> tuple[PhiJet, PhiJet]:
