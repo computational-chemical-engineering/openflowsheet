@@ -30,12 +30,14 @@ PUBLIC_URLS = (
     "ssh://git@github.com/Computational-Chemical-Engineering/OpenFlowsheet.git",
     "/tmp/x/computational-chemical-engineering/openflowsheet.git",
     "https://github.com/computational-chemical-engineering/openflowsheet-docs.git",
+    r"C:\Users\x\computational-chemical-engineering\openflowsheet.git",
 )
 UNGUARDED_URLS = (
     "https://github.com/computational-chemical-engineering/openflowsheet-dev.git",
     "git@github.com:computational-chemical-engineering/openflowsheet-dev",
     "https://github.com/someone/openflowsheet.git",
     "/tmp/elsewhere.git",
+    r"C:\Users\x\computational-chemical-engineering\openflowsheet-dev.git",
     "DISABLED-no-direct-push",
 )
 
