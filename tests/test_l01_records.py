@@ -452,6 +452,10 @@ MOVED = {
         "b1b47c287086b759b17a2c9fd024988e9aca8ec09514d01df3e0334bf9932e6a",
         "R-983",  # WIT M-6 part b: c1.tp_flash's near-dew sentence (Frank, Q-WIT-2, 2026-11-08)
     ),
+    "src/openflowsheet/models/c1/mixer.py": (
+        "970c19124478e13afb7dca61b126ed0cfd3f429185ffc882a0898d2b013e3a20",
+        "R-1061",  # S19 W5 batch L: behaviour-preserving restructuring (card ofs-s19-legacy-models, F-4)
+    ),
 }
 
 REGISTER = REPO_ROOT / "docs" / "decision-register.md"
