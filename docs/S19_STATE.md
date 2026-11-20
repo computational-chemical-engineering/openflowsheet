@@ -57,62 +57,56 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 - G1 (orchestrator/, numerics/): W3 lanes N and O closed 2026-11-19 (272011be); residuals executor.py (PR-1b, 6.1 -> 9.0, gating) and `_solve_region`'s parameter object (W4).
 - G-END (below) stays the end criterion for the whole repository.
 
-## Next actions (2026-11-20 ~19:30 CET)
+## Next actions (2026-11-20 ~21:30 CET)
 
-**Position:** main = d29f1a50 (F3 merged). wp/S19 = this commit. MB 756e1c12. Runner PID 1341562 (queue empty, results
-538). cce-code-health 34a30bf. Agents running: none. Background waits at reset: X07a CI 44773324184 at 94b38dae
-(`gh run watch`; older watches on 44764813337 and 44770741082 are superseded heads: ignore their notices). On each gate
-result: gate_report, log. Re-arm `$Q wait --since <COUNT from $Q status>`.
+**Position:** main = d29f1a50 (F3 merged). wp/S19 = this commit (batch P merged at 7b70da4c). MB 756e1c12. Runner
+PID 1341562 (queue empty; `$Q status` gives COUNT; `wait --since <COUNT>`, not the job number). cce-code-health
+34a30bf. Agents running: none. Background wait at reset: X07a ci run 44799836309 at 7d1a102e (`gh run watch`).
+Note: run 4479983631**2** is the Site workflow, not ci. On each gate result: gate_report, log.
 
-0. **F3 merged into main** (card ofs-f3-merge-main A, executed 2026-11-20 17:00Z): main d29f1a50 (merge of wp/F3
-   6cf2a1de, CI 44758521457 green on both check legs), F0 PASS 9/9 on main, pushed. wp/S19 does not contain it yet:
-   item 3c applies when wp/S19 next takes main.
-1. **W5 batch P: chain done, next WO-P6 = the close (orchestrator's own work, ruling section 9 row WO-P6).** B_P
-   2eae72a8; gate file `<git-common-dir>/codehealth/briefs/S19-W5-batchP.json` sha 91d97ce0; batch brief
-   `S19-W5-batchP.md` (read its "Close K" section and all three amendments: the K fixture list is there). Lane
-   `wp/S19-w5p` (worktree s19-w5p) at da75a268, every step gated PASS and reviewed `merge`: WO-P1 pr_c1, WO-P2 iapws95,
-   WO-P3 wilson_ig (R-W5-P1..P3), WO-P4 B7 a5b8fb11 (job 557, R-W5-P4), WO-P5 coolprop_heos f875f4d4, da75a268 (jobs
-   558, 559; R-W5-P5; health 6.4 -> 9.0). Close procedure (precedent: batch L close, `grep -n -A22 "batch L close
-   (orchestrator)" docs/S19_DECISIONS.md`; criteria ruling R5 :318 and W5-K1..K7 :431-470):
-   (a) gate file: all five admitted files were edited (check `git diff 2eae72a8..da75a268 -- src/`), so no drop
-   expected. (b) K commit on the lane: R5 re-record (`corpus_identity.py --record`, m6-requests.json must come out
-   byte-identical; `registry_builtin.py --write`), the L fixtures: `test_t07_w5c_signatures.py` EXPECTED by its
-   regenerator, TH-C1.json by substitution, `WILSON_V1_SHA256` in test_s11_wilson_v2.py by substitution (F-3, comment
-   amends S11 A75), `MOVED` pr_c1.py in test_l01_records.py + the L01 ruling in decision-register.md (F-4, form of
-   R-983/R-1061), the M9 35 -> 42 constants (test_f0_corpus_identity.py :57 and :433; test_f1_legacy_builtins.py :411
-   and the :16 docstring; test_s19_w5_gate.py :354). Ruff before `close`; `git diff --name-only K^..K` against the
-   close paths plus fixtures before `close`. (c) `w5_gate.py close --k K --queue-dir <queue> --fixture ...` (K1, K5
-   inside), K2 judge, K3 (F0 PASS 9/9 with M9 42, registry --check, mcp_digest), K7 i19_scan. (d) K4: helper branch =
-   K + wp/S19 tip, plain merge-check job (full suite). (e) K6: fresh reviewer over B_P..K (brief pattern
-   `S19-R-W5-L-close.md`). (f) release note (separate docs commit): the providers whose model_version moved, plus
-   coolprop-heos-v1 (FR-1). (g) on K4 PASS and K6 merge: merge the lane into wp/S19, log, remove worktree s19-w5p.
-   FR-1: close before the 0.5.0 RC cut. Docs pass before any S07 manifest re-take:
-   `scripts/s07_evidence_manifest.py:86,91-94,838-840` (R8.5, R-W5-P4).
+0. **W5 done: batches N, L and P are all merged into wp/S19.** Batch P: K 2a5f0322 + post-K 43dccc21 (four
+   capability fixtures by `t07_schema_fixtures.py --write`; DECISION in S19_DECISIONS, flag it to the S19 -> main
+   review), job 561 PASS 11/11; on wp/S19 patch_noop 0/261, F0 PASS 9/9 (M9 42/42), registry clean. FR-1 release
+   note in CHANGELOG `## Unreleased` (R-W5-P-close D5). FR-1 condition "close before the 0.5.0 RC cut" is met on
+   wp/S19; it holds for main only once S19 merges there. At that merge: CI's CoolProp leg runs the `needs_coolprop`
+   tests that read K's legacy.json (W5-K8); recheck R-1061, R-1066, R-1067 unique against main's register.
+1. **G-END at 7b70da4c** (scan `--repo . --json <scratch>`): 336 files, debt 2314.5 (target <= 1900: -415 left),
+   health 8.89 (>= 9.0), brain 0 (met), no huge_file (met), arch 0 violations / 0 cycles at depth 4 (met); below 7.0:
+   only `studies/nlp/verification.py` 6.1; 89 files below 9.0. Debt by package: models/syn001 426.8 (24 files < 9),
+   orchestrator 398.3 (10), application 278.8 (12), studies/nlp 207.3 (7), studies/trust_region 203.8 (9), verify
+   94.8, numerics 74.6. Order (Frank 2026-11-15): G3 studies, G4 assessment, G2 models trail development; syn001
+   (tier 4) is not edited in S19; the legacy engine stays untouched until Frank rules. Next lane, DECISION for the
+   new context: G3 studies/nlp (verification.py first: the one file below 7.0; nlp-marked suite rule, item 4) and
+   orchestrator/ (G1 residue) as two lanes from the wp/S19 tip, briefs per `S19-W3-common.md`.
 2. Three non-W5 `retarget` rows in i19_scan (column_acceptance.saturation_pairs, region_attempts.solve_ptc,
    region_problem.check_opening): open build-lane item for a later lane.
-3. **X07a (0.5):** reviewed (`docs/X07a-review.md` d13f5a3f + "## WO9 review" 1fc9f606); erratum R-10 2f067059; WO8
-   (db051d9c), WO9 (335c09bf, R-1 to R-6), WO10 (94b38dae, W-1 to W-3) pushed. Merge preconditions (review :131-144):
-   CI 44773324184 all four legs green (Windows 0 failed) + identity + codehealth; then move the manifest to that head
-   `tested` naming rows L1 to L12, Q-4, Q-10, Q-11 (after merge); then a merge card via hub (DECISION-REQUEST, card
-   wording memory). Windows red: read the leg (`gh api .../jobs/<id>/logs` to a scratch file, grep FAILED), fresh WO.
+3. **X07a (0.5):** CI 44773324184 at 94b38dae: Windows 1 failed (REL.A20 test, "RP.S08 same form: fail; S13
+   V03.A08 pass: DIFFERS"); same at 335c09bf; hidden at db051d9c behind RP.S03. X07a-WO11 (diagnostic, cause not
+   found; brief `<briefs>/X07a-WO11.md`, entry in docs/X07a_DECISIONS.md on wp/X07a): f38bea62 makes the test judge
+   every same-form key and print the child's failing nodes; suspects `test_v03_v0_3_gate.py -k a08_` or the a05_
+   bash workflow step. Main's CI has no Windows leg. **On 44799836309's result:** Windows leg log to scratch
+   (`gh api repos/{owner}/{repo}/actions/jobs/<id>/logs`), grep the REL.A20 message, then a fresh WO12 (fix with a
+   forced-Windows Linux test) or a design-lane finding (a limit row needs a ruling; never set S08 aside without one).
+   Green on all four legs: move the manifest to that head `tested` (rows L1 to L12, Q-4, Q-10, Q-11), then a merge
+   card via hub (DECISION-REQUEST, card wording memory).
    X01-WO1 part A: manifest `tested`, CI green; next a reviewer pass, then a merge card; open B, C, Q-1..Q-3
    (`docs/X01_DECISIONS.md` on wp/X01); X01 selectability moved to 0.6 (R-1065).
 3a. **0.5 scope (Frank, R-1065, ADR 0057 Amendment 1, wp/REL050 84a08a84):** 0.5 is X07a, F1, F3, X01 plugin docs,
    X32, and S19 batch P before the RC cut. Next for the line: `release/lines/0.5.json` design pass on wp/REL050.
-   Register numbers: R-1064 (wp/X32), R-1065 (wp/REL050), R-1066 (wp/S19) all append to the register end: trivial
-   merge conflicts, keep all.
+   Register numbers: R-1062/63 wp/X07a, R-1064 wp/X32, R-1065 wp/REL050, R-1066 and R-1067 wp/S19; next free R-1068.
 3b. **X32 (0.5):** wp/X32 7cf27880 pushed, manifest `tested`; next: into the 0.5 merge card. Keep the student's name
    off every record.
-3c. After the F3 merge: S19 G-END must absorb F3's `records/` (main's layer config gains it with the merge) and the
+3c. When wp/S19 next takes main (F3): S19 G-END must absorb F3's `records/` (main's layer config gains it) and the
    `application/local.py` duplication smell (nloc 411) the ratchet reported.
 4. Rule: lanes touching studies/ also need the nlp-marked suite at head, failures a subset of base (g19, g20).
 5. Brief rule (I1): `codehealth scan --json PATH` writes TO PATH; use `--repo <wt> --json <scratch>/scan.json`.
-   A test retarget is never enqueued alone: retarget, plan, step; gate from the plan commit. A generator step (only a
-   generator and its outputs, plus the hash-scope edit it requires) gates as `merge-check --batch` (job 556's miss).
+   A test retarget is never enqueued alone: retarget, plan, step; gate from the plan commit. A generator step gates
+   as `merge-check --batch`. A batch close K: check every committed generator's `--check` (for example
+   `scripts/t07_schema_fixtures.py`) after the registry re-emit, before `close` (job 560's miss).
 **Open for the design lane (one batched round):** (i) W5-S1 text admitting new `.py` modules in an admitted tier 1
 directory and added plan files (R-W5-N-close 4c; default: the tool's rule stands); (ii) `revision_binding.MODEL_BUILDERS`:
 keep as the W27 binder-protocol attribute, strike from I-19's list, state the protocol in `reading_for`'s docstring
-(R-W4-RC-N6; default: kept); (iii) cascade/column 87-line duplication.
+(R-W4-RC-N6; default: kept); (iii) cascade/column 87-line duplication; (iv) batch P post-K 43dccc21 (generator-only fixtures after a write-once K).
 **Open design-lane item (R-W5-L2b N1):** syn001 heat_exchanger `_bisect_newton` raises RuntimeError "this is a bug" on a creeping Newton iteration (reachable), where c1 mixer returns a not-converged refusal; behaviour, outside W5.
 **Open build-lane items:** test_s01_cascade_wo1.py:262 patches `region.solve_region`, a no-op (retarget to
 cascade_solve); `c1_reactor_surrogate_of` (revision_binding.py:708) unguarded by the list_models patch;

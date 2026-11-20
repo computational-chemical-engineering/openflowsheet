@@ -4525,3 +4525,9 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   (= 4e85fe6b + 43dccc21), ruff clean; job 561 w5p-mc2 plain merge-check. gate_report: "ALERT selected share 0% <
   75% of step gates" (standing, W5 collection-time code). Action unchanged.
 - 2026-11-20, CI 44799836312 is the Site workflow (green), not ci; X07a's ci run at 7d1a102e is 44799836309, watched.
+- **2026-11-20, batch P merged into wp/S19 (7b70da4c, lane head 43dccc21).** `git diff 7a985bc0 7b70da4c`:
+  CHANGELOG.md and S19_DECISIONS.md only (register taken from the gated helper: R-1066 then R-1067). On wp/S19:
+  patch_noop 0 of 261, F0 PASS 9/9 (M9 42/42), registry --check clean. Worktrees s19-w5p and s19-w5p-mc removed,
+  branches deleted (as batch L). W5 (batches N, L, P) is complete. G-END at 7b70da4c: debt 2314.5 (<= 1900 open),
+  health 8.89 (>= 9.0 open), brain 0, no huge_file, arch 0/0 at depth 4; below 7.0 only studies/nlp/verification.py
+  6.1. Self-reset next (milestone).
