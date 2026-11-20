@@ -84,6 +84,10 @@ brief `<git-common-dir>/codehealth/briefs/S19-W5-P0-pin.md`) and X07a-WO5 engine
    open B, C, Q-1..Q-3 for the design lane (`docs/X01_DECISIONS.md` on wp/X01). X01 selectability blocked on
    F2/F4/F6; ADR 0052 D11 amendment open. F3: ADR 0061 accepted (R-1050); waits on ofs-f3-mcp-descriptions-human,
    then its merge card.
+3a. **0.5 scope (Frank, 2026-11-20, R-1065, ADR 0057 Amendment 1, on wp/REL050 84a08a84, pushed):** 0.5 is X07a,
+   F1, F3, X01 plugin docs (+ parts needing no F2/F4/F6), TOK, and S19 batch P before the RC cut; F2, F8, X06 and X01
+   selectability lead 0.6. Next for the line: `release/lines/0.5.json` design pass on wp/REL050. R-1064 (wp/TOK) and
+   R-1065 (wp/REL050) both append to the register end: a trivial merge conflict, keep both.
 3b. **TOK (0.5, Frank 2026-11-20: "start it, ship with 0.5"):** wp/TOK (worktree tok, from main) e028b835 pushed:
    `project grant` prints the token alone on stdout (R-1064, no ADR: T07 §10.3 holds); docs, pins (`tok_reversed`),
    tests/test_tok_grant_token_file.py; local 536 passed, F0 9/9. CI 44706297998 running. Next: evidence manifest

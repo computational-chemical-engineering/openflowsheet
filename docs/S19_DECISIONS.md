@@ -4157,3 +4157,9 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   gated; module-level lines count on import, M8's subprocess unseen). Tests: w5_identity 62 passed, w5_gate 63 passed.
   Engineer DECISION: K5 inside `close` (reversible by that hunk); accepted. Batch P gate file must list the seven
   `_coolprop_heos_fluids_*` modules under `generator`. Ruff clean; job 543 w5p0-mc2 (merge-check, base 9ad50635).
+- **2026-11-20, Frank: a smaller 0.5.** Asked whether to narrow 0.5 on content alone; recommended it (F2 and F8
+  change stored records and identity, F4 to F6 build on the same v2 records: one release, one migration; F3 additive
+  by ADR 0061's migration proof; X06 independent, no ADR yet). Frank: "Let's go for the smaller 0.5 release."
+  Recorded on wp/REL050 (worktree rel050, from main) 84a08a84: ADR 0057 Amendment 1 (D6), roadmap.md 0.5/0.6,
+  progress.md, register R-1065; pushed. Estimate given before the decision: full 0.5 ~16-19M tokens, 1.5-3 weeks;
+  smaller ~5-6M tokens, 4-5 days (from this session's agent sizes, not measured per package).
