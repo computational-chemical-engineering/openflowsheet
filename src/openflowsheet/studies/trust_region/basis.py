@@ -428,8 +428,8 @@ def _link_curvature(
     record: dict[str, Any],
 ) -> tuple[list[float] | None, list[list[float]] | None, str | None]:
     """Steps 4-6: the path points' inlets w₁, w₂ (the pinned inner solve's link inputs) and the
-    remainders R_k(w₁)..., R_k(w₂)... there, or the failure reason (a failed solve, a refusal
-    other than a budget one, which raises)."""
+    remainders R_k(w₁)..., R_k(w₂)... there (`_remainders`), or the failure reason (a failed
+    solve, a refusal other than a budget one, which raises)."""
     parameter = projection.decisions[0].parameter_id
     inlets: list[list[float]] = []
     for d in points:
@@ -439,6 +439,23 @@ def _link_curvature(
             return None, None, f"inner_solve:{outcome}"
         inlets.append([float(state[i]) for i in ids])
     record["w_points"] = [list(w) for w in inlets]
+    found = _remainders(holder, inlets, values, jacobian, w0)
+    if isinstance(found, str):
+        return None, None, found
+    return found, inlets, None
+
+
+def _remainders(
+    holder: Any,
+    inlets: list[list[float]],
+    values: Sequence[float],
+    jacobian: Sequence[Sequence[float]],
+    w0: Sequence[float],
+) -> list[float] | str:
+    """Step 6: the remainders R_k(w) = f_k(w) − f_k(w₀) − Σ_j J_kj (w_j − w0_j) at each inlet w
+    in turn (all outputs at w₁, then at w₂), from the holder's values at w (purpose
+    `BASIS_CURVATURE_POINT`); or the reason `refused:<code>` of the first refusal other than a
+    budget one (a budget refusal raises). Pure apart from the holder's requests."""
     remainders: list[float] = []
     for w in inlets:
         try:
@@ -446,11 +463,11 @@ def _link_curvature(
         except TruthRefused as refusal:
             if refusal.status == "budget":
                 raise
-            return None, None, f"refused:{refusal.code}"
+            return f"refused:{refusal.code}"
         for k in range(len(values)):
             linear = sum(g * (wj - w0j) for g, wj, w0j in zip(jacobian[k], w, w0, strict=True))
             remainders.append(at[k] - values[k] - linear)
-    return remainders, inlets, None
+    return remainders
 
 
 def _finish(
