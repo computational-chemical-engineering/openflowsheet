@@ -4045,3 +4045,4 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   (D-22: two more M03 regularity paths, ratio 3.71 to bound); Q-10 TH-C1 companion (b) differs on macOS in
   `certificate_id` and the near-zero energy closure (row L5, `run.compare` unchanged). Merge waits on cards
   ofs-x07a-adr0007-am3 and ofs-x07a-pywin32-licence.
+- 2026-11-20 ~07:00, gate_report before self-reset: three standing ALERTs (selected share 7%, 623 s, ratio 0.59); W5 steps on hashed modules fall back on import-time code; action unchanged. Jobs 536-540 pending at reset.
