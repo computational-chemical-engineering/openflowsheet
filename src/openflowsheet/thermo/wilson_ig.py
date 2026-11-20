@@ -936,8 +936,12 @@ class _Search:
 
     def two_phase(self, ln_k_start: Sequence[float]) -> _Split:
         """Rachford–Rice and K_i = K_i(x) by successive substitution to max |Δ ln K| ≤ DELTA_K,
-        from K = K(w) of the liquid trial (step 4)."""
-        flowing, z = self.flowing, self.z
+        from K = K(w) of the liquid trial (step 4).
+
+        Each iteration's β and phase compositions are `_phases` (step 4b); a converged split's K
+        is `_split_k`.
+        """
+        flowing = self.flowing
         ln_k = {i: ln_k_start[i] for i in flowing}
         step = math.inf
         for m in range(1, SS_MAX_TWO_PHASE + 1):
@@ -949,25 +953,37 @@ class _Search:
                     f"no Rachford-Rice bracket (K_max = {k_max!r}, K_min = {k_min!r} over the "
                     "flowing components)",
                 )
-            beta = _rachford_rice([z[i] for i in flowing], [k[i] for i in flowing])
-            x = {i: z[i] / (1.0 + beta * (k[i] - 1.0)) for i in flowing}  # (b)
-            y = {i: k[i] * x[i] for i in flowing}
-            x_total, y_total = sum(x.values()), sum(y.values())
-            x_full = self._full({i: value / x_total for i, value in x.items()})
-            y_full = self._full({i: value / y_total for i, value in y.items()})
+            beta, x_full, y_full = self._phases(k)  # (b)
             ln_k_new = self.ln_k(x_full)  # (c)
             step = max(abs(ln_k_new[i] - ln_k[i]) for i in flowing)
             if step <= DELTA_K:
                 if not 0.0 < beta < 1.0:
                     return _Split(m, f"vapour fraction {beta!r} outside (0, 1)")
-                k_out = tuple(k[i] if i in k else math.exp(ln_k_new[i]) for i in range(self._size))
-                return _Split(m, None, beta, x_full, y_full, k_out, step)
+                return _Split(m, None, beta, x_full, y_full, self._split_k(k, ln_k_new), step)
             ln_k = {i: ln_k_new[i] for i in flowing}
         return _Split(
             SS_MAX_TWO_PHASE,
             f"two-phase successive substitution reached its cap of {SS_MAX_TWO_PHASE} iterations "
             f"(last step {step!r} > {DELTA_K!r})",
         )
+
+    def _phases(self, k: Mapping[int, float]) -> tuple[float, tuple[float, ...], tuple[float, ...]]:
+        """β = `_rachford_rice` over the flowing components at K, and the liquid and vapour
+        compositions x_i = z_i/(1 + β(K_i − 1)), y_i = K_i x_i, each normalised to its sum, every
+        component (step 4b)."""
+        flowing, z = self.flowing, self.z
+        beta = _rachford_rice([z[i] for i in flowing], [k[i] for i in flowing])
+        x = {i: z[i] / (1.0 + beta * (k[i] - 1.0)) for i in flowing}
+        y = {i: k[i] * x[i] for i in flowing}
+        x_total, y_total = sum(x.values()), sum(y.values())
+        x_full = self._full({i: value / x_total for i, value in x.items()})
+        y_full = self._full({i: value / y_total for i, value in y.items()})
+        return beta, x_full, y_full
+
+    def _split_k(self, k: Mapping[int, float], ln_k_x: Sequence[float]) -> tuple[float, ...]:
+        """`_Split.k`: K_i for i ∈ F (`k`, the K of the stopping Rachford–Rice solve), and
+        K_i(x) = exp(ln K_i(x)) from `ln_k_x` for i ∉ F, every component."""
+        return tuple(k[i] if i in k else math.exp(ln_k_x[i]) for i in range(self._size))
 
 
 def _rachford_rice(z: Sequence[float], k: Sequence[float]) -> float:
