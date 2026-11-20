@@ -1125,3 +1125,44 @@ def test_t4_a_changed_literal_fails_the_pinned_f0_on_m02(scratch: Path) -> None:
     assert failing and {m for m, _ in failing} <= {"M3", "M4", "M5"}
     assert {key for _, key in failing} == {M02}
     assert done.stdout.splitlines()[-1].endswith("vacuous 0, foreign 0; command exit 1")
+
+
+# -- the pin's blind spots: F0's line coverage of a step's hunks (review R-W5-P0-pin, item 5) ----
+
+
+def test_hunks_reports_which_changed_hunks_the_m02_run_executes(scratch: Path) -> None:
+    """`scripts/w5_hunks.py` (not a gate): of three hunks at the base, W5-T4's literal runs (a
+    module-level line, so on import), a line of `iapws95.py` does not run under m02 alone, and
+    the appended comment has no code."""
+    path = scratch / PR_C1
+    path.write_text(
+        path.read_text(encoding="utf-8").replace(*T4_LITERAL) + COMMENT, encoding="utf-8"
+    )
+    literal = path.read_text(encoding="utf-8").splitlines().index(T4_LITERAL[1].strip()) + 1
+    end = len(path.read_text(encoding="utf-8").splitlines())
+    iapws95 = scratch / IAPWS95
+    text = iapws95.read_text(encoding="utf-8")
+    function = next(
+        n for n in ast.parse(text).body if isinstance(n, ast.FunctionDef) and len(n.body) > 1
+    )
+    line = function.body[1].lineno
+    lines = text.splitlines(keepends=True)
+    lines[line - 1] = lines[line - 1].rstrip("\n") + "  # W5\n"
+    iapws95.write_text("".join(lines), encoding="utf-8")
+    tool = scratch / "scripts" / "w5_hunks.py"
+    tool.write_bytes((ROOT / "scripts" / "w5_hunks.py").read_bytes())
+    done = subprocess.run(
+        [sys.executable, str(tool), "--base", BASE, "--run", M02],
+        cwd=scratch,
+        env={**os.environ, "PYTHONPATH": str(scratch / "src")},
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert done.returncode == 0, done.stderr[-2000:]
+    assert done.stdout.splitlines() == [
+        f"NOT EXECUTED {IAPWS95}:{line}-{line} 0/1",
+        f"EXECUTED {PR_C1}:{literal}-{literal} 1/1",
+        f"NO CODE {PR_C1}:{end}-{end}",
+        "hunks 3: executed 1, not executed 1, no code 1, deletions 0 (in-process F0 code only)",
+    ]
