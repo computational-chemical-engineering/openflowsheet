@@ -4566,3 +4566,16 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   (df6ace41) lifts part of classify_exit's optimal family (whole-family lift needs 8 parameters); order claims only
   partly pinned (step 7 version reason before module reasons; step 1 `checks` key order P1, P4, P3, P2). Parked:
   greybox `_set_problem_scaling` patch (11.6 -> 8.1, file stays 8.3).
+- **2026-11-20, design round 2 (reviewer, Opus, ~192k; `docs/reviews/S19-design-round-2.md`):** (v) verification.py:
+  path (B) without behaviour change, REPLACES R-W3-G3-5 (b): playbook rule 15 was stale since cce-code-health 6529f47
+  (merging twins into one helper every site calls passes `literals`); work order WO-V (pinning tests for three stop
+  records, then `_not_evaluated`/`_stopped` consolidation, then `_assessment`'s CSR loops; predicted health 6.1 ->
+  7.1, verify_candidate 33.7 -> 20.2, optional steps to 10.5). (i) W5-S1: the tool's rule stands; a dated amendment
+  line under W5-S1 in S19-W5-ruling.md 6.2. (ii) MODEL_BUILDERS kept (W27 binder protocol; `restrict_to_v2_models`
+  assigns it, snapshot.py:88-102); strike from I-19 by ADR 0076 addendum; protocol stated in snapshot.py:285
+  `reading_for`. (iii) cascade duplication: one interface step after the lanes merge, column_compile twins only (WO-C;
+  health 8.4 -> 9.4); column_acceptance and recover twins stay. (iv) 43dccc21 acceptable; the manifest names it a
+  post-K generator-only commit; flag at the S19 -> main review.
+  Playbook rule 15 amended (.codehealth commit). DECISION: WO-V runs now from c6957580 (lane wp/S19-g3v), not after
+  the queued lanes merge: it touches only verification.py, which neither lane touches. Alternative: wait for the
+  merges. Reversible by: rebasing the lane onto the later tip.
