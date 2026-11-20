@@ -2,9 +2,10 @@
 and the mini-revisions (feed → unit → sinks) the injections run on.
 
 Not collected as tests. Design note `docs/design/T05-generalization.md` §8 (W12): a state the
-traversal cannot reach (INJ-T2, C3X's second branch) is solved by `solve_region(...,
-state=<twin state>, initializer_source="user_guess")` over the region `plan_revision` plans —
-the call `orchestrator.executor` makes for a revision flowsheet, with no new API.
+traversal cannot reach (INJ-T2, C3X's second branch) is solved by
+`solve_region(RegionCall(..., state=<twin state>, initializer_source="user_guess"))` over
+the region `plan_revision` plans — the call `orchestrator.executor` makes for a revision
+flowsheet, with no new API.
 """
 
 from __future__ import annotations
@@ -22,7 +23,7 @@ from openflowsheet.numerics.solve_record import SolvePolicy
 from openflowsheet.orchestrator import revision
 from openflowsheet.orchestrator.execution import ExecutionPlan, PlanStep
 from openflowsheet.orchestrator.mass import residence_time
-from openflowsheet.orchestrator.region import solve_region
+from openflowsheet.orchestrator.region import RegionCall, solve_region
 from openflowsheet.orchestrator.region_result import RegionResult
 from openflowsheet.orchestrator.splits import lifted_splits
 
@@ -58,15 +59,17 @@ def solve_from(
     assert not missing, f"the start has no value for {missing}"
     assert step.region is not None
     result = solve_region(
-        compiled=compile_problem(spec),
-        spec=spec,
-        region=step.region,
-        state={column: state[column] for column in spec.variable_ids},
-        splits=lifted_splits(revision.instances_of(flowsheet), flowsheet.components),
-        provider=flowsheet.provider,
-        policy=policy,
-        initializer_source="user_guess",
-        mass_mapping=residence_time(flowsheet.wiring, flowsheet.components),
+        RegionCall(
+            compiled=compile_problem(spec),
+            spec=spec,
+            region=step.region,
+            state={column: state[column] for column in spec.variable_ids},
+            splits=lifted_splits(revision.instances_of(flowsheet), flowsheet.components),
+            provider=flowsheet.provider,
+            policy=policy,
+            initializer_source="user_guess",
+            mass_mapping=residence_time(flowsheet.wiring, flowsheet.components),
+        )
     )
     return result, step
 

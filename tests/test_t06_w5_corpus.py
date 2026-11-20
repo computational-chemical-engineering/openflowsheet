@@ -60,7 +60,7 @@ from openflowsheet.orchestrator.execution import (
     declaration_identity,
 )
 from openflowsheet.orchestrator.executor import PlanResult, execute_plan
-from openflowsheet.orchestrator.region import solve_region, syn001_lifted_splits
+from openflowsheet.orchestrator.region import RegionCall, solve_region, syn001_lifted_splits
 from openflowsheet.orchestrator.revision import INITIALIZER_ID, plan_revision
 from openflowsheet.orchestrator.tear import solve_tear
 from openflowsheet.verify.certificate import verify_bound, verify_revision
@@ -290,14 +290,16 @@ def test_a02_num04_the_region_at_the_tear_root_converges_at_iteration_0_and_is_v
     root, _ = solve_tear(flowsheet)
     assert root.outcome == "CONVERGED" and root.final_state is not None
     result = solve_region(
-        compiled=compile_problem(spec),
-        spec=spec,
-        region=step.region,
-        state=dict(root.final_state),
-        splits=syn001_lifted_splits(flowsheet.components),
-        provider=flowsheet.provider,
-        policy=policy,
-        initializer_source="user_guess",
+        RegionCall(
+            compiled=compile_problem(spec),
+            spec=spec,
+            region=step.region,
+            state=dict(root.final_state),
+            splits=syn001_lifted_splits(flowsheet.components),
+            provider=flowsheet.provider,
+            policy=policy,
+            initializer_source="user_guess",
+        )
     )
     registered = case["expected"]
     assert result.outcome == registered["core_outcome"] == "CONVERGED"

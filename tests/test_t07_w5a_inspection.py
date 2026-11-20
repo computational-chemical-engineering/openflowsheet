@@ -122,12 +122,17 @@ def test_get_project_states_the_project_and_the_caller(app: LocalApplication) ->
 def test_list_models_is_the_signatures_and_constructs_nothing(
     app: LocalApplication, monkeypatch: pytest.MonkeyPatch
 ) -> None:
+    import openflowsheet.application.inspection_service as inspection
+    import openflowsheet.application.model_builders as builders
     import openflowsheet.application.revision_binding as binding
 
     def refuse(*_: Any, **__: Any) -> Any:
         raise AssertionError("list_models constructed a unit")
 
-    monkeypatch.setattr(binding, "MODEL_BUILDERS", {key: refuse for key in MODEL_BUILDERS})
+    # Every binding of the builder table a construction can read: the registry's unit factory
+    # (`model_builders`), the revision binder and list_models' own module.
+    for module in (builders, binding, inspection):
+        monkeypatch.setattr(module, "MODEL_BUILDERS", {key: refuse for key in MODEL_BUILDERS})
     view = app.list_models()
     assert [model["model_id"] for model in view.models] == sorted(MODEL_BUILDERS)
     for model in view.models:

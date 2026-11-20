@@ -37,7 +37,7 @@ from openflowsheet.orchestrator.execution import (
     build_execution_plan,
     declaration_identity,
 )
-from openflowsheet.orchestrator.region import solve_region, syn001_lifted_splits
+from openflowsheet.orchestrator.region import RegionCall, solve_region, syn001_lifted_splits
 from openflowsheet.orchestrator.region_result import RegionResult
 from openflowsheet.orchestrator.tear import INITIALIZER_ID, Syn001TearProblem, solve_tear
 from openflowsheet.thermo.syn001 import Syn001Provider
@@ -102,15 +102,17 @@ def solve(
     """`source` is item 0's `initializer_source` (T03 §8.1): the registered initializer's id when
     `state` is its reconstruction, `x(t⁰)`; `user_guess` for a state the test supplies."""
     return solve_region(
-        compiled=item.compiled,
-        spec=item.spec,
-        region=item.region,
-        state=state,
-        splits=syn001_lifted_splits(item.flowsheet.components),
-        provider=item.flowsheet.provider,
-        policy=POLICY,
-        trace=trace,
-        initializer_source=source,
+        RegionCall(
+            compiled=item.compiled,
+            spec=item.spec,
+            region=item.region,
+            state=state,
+            splits=syn001_lifted_splits(item.flowsheet.components),
+            provider=item.flowsheet.provider,
+            policy=POLICY,
+            trace=trace,
+            initializer_source=source,
+        )
     )
 
 

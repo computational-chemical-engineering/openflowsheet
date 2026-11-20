@@ -39,7 +39,7 @@ from openflowsheet.numerics.newton import Evaluation, Problem
 from openflowsheet.numerics.scaling import Scaling
 from openflowsheet.numerics.solve_record import SolvePolicy, Trace
 from openflowsheet.orchestrator.attempts import solve_with_attempts
-from openflowsheet.orchestrator.region import solve_region, syn001_lifted_splits
+from openflowsheet.orchestrator.region import RegionCall, solve_region, syn001_lifted_splits
 from openflowsheet.orchestrator.region_result import RegionResult
 from openflowsheet.orchestrator.tear import solve_tear
 
@@ -146,15 +146,17 @@ def observe(
     monkeypatch.setattr(region_attempts, "_region_problem", observed)
     monkeypatch.setattr(region_screen, "_screen", counted_screen)
     seen.result = solve_region(
-        compiled=compiled,
-        spec=item.binding.spec,
-        region=the_region(item),
-        state=dict(pre.final_state),
-        splits=syn001_lifted_splits(flowsheet.components),
-        provider=flowsheet.provider,
-        policy=policy,
-        trace=trace,
-        initializer_source="user_guess",
+        RegionCall(
+            compiled=compiled,
+            spec=item.binding.spec,
+            region=the_region(item),
+            state=dict(pre.final_state),
+            splits=syn001_lifted_splits(flowsheet.components),
+            provider=flowsheet.provider,
+            policy=policy,
+            trace=trace,
+            initializer_source="user_guess",
+        )
     )
     return seen
 
@@ -1428,14 +1430,16 @@ def test_n3_the_screen_passes_the_kernels_refusal_through(
     pre, _ = solve_tear(item.binding.flowsheet)
     assert pre.final_state is not None
     solve_region(
-        compiled=compile_problem(item.binding.spec),
-        spec=item.binding.spec,
-        region=the_region(item),
-        state=dict(pre.final_state),
-        splits=syn001_lifted_splits(item.binding.flowsheet.components),
-        provider=item.binding.flowsheet.provider,
-        policy=T02_POLICY,
-        initializer_source="user_guess",
+        RegionCall(
+            compiled=compile_problem(item.binding.spec),
+            spec=item.binding.spec,
+            region=the_region(item),
+            state=dict(pre.final_state),
+            splits=syn001_lifted_splits(item.binding.flowsheet.components),
+            provider=item.binding.flowsheet.provider,
+            policy=T02_POLICY,
+            initializer_source="user_guess",
+        )
     )
     assert seen, "PHS-01's first flagged trial reached the kernel"
     assert seen[0].status == expected
