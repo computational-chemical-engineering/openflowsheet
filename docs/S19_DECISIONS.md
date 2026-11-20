@@ -4258,3 +4258,8 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   manifest` rel_a20 (`RP.S03 same form: fail`; cause to bisect). identity: "G05 needs two platforms; found 0" (follows).
   X07a-WO7 launched (opus-engineer, brief `<git-common-dir>/codehealth/briefs/X07a-WO7.md`). R-W5-P1 waits for a
   slot (2-agent cap: WO-P2, WO7).
+- 2026-11-20, X07a-WO7 delivered (opus-engineer, ~73k): one cause for both: 672fe9f0's three lines in the released
+  `tests/test_m07a_v0_2_gate.py`; RP.S03 (`release_evidence_manifest.py:129-138`) runs test_m07_v0_2_gate, so rel_a20
+  followed (shown: fails at f498a3a6, passes with only that file restored). da4c03b0 (pushed): bytes restored from
+  c4a91a75, the a07 node in `conftest.FROZEN_WINDOWS_LIMITS` (win32 skip), a row in X07a_DECISIONS. 436 passed in the
+  four files; F0 PASS 9/9; requirements.lock ead4edf1 unchanged. CI 44736771069 running.
