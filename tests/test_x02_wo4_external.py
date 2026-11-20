@@ -34,7 +34,7 @@ from pathlib import Path
 from typing import Any
 
 import pytest
-from conftest import REPO_ROOT
+from conftest import NEEDS_EXTERNAL_CHILD, REPO_ROOT
 from m02_variant_support import register_variants
 
 from openflowsheet.adapters import variants
@@ -188,6 +188,7 @@ def _entries(record: Mapping[str, Any]) -> list[dict[str, Any]]:
 # -- G4 (a), (b): chaining inside a coupled run ----------------------------------------------------
 
 
+@NEEDS_EXTERNAL_CHILD
 def test_g4a_k0_is_cold_and_each_later_request_starts_from_the_previous_profile(
     chained: Chained,
 ) -> None:
@@ -219,6 +220,7 @@ def test_g4a_k0_is_cold_and_each_later_request_starts_from_the_previous_profile(
     assert chained.artifacts["solution-certificate.json"]["verification_status"] == "VERIFIED"
 
 
+@NEEDS_EXTERNAL_CHILD
 def test_g4b_warm_and_cold_outlets_match_the_analytic_value(chained: Chained) -> None:
     for entry in _entries(chained.artifacts["external-coupling.json"]):
         execution = entry["attempts"][-1]["execution"]
@@ -232,6 +234,7 @@ def test_g4b_warm_and_cold_outlets_match_the_analytic_value(chained: Chained) ->
             assert (start["used"], start["fallback_from"]) == (True, None)
 
 
+@NEEDS_EXTERNAL_CHILD
 def test_g4_every_result_profile_is_in_the_store(chained: Chained) -> None:
     store = ExperimentStore(chained.records)
     for entry in _entries(chained.artifacts["external-coupling.json"]):
@@ -245,6 +248,7 @@ def test_g4_every_result_profile_is_in_the_store(chained: Chained) -> None:
 # -- G4 (c), (d): keys and the fallback -----------------------------------------------------------
 
 
+@NEEDS_EXTERNAL_CHILD
 def test_g4c_a_warm_and_a_cold_request_at_one_inlet_have_different_keys(
     chained: Chained, tmp_path: Path
 ) -> None:
@@ -261,6 +265,7 @@ def test_g4c_a_warm_and_a_cold_request_at_one_inlet_have_different_keys(
     assert again.cache_hit is True and again.key == warm.key
 
 
+@NEEDS_EXTERNAL_CHILD
 def test_g4d_a_refused_warm_chain_answers_through_the_cold_chain(
     chained: Chained, tmp_path: Path
 ) -> None:
@@ -295,6 +300,7 @@ def test_g4e_replay_of_the_chained_run_matches(chained: Chained, tmp_path: Path)
     assert reproduction.report.verdict == "MATCH", reproduction.report.differences
 
 
+@NEEDS_EXTERNAL_CHILD
 def test_g4e_an_edited_start_diverges(chained: Chained, tmp_path: Path) -> None:
     manifest, _ = read_manifest(chained.bundle)
     artifacts = {name: read_artifact(chained.bundle, name) for name in manifest.artifacts}
@@ -313,6 +319,7 @@ def test_g4e_an_edited_start_diverges(chained: Chained, tmp_path: Path) -> None:
 # -- G4 (f): the certificate's disclosure (D8) -----------------------------------------------------
 
 
+@NEEDS_EXTERNAL_CHILD
 def test_g4f_the_certificate_discloses_the_final_start(chained: Chained) -> None:
     certificate = chained.artifacts["solution-certificate.json"]
     (external,) = [item for item in certificate["limitations"] if item["kind"] == "external_model"]
@@ -333,6 +340,7 @@ def test_g4f_a_cold_certificate_carries_no_start(tmp_path: Path) -> None:
 # -- the job source: k = 0 child starts and the `external` sub-record ------------------------------
 
 
+@NEEDS_EXTERNAL_CHILD
 def test_a_job_source_gives_the_k0_start_and_its_record(chained: Chained, tmp_path: Path) -> None:
     source = chained.bundle / "artifacts" / "external-coupling.json"
     with pytest.MonkeyPatch.context() as monkeypatch:
@@ -373,6 +381,7 @@ def test_a_job_source_gives_the_k0_start_and_its_record(chained: Chained, tmp_pa
     assert reproduction.report.verdict == "MATCH", reproduction.report.differences
 
 
+@NEEDS_EXTERNAL_CHILD
 def test_external_start_statuses(chained: Chained, tmp_path: Path) -> None:
     source = chained.bundle / "artifacts" / "external-coupling.json"
     store = ExperimentStore(chained.records)
@@ -442,6 +451,7 @@ def test_pinned_program_selects_the_child_by_runner_hash() -> None:
     assert pinned_program(variants.variant_from_document(unknown)).script.name == "child.py"
 
 
+@NEEDS_EXTERNAL_CHILD
 def test_a_start_capable_outlet_without_its_profile_is_a_protocol_error(tmp_path: Path) -> None:
     variant = warm_variant("x02-g4-noexport", child=SYNTHETIC_CHILD)
     runner = runner_in(tmp_path / "records", tmp_path / "env", child=SYNTHETIC_CHILD)

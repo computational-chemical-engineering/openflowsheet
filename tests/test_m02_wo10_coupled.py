@@ -33,7 +33,7 @@ from pathlib import Path
 from typing import Any
 
 import pytest
-from conftest import REPO_ROOT
+from conftest import NEEDS_EXTERNAL_CHILD, REPO_ROOT
 from jsonschema import Draft202012Validator
 from m02_variant_support import register_variants
 from t07_jobs_support import commit, lifecycle_violations, response_schema_violations
@@ -459,6 +459,7 @@ def out_of_process(name: str, hooks: list[str]) -> variants.Variant:
     return variants.variant_from_document(document)
 
 
+@NEEDS_EXTERNAL_CHILD
 def test_g6c_a_changed_fingerprint_at_k1_ends_evaluation_error(
     tmp_path: Path, register: Any
 ) -> None:
@@ -499,6 +500,7 @@ def r3_run(tmp_path: Path, register: Any) -> tuple[Path, Any, dict[str, Any], Pa
     return tmp_path / "bundle", manifest, artifacts, tmp_path
 
 
+@NEEDS_EXTERNAL_CHILD
 def test_r3_an_out_of_process_coupled_run_is_r3_and_its_checks_say_so(
     r3_run: tuple[Path, Any, dict[str, Any], Path],
 ) -> None:
@@ -520,6 +522,7 @@ def test_r3_an_out_of_process_coupled_run_is_r3_and_its_checks_say_so(
     assert not any(c["near_threshold"] for c in checks)
 
 
+@NEEDS_EXTERNAL_CHILD
 def test_r3_reproduce_replays_the_results_from_the_record(
     r3_run: tuple[Path, Any, dict[str, Any], Path],
 ) -> None:
@@ -556,6 +559,7 @@ def nonlinear_run(tmp_path: Path, register: Any) -> tuple[Path, Any, dict[str, A
     return tmp_path, manifest, artifacts
 
 
+@NEEDS_EXTERNAL_CHILD
 def test_f4_a_w_dependent_out_of_process_loop_converges_end_to_end(
     nonlinear_run: tuple[Path, Any, dict[str, Any]], register: Any
 ) -> None:
@@ -610,6 +614,7 @@ def _rp2b_rerun(
     return reproduction.report, recorded, rerun
 
 
+@NEEDS_EXTERNAL_CHILD
 def test_rp2b_a_w_dependent_rerun_one_ulp_off_matches_not_bitwise(
     nonlinear_run: tuple[Path, Any, dict[str, Any]], monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -638,6 +643,7 @@ def test_rp2b_the_seam_reaches_the_reactor_rate(
     )
 
 
+@NEEDS_EXTERNAL_CHILD
 def test_d130_a_failure_bundle_rerun_one_ulp_off_matches_not_bitwise(
     tmp_path: Path, register: Any, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -735,6 +741,7 @@ def test_r341_a_copy_that_does_not_digest_its_record_is_a_difference() -> None:
         assert len(found) == 1 and found[0].startswith(prefix + side), found
 
 
+@NEEDS_EXTERNAL_CHILD
 def test_r341_a_failure_bundle_naming_another_record_is_refused(
     tmp_path: Path, register: Any
 ) -> None:
@@ -777,6 +784,7 @@ def test_r341_a_failure_bundle_naming_another_record_is_refused(
     ), report.differences
 
 
+@NEEDS_EXTERNAL_CHILD
 def test_r3_a_request_that_is_not_the_records_is_a_mismatch_naming_it(
     r3_run: tuple[Path, Any, dict[str, Any], Path],
 ) -> None:

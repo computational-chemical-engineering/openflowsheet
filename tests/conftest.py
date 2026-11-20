@@ -19,6 +19,14 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 #: before PATH and finds the WSL launcher (run 44618922484: "... wsl.exe --install <Distro>"), so
 #: the PATH's bash (Git's on the CI runner) is named by its full path; elsewhere the bare name.
 BASH = (shutil.which("bash") or "bash") if sys.platform == "win32" else "bash"
+#: X07a platform limit (`docs/X07a_DECISIONS.md`, deliverable 4, row `launcher.py` `launch`):
+#: `external-subprocess-v1` refuses Windows before any spawn (ADR 0033 D2), so a test that needs
+#: the experiment child to run cannot run there (run 44670029066: 37 tests, each
+#: `environment_unavailable`). The refusal itself is `test_m02_kill_chain`'s.
+NEEDS_EXTERNAL_CHILD = pytest.mark.skipif(
+    sys.platform == "win32",
+    reason="external-subprocess-v1 refuses Windows before spawn (ADR 0033 D2)",
+)
 
 
 # -- X07a: replay and floating-point limits off the registered platforms (ruling R2, P1 to P5) ---
