@@ -247,8 +247,12 @@ def test_a22_cli_refuses_v2_onto_the_committed_record(
     if out == "committed":
         argv += ["--out", str(registration.COVERAGE_JSON)]
     elif out == "committed-relative":
-        monkeypatch.chdir(tmp_path)
-        argv += ["--out", os.path.relpath(registration.COVERAGE_JSON, tmp_path)]
+        # A relative path exists only on the same drive: Windows' checkout is on D:, its temp on C:.
+        start = tmp_path
+        if tmp_path.drive != registration.COVERAGE_JSON.drive:
+            start = Path(registration.COVERAGE_JSON.anchor)
+        monkeypatch.chdir(start)
+        argv += ["--out", os.path.relpath(registration.COVERAGE_JSON, start)]
     elif out == "not-heldout":  # R-580
         argv += ["--out", str(tmp_path / "v2.json")]
     elif out == "heldout-as-filename":  # a segment of the directory, not the file name
