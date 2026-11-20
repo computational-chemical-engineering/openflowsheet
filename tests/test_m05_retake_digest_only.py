@@ -108,7 +108,7 @@ def _write(stem: Path, documents: dict[str, Any]) -> None:
     for suffix, document in documents.items():
         path = Path(f"{stem}{suffix}")
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(json.dumps(document, indent=1), encoding="utf-8")
+        path.write_text(json.dumps(document, indent=1), encoding="utf-8", newline="\n")
 
 
 def _run(
@@ -563,7 +563,7 @@ def test_s6r10_the_committed_real_stem_retaken_on_another_kernel_passes(
         reactor = document["frozen"]["reactor"]
         old_fingerprint = copy.deepcopy(reactor["fingerprint"])
         reactor["fingerprint"]["platform"] = P_RETAKE
-        path.write_text(json.dumps(document), encoding="utf-8")
+        path.write_text(json.dumps(document), encoding="utf-8", newline="\n")
     old_digest = document_sha256(old_fingerprint)
     new_digest = document_sha256({**old_fingerprint, "platform": P_RETAKE})
     keys = {e["experiment_key"] for e in json.loads(REAL.with_suffix(".store.json").read_bytes())}
@@ -577,7 +577,7 @@ def test_s6r10_the_committed_real_stem_retaken_on_another_kernel_passes(
         return text
 
     for path in [*couplings, *(new.with_suffix(s) for s in REAL_SUFFIXES[:3])]:
-        path.write_text(rewrite(path.read_text(encoding="utf-8")), encoding="utf-8")
+        path.write_text(rewrite(path.read_text(encoding="utf-8")), encoding="utf-8", newline="\n")
     archive = json.loads(REAL.with_suffix(".experiments.json").read_bytes())
     renamed = {}
     for name, text in archive.items():
@@ -588,7 +588,7 @@ def test_s6r10_the_committed_real_stem_retaken_on_another_kernel_passes(
     new.with_suffix(".experiments.json").write_bytes(stored)
     record = json.loads(new.with_suffix(".json").read_bytes())
     record["artifacts"]["experiment_store"] = hashlib.sha256(stored).hexdigest()
-    new.with_suffix(".json").write_text(json.dumps(record), encoding="utf-8")
+    new.with_suffix(".json").write_text(json.dumps(record), encoding="utf-8", newline="\n")
 
     passed, lines = RETAKE.digest_only(REAL, new, None, p_old)
     assert passed, lines[:20]
@@ -919,8 +919,12 @@ def _run_host(
     old_stem, new_stem = tmp_path / "old" / "case", tmp_path / "new" / "case"
     _write(old_stem, _documents(K1, K2) if committed is None else committed)
     _write(new_stem, _documents(K3, K4) if retake is None else retake)
-    Path(f"{old_stem}.environment.json").write_text(_writer(committed_sidecar), encoding="utf-8")
-    Path(f"{new_stem}.environment.json").write_text(text(retake_sidecar), encoding="utf-8")
+    Path(f"{old_stem}.environment.json").write_text(
+        _writer(committed_sidecar), encoding="utf-8", newline="\n"
+    )
+    Path(f"{new_stem}.environment.json").write_text(
+        text(retake_sidecar), encoding="utf-8", newline="\n"
+    )
     return RETAKE.digest_only(old_stem, new_stem, old_version, old_platform, old_host)
 
 
