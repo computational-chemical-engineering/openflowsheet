@@ -370,3 +370,29 @@ JSON differs; the generator renders no paths; not diagnosed), `test_m04_quadrati
 fix. Next: read the Windows leg of the run for the final head (`gh api .../jobs/<id>/logs` to a file, grep
 `Z (FAILED|ERROR) tests/`). Open for the reviewer: D-20, D-22, D-28 to D-31, Q-4, Q-10, Q-11, D-24's companion.
 Push from this worktree: `git -c credential.helper='!gh auth git-credential' push origin wp/X07a`.
+
+## WO8 (2026-11-20, CI 44736771069 at da4c03b0: Windows 7 failed, 4 of them P3 rows for the design lane)
+
+- `test_smoke_serve_http_on_a_loopback_port` (exit 3 after a clean shutdown): uvicorn 0.54 restores the
+  handlers it found and re-raises the captured signal. SIGINT's handler raises `KeyboardInterrupt`, which
+  `uvicorn.run` swallows (POSIX exit 0); SIGBREAK's is the C runtime default, exit 3. 43520d8e: `http.run`
+  handles SIGBREAK with `signal.default_int_handler` for uvicorn's span (Windows, main thread; inert
+  elsewhere); `web.serve` (m06) goes through the same `run`. The m06 serve check ignores the exit code, so
+  it was green already. POSIX analogue measured: SIGTERM re-raised gives -15 bare, 0 wrapped.
+- `test_the_installed_hook_guards_git_push` (push exit 0): the hook ran (python3 resolved; the archive push
+  went through it), but git hands it the remote as given, `C:\...\computational-chemical-engineering\
+  openflowsheet.git`, and `REPOSITORY` matches `/` only, so `guarded()` was False. 13e0e6a6: `guarded()`
+  reads `\` as `/`; two cases added (a Windows public path, guarded; the archive's, not). A real guard bug,
+  not a test artefact.
+- `test_rel_a20_over_0_3_0s_committed_records` (`RP.S03 same form: fail`): not floating point. RP.S03's D
+  selection runs `tests/test_m07a_v0_2_gate.py`; on Windows its a07 is skipped by `FROZEN_WINDOWS_LIMITS`
+  (da4c03b0, log line 1876 of the run), and S13a's rule (`s13_evidence_manifest._pytest_part`: exit 0, one
+  passed, **none skipped**) makes the selection `fail`, so it differs from S13's Linux `pass`. Every repair
+  is out of bounds (STOPPED, Q-13 below).
+- Q-13 (open, design lane): REL.A20 on Windows while the a07 limit stands. (A) a P3c-style registered
+  difference: on win32 the test expects RP.S03 exactly `fail; S13 V03.A03 pass: DIFFERS` and every other
+  same-form key `equal` (an assertion edit; keeps the other 11 checks and RP.S18's sub-check judged on
+  Windows; fails when a07's limit lifts). (B) row the whole node in `FROZEN_WINDOWS_LIMITS` (loses REL.A20 on
+  Windows). Rejected: S13a's rule admitting a registered skip (a relaxed check); the a07 index-staging fix
+  (M07.A31(b) holds the file). Engineer's preference: A.
+- Left: Q-13; the four P3 rows (TH-C1 json (b), `test_opt_cost_lca`, m04 a34, m04 a49).
