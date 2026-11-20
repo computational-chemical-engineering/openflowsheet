@@ -4016,3 +4016,10 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   reactor) leave batch L by an amendment before K: their residual is `contribute`/`manifest` (R-W5-L2: not to split)
   or under about 2 per function, plus the cross-file clone R4 keeps. Alternative: steps on `contribute`. Reversible by:
   a later work order before K. L01 A22 stays non-vacuous through c1/mixer.
+- **2026-11-20, WO-L2b delivered (opus-engineer, Opus).** Lane 143f2fa0..319450a2, jobs 534-539: c1/mixer 21.2 -> 1.0
+  (7.2 -> 8.8; 40cd2d56, ca433693), heat_exchanger 17.8 -> 10.8 (8.4 -> 8.4; 238e921e `_invert`, new `_bisect_newton`
+  4.0), thermal/machines 14.5 -> 1.7 (7.8 -> 9.1; bb0908d7, fb1b2e62), thermal/heater 8.4 -> 0 (8.2 -> 9.0; 319450a2).
+  FP nodes in order equal; old vs new runs incl. the provider-call log, 0 differences; F0 `M9 FAIL 8/35` = predict;
+  registry sha line only; W5-S7 0 new edges. Deviations: private NamedTuple parameter objects (`_Bracket`,
+  `_OutletPort`, `_Answer`); `iterations = 0` moved into two helpers. Review R-W5-L2b launched (two windows, as
+  R-W5-L2).
