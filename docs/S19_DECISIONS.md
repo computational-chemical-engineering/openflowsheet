@@ -4326,3 +4326,13 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   both kept, support-matrix re-emitted, HARVEST_SIZE (100, 1144, 146) = base + (1, 6) + (1, 9), measured; t08 --check
   0 problems, 663 + 209 passed, F0 PASS 9/9. Fresh CI 44758521457 running; on green: merge wp/F3 into main (merge
   commit), F0 on main, push only if F0 passes, then `executed` on the card.
+- **2026-11-20, R-W5-P3 (reviewer, Opus): merge with batch P, no code fixes.** Own dump (`-P`, module paths under each
+  tree): 224524 records, e65d4448 at 63cead7c and ae2d5f81; arithmetic (132) and string multisets equal; v2 bytes
+  equal. (1) S1: every removed line verbatim; reads moved are a string comparison and plain `__init__` attributes;
+  call counts unchanged. Mutants: `_split_k` non-flowing branch 20 lines, `_request_refusal` domain/dormant swap 110,
+  `_lambda_entry` check swap 1, `_header` schema/string swap 0 (its order rests on reading; for later steps a record
+  failing both). (2) Ladders moved whole; first failure wins by reading. (3) v2 composes v1 (no override risk);
+  dump-only branches: the refusal checks, `_lambda`/`_lambda_entry` raises, `_header` raises, v2 `derivative_singular`.
+  S1, S4 (every imported name kept), S7 confirmed. (4) Only the two implementation_sha256 values derive from module
+  bytes; both blanked, the pin covers them. Optional docstring at wilson_ig.py:229 (`_lambda` omits its
+  `record_structure` error) not taken (no gain on a tier 3 file; a later docstring round may).
