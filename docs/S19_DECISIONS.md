@@ -4600,3 +4600,15 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   brief `<briefs>/S19-W5-P-G10.md`): a field-level proof with identity mapped, then a generator re-take (post-K,
   generator-only, as 43dccc21), a sweep of the m07 and fixture holders; gated by the orchestrator as merge-check.
   Rule (for S19_STATE item 4): a W5 batch close also runs the nlp-marked suite at K.
+- **2026-11-20, WO-P-G10 delivered (opus-engineer, Opus, ~139k):** wp/S19-w5pg 8e4b690e..258d32a9 (36 record files).
+  Proof (identity mapped by a consistent old->new hash bijection, floats by bits, m05_replay's registered rules
+  only): TR-E2 4317 fields, TR-E2-FAR 12161, TR-E2-FD 5002, LOOP-R 6645, LOOP-S 4379; other differences 0 in each.
+  Re-take via run_case + write_files from a clean detached tree at 8e4b690e (the CLI refuses to overwrite; recipe
+  of eb448c38), tree_clean true; `--replay` 5/5 differences=0; test_m05_g10_replay 5 passed; nlp-marked at the head:
+  only g19, g20. Sweep: m07/journey (24 files) class (b), A24 skipped at test_m07_journey_record.py:419, already
+  differing at 789ed591; the two schema fixtures class (b) (m02_schema_fixtures masks the identity fields). Enqueued
+  job 583 w5pg-mc (plain merge-check, post-K as job 561). A leftover waiter loop of the agent killed (no pytest).
+- **Open for the 0.5 RC cut (not caused by S19):** `benchmarks/m05/records` REAL replay (`m05_wo9_real.py
+  --replay`, RC step 14) fails at 8e4b690e AND at 789ed591 ("replay diverged: a cold execution"): recorded on
+  SMM-TRS2, never re-baselined on TR09 (R-1020 covered G10 only). A re-take (~35 min, reactor env, clean tree,
+  OMP_NUM_THREADS=1, mapping proof plus host column) is a work order for the 0.5 line.
