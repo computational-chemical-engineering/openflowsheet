@@ -3900,3 +3900,9 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
 - 2026-11-20, job 518 (rc-1i, interface, cce-code-health 34a30bf) PASS 20/20, step 466 accepted, debt 46.0 -> 30.0.
   Helper wp/S19-rcmc (worktree s19-rcmc) from c30d7d60: merges wp/S19-rc (d7fa6e6e) and wp/S19-n6 (d087d983); ruff
   clean; job 520 (rcmc-mc, merge-check, full suite) queued beside job 519 (rc-2d). Merge into wp/S19 on both PASS.
+- **2026-11-20, job 520 (rcmc-mc) PASS 10/10 (full suite): wp/S19-rcmc merged into wp/S19 (17f70aa2)** = W4 RegionCall
+  (I-21) + the WO-N6 retarget; job 519 (rc-2d) PASS accepted-neutral. wp/S19 changed only this log since c30d7d60.
+  patch_noop on the merge: 0 of 261. Worktrees and branches s19-rc, s19-n6, s19-rcmc removed. Card
+  ofs-s19-legacy-models: (a) done, (b) done; (c) batch L remains. gate_report: `ALERT selected share 15% < 75% of
+  step gates`; `ALERT selected gates take 357 s > 300 s (tests tier)`; action unchanged (few step gates this window,
+  most fall back on collection-time code, as before).
