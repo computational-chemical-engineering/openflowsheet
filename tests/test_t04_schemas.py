@@ -91,7 +91,7 @@ def test_a26_the_t04_fixtures_are_what_the_code_emits_today(emitted: dict[str, A
     equal under the reproducibility rule to what a live run emits now."""
     from t04_schema_fixtures import FIXTURE_NAMES
 
-    committed = {str(path.relative_to(FIXTURE_DIR)) for _, path in t04_fixtures()}
+    committed = {path.relative_to(FIXTURE_DIR).as_posix() for _, path in t04_fixtures()}
     assert set(emitted) == committed == set(FIXTURE_NAMES)
     for name, document in emitted.items():
         found = differences(

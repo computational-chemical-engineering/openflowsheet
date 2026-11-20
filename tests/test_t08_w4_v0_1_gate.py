@@ -641,6 +641,11 @@ def test_the_recorded_tree_gives_git_s_answer(
     )
     (tmp_path / "src/openflowsheet/y.py").unlink()
     (tmp_path / "schemas/a.schema.json").chmod(0o755)
+    # X07a: Windows has no executable bit (git sets `core.fileMode=false`), so the mode is also
+    # staged in the index, where `git add -A` keeps it; on Linux the chmod alone gives the same.
+    subprocess.run(
+        ["git", "update-index", "--chmod=+x", "schemas/a.schema.json"], cwd=tmp_path, check=True
+    )
     changed = _commit(tmp_path, {}, "remove and chmod")
     (tmp_path / "schemas/a.schema.json").unlink()
     removed = _commit(tmp_path, {}, "remove")

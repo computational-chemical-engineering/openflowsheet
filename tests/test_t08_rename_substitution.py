@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import sys
 from pathlib import Path
 
 import pytest
@@ -84,7 +85,7 @@ def test_the_generator_moved_by_its_i1_line_only() -> None:
 def test_the_schema_fixtures_moved_by_the_rename_only() -> None:
     assert all((FIXTURE_DIR / name).is_dir() for name in ADDED_AFTER_THE_RENAME)
     moved = sorted(
-        str(path.relative_to(FIXTURE_DIR))
+        path.relative_to(FIXTURE_DIR).as_posix()
         for path in FIXTURE_DIR.rglob("*.json")
         if path.relative_to(FIXTURE_DIR).parts[0] not in ADDED_AFTER_THE_RENAME
         and PROVIDER_SHA256[0][:12] in path.read_text(encoding="utf-8")
@@ -157,6 +158,10 @@ def test_the_cli_pins_moved_by_the_rename_only() -> None:
     assert hashlib.sha256(before.encode("utf-8")).hexdigest() == PINS_PRE_RENAME_SHA256
 
 
+@pytest.mark.skipif(
+    sys.platform == "win32",
+    reason="X07a limit: a POSIX-recorded CLI transcript; Windows prints native paths",
+)
 def test_with_the_pre_rename_self_hashes_the_cli_prints_the_pre_rename_pins(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

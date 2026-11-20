@@ -104,7 +104,7 @@ def test_the_fixtures_are_what_a_real_run_emits_today() -> None:
     """
     emitted = _emitted()
     assert set(emitted) == {
-        str(path.relative_to(FIXTURE_DIR)) for name in K05_SCHEMAS for path in fixtures(name)
+        path.relative_to(FIXTURE_DIR).as_posix() for name in K05_SCHEMAS for path in fixtures(name)
     }
     for name, document in emitted.items():
         found = differences(

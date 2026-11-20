@@ -344,7 +344,7 @@ def test_a19_the_memo_holds_the_outcome_not_only_the_version(monkeypatch: Any) -
 def test_a20_the_packaged_lock_is_a_link_to_the_root_file() -> None:
     link = REPO_ROOT / "src/openflowsheet/_data/requirements.lock"
     assert "requirements.lock" in PACKAGED
-    assert link.is_symlink() and os.readlink(link) == "../../../requirements.lock"
+    assert link.is_symlink() and Path(os.readlink(link)).as_posix() == "../../../requirements.lock"
     document = tomllib.loads((REPO_ROOT / "pyproject.toml").read_text("utf-8"))
     assert (
         "_data/requirements.lock" in document["tool"]["setuptools"]["package-data"]["openflowsheet"]

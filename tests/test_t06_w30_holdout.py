@@ -46,7 +46,7 @@ INDICES = list(range(20, 40))
 def test_a99a_the_file_is_the_registered_one() -> None:
     assert hashlib.sha256(HOLDOUT_BYTES).hexdigest() == ENTRY["starts_sha256"]
     assert canonical_json(HOLDOUT) == HOLDOUT_BYTES
-    assert ENTRY["starts_file"] == str(HOLDOUT_FILE.relative_to(REPO_ROOT))
+    assert ENTRY["starts_file"] == HOLDOUT_FILE.relative_to(REPO_ROOT).as_posix()
     assert ENTRY["run_id"] == ensemble.HOLDOUT_RUN_ID == "holdout1"
     assert (ENTRY["start_indices"]["first"], ENTRY["start_indices"]["last"]) == (20, 39)
     assert list(ensemble.HOLDOUT_INDICES) == INDICES
