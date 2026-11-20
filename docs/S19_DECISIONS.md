@@ -4413,3 +4413,7 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   in all four a49 children), 499c54d8 W-2 (VECLIB_MAXIMUM_THREADS on darwin; skip names the BLAS), 725885fa W-3 (Linux
   route raises on unreadable maps; two tests). Each falsified by undoing it. 41 passed (a49 not skipped), F0 PASS 9/9,
   locks unchanged. CI 44773324184 running: all four legs green there -> manifest `tested` at its head -> merge card.
+- 2026-11-20, job 557 (w5p4-1g, `merge-check --batch`) PASS 11/11 at a5b8fb11: logged as WO-P4's (B7) acceptance.
+  gate_report: "ALERT selected share 0% < 75% of step gates" (standing: W5 files are collection-time code, every step
+  gates on the full suite). Action unchanged. Reviewer R-W5-P4 (reviewer, Opus, brief `S19-R-W5-P4.md`, range
+  ae2d5f81..a5b8fb11) launched; WO-P5 brief `S19-W5-P5.md` drafted (lane head filled at launch).
