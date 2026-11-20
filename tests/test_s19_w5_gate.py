@@ -2,8 +2,9 @@
 
 Outside the gate (acceptance A2 of the WO-1 tooling brief): the subset rule of the tests tier
 (W5-S6), the scope rule (W5-S1), the frozen exemption of `scripts/codehealth_frozen.py`, the
-batch-file validation with each refusal, and batch P refused (W5-S2 is not implemented). The
-tiers and sets are those of the base 94840fb3 (`w5_identity.py sets`: tiers 16/28/6/1).
+batch-file validation with each refusal, and batch P's W5-S2 and W5-K5 wiring (WO-P0; the pin
+itself is tested in `test_s19_w5_identity.py`). The tiers and sets are those of the base 94840fb3
+(`w5_identity.py sets`: tiers 16/28/6/1).
 """
 
 from __future__ import annotations
@@ -377,7 +378,7 @@ REFUSALS: dict[str, tuple[Callable[[dict[str, Any]], Any], str]] = {
     "not an object": (lambda b: [b], "the batch file is not a JSON object"),
     "missing key": (lambda b: _without(b, "retarget"), "missing key 'retarget'"),
     "unknown key": (lambda b: {**b, "extra": 1}, "unknown key 'extra'"),
-    "batch P": (lambda b: {**b, "batch": "P"}, "batch P needs W5-S2"),
+    "batch P tier 2": (lambda b: {**b, "batch": "P"}, "max_tier 2: batch P's is 3"),
     "unknown batch": (lambda b: {**b, "batch": "X"}, "batch 'X': not one of N, L"),
     "short base": (lambda b: {**b, "base": BASE[:12]}, "not a 40-hex commit sha"),
     "max_tier 3": (lambda b: {**b, "max_tier": 3}, "max_tier 3: not one of (1, 2)"),
@@ -509,23 +510,133 @@ def test_batch_check_finds_one_batch_file_per_base(tmp_path: Path) -> None:
     assert refused.returncode == 2
 
 
-@pytest.mark.parametrize("command", ["validate", "batch"])
-def test_batch_p_is_refused_naming_w5_s2(
-    batch: dict[str, Any], tmp_path: Path, command: str
+# -- batch P: W5-S2 and W5-K5 (WO-P0) ------------------------------------------------------------
+
+
+def _batch_p(sets: dict[str, Any]) -> dict[str, Any]:
+    """Batch P: the six tier 3 files and B7's generator, at max_tier 3."""
+    return {
+        "batch": "P",
+        "base": BASE,
+        "max_tier": 3,
+        "admitted": sets["tiers"]["3"],
+        "generator": ["docs/derivations/scripts/s07_reference.py"],
+        "retarget": [],
+        "expected_failures": [],
+        "standing_failures": [],
+    }
+
+
+def test_batch_p_at_tier_3_validates(sets: dict[str, Any], tmp_path: Path) -> None:
+    path = _write(tmp_path / "p.json", _batch_p(sets))
+    done = _cli("validate", str(path), "--head", BASE)
+    assert done.returncode == 0, done.stdout
+    assert done.stdout.startswith("W5 batch P valid: base 94840fb3a4bd, max_tier 3, admitted 6")
+    over = {**_batch_p(sets), "admitted": [*sets["tiers"]["3"], SYN001]}
+    assert _refused(over, sets) == [f"admitted {SYN001}: tier 4 (excluded, ruling R1)"]
+
+
+def test_s3_batch_p_may_also_fail_m2_m3_and_m6() -> None:
+    """W5-S3: M1, M4, M5, M7 and M8 pass in every batch; batch P's line may fail M2, M3, M6."""
+    line = (
+        "F0 FAIL: M1 50/50, M2 FAIL 1/61, M3 FAIL 1/61, M4 61/61, M5 61/61, M6 FAIL 2/85, "
+        "M7 52/52, M8 105/105, M9 FAIL 1/35"
+    )
+    assert gate.f0_line_problems(line, "P") == []
+    assert gate.f0_line_problems(line) == [
+        f"summary line: {part!r} (in batches N and L only M9 may fail)"
+        for part in ("M2 FAIL 1/61", "M3 FAIL 1/61", "M6 FAIL 2/85")
+    ]
+    assert gate.f0_line_problems(line.replace("M4 61/61", "M4 FAIL 1/61"), "P") == [
+        "summary line: 'M4 FAIL 1/61' (in batch P only M2, M3, M6 and M9 may fail)"
+    ]
+
+
+@pytest.mark.parametrize("close", [False, True])
+def test_the_pin_is_not_applicable_to_batch_n(
+    batch: dict[str, Any], tmp_path: Path, close: bool
 ) -> None:
-    path = _write(tmp_path / "p.json", {**batch, "batch": "P"})
-    done = _cli(command, str(path), *(["--head", BASE] if command == "validate" else []))
-    assert done.returncode == 2 and "W5-S2" in done.stdout
-
-
-@pytest.mark.parametrize("tier", ["f0", "registry", "scope", "coverage"])
-def test_a_tier_refuses_batch_p(batch: dict[str, Any], tmp_path: Path, tier: str) -> None:
-    path = _write(tmp_path / "p.json", {**batch, "batch": "P"})
+    path = _write(tmp_path / "n.json", batch)
     environment = {**os.environ, gate.VARIABLE: str(path), "PYTHONPATH": str(ROOT / "src")}
     done = subprocess.run(
-        [sys.executable, str(TOOL), tier], cwd=ROOT, env=environment, capture_output=True, text=True
+        [sys.executable, str(TOOL), "pin", *(["--close"] if close else [])],
+        cwd=ROOT,
+        env=environment,
+        capture_output=True,
+        text=True,
     )
-    assert done.returncode == 2 and "W5-S2" in done.stdout
+    check = "W5-K5" if close else "W5-S2"
+    assert done.returncode == 0, done.stdout
+    assert done.stdout == f"w5 pin ({check}) PASS: not applicable to batch N (batch P only)\n"
+
+
+PIN_LINE = "F0 PASS: M1 50/50, M9 35/35"
+
+
+def _fake_identity(
+    calls: list[tuple[str, ...]], pin_exit: int, unpinned: list[str], predict_exit: int
+) -> Callable[..., subprocess.CompletedProcess[str]]:
+    """`w5_identity.py` as the gate calls it: `pin` writes its record and F0's log, `predict`
+    answers `predict_exit`; every call is recorded."""
+
+    def identity(*arguments: str, capture: bool = False) -> subprocess.CompletedProcess[str]:
+        calls.append(arguments)
+        if arguments[0] == "pin":
+            out = Path(arguments[arguments.index("--json") + 1])
+            log = Path(arguments[arguments.index("--log") + 1])
+            log.write_text(f"{PIN_LINE}\nplatform ref-x86-64\n", encoding="utf-8")
+            pinned = [] if unpinned else [f"{SRC}/thermo/pr_c1.py"]
+            record = {"pinned": pinned, "unpinned": unpinned, "moved_files": unpinned}
+            out.write_text(json.dumps(record), encoding="utf-8")
+            return subprocess.CompletedProcess(arguments, pin_exit)
+        return subprocess.CompletedProcess(arguments, predict_exit)
+
+    return identity
+
+
+COOLPROP = [f"{SRC}/thermo/_coolprop_heos_fluids.py", f"{SRC}/thermo/coolprop_heos.py"]
+PIN_CASES: dict[str, tuple[int, list[str], int, int, str]] = {
+    "pass": (0, [], 0, 0, "PASS: pinned 1, none unpinned, the pinned F0 is the prediction at "),
+    "coolprop": (1, COOLPROP, 0, 0, "PASS: pinned 0, unpinned 2 (CoolProp), "),
+    "vacuous": (3, [], 0, 3, "FAIL: pin exit 3 (a vacuous or foreign read)"),
+    "outside": (0, [FEED], 0, 1, f"FAIL: {FEED}: unpinned (hash scope changed since B), "),
+    "predicted": (0, [], 1, 1, f"FAIL: predict exit 1; {PIN_LINE}"),
+}
+
+
+@pytest.mark.parametrize("close", [False, True])
+@pytest.mark.parametrize("case", sorted(PIN_CASES))
+def test_s2_and_k5_judge_the_pin(
+    sets: dict[str, Any],
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+    case: str,
+    close: bool,
+) -> None:
+    """W5-S2 (a step) and W5-K5 (`--close`, F0's registry from B): the pin's exit 3 fails; a file
+    left unpinned outside the CoolProp pair fails; else the pinned log must be `predict --base B
+    --files <the files the pin left to the head>` both ways."""
+    pin_exit, unpinned, predict_exit, expected, verdict = PIN_CASES[case]
+    path = _write(tmp_path / "p.json", _batch_p(sets))
+    monkeypatch.setenv(gate.VARIABLE, str(path))
+    calls: list[tuple[str, ...]] = []
+    monkeypatch.setattr(gate, "identity", _fake_identity(calls, pin_exit, unpinned, predict_exit))
+    assert gate.main(["pin", *(["--close"] if close else [])]) == expected
+    check = "W5-K5" if close else "W5-S2"
+    assert f"w5 pin ({check}) {verdict}" in capsys.readouterr().out.splitlines()[-1]
+    pin = calls[0]
+    assert pin[:5] == ("pin", "--base", BASE, "--json", pin[4])
+    assert ("--registry" in pin) == close and (
+        not close or pin[pin.index("--registry") + 1] == BASE
+    )
+    assert pin[pin.index("--") + 1 :][:2] == ("scripts/corpus_identity.py", "--check")
+    if pin_exit == 3:
+        assert len(calls) == 1
+        return
+    (predict,) = calls[1:]
+    files = list(predict[predict.index("--files") + 1 : predict.index("--against-log")])
+    assert predict[:5] == ("predict", "--base", BASE, "--max-tier", "3") and files == unpinned
 
 
 # -- W5-K1: the batch close K (review R-W5-N-close item 4d) ---------------------------------------
