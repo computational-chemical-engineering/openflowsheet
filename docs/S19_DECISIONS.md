@@ -4500,3 +4500,12 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   not touch it. X07a-WO11 (opus-engineer, Opus; brief `<briefs>/X07a-WO11.md`): find the cause, make the assertion
   message carry the child's failing ids, fix with a forced-Windows Linux test, or report a design-lane finding;
   no set-aside without a registered row. Launched.
+- 2026-11-20, X07a-WO11 delivered (opus-engineer, Opus): diagnostic only, cause not found (no Windows host). f38bea62:
+  REL.A20's test judges every same-form key before failing and names, per differing key, the generator's lines, each
+  selection's exit code, failed/errored/skipped nodes with messages, log tail (<= 3000 chars). 7d1a102e WO11 entry.
+  Narrowed: S06 passes on Windows with `test_rel_release_gate.py -k a03_`, so the difference is in
+  `test_v03_v0_3_gate.py -k a08_` (7 nodes) or the a05_ part (6 nodes, the only bash-run workflow step). Ruled out:
+  frozen-limit skips, MSG-G3 audit miss, pipe encoding (PYTHONUTF8=1), path length (~221 chars), `-k` quoting,
+  marker deselection. Correction to the brief: main's CI has no Windows leg, so "main green on Windows" was no
+  evidence. Gates: test_rel_evidence_manifest 19 passed, F0 9/9, locks unchanged, ruff/format/mypy clean. Pushed;
+  CI 44799836312 at 7d1a102e watched; its Windows leg should name the node.
