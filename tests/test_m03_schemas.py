@@ -124,7 +124,7 @@ def test_the_fixtures_are_what_real_runs_emit_today(request: pytest.FixtureReque
     (X07a ruling P3c, `conftest.PLATFORM_DIFFERENCES`); on a registered one there are none."""
     emitted = m03_schema_fixtures.documents()
     committed = sorted(
-        str(path.relative_to(FIXTURES))
+        path.relative_to(FIXTURES).as_posix()
         for schema in DEFS
         for path in directory(schema).rglob("*.json")
     )
