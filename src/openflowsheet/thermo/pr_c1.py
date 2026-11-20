@@ -42,7 +42,7 @@ from __future__ import annotations
 
 import hashlib
 import math
-from collections.abc import Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from functools import cache
 from pathlib import Path
@@ -806,28 +806,17 @@ class PrC1Provider:
         proportions w alone, so it never depends on the feed's NH3 (M01.A21) and the trivial
         solution does not exist in this formulation (spec §5.5). Flash derivatives are
         refused; `FlashResult` has no field to carry them (R-197).
+
+        Refused by `_flash_request_refusal` (a request no state could answer, or a state outside
+        the domain). A dormant feed gives two dormant outlets (`route: zero_flow`); steps 2 to 4
+        and a pure NH3 whose stable phase is the vapour give one phase; the rest is
+        `_two_phase_flash`'s (steps 5 to 7).
         """
         del context
-        if request.specification != "TP":
-            return _flash_refused(
-                "unsupported",
-                f"unsupported_specification: {request.specification!r}; pr-c1-v1 offers TP only",
-            )
-        if request.derivatives:
-            # Amendment 1 (R-197): silence would read as an answer.
-            return _flash_refused(
-                "unsupported",
-                f"flash_derivatives_unsupported: {list(request.derivatives)}; "
-                "FlashResult carries no derivatives",
-            )
+        refusal_of_request = _flash_request_refusal(request)
+        if refusal_of_request is not None:
+            return refusal_of_request
         state = request.state
-        if len(state.n) != len(COMPONENTS):
-            return _flash_refused(
-                "error", f"state_length: {len(state.n)} flows for the components {COMPONENTS}"
-            )
-        outside = _domain_violation(state)
-        if outside is not None:
-            return _flash_refused("out_of_domain", outside)
         t, p, n = state.temperature, state.pressure, state.n
         if state.is_dormant:
             # ADR 0001 D3.4: two dormant outlets labelled T and P, no K-value (composition
@@ -858,67 +847,7 @@ class PrC1Provider:
         if _pure_stable_phase(pure) == "VAPOR":
             return _single_phase(state, "VAPOR", "no_liquid")
 
-        # Step 5: h(y) on (0, 1) with the vapour's largest root and no guard.
-        assert pure.liquid is not None  # the stable pure phase is the liquid
-        ln_phi_liquid = _ln_phi(pure.mixture, pure.liquid)[I_NH3]
-        proportions = tuple(n[k] / light for k in LIGHT)
-
-        def equilibrium_mixture(fraction: float) -> _Mixture:
-            rest = 1.0 - fraction
-            w0, w1, w3, w4 = proportions
-            return _mixture(t, p, (rest * w0, rest * w1, fraction, rest * w3, rest * w4))
-
-        def h(fraction: float) -> float:
-            mix = equilibrium_mixture(fraction)
-            z = admissible_roots(mix.big_a, mix.big_b)[-1]
-            return math.log(fraction) + _ln_phi(mix, z)[I_NH3] - ln_phi_liquid
-
-        # Step 6: bracket on the fixed samples, then bisect.
-        low, high, samples = 0.0, -1.0, 0
-        for sample in SAMPLES:
-            samples += 1
-            if h(sample) >= 0.0:
-                high = sample
-                break
-            low = sample
-        if high < 0.0:
-            return _single_phase(state, "VAPOR", "no_liquid", samples)
-        halvings = 0
-        while high - low > 2.0 * math.ulp(high) and halvings < _MAX_HALVINGS:
-            middle = (low + high) / 2.0
-            halvings += 1
-            if h(middle) >= 0.0:
-                high = middle
-            else:
-                low = middle
-        y_star = (low + high) / 2.0
-        iterations = samples + halvings
-
-        # Step 7: the guard on the converged vapour, then the split.
-        if _vapour_root(equilibrium_mixture(y_star))[1]:
-            return _flash_refused(
-                "unsupported",
-                "vapour_root_metastable: the equilibrium vapour's largest root is not its stable "
-                f"one (y* = {y_star!r} at {t!r} K, {p!r} Pa)",
-            )
-        vapour_nh3 = light * y_star / (1.0 - y_star)
-        if n[I_NH3] <= vapour_nh3:
-            return _single_phase(state, "VAPOR", "undersaturated", iterations)
-        return FlashResult(
-            status="ok",
-            phase_signature="TWO_PHASE",
-            vapor_fraction=(light + vapour_nh3) / state.total_flow,
-            vapor=StreamState(n=(n[0], n[1], vapour_nh3, n[3], n[4]), temperature=t, pressure=p),
-            liquid=StreamState(
-                n=(0.0, 0.0, n[I_NH3] - vapour_nh3, 0.0, 0.0), temperature=t, pressure=p
-            ),
-            # x_NH3 = 1, so K_NH3 = y*; a light gas has no K and is absent ("not computed").
-            k_values={"NH3": y_star},
-            iterations=iterations,
-            provider_id=PROVIDER_ID,
-            reference_convention=REFERENCE_CONVENTION,
-            message="route: two_phase",
-        )
+        return _two_phase_flash(state, pure, light)
 
 
 def _request_refusal(request: PropertyRequest) -> PropertyResult | None:
@@ -1029,6 +958,36 @@ def _requested_derivatives(
     return derivatives
 
 
+def _flash_request_refusal(request: FlashRequest) -> FlashResult | None:
+    """The refusal of a request `flash` does not evaluate, or None.
+
+    In order: a specification other than TP, requested flash derivatives (`unsupported`), a flow
+    vector whose length is not the component count (`error`), and a state outside the domain
+    (`_domain_violation`, `out_of_domain`).
+    """
+    if request.specification != "TP":
+        return _flash_refused(
+            "unsupported",
+            f"unsupported_specification: {request.specification!r}; pr-c1-v1 offers TP only",
+        )
+    if request.derivatives:
+        # Amendment 1 (R-197): silence would read as an answer.
+        return _flash_refused(
+            "unsupported",
+            f"flash_derivatives_unsupported: {list(request.derivatives)}; "
+            "FlashResult carries no derivatives",
+        )
+    state = request.state
+    if len(state.n) != len(COMPONENTS):
+        return _flash_refused(
+            "error", f"state_length: {len(state.n)} flows for the components {COMPONENTS}"
+        )
+    outside = _domain_violation(state)
+    if outside is not None:
+        return _flash_refused("out_of_domain", outside)
+    return None
+
+
 def _single_phase(state: StreamState, phase: Phase, route: str, iterations: int = 0) -> FlashResult:
     """The present phase carries the feed bitwise; the other is dormant, labelled T and P."""
     empty = StreamState(n=(0.0,) * 5, temperature=state.temperature, pressure=state.pressure)
@@ -1043,6 +1002,92 @@ def _single_phase(state: StreamState, phase: Phase, route: str, iterations: int 
         reference_convention=REFERENCE_CONVENTION,
         message=f"route: {route}",
     )
+
+
+def _two_phase_flash(state: StreamState, pure: _PureRoots, light: float) -> FlashResult:
+    """Steps 5 to 7 of the TP flash (spec §5.4): y*, the guard on its vapour, then the split.
+
+    `pure` is pure NH3's roots at the feed's (T, P), whose stable phase is the liquid; `light` is
+    the feed's light-gas flow, positive. VAPOR `no_liquid` when no sample brackets y*, refused
+    `vapour_root_metastable` when the guard refuses the equilibrium vapour, VAPOR
+    `undersaturated` when the feed's NH3 fits in that vapour, else TWO_PHASE.
+    """
+    t, p, n = state.temperature, state.pressure, state.n
+    # Step 5: h(y) on (0, 1) with the vapour's largest root and no guard.
+    assert pure.liquid is not None  # the stable pure phase is the liquid
+    ln_phi_liquid = _ln_phi(pure.mixture, pure.liquid)[I_NH3]
+    proportions = tuple(n[k] / light for k in LIGHT)
+
+    def equilibrium_mixture(fraction: float) -> _Mixture:
+        rest = 1.0 - fraction
+        w0, w1, w3, w4 = proportions
+        return _mixture(t, p, (rest * w0, rest * w1, fraction, rest * w3, rest * w4))
+
+    def h(fraction: float) -> float:
+        mix = equilibrium_mixture(fraction)
+        z = admissible_roots(mix.big_a, mix.big_b)[-1]
+        return math.log(fraction) + _ln_phi(mix, z)[I_NH3] - ln_phi_liquid
+
+    # Step 6: bracket on the fixed samples, then bisect.
+    low, high, samples = _sample_bracket(h)
+    if high < 0.0:
+        return _single_phase(state, "VAPOR", "no_liquid", samples)
+    y_star, halvings = _bisected_fraction(h, low, high)
+    iterations = samples + halvings
+
+    # Step 7: the guard on the converged vapour, then the split.
+    if _vapour_root(equilibrium_mixture(y_star))[1]:
+        return _flash_refused(
+            "unsupported",
+            "vapour_root_metastable: the equilibrium vapour's largest root is not its stable "
+            f"one (y* = {y_star!r} at {t!r} K, {p!r} Pa)",
+        )
+    vapour_nh3 = light * y_star / (1.0 - y_star)
+    if n[I_NH3] <= vapour_nh3:
+        return _single_phase(state, "VAPOR", "undersaturated", iterations)
+    return FlashResult(
+        status="ok",
+        phase_signature="TWO_PHASE",
+        vapor_fraction=(light + vapour_nh3) / state.total_flow,
+        vapor=StreamState(n=(n[0], n[1], vapour_nh3, n[3], n[4]), temperature=t, pressure=p),
+        liquid=StreamState(
+            n=(0.0, 0.0, n[I_NH3] - vapour_nh3, 0.0, 0.0), temperature=t, pressure=p
+        ),
+        # x_NH3 = 1, so K_NH3 = y*; a light gas has no K and is absent ("not computed").
+        k_values={"NH3": y_star},
+        iterations=iterations,
+        provider_id=PROVIDER_ID,
+        reference_convention=REFERENCE_CONVENTION,
+        message="route: two_phase",
+    )
+
+
+def _sample_bracket(h: Callable[[float], float]) -> tuple[float, float, int]:
+    """(low, high, samples): the first of `SAMPLES` with h ≥ 0 as high, the sample before it
+    (0.0 for the first) as low, and the samples evaluated; high is −1.0 when none has h ≥ 0."""
+    low, high, samples = 0.0, -1.0, 0
+    for sample in SAMPLES:
+        samples += 1
+        if h(sample) >= 0.0:
+            high = sample
+            break
+        low = sample
+    return low, high, samples
+
+
+def _bisected_fraction(h: Callable[[float], float], low: float, high: float) -> tuple[float, int]:
+    """(y*, halvings): bisection of h on [low, high] (h(low) < 0 ≤ h(high)) to two ulps of high or
+    `_MAX_HALVINGS` halvings; y* is the final interval's midpoint."""
+    halvings = 0
+    while high - low > 2.0 * math.ulp(high) and halvings < _MAX_HALVINGS:
+        middle = (low + high) / 2.0
+        halvings += 1
+        if h(middle) >= 0.0:
+            high = middle
+        else:
+            low = middle
+    y_star = (low + high) / 2.0
+    return y_star, halvings
 
 
 def _refused(status: PropertyStatus, message: str) -> PropertyResult:
