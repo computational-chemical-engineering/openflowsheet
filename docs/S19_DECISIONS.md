@@ -4112,3 +4112,5 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   generators, msg_corpus, pre_push_guard, s03/s09, V17 manifest, t07_server_extra now red on Windows through pywin32,
   rest). macOS leg of 44683830734 green (L5's exact set held). Next X07a: read 44699040945; X07a-WO6 for the ~34 left;
   then the reviewer round (D-20, D-22/Q-4, Q-10, Q-11).
+- 2026-11-20, hub filed ofs-x07a-pywin32-lock (A to C as sent; hub agrees A). ofs-x07a-pywin32-licence closed (v4):
+  licence half done, marker pin not done, superseded by ofs-x07a-pywin32-lock. Act on the new card only on VERIFIED.

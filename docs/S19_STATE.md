@@ -78,7 +78,7 @@ brief `<git-common-dir>/codehealth/briefs/S19-W5-P0-pin.md`) and X07a-WO5 engine
 3. **0.5:** X07a: WO4 delivered (51f7fcae: macOS rows L6-L10, two limits, Q-11; manifest moved to 9773c361; codehealth
    CI fixed; v02a r347 bug fixed). Cards ofs-x07a-adr0007-am3 and ofs-x07a-pywin32-licence VERIFIED (both A). am3 done
    (a60d1b54, R-1062, executed written). pywin32 in X07a-WO5 (R-1063 reserved; stop condition: a pin in
-   requirements.lock moves lock_sha256, measured first, else Q-12); its card's `executed` waits on WO5. WO5 also does
+   requirements.lock moves lock_sha256, measured first, else Q-12); licence half done (d7bb75bc); lock half is card ofs-x07a-pywin32-lock (filed, rec A: requirements-windows.lock), act on VERIFIED; the old card is closed. WO5 also does
    the Windows clusters. Then the X07a reviewer round (D-20, D-22/Q-4, Q-10, Q-11), then a merge card via hub.
    X01-WO1 part A delivered, manifest `tested`, CI green; next for X01: a reviewer pass, then a merge card via hub;
    open B, C, Q-1..Q-3 for the design lane (`docs/X01_DECISIONS.md` on wp/X01). X01 selectability blocked on
