@@ -832,3 +832,71 @@ def test_k5_needs_k_checked_out_clean_and_waits_for_k1(
     code, lines, calls, record = _close_p(sets, tmp_path / "k1", monkeypatch, k1=["src/a.py: x"])
     assert code == 1 and lines[-1].startswith("W5-K1 FAIL: ") and calls == []
     assert not record.exists()
+
+
+def _reference_class() -> str:
+    import corpus_identity  # noqa: PLC0415  (scripts/, on sys.path above)
+
+    return str(corpus_identity.reference_class())
+
+
+#: The pinned F0's line is the reference platform's (as the full-F0 tests of
+#: test_s19_w5_identity.py).
+reference_only = pytest.mark.skipif(
+    _reference_class() != "ref-x86-64", reason="the pinned F0's line is the reference platform's"
+)
+#: The tree under test's files a scratch base takes, so that the chain runs this tree's tools.
+CHAIN_TOOLS = (
+    ".codehealth/config.toml",
+    "scripts/corpus_identity.py",
+    "scripts/w5_gate.py",
+    "scripts/w5_identity.py",
+)
+
+
+@reference_only
+def test_s2_the_real_chain_passes_a_comment_edited_tier_3_step(
+    sets: dict[str, Any], tmp_path: Path
+) -> None:
+    """Review R-W5-P0-pin, item 4: the gate's `w5_pin` tier -> `w5_gate.py pin` ->
+    `w5_identity.py pin` -> F0, unfaked, on a scratch batch P step. B is HEAD with this tree's
+    tools; the step comment-edits `thermo/pr_c1.py`; the pinned F0 is B's line."""
+    tree = tmp_path / "tree"
+    git = ["git", "-c", "user.name=w5", "-c", "user.email=w5@invalid"]
+    subprocess.run([*git, "worktree", "add", "--detach", str(tree), "HEAD"], cwd=ROOT, check=True)
+    try:
+        for name in CHAIN_TOOLS:
+            (tree / name).write_bytes((ROOT / name).read_bytes())
+        subprocess.run([*git, "add", *CHAIN_TOOLS], cwd=tree, check=True)
+        subprocess.run([*git, "commit", "-q", "--allow-empty", "-m", "B"], cwd=tree, check=True)
+        base = gate._git("rev-parse", "HEAD", cwd=tree).stdout.strip()
+        pr_c1 = tree / SRC / "thermo" / "pr_c1.py"
+        pr_c1.write_text(
+            pr_c1.read_text(encoding="utf-8") + "# W5-S2 chain test: a comment-only edit.\n",
+            encoding="utf-8",
+        )
+        subprocess.run([*git, "commit", "-q", "-am", "a tier 3 step"], cwd=tree, check=True)
+        path = _write(tmp_path / "p.json", {**_batch_p(sets), "base": base})
+        environment = {
+            **os.environ,
+            gate.VARIABLE: str(path),
+            "OPENFLOWSHEET_VENV": sys.prefix,
+        }
+        environment.pop("PYTHONPATH", None)
+        done = subprocess.run(
+            ["sh", "-c", _tier("w5_pin")["cmd"]],
+            cwd=tree,
+            env=environment,
+            capture_output=True,
+            text=True,
+            timeout=1800,
+        )
+    finally:
+        subprocess.run([*git, "worktree", "remove", "--force", str(tree)], cwd=ROOT, check=False)
+        subprocess.run([*git, "worktree", "prune"], cwd=ROOT, check=False)
+    assert done.returncode == 0, done.stdout[-3000:] + done.stderr[-2000:]
+    verdict = done.stdout.splitlines()[-1]
+    assert verdict.startswith(
+        f"w5 pin (W5-S2) PASS: pinned 1, none unpinned, the pinned F0 is the prediction at "
+        f"{base[:12]} for 0 file(s); F0 PASS: "
+    ), verdict
