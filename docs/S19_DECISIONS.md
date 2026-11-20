@@ -4625,3 +4625,9 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   44825507897. Orchestrator's reading: child basetemp ~221 + 68 > 260 (MAX_PATH, git without core.longpaths).
   X07a-WO13 (opus-engineer, Opus; brief `<briefs>/X07a-WO13.md`): confirm by arithmetic, core.longpaths plus a
   loud failure when a file misses the commit; STOP with a diagnostic if not confirmed.
+- **2026-11-20, X07a-WO13 (opus-engineer, Opus): MAX_PATH hypothesis REJECTED by arithmetic** (longest scratch file
+  221 chars absolute, 39 under 260; WO12's "221 basetemp" was the whole path). Populating: test_m07_v0_2_gate.py:766
+  `git add -A` + commit with check=True, so a drop needs git to skip with exit 0 (ignore rule, empty-reading dir).
+  STOP: diagnostic only, `_scratch_tree_diagnosis` in test_v03_v0_3_gate.py (tree count, missing records, untracked,
+  core.longpaths, check-ignore -v, add -n), first line of the a08 assertion; Linux bytes identical, REL.A20 PASS.
+  8c41d541 pushed (gh credential helper again); CI 44826386637 decides the cause.
