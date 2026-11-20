@@ -469,8 +469,9 @@ def _placed_inlets(
     view: InstanceView, count: int, feeds: tuple[str, ...]
 ) -> tuple[PlacedPort, ...]:
     """`ColumnStructure.inlets`: `top` at stage 1 and `bottom` at stage `count` when connected,
-    then the side feeds `feeds` as `feed1, feed2, …` at their `feed_stage.<stream>` (`_integer`),
-    all on the `feed` port's one declared phase (`_phase_of`, which raises for a missing one)."""
+    then the side feeds `feeds` as `feed1, feed2, …` at their `feed_stage.<stream>` (`_integer`).
+    Each inlet takes its own port's one declared phase (`_phase_of` on `top`, `bottom` or `feed`,
+    which raises for a missing one); the side feeds share the `feed` port's."""
     placed: list[PlacedPort] = []
     if TOP in view.ports:
         placed.append(PlacedPort(TOP, TOP, 1, _phase_of(view, TOP), view.ports[TOP][0]))
