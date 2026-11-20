@@ -4010,3 +4010,9 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   `contribute` (straight-line row building; splitting fragments it, playbook rule 6) and `manifest` (identity payload,
   W5-S4 risk), not "debt per function below about 2". N1 (rule 7 note one step late) repaired in the lane; N3 comment
   `conversion_reactor.py:326-328` still true in file order.
+- 2026-11-20: WO-L2b launched (opus-engineer, brief `S19-W5-L2b.md`, lane head 143f2fa0): c1 mixer `_close_energy`,
+  `evaluate`; heat_exchanger `_invert`; thermal machines `evaluate`, `__post_init__`; thermal heater `evaluate`.
+  DECISION: the other eight admitted files (ph_flash, c1 flash, syn001 flash, heater, pump, valve, c1 heater, c1
+  reactor) leave batch L by an amendment before K: their residual is `contribute`/`manifest` (R-W5-L2: not to split)
+  or under about 2 per function, plus the cross-file clone R4 keeps. Alternative: steps on `contribute`. Reversible by:
+  a later work order before K. L01 A22 stays non-vacuous through c1/mixer.
