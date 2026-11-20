@@ -271,7 +271,9 @@ def resolve_mass(
     unit (the row id's prefix). The checks run in the specification's order — V1 every
     `holdup_balance` row (or row of unknown accumulation, ADR 0008 D3.6) is mapped; V2 no entry
     lies on another row; V3 θ > 0; V4 each entry's holdup dimension is its manifest's — over the
-    rows in region order. `mapping = None` maps nothing, so the first holdup row is `missing`."""
+    rows in region order. `mapping = None` maps nothing, so the first holdup row is `missing`.
+    `_matched_rows` pairs rows with entries, `_validation_refusal` runs V1 to V4 and `_entries`
+    builds the result; a matched unit missing from `mapping.wiring` raises `KeyError`."""
     accumulation = spec.row_accumulation
     origins = {equation.equation_id: equation.origin for equation in spec.equations}
     components = mapping.components if mapping is not None else ()
@@ -333,7 +335,8 @@ def _entries(
 ) -> list[_Entry]:
     """One `_Entry` per matched row, in order: its unit (the row id's prefix), holdup quantity,
     component index (for `component_moles`, the row id's suffix in `components`) and phase
-    outflows from the rule. Raises `ValueError` for a unit `mapping` has no wiring for."""
+    outflows from the rule. A unit missing from `mapping.wiring` raises `KeyError` (its values
+    are never None, so the `ValueError` branch below does not run)."""
     assert mapping is not None or not matched
     entries: list[_Entry] = []
     for row, rule, _, holdup in matched:
