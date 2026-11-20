@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+### Changed
+
+- Five property providers carry a new implementation SHA-256, and with it a new `model_version`: `pr-c1-v1`,
+  `iapws95-v1`, `wilson-ig-v1`, `wilson-ig-v2` and `coolprop-heos-v1`. Their source was restructured for code health
+  (S19 W5 batch P; ADR 0077, R-1059): functions extracted inside each file, and the CoolProp fluid table split into
+  eight generated modules (R-1066). Their answers are unchanged bit for bit (the W5 identity pin at every step, and
+  F0 re-registered once at the batch close). A `model_version` names the first 12 hex digits of that hash, so a
+  bundle written earlier on one of these providers, released 0.4.x bundles included, replays `MISMATCH` on
+  `model_version`; re-solving gives the same numbers under the new label. L01's pin of `thermo/pr_c1.py` moves by
+  registered ruling (R-1067), and S11 A75 now reads "v1 is not edited since K of batch P".
+
 ## v0.4.0 — unreleased
 
 *Notes at the release candidate C = `84c665477b512548f38a6335f51648732b1fe5bb` (RP §9.2 step 3; line `0.4`, gate

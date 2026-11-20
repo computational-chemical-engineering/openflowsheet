@@ -4479,3 +4479,17 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   Opus; brief `S19-R-W5-P-close.md`). (f) DECISION: the FR-1 release note -> CHANGELOG `## Unreleased` on wp/S19 as
   a docs commit after the lane merge (keeps the lane's K..tip inside the close paths). Alternative: on the lane
   after K. Reversible by: moving the commit.
+- **2026-11-20, R-W5-P-close (reviewer, Opus, ~138k): merge after job 560 PASS; no lane change.** K1 sound (12
+  files = close paths + amended fixture list; core.json untouched; TH-C1.json one 64-hex substitution); K2/K3/K5/K7
+  consistent (corpus diff exactly M2 9, M3 9, M6 8, M9 5 + 7 new). D1 accepted (the key-order test :492-494 and the
+  parametrized values pass at K, so the substituted dict equals the regenerator's output; optional later comment
+  fix at test_t07_w5c_signatures.py:361-362, "only `revision_sha256` moved" now lags the TH/GP rows). D3, D4
+  accepted (sha of wilson_ig.py and pr_c1.py at K recomputed; PINNED untouched; no duplicate register id in
+  4e85fe6b). **Correction to my D2 DECISION above:** three st/valid schema examples keep B's hashes, not one:
+  `pr-c1-v1.json` (a6123b07), `iapws95-v1.json` (21fe37db), `wilson-ig-v2.json` (8eab3b83); all stay
+  (test_st_schema.py:63-67 checks provider_id and schema only, no generator writes them). D5: the five providers
+  are complete, wilson-ig-v1 named (registered, legacy.json:3319; ruling 10 FR-1 cost); the note must state the
+  replay `MISMATCH` on `model_version` for earlier bundles, 0.4.x included. Done: CHANGELOG `## Unreleased`
+  "### Changed" entry on wp/S19 (changelog tests 34 passed). After the merge: `git diff 4e85fe6b <merge>` docs
+  only, patch_noop and F0 on wp/S19; the `needs_coolprop` tests read K's legacy.json and run only on CI's CoolProp
+  leg (W5-K8).
