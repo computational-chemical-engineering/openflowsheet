@@ -42,13 +42,14 @@ from openflowsheet.models import (
     flow_id,
     manifest_document,
 )
+from openflowsheet.models.lifted import StagedSplits
 from openflowsheet.models.revision_flowsheet import InstanceView, RevisionError
 from openflowsheet.models.syn001 import P_MAX, P_MIN
-from openflowsheet.models.syn001.cascade import (
+from openflowsheet.models.syn001.cascade_failure import CascadeFailure
+from openflowsheet.models.syn001.cascade_spec import (
     _TOKEN,
     BOTTOM,
     TOP,
-    CascadeFailure,
     InletState,
     SideFeed,
     inlet_stream,
@@ -56,7 +57,16 @@ from openflowsheet.models.syn001.cascade import (
     stage_row_id,
     stage_temperature_id,
 )
-from openflowsheet.models.syn001.column import (
+from openflowsheet.models.syn001.column_acceptance import products
+from openflowsheet.models.syn001.column_compile import (
+    closure_types,
+    lifted_splits,
+    split_temperatures,
+    zero_flow_forms,
+)
+from openflowsheet.models.syn001.column_rows import declared_rows
+from openflowsheet.models.syn001.column_solve import ColumnSolution, solve_column
+from openflowsheet.models.syn001.column_spec import (
     COMPONENT_KINDS,
     CONDENSER,
     END_KINDS,
@@ -70,24 +80,13 @@ from openflowsheet.models.syn001.column import (
     ColumnSpec,
     EndSpecification,
     FlowsheetLinks,
-    declared_rows,
     product_flow_id,
     product_total_id,
     purity_flow_id,
     recovery_flow_id,
 )
-from openflowsheet.models.syn001.column_solve import (
-    ColumnSolution,
-    closure_types,
-    lifted_splits,
-    products,
-    solve_column,
-    split_temperatures,
-    zero_flow_forms,
-)
 from openflowsheet.models.syn001.equilibrium_form import equilibrium_form
 from openflowsheet.models.syn001.ph_kernel import port_enthalpy, typed_failure
-from openflowsheet.orchestrator.region import StagedSplits
 from openflowsheet.thermo import Phase, PropertyProvider, PropertyStatus, StreamState
 
 #: The unit's material ports (§4.7.1).
