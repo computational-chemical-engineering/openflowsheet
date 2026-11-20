@@ -245,9 +245,23 @@ def _implementation_sha256() -> str:
         _canonical(
             {
                 "module_sha256": hashlib.sha256(here.read_bytes()).hexdigest(),
-                "fluid_table_sha256": hashlib.sha256(
-                    (here.parent / "_coolprop_heos_fluids.py").read_bytes()
-                ).hexdigest(),
+                "fluid_table_sha256": _sha256(
+                    _canonical(
+                        [
+                            [name, hashlib.sha256((here.parent / name).read_bytes()).hexdigest()]
+                            for name in (
+                                "_coolprop_heos_fluids.py",
+                                "_coolprop_heos_fluids_a.py",
+                                "_coolprop_heos_fluids_b1.py",
+                                "_coolprop_heos_fluids_b2.py",
+                                "_coolprop_heos_fluids_b3.py",
+                                "_coolprop_heos_fluids_b4.py",
+                                "_coolprop_heos_fluids_b5.py",
+                                "_coolprop_heos_fluids_b6.py",
+                            )
+                        ]
+                    )
+                ),
                 "coolprop_version": PINNED_COOLPROP_VERSION,
                 "coolprop_gitrevision": PINNED_COOLPROP_GITREVISION,
             }
