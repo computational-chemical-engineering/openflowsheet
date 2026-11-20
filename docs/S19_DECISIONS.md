@@ -4294,3 +4294,4 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   d934f55c every one. Both claims hold. Batch L harnesses use `PYTHONPATH=src` without `-I` (not affected). Rule added
   to `S19-W3-common.md` ("Bitwise dumps: import the tree you mean").
 - 2026-11-20, WO-P3 launched (opus-engineer, brief `S19-W5-P3.md`, wilson_ig.py, same lane from 63cead7c; keeps the names other modules import; v2 in the dump for S11 A75). R-W5-P2 brief `S19-R-W5-P2.md` written (reviewer, Opus); launches on jobs 549-551 PASS.
+- 2026-11-20, job 549 (w5p2-1, WO-P2 step 1) PASS 20/20 (step 489, iapws95 39.6 -> 23.0). gate_report: standing selected-share ALERT only.
