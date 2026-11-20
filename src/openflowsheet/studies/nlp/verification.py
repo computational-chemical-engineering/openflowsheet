@@ -430,12 +430,13 @@ def _stopped(
     point: CertifiedPoint,
     basis: str | None,
 ) -> CandidateVerification:
-    """The record of a candidate judged no further after V1 admitted the re-solve `point` (the
-    assessment's or the phase rows' stop): `checks` in `names` order, no values, and the
-    re-solve's certificate, state and V1 `basis`."""
+    """The record of a candidate judged no further after V1's stop let it pass (the re-solve
+    `point` has a state; without a held system V1 may have failed): the assessment's or the
+    phase rows' stop, `checks` in `names` order, no values, and the re-solve's certificate,
+    state and V1 `basis`."""
     certificate = point.certificate
     state = point.state
-    assert state is not None  # V1 admitted only a point with a state
+    assert state is not None  # V1's stop returned on a point without a state
     return CandidateVerification(
         decisions=values,
         checks=tuple(checks[check] for check in names),
