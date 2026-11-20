@@ -13,7 +13,7 @@
   `selectable_bases()`, `FRESH_PROVIDERS`, all 123 CoolProp fluids; each unit's `signature` is its
   `list_models` entry; each factory resolves.
 - **E-F1-4** Self-hash: the union of the 38 implementation sets, `src/`-prefixed, is F0's M9 set
-  (35 paths); every self-hash recomputes with `hashlib`; a CRLF copy hashes the same.
+  (42 paths); every self-hash recomputes with `hashlib`; a CRLF copy hashes the same.
 
 Also: `scripts/registry_builtin.py --check` is clean and reports a changed table by pointer; the
 legacy payloads apply to the `legacy` table only; `default_registry()` is built once and closed.
@@ -408,7 +408,7 @@ def test_e_f1_4_the_implementation_sets_are_f0s_m9_set(registry: Registry) -> No
         for path in entry.document["implementation"]["modules"]
     }
     frozen = set(corpus_identity.frozen_modules())
-    assert len(frozen) == 35
+    assert len(frozen) == 42
     assert union == frozen, f"only in the registry: {sorted(union - frozen)}; " + (
         f"only in M9: {sorted(frozen - union)}"
     )

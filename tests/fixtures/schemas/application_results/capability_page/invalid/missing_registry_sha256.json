@@ -5,9 +5,9 @@
       {
         "data_rights": null,
         "descriptor_format": "openflowsheet-extension-v1",
-        "descriptor_sha256": "6d865b1214e2a460a0e5ec567024668a3a85099bc5497ba010f317b7470f5365",
+        "descriptor_sha256": "d57cf39f4ba11f44ef5270fcbd3cca3af5e35c335c4aaef39a1afa01e11a6dfc",
         "distribution": "openflowsheet",
-        "distribution_version": "0.4.0",
+        "distribution_version": "0.5.0.dev0",
         "effective_status": "released",
         "entry_point": null,
         "evidence_class": "core",
@@ -20,6 +20,13 @@
           },
           "modules": [
             "openflowsheet/thermo/_coolprop_heos_fluids.py",
+            "openflowsheet/thermo/_coolprop_heos_fluids_a.py",
+            "openflowsheet/thermo/_coolprop_heos_fluids_b1.py",
+            "openflowsheet/thermo/_coolprop_heos_fluids_b2.py",
+            "openflowsheet/thermo/_coolprop_heos_fluids_b3.py",
+            "openflowsheet/thermo/_coolprop_heos_fluids_b4.py",
+            "openflowsheet/thermo/_coolprop_heos_fluids_b5.py",
+            "openflowsheet/thermo/_coolprop_heos_fluids_b6.py",
             "openflowsheet/thermo/coolprop_heos.py"
           ]
         },
@@ -3017,7 +3024,7 @@
           "legacy:coolprop-heos-v1"
         ],
         "requires": [],
-        "self_sha256": "a0c6cdcba16b210010260066a20d6868fcf71a0c16c627b6c5d996a928656de2",
+        "self_sha256": "9d81233af4d69ebe14601e65a63aa6bcf5cf9abd34a5d21935004b3e70ea7d4c",
         "stability": "core",
         "status": "released",
         "title": "Legacy property method coolprop-heos-v1",
@@ -3028,7 +3035,7 @@
         "descriptor_format": "openflowsheet-extension-v1",
         "descriptor_sha256": "461c591e1c7ef62da5be9d63d1a1c74030057dae52faf75610a0bdab2137bd47",
         "distribution": "openflowsheet",
-        "distribution_version": "0.4.0",
+        "distribution_version": "0.5.0.dev0",
         "effective_status": "released",
         "entry_point": null,
         "evidence_class": "core",
@@ -3092,7 +3099,7 @@
           "legacy:iapws95-v1"
         ],
         "requires": [],
-        "self_sha256": "6d0f88cff5b34dc43f9dc75bb2b925c3fe9020d7e3722d39037765bc6d1a0df2",
+        "self_sha256": "fa8a8a898553c3f5053c261b72a4d11a9310c6bb28db61050bb39feb585b0f88",
         "stability": "core",
         "status": "released",
         "title": "Legacy property method iapws95-v1",

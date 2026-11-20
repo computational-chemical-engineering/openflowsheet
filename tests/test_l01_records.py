@@ -456,6 +456,10 @@ MOVED = {
         "970c19124478e13afb7dca61b126ed0cfd3f429185ffc882a0898d2b013e3a20",
         "R-1061",  # S19 W5 batch L restructuring (card ofs-s19-legacy-models, F-4)
     ),
+    "src/openflowsheet/thermo/pr_c1.py": (
+        "0e5c7913efa3e34199c3bc75b3c1d5992fd6b7e1ab32e40e991e477df205142b",
+        "R-1067",  # S19 W5 batch P restructuring (card ofs-s19-w5-fr1-providers, F-4)
+    ),
 }
 
 REGISTER = REPO_ROOT / "docs" / "decision-register.md"

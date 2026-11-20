@@ -226,28 +226,38 @@ def _bounds(document: Mapping[str, Any]) -> tuple[tuple[float, float], tuple[flo
 
 
 def _lambda(entries: object, ids: tuple[str, ...]) -> tuple[tuple[float, ...], ...]:
+    """The Wilson matrix Λ over `ids` (Λ_ii = 1) from the `wilson_lambda` list, each entry checked
+    by `_lambda_entry`; `record_lambda` if an off-diagonal entry is missing."""
     if not isinstance(entries, list):
         raise _structure("wilson_lambda is not a list")
     matrix: dict[tuple[str, str], float] = {}
     for position, entry in enumerate(entries):
-        _keys(entry, _LAMBDA_REQUIRED, _LAMBDA_ALLOWED, f"wilson_lambda[{position}]")
-        assert isinstance(entry, Mapping)
-        i, j, value = entry["i"], entry["j"], entry["value"]
-        if i not in ids or j not in ids:
-            raise RecordError(f"record_lambda: entry ({i!r}, {j!r}) names an unknown component")
-        if i == j:
-            raise RecordError(f"record_lambda: diagonal entry ({i}, {j}); Lambda_ii = 1 is implied")
-        if (i, j) in matrix:
-            raise RecordError(f"record_lambda: duplicate entry ({i}, {j})")
-        if not _number(value) or not math.isfinite(value) or not value > 0.0:
-            raise RecordError(
-                f"record_lambda: ({i}, {j}) = {value!r} is not a finite positive number"
-            )
-        matrix[(i, j)] = float(value)
+        i, j, value = _lambda_entry(entry, position, ids, matrix)
+        matrix[(i, j)] = value
     missing = [(i, j) for i in ids for j in ids if i != j and (i, j) not in matrix]
     if missing:
         raise RecordError(f"record_lambda: missing entries {missing}")
     return tuple(tuple(1.0 if i == j else matrix[(i, j)] for j in ids) for i in ids)
+
+
+def _lambda_entry(
+    entry: object, position: int, ids: tuple[str, ...], matrix: Mapping[tuple[str, str], float]
+) -> tuple[str, str, float]:
+    """The `wilson_lambda[position]` entry as (i, j, Λ_ij), checked in this order: its keys, both
+    components in `ids` (`record_lambda`), off the diagonal, not already in `matrix`, and a
+    finite positive number."""
+    _keys(entry, _LAMBDA_REQUIRED, _LAMBDA_ALLOWED, f"wilson_lambda[{position}]")
+    assert isinstance(entry, Mapping)
+    i, j, value = entry["i"], entry["j"], entry["value"]
+    if i not in ids or j not in ids:
+        raise RecordError(f"record_lambda: entry ({i!r}, {j!r}) names an unknown component")
+    if i == j:
+        raise RecordError(f"record_lambda: diagonal entry ({i}, {j}); Lambda_ii = 1 is implied")
+    if (i, j) in matrix:
+        raise RecordError(f"record_lambda: duplicate entry ({i}, {j})")
+    if not _number(value) or not math.isfinite(value) or not value > 0.0:
+        raise RecordError(f"record_lambda: ({i}, {j}) = {value!r} is not a finite positive number")
+    return i, j, float(value)
 
 
 def parse_records(data: bytes) -> WilsonRecords:
@@ -256,18 +266,7 @@ def parse_records(data: bytes) -> WilsonRecords:
         document = yaml.safe_load(data.decode("utf-8"))
     except (UnicodeDecodeError, yaml.YAMLError) as error:
         raise _structure(f"not a YAML document ({error})") from None
-    _keys(document, _TOP_KEYS, _TOP_KEYS, "the file")
-    if document["schema_version"] != 1 or isinstance(document["schema_version"], bool):
-        raise _structure(f"schema_version {document['schema_version']!r} is not 1")
-    for key in ("record_schema", "data_set", "uncertainty", "data_provenance"):
-        if not isinstance(document[key], str):
-            raise _structure(f"{key} is not a string")
-    convention, synthetic = document["reference_convention"], document["synthetic"]
-    if convention not in CONVENTIONS or synthetic is not CONVENTIONS[convention]:
-        raise RecordError(
-            f"record_convention: reference_convention {convention!r} with synthetic "
-            f"{synthetic!r} is not one of {dict(CONVENTIONS)}"
-        )
+    convention, synthetic = _header(document)
     records = document["components"]
     if not isinstance(records, list) or not records:
         raise _structure("components is not a non-empty list")
@@ -315,6 +314,25 @@ def parse_records(data: bytes) -> WilsonRecords:
         data_provenance=document["data_provenance"],
         sha256=hashlib.sha256(data).hexdigest(),
     )
+
+
+def _header(document: Any) -> tuple[str, bool]:
+    """The file's reference convention and synthetic flag, after its header checks, in this order:
+    exactly the top-level keys, schema_version 1 (`record_structure`), the four string fields,
+    and a registered (reference_convention, synthetic) pair (`record_convention`)."""
+    _keys(document, _TOP_KEYS, _TOP_KEYS, "the file")
+    if document["schema_version"] != 1 or isinstance(document["schema_version"], bool):
+        raise _structure(f"schema_version {document['schema_version']!r} is not 1")
+    for key in ("record_schema", "data_set", "uncertainty", "data_provenance"):
+        if not isinstance(document[key], str):
+            raise _structure(f"{key} is not a string")
+    convention, synthetic = document["reference_convention"], document["synthetic"]
+    if convention not in CONVENTIONS or synthetic is not CONVENTIONS[convention]:
+        raise RecordError(
+            f"record_convention: reference_convention {convention!r} with synthetic "
+            f"{synthetic!r} is not one of {dict(CONVENTIONS)}"
+        )
+    return convention, synthetic
 
 
 def _checkout_records() -> Path | None:
@@ -430,6 +448,10 @@ def _projected(by_x: Sequence[float], x: Sequence[float], total: float) -> tuple
 # -- the provider --------------------------------------------------------------------------------
 
 
+#: Per property: its value, d/dT, d/dP and d/dx_j with x free (`_phase_rows`).
+_Rows = dict[str, tuple[float, float, float, tuple[float, ...]]]
+
+
 class WilsonIdealGasProvider:
     """A `PropertyProvider` on a Wilson liquid and an ideal-gas vapour (`wilson-ig-v1`, ADR 0047).
 
@@ -497,8 +519,45 @@ class WilsonIdealGasProvider:
     def evaluate_phase(
         self, request: PropertyRequest, context: EvaluationContext
     ) -> PropertyResult:
-        """Values and derivatives of the requested phase at the request's state (spec §5.3)."""
+        """Values and derivatives of the requested phase at the request's state (spec §5.3).
+
+        Refused by `_request_refusal` (a request no state could answer, or a state outside the
+        domain or dormant). Otherwise the values are the rows of `_phase_rows`, and the
+        derivatives, when asked, are `_requested_derivatives` of the same rows.
+        """
         del context
+        convention = self._records.reference_convention
+        refusal_of_request = self._request_refusal(request)
+        if refusal_of_request is not None:
+            return refusal_of_request
+
+        state = request.state
+        total = state.total_flow
+        x = tuple(value / total for value in state.n)
+        liquid = request.phase == "LIQUID"
+        rows = self._phase_rows(state, x, liquid)
+
+        values = {name: rows[name][0] for name in request.properties}
+        derivatives: dict[str, dict[str, float]] = {}
+        if request.derivatives:
+            derivatives = self._requested_derivatives(request, rows, x, total, liquid)
+
+        return PropertyResult(
+            status="ok",
+            phase_signature=request.phase,
+            values=values,
+            derivatives=derivatives,
+            provider_id=PROVIDER_ID,
+            reference_convention=convention,
+        )
+
+    def _request_refusal(self, request: PropertyRequest) -> PropertyResult | None:
+        """The refusal of a request `evaluate_phase` does not evaluate, or None.
+
+        In order: an undeclared derivative input, an unknown property (`unsupported`), a flow vector
+        whose length is not the component count (`error`), a state outside the domain
+        (`_domain_violation`, `out_of_domain`), and a dormant state (`unsupported`).
+        """
         convention = self._records.reference_convention
         undeclared = [name for name in request.derivatives if name not in self._derivative_inputs]
         if undeclared:
@@ -519,14 +578,18 @@ class WilsonIdealGasProvider:
             return _refused("out_of_domain", outside, convention)
         if state.is_dormant:
             return _refused("unsupported", "dormant_state: composition undefined", convention)
+        return None
 
-        size = len(ids)
-        total = state.total_flow
-        x = tuple(value / total for value in state.n)
+    def _phase_rows(self, state: StreamState, x: tuple[float, ...], liquid: bool) -> _Rows:
+        """Per property of the phase (LIQUID if `liquid`, else VAPOR) at `state`'s T and P and the
+        mole fractions `x`: its value, d/dT, d/dP and d/dx_j with x free (spec §3.5-§3.6).
+
+        The vapour's ln φ_i rows are zero (an ideal gas); `h` is the x-weighted sum of the phase's
+        pure h_i and c_p,i, with d/dx_j = h_j.
+        """
+        size = len(self._records.components)
         pure = _pure(self._records, state.temperature)
-        liquid = request.phase == "LIQUID"
-        # Per property: its value, d/dT, d/dP and d/dx_j with x free (spec §3.5-§3.6).
-        rows: dict[str, tuple[float, float, float, tuple[float, ...]]] = {}
+        rows: _Rows = {}
         if liquid:
             ln_gamma, g = _wilson(self._records.wilson_lambda, x)
             ln_p = math.log(state.pressure)
@@ -548,32 +611,39 @@ class WilsonIdealGasProvider:
             0.0,
             h_i,
         )
+        return rows
 
-        values = {name: rows[name][0] for name in request.properties}
+    def _requested_derivatives(
+        self,
+        request: PropertyRequest,
+        rows: _Rows,
+        x: tuple[float, ...],
+        total: float,
+        liquid: bool,
+    ) -> dict[str, dict[str, float]]:
+        """Each requested property's derivatives with respect to the requested inputs.
+
+        ∂/∂T and ∂/∂P are the row's own; ∂/∂n_k is its d/dx projected by `_projected`, and is 0.0
+        for a vapour (not `liquid`) ln φ_i, which is identically zero. Keyed by property, then
+        input, in request order.
+        """
+        ids = self._records.components
+        size = len(ids)
         derivatives: dict[str, dict[str, float]] = {}
-        if request.derivatives:
-            for name in request.properties:
-                value, by_t, by_p, by_x = rows[name]
-                identity_zero = not liquid and name != "h"
-                by_n = (0.0,) * size if identity_zero else _projected(by_x, x, total)
-                entry: dict[str, float] = {}
-                for wanted in request.derivatives:
-                    if wanted == "T":
-                        entry[wanted] = by_t
-                    elif wanted == "P":
-                        entry[wanted] = by_p
-                    else:
-                        entry[wanted] = by_n[ids.index(wanted.removeprefix("n_"))]
-                derivatives[name] = entry
-
-        return PropertyResult(
-            status="ok",
-            phase_signature=request.phase,
-            values=values,
-            derivatives=derivatives,
-            provider_id=PROVIDER_ID,
-            reference_convention=convention,
-        )
+        for name in request.properties:
+            value, by_t, by_p, by_x = rows[name]
+            identity_zero = not liquid and name != "h"
+            by_n = (0.0,) * size if identity_zero else _projected(by_x, x, total)
+            entry: dict[str, float] = {}
+            for wanted in request.derivatives:
+                if wanted == "T":
+                    entry[wanted] = by_t
+                elif wanted == "P":
+                    entry[wanted] = by_p
+                else:
+                    entry[wanted] = by_n[ids.index(wanted.removeprefix("n_"))]
+            derivatives[name] = entry
+        return derivatives
 
     # -- flash ---------------------------------------------------------------------------------
 
@@ -884,8 +954,12 @@ class _Search:
 
     def two_phase(self, ln_k_start: Sequence[float]) -> _Split:
         """Rachford–Rice and K_i = K_i(x) by successive substitution to max |Δ ln K| ≤ DELTA_K,
-        from K = K(w) of the liquid trial (step 4)."""
-        flowing, z = self.flowing, self.z
+        from K = K(w) of the liquid trial (step 4).
+
+        Each iteration's β and phase compositions are `_phases` (step 4b); a converged split's K
+        is `_split_k`.
+        """
+        flowing = self.flowing
         ln_k = {i: ln_k_start[i] for i in flowing}
         step = math.inf
         for m in range(1, SS_MAX_TWO_PHASE + 1):
@@ -897,25 +971,37 @@ class _Search:
                     f"no Rachford-Rice bracket (K_max = {k_max!r}, K_min = {k_min!r} over the "
                     "flowing components)",
                 )
-            beta = _rachford_rice([z[i] for i in flowing], [k[i] for i in flowing])
-            x = {i: z[i] / (1.0 + beta * (k[i] - 1.0)) for i in flowing}  # (b)
-            y = {i: k[i] * x[i] for i in flowing}
-            x_total, y_total = sum(x.values()), sum(y.values())
-            x_full = self._full({i: value / x_total for i, value in x.items()})
-            y_full = self._full({i: value / y_total for i, value in y.items()})
+            beta, x_full, y_full = self._phases(k)  # (b)
             ln_k_new = self.ln_k(x_full)  # (c)
             step = max(abs(ln_k_new[i] - ln_k[i]) for i in flowing)
             if step <= DELTA_K:
                 if not 0.0 < beta < 1.0:
                     return _Split(m, f"vapour fraction {beta!r} outside (0, 1)")
-                k_out = tuple(k[i] if i in k else math.exp(ln_k_new[i]) for i in range(self._size))
-                return _Split(m, None, beta, x_full, y_full, k_out, step)
+                return _Split(m, None, beta, x_full, y_full, self._split_k(k, ln_k_new), step)
             ln_k = {i: ln_k_new[i] for i in flowing}
         return _Split(
             SS_MAX_TWO_PHASE,
             f"two-phase successive substitution reached its cap of {SS_MAX_TWO_PHASE} iterations "
             f"(last step {step!r} > {DELTA_K!r})",
         )
+
+    def _phases(self, k: Mapping[int, float]) -> tuple[float, tuple[float, ...], tuple[float, ...]]:
+        """β = `_rachford_rice` over the flowing components at K, and the liquid and vapour
+        compositions x_i = z_i/(1 + β(K_i − 1)), y_i = K_i x_i, each normalised to its sum, every
+        component (step 4b)."""
+        flowing, z = self.flowing, self.z
+        beta = _rachford_rice([z[i] for i in flowing], [k[i] for i in flowing])
+        x = {i: z[i] / (1.0 + beta * (k[i] - 1.0)) for i in flowing}
+        y = {i: k[i] * x[i] for i in flowing}
+        x_total, y_total = sum(x.values()), sum(y.values())
+        x_full = self._full({i: value / x_total for i, value in x.items()})
+        y_full = self._full({i: value / y_total for i, value in y.items()})
+        return beta, x_full, y_full
+
+    def _split_k(self, k: Mapping[int, float], ln_k_x: Sequence[float]) -> tuple[float, ...]:
+        """`_Split.k`: K_i for i ∈ F (`k`, the K of the stopping Rachford–Rice solve), and
+        K_i(x) = exp(ln K_i(x)) from `ln_k_x` for i ∉ F, every component."""
+        return tuple(k[i] if i in k else math.exp(ln_k_x[i]) for i in range(self._size))
 
 
 def _rachford_rice(z: Sequence[float], k: Sequence[float]) -> float:
