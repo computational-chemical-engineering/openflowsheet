@@ -435,9 +435,9 @@
         },
         {
           "review_kind": "human",
-          "status": "pending",
-          "reviewed_by": null,
-          "reviewed_at": null
+          "status": "reviewed",
+          "reviewed_by": "Frank Peters",
+          "reviewed_at": "2026-11-18"
         }
       ]
     },
@@ -455,9 +455,9 @@
         },
         {
           "review_kind": "human",
-          "status": "pending",
-          "reviewed_by": null,
-          "reviewed_at": null
+          "status": "reviewed",
+          "reviewed_by": "Frank Peters",
+          "reviewed_at": "2026-11-18"
         }
       ]
     },
@@ -475,9 +475,9 @@
         },
         {
           "review_kind": "human",
-          "status": "pending",
-          "reviewed_by": null,
-          "reviewed_at": null
+          "status": "reviewed",
+          "reviewed_by": "Frank Peters",
+          "reviewed_at": "2026-11-18"
         }
       ]
     },
@@ -495,9 +495,9 @@
         },
         {
           "review_kind": "human",
-          "status": "pending",
-          "reviewed_by": null,
-          "reviewed_at": null
+          "status": "reviewed",
+          "reviewed_by": "Frank Peters",
+          "reviewed_at": "2026-11-18"
         }
       ]
     },
@@ -515,9 +515,9 @@
         },
         {
           "review_kind": "human",
-          "status": "pending",
-          "reviewed_by": null,
-          "reviewed_at": null
+          "status": "reviewed",
+          "reviewed_by": "Frank Peters",
+          "reviewed_at": "2026-11-18"
         }
       ]
     }
