@@ -57,30 +57,37 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 - G1 (orchestrator/, numerics/): W3 lanes N and O closed 2026-11-19 (272011be); residuals executor.py (PR-1b, 6.1 -> 9.0, gating) and `_solve_region`'s parameter object (W4).
 - G-END (below) stays the end criterion for the whole repository.
 
-## Next actions (2026-11-20 ~18:40 CET)
+## Next actions (2026-11-20 ~19:30 CET)
 
-**Position:** main = d29f1a50 (F3 merged). wp/S19 = this commit. MB 756e1c12. Runner PID 1341562. cce-code-health 34a30bf.
-Agents running: none. Background waits at reset (their notices reach the new context): gate queue `wait --since 535`
-(job 557 w5p4-1g gating); F3 CI 44758521457 at 6cf2a1de (`gh run watch`); X07a CI 44773324184 at 94b38dae. On each
-gate result: gate_report, log. Re-arm `$Q wait --since <COUNT from $Q status>`.
+**Position:** main = d29f1a50 (F3 merged). wp/S19 = this commit. MB 756e1c12. Runner PID 1341562 (queue empty, results
+538). cce-code-health 34a30bf. Agents running: none. Background waits at reset: X07a CI 44773324184 at 94b38dae
+(`gh run watch`; older watches on 44764813337 and 44770741082 are superseded heads: ignore their notices). On each gate
+result: gate_report, log. Re-arm `$Q wait --since <COUNT from $Q status>`.
 
 0. **F3 merged into main** (card ofs-f3-merge-main A, executed 2026-11-20 17:00Z): main d29f1a50 (merge of wp/F3
    6cf2a1de, CI 44758521457 green on both check legs), F0 PASS 9/9 on main, pushed. wp/S19 does not contain it yet:
    item 3c applies when wp/S19 next takes main.
-1. **W5 batch P (FR-1, ADR 0077).** B_P 2eae72a8; gate file `<git-common-dir>/codehealth/briefs/S19-W5-batchP.json`
-   now sha 91d97ce0 (amended twice today: retarget + test_s07_coolprop.py, generator + s07_reference.json, L_P 27 -> 30;
-   prior copies `.pre-P4`, `.pre-P4b`; amendment section in `S19-W5-batchP.md`). Lane `wp/S19-w5p` at a5b8fb11:
-   WO-P1 pr_c1, WO-P2 iapws95, WO-P3 wilson_ig (6.9 -> 9.2, jobs 552-555 PASS, R-W5-P3 merge) done. WO-P4 = B7
-   (ruling 8 + 8.1, R-1066): 023eb2a2 R-A28, 54418242 R-wheel, a5b8fb11 step. Job 556 (no-gain) FAIL on generic
-   scope/literals/public_api; re-gated as a generator step, job 557 `merge-check --batch` (S19_DECISIONS). On 557 PASS:
-   log it as the step's acceptance, then a reviewer R-W5-P4 (S2 cadence: read 023eb2a2..a5b8fb11 incl. the oracle
-   amendment and the two R commits; brief pattern `S19-R-W5-P3.md`). On FAIL: read the failed checks. Then WO-P5
-   `coolprop_heos.py` (6.4; `_evaluate` 30.4, `_maxwell_fallback` 23.3; inside the file, its hash scope as WO-P4 left
-   it; brief pattern `S19-W5-P3.md`, B7-C4 and S1 FP rules), then WO-P6 close (R5, K1-K6, F-3 WILSON_V1_SHA256, F-4 L01
-   ruling for pr_c1, release note; close fixtures now also `tests/test_f0_corpus_identity.py:433` and
-   `tests/test_f1_legacy_builtins.py:411` 35 -> 42, and the registry re-emit). FR-1: close before the 0.5.0 RC cut.
-   Docs pass before any S07 manifest re-take: `scripts/s07_evidence_manifest.py:86,91-94,838-840` (R8.5, R-W5-P4).
-   Lessons (R-W5-L-close): ruff before `w5_gate.py close`; `git diff --name-only K^..K` inside close paths plus fixtures.
+1. **W5 batch P: chain done, next WO-P6 = the close (orchestrator's own work, ruling section 9 row WO-P6).** B_P
+   2eae72a8; gate file `<git-common-dir>/codehealth/briefs/S19-W5-batchP.json` sha 91d97ce0; batch brief
+   `S19-W5-batchP.md` (read its "Close K" section and all three amendments: the K fixture list is there). Lane
+   `wp/S19-w5p` (worktree s19-w5p) at da75a268, every step gated PASS and reviewed `merge`: WO-P1 pr_c1, WO-P2 iapws95,
+   WO-P3 wilson_ig (R-W5-P1..P3), WO-P4 B7 a5b8fb11 (job 557, R-W5-P4), WO-P5 coolprop_heos f875f4d4, da75a268 (jobs
+   558, 559; R-W5-P5; health 6.4 -> 9.0). Close procedure (precedent: batch L close, `grep -n -A22 "batch L close
+   (orchestrator)" docs/S19_DECISIONS.md`; criteria ruling R5 :318 and W5-K1..K7 :431-470):
+   (a) gate file: all five admitted files were edited (check `git diff 2eae72a8..da75a268 -- src/`), so no drop
+   expected. (b) K commit on the lane: R5 re-record (`corpus_identity.py --record`, m6-requests.json must come out
+   byte-identical; `registry_builtin.py --write`), the L fixtures: `test_t07_w5c_signatures.py` EXPECTED by its
+   regenerator, TH-C1.json by substitution, `WILSON_V1_SHA256` in test_s11_wilson_v2.py by substitution (F-3, comment
+   amends S11 A75), `MOVED` pr_c1.py in test_l01_records.py + the L01 ruling in decision-register.md (F-4, form of
+   R-983/R-1061), the M9 35 -> 42 constants (test_f0_corpus_identity.py :57 and :433; test_f1_legacy_builtins.py :411
+   and the :16 docstring; test_s19_w5_gate.py :354). Ruff before `close`; `git diff --name-only K^..K` against the
+   close paths plus fixtures before `close`. (c) `w5_gate.py close --k K --queue-dir <queue> --fixture ...` (K1, K5
+   inside), K2 judge, K3 (F0 PASS 9/9 with M9 42, registry --check, mcp_digest), K7 i19_scan. (d) K4: helper branch =
+   K + wp/S19 tip, plain merge-check job (full suite). (e) K6: fresh reviewer over B_P..K (brief pattern
+   `S19-R-W5-L-close.md`). (f) release note (separate docs commit): the providers whose model_version moved, plus
+   coolprop-heos-v1 (FR-1). (g) on K4 PASS and K6 merge: merge the lane into wp/S19, log, remove worktree s19-w5p.
+   FR-1: close before the 0.5.0 RC cut. Docs pass before any S07 manifest re-take:
+   `scripts/s07_evidence_manifest.py:86,91-94,838-840` (R8.5, R-W5-P4).
 2. Three non-W5 `retarget` rows in i19_scan (column_acceptance.saturation_pairs, region_attempts.solve_ptc,
    region_problem.check_opening): open build-lane item for a later lane.
 3. **X07a (0.5):** reviewed (`docs/X07a-review.md` d13f5a3f + "## WO9 review" 1fc9f606); erratum R-10 2f067059; WO8
