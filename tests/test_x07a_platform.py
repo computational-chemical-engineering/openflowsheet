@@ -8,7 +8,9 @@
 - (c) the forced kill takes the tree: a worker that called `isolate_process_tree` and spawned a
   child holding a lock is ended by the executor's `_kill_tree`, and the child's lock comes free
   (POSIX: `killpg`; Windows: the worker's kill-on-close Job Object);
-- (d) `replace_file` and `fsync_directory` give `atomic_write_bytes` its contract;
+- (d) `replace_file` and `fsync_directory` give `atomic_write_bytes` its contract; on Windows a
+  `PermissionError` is retried `REPLACE_ATTEMPTS` times in all, `REPLACE_RETRY_S` apart, then
+  raised, and elsewhere it is raised at once;
 - (e) POSIX only, by construction: the layer makes the calls its callers made before X07a, with
   the same arguments and in the same order (Linux behaviour unchanged).
 """
@@ -142,6 +144,41 @@ def test_d_atomic_write_replaces_in_place(tmp_path: Path) -> None:
     assert path.read_bytes() == b"two"
     assert sorted(p.name for p in tmp_path.iterdir()) == ["record.json"]
     _platform.fsync_directory(tmp_path)
+
+
+def _replace_failing(monkeypatch: pytest.MonkeyPatch, platform: str, failures: int) -> list[str]:
+    """`os.replace` raising `PermissionError` on its first `failures` calls; the log of calls."""
+    calls: list[str] = []
+
+    def fake_replace(source: Path, target: Path) -> None:
+        calls.append("replace")
+        if calls.count("replace") <= failures:
+            raise PermissionError(13, "in use")
+
+    monkeypatch.setattr(sys, "platform", platform)
+    monkeypatch.setattr(_platform.os, "replace", fake_replace)
+    monkeypatch.setattr(_platform.time, "sleep", lambda s: calls.append(f"sleep {s}"))
+    return calls
+
+
+def test_d_replace_retries_on_windows_only(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    source, target = tmp_path / "a", tmp_path / "b"
+    pause = f"sleep {_platform.REPLACE_RETRY_S}"
+    calls = _replace_failing(monkeypatch, "win32", 2)
+    _platform.replace_file(source, target)
+    assert calls == ["replace", pause, "replace", pause, "replace"]
+
+    calls = _replace_failing(monkeypatch, "win32", _platform.REPLACE_ATTEMPTS)
+    with pytest.raises(PermissionError):
+        _platform.replace_file(source, target)
+    assert calls.count("replace") == _platform.REPLACE_ATTEMPTS
+    assert calls.count(pause) == _platform.REPLACE_ATTEMPTS - 1
+    assert calls[-1] == "replace"
+
+    calls = _replace_failing(monkeypatch, "linux", 1)
+    with pytest.raises(PermissionError):
+        _platform.replace_file(source, target)
+    assert calls == ["replace"]
 
 
 @pytest.mark.skipif(sys.platform == "win32", reason="the POSIX calls are checked on POSIX")

@@ -244,16 +244,13 @@ def replace_file(source: Path, target: Path) -> None:
     file open, without delete sharing) is retried `REPLACE_ATTEMPTS` times, `REPLACE_RETRY_S`
     apart, and then raised."""
     if sys.platform == "win32":
-        for attempt in range(REPLACE_ATTEMPTS):
+        for _ in range(REPLACE_ATTEMPTS - 1):
             try:
                 os.replace(source, target)
                 return
             except PermissionError:
-                if attempt == REPLACE_ATTEMPTS - 1:
-                    raise
                 time.sleep(REPLACE_RETRY_S)
-    else:
-        os.replace(source, target)
+    os.replace(source, target)
 
 
 def fsync_directory(directory: Path) -> None:
