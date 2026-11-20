@@ -13,12 +13,15 @@ architectures. Two kinds of test live here:
 
 from __future__ import annotations
 
+import hashlib
+import importlib.metadata
 import importlib.util
 import json
 import re
 import subprocess
 import sys
 import tomllib
+from pathlib import Path
 from types import ModuleType
 from typing import Any
 
@@ -191,11 +194,27 @@ def test_every_compiled_distribution_has_a_wheel_for_both_ci_architectures(
             assert len(wheel["sha256"]) == 64 and wheel["file"].endswith(".whl")
 
 
+def _lf_licence_files(name: str) -> dict[str, str]:
+    """`t07_licence_inventory`'s licence-file hashes of the installed `name`, with CRLF read as LF:
+    the Windows wheels of pydantic-core 2.46.5 and rpds-py 2026.6.3 ship the licence text of the
+    Linux wheels with CRLF line endings (measured from the wheels, D-31)."""
+    distribution = importlib.metadata.distribution(name)
+    wanted = SCRIPT._licence_files(distribution)
+    files: dict[str, str] = {}
+    for entry in distribution.files or []:
+        inside = str(entry).split(".dist-info/", 1)[-1]
+        if inside in wanted:
+            data = Path(str(entry.locate())).read_bytes().replace(b"\r\n", b"\n")
+            files[inside] = hashlib.sha256(data).hexdigest()
+    return dict(sorted(files.items()))
+
+
 def test_the_installed_closure_is_the_recorded_one(record: dict[str, Any]) -> None:
     """With the extra installed, the inventory re-read from this environment equals the record in
     every field an installed environment can show (the wheel hashes are of the downloads). The
     record is the Linux closure; on Windows the closure adds exactly the pins of
-    `requirements-windows.lock`, at their versions (R-1063), and their verdicts pass above."""
+    `requirements-windows.lock`, at their versions (R-1063), and their verdicts pass above; its
+    licence files are compared with CRLF read as LF (D-31)."""
     pytest.importorskip("mcp")
     fresh = SCRIPT.inventory(REPO_ROOT / "pyproject.toml", None)
     assert fresh["failures"] == []
@@ -204,6 +223,7 @@ def test_the_installed_closure_is_the_recorded_one(record: dict[str, Any]) -> No
         pins = {name: version for name, (version, _) in _windows_lock().items()}
         assert {row["name"]: row["version"] for row in rows if row["name"] in pins} == pins
         rows = [row for row in rows if row["name"] not in pins]
+        rows = [row | {"license_files": _lf_licence_files(row["name"])} for row in rows]
     strip = [{k: v for k, v in row.items() if k != "wheels"} for row in record["distributions"]]
     assert [{k: v for k, v in row.items() if k != "wheels"} for row in rows] == strip
 

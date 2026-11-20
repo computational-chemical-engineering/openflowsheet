@@ -286,6 +286,16 @@ of ids are equal.
   Windows lock's hash would never be checked while 312 is the newest release; installed first,
   the hash is checked and the main lock keeps 312. Alternative: after, as briefed (or after with
   `--force-reinstall`). Reversible by: reverting the D-30 commit (moves the step back).
+  Confirmed in run 44703554833 (head b04d7764): "Successfully installed pywin32-312", then the
+  main lock "Requirement already satisfied: pywin32>=310"; G19 step green on windows-latest.
+- D-31. DECISION (WO6): on Windows `test_the_installed_closure_is_the_recorded_one` compares
+  licence files with CRLF read as LF. Measured (run 44703554833, then the wheels from `pip
+  download --platform win_amd64 --python-version 3.13`): pydantic-core 2.46.5 and rpds-py
+  2026.6.3 ship `licenses/LICENSE` with CRLF (`fbe7f615...`, `8bcb72c8...`); LF-normalised they
+  are the record's `2afdd30d...` and `314e4e91...`; cffi and cryptography are byte-equal. The
+  normalising helper reproduces all 29 recorded rows on Linux. The G19 record and the script are
+  unchanged. Alternative: a Windows licence record, or CRLF normalisation in the script's hash.
+  Reversible by: reverting the D-31 commit.
 
 ## Windows classification (run 44670029066, head 9773c361: 116 failed, 179 errors)
 
