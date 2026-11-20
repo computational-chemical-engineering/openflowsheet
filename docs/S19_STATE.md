@@ -57,22 +57,30 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 - G1 (orchestrator/, numerics/): W3 lanes N and O closed 2026-11-19 (272011be); residuals executor.py (PR-1b, 6.1 -> 9.0, gating) and `_solve_region`'s parameter object (W4).
 - G-END (below) stays the end criterion for the whole repository.
 
-## Next actions (2026-11-20 ~02:45 CET)
+## Next actions (2026-11-20 ~07:00 CET)
 
-**Position:** main = c4a91a75. wp/S19 = 69806a5a + logs. MB 756e1c12. Runner PID 1341562. Results COUNT 501 (a fresh
-context re-arms `$Q wait --since <COUNT from $Q status>` in the background). cce-code-health pinned at 34a30bf.
-Agents running: WO-L2 (opus-engineer, lane `wp/S19-w5l`, worktree s19-w5l, from 793eff3c; WO-L1 done, R-W5-L1 merge) and X07a-WO3 (opus-engineer, wp/X07a).
-On each result: gate_report, log.
+**Position:** main = c4a91a75. wp/S19 = this commit. MB 756e1c12. Runner PID 1341562. Re-arm in the background:
+`$Q wait --since <COUNT from $Q status> --idle /home/eajfpeters/Code/OpenFlowsheet/.claude/worktrees/s19-w5l` (one wake
+when the lane's chain is gated). cce-code-health 34a30bf. Agents running: none. On each result: gate_report, log.
 
-1. **Batch L open** (card ofs-s19-legacy-models (c)): B_L = 69806a5a; gate file and brief
-   `<git-common-dir>/codehealth/briefs/S19-W5-batchL.{json,md}` (admitted 16 unit modules, retarget 4, L_L 10).
-   WO-L1 (column_unit: 34 retargets, re-export removal as interface step, health) running. Every W5-L enqueue adds
-   `--batch .../S19-W5-batchL.json`. Reviewer every 3 accepted steps (S1). Then WO-L2 (conversion_reactor,
-   kinetic_cstr, syn001/mixer, then others worst first), WO-L3 close (`close --k K --fixture tests/test_l01_records.py`;
-   L01 F-4 register ruling for edited c1 files).
+1. **Batch L, close next (WO-L3)** (card ofs-s19-legacy-models (c)): B_L = 69806a5a; gate file and brief
+   `<git-common-dir>/codehealth/briefs/S19-W5-batchL.{json,md}`. Lane `wp/S19-w5l` (worktree s19-w5l) head abe8964f:
+   WO-L1, WO-L2, WO-L2b done and reviewed (R-W5-L1, R-W5-L2 merge; R-W5-L2b fixes applied: abe8964f, job 540). Jobs
+   528-540 gating; all must PASS. Then, in order: (a) amend the batch file: drop the 8 unedited admitted files
+   (ph_flash, c1 flash, syn001 flash, heater, pump, valve, c1 heater, c1 reactor), keep copy `.json.pre-close`, validate;
+   (b) K on the lane: `corpus_identity.py --record` (corpus.json M9 of the 8 edited files; m6-requests.json must stay
+   byte-identical), `registry_builtin.py --write` (builtin-sha256.txt, legacy.json/core.json/tables.sha256 if they
+   move), `tests/test_l01_records.py` `MOVED` entry for `models/c1/mixer.py` (new SHA-256, ruling R-1061) and register
+   heading `## R-1061 ` in `docs/decision-register.md` stating that SHA-256 (form of R-983; authority card
+   ofs-s19-legacy-models, ruling F-4); (c) `w5_gate.py close --k K --queue-dir <queue> --batch <json> --fixture
+   tests/test_l01_records.py --fixture docs/decision-register.md`; W5-K2 `w5_identity.py judge --before 69806a5a
+   --after K`; W5-K3 F0 `--check` 9/9 and registry `--check` clean at K; W5-K7 i19_scan no w5 rows; (d) W5-K4: helper
+   `wp/S19-w5l-mc` = K merged with the wp/S19 tip, plain merge-check (no `--batch`, as job 515); (e) W5-K6 review
+   R-W5-L-close (reviewer; form of `S19-R-W5-N-close.md`); (f) merge into wp/S19, patch_noop on the merge, card
+   ofs-s19-legacy-models (c) done; then the card's `executed` once (a)-(c) are all done.
 2. Three non-W5 `retarget` rows in i19_scan (column_acceptance.saturation_pairs, region_attempts.solve_ptc,
    region_problem.check_opening): open build-lane item for a later lane.
-3. **0.5:** X07a-WO2 delivered at the cap (wp/X07a 69f4703f, ubuntu legs green); ruling `docs/X07a-platform-ruling.md` (8b9e8f86) done; X07a-WO3 running (brief `docs/briefs/X07a-WO3.md`); cards ofs-x07a-pywin32-licence and ofs-x07a-adr0007-am3 with hub (merge waits on both). X01-WO1 part A delivered, manifest `tested`, CI green (S19_DECISIONS 2026-11-20); next for X01: a
+3. **0.5:** X07a-WO3 delivered (wp/X07a 2d914b7d; macOS 155 -> 12 failed, F0 PASS on macOS). Next X07a-WO4 (brief to write from `docs/X07a_DECISIONS.md` Position): manifest move with T08 harvest rows, rows for the six macOS Q-3 candidates, the three other-class macOS failures, the Windows leg (old run 246 failed; read run 44670029066). Then the X07a reviewer round with D-20, Q-4 ext (D-22), Q-10. Cards ofs-x07a-pywin32-licence and ofs-x07a-adr0007-am3 with hub (merge waits on both). X01-WO1 part A delivered, manifest `tested`, CI green (S19_DECISIONS 2026-11-20); next for X01: a
    reviewer pass, then a merge card via hub; open B, C, Q-1..Q-3 for the design lane (`docs/X01_DECISIONS.md` on wp/X01). X07a-WO2 next in the 0.5 slot: read CI runs 44629325836 and
    44629506428 (codehealth job failed on 44629506428), fix Windows/macOS test failures; brief to write from
    `docs/X07a_DECISIONS.md` Position (wp/X07a 37049c8a). Q-1 pywin32 licence (rights: Frank) and Q-2 F0 M7 per-platform

@@ -4033,3 +4033,15 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   RuntimeError reached 1143 times, exit sites 12/13. N1 (outside W5, design lane follow-up): at base a reachable
   provider input raises a "this is a bug" RuntimeError where the c1 mixer returns a not-converged refusal; the message
   is behaviour, so W5 keeps it; registered here as an open item.
+- **2026-11-20, X07a-WO3 delivered at the cap (opus-engineer, Opus; 0.5 lane).** wp/X07a pushed, head 2d914b7d: C1
+  b27c69a1 (Amendment 3 in `decide_mode`, revertible alone), C3 769c87f9 6b9feca2, C4 ea13e879 (F0 M7), C5/C6 2d65dda8,
+  docs 9773c361, 6193bac5 (M03 fixture names POSIX), 2d914b7d (rows L2, L5, Position). A1 3 passed; A2 288 / 82 944 /
+  82 880 / 64 / 0 as ruled; A5 F0 PASS on the workstation and macOS (M7 52/52 by R1.4), Windows (old run) M7 fails;
+  A10 nothing passed on Linux lost or newly skipped. Run 44670029066: ubuntu x2 green, macOS 155 -> 12 failed, Windows
+  running; old Windows run 44652504290: 246 failed (paths, CRLF, file locks, signals). Not done: manifest move (needs
+  T08 harvest rows), Windows classification, rows for six macOS Q-3 candidates (m02 g1a, t05b b34a, t06 a85b x3, m01
+  f2, m02 rp2b), three other-class macOS failures (w7a token, v02a, p03). For the X07a reviewer round (design lane):
+  D-20 an inspected replay emits a second reason ("no rerun was supplied") against R1.4's exactly one; Q-4 extended
+  (D-22: two more M03 regularity paths, ratio 3.71 to bound); Q-10 TH-C1 companion (b) differs on macOS in
+  `certificate_id` and the near-zero energy closure (row L5, `run.compare` unchanged). Merge waits on cards
+  ofs-x07a-adr0007-am3 and ofs-x07a-pywin32-licence.
