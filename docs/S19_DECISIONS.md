@@ -4403,3 +4403,9 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   08a94363 R-2 (POSIX keys; reference_values.json d0a23a01 unchanged), ea56f0c5 R-3 (L5), 4d34213d R-4 (L11 + 1e-9
   companion), c91da7cc R-5 (L12, tied to the a07 limit key), 90d53af2 R-6 (A85b split). F0 PASS 9/9; locks unchanged.
   CI 44770741082 running. R-1 touches determinism: narrow reviewer pass (brief `X07a-R-WO9.md`) launched.
+- 2026-11-20, X07a WO9 review (reviewer, Opus, ~104k+): 1fc9f606 "## WO9 review". R-1 correct, same effect on Linux
+  (WO-11 evidence for d65bb022 stands); R-2 to R-6 match; 207 passed locally. W-1 (a49 must check every loaded
+  OpenBLAS is controlled), W-2, W-3 open. DECISION: W-2 -> vary `VECLIB_MAXIMUM_THREADS` in a49's child on macOS.
+  Alternative: manifest says A3.3 not exercised on macOS. Reversible by: reverting that commit. DECISION: W-3 -> an
+  unreadable /proc/self/maps raises, as the other OS routes do. Alternative: keep `[]`. Reversible by: reverting.
+  X07a-WO10 (opus-engineer, Opus, brief `X07a-WO10.md`) launched.
