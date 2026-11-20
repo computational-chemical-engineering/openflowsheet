@@ -473,3 +473,28 @@ Push from this worktree: `git -c credential.helper='!gh auth git-credential' pus
   row a limit would need); S08 is not set aside without one.
 - Gates: `tests/test_rel_evidence_manifest.py` 19 passed; F0 PASS 9/9; locks ead4edf1/71f30fa7 unchanged;
   ruff, format, mypy (393 files) clean.
+
+## WO12 (2026-11-20, REL.A20 on Windows: path separators; CI 44799836309 at 7d1a102e)
+
+- RP.S16 and RP.S22, cause confirmed: `scripts/s13_evidence_manifest.py:293` (`_working_files`, RP.S16's
+  `docs/adr/` files) and `scripts/release_evidence_manifest.py:438` (`_m_harvest`, RP.S22's manifests) wrote
+  `str(path.relative_to(ROOT))`, backslashes on Windows, then matched it against `docs/adr/<n>-` and `_HEX40`.
+  Both now `.as_posix()` (4f3a59ea). No other path-to-string site is on RP.S16's or RP.S22's path.
+- Forcing test: `test_rp_s16_and_s22_record_git_paths_where_windows_prints_backslashes` patches `ROOT` in both
+  modules with a `Path` whose `relative_to` returns a `PureWindowsPath`, and asserts both measures give the
+  native bytes. Without the fix it fails on Linux with the Windows leg's text (`ADR 0022: 0 files
+  docs/adr/0022-*.md at the candidate, not 1`, ...); with it, passes.
+- Linux identity: the REL.A20 generator command before and after: RP.S16 and RP.S22 entries byte-identical;
+  RP.S08 and five other D entries differ only in pytest's `in N.NNs`; the manifest minus `commands`,
+  timings normalised, identical; the 12 same-form lines identical; REL.A20 PASS both.
+- RP.S08, hypothesis fails (not path separators; no fix, per the brief's STOP rule). Every read on the
+  failing node's path is a git path (`ls-tree`, `show`, `merge-base`); the scratch is written with
+  `pathlib` and `git add -A`. The Windows output (21 reasons, last four S10, S10c, S11, S12) is reproduced
+  exactly on Linux when nothing under `evidence/` reaches the scratch candidate's commit (a `.gitignore`
+  probe: `no S13 manifest` plus the 20 packages); a failing ancestry gives 20. So in the child, the 21
+  `evidence/<pkg>/<40 hex>/manifest.json` files (67-68 characters, the only paths over 38) are absent from
+  the commit. Open: why on Windows and only in the child (deeper basetemp, about 221 characters, below 260
+  by count; the same node passes in the leg's main suite). Needed to decide it: the child's full gate
+  output or `git ls-tree -r` of the scratch candidate on a Windows runner (one diagnostic line).
+- Gates: `tests/test_rel_evidence_manifest.py` + `tests/test_v03_s13_route.py` 33 passed; ruff, format
+  clean; mypy (393 files) clean.
