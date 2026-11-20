@@ -4251,3 +4251,4 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   re-emitted (as 605a2d64), HARVEST_SIZE (100, 1139, 146); t08 --check 0 problems, 663 passed. CI 44734187451 running;
   on green: status `tested`. WO-P2 launched (opus-engineer, brief `S19-W5-P2.md`, same worktree from 65504942); the
   R-W5-P1 review brief now reads the range through git only (its own detached worktree to run anything).
+- 2026-11-20, job 547 (w5p1-2, WO-P1 step 2 `flash`) PASS 20/20 (step 487, 21.7 -> 8.7). gate_report: standing selected-share ALERT only.
