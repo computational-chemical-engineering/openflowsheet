@@ -443,17 +443,59 @@ def structural_refusal(structure: ColumnStructure, provider: PropertyProvider) -
     contradicts (an end without its specification, a specification at a `none` end, a kind the
     column or the basis does not offer), `SpecificationError` (`invalid_spec(<key>)`, the
     column's own keys) for a value. The inlet-dependent items are `column.validate`'s, at
-    evaluate."""
+    evaluate.
+
+    The items in order: R3, the stage pressures (`_check_stage_pressures`); S2, S10-C D8, S06 I1
+    and I2, each end's specification (`_given_specifications`); S3; I1, I2 and S4 per given end
+    (`_check_end_value`); R4 and S7 (`_check_side_feeds`); then S8, S9 and S10's structural
+    half."""
     unit, count = structure.unit_id, structure.stage_count
     form = equilibrium_form(provider)
     composition_dependent = form is not None and form.composition_dependent
     p_bounds = form.domain["P"] if composition_dependent and form is not None else (P_MIN, P_MAX)
-    # R3, the stage pressures
+    _check_stage_pressures(structure, p_bounds)
+    given = _given_specifications(structure, provider, composition_dependent)
+    # S3
+    if given.get(CONDENSER, _NONE).kind == "distillate_rate" and (
+        given.get(REBOILER, _NONE).kind == "bottoms_rate"
+    ):
+        raise _refuse(unit, "redundant_specification", "distillate and bottoms rates together")
+    for end, found in given.items():
+        _check_end_value(structure, end, found)
+    slots = {stage for stage, duty in enumerate(structure.duties, start=1) if duty is None}
+    _check_side_feeds(structure, slots)
+    # S8
+    if count < 1 + len(slots):
+        raise _refuse(unit, "stage_count", f"N = {count} cannot hold the condenser and reboiler")
+    # S9
+    for stage in range(1, count):
+        if structure.pressures[stage] < structure.pressures[stage - 1]:
+            raise _refuse(unit, "pressure_profile", f"P_{stage + 1}* < P_{stage}*")
+    # S10's structural half: an end needs an inlet
+    if slots and not structure.inlets:
+        raise _refuse(unit, "no_feed", "a column with a condenser or reboiler and no inlet")
+
+
+def _check_stage_pressures(structure: ColumnStructure, p_bounds: tuple[float, float]) -> None:
+    """R3, the stage pressures: each finite and within `p_bounds` (the basis's `P` domain on a
+    composition-dependent basis, else `[P_MIN, P_MAX]`), else `invalid_spec(domain:<column>)` for
+    the first stage that is not."""
+    unit = structure.unit_id
     for stage, value in enumerate(structure.pressures, start=1):
         if not (math.isfinite(value) and p_bounds[0] <= value <= p_bounds[1]):
             column = stage_pressure_id(unit, stage)
             raise _refuse(unit, f"domain:{column}", f"{column} = {value!r} outside {p_bounds}")
-    # S2, S10-C D8, S06 I1 and I2: each end's specification
+
+
+def _given_specifications(
+    structure: ColumnStructure, provider: PropertyProvider, composition_dependent: bool
+) -> dict[str, EndSpecification]:
+    """S2, S10-C D8, S06 I1 and I2: each end's specification, by end, condenser first, for the
+    ends that are not `none`. `RevisionError` for a specification at a `none` end
+    (`specification_conflict`), a present end without one (`specification_missing`) and a kind
+    the end, or on a composition-dependent basis the direct kinds (`GAMMA_PHI_KINDS`), does not
+    offer (`specification_unsupported`)."""
+    unit = structure.unit_id
     given: dict[str, EndSpecification] = {}
     for end, kind, found in (
         (CONDENSER, structure.condenser, structure.condenser_spec),
@@ -484,31 +526,40 @@ def structural_refusal(structure: ColumnStructure, provider: PropertyProvider) -
                 f"A {end} of {unit} on {_provider_id(provider)} takes {', '.join(offered)}.",
             )
         given[end] = found
-    # S3
-    if given.get(CONDENSER, _NONE).kind == "distillate_rate" and (
-        given.get(REBOILER, _NONE).kind == "bottoms_rate"
-    ):
-        raise _refuse(unit, "redundant_specification", "distillate and bottoms rates together")
-    for end, found in given.items():
-        value = found.value
-        if found.kind in INVERSE_KINDS:
-            # I1, I2
-            if found.kind == "temperature":
-                wrong = found.stage is None or not 1 <= found.stage <= count
-            else:
-                wrong = found.component not in structure.components or not 0.0 < value < 1.0
-            if wrong or not math.isfinite(value):
-                raise _refuse(unit, f"{found.kind}:{end}", f"{end} {found.kind} = {value!r}")
-            continue
-        # S4
-        if found.kind == "duty":
-            wrong = value >= 0.0 if end == CONDENSER else value <= 0.0
+    return given
+
+
+def _check_end_value(structure: ColumnStructure, end: str, found: EndSpecification) -> None:
+    """The value of `end`'s specification `found`: I1 and I2 for an inverse kind (a temperature's
+    stage in `1..N`; a purity's or recovery's component in the column's components and its value
+    in `(0, 1)`), S4 for a direct kind (a condenser duty negative, a reboiler duty positive, any
+    other value positive); each value finite. Else `invalid_spec(<kind>:<end>)`."""
+    unit, count = structure.unit_id, structure.stage_count
+    value = found.value
+    if found.kind in INVERSE_KINDS:
+        # I1, I2
+        if found.kind == "temperature":
+            wrong = found.stage is None or not 1 <= found.stage <= count
         else:
-            wrong = value <= 0.0
+            wrong = found.component not in structure.components or not 0.0 < value < 1.0
         if wrong or not math.isfinite(value):
             raise _refuse(unit, f"{found.kind}:{end}", f"{end} {found.kind} = {value!r}")
-    # R4, S7
-    slots = {stage for stage, duty in enumerate(structure.duties, start=1) if duty is None}
+        return
+    # S4
+    if found.kind == "duty":
+        wrong = value >= 0.0 if end == CONDENSER else value <= 0.0
+    else:
+        wrong = value <= 0.0
+    if wrong or not math.isfinite(value):
+        raise _refuse(unit, f"{found.kind}:{end}", f"{end} {found.kind} = {value!r}")
+
+
+def _check_side_feeds(structure: ColumnStructure, slots: set[int]) -> None:
+    """R4, S7: each side feed (an inlet on the `feed` port) at a stage in `1..N`, one per stage
+    and none at a `slots` stage (a condenser or reboiler), else
+    `invalid_spec(side_feed_stage:<name>)` for the first that is not, in `structure.inlets`
+    order."""
+    unit, count = structure.unit_id, structure.stage_count
     taken: set[int] = set()
     for inlet in structure.inlets:
         if inlet.port != FEED:
@@ -521,16 +572,6 @@ def structural_refusal(structure: ColumnStructure, provider: PropertyProvider) -
                 "side feed per stage, none at a condenser or reboiler stage)",
             )
         taken.add(inlet.stage)
-    # S8
-    if count < 1 + len(slots):
-        raise _refuse(unit, "stage_count", f"N = {count} cannot hold the condenser and reboiler")
-    # S9
-    for stage in range(1, count):
-        if structure.pressures[stage] < structure.pressures[stage - 1]:
-            raise _refuse(unit, "pressure_profile", f"P_{stage + 1}* < P_{stage}*")
-    # S10's structural half: an end needs an inlet
-    if slots and not structure.inlets:
-        raise _refuse(unit, "no_feed", "a column with a condenser or reboiler and no inlet")
 
 
 # -- the unit ------------------------------------------------------------------------------------
