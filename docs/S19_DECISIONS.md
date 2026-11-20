@@ -4228,3 +4228,7 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   (opus-engineer, brief `S19-W5-P1.md`, lane `wp/S19-w5p` from B_P). gate_report after job 545: "ALERT selected share
   0% < 75% of step gates" (standing: W5 steps on hashed modules); "ALERT queue wait median 92 min > 15 min" (batch L's
   chains this morning; queue idle before the probe). Action unchanged.
+- 2026-11-20, job 546 (w5p1-1, WO-P1 step 1, 34040b6a `evaluate_phase`) PASS 20/20 (step 486, pr_c1 debt 55.7 ->
+  21.7). The first batch P step through the pin: W5-S2 `pinned 1 ... F0 PASS` 9/9 with B's counts; W5-S3 unpinned
+  `M2 FAIL 1/61, M3 FAIL 1/61, M6 FAIL 2/85, M9 FAIL 1/35`, the prediction both ways. Job 547 (step 2, `flash`) queued.
+  gate_report: "ALERT selected share 0% < 75% of step gates" (standing). Action unchanged.
