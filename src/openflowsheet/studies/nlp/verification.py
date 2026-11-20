@@ -311,10 +311,17 @@ def verify_candidate(
     assert point.spec is not None  # a point with a state was bound
     scaling = Scaling.from_spec(point.spec)
     checks["V2"] = _gross(scaling, state, optimizer_state, held)
-    record = host.regimes(point)
-    # §9 A-2: V4 re-derives the zero subsystem at the re-solve (its held system's).
-    zero = (held.zero, host.held_system(point).zero) if held is not None else None
-    checks["V4"] = _regimes(record, regimes, held, point.signature, zero=zero)
+    inputs = _RegimeInputs(
+        record=host.regimes(point),
+        declared=regimes,
+        held=held,
+        signature=point.signature,
+        # §9 A-2: V4 re-derives the zero subsystem at the re-solve (its held system's).
+        zero=(held.zero, host.held_system(point).zero) if held is not None else None,
+    )
+    checks["V4"] = _regimes(
+        inputs.record, inputs.declared, inputs.held, inputs.signature, zero=inputs.zero
+    )
     assessment: _Assessment | None = None
     if binding is not None:
         evaluated = _assessment(point.spec, formulation, binding, state, values, closure)
@@ -347,21 +354,7 @@ def verify_candidate(
     slacks, active, checks["V3"] = _feasibility(formulation, constraints, values, constraint_values)
     held_units: tuple[str, ...] = ()
     if phase is not None:
-        # OPT §4.6 V4: a split whose phase row is active is recorded, not judged by its margin.
-        active_rows = [item.target for item in active if item.target in set(phase.ids)]
-        held_units = tuple(phase.row(row).unit for row in active_rows if phase.row(row).split)
-        checks["V4"] = _regimes(
-            record,
-            regimes,
-            held,
-            point.signature,
-            phase_active=held_units,
-            phase_rows=active_rows,
-            zero=zero,
-            not_closure_test=(
-                _not_closure_test(phase, record, state, rows) if rows is not None else ()
-            ),
-        )
+        held_units, checks["V4"] = _phase_regimes(inputs, phase, active, state, rows)
     sensitivity, kkt, checks["V5"] = _kkt(
         host, resolved, formulation, constraints, at, active, assessment, rows, held_units
     )
@@ -765,6 +758,47 @@ def _constraint_feasibility(
                     ActiveConstraint(name, "constraint", constraint.constraint_id, side, slack)  # type: ignore[arg-type]
                 )
     return _ConstraintFeasibility(slacks, violated, active)
+
+
+@dataclass(frozen=True)
+class _RegimeInputs:
+    """V4's inputs fixed at the re-solve (OPT §4.6): the re-solve's regime record, the declared
+    regimes, the start's held system, the re-solve's attempt signature, and the (start's,
+    re-solve's) zero subsystems on a held system (§9 A-2), `None` without one."""
+
+    record: RegimeRecord
+    declared: Mapping[str, str]
+    held: HeldSystem | None
+    signature: Any
+    zero: tuple[ZeroSubsystem | None, ZeroSubsystem | None] | None
+
+
+def _phase_regimes(
+    inputs: _RegimeInputs,
+    phase: PhaseRows,
+    active: Sequence[ActiveConstraint],
+    state: Mapping[str, float],
+    rows: _PhaseTerms | None,
+) -> tuple[tuple[str, ...], VerificationCheck]:
+    """V4 with the start's phase rows (OPT §4.7): (the units of the split rows in V3's active set
+    `active`, V4's check). With the rows' terms `rows` V4 also names the guarded splits whose row
+    is not their closure's test (§9 A-3, `_not_closure_test`); without them, none."""
+    # OPT §4.6 V4: a split whose phase row is active is recorded, not judged by its margin.
+    active_rows = [item.target for item in active if item.target in set(phase.ids)]
+    held_units = tuple(phase.row(row).unit for row in active_rows if phase.row(row).split)
+    check = _regimes(
+        inputs.record,
+        inputs.declared,
+        inputs.held,
+        inputs.signature,
+        phase_active=held_units,
+        phase_rows=active_rows,
+        zero=inputs.zero,
+        not_closure_test=(
+            _not_closure_test(phase, inputs.record, state, rows) if rows is not None else ()
+        ),
+    )
+    return held_units, check
 
 
 def _regimes(
