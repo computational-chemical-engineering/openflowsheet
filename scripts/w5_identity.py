@@ -23,7 +23,9 @@ The ruling decides what a byte change of a registry-hashed file moves; this tool
   one fixed at B.
 - `predict`: the (measure, key) pairs of F0's registry that a comment-only change of the files
   moves, by section 3.2's reach rules, and whether `registry_sha256` moves. `--files` defaults
-  to `git diff --name-only BASE..HEAD`; files outside R move nothing. `--against-log` compares
+  to `git diff --name-only BASE..HEAD` (`--files` with no path: E is empty); files outside R
+  move nothing, except B7's seven group modules, which M9 measures and the base does not
+  register (section 8: M9 has 42 keys at head). `--against-log` compares
   the prediction with an unpinned F0 `--check` log, both ways, and its summary line (W5-S3).
   The prediction also names the table pointers E moves (W5-S4: a contributor's implementation
   `modules` after a tier 1 split adds or removes a module in its directory, coolprop-heos-v1's
@@ -534,14 +536,15 @@ def normalise(name: str) -> str:
 
 def predict(facts: Facts, files: Iterable[str]) -> tuple[Moved, bool]:
     """The registered (measure, key) pairs a comment-only change of `files` moves, and whether
-    `registry_sha256` moves. Files outside R move nothing."""
+    `registry_sha256` moves. Files outside R move nothing, except B7's group modules, which F0
+    measures and the base does not register (M9, section 8)."""
     edited = set(files) & set(registry_set(facts))
     attributed = attribution(facts)
     providers = {p for file in edited for p in attributed.get(file, [])}
     prefixes = {prefix_of(facts, p) for p in providers}
     measures = facts["registry"]["measures"]
     moved: Moved = {measure: set() for measure in MEASURES}
-    moved["M9"] = edited & set(measures["M9"])
+    moved["M9"] = (edited & set(measures["M9"])) | (set(files) & set(B7_MODULES))
     moved["M2"] = {
         run
         for run, value in measures["M2"].items()
@@ -950,7 +953,7 @@ def command_sets(arguments: argparse.Namespace, tree: Path) -> int:
 
 
 def _edited(tree: Path, base: str, files: Sequence[str] | None, head: str = "HEAD") -> list[str]:
-    if files:
+    if files is not None:
         return sorted({normalise(name) for name in files})
     return sorted(_git(tree, "diff", "--name-only", f"{base}..{head}").split())
 
@@ -1131,7 +1134,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     sets.add_argument("--json", type=Path)
     prediction = commands.add_parser("predict")
     prediction.add_argument("--base", required=True)
-    prediction.add_argument("--files", nargs="+")
+    prediction.add_argument("--files", nargs="*", help="E (default: the diff); none: E empty")
     prediction.add_argument("--against-log", type=Path)
     prediction.add_argument(
         "--against-tables", action="store_true", help="W5-S4: HEAD's generator against BASE"
