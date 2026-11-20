@@ -4308,3 +4308,21 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   branches: `_phase_answer` rule-None (~:1040), `_saturation_answers` Tsat-None (~:1078). W5-S1, S4, S7 confirmed.
   (4) m6 anchor: leaving `_requested_derivatives` inline is right (a retarget edits S05 A29's mutation evidence).
 - 2026-11-20, job 552 (w5p3-1, WO-P3 step 1) PASS 20/20 (step 492, wilson_ig 60.5 -> 37.0). Jobs 553, 554 queued. gate_report: standing ALERT only.
+- **2026-11-20, WO-P3 delivered (opus-engineer, Opus, ~233k, over the cap).** wp/S19-w5p 63cead7c..ae2d5f81,
+  `wilson_ig.py` health 6.9 -> 9.2, debt 60.5 -> 3.0: c37274e5 `evaluate_phase` (`_request_refusal`, `_phase_rows`,
+  `_requested_derivatives`; 23.5 -> 0; job 552 PASS), 1327ffde `_Search.two_phase` (`_phases`, `_split_k`; 19.0 -> 0;
+  job 553 PASS), 382872f6 `_lambda` (`_lambda_entry`; 554), ae2d5f81 `parse_records` (`_header`; 555). FP: arithmetic
+  multiset (132) and string-literal multiset equal; dump 224524 records (v1 and v2 evaluate_phase, flash, stability,
+  `_Search.two_phase` from 6 starts, parse_records/_lambda over 71 record files, four record sets; `describe()`'s
+  implementation_sha256 blanked) sha256 e65d4448 at B_P and every step, `-P`, module paths asserted; a falsifier per
+  step; wilson_ig_v2.py byte-equal to B_P. Coverage: no NOT EXECUTED; partly executed 512-543 (F0 20/21), 243-262
+  (11/15), 319-337 (8/13), the dump runs all. Local W5-S2 `F0 PASS` 9/9; S3 `M2 FAIL 9/61, M3 FAIL 9/61, M6 FAIL 6/85,
+  M9 FAIL 3/35` (predict PASS). Left: `flash` 2.0, `_rachford_rice` 1.0 (not in the brief). S1 review R-W5-P3 due
+  (4 steps) on 554/555 PASS.
+- 2026-11-20, job 553 (w5p3-2) PASS 20/20 (step 493, 37.0 -> 18.0).
+- **2026-11-20, ofs-f3-merge-main `VERIFIED`** (A "Merge now", signed 14:48:32Z, key 032ee0a5; hub's doorbell, verified
+  here with the exact action text). Step 1: main was not an ancestor of wp/F3, so main c4a91a75 merged into wp/F3
+  (6cf2a1de, pushed): register both appends (F3 R-1050..R-1058, then main R-1059, R-1060; no repeat), envelope rows
+  both kept, support-matrix re-emitted, HARVEST_SIZE (100, 1144, 146) = base + (1, 6) + (1, 9), measured; t08 --check
+  0 problems, 663 + 209 passed, F0 PASS 9/9. Fresh CI 44758521457 running; on green: merge wp/F3 into main (merge
+  commit), F0 on main, push only if F0 passes, then `executed` on the card.
