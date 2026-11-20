@@ -141,6 +141,10 @@ the set; its literal pin in `test_k05_replay.py:566` stays and is the independen
 Log line for the third row: `M7: <machine>/<system> is not a registered replay platform (ADR 0007 D3.3): judged
 inspected_archived_results/NOT_RUN with the unregistered-platform reason; MATCH is judged on the registered legs`.
 
+*Erratum (review R-10, `docs/X07a-review.md`, 2026-11-20):* for "the report's reasons exactly one" read "the report's
+reasons exactly two, in this order: the `running on <machine>/<system>, which is not a registered platform` reason,
+then `no rerun was supplied`"; a third reason, a missing one or a lock reason fails (D-20).
+
 This does not relax M7. On an unregistered platform the replay policy forbids the comparison, so `MATCH` is not a
 possible correct answer there. The judged answer is exact and fails on a false registration (`compatible_reproduction`
 or `MATCH`), an integrity failure, an unverified lock (its reason would come first) or an unknown policy (a second
@@ -180,6 +184,8 @@ D7 case, and only after its platform is registered and its classification is set
     `assert_inspected_off_registered(report)`): mode `inspected_archived_results`, verdict `NOT_RUN`, `integrity_ok`
     true, and reasons exactly one, the `running on` reason. The comparison claim stays judged on the registered legs.
     Row class `replay-committed`, lifted by the platform's registration.
+    *Erratum (review R-10, 2026-11-20):* the reasons are exactly two, the `running on` reason and then `no rerun was
+    supplied` (as R1.4's erratum; D-20).
 - **P2 The expectation is bitwise** (`float.hex()`, `repr` or byte goldens, `==` on a float or on a digest of floats
   recorded on another platform). Mark the node with the shared marker `bitwise_baseline` (`tests/conftest.py`). It runs
   on `BITWISE_BASELINE_PLATFORMS = {(x86_64, Linux), (aarch64, Linux)}`, where the committed baselines were recorded or
