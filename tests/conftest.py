@@ -118,8 +118,22 @@ def assert_inspected_off_registered(report: Any, row: str) -> None:
         assert texts[1:] in ([], [NOT_RERUN_NOTE]), (row, member, texts)
 
 
+#: X07a Windows limits on tests whose own file is registered byte-identical, so it cannot carry a
+#: marker (`docs/X07a_DECISIONS.md`, platform-limit table): node id -> reason.
+FROZEN_WINDOWS_LIMITS: dict[str, str] = {
+    "tests/test_t08_w4_v0_1_gate.py::test_the_recorded_tree_gives_git_s_answer": (
+        "X07a platform limit: its chmod makes no mode change where git has no executable bit "
+        "(core.fileMode=false), and M07a.A13 holds the file byte-identical, so the index "
+        "staging fix is held back"
+    ),
+}
+
+
 def pytest_runtest_setup(item: Any) -> None:
-    """P2: a `bitwise_baseline` node runs only where its baseline's bits were recorded."""
+    """P2: a `bitwise_baseline` node runs only where its baseline's bits were recorded; on
+    Windows, a node of `FROZEN_WINDOWS_LIMITS` skips with its reason."""
+    if sys.platform == "win32" and item.nodeid in FROZEN_WINDOWS_LIMITS:
+        pytest.skip(FROZEN_WINDOWS_LIMITS[item.nodeid])
     marker = item.get_closest_marker("bitwise_baseline")
     if marker is not None and HOST_PLATFORM not in BITWISE_BASELINE_PLATFORMS:
         row = marker.kwargs.get("row", "")
