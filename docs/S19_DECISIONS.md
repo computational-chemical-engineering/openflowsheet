@@ -3983,3 +3983,13 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
 - 2026-11-20: DECISION-REQUEST ofs-x07a-pywin32-licence sent to hub (X07a Q-1; rec A: allow pywin32 PSF-2.0 as a
   Windows-only dependency of the server extra, Windows-marker pin in the lock; B: server extra a Windows platform limit).
 - 2026-11-20, job 527 (`w5l2-1`, no-gain, R-W5-L1 N1 docstring, 1214e1f1) PASS 18/18, step 472 accepted-neutral.
+- **2026-11-20, X07a platform ruling (specifier, Opus, ~229k; 0.5 lane):** `docs/X07a-platform-ruling.md` on wp/X07a
+  8b9e8f86. Q-2: macOS and Windows stay unregistered in 0.5; a same-host rerun gets `exact_replay` on any platform
+  (ADR 0007 Amendment 3, proposed; grid of 82 944 pairs: 64 change, all same-identity on unregistered platforms, none
+  between registered ones). Q-3: ADR 0067 D7 covers registered platforms only (F8-WO5, 0.6); bitwise tests become typed
+  limits off Linux, the M03 margin a platform-difference row (Q-4 open with default); rules P1-P5. Five proposed
+  errata to ADR 0067 D7 (wrong ADR 0060 D2 citation, ADR 0025 has no such pattern, schedule). K05's CI-matrix guard
+  passes vacuously. DECISION: Q-8 (when D7 is built) -> the ruling's default, F8-WO5 or the first registration.
+  Alternative: build D7 in X07a. Reversible by: a work order. X07a-WO3 launched (opus-engineer, brief
+  `docs/briefs/X07a-WO3.md`, 460634ac). DECISION-REQUEST ofs-x07a-adr0007-am3 sent to hub (rec A: accept
+  Amendment 3, Q-5 default no registration in 0.5); X07a's merge into main waits on it and on ofs-x07a-pywin32-licence.
