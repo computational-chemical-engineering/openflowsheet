@@ -415,6 +415,7 @@ builds = [
 print(json.dumps({
     "coefficients": [c.hex() for c in s.coefficients_x + s.coefficients_dt],
     "controlled": [os.path.basename(library.path) for library in blas.controlled()],
+    "loaded": [os.path.basename(path) for path in blas._loaded_openblas()],
     "openblas_builds": builds,
 }))
 """
@@ -451,13 +452,18 @@ def test_a49_the_fits_coefficients_are_bitwise_equal_at_one_and_eight_blas_threa
     unpinned_1 = children["unpinned", 1]["coefficients"]
     unpinned_8 = children["unpinned", 8]["coefficients"]
     # The pin reaches every platform's OpenBLAS (review R-1: it found none off Linux and was a
-    # no-op there): where NumPy or SciPy is built against an OpenBLAS, the child controls one.
+    # no-op there): where NumPy or SciPy is built against an OpenBLAS, the child controls one;
+    # and it controls every OpenBLAS the fit loaded, none dropped (WO9 review W-1).
     child = children["pinned", 8]
     record_property("blas_controlled", child["controlled"])
     record_property("openblas_builds", child["openblas_builds"])
     assert child["controlled"] or not child["openblas_builds"], (
         f"OpenBLAS builds {child['openblas_builds']}, but the pin controls none"
     )
+    for key, run in children.items():
+        assert run["controlled"] == run["loaded"], (
+            f"{key}: OpenBLAS loaded {run['loaded']}, but the pin controls {run['controlled']}"
+        )
     assert pinned_1 == pinned_8
     # And the pin is single-threaded OpenBLAS: the bits of a process started at one thread.
     assert pinned_8 == unpinned_1
