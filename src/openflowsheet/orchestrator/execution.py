@@ -543,12 +543,9 @@ def specification_regions(
 
 
 def _solve_plan(
+    basis: _PlanBasis,
     *,
     plan_id: str,
-    declaration: Declaration,
-    report: StructuralReport,
-    scaling: Scaling,
-    policy: SolvePolicy,
     tear_variables: Sequence[str],
     tear_rows: Sequence[str],
     inner_variables: Sequence[str],
@@ -558,15 +555,18 @@ def _solve_plan(
     signature_units: Sequence[str],
     initializer_chain: Sequence[str],
 ) -> SolvePlan:
-    """A K03 `SolvePlan`, unchanged in shape (ADR 0009 D5), built from the declaration alone."""
+    """A K03 `SolvePlan`, unchanged in shape (ADR 0009 D5), built from the declaration alone:
+    `basis`'s declaration, structural report, scaling and policy, and the step's system."""
+    declaration = basis.declaration
+    scaling = basis.scaling
     rows = set(inner_rows) | set(tear_rows)
     columns = set(inner_variables) | set(tear_variables)
-    certificates = {entry.row_id: entry for entry in report.certificates}
+    certificates = {entry.row_id: entry for entry in basis.report.certificates}
     return SolvePlan(
         plan_id=plan_id,
         model_version=declaration.model_version,
         constants_sha256=declaration.constants_sha256,
-        policy_id=policy.policy_id,
+        policy_id=basis.policy.policy_id,
         tear_variable_ids=tuple(tear_variables),
         tear_row_ids=tuple(tear_rows),
         inner_variable_ids=tuple(inner_variables),
@@ -755,11 +755,8 @@ def _region_step(basis: _PlanBasis, region: Region, index: int, suffix: str) -> 
         units=region.units,
         region=region,
         solve_plan=_solve_plan(
+            basis,
             plan_id=f"{basis.label}-{basis.policy.policy_id}-{suffix}",
-            declaration=basis.declaration,
-            report=basis.report,
-            scaling=basis.scaling,
-            policy=basis.policy,
             tear_variables=(),
             tear_rows=(),
             inner_variables=region.variable_ids,
@@ -838,11 +835,8 @@ def _loop_step(
         tear_streams=tear_streams,
         method=method,
         solve_plan=_solve_plan(
+            basis,
             plan_id=f"{basis.label}-{basis.policy.policy_id}-loop{index}",
-            declaration=basis.declaration,
-            report=basis.report,
-            scaling=basis.scaling,
-            policy=basis.policy,
             tear_variables=tear_variables,
             tear_rows=tear_rows,
             inner_variables=inner_variables,
