@@ -4148,3 +4148,12 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   `grant ... > token.txt` writes five lines `serve-mcp` refuses; reproduced on main c4a91a75 and v0.4.0. Branch wp/TOK
   (worktree tok, from main). DECISION: no ADR (T07 §10.3 says only "print its token once", which holds) -> register
   R-1064. Alternative: ADR 0078. Reversible by: filing it. Register numbers: R-1061 S19, R-1062/R-1063 X07a, R-1064 TOK.
+- **2026-11-20, WO-P0 fix round 1 delivered (opus-engineer, Opus, ~155k).** wp/S19-w5p0 head b314f69b: 5f66897f
+  fix 1 (tier `w5_pin` after `f0`, guard as `w5_registry`, detect_exit [1, 124], 1800 s; `close` runs W5-K5 for
+  batch P after K1, K recorded only if K5 passes; checked: `grep -c 'w5_gate.py pin' .codehealth/config.toml` = 1);
+  fada6010 fix 2 (coverage's M9 key set takes B7's exception, scoped as predict); dd96165e fix 3 (T3 pins all six
+  tier 3 files); 57c382cd fix 4 (the real tier -> w5_gate pin -> w5_identity pin -> F0 chain, reference platform);
+  3ee839a9 typing; b314f69b fix 5 `scripts/w5_hunks.py` (F0 line coverage per changed hunk, sys.monitoring; not
+  gated; module-level lines count on import, M8's subprocess unseen). Tests: w5_identity 62 passed, w5_gate 63 passed.
+  Engineer DECISION: K5 inside `close` (reversible by that hunk); accepted. Batch P gate file must list the seven
+  `_coolprop_heos_fluids_*` modules under `generator`. Ruff clean; job 543 w5p0-mc2 (merge-check, base 9ad50635).
