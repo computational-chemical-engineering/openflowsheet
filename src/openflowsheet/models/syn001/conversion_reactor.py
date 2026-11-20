@@ -298,6 +298,17 @@ class ConversionReactor:
     molar_masses: tuple[float, ...] = MOLAR_MASSES
 
     def __post_init__(self) -> None:
+        """The construction checks, in order: the inputs' shape, the energy specification's name
+        and the finiteness of the value, the pressure drop and the molar masses
+        (`_check_well_formed`), then spec §6.2's construction refusals in the order it lists
+        them (`_check_construction`)."""
+        self._check_well_formed()
+        self._check_construction()
+
+    def _check_well_formed(self) -> None:
+        """`ValueError` for coefficient or molar-mass counts that are not the components', then
+        `unknown_specification` for an energy specification outside `ENERGY_SPECIFICATIONS`,
+        then `ValueError` for a non-finite value, pressure drop or molar mass."""
         count = len(self.components)
         if len(self.stoichiometry) != count or len(self.molar_masses) != count:
             raise ValueError(
@@ -320,7 +331,10 @@ class ConversionReactor:
         if not all(math.isfinite(mass) for mass in self.molar_masses):
             raise ValueError(f"{self.unit_id}: molar masses {self.molar_masses} are not finite")
 
-        # Spec §6.2's construction refusals, in the order it lists them.
+    def _check_construction(self) -> None:
+        """Spec §6.2's construction refusals, in the order it lists them: the conversion in
+        `[0, 1]`, the key a reactant, mass conservation, a reaction-consistent reference
+        convention, `T_spec` in the domain, a non-negative pressure drop."""
         if not 0.0 <= self.conversion <= 1.0:
             raise SpecificationError(
                 "conversion_outside_unit_interval\n"
