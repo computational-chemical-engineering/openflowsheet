@@ -4003,3 +4003,10 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   dropped dead `f_low`/`f_high` stores in a loop; playbook rule 7 docstring note added one step late. DECISION: my brief
   ordered 6 S1 steps against the cadence of a review every 3; one review R-W5-L2 covers both windows (528-530,
   531-533) step by step. Alternative: two reviews. Reversible by: none needed (no step is merged before review).
+- **2026-11-20, R-W5-L2 (reviewer, Opus): merge with batch L, no fixes.** FP order, evaluation counts, accumulation
+  (`total`, same loop and start), `is not None` guards (non-None only from `typed_failure` or constructors; no parent
+  tested truthiness), dead `f_low`/`f_high` proven dead, `__post_init__` check order unchanged, W5-S1/S3/S4/S7 hold.
+  Correction (N2) to the WO-L2 entry: the stop reason for conversion_reactor and kinetic_cstr is that the residual is
+  `contribute` (straight-line row building; splitting fragments it, playbook rule 6) and `manifest` (identity payload,
+  W5-S4 risk), not "debt per function below about 2". N1 (rule 7 note one step late) repaired in the lane; N3 comment
+  `conversion_reactor.py:326-328` still true in file order.
