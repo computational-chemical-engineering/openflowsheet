@@ -673,10 +673,9 @@ def test_a25c_writer_regression_on_a_synthetic_archive(tmp_path):
     build_archive(good, doc)
     out = _writer("--check", "--archive", str(good))
     assert out.returncode == 0, out.stdout + out.stderr
-    assert (
-        f"OK benchmarks/m06/openidaes450/case_facts-v2.json byte-identical "
-        f"(sha256 {FACTS_V2_SHA256})"
-    ) in out.stdout
+    # The writer prints the path natively (`benchmarks\\m06\\...` on Windows; X07a).
+    named = Path("benchmarks/m06/openidaes450/case_facts-v2.json")
+    assert f"OK {named} byte-identical (sha256 {FACTS_V2_SHA256})" in out.stdout
     first = next(c for c in doc["cases"] if c["case_id"] == FIRST_DEVELOPMENT)["topology_units"]
     first[0]["id"] += "_A25"
     differs = tmp_path / "differs"
