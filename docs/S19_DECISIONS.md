@@ -4252,3 +4252,9 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   on green: status `tested`. WO-P2 launched (opus-engineer, brief `S19-W5-P2.md`, same worktree from 65504942); the
   R-W5-P1 review brief now reads the range through git only (its own detached worktree to run anything).
 - 2026-11-20, job 547 (w5p1-2, WO-P1 step 2 `flash`) PASS 20/20 (step 487, 21.7 -> 8.7). gate_report: standing selected-share ALERT only.
+- 2026-11-20, outside S19 (0.5): X07a CI 44722847356 at f498a3a6 FAIL on every leg, the same two tests everywhere
+  (default-install 2 failed, 17083 passed): `test_m07_v0_2_gate` a31_b (672fe9f0 edited the 0.2 alpha's tagged
+  `tests/test_m07a_v0_2_gate.py` a07, as 2bb2c157 did the v0.1 gate test before ebe513d9) and `test_rel_evidence_
+  manifest` rel_a20 (`RP.S03 same form: fail`; cause to bisect). identity: "G05 needs two platforms; found 0" (follows).
+  X07a-WO7 launched (opus-engineer, brief `<git-common-dir>/codehealth/briefs/X07a-WO7.md`). R-W5-P1 waits for a
+  slot (2-agent cap: WO-P2, WO7).
