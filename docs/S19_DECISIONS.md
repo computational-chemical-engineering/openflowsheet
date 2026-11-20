@@ -3980,3 +3980,5 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   (`REGISTERED_PLATFORMS` makes every off-Linux rerun NOT_RUN: F0 M7, ~90 macOS and 54 Windows tests); Q-3 new (macOS
   last-bit float differences against Linux fixtures). Design ruling on Q-2/Q-3 launched (specifier, brief
   `docs/briefs/X07a-R-platforms.md` on wp/X07a bd7548e4); X07a-WO3 follows the ruling.
+- 2026-11-20: DECISION-REQUEST ofs-x07a-pywin32-licence sent to hub (X07a Q-1; rec A: allow pywin32 PSF-2.0 as a
+  Windows-only dependency of the server extra, Windows-marker pin in the lock; B: server extra a Windows platform limit).
