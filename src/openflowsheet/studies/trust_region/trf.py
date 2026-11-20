@@ -81,7 +81,7 @@ import threading
 import time
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
-from typing import Any, Final
+from typing import Any, Final, NamedTuple
 
 import pyomo.environ as pyo
 from pyomo.opt import SolverFactory
@@ -269,17 +269,126 @@ def _run(
     gradient_check: Callable[[Projection], Any] | None = None,
     check_budgets: Mapping[str, Sequence[ColdBudget]] | None = None,
 ) -> TrfRun:
+    """One TRF run on `projection`, inside its holders' run: `_preflight_phase` (the gradient
+    check, the basis, `_preflight`), whose refusal is the run's outcome
+    `TRF_TRUTH_REFUSED(<code>)` without a solve; else Pyomo's TRF solve with its log and stdout
+    captured and the θ recheck (`_solve_phase`), its log read back with the holder refusals
+    (`_run_log`), R-401's final step (`_final_step`), the outcome classified (`_classify_run`),
+    and the records at the model it returns (`_final_records`), into the returned `TrfRun`."""
     solver = SolverFactory("trustregion")
     effective = solver.config(dict(config))
     run = RunState(run_id)
     handler = TrfLogHandler(run)
-    logger = logging.getLogger(TRF_PACKAGE)
-    saved = (logger.level, logger.propagate)
-    captured = io.StringIO()
     checked = check_budgets or {}
     for holder in projection.holders:
         holder.begin_run(run, budgets.get(holder.name, ()), checked.get(holder.name, ()))
     preflight_start = time.perf_counter()
+    refused, refused_phase, built = _preflight_phase(projection, basis, gradient_check, run)
+    # The backstop (R-276) counts the refusals from here on: one the basis handled itself (R-400
+    # step 9: the curvature's fallback) is recorded in its basis block, not the run's outcome.
+    refused_before = {holder.name: len(holder.refusals) for holder in projection.holders}
+    basis_record = getattr(built, "record", None)
+    basis_limitations = tuple(getattr(built, "limitations", ()))
+    kinds = {} if built is None else {name: built[name].kind for name in sorted(built)}
+    if refused is not None:
+        return TrfRun(
+            feasibility_termination=float(effective.feasibility_termination),
+            run_id=run_id,
+            outcome=truth_refused(f"{refused_phase}{refused.code}"),
+            iterations=(),
+            filter=(),
+            exit_lines=(),
+            warnings=(),
+            log=(),
+            config=dict(config),
+            final=None,
+            model=None,
+            trf_map=(),
+            refusal=refused,
+            error=None,
+            wall_s=time.perf_counter() - preflight_start,
+            basis=kinds,
+            basis_record=basis_record,
+            basis_limitations=basis_limitations,
+            theta_recheck=None,
+        )
+    assert built is not None  # no refusal: the basis was built
+    solved = _solve_phase(projection, solver, config, built, handler)
+    log = _run_log(solved.captured, projection, refused_before, handler)
+    final_step = _final_step(projection, effective, log.iterations, solved.returned)
+    outcome, refusal, error_text = _classify_run(log, solved, handler, effective, final_step)
+
+    model = solved.returned if outcome in RETURNS_MODEL else None
+    claim = theta_logged = same_point = None
+    if solved.returned is not None:
+        claim = exit_claim(log.exit_lines)
+        theta_logged = log.iterations[-1].theta if log.iterations else None
+        same_point = _returned_at_last_points(projection, solved.returned, solved.last_points)
+    trf_map: tuple[Mapping[str, str], ...] = ()
+    if model is not None:
+        try:
+            trf_map = _trf_map(projection, model)
+        except ValueError as error:
+            outcome, model, error_text = trf_error("trf_map"), None, str(error)
+    at_model = _final_records(projection, model, log.iterations)
+    return TrfRun(
+        feasibility_termination=float(effective.feasibility_termination),
+        run_id=run_id,
+        outcome=outcome,
+        iterations=log.iterations,
+        filter=reconstruct_filter(
+            log.iterations,
+            float(effective.param_filter_gamma_f),
+            float(effective.param_filter_gamma_theta),
+        ),
+        exit_lines=log.exit_lines,
+        warnings=tuple(handler.warnings),
+        log=tuple(handler.messages),
+        config=dict(config),
+        final=at_model.final,
+        model=model,
+        trf_map=trf_map,
+        refusal=refusal,
+        error=error_text,
+        wall_s=solved.wall,
+        basis=kinds,
+        basis_record=basis_record,
+        basis_limitations=basis_limitations,
+        theta_recheck=solved.theta_recheck,
+        omitted_rows_final=at_model.omitted_rows,
+        zero_pins_final=at_model.zero_pins,
+        final_state=at_model.state,
+        exit_claim=claim,
+        theta_logged=theta_logged,
+        final_state_is_last_truth_point=same_point,
+        final_step_ratio=final_step.step_ratio,
+        final_step_at_box_bound=final_step.at_box_bound,
+    )
+
+
+class _Preflown(NamedTuple):
+    """`_preflight_phase`'s result: the refusal that ends the run before TRF starts (`None`: TRF
+    runs), the prefix of its outcome code (`""` for a refusal the gradient check or the basis
+    raised, `start:` for `_preflight`'s), and the basis (`None` only when the check or the basis
+    refused before it was formed)."""
+
+    refused: TruthRefused | None
+    refused_phase: str
+    built: Mapping[str, EFBasis] | None
+
+
+def _preflight_phase(
+    projection: Projection,
+    basis: Mapping[str, EFBasis] | BasisFor,
+    gradient_check: Callable[[Projection], Any] | None,
+    run: RunState,
+) -> _Preflown:
+    """Everything before TRF's solve, inside the holders' run: `gradient_check` (with
+    `run.checking_gradient` set), then the basis when `basis` is a `BasisFor` (with
+    `run.forming_basis` set); a `TruthRefused` from either is the run's refusal (R-400 step 9).
+    Otherwise `_refuse_basis` (it raises `TrfConfigurationRefusedError`) and `_preflight` (R-276).
+    The holders' runs are ended here when the phase refuses or raises; otherwise they stay open
+    for the solve."""
     refused: TruthRefused | None = None
     refused_phase = "start:"
     built: Mapping[str, EFBasis] | None = None if callable(basis) else basis
@@ -311,35 +420,41 @@ def _run(
         if not preflown or refused is not None:
             for holder in projection.holders:
                 holder.end_run()
-    # The backstop (R-276) counts the refusals from here on: one the basis handled itself (R-400
-    # step 9: the curvature's fallback) is recorded in its basis block, not the run's outcome.
-    refused_before = {holder.name: len(holder.refusals) for holder in projection.holders}
-    basis_record = getattr(built, "record", None)
-    basis_limitations = tuple(getattr(built, "limitations", ()))
-    kinds = {} if built is None else {name: built[name].kind for name in sorted(built)}
-    if refused is not None:
-        return TrfRun(
-            feasibility_termination=float(effective.feasibility_termination),
-            run_id=run_id,
-            outcome=truth_refused(f"{refused_phase}{refused.code}"),
-            iterations=(),
-            filter=(),
-            exit_lines=(),
-            warnings=(),
-            log=(),
-            config=dict(config),
-            final=None,
-            model=None,
-            trf_map=(),
-            refusal=refused,
-            error=None,
-            wall_s=time.perf_counter() - preflight_start,
-            basis=kinds,
-            basis_record=basis_record,
-            basis_limitations=basis_limitations,
-            theta_recheck=None,
-        )
-    assert built is not None  # no refusal: the basis was built
+    return _Preflown(refused, refused_phase, built)
+
+
+class _Solved(NamedTuple):
+    """`_solve_phase`'s result: TRF's captured stdout, the model `solve` returned (`None` when it
+    raised) or the exception it raised (`None` when it returned), the θ recheck of the returned
+    model (`None` when the solve raised or the recheck raised; `recheck_error` holds the text of a
+    recheck exception that is not a `TruthRefused`), each holder's last point when the solve
+    returned (empty otherwise), and the solve's wall time."""
+
+    captured: io.StringIO
+    returned: Any
+    raised: BaseException | None
+    theta_recheck: float | None
+    recheck_error: str | None
+    last_points: dict[str, str | None]
+    wall: float
+
+
+def _solve_phase(
+    projection: Projection,
+    solver: Any,
+    config: Mapping[str, Any],
+    built: Mapping[str, EFBasis],
+    handler: TrfLogHandler,
+) -> _Solved:
+    """Pyomo's TRF solve of `projection` with `config` and the surrogate rule over `built`, inside
+    the holders' run: TRF's log goes to `handler` alone and its stdout is captured. When the solve
+    returns, each holder's last point and the θ recheck (`recheck_theta`) are read while the
+    holders still serve the run. Every exception of the solve is returned in `raised`, never
+    raised; a `TruthRefused` from the recheck stays on its holder (the caller's outcome is that
+    refusal). Whatever happened, the logger is restored and the holders' runs are ended here."""
+    logger = logging.getLogger(TRF_PACKAGE)
+    saved = (logger.level, logger.propagate)
+    captured = io.StringIO()
     logger.setLevel(logging.INFO)
     logger.propagate = False
     logger.addHandler(handler)
@@ -364,7 +479,7 @@ def _run(
         try:
             theta_recheck = recheck_theta(returned)
         except TruthRefused:
-            pass  # kept on its holder: the outcome below is that refusal
+            pass  # kept on its holder: the caller's outcome is that refusal
         except Exception as error:  # noqa: BLE001 - mapped to TRF_ERROR(theta_recheck)
             recheck_error = f"{type(error).__name__}: {error}"
     finally:
@@ -374,7 +489,30 @@ def _run(
         logger.propagate = saved[1]
         for holder in projection.holders:
             holder.end_run()
+    return _Solved(captured, returned, raised, theta_recheck, recheck_error, last_points, wall)
 
+
+class _RunLog(NamedTuple):
+    """`_run_log`'s result: the `EXIT:` lines of TRF's stdout, the truth refusals raised during
+    the solve in their order, and the parsed iteration log (empty, with the log's error text in
+    `log_error`, when the log is not TRF 6.10.1's; `log_error` is `None` otherwise)."""
+
+    exit_lines: tuple[str, ...]
+    refusals: list[TruthRefused]
+    iterations: tuple[IterationRecord, ...]
+    log_error: str | None
+
+
+def _run_log(
+    captured: io.StringIO,
+    projection: Projection,
+    refused_before: Mapping[str, int],
+    handler: TrfLogHandler,
+) -> _RunLog:
+    """What the solve left behind, read after the holders' run ended: the `EXIT:` lines of the
+    `captured` stdout, each holder's refusals past its count in `refused_before` (the backstop,
+    R-276) sorted by `order`, and `handler`'s iteration records; a `TrfLogError` from them is
+    returned as its text in `log_error`, not raised."""
     exit_lines = tuple(
         line for line in captured.getvalue().splitlines() if line.startswith("EXIT:")
     )
@@ -392,8 +530,26 @@ def _run(
     except TrfLogError as error:
         iterations = ()
         log_error = str(error)
+    return _RunLog(exit_lines, refusals, iterations, log_error)
 
-    # R-401: the final step against the radius it was solved with, and the returned decision.
+
+class _FinalStep(NamedTuple):
+    """`_final_step`'s result (R-401): the radius rule the run was solved with (TRF's
+    `trust_radius`, `minimum_radius` and `gamma_c`), the final step's ratio to its radius (`None`
+    with no logged TRSP), whether the returned decision is at a box bound (`None` when TRF raised
+    or the ratio is `None`), and whether that exempts the run (a single decision at its bound)."""
+
+    radius_rule: dict[str, float]
+    step_ratio: float | None
+    at_box_bound: bool | None
+    box_bound_exempt: bool
+
+
+def _final_step(
+    projection: Projection, effective: Any, iterations: Sequence[IterationRecord], returned: Any
+) -> _FinalStep:
+    """R-401: the final step of `iterations` against the radius it was solved with, read from TRF's
+    `effective` config, and the decision `returned` (`None` when TRF raised) against its box."""
     radius_rule = {
         "trust_radius": float(effective.trust_radius),
         "minimum_radius": float(effective.minimum_radius),
@@ -403,94 +559,8 @@ def _run(
     at_box_bound = None
     if returned is not None and step_ratio is not None:
         at_box_bound = _at_box_bound(projection, returned)
-
-    outcome: str
-    refusal = refusals[0] if refusals else None
-    error_text = None if raised is None else f"{type(raised).__name__}: {raised}"
-    if refusal is not None:
-        outcome = truth_refused(refusal.code)
-    elif raised is not None:
-        if type(raised) is ArithmeticError and str(raised).startswith(_SUBPROBLEM_FAILED_PREFIX):
-            outcome = TRF_SUBPROBLEM_FAILED
-        else:
-            outcome = trf_error(type(raised).__name__)
-    elif log_error is not None:
-        outcome = trf_error("log")
-        error_text = log_error
-    elif theta_recheck is None:
-        outcome = trf_error("theta_recheck")
-        error_text = recheck_error
-    else:
-        outcome = classify_exit(
-            exit_lines=exit_lines,
-            warnings=handler.warnings,
-            iterations=iterations,
-            theta_recheck=theta_recheck,
-            feasibility_termination=float(effective.feasibility_termination),
-            step_size_termination=float(effective.step_size_termination),
-            maximum_iterations=int(effective.maximum_iterations),
-            **radius_rule,
-            box_bound_exempt=len(projection.decisions) == 1 and bool(at_box_bound),
-        )
-
-    model = returned if outcome in RETURNS_MODEL else None
-    claim = theta_logged = same_point = None
-    if returned is not None:
-        claim = exit_claim(exit_lines)
-        theta_logged = iterations[-1].theta if iterations else None
-        same_point = _returned_at_last_points(projection, returned, last_points)
-    trf_map: tuple[Mapping[str, str], ...] = ()
-    final = None
-    if model is not None:
-        try:
-            trf_map = _trf_map(projection, model)
-        except ValueError as error:
-            outcome, model, error_text = trf_error("trf_map"), None, str(error)
-    if model is not None:
-        accepted = last_accepted(iterations)
-        assert accepted is not None  # classify_exit refused an empty log
-        sign = -1.0 if projection.source_map["objective"]["sense"] == "maximize" else 1.0
-        final = TrfFinal(
-            decisions=projection.decision_parameters(model),
-            objective=sign * accepted.objective,
-            theta=accepted.theta,
-        )
-    omitted_rows_final = projection.omitted_rows_at(model) if model is not None else None
-    zero_pins_final = projection.zero_pins_at(model) if model is not None else None
-    final_state = projection.state_of(model) if model is not None else None
-    return TrfRun(
-        feasibility_termination=float(effective.feasibility_termination),
-        run_id=run_id,
-        outcome=outcome,
-        iterations=iterations,
-        filter=reconstruct_filter(
-            iterations,
-            float(effective.param_filter_gamma_f),
-            float(effective.param_filter_gamma_theta),
-        ),
-        exit_lines=exit_lines,
-        warnings=tuple(handler.warnings),
-        log=tuple(handler.messages),
-        config=dict(config),
-        final=final,
-        model=model,
-        trf_map=trf_map,
-        refusal=refusal,
-        error=error_text,
-        wall_s=wall,
-        basis=kinds,
-        basis_record=basis_record,
-        basis_limitations=basis_limitations,
-        theta_recheck=theta_recheck,
-        omitted_rows_final=omitted_rows_final,
-        zero_pins_final=zero_pins_final,
-        final_state=final_state,
-        exit_claim=claim,
-        theta_logged=theta_logged,
-        final_state_is_last_truth_point=same_point,
-        final_step_ratio=step_ratio,
-        final_step_at_box_bound=at_box_bound,
-    )
+    box_bound_exempt = len(projection.decisions) == 1 and bool(at_box_bound)
+    return _FinalStep(radius_rule, step_ratio, at_box_bound, box_bound_exempt)
 
 
 def _at_box_bound(projection: Projection, model: Any) -> bool:
@@ -503,6 +573,99 @@ def _at_box_bound(projection: Projection, model: Any) -> bool:
         if min(abs(scaled + 1.0), abs(scaled - 1.0)) <= AT_BOUND_SCALED:
             return True
     return False
+
+
+class _RunOutcome(NamedTuple):
+    """`_classify_run`'s result: the run's outcome code, the first truth refusal of the solve
+    (`None` without one), and the run's error text (`None` without one)."""
+
+    outcome: str
+    refusal: TruthRefused | None
+    error_text: str | None
+
+
+def _classify_run(
+    log: _RunLog,
+    solved: _Solved,
+    handler: TrfLogHandler,
+    effective: Any,
+    final_step: _FinalStep,
+) -> _RunOutcome:
+    """The run's outcome, by the first rung that holds: the solve's first truth refusal in `log`
+    (`TRF_TRUTH_REFUSED(<code>)`); an exception of the solve (`TRF_SUBPROBLEM_FAILED` for TRF's
+    subproblem failure, else `TRF_ERROR(<type>)`, with the exception's text); a log that is not TRF
+    6.10.1's (`TRF_ERROR(log)`, with its error text); no θ recheck (`TRF_ERROR(theta_recheck)`,
+    with the recheck's error text); else `classify_exit` on the log, `handler`'s warnings, the θ
+    recheck, TRF's `effective` terminations and `final_step`'s radius rule and exemption."""
+    outcome: str
+    refusal = log.refusals[0] if log.refusals else None
+    error_text = (
+        None if solved.raised is None else f"{type(solved.raised).__name__}: {solved.raised}"
+    )
+    if refusal is not None:
+        outcome = truth_refused(refusal.code)
+    elif solved.raised is not None:
+        if type(solved.raised) is ArithmeticError and str(solved.raised).startswith(
+            _SUBPROBLEM_FAILED_PREFIX
+        ):
+            outcome = TRF_SUBPROBLEM_FAILED
+        else:
+            outcome = trf_error(type(solved.raised).__name__)
+    elif log.log_error is not None:
+        outcome = trf_error("log")
+        error_text = log.log_error
+    elif solved.theta_recheck is None:
+        outcome = trf_error("theta_recheck")
+        error_text = solved.recheck_error
+    else:
+        outcome = classify_exit(
+            exit_lines=log.exit_lines,
+            warnings=handler.warnings,
+            iterations=log.iterations,
+            theta_recheck=solved.theta_recheck,
+            feasibility_termination=float(effective.feasibility_termination),
+            step_size_termination=float(effective.step_size_termination),
+            maximum_iterations=int(effective.maximum_iterations),
+            **final_step.radius_rule,
+            box_bound_exempt=final_step.box_bound_exempt,
+        )
+    return _RunOutcome(outcome, refusal, error_text)
+
+
+class _FinalRecords(NamedTuple):
+    """`_final_records`'s result: the run's `TrfFinal`, R-274's fact 4 on the omitted rows,
+    R-296's zero-flow pins and the state mapped back to every spec variable, each at the model
+    the run returns."""
+
+    final: TrfFinal | None
+    omitted_rows: OmittedRowsCheck | None
+    zero_pins: OmittedRowsCheck | None
+    state: Mapping[str, float] | None
+
+
+def _final_records(
+    projection: Projection, model: Any, iterations: Sequence[IterationRecord]
+) -> _FinalRecords:
+    """The records at the `model` the run returns, in this order: the `TrfFinal` (the decisions
+    at `model`, the last accepted iterate's objective in the objective's sense, and its θ), then
+    `projection`'s omitted-row check, zero-pin check and final state at `model`. All None when
+    `model` is None (the outcome returns no model, or `_trf_map` failed)."""
+    if model is None:
+        return _FinalRecords(None, None, None, None)
+    accepted = last_accepted(iterations)
+    assert accepted is not None  # classify_exit refused an empty log
+    sign = -1.0 if projection.source_map["objective"]["sense"] == "maximize" else 1.0
+    final = TrfFinal(
+        decisions=projection.decision_parameters(model),
+        objective=sign * accepted.objective,
+        theta=accepted.theta,
+    )
+    return _FinalRecords(
+        final,
+        projection.omitted_rows_at(model),
+        projection.zero_pins_at(model),
+        projection.state_of(model),
+    )
 
 
 def _preflight(projection: Projection) -> TruthRefused | None:

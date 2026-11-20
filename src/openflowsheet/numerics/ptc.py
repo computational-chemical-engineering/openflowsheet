@@ -57,6 +57,7 @@ from openflowsheet.numerics.newton import (
     Problem,
     _bound_aware_alpha,
     _scale_matrix,
+    _Step,
     _trial_point,
     another_signature,
 )
@@ -293,214 +294,13 @@ def solve_ptc(
         if not isinstance(frozen, _Frozen):
             return frozen
 
-        tau_try, retry = run.tau, 0
-        accepted: tuple[npt.NDArray[np.float64], tuple[float, ...], float, float, tuple[str, ...]]
-        while True:
-            reason: RejectionReason | None = None
-            alpha: float | None = None
-            blocked: tuple[str, ...] = ()
-            trial: npt.NDArray[np.float64] = run.x
-            trial_evaluation: Evaluation | None = None
-            step_inf: float | None = None
-            failure_message = ""
-            run.running = run.running.plus(factorizations=1)
-            try:
-                step_scaled, linear = solve_linear(
-                    sp.csc_matrix(frozen.jacobian + frozen.mass / tau_try), frozen.rhs
-                )
-            except LinearSolveFailedError as failure:
-                reason = "linear_solve_failed"
-                failure_message = str(failure)
-            else:
-                trace.record(
-                    kind="linear_solve",
-                    attempt=attempt,
-                    iteration=k,
-                    signature=signature,
-                    state_sha256=run.digest(run.x),
-                    residual_inf_unscaled=infinity,
-                    merit=merit,
-                    counters=run.running,
-                    linear=LinearRecord(
-                        residual_normalized=linear.residual_normalized,
-                        u_diag_min_abs=linear.min_abs_u_diagonal,
-                        u_diag_max_abs=linear.max_abs_u_diagonal,
-                        nnz_l=linear.nnz_l,
-                        nnz_u=linear.nnz_u,
-                    ),
-                    pseudo_step=tau_try,
-                )
-                direction = problem.scaling.unscale_state(step_scaled, problem.variable_ids)
-                alpha_max, landing = _bound_aware_alpha(run.x, direction, run.lower)
-                if alpha_max == 0.0:
-                    reason = "bound_blocked"
-                    blocked = tuple(problem.variable_ids[index] for index in landing)
-                    failure_message = f"blocked by {', '.join(blocked)}"
-                else:
-                    alpha = alpha_max
-                    trial = _trial_point(run.x, direction, alpha_max, run.lower, landing)
-                    trial_evaluation = run.evaluate(trial)
-                    step_inf = float(np.max(np.abs(step_scaled))) * alpha_max
-                    failure_message = trial_evaluation.message
-                    if trial_evaluation.status == "error":
-                        trace.record(
-                            kind="trial",
-                            attempt=attempt,
-                            iteration=k,
-                            signature=signature,
-                            state_sha256=run.digest(trial),
-                            residual_inf_unscaled=float("nan"),
-                            merit=float("nan"),
-                            counters=run.running,
-                            alpha=alpha_max,
-                            step_inf_scaled=step_inf,
-                            trial_status="rejected",
-                            message=trial_evaluation.message,
-                            pseudo_step=tau_try,
-                        )
-                        return run.close(
-                            "EVALUATION_ERROR",
-                            run.values,
-                            iterations=k,
-                            tau_end=tau_try,
-                            message=trial_evaluation.message,
-                        )
-                    if trial_evaluation.status != "ok" or trial_evaluation.values is None:
-                        reason = "invalid_trial"
-                    elif another_signature(
-                        signature, trial_evaluation.signature, compare_empty=compare_empty
-                    ):
-                        reason = "phase_update_required"
-                    else:
-                        landed = (
-                            tuple(problem.variable_ids[index] for index in landing)
-                            if alpha_max < 1.0
-                            else ()
-                        )
-                        accepted = (trial, trial_evaluation.values, alpha_max, step_inf, landed)
-                        break
-
-            # §7.3.5: a rejection keeps x_k and F_k; nothing of the trial is kept.
-            run.rejections.append(PtcRejection(k, retry, tau_try, reason, alpha, blocked))
-            trial_values = (
-                trial_evaluation.values
-                if trial_evaluation is not None and trial_evaluation.values is not None
-                else None
-            )
-            trace.record(
-                kind="trial",
-                attempt=attempt,
-                iteration=k,
-                signature=(
-                    trial_evaluation.signature
-                    if trial_evaluation is not None and trial_evaluation.signature
-                    else signature
-                ),
-                state_sha256=run.digest(trial) if alpha is not None else "",
-                residual_inf_unscaled=(
-                    float(np.max(np.abs(trial_values))) if trial_values else float("nan")
-                ),
-                merit=(
-                    problem.scaling.merit(trial_values, problem.row_ids)
-                    if trial_values
-                    else float("nan")
-                ),
-                counters=run.running,
-                alpha=alpha,
-                step_inf_scaled=step_inf,
-                trial_status="rejected",
-                rejection_reason=reason,
-                message=failure_message,
-                pseudo_step=tau_try,
-            )
-            if observer is not None:
-                # T04 §7.6: the wall observer hears every rejection, with the pseudo-step index
-                # and `2^−retry`, so a candidate's halving index is its retry index.
-                observer.rejected(
-                    k,
-                    2.0**-retry,
-                    trial,
-                    reason,
-                    trial_evaluation.signature if trial_evaluation is not None else None,
-                )
-            retry += 1
-            shrunk = tau_try * settings.retry_shrink
-            if retry > settings.retries_max or shrunk < settings.tau_min_s:
-                outcome: SolveOutcome = (
-                    "BOUND_BLOCKED" if reason == "bound_blocked" else "PTC_STALLED"
-                )
-                return run.close(
-                    outcome,
-                    run.values,
-                    iterations=k,
-                    tau_end=tau_try,
-                    blocked_by=blocked if reason == "bound_blocked" else (),
-                    # R0: the message reaches a provenance item's cause, so it carries no float.
-                    message=f"pseudo-step {k}: {retry} trials rejected, the last {reason}",
-                )
-            tau_try = shrunk
-
-        # §7.3.6 and §7.4: accepted; SER on accepted iterates only, unless the stop test holds.
-        trial, trial_values, alpha_max, accepted_step_inf, landed = accepted
-        before, residual_before = run.x, run.values
-        run.x, run.values = trial, trial_values
-        next_scaled = problem.scaling.scale_residual(run.values, problem.row_ids)
-        phi_next = _norm(next_scaled)
-        tau_next: float | None = None
-        ratio: float | None = None
-        if not run.met(run.values):
-            ratio = min(
-                max(phi / max(phi_next, settings.phi_floor), settings.gamma_min),
-                settings.gamma_max,
-            )
-            tau_next = min(max(tau_try * ratio, settings.tau_min_s), settings.tau_max_s)
-            run.tau = tau_next
-        run.steps.append(
-            PseudoStep(
-                index=k,
-                tau=tau_try,
-                alpha=alpha_max,
-                retries=retry,
-                phi_before=phi,
-                phi=phi_next,
-                tau_next=tau_next,
-                ser_ratio=ratio,
-                x_before=before,
-                x=run.x,
-                residual_before=residual_before,
-                residual=run.values,
-                landing=landed,
-            )
-        )
-        trace.record(
-            kind="step_accepted",
-            attempt=attempt,
-            iteration=k,
-            signature=signature,
-            state_sha256=run.digest(run.x),
-            residual_inf_unscaled=float(np.max(np.abs(np.asarray(run.values)))),
-            merit=0.5 * phi_next * phi_next,
-            counters=run.running,
-            alpha=alpha_max,
-            step_inf_scaled=accepted_step_inf,
-            trial_status="accepted",
-            pseudo_step=tau_try,
-            pseudo_step_next=tau_next,
-            ser_ratio=ratio,
-        )
-        if observer is not None:
-            requested = observer.should_close(k)
-            if requested is not None:
-                return run.close(
-                    requested,
-                    run.values,
-                    iterations=k + 1,
-                    tau_end=run.tau,
-                    message=(
-                        "the attempt controller closed the attempt: a persistent phase wall, "
-                        "not an overshoot (§9.3)"
-                    ),
-                )
+        taken = run._accepted_trial(k, frozen)
+        if not isinstance(taken, _Taken):
+            return taken
+        run._accept(k, taken, phi)
+        closed = run._closed_by_observer(k)
+        if closed is not None:
+            return closed
 
     raise AssertionError("unreachable: the pseudo-step budget is checked inside the loop")
 
@@ -693,6 +493,269 @@ class _PtcRun:
         rhs = -(self.sigma * scaled_residual)
         return _Frozen(jacobian, mass, rhs, infinity, merit)
 
+    def _accepted_trial(self, k: int, frozen: _Frozen) -> _Taken | _Closed:
+        """Pseudo-step `k`'s retry loop (§7.3.2, §7.3.5) from `tau`: the accepted trial with the
+        pseudo-step it was taken at and its retry index.
+
+        Each trial is `_trial`'s; a rejection is recorded by `_reject`, and the pseudo-step
+        shrinks by `retry_shrink`. Past `retries_max` retries, or below `tau_min_s`, the attempt
+        closes through `close` (writing `attempt_closed`) as `BOUND_BLOCKED` when the last trial
+        was bound-blocked and `PTC_STALLED` otherwise, at `tau_end` the last pseudo-step tried;
+        `_trial`'s own closes are passed through.
+        """
+        tau_try, retry = self.tau, 0
+        while True:
+            tried = self._trial(k, tau_try, frozen)
+            if isinstance(tried, _Accepted):
+                return _Taken(tried, tau_try, retry)
+            if not isinstance(tried, _Rejected):
+                return tried
+            self._reject(k, retry, tau_try, tried)
+            retry += 1
+            shrunk = tau_try * self.settings.retry_shrink
+            if retry > self.settings.retries_max or shrunk < self.settings.tau_min_s:
+                outcome: SolveOutcome = (
+                    "BOUND_BLOCKED" if tried.reason == "bound_blocked" else "PTC_STALLED"
+                )
+                return self.close(
+                    outcome,
+                    self.values,
+                    iterations=k,
+                    tau_end=tau_try,
+                    blocked_by=tried.blocked if tried.reason == "bound_blocked" else (),
+                    # R0: the message reaches a provenance item's cause, so it carries no float.
+                    message=f"pseudo-step {k}: {retry} trials rejected, the last {tried.reason}",
+                )
+            tau_try = shrunk
+
+    def _trial(self, k: int, tau_try: float, frozen: _Frozen) -> _Accepted | _Rejected | _Closed:
+        """One trial of pseudo-step `k` at `tau_try` on the `frozen` matrices (§7.3.2 to §7.3.4).
+
+        Counts one factorization on `running` before the solve, also when it fails. A failed
+        solve is `_Rejected` as `linear_solve_failed`; a solved one writes the `linear_solve`
+        event and takes K03 §5.3's bound-aware length, `_Rejected` as `bound_blocked` (with the
+        blocking variables) when it is zero. Otherwise the trial and its verdict are
+        `_evaluated`'s, passed through: `_Accepted`, `_Rejected`, or its `EVALUATION_ERROR`
+        close.
+        """
+        reason: RejectionReason | None = None
+        blocked: tuple[str, ...] = ()
+        failure_message = ""
+        self.running = self.running.plus(factorizations=1)
+        try:
+            step_scaled, linear = solve_linear(
+                sp.csc_matrix(frozen.jacobian + frozen.mass / tau_try), frozen.rhs
+            )
+        except LinearSolveFailedError as failure:
+            reason = "linear_solve_failed"
+            failure_message = str(failure)
+        else:
+            self.trace.record(
+                kind="linear_solve",
+                attempt=self.attempt,
+                iteration=k,
+                signature=self.signature,
+                state_sha256=self.digest(self.x),
+                residual_inf_unscaled=frozen.infinity,
+                merit=frozen.merit,
+                counters=self.running,
+                linear=LinearRecord(
+                    residual_normalized=linear.residual_normalized,
+                    u_diag_min_abs=linear.min_abs_u_diagonal,
+                    u_diag_max_abs=linear.max_abs_u_diagonal,
+                    nnz_l=linear.nnz_l,
+                    nnz_u=linear.nnz_u,
+                ),
+                pseudo_step=tau_try,
+            )
+            direction = self.problem.scaling.unscale_state(step_scaled, self.problem.variable_ids)
+            alpha_max, landing = _bound_aware_alpha(self.x, direction, self.lower)
+            if alpha_max == 0.0:
+                reason = "bound_blocked"
+                blocked = tuple(self.problem.variable_ids[index] for index in landing)
+                failure_message = f"blocked by {', '.join(blocked)}"
+            else:
+                return self._evaluated(
+                    k, tau_try, _Step(direction, step_scaled, alpha_max, landing)
+                )
+        return _Rejected(reason, None, blocked, self.x, None, None, failure_message)
+
+    def _evaluated(self, k: int, tau_try: float, step: _Step) -> _Accepted | _Rejected | _Closed:
+        """§7.3.3's one trial of pseudo-step `k` along a `step` that is not blocked, and §7.3.4's
+        verdict on it.
+
+        Forms the trial point at `alpha_max` with the exact landing, evaluates it (one residual
+        call on `running`) and returns `_Accepted` for an ok trial in the attempt's phase
+        signature, `_Rejected` as `invalid_trial` or `phase_update_required` otherwise. A trial
+        whose evaluation errs writes its rejected `trial` event and closes `EVALUATION_ERROR`
+        through `close` at `tau_end=tau_try`.
+        """
+        direction, step_scaled, alpha_max, landing = step
+        trial = _trial_point(self.x, direction, alpha_max, self.lower, landing)
+        trial_evaluation = self.evaluate(trial)
+        step_inf = float(np.max(np.abs(step_scaled))) * alpha_max
+        failure_message = trial_evaluation.message
+        if trial_evaluation.status == "error":
+            self.trace.record(
+                kind="trial",
+                attempt=self.attempt,
+                iteration=k,
+                signature=self.signature,
+                state_sha256=self.digest(trial),
+                residual_inf_unscaled=float("nan"),
+                merit=float("nan"),
+                counters=self.running,
+                alpha=alpha_max,
+                step_inf_scaled=step_inf,
+                trial_status="rejected",
+                message=trial_evaluation.message,
+                pseudo_step=tau_try,
+            )
+            return self.close(
+                "EVALUATION_ERROR",
+                self.values,
+                iterations=k,
+                tau_end=tau_try,
+                message=trial_evaluation.message,
+            )
+        reason: RejectionReason
+        if trial_evaluation.status != "ok" or trial_evaluation.values is None:
+            reason = "invalid_trial"
+        elif another_signature(
+            self.signature, trial_evaluation.signature, compare_empty=self.compare_empty
+        ):
+            reason = "phase_update_required"
+        else:
+            landed = (
+                tuple(self.problem.variable_ids[index] for index in landing)
+                if alpha_max < 1.0
+                else ()
+            )
+            return _Accepted(trial, trial_evaluation.values, alpha_max, step_inf, landed)
+        return _Rejected(reason, alpha_max, (), trial, trial_evaluation, step_inf, failure_message)
+
+    def _reject(self, k: int, retry: int, tau_try: float, rejected: _Rejected) -> None:
+        """Records the `rejected` trial of pseudo-step `k`: a `PtcRejection` on `rejections`, the
+        rejected `trial` event, and the observer's `rejected` call."""
+        reason, alpha, blocked, trial, trial_evaluation, step_inf, failure_message = rejected
+        # §7.3.5: a rejection keeps x_k and F_k; nothing of the trial is kept.
+        self.rejections.append(PtcRejection(k, retry, tau_try, reason, alpha, blocked))
+        trial_values = (
+            trial_evaluation.values
+            if trial_evaluation is not None and trial_evaluation.values is not None
+            else None
+        )
+        self.trace.record(
+            kind="trial",
+            attempt=self.attempt,
+            iteration=k,
+            signature=(
+                trial_evaluation.signature
+                if trial_evaluation is not None and trial_evaluation.signature
+                else self.signature
+            ),
+            state_sha256=self.digest(trial) if alpha is not None else "",
+            residual_inf_unscaled=(
+                float(np.max(np.abs(trial_values))) if trial_values else float("nan")
+            ),
+            merit=(
+                self.problem.scaling.merit(trial_values, self.problem.row_ids)
+                if trial_values
+                else float("nan")
+            ),
+            counters=self.running,
+            alpha=alpha,
+            step_inf_scaled=step_inf,
+            trial_status="rejected",
+            rejection_reason=reason,
+            message=failure_message,
+            pseudo_step=tau_try,
+        )
+        if self.observer is not None:
+            # T04 §7.6: the wall observer hears every rejection, with the pseudo-step index
+            # and `2^−retry`, so a candidate's halving index is its retry index.
+            self.observer.rejected(
+                k,
+                2.0**-retry,
+                trial,
+                reason,
+                trial_evaluation.signature if trial_evaluation is not None else None,
+            )
+
+    def _accept(self, k: int, taken: _Taken, phi: float) -> None:
+        """Takes pseudo-step `k`'s accepted trial (§7.3.6): moves `x` and `values` to it, and
+        unless the stop test holds at the new iterate, sets `tau` by SER (§7.4) from the
+        pseudo-step it was taken at and the ratio of `phi` to the new norm; appends the
+        `PseudoStep` to `steps` and writes the `step_accepted` event."""
+        accepted, tau_try, retry = taken
+
+        # §7.3.6 and §7.4: accepted; SER on accepted iterates only, unless the stop test holds.
+        trial, trial_values, alpha_max, accepted_step_inf, landed = accepted
+        before, residual_before = self.x, self.values
+        self.x, self.values = trial, trial_values
+        next_scaled = self.problem.scaling.scale_residual(self.values, self.problem.row_ids)
+        phi_next = _norm(next_scaled)
+        tau_next: float | None = None
+        ratio: float | None = None
+        if not self.met(self.values):
+            ratio = min(
+                max(phi / max(phi_next, self.settings.phi_floor), self.settings.gamma_min),
+                self.settings.gamma_max,
+            )
+            tau_next = min(max(tau_try * ratio, self.settings.tau_min_s), self.settings.tau_max_s)
+            self.tau = tau_next
+        self.steps.append(
+            PseudoStep(
+                index=k,
+                tau=tau_try,
+                alpha=alpha_max,
+                retries=retry,
+                phi_before=phi,
+                phi=phi_next,
+                tau_next=tau_next,
+                ser_ratio=ratio,
+                x_before=before,
+                x=self.x,
+                residual_before=residual_before,
+                residual=self.values,
+                landing=landed,
+            )
+        )
+        self.trace.record(
+            kind="step_accepted",
+            attempt=self.attempt,
+            iteration=k,
+            signature=self.signature,
+            state_sha256=self.digest(self.x),
+            residual_inf_unscaled=float(np.max(np.abs(np.asarray(self.values)))),
+            merit=0.5 * phi_next * phi_next,
+            counters=self.running,
+            alpha=alpha_max,
+            step_inf_scaled=accepted_step_inf,
+            trial_status="accepted",
+            pseudo_step=tau_try,
+            pseudo_step_next=tau_next,
+            ser_ratio=ratio,
+        )
+
+    def _closed_by_observer(self, k: int) -> _Closed | None:
+        """The observer's close after accepted pseudo-step `k` (§9.3), through `close`, counting
+        that step. None without an observer or a request."""
+        if self.observer is not None:
+            requested = self.observer.should_close(k)
+            if requested is not None:
+                return self.close(
+                    requested,
+                    self.values,
+                    iterations=k + 1,
+                    tau_end=self.tau,
+                    message=(
+                        "the attempt controller closed the attempt: a persistent phase wall, "
+                        "not an overshoot (§9.3)"
+                    ),
+                )
+        return None
+
 
 type _Closed = tuple[NewtonResult, PtcRecord]
 
@@ -705,6 +768,40 @@ class _Frozen(NamedTuple):
     rhs: npt.NDArray[np.float64]
     infinity: float
     merit: float
+
+
+class _Accepted(NamedTuple):
+    """An accepted trial (§7.3.6): the trial point, its residual, the step length, the scaled
+    step's infinity norm times that length, and the variables it landed on."""
+
+    trial: npt.NDArray[np.float64]
+    values: tuple[float, ...]
+    alpha: float
+    step_inf: float
+    landed: tuple[str, ...]
+
+
+class _Taken(NamedTuple):
+    """Pseudo-step k's accepted trial with the pseudo-step it was taken at and its retry index."""
+
+    accepted: _Accepted
+    tau_try: float
+    retry: int
+
+
+class _Rejected(NamedTuple):
+    """A rejected trial (§7.3.5): its reason, the step length when a step was taken, the
+    variables that blocked it, the trial point (`x` when none was formed), its evaluation, the
+    scaled step's infinity norm times the step length (None when no trial was formed), and the
+    message its records carry."""
+
+    reason: RejectionReason
+    alpha: float | None
+    blocked: tuple[str, ...]
+    trial: npt.NDArray[np.float64]
+    evaluation: Evaluation | None
+    step_inf: float | None
+    message: str
 
 
 @dataclass(frozen=True)

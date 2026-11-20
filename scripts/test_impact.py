@@ -914,6 +914,7 @@ def build(base: str, out: Path | None, workers: int, extra: list[str]) -> int:
 SUMMARY = re.compile(r"^=*\s*(\d+ (?:passed|failed|error|skipped|deselected).*?) in [\d.]+s")
 COUNT = re.compile(r"(\d+) (\w+)")
 NO_TESTS = 5  # pytest's exit code when it collected nothing
+INTERNAL_ERROR = 3  # pytest's exit code for an internal error: a run with a killed call exits so
 
 
 def _runs(selection: Selection, workers: int) -> list[tuple[list[str], list[str]]]:
@@ -944,6 +945,48 @@ def _deselected(extra: list[str]) -> frozenset[str]:
     return frozenset(found)
 
 
+ALWAYS_AT_STEP_CADENCE = ("tests/test_doc_examples.py",)  # never on an exclusion list (S19)
+
+
+def _excluded_files(listing: Path, repo: Path) -> list[str]:
+    """The test files a step-cadence exclusion list names: one path per line, `#` comments.
+
+    The list is refused when it names a path that is not a test file of the checkout (a renamed
+    file would otherwise come back into every gate unnoticed) or a file that stays at step cadence.
+    """
+    lines = (line.split("#", 1)[0].strip() for line in listing.read_text().splitlines())
+    names = sorted({line for line in lines if line})
+    for name in names:
+        if name in ALWAYS_AT_STEP_CADENCE:
+            raise SystemExit(f"--exclude-from {listing}: {name} stays at step cadence")
+        if not is_test_module(name) or not (repo / name).is_file():
+            raise SystemExit(f"--exclude-from {listing}: {name} is not a test file of {repo}")
+    return names
+
+
+def _exclude(selection: Selection, listing: Path, repo: Path) -> Selection:
+    """The selection without the listed files, each one named on standard output.
+
+    A full run (`--full`) and a fallback to the full suite keep every file: the list only thins a
+    selection, and the runs that stand behind it (the merge check, CI) stay complete."""
+    names = _excluded_files(listing, repo)
+    if selection.fallback is not None:
+        print(f"step-gate exclusion list {listing}: not applied, the full suite runs")
+        return selection
+    dropped = {
+        name: sum(1 for node in selection.nodes if node.split("::", 1)[0] == name) for name in names
+    }
+    hit = {name: number for name, number in dropped.items() if number}
+    print(
+        f"step-gate exclusion list {listing}: {len(names)} files listed, "
+        f"{len(hit)} of them selected and not run here (the merge check runs them)"
+    )
+    for name in names:
+        print(f"  excluded {name}: {'selected, not run' if name in hit else 'not selected'}")
+    kept = {node for node in selection.nodes if node.split("::", 1)[0] not in hit}
+    return Selection(kept, None)
+
+
 def _counts(text: str) -> dict[str, int]:
     """pytest's closing counts (`3 passed, 1 skipped`) of one run's output, by kind."""
     match = next((m for m in map(SUMMARY.match, reversed(text.splitlines())) if m), None)
@@ -964,6 +1007,7 @@ def run(
     since: str | None = None,
     by_file: bool = False,
     full: bool = False,
+    exclude_from: Path | None = None,
 ) -> int:
     if any(
         arg in ("-n", "--numprocesses") or arg.startswith(("-n", "--numprocesses="))
@@ -974,6 +1018,8 @@ def run(
         selection = Selection(fallback="--full")
     else:
         selection = select(base, map_dir, repo, since, by_file, _deselected(extra)).whole_files()
+        if exclude_from is not None:
+            selection = _exclude(selection, exclude_from, repo)
     sha = git("rev-parse", "--short", "HEAD", cwd=repo).strip()
     log = log or Path(os.environ.get("TMPDIR", "/tmp")) / f"test-impact-{sha}.log"
     command = [sys.executable, "-m", "pytest", "-q", "-p", "no:cacheprovider", "-rs", *extra]
@@ -1009,10 +1055,14 @@ def run(
     wall = time.monotonic() - started
     # A part that collected nothing (an extra -k, say) is not a failure while another part ran.
     ran = [code for code in codes if code != NO_TESTS] or codes
-    exit_code = max(ran)
+    # A call killed by a signal returns -signal: never a pass or a test failure, whatever the other
+    # call returned. Calls are numbered as their `<log>.N.args` listings.
+    killed = [(index, -code) for index, code in enumerate(codes) if code < 0]
+    exit_code = INTERNAL_ERROR if killed else max(ran)
     summary = (
         ", ".join(f"{number} {kind}" for kind, number in counts.items()) or "no pytest summary"
     )
+    summary += "".join(f", killed: call {index} signal {signal}" for index, signal in killed)
     verdict = "PASS" if exit_code == 0 else f"FAIL (exit {exit_code})"
     selected = "all" if selection.fallback else str(len(selection.nodes))
     fallback = "yes" if selection.fallback else "no"
@@ -1076,6 +1126,12 @@ def main(argv: list[str] | None = None) -> int:
         "--full", action="store_true", help="run the full suite, selecting nothing (a merge check)"
     )
     run_parser.add_argument(
+        "--exclude-from",
+        type=Path,
+        help="a list of test files a selection leaves out (one path per line; ignored with --full\n"
+        "and on a fallback to the full suite, so the merge check runs them)",
+    )
+    run_parser.add_argument(
         "--workers", type=int, default=0, help="pytest-xdist workers (XDIST_SERIAL runs serially)"
     )
     run_parser.add_argument("pytest_args", nargs="*", help="after --: extra pytest arguments")
@@ -1095,6 +1151,7 @@ def main(argv: list[str] | None = None) -> int:
             args.since,
             args.import_time_by_file,
             args.full,
+            args.exclude_from,
         )
     if args.lines:
         selection = select_lines(args.lines, args.base, args.map, args.repo or ROOT)

@@ -571,12 +571,11 @@ def test_a16_an_incompatible_opening_is_refused_and_opens_nothing(
     corrupt: Callable[[Any], Any],
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    real = region_module.check_opening
+    real = region_problem.check_opening
 
     def corrupted(state: Any, requirement: Any) -> Any:
         return real(corrupt(state), requirement)
 
-    monkeypatch.setattr(region_module, "check_opening", corrupted)
     monkeypatch.setattr(region_problem, "check_opening", corrupted)
     assert_refused(observe("SYN-001-A02-355-liquid-guess", monkeypatch), check, subject, observed)
 
@@ -633,14 +632,13 @@ def test_a16_every_registered_opening_passes_all_six_checks(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     refusals: list[Any] = []
-    real = region_module.check_opening
+    real = region_problem.check_opening
 
     def watched(state: Any, requirement: Any) -> Any:
         outcome = real(state, requirement)
         refusals.append(outcome)
         return outcome
 
-    monkeypatch.setattr(region_module, "check_opening", watched)
     monkeypatch.setattr(region_problem, "check_opening", watched)
     for case_id in (
         "SYN-001-A02-355-liquid-guess",

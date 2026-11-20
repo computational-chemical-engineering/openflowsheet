@@ -687,7 +687,7 @@ The full list of 113 claims is in the YAML's `generator_claims`. They include:
 | S10.A23 | **Permutation.** A test-built copy of the verification records lists the components as (VC, VA, VB), with the Λ entries unchanged by id. At E1 and F3 with n permuted, its answers are the permuted answers. | the permuted YAML values | §7.2 and §7.3: a permuted index fails by O(0.05) (DIST-01) |
 | S10.A24 | Two identical calls give bitwise-identical results: no hidden state. | — | exact |
 | S10.A25 | `s10_reference.py --check` passes. | 113 claims | exact |
-| S10.A26 | `thermo/syn001.py`, `pr_c1.py`, `pr_lib.py`, `iapws95.py` and `coolprop_heos.py` are byte-identical to `main`. | `git diff` empty | exact |
+| S10.A26 | `thermo/syn001.py`, `pr_c1.py`, `pr_lib.py`, `iapws95.py` and `coolprop_heos.py` are byte-identical to their F0 registration *(amended by R-1060: the oracle was `main`)*. | SHA-256 equals `benchmarks/f0/corpus.json` M9 | exact |
 | S10.A27 | `LIBRARY_ONLY_PROVIDERS` has `"wilson-ig-v1": "S10"`. T08.A20's tripwire passes, and the provider is not in `SELECTABLE_BASES`. | — | exact |
 | S10.A28 | No S10 records file is in a `PACKAGED` path. | — | exact (R-706) |
 

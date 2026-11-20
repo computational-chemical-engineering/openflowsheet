@@ -17,7 +17,7 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
   `docs/briefs/S19-digest.md`; scan JSON `<git-common-dir>/codehealth/runs/repo-wide-scan-d90b498f.json`.
 - `MB` (the test-map base, read by `.claude/skills/s19-refactor/gate.sh` from the line below; moves to milestone
   commits, `S19_DECISIONS`):
-- `MB` = `14c6d4146eee73e66378cf83e0ef20b877c933f7` (the `wp/S19` tip after the I-12d merge, 2026-11-17; G-MAP 5 map; unsure set = the B-6 four + t07_v17_reference f6, which every gate deselects; earlier MB 1720cc98, c3c5793e, 736f70db, bec6dbe6).
+- `MB` = `756e1c12076d043ddf3a7f06176a2eb3610fec04` (the `wp/S19` tip after the W3/W4 merge into main, 2026-11-18; G-MAP 6 map: 20516 tests, failed = the B-6 four; earlier MB 14c6d414, 1720cc98, c3c5793e, 736f70db, bec6dbe6).
 - A1 done: design note `docs/briefs/S19-architecture.md` (phases W0 to W4, table 4.1 with the arch numbers per
   step), ADR 0076 proposed. Config committed: scope `src/openflowsheet/*`, `repo-layers`, forbid
   `verifier-not-through-the-solver`; adoption 14 violations, 10 cycles, 79 cycle edges.
@@ -42,7 +42,7 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 - G6 run 6 merged into wp/S19 (18f934f6, 2026-11-16 21:42); G6's W3 part done (frozen thermo: W5).
 - 2026-11-17: I-11 merged (6668be04), G5 run 11 merged (1720cc98), I-13 merged (d63dcd7a), W4 runs 13-16 merged (e61b23f2). I-12d done on the lane, gating (jobs 241-243).
 
-- Open (R-W3-G1N-1): numerics/ptc.py health 6.8 after P1 (closing method's 9 parameters); P2 to P4 must end >= 7.0,
+- R-W3-G1N-1 ptc.py item met: health 8.3 after P3 (2026-11-18).
   else a miss and P1 is reverted.
 
 ## Order (Frank, 2026-11-15; S19_DECISIONS)
@@ -53,41 +53,49 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 - In parallel: the scale probe (R-1034).
 - Behind development: G3 studies, G4 assessment, G2 models (legacy engine untouched until Frank rules), W5.
 - Trailing behind 0.5 (Frank, ofs-s19-w4-docs-scope A, 2026-11-17): pre-S19 broken references in living docs.
-- Held until the scale probe reports: G1 (orchestrator/, numerics/). Open: ptc.py 6.8 (P3, P4).
+- I-20 merged 2026-11-19 (d7e9b014): the 0.5 blocking set is done on wp/S19.
+- G1 (orchestrator/, numerics/): W3 lanes N and O closed 2026-11-19 (272011be); residuals executor.py (PR-1b, 6.1 -> 9.0, gating) and `_solve_region`'s parameter object (W4).
 - G-END (below) stays the end criterion for the whole repository.
 
-## Next actions (2026-11-17 ~18:30, the blocking set for 0.5 done)
+## Next actions (2026-11-19 18:15 CET)
 
-**Position:** G5 run 12 and G6 run 7 merged into wp/S19 as 517ab610 (review R-W3-G5-12, merge-check job 264 PASS).
-Scan 517ab610: debt 4670.7, health 8.24, brain 26, file smells 53, 27 files below 7.0; arch 0 violations, 0 cycles
-(4100 imports). MB stays 14c6d414 (refactor steps only since; DECISION in S19_DECISIONS). Runner PID 1474880 (queue
-idle, results up to 264). No agent, no serial run, no background job. Design batch 1 ruled
-(`docs/briefs/S19-D-batch1-ruling.md`): Q1 no bug, pinned by `tests/test_s19_component_order.py`; Q2 (NaN witness
-refusal) lands after S19 (Decision Desk ofs-s19-oq1-nan-witness, A, VERIFIED; write `executed` on the card when it
-lands, then tell hub).
-**Blocking set (Frank, 2026-11-15) done:** W4 (ADR 0076), 0 cycles and 0 violations, G5 and G6 to the end W3 allows.
-What stays below 9.0 there, each with its owner: verify twins gamma_phi_units 6.4 / pr_c1 7.7 and table.py's
-duplication (twin merge: addendum for Frank); certificate, checks, split_checks 8.7 (public signatures, test-pinned
-`_project`, rule 10; many_args at its cap); render 8.5 (ladder, judged); store 8.6 (R-237 interface); compare 8.6
-(frozen v1); thermo/ frozen files (W5).
-**Next (four desk cards signed A and VERIFIED, 2026-11-17 ~20:10):**
-1. Merge wp/S19 into main: card ofs-s19-w3w4-merge-main stopped by its step-3 clause (CI 44158387592 failed; K05
-   hash test fixed in b716feb7 + 4bef2608, reviewed ACCEPT WITH FIXES). It stays UNEXECUTED. Manifest at 4f9f2c3d is
-   `tested` (9649de4c, CI 44173756567). F0 PASS on a local merge; local main reset to 218e7a73 (= origin/main).
-   **Waiting: CI 44194354064 on b36fa2a6, and a new card (DECISION-REQUEST sent to hub 2026-11-17, suggested id
-   ofs-s19-w3w4-merge-main-2).** On a VERIFIED A: add the new run to the manifest's G-END-CI, merge commit into
-   main, F0 on main, push main, `executed` on the new card (note the old one as superseded), tell hub, rebuild map.
-2. WITNF (ofs-s19-oq1b-nan-witness-early): brief WITNF-engineer.md ready (fill BASE_SHA_HERE with main after step 1),
-   then `reviewer` (design lane), CI, merge into main, `executed` on both NaN cards.
-3. 0.5 (ofs-s19-start-05): starts after step 1; Frank's roadmap ADR 0057 (X07a, X01, F3, F2, F8, X06). Write
-   `executed` when the first 0.5 package is started.
-4. Trailing S19 at one lane (ofs-s19-trailing-order): G3, G4, G2 (non-legacy), W5, G1 after the scale probe, docs.
-**Open for Frank (not blocking):** proposal 2 (selection widening; selected gates ~600 s vs 300 s); R-1042 option C;
-STOP 1 alternative; verify twins addendum; thermo/ below 7.0 only in W5; optional forbid rule cli/serving -> services;
-merge of wp/S19 into main (main = 218e7a73 shows health 7.7).
-**Notes:** as before (STOP 1 no-gain; ruff before a merge-check; helper merge only if wp/S19 changed only docs since;
-`enqueue` needs `--target --recipe --model`; repo `.venv`, `PYTHONPATH=<worktree>/src`, no `-n`). Two lanes can share
-one merge-check helper (done for G5 r12 + G6 r7). Rule-6 precedent: helpers writing `LaunchProgress` (R-W3-G5-12).
+**Position:** wp/S19 = docs after e3e95520 (G2 runs 6+7 merged; = C of card ofs-s19-blocking-merge-main, VERIFIED, A).
+MB 756e1c12. Runner PID 1341562. Queue: batch N jobs 496-507 (re-enqueued after job 483's w5_scope FAIL; batch file
+amended, sha e7c318e4, prior `.json.pre-plan`). Results COUNT 474 at 18:13. Two engineers running (opus-engineer):
+G2 run 8 (wp/S19-g2d) and the evidence manifest (wp/S19-ev2). A fresh context: check `git worktree list` and the lane
+logs; agents of a dead session are gone, so re-brief from the commit logs.
+
+1. **Main merge (card ofs-s19-blocking-merge-main, A):** step 2 (budget tests at C) PASS (S19_DECISIONS 18:12).
+   On the evidence engineer's report: spot-check the manifest, merge wp/S19-ev2 into wp/S19 (docs and tests only;
+   gate the envelope tests it touched), push wp/S19, CI on both legs, manifest `tested` commit, then merge commit on
+   main, `scripts/corpus_identity.py --check` (F0) on main, push main, `executed` on the card (ArtifactData update,
+   with the result). Stop without a push on any failure in steps 1-4 and tell hub.
+2. **G2 run 8:** on its report, gates PASS -> S1 reviewer (R-W5-G2-8), fixes, merge-check, merge.
+3. **Batch N:** on 496-500 PASS: S1 review R-W5-N3 (brief `S19-R-W5-N3.md`; update shas to the rebased lane and add
+   the gate results). Then WO-N4 (factory switch, `--mode interface`; ruling section 9 row), WO-N5 (close: K, judge,
+   batch-check, one review of the WO-N2, N3b, N4 chains), merge batch N into wp/S19 (FR-2 B), WO-N6. Old lane tip
+   wp/S19-w5n-pre-plan (delete after batch N merges). For the close review: W5-S1 should accept interface plan files
+   (job 483), batch L will hit it.
+4. **Legacy models/ (card ofs-s19-legacy-models A):** (a) G2 runs 6+7 merged, run 8 running; (b) `solve_region` takes
+   `_RegionCall` (`--mode interface --plan`; callers executor.py:1316, cascade_solve.py:345, 12 tests, 3 scripts,
+   benchmarks/t04/basin.py) after re-pinning cce-code-health to 34a30bf (after batch N is gated); (c) W5 batch L
+   after batch N merges (WO-L0 to WO-L3). `executed` on the card when (a) to (c) are done.
+5. Rule: lanes touching studies/ also need the nlp-marked suite at head, failures a subset of base (g19, g20).
+6. F3 (0.5, `wp/F3`, worktree `f3`): waits for Frank (card ofs-f3-mcp-descriptions-human).
+**Open after S19 (F1):** restore the S11.A73 gamma-phi vs PR comparison (`forms._FORMS`), targeting `_routing`'s
+gamma-phi rung, `admissibility_checks`, a test for pr_c1.py:334. For Frank (not blocking): P1 the seven new public
+names of I-20 (default as written).
+**Open for the design lane at batch N's close review:** W5-S1's text vs fix 2 (default: the tool's rule stands).
+**Open build-lane items:** `benchmarks/m03/nlp-test.lock` lacks mpmath; test_opt_cost_lca_nlp g19, g20 fail; no CI or
+gate runs nlp-marked tests; the f3 worktree's `.venv` lacks pytest-xdist and pytest-timeout (the s19-g2b one too:
+`-n` rejected); brightway.py 8.8 needs an lca-extra venv.
+**Open for Frank (not blocking):** R-1042 option C; STOP 1 alternative; optional forbid rule cli/serving -> services;
+re-pin cce-code-health to 9a4605f (optional).
+**Notes:** STOP 1 no-gain; ruff before a merge-check; helper merge only if wp/S19 changed only docs since; `enqueue`
+needs `--target --recipe --model`; repo `.venv`, `PYTHONPATH=<worktree>/src`, no `-n`. Two lanes can share one
+merge-check helper. Every W5 enqueue adds `--batch <json>`. `enqueue --rerun-of` takes the RUN-LOG step from the
+failed result line, never the queue job. codehealth binary: `<repo>/.venv-codehealth/bin/codehealth`. Background
+waits: `run_in_background`, never `&`. Worktrees s19-g1o8, s19-g3 kept (branches not ancestors of wp/S19).
 
 ## Gates (pass numbers fixed after A1, before step 1)
 
@@ -102,5 +110,5 @@ one merge-check helper (done for G5 r12 + G6 r7). Rule-6 precedent: helpers writ
 | W4-DOCS | end of W4 (Frank, Decision Desk ofs-s19-w4-docs-scope, 2026-11-17, A) | `codehealth docs` with the [docs] records list of ADR 0076 rule 5 (card ofs-s19-w4-docs-records, A): 0 broken references introduced by S19 (diff of the tip against CB d90b498f); pre-S19 broken references (232 unique at 91af908f) are a trailing item behind 0.5 || PASS (2026-11-17, after the I-19 merge a758cbbe and 26d343f6): 0 introduced by S19; 232 pre-S19 trailing; 286 broken in living docs (repo config) |
 | G-STEP | every step | gate exit 0; refactor: touched files' debt strictly lower; restructure: the plan's arch numbers (table 4.1) met exactly | run log |
 | G-REVIEW | S1 files every 3 accepted steps, S2 and S1/S2 splits every 4, others every 8 (design note 5) | fresh `reviewer`; rejects reverted and logged | |
-| G-END | campaign end, at the merged tip | repo scan (scope `src/openflowsheet/*`): debt <= 1900; health >= 9.0 (binding); brain functions 0; no file below health 7.0; no `huge_file`; `codehealth arch`: 0 cycles at depth 4, 0 violations on every rule; F0 and MCP digest identical; full suite and CI green on both legs | |
+| G-END | campaign end, at the merged tip | repo scan (scope `src/openflowsheet/*`): debt <= 1900; health >= 9.0 (binding); brain functions 0; no file below health 7.0; no `huge_file`; `codehealth arch`: 0 cycles at depth 4, 0 violations on every rule; F0 and MCP digest by E1 to E5 (`docs/briefs/S19-W5-ruling.md` section 7; ADR 0077, card ofs-s19-w5-fr3-gend-clause A, 2026-11-18); full suite and CI green on both legs | |
 | G-END-CI | before each merge | CI green on both legs; F0 on `main` after the merge | |

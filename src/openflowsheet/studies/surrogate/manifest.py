@@ -73,6 +73,7 @@ from openflowsheet.studies.surrogate.quadratic import (
     BASIS_ID,
     FIT_METHOD_ID,
     OUTPUT_MAP_ID,
+    QuadraticFit,
 )
 from openflowsheet.studies.surrogate.records import MODEL_ID, Observation, SurrogateEvaluation
 
@@ -250,11 +251,12 @@ def build_records(
     predecessors: Sequence[str] = (),
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     """The SurrogateManifest and its ModelEvidence for a run plan (spec §10.1, §10.2);
-    `predecessors` are the earlier iterations' manifest SHA-256s, in order (spec §18 A1.2)."""
+    `predecessors` are the earlier iterations' manifest SHA-256s, in order (spec §18 A1.2). The
+    manifest's `predictor`, `evaluation` and `gradient` members are `_predictor_member`'s,
+    `_evaluation_member`'s and `_gradient_member`'s."""
     plan = evaluation.plan
     verdict = evaluation.verdict
     fit = evaluation.fit
-    surrogate = fit.surrogate
     observations = evaluation.observations
     counts = plan.counts
     splits: dict[str, Any] = {
@@ -281,9 +283,6 @@ def build_records(
     n = len(evaluation.calibration_scores)
     m = len(evaluation.test_scores)
     k = k_index(n)
-    test_x = [e[0] for e in evaluation.test_errors]
-    test_dt = [e[1] for e in evaluation.test_errors]
-    within = sum(1 for s in evaluation.test_scores if s is not None and s <= 1.0)
     coverage_evaluated = verdict.hits is not None and verdict.h_min is not None
     synthetic = variant.synthetic
     lower = verdict.lower_bound
@@ -325,21 +324,7 @@ def build_records(
                 "dT_K": list(ADMISSIBLE_DT_K),
             },
         },
-        "predictor": {
-            "basis": BASIS_ID,
-            "terms": TERMS,
-            "coefficients": None
-            if surrogate is None
-            else {"X": list(surrogate.coefficients_x), "dT_K": list(surrogate.coefficients_dt)},
-            "fit": {
-                "method": FIT_METHOD_ID,
-                "training_ok": fit.training_ok,
-                "singular_value_ratio": fit.singular_value_ratio,
-                "training_rms": None
-                if fit.training_rms is None
-                else {"X": fit.training_rms[0], "dT_K": fit.training_rms[1]},
-            },
-        },
+        "predictor": _predictor_member(fit),
         "score": {"id": SCORE_ID, "scales": {"X": WIDTH_X, "dT_K": WIDTH_DT_K}},
         "reference_distribution": {
             "id": plan.reference_distribution,
@@ -355,31 +340,8 @@ def build_records(
             "scores": list(evaluation.calibration_scores),
             "q_hat": verdict.q_hat,
         },
-        "evaluation": {
-            "m": m,
-            "scores": list(evaluation.test_scores),
-            "hits": verdict.hits,
-            "lower_bound": lower,
-            "h_min": verdict.h_min,
-            "c_min": float(C_MIN),
-            "delta": float(DELTA),
-            "errors": {"X": _errors(test_x), "dT_K": _errors(test_dt)},
-            "fraction_within_width": within / m if m else None,
-        },
-        "gradient": {
-            "step_z": GRADIENT_STEP_Z,
-            "rho_g": RHO_G,
-            "centres": [
-                {
-                    "index": centre.index,
-                    "status": centre.status,
-                    "errors": None
-                    if centre.errors is None
-                    else {"X": centre.errors[0], "dT_K": centre.errors[1]},
-                }
-                for centre in evaluation.centres
-            ],
-        },
+        "evaluation": _evaluation_member(evaluation, m),
+        "gradient": _gradient_member(evaluation),
         "domain": {
             "empirical": "box",
             "hard": _hard_domain(variant),
@@ -437,6 +399,68 @@ def build_records(
         },
     }
     return manifest, evidence
+
+
+def _predictor_member(fit: QuadraticFit) -> dict[str, Any]:
+    """The manifest's `predictor` (spec §10.1): the basis and its terms, `fit`'s surrogate
+    coefficients (`None` without a surrogate), and the fit's method, outcome and training RMS
+    (`None` when not computed)."""
+    surrogate = fit.surrogate
+    return {
+        "basis": BASIS_ID,
+        "terms": TERMS,
+        "coefficients": None
+        if surrogate is None
+        else {"X": list(surrogate.coefficients_x), "dT_K": list(surrogate.coefficients_dt)},
+        "fit": {
+            "method": FIT_METHOD_ID,
+            "training_ok": fit.training_ok,
+            "singular_value_ratio": fit.singular_value_ratio,
+            "training_rms": None
+            if fit.training_rms is None
+            else {"X": fit.training_rms[0], "dT_K": fit.training_rms[1]},
+        },
+    }
+
+
+def _evaluation_member(evaluation: SurrogateEvaluation, m: int) -> dict[str, Any]:
+    """The manifest's `evaluation` (spec §10.1): the `m` test scores, the verdict's hits, lower
+    bound and `h_min`, the registered `c_min` and `delta`, the test errors of `X` and `dT_K`, and
+    the fraction of scores within the width (`None` without test draws)."""
+    verdict = evaluation.verdict
+    test_x = [e[0] for e in evaluation.test_errors]
+    test_dt = [e[1] for e in evaluation.test_errors]
+    within = sum(1 for s in evaluation.test_scores if s is not None and s <= 1.0)
+    return {
+        "m": m,
+        "scores": list(evaluation.test_scores),
+        "hits": verdict.hits,
+        "lower_bound": verdict.lower_bound,
+        "h_min": verdict.h_min,
+        "c_min": float(C_MIN),
+        "delta": float(DELTA),
+        "errors": {"X": _errors(test_x), "dT_K": _errors(test_dt)},
+        "fraction_within_width": within / m if m else None,
+    }
+
+
+def _gradient_member(evaluation: SurrogateEvaluation) -> dict[str, Any]:
+    """The manifest's `gradient` (spec §10.1): the registered step and `rho_g`, and per gradient
+    centre its index, status and the errors of `X` and `dT_K` (`None` when not evaluated)."""
+    return {
+        "step_z": GRADIENT_STEP_Z,
+        "rho_g": RHO_G,
+        "centres": [
+            {
+                "index": centre.index,
+                "status": centre.status,
+                "errors": None
+                if centre.errors is None
+                else {"X": centre.errors[0], "dT_K": centre.errors[1]},
+            }
+            for centre in evaluation.centres
+        ],
+    }
 
 
 # -- the checker (M04.A24) ------------------------------------------------------------------------
@@ -682,35 +706,52 @@ def _split_consistency(splits: Mapping[str, Any], counts: Mapping[Split, int]) -
     """The `splits` block against the plan's `counts`: each split's count and key count, its
     `keys_sha256`, no key in two splits, every failed or incomplete index inside its split (and
     an incomplete entry's key that of its index), and the gradient centres' stencil keys being
-    the gradient split's keys in order."""
+    the gradient split's keys in order. Per split, its own size and hash are `_split_keys`'s, its
+    failed and incomplete indices `_split_indices`'s; the overlap check runs between them."""
     found: list[str] = []
     seen: dict[str, str] = {}
     for split in SPLITS:
         block = splits[split]
         keys = block["keys"]
-        expected: int = counts[split]
-        size = expected * 2 * len(BOX) if split == "gradient" else expected
-        if block["count"] != expected or len(keys) != size:
-            found.append(
-                f"{split}: count {block['count']} with {len(keys)} keys; the plan has {expected}"
-            )
-        if block["keys_sha256"] != document_sha256(keys):
-            found.append(f"{split}: keys_sha256 is not the keys' SHA-256")
+        found += _split_keys(split, block, keys, counts[split])
         for key in keys:
             if key in seen:
                 found.append(f"{split}: key {key} is also in {seen[key]} (overlapping splits)")
             seen[key] = split
-        for entry in (*block["failed"], *block["incomplete"]):
-            if not 0 <= entry["index"] < len(keys):
-                found.append(f"{split}: index {entry['index']} is outside the split")
-            elif "key" in entry and entry["key"] != keys[entry["index"]]:
-                found.append(
-                    f"{split}: incomplete key {entry['key']} is not keys[{entry['index']}]"
-                )
+        found += _split_indices(split, block, keys)
     centres = splits["gradient"]["centres"]
     stencil_keys = [key for centre in centres for key in centre["stencil_keys"]]
     if stencil_keys != splits["gradient"]["keys"]:
         found.append("gradient: the centres' stencil keys are not the split's keys in order")
+    return found
+
+
+def _split_keys(
+    split: Split, block: Mapping[str, Any], keys: Sequence[str], expected: int
+) -> list[str]:
+    """One split's `block` against the plan: its `count` and its number of `keys` against the
+    plan's `expected` count (times `2 * len(BOX)` stencil points for the gradient split), then
+    its `keys_sha256` against the keys' document hash."""
+    found: list[str] = []
+    size = expected * 2 * len(BOX) if split == "gradient" else expected
+    if block["count"] != expected or len(keys) != size:
+        found.append(
+            f"{split}: count {block['count']} with {len(keys)} keys; the plan has {expected}"
+        )
+    if block["keys_sha256"] != document_sha256(keys):
+        found.append(f"{split}: keys_sha256 is not the keys' SHA-256")
+    return found
+
+
+def _split_indices(split: Split, block: Mapping[str, Any], keys: Sequence[str]) -> list[str]:
+    """One split's failed, then incomplete entries: an index outside `keys`, or an incomplete
+    entry's `key` that is not the key at its index."""
+    found: list[str] = []
+    for entry in (*block["failed"], *block["incomplete"]):
+        if not 0 <= entry["index"] < len(keys):
+            found.append(f"{split}: index {entry['index']} is outside the split")
+        elif "key" in entry and entry["key"] != keys[entry["index"]]:
+            found.append(f"{split}: incomplete key {entry['key']} is not keys[{entry['index']}]")
     return found
 
 

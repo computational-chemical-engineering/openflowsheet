@@ -113,6 +113,25 @@ class _Assembly:
 # -- the exact-zero flows (R-296) -----------------------------------------------------------------
 
 
+@dataclass(frozen=True)
+class _ZeroFlowRows:
+    """The fixed row data of one `_eliminate_zero_flows` call, built once before its passes: the
+    equation ids in spec order with each row's `position` there, each variable's `index` in
+    variable order, the shape check's `unknowns` by name and each built row's structural
+    `incidence` over them (`_structural_incidence`), the `omitted` rows, the candidates Z₀
+    (`zero`), and every row's residual and derivatives at x₀."""
+
+    equation_ids: tuple[str, ...]
+    position: Mapping[str, int]
+    index: Mapping[str, int]
+    unknowns: Mapping[str, Any]
+    incidence: Mapping[str, frozenset[str]]
+    omitted: Collection[str]
+    zero: frozenset[str]
+    residuals_x0: Mapping[str, float]
+    derivatives: _RowDerivatives
+
+
 def _eliminate_zero_flows(
     spec: ProblemSpec,
     x0: Mapping[str, float],
@@ -125,9 +144,11 @@ def _eliminate_zero_flows(
     decisions: Sequence[DecisionSpec],
 ) -> tuple[tuple[ZeroEliminated, ...], tuple[ZeroBlock, ...]]:
     """`M05-zero-flow-v2` (module docstring) on the model with every variable: the candidates
-    Z₀; §17.1's single pins, found by repeated passes over the kept rows in spec order; §18.1's
-    joint stage on the flows they leave, alternating with the passes until neither adds anything;
-    and the refusals. Returns the eliminated flows in variable order and the certified blocks."""
+    Z₀; §17.1's single pins, found by repeated passes over the kept rows in spec order
+    (`_add_single_pins`, on the call's fixed `_ZeroFlowRows`); §18.1's joint stage on the flows
+    they leave, alternating with the passes until neither adds anything; and the refusals, in this
+    order: `_check_unpinned`, `_check_redundant`, `_check_link_inputs`. Returns the eliminated
+    flows in variable order and the certified blocks."""
     variable_ids = spec.variable_ids
     candidates = [
         name
@@ -136,57 +157,28 @@ def _eliminate_zero_flows(
     ]
     if not candidates:
         return (), ()
-    model = assembly.model
-    # A row's structural incidence: the unknowns of the shape check (x, y, w) its expression
-    # contains — never the decisions, whose derivative is criterion (iii).
-    unknowns = {
-        **{name: model.x[i] for i, name in enumerate(variable_ids)},
-        **{f"y[{g}]": model.y[g] for g in range(len(assembly.output_rows))},
-        **{f"w[{k}]": model.w[k] for k in range(len(assembly.link_rows))},
-    }
-    column = ComponentMap((variable, name) for name, variable in unknowns.items())
-    incidence = {
-        name: frozenset(column[v] for v in identify_variables(expression) if v in column)
-        for name, expression in assembly.built.items()
-    }
-    position = {name: i for i, name in enumerate(spec.equation_ids)}
-    index = {name: i for i, name in enumerate(variable_ids)}
-    zero = set(candidates)
+    unknowns, incidence = _structural_incidence(variable_ids, assembly)
+    row_data = _ZeroFlowRows(
+        equation_ids=spec.equation_ids,
+        position={name: i for i, name in enumerate(spec.equation_ids)},
+        index={name: i for i, name in enumerate(variable_ids)},
+        unknowns=unknowns,
+        incidence=incidence,
+        omitted=omitted,
+        zero=frozenset(candidates),
+        residuals_x0=residuals_x0,
+        derivatives=derivatives,
+    )
     found: dict[str, ZeroEliminated] = {}
     pins: set[str] = set()
     blocks: list[ZeroBlock] = []
     xi: npt.NDArray[np.float64] | None = None
     while True:
-        # §17.1 step 2: single pins, to the fixpoint.
-        changed = True
-        while changed:
-            changed = False
-            for row in spec.equation_ids:
-                if row in omitted or row in pins:
-                    continue
-                rest = incidence[row] - found.keys()
-                if len(rest) != 1:
-                    continue
-                (j,) = rest
-                if j not in zero:
-                    continue
-                e = position[row]
-                pivot = float(derivatives.x[e, index[j]])
-                if (
-                    residuals_x0[row] == 0.0
-                    and pivot != 0.0
-                    and all(float(value) == 0.0 for value in derivatives.d[e])
-                ):
-                    found[j] = ZeroEliminated(j, row, float(residuals_x0[row]), pivot)
-                    pins.add(row)
-                    changed = True
-        if zero <= found.keys():
+        _add_single_pins(row_data, found, pins)
+        if row_data.zero <= found.keys():
             break
         # §18.1: the joint stage on the flows the passes leave.
-        joint = _joint_blocks(
-            spec, assembly, omitted, pins, found.keys(), zero, incidence, unknowns,
-            residuals_x0, derivatives,
-        )  # fmt: skip
+        joint = _joint_blocks(spec, assembly, row_data, pins, found.keys())
         if not joint:
             break
         if xi is None:
@@ -201,64 +193,91 @@ def _eliminate_zero_flows(
             pins.update(rows)
             for name in variables:
                 found[name] = ZeroEliminated(name, None, None, None, block.block)
-    unpinned = [name for name in candidates if name not in found]
-    if unpinned:
-        raise ProjectionRefusedError(
-            "PROJECTION_ZERO_FLOW",
-            f"{unpinned[0]}:unpinned",
-            f"the flows {unpinned} are exactly 0.0 at x0 and no kept row pins them alone with a "
-            "zero residual, a nonzero pivot and a zero decision tangent at x0 (R-296), nor does "
-            "a certified block of rows pin them jointly (R-326)",
-        )
-    redundant = [
-        row
-        for row in spec.equation_ids
-        if row not in omitted
-        and row not in pins
-        and incidence[row] & found.keys()
-        and not incidence[row] - found.keys()
-    ]
-    if redundant:
-        raise ProjectionRefusedError(
-            "PROJECTION_ZERO_FLOW",
-            f"{redundant[0]}:redundant_row",
-            f"the rows {redundant} have no unknown left once the zero flows are eliminated (R-296)",
-        )
-    inputs = [name for link in links for name in link.inlet_variable_ids if name in found]
-    if inputs:
-        raise ProjectionRefusedError(
-            "PROJECTION_ZERO_FLOW",
-            f"{inputs[0]}:link_input",
-            f"the eliminated flows {inputs} are inlet arguments of an external link; the FD policy "
-            "has no rule for a constant inlet coordinate (R-296)",
-        )
+    _check_unpinned(candidates, found)
+    _check_redundant(spec, omitted, pins, incidence, found)
+    _check_link_inputs(links, found)
     return tuple(found[name] for name in variable_ids if name in found), tuple(blocks)
+
+
+def _structural_incidence(
+    variable_ids: Sequence[str], assembly: _Assembly
+) -> tuple[dict[str, Any], dict[str, frozenset[str]]]:
+    """The unknowns of the shape check by name (`x` by variable id in `variable_ids` order, then
+    `y[g]`, then `w[k]`) and each built row's structural incidence over them, by equation id (the
+    rows of `assembly.built`). Pure: it reads `assembly.model` and walks each expression."""
+    model = assembly.model
+    # A row's structural incidence: the unknowns of the shape check (x, y, w) its expression
+    # contains — never the decisions, whose derivative is criterion (iii).
+    unknowns = {
+        **{name: model.x[i] for i, name in enumerate(variable_ids)},
+        **{f"y[{g}]": model.y[g] for g in range(len(assembly.output_rows))},
+        **{f"w[{k}]": model.w[k] for k in range(len(assembly.link_rows))},
+    }
+    column = ComponentMap((variable, name) for name, variable in unknowns.items())
+    incidence = {
+        name: frozenset(column[v] for v in identify_variables(expression) if v in column)
+        for name, expression in assembly.built.items()
+    }
+    return unknowns, incidence
+
+
+def _add_single_pins(
+    row_data: _ZeroFlowRows, found: dict[str, ZeroEliminated], pins: set[str]
+) -> None:
+    """§17.1 step 2, to the fixpoint: repeated passes over the kept rows in spec order (neither
+    omitted nor in `pins`), each adding to `found` the one zero flow of Z₀ a row pins alone (its
+    single unknown not yet in `found`, its residual exactly 0.0, its pivot nonzero, its decision
+    derivatives all 0.0) and the row to `pins`, until a pass adds nothing. Edits the caller's
+    working state `found` and `pins` and keeps its invariant: `pins` are the rows that pinned or
+    certified a member of `found`."""
+    changed = True
+    while changed:
+        changed = False
+        for row in row_data.equation_ids:
+            if row in row_data.omitted or row in pins:
+                continue
+            rest = row_data.incidence[row] - found.keys()
+            if len(rest) != 1:
+                continue
+            (j,) = rest
+            if j not in row_data.zero:
+                continue
+            e = row_data.position[row]
+            pivot = float(row_data.derivatives.x[e, row_data.index[j]])
+            if (
+                row_data.residuals_x0[row] == 0.0
+                and pivot != 0.0
+                and all(float(value) == 0.0 for value in row_data.derivatives.d[e])
+            ):
+                found[j] = ZeroEliminated(j, row, float(row_data.residuals_x0[row]), pivot)
+                pins.add(row)
+                changed = True
 
 
 def _joint_blocks(
     spec: ProblemSpec,
     assembly: _Assembly,
-    omitted: Collection[str],
+    row_data: _ZeroFlowRows,
     pins: Collection[str],
     eliminated: Collection[str],
-    zero: Collection[str],
-    incidence: Mapping[str, frozenset[str]],
-    unknowns: Mapping[str, Any],
-    residuals_x0: Mapping[str, float],
-    derivatives: _RowDerivatives,
 ) -> list[tuple[tuple[str, ...], tuple[str, ...]]]:
-    """§18.1 steps 1-3 up to certification: the candidate rows R_J with their numerical
-    incidence N_e, and the connected components of the bipartite graph (R_J, Z_J), ordered by
-    their first variable, rows in spec order and variables in variable order."""
-    free = set(zero) - set(eliminated)
-    index = {name: i for i, name in enumerate(spec.variable_ids)}
+    """§18.1 steps 1-3 up to certification, on the call's fixed `row_data` and the kept rows
+    (not in `pins`) and zero flows (not in `eliminated`) the single pins leave: the candidate
+    rows R_J with their numerical incidence N_e, and the connected components of the bipartite
+    graph (R_J, Z_J) (`_components`), ordered by their first variable, rows in spec order and
+    variables in variable order."""
+    free = set(row_data.zero) - set(eliminated)
+    index = row_data.index
+    derivatives = row_data.derivatives
     numerical: dict[str, frozenset[str]] = {}
-    for e, row in enumerate(spec.equation_ids):
-        if row in omitted or row in pins:
+    for e, row in enumerate(row_data.equation_ids):
+        if row in row_data.omitted or row in pins:
             continue
-        if residuals_x0[row] != 0.0 or any(float(value) != 0.0 for value in derivatives.d[e]):
+        if row_data.residuals_x0[row] != 0.0 or any(
+            float(value) != 0.0 for value in derivatives.d[e]
+        ):
             continue
-        rest = incidence[row] - set(eliminated)
+        rest = row_data.incidence[row] - set(eliminated)
         columns = {k for k in rest if k in index and float(derivatives.x[e, index[k]]) != 0.0}
         if not columns or not columns <= free:
             continue
@@ -268,12 +287,22 @@ def _joint_blocks(
         if others:
             partials = differentiate(
                 assembly.built[row],
-                wrt_list=[unknowns[k] for k in others],
+                wrt_list=[row_data.unknowns[k] for k in others],
                 mode=Modes.reverse_numeric,
             )
             if any(float(value) != 0.0 for value in partials):
                 continue
         numerical[row] = frozenset(columns)
+    return _components(spec, numerical)
+
+
+def _components(
+    spec: ProblemSpec, numerical: Mapping[str, frozenset[str]]
+) -> list[tuple[tuple[str, ...], tuple[str, ...]]]:
+    """§18.1 step 3: the connected components of the bipartite graph (R_J, Z_J) whose edges are
+    the candidate rows' numerical incidences N_e (`numerical`, by row), ordered by their first
+    variable, rows in spec order and variables in variable order; one component per
+    `_component`. Pure."""
     rows_of: dict[str, list[str]] = {}
     for row, incident in numerical.items():
         for name in incident:
@@ -283,16 +312,7 @@ def _joint_blocks(
     for start in (name for name in spec.variable_ids if name in rows_of):
         if start in seen:
             continue
-        rows: set[str] = set()
-        variables = {start}
-        frontier = [start]
-        while frontier:
-            for row in rows_of[frontier.pop()]:
-                if row not in rows:
-                    rows.add(row)
-                    for name in numerical[row] - variables:
-                        variables.add(name)
-                        frontier.append(name)
+        rows, variables = _component(start, rows_of, numerical)
         seen |= variables
         blocks.append(
             (
@@ -301,6 +321,26 @@ def _joint_blocks(
             )
         )
     return blocks
+
+
+def _component(
+    start: str, rows_of: Mapping[str, list[str]], numerical: Mapping[str, frozenset[str]]
+) -> tuple[set[str], set[str]]:
+    """The rows and the variables of the component of the bipartite graph that holds the
+    variable `start`, by a worklist over `rows_of` (each variable's rows) and `numerical` (each
+    row's variables). Pure."""
+    rows: set[str] = set()
+    variables = {start}
+    frontier = [start]
+    while frontier:
+        for row in rows_of[frontier.pop()]:
+            if row in rows:
+                continue
+            rows.add(row)
+            for name in numerical[row] - variables:
+                variables.add(name)
+                frontier.append(name)
+    return rows, variables
 
 
 def _certify_block(
@@ -413,3 +453,59 @@ def _persistence_rows(
         else:
             parameters[name] = moved(start, 1.0, k)
     return _float_rows(spec, state, outputs, parameters, rows)
+
+
+def _check_unpinned(candidates: Sequence[str], found: Mapping[str, ZeroEliminated]) -> None:
+    """R-296, R-326: every candidate flow (Z₀, in variable order) is in `found`, pinned alone by
+    a kept row or jointly by a certified block; else `PROJECTION_ZERO_FLOW` naming the first
+    one that is not (`<flow>:unpinned`)."""
+    unpinned = [name for name in candidates if name not in found]
+    if unpinned:
+        raise ProjectionRefusedError(
+            "PROJECTION_ZERO_FLOW",
+            f"{unpinned[0]}:unpinned",
+            f"the flows {unpinned} are exactly 0.0 at x0 and no kept row pins them alone with a "
+            "zero residual, a nonzero pivot and a zero decision tangent at x0 (R-296), nor does "
+            "a certified block of rows pin them jointly (R-326)",
+        )
+
+
+def _check_redundant(
+    spec: ProblemSpec,
+    omitted: Collection[str],
+    pins: Collection[str],
+    incidence: Mapping[str, frozenset[str]],
+    found: Mapping[str, ZeroEliminated],
+) -> None:
+    """R-296: no kept row in spec order, neither omitted nor a pin, whose incidence meets the
+    eliminated flows (`found`) and has no unknown left without them; else
+    `PROJECTION_ZERO_FLOW` naming the first such row (`<row>:redundant_row`)."""
+    redundant = [
+        row
+        for row in spec.equation_ids
+        if row not in omitted
+        and row not in pins
+        and incidence[row] & found.keys()
+        and not incidence[row] - found.keys()
+    ]
+    if redundant:
+        raise ProjectionRefusedError(
+            "PROJECTION_ZERO_FLOW",
+            f"{redundant[0]}:redundant_row",
+            f"the rows {redundant} have no unknown left once the zero flows are eliminated (R-296)",
+        )
+
+
+def _check_link_inputs(
+    links: Sequence[ExternalLinkSpec], found: Mapping[str, ZeroEliminated]
+) -> None:
+    """R-296: no eliminated flow (`found`) is an inlet argument of an external link, in link
+    and inlet order; else `PROJECTION_ZERO_FLOW` naming the first (`<flow>:link_input`)."""
+    inputs = [name for link in links for name in link.inlet_variable_ids if name in found]
+    if inputs:
+        raise ProjectionRefusedError(
+            "PROJECTION_ZERO_FLOW",
+            f"{inputs[0]}:link_input",
+            f"the eliminated flows {inputs} are inlet arguments of an external link; the FD policy "
+            "has no rule for a constant inlet coordinate (R-296)",
+        )
