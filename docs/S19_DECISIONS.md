@@ -3957,3 +3957,5 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   Deviations for review: step 2 also edits docstrings naming the removed paths; `w5_gate.py scope` without `--plans`
   refuses the plan file (the gate passes the glob); two archival probes under `docs/derivations/scripts/s08_design/`
   still import the removed paths (not retargeted). Reviewer R-W5-L1 after jobs 524-526 (S1 cadence).
+- 2026-11-20, jobs 524 (`w5l1-2`, interface, 20/20), 525 (`w5l1-3`, 95.1 -> 44.2), 526 (`w5l1-4`, 44.2 -> 3.0) PASS,
+  steps 469-471 accepted. Review R-W5-L1 launched (reviewer, Opus; brief `S19-R-W5-L1.md`). gate_report: the three standing ALERTs (selected share 10%, 623 s, ratio 0.58): W5 steps edit hashed modules whose import-time code makes selection fall back; action unchanged.
