@@ -4672,3 +4672,14 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   names its three helpers (rule 7). Applied by the orchestrator: 9bab9e72, job 604 g1r1-fix no-gain. Notes:
   `_retained_rows`/`_owning_region` at the floor of a helper (accepted: spec concepts); `_validation_refusal` could
   be `_mapping_refusal`. Merge-check: one helper for G1R and G3R after R-W3-G3R-1.
+- **2026-11-21, R-W3-G3R-1 (reviewer, Opus, ~104k): merge, no blocker.** Q1 accept df6ace41: the playbook row targets
+  rungs shared by families; the shared rungs (`feasible`, TRF_STALLED_INCONSISTENT, exit_mismatch) stay in the
+  caller, the lifted tail is R-401's own precedence unit, the feasible family is three lines, and a whole lift
+  needs an 8-parameter object over caller locals (the stop case). Recorded so the row is not reopened. Q2 order
+  unchanged by reading; step 1 is not identity-bearing (`as_document` iterates CHECK_ORDER, checks.py:392). Q3
+  `_nonzero_rows` equal in every effect (set filtered over system.rows; no string literal lost). Q4 S1 arithmetic
+  verbatim. Fix (next run, not blocking): a rule-16 test pinning trf_state's full `reasons` tuple (version
+  mismatch, empty module_dir, missing executable) with a local swap as negative control. Notes: basis.py
+  `_check_float_arguments` twin in `affine` (:108-110) can now merge under amended rule 15 (optional); 9 other
+  inline CSC column scans (tear.py, verify/*, sensitivity.py): a shared iterator is cross-module, out of scope.
+  Helper wp/S19-g13r-mc (a2ba5b12 + g1r incl. fix 9bab9e72 + g3r, 811414d6; ruff clean), merge-check job 605.
