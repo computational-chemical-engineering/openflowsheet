@@ -425,3 +425,23 @@ Push from this worktree: `git -c credential.helper='!gh auth git-credential' pus
   other same-form key differs on Windows (the old assertion stopped at RP.S03).
 - R-6 (90d53af2): A85b's products style split into unmarked nodes (w6, w30; 720 values each).
 - Gates: touched tests pass; F0 PASS 9/9; locks ead4edf1/71f30fa7 unchanged; ruff, format, mypy clean.
+
+## WO10 (2026-11-20, the WO9 review's W-1 to W-3; one commit each)
+
+- W-1 (eea7b3a3): a49's child also reports `blas._loaded_openblas()` basenames (`loaded`), and the test
+  asserts `controlled == loaded` for each of the four children (the non-empty condition kept). Falsifier:
+  `controlled()` with its first library dropped fails a49 at ('pinned', 1). Linux: both libraries
+  (`libscipy_openblas64_-6bb31eeb.so`, `libscipy_openblas-68440149.so`) controlled.
+- W-2 (499c54d8; DECISION by the orchestrator, review option (a)): on macOS the child sets
+  `VECLIB_MAXIMUM_THREADS` with `OMP_NUM_THREADS`/`OPENBLAS_NUM_THREADS` (1 and 8), so A3.3 is exercised on
+  an Accelerate leg; a pinned difference there is an A3.3 finding for a P4 row. The child reports each
+  package's BLAS (junit property `blas`), and the skip reason names it, not the CPU count (checked by
+  forcing the branch: "numpy: scipy-openblas, scipy: scipy-openblas"). `blas.py` docstring: the pin does
+  not set Accelerate's own thread count. Linux environment unchanged (darwin only). Alternative (b): keep
+  the skip, state the limitation in the manifest. Reversible by reverting 499c54d8.
+- W-3 (725885fa; DECISION by the orchestrator, the review's option): `loaded_libraries` lets the `OSError`
+  of an unreadable `/proc/self/maps` propagate instead of returning `[]`, as the Windows and macOS routes
+  refuse. Tests on every leg with the Linux route forced: unreadable maps raises `PermissionError` (the
+  previous code: DID NOT RAISE); a fixed maps text parses as before. Reversible by reverting 725885fa.
+- Gates: `test_m04_quadratic.py` + `test_x07a_platform.py` 41 passed, none skipped (a49 passed); F0 PASS
+  9/9; locks ead4edf1/71f30fa7 unchanged; ruff, format, mypy (393 files) clean. CI: see the push.
