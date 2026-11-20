@@ -4617,3 +4617,11 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   docs/adr/0022-*.md), RP.S22 (manifest path `evidence\S13\...` beside prefix `evidence/S13/`). Hypothesis: path
   separators. X07a-WO12 (opus-engineer, Opus; brief `<briefs>/X07a-WO12.md`): POSIX-form fix, a forced-Windows Linux
   test, Linux byte-identity, push; STOP if the hypothesis fails. Win log: e9f8087c scratch `x07a-win.log`.
+- **2026-11-20, X07a-WO12 delivered (opus-engineer, Opus, ~134k):** RP.S16 (s13_evidence_manifest.py:293) and
+  RP.S22 (release_evidence_manifest.py:438) fixed with `.as_posix()`; forcing test (PureWindowsPath relative_to)
+  1 failed without, 1 passed with; Linux same-form lines and S16/S22 entries byte-identical. RP.S08 NOT separators
+  (all git paths): the child's scratch commit lacks the 21 evidence manifests (67-68 chars). Commits 4f3a59ea,
+  05887948, pushed (the engineer used `gh auth git-credential` as helper: plain push lacked credentials); CI
+  44825507897. Orchestrator's reading: child basetemp ~221 + 68 > 260 (MAX_PATH, git without core.longpaths).
+  X07a-WO13 (opus-engineer, Opus; brief `<briefs>/X07a-WO13.md`): confirm by arithmetic, core.longpaths plus a
+  loud failure when a file misses the commit; STOP with a diagnostic if not confirmed.
