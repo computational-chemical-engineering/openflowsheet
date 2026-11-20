@@ -57,47 +57,47 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 - G1 (orchestrator/, numerics/): W3 lanes N and O closed 2026-11-19 (272011be); residuals executor.py (PR-1b, 6.1 -> 9.0, gating) and `_solve_region`'s parameter object (W4).
 - G-END (below) stays the end criterion for the whole repository.
 
-## Next actions (2026-11-19 ~23:59 CET)
+## Next actions (2026-11-20 ~01:30 CET)
 
-**Position:** main = c4a91a75. wp/S19 = batch N merged (d0c5b1f9) + docs. MB 756e1c12. Runner PID 1341562. Results
-COUNT 494 (a fresh context re-arms `$Q wait --since <COUNT from $Q status>` in the background). Queue empty. Agent
-running: none. On each result: gate_report, log.
+**Position:** main = c4a91a75. wp/S19 = 17f70aa2 (RegionCall + WO-N6 retarget merged) + docs. MB 756e1c12. Runner
+PID 1341562. Results COUNT 499 (a fresh context re-arms `$Q wait --since <COUNT from $Q status>` in the background).
+Queue empty. cce-code-health pinned at 34a30bf (requirements-codehealth.txt, `.venv-codehealth`). Batch N's K
+4178e4bc recorded (`<queue>/batches/closed-605d332f....json`). Agent running: X01-WO1 (0.5 lane, waiting on its CI;
+on its report: read, log, merge only by a Decision Desk card). On each result: gate_report, log.
 
-1. **G2 run 8:** merged (0d1e325e). Card ofs-s19-legacy-models: (a) done; (b) `_RegionCall`; (c) batch L.
-2. **Batch N:** merged into wp/S19 (d0c5b1f9; K 4178e4bc; review `docs/reviews/S19-R-W5-N-close.md`: merge, no
-   fixes). Next: **WO-N6** (remove `revision_binding.MODEL_BUILDERS`; retarget the patch at
-   test_t07_w5a_inspection.py:130 to model_builders; acceptance a real test, not i19_scan) on a lane from the wp/S19
-   tip; and a **tooling work order** before B_L (review item 4: (a) repeatable `--plans` admitting added
-   `.codehealth/interface/*.toml`; (b) generator-only steps gated `--behaviour-only --batch`; (c) W5-S1 text amendment,
-   design lane; (d) `w5_gate.py close --k`, `gate_queue.py` refuses `--batch` once the head contains K; a K
-   merge-check runs without `--batch` and needs F0 9/9 and L_N passing).
-3. **Legacy models/:** (b) `solve_region` takes `_RegionCall` (`--mode interface --plan`; callers executor.py:1316,
-   cascade_solve.py:345, 12 tests, 3 scripts, benchmarks/t04/basin.py) after re-pinning cce-code-health to 34a30bf
-   (batch N is gated: unblocked); (c) W5 batch L (WO-L0 to WO-L3) after the tooling work order. Deferred:
-   cascade/column 87-line duplication (design-lane ruling first). E1 (tooling) before the g2d recorder is reused.
-4. **0.5:** card ofs-05-widen B executed (card v3). Lanes from main c4a91a75: wp/X07a (worktree x07a, WO1 delivered
-   partly, head 37049c8a pushed, manifest implemented; next X07a-WO2: read CI runs 44629325836 and 44629506428, fix the
-   Windows/macOS test failures, `docs/X07a_DECISIONS.md` has the position; design-lane round for Q-1 pywin32 licence
-   (G19, rights: Frank) and Q-2 F0 M7 per-platform reference, both left failing; S19_DECISIONS 2026-11-20 00:10) and wp/X01 (worktree x01, brief docs/briefs/X01-WO1.md, plugin docs +
-   example plugin; launch when an agent slot frees: one 0.5 engineer and one S19 engineer at a time). X01
-   selectability blocked on F2/F4/F6; ADR 0052 D11 amendment open for the design lane. F3: ADR 0061 accepted
-   (R-1050); waits on ofs-f3-mcp-descriptions-human, then its merge card.
-5. Rule: lanes touching studies/ also need the nlp-marked suite at head, failures a subset of base (g19, g20).
-6. Brief rule (I1): `codehealth scan --json PATH` writes TO PATH; use `--repo <wt> --json <scratch>/scan.json`.
-**Open after S19 (F1):** restore the S11.A73 gamma-phi vs PR comparison (`forms._FORMS`), targeting `_routing`'s
-gamma-phi rung, `admissibility_checks`, a test for pr_c1.py:334. For Frank (not blocking): P1 the seven new public
-names of I-20 (default as written).
-**Open for the design lane at batch N's close review:** W5-S1's text vs fix 2 (default: the tool's rule stands).
-**Open build-lane items:** `benchmarks/m03/nlp-test.lock` lacks mpmath; test_opt_cost_lca_nlp g19, g20 fail; no CI or
-gate runs nlp-marked tests; the f3 worktree's `.venv` lacks pytest-xdist and pytest-timeout (the s19-g2b one too:
-`-n` rejected); brightway.py 8.8 needs an lca-extra venv.
-**Open for Frank (not blocking):** R-1042 option C; STOP 1 alternative; optional forbid rule cli/serving -> services;
-re-pin cce-code-health to 9a4605f (optional).
+1. **Done since the last reset:** T6 tooling (56dc5b64: repeatable `--plans` admitting added plan files;
+   generator-only step = `enqueue --mode merge-check --batch FILE --base <parent> --head <step>`; `w5_gate.py close
+   --k K --queue-dir <queue> [--fixture PATH]`, `enqueue --batch` refuses a head containing K); WO-N6 retarget;
+   RegionCall (ADR 0076 I-21, card ofs-s19-legacy-models (b) done).
+2. **Next S19 work: W5 batch L** (card ofs-s19-legacy-models (c); ruling `docs/briefs/S19-W5-ruling.md` section 9
+   WO-L0 to WO-L3, 6.2, 6.3): the orchestrator writes the batch file at B_L = the wp/S19 tip (form of
+   `<git-common-dir>/codehealth/briefs/S19-W5-batchN.json`; list L_B's fixture paths so `close --k` needs no
+   `--fixture`), then briefs WO-L0 on a lane `wp/S19-w5l`. One S19 engineer at a time.
+3. **0.5:** X01-WO1 running (wp/X01, worktree x01). X07a-WO2 next in the 0.5 slot: read CI runs 44629325836 and
+   44629506428 (codehealth job failed on 44629506428), fix Windows/macOS test failures; brief to write from
+   `docs/X07a_DECISIONS.md` Position (wp/X07a 37049c8a). Q-1 pywin32 licence (rights: Frank) and Q-2 F0 M7 per-platform
+   reference stay failing for the design lane. X01 selectability blocked on F2/F4/F6; ADR 0052 D11 amendment open.
+   F3: ADR 0061 accepted (R-1050); waits on ofs-f3-mcp-descriptions-human, then its merge card.
+4. Rule: lanes touching studies/ also need the nlp-marked suite at head, failures a subset of base (g19, g20).
+5. Brief rule (I1): `codehealth scan --json PATH` writes TO PATH; use `--repo <wt> --json <scratch>/scan.json`.
+   A test retarget is never enqueued alone: retarget, plan, step; gate from the plan commit (job 516's miss).
+**Open for the design lane (one batched round):** (i) W5-S1 text admitting new `.py` modules in an admitted tier 1
+directory and added plan files (R-W5-N-close 4c; default: the tool's rule stands); (ii) `revision_binding.MODEL_BUILDERS`:
+keep as the W27 binder-protocol attribute, strike from I-19's list, state the protocol in `reading_for`'s docstring
+(R-W4-RC-N6; default: kept); (iii) cascade/column 87-line duplication.
+**Open build-lane items:** test_s01_cascade_wo1.py:262 patches `region.solve_region`, a no-op (retarget to
+cascade_solve); `c1_reactor_surrogate_of` (revision_binding.py:708) unguarded by the list_models patch;
+`benchmarks/m03/nlp-test.lock` lacks mpmath; test_opt_cost_lca_nlp g19, g20 fail; no CI or gate runs nlp-marked
+tests; the f3 worktree's `.venv` lacks pytest-xdist and pytest-timeout; brightway.py 8.8 needs an lca-extra venv.
+**Open after S19 (F1):** restore the S11.A73 gamma-phi vs PR comparison (`forms._FORMS`). For Frank (not blocking):
+P1 the seven new public names of I-20; R-1042 option C; STOP 1 alternative; optional forbid rule cli/serving ->
+services.
 **Notes:** STOP 1 no-gain; ruff before a merge-check; helper merge only if wp/S19 changed only docs since; `enqueue`
-needs `--target --recipe --model`; repo `.venv`, `PYTHONPATH=<worktree>/src`, no `-n`. Two lanes can share one
-merge-check helper. Every W5 enqueue adds `--batch <json>`. `enqueue --rerun-of` takes the RUN-LOG step from the
-failed result line, never the queue job. codehealth binary: `<repo>/.venv-codehealth/bin/codehealth`. Background
-waits: `run_in_background`, never `&`. Worktrees s19-g1o8, s19-g3 kept (branches not ancestors of wp/S19).
+needs `--target --recipe --model` (no-gain also `--reason`); repo `.venv`, `PYTHONPATH=<worktree>/src`, no `-n`. Two
+lanes can share one merge-check helper. Every W5 enqueue adds `--batch <json>`; a K merge-check runs without it.
+`enqueue --rerun-of` takes the RUN-LOG step from the failed result line. codehealth binary:
+`<repo>/.venv-codehealth/bin/codehealth`. Background waits: `run_in_background`, never `&`. Worktrees s19-g1o8, s19-g3
+kept (branches not ancestors of wp/S19).
 
 ## Gates (pass numbers fixed after A1, before step 1)
 
