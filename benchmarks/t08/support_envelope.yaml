@@ -9778,7 +9778,7 @@ harvest:
   note: 'provenance note: requirements empty, a development-process package'
 - manifest: evidence/X32/2725fa7d973d00bea308d67b6aa4c845a6beb1ba/manifest.json
   item: limitations[0]
-  sha256: 50bc996d54ff4579884a62028ebcde6a1c4cf23d37ab51511ef7835f259f2bc1
+  sha256: 87c5f3a63cf96390bd71c35ef628686fdcaf164cabc7f65599e95d497ca41ad8
   class: P
   to: []
-  note: 'provenance note: software verification of the grant token-file recipe, in-process, CI pending, review pending, F0 not re-run for the re-take'
+  note: 'provenance note: software verification of the grant token-file recipe, in-process; tested on CI 44734187451 (records-only commit on top); one design-lane review, fixes in; F0 and the full suite by CI'

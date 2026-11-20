@@ -2,7 +2,7 @@
  "work_package": "X32",
  "commit": "2725fa7d973d00bea308d67b6aa4c845a6beb1ba",
  "requirements": [],
- "status": "implemented",
+ "status": "tested",
  "inputs": {
   "case_id": "X32 (formerly TOK): the Coding Agents page's recipe `openflowsheet project grant ... > token.txt`, then `serve-mcp --token-file token.txt` (docs-site/agents.md, case_hash its sha256); register R-1064",
   "case_hash": "02a0aa9e963048a3ded84f6f81c155406e4952d454a1e7062e5e8b9dca6fad47",
@@ -23,6 +23,11 @@
    "cmd": "PYTHONPATH=src .venv/bin/python -m pytest -q -p no:cacheprovider tests/test_tok_grant_token_file.py tests/test_t07_authz.py tests/test_t07_w5b_cli.py tests/test_t08_rename_substitution.py tests/test_m07a_changelog.py tests/test_t08_w4_changelog.py",
    "cwd": ".claude/worktrees/tok",
    "exit_code": 0
+  },
+  {
+   "cmd": "CI run 44734187451 on wp/X32 at 083839ec (2725fa7d plus this manifest, its T08 harvest row, docs/support-matrix.md and HARVEST_SIZE; no code): check (ubuntu-latest) success, check (ubuntu-24.04-arm) success, identity success, default-install success, codehealth success",
+   "cwd": "GitHub Actions",
+   "exit_code": 0
   }
  ],
  "checks": [
@@ -39,6 +44,11 @@
   {
    "id": "X32.local",
    "description": "89 passed (command 3); ruff check, ruff format --check and mypy clean on the files changed since c4a91a75 (commands 1 and 2)",
+   "result": "pass"
+  },
+  {
+   "id": "X32.ci",
+   "description": "CI run 44734187451 at 083839ec (2725fa7d plus records only): required jobs check (ubuntu-latest), check (ubuntu-24.04-arm), identity, default-install all success",
    "result": "pass"
   }
  ],
@@ -60,7 +70,7 @@
   }
  ],
  "limitations": [
-  "Evidence class: software verification on ref-x86-64; CI for this commit has not yet run, so status is implemented, not tested (CI 44720447549 at 2725fa7d failed only on the X32 manifest's own harvest rows and HARVEST_SIZE, fixed in this commit). macOS and Windows legs are X07a's. The recipe test runs `grant` in-process and does not start a serve-mcp subprocess (a by-hand MCP probe on the workstation did). The full suite and F0 were not re-run locally for this re-take. Review fixes 1, 2, 4 (changelog, R-1064 wording, tutorial, a positive control) are in. Not reviewed: one reviewer pass is pending."
+  "Evidence class: software verification on ref-x86-64 and CI. Status is tested: CI run 44734187451 ran at 083839ec, which is the commit field 2725fa7d plus records only (this manifest, its T08 harvest row, docs/support-matrix.md, HARVEST_SIZE); CI 44720447549 at 2725fa7d itself failed only on the then-unharvested manifest. macOS and Windows legs are X07a's. The recipe test runs `grant` in-process and does not start a serve-mcp subprocess (a by-hand MCP probe on the workstation did). The full suite and F0 were not re-run locally; CI ran them. One design-lane reviewer pass returned merge after fixes; fixes 1, 2 and 4 are in 2725fa7d, fix 3 (the ruff and mypy commands) is this manifest. No reviewed status is claimed by the build lane."
  ],
  "review": {
   "numerical": "not_applicable",
