@@ -20056,3 +20056,21 @@ joins D3.3 only by a further amendment accepted by Frank, with the evidence the 
 no further platform is registered in 0.5.
 
 **Rejected.** Option B (reject; same-host replay tests on macOS and Windows become platform-limit rows).
+
+## R-1063: pywin32 allowed in G19 as a Windows-only dependency of the server extra (X07a; 2026-11-20)
+
+| | |
+| --- | --- |
+| Date | 2026-11-20 |
+| Decided by | Frank, Decision Desk card ofs-x07a-pywin32-licence, option A (signed 2026-11-20, `VERIFIED`) |
+| Normative text | the card's action: "allow pywin32 (PSF-2.0, compiled) in the G19 licence policy as a Windows-only dependency of the server extra, and pin it with a Windows marker in the lock, on wp/X07a" |
+| Evidence | `docs/X07a_DECISIONS.md` Q-1 (run 44615939688: `pywin32 312: PSF (compiled) not-allowed`), Q-12 (the lock half) |
+| Affected packages | X07a (`scripts/t07_licence_inventory.py` `ALLOWED_FOR`, `tests/test_t07_server_extra.py`) |
+
+**Decision.** pywin32, which `mcp==1.30.0` requires on Windows only (`pywin32>=310; sys_platform == 'win32'`), may be
+in the server extra's closure there. G19 admits the term pywin32 312 declares (`PSF`, not the `PSF-2.0` already in
+`ALLOWED`) for pywin32 alone, through an entry keyed by distribution and term (`ALLOWED_FOR`); no other distribution
+declaring `PSF` passes, and `ALLOWED` is unchanged (S07 A41 pins its keys). The pin is not built: a marker line in
+`requirements.lock` fails ADR 0069 D2.2's grammar and moves the lock's recorded SHA-256 (Q-12).
+
+**Rejected.** Option B (keep pywin32 refused; declare the server extra a Windows platform limit).

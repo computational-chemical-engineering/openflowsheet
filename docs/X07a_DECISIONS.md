@@ -128,6 +128,25 @@ Brief: `docs/briefs/X07a-WO1.md`. Branch `wp/X07a`, base `main` c4a91a75. Build 
   `pywin32 312: PSF (compiled) not-allowed`. pywin32 is `mcp==1.30.0`'s Windows-only requirement;
   it is not in `requirements.lock` (frozen on Linux), so on Windows it is also unpinned. Needed: a
   licence ruling on pywin32 (PSF-2.0 family, compiled) and a decision on a per-platform lock entry.
+  **Closed (WO5)** for the licence: Frank, ofs-x07a-pywin32-licence A (R-1063); G19's `ALLOWED_FOR`
+  admits `("pywin32", "PSF")` only. The lock half is Q-12.
+- Q-12 (WO5, the lock half of R-1063; stop condition of the WO5 brief, lock edit not committed). The
+  lock that installs the server extra on Windows is `requirements.lock` (ci.yml "Install locked
+  dependencies", `pip install -r requirements.lock` on all four legs). Measured on this workstation
+  with `pywin32==312 ; sys_platform == "win32"` inserted after `python-multipart` (then reverted):
+  the lock's SHA-256 moves `ead4edf1...b9c4` -> `0f02fc83...6f2e`; `verify_lock` on Linux returns
+  `("", ("the lock openflowsheet/_data/requirements.lock is malformed at line 36: ...",))` (F2: D2.2's
+  `NAME==VERSION` fullmatch admits no marker), so `lock_sha256` is `""` on every platform; F0 FAIL
+  `M7 FAIL 52/52` (every bundle `NOT_RUN`, "this side's lock did not verify"), M1 to M6, M8, M9 equal;
+  the lock's pinned digest fails 46 tests in 6 files (test_x05_lock 41, test_s07_packaging 2,
+  test_t08_w1_records 2, test_t08_w4_rc 1, plus test_t07_server_extra through S07 A41's subprocess);
+  `scripts/t08_rc.py` `LOCK_SHA256` and the A30 records pin it too. Any edit of the file, even one D2.2
+  accepts, moves the digest. Options: (a) a Windows-only increment lock (`requirements-windows.lock`,
+  `pywin32==312` with its wheel hashes, `pip install --no-deps --require-hashes` on the Windows leg,
+  the `requirements-coolprop.lock` pattern of R-624), `requirements.lock` unchanged; (b) an ADR 0069
+  amendment admitting markers in D2.2 and a re-registration of the lock digest; (c) no pin: pywin32
+  stays resolved from `mcp`'s `pywin32>=310; sys_platform == 'win32'` (312 today). Default proposed:
+  (a), the action's "the lock" read as a Windows lock; not built, since the card names "the lock".
 - Q-2 (F0 M7 on macOS, run 44615939688): `F0 FAIL: M1 50/50, M2 61/61, M3 61/61, M4 NOT JUDGED,
   M5 61/61, M6 70/70, M7 FAIL 52/52, M8 105/105, M9 35/35`. M2, M3, M5 are equal: no floating-point
   difference. M7: every one of the 52 v0.3.0 bundles is `{'verdict': 'NOT_RUN', 'integrity_ok':
