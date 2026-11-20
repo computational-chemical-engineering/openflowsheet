@@ -4080,3 +4080,11 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   wp/S19-w5l-mc (worktree s19-w5l-mc) a72b4518 = K + wp/S19 tip d886affe (only S19 docs changed since B_L, no
   overlap) + 0d38cb70; ruff clean; job 541 w5l-mc plain merge-check. (e) W5-K6 R-W5-L-close launched (reviewer, Opus;
   brief S19-R-W5-L-close.md).
+- **2026-11-20, R-W5-L-close (reviewer, Opus, ~107k): fixes first (docs only), then merge after job 541 PASS.**
+  Amendment within the ruling (dropping unedited files only tightens W5-S1; L_L stays non-vacuous, 10/10 at job
+  540); K clean against K1/K2/K3/K7 (mcp_digest covered by job 541's merge-check); R-1061 a correct R-983 instance;
+  0d38cb70 acceptable, agrees with the logged DECISION. Fix 1 (register R-1061: steps 468-485 / jobs 523-540,
+  mixer moved in 479-480; "option A, item (c)"; registration at K under ruling R3 "No step re-registers") done on
+  the lane 62cd9516, test_l01_records 98 passed. Fix 2 (batch L brief: amendment section, 7ca6eee0 -> c338d337)
+  done. Notes for batches P on: run ruff before `w5_gate.py close`; the merge step asserts `git diff --name-only
+  K..tip` stays inside the close paths plus fixtures; at the S19 -> main merge recheck that R-1061 is unique.
