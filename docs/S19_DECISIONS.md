@@ -4232,3 +4232,8 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   21.7). The first batch P step through the pin: W5-S2 `pinned 1 ... F0 PASS` 9/9 with B's counts; W5-S3 unpinned
   `M2 FAIL 1/61, M3 FAIL 1/61, M6 FAIL 2/85, M9 FAIL 1/35`, the prediction both ways. Job 547 (step 2, `flash`) queued.
   gate_report: "ALERT selected share 0% < 75% of step gates" (standing). Action unchanged.
+- 2026-11-20, outside S19: X32 CI 44720447549 at 2725fa7d FAIL (both Linux check legs, default-install; codehealth
+  green): only the X32 manifest of ae0dec21 (`test_m07a_harvest` A50 `(100, 1139, 146) != (99, 1138, 146)`;
+  `test_t08_w2_support_envelope` A21 `evidence/X32/e028b835.../manifest.json limitations[0]: unmapped`). Not the
+  change. Manifest re-take at 2725fa7d with harvest rows and HARVEST_SIZE (pattern 605a2d64) delegated
+  (sonnet-implementer, brief `<git-common-dir>/codehealth/briefs/X32-manifest.md`); status `tested` after its CI.
