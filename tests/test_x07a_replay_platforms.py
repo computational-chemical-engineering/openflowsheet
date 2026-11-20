@@ -19,8 +19,10 @@ import itertools
 from collections import Counter
 from dataclasses import replace
 
+from conftest import HOST_PLATFORM, TERMINAL_REPORT
+
 from openflowsheet.run.lock import TEMPLATES
-from openflowsheet.run.manifest import THREAD_VARIABLES, Environment
+from openflowsheet.run.manifest import THREAD_VARIABLES, Environment, environment
 from openflowsheet.run.replay import REGISTERED_PLATFORMS, decide_mode
 
 PLATFORMS = (("x86_64", "Linux"), ("aarch64", "Linux"), ("arm64", "Darwin"), ("AMD64", "Windows"))
@@ -140,3 +142,15 @@ def test_registration_still_governs_a_replay_whose_environments_differ() -> None
         assert mode == "inspected_archived_results", architecture
         assert len(reasons) == 1, reasons
         assert reasons[0].startswith(f"recorded on {architecture}/{os_name}, which is not"), reasons
+
+
+def test_a6_this_hosts_lock_is_verified_and_its_platform_is_the_reported_one() -> None:
+    """WO3 A6, logged per leg: the host's `lock_sha256` is non-empty (the lock verifies, Q-6) and
+    its `(architecture, os_name)` is `platform.machine(), platform.system()`, the pair the CI
+    matrix guard and `REGISTERED_PLATFORMS` are written in."""
+    host = environment()
+    TERMINAL_REPORT.append(
+        f"X07a-A6: lock_sha256 {host.lock_sha256 or '(none)'} on {host.architecture}/{host.os_name}"
+    )
+    assert host.lock_sha256
+    assert (host.architecture, host.os_name) == HOST_PLATFORM
