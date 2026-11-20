@@ -36,7 +36,6 @@ import ast
 import hashlib
 import json
 import math
-import os
 import shutil
 import subprocess
 import sys
@@ -250,6 +249,10 @@ def test_an_exception_with_the_lifeline_blocked_exits_1_not_sigabrt(tmp_path: Pa
     assert b"KeyError: 'deadline_s'" in completed.stderr
 
 
+@pytest.mark.skipif(
+    sys.platform == "win32",
+    reason="X07a platform limit: a SIGINT sent to a child and a negative return code are POSIX",
+)
 def test_a_sigint_ends_the_child_by_the_signal_not_sigabrt(tmp_path: Path) -> None:
     import signal
     import time
@@ -888,7 +891,9 @@ def test_the_superseded_variant_is_refused_at_the_environment_check(
     request = {"protocol": 1, "deadline_s": 60.0, "expected": expected, "request_sha256": "0" * 64}
     completed = _run_child(tmp_path, request, close=False)
     assert completed.returncode == protocol.EXIT_ENVIRONMENT_MISMATCH == 72
-    assert completed.stderr.decode() == (
+    # X07a: the child's stderr is a text stream, CRLF-translated on Windows; its bytes are the
+    # registered `runner_sha256`, so the line ending is read, not changed, here.
+    assert completed.stderr.decode().replace("\r\n", "\n") == (
         f"environment_mismatch: runner_sha256 {runner} is not the expected one\n"
     )
     assert not (tmp_path / "result.json").exists()
@@ -1038,7 +1043,7 @@ def test_the_child_resolves_through_the_packaged_files() -> None:
     program = backends.pinned_program(variants.registered_variant(REAL_ID))
     assert program.script.resolve() == CHILD.resolve()
     assert program.environment_root.name == f"pymrm-6089593-{file_sha256(env.packaged_lock())[:12]}"
-    assert os.fspath(program.python).endswith("venv/bin/python")
+    assert program.python.parts[-3:] == ("venv", "bin", "python")
 
 
 def test_the_builder_needs_a_clean_clone_at_the_pin(tmp_path: Path) -> None:
