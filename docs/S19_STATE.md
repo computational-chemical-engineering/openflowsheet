@@ -62,8 +62,7 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 **Position:** main = c4a91a75. wp/S19 = 17f70aa2 (RegionCall + WO-N6 retarget merged) + docs. MB 756e1c12. Runner
 PID 1341562. Results COUNT 499 (a fresh context re-arms `$Q wait --since <COUNT from $Q status>` in the background).
 Queue empty. cce-code-health pinned at 34a30bf (requirements-codehealth.txt, `.venv-codehealth`). Batch N's K
-4178e4bc recorded (`<queue>/batches/closed-605d332f....json`). Agent running: X01-WO1 (0.5 lane, waiting on its CI;
-on its report: read, log, merge only by a Decision Desk card). On each result: gate_report, log.
+4178e4bc recorded (`<queue>/batches/closed-605d332f....json`). Agent running: none. On each result: gate_report, log.
 
 1. **Done since the last reset:** T6 tooling (56dc5b64: repeatable `--plans` admitting added plan files;
    generator-only step = `enqueue --mode merge-check --batch FILE --base <parent> --head <step>`; `w5_gate.py close
@@ -73,7 +72,8 @@ on its report: read, log, merge only by a Decision Desk card). On each result: g
    WO-L0 to WO-L3, 6.2, 6.3): the orchestrator writes the batch file at B_L = the wp/S19 tip (form of
    `<git-common-dir>/codehealth/briefs/S19-W5-batchN.json`; list L_B's fixture paths so `close --k` needs no
    `--fixture`), then briefs WO-L0 on a lane `wp/S19-w5l`. One S19 engineer at a time.
-3. **0.5:** X01-WO1 running (wp/X01, worktree x01). X07a-WO2 next in the 0.5 slot: read CI runs 44629325836 and
+3. **0.5:** X01-WO1 part A delivered, manifest `tested`, CI green (S19_DECISIONS 2026-11-20); next for X01: a
+   reviewer pass, then a merge card via hub; open B, C, Q-1..Q-3 for the design lane (`docs/X01_DECISIONS.md` on wp/X01). X07a-WO2 next in the 0.5 slot: read CI runs 44629325836 and
    44629506428 (codehealth job failed on 44629506428), fix Windows/macOS test failures; brief to write from
    `docs/X07a_DECISIONS.md` Position (wp/X07a 37049c8a). Q-1 pywin32 licence (rights: Frank) and Q-2 F0 M7 per-platform
    reference stay failing for the design lane. X01 selectability blocked on F2/F4/F6; ADR 0052 D11 amendment open.

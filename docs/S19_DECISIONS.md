@@ -3906,3 +3906,15 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   ofs-s19-legacy-models: (a) done, (b) done; (c) batch L remains. gate_report: `ALERT selected share 15% < 75% of
   step gates`; `ALERT selected gates take 357 s > 300 s (tests tier)`; action unchanged (few step gates this window,
   most fall back on collection-time code, as before).
+- **2026-11-20, X01-WO1 part A delivered (opus-engineer, Opus, ~170k; 0.5 lane, not S19).** wp/X01 pushed: 65c624e4
+  guide `docs-site/guide/plugins.md` + example plugin `examples/plugins/demo/` (one `message_entries` descriptor
+  `demo.messages`, code `demo.feed_too_wet`; the only kind a plugin may register `core` in 0.5, A-2) +
+  tests/test_x01_example_plugin.py; a0e4c546 `docs/X01_DECISIONS.md` (A-1..A-6, open B, C, Q-1..Q-3); manifest
+  `evidence/X01/a0e4c546.../manifest.json` `tested` (6db80c8c), review pending. 419 passed (new test + f1, s19_w5,
+  s19_i14, t08_w2_inventory, doc_pages; three snippet mutations each caught); F0 PASS; registry --check clean (42,
+  f251447d); codehealth docs 286 = base; CI 44632249060 green (both legs, default-install, codehealth, identity),
+  Site 44632249098 green (mkdocs --strict). No registry code, schema, table or identity changed. Open for the design
+  lane: B selectability (blocked on F4/F6), C ADR 0052 amendment, Q-1 must D2 `modules` list data files a descriptor
+  reads (with `modules: []` a catalogue edit moves no hash), Q-2 no operation exposes quarantine rows, Q-3 `explain`
+  links a missing site anchor for extension codes. Next for X01: a reviewer pass, then a merge card for Frank.
+  X07a-WO2 takes the 0.5 slot next.
