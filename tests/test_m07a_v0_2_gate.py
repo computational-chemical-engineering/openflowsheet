@@ -872,6 +872,9 @@ def test_a07_t08_a50_s_and_r_151_s_states_give_v0_1_s_answers(
     removed = _commit(scratch, {"schemas/a.schema.json": None}, "removal")
     _commit(scratch, {"schemas/a.schema.json": "{}\n"}, "restore")
     (scratch / "schemas/a.schema.json").chmod(0o755)
+    # X07a: Windows has no executable bit (`core.fileMode=false`): the mode is staged in the index
+    # too, where `git add -A` keeps it; on Linux the chmod alone gives the same.
+    _git(scratch, "update-index", "--chmod=+x", "schemas/a.schema.json")
     moded = _commit(scratch, {}, "mode change")
     twice = _commit(
         scratch,
