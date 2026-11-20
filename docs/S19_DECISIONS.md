@@ -3918,3 +3918,18 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   reads (with `modules: []` a catalogue edit moves no hash), Q-2 no operation exposes quarantine rows, Q-3 `explain`
   links a missing site anchor for extension codes. Next for X01: a reviewer pass, then a merge card for Frank.
   X07a-WO2 takes the 0.5 slot next.
+- **2026-11-20 ~02:15 CET, WO-L0 started (batch L base).** B_L = 838268db (the wp/S19 tip; contains MB). `w5_identity.py
+  sets --check` PASS (|R| 51, |F| 35, tiers 16/28/6/1, T-2a holds). `i19_scan.py --rows`: w5 34 (column 18,
+  cascade 10, column_solve 5, region 1), all imported by `column_unit.py`; also 3 `retarget` rows outside W5
+  (`column_acceptance.saturation_pairs`, `region_attempts.solve_ptc`, `region_problem.check_opening`; open build-lane
+  item). DECISION: batch L's admitted set = the 16 tier 2 unit modules below health 9.0 at B_L (column_unit 4.9,
+  conversion_reactor 6.6, kinetic_cstr 6.8, syn001/mixer 6.9, c1/mixer 7.2, thermal/machines 7.8, c1/flash 7.9,
+  ph_flash 8.1, thermal/heater 8.2, syn001 flash, heat_exchanger, heater, pump, valve 8.4, c1 heater, reactor 8.7);
+  ruling 9 WO-L2 "other unit modules below target" read with target 9.0. Alternative: only the four below 7.0.
+  Reversible by: an amendment dropping unedited files and their L_B rows before K. L_L probe through the queue
+  (lesson of 2026-11-18): scratch `scratch/S19-w5-LL` d1999d3f (B_L + a ruff-formatted comment line in each of the 16;
+  job 521 on the unformatted 1b96e431 failed ruff only), job 522 `w5ll-probe2` merge-check (F0, registry, full suite).
+  Control: job 520 full suite PASS at 17f70aa2, which B_L equals outside docs.
+- 2026-11-20 ~02:15 CET, X07a-WO2 launched (opus-engineer, Opus; 0.5 lane, not S19), brief
+  `docs/briefs/X07a-WO2.md` on wp/X07a (bbc48171). Facts: run 44629506428 (37049c8a) failed every check leg incl.
+  ubuntu; 44629325836 windows stuck in G19 ~2.5 h.
