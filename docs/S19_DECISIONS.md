@@ -4237,3 +4237,12 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   `test_t08_w2_support_envelope` A21 `evidence/X32/e028b835.../manifest.json limitations[0]: unmapped`). Not the
   change. Manifest re-take at 2725fa7d with harvest rows and HARVEST_SIZE (pattern 605a2d64) delegated
   (sonnet-implementer, brief `<git-common-dir>/codehealth/briefs/X32-manifest.md`); status `tested` after its CI.
+- **2026-11-20, WO-P1 delivered (opus-engineer, Opus, ~174k).** wp/S19-w5p (worktree s19-w5p) 2eae72a8..65504942,
+  `pr_c1.py` health 4.6 -> 9.0, debt 55.7 -> 0: 34040b6a `evaluate_phase` (34.0 -> 0; `_request_refusal`,
+  `_requested_derivatives` with pr_lib's names, `_phase_root`; one moved read `total_flow`, justified), dd308c71
+  `flash` (13.0 -> 0), 65504942 `_derivatives` (8.7 -> 0; `_mixing_rule_terms`, `_root_derivatives`). FP: arithmetic
+  ast.dump multiset (178) equal; float.hex dump (1250 states, 47128 records) sha256 07e423b9 at B_P and every step.
+  w5_hunks: no NOT EXECUTED hunk. Local W5-S2 `F0 PASS` 9/9, S3 the predicted five keys, S4 the sha line only, S7 0
+  edges, patch_noop 0. Jobs 546 PASS, 547, 548 queued. Left: the pr_lib clone (a shared module needs an R4 ruling).
+  S1 review R-W5-P1 due (3 steps; brief `S19-R-W5-P1.md`, reviewer Opus: S1 FP order, not an identity ruling) on
+  547/548 PASS. WO-P2 brief `S19-W5-P2.md` written; launches after the review (same worktree; 2-agent cap).
