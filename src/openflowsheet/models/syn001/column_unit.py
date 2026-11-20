@@ -305,7 +305,47 @@ def column_structure(view: InstanceView, components: Sequence[str]) -> ColumnStr
     """§4.7.2: a revision instance of `syn001.column` as a `ColumnStructure`. Pure; raises
     `RevisionError` for what the document's configuration contradicts or omits. The column's
     own refusals (S02 §5, S06 §5) are not applied here: `structural_refusal` applies the
-    structural ones at bind, `column.validate` all of them at evaluate."""
+    structural ones at bind, `column.validate` all of them at evaluate.
+
+    The phases in order: the id and the wiring (`_check_id_and_ports`); the ends
+    (`_condenser_and_reboiler`); the parameters (`_stage_count`, `_check_parameter_names`, the
+    stage pressures, `_end_specification` per end, `_duties`); the inlets (`_placed_inlets`)."""
+    unit = view.unit_id
+    _check_id_and_ports(view)
+    condenser, reboiler = _condenser_and_reboiler(view)
+
+    # Parameters (§4.7.1).
+    count = _stage_count(view)
+    feeds = tuple(view.ports.get(FEED, ()))
+    entries = end_entries(view)
+    _check_parameter_names(view, count, feeds, entries)
+    pressures = tuple(float(view.parameters[f"{STAGE_PRESSURE}.{j}"]) for j in range(1, count + 1))
+
+    condenser_spec = _end_specification(view, CONDENSER, entries)
+    reboiler_spec = _end_specification(view, REBOILER, entries)
+    duties = _duties(view, count, condenser, reboiler)
+    placed = _placed_inlets(view, count, feeds)
+    return ColumnStructure(
+        unit_id=unit,
+        stage_count=count,
+        condenser=condenser,
+        reboiler=reboiler,
+        pressures=pressures,
+        duties=duties,
+        condenser_spec=condenser_spec,
+        reboiler_spec=reboiler_spec,
+        inlets=placed,
+        distillate=view.ports[DISTILLATE][0],
+        bottoms=view.ports[BOTTOMS][0],
+        components=tuple(components),
+    )
+
+
+def _check_id_and_ports(view: InstanceView) -> None:
+    """The instance id and the wiring: `id_unsupported(<U>)` for an id that cannot name the
+    column's property blocks, `port_unsupported(<U>.<port>)` for a port the unit does not
+    declare, `port_unwired(<U>.<port>)` for an outlet not wired exactly once and
+    `port_multiplicity_unsupported(<U>.<port>)` for `top` or `bottom` wired more than once."""
     unit = view.unit_id
     if not _TOKEN.match(unit):
         # The column's property blocks are named after its id (S01's `_token`).
@@ -325,7 +365,14 @@ def column_structure(view: InstanceView, components: Sequence[str]) -> ColumnStr
         if len(view.ports.get(port, ())) > 1:
             raise RevisionError("unsupported", f"port_multiplicity_unsupported({unit}.{port})")
 
-    # The ends, from the wiring and the declared phases (§4.7.1).
+
+def _condenser_and_reboiler(view: InstanceView) -> tuple[str, str]:
+    """The ends, from the wiring and the declared phases (§4.7.1): the condenser `none` with
+    `top` connected (the distillate then declared vapor, else `specification_conflict`),
+    `partial` for a vapor distillate, `total` for a liquid one, any other declaration
+    `port_unsupported`; the bottoms declared liquid, else `port_unsupported`; the reboiler `none`
+    with `bottom` connected, else `partial`."""
+    unit = view.unit_id
     distillate_phase = view.phases.get(DISTILLATE)
     if TOP in view.ports:
         if distillate_phase != "VAPOR":
@@ -353,15 +400,29 @@ def column_structure(view: InstanceView, components: Sequence[str]) -> ColumnStr
             f"Declare {unit}.bottoms liquid: it is the stage-N liquid.",
         )
     reboiler = "none" if BOTTOM in view.ports else "partial"
+    return condenser, reboiler
 
-    # Parameters (§4.7.1).
+
+def _stage_count(view: InstanceView) -> int:
+    """`stage_count`: `parameter_missing` when absent, `parameter_value_unsupported` when not an
+    integer (`_integer`) or below 1."""
+    unit = view.unit_id
     if STAGE_COUNT not in view.parameters:
         raise RevisionError("incomplete", f"parameter_missing({unit}.{STAGE_COUNT})")
     count = _integer(view, STAGE_COUNT)
     if count < 1:
         raise RevisionError("unsupported", f"parameter_value_unsupported({unit}.{STAGE_COUNT})")
-    feeds = tuple(view.ports.get(FEED, ()))
-    entries = end_entries(view)
+    return count
+
+
+def _check_parameter_names(
+    view: InstanceView, count: int, feeds: tuple[str, ...], entries: Mapping[str, float]
+) -> None:
+    """The instance's parameter names against the `count` stages, the side-feed streams `feeds`
+    and the end specifications `entries`: `parameter_unsupported` for the first unknown name,
+    then `parameter_missing` for the first absent `stage_pressure.<j>`, then for the first absent
+    `feed_stage.<stream>`. `stage_duty.<j>` is optional."""
+    unit = view.unit_id
     known = {
         STAGE_COUNT,
         *(f"{STAGE_PRESSURE}.{j}" for j in range(1, count + 1)),
@@ -378,10 +439,15 @@ def column_structure(view: InstanceView, components: Sequence[str]) -> ColumnStr
     for stream in feeds:
         if f"{FEED_STAGE}.{stream}" not in view.parameters:
             raise RevisionError("incomplete", f"parameter_missing({unit}.{FEED_STAGE}.{stream})")
-    pressures = tuple(float(view.parameters[f"{STAGE_PRESSURE}.{j}"]) for j in range(1, count + 1))
 
-    condenser_spec = _end_specification(view, CONDENSER, entries)
-    reboiler_spec = _end_specification(view, REBOILER, entries)
+
+def _duties(
+    view: InstanceView, count: int, condenser: str, reboiler: str
+) -> tuple[float | None, ...]:
+    """`ColumnStructure.duties`, top to bottom: `None` at a column-specification stage (stage 1
+    unless the condenser is `none`, stage `count` unless the reboiler is `none`), where a
+    `stage_duty.<j>` is `parameter_unsupported`; elsewhere `stage_duty.<j>`, `0.0` when absent."""
+    unit = view.unit_id
     slot_stages = {
         stage
         for stage, present in ((1, condenser != "none"), (count, reboiler != "none"))
@@ -396,7 +462,15 @@ def column_structure(view: InstanceView, components: Sequence[str]) -> ColumnStr
             duties.append(None)
         else:
             duties.append(float(view.parameters.get(name, 0.0)))
+    return tuple(duties)
 
+
+def _placed_inlets(
+    view: InstanceView, count: int, feeds: tuple[str, ...]
+) -> tuple[PlacedPort, ...]:
+    """`ColumnStructure.inlets`: `top` at stage 1 and `bottom` at stage `count` when connected,
+    then the side feeds `feeds` as `feed1, feed2, …` at their `feed_stage.<stream>` (`_integer`),
+    all on the `feed` port's one declared phase (`_phase_of`, which raises for a missing one)."""
     placed: list[PlacedPort] = []
     if TOP in view.ports:
         placed.append(PlacedPort(TOP, TOP, 1, _phase_of(view, TOP), view.ports[TOP][0]))
@@ -410,20 +484,7 @@ def column_structure(view: InstanceView, components: Sequence[str]) -> ColumnStr
             PlacedPort(FEED, f"feed{k}", _integer(view, f"{FEED_STAGE}.{stream}"), phase, stream)
             for k, stream in enumerate(feeds, start=1)
         )
-    return ColumnStructure(
-        unit_id=unit,
-        stage_count=count,
-        condenser=condenser,
-        reboiler=reboiler,
-        pressures=pressures,
-        duties=tuple(duties),
-        condenser_spec=condenser_spec,
-        reboiler_spec=reboiler_spec,
-        inlets=tuple(placed),
-        distillate=view.ports[DISTILLATE][0],
-        bottoms=view.ports[BOTTOMS][0],
-        components=tuple(components),
-    )
+    return tuple(placed)
 
 
 # -- bind-time refusals (§4.7.2) -----------------------------------------------------------------
