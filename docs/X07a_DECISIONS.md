@@ -398,3 +398,30 @@ Push from this worktree: `git -c credential.helper='!gh auth git-credential' pus
   Windows). Rejected: S13a's rule admitting a registered skip (a relaxed check); the a07 index-staging fix
   (M07.A31(b) holds the file). Engineer's preference: A.
 - Left: Q-13; the four P3 rows (TH-C1 json (b), `test_opt_cost_lca`, m04 a34, m04 a49).
+
+## WO9 (2026-11-20, the review's build-lane fixes R-1 to R-6; one commit each)
+
+- R-1 (4f964722): the BLAS pin was a no-op off Linux, a defect, not a row. `_platform.loaded_libraries`
+  lists the loaded shared objects (Linux `/proc/self/maps`, the same parse; macOS `_dyld_image_count`/
+  `_dyld_get_image_name`; Windows `K32EnumProcessModules`/`GetModuleFileNameW`; ctypes only, no dependency,
+  locks unchanged); `blas._loaded_openblas` filters it. a49's child reports the controlled libraries and
+  which of NumPy/SciPy are built against OpenBLAS, and fails if one is and none is controlled (junit
+  properties `blas_controlled`, `openblas_builds`; the skip reason names them). Linux: the same two
+  libraries (`libscipy_openblas64_-6bb31eeb.so`, `libscipy_openblas-68440149.so`), a49 passes, not skipped.
+  The Windows measurement (`controlled()` 0 before, non-empty after, pinned 1 = 8) is CI's. macOS arm64
+  wheels of NumPy 2.2.4/SciPy 1.15.3 may use Accelerate: then `openblas_builds` is empty, the pin rightly
+  controls nothing and the a49 control is vacuous (skip). `greybox.openmp_runtimes` and
+  `forbidden_mapped_objects` read `/proc` too: left, the NLP stack (cyipopt from conda) is Linux-only and
+  the module imports cyipopt at the top, so no other platform reaches them.
+- R-2 (08a94363): `amendment2.sources` keys `.as_posix()`; a34 expects the native path
+  (as m03 a42). `--check` prints a unified diff (200 lines at most) on a mismatch. Linux: 11943 claims,
+  every output byte-identical, `reference_values.json` sha256 d0a23a01 unchanged; a one-byte mutation
+  fails with its hunk.
+- R-3 (ea56f0c5): `PLATFORM_DIFFERENCES[("AMD64", "Windows")]` carries TH-C1 (b)'s three paths under L5.
+- R-4 (4d34213d): row L11, `bitwise_baseline` on the 1e-13 node; companion at `V2_RELATIVE_TOLERANCE` (1e-9).
+- R-5 (c91da7cc): Q-13 option A as row L12, `conftest.FROZEN_WINDOWS_CONSEQUENCES` keyed to the a07 node;
+  the rows test fails if the key goes while the row stays. The Windows branch is checked on Linux against
+  a manifest with RP.S03 set to `fail` (the generator's own lines match). Unverified until CI: that no
+  other same-form key differs on Windows (the old assertion stopped at RP.S03).
+- R-6 (90d53af2): A85b's products style split into unmarked nodes (w6, w30; 720 values each).
+- Gates: touched tests pass; F0 PASS 9/9; locks ead4edf1/71f30fa7 unchanged; ruff, format, mypy clean.
