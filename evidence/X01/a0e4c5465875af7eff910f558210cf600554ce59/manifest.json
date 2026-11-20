@@ -2,7 +2,7 @@
   "work_package": "X01",
   "commit": "a0e4c5465875af7eff910f558210cf600554ce59",
   "requirements": [],
-  "status": "implemented",
+  "status": "tested",
   "inputs": {
     "case_id": "X01-WO1 (docs/briefs/X01-WO1.md, card ofs-05-widen option B): X01 rest part A, the plugin path ADR 0060 F1-WO3 unblocks (ADR 0060:540-541)",
     "case_hash": "09fa174617a14e41021939749b99a9fdf46e0e17ff4681ef70e14a03860aa448",
@@ -63,8 +63,8 @@
     {
       "id": "X01.CI",
       "description": "CI green on both architectures (check ubuntu-latest, check ubuntu-24.04-arm) and the Site workflow (mkdocs build --strict)",
-      "result": "not_applicable",
-      "value": "CI runs ci 44632249060 and Site 44632249098 on a0e4c546 in progress"
+      "result": "pass",
+      "value": "CI run 44632249060 (ci) at a0e4c5465875af7eff910f558210cf600554ce59: conclusion success; check (ubuntu-latest) success, check (ubuntu-24.04-arm) success, default-install success, codehealth success, identity success, the other jobs skipped; Site run 44632249098 (mkdocs build --strict) success (confirmed with gh run view --json conclusion,headSha,jobs)"
     }
   ],
   "artifacts": [
