@@ -445,3 +445,31 @@ Push from this worktree: `git -c credential.helper='!gh auth git-credential' pus
   previous code: DID NOT RAISE); a fixed maps text parses as before. Reversible by reverting 725885fa.
 - Gates: `test_m04_quadratic.py` + `test_x07a_platform.py` 41 passed, none skipped (a49 passed); F0 PASS
   9/9; locks ead4edf1/71f30fa7 unchanged; ruff, format, mypy (393 files) clean. CI: see the push.
+
+## WO11 (2026-11-20, RP.S08 differs on Windows in REL.A20; CI 44773324184 at 94b38dae)
+
+- Cause: not found by reading; no Windows host here. The Windows leg's one failure gives only
+  `RP.S08 same form: fail; S13 V03.A08 pass: DIFFERS`, and the child runs' logs and junit stay in the
+  runner's temp directory.
+- Narrowed: RP.S06's selections pass on Windows, among them `test_rel_release_gate.py -k a03_`, so the
+  differing selection is `test_v03_v0_3_gate.py -k a08_` (7 nodes) or the a05_ half of
+  `test_rel_release_gate.py -k "a03_ or a05_"` (6 nodes; the only judged selection that runs a workflow
+  step through bash, `test_release_workflows._run`). Both pass in the same leg's main suite.
+- Ruled out: a `FROZEN_WINDOWS_LIMITS` skip (neither node is in S08's selections; the leg's two
+  `conftest.py:167` skips are the two frozen nodes); an MSG-G3 miss turning a green child's exit code to 1
+  (none in the leg's main suite); the pipe encoding (CI sets `PYTHONUTF8=1`, inherited); path length (the
+  deepest path under the child's basetemp is 114 characters on Linux, about 221 under the Windows runner's
+  basetemp, below 260); `-k` with a space (an argv list, quoted by `list2cmdline`); marker deselection
+  (`addopts` deselects only nlp and pymrm). The brief's "main is green on Windows" carries no evidence:
+  main's CI matrix is `[ubuntu-latest, ubuntu-24.04-arm]`, so the test never ran on Windows there.
+- Diagnostic (f38bea62): REL.A20's test judges every same-form key before it asserts; the message carries,
+  per key not as expected, the generator's lines, each selection's summary, and per pytest selection its
+  exit code, the junit's failed, errored and skipped nodes with their message, and its log's last 8 lines
+  (bounded, 3000 characters a key). Checked on Linux by a forced skip and a forced failure in two a08 nodes
+  (reverted): the message named RP.S03 and RP.S08, `RP.S08.0 skipped: ...test_a08_the_uncovered_text: forced
+  WO11 probe`, the failing node and its assertion, exit codes and summaries. The checks are unchanged.
+- Next: the next Windows leg names the node and its reason. A harness or generator defect: fix with a
+  Linux test that forces the Windows path. A Windows behaviour of an S08 node: a design-lane finding (the
+  row a limit would need); S08 is not set aside without one.
+- Gates: `tests/test_rel_evidence_manifest.py` 19 passed; F0 PASS 9/9; locks ead4edf1/71f30fa7 unchanged;
+  ruff, format, mypy (393 files) clean.
