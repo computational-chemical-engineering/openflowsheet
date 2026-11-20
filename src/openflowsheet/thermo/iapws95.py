@@ -862,7 +862,10 @@ class Iapws95Provider:
 
         Refused, in order (spec §4.5): by `_request_refusal` (rows 1 to 6: a request no state
         could answer, a state outside the domain or dormant, Psat or Tsat asked outside the range
-        where saturation is answered); then by the phase and saturation solves below.
+        where saturation is answered); by `_phase_answer` when a phase property is asked (rows 7
+        to 9: the `near_critical` box, the rule's saturation not converged, a phase the rule does
+        not answer, the density root not converged); then by `_saturation_answers` (row 9: Psat's
+        saturation or Tsat not converged).
         """
         del context
         refusal_of_request = _request_refusal(request)
@@ -875,44 +878,15 @@ class Iapws95Provider:
 
         answer: _Answer = {}
         saturation: _Saturation | None = None
-        signature: Phase = request.phase
         if asked & set(PHASE_PROPERTIES):
-            if _near_critical(t, p):
-                return _refused(
-                    "unsupported", f"near_critical: {t!r} K, {p!r} Pa is inside the refused box"
-                )
-            rule = _rule(t, p)
-            if rule is None:
-                return _refused("not_converged", f"{_NOT_CONVERGED_SAT}: at {t!r} K")
-            if request.phase not in rule.answered:
-                return _refused(
-                    "unsupported",
-                    f"phase_not_stable: {request.phase} at {t!r} K, {p!r} Pa; answered "
-                    f"{list(rule.answered)}",
-                )
-            saturation = rule.saturation
-            if saturation is None and t < T_C:
-                # The strip (647.0 K, T_c): without a saturation, the T ≥ T_c bracket (design note
-                # S07-near-critical-saturation, D3 and D5).
-                saturation = _saturation(t)
-            rho = _density(t, p, request.phase, saturation)
-            if rho is None:
-                return _refused(
-                    "not_converged",
-                    f"density_not_converged: {request.phase} at {t!r} K, {p!r} Pa",
-                )
-            answer, _ = _at(t, rho, p)
-        if "Psat" in asked:
-            if saturation is None or saturation.temperature != t:
-                saturation = _saturation(t)
-            if saturation is None:
-                return _refused("not_converged", f"{_NOT_CONVERGED_SAT}: Psat at {t!r} K")
-            answer["Psat"] = (saturation.pressure, _saturation_slope(saturation), 0.0)
-        if "Tsat" in asked:
-            solved = _tsat(p)
-            if solved is None:
-                return _refused("not_converged", f"{_NOT_CONVERGED_SAT}: Tsat at {p!r} Pa")
-            answer["Tsat"] = (solved[0], 0.0, solved[1])
+            phase_answer = _phase_answer(request, t, p)
+            if isinstance(phase_answer, PropertyResult):
+                return phase_answer
+            answer, saturation = phase_answer
+        saturation_answer = _saturation_answers(asked, t, p, saturation)
+        if isinstance(saturation_answer, PropertyResult):
+            return saturation_answer
+        answer.update(saturation_answer)
 
         values = {name: answer[name][0] for name in request.properties}
         derivatives: dict[str, dict[str, float]] = {}
@@ -925,7 +899,7 @@ class Iapws95Provider:
                 }
         return PropertyResult(
             status="ok",
-            phase_signature=signature,
+            phase_signature=request.phase,
             values=values,
             derivatives=derivatives,
             provider_id=PROVIDER_ID,
@@ -1034,6 +1008,69 @@ def _request_refusal(request: PropertyRequest) -> PropertyResult | None:
                 f"no_saturation: Tsat at {p!r} Pa outside [{low!r}, {high!r}] Pa",
             )
     return None
+
+
+def _phase_answer(
+    request: PropertyRequest, t: float, p: float
+) -> tuple[_Answer, _Saturation | None] | PropertyResult:
+    """The requested phase's six properties at (T, P) with the saturation the phase rule used,
+    or the refusal (spec §4.2, §4.4).
+
+    In order: `near_critical` inside the refused box, `saturation_not_converged` when `_rule`
+    returns None, `phase_not_stable` when the rule does not answer the requested phase, and
+    `density_not_converged` when `_density` returns None. The saturation is the rule's; in the
+    strip (647.0 K, T_c), where the rule uses none, it is `_saturation(t)`.
+    """
+    if _near_critical(t, p):
+        return _refused(
+            "unsupported", f"near_critical: {t!r} K, {p!r} Pa is inside the refused box"
+        )
+    rule = _rule(t, p)
+    if rule is None:
+        return _refused("not_converged", f"{_NOT_CONVERGED_SAT}: at {t!r} K")
+    if request.phase not in rule.answered:
+        return _refused(
+            "unsupported",
+            f"phase_not_stable: {request.phase} at {t!r} K, {p!r} Pa; answered "
+            f"{list(rule.answered)}",
+        )
+    saturation = rule.saturation
+    if saturation is None and t < T_C:
+        # The strip (647.0 K, T_c): without a saturation, the T ≥ T_c bracket (design note
+        # S07-near-critical-saturation, D3 and D5).
+        saturation = _saturation(t)
+    rho = _density(t, p, request.phase, saturation)
+    if rho is None:
+        return _refused(
+            "not_converged",
+            f"density_not_converged: {request.phase} at {t!r} K, {p!r} Pa",
+        )
+    answer, _ = _at(t, rho, p)
+    return answer, saturation
+
+
+def _saturation_answers(
+    asked: set[str], t: float, p: float, saturation: _Saturation | None
+) -> _Answer | PropertyResult:
+    """Psat and Tsat with their (T, P) derivatives, those of the two that are asked, or the
+    refusal (spec §3.5); empty when neither is asked.
+
+    Psat takes `saturation` (`_phase_answer`'s) when it is at T, else solves `_saturation(t)`;
+    refused `saturation_not_converged` when that solve, or then `_tsat(p)`, returns None.
+    """
+    entries: _Answer = {}
+    if "Psat" in asked:
+        if saturation is None or saturation.temperature != t:
+            saturation = _saturation(t)
+        if saturation is None:
+            return _refused("not_converged", f"{_NOT_CONVERGED_SAT}: Psat at {t!r} K")
+        entries["Psat"] = (saturation.pressure, _saturation_slope(saturation), 0.0)
+    if "Tsat" in asked:
+        solved = _tsat(p)
+        if solved is None:
+            return _refused("not_converged", f"{_NOT_CONVERGED_SAT}: Tsat at {p!r} Pa")
+        entries["Tsat"] = (solved[0], 0.0, solved[1])
+    return entries
 
 
 def _refused(status: PropertyStatus, message: str) -> PropertyResult:
