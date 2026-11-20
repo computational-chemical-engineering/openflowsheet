@@ -4050,3 +4050,12 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   pending; wait re-armed (`--since 513 --idle s19-w5l`). gate_report: the same three standing ALERTs (selected share
   7%, 623 s, ratio 0.59); action unchanged. X07a-WO4 launched (opus-engineer, brief `docs/briefs/X07a-WO4.md` on
   wp/X07a b3b66bbb): macOS rows, manifest move, Windows leg, the failed codehealth CI job of 44670029066.
+- **2026-11-20, X07a-WO4 delivered (opus-engineer, Opus, ~200k; 0.5 lane).** wp/X07a pushed, head 51f7fcae, CI
+  44683830734 running. b39ada81 codehealth CI job (debt 62.60 -> 67.60 on the branch, fixed back to 62.60; subject
+  line names the failing number); a99c510f Windows WinError 123 (W3a rerun dir name with ":", 179 errors); cab55fa8
+  macOS rows L6-L10 (P2) + two platform limits (s9_5 /proc/self/maps; token_placement undiagnosed off a macOS host),
+  Q-11 (B34a outcome counts as a bitwise expectation?); ff7a1437 v02a r347 real bug (KeyError without an A30 summary);
+  8b6d821a A6 logged per leg; b4a28fe5 L5 third path; 51f7fcae manifest move (implemented, run 44670029066; t08 check
+  0 problems). Windows (44670029066): 116 failed + 179 errors before a99c510f; clusters classified, unfixed. Rule slip:
+  `git add -A evidence/X07a` (scoped to that path; commit holds 4 expected files). Reviewer round: D-20, D-22, Q-4,
+  Q-10, Q-11. Next: read 44683830734 (macOS rows, L5), then X07a-WO5 (Windows clusters).
