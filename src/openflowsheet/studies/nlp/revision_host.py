@@ -31,7 +31,7 @@ import dataclasses
 import math
 import struct
 import time
-from collections.abc import Callable, Mapping, Sequence
+from collections.abc import Callable, Collection, Mapping, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
 from types import MappingProxyType
@@ -221,7 +221,8 @@ def decision_map(
     A probe may move at most one parameter, to the written value bitwise, and nothing else; a
     probe at the base value moves none. Across a decision's probes exactly one parameter is
     named, and at every probe it holds the written value. The specification clause is
-    `_specification_refusal`, the probes at the box's ends `_end_probes`."""
+    `_specification_refusal`, the probes at the box's ends `_end_probes`, the parameter they
+    name `_probed_parameter`."""
     base = routes.bind(ROUTE, document, surrogates=surrogates)
     if not routes.is_route(base):
         raise RevisionUnboundError(base)
@@ -235,24 +236,10 @@ def decision_map(
             refusals.append(refused)
             continue
         probes, why = _end_probes(document, decision, binding, routes, surrogates)
-        named = sorted({parameter for _, moved, _ in probes for parameter in moved})
-        if not why and len(named) != 1:
-            why = (
-                f"the probes moved {named}"
-                if named
-                else "no probe moved a parameter (no end of the box is off the base value)"
-            )
-        if not why:
-            (parameter,) = named
-            # A probe at the base value moves nothing; there too the parameter holds the value.
-            wrong = [value for value, _, held in probes if _bits(held[parameter]) != _bits(value)]
-            if wrong:
-                why = f"the probe at {wrong[0]!r} did not set {parameter} to it"
-            elif parameter in parameters.values():
-                why = f"{parameter} is already another decision's parameter"
-            else:
-                parameters[name] = parameter
-                continue
+        parameter, why = _probed_parameter(probes, why, parameters.values())
+        if parameter is not None:
+            parameters[name] = parameter
+            continue
         refusals.append(
             DecisionRefusal(
                 "DECISION_NOT_CONTINUOUS", name, f"DECISION_NOT_CONTINUOUS({name}): {why}"
@@ -319,6 +306,36 @@ def _end_probes(
             break
         probes.append((value, moved, probe.binding.spec.parameters))
     return probes, why
+
+
+def _probed_parameter(
+    probes: list[tuple[float, list[str], Mapping[str, float]]],
+    why: str,
+    taken: Collection[str],
+) -> tuple[str | None, str]:
+    """The one parameter `_end_probes`' `probes` name, as `(parameter, why)` with `why` empty; or
+    `(None, why)` with the reason the decision is not continuous: `_end_probes`' own `why`
+    when not empty, else the probes moved no parameter or several, a probe did not set the
+    parameter to its value bitwise, or the parameter is already in `taken` (another decision's).
+    Pure."""
+    named = sorted({parameter for _, moved, _ in probes for parameter in moved})
+    if not why and len(named) != 1:
+        why = (
+            f"the probes moved {named}"
+            if named
+            else "no probe moved a parameter (no end of the box is off the base value)"
+        )
+    if not why:
+        (parameter,) = named
+        # A probe at the base value moves nothing; there too the parameter holds the value.
+        wrong = [value for value, _, held in probes if _bits(held[parameter]) != _bits(value)]
+        if wrong:
+            why = f"the probe at {wrong[0]!r} did not set {parameter} to it"
+        elif parameter in taken:
+            why = f"{parameter} is already another decision's parameter"
+        else:
+            return parameter, why
+    return None, why
 
 
 def two_phase_margin(
