@@ -4170,3 +4170,7 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   15 lines (5 x status, reviewed_by, reviewed_at 2026-11-18), tree clean; description tests 173 passed incl.
   test_every_description_is_reviewed_by_both_lanes. Card `executed` written (v3). wp/F3 pushed, CI running. Next:
   manifest `tested`, merge card via hub.
+- 2026-11-20, job 543 (w5p0-mc2, merge-check of b314f69b) FAIL tests: 1 failed, 20559 passed, 107 skipped (1074 s):
+  `test_s16_test_impact.py::test_no_test_reads_campaign_tooling`; fix round 1 made `tests/test_s19_w5_gate.py` name
+  `.codehealth/config.toml` (lines 746, 851) without declaring it in `TOOLING_TESTS`. A real failure, not environment.
+  Fix delegated (sonnet-implementer, one tuple entry plus comment); then a fresh merge-check.
