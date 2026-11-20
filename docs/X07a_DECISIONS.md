@@ -67,6 +67,29 @@ Brief: `docs/briefs/X07a-WO1.md`. Branch `wp/X07a`, base `main` c4a91a75. Build 
   the macos-latest runner's CPU count -> the made-up value is 7 (5 and 96 are taken). The guard is
   unchanged. Reversible by: the literal.
 
+- D-13. DECISION (WO2): every Linux leg of run 44629506428 failed on T08.A21 and M07a.A50: the
+  manifest added at 37049c8a was not harvested -> T08 harvest rows (class P) for it and
+  `HARVEST_SIZE` (100, 1139, 147), as every package that adds a manifest does (commit 8b1c7671).
+  A later manifest needs the same rows. Alternative: none (the gate is the rule).
+- D-14. DECISION (WO2): the Windows "G19 hang" -> not a hang in G19: G19 fails in seconds (Q-1) and
+  `Run checks` then runs pytest, which took 175 min on Windows in run 44618922484 (17068 tests,
+  Linux about 115 min). The `check` job gets `timeout-minutes: 300` so a real hang ends bounded.
+  Alternative: no bound (default 360 min). Reversible by: the line. `gh run cancel` of the two
+  long runs was refused by the session's permission classifier; they end on their own.
+- D-15. DECISION (WO2): the CI pytest summary names failures -> `PYTEST_ADDOPTS: -rsfE` (was
+  `-rs`), so a leg's failures are read by grep. Output only. Reversible by: the env line.
+- D-16. DECISION (WO2): `bash` in tests on Windows resolved to the WSL launcher (CreateProcess
+  searches System32 before PATH; 33 failures in `test_release_workflows.py`, stderr "wsl.exe
+  --install <Distro>") -> `conftest.BASH`: `shutil.which("bash")` on win32, the bare name
+  elsewhere (Linux argv unchanged). Portability bug in the tests, fixed.
+- D-17. DECISION (WO2): a corpus name with ":" (`T05b:DZ-3`) as a directory name (WinError 123,
+  13 failures in `test_t07_w3a_revision_runs.py`) -> the test's directory replaces ":" by "_".
+  Portability bug in the test, fixed.
+- D-18. DECISION (WO2): `os.kill(pid, signal.SIGKILL)` on a `multiprocessing.Process` -> its
+  `.kill()` (the same SIGKILL on POSIX, TerminateProcess on Windows) in `test_t07_store.py` and the
+  server kill of `test_t07_w4c_process_executor.py`; tests that judge the POSIX exit code
+  `-SIGKILL` are a platform limit (row below).
+
 ## Design-lane questions (left failing, not chosen)
 
 - Q-1 (G19 on Windows, run 44615939688): `t07_licence_inventory.py` FAILED, 30 distributions:
@@ -82,6 +105,19 @@ Brief: `docs/briefs/X07a-WO1.md`. Branch `wp/X07a`, base `main` c4a91a75. Build 
   ruling on M7's expected verdict per machine class (ADR 0067 D7, R9: per-platform reference
   records).
 
+- Q-2 extended (WO2, runs 44618922484 and 44629506428): the same rule fails tests, not only F0.
+  `run/replay.py:53` `REGISTERED_PLATFORMS` holds `(x86_64, Linux)` and `(aarch64, Linux)` only, so
+  `decide_mode` gives `inspected_archived_results`/`NOT_RUN` for every rerun on Windows and macOS,
+  a same-host rerun included. macOS: about 90 of 144 failures (47 `test_g8_rerun_matches_on_the_same_host`,
+  `test_a16_a17_the_replay_matrix`, `test_g16*`, `test_t07_q26_*`, ...); Windows: 54 of the rest.
+  Registering a platform for replay is the same ruling as Q-2.
+- Q-3 (WO2, macOS run 44629506428): floating-point differences against Linux-recorded fixtures,
+  for example `test_every_registered_call_is_bitwise_the_baseline[kernel_targets]`
+  (`_same(1.9163045025588417, 1.9163045025588423)`), `test_the_fixtures_are_what_real_runs_emit_today`
+  (`qualification.outcomes[8].splits[1].margin: 1.3370443359361772e-05 against 1.33704433897...`),
+  `test_th_c1_golden[csv,json,text]`. Per-platform reference records are a design-lane ruling
+  (ADR 0067 D7, R9); left failing.
+
 ## Platform limits (deliverable 4)
 
 | Test or module | Platform | Reason | Lifted by |
@@ -92,6 +128,10 @@ Brief: `docs/briefs/X07a-WO1.md`. Branch `wp/X07a`, base `main` c4a91a75. Build 
 | `tests/test_m06_browser_smoke.py` (module skip, as when no browser is found) | Windows | the driver passes `--remote-debugging-pipe` fds 3/4 by `dup2` (POSIX); run 44617827438 | a Windows pipe driver (X07b or M06 follow-up) |
 | `spikes/p02/common/timing.py` `measure_memory` | Windows | POSIX `resource` (now imported in the function; the module imports everywhere) | not needed by any test |
 | `nlp`, `pymrm` marked tests (deselected by `-m` on every leg, pre-existing) | all | opt-in environments | X07b |
+| `tests/test_s19_w5_identity.py` (`facts`, `scratch`, `_tool`), `tests/test_s19_w5_gate.py` (`sets`) | Windows | the W5 base tree is imported to measure facts and imports `fcntl` (it predates `_platform`); run 44618922484, 45 errors + 19 failures | a W5 base at or after X07a's merge (S19) |
+| `tests/test_t07_w4c_process_executor.py` 2 tests, `tests/test_t07_w4e_error_mapping.py` 1 test (`NEEDS_SIGKILL`) | Windows | the lost worker is made by SIGKILL and judged by its POSIX exit code; run 44618922484 | X07b (Windows kill-chain semantics) |
+| `tests/test_t07_v17_c2.py` (`_posix_only` in `_operator`, `identity_claude`, one test) | Windows | V17 harness: token secrecy is checked on POSIX mode bits (Windows reports 0o666), stand-in `claude` is a shebang script; run 44618922484 | not planned (V17 runs on the Linux workstation, R-116) |
+| `tests/test_t07_w7a_harness.py` (`fake_claude`) | Windows | the stand-in `claude` is a shebang script run with a POSIX PATH; run 44618922484 | not planned (as above) |
 
 Rows found by the CI legs are added below with their run id.
 
