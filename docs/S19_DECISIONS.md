@@ -4432,3 +4432,15 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   `git merge --no-ff wp/F3` on main -> d29f1a50 (tree equal to 6cf2a1de); F0 on main `F0 PASS` 9/9 (M9 35/35); pushed
   origin/main c4a91a75..d29f1a50. Card `executed` written (v4). Next for S19: item 3c (records/, local.py duplication)
   when wp/S19 takes main.
+- **2026-11-20, WO-P5 delivered (opus-engineer, Opus).** wp/S19-w5p a5b8fb11..da75a268, `coolprop_heos.py` health 6.4 ->
+  9.0, debt 53.7 -> 0: f875f4d4 `_evaluate` 30.4 -> 0 (`_saturation_range_refusal`, `_phase_answer`,
+  `_saturation_answers`, `_requested_derivatives`; job 558), da75a268 `_maxwell_fallback` 23.3 -> 0 (`_mechanically_
+  stable`, `_vapour_point`, `_spinodals`, `_reduced_gibbs`, `_pressure_bisection`; closures `vapour`/`liquid` inlined as
+  their `_bracketed_density` calls; job 559). Arithmetic multiset 175 equal (step 2 after writing the lifted closure
+  calls back in old form; 4 nodes differ otherwise), strings equal; dump 123 fluids with every CoolProp call's args
+  (step 2 also k-test and K returns), 421790 lines, equal at B_P, parent, head (`-P`, paths asserted); 4 falsifiers
+  detected; every NOT EXECUTED / partly executed hunk run by the dump. Pinned F0 `M6 FAIL 2/85, M9 FAIL 9/35` and
+  unpinned `M2 9/61, M3 9/61, M6 8/85, M9 12/35`, both as at the WO-P4 head; registry byte-equal; 11 test failures, all
+  in L_P. Deviation: `answer.update(...)` tripped S07 A27's oracle (any `.update` outside `_jet` reads as a CoolProp
+  state update) -> `answer |= ...`. Left: duplication smell 13.3% (copies of iapws95/pr_c1/pr_lib code; a shared
+  module is outside R4) caps health at 9.0. Harness `<scratchpad fd6d6a3d>/w5p5/`.
