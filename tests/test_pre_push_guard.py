@@ -141,7 +141,10 @@ def test_the_installed_hook_guards_git_push(tmp_path: Path) -> None:
         check=True,
     )
     hook = Path(_git(repo, "rev-parse", "--path-format=absolute", "--git-path", "hooks"))
-    assert installed.stdout.strip() == f"installed {hook / 'pre-push'}"
+    # The script prints git's path (`C:/...` on Windows); compared as a path (X07a).
+    printed = installed.stdout.strip()
+    assert printed.startswith("installed ")
+    assert Path(printed.removeprefix("installed ")) == hook / "pre-push"
     assert (hook / "pre-push").read_bytes() == (
         REPO_ROOT / "scripts" / "pre_push_guard.py"
     ).read_bytes()
