@@ -311,7 +311,7 @@ def runs(tmp_path_factory: pytest.TempPathFactory) -> dict[str, Any]:
         assert isinstance(route, Route), name
         policy = resolve_policy(DEFAULT_POLICY_ID, route.solve_path)
         assert policy is not None
-        directory = root / name
+        directory = root / name.replace(":", "_")  # X07a: no ":" in a Windows file name
         try:
             manifest = run_revision_session(
                 route,

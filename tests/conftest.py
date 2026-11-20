@@ -4,7 +4,9 @@ from __future__ import annotations
 
 import hashlib
 import json
+import shutil
 import subprocess
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -12,6 +14,10 @@ import pytest
 import yaml
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
+#: X07a: the `bash` a test runs a shell script with. On Windows CreateProcess searches System32
+#: before PATH and finds the WSL launcher (run 44618922484: "... wsl.exe --install <Distro>"), so
+#: the PATH's bash (Git's on the CI runner) is named by its full path; elsewhere the bare name.
+BASH = (shutil.which("bash") or "bash") if sys.platform == "win32" else "bash"
 
 #: The reason a test that reads the pre-0.1.0 development history skips where that history is not.
 ARCHIVED_HISTORY = "pre-0.1.0 development history is archived in openflowsheet-dev (R-150)"
