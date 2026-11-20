@@ -641,35 +641,85 @@ class CoolPropHeosProvider:
         F(P) = K(ρ_L(P)) − K(ρ_V(P)) (K = αʳ + δαʳ_δ + ln δ) between the spinodal pressures, each
         phase's root on its mechanically stable branch, then `_maxwell_newton` from them; accepted
         by its rule with both phases outside the spinodals. Every loop is bounded; any failed
-        check gives `None`. `seed_v` is the vapour ancillary's density, used only if usable."""
+        check gives `None`. `seed_v` is the vapour ancillary's density, used only if usable.
+
+        Steps 2, 3 and 6 are `_vapour_point`, `_spinodals` and `_pressure_bisection`; k is
+        `_mechanically_stable`'s test and K is `_reduced_gibbs`.
+        """
         fluid = self._fluid
         rho_c, top, rho_red = fluid.rho_c, fluid.rho_max, fluid.rho_red
-
-        def stable(density: float) -> bool:  # k = (∂p/∂ρ)_T/(RT) > 0
-            return self._pressure(temperature, density)[1] > 0.0
-
-        def gibbs(density: float) -> float:  # K
-            delta = density / rho_red
-            _, res = self._jet(temperature, density)
-            return res.phi + delta * res.d + math.log(delta)
-
         # 1. The anchor: ρ_c inside the unstable branch.
-        if stable(rho_c):
+        if self._mechanically_stable(temperature, rho_c):
             return None
         # 2. A mechanically stable vapour density below ρ_c.
+        rho_a = self._vapour_point(temperature, seed_v)
+        if rho_a is None:
+            return None
+        # 3. The spinodals, each by bisection on the sign of k, keeping the end with k > 0.
+        spinodals = self._spinodals(temperature, rho_a)
+        if spinodals is None:
+            return None
+        rho_vb, rho_lb = spinodals
+        # 4. The pressure bracket.
+        p_a, p_b = self._pressure(temperature, rho_lb)[0], self._pressure(temperature, rho_vb)[0]
+        if not 0.0 < p_a < p_b:
+            return None
+        rt = fluid.r * temperature
+        # 5. The end signs: F(P_a) > 0 > F(P_b), with ρ_L(P_b) on the liquid branch (ρ_lb, ρ_max]
+        # and ρ_V(P_a) on the vapour branch (0, ρ_vb].
+        rho_l_end, rho_v_end = (
+            self._bracketed_density(temperature, p_b, rho_lb, top, rho_lb),
+            self._bracketed_density(temperature, p_a, 0.0, rho_vb, min(p_a / rt, rho_vb)),
+        )
+        if rho_l_end is None or rho_v_end is None:
+            return None
+        gibbs = self._reduced_gibbs
+        if not (
+            gibbs(temperature, rho_lb) - gibbs(temperature, rho_v_end)
+            > 0.0
+            > gibbs(temperature, rho_l_end) - gibbs(temperature, rho_vb)
+        ):
+            return None
+        # 6. Bisection on P, the inner roots warm-started from the previous ones.
+        roots = self._pressure_bisection(temperature, (p_a, p_b), spinodals, rt)
+        if roots is None:
+            return None
+        rho_l, rho_v = roots
+        # 7. The polish and its acceptance.
+        polished = self._maxwell_newton(temperature, rho_l / rho_red, rho_v / rho_red)
+        if polished is None or not (polished.rho_l >= rho_lb and polished.rho_v <= rho_vb):
+            return None
+        return polished
+
+    def _mechanically_stable(self, temperature: float, density: float) -> bool:
+        """k = (∂p/∂ρ)_T/(RT) > 0 at (T, ρ), from `_pressure` (design note §4.2)."""
+        return self._pressure(temperature, density)[1] > 0.0
+
+    def _vapour_point(self, temperature: float, seed_v: float) -> float | None:
+        """§4.2 step 2: ρ_a = min(`seed_v`, ρ_c/2) if the seed is usable, else ρ_c/2, halved while
+        `_mechanically_stable` fails; `None` once `_FALLBACK_HALVINGS` halvings did not reach a
+        stable density."""
+        rho_c = self._fluid.rho_c
         rho_a = min(seed_v, 0.5 * rho_c) if _usable(seed_v) else 0.5 * rho_c
         halvings = 0
-        while not stable(rho_a):
+        while not self._mechanically_stable(temperature, rho_a):
             if halvings == _FALLBACK_HALVINGS:
                 return None
             rho_a, halvings = 0.5 * rho_a, halvings + 1
-        # 3. The spinodals, each by bisection on the sign of k, keeping the end with k > 0.
-        if not stable(top):
+        return rho_a
+
+    def _spinodals(self, temperature: float, rho_a: float) -> tuple[float, float] | None:
+        """§4.2 step 3: (ρ_vb, ρ_lb), each by `_SPINODAL_HALVINGS` bisections on the sign of k,
+        keeping the end with k > 0: ρ_vb from [ρ_a, ρ_c], ρ_lb from [ρ_c, ρ_max]. `None` unless
+        k(ρ_max) > 0."""
+        fluid = self._fluid
+        rho_c, top = fluid.rho_c, fluid.rho_max
+        if not self._mechanically_stable(temperature, top):
             return None
         low, high = rho_a, rho_c
         for _ in range(_SPINODAL_HALVINGS):
             middle = 0.5 * (low + high)
-            if stable(middle):
+            if self._mechanically_stable(temperature, middle):
                 low = middle
             else:
                 high = middle
@@ -677,39 +727,47 @@ class CoolPropHeosProvider:
         low, high = rho_c, top
         for _ in range(_SPINODAL_HALVINGS):
             middle = 0.5 * (low + high)
-            if stable(middle):
+            if self._mechanically_stable(temperature, middle):
                 high = middle
             else:
                 low = middle
         rho_lb = high
-        # 4. The pressure bracket.
-        p_a, p_b = self._pressure(temperature, rho_lb)[0], self._pressure(temperature, rho_vb)[0]
-        if not 0.0 < p_a < p_b:
-            return None
-        rt = fluid.r * temperature
+        return rho_vb, rho_lb
 
-        def vapour(pressure: float, start: float) -> float | None:
-            return self._bracketed_density(temperature, pressure, 0.0, rho_vb, start)
+    def _reduced_gibbs(self, temperature: float, density: float) -> float:
+        """K = αʳ + δαʳ_δ + ln δ at (T, ρ): g/(RT) less its δ-free part (design note §4.2)."""
+        rho_red = self._fluid.rho_red
+        delta = density / rho_red
+        _, res = self._jet(temperature, density)
+        return res.phi + delta * res.d + math.log(delta)
 
-        def liquid(pressure: float, start: float) -> float | None:
-            return self._bracketed_density(temperature, pressure, rho_lb, top, start)
-
-        # 5. The end signs: F(P_a) > 0 > F(P_b).
-        rho_l_end, rho_v_end = liquid(p_b, rho_lb), vapour(p_a, min(p_a / rt, rho_vb))
-        if rho_l_end is None or rho_v_end is None:
-            return None
-        if not gibbs(rho_lb) - gibbs(rho_v_end) > 0.0 > gibbs(rho_l_end) - gibbs(rho_vb):
-            return None
-        # 6. Bisection on P, the inner roots warm-started from the previous ones.
+    def _pressure_bisection(
+        self,
+        temperature: float,
+        bracket: tuple[float, float],
+        spinodals: tuple[float, float],
+        rt: float,
+    ) -> tuple[float, float] | None:
+        """§4.2 step 6: bisection on P in `bracket` (P_a, P_b) for the sign of F, each inner root
+        on its branch of `spinodals` (ρ_vb, ρ_lb) and warm-started from the previous one (first:
+        ρ_V from min(P_m/RT, ρ_vb) with `rt` = RT, ρ_L from ρ_lb). The inner roots (ρ_L, ρ_V) at
+        the last P_m, once F = 0 or P_b − P_a ≤ `_PRESSURE_WIDTH`·P_b; `None` when an inner root
+        fails, F is NaN, or `_FALLBACK_HALVINGS` halvings do not reach the width."""
+        p_a, p_b = bracket
+        rho_vb, rho_lb = spinodals
+        top = self._fluid.rho_max
+        gibbs = self._reduced_gibbs
         rho_l, rho_v = rho_lb, math.nan
         for halving in range(_FALLBACK_HALVINGS):
             p_m = 0.5 * (p_a + p_b)
-            root_v = vapour(p_m, min(p_m / rt, rho_vb) if halving == 0 else rho_v)
-            root_l = liquid(p_m, rho_l)
+            root_v = self._bracketed_density(
+                temperature, p_m, 0.0, rho_vb, min(p_m / rt, rho_vb) if halving == 0 else rho_v
+            )
+            root_l = self._bracketed_density(temperature, p_m, rho_lb, top, rho_l)
             if root_l is None or root_v is None:
                 return None
             rho_l, rho_v = root_l, root_v
-            f = gibbs(rho_l) - gibbs(rho_v)
+            f = gibbs(temperature, rho_l) - gibbs(temperature, rho_v)
             if f > 0.0:
                 p_a = p_m
             elif f < 0.0:
@@ -722,11 +780,7 @@ class CoolPropHeosProvider:
                 break
         else:
             return None
-        # 7. The polish and its acceptance.
-        polished = self._maxwell_newton(temperature, rho_l / rho_red, rho_v / rho_red)
-        if polished is None or not (polished.rho_l >= rho_lb and polished.rho_v <= rho_vb):
-            return None
-        return polished
+        return rho_l, rho_v
 
     def _maxwell_newton(self, temperature: float, dl: float, dv: float) -> _Saturation | None:
         """Maxwell's conditions by two-variable Newton in (δ', δ'') from (dl, dv), T < T_c; `None`
