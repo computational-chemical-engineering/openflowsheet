@@ -4336,3 +4336,11 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   S1, S4 (every imported name kept), S7 confirmed. (4) Only the two implementation_sha256 values derive from module
   bytes; both blanked, the pin covers them. Optional docstring at wilson_ig.py:229 (`_lambda` omits its
   `record_structure` error) not taken (no gain on a tier 3 file; a later docstring round may).
+- 2026-11-20 ~16:10, resume after self-reset. F3 CI 44758521457 (6cf2a1de): job `codehealth` red, step "Debt ratchet
+  against origin/main (informational)", `continue-on-error: true` (ci.yml:325-346), also red on the earlier F3 run
+  44709885423: `codehealth diff` against main's config, which has no `records` layer, so 26 records imports read as
+  new repo-layers violations, plus debt over touched files 51.6 -> 62.7 and a duplication smell in
+  `application/local.py` (nloc 411). `codehealth arch --depth 4` on wp/F3 itself: 0 violations, 0 cycles. Not a merge
+  condition (the card's text: green on both architectures = the check legs); the merge waits for the check legs.
+  For S19 G-END after the F3 merge: `application/local.py` duplication and the F3 debt rise enter the repo scan.
+- 2026-11-20, WO-P4 (B7) launched: opus-engineer (Opus), brief `S19-W5-P4.md`, lane wp/S19-w5p from ae2d5f81.
