@@ -717,13 +717,39 @@ def _build_scratch(repo: Path) -> tuple[str, str, dict[str, str]]:
     return rc, candidate, records
 
 
+def _scratch_tree_diagnosis(repo: Path, candidate: str, records: dict[str, str]) -> str:
+    """X07a WO13: one line (under 280 characters, so that the first line of the junit message
+    carries it) on what reached the scratch candidate's commit, evaluated only when the assertion
+    fails (RP.S08 in REL.A20's generator child on Windows): the tree's path count and longest path,
+    the records missing from it, and git's own account of the first missing one."""
+    names = m07._git(repo, "ls-tree", "-r", "--name-only", candidate).splitlines()
+    missing = sorted(set(records) - set(names))
+    untracked = m07._git(repo, "status", "--porcelain", "--untracked-files=all").splitlines()
+
+    def said(*arguments: str) -> str:
+        done = subprocess.run(["git", *arguments], cwd=repo, capture_output=True, text=True)
+        first_line = (done.stdout + done.stderr).strip().split("\n")[0].split("\t")[0]
+        return f"{done.returncode}:{first_line[:40]}"
+
+    first = missing[0] if missing else ""
+    return (
+        f"WO13 tree {candidate[:8]}: {len(names)} paths, max {max(map(len, names), default=0)}; "
+        f"missing {len(missing)}/{len(records)}, first {first[:17]}.. "
+        f"abs {len(str(repo / first))}; "
+        f"repo {len(str(repo))}; untracked {len(untracked)}; "
+        f"longpaths {said('config', '--get', 'core.longpaths')}; "
+        f"ignore {said('check-ignore', '-v', first) if first else '-'}; "
+        f"add-n {said('add', '-A', '-n', '--', first) if first else '-'}"
+    )
+
+
 def test_a08_main_on_a_scratch_repository(
     scratch: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
-    rc, candidate, _ = _build_scratch(scratch)
+    rc, candidate, records = _build_scratch(scratch)
     code = v0_3_gate.main(["--rc", rc])
     out = capsys.readouterr().out
-    assert code == 0, out
+    assert code == 0, _scratch_tree_diagnosis(scratch, candidate, records) + "\n" + out
     assert out.splitlines()[0] == f"v0.3 gates ({SET}) at C = {rc}; candidate {candidate}"
     assert out.splitlines()[-1] == "v0.3.0 tag may be proposed: YES"
     m07._commit(scratch, {"docs/adr/0046-test-input.md": adr("**Status:** Proposed")}, "proposed")

@@ -498,3 +498,27 @@ Push from this worktree: `git -c credential.helper='!gh auth git-credential' pus
   output or `git ls-tree -r` of the scratch candidate on a Windows runner (one diagnostic line).
 - Gates: `tests/test_rel_evidence_manifest.py` + `tests/test_v03_s13_route.py` 33 passed; ruff, format
   clean; mypy (393 files) clean.
+
+## WO13 (2026-11-20, RP.S08 on Windows: the MAX_PATH hypothesis; at 05887948)
+
+- Hypothesis fails by arithmetic (STOP rule; no fix). Exact Windows paths from CI 44799836309: REL.A20's
+  `tmp_path` `C:\Users\runneradmin\AppData\Local\Temp\pytest-of-runneradmin\pytest-0\test_rel_a20_over_0_3_0s_commi0`
+  (102); the child's `--basetemp` `<that>\tmp\RP.S08.0` (115, `s13_evidence_manifest.py:314`); the scratch
+  test's `tmp_path` `<basetemp>\test_a08_main_on_a_scratch_r0` (147); the repository `<that>\repo` (152). Longest
+  scratch file `repo\evidence\S10c\<40 hex>\manifest.json`: 152 + 1 + 68 = 221; its directory 207. Both under
+  260 (MAX_PATH) and 248 (directory creation) by 39 and 41. WO12's "basetemp about 221" was the whole path. In
+  the main suite the same file is 176. So MAX_PATH does not separate child from main suite.
+- Populating command: `tests/test_m07_v0_2_gate.py:766` `_commit` writes with `pathlib`, then `git add -A` and
+  `git commit` through `_git` (`:756`, `check=True`): a non-zero git exit raises. A silent drop needs git to
+  skip the files with exit 0 (an ignore rule, or a directory traversal that reads as empty).
+- Diagnostic only (`tests/test_v03_v0_3_gate.py`, `_scratch_tree_diagnosis`): on failure of
+  `test_a08_main_on_a_scratch_repository`, the first line of the assertion message (the line REL.A20's
+  `_same_form_diagnosis` prints from the junit, under its 300-character cut) gives the candidate tree's path
+  count and longest path, the records missing and the first one's absolute length, the repository path length,
+  the untracked count, `core.longpaths`, and git's `check-ignore -v` and `add -A -n` on the first missing
+  file. Evaluated only on failure. Forced on Linux (`evidence/` in `.git/info/exclude`): `WO13 tree 4410d0d2:
+  33 paths, max 38; missing 21/50, first evidence/M01/d971.. abs 142; repo 74; untracked 0; longpaths 1:;
+  ignore 0:.git/info/exclude:1:evidence/; add-n 1:The following paths are ignored by one o` (228 characters).
+- Linux identity: REL.A20 generator before (WO12's run) and after: RP.S08 lines and manifest entry identical
+  with timings normalised; the 12 same-form lines identical; REL.A20 PASS. Gates: test_v03_v0_3_gate +
+  test_rel_evidence_manifest + test_v03_s13_route 100 passed; ruff, format clean; mypy (393 files) clean.
