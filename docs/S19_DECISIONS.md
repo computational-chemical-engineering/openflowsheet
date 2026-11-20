@@ -4059,3 +4059,24 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   0 problems). Windows (44670029066): 116 failed + 179 errors before a99c510f; clusters classified, unfixed. Rule slip:
   `git add -A evidence/X07a` (scoped to that path; commit holds 4 expected files). Reviewer round: D-20, D-22, Q-4,
   Q-10, Q-11. Next: read 44683830734 (macOS rows, L5), then X07a-WO5 (Windows clusters).
+- 2026-11-20, jobs 535-540 PASS (steps 480-485; 540 accepted-neutral): batch L's chain fully gated (528-540 PASS).
+- **2026-11-20, Decision Desk: ofs-x07a-adr0007-am3 and ofs-x07a-pywin32-licence `VERIFIED`** (both A, signed
+  07:21Z / 07:20Z, key 032ee0a5ae620a90; hub's doorbell, verified here with the exact action texts). am3 done on
+  wp/X07a a60d1b54: Amendment 3 copied unchanged into ADR 0007 as Accepted, R-1062, manifest limitations[0] + its
+  T08 harvest row re-hashed (t08 --check 0 problems; 16 support-matrix files 1137 passed); `executed` written (v3).
+  pywin32: X07a-WO5 launched (opus-engineer, brief `docs/briefs/X07a-WO5.md`, 952bd647) with a stop condition: a pin
+  in `requirements.lock` moves `lock_sha256` (ADR 0007 Am. 2, ADR 0069), so it is measured (F0, pinned hashes, the
+  verified-lock check) before commit, else Q-12. R-1063 reserved for it; its `executed` waits on WO5.
+  Register numbers: R-1061 batch L (wp/S19-w5l), R-1062 am3 (wp/X07a), R-1063 pywin32 (wp/X07a).
+- **2026-11-20, batch L close (orchestrator).** (a) gate file amended: 8 unedited admitted files dropped (16 -> 8,
+  = the admitted files in `git diff 69806a5a..abe8964f -- src/`), copy `.json.pre-close`, validate OK (sha c338d337).
+  (b) K = bfc6f84b: corpus.json M9 of the 8 edited files (8 lines), m6-requests.json byte-identical,
+  builtin-sha256.txt d9405c18, L01 MOVED c1/mixer.py 970c1912 + register R-1061 (form of R-983); test_l01_records 98
+  passed. (c) W5-K1 close PASS (closed record written); W5-K2 judge PASS (|E| 8, predicted M9 8); W5-K3 F0 PASS 9/9,
+  registry --check clean; W5-K7 lane i19_scan: no w5 row (the 3 known non-W5 retarget rows). Ruff on the helper
+  found E501 in my MOVED comment: fix 0d38cb70 on the lane. DECISION: K stays bfc6f84b (the close record is
+  write-once) -> 0d38cb70 is a post-K comment-only change in a K1 fixture path, K2 at 0d38cb70 PASS (|E| 8).
+  Alternative: delete the closed record and re-close at 0d38cb70. Reversible by: that re-close. (d) W5-K4: helper
+  wp/S19-w5l-mc (worktree s19-w5l-mc) a72b4518 = K + wp/S19 tip d886affe (only S19 docs changed since B_L, no
+  overlap) + 0d38cb70; ruff clean; job 541 w5l-mc plain merge-check. (e) W5-K6 R-W5-L-close launched (reviewer, Opus;
+  brief S19-R-W5-L-close.md).
