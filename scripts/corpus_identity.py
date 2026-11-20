@@ -79,6 +79,13 @@ M6_SAMPLE_PREFIX: Final = "sample/"
 #: M7's fields judged off the reference platform: the replay mode is decided by the platform
 #: identity (`run.replay.decide_mode`), so elsewhere only the verdict and the integrity are.
 M7_PORTABLE: Final = ("verdict", "integrity_ok")
+#: M7 on a host outside ADR 0007 D3.3's registered set (X07a ruling R1.4): the replay policy
+#: forbids the comparison there, so its answer is judged, never `MATCH`.
+M7_UNREGISTERED_MODE: Final = "inspected_archived_results"
+M7_UNREGISTERED_VERDICT: Final = "NOT_RUN"
+#: The note replay appends when it re-runs nothing, after the `running on` reason: the inspected
+#: archive is reported, as RC step 5 reports it, by `revision_replay._inspected` (X07a D-20).
+M7_NOT_RERUN: Final = "no rerun was supplied"
 #: M8: the test functions that validate a document against its schema and round-trip it
 #: (docs/F0_DECISIONS.md D4, D13). Every node they collect is registered.
 M8_FUNCTIONS: Final = (
@@ -502,6 +509,10 @@ def m7(bundles: Path = V030_BUNDLES) -> dict[str, dict[str, Any]]:
                 "mode": report.mode,
                 "integrity_ok": report.integrity.ok,
             }
+            # X07a R1.4: the reasons, where there are any. An exact replay has none, so the
+            # entries the reference platform registers keep their shape.
+            if report.reasons:
+                result[key]["reasons"] = list(report.reasons)
     return result
 
 
@@ -730,6 +741,64 @@ def reference_class() -> str:
     return machine_class()
 
 
+def replay_platform() -> tuple[str, str]:
+    """This host's `(machine, system)`, as `run.replay.decide_mode` sees it."""
+    from openflowsheet.run.manifest import environment  # noqa: PLC0415
+
+    env = environment()
+    return env.architecture, env.os_name
+
+
+def _m7_off_reference(
+    expected: Mapping[str, Any],
+    actual: Mapping[str, Any],
+    platform: str,
+    host: tuple[str, str],
+    log: list[str],
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    """M7 off the reference class (X07a ruling R1.4): what is judged, as (expected, actual).
+
+    On a registered platform, `M7_PORTABLE`: the mode is decided by the platform identity. On an
+    unregistered one the policy forbids the comparison, so `MATCH` is not a correct answer: per
+    registered key, the policy's answer (`NOT_RUN`, inspected, the registered integrity, and the
+    reasons: the `running on` one, then `M7_NOT_RERUN`) is judged exactly against what was
+    measured, each reason cut to the length of the `running on` prefix. The registered legs
+    judge `MATCH`."""
+    from openflowsheet.run.replay import REGISTERED_PLATFORMS  # noqa: PLC0415
+
+    if host in REGISTERED_PLATFORMS:
+        log.append(f"M7: mode not judged on {platform}; {', '.join(M7_PORTABLE)} are")
+        return (
+            {k: _fields(v, M7_PORTABLE) for k, v in expected.items()},
+            {k: _fields(v, M7_PORTABLE) for k, v in actual.items()},
+        )
+    log.append(
+        f"M7: {host[0]}/{host[1]} is not a registered replay platform (ADR 0007 D3.3): judged "
+        "inspected_archived_results/NOT_RUN with the unregistered-platform reason; MATCH is "
+        "judged on the registered legs"
+    )
+    prefix = f"running on {host[0]}/{host[1]}, which is not a registered platform"
+    answer = {
+        key: {
+            "verdict": M7_UNREGISTERED_VERDICT,
+            "mode": M7_UNREGISTERED_MODE,
+            "integrity_ok": value.get("integrity_ok"),
+            "reasons": [prefix, M7_NOT_RERUN],
+        }
+        for key, value in expected.items()
+    }
+    found = {
+        key: {
+            **_fields(value, ("verdict", "mode", "integrity_ok")),
+            "reasons": [reason[: len(prefix)] for reason in value.get("reasons") or []],
+        }
+        if isinstance(value, Mapping)
+        else value
+        for key, value in actual.items()
+    }
+    return answer, found
+
+
 def measure_all(requests: dict[str, list[dict[str, Any]]] | None = None) -> dict[str, Any]:
     """Every measure. `requests` (`--record`) receives the runs' cache-key inputs, and the M6
     sample is written from them before it is measured."""
@@ -763,9 +832,11 @@ def compare(
     platform: str,
     *,
     subset: bool = False,
+    host: tuple[str, str] | None = None,
 ) -> tuple[dict[str, dict[str, Any]], list[str]]:
     """Per measure: `status` (PASS, FAIL, NOT JUDGED, NOT IMPLEMENTED) and counts; and the log.
-    `subset` (tests only) judges the measured keys alone and skips unmeasured measures."""
+    `subset` (tests only) judges the measured keys alone and skips unmeasured measures. `host` is
+    the `(machine, system)` M7's replay ran on (default: this host's, `replay_platform()`)."""
     results: dict[str, dict[str, Any]] = {}
     log: list[str] = []
     for measure in MEASURES:
@@ -791,9 +862,9 @@ def compare(
                 "the committed request sample is"
             )
         if measure == "M7" and platform != registered["reference_platform"]:
-            expected = {k: _fields(v, M7_PORTABLE) for k, v in expected.items()}
-            actual = {k: _fields(v, M7_PORTABLE) for k, v in actual.items()}
-            log.append(f"M7: mode not judged on {platform}; {', '.join(M7_PORTABLE)} are")
+            expected, actual = _m7_off_reference(
+                expected, actual, platform, host or replay_platform(), log
+            )
         wrong = [key for key in actual if key in expected and expected[key] != actual[key]]
         missing = [] if subset else sorted(set(expected) - set(actual))
         extra = sorted(set(actual) - set(expected))
