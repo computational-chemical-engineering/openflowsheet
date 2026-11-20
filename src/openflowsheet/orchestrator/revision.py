@@ -69,6 +69,7 @@ from openflowsheet.thermo import StreamState
 
 if TYPE_CHECKING:
     from openflowsheet.application.revision_binding import RevisionBinding
+    from openflowsheet.models.lifted import LiftedSplit
 
 __all__ = [
     "INITIALIZER_ID",
@@ -296,7 +297,9 @@ def lifted_split_values(
     split unit's PH closure, `None` where the unit closed by TP or the stream is not a unit's
     closure. `_start_from_pass` passes one traversal pass's; T06's ensemble passes a perturbed
     start's streams with no closure (spec §6.2: the split is a function of the stream). Returns
-    the split columns, or the first split the kernel refused, in declaration order.
+    the split columns, or the first split the kernel refused, in declaration order. An
+    outlet-style split's columns and refusal are `_outlet_split_columns`'s; a flash-style split's
+    totals are summed here.
     """
     out: dict[str, float] = {}
     instances = instances_of(flowsheet)
@@ -305,37 +308,50 @@ def lifted_split_values(
     }
     for split in lifted_splits(instances, flowsheet.components):
         if styles[split.unit] == "outlet":
-            closure = closures[split.unit]
-            if closure is not None:
-                # T05b spec §6.4 (ADR 0012 D5): the split the unit's PH closure returned. On the
-                # bracket route it is the provider's TP flash at the outlet's (n, T*, P) (T05
-                # spec §4.4 step 6) — the re-flash below, bit for bit; on the saturation and band
-                # routes the re-flash would lose the vapour fraction (`ln K_B(T_sat) = 0`: the
-                # flash calls a pure stream at T_sat liquid).
-                resplit = closure.split
-            else:
-                # A TP closure (the K02 heater, the outlet-temperature reactor) or a dormant
-                # outlet: the provider's TP flash at the outlet's (n, T, P) (design note §2.2
-                # step 5), which is the split the unit's own closure computed.
-                resplit = tp_state(flowsheet.provider, streams[split.stream], flowsheet.context)
-            if (
-                resplit is None
-                or resplit.status != "ok"
-                or resplit.vapor is None
-                or resplit.liquid is None
-            ):
-                status = "absent" if resplit is None else str(resplit.status)
-                return SplitRefusal(split.unit, split.stream, status)
-            for index, (vapor, liquid) in enumerate(zip(split.vapor, split.liquid, strict=True)):
-                out[vapor] = resplit.vapor.n[index]
-                out[liquid] = resplit.liquid.n[index]
-            out[split.vapor_total] = sum(resplit.vapor.n)
-            out[split.liquid_total] = sum(resplit.liquid.n)
+            columns = _outlet_split_columns(flowsheet, split, streams, closures)
+            if isinstance(columns, SplitRefusal):
+                return columns
+            out.update(columns)
         else:
             # Flash style: the split is the product streams, already assigned.
             out[split.vapor_total] = sum(values[name] for name in split.vapor)
             out[split.liquid_total] = sum(values[name] for name in split.liquid)
     return out
+
+
+def _outlet_split_columns(
+    flowsheet: RevisionFlowsheet,
+    split: LiftedSplit,
+    streams: Mapping[str, StreamState],
+    closures: Mapping[str, PHState | None],
+) -> dict[str, float] | SplitRefusal:
+    """§2.2 step 5 for one outlet-style split: its per-component vapour and liquid columns and
+    its two totals, re-split from the unit's PH closure where `closures` holds one, else by the
+    provider's TP flash of its stream; or the refusal when that split is absent, not `ok`, or
+    lacks a phase."""
+    closure = closures[split.unit]
+    if closure is not None:
+        # T05b spec §6.4 (ADR 0012 D5): the split the unit's PH closure returned. On the
+        # bracket route it is the provider's TP flash at the outlet's (n, T*, P) (T05
+        # spec §4.4 step 6) — the re-flash below, bit for bit; on the saturation and band
+        # routes the re-flash would lose the vapour fraction (`ln K_B(T_sat) = 0`: the
+        # flash calls a pure stream at T_sat liquid).
+        resplit = closure.split
+    else:
+        # A TP closure (the K02 heater, the outlet-temperature reactor) or a dormant
+        # outlet: the provider's TP flash at the outlet's (n, T, P) (design note §2.2
+        # step 5), which is the split the unit's own closure computed.
+        resplit = tp_state(flowsheet.provider, streams[split.stream], flowsheet.context)
+    if resplit is None or resplit.status != "ok" or resplit.vapor is None or resplit.liquid is None:
+        status = "absent" if resplit is None else str(resplit.status)
+        return SplitRefusal(split.unit, split.stream, status)
+    columns: dict[str, float] = {}
+    for index, (vapor, liquid) in enumerate(zip(split.vapor, split.liquid, strict=True)):
+        columns[vapor] = resplit.vapor.n[index]
+        columns[liquid] = resplit.liquid.n[index]
+    columns[split.vapor_total] = sum(resplit.vapor.n)
+    columns[split.liquid_total] = sum(resplit.liquid.n)
+    return columns
 
 
 def _check_torn(first: FlowsheetPass, traversed: FlowsheetPass) -> None:
