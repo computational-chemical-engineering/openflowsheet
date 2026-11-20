@@ -206,6 +206,39 @@ the failing distributions are carried, unrecorded, to replay. **D4.** The table 
 means the same verified lock. The reason of the unknown-lock branch is ADR 0069 D5's. D1–D3, D5 and Amendment 1 are
 unchanged.
 
+## Amendment 3 (X07a) — exact replay on any platform; the evidence that registers a platform
+
+**Status:** Accepted (Frank, Decision Desk card ofs-x07a-adr0007-am3, option A, signed 2026-11-20, verified with
+`decision_desk_verify.py`; decision register R-1062). Drafted by the design-lane ruling `docs/X07a-platform-ruling.md`
+section 5.1 (R1.2, R1.3; wp/X07a 8b9e8f86), copied here unchanged. No further replay platform is registered in 0.5.
+
+**D4.** The table is unchanged. Its `exact_replay` row is read as written: the same verified lock, the same platform
+identity (architecture, OS, Python version, BLAS vendor; D3.3), the same thread pins known on both sides (F4), and, as
+the implementation already requires, the same BLAS version. These conditions decide `exact_replay` on any platform,
+registered or not. The registered set governs only a replay whose environments differ: where either side is outside
+it, such a replay is `inspected_archived_results` / `NOT_RUN` with a reason naming that side, and never
+`compatible_reproduction`. Between registered platforms nothing changes.
+
+**D3.3.** Unchanged. The registered pair stays `ubuntu-latest` x86-64 and `ubuntu-24.04-arm`. An exact replay on an
+unregistered platform compares a run with itself on one platform identity and carries no promise to any other platform.
+
+**Registering a platform.** A platform joins D3.3's set only by a further amendment accepted by Frank. That amendment
+cites, from the platform's CI leg at one commit of a measurement branch that adds it to the registered set: F0 M1, M2,
+M3, M5, M6 (sample), M8 and M9 PASS; F0 M7 52 of 52 `compatible_reproduction` / `MATCH` with `integrity_ok`; every
+replay of a committed bundle passing without a platform limit; every beyond-policy float there resolved by
+reclassification on every platform or by an ADR 0067 D7 record. A same-host green leg does not register a platform.
+
+**What this amendment does not establish.** That a run on an unregistered platform agrees with any other platform, in
+R0 or in floats; that floats reproduce bit for bit anywhere (D3.2 stands).
+
+**Acceptance evidence.** X07a-WO3 A1 (the decision table over 82 944 ordered pairs), A2 (64 pairs change, all
+same-identity pairs on unregistered platforms; none between registered platforms), A6 (same-session reruns
+`exact_replay` / `MATCH` on the macOS and Windows legs).
+
+**Affected requirements.** As ADR 0007 (D20, A08); K05's G05 evidence is unchanged. **Migration impact:** none. No
+stored record, schema, digest or registered expectation changes, and every replay between registered platforms reports
+as before.
+
 ## Changing this ADR
 
 D1's rule and D2's policy bind every package that records or compares a float. A new class, a different relative tolerance, a floor that is not a registered threshold, a bitwise promise, or a change to what replay reports requires a new ADR stating the reason, the measurement that justifies it, and the affected requirements, and a decision-register entry. Adding a float to D2.2's table with its threshold's provenance is an ordinary change made by the package that records it (D2.3) and does not reopen this ADR.

@@ -226,6 +226,11 @@ of ids are equal.
   items). A6: the new test `test_a6_this_hosts_lock_is_verified_and_its_platform_is_the_reported_one`
   logs `MSG X07a-A6: lock_sha256 <sha> on <machine>/<system>` per leg; F0 M7 PASS on macOS and
   Windows in 44670029066 already implies a verified lock there (Q-6 yes on both).
+- D-27. Frank accepted ADR 0007 Amendment 3 (Decision Desk ofs-x07a-adr0007-am3, option A, 2026-11-20,
+  `VERIFIED`; R-1062): copied into `docs/adr/0007-reproducibility-certificate-policy.md` unchanged; no further
+  replay platform in 0.5. The manifest's `limitations[0]` and its harvest row (sha256 bbf06597...) say accepted.
+  Frank allowed pywin32 (ofs-x07a-pywin32-licence, option A, `VERIFIED`; R-1063): Q-1 is answered, its build is a
+  separate work order.
 
 ## Windows classification (run 44670029066, head 9773c361: 116 failed, 179 errors)
 

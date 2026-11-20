@@ -20039,3 +20039,20 @@ without any judgement.
 
 **Rejected.** *Keep `main` as the oracle:* blocks W5 batch N (circular, above). *List the test as a standing
 failure:* hides a guard the batch needs.
+
+## R-1062: ADR 0007 Amendment 3 accepted: exact replay on any platform; no further replay platform in 0.5 (X07a; 2026-11-20)
+
+| | |
+| --- | --- |
+| Date | 2026-11-20 |
+| Decided by | Frank, Decision Desk card ofs-x07a-adr0007-am3, option A (signed 2026-11-20T07:21:50Z, key 032ee0a5ae620a90, `VERIFIED`) |
+| Normative text | `docs/adr/0007-reproducibility-certificate-policy.md` Amendment 3 (copied from `docs/X07a-platform-ruling.md` section 5.1) |
+| Evidence | X07a-WO3 A1 (82 944 ordered pairs), A2 (64 pairs change, all same-identity pairs on unregistered platforms), A6; CI run 44670029066 (macOS F0 M7 52/52 by R1.4) |
+| Affected packages | X07a (`run/replay.py` `decide_mode`, commit b27c69a1); K05 G05 evidence unchanged |
+
+**Decision.** The `exact_replay` conditions of ADR 0007 D4 decide on any platform, registered or not; the registered
+set (D3.3: `ubuntu-latest` x86-64, `ubuntu-24.04-arm`) governs only replays whose environments differ. A platform
+joins D3.3 only by a further amendment accepted by Frank, with the evidence the amendment lists. Q-5's default holds:
+no further platform is registered in 0.5.
+
+**Rejected.** Option B (reject; same-host replay tests on macOS and Windows become platform-limit rows).

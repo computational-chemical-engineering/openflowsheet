@@ -9783,10 +9783,10 @@ harvest:
   note: 'provenance note: requirements empty, a development-process package'
 - manifest: evidence/X07a/9773c361c3089ba5c4e9a84e4c63e296d53a727a/manifest.json
   item: limitations[0]
-  sha256: 54fb94236297a4db46b6bc59cd662049f0151a7f3bd7e52141602f6efa1b17f1
+  sha256: bbf065970b6158a9c927c741cfb26075b780faccf57cd75879bfea2e5f1cfcda
   class: P
   to: []
-  note: 'provenance note: status follows CI; Amendment 3 proposed, two unregistered platforms; review pending'
+  note: 'provenance note: status follows CI; Amendment 3 accepted (R-1062), two unregistered platforms; review pending'
 - manifest: evidence/X07a/9773c361c3089ba5c4e9a84e4c63e296d53a727a/manifest.json
   item: checks[2]
   check_id: X07a.CI

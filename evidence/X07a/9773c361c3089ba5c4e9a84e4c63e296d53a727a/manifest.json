@@ -57,7 +57,7 @@
   ],
   "artifacts": [],
   "limitations": [
-    "Status implemented: CI is not green on all four legs. ADR 0007 Amendment 3 (exact replay on any platform; the evidence that registers a platform) is proposed, not accepted; REGISTERED_PLATFORMS is unchanged, so macOS arm64 (arm64, Darwin) and Windows x86-64 (AMD64, Windows) are unregistered replay platforms: bundles from another platform are inspected there, not reproduced (ADR 0007 D3.3). Platform rows X07a-L1 to L10 and the limits table in docs/X07a_DECISIONS.md; Q-1 (pywin32 licence), Q-4, Q-10, Q-11 and the reviewer items D-20, D-22 await the design lane; Windows failures beyond the named limits are partly unclassified. No reviewed status is claimed."
+    "Status implemented: CI is not green on all four legs. ADR 0007 Amendment 3 (exact replay on any platform; the evidence that registers a platform) is accepted (Frank, Decision Desk ofs-x07a-adr0007-am3, 2026-11-20; R-1062); REGISTERED_PLATFORMS is unchanged, so macOS arm64 (arm64, Darwin) and Windows x86-64 (AMD64, Windows) are unregistered replay platforms: bundles from another platform are inspected there, not reproduced (ADR 0007 D3.3). Platform rows X07a-L1 to L10 and the limits table in docs/X07a_DECISIONS.md; Q-1 (pywin32 licence), Q-4, Q-10, Q-11 and the reviewer items D-20, D-22 await the design lane; Windows failures beyond the named limits are partly unclassified. No reviewed status is claimed."
   ],
   "review": {
     "numerical": "pending",
