@@ -73,6 +73,10 @@ def test_a_file_with_the_old_five_line_output_is_still_refused(tmp_path: Path) -
     with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(io.StringIO()):
         assert main(["project", "grant", "--project", str(project), "--principal", "agent"]) == 0
     token = stdout.getvalue().strip()
+    assert TOKEN.fullmatch(token), token
+    current = tmp_path / "current.txt"
+    current.write_text(token + "\n", encoding="utf-8")
+    token_capability(project, current)  # the same token alone is accepted: the control
     old = tmp_path / "old.txt"
     old.write_text(
         f"capability cap\nprincipal  agent\nrights     read\ntoken      {token}\n(note)\n",

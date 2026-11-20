@@ -20052,7 +20052,8 @@ failure:* hides a guard the batch needs.
 
 **Decision.** `openflowsheet project grant` writes the token alone, one line, to standard output, and the
 capability id, principal, rights and the shown-once note to standard error. `serve-mcp --token-file` is unchanged:
-it reads the whole file, stripped, as the token.
+it reads the whole file, stripped, as the token. A script that read the `capability` line from stdout (for a
+later `revoke`) reads it from stderr now, or fixes the id in advance with `--capability-id`.
 
 **Why.** A user following the Coding Agents page reported (2026-11-18) that `grant ... > token.txt` wrote the five
 labelled lines that 0.4.0 prints on stdout, which `serve-mcp` refuses ("the token matches no current grant"). Reproduced on

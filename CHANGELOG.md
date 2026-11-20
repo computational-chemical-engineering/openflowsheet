@@ -7,7 +7,9 @@
 - `openflowsheet project grant` prints the token alone on standard output and the capability, principal and
   rights on standard error, so the Coding Agents recipe `grant ... > token.txt` writes the file
   `serve-mcp --token-file` reads. In 0.4.0 the five labelled lines went to stdout and `serve-mcp` refused the file.
-  A script that parsed `grant`'s stdout for the `token` line now reads the whole of stdout (R-1064).
+  A script that parsed `grant`'s stdout now reads the token as the whole of stdout, and the `capability`,
+  `principal` and `rights` lines from stderr; `--capability-id` fixes the capability id in advance, for a later
+  `revoke` (R-1064).
 
 ## v0.4.0 — unreleased
 
