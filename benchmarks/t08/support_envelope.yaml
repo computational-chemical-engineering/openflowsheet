@@ -9781,16 +9781,16 @@ harvest:
   class: P
   to: []
   note: 'provenance note: requirements empty, a development-process package'
-- manifest: evidence/X07a/a24a0bf3f4f534ebf61fc908c1c9dd7e3a2df218/manifest.json
+- manifest: evidence/X07a/9773c361c3089ba5c4e9a84e4c63e296d53a727a/manifest.json
   item: limitations[0]
-  sha256: b9d1e64581d168554f8fede8a123d4ae993ebbf9325dd48fc36a4158f648d5e4
+  sha256: 54fb94236297a4db46b6bc59cd662049f0151a7f3bd7e52141602f6efa1b17f1
   class: P
   to: []
-  note: 'provenance note: status follows CI; Q-1, Q-2 and Q-3 await design-lane rulings; review pending'
-- manifest: evidence/X07a/a24a0bf3f4f534ebf61fc908c1c9dd7e3a2df218/manifest.json
+  note: 'provenance note: status follows CI; Amendment 3 proposed, two unregistered platforms; review pending'
+- manifest: evidence/X07a/9773c361c3089ba5c4e9a84e4c63e296d53a727a/manifest.json
   item: checks[2]
   check_id: X07a.CI
-  sha256: e8878b2ca6e29468ee26e07d68815b80dfdcd87fa100aa2ff76f3bd78184e1c7
+  sha256: 4264fe296b756879726a6033093eea61a284bf945141102c34c2939936bd5da3
   class: P
   to: []
-  note: 'provenance note: CI on four legs not yet green (Q-1, Q-2, Q-3 open)'
+  note: 'provenance note: CI on four legs not yet green (Q-1 and the Windows clusters open)'

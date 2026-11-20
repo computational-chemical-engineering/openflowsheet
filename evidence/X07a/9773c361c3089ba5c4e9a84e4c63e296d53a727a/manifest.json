@@ -1,6 +1,6 @@
 {
   "work_package": "X07a",
-  "commit": "a24a0bf3f4f534ebf61fc908c1c9dd7e3a2df218",
+  "commit": "9773c361c3089ba5c4e9a84e4c63e296d53a727a",
   "requirements": [],
   "status": "implemented",
   "inputs": {
@@ -46,18 +46,18 @@
       "id": "X07a.kill-tree",
       "description": "forced kill ends the worker's child (falsifier: worker-only kill detected)",
       "result": "pass",
-      "value": "tests/test_x07a_platform.py (c) on Linux; macOS leg runs it (run 44652504290); Windows leg pending"
+      "value": "tests/test_x07a_platform.py (c) on Linux; passes on macos-latest and windows-latest in run 44670029066"
     },
     {
       "id": "X07a.CI",
       "description": "CI green on four legs",
       "result": "fail",
-      "value": "run 44652504290 at a24a0bf3: ubuntu-latest, ubuntu-24.04-arm and default-install success; macos-latest failure in Run checks (155 failed: Q-2 replay platforms, Q-3 floating point) and F0 M7 (Q-2); windows-latest pending at the WO2 cap (expected red on G19, Q-1, and on open Windows clusters in docs/X07a_DECISIONS.md)"
+      "value": "run 44670029066 at 9773c361: ubuntu-latest and ubuntu-24.04-arm success; F0 PASS on all four legs (macOS and Windows with M7 judged by R1.4); macos-latest failure (12 failed, rows X07a-L5 to L10 and two limits added by WO4 on wp/X07a); windows-latest failure (116 failed, 179 errors: G19 pywin32 (Q-1), 179 WinError 123 fixed at a99c510f, other clusters in docs/X07a_DECISIONS.md)"
     }
   ],
   "artifacts": [],
   "limitations": [
-    "Status implemented: CI is not green on all four legs; Q-1 (pywin32 licence, G19 on Windows), Q-2 (replay and F0 M7 off Linux, REGISTERED_PLATFORMS) and Q-3 (floating-point fixtures on macOS) await design-lane rulings and fail as recorded; Windows failures beyond the named limits are partly unclassified. No reviewed status is claimed."
+    "Status implemented: CI is not green on all four legs. ADR 0007 Amendment 3 (exact replay on any platform; the evidence that registers a platform) is proposed, not accepted; REGISTERED_PLATFORMS is unchanged, so macOS arm64 (arm64, Darwin) and Windows x86-64 (AMD64, Windows) are unregistered replay platforms: bundles from another platform are inspected there, not reproduced (ADR 0007 D3.3). Platform rows X07a-L1 to L10 and the limits table in docs/X07a_DECISIONS.md; Q-1 (pywin32 licence), Q-4, Q-10, Q-11 and the reviewer items D-20, D-22 await the design lane; Windows failures beyond the named limits are partly unclassified. No reviewed status is claimed."
   ],
   "review": {
     "numerical": "pending",

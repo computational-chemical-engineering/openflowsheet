@@ -206,37 +206,67 @@ of ids are equal.
 | X07a-L9 | `tests/test_t06_w6_a85.py::test_a85b_every_published_split_column_is_the_rule_applied_to_its_stream`, `tests/test_t06_w30_holdout.py::test_a85b_every_holdout_split_column_is_the_rule_applied_to_its_stream` (all cases) | macOS (measured), Windows (skipped by the marker) | bitwise (P2): `_same` is "bit for bit" against the published split columns | w30 NET-02 start 21 `S3.vap.A` 0.9812393267462561 against 0.981239326746256; w30 NET-03 start 25 `S9.vap.A` 0.30926437883431707 against 0.30926437883431684; w6 NET-03 start 3 `S4.vap.A` | 44670029066 | as X07a-L1 |
 | X07a-L10 | `tests/test_t05b_candidate_answers.py::test_b34a_the_outcome_counts` | macOS (measured), Windows (skipped by the marker) | bitwise (P2), provisional (Q-11): a regression count, recorded on Linux, of discrete outcomes that are a function of the sweep's floats, compared by `==` | macOS: `BOUND_BLOCKED` 2 -> 0, `SPECIFICATION_CONFLICT` 6 -> 8 (CONVERGED 82, ACTIVE_SET_CYCLING 10, STAGNATION 4 equal) | 44670029066 | as X07a-L1, or Q-11 |
 
-## Position (handoff, WO3 at its context cap, 2026-11-20)
+## WO4 decisions (2026-11-20)
 
-WO3 commits: b27c69a1 C1 (Amendment 3, revertible alone) + A1 test; 769c87f9 and 6b9feca2 K05
-templates and the CI-matrix guard (C3); ea13e879 F0 M7 (C4, A5); 2d65dda8 conftest rows (C5, C6);
-9773c361 docs (A11) and this log; 6193bac5 M03 POSIX names (Windows); then rows L2 (CSV file) and
-L5 with this Position.
+- D-23. DECISION (WO4): the `codehealth` job of 44670029066 failed on this branch's code (`diff`
+  debt 62.60 -> 67.60: `_platform.replace_file` nesting 4, `decide_mode` boolops 4) -> fixed
+  (b39ada81): the exact rung is the predicate `_alike_and_pinned`, `replace_file` has no nested
+  raise; a new test pins the Windows retry contract and passes on the old and the new code. Local
+  `codehealth diff` PASS 62.60 -> 62.60. Alternative: a suppression. Reversible by: the commit.
+- D-24. DECISION (WO4): P2 rows mark the whole node, every parameter (L6, L9), as P2 says; the rp2b
+  witness is split into its own node so that `MATCH`, not bitwise, stays judged on every leg (L8).
+  The A85b products-style columns (sums of committed floats) are a P2 companion not yet split out.
+  Alternative: per-parameter marks. Reversible by: the markers.
+- D-25. DECISION (WO4): `t08_rc.py install-check` on a machine without an A30 summary records
+  `a44.casadi_files_equal_a30` failed with `expected: null` and writes the record (was a
+  `KeyError`): a portability bug, not a limit; Linux records unchanged. Reversible by: ff7a1437.
+- D-26. DECISION (WO4): the manifest moves to 9773c361 (run 44670029066, the last run complete on
+  four legs at WO4), `limitations[0]` rewritten (Amendment 3 proposed, the two unregistered
+  platforms), harvest rows re-hashed (54fb9423..., 4264fe29...); `HARVEST_SIZE` unchanged (same
+  items). A6: the new test `test_a6_this_hosts_lock_is_verified_and_its_platform_is_the_reported_one`
+  logs `MSG X07a-A6: lock_sha256 <sha> on <machine>/<system>` per leg; F0 M7 PASS on macOS and
+  Windows in 44670029066 already implies a verified lock there (Q-6 yes on both).
 
-Run 44670029066 (head 9773c361): ubuntu-latest and ubuntu-24.04-arm success; macos-latest 12
-failed (was 155), F0 PASS there with the R1.4 line (M7 52/52, M2/M3/M5 equal), the 7
-`bitwise_baseline_off_platform` skips are L1 (4) and L2 (3); windows-latest still running at the
-cap. A10: every node passed on a Linux leg in 44652504290 passes in 44670029066 (the 7 apparent
-losses are the old d2fb0252 manifest parameters and one address-named parameter); 0 newly skipped.
-Local: touched modules 410 passed; F0 PASS (ref-x86-64); mypy clean; codehealth arch 0/0.
+## Windows classification (run 44670029066, head 9773c361: 116 failed, 179 errors)
 
-macOS left (not Q-2; Q-3 candidates not yet classified, one row each needed under P1 to P5):
-`test_m02_schemas.py::test_g1a_...` (standin_loop.json), `test_t05b_candidate_answers.py::test_b34a`
-(outcome counts), `test_t06_w30_holdout.py` and `test_t06_w6_a85.py` `test_a85b[NET-02/03]`
-(split columns), `test_m01_provider.py::test_f2[10025791.149338447]`, `test_m02_wo10_coupled.py::
-test_rp2b`; other classes: `test_t07_w7a_harness.py::test_token_placement`, `test_v02a_r347`,
-`test_p03_a30_workload.py::test_s9_5`. L5 (TH-C1 companion b) was added from this run and is
-untested on the leg.
+Fixed: 179 errors WinError 123 (`T05b:DZ-3.rerun`, W3a's rerun directory, a99c510f). F0 PASS on
+Windows (M7 52/52 by R1.4). Marked off-platform by WO3/WO4 rows (L1, L2, L6 to L10): g1a, A85b,
+B34a, TH-C1 golden. Clusters left, by class (WO2's rules; none yet fixed or rowed):
 
-Not done: the manifest move (A11 second bullet: limitations naming Amendment 3 as proposed and the
-two unregistered platforms; needs new T08 harvest rows, `scripts/t08_support_matrix.py --check`
-gives their sha256); A6's logged `lock_sha256` per leg (F0 M7 passing on macOS implies a verified
-lock there, Q-6 yes on macOS); Windows (this class and WO2's clusters, which now include path
-separators, CRLF, WinError 32, signal 2, the experiment child `environment_unavailable`).
+- path separators in recorded strings: `test_s05_envelope` a26, `test_x05_lock` a20,
+  `test_t06_w30_holdout` a99a, `test_t06_w29_runs` (2), `test_rel_ci_release_rc`,
+  `test_pre_push_guard`, `test_msg_corpus` C04/C05, `test_m07_journey` a00, `test_s11_w27_v3` a32,
+  `test_t08_w4_v0_1_gate`, and probably the "a fixture exists that nothing regenerates" family
+  (`test_k03/k04/k05/t04_schemas`, `test_t07_w5e`, `test_t08_rename_substitution`, `test_t07_w5b_cli`);
+  `test_c9_w27_v2` committed-relative (`path is on mount 'D:'`): portability bugs, to fix.
+- CRLF written by a generator or compared as text: `test_f1_discovery`, `test_s03/s09_references`,
+  `test_m07_journey_record` a21 (4), `test_t06_w31_runs` (6), `test_m02_pymrm_child` (2),
+  `test_t07_evidence_manifest`, `test_c2_openidaes450_split`: portability bugs (newline="\n").
+- WinError 32: `test_s16_test_impact` (3); signal 2: `test_m02_pymrm_child` SIGINT,
+  `test_t07_conformance` serve: WO2's classes (likely limits: no SIGINT delivery to a child on
+  Windows).
+- experiment child `environment_unavailable`: `test_m02_experiments` (19), `test_m02_wo10_coupled`
+  (8), `test_x02_wo4_external` (10): one root cause, not diagnosed.
+- M05 host keys: `test_m05_retake_digest_only` (10); V17 reference: `test_t07_s3_validation`;
+  Q-1: `test_t07_server_extra` (pywin32); P3 sets on Windows (not macOS's): TH-C1 companion (b),
+  `test_m03_schemas`; others unread: `test_opt_cost_lca` hand model, `test_m03_reference` a42,
+  `test_m04_reference_values` a34, `test_m06_wo4_serving`, `test_m07a_v0_2_gate` a07,
+  `test_t08_w1_ledger`, `test_t07_interrupt` no_broad_except, `test_s16` runtime_open_record,
+  `test_p03` s9_5 and `test_v02a_r347` (both fixed or rowed by WO4 for every non-Linux leg).
 
-Open for the reviewer: D-20 (the not-rerun note vs "exactly one reason"), D-22 and Q-4 (two
-regularity paths), Q-10 (L5: `certificate_id` is a digest compared for value, P3b's own example
-of a departure; the closure has no floor). X07a's merge waits on Frank accepting Amendment 3.
+## Position (handoff, WO4, 2026-11-20)
 
-Next: read windows-latest of 44670029066 and of the next run; rows for the macOS list above; the
-manifest move with harvest rows.
+WO4 commits: b39ada81 codehealth (D-23); a99c510f W3a rerun directory (Windows, 179 errors);
+cab55fa8 macOS rows L6 to L10, limits s9_5 and token_placement, Q-11; ff7a1437 install-check
+(D-25); 8b6d821a A6 test; b4a28fe5 L5's third path; then the manifest move (D-26) and this
+Position. Local: touched modules pass (w3a/w3e 260, marked modules 5 + 174, rows 3, platform 6,
+replay 44 + 4); F0 PASS; `codehealth diff` PASS; `t08_support_matrix.py --check` 0 problems.
+
+macOS (44670029066, 12 failed): every one is now rowed or fixed; the leg should be green at the
+WO4 head apart from anything 44681408041 (head 2d914b7d, still running at WO4's end) shows new.
+Confirm L5's three paths and L6 to L10 on the WO4 push's macOS leg.
+
+Next: read the WO4 push's run (both new legs); Windows clusters above in order: path separators
+and CRLF (portability fixes, Linux unchanged), then the experiment child, then WinError 32 and
+signal 2, M05 host keys, the unread rest. Open for the reviewer: D-20, D-22, Q-4, Q-10, Q-11
+(B34a class), D-24's companion. X07a's merge waits on Frank accepting Amendment 3.
