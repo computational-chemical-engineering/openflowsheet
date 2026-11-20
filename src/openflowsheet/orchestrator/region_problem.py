@@ -115,6 +115,9 @@ def _region_problem(
     single-phase unit whose admissibility check flagged the trial — or, when the kernel refuses,
     the typed evaluation to return instead. It reads a trial; it never changes the residual. The
     `opening` point is not screened (an attempt may open where its own screen would object).
+
+    The residual's label values are `_label_residuals`'s and a screened trial's evaluation is
+    `_screened_evaluation`'s.
     """
     order = {name: index for index, name in enumerate(spec.variable_ids)}
     rows_at = {name: index for index, name in enumerate(spec.equation_ids)}
@@ -137,13 +140,10 @@ def _region_problem(
             return Evaluation(status=result.status, message=result.message)
         values = tuple(result.values[i] for i in selected_rows)
         if labels:
-            values += tuple(float(vector[o]) - float(vector[s]) for o, s in label_columns)
+            values += _label_residuals(vector, label_columns)
         if screen is None or (opening is not None and np.array_equal(x, opening)):
             return Evaluation(status="ok", values=values)
-        reported = screen(dict(zip(spec.variable_ids, (float(v) for v in vector), strict=True)))
-        if isinstance(reported, Evaluation):
-            return reported
-        return Evaluation(status="ok", values=values, signature=reported)
+        return _screened_evaluation(screen, spec.variable_ids, vector, values)
 
     def jacobian(x: npt.NDArray[np.float64]) -> sp.csc_matrix:
         result = compiled.jacobian(full(x), context)
@@ -221,6 +221,29 @@ def _label_matrix(labels: Sequence[tuple[str, str, str]], free: Sequence[str]) -
             shape=(len(labels), len(free)),
         )
     )
+
+
+def _label_residuals(
+    vector: npt.NDArray[np.float64], label_columns: Sequence[tuple[int, int]]
+) -> tuple[float, ...]:
+    """The label rows' residuals `T_out − T_label` at the full state `vector` (T05b spec §7.2),
+    one per `(T_out, T_label)` column pair, in label order (pure)."""
+    return tuple(float(vector[o]) - float(vector[s]) for o, s in label_columns)
+
+
+def _screened_evaluation(
+    screen: Callable[[dict[str, float]], AttemptSignature | Evaluation],
+    variable_ids: Sequence[str],
+    vector: npt.NDArray[np.float64],
+    values: tuple[float, ...],
+) -> Evaluation:
+    """A trial's evaluation under `screen` (T03 §4.3), called with the full state `vector` by
+    variable id: the typed evaluation `screen` returns when the kernel refuses, else `values`
+    with the signature it reports. `screen` may raise; this adds no catch."""
+    reported = screen(dict(zip(variable_ids, (float(v) for v in vector), strict=True)))
+    if isinstance(reported, Evaluation):
+        return reported
+    return Evaluation(status="ok", values=values, signature=reported)
 
 
 def _label_entries(labels: Sequence[tuple[str, str, str]]) -> tuple[tuple[str, str], ...]:
