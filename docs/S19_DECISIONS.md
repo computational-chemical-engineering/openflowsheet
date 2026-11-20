@@ -4367,3 +4367,11 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   STOPPED as Q-13 (a07 skipped on Windows by `FROZEN_WINDOWS_LIMITS` -> S13a's rule says `fail`; options A win32
   expected line, B the node into the limits; engineer prefers A): for the X07a design-lane round with the P3 rows.
   Pushed db051d9c; CI 44764813337 running.
+- 2026-11-20, X07a reviewer pass (reviewer, Opus, ~203k): `docs/X07a-review.md` d13f5a3f on wp/X07a. Package diff
+  sound (Amendment 3 exact, no relaxed check); D-20, D-22, D-28 to D-31 accepted; a49 and a34 are defects, not P3
+  rows (BLAS pin finds OpenBLAS only via /proc/self/maps; native path keys); TH-C1 Windows joins L5 (P3c);
+  opt_cost_lca P2 row L11 + every-leg companion; Q-13 option A; Q-4, Q-10, Q-11 after the merge. Erratum R-10
+  committed by the orchestrator (2f067059, the reviewer's wording). DECISION: a49 -> fix the library discovery.
+  Alternative: row "A3.3 unmet" (Frank's call). Reversible by: reverting WO9's R-1 commit. X07a-WO9 (opus-engineer,
+  Opus, brief `X07a-WO9.md`) launched for R-1 to R-6. Merge preconditions (review :131-144): WO9, CI all four legs
+  green, manifest `tested`, then the merge card.
