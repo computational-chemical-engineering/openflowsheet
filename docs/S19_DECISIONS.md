@@ -3993,3 +3993,13 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   Alternative: build D7 in X07a. Reversible by: a work order. X07a-WO3 launched (opus-engineer, brief
   `docs/briefs/X07a-WO3.md`, 460634ac). DECISION-REQUEST ofs-x07a-adr0007-am3 sent to hub (rec A: accept
   Amendment 3, Q-5 default no registration in 0.5); X07a's merge into main waits on it and on ofs-x07a-pywin32-licence.
+- **2026-11-20, WO-L2 delivered (opus-engineer, Opus).** wp/S19-w5l head 143f2fa0, jobs 528-533 queued: mixer
+  27.3 -> 2.1 (6.9 -> 8.0; b37f26be `_close_energy`, 44524231 `evaluate`), conversion_reactor 24.7 -> 6.9 (6.6 -> 8.4;
+  4832dce7 `evaluate_with_split`, 06a9d913 `__post_init__`), kinetic_cstr 19.2 -> 4.2 (6.8 -> 8.4; f4c0171f
+  `__post_init__`, 143f2fa0 `evaluate`). FP: arithmetic and comparison nodes equal in order (extra nodes only `is not
+  None` on helper returns); old vs new comparison reached every raise and return site of the touched code (13 to 17 per
+  step), 0 differ in type, message, args or result repr. F0 `M9 FAIL 4/35`; registry: sha line only; W5-S7 0 new edges;
+  patch_noop 0. Stopped: residual debt per function below about 2; cross-file duplication left (R4). Deviations: b37f26be
+  dropped dead `f_low`/`f_high` stores in a loop; playbook rule 7 docstring note added one step late. DECISION: my brief
+  ordered 6 S1 steps against the cadence of a review every 3; one review R-W5-L2 covers both windows (528-530,
+  531-533) step by step. Alternative: two reviews. Reversible by: none needed (no step is merged before review).
