@@ -3,7 +3,7 @@
 `OPERATIONS` is the only routing source: one row per protocol method — `Application`'s four,
 `JobControl`'s seven, `Inspection`'s thirteen (`list_audit` is ADR 0019 Amendment 3's, `explain`
 ADR 0058 D7's, `get_stream_table` ADR 0068's, `list_capabilities` and `check_admission` ADR 0060
-D11's) — and
+D11's), `Records`' five (ADR 0061 D13, ADR 0019 Amendment 8) — and
 `artifact_bytes`, the raw export. A row names its method, the right it needs, its request and
 response schemas, its HTTP verb and path, its MCP tool, the transports that carry it and its tool
 description. Python (through `dispatch`), the
@@ -43,7 +43,7 @@ from dataclasses import dataclass
 from functools import cache
 from typing import Any, Final, Literal, Protocol
 
-from openflowsheet.application.contract import Application, Inspection, JobControl, Page
+from openflowsheet.application.contract import Application, Inspection, JobControl, Page, Records
 from openflowsheet.application.documents import published_schemas, validate_inline
 from openflowsheet.application.errors import ApiError, ApiErrorCode, ApplicationError, api_error
 from openflowsheet.application.inspection_types import AuditRecord, RevisionSummary
@@ -71,8 +71,8 @@ TRANSPORT_WAIT_CAP_S: Final[float] = 30.0
 MAX_EVENT_PAGE: Final[int] = 500
 
 
-class Dispatchable(Application, JobControl, Inspection, Protocol):
-    """What `dispatch` calls: the three protocols, the raw export, and the audit of a refusal
+class Dispatchable(Application, JobControl, Inspection, Records, Protocol):
+    """What `dispatch` calls: the four protocols, the raw export, and the audit of a refusal
     made before a method was reached (`LocalApplication`)."""
 
     def artifact_bytes(self, artifact_id: str) -> bytes: ...
@@ -221,6 +221,114 @@ CHECK_ADMISSION_REQUEST: Final = {
     "minProperties": 1,
     "maxProperties": 1,
 }
+
+
+#: ADR 0061 D1, D9, D12: a record SHA, a lookup scheme, a record type, a user-file format and
+#: the five `defaults` of a v1 user file (F3 decision WO5a-7: exactly these, `origin` a list).
+RECORD_SHA: Final = _ref("record-v2.schema.json#/$defs/sha256")
+RECORD_SCHEMES: Final = ("sha256", "inchikey", "inchi", "cas", "id", "name", "formula")
+RECORD_TYPE: Final = _ref("record-v2.schema.json#/properties/record_type")
+USER_FILE_FORMATS: Final = ("component-record-v1-yaml", "record-v2-json", "record-v2-yaml")
+#: The largest user file's text a request carries (characters).
+MAX_FILE_TEXT: Final[int] = 8 * 1024 * 1024
+_TEXT: Final = {"type": "string", "minLength": 1, "maxLength": 4096}
+RECORD_DEFAULTS: Final = _object(
+    {
+        "origin": {"type": "array", "maxItems": 64, "items": _TEXT},
+        "derivation": _TEXT,
+        "source_id": _TEXT,
+        "source_version": _TEXT,
+        "citation": _TEXT,
+    }
+)
+#: ADR 0061 D13 `search_records`: a key, optionally in one scheme (which needs the key).
+SEARCH_RECORDS_REQUEST: Final = {
+    **_object(
+        {},
+        {
+            "key": {"type": "string", "minLength": 1, "maxLength": 1024},
+            "scheme": {"enum": list(RECORD_SCHEMES)},
+            "record_type": RECORD_TYPE,
+            "cursor": CURSOR,
+            "limit": _limit(MAX_PAGE),
+        },
+    ),
+    "dependentRequired": {"scheme": ["key"]},
+}
+#: ADR 0061 D13 `register_record`: a record, or a user file with its optional `defaults`
+#: (F3 decision WO5b-3: and the client's optional `local_path`, which only the volatile block
+#: carries).
+REGISTER_RECORD_REQUEST: Final = {
+    **_object(
+        {},
+        {
+            "record": {"type": "object"},
+            "file": _object(
+                {
+                    "format": {"enum": list(USER_FILE_FORMATS)},
+                    "content": {"type": "string", "maxLength": MAX_FILE_TEXT},
+                },
+                {"local_path": {"type": "string", "minLength": 1, "maxLength": 4096}},
+            ),
+            "defaults": RECORD_DEFAULTS,
+        },
+    ),
+    # Exactly one of `record` and `file`, `defaults` only with `file`, and no top-level
+    # combinator (MCP clients refuse one, W6e).
+    "minProperties": 1,
+    "dependentRequired": {"defaults": ["file"]},
+    "dependentSchemas": {"record": {"maxProperties": 1}},
+}
+#: ADR 0061 D13 `validate_record`. A reaction's ν is a JSON number, never a boolean, and every
+#: stoichiometry key must be a `components` key (checked by the operation; F3 decision WO5a-3).
+VALIDATE_RECORD_REQUEST: Final = {
+    **_object(
+        {},
+        {
+            "record": {"type": "object"},
+            "records": {
+                "type": "array",
+                "maxItems": MAX_PAGE,
+                "items": {"anyOf": [RECORD_SHA, {"type": "object"}]},
+            },
+            "components": {
+                "type": "object",
+                "maxProperties": MAX_PAGE,
+                "propertyNames": {"minLength": 1, "maxLength": 256},
+                "additionalProperties": RECORD_SHA,
+            },
+            "reactions": {
+                "type": "array",
+                "maxItems": MAX_PAGE,
+                "items": _object(
+                    {
+                        "id": {"type": "string", "minLength": 1, "maxLength": 256},
+                        "stoichiometry": {
+                            "type": "object",
+                            "minProperties": 1,
+                            "maxProperties": MAX_PAGE,
+                            "propertyNames": {"minLength": 1, "maxLength": 256},
+                            "additionalProperties": {"type": "number"},
+                        },
+                    }
+                ),
+            },
+        },
+    ),
+    "minProperties": 1,
+    "dependentRequired": {"reactions": ["components"]},
+}
+#: ADR 0061 D13 `assess_rights`: one D11 row for (source, record) or for the whole source.
+ASSESS_RIGHTS_REQUEST: Final = _object(
+    {
+        "source_id": _TEXT,
+        "record_sha256": RECORD_SHA,
+        "scope": {"enum": ["record", "source"]},
+        "assessment": {"enum": ["permitted", "unknown", "refused"]},
+        "basis": _TEXT,
+    },
+    {"conditions": {"anyOf": [_TEXT, {"type": "null"}]}},
+)
 
 
 # ================================================================================= decoding
@@ -586,6 +694,49 @@ OPERATIONS: Final[Mapping[str, Operation]] = {
             _result("admission_report"),
             ("POST", "/v1/admission/check"),
             decode=_members("pair", "revision"),
+        ),
+        # Records: ADR 0061 D13 (F3, ADR 0019 Amendment 8), the record store and its rights
+        _row(
+            "search_records",
+            "read",
+            SEARCH_RECORDS_REQUEST,
+            _result("record_page"),
+            ("POST", "/v1/records/search"),
+            decode=_members("key", "scheme", "record_type", "cursor", "limit"),
+        ),
+        _row(
+            "get_record",
+            "read",
+            _object({"record_sha256": RECORD_SHA}),
+            _result("record_view"),
+            ("GET", "/v1/records/{record_sha256}"),
+            decode=_members("record_sha256"),
+        ),
+        _row(
+            "register_record",
+            "draft",
+            REGISTER_RECORD_REQUEST,
+            _result("record_registration_result"),
+            ("POST", "/v1/records"),
+            decode=_members("record", "file", "defaults"),
+        ),
+        _row(
+            "validate_record",
+            "read",
+            VALIDATE_RECORD_REQUEST,
+            _result("record_validation_report"),
+            ("POST", "/v1/records/validate"),
+            decode=_members("record", "records", "components", "reactions"),
+        ),
+        _row(
+            "assess_rights",
+            "policy",
+            ASSESS_RIGHTS_REQUEST,
+            _result("rights_assessment_result"),
+            ("POST", "/v1/records/rights"),
+            decode=_members(
+                "source_id", "record_sha256", "scope", "assessment", "conditions", "basis"
+            ),
         ),
         # The raw export (Python, CLI, HTTP; never MCP)
         _row(

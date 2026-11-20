@@ -29,8 +29,10 @@ REVIEW_KINDS = ("design-lane", "human")
 
 def test_every_description_is_reviewed_by_both_lanes() -> None:
     record: dict[str, Any] = json.loads(REVIEW.read_text(encoding="utf-8"))
-    # ADR 0058 D7 (MSG): `explain`; ADR 0068: `get_stream_table`; ADR 0060 D11: two more
-    assert len(MCP_OPERATIONS) == 21
+    # ADR 0058 D7 (MSG): `explain`; ADR 0068: `get_stream_table`; ADR 0060 D11: two more;
+    # ADR 0061 D13: five more, `search_records`, `get_record`, `register_record`,
+    # `validate_record` and `assess_rights`
+    assert len(MCP_OPERATIONS) == 26
     assert sorted(record["operations"]) == MCP_OPERATIONS
 
     open_items: list[str] = []

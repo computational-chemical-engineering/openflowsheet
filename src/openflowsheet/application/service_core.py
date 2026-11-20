@@ -1,7 +1,8 @@
 """`ServiceCore`: what the services behind `LocalApplication` share (ADR 0076 I-12d).
 
-One core per caller: the store, the project policy, the caller's capability, the owner instance,
-the executor and an in-memory project's scratch directory, with the cross-cutting steps every
+One core per caller: the store, the record stack (ADR 0061 D8), the project policy, the
+caller's capability, the owner instance, the executor and an in-memory project's scratch
+directory, with the cross-cutting steps every
 operation takes: who the caller is (`caller`), whether it may (`authorize`), and an audited
 refusal (`refuse`, `refuse_error`, `audit_refusal`). `LocalApplication.authenticated` acts as
 another grant through `acting_as`: the same store, policy, executor and owner, another
@@ -14,7 +15,7 @@ import copy
 import tempfile
 from collections.abc import Mapping
 from pathlib import Path
-from typing import Any, NoReturn
+from typing import Any, Final, NoReturn
 
 from openflowsheet.application.admission import surrogate_resolver
 from openflowsheet.application.authz import LOCAL_OWNER, PolicyFile, StaticPolicy, authorize
@@ -25,6 +26,21 @@ from openflowsheet.application.model_builders import SurrogateResolver
 from openflowsheet.application.policy_types import CapabilityReference
 from openflowsheet.application.store import ProjectStore
 from openflowsheet.application.store_records import AuditEntry
+from openflowsheet.records.importers.legacy import available_records
+from openflowsheet.records.stack import LegacyStore, StoreStack
+from openflowsheet.records.store import RecordStore
+
+#: ADR 0061 D8: the legacy store, one per process: it imports the available legacy files at its
+#: first access (F3 decision WO5b-2).
+LEGACY_STORE: Final = LegacyStore(available_records)
+
+
+def record_stack(directory: Path | None) -> StoreStack:
+    """D8's stack of a project: its `<directory>/records/` store, opened at its first operation
+    (never at project open), or an in-memory store for an in-memory project; then the legacy
+    store."""
+    project = RecordStore.in_memory() if directory is None else RecordStore.at(directory)
+    return StoreStack(project, LEGACY_STORE)
 
 
 class ServiceCore:
@@ -51,6 +67,8 @@ class ServiceCore:
         #: An in-memory project's files (bundles, imports) live in a directory of its own,
         #: removed on `close`.
         self._scratch: tempfile.TemporaryDirectory[str] | None = None
+        #: ADR 0061 D8, D11: the record stack and, in its project store, the project register.
+        self.records: StoreStack = record_stack(store.directory)
 
     def acting_as(self, capability: CapabilityReference) -> ServiceCore:
         """This core acting as `capability`: the same store, policy, executor and owner."""

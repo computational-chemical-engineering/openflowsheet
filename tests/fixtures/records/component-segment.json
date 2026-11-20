@@ -1,0 +1,119 @@
+{
+  "record_format": "openflowsheet-record-v2",
+  "record_type": "component",
+  "type_version": "1.0.0",
+  "id": "fixture.copolymer",
+  "name": "Copolymer, segment-basis fixture record",
+  "sources": {
+    "fixture.handbook": {
+      "version": "2026-03",
+      "citation": "Fictitious fixture handbook: every value citing it is invented",
+      "licence_stated": "LicenseRef-fixture",
+      "url": "https://example.org/handbook/water"
+    }
+  },
+  "synthetic": true,
+  "amount_basis": "segment_mol",
+  "charge": 0,
+  "molar_mass": {
+    "value": 0.1,
+    "unit": "kg/mol",
+    "kind": "segment_molar_mass",
+    "uncertainty": {
+      "type": "expanded",
+      "absolute": 0.5,
+      "relative": 0.002,
+      "coverage_factor": 2.0
+    },
+    "provenance": {
+      "origin": [
+        "synthetic"
+      ],
+      "derivation": "direct",
+      "source": "fixture.handbook",
+      "inputs": [
+        {
+          "scheme": "file",
+          "sha256": "5d319c82597e4f088ec39424268538da41483fe41d02353b509b138737b6822f",
+          "path": "benchmarks/fixture/table.csv"
+        }
+      ],
+      "transformation": "copied from the source table"
+    },
+    "meaning": "Mean segment molar mass",
+    "note": "fixture"
+  },
+  "elemental_verification": "NOT_APPLICABLE",
+  "segment_types": [
+    {
+      "id": "styrene",
+      "molar_mass": {
+        "value": 0.104,
+        "unit": "kg/mol",
+        "kind": "segment_molar_mass",
+        "uncertainty": {
+          "type": "expanded",
+          "absolute": 0.5,
+          "relative": 0.002,
+          "coverage_factor": 2.0
+        },
+        "provenance": {
+          "origin": [
+            "synthetic"
+          ],
+          "derivation": "direct",
+          "source": "fixture.handbook",
+          "inputs": [
+            {
+              "scheme": "file",
+              "sha256": "5d319c82597e4f088ec39424268538da41483fe41d02353b509b138737b6822f",
+              "path": "benchmarks/fixture/table.csv"
+            }
+          ],
+          "transformation": "copied from the source table"
+        },
+        "meaning": "Styrene segment",
+        "note": "fixture"
+      },
+      "elements": {
+        "C": 8,
+        "H": 8
+      }
+    },
+    {
+      "id": "butadiene",
+      "molar_mass": {
+        "value": 0.054,
+        "unit": "kg/mol",
+        "kind": "segment_molar_mass",
+        "uncertainty": {
+          "type": "expanded",
+          "absolute": 0.5,
+          "relative": 0.002,
+          "coverage_factor": 2.0
+        },
+        "provenance": {
+          "origin": [
+            "synthetic"
+          ],
+          "derivation": "direct",
+          "source": "fixture.handbook",
+          "inputs": [
+            {
+              "scheme": "file",
+              "sha256": "5d319c82597e4f088ec39424268538da41483fe41d02353b509b138737b6822f",
+              "path": "benchmarks/fixture/table.csv"
+            }
+          ],
+          "transformation": "copied from the source table"
+        },
+        "meaning": "Butadiene segment",
+        "note": "fixture"
+      },
+      "elements": {
+        "C": 4,
+        "H": 6
+      }
+    }
+  ]
+}

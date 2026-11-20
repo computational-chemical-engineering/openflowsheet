@@ -1,0 +1,377 @@
+# F3, component data (ADR 0061, "New catalogue codes"; F3-WO1): the refusals and notices of the
+# record normaliser and validator. Params are strings: `<component>` is the record's id, `<entry>`
+# and `<pointer>` RFC 6901 pointers into the normalised record (F3 build decision WO1-9). Emitters:
+# `records/normalize.py` (D2 steps 1 to 5, D6) and `records/validate.py` (D2 step 6, D7); the
+# store's and resolution's (F3-WO2) from `records/store.py`, `records/stack.py` (D8) and
+# `records/resolve.py` (D9); the legacy import's (F3-WO3) from `records/importers/legacy.py`
+# (D12); the data lock's (F3-WO4) from `records/lock.py` (D10, D5); reaction consistency's (D7,
+# Q7.A3; F3-WO5a) from `records/reactions.py`, where `<component>` is the reaction's component key.
+catalogue: openflowsheet-messages-v1
+namespace: null
+entries:
+  # D2 steps 1, 3, 6; D7: the record does not match the record format.
+  - code: record_schema_invalid
+    family: refusal
+    kind: input
+    complete: true
+    title: A record does not match the record format
+    args: [pointer]
+    params: {pointer: {type: text, label: location in the record}}
+    summary: "The record is not valid at {pointer!raw}."
+    why: "A record is checked against the record format before it is stored or hashed: its members and their types, every object closed, phase and identifier spellings, and the rules the format adds, such as one entry per property and phase and one formation entry per phase. The location is a JSON pointer into the record after normalisation; an empty location is the whole record, for example text that is not one JSON or YAML object. In a record file of the older (version 1) component format, the location points into the file."
+    action: "Correct the record at the location given and submit it again."
+    examples:
+      - params: {pointer: /entries/0/phase}
+
+  # D7: a unit or quantity kind that is not the registered pair.
+  - code: record_unit_invalid
+    family: refusal
+    kind: input
+    complete: true
+    title: A record value has an unknown kind or a unit other than its SI unit
+    args: [entry]
+    params: {entry: {type: text, label: entry}}
+    summary: "The value at {entry!raw} has a quantity kind that is not registered, or a unit that is not that kind's SI unit."
+    why: "Records store every value in the SI unit of a registered quantity kind, and a core property has a fixed kind. A kind that is not registered, such as a molar entropy before it is added, cannot be stored yet."
+    action: "State the value in the SI unit of the kind the property needs, or leave out a value whose kind is not registered yet."
+    examples:
+      - params: {entry: /entries/1}
+
+  # D7, Q7.R1/R2: the amount basis and its molar mass and charge disagree.
+  - code: amount_basis_invalid
+    family: refusal
+    kind: input
+    complete: true
+    title: A component's amount basis does not fit its molar mass or charge
+    args: [component, rule]
+    params:
+      component: {type: text, label: component}
+      rule:      {type: text, label: rule}
+    summary: "The component {component!raw} breaks the amount-basis rule {rule!raw}."
+    why: "A component on a molar basis states its molar mass, of the kind its basis needs; a component on a mass basis states none and carries no charge. The rule names which of these the record breaks: molar_mass_present, molar_mass_absent, molar_mass_kind or charge_nonzero."
+    action: "Add, remove or correct the molar mass or the charge so the record fits its amount basis."
+    examples:
+      - params: {component: H2O, rule: molar_mass_absent}
+
+  # D7, risk 4: `kg` and `segment_mol` wait for ADR-F2's quantity kinds.
+  - code: amount_basis_unsupported
+    family: refusal
+    kind: not_supported
+    complete: true
+    title: Records on this amount basis cannot be stored yet
+    args: [basis]
+    params: {basis: {type: text, label: amount basis}}
+    summary: "Records on the amount basis {basis!raw} cannot be stored yet."
+    why: "A component on a mass or segment basis needs quantity kinds that are not registered yet. The rules for these bases are fixed; only their kinds are missing."
+    action: "Store the component on the molar basis if that describes it, or wait for the release that registers the kinds of this basis."
+    gap: {limitation: null, capability: "the quantity kinds of the mass and segment amount bases"}
+    examples:
+      - params: {basis: kg}
+
+  # D7: a malformed identifier, or any identifier on a synthetic component.
+  - code: identifier_invalid
+    family: refusal
+    kind: input
+    complete: true
+    title: A component identifier is malformed or not allowed
+    args: [component, scheme]
+    params:
+      component: {type: text, label: component}
+      scheme:    {type: text, label: identifier scheme}
+    summary: "The {scheme!raw} identifier of component {component!raw} is malformed, or the component is synthetic and may carry none."
+    why: "A CAS number must have a valid check digit and an InChIKey the standard 27-character form. A synthetic component has no chemical identity, so it may carry no identifier at all."
+    action: "Correct the identifier, or remove it if the component is synthetic."
+    examples:
+      - params: {component: H2O, scheme: cas}
+
+  # D7: a molar record whose formula disagrees with its elements.
+  - code: formula_elements_invalid
+    family: refusal
+    kind: input
+    complete: true
+    title: A component's formula does not match its elements
+    args: [component]
+    params: {component: {type: text, label: component}}
+    summary: "The formula of component {component!raw} does not match its elemental composition."
+    why: "On a molar basis the formula and the element amounts describe the same molecule. The formula is read as element symbols with counts, and its counts must equal the stated element amounts exactly."
+    action: "Correct the formula or the element amounts so that they agree."
+    examples:
+      - params: {component: CH3OH}
+
+  # D6: a stated anchor phase the rules do not allow.
+  - code: anchor_phase_invalid
+    family: refusal
+    kind: input
+    complete: true
+    title: A component's anchor phase is not allowed
+    args: [component, phase]
+    params:
+      component: {type: text, label: component}
+      phase:     {type: text, label: phase}
+    summary: "The anchor phase {phase!raw} of component {component!raw} is not allowed."
+    why: "The anchor phase is where a component's formation data fix its enthalpy and entropy. A stated anchor must be a phase with formation data when the record gives any, and a charged component is anchored in aqueous solution."
+    action: "State an anchor phase in which the record gives formation data, aq for a charged component, or leave the anchor out so that it is derived."
+    examples:
+      - params: {component: H2O, phase: "s:ice-Ih"}
+
+  # D7: an entry names a correlation form that is not registered.
+  - code: correlation_form_unknown
+    family: refusal
+    kind: input
+    complete: true
+    title: A record entry names an unknown correlation form
+    args: [entry, form]
+    params:
+      entry: {type: text, label: entry}
+      form:  {type: text, label: correlation form}
+    summary: "The entry at {entry!raw} uses the correlation form {form!raw}, which is not registered."
+    why: "A correlation entry stores coefficients of a registered correlation form, which fixes their names, the variables and the result. An entry of an unregistered form cannot be checked or evaluated."
+    action: "Use a registered correlation form, or install the extension that registers this one. The list_capabilities operation lists the registered forms."
+    examples:
+      - params: {entry: /entries/2, form: acme.antoine}
+
+  # D7: the coefficients are not exactly the form's.
+  - code: correlation_coefficients_invalid
+    family: refusal
+    kind: input
+    complete: true
+    title: A record entry's coefficients do not match its correlation form
+    args: [entry, form]
+    params:
+      entry: {type: text, label: entry}
+      form:  {type: text, label: correlation form}
+    summary: "The coefficients of the entry at {entry!raw} are not exactly those of the correlation form {form!raw}."
+    why: "A correlation entry gives every coefficient its form defines and no other."
+    action: "Give exactly the coefficients the form names."
+    examples:
+      - params: {entry: /entries/2, form: cp_ig_poly4_theta}
+
+  # D7: a validity range with a variable the form lacks, or lower bound not below upper.
+  - code: validity_range_invalid
+    family: refusal
+    kind: input
+    complete: true
+    title: A record's validity range is not valid
+    args: [entry, variable]
+    params:
+      entry:    {type: text, label: entry}
+      variable: {type: text, label: variable}
+    summary: "The validity range of {variable!raw} at {entry!raw} is not valid."
+    why: "A validity range names a variable of the entry's form (T or P for a constant) and gives a lower bound below its upper bound."
+    action: "Use a variable of the form and order the bounds from low to high."
+    examples:
+      - params: {entry: /entries/2, variable: T}
+
+  # D7, Q9.R4: an empty origin, or a source the record does not list.
+  - code: provenance_invalid
+    family: refusal
+    kind: input
+    complete: true
+    title: A record value has incomplete provenance
+    args: [entry]
+    params: {entry: {type: text, label: entry}}
+    summary: "The provenance of the value at {entry!raw} has no origin, or names a source the record does not list."
+    why: "Every stored value says where it came from: at least one origin (measured, computed, estimated or synthetic) and a source listed in the record's sources."
+    action: "Give the value an origin and a source listed in the record."
+    examples:
+      - params: {entry: /molar_mass}
+
+  # D6 step 4, Q2.R9: the anchor defaulted to the ideal gas.
+  - code: anchor_defaulted
+    family: notice
+    kind: notice
+    complete: true
+    title: A component's anchor phase was defaulted to the ideal gas
+    args: [component]
+    params: {component: {type: text, label: component}}
+    summary: "Component {component!raw} gives no formation data and no phase-specific data, so it is anchored in the ideal gas by default."
+    why: "Every component has one anchor phase, where its formation data fix its enthalpy and entropy. A molar record that states none, is uncharged and gives nothing phase-specific takes the ideal gas. This record and one that states the ideal gas are the same record."
+    action: "Nothing is needed; state an anchor phase in the record if another phase is meant."
+    examples:
+      - params: {component: Methanol}
+
+  # D6 step 5, Q2.R9: no anchor could be derived.
+  - code: anchor_undetermined
+    family: notice
+    kind: notice
+    complete: true
+    title: A component has no anchor phase
+    args: [component]
+    params: {component: {type: text, label: component}}
+    summary: "Component {component!raw} has no anchor phase."
+    why: "A record on a mass or segment basis that states no anchor phase, gives no formation data and nothing phase-specific has none. Its energy reference cannot be fixed, so it is refused for an elemental reference until the record states an anchor."
+    action: "State an anchor phase in the record."
+    examples:
+      - params: {component: bitumen}
+
+  # D4, R-924: a fitted or generated value whose inputs are not hashed.
+  - code: fit_inputs_unhashed
+    family: notice
+    kind: notice
+    complete: true
+    title: A fitted value does not identify the data it was fitted to
+    args: [entry]
+    params: {entry: {type: text, label: entry}}
+    summary: "The value at {entry!raw} was fitted or generated, but its input data are not identified by hash."
+    why: "A fitted or generated value names the data it came from by hash, so that a change of those data is a change of the value. This one names none, usually because its inputs are not in the repository."
+    action: "Add the hashes of the input data to the value's provenance if they are available."
+    examples:
+      - params: {entry: /entries/1}
+
+  # D9: an identity key that matches several records.
+  - code: component_ambiguous
+    family: refusal
+    kind: input
+    complete: true
+    title: A component key matches more than one record
+    args: [key]
+    params: {key: {type: text, label: key}}
+    summary: "The key {key!raw} matches more than one stored record."
+    why: "A key such as a name, a formula, a CAS number or an InChIKey can match several records: different compounds (records that share no CAS number or InChIKey, for example two compounds of one formula) or one compound from several sources. No source is preferred over another, so the choice is yours. The error's detail lists the candidates, grouped by compound, with each record's SHA, sources and name."
+    action: "Choose one of the candidates and refer to it by its SHA (sha256:<sha>), or use a key that matches only that record."
+    examples:
+      - params: {key: C2H6O}
+
+  # D8, Q9.R7: no store holds the record (F8 reuses this entry).
+  - code: data_unavailable
+    family: refusal
+    kind: input
+    complete: true
+    title: A record is not available here
+    args: [sha]
+    params: {sha: {type: text, label: record SHA}}
+    summary: "The record {sha!raw} is not in this project's record store or in the records this installation provides."
+    why: "A record is found by its SHA in the project's record store and then in the records that come with OpenFlowsheet. Some of those come only with a source checkout, not with an installed package, and a record registered in another project is not in this one."
+    action: "Register the record in this project, or open the project where its record files are available."
+    examples:
+      - params: {sha: 0f4c2e6a9b1d3c5e7f80a2b4c6d8e0f1a3b5c7d9e1f3a5b7c9d1e3f5a7b9c1d3}
+
+  # D5, D10: a parameter set's component matches no record the data lock binds.
+  - code: parameter_set_component_missing
+    family: refusal
+    kind: input
+    complete: true
+    title: A parameter set names a component the selection lacks
+    args: [set, key]
+    params: {set: {type: text, label: parameter set}, key: {type: text, label: component key}}
+    summary: "The parameter set {set!raw} has the component {key!raw}, which matches none of the selected component records."
+    why: "A parameter set states which component each of its keys belongs to: either one exact record, by its SHA, or any record of a compound, by its InChIKey. A set fitted to one record's data matches only that record, so selecting another record of the same compound does not satisfy it."
+    action: "Select the record the parameter set names for that component, or use a parameter set made for the records you selected."
+    examples:
+      - params: {set: S10-wilson-ig-real-v1, key: CH3OH}
+
+  # D8: a project path too long for the record store on Windows without long paths.
+  - code: store_path_too_long
+    family: refusal
+    kind: not_supported
+    complete: true
+    title: The project path is too long for the record store on this computer
+    args: [root]
+    params: {root: {type: text, label: project directory}}
+    summary: "The project directory {root!raw} is too long a path for the record store: its record files would pass Windows's 260-character limit."
+    why: "The record store keeps each record in a file under the project directory, up to 92 characters below it. Windows without long paths enabled cannot open a path longer than 259 characters, so the store refuses before it writes a file it could not read back. The project itself still opens."
+    action: "Move the project to a shorter path, or enable long paths in Windows (the LongPathsEnabled setting) and try again."
+    gap: {limitation: null, capability: "long paths on this Windows installation"}
+    examples:
+      - params: {root: 'C:\Users\me\projects\plant'}
+
+  # D8: a stored record file whose bytes do not hash to its name.
+  - code: store_object_corrupt
+    family: refusal
+    kind: bug
+    complete: true
+    title: A stored record file is damaged
+    args: [sha]
+    params: {sha: {type: text, label: record SHA}}
+    summary: "The stored file of record {sha!raw} does not hold that record: its bytes do not hash to its name."
+    why: "Each record file is named by the SHA-256 of its bytes and is never changed once it holds them, so a file whose bytes hash otherwise was changed or damaged after it was written, by something other than OpenFlowsheet or by a disk fault."
+    action: "Report it. If you have the record, register it again: the registration replaces the damaged file."
+    examples:
+      - params: {sha: 0f4c2e6a9b1d3c5e7f80a2b4c6d8e0f1a3b5c7d9e1f3a5b7c9d1e3f5a7b9c1d3}
+
+  # D8 (F3 ruling round 1): a registration replaced a stored record file that was damaged.
+  - code: store_object_repaired
+    family: notice
+    kind: notice
+    complete: true
+    title: A damaged stored record file was repaired
+    args: [sha]
+    params: {sha: {type: text, label: record SHA}}
+    summary: "The stored file of record {sha!raw} was damaged; registering the record replaced it with the record's bytes."
+    why: "Each record file is named by the SHA-256 of its bytes. This file's bytes no longer hashed to its name, so it had been changed or damaged after it was written, by something other than OpenFlowsheet or by a disk fault. The registration held bytes that hash to the name and wrote them in its place."
+    action: "Nothing is needed for this record. Report it, and check the disk and anything else that writes to the project's records directory."
+    examples:
+      - params: {sha: 0f4c2e6a9b1d3c5e7f80a2b4c6d8e0f1a3b5c7d9e1f3a5b7c9d1e3f5a7b9c1d3}
+
+  # D12: a legacy record file, or the import of it, no longer gives the committed legacy index.
+  - code: legacy_record_drift
+    family: refusal
+    kind: bug
+    complete: true
+    title: A built-in record no longer matches its index
+    args: [file, id]
+    params: {file: {type: text, label: record file}, id: {type: text, label: record id}}
+    summary: "The record {id!raw} of the built-in record file {file!raw} differs from the record this release was built with."
+    why: "The record files that come with OpenFlowsheet are fixed, and the identity of each record they give is recorded when the release is built. A file whose bytes changed after that, or an importer that now reads it differently, would give records with other identities under the same names."
+    action: "Report it. Restore the record file from the release or the repository, or reinstall OpenFlowsheet."
+    examples:
+      - params: {file: benchmarks/m01/components.yaml, id: H2}
+
+  # D7, Q7.A3 (F3-WO5a, `records/reactions.py`): an element not conserved by a reaction.
+  - code: reaction_element_imbalance
+    family: refusal
+    kind: input
+    complete: true
+    title: A reaction does not conserve an element
+    args: [reaction, element]
+    params: {reaction: {type: text, label: reaction}, element: {type: text, label: element}}
+    summary: "Reaction {reaction!raw} does not conserve {element!raw}: its stoichiometric coefficients times the element counts of its components do not sum to zero."
+    why: "A reaction rearranges atoms; it neither makes nor destroys them. For every element, the sum over the reaction's components of the stoichiometric coefficient times the number of atoms of that element in the component must be exactly zero. The sum is computed exactly from the stored numbers."
+    action: "Correct the reaction's stoichiometric coefficients, or the elemental composition of the component record that is wrong."
+    examples:
+      - params: {reaction: ammonia_synthesis, element: H}
+
+  # D7, Q7.A3: the charge of a reaction's components is not conserved.
+  - code: reaction_charge_imbalance
+    family: refusal
+    kind: input
+    complete: true
+    title: A reaction does not conserve charge
+    args: [reaction]
+    params: {reaction: {type: text, label: reaction}}
+    summary: "Reaction {reaction!raw} does not conserve charge: its stoichiometric coefficients times the charges of its components do not sum to zero."
+    why: "Charge is conserved by every reaction. The sum over the reaction's components of the stoichiometric coefficient times the component's charge number must be exactly zero."
+    action: "Correct the reaction's stoichiometric coefficients, or the charge of the component record that is wrong."
+    examples:
+      - params: {reaction: water_dissociation}
+
+  # D7, Q7.A3: a component without elemental composition, so the element balance is not judged.
+  - code: reaction_element_unchecked
+    family: notice
+    kind: notice
+    complete: true
+    title: A reaction's element balance could not be checked
+    args: [reaction, component]
+    params: {reaction: {type: text, label: reaction}, component: {type: text, label: component}}
+    summary: "The element balance of reaction {reaction!raw} was not checked, because component {component!raw} has no elemental composition."
+    why: "Element balance needs the number of atoms of each element in every component of the reaction. A pseudo-component, such as a petroleum fraction, has no elemental formula, so the balance cannot be decided and is not claimed. Charge and molar mass are still checked."
+    action: "Nothing is needed. Give the component an elemental composition if it has one, and the balance will be checked."
+    examples:
+      - params: {reaction: cracking, component: NBP_350}
+
+  # D7, Q7.A3: the molar masses of a reaction's components do not balance. A notice by the ADR's
+  # code table: an explicit override of MSG §4.2.1's `*_inconsistent` -> `bug` rule (the cause is
+  # in the data, typically two atomic-weight conventions in one reaction, not in OpenFlowsheet).
+  - code: molar_mass_inconsistent
+    family: notice
+    kind: notice
+    complete: true
+    review: false
+    title: A reaction's molar masses do not balance
+    args: [reaction]
+    params: {reaction: {type: text, label: reaction}}
+    summary: "The molar masses of the components of reaction {reaction!raw} do not balance to within the rounding of the stored values."
+    why: "A balanced reaction conserves mass, so the sum of the stoichiometric coefficients times the molar masses is zero up to the rounding of the stored numbers: at most four times the double-precision machine epsilon of the sum of their magnitudes. A larger sum usually means the component records take their molar masses from different atomic-weight tables. The reaction is not refused; a mass balance over it carries this imbalance."
+    action: "Use component records whose molar masses come from one atomic-weight table, or accept the stated imbalance."
+    examples:
+      - params: {reaction: water_formation}

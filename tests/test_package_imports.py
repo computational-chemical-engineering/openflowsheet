@@ -46,6 +46,9 @@ LAYERS = [
     # registry snapshot. It imports `messages.catalogue` at import, to install the catalogue's
     # before-freeze hook (ADR 0076 I-14), and no application module.
     "registry",
+    # F3's component data core (ADR 0061): v2 records, their identity and validation. Above the
+    # registry, whose record types and correlation forms it validates by.
+    "records",
 ]
 
 

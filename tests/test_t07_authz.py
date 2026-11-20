@@ -78,6 +78,12 @@ EXPECTED_RIGHT = {
     # ADR 0060 D11 (F1; ADR 0019 Amendment 7)
     "list_capabilities": "read",
     "check_admission": "read",
+    # ADR 0061 D13 (F3; ADR 0019 Amendment 8): `assess_rights` vets data, so it needs `policy`
+    "search_records": "read",
+    "get_record": "read",
+    "register_record": "draft",
+    "validate_record": "read",
+    "assess_rights": "policy",
     "artifact_bytes": "read",
 }
 SUBSETS = [
@@ -125,14 +131,14 @@ def expected(rights: tuple[str, ...], operation: str, own: bool = True) -> bool:
 
 def test_the_table_names_exactly_the_twenty_operations() -> None:
     """The 19 protocol methods and `artifact_bytes` (§4.1, §4.3; G11), ADR 0019 Amendment 3's
-    `list_audit`, ADR 0058 D7's `explain`, ADR 0068's `get_stream_table` and ADR 0060 D11's
-    `list_capabilities` and `check_admission`: 25."""
+    `list_audit`, ADR 0058 D7's `explain`, ADR 0068's `get_stream_table`, ADR 0060 D11's
+    `list_capabilities` and `check_admission`, and ADR 0061 D13's five `Records` operations: 30."""
     assert dict(OPERATION_RIGHTS) == EXPECTED_RIGHT
     assert len(SUBSETS) == 64
 
 
 def test_g11_the_decision_matrix_equals_the_table() -> None:
-    """64 right subsets × 21 operations (and `cancel_job` of another's job, and `list_audit` of
+    """64 right subsets × 30 operations (and `cancel_job` of another's job, and `list_audit` of
     another's or all principals' rows, ADR 0019 Amendment 3) — every cell."""
     cells = 0
     for rights in SUBSETS:
@@ -150,7 +156,8 @@ def test_g11_the_decision_matrix_equals_the_table() -> None:
         assert others.allowed == expected(rights, "list_audit", own=False), rights
         everyone = authorize(cap, "list_audit", None)
         assert everyone.allowed == others.allowed, "all principals' rows are others' rows"
-    assert cells == 64 * 25  # with `explain`, `get_stream_table` and ADR 0060 D11's two
+    # with `explain`, `get_stream_table`, ADR 0060 D11's two and ADR 0061 D13's five
+    assert cells == 64 * 30
 
 
 def test_g11_an_unknown_operation_and_an_expired_capability_are_refused() -> None:

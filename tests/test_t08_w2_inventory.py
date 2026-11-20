@@ -33,6 +33,8 @@ import yaml
 from conftest import REPO_ROOT, load_json, sha256_of
 from test_schemas_p01 import validator_for
 
+from openflowsheet.records import identify, rights
+from openflowsheet.records.importers import legacy
 from openflowsheet.thermo import iapws95
 from openflowsheet.thermo._coolprop_heos_fluids import FLUIDS
 
@@ -385,7 +387,11 @@ SHIPPED_DATA = re.compile(
     # F1 (ADR 0060 D6): the registry's built-in tables, generated from the project's own code by
     # `scripts/registry_builtin.py` (ids, signatures, record-source paths; no third-party data),
     # and since F1-WO5 (review SF-8) its record of their digests, `tables.sha256`.
-    r"|registry/builtin/([a-z_-]+\.json|tables\.sha256))$"
+    r"|registry/builtin/([a-z_-]+\.json|tables\.sha256)"
+    # F3 (ADR 0061 D12): the legacy importer's profiles (the project's own mapping and
+    # classification) and the legacy record index generated from them (ids, positions, SHAs);
+    # (D11) the repository rights register (the project's own assessments, keyed by SHA).
+    r"|records/legacy_(profiles\.yaml|index\.json)|records/rights-register\.json)$"
 )
 PACKAGING = re.compile(
     r"^(PKG-INFO|setup\.cfg|pyproject\.toml|README\.md|MANIFEST\.in|LICENSE|NOTICE|"
@@ -551,30 +557,70 @@ def test_a32_no_third_party_data_in_the_sdist_or_the_wheel(built: dict[str, Path
         assert [name for name in python if not re.match(source, name)] == [], kind
 
 
-def _component_records() -> list[tuple[str, dict[str, Any]]]:
-    """Every component-record-shaped mapping in a tracked YAML or JSON file.
+#: ADR 0061 D1: the record format a v1 reader refuses (ADR 0002 D7.5).
+RECORD_V2 = "openflowsheet-record-v2"
+#: F3 decision WO1-15 as narrowed by the design lane: the directory of the v2 schema fixtures
+#: (some refused by construction; they ship nowhere), which A32's v2 clause judges by its own
+#: branch (F3-WO4; F3 ruling round 1, B6).
+RECORD_V2_HOME = "tests/fixtures/records/"
+#: F3 ruling round 1 (B6): the source-id prefix of the v2 fixtures' invented sources.
+FIXTURE_SOURCE_PREFIX = "fixture."
 
-    The schema's negative fixtures (`tests/fixtures/schemas/component_record/invalid/`) are
-    excluded: they are invalid by construction and ship nowhere.
-    """
+
+def _mappings(marker: str, *, skip_invalid: bool) -> list[tuple[str, dict[str, Any]]]:
+    """Every mapping, at any depth, of a tracked YAML or JSON file whose text contains `marker`,
+    with its path; files under an `/invalid/` directory skipped when `skip_invalid`."""
     found = []
     for path in _tracked():
-        if not path.endswith((".yaml", ".yml", ".json")) or "/invalid/" in path:
+        if not path.endswith((".yaml", ".yml", ".json")) or (skip_invalid and "/invalid/" in path):
             continue
         text = (REPO_ROOT / path).read_text(encoding="utf-8", errors="replace")
-        if "elemental_verification" not in text:
+        if marker not in text:
             continue
         document = yaml.safe_load(text) if path.endswith((".yaml", ".yml")) else json.loads(text)
         stack = [document]
         while stack:
             item = stack.pop()
             if isinstance(item, dict):
-                if "elemental_verification" in item and isinstance(item.get("id"), str):
-                    found.append((path, item))
+                found.append((path, item))
                 stack.extend(item.values())
             elif isinstance(item, list):
                 stack.extend(item)
     return found
+
+
+def _record_mappings() -> list[tuple[str, dict[str, Any]]]:
+    """Every component-record-shaped mapping (`elemental_verification` and a string `id`) in a
+    tracked YAML or JSON file, v1 or v2. The schema's negative fixtures
+    (`tests/fixtures/schemas/component_record/invalid/`) are excluded: they are invalid by
+    construction and ship nowhere."""
+    return [
+        (path, item)
+        for path, item in _mappings("elemental_verification", skip_invalid=True)
+        if "elemental_verification" in item and isinstance(item.get("id"), str)
+    ]
+
+
+def _record_v2_mappings() -> list[tuple[str, dict[str, Any]]]:
+    """Every mapping with `record_format: openflowsheet-record-v2` in a tracked YAML or JSON
+    file, whatever its `record_type` (F3 ruling round 1, B6: a v2 `parameter_set` has no
+    `elemental_verification`, so `_record_mappings` never finds it)."""
+    return [
+        (path, item)
+        for path, item in _mappings(RECORD_V2, skip_invalid=False)
+        if item.get("record_format") == RECORD_V2
+    ]
+
+
+def _component_records() -> list[tuple[str, dict[str, Any]]]:
+    """Every v1 component record (`_record_mappings` without the v2 records). A v2 record
+    (`record_format: openflowsheet-record-v2`, ADR 0061) is not a v1 ComponentRecord, its rights
+    live in F3's rights register (D11) and F3 validates it (F3 decision WO1-15, narrowed by the
+    design lane to that exact value); A32's v2 clause judges them (`_a32_v2_problems`, F3-WO4).
+    Any other `record_format` value is judged as v1."""
+    return [
+        (path, item) for path, item in _record_mappings() if item.get("record_format") != RECORD_V2
+    ]
 
 
 def _m01_vetted(vetting: dict[str, Any], component: str, path: str) -> bool:
@@ -896,6 +942,129 @@ def test_a32_every_component_record_is_synthetic_or_a_vetted_real_record_with_ri
     problems, compared = _a32_problems(records, _vetted_conventions())
     assert problems == []
     assert compared == CAS_COMPARED_IDS
+
+
+def _a32_v2_problems(
+    mappings: list[tuple[str, dict[str, Any]]], register: tuple[dict[str, Any], ...]
+) -> list[str]:
+    """T08.A32's v2 clause (F3 decision WO1-15, the design lane's narrowing; F3-WO4; F3 ruling
+    round 1, B6) on the v2 records (`record_format: openflowsheet-record-v2`) of `mappings`. Inside
+    `RECORD_V2_HOME` a record's `sources` must be a non-empty object whose every key begins
+    `fixture.` (its records are invented, some refused by construction, so D2 is not run).
+    Outside it a record must pass D2 (`records.identify`) and then be `synthetic: true`, or be a
+    component whose record SHA the committed legacy index lists under a file of
+    `VETTED_RECORD_FILES` (the vetting vets a file's components, not its parameter set,
+    F3-rulings-1 B6 build decision; decided by the index, not by the record's own `legacy`
+    member, F3 review 2 C10), or have each of its sources `permitted` in the repository
+    rights register `register` (ADR 0061 D11's precedence over the repository layer: packaging
+    reads that layer only). Returns one line per failing record."""
+    vetted = {
+        item["sha256"]
+        for entry in legacy.committed_index()["files"]
+        if entry["path"] in VETTED_RECORD_FILES
+        for item in entry["records"]
+        if item["record_type"] == "component"
+    }
+    found = []
+    for path, item in mappings:
+        if item.get("record_format") != RECORD_V2:
+            continue
+        if path.startswith(RECORD_V2_HOME):
+            if not _fixture_sources(item.get("sources")):
+                found.append(f"{path}: {item.get('id')} names a source that is not fixture.*")
+            continue
+        outcome = identify(item)
+        if outcome.record_sha256 is None:
+            found.append(f"{path}: {item['id']} is refused {[e.code for e in outcome.errors]}")
+            continue
+        record = outcome.record
+        if record.get("synthetic") is True:
+            continue
+        if record["record_type"] == "component" and outcome.record_sha256 in vetted:
+            continue
+        assessed = rights.record_rights(record, outcome.record_sha256, repository=register)
+        if not rights.embeddable(assessed):
+            found.append(f"{path}: {item['id']} is real, from no vetted file, not permitted")
+    return found
+
+
+def _fixture_sources(sources: object) -> bool:
+    """A32's v2 clause in `RECORD_V2_HOME`: `sources` is a non-empty object whose every key
+    begins `fixture.`."""
+    return (
+        isinstance(sources, dict)
+        and bool(sources)
+        and all(str(key).startswith(FIXTURE_SOURCE_PREFIX) for key in sources)
+    )
+
+
+def test_a32_v2_records_pass_the_v2_clause() -> None:
+    """T08.A32's v2 clause (`_a32_v2_problems`) over every tracked v2 mapping of any record type,
+    against the packaged rights register; the three committed fixtures are found and pass their
+    branch."""
+    mappings = _record_v2_mappings()
+    fixtures = {"component-maximal.json", "component-segment.json", "parameter-set-maximal.json"}
+    assert {path for path, _ in mappings} >= {RECORD_V2_HOME + name for name in fixtures}
+    assert _a32_v2_problems(mappings, rights.repository_rows()) == []
+
+
+def test_a32_v2_clause_refuses_each_defect() -> None:
+    """Each branch of the v2 clause decides one record: a synthetic record, an imported `m01`
+    record (a vetted file's SHA) and an imported `s07` record (its source permitted by its seed
+    row) pass; the `s07` record with no register row, and a record D2 refuses, fail. The
+    imported `s10` parameter set fails with no register row and passes with the packaged one
+    (R-880): the vetted-file branch holds for components only. In `RECORD_V2_HOME` only the
+    `fixture.` sources decide."""
+    imported = {
+        item.profile: item
+        for item in legacy.import_all(lambda path: (REPO_ROOT / path).read_bytes())
+    }
+    m01 = dict(imported["m01"].records[0].record)
+    s07 = dict(imported["s07"].records[0].record)
+    synthetic = dict(imported["syn001"].records[0].record)
+    register = rights.repository_rows()
+    at = "benchmarks/x/records.json"
+    assert _a32_v2_problems([(at, m01), (at, s07), (at, synthetic)], register) == []
+    assert _a32_v2_problems([(at, s07)], ()) == [
+        f"{at}: {s07['id']} is real, from no vetted file, not permitted"
+    ]
+    refused = {**s07, "amount_basis": "kg"}
+    assert _a32_v2_problems([(at, refused)], register)[0].startswith(
+        f"{at}: {s07['id']} is refused"
+    )
+    assert _a32_v2_problems([(RECORD_V2_HOME + "x.json", refused)], ()) == [
+        f"{RECORD_V2_HOME}x.json: {s07['id']} names a source that is not fixture.*"
+    ]
+    s10_set = dict(imported["s10"].records[-1].record)
+    assert s10_set["record_type"] == "parameter_set"
+    sets = "benchmarks/x/sets.json"
+    assert _a32_v2_problems([(sets, s10_set)], ()) == [
+        f"{sets}: {s10_set['id']} is real, from no vetted file, not permitted"
+    ]
+    assert _a32_v2_problems([(sets, s10_set)], register) == []  # R-880
+    s10 = dict(imported["s10"].records[0].record)
+    assert _a32_v2_problems([(sets, s10)], ()) == []  # a vetted file's component
+    invented = {**refused, "sources": {"fixture.x": {"version": "1"}}}
+    assert _a32_v2_problems([(RECORD_V2_HOME + "x.json", invented)], ()) == []
+    for sources in ({}, None, {"fixture.x": {}, "other": {}}):
+        mapping = {**invented, "sources": sources}
+        assert len(_a32_v2_problems([(RECORD_V2_HOME + "x.json", mapping)], ())) == 1
+
+
+def test_a32_v2_the_vetted_branch_is_decided_by_the_committed_index() -> None:
+    """F3 review 2, S8 (C10; R1-B6 tightened): a copy of a vetted component with one value
+    changed and another source keeps its `legacy` member, so the record's own
+    `legacy.file_sha256` cannot decide the branch; the committed legacy index's SHAs do."""
+    imported = legacy.import_all(lambda path: (REPO_ROOT / path).read_bytes())
+    h2 = dict(next(item for item in imported if item.profile == "m01").records[0].record)
+    assert h2["id"] == "H2" and "legacy" in h2
+    copy_ = json.loads(json.dumps(h2).replace('"legacy.m01"', '"user.copy"'))
+    copy_["molar_mass"]["value"] *= 2.0
+    at = "benchmarks/x/h2.json"
+    assert _a32_v2_problems([(at, h2)], ()) == []
+    assert _a32_v2_problems([(at, copy_)], ()) == [
+        f"{at}: H2 is real, from no vetted file, not permitted"
+    ]
 
 
 def test_a32_one_datum_rule_within_and_across_conventions() -> None:

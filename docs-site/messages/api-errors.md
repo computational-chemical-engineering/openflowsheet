@@ -243,7 +243,7 @@ The change was refused: a replacement model does not fit the model it replaces.
 - **Summary:** Nothing named &lt;artifact_id&gt; &lt;revision_id&gt; &lt;job_id&gt; exists in this project.
 - **Why:** The id is not one this project has recorded.
 - **Do:** Check the id; a job's outputs list the artifact ids it wrote.
-- **Parameters:** `artifact_id` (artifact, optional), `revision_id` (revision, optional), `job_id` (job, optional), `bundle_id` (bundle, optional), `member` (text, optional), `members` (list, optional), `members_total` (number, optional), `run_outcome` (code, optional), `output` (text, optional), `code` (text, optional), `suggestions` (list, optional), `kind` (text, optional), `id` (text, optional), `version` (text, optional)
+- **Parameters:** `artifact_id` (artifact, optional), `revision_id` (revision, optional), `job_id` (job, optional), `bundle_id` (bundle, optional), `member` (text, optional), `members` (list, optional), `members_total` (number, optional), `run_outcome` (code, optional), `output` (text, optional), `code` (text, optional), `suggestions` (list, optional), `kind` (text, optional), `id` (text, optional), `version` (text, optional), `record_sha256` (text, optional)
 
 Example:
 
@@ -273,6 +273,17 @@ Example:
 No unit_model with the id thermal.heatr is registered.
   Why:     The extension registry holds the unit models, property methods, stream definitions and other extensions this installation provides; it is not part of the project.
   Do:      Did you mean thermal.heater? The list_capabilities operation lists every registered extension.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    not_found (openflowsheet explain not_found)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/api-errors/#not_found
+```
+
+Example:
+
+```text
+No record 0f4c2e6a9b1d3c5e7f80a2b4c6d8e0f1a3b5c7d9e1f3a5b7c9d1e3f5a7b9c1d3 is in this project's record store or in the records this installation provides.
+  Why:     A record is found by its SHA in the project's record store, then in the records that come with OpenFlowsheet.
+  Do:      Check the SHA; the search_records operation finds a record by an identifier, a name or a formula, and register_record stores one in this project.
   Kind:    Input problem: something in the flowsheet or the request needs to change.
   Code:    not_found (openflowsheet explain not_found)
   Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/api-errors/#not_found

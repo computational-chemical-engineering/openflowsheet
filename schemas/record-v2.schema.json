@@ -1,0 +1,1021 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/frankp/process-runtime/schemas/record-v2.schema.json",
+  "title": "Record",
+  "description": "DRAFT until ADR 0061 is Accepted (F3-WO1). ADR 0061 D1 to D5: one record of the F3 store, an envelope with a discriminator on `record_type` (`component` 1.0.0 and `parameter_set` 1.0.0 core, `assay` 0.1.0 preview), the type's members beside it, every object closed. Identity (D2) is the SHA-256 of the canonical JSON of the normalised record without its top-level `volatile` member; `volatile` is the closed volatile set. A record is normalised (`openflowsheet.records.normalize`) before it is validated: an optional member equal to `null`, `[]` or `{}` is removed, so the schema is read against that form. Rules a JSON Schema cannot state (units and kinds, identifiers, anchors, correlation forms, validity ranges, provenance sources, uniqueness of keys; D6, D7) are `openflowsheet.records.validate`'s. A v1 reader refuses `record_format` (ADR 0002 D7.5).",
+  "type": "object",
+  "required": [
+    "record_format",
+    "record_type",
+    "type_version",
+    "id",
+    "name",
+    "sources"
+  ],
+  "properties": {
+    "record_format": {
+      "const": "openflowsheet-record-v2"
+    },
+    "record_type": {
+      "description": "A registered `record_type` id (ADR 0060 D1).",
+      "type": "string",
+      "pattern": "^[A-Za-z][A-Za-z0-9_-]*(\\.[A-Za-z0-9][A-Za-z0-9_-]*)*$(?!\\n)"
+    },
+    "type_version": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$(?!\\n)"
+    },
+    "id": {
+      "$ref": "#/$defs/record_id"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "sources": {
+      "type": "object",
+      "minProperties": 1,
+      "propertyNames": {
+        "pattern": "^[a-z0-9][a-z0-9._-]*$(?!\\n)"
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/source"
+      }
+    },
+    "legacy": {
+      "$ref": "#/$defs/legacy"
+    },
+    "uncertainty_statement": {
+      "type": "string"
+    },
+    "volatile": {
+      "$ref": "#/$defs/volatile"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "record_type": {
+            "const": "component"
+          }
+        },
+        "required": [
+          "record_type"
+        ]
+      },
+      "then": {
+        "$ref": "#/$defs/component"
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "record_type": {
+            "const": "parameter_set"
+          }
+        },
+        "required": [
+          "record_type"
+        ]
+      },
+      "then": {
+        "$ref": "#/$defs/parameter_set"
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "record_type": {
+            "const": "assay"
+          }
+        },
+        "required": [
+          "record_type"
+        ]
+      },
+      "then": {
+        "$ref": "#/$defs/assay"
+      }
+    }
+  ],
+  "unevaluatedProperties": false,
+  "$defs": {
+    "record_id": {
+      "description": "D1: the v1 id pattern; the record's suggested component (or set) id.",
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$(?!\\n)"
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$(?!\\n)"
+    },
+    "phase": {
+      "description": "D3: a phase token, `ig`, `aq`, `l` or `s:<form>`.",
+      "type": "string",
+      "pattern": "^(ig|aq|l|s:[A-Za-z0-9][A-Za-z0-9_-]*)$(?!\\n)"
+    },
+    "source": {
+      "description": "D1: one cited source. `version` is required.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "version"
+      ],
+      "properties": {
+        "version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "citation": {
+          "type": "string"
+        },
+        "licence_stated": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "url": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "legacy": {
+      "description": "D1, D12: written by the legacy importer only. `file` is the repository-relative path of a packaged source file: a source identifier, not a local path.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "profile",
+        "file",
+        "file_sha256"
+      ],
+      "properties": {
+        "profile": {
+          "type": "string",
+          "minLength": 1
+        },
+        "file": {
+          "type": "string",
+          "pattern": "^(?:(?!\\.\\.?/)[^/\\\\\\u0000-\\u001f]+/)*(?!\\.\\.?$)[^/\\\\\\u0000-\\u001f]+$(?!\\n)"
+        },
+        "file_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "position": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "file_fields": {
+          "type": [
+            "object",
+            "null"
+          ]
+        }
+      }
+    },
+    "headers": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "volatile": {
+      "description": "D2: the closed volatile set, excluded from identity. Every member is optional and no other member exists, so what moves the SHA is a schema fact (Q9.A1).",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "retrieved_at": {
+          "description": "RFC 3339 date-time.",
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}[Tt ][0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]+)?([Zz]|[+-][0-9]{2}:[0-9]{2})$(?!\\n)"
+        },
+        "request": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "url": {
+              "type": "string"
+            },
+            "method": {
+              "type": "string"
+            },
+            "query": {
+              "type": "array",
+              "items": {
+                "type": "array",
+                "prefixItems": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  }
+                ],
+                "minItems": 2,
+                "items": false
+              }
+            },
+            "headers": {
+              "$ref": "#/$defs/headers"
+            }
+          }
+        },
+        "response": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "status": {
+              "type": "integer"
+            },
+            "headers": {
+              "$ref": "#/$defs/headers"
+            }
+          }
+        },
+        "mirror_url": {
+          "type": "string"
+        },
+        "fetch_duration_s": {
+          "type": "number",
+          "minimum": 0
+        },
+        "local_path": {
+          "type": "string"
+        },
+        "adapter_version": {
+          "type": "string"
+        },
+        "host": {
+          "type": "string"
+        }
+      }
+    },
+    "uncertainty": {
+      "description": "D4.",
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "enum": [
+            "standard",
+            "expanded",
+            "bound"
+          ]
+        },
+        "absolute": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "relative": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "coverage_factor": {
+          "type": [
+            "number",
+            "null"
+          ]
+        }
+      }
+    },
+    "input": {
+      "description": "D4: an input hash, tagged by what it hashes. `record`: a record SHA (`path` null); `file`: the SHA-256 of a file's LF-normalised bytes (`path` its repository-relative path).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "scheme",
+        "sha256"
+      ],
+      "properties": {
+        "scheme": {
+          "enum": [
+            "record",
+            "file"
+          ]
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "path": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "provenance": {
+      "description": "D4 (Q9.R4): per entry. `origin` and `inputs` are sets. An empty `origin`, or a `source` that is not a key of `sources`, is `provenance_invalid` (D7).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "origin",
+        "derivation",
+        "source"
+      ],
+      "properties": {
+        "origin": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "measured",
+              "computed",
+              "estimated",
+              "synthetic"
+            ]
+          }
+        },
+        "derivation": {
+          "enum": [
+            "direct",
+            "fitted",
+            "generated"
+          ]
+        },
+        "source": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9._-]*$(?!\\n)"
+        },
+        "inputs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/input"
+          }
+        },
+        "transformation": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "constant": {
+      "description": "D3: `kind` a registered quantity kind (`schemas/units.json`), `unit` its SI unit; the dimension is derived from the kind.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "value",
+        "unit",
+        "kind",
+        "provenance"
+      ],
+      "properties": {
+        "value": {
+          "type": "number"
+        },
+        "unit": {
+          "type": "string",
+          "minLength": 1
+        },
+        "kind": {
+          "type": "string",
+          "minLength": 1
+        },
+        "uncertainty": {
+          "$ref": "#/$defs/uncertainty"
+        },
+        "provenance": {
+          "$ref": "#/$defs/provenance"
+        },
+        "meaning": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "note": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "validity": {
+      "description": "D4, D5: `{variable: [lo, hi]}`, lo < hi (D7 `validity_range_invalid`).",
+      "type": [
+        "object",
+        "null"
+      ],
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "number"
+          }
+        ],
+        "minItems": 2,
+        "items": false
+      }
+    },
+    "entry_fields": {
+      "description": "D4: an entry's members. `form` `constant` takes `value`, `unit` and `kind`; a correlation form takes `coefficients`, whose names are exactly the form's.",
+      "type": "object",
+      "required": [
+        "property",
+        "form",
+        "provenance"
+      ],
+      "properties": {
+        "property": {
+          "description": "A core property id of the record type, or `<namespace>.<name>`.",
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]*(\\.[A-Za-z0-9][A-Za-z0-9_.-]*)?$(?!\\n)"
+        },
+        "phase": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/phase"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "form": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9_-]*(\\.[A-Za-z0-9][A-Za-z0-9_-]*)*$(?!\\n)"
+        },
+        "value": {
+          "type": "number"
+        },
+        "unit": {
+          "type": "string",
+          "minLength": 1
+        },
+        "kind": {
+          "type": "string",
+          "minLength": 1
+        },
+        "coefficients": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "number"
+          }
+        },
+        "validity": {
+          "$ref": "#/$defs/validity"
+        },
+        "uncertainty": {
+          "$ref": "#/$defs/uncertainty"
+        },
+        "provenance": {
+          "$ref": "#/$defs/provenance"
+        },
+        "meaning": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "note": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "if": {
+        "properties": {
+          "form": {
+            "const": "constant"
+          }
+        },
+        "required": [
+          "form"
+        ]
+      },
+      "then": {
+        "required": [
+          "value",
+          "unit",
+          "kind"
+        ],
+        "not": {
+          "required": [
+            "coefficients"
+          ]
+        }
+      },
+      "else": {
+        "required": [
+          "coefficients"
+        ],
+        "allOf": [
+          {
+            "not": {
+              "required": [
+                "value"
+              ]
+            }
+          },
+          {
+            "not": {
+              "required": [
+                "unit"
+              ]
+            }
+          },
+          {
+            "not": {
+              "required": [
+                "kind"
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "entry": {
+      "description": "D4: a component entry; (property, phase) unique.",
+      "allOf": [
+        {
+          "$ref": "#/$defs/entry_fields"
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "set_entry": {
+      "description": "D5: a parameter-set entry, D4's entry plus `indices` (component keys); (property, phase, indices) unique.",
+      "allOf": [
+        {
+          "$ref": "#/$defs/entry_fields"
+        }
+      ],
+      "required": [
+        "indices"
+      ],
+      "properties": {
+        "indices": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "formation": {
+      "description": "D3: Δf h° and s° at T° = 298.15 K, P° = 1e5 Pa, per unit amount.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "phase",
+        "h"
+      ],
+      "properties": {
+        "phase": {
+          "$ref": "#/$defs/phase"
+        },
+        "h": {
+          "$ref": "#/$defs/constant"
+        },
+        "s": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/constant"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "transition": {
+      "description": "D3: Δ_aφ h° and Δ_aφ s° at (T°, P°), Q2.R8's bridge datum.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "from",
+        "to",
+        "h"
+      ],
+      "properties": {
+        "from": {
+          "$ref": "#/$defs/phase"
+        },
+        "to": {
+          "$ref": "#/$defs/phase"
+        },
+        "h": {
+          "$ref": "#/$defs/constant"
+        },
+        "s": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/constant"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "identifiers": {
+      "description": "D3: a CAS number with a valid check digit, an InChIKey `^[A-Z]{14}-[A-Z]{10}-[A-Z]$` (D7 `identifier_invalid`). Stored as given; lookup keys are normalised (D9).",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "cas": {
+          "type": "string",
+          "minLength": 1
+        },
+        "inchi": {
+          "type": "string",
+          "minLength": 1
+        },
+        "inchikey": {
+          "type": "string",
+          "minLength": 1
+        },
+        "formula": {
+          "type": "string",
+          "minLength": 1
+        },
+        "smiles": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "elements": {
+      "description": "D3: element amount per unit amount of the component (per mol, per segment-mol or per kg), symbols from the 118 elements.",
+      "type": [
+        "object",
+        "null"
+      ],
+      "minProperties": 1,
+      "propertyNames": {
+        "enum": [
+          "H",
+          "He",
+          "Li",
+          "Be",
+          "B",
+          "C",
+          "N",
+          "O",
+          "F",
+          "Ne",
+          "Na",
+          "Mg",
+          "Al",
+          "Si",
+          "P",
+          "S",
+          "Cl",
+          "Ar",
+          "K",
+          "Ca",
+          "Sc",
+          "Ti",
+          "V",
+          "Cr",
+          "Mn",
+          "Fe",
+          "Co",
+          "Ni",
+          "Cu",
+          "Zn",
+          "Ga",
+          "Ge",
+          "As",
+          "Se",
+          "Br",
+          "Kr",
+          "Rb",
+          "Sr",
+          "Y",
+          "Zr",
+          "Nb",
+          "Mo",
+          "Tc",
+          "Ru",
+          "Rh",
+          "Pd",
+          "Ag",
+          "Cd",
+          "In",
+          "Sn",
+          "Sb",
+          "Te",
+          "I",
+          "Xe",
+          "Cs",
+          "Ba",
+          "La",
+          "Ce",
+          "Pr",
+          "Nd",
+          "Pm",
+          "Sm",
+          "Eu",
+          "Gd",
+          "Tb",
+          "Dy",
+          "Ho",
+          "Er",
+          "Tm",
+          "Yb",
+          "Lu",
+          "Hf",
+          "Ta",
+          "W",
+          "Re",
+          "Os",
+          "Ir",
+          "Pt",
+          "Au",
+          "Hg",
+          "Tl",
+          "Pb",
+          "Bi",
+          "Po",
+          "At",
+          "Rn",
+          "Fr",
+          "Ra",
+          "Ac",
+          "Th",
+          "Pa",
+          "U",
+          "Np",
+          "Pu",
+          "Am",
+          "Cm",
+          "Bk",
+          "Cf",
+          "Es",
+          "Fm",
+          "Md",
+          "No",
+          "Lr",
+          "Rf",
+          "Db",
+          "Sg",
+          "Bh",
+          "Hs",
+          "Mt",
+          "Ds",
+          "Rg",
+          "Cn",
+          "Nh",
+          "Fl",
+          "Mc",
+          "Lv",
+          "Ts",
+          "Og"
+        ]
+      },
+      "additionalProperties": {
+        "type": "number",
+        "exclusiveMinimum": 0
+      }
+    },
+    "segment_type": {
+      "description": "Preview (X20): a copolymer segment type, `segment_mol` only.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "molar_mass"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/record_id"
+        },
+        "molar_mass": {
+          "$ref": "#/$defs/constant"
+        },
+        "elements": {
+          "$ref": "#/$defs/elements"
+        }
+      }
+    },
+    "set_component": {
+      "description": "D5: a component of a parameter set, matched by record SHA or by InChIKey when a data lock is built (D10).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "key",
+        "match"
+      ],
+      "properties": {
+        "key": {
+          "type": "string",
+          "minLength": 1
+        },
+        "match": {
+          "type": "object",
+          "additionalProperties": false,
+          "minProperties": 1,
+          "maxProperties": 1,
+          "properties": {
+            "record": {
+              "$ref": "#/$defs/sha256"
+            },
+            "inchikey": {
+              "description": "D3's InChIKey pattern.",
+              "type": "string",
+              "pattern": "^[A-Z]{14}-[A-Z]{10}-[A-Z]$(?!\\n)"
+            }
+          }
+        }
+      }
+    },
+    "component": {
+      "description": "D3: the `component` payload (record type `component` 1.0.0).",
+      "required": [
+        "synthetic",
+        "amount_basis",
+        "charge",
+        "elemental_verification"
+      ],
+      "properties": {
+        "type_version": {
+          "const": "1.0.0"
+        },
+        "synthetic": {
+          "type": "boolean"
+        },
+        "synonyms": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "identifiers": {
+          "$ref": "#/$defs/identifiers"
+        },
+        "amount_basis": {
+          "enum": [
+            "mol",
+            "segment_mol",
+            "kg"
+          ]
+        },
+        "charge": {
+          "type": "integer"
+        },
+        "molar_mass": {
+          "$ref": "#/$defs/constant"
+        },
+        "elements": {
+          "$ref": "#/$defs/elements"
+        },
+        "elemental_verification": {
+          "enum": [
+            "VERIFIED",
+            "PENDING",
+            "FAILED",
+            "NOT_APPLICABLE"
+          ]
+        },
+        "anchor_phase": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/phase"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "formation": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/formation"
+          }
+        },
+        "transitions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/transition"
+          }
+        },
+        "entries": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/entry"
+          }
+        },
+        "segment_types": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/segment_type"
+          }
+        }
+      }
+    },
+    "parameter_set": {
+      "description": "D5: the `parameter_set` payload (record type `parameter_set` 1.0.0).",
+      "required": [
+        "components",
+        "entries",
+        "synthetic"
+      ],
+      "properties": {
+        "type_version": {
+          "const": "1.0.0"
+        },
+        "components": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/set_component"
+          }
+        },
+        "entries": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/set_entry"
+          }
+        },
+        "validity": {
+          "$ref": "#/$defs/validity"
+        },
+        "synthetic": {
+          "type": "boolean"
+        },
+        "data_set": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "assay": {
+      "description": "Preview (X21 owns the payload): any members beside the envelope.",
+      "properties": {
+        "type_version": {
+          "const": "0.1.0"
+        }
+      },
+      "additionalProperties": true
+    }
+  }
+}

@@ -1193,6 +1193,30 @@
     },
     "admission_report": {
       "$ref": "https://github.com/frankp/process-runtime/schemas/registry-snapshot.schema.json#/$defs/admission_report"
+    },
+    "record_finding": {
+      "$ref": "https://github.com/frankp/process-runtime/schemas/record-results.schema.json#/$defs/record_finding"
+    },
+    "effective_rights": {
+      "$ref": "https://github.com/frankp/process-runtime/schemas/record-results.schema.json#/$defs/effective_rights"
+    },
+    "rights_row": {
+      "$ref": "https://github.com/frankp/process-runtime/schemas/record-results.schema.json#/$defs/rights_row"
+    },
+    "record_page": {
+      "$ref": "https://github.com/frankp/process-runtime/schemas/record-results.schema.json#/$defs/record_page"
+    },
+    "record_view": {
+      "$ref": "https://github.com/frankp/process-runtime/schemas/record-results.schema.json#/$defs/record_view"
+    },
+    "record_registration_result": {
+      "$ref": "https://github.com/frankp/process-runtime/schemas/record-results.schema.json#/$defs/record_registration_result"
+    },
+    "record_validation_report": {
+      "$ref": "https://github.com/frankp/process-runtime/schemas/record-results.schema.json#/$defs/record_validation_report"
+    },
+    "rights_assessment_result": {
+      "$ref": "https://github.com/frankp/process-runtime/schemas/record-results.schema.json#/$defs/rights_assessment_result"
     }
   }
 }

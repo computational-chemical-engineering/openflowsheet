@@ -83,6 +83,13 @@ OPERATION_RIGHTS: Final[Mapping[str, Right]] = {
     # ADR 0060 D11 (F1, ADR 0019 Amendment 7): the extension registry's listing and admission
     "list_capabilities": "read",
     "check_admission": "read",
+    # ADR 0061 D13 (F3, ADR 0019 Amendment 8): the record store; `assess_rights` vets data, so
+    # it needs `policy`, which the default agent grant (draft, execute, read) does not hold
+    "search_records": "read",
+    "get_record": "read",
+    "register_record": "draft",
+    "validate_record": "read",
+    "assess_rights": "policy",
     # raw export (Python, CLI, HTTP)
     "artifact_bytes": "read",
 }

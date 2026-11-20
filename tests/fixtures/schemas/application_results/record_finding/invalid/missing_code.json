@@ -1,0 +1,8 @@
+{
+  "expect_error": "'code' is a required property",
+  "document": {
+    "params": {
+      "component": "user.xenonol"
+    }
+  }
+}
