@@ -795,7 +795,8 @@ def test_f4_an_unpinned_machine_cannot_claim_an_exact_replay(
     _, manifest = bundle
     for variable in THREAD_VARIABLES:
         monkeypatch.delenv(variable, raising=False)
-    unpinned = capture()
+    # A registered Linux template (X07a ruling R1.5): the rung under test is the pins one.
+    unpinned = replace(capture(), architecture="x86_64", os_name="Linux")
 
     assert not unpinned.threads_known()
     mode, reasons = decide_mode(unpinned, unpinned)
@@ -815,7 +816,7 @@ def test_s3_the_blas_identity_decides_the_mode(bundle: tuple[Path, Any]) -> None
     code a BLAS build feeds.
     """
     _, manifest = bundle
-    recorded = manifest.environment
+    recorded = replace(manifest.environment, architecture="x86_64", os_name="Linux")
     assert recorded.blas["name"] in recorded.identity()
 
     other_vendor = replace(recorded, blas={**recorded.blas, "name": "mkl"})
