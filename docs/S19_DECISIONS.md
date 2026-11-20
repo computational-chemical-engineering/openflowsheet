@@ -4114,3 +4114,9 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   then the reviewer round (D-20, D-22/Q-4, Q-10, Q-11).
 - 2026-11-20, hub filed ofs-x07a-pywin32-lock (A to C as sent; hub agrees A). ofs-x07a-pywin32-licence closed (v4):
   licence half done, marker pin not done, superseded by ofs-x07a-pywin32-lock. Act on the new card only on VERIFIED.
+- **2026-11-20, ofs-x07a-pywin32-lock `VERIFIED`** (A "Separate Windows lock", signed 08:23Z, key 032ee0a5ae620a90;
+  hub's doorbell, verified here with the exact action text). Build in X07a-WO6 (opus-engineer, brief
+  `docs/briefs/X07a-WO6.md` on wp/X07a 7d0ac888): requirements-windows.lock (R-624 pattern), requirements.lock
+  byte-identical (ead4edf1), R-1063 amended, Q-12 closed; then the Windows remainder from run 44683830734's
+  successor 44699040945. `executed` after WO6 delivers. Run 44683830734 (head 51f7fcae): all legs green but
+  windows-latest (pre-WO5). WO-P0 pin engineer at ~230k context, waiting on its own background job.
