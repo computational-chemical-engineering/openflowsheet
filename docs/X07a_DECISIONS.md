@@ -151,6 +151,10 @@ Brief: `docs/briefs/X07a-WO1.md`. Branch `wp/X07a`, base `main` c4a91a75. Build 
   its D2.2 floor 1e-8 against values of 1.8e-8 and 5.5e-8. The ruling's default (no floor for the
   margin) does not cover the two regularity paths, which F-5 did not show. Not chosen (stop
   condition "a P3b classification that the policy's text does not settle"); the row stands.
+- Q-10 (WO3, row X07a-L5): TH-C1's companion (b) on macOS differs in `certificate_id` (a digest,
+  compared for value: P3b names this as a comparator departure) and `energy.overall.closure` (a
+  near-zero closure with no floor). Fixing the comparison changes `run.compare` on every platform:
+  not chosen; the row stands.
 - Q-3 (WO2, macOS run 44629506428): floating-point differences against Linux-recorded fixtures,
   for example `test_every_registered_call_is_bitwise_the_baseline[kernel_targets]`
   (`_same(1.9163045025588417, 1.9163045025588423)`), `test_the_fixtures_are_what_real_runs_emit_today`
@@ -184,33 +188,42 @@ of ids are equal.
 | Row | Test node(s) | Platform | Class | Numbers (P3a) | Run | Lifted by |
 | --- | --- | --- | --- | --- | --- | --- |
 | X07a-L1 | `tests/test_t05b_kernel_inert.py::test_the_baseline_is_what_the_generator_emits_today`, `::test_every_registered_call_is_bitwise_the_baseline` (all groups) | macOS, Windows | bitwise (P2) | `kernel_targets` 1.9163045025588417 against 1.9163045025588423: 3 ulp, 3.5e-16 relative (F-5) | 44629506428, 44652504290 | never by registration: a baseline recorded or measured bit-identical on the platform (`BITWISE_BASELINE_PLATFORMS`) |
-| X07a-L2 | `tests/test_st_cli.py::test_th_c1_golden[csv,json,text]` | macOS, Windows | bitwise (P2); companions on every leg: (a) `test_th_c1_the_goldens_are_the_formatters_image_of_the_json_golden`, (b) `test_th_c1_a_fresh_solve_is_the_json_golden_under_the_policy` | (b) measures it | 44629506428, 44652504290 | as X07a-L1 |
+| X07a-L2 | `tests/test_st_cli.py::test_th_c1_golden[csv,json,text]`, `::test_output_writes_the_file_and_prints_nothing` (the CSV golden's bytes) | macOS, Windows | bitwise (P2); companions on every leg: (a) `test_th_c1_the_goldens_are_the_formatters_image_of_the_json_golden`, (b) `test_th_c1_a_fresh_solve_is_the_json_golden_under_the_policy` | (b) measures it | 44629506428, 44652504290 | as X07a-L1 |
 | X07a-L3 | `tests/test_m03_schemas.py::test_the_fixtures_are_what_real_runs_emit_today`, fixture `study/sensitivity_result/valid/b1_forward_phase_boundary.json` | macOS | policy-bounded (P3c) | macOS against Linux, bound max(1e-9 rel, floor): `qualification.outcomes[8].splits[1].margin` and `qualification.splits[1].margin` 1.3370443359361772e-05 against 1.3370443389781883e-05, 3.04e-14, bound 1.34e-14 (no floor), ratio 2.28; `qualification.regularity.inverse_one_norm_estimate` 563097.6782451527 against 563097.6769593855, 1.29e-3, bound 5.63e-4 (its D2.2 floor, absolute 0.0), ratio 2.28; `qualification.regularity.solution_error_bound_scaled` 5.5097787861064925e-08 against 1.7963045774504667e-08, 3.71e-8, bound 1e-8 (its D2.2 floor), ratio 3.71; `refusals[0].message` float 0 of its text, the margin's numbers (ADR 0025 D6) | 44652504290 | Q-4 (classification, P3b) or the platform's registration with an ADR 0067 D7 record |
+| X07a-L5 | `tests/test_st_cli.py::test_th_c1_a_fresh_solve_is_the_json_golden_under_the_policy` (X07a-L2's companion (b)) | macOS | policy-bounded (P3c) | `<root>.certificate_id` 'cert-47d7a759d62a' against 'cert-a23b2407ff55' (a digest compared for value); `<root>.energy.overall.closure` a near-zero closure, relative 1e-9 with no registered floor (ADR 0007 D2.3); full values in the leg's log | 44670029066 | Q-10 (P3b classification) or registration with a D7 record |
 | X07a-L4 | `tests/test_opt_replay.py::test_g13_the_committed_record_replays_to_match_without_ipopt`, `::test_g11_replay_imports_neither_pyomo_nor_cyipopt`, `::test_g13_reproduce_imports_and_replays_an_optimization_record`, `::test_g13_the_cli_replays_an_optimization_record` | macOS, Windows | replay-committed (P1c): OPT-A2 was written on x86-64 Linux | - | 44652504290 | the platform's registration (ruling E-3) |
 
-## Position (handoff, WO2 at its context cap, 2026-11-20)
+## Position (handoff, WO3 at its context cap, 2026-11-20)
 
-WO2 commits: 8b1c7671 harvest rows (D-13), ba9df838 CI bound and summary (D-14, D-15),
-d0df7e9f test portability (D-16 to D-18), ae03bd40 Windows limits (rows above), 9e41c79a and
-a24a0bf3 docs (D-19), then `check.sh -rsfE` and the manifest moved to a24a0bf3.
+WO3 commits: b27c69a1 C1 (Amendment 3, revertible alone) + A1 test; 769c87f9 and 6b9feca2 K05
+templates and the CI-matrix guard (C3); ea13e879 F0 M7 (C4, A5); 2d65dda8 conftest rows (C5, C6);
+9773c361 docs (A11) and this log; 6193bac5 M03 POSIX names (Windows); then rows L2 (CSV file) and
+L5 with this Position.
 
-CI run 44652504290 (head a24a0bf3): ubuntu-latest, ubuntu-24.04-arm, default-install success;
-macos-latest failure in Run checks (155 failed, the same set as run 44629506428 minus the two
-harvest tests: Q-2 replay platforms and Q-3 floating point; no new class) and F0 M7 (Q-2);
-codehealth informational (D-19); windows-latest was still running at the cap. Local: touched
-tests 656 passed (9e41c79a); harvest and manifest tests 46 passed, 13 skipped; F0 PASS.
+Run 44670029066 (head 9773c361): ubuntu-latest and ubuntu-24.04-arm success; macos-latest 12
+failed (was 155), F0 PASS there with the R1.4 line (M7 52/52, M2/M3/M5 equal), the 7
+`bitwise_baseline_off_platform` skips are L1 (4) and L2 (3); windows-latest still running at the
+cap. A10: every node passed on a Linux leg in 44652504290 passes in 44670029066 (the 7 apparent
+losses are the old d2fb0252 manifest parameters and one address-named parameter); 0 newly skipped.
+Local: touched modules 410 passed; F0 PASS (ref-x86-64); mypy clean; codehealth arch 0/0.
 
-Windows, open (run 44618922484, a5f53590, before the WO2 fixes): 294 failures and errors. WO2
-fixed or named about 130 (bash, ":", SIGKILL, W5 base tree, V17/W7a harness); 54 more are Q-2.
-Not yet classified, about 110 in clusters: `test_m02_experiments.py` 14 (attempts end
-`environment_unavailable` instead of `timed_out`/`environment_changed`: the experiment child does
-not start on Windows, undiagnosed), `test_t07_v17_reference.py` 12, `test_x02_wo4_external.py` 8
-(outcome None), `test_m05_retake_digest_only.py` 6 (host keys), `test_s16_test_impact.py` 4
-(WinError 32, a file held open), `test_st_cli.py` 4, `test_rel_release_gate.py` 4,
-`test_m07_journey_record.py` 4, `test_m02_wo10_coupled.py` 4, and about 40 singletons.
+macOS left (not Q-2; Q-3 candidates not yet classified, one row each needed under P1 to P5):
+`test_m02_schemas.py::test_g1a_...` (standin_loop.json), `test_t05b_candidate_answers.py::test_b34a`
+(outcome counts), `test_t06_w30_holdout.py` and `test_t06_w6_a85.py` `test_a85b[NET-02/03]`
+(split columns), `test_m01_provider.py::test_f2[10025791.149338447]`, `test_m02_wo10_coupled.py::
+test_rp2b`; other classes: `test_t07_w7a_harness.py::test_token_placement`, `test_v02a_r347`,
+`test_p03_a30_workload.py::test_s9_5`. L5 (TH-C1 companion b) was added from this run and is
+untested on the leg.
 
-Next: read windows-latest of the newest run (`gh api repos/{owner}/{repo}/actions/jobs/<id>/logs`,
-then `grep '^FAILED\|^ERROR'` now that `check.sh` passes `-rsfE`); classify the clusters above,
-first `test_m02_experiments.py` (one root cause likely covers M02/X02). The manifest
-`evidence/X07a/a24a0bf3f4f534ebf61fc908c1c9dd7e3a2df218/manifest.json` stays `implemented`; any change to its limitations or
-checks needs new T08 harvest rows (D-13) and `HARVEST_SIZE` unchanged unless the counts change.
+Not done: the manifest move (A11 second bullet: limitations naming Amendment 3 as proposed and the
+two unregistered platforms; needs new T08 harvest rows, `scripts/t08_support_matrix.py --check`
+gives their sha256); A6's logged `lock_sha256` per leg (F0 M7 passing on macOS implies a verified
+lock there, Q-6 yes on macOS); Windows (this class and WO2's clusters, which now include path
+separators, CRLF, WinError 32, signal 2, the experiment child `environment_unavailable`).
+
+Open for the reviewer: D-20 (the not-rerun note vs "exactly one reason"), D-22 and Q-4 (two
+regularity paths), Q-10 (L5: `certificate_id` is a digest compared for value, P3b's own example
+of a departure; the closure has no floor). X07a's merge waits on Frank accepting Amendment 3.
+
+Next: read windows-latest of 44670029066 and of the next run; rows for the macOS list above; the
+manifest move with harvest rows.

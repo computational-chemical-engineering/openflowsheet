@@ -269,6 +269,7 @@ def test_a_view_of_another_document_is_refused(solved: Solved) -> None:
     assert refused.value.code == "internal_error"
 
 
+@pytest.mark.bitwise_baseline(row="X07a-L2")
 def test_output_writes_the_file_and_prints_nothing(
     bundle: Path, tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
