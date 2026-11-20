@@ -1,14 +1,14 @@
 """`syn001.column` as a flowsheet unit (S11 design note §4.7, ADR 0050 D6).
 
 Authority `docs/derivations/S11-design.md` §4.7. The column is embedded, not wrapped: in a
-flowsheet it contributes S02/S06's own rows (`column.declared_rows(..., links=...)`), its inlet
-pin rows become link rows to the connected streams, and link rows tie its two products to the
-outlet streams.
+flowsheet it contributes S02/S06's own rows (`column_rows.declared_rows(..., links=...)`), its
+inlet pin rows become link rows to the connected streams, and link rows tie its two products to
+the outlet streams.
 
 This module holds what the builder and the verifier share: `ColumnStructure`, the instance's
 configuration without any inlet state; `column_structure`, the pure parser of a revision instance
 into it; and `structural_spec`, a `ColumnSpec` whose inlet states are NaN and carry only the
-declared phase, which may be passed to `declared_rows(..., links=...)`, `column_solve.
+declared phase, which may be passed to `declared_rows(..., links=...)`, `column_compile.
 lifted_splits`, `zero_flow_forms`, `closure_types` and `split_temperatures` and to nothing else
 (§4.7.2).
 
@@ -175,7 +175,7 @@ class ColumnStructure:
 
 def structural_spec(structure: ColumnStructure) -> ColumnSpec:
     """§4.7.2: the `ColumnSpec` whose inlet states are `n = (nan,)*C, T = nan, P = nan` with the
-    declared phase. Only for `declared_rows(..., links=...)`, `column_solve.lifted_splits`,
+    declared phase. Only for `declared_rows(..., links=...)`, `column_compile.lifted_splits`,
     `zero_flow_forms`, `closure_types` and `split_temperatures`: none of them reads an inlet
     value."""
     nan = math.nan

@@ -8,9 +8,8 @@ single phase. There is no condenser, reboiler or reflux (S01 spec §1; those are
 specification object, the declarations and the cascade's ids, `cascade_rows` the §2 declared rows
 built from `models.rows` and `cascade_init` the §6 analytic initializer `s01-kremser-cmo-v1`; this
 module holds the §5 refusals, the per-stage regime forms of §4.2 and the §4.6 closed-form answer
-for an all-dormant cascade. It keeps re-exporting the names the frozen `column_unit` imports
-through it until W5 (ADR 0076 I-8, I-19). Compiling, the isothermal pre-solve and the
-`solve_region` call are WO-2's.
+for an all-dormant cascade. Compiling, the isothermal pre-solve and the `solve_region` call are
+WO-2's.
 
 **Every stage is one lifted split, PH-type** (S01 spec §4.1): its mixed inflow `m_j` is lifted
 (DECISION 3), so `feed = m_j`, and its energy row fixes `T_j`. Equilibrium is written
@@ -46,33 +45,29 @@ from openflowsheet.models.syn001 import (
     T_MIN,
 )
 from openflowsheet.models.syn001.cascade_failure import (
-    CascadeFailure as CascadeFailure,
+    CascadeFailure,
 )
 from openflowsheet.models.syn001.cascade_init import _inflow_sum, _inlet_columns
 from openflowsheet.models.syn001.cascade_rows import declared_problem, declared_rows
-from openflowsheet.models.syn001.cascade_spec import _TOKEN as _TOKEN
-from openflowsheet.models.syn001.cascade_spec import BOTTOM as BOTTOM
-from openflowsheet.models.syn001.cascade_spec import TOP as TOP
 from openflowsheet.models.syn001.cascade_spec import (
     CascadeSpec,
+    InletState,
     PlacedInlet,
     _phase,
     energy_row_id,
+    inlet_stream,
     label_column,
     label_row_id,
     liquid_id,
     liquid_total_id,
     mixed_id,
     stage_duty_id,
+    stage_pressure_id,
+    stage_row_id,
+    stage_temperature_id,
     vapor_id,
     vapor_total_id,
 )
-from openflowsheet.models.syn001.cascade_spec import InletState as InletState
-from openflowsheet.models.syn001.cascade_spec import SideFeed as SideFeed
-from openflowsheet.models.syn001.cascade_spec import inlet_stream as inlet_stream
-from openflowsheet.models.syn001.cascade_spec import stage_pressure_id as stage_pressure_id
-from openflowsheet.models.syn001.cascade_spec import stage_row_id as stage_row_id
-from openflowsheet.models.syn001.cascade_spec import stage_temperature_id as stage_temperature_id
 from openflowsheet.models.syn001.tp_state import enthalpy_flow, single_phase_admissible
 from openflowsheet.thermo import Phase, PropertyProvider, StreamState
 
@@ -523,15 +518,10 @@ class _NoAlgebra:
 _NO_ALGEBRA: Final = _NoAlgebra()
 
 __all__ = [
-    "BOTTOM",
     "INLET_PHASES",
-    "TOP",
-    "CascadeFailure",
     "DormantAnswer",
     "EnergyPrecheck",
-    "InletState",
     "RegimeForm",
-    "SideFeed",
     "dormant_answer",
     "energy_precheck",
     "is_dormant",
