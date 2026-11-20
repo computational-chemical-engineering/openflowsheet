@@ -326,7 +326,7 @@ def runs(tmp_path_factory: pytest.TempPathFactory) -> dict[str, Any]:
             out[name] = {"route": route, "unsupported": error.code, "directory": directory}
             continue
         reproduction = reproduce_bundle(
-            directory, rerun=True, rerun_directory=root / f"{name}.rerun", run_id="rerun"
+            directory, rerun=True, rerun_directory=root / f"{directory.name}.rerun", run_id="rerun"
         )
         out[name] = {
             "route": route,
