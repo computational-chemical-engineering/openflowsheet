@@ -126,6 +126,11 @@ FROZEN_WINDOWS_LIMITS: dict[str, str] = {
         "(core.fileMode=false), and M07a.A13 holds the file byte-identical, so the index "
         "staging fix is held back"
     ),
+    "tests/test_m07a_v0_2_gate.py::test_a07_t08_a50_s_and_r_151_s_states_give_v0_1_s_answers": (
+        "X07a platform limit: its chmod makes no mode change where git has no executable bit "
+        "(core.fileMode=false), and M07.A31(b) holds the file to the 0.2 alpha's tagged tests, "
+        "so the index staging fix is held back"
+    ),
 }
 
 
