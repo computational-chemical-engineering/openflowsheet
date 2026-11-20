@@ -1005,10 +1005,52 @@ class CoolPropHeosProvider:
             return _refused("error", str(error))
 
     def _evaluate(self, request: PropertyRequest, phase_properties: set[str]) -> PropertyResult:
-        fluid = self._fluid
+        """The requested values and derivatives of a request `evaluate_phase`'s ladder admitted.
+
+        Refused, in order: by `_saturation_range_refusal` (Psat or Tsat asked outside the range
+        where saturation is answered, or Tsat's bounds not converged); by `_phase_answer` when a
+        phase property is asked (the `near_critical` box, the rule's saturation not converged, a
+        phase the rule does not answer, the density root not converged); then by
+        `_saturation_answers` (Psat's saturation or Tsat not converged). A CoolProp exception
+        raises `_EvaluationError`, which `evaluate_phase` refuses.
+        """
         state = request.state
         t, p = state.temperature, state.pressure
         asked = set(request.properties)
+        refusal_of_range = self._saturation_range_refusal(asked, t, p)
+        if refusal_of_range is not None:
+            return refusal_of_range
+
+        answer: _Answer = {}
+        saturation: _Saturation | None = None
+        if asked & phase_properties:
+            phase_answer = self._phase_answer(request, t, p)
+            if isinstance(phase_answer, PropertyResult):
+                return phase_answer
+            answer, saturation = phase_answer
+        saturation_answer = self._saturation_answers(asked, t, p, saturation)
+        if isinstance(saturation_answer, PropertyResult):
+            return saturation_answer
+        answer |= saturation_answer
+
+        values = {name: answer[name][0] for name in request.properties}
+        derivatives = self._requested_derivatives(request, answer)
+        return PropertyResult(
+            status="ok",
+            phase_signature=request.phase,
+            values=values,
+            derivatives=derivatives,
+            provider_id=PROVIDER_ID,
+            reference_convention=REFERENCE_CONVENTION,
+        )
+
+    def _saturation_range_refusal(
+        self, asked: set[str], t: float, p: float
+    ) -> PropertyResult | None:
+        """The `no_saturation` refusal (`unsupported`) when Psat is asked above T_σ,max or Tsat at
+        a pressure outside `_tsat_bounds()`, `saturation_not_converged` when those bounds do not
+        converge, else None (spec §6.3)."""
+        fluid = self._fluid
         if "Psat" in asked and t > fluid.t_sigma_max:
             return _refused(
                 "unsupported",
@@ -1024,47 +1066,75 @@ class CoolPropHeosProvider:
                     "unsupported",
                     f"no_saturation: Tsat at {p!r} Pa outside [{low!r}, {high!r}] Pa",
                 )
+        return None
 
-        answer: _Answer = {}
-        saturation: _Saturation | None = None
-        if asked & phase_properties:
-            if self._near_critical(t, p):
-                return _refused(
-                    "unsupported", f"near_critical: {t!r} K, {p!r} Pa is inside the refused box"
-                )
-            rule = self._rule(t, p)
-            if rule is None:
-                return self._not_converged(f"at {t!r} K")
-            if request.phase not in rule.answered:
-                return _refused(
-                    "unsupported",
-                    f"phase_not_stable: {request.phase} at {t!r} K, {p!r} Pa; answered "
-                    f"{list(rule.answered)}",
-                )
-            saturation = rule.saturation
-            if saturation is None and t < fluid.t_c:
-                # The strip (T_σ,max, T_c): without a saturation, the T ≥ T_c bracket (D3).
-                saturation = self._saturation(t)
-            rho = self._density(t, p, request.phase, saturation)
-            if rho is None:
-                return _refused(
-                    "not_converged",
-                    f"density_not_converged: {request.phase} at {t!r} K, {p!r} Pa",
-                )
-            answer = self._at(t, rho, p)
+    def _phase_answer(
+        self, request: PropertyRequest, t: float, p: float
+    ) -> tuple[_Answer, _Saturation | None] | PropertyResult:
+        """The requested phase's six properties at (T, P) with the saturation the phase rule used,
+        or the refusal (S05 §4.2, §4.4).
+
+        In order: `near_critical` inside the refused box, `saturation_not_converged` when `_rule`
+        returns None, `phase_not_stable` when the rule does not answer the requested phase, and
+        `density_not_converged` when `_density` returns None. The saturation is the rule's; in the
+        strip (T_σ,max, T_c), where the rule uses none, it is `_saturation(t)`.
+        """
+        fluid = self._fluid
+        if self._near_critical(t, p):
+            return _refused(
+                "unsupported", f"near_critical: {t!r} K, {p!r} Pa is inside the refused box"
+            )
+        rule = self._rule(t, p)
+        if rule is None:
+            return self._not_converged(f"at {t!r} K")
+        if request.phase not in rule.answered:
+            return _refused(
+                "unsupported",
+                f"phase_not_stable: {request.phase} at {t!r} K, {p!r} Pa; answered "
+                f"{list(rule.answered)}",
+            )
+        saturation = rule.saturation
+        if saturation is None and t < fluid.t_c:
+            # The strip (T_σ,max, T_c): without a saturation, the T ≥ T_c bracket (D3).
+            saturation = self._saturation(t)
+        rho = self._density(t, p, request.phase, saturation)
+        if rho is None:
+            return _refused(
+                "not_converged",
+                f"density_not_converged: {request.phase} at {t!r} K, {p!r} Pa",
+            )
+        return self._at(t, rho, p), saturation
+
+    def _saturation_answers(
+        self, asked: set[str], t: float, p: float, saturation: _Saturation | None
+    ) -> _Answer | PropertyResult:
+        """Psat and Tsat with their (T, P) derivatives, those of the two that are asked, or the
+        refusal (S05 §3.5); empty when neither is asked.
+
+        Psat takes `saturation` (`_phase_answer`'s) when it is at T, else solves `_saturation(t)`;
+        refused `saturation_not_converged` when that solve, or then `_tsat(p)`, returns None.
+        """
+        entries: _Answer = {}
         if "Psat" in asked:
             if saturation is None or saturation.temperature != t:
                 saturation = self._saturation(t)
             if saturation is None:
                 return self._not_converged(f"Psat at {t!r} K")
-            answer["Psat"] = (saturation.pressure, self._saturation_slope(saturation), 0.0)
+            entries["Psat"] = (saturation.pressure, self._saturation_slope(saturation), 0.0)
         if "Tsat" in asked:
             solved = self._tsat(p)
             if solved is None:
                 return self._not_converged(f"Tsat at {p!r} Pa")
-            answer["Tsat"] = (solved[0], 0.0, solved[1])
+            entries["Tsat"] = (solved[0], 0.0, solved[1])
+        return entries
 
-        values = {name: answer[name][0] for name in request.properties}
+    @staticmethod
+    def _requested_derivatives(
+        request: PropertyRequest, answer: _Answer
+    ) -> dict[str, dict[str, float]]:
+        """Each requested property's derivatives with respect to the requested inputs: ∂/∂T and
+        ∂/∂P are the answer's own, ∂/∂n is 0.0 (a pure fluid's intensive properties). Keyed by
+        property, then input, in request order; empty when no derivative is asked."""
         derivatives: dict[str, dict[str, float]] = {}
         if request.derivatives:
             slot = {"T": 1, "P": 2}
@@ -1073,14 +1143,7 @@ class CoolPropHeosProvider:
                     wanted: answer[name][slot[wanted]] if wanted in slot else 0.0
                     for wanted in request.derivatives
                 }
-        return PropertyResult(
-            status="ok",
-            phase_signature=request.phase,
-            values=values,
-            derivatives=derivatives,
-            provider_id=PROVIDER_ID,
-            reference_convention=REFERENCE_CONVENTION,
-        )
+        return derivatives
 
     def _not_converged(self, where: str) -> PropertyResult:
         detail = f"{_NOT_CONVERGED_SAT}: {where}"
