@@ -4264,3 +4264,15 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   c4a91a75, the a07 node in `conftest.FROZEN_WINDOWS_LIMITS` (win32 skip), a row in X07a_DECISIONS. 436 passed in the
   four files; F0 PASS 9/9; requirements.lock ead4edf1 unchanged. CI 44736771069 running.
 - 2026-11-20, job 548 (w5p1-3, WO-P1 step 3 `_derivatives`) PASS 20/20 (step 488, 8.7 -> 0; pr_c1 debt 0). WO-P1 chain all PASS. R-W5-P1 launched (reviewer, Opus; brief `S19-R-W5-P1.md`). gate_report: standing selected-share ALERT only.
+- **2026-11-20, R-W5-P1 (reviewer, Opus): merge with batch P, no fixes.** Reran the dump at 2eae72a8 and 65504942:
+  47128 records, sha256 07e423b9 both. (1) S1: every removed line reappears verbatim (indent, elif->if after a
+  return, assignment->return, `total` as argument); each helper called once; `total_flow` read counts per path
+  unchanged; the moved read neutral (pure sum, under `if request.derivatives`, finite by `_domain_violation`). (2)
+  Refusal ladders keep the parent's order; first refusal identical. (3) Identity: every hunk only partly executed by
+  F0; 43 changed executable lines F0 never runs (the refusal rungs, `_phase_root`'s pure-NH3 VAPOR branch, flash
+  `no_liquid`/metastable/undersaturated); the dump reaches each. W5-S1, S4, S7 confirmed (new import `Callable`,
+  stdlib). (4) `_mixing_rule_terms`, `_root_derivatives` equal pr_lib's but `range(5)` (and a citation); the refusal
+  helpers differ (a shared module is not a pure move). DECISION: the coverage record also lists partly executed hunks
+  (k < n) and the census names their branches, from WO-P2 on -> batch brief amendment. Alternative: unchanged.
+  Reversible by: dropping the amendment. Optional docstring citation at pr_c1.py:647 not taken (no gain on a tier 3
+  file). Note: step 3's message says 1680 roots, the census 1689.
