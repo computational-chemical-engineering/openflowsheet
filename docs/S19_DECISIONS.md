@@ -4493,3 +4493,10 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   "### Changed" entry on wp/S19 (changelog tests 34 passed). After the merge: `git diff 4e85fe6b <merge>` docs
   only, patch_noop and F0 on wp/S19; the `needs_coolprop` tests read K's legacy.json and run only on CI's CoolProp
   leg (W5-K8).
+- 2026-11-20, X07a CI 44773324184 at 94b38dae: all legs green except Windows, 1 failed of 17186:
+  test_rel_evidence_manifest.py::test_rel_a20_over_0_3_0s_committed_records, "RP.S08 same form: fail; S13 V03.A08
+  pass: DIFFERS" (the same single failure at 335c09bf, CI 44770741082). At db051d9c the test stopped on RP.S03
+  first (the loop ends at the first differing key), so S08 was hidden until WO9 set S03 aside (X07a-L12). WO10 did
+  not touch it. X07a-WO11 (opus-engineer, Opus; brief `<briefs>/X07a-WO11.md`): find the cause, make the assertion
+  message carry the child's failing ids, fix with a forced-Windows Linux test, or report a design-lane finding;
+  no set-aside without a registered row. Launched.
