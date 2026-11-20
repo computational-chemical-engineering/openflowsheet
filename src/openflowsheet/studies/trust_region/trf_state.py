@@ -107,6 +107,8 @@ def framework_readiness(
     The keyword arguments replace what is measured, so a test can present a patched version
     string, a changed module byte or another executable (G2) without touching the environment.
     Pyomo is located without importing it; it is imported (for `pyomo.version`) only when present.
+    The three checks, in this order, are `_pyomo_version_reasons`, `_trf_module_reasons` and
+    `_trsp_executable_reasons`.
     """
     if version is None and importlib.util.find_spec("pyomo") is None:
         return FrameworkReadiness(
@@ -121,6 +123,17 @@ def framework_readiness(
             ),
         )
     reasons: list[ReadinessReason] = []
+    reasons += _pyomo_version_reasons(version)
+    reasons += _trf_module_reasons(module_dir)
+    reasons += _trsp_executable_reasons(executable)
+    return FrameworkReadiness("UNSUPPORTED" if reasons else "READY", tuple(reasons))
+
+
+def _pyomo_version_reasons(version: str | None) -> list[ReadinessReason]:
+    """The Pyomo pin's reason (`TRUST_REGION_FRAMEWORK_UNPINNED`) when `version`, or the
+    installed `pyomo.version.version` when it is None (imported here), is not `PYOMO_VERSION`;
+    empty when it is."""
+    reasons: list[ReadinessReason] = []
     if version is None:
         version = str(importlib.import_module("pyomo.version").version)
     if version != PYOMO_VERSION:
@@ -130,6 +143,16 @@ def framework_readiness(
                 f"pyomo.version.version is {version!r}; the adapter is pinned to {PYOMO_VERSION}",
             )
         )
+    return reasons
+
+
+def _trf_module_reasons(module_dir: Path | None) -> list[ReadinessReason]:
+    """The TRF modules' reasons (`TRUST_REGION_FRAMEWORK_UNPINNED`) in `module_dir`, or, when it
+    is None, in the `TRF_PACKAGE` directory `find_spec` locates (without importing the package):
+    one that `TRF_PACKAGE` is not present when there is no directory, else one per module of
+    `TRF_MODULE_SHA256` whose SHA-256 (None for a missing file) is not the pinned one, in that
+    table's order. Empty when every module matches."""
+    reasons: list[ReadinessReason] = []
     if module_dir is None:
         try:
             spec = importlib.util.find_spec(TRF_PACKAGE)
@@ -152,6 +175,14 @@ def framework_readiness(
                         f"{TRF_PACKAGE}/{name} has SHA-256 {measured}; pinned {expected}",
                     )
                 )
+    return reasons
+
+
+def _trsp_executable_reasons(executable: Path | None) -> list[ReadinessReason]:
+    """The subproblem solver's reason (`TRSP_SOLVER_UNAUDITED`) when `executable`, or
+    `trsp_executable()` when it is None, is not a file or its SHA-256 is not
+    `TRSP_EXECUTABLE_SHA256`; empty when it is the audited executable."""
+    reasons: list[ReadinessReason] = []
     if executable is None:
         executable = trsp_executable()
     if not executable.is_file():
@@ -168,7 +199,7 @@ def framework_readiness(
                     f"is {TRSP_EXECUTABLE_SHA256}",
                 )
             )
-    return FrameworkReadiness("UNSUPPORTED" if reasons else "READY", tuple(reasons))
+    return reasons
 
 
 # -- the registered configurations (D4, D8) -------------------------------------------------------
