@@ -4211,3 +4211,14 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
 - 2026-11-20 ~17:30, before self-reset: gate_report "ALERT selected share 0% < 75%" (standing) and "ALERT queue wait
   median 93 min > 15 min" (three full-suite merge-checks of the pin lane in the window); queue idle (COUNT 523),
   action unchanged. No agent of this session running.
+- **2026-11-20 ~12:15 CET, L_P measured (WO-P0, orchestrator part; method 3.1).** Scratch `scratch/S19-w5-LP`
+  e8ba7d0a = 9f4eecea + one ruff-formatted comment line in each of the 5 batch P files (`pr_c1`, `iapws95`,
+  `wilson_ig`, `coolprop_heos`, `_coolprop_heos_fluids`), committed, never merged. Job 545 `w5lp-probe` (merge-check,
+  full suite): 27 failed, 20533 passed, 107 skipped, 1077 s. F0 `M1 50/50, M2 FAIL 9/61, M3 FAIL 9/61, M4 61/61, M5
+  61/61, M6 FAIL 8/85, M7 52/52, M8 105/105, M9 FAIL 5/35` (1+3+5 runs, 4 provider pairs, 5 files: the ruling's 3.2
+  rows summed); registry check fails on `builtin-sha256.txt` only. L_P = the ruling's 26 (G1 5, G2 4, G2' 2, S10 A26
+  under its WO-1b name, S11 A75, both L01 A22, G4 11) plus `test_s19_w5_gate.py::test_s2_the_real_chain_passes_a_
+  comment_edited_tier_3_step` (fix round 1's test; it takes HEAD as B, so any tier 3 byte off the registry fails its
+  predict: an identity reach, passes again at K). No surprise. DECISION: batch P's admitted set = the 5 tier 3 files
+  below health 9.0 (`wilson_ig_v2.py` 9.0 stays frozen). Alternative: all 6. Reversible by: an amendment before the
+  first step. B_P = this commit (docs only since 9f4eecea, so the probe holds).
