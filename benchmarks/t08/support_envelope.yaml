@@ -9729,37 +9729,37 @@ harvest:
   class: P
   to: []
   note: 'provenance note: witness tolerances and escalation numerics not re-examined (ruling scope)'
-- manifest: evidence/F3/361c62077359aa8efb5cacbcfa0d4b020c0d5d71/manifest.json
+- manifest: evidence/F3/6c82b53518775945b00f4a8c2e4fcee09b995c20/manifest.json
   item: limitations[0]
-  sha256: 1637384a8ed3f22d5af14c963fc063a597a9280f0624a89b488bce8a7803e11c
+  sha256: f8b0bb0811ab60e5f8165adc661b799f27f76434ce69b272f39eaaa6b78d8739
   class: P
   to: []
-  note: 'provenance note: software verification of the component-data records and their five MCP operations; implemented until CI, not reviewed'
-- manifest: evidence/F3/361c62077359aa8efb5cacbcfa0d4b020c0d5d71/manifest.json
+  note: 'provenance note: software verification of the component-data records and their five MCP operations; tested at CI run 44709885423, not reviewed'
+- manifest: evidence/F3/6c82b53518775945b00f4a8c2e4fcee09b995c20/manifest.json
   item: limitations[1]
-  sha256: 5a98007e503545477b60db80d867d466ce0cf7391334fd4bb0c318e85e7507f5
+  sha256: 4542b9e5b75d24069f94443aafbb8f2cc215c5ef40995d9f9aee12fc3d4ba242
   class: P
   to: []
-  note: 'process note: review records; the five human description reviews wait for Frank (REVIEW.json); the one expected red'
-- manifest: evidence/F3/361c62077359aa8efb5cacbcfa0d4b020c0d5d71/manifest.json
+  note: 'process note: review records; the five human description reviews recorded in REVIEW.json at 6c82b535 (card ofs-f3-mcp-descriptions-human A); the expected red resolved'
+- manifest: evidence/F3/6c82b53518775945b00f4a8c2e4fcee09b995c20/manifest.json
   item: limitations[2]
   sha256: d52be78a2744fe8e56971c095a4ec4b349b819d3c290624b26d91a72b4878613
   class: P
   to: []
   note: 'process note: card ofs-f3-qf1-rational-coefficients signed A; rational coefficients an obligation on F2 (ADR 0062)'
-- manifest: evidence/F3/361c62077359aa8efb5cacbcfa0d4b020c0d5d71/manifest.json
+- manifest: evidence/F3/6c82b53518775945b00f4a8c2e4fcee09b995c20/manifest.json
   item: limitations[3]
   sha256: 2a9ce256bab3c7ab7349114a8ced69078da2db09b9b2addb03045b7960e7f153
   class: P
   to: []
   note: 'process note: the full suite''s second failure was the WO7 manifest''s schema check, removed with that manifest'
-- manifest: evidence/F3/361c62077359aa8efb5cacbcfa0d4b020c0d5d71/manifest.json
+- manifest: evidence/F3/6c82b53518775945b00f4a8c2e4fcee09b995c20/manifest.json
   item: limitations[4]
   sha256: 4dd459ff512bacf31b596e07ceebe1aafe1d5433d093a1eaf22283c6f348e0a1
   class: P
   to: []
   note: 'process note: open question for the design lane (molar_mass_inconsistent signature), none blocking; fix round 3 DECISIONs ruled in F3-rulings-2'
-- manifest: evidence/F3/361c62077359aa8efb5cacbcfa0d4b020c0d5d71/manifest.json
+- manifest: evidence/F3/6c82b53518775945b00f4a8c2e4fcee09b995c20/manifest.json
   item: limitations[5]
   sha256: fc6aa1292f6e8ac8f92671e4b6158fb2ac1c6167087701bbc1519b01a7951452
   class: P

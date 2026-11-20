@@ -1,10 +1,10 @@
 {
   "work_package": "F3",
-  "commit": "361c62077359aa8efb5cacbcfa0d4b020c0d5d71",
+  "commit": "6c82b53518775945b00f4a8c2e4fcee09b995c20",
   "requirements": [],
-  "status": "implemented",
+  "status": "tested",
   "inputs": {
-    "case_id": "ADR 0061 (Accepted, R-1050); F3 review 2 docs/reviews/F3-review-2.md (68ca5b98) and fix round 2 (afde8883); ruling round 1 docs/reviews/F3-rulings-1.md; build decisions docs/F3_DECISIONS.md; register R-1050 to R-1058; surface c_10, D_10 f7ec3c94233d30506ec2082a13c4e54d57bd540e43e97fdf877b1e3c75fed467; built-in registry_sha256 fc0af96b7ba9b7259ce3c1336cf408f41c1805259859a788c4804502c5c7bcee; fix round 3 docs/briefs/F3-fix3.md (CI 44283813577); ruling round 2 docs/reviews/F3-rulings-2.md (576f7eab), fix round 4 docs/briefs/F3-fix4.md",
+    "case_id": "ADR 0061 (Accepted, R-1050); F3 review 2 docs/reviews/F3-review-2.md (68ca5b98) and fix round 2 (afde8883); ruling round 1 docs/reviews/F3-rulings-1.md; build decisions docs/F3_DECISIONS.md; register R-1050 to R-1058; surface c_10, D_10 f7ec3c94233d30506ec2082a13c4e54d57bd540e43e97fdf877b1e3c75fed467; built-in registry_sha256 fc0af96b7ba9b7259ce3c1336cf408f41c1805259859a788c4804502c5c7bcee; fix round 3 docs/briefs/F3-fix3.md (CI 44283813577); ruling round 2 docs/reviews/F3-rulings-2.md (576f7eab), fix round 4 docs/briefs/F3-fix4.md; human review of the five MCP descriptions: Decision Desk card ofs-f3-mcp-descriptions-human, option A, recorded in REVIEW.json at 6c82b535",
     "case_hash": "1b763ed1e49766ab1bc0b3882bc7f4ffb761701729fb5689b835bbad3be4ce91",
     "environment_lock_hash": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
   },
@@ -45,7 +45,17 @@
       "exit_code": 0
     },
     {
-      "cmd": "the manifest commit (this manifest, the T08 harvest rows and HARVEST_SIZE moved to it): PYTHONPATH=src .venv/bin/python -m pytest -q -p no:cacheprovider tests/test_evidence_manifests.py tests/test_t08_w2_support_envelope.py tests/test_m07a_harvest.py, and scripts/t08_support_matrix.py --check",
+      "cmd": "CI run 44709885423 on wp/F3 at 6c82b53518775945b00f4a8c2e4fcee09b995c20 (the commit CI ran; this manifest commit sits on top of it): check (ubuntu-latest) success, check (ubuntu-24.04-arm) success, identity success, default-install success; codehealth failure, informational only: the accepted local.py duplication (DECISION F3-3-4, docs/F3_DECISIONS.md:734)",
+      "cwd": ".claude/worktrees/f3",
+      "exit_code": 0
+    },
+    {
+      "cmd": "at 6c82b535: PYTHONPATH=src .venv/bin/python -m pytest -q -p no:cacheprovider tests/test_t07_w6b_mcp.py tests/test_t07_w6c_descriptions.py tests/test_m07a_surface_chain.py tests/test_t08_w2_description_reviews.py (173 passed, including test_every_description_is_reviewed_by_both_lanes, red before the human review)",
+      "cwd": ".claude/worktrees/f3",
+      "exit_code": 0
+    },
+    {
+      "cmd": "the manifest commit at 6c82b535 (this manifest, the T08 harvest rows and HARVEST_SIZE moved to it): PYTHONPATH=src .venv/bin/python -m pytest -q -p no:cacheprovider tests/test_evidence_manifests.py tests/test_t08_w2_support_envelope.py tests/test_m07a_harvest.py, and scripts/t08_support_matrix.py --check",
       "cwd": ".claude/worktrees/f3",
       "exit_code": 0
     }
@@ -65,7 +75,7 @@
     },
     {
       "id": "F3.R2.C2.FINALLY-LINT",
-      "description": "no finally in src/ holds a return, or a break or continue that leaves it (T07 §8.1)",
+      "description": "no finally in src/ holds a return, or a break or continue that leaves it (T07 \u00a78.1)",
       "result": "pass",
       "value": "0 hits in src/; 5 adversarial cases; fails with a return added to _writing's finally"
     },
@@ -74,6 +84,18 @@
       "description": "a body exception after SQLite ended the transaction propagates unchanged, file and memory store",
       "result": "pass",
       "value": "2 passed; 2 failed before the change"
+    },
+    {
+      "id": "F3.CI.44709885423",
+      "description": "CI run 44709885423 on wp/F3 at 6c82b535: required jobs check (ubuntu-latest), check (ubuntu-24.04-arm), identity, default-install",
+      "result": "pass",
+      "value": "4 of 4 success; codehealth failure, informational, the accepted local.py duplication (DECISION F3-3-4), not green"
+    },
+    {
+      "id": "F3.HUMAN-REVIEW.MCP-DESCRIPTIONS",
+      "description": "human review of the five F3 MCP descriptions recorded in REVIEW.json at 6c82b535 (card ofs-f3-mcp-descriptions-human, option A, executed); test_every_description_is_reviewed_by_both_lanes passes",
+      "result": "pass",
+      "value": "5 entries reviewed, sha256 prefixes 3e906768 eaf900f8 de9cb3b5 7661ac4d b9c5a7f5; 173 passed in the description tests"
     }
   ],
   "artifacts": [
@@ -99,8 +121,8 @@
     }
   ],
   "limitations": [
-    "Evidence class: software verification of the component-data records and their five MCP operations against independent expectations. Status is implemented, not tested: CI has not run on this commit, and the orchestrator sets tested on CI green; when it does, commands names the CI run ID and the commit CI ran, because the manifest commit sits on top of commit. No reviewed status is claimed by the build lane.",
-    "Review records (not review fields): design-lane WO1 review, ruling round 1 (docs/reviews/F3-rulings-1.md), review 2 (68ca5b98) and fix round 2 (afde8883), ruling round 2 (docs/reviews/F3-rulings-2.md); the design-lane review of the five MCP descriptions is recorded in REVIEW.json at c1cee7e1. Frank signed Decision Desk card ofs-f3-mcp-descriptions-human, choice A; recording it in REVIEW.json waits for Frank, so test_every_description_is_reviewed_by_both_lanes is the one expected red.",
+    "Evidence class: software verification of the component-data records and their five MCP operations against independent expectations. Status is tested: CI run 44709885423 ran at 6c82b535 (the commit field); the manifest commit sits on top of it. CI result: check on both architectures, identity and default-install success; codehealth failure, informational, the accepted local.py duplication (DECISION F3-3-4, docs/F3_DECISIONS.md:734). No reviewed status is claimed by the build lane.",
+    "Review records (not review fields): design-lane WO1 review, ruling round 1 (docs/reviews/F3-rulings-1.md), review 2 (68ca5b98) and fix round 2 (afde8883), ruling round 2 (docs/reviews/F3-rulings-2.md); the design-lane review of the five MCP descriptions is recorded in REVIEW.json at c1cee7e1, and Frank's human review of them (card ofs-f3-mcp-descriptions-human, choice A) in REVIEW.json at 6c82b535, so test_every_description_is_reviewed_by_both_lanes now passes. The numerical and process-model reviews stay pending.",
     "Card ofs-f3-qf1-rational-coefficients signed A: JSON numbers only in F3; ADR 0062's [p, q] coefficients join validate_record when ADR 0062 is accepted, an obligation on F2.",
     "The full suite at 05ccf880 had two failures: the expected red above, and test_manifest_validates on the WO7 manifest (evidence/F3/ebdff46f..., a pending check result and review members the schema does not admit), which fix round 3's manifest commit (db59c345) removed; this manifest validates (the manifest commit's command).",
     "Open for the design lane: the molar_mass_inconsistent signature differs between ADR 0061 and ADR 0062. Fix round 3's DECISIONs are ruled in docs/reviews/F3-rulings-2.md.",
