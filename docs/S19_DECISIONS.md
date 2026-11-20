@@ -4661,3 +4661,14 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   Gate report (6 h): 28 gates (step 24: selected 22, full suite 2), 24 of 24 accepted, debt removed 249.0;
   "ALERT queue wait median 32 min > 15 min": the G-MAP 7 hold (no action). The selected-share ALERT is gone after the
   new map. Reviews R-W3-G1R-1 and R-W3-G3R-1 (reviewer, Opus) launched.
+- **2026-11-21, R-W3-G1R-1 (reviewer, Opus, ~103k): merge after fixes, no blocker; all 8 steps preserve behaviour.**
+  Q1 `_PlanBasis` the right home (frozen per-plan record, G1 plan E2). Q2 no code fix: `_screened_evaluation`'s
+  docstring lists no types (rule 10 all-or-none met); the commit message a805a1c9's list is partial (also
+  BudgetExhaustedError, region.py:1065): rule-10 note, no run-time effect. Q3 resolve_mass: V3's float comparison
+  and refusal texts/order unchanged. Q4 V1-V4 ladder verbatim. Q5 agreed: `_homotopy`/`_ptc_attempt`/
+  `_LiftedOps.__init__` belong to the W4 parameter-object item. Fixes (mass.py, docstrings): `_entries` said
+  ValueError for a missing unit; it is KeyError (`MassMapping.wiring` values never None; the ValueError branch is
+  dead, kept for a later declared literal drop; commit f8cd422e's message makes the same wrong claim); resolve_mass
+  names its three helpers (rule 7). Applied by the orchestrator: 9bab9e72, job 604 g1r1-fix no-gain. Notes:
+  `_retained_rows`/`_owning_region` at the floor of a helper (accepted: spec concepts); `_validation_refusal` could
+  be `_mapping_refusal`. Merge-check: one helper for G1R and G3R after R-W3-G3R-1.
