@@ -57,28 +57,41 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 - G1 (orchestrator/, numerics/): W3 lanes N and O closed 2026-11-19 (272011be); residuals executor.py (PR-1b, 6.1 -> 9.0, gating) and `_solve_region`'s parameter object (W4).
 - G-END (below) stays the end criterion for the whole repository.
 
-## Next actions (2026-11-20 ~12:30 CET)
+## Next actions (2026-11-20 ~16:40 CET)
 
-**Position:** main = c4a91a75. wp/S19 = this commit. MB 756e1c12. Runner PID 1341562 (COUNT 524 after job 545).
-cce-code-health 34a30bf. Agent running: WO-P1 engineer (opus-engineer, brief `S19-W5-P1.md`, worktree
-`.claude/worktrees/s19-w5p`, branch `wp/S19-w5p` from B_P 2eae72a8). CI to read: X32 44720447549 (2725fa7d), X07a
-44722847460 / 44722847356 (f498a3a6). On each result: gate_report, log. Re-arm `$Q wait --since <COUNT>`.
+**Position:** main = c4a91a75. wp/S19 = this commit. MB 756e1c12. Runner PID 1341562. cce-code-health 34a30bf.
+Agents running: none. Background waits at reset (their notices reach the new context): gate queue `wait --since 532`
+(jobs 554 w5p3-3, 555 w5p3-4 gating); F3 CI 44758521457 at 6cf2a1de; X07a CI 44736771069 at da4c03b0. On each gate
+result: gate_report, log. Re-arm `$Q wait --since <COUNT from $Q status>`.
 
-1. **W5 batch P (after FR-1, ADR 0077).** WO-P0 done: tool part merged (d98b2ca4); B_P 2eae72a8, L_P 27 (job 545),
-   gate file `<git-common-dir>/codehealth/briefs/S19-W5-batchP.json` (455b595e), brief `S19-W5-batchP.md`. Running:
-   WO-P1 `thermo/pr_c1.py`, WO-P2 iapws95, WO-P3 wilson_ig
-   (S11 A75 amended), B7. Reviews: S1 cadence (every 3 steps); identity rulings on `model: fable`. FR-1 conditions:
-   the pin, close before the 0.5.0 RC cut, a release note naming the moved providers.
-   Lessons (R-W5-L-close): ruff before `w5_gate.py close` (the close record is write-once); `git diff --name-only
-   K..tip` inside the close paths plus fixtures; at the S19 -> main merge recheck that R-1061 is unique.
+0. **F3 merge into main IN FLIGHT** (card ofs-f3-merge-main A, VERIFIED 2026-11-20 by this session; act once): step 1
+   done (main merged into wp/F3 as 6cf2a1de, pushed; S19_DECISIONS). When CI 44758521457 is green on both
+   architectures: in a clean worktree on `main`, `git merge --no-ff wp/F3` (merge commit, message names the card),
+   `PYTHONPATH=src .venv/bin/python scripts/corpus_identity.py --check` (F0) on main, push main only if F0 PASS
+   (`git -c credential.helper='!gh auth git-credential' push origin main`), then ArtifactData update of the card
+   (`decisions/ofs-f3-merge-main`, version 2) with `executed: {at, by, result}`. If CI is red: do not merge; log, fix
+   on wp/F3, rerun CI (the card stays valid for exactly this action).
+1. **W5 batch P (FR-1, ADR 0077).** B_P 2eae72a8, L_P 27, gate file `<git-common-dir>/codehealth/briefs/S19-W5-batchP.json`
+   (455b595e), brief `S19-W5-batchP.md` (with the 2026-11-20 coverage amendment). Lane `wp/S19-w5p` (worktree
+   s19-w5p) at ae2d5f81: WO-P1 pr_c1 4.6 -> 9.0 (jobs 546-548 PASS, R-W5-P1 merge), WO-P2 iapws95 6.2 -> 8.5 (549-551
+   PASS, R-W5-P2 merge), WO-P3 wilson_ig 6.9 -> 9.2 (552, 553 PASS; 554, 555 gating; R-W5-P3 merge). Next: WO-P4 = B7
+   (ruling section 8: the generator `docs/derivations/scripts/s07_reference.py` emits eight modules; a retarget commit
+   for `tests/test_s07_registration.py:143` before the step; B7-C1..C4; needs the CoolProp extra env for C2, C4):
+   write brief `S19-W5-P4.md` (pattern S19-W5-P3.md; expected S2 from B7 on: the CoolProp keys only), launch
+   opus-engineer. Then WO-P5 coolprop_heos.py (6.4), then WO-P6 close (R5, K1-K6, F-3 WILSON_V1_SHA256, F-4 L01 ruling
+   for pr_c1, release note). FR-1: close before the 0.5.0 RC cut. Reviewer notes for later steps: dump states
+   `((0.0,), 200.0, 1e5)` (iapws95 row order) and a record failing schema and string checks (wilson `_header`).
+   Dump harnesses: `-P`, never `-I` with PYTHONPATH (rule in S19-W3-common.md; WO-N3 and WO-P1 re-checked, hold).
+   Lessons (R-W5-L-close): ruff before `w5_gate.py close`; `git diff --name-only K^..K` inside close paths plus
+   fixtures; at the S19 -> main merge recheck that R-1061 is unique.
 2. Three non-W5 `retarget` rows in i19_scan (column_acceptance.saturation_pairs, region_attempts.solve_ptc,
    region_problem.check_opening): open build-lane item for a later lane.
 3. **0.5:** X07a: WO6 delivered (wp/X07a f498a3a6, ~30 commits): requirements-windows.lock (pywin32 312 hashed, installed
    before the main lock, D-30; requirements.lock unchanged ead4edf1); card ofs-x07a-pywin32-lock executed; WO5's
    regression of tests/test_t08_w4_v0_1_gate.py (M07a.A13 registered bytes) restored ebe513d9; Windows 39 -> 38 failed
    before the last fixes; left: floating-point P3 sets (st_cli TH-C1 json/csv, opt_cost_lca 1.75e-12 vs 1e-13, m04 a34
-   undiagnosed, m04_quadratic a49, m03_schemas) for the design lane. CI 44722847460 / 44722847356 at f498a3a6 running:
-   read them first (`gh run view <id> --json jobs`). Next: the X07a reviewer round (D-20, D-22/Q-4, Q-10, Q-11, D-28 to
+   undiagnosed, m04_quadratic a49, m03_schemas) for the design lane. CI 44722847356 at f498a3a6 red on all legs (two released-record
+   tests); X07a-WO7 fixed it (da4c03b0, pushed; CI 44736771069 running): read it first. Next: the X07a reviewer round (D-20, D-22/Q-4, Q-10, Q-11, D-28 to
    D-31) and the P3 rows, then a merge card via hub. X01-WO1 part A delivered, manifest `tested`, CI green; next for
    X01: a reviewer pass, then a merge card via hub; open B, C, Q-1..Q-3 for the design lane (`docs/X01_DECISIONS.md`
    on wp/X01); X01 selectability moved to 0.6 (R-1065). F3: ADR 0061 accepted (R-1050); human review recorded
