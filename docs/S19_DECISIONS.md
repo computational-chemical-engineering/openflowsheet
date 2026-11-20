@@ -4531,3 +4531,21 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   branches deleted (as batch L). W5 (batches N, L, P) is complete. G-END at 7b70da4c: debt 2314.5 (<= 1900 open),
   health 8.89 (>= 9.0 open), brain 0, no huge_file, arch 0/0 at depth 4; below 7.0 only studies/nlp/verification.py
   6.1. Self-reset next (milestone).
+
+## 2026-11-20 ~20:40 resume after self-reset: G-MAP 7 build, G1 and G3 residue lanes
+
+- Gate report (6 h): "ALERT selected share 0% < 75% of step gates" (8 of 8 step gates fell back to the full suite,
+  cause: collection-time code, the W5 provider tiers). Action: the W5 milestone map. G-MAP 7 build at the wp/S19 tip
+  c6957580: runner 1341562 stopped (queue empty, COUNT 561), detached worktree `/tmp/claude-1000/-home-eajfpeters-Code-OpenFlowsheet/e9f8087c-6030-428f-b826-770779f39f95/scratchpad/map7`, `.venv-testmap`,
+  PYTEST_ADDOPTS=--timeout=900, TMPDIR ~/.cache/openflowsheet/tmp-map, 8 workers, no `--deselect`, log
+  `/tmp/claude-1000/-home-eajfpeters-Code-OpenFlowsheet/e9f8087c-6030-428f-b826-770779f39f95/scratchpad/map7.log`. Criteria as G-MAP 5 (exit 0 or 1; at least 20516 tests; failures a subset of the B-6 four + f6;
+  no unsure test in a file over ~60 s). On the result: judge, set MB, restart the runner (`$Q run --detach`),
+  remove map7.
+- DECISION (next lanes, the state file's item 1): two W3 residue lanes from c6957580, both opus-engineer (Opus):
+  G1R (`wp/S19-g1r`, orchestrator/: revision.py, execution.py, then <= 4 S1 steps on mass/region_attempts/
+  region_problem; brief `<briefs>/S19-W3-G1R-1.md`) and G3R (`wp/S19-g3r`, studies/ trust_region + nlp residue,
+  verification.py excluded under R-W3-G3-5 (b); brief `<briefs>/S19-W3-G3R-1.md`). Alternative: application/
+  (218.1 debt, 12 files) first. Reversible by: dropping the lane branches. Lanes keep MB 756e1c12 from their base.
+- verification.py (6.1) is the one file below G-END's 7.0 floor and needs a design-lane ruling on
+  `verify_candidate` (R-W3-G3-5 (b): a test pinning `assessment_not_evaluable`, `phase_rows_not_evaluable` and
+  the stop record first). Added as item (v) of the batched design round.
