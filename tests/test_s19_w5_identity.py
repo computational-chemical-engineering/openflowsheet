@@ -812,6 +812,7 @@ T4_LITERAL = ("OMEGA_A: Final = 0.45724\n", "OMEGA_A: Final = 0.45725\n")
 M02 = "m02/C1-FLASH-F1-M02-v1"
 WILSON = f"{THERMO}/wilson_ig.py"
 IAPWS95 = f"{THERMO}/iapws95.py"
+WILSON_V2 = f"{THERMO}/wilson_ig_v2.py"
 #: Runs F0 in full: only where its line holds (M4 and M6's trails are judged on `ref-x86-64`).
 reference_only = pytest.mark.skipif(
     w5.corpus_identity().reference_class() != "ref-x86-64",
@@ -1098,14 +1099,17 @@ def _pinned_f0(tree: Path) -> tuple[Any, str, w5.Moved]:
 
 
 @reference_only
-def test_t3_the_pinned_f0_of_three_tier_3_edits_passes(scratch: Path) -> None:
-    """W5-T3, the edits of x5, x6 and x7 together: the pinned F0 is the base's line."""
-    for name in (PR_C1, IAPWS95, WILSON):
+def test_t3_the_pinned_f0_of_the_six_tier_3_edits_passes(facts: w5.Facts, scratch: Path) -> None:
+    """W5-T3, the edits of x5, x6 and x7 and of the other three tier 3 files (`wilson_ig_v2.py`
+    and the CoolProp pair) together: the pinned F0 is the base's line."""
+    tier_3 = (PR_C1, IAPWS95, WILSON, WILSON_V2, *w5.COOLPROP_FILES)
+    assert sorted(tier_3) == sorted(w5.tiers(facts)[3])
+    for name in tier_3:
         _append(scratch, name, COMMENT)
     done, line, _ = _pinned_f0(scratch)
     assert done.returncode == 0, done.stdout[-3000:]
     assert line == T3_LINE
-    assert done.stdout.splitlines()[-1].startswith("pin PASS: base 8d31b89ea3f8, |E| 3, pinned 3")
+    assert done.stdout.splitlines()[-1].startswith("pin PASS: base 8d31b89ea3f8, |E| 6, pinned 6")
 
 
 @reference_only
