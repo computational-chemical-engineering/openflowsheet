@@ -4631,3 +4631,7 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   STOP: diagnostic only, `_scratch_tree_diagnosis` in test_v03_v0_3_gate.py (tree count, missing records, untracked,
   core.longpaths, check-ignore -v, add -n), first line of the a08 assertion; Linux bytes identical, REL.A20 PASS.
   8c41d541 pushed (gh credential helper again); CI 44826386637 decides the cause.
+- **2026-11-20 ~23:10, G-MAP 7 (map at c6957580): PASS with the standing note; MB moved to c6957580.** 20672 tests,
+  20558 passed, 109 skipped, 5 failed = the B-6 four + f6 (within the criterion); wall 4611 s, 26.6 MB; unsure-file
+  note as G-MAP 3-6 (test_m04_wo9). map7 removed; runner restarted (PID 3031640); 22 jobs pending (562-583). Lanes
+  g1r, g3r, g3v, w5pg keep MB 756e1c12 from their bases.
