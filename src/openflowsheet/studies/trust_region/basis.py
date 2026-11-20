@@ -302,7 +302,8 @@ def curvature(
     p(w) = Σ_j m_j v_j (w_j − w0_j) / Σ_j m_j v_j² (R-400 steps 7 and 8), an `affine_curvature`
     basis. At w₀ every added term is an exact zero, so b(w₀) and ∇b(w₀) are `affine`'s bitwise.
     A float argument (an eliminated zero flow, R-296) takes no term, as in `affine`; a non-zero
-    v_j for one, or a float that differs from its w0_j, is a `ValueError`."""
+    v_j for one, or a float that differs from its w0_j, is a `ValueError`
+    (`_check_float_arguments`)."""
     frozen_gradient = tuple(float(entry) for entry in gradient)
     frozen_w0 = tuple(float(entry) for entry in w0)
     frozen_v = tuple(float(entry) for entry in direction)
@@ -314,18 +315,26 @@ def curvature(
 
     def build(args: Sequence[Any]) -> Any:
         terms = list(zip(frozen_gradient, args, frozen_w0, frozen_v, frozen_m, strict=True))
-        moved = [a for _, a, w, _, _ in terms if isinstance(a, float) and a != w]
-        if moved:
-            raise ValueError(f"a constant argument {moved!r} differs from its start value")
-        along = [v for _, a, _, v, _ in terms if isinstance(a, float) and v != 0.0]
-        if along:
-            raise ValueError(f"the path moves an eliminated zero flow (v = {along!r})")
+        _check_float_arguments(terms)
         variable = [(g, a, w, v, m) for g, a, w, v, m in terms if not isinstance(a, float)]
         taylor = frozen_value + sum(g * (a - w) for g, a, w, _, _ in variable)
         p = sum(m * v * (a - w) for _, a, w, v, m in variable) / norm
         return (taylor + 0.5 * frozen_c * p**2) / frozen_scale
 
     return EFBasis("affine_curvature", build)
+
+
+def _check_float_arguments(terms: Sequence[tuple[float, Any, float, float, float]]) -> None:
+    """`curvature`'s check of its float arguments over `terms` = (g_j, argument, w0_j, v_j, m_j):
+    a `ValueError` naming every float that differs from its w0_j, else one naming every non-zero
+    v_j of a float (the path moves an eliminated zero flow); nothing when neither. Pure: only
+    comparisons. `affine`'s `build` makes the first check with the same message."""
+    moved = [a for _, a, w, _, _ in terms if isinstance(a, float) and a != w]
+    if moved:
+        raise ValueError(f"a constant argument {moved!r} differs from its start value")
+    along = [v for _, a, _, v, _ in terms if isinstance(a, float) and v != 0.0]
+    if along:
+        raise ValueError(f"the path moves an eliminated zero flow (v = {along!r})")
 
 
 def _stencil(d0: float, t: float) -> tuple[str, float, float, float, float, int]:
