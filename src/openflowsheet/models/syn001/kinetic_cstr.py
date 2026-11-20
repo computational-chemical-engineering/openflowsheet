@@ -88,7 +88,7 @@ from openflowsheet.models.syn001.conversion_reactor import (
 )
 from openflowsheet.models.syn001.ph_kernel import port_enthalpy, typed_failure
 from openflowsheet.models.syn001.tp_state import single_phase_enthalpy, stream_enthalpy_terms
-from openflowsheet.thermo import Phase, PropertyProvider, StreamState
+from openflowsheet.thermo import Phase, PropertyCapabilities, PropertyProvider, StreamState
 
 MODEL_ID: Final = "syn001.kinetic_cstr"
 
@@ -252,6 +252,17 @@ class KineticCSTR:
     molar_masses: tuple[float, ...] = MOLAR_MASSES
 
     def __post_init__(self) -> None:
+        """The construction checks, in order: the inputs' shape, the outlet phase and the
+        finiteness of the scalar pins and the molar masses (`_check_well_formed`), then §A1.2's
+        construction refusals (`_check_construction`)."""
+        self._check_well_formed()
+        self._check_construction()
+
+    def _check_well_formed(self) -> None:
+        """`ValueError` for coefficient or molar-mass counts that are not the components', for
+        an outlet phase outside `OUTLET_PHASES`, for the first non-finite scalar pin in the
+        order `damkohler`, `T_ref`, `T_scale`, `coolant_flow`, `coolant_cp`, `T_coolant`,
+        `pressure_drop`, then for non-finite molar masses."""
         count = len(self.components)
         if len(self.stoichiometry) != count or len(self.molar_masses) != count:
             raise ValueError(
@@ -279,8 +290,26 @@ class KineticCSTR:
         if not all(math.isfinite(mass) for mass in self.molar_masses):
             raise ValueError(f"{self.unit_id}: molar masses {self.molar_masses} are not finite")
 
-        # §A1.2's construction refusals: the three carried from T05 §6.2 in the conversion
-        # reactor's order, then the eight new ones in the order the spec lists them.
+    def _check_construction(self) -> None:
+        """§A1.2's construction refusals: the three carried from T05 §6.2 in the conversion
+        reactor's order (`_check_stoichiometry`, then the reference convention), then the eight
+        new ones in the order the spec lists them (`_check_kinetics`). The provider's
+        `describe()` is read once, at the reference-convention rung."""
+        self._check_stoichiometry()
+        described = self.provider.describe()
+        convention = described.reference_convention
+        if convention not in REACTION_CONSISTENT_CONVENTIONS:
+            raise SpecificationError(
+                f"{reference_convention_not_reaction_consistent(convention)}\n"
+                f"{self.unit_id}: the provider's reference convention {convention!r} is not in "
+                f"ADR 0011 D2's reaction-consistent set {sorted(REACTION_CONSISTENT_CONVENTIONS)}; "
+                "a total-enthalpy balance over it would not carry an enthalpy of reaction"
+            )
+        self._check_kinetics(described)
+
+    def _check_stoichiometry(self) -> None:
+        """The first two carried refusals: `key_not_reactant`, then
+        `stoichiometry_not_mass_conserving`."""
         if self.key_component not in self.components or not (
             self.stoichiometry[self.key_index] < 0.0
         ):
@@ -301,15 +330,12 @@ class KineticCSTR:
                 f"gives sum nu_i M_i = {net} kg/mol, past {MASS_CONSERVATION_RELATIVE} x "
                 f"sum |nu_i| M_i"
             )
-        described = self.provider.describe()
-        convention = described.reference_convention
-        if convention not in REACTION_CONSISTENT_CONVENTIONS:
-            raise SpecificationError(
-                f"{reference_convention_not_reaction_consistent(convention)}\n"
-                f"{self.unit_id}: the provider's reference convention {convention!r} is not in "
-                f"ADR 0011 D2's reaction-consistent set {sorted(REACTION_CONSISTENT_CONVENTIONS)}; "
-                "a total-enthalpy balance over it would not carry an enthalpy of reaction"
-            )
+
+    def _check_kinetics(self, described: PropertyCapabilities) -> None:
+        """§A1.2's eight new refusals, in the order the spec lists them: the Damköhler number,
+        `T_scale`, the coolant flow and heat capacity, `T_ref` and `T_coolant` in the provider's
+        `T` domain (`described`, read after the first four), the pressure drop, and the rate
+        exponent at the domain's upper end."""
         if not self.damkohler >= 0.0:
             raise SpecificationError(
                 "damkohler_negative\n"
