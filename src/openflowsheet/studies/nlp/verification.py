@@ -292,8 +292,7 @@ def verify_candidate(
     # judged no further.
     if state is None or (held is not None and not admitted):
         reason = "no_simulation" if state is None else "resolve_not_certified"
-        for check in names[1:]:
-            checks[check] = VerificationCheck(check, "not_evaluated", {"reason": reason})
+        checks = _not_evaluated(checks, names[1:], reason)
         return CandidateVerification(
             decisions=values,
             checks=tuple(checks[check] for check in names),
@@ -321,25 +320,10 @@ def verify_candidate(
         evaluated = _assessment(point.spec, formulation, binding, state, values, closure)
         checks["V7"] = _regime_held(binding, state, values)
         if isinstance(evaluated, str):
-            for check in ("V3", "V5", "V6"):
-                checks[check] = VerificationCheck(
-                    check, "not_evaluated", {"reason": f"assessment_not_evaluable: {evaluated}"}
-                )
-            return CandidateVerification(
-                decisions=values,
-                checks=tuple(checks[check] for check in names),
-                objective=None,
-                constraint_values={},
-                slacks={},
-                active_set=(),
-                kkt=None,
-                certificate_id=certificate.certificate_id if certificate else None,
-                state_sha256=certificate.target_state_sha256 if certificate else None,
-                simulation_state=dict(state),
-                sensitivity=None,
-                point=point,
-                basis=basis,
+            checks = _not_evaluated(
+                checks, ("V3", "V5", "V6"), f"assessment_not_evaluable: {evaluated}"
             )
+            return _stopped(values, names, checks, point, basis)
         assessment = evaluated
     resolved = point
     at = state if assessment is None else assessment.point
@@ -350,25 +334,10 @@ def verify_candidate(
     if phase is not None and phase.rows:
         found = _phase_terms(point.spec, phase, state, values)
         if isinstance(found, str):
-            for check in ("V3", "V5", "V6"):
-                checks[check] = VerificationCheck(
-                    check, "not_evaluated", {"reason": f"phase_rows_not_evaluable: {found}"}
-                )
-            return CandidateVerification(
-                decisions=values,
-                checks=tuple(checks[check] for check in names),
-                objective=None,
-                constraint_values={},
-                slacks={},
-                active_set=(),
-                kkt=None,
-                certificate_id=certificate.certificate_id if certificate else None,
-                state_sha256=certificate.target_state_sha256 if certificate else None,
-                simulation_state=dict(state),
-                sensitivity=None,
-                point=point,
-                basis=basis,
+            checks = _not_evaluated(
+                checks, ("V3", "V5", "V6"), f"phase_rows_not_evaluable: {found}"
             )
+            return _stopped(values, names, checks, point, basis)
         rows = found
         constraints = (*constraints, *rows.constraints)
         at = {**at, **rows.point}
@@ -448,6 +417,47 @@ def _resolve_admission(
             admitted = verdict.passed
             basis = PHASE_BOUNDARY_FORM if admitted else None
     return VerificationCheck("V1", "pass" if admitted else "fail", v1), admitted, basis
+
+
+def _not_evaluated(
+    checks: Mapping[str, VerificationCheck], which: Sequence[str], reason: str
+) -> dict[str, VerificationCheck]:
+    """`checks` with each check in `which` added (in that order) as `not_evaluated` for
+    `reason`; `checks` itself is not changed."""
+    return {
+        **checks,
+        **{check: VerificationCheck(check, "not_evaluated", {"reason": reason}) for check in which},
+    }
+
+
+def _stopped(
+    values: Mapping[str, float],
+    names: Sequence[str],
+    checks: Mapping[str, VerificationCheck],
+    point: CertifiedPoint,
+    basis: str | None,
+) -> CandidateVerification:
+    """The record of a candidate judged no further after V1 admitted the re-solve `point` (the
+    assessment's or the phase rows' stop): `checks` in `names` order, no values, and the
+    re-solve's certificate, state and V1 `basis`."""
+    certificate = point.certificate
+    state = point.state
+    assert state is not None  # V1 admitted only a point with a state
+    return CandidateVerification(
+        decisions=values,
+        checks=tuple(checks[check] for check in names),
+        objective=None,
+        constraint_values={},
+        slacks={},
+        active_set=(),
+        kkt=None,
+        certificate_id=certificate.certificate_id if certificate else None,
+        state_sha256=certificate.target_state_sha256 if certificate else None,
+        simulation_state=dict(state),
+        sensitivity=None,
+        point=point,
+        basis=basis,
+    )
 
 
 # -- the assessment (E01 §4.10.3) -----------------------------------------------------------------
