@@ -266,18 +266,7 @@ def parse_records(data: bytes) -> WilsonRecords:
         document = yaml.safe_load(data.decode("utf-8"))
     except (UnicodeDecodeError, yaml.YAMLError) as error:
         raise _structure(f"not a YAML document ({error})") from None
-    _keys(document, _TOP_KEYS, _TOP_KEYS, "the file")
-    if document["schema_version"] != 1 or isinstance(document["schema_version"], bool):
-        raise _structure(f"schema_version {document['schema_version']!r} is not 1")
-    for key in ("record_schema", "data_set", "uncertainty", "data_provenance"):
-        if not isinstance(document[key], str):
-            raise _structure(f"{key} is not a string")
-    convention, synthetic = document["reference_convention"], document["synthetic"]
-    if convention not in CONVENTIONS or synthetic is not CONVENTIONS[convention]:
-        raise RecordError(
-            f"record_convention: reference_convention {convention!r} with synthetic "
-            f"{synthetic!r} is not one of {dict(CONVENTIONS)}"
-        )
+    convention, synthetic = _header(document)
     records = document["components"]
     if not isinstance(records, list) or not records:
         raise _structure("components is not a non-empty list")
@@ -325,6 +314,25 @@ def parse_records(data: bytes) -> WilsonRecords:
         data_provenance=document["data_provenance"],
         sha256=hashlib.sha256(data).hexdigest(),
     )
+
+
+def _header(document: Any) -> tuple[str, bool]:
+    """The file's reference convention and synthetic flag, after its header checks, in this order:
+    exactly the top-level keys, schema_version 1 (`record_structure`), the four string fields,
+    and a registered (reference_convention, synthetic) pair (`record_convention`)."""
+    _keys(document, _TOP_KEYS, _TOP_KEYS, "the file")
+    if document["schema_version"] != 1 or isinstance(document["schema_version"], bool):
+        raise _structure(f"schema_version {document['schema_version']!r} is not 1")
+    for key in ("record_schema", "data_set", "uncertainty", "data_provenance"):
+        if not isinstance(document[key], str):
+            raise _structure(f"{key} is not a string")
+    convention, synthetic = document["reference_convention"], document["synthetic"]
+    if convention not in CONVENTIONS or synthetic is not CONVENTIONS[convention]:
+        raise RecordError(
+            f"record_convention: reference_convention {convention!r} with synthetic "
+            f"{synthetic!r} is not one of {dict(CONVENTIONS)}"
+        )
+    return convention, synthetic
 
 
 def _checkout_records() -> Path | None:
