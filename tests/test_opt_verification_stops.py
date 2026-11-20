@@ -114,7 +114,7 @@ def _stop_fields(result: CandidateVerification) -> dict[str, Any]:
 def _expected_stop(
     point: CertifiedPoint, formulation: NlpFormulation, basis: str | None
 ) -> dict[str, Any]:
-    """The record of a stop after V1 admitted `point`: no values, the re-solve's identity."""
+    """The record of a stop after V1's stop let `point` pass: no values, the re-solve's identity."""
     assert point.certificate is not None and point.state is not None
     return {
         "decisions": _decisions(formulation),
