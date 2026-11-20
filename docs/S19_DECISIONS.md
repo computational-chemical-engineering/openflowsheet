@@ -4096,3 +4096,6 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
 - 2026-11-20, batch P: W5-S2 (the pin) is not implemented (`scripts/w5_gate.py:130` refuses P). WO-P0 tool part
   launched (opus-engineer, brief `S19-W5-P0-pin.md`, worktree s19-w5p0 from the wp/S19 tip): `pin` per W5-T3..T5,
   W5-S2 and W5-K5 wiring; B_P and L_P stay the orchestrator's, after it merges. Its review is an identity ruling.
+- 2026-11-20 ~10:30, gate_report after job 541: "ALERT selected share 0% < 75% of step gates" (standing: W5 steps on
+  hashed modules fall back on import-time code); "ALERT queue wait median 66 min > 15 min" (batch L's 13-step chain
+  was enqueued at once on two slots; the queue is idle now). Action unchanged.
