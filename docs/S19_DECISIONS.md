@@ -4198,3 +4198,16 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   harvest rows re-hashed (t08 --check 0 problems; 657 passed); pushed. Review record complete (F3-review-2, fix round 3,
   F3-rulings-2, C1-C5). DECISION-REQUEST ofs-f3-merge-main to hub (rec A: merge now after a CI run of wp/F3 + main
   tip, F0 on main; B: hold for the RC).
+- **2026-11-20, X07a-WO6 delivered (opus-engineer, Opus, ~261k; 0.5 lane).** wp/X07a f498a3a6 pushed (~30 commits),
+  CI 44722847460/44722847356 running. Part 1: requirements-windows.lock 071815c7 (pywin32==312, cp313 win_amd64 hash
+  from pip download = PyPI digest), Windows leg `pip install --no-deps --require-hashes`; DECISION D-30 (engineer):
+  installed before the main lock, since pip skips the hash check for an installed package (measured), against the
+  brief's "after"; the card's action names no order. requirements.lock unchanged (ead4edf1, checked). G19 PASS on
+  windows-latest (44703554833); t07_server_extra CRLF licence files compared as LF on Windows (D-31). R-1063 amended,
+  Q-12 closed. Card ofs-x07a-pywin32-lock `executed` written (v3). Part 2: Windows 39 (44699040945) -> 38
+  (44703554833) failed before the last fixes; WO5's 2bb2c157 had broken registered bytes of
+  tests/test_t08_w4_v0_1_gate.py (M07a.A13) on every leg, restored ebe513d9 (its chmod case a Windows limit). Left:
+  floating-point P3 sets for the design lane. Open for the reviewer: D-20, D-22/Q-4, Q-10, Q-11, D-28 to D-31.
+- 2026-11-20 ~17:30, before self-reset: gate_report "ALERT selected share 0% < 75%" (standing) and "ALERT queue wait
+  median 93 min > 15 min" (three full-suite merge-checks of the pin lane in the window); queue idle (COUNT 523),
+  action unchanged. No agent of this session running.

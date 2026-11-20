@@ -57,12 +57,11 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 - G1 (orchestrator/, numerics/): W3 lanes N and O closed 2026-11-19 (272011be); residuals executor.py (PR-1b, 6.1 -> 9.0, gating) and `_solve_region`'s parameter object (W4).
 - G-END (below) stays the end criterion for the whole repository.
 
-## Next actions (2026-11-20 ~15:30 CET)
+## Next actions (2026-11-20 ~17:30 CET)
 
 **Position:** main = c4a91a75. wp/S19 = this commit (WO-P0 tool part merged d98b2ca4). MB 756e1c12. Runner PID
-1341562, queue idle (COUNT 523). cce-code-health 34a30bf. Agents running: X07a-WO6 engineer (opus-engineer, wp/X07a,
-brief `docs/briefs/X07a-WO6.md`). Background shells: CI watches on X07a 44699040945, wp/TOK 44706297998, wp/F3 (head
-6c82b535). On each result: gate_report, log. Re-arm the queue wait with `$Q wait --since <COUNT from $Q status>`.
+1341562, queue idle (COUNT 523). cce-code-health 34a30bf. Agents running: none. Background shell: CI watch on wp/X32 2725fa7d
+(its notice reaches the new context). CI to read: X07a 44722847460, 44722847356. On each result: gate_report, log. Re-arm the queue wait with `$Q wait --since <COUNT from $Q status>`.
 
 1. **W5 batch P (after FR-1, ADR 0077).** WO-P0 tool part merged (d98b2ca4): `w5_identity.py pin` (W5-S2), `close`
    runs W5-K5 for P, gate tier `w5_pin`, `scripts/w5_hunks.py` (F0 line coverage per hunk). Next, the orchestrator's
@@ -76,24 +75,27 @@ brief `docs/briefs/X07a-WO6.md`). Background shells: CI watches on X07a 44699040
    K..tip` inside the close paths plus fixtures; at the S19 -> main merge recheck that R-1061 is unique.
 2. Three non-W5 `retarget` rows in i19_scan (column_acceptance.saturation_pairs, region_attempts.solve_ptc,
    region_problem.check_opening): open build-lane item for a later lane.
-3. **0.5:** X07a: WO4 delivered (51f7fcae: macOS rows L6-L10, two limits, Q-11; manifest moved to 9773c361; codehealth
-   CI fixed; v02a r347 bug fixed). Cards ofs-x07a-adr0007-am3 and ofs-x07a-pywin32-licence VERIFIED (both A). am3 done
-   (a60d1b54, R-1062, executed written). pywin32 in X07a-WO5 (R-1063 reserved; stop condition: a pin in
-   requirements.lock moves lock_sha256, measured first, else Q-12); licence half done (d7bb75bc); lock half is card ofs-x07a-pywin32-lock (filed, rec A: requirements-windows.lock), act on VERIFIED; the old card is closed. WO5 also does
-   the Windows clusters. Then the X07a reviewer round (D-20, D-22/Q-4, Q-10, Q-11), then a merge card via hub.
-   X01-WO1 part A delivered, manifest `tested`, CI green; next for X01: a reviewer pass, then a merge card via hub;
-   open B, C, Q-1..Q-3 for the design lane (`docs/X01_DECISIONS.md` on wp/X01). X01 selectability blocked on
-   F2/F4/F6; ADR 0052 D11 amendment open. F3: ADR 0061 accepted (R-1050); human review recorded (6c82b535); CI 44709885423 green;
-   manifest tested (955addd4); merge card ofs-f3-merge-main filed (A verbatim: "merge wp/F3 into main with a merge commit after a fresh CI run on
-   wp/F3 merged with the main tip is green on both architectures, run scripts/corpus_identity.py --check (F0) on main
-   after the merge, and push main only if F0 passes"); verify with that text, act on VERIFIED.
+3. **0.5:** X07a: WO6 delivered (wp/X07a f498a3a6, ~30 commits): requirements-windows.lock (pywin32 312 hashed, installed
+   before the main lock, D-30; requirements.lock unchanged ead4edf1); card ofs-x07a-pywin32-lock executed; WO5's
+   regression of tests/test_t08_w4_v0_1_gate.py (M07a.A13 registered bytes) restored ebe513d9; Windows 39 -> 38 failed
+   before the last fixes; left: floating-point P3 sets (st_cli TH-C1 json/csv, opt_cost_lca 1.75e-12 vs 1e-13, m04 a34
+   undiagnosed, m04_quadratic a49, m03_schemas) for the design lane. CI 44722847460 / 44722847356 at f498a3a6 running:
+   read them first (`gh run view <id> --json jobs`). Next: the X07a reviewer round (D-20, D-22/Q-4, Q-10, Q-11, D-28 to
+   D-31) and the P3 rows, then a merge card via hub. X01-WO1 part A delivered, manifest `tested`, CI green; next for
+   X01: a reviewer pass, then a merge card via hub; open B, C, Q-1..Q-3 for the design lane (`docs/X01_DECISIONS.md`
+   on wp/X01); X01 selectability moved to 0.6 (R-1065). F3: ADR 0061 accepted (R-1050); human review recorded
+   (6c82b535); CI 44709885423 green; manifest tested (955addd4); merge card ofs-f3-merge-main filed (A verbatim: "merge
+   wp/F3 into main with a merge commit after a fresh CI run on wp/F3 merged with the main tip is green on both
+   architectures, run scripts/corpus_identity.py --check (F0) on main after the merge, and push main only if F0
+   passes"); verify with that text, act on VERIFIED.
 3a. **0.5 scope (Frank, 2026-11-20, R-1065, ADR 0057 Amendment 1, on wp/REL050 84a08a84, pushed):** 0.5 is X07a,
    F1, F3, X01 plugin docs (+ parts needing no F2/F4/F6), TOK, and S19 batch P before the RC cut; F2, F8, X06 and X01
    selectability lead 0.6. Next for the line: `release/lines/0.5.json` design pass on wp/REL050. R-1064 (wp/TOK) and
    R-1065 (wp/REL050) both append to the register end: a trivial merge conflict, keep both.
 3b. **X32 (formerly TOK; 0.5, Frank 2026-11-20):** wp/X32 (worktree tok, from main), e028b835 + ae0dec21 pushed:
-   `project grant` prints the token alone on stdout (R-1064, no ADR: T07 §10.3 holds); CI 44706297998 green; manifest
-   `evidence/X32/e028b835.../manifest.json` tested. Reviewer pass running. Then into the 0.5 merge card. The user
+   `project grant` prints the token alone on stdout (R-1064, no ADR: T07 §10.3 holds); review: merge after fixes, fixes done 2725fa7d
+   (pushed). Next: when CI at 2725fa7d is green (watch was running at reset; re-read with `gh run list --branch wp/X32`),
+   move the manifest to evidence/X32/2725fa7d.../ with the ruff and mypy commands recorded (review fix 3). Then into the 0.5 merge card. The user
    report came from a student: keep the name off every record. Remote wp/TOK deleted (renamed to wp/X32).
 4. Rule: lanes touching studies/ also need the nlp-marked suite at head, failures a subset of base (g19, g20).
 5. Brief rule (I1): `codehealth scan --json PATH` writes TO PATH; use `--repo <wt> --json <scratch>/scan.json`.
