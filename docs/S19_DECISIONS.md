@@ -3945,3 +3945,6 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   lane `wp/S19-w5l` from 69806a5a). gate_report ALERTs: `selected share 10% < 75%`, `selected gates take 623 s > 300
   s`, `selected/full ratio 0.55 > 0.4`; cause: this window's gates were merge-checks and probes (full suite by
   design); action unchanged.
+- 2026-11-20, job 523 (`w5l1-1`, no-gain, W5 batch L) PASS 18/18, step 468 accepted-neutral: column_unit's 34
+  bindings imported from their homes (d30c0006; debt 95.1 -> 95.1). Job 524 (`w5l1-2`, interface, the re-export
+  removal, plan d009d660) gating. gate_report ALERTs as at 02:45 (selection share, tests-tier time); action unchanged.
