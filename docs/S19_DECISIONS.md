@@ -4646,3 +4646,13 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   g1r1-1r PASS (step 502), job 583 w5pg-mc PASS 11/11: wp/S19-w5pg merged into wp/S19 (b1d2ae6a; wp/S19 changed
   only docs since 8e4b690e); worktree and branch removed.** Review R-W3-G3V-1 (reviewer, Opus; brief
   `<briefs>/S19-R-W3-G3V-1.md`) launched.
+- **2026-11-20, R-W3-G3V-1 (reviewer, Opus, ~82k): merge after one fix, no blocker; every step bit-identical.**
+  Q1 literal drops allowed under amended rule 15 (all three former sites reach them via `_not_evaluated`); twins
+  equal field for field apart from the reason f-string. Q2 step 0 pins all 14 fields except checks/point (dict
+  equality), point by identity. Q3 `_RegimeInputs` cohesive, host call order and count unchanged. Q4 CSR loops
+  verbatim. Fix (rule 4): `_stopped` docstring and assert comment said "V1 admitted"; without a held system V1 may
+  fail and still reach a stop. Applied by the orchestrator: 5efff7d0 (src, job 602 g3v1-fix no-gain), 3e9b40dc (the
+  test helper's docstring, tests only). Notes: no test reaches `_stopped` with held=None and V1 failed (gap, low
+  risk; unchanged logic); `_not_evaluated` replaces an existing entry silently (no collision today);
+  `_d_dd_by_output` reads `d_dp`. Helper wp/S19-g3v-mc (wp/S19 0f96b649 + g3v, 514f7f74; wp/S19 gained the G10
+  records since the lane base), merge-check job 603 g3v-mc.
