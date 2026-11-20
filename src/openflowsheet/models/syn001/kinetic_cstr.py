@@ -626,18 +626,14 @@ class KineticCSTR:
     def evaluate(
         self, inlets: Mapping[str, Sequence[StreamState]], context: EvaluationContext
     ) -> UnitEvaluation:
-        """§A1.4: the isothermal local initializer at `T_init`, never a steady state."""
-        connected = tuple(inlets.get("inlet", ()))
-        if len(connected) != 1 or set(inlets) - {"inlet"}:
-            raise SpecificationError(
-                f"{self.unit_id}: a CSTR takes exactly one inlet stream, got {inlets!r}"
-            )
-        feed = connected[0]
-        if len(feed.n) != len(self.components):
-            raise SpecificationError(
-                f"{self.unit_id}: inlet carries {len(feed.n)} components, expected "
-                f"{len(self.components)}"
-            )
+        """§A1.4: the isothermal local initializer at `T_init`, never a steady state.
+
+        The steps in order: the shape checks (`_feed`, which raises `SpecificationError`);
+        (1) the outlet state's domain; (2) a dormant inlet's outlet; (3) the isothermal outlet
+        flows (`_isothermal_flows`) and an exhausted reactant (`_exhaustion_refusal`); (4) the
+        inlet's enthalpy; (5) the declared outlet phase.
+        """
+        feed = self._feed(inlets)
         capacity = self.coolant_flow * self.coolant_cp
         dormant = feed.is_dormant
         initial = self.coolant_temperature if dormant and capacity > 0.0 else feed.temperature
@@ -680,28 +676,10 @@ class KineticCSTR:
                 message=INITIALIZER_LIMITATION,
             )
 
-        # (3) The isothermal outlet: the key's closed form, the others from the stoichiometry,
-        # never clipped (ADR 0001 D2.3). The rate is formed as the rows form it.
-        key = self.key_index
-        scaled = self.damkohler * math.exp(
-            (initial - self.reference_temperature) / self.temperature_scale
-        )
-        key_out = feed.n[key] / (1.0 + abs(self.stoichiometry[key]) * scaled)
-        rate = scaled * key_out
-        n_out = tuple(
-            key_out if index == key else flow + coefficient * rate
-            for index, (flow, coefficient) in enumerate(
-                zip(feed.n, self.stoichiometry, strict=True)
-            )
-        )
-        for component, flow in zip(self.components, n_out, strict=True):
-            if flow < 0.0:
-                return typed_failure(
-                    "out_of_domain",
-                    reactant_exhausted(component),
-                    f"the isothermal rate r = {rate} mol/s at T_init = {initial} K gives "
-                    f"n_out = {n_out} mol/s",
-                )
+        # (3)
+        rate, n_out = self._isothermal_flows(feed, initial)
+        if (exhausted := self._exhaustion_refusal(rate, initial, n_out)) is not None:
+            return exhausted
 
         # (4) The inlet, as its rows write it: declared-phase admission or its producer's split.
         inlet = port_enthalpy(
@@ -727,3 +705,54 @@ class KineticCSTR:
             reference_convention=REFERENCE_CONVENTION,
             message=INITIALIZER_LIMITATION,
         )
+
+    def _feed(self, inlets: Mapping[str, Sequence[StreamState]]) -> StreamState:
+        """The one `inlet` stream, after the shape checks: `SpecificationError` for another
+        count or another port, then for a component count that is not the unit's."""
+        connected = tuple(inlets.get("inlet", ()))
+        if len(connected) != 1 or set(inlets) - {"inlet"}:
+            raise SpecificationError(
+                f"{self.unit_id}: a CSTR takes exactly one inlet stream, got {inlets!r}"
+            )
+        feed = connected[0]
+        if len(feed.n) != len(self.components):
+            raise SpecificationError(
+                f"{self.unit_id}: inlet carries {len(feed.n)} components, expected "
+                f"{len(self.components)}"
+            )
+        return feed
+
+    def _isothermal_flows(
+        self, feed: StreamState, initial: float
+    ) -> tuple[float, tuple[float, ...]]:
+        """(3) `(r, n_out)` at `T_init = initial`: the isothermal outlet, the key's closed form,
+        the others from the stoichiometry, never clipped (ADR 0001 D2.3). The rate is formed
+        as the rows form it."""
+        key = self.key_index
+        scaled = self.damkohler * math.exp(
+            (initial - self.reference_temperature) / self.temperature_scale
+        )
+        key_out = feed.n[key] / (1.0 + abs(self.stoichiometry[key]) * scaled)
+        rate = scaled * key_out
+        n_out = tuple(
+            key_out if index == key else flow + coefficient * rate
+            for index, (flow, coefficient) in enumerate(
+                zip(feed.n, self.stoichiometry, strict=True)
+            )
+        )
+        return rate, n_out
+
+    def _exhaustion_refusal(
+        self, rate: float, initial: float, n_out: tuple[float, ...]
+    ) -> UnitEvaluation | None:
+        """(3) `reactant_exhausted(<component>)` for the first component, in `components` order,
+        whose outlet flow is negative; `None` when none is."""
+        for component, flow in zip(self.components, n_out, strict=True):
+            if flow < 0.0:
+                return typed_failure(
+                    "out_of_domain",
+                    reactant_exhausted(component),
+                    f"the isothermal rate r = {rate} mol/s at T_init = {initial} K gives "
+                    f"n_out = {n_out} mol/s",
+                )
+        return None
