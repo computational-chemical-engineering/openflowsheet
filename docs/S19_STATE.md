@@ -64,15 +64,16 @@ idle (COUNT 520). cce-code-health 34a30bf. Agents running: WO-P0 pin engineer (o
 brief `<git-common-dir>/codehealth/briefs/S19-W5-P0-pin.md`) and X07a-WO5 engineer (wp/X07a). Background shell:
 `gh run watch 44683830734` (X07a CI). On each result: gate_report, log.
 
-1. **W5 batch P (after FR-1, ADR 0077).** WO-P0 tool part running: `w5_identity.py pin` (W5-S2, W5-K5; acceptance
-   W5-T3..T5) and `w5_gate.py` wiring (batch P refusal at w5_gate.py:130 goes). On delivery: gate it (no-gain or step
-   on wp/S19-w5p0 with a full-suite merge-check), review (`reviewer`; `model: fable` is for identity rulings: this is
-   one), merge. Then the orchestrator's part of WO-P0: B_P, L_P by the 3.1 method, gate file, batch brief; then
-   WO-P1 `thermo/pr_c1.py`, WO-P2 iapws95, WO-P3 wilson_ig (S11 A75 amended), B7. FR-1 conditions: the pin, close
-   before the 0.5.0 RC cut, a release note naming the moved providers.
-   Lessons from batch L's close (R-W5-L-close): run ruff before `w5_gate.py close` (the close record is write-once);
-   assert `git diff --name-only K..tip` stays inside the close paths plus fixtures; at the S19 -> main merge recheck
-   that R-1061 is unique in the register (L01 A22).
+1. **W5 batch P (after FR-1, ADR 0077).** WO-P0 tool part merged (d98b2ca4): `w5_identity.py pin` (W5-S2), `close`
+   runs W5-K5 for P, gate tier `w5_pin`, `scripts/w5_hunks.py` (F0 line coverage per hunk). Next, the orchestrator's
+   part of WO-P0: B_P = the wp/S19 tip; L_P by ruling 3.1; gate file `<git-common-dir>/codehealth/briefs/S19-W5-batchP.json`
+   (`max_tier` 3; `generator` lists the seven `_coolprop_heos_fluids_{a,b1..b6}.py`, else W5-S1 rejects them) and
+   batch brief (`S19-W5-batchP.md`: admitted set per ruling 9 WO-P1..P3 and B7; each step records `w5_hunks.py`
+   coverage for the reviewer, DECISION 2026-11-20). Then WO-P1 `thermo/pr_c1.py`, WO-P2 iapws95, WO-P3 wilson_ig
+   (S11 A75 amended), B7. Reviews: S1 cadence (every 3 steps); identity rulings on `model: fable`. FR-1 conditions:
+   the pin, close before the 0.5.0 RC cut, a release note naming the moved providers.
+   Lessons (R-W5-L-close): ruff before `w5_gate.py close` (the close record is write-once); `git diff --name-only
+   K..tip` inside the close paths plus fixtures; at the S19 -> main merge recheck that R-1061 is unique.
 2. Three non-W5 `retarget` rows in i19_scan (column_acceptance.saturation_pairs, region_attempts.solve_ptc,
    region_problem.check_opening): open build-lane item for a later lane.
 3. **0.5:** X07a: WO4 delivered (51f7fcae: macOS rows L6-L10, two limits, Q-11; manifest moved to 9773c361; codehealth

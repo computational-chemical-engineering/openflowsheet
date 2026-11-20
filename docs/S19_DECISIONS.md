@@ -4174,3 +4174,10 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   `test_s16_test_impact.py::test_no_test_reads_campaign_tooling`; fix round 1 made `tests/test_s19_w5_gate.py` name
   `.codehealth/config.toml` (lines 746, 851) without declaring it in `TOOLING_TESTS`. A real failure, not environment.
   Fix delegated (sonnet-implementer, one tuple entry plus comment); then a fresh merge-check.
+- **2026-11-20, job 544 (w5p0-mc3, merge-check of 4a8d5e32) PASS 11/11 (the `w5_pin` tier the 11th): WO-P0's tool
+  part merged into wp/S19 (d98b2ca4).** wp/S19 changed only S19_DECISIONS/S19_STATE since 9ad50635; patch_noop 0 of
+  261. 4a8d5e32 (sonnet-implementer, ~52k): `tests/test_s19_w5_gate.py` declared in `TOOLING_TESTS`
+  (test_s16_test_impact 86 passed). Worktree s19-w5p0 and branch wp/S19-w5p0 removed. Batch P is no longer refused.
+  Next: WO-P0's orchestrator part (B_P = the wp/S19 tip, L_P by ruling 3.1, gate file with the seven
+  `_coolprop_heos_fluids_*` modules under `generator`, batch brief with the per-step `w5_hunks.py` coverage record),
+  then WO-P1 `thermo/pr_c1.py`.
