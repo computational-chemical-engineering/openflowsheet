@@ -4163,3 +4163,10 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   Recorded on wp/REL050 (worktree rel050, from main) 84a08a84: ADR 0057 Amendment 1 (D6), roadmap.md 0.5/0.6,
   progress.md, register R-1065; pushed. Estimate given before the decision: full 0.5 ~16-19M tokens, 1.5-3 weeks;
   smaller ~5-6M tokens, 4-5 days (from this session's agent sizes, not measured per package).
+- **2026-11-20, F3's human review recorded by the user.** The state file called ofs-f3-mcp-descriptions-human a
+  pending decision; it was signed A on 2026-11-18 (VERIFIED then) and only its execution was parked (the agent edit of
+  REVIEW.json was refused as recording a human's oversight). The card's five sha256 equal REVIEW.json's pending entries
+  and the description files on wp/F3. The user ran the edit and the commit (6c82b535); checked: the diff is exactly the
+  15 lines (5 x status, reviewed_by, reviewed_at 2026-11-18), tree clean; description tests 173 passed incl.
+  test_every_description_is_reviewed_by_both_lanes. Card `executed` written (v3). wp/F3 pushed, CI running. Next:
+  manifest `tested`, merge card via hub.
