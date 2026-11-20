@@ -4142,3 +4142,9 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   on lines the registered runs execute: pr-c1 1 run, iapws95 3, wilson 5, CoolProp 0) -> yes, a per-step obligation in
   the batch P brief, tool support in fix 1 item 5 if budget allows. Alternative: no record. Reversible by: dropping it
   from the batch brief. Job 542 (merge-check of 5112050a) continues; the fixed head needs its own merge-check.
+- 2026-11-20, job 542 (w5p0-mc, merge-check of 5112050a, the pin lane before fix round 1) PASS 10/10 (full suite).
+  The fixed head needs its own merge-check before the merge.
+- 2026-11-20, outside S19 (Frank: "start it, ship with 0.5"): a user report that the Coding Agents page's
+  `grant ... > token.txt` writes five lines `serve-mcp` refuses; reproduced on main c4a91a75 and v0.4.0. Branch wp/TOK
+  (worktree tok, from main). DECISION: no ADR (T07 §10.3 says only "print its token once", which holds) -> register
+  R-1064. Alternative: ADR 0078. Reversible by: filing it. Register numbers: R-1061 S19, R-1062/R-1063 X07a, R-1064 TOK.
