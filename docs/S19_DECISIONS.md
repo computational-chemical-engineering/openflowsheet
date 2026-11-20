@@ -4612,3 +4612,8 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   --replay`, RC step 14) fails at 8e4b690e AND at 789ed591 ("replay diverged: a cold execution"): recorded on
   SMM-TRS2, never re-baselined on TR09 (R-1020 covered G10 only). A re-take (~35 min, reactor env, clean tree,
   OMP_NUM_THREADS=1, mapping proof plus host column) is a work order for the 0.5 line.
+- **2026-11-20, X07a CI 44799836309 at 7d1a102e (0.5 lane):** all legs green except Windows (REL.A20 only). WO11's
+  diagnostic names it: RP.S08 (scratch-repo a08_ finds no S10/S10c/S11/S12 manifest), RP.S16 (0 files
+  docs/adr/0022-*.md), RP.S22 (manifest path `evidence\S13\...` beside prefix `evidence/S13/`). Hypothesis: path
+  separators. X07a-WO12 (opus-engineer, Opus; brief `<briefs>/X07a-WO12.md`): POSIX-form fix, a forced-Windows Linux
+  test, Linux byte-identity, push; STOP if the hypothesis fails. Win log: e9f8087c scratch `x07a-win.log`.
