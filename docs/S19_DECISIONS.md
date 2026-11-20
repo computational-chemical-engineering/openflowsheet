@@ -4129,3 +4129,16 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   passed. Engineer decisions (1)-(4) in commit messages. Left: B_P, L_P, the config.toml tier calling `w5_gate.py
   pin` (orchestrator). Ruff clean; job 542 w5p0-mc (merge-check, full suite, base 9ad50635) queued. Review
   R-W5-P0-pin launched (reviewer, model fable: an identity ruling; brief S19-R-W5-P0-pin.md).
+- **2026-11-20, R-W5-P0-pin (reviewer, model fable, ~178k): merge after fixes (one blocking, in the wiring).**
+  Rulings: the pin serves B's bytes only at the identity sites, reach enforced per run (foreign -> exit 3); an escaped
+  read gets head bytes, so it can only fail F0 (caveat: m9 reads every F file, so PIN VACUOUS cannot fire for an F
+  file; non-vacuity evidence is S3 failing and S2 passing on the same keys); T4 a real falsifier, M4 alone the
+  expected signature; W5-S3's P set exactly the ruling's, judged key by key; engineer decisions 1-4 and empty E within
+  the ruling; nothing changes N or L. Reviewer's own probe: six tier 3 files edited, pinned, F0 PASS 9/9, 37 reads, 8
+  callers, 0 vacuous, 0 foreign. Fixes: (1 must) no config tier calls `w5_gate.py pin` (grep 0, confirmed) and
+  `close` runs K1 only; (2) coverage (W5-S7) lacks the B7 M9 exception (w5_identity.py:1134); (3) the full-F0 test
+  pins 3 of 6 tier 3 files; (4) no committed test of the real gate -> pin chain. Fix round 1 launched (opus-engineer,
+  brief S19-W5-P0-fix1.md). DECISION: record F0 line coverage of each P step's hunks (S2 sees a behaviour change only
+  on lines the registered runs execute: pr-c1 1 run, iapws95 3, wilson 5, CoolProp 0) -> yes, a per-step obligation in
+  the batch P brief, tool support in fix 1 item 5 if budget allows. Alternative: no record. Reversible by: dropping it
+  from the batch brief. Job 542 (merge-check of 5112050a) continues; the fixed head needs its own merge-check.
