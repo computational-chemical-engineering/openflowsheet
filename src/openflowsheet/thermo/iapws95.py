@@ -858,35 +858,20 @@ class Iapws95Provider:
     def evaluate_phase(
         self, request: PropertyRequest, context: EvaluationContext
     ) -> PropertyResult:
-        del context
-        undeclared = [name for name in request.derivatives if name not in DERIVATIVE_INPUTS]
-        if undeclared:
-            return _refused("unsupported", f"undeclared_derivative_input: {undeclared[0]}")
-        unknown = [name for name in request.properties if name not in PROPERTIES]
-        if unknown:
-            return _refused("unsupported", f"unknown_property: {unknown}")
-        state = request.state
-        if len(state.n) != 1:
-            return _refused("error", f"state_length: {len(state.n)} flows for {COMPONENTS}")
-        outside = _domain_violation(state)
-        if outside is not None:
-            return _refused("out_of_domain", outside)
-        if state.is_dormant:
-            return _refused("unsupported", "dormant_state: composition undefined")
+        """The requested values and derivatives of the requested phase at the request's state.
 
+        Refused, in order (spec §4.5): by `_request_refusal` (rows 1 to 6: a request no state
+        could answer, a state outside the domain or dormant, Psat or Tsat asked outside the range
+        where saturation is answered); then by the phase and saturation solves below.
+        """
+        del context
+        refusal_of_request = _request_refusal(request)
+        if refusal_of_request is not None:
+            return refusal_of_request
+
+        state = request.state
         t, p = state.temperature, state.pressure
         asked = set(request.properties)
-        if "Psat" in asked and t > T_SIGMA_MAX:
-            return _refused(
-                "unsupported", f"no_saturation: Psat at {t!r} K outside [{T_T}, {T_SIGMA_MAX}] K"
-            )
-        if "Tsat" in asked:
-            low, high = _tsat_bounds()
-            if not low <= p <= high:
-                return _refused(
-                    "unsupported",
-                    f"no_saturation: Tsat at {p!r} Pa outside [{low!r}, {high!r}] Pa",
-                )
 
         answer: _Answer = {}
         saturation: _Saturation | None = None
@@ -1009,6 +994,46 @@ class Iapws95Provider:
             reference_convention=REFERENCE_CONVENTION,
             message=f"route: {rule.route}",
         )
+
+
+def _request_refusal(request: PropertyRequest) -> PropertyResult | None:
+    """The refusal of a request `evaluate_phase` does not evaluate, or None.
+
+    Spec §4.5 rows 1 to 6, in order: an undeclared derivative input, an unknown property
+    (`unsupported`), a flow vector whose length is not the component count (`error`), a state
+    outside the domain (`_domain_violation`, `out_of_domain`), a dormant state (`unsupported`),
+    and `no_saturation` (`unsupported`) when Psat is asked above T_SIGMA_MAX or Tsat at a pressure
+    outside `_tsat_bounds()`.
+    """
+    undeclared = [name for name in request.derivatives if name not in DERIVATIVE_INPUTS]
+    if undeclared:
+        return _refused("unsupported", f"undeclared_derivative_input: {undeclared[0]}")
+    unknown = [name for name in request.properties if name not in PROPERTIES]
+    if unknown:
+        return _refused("unsupported", f"unknown_property: {unknown}")
+    state = request.state
+    if len(state.n) != 1:
+        return _refused("error", f"state_length: {len(state.n)} flows for {COMPONENTS}")
+    outside = _domain_violation(state)
+    if outside is not None:
+        return _refused("out_of_domain", outside)
+    if state.is_dormant:
+        return _refused("unsupported", "dormant_state: composition undefined")
+
+    t, p = state.temperature, state.pressure
+    asked = set(request.properties)
+    if "Psat" in asked and t > T_SIGMA_MAX:
+        return _refused(
+            "unsupported", f"no_saturation: Psat at {t!r} K outside [{T_T}, {T_SIGMA_MAX}] K"
+        )
+    if "Tsat" in asked:
+        low, high = _tsat_bounds()
+        if not low <= p <= high:
+            return _refused(
+                "unsupported",
+                f"no_saturation: Tsat at {p!r} Pa outside [{low!r}, {high!r}] Pa",
+            )
+    return None
 
 
 def _refused(status: PropertyStatus, message: str) -> PropertyResult:
