@@ -4509,3 +4509,19 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   marker deselection. Correction to the brief: main's CI has no Windows leg, so "main green on Windows" was no
   evidence. Gates: test_rel_evidence_manifest 19 passed, F0 9/9, locks unchanged, ruff/format/mypy clean. Pushed;
   CI 44799836312 at 7d1a102e watched; its Windows leg should name the node.
+- **2026-11-20, job 560 (w5p-mc, plain merge-check of 4e85fe6b) FAIL: 1 failed, 20560 passed** (1047 s):
+  test_t07_w5e_application_results.py::test_the_fixtures_are_what_real_responses_emit_today,
+  `capability_page/valid/two_property_methods.json`. Cause: K's registry re-emit moves coolprop-heos-v1's descriptor
+  (B7's seven new implementation modules) and iapws95-v1's `self_sha256`, and four committed capability fixtures
+  record them; the L_P scratch (method 3.1, comment edits, no registry re-emit) could not see it, like the B7
+  amendment's three tests. `scripts/t07_schema_fixtures.py --write` rewrote exactly four fixtures (capability_page
+  valid/two_property_methods, invalid/missing_registry_sha256; capability_descriptor valid/first_property_method,
+  invalid/missing_descriptor_format): the seven module paths, descriptor_sha256 6d865b12 -> d57cf39f, self_sha256
+  a0c6cdcb -> 9d81233a and 6d0f88cf -> fa8a8a89, registry_sha256 -> 2eb3c86b, and the masked distribution_version
+  0.4.0 -> 0.5.0.dev0. Generator check clean, 104 tests passed. DECISION: K stays 2a5f0322 (write-once record);
+  43dccc21 is a post-K, generator-only fixture commit on the lane, K2 at 43dccc21 PASS (|E| 5). Alternative: delete
+  the closed record and re-close with these four as `--fixture` paths. Reversible by: that re-close. For the next
+  review (the S19 -> main merge): one post-K commit beyond batch L's comment-only precedent. Helper 7a985bc0
+  (= 4e85fe6b + 43dccc21), ruff clean; job 561 w5p-mc2 plain merge-check. gate_report: "ALERT selected share 0% <
+  75% of step gates" (standing, W5 collection-time code). Action unchanged.
+- 2026-11-20, CI 44799836312 is the Site workflow (green), not ci; X07a's ci run at 7d1a102e is 44799836309, watched.
