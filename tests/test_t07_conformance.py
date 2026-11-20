@@ -799,10 +799,12 @@ _LISTENING = re.compile(r"Uvicorn running on http://127\.0\.0\.1:(\d+)")
 
 #: X07a: Windows has no SIGINT to send to a child; uvicorn stops on SIGBREAK there, which
 #: Ctrl+Break delivers to a child started in its own process group.
-STOP = signal.CTRL_BREAK_EVENT if sys.platform == "win32" else signal.SIGINT
-STOPPABLE: dict[str, Any] = (
-    {"creationflags": subprocess.CREATE_NEW_PROCESS_GROUP} if sys.platform == "win32" else {}
-)
+if sys.platform == "win32":
+    STOP = signal.CTRL_BREAK_EVENT
+    STOPPABLE: dict[str, Any] = {"creationflags": subprocess.CREATE_NEW_PROCESS_GROUP}
+else:
+    STOP = signal.SIGINT
+    STOPPABLE: dict[str, Any] = {}
 
 
 def test_smoke_serve_http_on_a_loopback_port(tmp_path: Path) -> None:
