@@ -4444,3 +4444,6 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   in L_P. Deviation: `answer.update(...)` tripped S07 A27's oracle (any `.update` outside `_jet` reads as a CoolProp
   state update) -> `answer |= ...`. Left: duplication smell 13.3% (copies of iapws95/pr_c1/pr_lib code; a shared
   module is outside R4) caps health at 9.0. Harness `<scratchpad fd6d6a3d>/w5p5/`.
+- 2026-11-20, jobs 558 (w5p5-1, step 497, debt 53.7 -> 23.3) and 559 (w5p5-2, step 498, 23.3 -> 0) PASS 20/20: WO-P5
+  accepted. gate_report: "ALERT selected share 0% < 75%" (standing, W5 collection-time code). Action unchanged.
+  Reviewer R-W5-P5 (reviewer, Opus, brief `S19-R-W5-P5.md`, range a5b8fb11..da75a268) launched.
