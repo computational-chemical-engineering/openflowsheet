@@ -9779,3 +9779,16 @@ harvest:
   class: P
   to: []
   note: 'provenance note: requirements empty, a development-process package'
+- manifest: evidence/X07a/d2fb0252e23c6362b1460bd9ed701b6dd2714ec6/manifest.json
+  item: limitations[0]
+  sha256: 2ca58bf970c11156a6ddbd937c70e4471bd520b4b02355e174ee5dc41ff81957
+  class: P
+  to: []
+  note: 'provenance note: status follows CI; Q-1 and Q-2 await design-lane rulings; review pending'
+- manifest: evidence/X07a/d2fb0252e23c6362b1460bd9ed701b6dd2714ec6/manifest.json
+  item: checks[2]
+  check_id: X07a.CI
+  sha256: e42af4f629e5dee699dd0e8d0433e80b8cc747b14f39fab8faca282d8c087cf2
+  class: P
+  to: []
+  note: 'provenance note: CI on four legs not yet green (Q-1, Q-2 open)'
