@@ -4417,3 +4417,13 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   gate_report: "ALERT selected share 0% < 75% of step gates" (standing: W5 files are collection-time code, every step
   gates on the full suite). Action unchanged. Reviewer R-W5-P4 (reviewer, Opus, brief `S19-R-W5-P4.md`, range
   ae2d5f81..a5b8fb11) launched; WO-P5 brief `S19-W5-P5.md` drafted (lane head filled at launch).
+- 2026-11-20, R-W5-P4 (reviewer, Opus, ~166k): **merge with batch P**, no fixes in ae2d5f81..a5b8fb11. Checked itself
+  at a5b8fb11 (`-P`, paths): FLUIDS 123 entries equal by float.hex (2952 floats), EXCLUDED 13 equal; `--emit-fluid-table`
+  byte-equal 8/8; hash scope per §16.9/D3 (coolprop_heos.py:248-264), job 557 moved only the predicted keys; R-A28
+  re-run: 7 problems each at 023eb2a2. Q8.1's measurement cannot fail (`pin_plan` sees only base files,
+  w5_identity.py:1217), so it does not discriminate; the decision stands. Close items: a third M9 35 at
+  test_f0_corpus_identity.py:57 and `test_s19_w5_gate.py:354` (fails at K, W5-K4). DECISION: both into K as
+  `--fixture` paths (batch brief amendment "R-W5-P4 item 5"), with the :16 docstring and coolprop-heos-v1 in the FR-1
+  note. Alternative: test_s19_w5_gate.py as an orchestrator tool-test edit. Reversible by: editing the brief before K.
+  Open docs-pass item: `scripts/s07_evidence_manifest.py:86,91-94,838-840` (R8.5: no S07 manifest re-take before it).
+  WO-P5 (opus-engineer, Opus, brief `S19-W5-P5.md`, from a5b8fb11) launched.

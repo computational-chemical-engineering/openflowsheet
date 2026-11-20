@@ -83,6 +83,7 @@ gate result: gate_report, log. Re-arm `$Q wait --since <COUNT from $Q status>`.
    it; brief pattern `S19-W5-P3.md`, B7-C4 and S1 FP rules), then WO-P6 close (R5, K1-K6, F-3 WILSON_V1_SHA256, F-4 L01
    ruling for pr_c1, release note; close fixtures now also `tests/test_f0_corpus_identity.py:433` and
    `tests/test_f1_legacy_builtins.py:411` 35 -> 42, and the registry re-emit). FR-1: close before the 0.5.0 RC cut.
+   Docs pass before any S07 manifest re-take: `scripts/s07_evidence_manifest.py:86,91-94,838-840` (R8.5, R-W5-P4).
    Lessons (R-W5-L-close): ruff before `w5_gate.py close`; `git diff --name-only K^..K` inside close paths plus fixtures.
 2. Three non-W5 `retarget` rows in i19_scan (column_acceptance.saturation_pairs, region_attempts.solve_ptc,
    region_problem.check_opening): open build-lane item for a later lane.
