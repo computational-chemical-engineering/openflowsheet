@@ -744,7 +744,8 @@ def test_k1_needs_a_batch_and_a_k_that_descends_from_b(
 
 def _tier(name: str) -> dict[str, Any]:
     config = tomllib.loads((ROOT / ".codehealth" / "config.toml").read_text(encoding="utf-8"))
-    (tier,) = [t for t in config["gate"]["tier"] if t["name"] == name]
+    tiers: list[dict[str, Any]] = config["gate"]["tier"]
+    (tier,) = [t for t in tiers if t["name"] == name]
     return tier
 
 
@@ -822,11 +823,11 @@ def test_k5_needs_k_checked_out_clean_and_waits_for_k1(
 ) -> None:
     """W5-K5 runs F0 in this tree: K must be its HEAD and the tree clean (else refused, exit 2);
     a W5-K1 failure stops the close before the pin."""
-    for case, options in {
-        "another K": {"k": "HEAD^"},
-        "dirty": {"tree": " M src/openflowsheet/thermo/pr_c1.py"},
-    }.items():
-        code, lines, calls, record = _close_p(sets, tmp_path / case, monkeypatch, **options)
+    for case, k, tree in (
+        ("another K", "HEAD^", ""),
+        ("dirty", "HEAD", " M src/openflowsheet/thermo/pr_c1.py"),
+    ):
+        code, lines, calls, record = _close_p(sets, tmp_path / case, monkeypatch, k=k, tree=tree)
         assert code == gate.REFUSED and lines[-1].startswith("W5 batch REFUSED: close: W5-K5 ")
         assert calls == [] and not record.exists(), case
     code, lines, calls, record = _close_p(sets, tmp_path / "k1", monkeypatch, k1=["src/a.py: x"])
