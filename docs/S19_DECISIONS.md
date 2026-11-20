@@ -4120,3 +4120,12 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   byte-identical (ead4edf1), R-1063 amended, Q-12 closed; then the Windows remainder from run 44683830734's
   successor 44699040945. `executed` after WO6 delivers. Run 44683830734 (head 51f7fcae): all legs green but
   windows-latest (pre-WO5). WO-P0 pin engineer at ~230k context, waiting on its own background job.
+- **2026-11-20, WO-P0 tool part delivered (opus-engineer, Opus, ~234k).** wp/S19-w5p0 (worktree s19-w5p0) from
+  9ad50635: d06b3fba `predict` (empty E; B7's 7 group modules M9 "measured, not registered"), dcb9a774 `pin`
+  (in-process, B's bytes at the identity sites, `PIN_SITES` from 8d31b89e, `--registry REV` for K5), a942e7f9
+  `w5_gate.py` (batch P max_tier 3, W5-S2 = pin, W5-K5 = pin --close, W5-S3 for P lets M2/M3/M6/M9 fail), 5112050a
+  tests. Reported: W5-T3 x5/x6/x7 pinned 9/9, unpinned 3.2's rows; W5-T4 OMEGA_A 0.45724 -> 0.45725 pinned F0 FAIL
+  M4 m02/C1-FLASH-F1-M02-v1 only; W5-T5 51 R files pinned F0 PASS, 21233 reads, 25 callers, 0 foreign; gate tests 59
+  passed. Engineer decisions (1)-(4) in commit messages. Left: B_P, L_P, the config.toml tier calling `w5_gate.py
+  pin` (orchestrator). Ruff clean; job 542 w5p0-mc (merge-check, full suite, base 9ad50635) queued. Review
+  R-W5-P0-pin launched (reviewer, model fable: an identity ruling; brief S19-R-W5-P0-pin.md).
