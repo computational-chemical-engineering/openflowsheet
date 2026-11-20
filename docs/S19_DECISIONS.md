@@ -4398,3 +4398,8 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   group modules (ruling 8). DECISION: B7 is a generator step -> `merge-check --batch` (skill: behaviour-only, W5-S1 to S7
   on the full suite, ruff, mypy, MCP digest; no debt gate, no run-log record), job 557 w5p4-1g; its PASS is logged as
   the step's acceptance. Alternative: tool change to admit generator paths into `scope`. Reversible by: a re-gate.
+- 2026-11-20, X07a-WO9 delivered (opus-engineer, Opus, ~181k): db051d9c..335c09bf pushed, one commit per finding:
+  4f964722 R-1 (`_platform.loaded_libraries()` per OS via ctypes; a49 fails if OpenBLAS is linked and nothing pinned),
+  08a94363 R-2 (POSIX keys; reference_values.json d0a23a01 unchanged), ea56f0c5 R-3 (L5), 4d34213d R-4 (L11 + 1e-9
+  companion), c91da7cc R-5 (L12, tied to the a07 limit key), 90d53af2 R-6 (A85b split). F0 PASS 9/9; locks unchanged.
+  CI 44770741082 running. R-1 touches determinism: narrow reviewer pass (brief `X07a-R-WO9.md`) launched.
