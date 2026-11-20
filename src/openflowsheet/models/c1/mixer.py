@@ -23,7 +23,7 @@ bracket. It is an initializer for the EO solve, whose row is the balance above.
 from __future__ import annotations
 
 import math
-from collections.abc import Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Final
@@ -298,28 +298,18 @@ class AdiabaticMixer:
     def evaluate(
         self, inlets: Mapping[str, Sequence[StreamState]], context: EvaluationContext
     ) -> UnitEvaluation:
-        connected = tuple(inlets.get("inlet", ()))
-        if len(connected) < 2 or set(inlets) - {"inlet"}:
-            raise SpecificationError(
-                f"{self.unit_id}: a mixer takes two or more inlet streams, got {inlets!r}"
-            )
-        for stream in connected:
-            if len(stream.n) != len(self.components):
-                raise SpecificationError(
-                    f"{self.unit_id}: an inlet carries {len(stream.n)} components, expected "
-                    f"{len(self.components)}"
-                )
-        pressures = {stream.pressure for stream in connected}
-        if len(pressures) != 1:
-            return UnitEvaluation(
-                status="error",
-                message=(
-                    f"inlet pressures {sorted(pressures)} are not equal. C1MIX-pressure declares "
-                    "them equal to the outlet pressure and ADR 0001 D4.5 makes a mismatch a "
-                    "validation failure, not something the unit repairs"
-                ),
-                reference_convention=REFERENCE_CONVENTION,
-            )
+        """The outlet of an adiabatic mix of the `inlet` streams at their common pressure.
+
+        The phases in order: the shape checks (`_connected_inlets`, which raises
+        `SpecificationError`); C1MIX-pressure (`_pressure_refusal`); the combined flows and, when
+        every inlet is dormant, the dormant outlet; the closure's target (`_target_enthalpy`);
+        the energy closure on the flowing inlets' temperature range (`_close_energy`); B16's
+        vapour admissibility of the outlet (`vapour_refusal`). Every refusal after the shape
+        checks is returned as a `UnitEvaluation`.
+        """
+        connected = self._connected_inlets(inlets)
+        if (pressure_refusal := self._pressure_refusal(connected)) is not None:
+            return pressure_refusal
         pressure = connected[0].pressure
         combined = tuple(
             normalize_zero(sum(stream.n[index] for stream in connected))
@@ -344,15 +334,9 @@ class AdiabaticMixer:
                 message="every inlet is dormant; the outlet temperature is a retained label",
             )
 
-        target = 0.0
-        for index, stream in flowing:
-            refused = vapour_refusal(self.provider, context, f"inlet {index}", stream)
-            if refused is not None:
-                return refused
-            contribution, failure = enthalpy_flow(self.provider, context, stream, "VAPOR")
-            if failure is not None:
-                return failure
-            target += contribution
+        target = self._target_enthalpy(flowing, context)
+        if isinstance(target, UnitEvaluation):
+            return target
 
         low = min(stream.temperature for _, stream in flowing)
         high = max(stream.temperature for _, stream in flowing)
@@ -380,6 +364,59 @@ class AdiabaticMixer:
             reference_convention=REFERENCE_CONVENTION,
         )
 
+    def _connected_inlets(
+        self, inlets: Mapping[str, Sequence[StreamState]]
+    ) -> tuple[StreamState, ...]:
+        """The `inlet` port's streams, after the shape checks: `SpecificationError` for fewer
+        than two streams or another port, then for the first stream whose component count is
+        not the unit's."""
+        connected = tuple(inlets.get("inlet", ()))
+        if len(connected) < 2 or set(inlets) - {"inlet"}:
+            raise SpecificationError(
+                f"{self.unit_id}: a mixer takes two or more inlet streams, got {inlets!r}"
+            )
+        for stream in connected:
+            if len(stream.n) != len(self.components):
+                raise SpecificationError(
+                    f"{self.unit_id}: an inlet carries {len(stream.n)} components, expected "
+                    f"{len(self.components)}"
+                )
+        return connected
+
+    def _pressure_refusal(self, connected: tuple[StreamState, ...]) -> UnitEvaluation | None:
+        """C1MIX-pressure: an `error` evaluation when the inlet pressures are not all equal, else
+        `None`."""
+        pressures = {stream.pressure for stream in connected}
+        if len(pressures) != 1:
+            return UnitEvaluation(
+                status="error",
+                message=(
+                    f"inlet pressures {sorted(pressures)} are not equal. C1MIX-pressure declares "
+                    "them equal to the outlet pressure and ADR 0001 D4.5 makes a mismatch a "
+                    "validation failure, not something the unit repairs"
+                ),
+                reference_convention=REFERENCE_CONVENTION,
+            )
+        return None
+
+    def _target_enthalpy(
+        self, flowing: list[tuple[int, StreamState]], context: EvaluationContext
+    ) -> float | UnitEvaluation:
+        """The closure's target: the flowing inlets' vapour enthalpy flows (`enthalpy_flow`),
+        summed from 0.0 in inlet order, each inlet keyed by its index among the connected ones.
+        Returns instead, for the first inlet that fails, B16's refusal (`vapour_refusal`) or the
+        provider's failure, checked in that order per inlet."""
+        target = 0.0
+        for index, stream in flowing:
+            refused = vapour_refusal(self.provider, context, f"inlet {index}", stream)
+            if refused is not None:
+                return refused
+            contribution, failure = enthalpy_flow(self.provider, context, stream, "VAPOR")
+            if failure is not None:
+                return failure
+            target += contribution
+        return target
+
     def _close_energy(
         self,
         flows: tuple[float, ...],
@@ -391,7 +428,8 @@ class AdiabaticMixer:
     ) -> tuple[float | None, int, str]:
         """Solve `Ḣ_V(flows, T, pressure) = target` for T. Returns `(T, iterations, message)`,
         `T` `None` when no root was bracketed or the provider refused; never a midpoint as if it
-        were a root."""
+        were a root. The bracket is widened by `_widened_bracket`; the iteration inside the checked
+        bracket is `_bisect_newton`."""
         total = sum(flows)
 
         def residual(temperature: float) -> tuple[float, float] | None:
@@ -411,17 +449,7 @@ class AdiabaticMixer:
                 total * result.derivatives["h"]["T"],
             )
 
-        # Widen the bracket outward until it straddles: Ḣ_V rises with T, and the excess enthalpy
-        # of mixing moves the root off the inlet-temperature interval by a small amount.
-        f_low, f_high = residual(low), residual(high)
-        step = 1.0
-        while f_low is not None and f_low[0] > 0.0 and low > T_MIN:
-            low, step = max(low - step, T_MIN), 2.0 * step
-            f_low = residual(low)
-        step = 1.0
-        while f_high is not None and f_high[0] < 0.0 and high < T_MAX:
-            high, step = min(high + step, T_MAX), 2.0 * step
-            f_high = residual(high)
+        low, f_low, high, f_high = self._widened_bracket(residual, low, high)
         if f_low is None or f_high is None:
             return None, 0, "the energy closure: the provider refused a bracket endpoint"
         if f_low[0] > 0.0 or f_high[0] < 0.0:
@@ -436,6 +464,44 @@ class AdiabaticMixer:
         if f_high[0] == 0.0:
             return high, 0, ""
 
+        return self._bisect_newton(residual, low, high)
+
+    @staticmethod
+    def _widened_bracket(
+        residual: Callable[[float], tuple[float, float] | None], low: float, high: float
+    ) -> tuple[float, tuple[float, float] | None, float, tuple[float, float] | None]:
+        """`_close_energy`'s bracket `(low, f_low, high, f_high)`: the residual at both ends, then
+        each end widened outward until it straddles the root.
+
+        Widen the bracket outward until it straddles: Ḣ_V rises with T, and the excess enthalpy
+        of mixing moves the root off the inlet-temperature interval by a small amount. `low`
+        steps down while its residual is positive, `high` up while its residual is negative,
+        each by a step that doubles from 1 K, clamped to `[T_MIN, T_MAX]`. A residual is `None`
+        when the provider refused that end, which stops its widening.
+        """
+        f_low, f_high = residual(low), residual(high)
+        step = 1.0
+        while f_low is not None and f_low[0] > 0.0 and low > T_MIN:
+            low, step = max(low - step, T_MIN), 2.0 * step
+            f_low = residual(low)
+        step = 1.0
+        while f_high is not None and f_high[0] < 0.0 and high < T_MAX:
+            high, step = min(high + step, T_MAX), 2.0 * step
+            f_high = residual(high)
+        return low, f_low, high, f_high
+
+    @staticmethod
+    def _bisect_newton(
+        residual: Callable[[float], tuple[float, float] | None], low: float, high: float
+    ) -> tuple[float | None, int, str]:
+        """`_close_energy`'s iteration on a bracket `[low, high]` already checked to hold the root.
+
+        Starts at the midpoint; each iterate narrows the bracket on its residual's sign and takes
+        the Newton step when the slope is positive and the step stays strictly inside, else the
+        midpoint. Returns `(T, iterations, message)`: `T` on a zero residual, a repeated iterate
+        or a bracket collapsed to within two ulps; `T` `None` when the provider refuses an
+        iterate or after `_MAX_ITERATIONS`.
+        """
         guess = 0.5 * (low + high)
         for iteration in range(1, _MAX_ITERATIONS + 1):
             evaluated = residual(guess)

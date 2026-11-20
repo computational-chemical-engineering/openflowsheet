@@ -15,7 +15,7 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Final, Literal
+from typing import Any, Final, Literal, NamedTuple
 
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models import (
@@ -37,6 +37,7 @@ from openflowsheet.models.thermal import Form, admitted_identity
 from openflowsheet.models.thermal.common import (
     LIMITATIONS,
     NO_HOLDUP,
+    Outcome,
     Rows,
     check_wiring,
     energy_port,
@@ -146,6 +147,24 @@ PORTS: Final[tuple[Port, ...]] = (
 
 def _refused(unit_id: str, what: str, hint: str) -> SpecificationError:
     return SpecificationError(f"specification_unsupported({unit_id}.{what})\n{hint}")
+
+
+class _OutletPort(NamedTuple):
+    """The outlet as `ThermalHeater.evaluate` fixes it before the inlet is evaluated: its stream
+    id, its declared form and its pressure (the inlet's less the pressure drop)."""
+
+    stream: str
+    form: Form
+    pressure: float
+
+
+class _Answer(NamedTuple):
+    """A specification mode's answer for a flowing feed: the outlet, the duty and the
+    closure's iterations (0 where no closure is solved)."""
+
+    done: Outcome
+    duty: float
+    iterations: int
 
 
 @dataclass(frozen=True)
@@ -375,6 +394,13 @@ class ThermalHeater:
     def evaluate(
         self, inlets: Mapping[str, Sequence[StreamState]], context: EvaluationContext
     ) -> UnitEvaluation:
+        """The outlet and duty of the heater on its one `inlet` stream.
+
+        The phases in order: the shape check (`SpecificationError`); a dormant feed's zero-duty
+        outlet; the inlet enthalpy; the specification mode's outlet and duty
+        (`_outlet_at_temperature`, `_outlet_at_duty` or `_outlet_at_quality`). Every refusal
+        after the shape check is returned as a `UnitEvaluation`.
+        """
         connected = tuple(inlets.get("inlet", ()))
         if len(connected) != 1 or set(inlets) - {"inlet"}:
             raise SpecificationError(f"{self.unit_id}: a heater takes exactly one inlet stream")
@@ -400,45 +426,17 @@ class ThermalHeater:
         if isinstance(entering, Failure):
             return self._failure(entering)
         total = feed.total_flow
-        iterations = 0
 
+        port = _OutletPort(out, form, pressure)
         if self.mode == "T":
-            assert self.outlet_temperature is not None and form != "SATURATED"
-            temperature = float(self.outlet_temperature)
-            admissible = declared_admissible(self.provider, temperature, pressure, form, context)
-            if isinstance(admissible, Failure):
-                return self._failure(admissible)
-            if not admissible:
-                other: Form = "VAPOR" if form == "LIQUID" else "LIQUID"
-                return self._failure(Mismatch(form, other, None).failure(out))
-            jets = phase_properties(self.provider, context, temperature, pressure, form, ("h",))
-            if isinstance(jets, Failure):
-                return self._failure(jets)
-            leaving = total * jets["h"][0]
-            done = outlet(out, form, feed.n, temperature, pressure)
-            duty = leaving - entering
+            answer = self._outlet_at_temperature(port, feed, entering, total, context)
         elif self.mode == "duty":
-            assert self.duty is not None
-            duty = float(self.duty)
-            closed = declared_state(
-                self.provider, total, pressure, entering + duty, form, "h", context
-            )
-            if isinstance(closed, Failure):
-                return self._failure(closed)
-            if isinstance(closed, Mismatch):
-                return self._failure(closed.failure(out))
-            iterations = closed.iterations
-            done = outlet(out, form, feed.n, closed.temperature, pressure, closed.beta)
+            answer = self._outlet_at_duty(port, feed, entering, total, context)
         else:
-            assert self.outlet_vapor_fraction is not None
-            beta = float(self.outlet_vapor_fraction)
-            sat = saturation(self.provider, pressure, context)
-            if isinstance(sat, Failure):
-                return self._failure(sat)
-            liquid, vapour = sat.value("LIQUID", "h"), sat.value("VAPOR", "h")
-            leaving = total * (liquid + beta * (vapour - liquid))
-            done = outlet(out, form, feed.n, sat.temperature, pressure, beta)
-            duty = leaving - entering
+            answer = self._outlet_at_quality(port, feed, entering, total, context)
+        if isinstance(answer, UnitEvaluation):
+            return answer
+        done, duty, iterations = answer
 
         return UnitEvaluation(
             status="ok",
@@ -450,3 +448,77 @@ class ThermalHeater:
             reference_convention=described.reference_convention,
             owned=done.owned,
         )
+
+    def _outlet_at_temperature(
+        self,
+        port: _OutletPort,
+        feed: StreamState,
+        entering: float,
+        total: float,
+        context: EvaluationContext,
+    ) -> _Answer | UnitEvaluation:
+        """Mode T: the outlet at the specified temperature in its declared form; the duty is its
+        enthalpy flow (`phase_properties`' `h` times `total`) less `entering`. Returns instead
+        the failure of `declared_admissible` or `phase_properties`, or the declared form's
+        mismatch when the temperature is not admissible in it."""
+        out, form, pressure = port
+        assert self.outlet_temperature is not None and form != "SATURATED"
+        temperature = float(self.outlet_temperature)
+        admissible = declared_admissible(self.provider, temperature, pressure, form, context)
+        if isinstance(admissible, Failure):
+            return self._failure(admissible)
+        if not admissible:
+            other: Form = "VAPOR" if form == "LIQUID" else "LIQUID"
+            return self._failure(Mismatch(form, other, None).failure(out))
+        jets = phase_properties(self.provider, context, temperature, pressure, form, ("h",))
+        if isinstance(jets, Failure):
+            return self._failure(jets)
+        leaving = total * jets["h"][0]
+        done = outlet(out, form, feed.n, temperature, pressure)
+        duty = leaving - entering
+        return _Answer(done, duty, 0)
+
+    def _outlet_at_duty(
+        self,
+        port: _OutletPort,
+        feed: StreamState,
+        entering: float,
+        total: float,
+        context: EvaluationContext,
+    ) -> _Answer | UnitEvaluation:
+        """Mode duty: the declared-regime PH closure at `entering` plus the specified duty, with
+        its iterations. Returns instead the closure's failure or its regime mismatch."""
+        out, form, pressure = port
+        assert self.duty is not None
+        duty = float(self.duty)
+        closed = declared_state(self.provider, total, pressure, entering + duty, form, "h", context)
+        if isinstance(closed, Failure):
+            return self._failure(closed)
+        if isinstance(closed, Mismatch):
+            return self._failure(closed.failure(out))
+        iterations = closed.iterations
+        done = outlet(out, form, feed.n, closed.temperature, pressure, closed.beta)
+        return _Answer(done, duty, iterations)
+
+    def _outlet_at_quality(
+        self,
+        port: _OutletPort,
+        feed: StreamState,
+        entering: float,
+        total: float,
+        context: EvaluationContext,
+    ) -> _Answer | UnitEvaluation:
+        """Mode quality: the saturated outlet at the specified vapour fraction; the duty is its
+        enthalpy flow (`total` times the liquid `h` plus the fraction of the vaporisation
+        enthalpy) less `entering`. Returns instead the failure of `saturation`."""
+        out, form, pressure = port
+        assert self.outlet_vapor_fraction is not None
+        beta = float(self.outlet_vapor_fraction)
+        sat = saturation(self.provider, pressure, context)
+        if isinstance(sat, Failure):
+            return self._failure(sat)
+        liquid, vapour = sat.value("LIQUID", "h"), sat.value("VAPOR", "h")
+        leaving = total * (liquid + beta * (vapour - liquid))
+        done = outlet(out, form, feed.n, sat.temperature, pressure, beta)
+        duty = leaving - entering
+        return _Answer(done, duty, 0)

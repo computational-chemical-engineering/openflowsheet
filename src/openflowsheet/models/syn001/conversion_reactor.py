@@ -298,6 +298,17 @@ class ConversionReactor:
     molar_masses: tuple[float, ...] = MOLAR_MASSES
 
     def __post_init__(self) -> None:
+        """The construction checks, in order: the inputs' shape, the energy specification's name
+        and the finiteness of the value, the pressure drop and the molar masses
+        (`_check_well_formed`), then spec §6.2's construction refusals in the order it lists
+        them (`_check_construction`)."""
+        self._check_well_formed()
+        self._check_construction()
+
+    def _check_well_formed(self) -> None:
+        """`ValueError` for coefficient or molar-mass counts that are not the components', then
+        `unknown_specification` for an energy specification outside `ENERGY_SPECIFICATIONS`,
+        then `ValueError` for a non-finite value, pressure drop or molar mass."""
         count = len(self.components)
         if len(self.stoichiometry) != count or len(self.molar_masses) != count:
             raise ValueError(
@@ -320,7 +331,10 @@ class ConversionReactor:
         if not all(math.isfinite(mass) for mass in self.molar_masses):
             raise ValueError(f"{self.unit_id}: molar masses {self.molar_masses} are not finite")
 
-        # Spec §6.2's construction refusals, in the order it lists them.
+    def _check_construction(self) -> None:
+        """Spec §6.2's construction refusals, in the order it lists them: the conversion in
+        `[0, 1]`, the key a reactant, mass conservation, a reaction-consistent reference
+        convention, `T_spec` in the domain, a non-negative pressure drop."""
         if not 0.0 <= self.conversion <= 1.0:
             raise SpecificationError(
                 "conversion_outside_unit_interval\n"
@@ -634,74 +648,24 @@ class ConversionReactor:
         outlet's variables hold at the physical root, and `UnitEvaluation` has no field for it.
         It is `None` when the evaluator stopped before the split (a dormant inlet, an exhausted
         reactant, an outlet pressure off the domain, an inadmissible inlet, a failed closure).
+
+        The steps in order: the shape checks (`_feed`, which raises `SpecificationError`); (1)
+        a dormant inlet's outlet (`_dormant_outlet`); (2) the extent and the outlet flows
+        (`_extent_and_flows`) and an exhausted reactant (`_exhaustion_refusal`); (3) the outlet
+        pressure's domain; (4) the inlet enthalpy; (5) the outlet's split and duty.
         """
-        connected = tuple(inlets.get("inlet", ()))
-        if len(connected) != 1 or set(inlets) - {"inlet"}:
-            raise SpecificationError(
-                f"{self.unit_id}: a reactor takes exactly one inlet stream, got {inlets!r}"
-            )
-        feed = connected[0]
-        if len(feed.n) != len(self.components):
-            raise SpecificationError(
-                f"{self.unit_id}: inlet carries {len(feed.n)} components, expected "
-                f"{len(self.components)}"
-            )
+        feed = self._feed(inlets)
         outlet_pressure = feed.pressure - float(self.pressure_drop)
         by_temperature = self.energy_specification == "outlet_temperature"
 
-        # (1) Spec §4.7: a dormant outlet carries T_spec or the inlet temperature as a label.
+        # (1)
         if feed.is_dormant:
-            if not by_temperature and self.value != 0.0:
-                return (
-                    typed_failure(
-                        "error",
-                        "duty_into_dormant_stream",
-                        f"Q_spec = {self.value} W into a dormant stream; RX-duty forces Q = 0",
-                    ),
-                    None,
-                )
-            dormant = StreamState(
-                n=tuple(0.0 for _ in self.components),
-                temperature=float(self.value) if by_temperature else feed.temperature,
-                pressure=outlet_pressure,
-            )
-            return (
-                UnitEvaluation(
-                    status="ok",
-                    outlets={"outlet": dormant},
-                    duty=0.0,
-                    extent=0.0,
-                    phase_signature="ZERO_FLOW",
-                    reference_convention=REFERENCE_CONVENTION,
-                ),
-                None,
-            )
+            return self._dormant_outlet(feed, outlet_pressure, by_temperature), None
 
-        # (2) The extent and the outlet flows; no clipping. The key's outlet is `n_k - X n_k`,
-        # the same function as the rows' `n_k + nu_k xi` but written so that rounding cannot
-        # push it below zero (`fl(X n_k) <= n_k` for `X <= 1`): at `X = 1` it is exactly 0.0
-        # for every `nu_k`, not only a power of two (spec §6.3 as amended, R-051, review S2).
-        # Every other component keeps `n_i + nu_i xi`, so only a non-key can be exhausted.
-        key = self.key_index
-        converted = self.conversion * feed.n[key]
-        extent = converted / (-self.stoichiometry[key])
-        n_out = tuple(
-            feed.n[key] - converted if index == key else flow + coefficient * extent
-            for index, (flow, coefficient) in enumerate(
-                zip(feed.n, self.stoichiometry, strict=True)
-            )
-        )
-        for component, flow in zip(self.components, n_out, strict=True):
-            if flow < 0.0:
-                return (
-                    typed_failure(
-                        "out_of_domain",
-                        reactant_exhausted(component),
-                        f"conversion {self.conversion} of {self.key_component} gives xi = "
-                        f"{extent} mol/s and n_out = {n_out} mol/s",
-                    ),
-                    None,
-                )
+        # (2)
+        extent, n_out = self._extent_and_flows(feed)
+        if (exhausted := self._exhaustion_refusal(extent, n_out)) is not None:
+            return exhausted, None
 
         # (3)
         if not P_MIN <= outlet_pressure <= P_MAX:
@@ -765,3 +729,75 @@ class ConversionReactor:
             ),
             split,
         )
+
+    def _feed(self, inlets: Mapping[str, Sequence[StreamState]]) -> StreamState:
+        """The one `inlet` stream, after the shape checks: `SpecificationError` for another
+        count or another port, then for a component count that is not the unit's."""
+        connected = tuple(inlets.get("inlet", ()))
+        if len(connected) != 1 or set(inlets) - {"inlet"}:
+            raise SpecificationError(
+                f"{self.unit_id}: a reactor takes exactly one inlet stream, got {inlets!r}"
+            )
+        feed = connected[0]
+        if len(feed.n) != len(self.components):
+            raise SpecificationError(
+                f"{self.unit_id}: inlet carries {len(feed.n)} components, expected "
+                f"{len(self.components)}"
+            )
+        return feed
+
+    def _dormant_outlet(
+        self, feed: StreamState, outlet_pressure: float, by_temperature: bool
+    ) -> UnitEvaluation:
+        """(1) Spec §4.7: a dormant outlet carries T_spec or the inlet temperature as a label.
+        A nonzero `Q_spec` into the dormant stream is the `duty_into_dormant_stream` error."""
+        if not by_temperature and self.value != 0.0:
+            return typed_failure(
+                "error",
+                "duty_into_dormant_stream",
+                f"Q_spec = {self.value} W into a dormant stream; RX-duty forces Q = 0",
+            )
+        dormant = StreamState(
+            n=tuple(0.0 for _ in self.components),
+            temperature=float(self.value) if by_temperature else feed.temperature,
+            pressure=outlet_pressure,
+        )
+        return UnitEvaluation(
+            status="ok",
+            outlets={"outlet": dormant},
+            duty=0.0,
+            extent=0.0,
+            phase_signature="ZERO_FLOW",
+            reference_convention=REFERENCE_CONVENTION,
+        )
+
+    def _extent_and_flows(self, feed: StreamState) -> tuple[float, tuple[float, ...]]:
+        """(2) `(xi, n_out)`: the extent and the outlet flows; no clipping. The key's outlet is
+        `n_k - X n_k`, the same function as the rows' `n_k + nu_k xi` but written so that
+        rounding cannot push it below zero (`fl(X n_k) <= n_k` for `X <= 1`): at `X = 1` it is
+        exactly 0.0 for every `nu_k`, not only a power of two (spec §6.3 as amended, R-051,
+        review S2). Every other component keeps `n_i + nu_i xi`, so only a non-key can be
+        exhausted."""
+        key = self.key_index
+        converted = self.conversion * feed.n[key]
+        extent = converted / (-self.stoichiometry[key])
+        n_out = tuple(
+            feed.n[key] - converted if index == key else flow + coefficient * extent
+            for index, (flow, coefficient) in enumerate(
+                zip(feed.n, self.stoichiometry, strict=True)
+            )
+        )
+        return extent, n_out
+
+    def _exhaustion_refusal(self, extent: float, n_out: tuple[float, ...]) -> UnitEvaluation | None:
+        """(2) `reactant_exhausted(<component>)` for the first component, in `components` order,
+        whose outlet flow is negative; `None` when none is."""
+        for component, flow in zip(self.components, n_out, strict=True):
+            if flow < 0.0:
+                return typed_failure(
+                    "out_of_domain",
+                    reactant_exhausted(component),
+                    f"conversion {self.conversion} of {self.key_component} gives xi = "
+                    f"{extent} mol/s and n_out = {n_out} mol/s",
+                )
+        return None

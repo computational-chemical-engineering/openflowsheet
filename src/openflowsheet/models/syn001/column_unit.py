@@ -1,14 +1,14 @@
 """`syn001.column` as a flowsheet unit (S11 design note §4.7, ADR 0050 D6).
 
 Authority `docs/derivations/S11-design.md` §4.7. The column is embedded, not wrapped: in a
-flowsheet it contributes S02/S06's own rows (`column.declared_rows(..., links=...)`), its inlet
-pin rows become link rows to the connected streams, and link rows tie its two products to the
-outlet streams.
+flowsheet it contributes S02/S06's own rows (`column_rows.declared_rows(..., links=...)`), its
+inlet pin rows become link rows to the connected streams, and link rows tie its two products to
+the outlet streams.
 
 This module holds what the builder and the verifier share: `ColumnStructure`, the instance's
 configuration without any inlet state; `column_structure`, the pure parser of a revision instance
 into it; and `structural_spec`, a `ColumnSpec` whose inlet states are NaN and carry only the
-declared phase, which may be passed to `declared_rows(..., links=...)`, `column_solve.
+declared phase, which may be passed to `declared_rows(..., links=...)`, `column_compile.
 lifted_splits`, `zero_flow_forms`, `closure_types` and `split_temperatures` and to nothing else
 (§4.7.2).
 
@@ -42,13 +42,14 @@ from openflowsheet.models import (
     flow_id,
     manifest_document,
 )
+from openflowsheet.models.lifted import StagedSplits
 from openflowsheet.models.revision_flowsheet import InstanceView, RevisionError
 from openflowsheet.models.syn001 import P_MAX, P_MIN
-from openflowsheet.models.syn001.cascade import (
+from openflowsheet.models.syn001.cascade_failure import CascadeFailure
+from openflowsheet.models.syn001.cascade_spec import (
     _TOKEN,
     BOTTOM,
     TOP,
-    CascadeFailure,
     InletState,
     SideFeed,
     inlet_stream,
@@ -56,7 +57,16 @@ from openflowsheet.models.syn001.cascade import (
     stage_row_id,
     stage_temperature_id,
 )
-from openflowsheet.models.syn001.column import (
+from openflowsheet.models.syn001.column_acceptance import products
+from openflowsheet.models.syn001.column_compile import (
+    closure_types,
+    lifted_splits,
+    split_temperatures,
+    zero_flow_forms,
+)
+from openflowsheet.models.syn001.column_rows import declared_rows
+from openflowsheet.models.syn001.column_solve import ColumnSolution, solve_column
+from openflowsheet.models.syn001.column_spec import (
     COMPONENT_KINDS,
     CONDENSER,
     END_KINDS,
@@ -70,24 +80,13 @@ from openflowsheet.models.syn001.column import (
     ColumnSpec,
     EndSpecification,
     FlowsheetLinks,
-    declared_rows,
     product_flow_id,
     product_total_id,
     purity_flow_id,
     recovery_flow_id,
 )
-from openflowsheet.models.syn001.column_solve import (
-    ColumnSolution,
-    closure_types,
-    lifted_splits,
-    products,
-    solve_column,
-    split_temperatures,
-    zero_flow_forms,
-)
 from openflowsheet.models.syn001.equilibrium_form import equilibrium_form
 from openflowsheet.models.syn001.ph_kernel import port_enthalpy, typed_failure
-from openflowsheet.orchestrator.region import StagedSplits
 from openflowsheet.thermo import Phase, PropertyProvider, PropertyStatus, StreamState
 
 #: The unit's material ports (§4.7.1).
@@ -176,7 +175,7 @@ class ColumnStructure:
 
 def structural_spec(structure: ColumnStructure) -> ColumnSpec:
     """§4.7.2: the `ColumnSpec` whose inlet states are `n = (nan,)*C, T = nan, P = nan` with the
-    declared phase. Only for `declared_rows(..., links=...)`, `column_solve.lifted_splits`,
+    declared phase. Only for `declared_rows(..., links=...)`, `column_compile.lifted_splits`,
     `zero_flow_forms`, `closure_types` and `split_temperatures`: none of them reads an inlet
     value."""
     nan = math.nan
@@ -306,7 +305,47 @@ def column_structure(view: InstanceView, components: Sequence[str]) -> ColumnStr
     """§4.7.2: a revision instance of `syn001.column` as a `ColumnStructure`. Pure; raises
     `RevisionError` for what the document's configuration contradicts or omits. The column's
     own refusals (S02 §5, S06 §5) are not applied here: `structural_refusal` applies the
-    structural ones at bind, `column.validate` all of them at evaluate."""
+    structural ones at bind, `column.validate` all of them at evaluate.
+
+    The phases in order: the id and the wiring (`_check_id_and_ports`); the ends
+    (`_condenser_and_reboiler`); the parameters (`_stage_count`, `_check_parameter_names`, the
+    stage pressures, `_end_specification` per end, `_duties`); the inlets (`_placed_inlets`)."""
+    unit = view.unit_id
+    _check_id_and_ports(view)
+    condenser, reboiler = _condenser_and_reboiler(view)
+
+    # Parameters (§4.7.1).
+    count = _stage_count(view)
+    feeds = tuple(view.ports.get(FEED, ()))
+    entries = end_entries(view)
+    _check_parameter_names(view, count, feeds, entries)
+    pressures = tuple(float(view.parameters[f"{STAGE_PRESSURE}.{j}"]) for j in range(1, count + 1))
+
+    condenser_spec = _end_specification(view, CONDENSER, entries)
+    reboiler_spec = _end_specification(view, REBOILER, entries)
+    duties = _duties(view, count, condenser, reboiler)
+    placed = _placed_inlets(view, count, feeds)
+    return ColumnStructure(
+        unit_id=unit,
+        stage_count=count,
+        condenser=condenser,
+        reboiler=reboiler,
+        pressures=pressures,
+        duties=duties,
+        condenser_spec=condenser_spec,
+        reboiler_spec=reboiler_spec,
+        inlets=placed,
+        distillate=view.ports[DISTILLATE][0],
+        bottoms=view.ports[BOTTOMS][0],
+        components=tuple(components),
+    )
+
+
+def _check_id_and_ports(view: InstanceView) -> None:
+    """The instance id and the wiring: `id_unsupported(<U>)` for an id that cannot name the
+    column's property blocks, `port_unsupported(<U>.<port>)` for a port the unit does not
+    declare, `port_unwired(<U>.<port>)` for an outlet not wired exactly once and
+    `port_multiplicity_unsupported(<U>.<port>)` for `top` or `bottom` wired more than once."""
     unit = view.unit_id
     if not _TOKEN.match(unit):
         # The column's property blocks are named after its id (S01's `_token`).
@@ -326,7 +365,14 @@ def column_structure(view: InstanceView, components: Sequence[str]) -> ColumnStr
         if len(view.ports.get(port, ())) > 1:
             raise RevisionError("unsupported", f"port_multiplicity_unsupported({unit}.{port})")
 
-    # The ends, from the wiring and the declared phases (§4.7.1).
+
+def _condenser_and_reboiler(view: InstanceView) -> tuple[str, str]:
+    """The ends, from the wiring and the declared phases (§4.7.1): the condenser `none` with
+    `top` connected (the distillate then declared vapor, else `specification_conflict`),
+    `partial` for a vapor distillate, `total` for a liquid one, any other declaration
+    `port_unsupported`; the bottoms declared liquid, else `port_unsupported`; the reboiler `none`
+    with `bottom` connected, else `partial`."""
+    unit = view.unit_id
     distillate_phase = view.phases.get(DISTILLATE)
     if TOP in view.ports:
         if distillate_phase != "VAPOR":
@@ -354,15 +400,29 @@ def column_structure(view: InstanceView, components: Sequence[str]) -> ColumnStr
             f"Declare {unit}.bottoms liquid: it is the stage-N liquid.",
         )
     reboiler = "none" if BOTTOM in view.ports else "partial"
+    return condenser, reboiler
 
-    # Parameters (§4.7.1).
+
+def _stage_count(view: InstanceView) -> int:
+    """`stage_count`: `parameter_missing` when absent, `parameter_value_unsupported` when not an
+    integer (`_integer`) or below 1."""
+    unit = view.unit_id
     if STAGE_COUNT not in view.parameters:
         raise RevisionError("incomplete", f"parameter_missing({unit}.{STAGE_COUNT})")
     count = _integer(view, STAGE_COUNT)
     if count < 1:
         raise RevisionError("unsupported", f"parameter_value_unsupported({unit}.{STAGE_COUNT})")
-    feeds = tuple(view.ports.get(FEED, ()))
-    entries = end_entries(view)
+    return count
+
+
+def _check_parameter_names(
+    view: InstanceView, count: int, feeds: tuple[str, ...], entries: Mapping[str, float]
+) -> None:
+    """The instance's parameter names against the `count` stages, the side-feed streams `feeds`
+    and the end specifications `entries`: `parameter_unsupported` for the first unknown name,
+    then `parameter_missing` for the first absent `stage_pressure.<j>`, then for the first absent
+    `feed_stage.<stream>`. `stage_duty.<j>` is optional."""
+    unit = view.unit_id
     known = {
         STAGE_COUNT,
         *(f"{STAGE_PRESSURE}.{j}" for j in range(1, count + 1)),
@@ -379,10 +439,15 @@ def column_structure(view: InstanceView, components: Sequence[str]) -> ColumnStr
     for stream in feeds:
         if f"{FEED_STAGE}.{stream}" not in view.parameters:
             raise RevisionError("incomplete", f"parameter_missing({unit}.{FEED_STAGE}.{stream})")
-    pressures = tuple(float(view.parameters[f"{STAGE_PRESSURE}.{j}"]) for j in range(1, count + 1))
 
-    condenser_spec = _end_specification(view, CONDENSER, entries)
-    reboiler_spec = _end_specification(view, REBOILER, entries)
+
+def _duties(
+    view: InstanceView, count: int, condenser: str, reboiler: str
+) -> tuple[float | None, ...]:
+    """`ColumnStructure.duties`, top to bottom: `None` at a column-specification stage (stage 1
+    unless the condenser is `none`, stage `count` unless the reboiler is `none`), where a
+    `stage_duty.<j>` is `parameter_unsupported`; elsewhere `stage_duty.<j>`, `0.0` when absent."""
+    unit = view.unit_id
     slot_stages = {
         stage
         for stage, present in ((1, condenser != "none"), (count, reboiler != "none"))
@@ -397,7 +462,16 @@ def column_structure(view: InstanceView, components: Sequence[str]) -> ColumnStr
             duties.append(None)
         else:
             duties.append(float(view.parameters.get(name, 0.0)))
+    return tuple(duties)
 
+
+def _placed_inlets(
+    view: InstanceView, count: int, feeds: tuple[str, ...]
+) -> tuple[PlacedPort, ...]:
+    """`ColumnStructure.inlets`: `top` at stage 1 and `bottom` at stage `count` when connected,
+    then the side feeds `feeds` as `feed1, feed2, …` at their `feed_stage.<stream>` (`_integer`).
+    Each inlet takes its own port's one declared phase (`_phase_of` on `top`, `bottom` or `feed`,
+    which raises for a missing one); the side feeds share the `feed` port's."""
     placed: list[PlacedPort] = []
     if TOP in view.ports:
         placed.append(PlacedPort(TOP, TOP, 1, _phase_of(view, TOP), view.ports[TOP][0]))
@@ -411,20 +485,7 @@ def column_structure(view: InstanceView, components: Sequence[str]) -> ColumnStr
             PlacedPort(FEED, f"feed{k}", _integer(view, f"{FEED_STAGE}.{stream}"), phase, stream)
             for k, stream in enumerate(feeds, start=1)
         )
-    return ColumnStructure(
-        unit_id=unit,
-        stage_count=count,
-        condenser=condenser,
-        reboiler=reboiler,
-        pressures=pressures,
-        duties=tuple(duties),
-        condenser_spec=condenser_spec,
-        reboiler_spec=reboiler_spec,
-        inlets=tuple(placed),
-        distillate=view.ports[DISTILLATE][0],
-        bottoms=view.ports[BOTTOMS][0],
-        components=tuple(components),
-    )
+    return tuple(placed)
 
 
 # -- bind-time refusals (§4.7.2) -----------------------------------------------------------------
@@ -444,17 +505,59 @@ def structural_refusal(structure: ColumnStructure, provider: PropertyProvider) -
     contradicts (an end without its specification, a specification at a `none` end, a kind the
     column or the basis does not offer), `SpecificationError` (`invalid_spec(<key>)`, the
     column's own keys) for a value. The inlet-dependent items are `column.validate`'s, at
-    evaluate."""
+    evaluate.
+
+    The items in order: R3, the stage pressures (`_check_stage_pressures`); S2, S10-C D8, S06 I1
+    and I2, each end's specification (`_given_specifications`); S3; I1, I2 and S4 per given end
+    (`_check_end_value`); R4 and S7 (`_check_side_feeds`); then S8, S9 and S10's structural
+    half."""
     unit, count = structure.unit_id, structure.stage_count
     form = equilibrium_form(provider)
     composition_dependent = form is not None and form.composition_dependent
     p_bounds = form.domain["P"] if composition_dependent and form is not None else (P_MIN, P_MAX)
-    # R3, the stage pressures
+    _check_stage_pressures(structure, p_bounds)
+    given = _given_specifications(structure, provider, composition_dependent)
+    # S3
+    if given.get(CONDENSER, _NONE).kind == "distillate_rate" and (
+        given.get(REBOILER, _NONE).kind == "bottoms_rate"
+    ):
+        raise _refuse(unit, "redundant_specification", "distillate and bottoms rates together")
+    for end, found in given.items():
+        _check_end_value(structure, end, found)
+    slots = {stage for stage, duty in enumerate(structure.duties, start=1) if duty is None}
+    _check_side_feeds(structure, slots)
+    # S8
+    if count < 1 + len(slots):
+        raise _refuse(unit, "stage_count", f"N = {count} cannot hold the condenser and reboiler")
+    # S9
+    for stage in range(1, count):
+        if structure.pressures[stage] < structure.pressures[stage - 1]:
+            raise _refuse(unit, "pressure_profile", f"P_{stage + 1}* < P_{stage}*")
+    # S10's structural half: an end needs an inlet
+    if slots and not structure.inlets:
+        raise _refuse(unit, "no_feed", "a column with a condenser or reboiler and no inlet")
+
+
+def _check_stage_pressures(structure: ColumnStructure, p_bounds: tuple[float, float]) -> None:
+    """R3, the stage pressures: each finite and within `p_bounds` (the basis's `P` domain on a
+    composition-dependent basis, else `[P_MIN, P_MAX]`), else `invalid_spec(domain:<column>)` for
+    the first stage that is not."""
+    unit = structure.unit_id
     for stage, value in enumerate(structure.pressures, start=1):
         if not (math.isfinite(value) and p_bounds[0] <= value <= p_bounds[1]):
             column = stage_pressure_id(unit, stage)
             raise _refuse(unit, f"domain:{column}", f"{column} = {value!r} outside {p_bounds}")
-    # S2, S10-C D8, S06 I1 and I2: each end's specification
+
+
+def _given_specifications(
+    structure: ColumnStructure, provider: PropertyProvider, composition_dependent: bool
+) -> dict[str, EndSpecification]:
+    """S2, S10-C D8, S06 I1 and I2: each end's specification, by end, condenser first, for the
+    ends that are not `none`. `RevisionError` for a specification at a `none` end
+    (`specification_conflict`), a present end without one (`specification_missing`) and a kind
+    the end, or on a composition-dependent basis the direct kinds (`GAMMA_PHI_KINDS`), does not
+    offer (`specification_unsupported`)."""
+    unit = structure.unit_id
     given: dict[str, EndSpecification] = {}
     for end, kind, found in (
         (CONDENSER, structure.condenser, structure.condenser_spec),
@@ -485,31 +588,40 @@ def structural_refusal(structure: ColumnStructure, provider: PropertyProvider) -
                 f"A {end} of {unit} on {_provider_id(provider)} takes {', '.join(offered)}.",
             )
         given[end] = found
-    # S3
-    if given.get(CONDENSER, _NONE).kind == "distillate_rate" and (
-        given.get(REBOILER, _NONE).kind == "bottoms_rate"
-    ):
-        raise _refuse(unit, "redundant_specification", "distillate and bottoms rates together")
-    for end, found in given.items():
-        value = found.value
-        if found.kind in INVERSE_KINDS:
-            # I1, I2
-            if found.kind == "temperature":
-                wrong = found.stage is None or not 1 <= found.stage <= count
-            else:
-                wrong = found.component not in structure.components or not 0.0 < value < 1.0
-            if wrong or not math.isfinite(value):
-                raise _refuse(unit, f"{found.kind}:{end}", f"{end} {found.kind} = {value!r}")
-            continue
-        # S4
-        if found.kind == "duty":
-            wrong = value >= 0.0 if end == CONDENSER else value <= 0.0
+    return given
+
+
+def _check_end_value(structure: ColumnStructure, end: str, found: EndSpecification) -> None:
+    """The value of `end`'s specification `found`: I1 and I2 for an inverse kind (a temperature's
+    stage in `1..N`; a purity's or recovery's component in the column's components and its value
+    in `(0, 1)`), S4 for a direct kind (a condenser duty negative, a reboiler duty positive, any
+    other value positive); each value finite. Else `invalid_spec(<kind>:<end>)`."""
+    unit, count = structure.unit_id, structure.stage_count
+    value = found.value
+    if found.kind in INVERSE_KINDS:
+        # I1, I2
+        if found.kind == "temperature":
+            wrong = found.stage is None or not 1 <= found.stage <= count
         else:
-            wrong = value <= 0.0
+            wrong = found.component not in structure.components or not 0.0 < value < 1.0
         if wrong or not math.isfinite(value):
             raise _refuse(unit, f"{found.kind}:{end}", f"{end} {found.kind} = {value!r}")
-    # R4, S7
-    slots = {stage for stage, duty in enumerate(structure.duties, start=1) if duty is None}
+        return
+    # S4
+    if found.kind == "duty":
+        wrong = value >= 0.0 if end == CONDENSER else value <= 0.0
+    else:
+        wrong = value <= 0.0
+    if wrong or not math.isfinite(value):
+        raise _refuse(unit, f"{found.kind}:{end}", f"{end} {found.kind} = {value!r}")
+
+
+def _check_side_feeds(structure: ColumnStructure, slots: set[int]) -> None:
+    """R4, S7: each side feed (an inlet on the `feed` port) at a stage in `1..N`, one per stage
+    and none at a `slots` stage (a condenser or reboiler), else
+    `invalid_spec(side_feed_stage:<name>)` for the first that is not, in `structure.inlets`
+    order."""
+    unit, count = structure.unit_id, structure.stage_count
     taken: set[int] = set()
     for inlet in structure.inlets:
         if inlet.port != FEED:
@@ -522,16 +634,6 @@ def structural_refusal(structure: ColumnStructure, provider: PropertyProvider) -
                 "side feed per stage, none at a condenser or reboiler stage)",
             )
         taken.add(inlet.stage)
-    # S8
-    if count < 1 + len(slots):
-        raise _refuse(unit, "stage_count", f"N = {count} cannot hold the condenser and reboiler")
-    # S9
-    for stage in range(1, count):
-        if structure.pressures[stage] < structure.pressures[stage - 1]:
-            raise _refuse(unit, "pressure_profile", f"P_{stage + 1}* < P_{stage}*")
-    # S10's structural half: an end needs an inlet
-    if slots and not structure.inlets:
-        raise _refuse(unit, "no_feed", "a column with a condenser or reboiler and no inlet")
 
 
 # -- the unit ------------------------------------------------------------------------------------

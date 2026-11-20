@@ -20039,3 +20039,23 @@ without any judgement.
 
 **Rejected.** *Keep `main` as the oracle:* blocks W5 batch N (circular, above). *List the test as a standing
 failure:* hides a guard the batch needs.
+
+## R-1061 — L01.A22 (a): S19 W5 batch L moves `models/c1/mixer.py` by a behaviour-preserving restructuring (2026-11-20)
+
+| | |
+| --- | --- |
+| Date | 2026-11-20 |
+| Decided by | Frank, Decision Desk card ofs-s19-legacy-models (option A, item (c), batch L; ruling F-4 of `docs/briefs/S19-W5-ruling.md`); form of R-983 |
+| Normative text | `docs/briefs/S19-W5-ruling.md` (W5 batches, F-4); batch L brief `S19-W5-batchL.md` |
+| Evidence | batch L steps 468-485 accepted (gate jobs 523-540 PASS; `c1/mixer.py` moved in steps 479-480, jobs 534-535); W5-K2 `w5_identity.py judge --before 69806a5a --after K` |
+| Affected packages | L01 (A22: `tests/test_l01_records.py` `MOVED`); S19 W5 batch L |
+
+**Decision.** `src/openflowsheet/models/c1/mixer.py`, pinned by L01.A22 at the L01 base, moves to SHA-256
+`970c19124478e13afb7dca61b126ed0cfd3f429185ffc882a0898d2b013e3a20` (S19 W5 batch L, close K). The move is a
+code-health restructuring judged behaviour-identical by the W5 gates (W5-S1 to S7 per step, W5-K2 at the close);
+`PINNED` stays the L01 base, as R-983 requires. The entry is recorded at the batch close K, not in the moving
+commit as R-983's text asks: under ruling R3 of `docs/briefs/S19-W5-ruling.md` no W5 step re-registers, so the
+registration of a batch's moves happens once, at K.
+
+**Rejected.** *Leave `models/c1/mixer.py` out of batch L:* keeps the debt batch L removes from it (WO-L1 to WO-L2b),
+against G-END (S19).

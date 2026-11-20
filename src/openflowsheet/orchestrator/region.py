@@ -95,7 +95,6 @@ from openflowsheet.models.lifted import (
     VapourOnlyForm,
     ZeroFlowForm,
 )
-from openflowsheet.models.lifted import StagedSplits as StagedSplits
 from openflowsheet.numerics.newton import NewtonResult, solve_newton
 from openflowsheet.numerics.ptc import PtcRecord
 from openflowsheet.numerics.scaling import REGISTERED_NOMINALS, Scaling
@@ -168,7 +167,6 @@ from openflowsheet.thermo import PropertyProvider
 
 __all__ = [
     "RegionCall",
-    "StagedSplits",
     "solve_region",
     "syn001_lifted_splits",
 ]

@@ -54,6 +54,7 @@ from openflowsheet.models.syn001.tp_state import single_phase_enthalpy
 from openflowsheet.models.thermal import ADDITIVE_VAPOUR, Form, admitted_identity
 from openflowsheet.models.thermal.blocks import (
     IsentropicEnthalpyBlock,
+    IsentropicState,
     Variant,
     isentropic_block_id,
     isentropic_state,
@@ -241,10 +242,12 @@ class ThermalMachine:
     isentropic_phase: IsentropicPhase | None = None
 
     def __post_init__(self) -> None:
-        if self.machine not in MACHINE_MODEL_IDS:
-            raise SpecificationError(
-                f"{self.unit_id}: machine {self.machine!r} is not one of {tuple(MACHINE_MODEL_IDS)}"
-            )
+        """§4.4's bind-time checks, in this order, each raising `SpecificationError`: the
+        machine (`_check_machine`); the provider's admitted identity and the wiring; the
+        additive-vapour ports' forms (`_check_additive_forms`); the efficiency
+        (`_check_efficiency`); the inlet's form (`_check_inlet_form`); the outlet's form
+        (`_check_outlet_form`); the isentropic phase (`_check_isentropic_phase`)."""
+        self._check_machine()
         identity = admitted_identity(
             self.provider,
             self.unit_id,
@@ -252,18 +255,40 @@ class ThermalMachine:
             additive_vapour=self.machine != "pump",
         )
         check_wiring(self.unit_id, self.streams, self.forms)
+        self._check_additive_forms(identity)
+        self._check_efficiency()
+        phase = _INLET_PHASE[self.machine]
+        self._check_inlet_form(phase)
+        self._check_outlet_form()
+        self._check_isentropic_phase(phase)
+
+    def _check_machine(self) -> None:
+        """The machine is one of `MACHINE_MODEL_IDS`."""
+        if self.machine not in MACHINE_MODEL_IDS:
+            raise SpecificationError(
+                f"{self.unit_id}: machine {self.machine!r} is not one of {tuple(MACHINE_MODEL_IDS)}"
+            )
+
+    def _check_additive_forms(self, identity: tuple[str, str]) -> None:
+        """With an `ADDITIVE_VAPOUR` provider `identity`: both ports VAPOR (inlet first) and no
+        isentropic phase other than `vapor`, each refused with `WILSON_PORT_HINT`."""
         if identity in ADDITIVE_VAPOUR:
             for port, form in (("inlet", self.inlet_form), ("outlet", self.outlet_form)):
                 if form != "VAPOR":
                     raise _refused(self.unit_id, port, WILSON_PORT_HINT)
             if self.isentropic_phase not in (None, "vapor"):
                 raise _refused(self.unit_id, "isentropic_phase", WILSON_PORT_HINT)
+
+    def _check_efficiency(self) -> None:
+        """The efficiency lies in (0, 1]: `efficiency_outside_interval` otherwise."""
         if not 0.0 < self.efficiency <= 1.0:
             raise SpecificationError(
                 "efficiency_outside_interval\n"
                 f"{self.unit_id}: efficiency {self.efficiency} is outside (0, 1]"
             )
-        phase = _INLET_PHASE[self.machine]
+
+    def _check_inlet_form(self, phase: Phase) -> None:
+        """The inlet is the machine's inlet `phase` or SATURATED."""
         if self.inlet_form not in (phase, "SATURATED"):
             raise _refused(
                 self.unit_id,
@@ -272,6 +297,9 @@ class ThermalMachine:
                 f"(vapor_liquid at beta = {_INLET_BETA[self.machine]}), declared "
                 f"{self.inlet_form.lower()}",
             )
+
+    def _check_outlet_form(self) -> None:
+        """The outlet is one of the machine's `_OUTLET_FORMS`."""
         if self.outlet_form not in _OUTLET_FORMS[self.machine]:
             raise _refused(
                 self.unit_id,
@@ -280,6 +308,10 @@ class ThermalMachine:
                 f"{' or '.join(form.lower() for form in _OUTLET_FORMS[self.machine])}, declared "
                 f"{self.outlet_form.lower()}",
             )
+
+    def _check_isentropic_phase(self, phase: Phase) -> None:
+        """A declared isentropic phase: only a turbine's, one of `_ISENTROPIC_FORM`, and not
+        `vapor` with a SATURATED outlet, refused in that order."""
         if self.isentropic_phase is not None:
             if self.machine != "turbine":
                 raise _refused(
@@ -629,12 +661,17 @@ class ThermalMachine:
     def evaluate(
         self, inlets: Mapping[str, Sequence[StreamState]], context: EvaluationContext
     ) -> UnitEvaluation:
-        connected = tuple(inlets.get("inlet", ()))
-        if len(connected) != 1 or set(inlets) - {"inlet"}:
-            raise SpecificationError(
-                f"{self.unit_id}: a {self.machine} takes exactly one inlet stream"
-            )
-        feed = connected[0]
+        """The outlet and work of the machine on its one `inlet` stream (§4.4).
+
+        The phases in order: the shape check (`_fed_inlet`, which raises
+        `SpecificationError`); (0) a dormant feed's zero-work outlet; the pressure bound
+        (`_pressure_bound_refusal`); the additive-vapour path (`_additive_evaluate`) when the
+        provider is Wilson's; (1) a saturated inlet's vapour fraction
+        (`_saturated_inlet_refusal`) and the inlet enthalpy; (2) the isentropic state at P_spec
+        (`_ideal_state`); (3) the work; (4) the outlet's declared-regime PH closure. Every
+        refusal after the shape check is returned as a `UnitEvaluation`.
+        """
+        feed = self._fed_inlet(inlets)
         described = self.provider.describe()
         out, form = self.outlet_stream, self.outlet_form
         pressure = float(self.outlet_pressure)
@@ -651,59 +688,29 @@ class ThermalMachine:
                 owned=dormant.owned,
             )
 
-        # Bounds: an inequality on the state, as the SYN-001 pump's.
         expanding = self.machine == "turbine"
-        if (pressure > feed.pressure) if expanding else (pressure < feed.pressure):
-            side = "above" if expanding else "below"
-            return self._failure(
-                Failure(
-                    "out_of_domain",
-                    self._bound_code(),
-                    f"P_spec = {pressure!r} Pa is {side} the inlet's {feed.pressure!r} Pa",
-                )
-            )
+        if (bound_refusal := self._pressure_bound_refusal(feed, pressure, expanding)) is not None:
+            return bound_refusal
 
         if self.additive:
             return self._additive_evaluate(feed, pressure, context)
 
-        # (1) A saturated inlet's vapour fraction is the stated one, exactly.
+        # (1) The inlet: a saturated one's vapour fraction, then its enthalpy.
         phase = _INLET_PHASE[self.machine]
         inlet_stream, inlet_form = self.inlet_stream, self.inlet_form
-        if inlet_form == "SATURATED":
-            beta = carried_fraction(feed, inlet_stream)
-            if isinstance(beta, Failure):
-                return self._failure(beta)
-            if beta != _INLET_BETA[self.machine]:
-                return self._failure(
-                    Failure(
-                        "unsupported",
-                        f"inadmissible_phase(inlet, {phase})",
-                        f"{inlet_stream} carries vapour fraction {beta!r}; a {self.machine} "
-                        f"takes a saturated inlet at beta = {_INLET_BETA[self.machine]} exactly",
-                    )
-                )
+        if (
+            fraction_refusal := self._saturated_inlet_refusal(feed, inlet_stream, inlet_form, phase)
+        ) is not None:
+            return fraction_refusal
         entering = inlet_enthalpy(self.provider, feed, inlet_form, "inlet", inlet_stream, context)
         if isinstance(entering, Failure):
             return self._failure(entering)
         total = feed.total_flow
 
         # (2) The isentropic state at P_spec.
-        ideal = isentropic_state(
-            self.provider,
-            context,
-            self.variant,
-            phase,
-            self._isentropic_phase,
-            None if inlet_form == "SATURATED" else feed.temperature,
-            feed.pressure,
-            pressure,
-        )
-        if isinstance(ideal, Failure):
-            if ideal.code in ISENTROPIC_FORM_CODES:
-                return self._failure(
-                    Failure("unsupported", f"{ideal.code}({self.unit_id})", ideal.detail)
-                )
-            return self._failure(ideal)
+        ideal = self._ideal_state(feed, inlet_form, phase, pressure, context)
+        if isinstance(ideal, UnitEvaluation):
+            return ideal
 
         # (3) The work, as the work row writes it.
         rise = total * ideal.h - entering
@@ -727,6 +734,33 @@ class ThermalMachine:
             reference_convention=described.reference_convention,
             owned=done.owned,
         )
+
+    def _fed_inlet(self, inlets: Mapping[str, Sequence[StreamState]]) -> StreamState:
+        """The `inlet` port's one stream; `SpecificationError` for another count or another
+        port."""
+        connected = tuple(inlets.get("inlet", ()))
+        if len(connected) != 1 or set(inlets) - {"inlet"}:
+            raise SpecificationError(
+                f"{self.unit_id}: a {self.machine} takes exactly one inlet stream"
+            )
+        return connected[0]
+
+    def _pressure_bound_refusal(
+        self, feed: StreamState, pressure: float, expanding: bool
+    ) -> UnitEvaluation | None:
+        """Bounds: an inequality on the state, as the SYN-001 pump's. An `out_of_domain`
+        evaluation (`_bound_code`) when P_spec is above the inlet's pressure for an expanding
+        machine or below it otherwise, else `None`."""
+        if (pressure > feed.pressure) if expanding else (pressure < feed.pressure):
+            side = "above" if expanding else "below"
+            return self._failure(
+                Failure(
+                    "out_of_domain",
+                    self._bound_code(),
+                    f"P_spec = {pressure!r} Pa is {side} the inlet's {feed.pressure!r} Pa",
+                )
+            )
+        return None
 
     def _additive_evaluate(
         self, feed: StreamState, pressure: float, context: EvaluationContext
@@ -817,3 +851,54 @@ class ThermalMachine:
             provider_id=described.provider_id,
             reference_convention=described.reference_convention,
         )
+
+    def _saturated_inlet_refusal(
+        self, feed: StreamState, inlet_stream: str, inlet_form: Form, phase: Phase
+    ) -> UnitEvaluation | None:
+        """(1) A saturated inlet's vapour fraction is the stated one, exactly. `None` for an
+        inlet not declared SATURATED and for one carrying exactly the machine's `_INLET_BETA`;
+        else the failure of `carried_fraction`, or an `unsupported`
+        `inadmissible_phase(inlet, <phase>)` evaluation."""
+        if inlet_form == "SATURATED":
+            beta = carried_fraction(feed, inlet_stream)
+            if isinstance(beta, Failure):
+                return self._failure(beta)
+            if beta != _INLET_BETA[self.machine]:
+                return self._failure(
+                    Failure(
+                        "unsupported",
+                        f"inadmissible_phase(inlet, {phase})",
+                        f"{inlet_stream} carries vapour fraction {beta!r}; a {self.machine} "
+                        f"takes a saturated inlet at beta = {_INLET_BETA[self.machine]} exactly",
+                    )
+                )
+        return None
+
+    def _ideal_state(
+        self,
+        feed: StreamState,
+        inlet_form: Form,
+        phase: Phase,
+        pressure: float,
+        context: EvaluationContext,
+    ) -> IsentropicState | UnitEvaluation:
+        """(2) The isentropic state at P_spec (`isentropic_state`, from the feed's temperature
+        unless the inlet is SATURATED). A failure with one of `ISENTROPIC_FORM_CODES` is
+        returned as an `unsupported` `<code>(<unit_id>)` evaluation, any other as itself."""
+        ideal = isentropic_state(
+            self.provider,
+            context,
+            self.variant,
+            phase,
+            self._isentropic_phase,
+            None if inlet_form == "SATURATED" else feed.temperature,
+            feed.pressure,
+            pressure,
+        )
+        if isinstance(ideal, Failure):
+            if ideal.code in ISENTROPIC_FORM_CODES:
+                return self._failure(
+                    Failure("unsupported", f"{ideal.code}({self.unit_id})", ideal.detail)
+                )
+            return self._failure(ideal)
+        return ideal
