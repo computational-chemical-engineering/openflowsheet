@@ -4307,3 +4307,4 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   4/5, 3/5, 5/6 or Psat vs Tsat both not converged (suggests `((0.0,), 200.0, 1e5)` for later steps). (3) Dump-only
   branches: `_phase_answer` rule-None (~:1040), `_saturation_answers` Tsat-None (~:1078). W5-S1, S4, S7 confirmed.
   (4) m6 anchor: leaving `_requested_derivatives` inline is right (a retarget edits S05 A29's mutation evidence).
+- 2026-11-20, job 552 (w5p3-1, WO-P3 step 1) PASS 20/20 (step 492, wilson_ig 60.5 -> 37.0). Jobs 553, 554 queued. gate_report: standing ALERT only.
