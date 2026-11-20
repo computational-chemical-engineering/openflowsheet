@@ -4557,3 +4557,12 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   (debt is 22/24 keyword parameters pinned by G1 plan R4: the W4 parameter-object item), `_LiftedOps.__init__`
   (19 test-pinned keywords). Review note: a805a1c9's message lists `_KernelRefusedError` but not every exception type
   (playbook rule 10). Reviewer after the gates (S1 steps 2 of 4).
+- **2026-11-20, G3R run 1 delivered (opus-engineer, Opus):** wp/S19-g3r c6957580..019b5318, 10 extract-phase steps
+  queued as jobs 564, 565, 567, 570, 573, 575-579 (g3r1-1..10): checks.check_candidate 18.9 -> 12.6, study.TrfStage.
+  __call__ 14.3 -> 0 (2 steps), revision_host.decision_map 11 -> 0, _zero_rows 10 -> 0, nlp/revision._bind_assessment
+  11 -> 3, trf_state (S2) framework_readiness 14 -> 0, classify_exit 19 -> 6, basis (S1) curvature 8 -> 2,
+  _link_curvature 6 -> 4. Files: study 7.6 -> 8.1, revision_host 8.0 -> 9.0, trf_state 7.8 -> 9.3, basis 7.9 -> 8.9.
+  Engineer's scan 2314.5 -> 2232.1, health 8.91. nlp-marked: only g19, g20 fail (base). For the review: step 8
+  (df6ace41) lifts part of classify_exit's optimal family (whole-family lift needs 8 parameters); order claims only
+  partly pinned (step 7 version reason before module reasons; step 1 `checks` key order P1, P4, P3, P2). Parked:
+  greybox `_set_problem_scaling` patch (11.6 -> 8.1, file stays 8.3).
