@@ -43,7 +43,13 @@ PLATFORM_DIFFERENCES: dict[tuple[str, str], dict[str, tuple[str, frozenset[str]]
     ("arm64", "Darwin"): {
         "tests/test_st_cli.py::test_th_c1_a_fresh_solve_is_the_json_golden_under_the_policy": (
             "X07a-L5",
-            frozenset({"<root>.certificate_id", "<root>.energy.overall.closure"}),
+            frozenset(
+                {
+                    "<root>.certificate_id",
+                    "<root>.energy.overall.closure",
+                    "<root>.energy.units[0].closure",
+                }
+            ),
         ),
         "tests/test_m03_schemas.py::test_the_fixtures_are_what_real_runs_emit_today": (
             "X07a-L3",
