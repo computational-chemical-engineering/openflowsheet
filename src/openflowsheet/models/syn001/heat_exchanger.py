@@ -869,7 +869,8 @@ class HeatExchanger:
         strictly inside. Returns the iterate on a zero residual or a repeated iterate, the end
         with the smaller residual when no double lies strictly between the ends, or the
         provider's refusal of an iterate. Raises `RuntimeError` after `_MAX_ITERATIONS` steps,
-        which a bracketed bisection on doubles cannot reach.
+        which happens when the provider's slope keeps every Newton step strictly inside the
+        bracket but small, so the iterates creep (R-W5-L2b F1).
         """
         low, f_low, high, f_high = bracket
         for _ in range(_MAX_ITERATIONS):
