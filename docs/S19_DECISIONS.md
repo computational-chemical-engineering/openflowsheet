@@ -4222,3 +4222,9 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   predict: an identity reach, passes again at K). No surprise. DECISION: batch P's admitted set = the 5 tier 3 files
   below health 9.0 (`wilson_ig_v2.py` 9.0 stays frozen). Alternative: all 6. Reversible by: an amendment before the
   first step. B_P = this commit (docs only since 9f4eecea, so the probe holds).
+- 2026-11-20 ~12:30, batch P set up: gate file `S19-W5-batchP.json` (B_P 2eae72a8, sha256 455b595e, validate PASS:
+  admitted 5, generator 8 = s07_reference.py + the seven group modules, retarget 1 = test_s07_registration.py,
+  expected failures 27); brief `S19-W5-batchP.md` (per-step `w5_hunks.py` record, K's fixture paths). WO-P1 launched
+  (opus-engineer, brief `S19-W5-P1.md`, lane `wp/S19-w5p` from B_P). gate_report after job 545: "ALERT selected share
+  0% < 75% of step gates" (standing: W5 steps on hashed modules); "ALERT queue wait median 92 min > 15 min" (batch L's
+  chains this morning; queue idle before the probe). Action unchanged.

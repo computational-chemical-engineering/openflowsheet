@@ -57,18 +57,16 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 - G1 (orchestrator/, numerics/): W3 lanes N and O closed 2026-11-19 (272011be); residuals executor.py (PR-1b, 6.1 -> 9.0, gating) and `_solve_region`'s parameter object (W4).
 - G-END (below) stays the end criterion for the whole repository.
 
-## Next actions (2026-11-20 ~17:30 CET)
+## Next actions (2026-11-20 ~12:30 CET)
 
-**Position:** main = c4a91a75. wp/S19 = this commit (WO-P0 tool part merged d98b2ca4). MB 756e1c12. Runner PID
-1341562, queue idle (COUNT 523). cce-code-health 34a30bf. Agents running: none. Background shell: CI watch on wp/X32 2725fa7d
-(its notice reaches the new context). CI to read: X07a 44722847460, 44722847356. On each result: gate_report, log. Re-arm the queue wait with `$Q wait --since <COUNT from $Q status>`.
+**Position:** main = c4a91a75. wp/S19 = this commit. MB 756e1c12. Runner PID 1341562 (COUNT 524 after job 545).
+cce-code-health 34a30bf. Agent running: WO-P1 engineer (opus-engineer, brief `S19-W5-P1.md`, worktree
+`.claude/worktrees/s19-w5p`, branch `wp/S19-w5p` from B_P 2eae72a8). CI to read: X32 44720447549 (2725fa7d), X07a
+44722847460 / 44722847356 (f498a3a6). On each result: gate_report, log. Re-arm `$Q wait --since <COUNT>`.
 
-1. **W5 batch P (after FR-1, ADR 0077).** WO-P0 tool part merged (d98b2ca4): `w5_identity.py pin` (W5-S2), `close`
-   runs W5-K5 for P, gate tier `w5_pin`, `scripts/w5_hunks.py` (F0 line coverage per hunk). Next, the orchestrator's
-   part of WO-P0: B_P = the wp/S19 tip; L_P by ruling 3.1; gate file `<git-common-dir>/codehealth/briefs/S19-W5-batchP.json`
-   (`max_tier` 3; `generator` lists the seven `_coolprop_heos_fluids_{a,b1..b6}.py`, else W5-S1 rejects them) and
-   batch brief (`S19-W5-batchP.md`: admitted set per ruling 9 WO-P1..P3 and B7; each step records `w5_hunks.py`
-   coverage for the reviewer, DECISION 2026-11-20). Then WO-P1 `thermo/pr_c1.py`, WO-P2 iapws95, WO-P3 wilson_ig
+1. **W5 batch P (after FR-1, ADR 0077).** WO-P0 done: tool part merged (d98b2ca4); B_P 2eae72a8, L_P 27 (job 545),
+   gate file `<git-common-dir>/codehealth/briefs/S19-W5-batchP.json` (455b595e), brief `S19-W5-batchP.md`. Running:
+   WO-P1 `thermo/pr_c1.py`, WO-P2 iapws95, WO-P3 wilson_ig
    (S11 A75 amended), B7. Reviews: S1 cadence (every 3 steps); identity rulings on `model: fable`. FR-1 conditions:
    the pin, close before the 0.5.0 RC cut, a release note naming the moved providers.
    Lessons (R-W5-L-close): ruff before `w5_gate.py close` (the close record is write-once); `git diff --name-only
