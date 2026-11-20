@@ -4344,3 +4344,19 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   condition (the card's text: green on both architectures = the check legs); the merge waits for the check legs.
   For S19 G-END after the F3 merge: `application/local.py` duplication and the F3 debt rise enter the repo scan.
 - 2026-11-20, WO-P4 (B7) launched: opus-engineer (Opus), brief `S19-W5-P4.md`, lane wp/S19-w5p from ae2d5f81.
+- 2026-11-20, WO-P4 engineer (opus-engineer, Opus, ~93k) STOPPED before any edit: A28 (S07 §16.9) recomputes the
+  CoolProp hash from the one-file table in `tests/test_s07_coolprop.py:343-357` (two tests, pass at ae2d5f81); the
+  ruling did not cover it. CoolProp in the repo venv 8.0.0 = `requirements-coolprop.lock`.
+- 2026-11-20, A28 ruling (specifier, Opus, ~171k): 73fd64ae, S07 §16.9 amended, ruling §8.1 (R8.1 to R8.5, falsifiers
+  F1 to F4, Q8.1). Register R-1066 (highest in use across branches: R-1065 on wp/REL050).
+- 2026-11-20, job 554 (w5p3-3) PASS 20/20 (step 494, wilson_ig 18.0 -> 10.0). gate_report: standing ALERT only.
+- DECISION: batch P gate file amended for WO-P4: `retarget` += `tests/test_s07_coolprop.py` (R8.2/R8.3), `generator` +=
+  `docs/derivations/scripts/s07_reference.json` (R8.5, C19 statement). sha256 455b595e -> 2a10214c, prior copy
+  `S19-W5-batchP.json.pre-P4`, `w5_gate.py validate --head ae2d5f81` valid (generator 9, retarget 2). Jobs 546-555 keep
+  455b595e: two batch files for B_P from here, as batch N's amendments. Alternative: a second batch file. Reversible by:
+  restoring the .pre-P4 copy.
+- DECISION: Q8.1 (does `COOLPROP_FILES` need the seven group modules) -> no tool change now. `pin_plan`
+  (`w5_identity.py:1220-1229`) takes E as `files` ∩ R at the base; the group modules have no base form, so they are
+  `added` (moved_files), never `unpinned`, and `pin_problems` cannot flag them. The WO-P4 engineer measures `pin` at
+  the step head (R8 Q8.1's fact); a pinned-never-read or foreign read on a group module: STOP, then the tool change.
+  Alternative: the specifier's default, add the seven now. Reversible by: a W5 tools commit adding them.

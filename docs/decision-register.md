@@ -20059,3 +20059,24 @@ registration of a batch's moves happens once, at K.
 
 **Rejected.** *Leave `models/c1/mixer.py` out of batch L:* keeps the debt batch L removes from it (WO-L1 to WO-L2b),
 against G-END (S19).
+
+## R-1066 — S07 A28 and spec §16.9: the CoolProp `fluid_table_sha256` follows B7's eight generated modules (2026-11-20)
+
+| | |
+| --- | --- |
+| Date | 2026-11-20 |
+| Decided by | design lane (`specifier`), addendum §8.1 to `docs/briefs/S19-W5-ruling.md` (ADR 0077 D6, B7's route); commit 73fd64ae |
+| Normative text | `docs/derivations/S07-spec.md` §16.9 (amendment, pointers in §16.8 and the C19 row); ruling §8.1 (R8.1 to R8.5) |
+| Evidence | to come with WO-P4 (S19 W5 batch P): A28 tests fail at the R commit alone with exactly the seven `<group>: missing` problems and pass at the step; falsifiers F1 to F4 of R8.4; B7-C1 to C4 |
+| Affected packages | S07 (A28, C19); S19 W5 batch P (WO-P4, `tests/test_s07_coolprop.py` oracle, `docs/derivations/scripts/s07_reference.json` C19 statement) |
+
+**Decision.** With B7 the CoolProp fluid table is eight generated modules (index plus `_a`, `_b1` to `_b6`).
+§16.9's `fluid_table_sha256` becomes the ADR 0060 D3 self-hash over the eight names as string literals in UTF-8
+order with their raw bytes; A28's oracle `a28_problems` recomputes it from the eight literal names without any
+helper of `coolprop_heos.py`, and a new A28 (d) test (no `needs_coolprop`) pins the serialisation on toys. The
+oracle change is its own commit in the R position before B7's plan commit. "One table, one identity" holds, now
+checked by A28 (c) (the index's `FLUIDS` is the seven groups' `FLUIDS` joined in order).
+
+**Rejected.** *Keep the one-file recipe:* the index file no longer holds the data, so its bytes would not identify
+the table. *Leave C19's statement unchanged in `s07_reference.json`:* C19 would name one module while its check
+covers eight.
