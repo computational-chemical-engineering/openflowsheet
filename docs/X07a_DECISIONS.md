@@ -272,6 +272,17 @@ of ids are equal.
   file is written with `newline="\n"` (`scripts/registry_builtin.py`). Linux bytes unchanged.
   Alternative: rows. Reversible by: the commits.
 
+## WO6 decisions (2026-11-20)
+
+- D-30. DECISION (WO6): the Windows leg installs `requirements-windows.lock` **before**
+  `requirements.lock`, not after it as the WO6 brief says (the card names no order). Measured
+  (pip 25.1.1, scratch venv): with `six==1.16.0` installed, `pip install --no-deps
+  --require-hashes -r` a lock giving it an all-zero hash prints "Requirement already satisfied"
+  and exits 0. After the main lock, which resolves `mcp`'s `pywin32>=310` to 312 unpinned, the
+  Windows lock's hash would never be checked while 312 is the newest release; installed first,
+  the hash is checked and the main lock keeps 312. Alternative: after, as briefed (or after with
+  `--force-reinstall`). Reversible by: reverting the D-30 commit (moves the step back).
+
 ## Windows classification (run 44670029066, head 9773c361: 116 failed, 179 errors)
 
 Fixed: 179 errors WinError 123 (`T05b:DZ-3.rerun`, W3a's rerun directory, a99c510f). F0 PASS on

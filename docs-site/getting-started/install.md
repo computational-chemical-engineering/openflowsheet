@@ -77,7 +77,7 @@ What differs from Linux:
 - **From source**, use Git for Windows and run `make` and `scripts/check.sh` in Git Bash. Clone with
   `git config --global core.autocrlf false` set first, so that the checkout has the repository's
   line endings: identity hashes are computed over file bytes. The `server` extra needs pywin32
-  there, which `requirements.lock` does not carry; CI installs it hash-pinned after that lock:
+  there, which `requirements.lock` does not carry; CI installs it hash-pinned before that lock:
   `python -m pip install --no-deps --require-hashes -r requirements-windows.lock`.
 - **Replay.** macOS arm64 and Windows x86-64: bundles made on the same platform identity replay
   exactly; bundles from another platform are inspected, not reproduced (ADR 0007 D3.3,

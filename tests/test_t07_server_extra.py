@@ -127,7 +127,8 @@ def test_the_windows_lock_pins_pywin32_alone_by_its_wheel_hash() -> None:
 
 def test_ci_installs_the_windows_lock_on_the_windows_leg_only() -> None:
     """R-1063: one step of the whole workflow installs the lock, `--no-deps --require-hashes`, on
-    Windows only and before the tests run."""
+    Windows only, and before the main lock: after it, pip finds `mcp`'s pywin32 installed and
+    checks no hash (D-30)."""
     workflow = yaml.safe_load((REPO_ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8"))
     installs = [
         (job, index, step)
@@ -140,7 +141,7 @@ def test_ci_installs_the_windows_lock_on_the_windows_leg_only() -> None:
     assert job == "check" and WINDOWS_INSTALL in step["run"]
     assert step["if"].replace(" ", "") == "${{runner.os=='Windows'}}"
     runs = [step.get("run", "") for step in workflow["jobs"]["check"]["steps"]]
-    assert index < next(i for i, run in enumerate(runs) if "./scripts/check.sh" in run)
+    assert index < next(i for i, run in enumerate(runs) if "-r requirements.lock" in run)
 
 
 def test_g19_the_recorded_closure_has_no_gpl_family_or_unresolved_licence(
