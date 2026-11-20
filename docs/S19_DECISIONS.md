@@ -4579,3 +4579,14 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   Playbook rule 15 amended (.codehealth commit). DECISION: WO-V runs now from c6957580 (lane wp/S19-g3v), not after
   the queued lanes merge: it touches only verification.py, which neither lane touches. Alternative: wait for the
   merges. Reversible by: rebasing the lane onto the later tip.
+- **2026-11-20, G3V run 1 (WO-V) delivered (opus-engineer, Opus, ~150k):** wp/S19-g3v 3893f6b2..299aa8cc. Step 0
+  40a3be2f (tests only, not enqueued): tests/test_opt_verification_stops.py, 4 tests pinning the three stop records
+  field by field; falsifier (one reason prefix changed) 1 failed. Jobs 580 g3v1-1 (consolidate-duplicate,
+  verify_candidate 33.7 -> 20.6, pred 20.2), 581 g3v1-2 (`_assessment` CSR loops, 3.0 -> 1.0; file health 7.1),
+  582 g3v1-3b (`_RegimeInputs`/`_phase_regimes`, 20.6 -> 13.0). File 49.8 -> 27.1, health 6.1 -> 7.1. 3a dropped
+  (1.3 < 2-point rule). DECISION: 3b stays and 3c is skipped. The engineer read the 10.5 probe miss (11.7) as the
+  stop rule; that probe was 1+3a+3b and 3a is dropped, so it does not apply to 3b, which passed its own keep rule
+  (7.6). 3c was a margin step and 7.1 meets the floor. Alternative: revert 3b. Reversible by: reverting 299aa8cc.
+  nlp-marked at base, s1, s2, head: identical 7 failures: g19, g20 and 5 of test_m05_g10_replay (TR-E2, TR-E2-FAR,
+  TR-E2-FD, LOOP-R, LOOP-S; source_map and provider-identity sha differences). Not in the known set: checking at
+  789ed591 (before batch P) and c6957580.
