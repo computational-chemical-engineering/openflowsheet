@@ -39,7 +39,7 @@ import numpy as np
 import scipy.sparse as sp
 
 from openflowsheet.compile.spec import ProblemSpec
-from openflowsheet.compiled import EvaluationContext
+from openflowsheet.compiled import EvaluationContext, RowAccumulation
 from openflowsheet.models import DeclaredEquation, Dimension, Wiring, flow_id
 from openflowsheet.models import pressure_id as _pressure_id
 from openflowsheet.models import temperature_id as _temperature_id
@@ -275,16 +275,39 @@ def resolve_mass(
     accumulation = spec.row_accumulation
     origins = {equation.equation_id: equation.origin for equation in spec.equations}
     components = mapping.components if mapping is not None else ()
+    matched = _matched_rows(mapping, origins, rows)
+    refusal = _validation_refusal(accumulation, rows, matched, residence_time)
+    if refusal is not None:
+        return refusal
+    entries = _entries(mapping, matched, components)
+    return RegionMass(tuple(entries), residence_time, components)
+
+
+def _matched_rows(
+    mapping: MassMapping | None, origins: Mapping[str, str], rows: Sequence[str]
+) -> list[tuple[str, ModelMassRule, str, HoldupRule]]:
+    """`(row, rule, equation id, holdup)` for each row of `rows`, in order, whose origin's model
+    has a rule in `mapping` with a holdup for the origin's equation (pure). A row without an
+    origin, rule or holdup is left out; `mapping = None` matches nothing."""
     matched: list[tuple[str, ModelMassRule, str, HoldupRule]] = []
-    unmatched: list[str] = []
     for row in rows:
         model_id, _, equation_id = origins.get(row, "").partition("#")
         rule = mapping.rules.get(model_id) if mapping is not None else None
         holdup = rule.holdups.get(equation_id) if rule is not None else None
         if rule is None or holdup is None:
-            unmatched.append(row)
-        else:
-            matched.append((row, rule, equation_id, holdup))
+            continue
+        matched.append((row, rule, equation_id, holdup))
+    return matched
+
+
+def _validation_refusal(
+    accumulation: Mapping[str, RowAccumulation],
+    rows: Sequence[str],
+    matched: Sequence[tuple[str, ModelMassRule, str, HoldupRule]],
+    residence_time: float,
+) -> MappingRefusal | None:
+    """T04 §7.2's checks V1 to V4 in the specification's order, each over the rows in region
+    order (pure): the first failing check's refusal, or None when all four pass."""
     mapped = {row for row, *_ in matched}
 
     for row in rows:  # V1
@@ -300,7 +323,17 @@ def resolve_mass(
         manifest = declared.accumulation.holdup if declared is not None else None
         if manifest is None or tuple(manifest.dimension) != tuple(holdup.dimension):
             return MappingRefusal(row, "dimension")
+    return None
 
+
+def _entries(
+    mapping: MassMapping | None,
+    matched: Sequence[tuple[str, ModelMassRule, str, HoldupRule]],
+    components: tuple[str, ...],
+) -> list[_Entry]:
+    """One `_Entry` per matched row, in order: its unit (the row id's prefix), holdup quantity,
+    component index (for `component_moles`, the row id's suffix in `components`) and phase
+    outflows from the rule. Raises `ValueError` for a unit `mapping` has no wiring for."""
     assert mapping is not None or not matched
     entries: list[_Entry] = []
     for row, rule, _, holdup in matched:
@@ -316,7 +349,7 @@ def resolve_mass(
         entries.append(
             _Entry(row, unit, holdup.quantity, component, rule.outflows(wiring, components, phase))
         )
-    return RegionMass(tuple(entries), residence_time, components)
+    return entries
 
 
 # ------------------------------------------------------------------ the registered entries (§6.3)
