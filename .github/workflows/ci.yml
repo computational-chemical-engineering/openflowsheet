@@ -127,6 +127,13 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -r requirements.lock
 
+      # X07a (R-1063, card ofs-x07a-pywin32-lock A): `mcp`'s Windows-only requirement pywin32,
+      # hash-pinned in its own lock by the R-624 pattern; requirements.lock, a registered identity
+      # frozen on Linux, does not carry it. No other leg or job installs this file.
+      - name: Install the Windows lock
+        if: ${{ runner.os == 'Windows' }}
+        run: python -m pip install --no-deps --require-hashes -r requirements-windows.lock
+
       # S07 (spec §17.4, R-624): the `coolprop` extra's increment over the lock above, hash-pinned
       # for both architectures. --no-deps keeps numpy at the base pin; requirements.lock itself is
       # a registered identity and does not carry CoolProp. No other job installs this file.

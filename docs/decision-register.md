@@ -20074,3 +20074,17 @@ declaring `PSF` passes, and `ALLOWED` is unchanged (S07 A41 pins its keys). The 
 `requirements.lock` fails ADR 0069 D2.2's grammar and moves the lock's recorded SHA-256 (Q-12).
 
 **Rejected.** Option B (keep pywin32 refused; declare the server extra a Windows platform limit).
+
+*Amended (lock half, 2026-11-20):* Frank, Decision Desk card ofs-x07a-pywin32-lock, option A (signed 2026-11-20,
+`VERIFIED`), verbatim: "pin pywin32==312 with its wheel hashes in a separate Windows-only lock
+requirements-windows.lock, installed with pip --no-deps --require-hashes on the Windows CI leg (the
+requirements-coolprop.lock pattern of R-624); requirements.lock unchanged, on wp/X07a". `requirements-windows.lock`
+at the root holds one line, `pywin32==312` with the hash of the wheel windows-latest installs
+(`pywin32-312-cp313-cp313-win_amd64.whl`, `c53e878d…aaf9`, from `pip download`; PyPI's digest agrees). The `check`
+job's Windows leg installs it with `--no-deps --require-hashes`; no other leg or job does. `requirements.lock` is
+byte-unchanged (`ead4edf1…b9c4`), so D2.2's grammar, T08.A19 and every registered bundle stand. G19's record stays the
+Linux closure; on Windows `test_the_installed_closure_is_the_recorded_one` compares the closure less the Windows
+lock's pins, which it holds to the lock's versions. Closes Q-12 (`docs/X07a_DECISIONS.md`). *Rejected:* option B (an
+ADR 0069 amendment admitting markers in D2.2 and a re-registration of the lock digest: it moves T08.A19, the A30
+records and every bundle's `lock_sha256`); option C (no pin: pywin32 resolved from `mcp`'s marker, unpinned and
+unhashed).

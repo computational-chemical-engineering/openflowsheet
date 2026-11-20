@@ -147,6 +147,9 @@ Brief: `docs/briefs/X07a-WO1.md`. Branch `wp/X07a`, base `main` c4a91a75. Build 
   amendment admitting markers in D2.2 and a re-registration of the lock digest; (c) no pin: pywin32
   stays resolved from `mcp`'s `pywin32>=310; sys_platform == 'win32'` (312 today). Default proposed:
   (a), the action's "the lock" read as a Windows lock; not built, since the card names "the lock".
+  **Closed (WO6)**: Frank, ofs-x07a-pywin32-lock A (R-1063 amended): `requirements-windows.lock`,
+  `pywin32==312 --hash=sha256:c53e878d...aaf9` (cp313 win_amd64, `pip download`, PyPI agrees),
+  `--no-deps --require-hashes` on the Windows leg; `requirements.lock` byte-unchanged.
 - Q-2 (F0 M7 on macOS, run 44615939688): `F0 FAIL: M1 50/50, M2 61/61, M3 61/61, M4 NOT JUDGED,
   M5 61/61, M6 70/70, M7 FAIL 52/52, M8 105/105, M9 35/35`. M2, M3, M5 are equal: no floating-point
   difference. M7: every one of the 52 v0.3.0 bundles is `{'verdict': 'NOT_RUN', 'integrity_ok':
