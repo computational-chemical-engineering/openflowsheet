@@ -59,7 +59,7 @@ has no source term at all. A mixer that carried a duty variable would be a diffe
 
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
 from functools import cache
 from pathlib import Path
@@ -554,25 +554,7 @@ class AdiabaticMixer:
 
         def residual(temperature: float) -> tuple[float, float, bool]:
             state = StreamState(n=flows, temperature=temperature, pressure=pressure)
-            if gamma_phi_form:
-                status, enthalpy, enthalpy_slope, _ = gamma_phi.enthalpy_and_slope(
-                    self.provider, state, "LIQUID", context
-                )
-                if status != "ok":
-                    return 0.0, 0.0, False
-                return enthalpy - target, enthalpy_slope, True
-            result = self.provider.evaluate_phase(
-                PropertyRequest(state=state, phase="LIQUID", properties=("h",), derivatives=("T",)),
-                context,
-            )
-            if result.status != "ok":
-                return 0.0, 0.0, False
-            value = -target
-            slope = 0.0
-            for component, flow in zip(self.components, flows, strict=True):
-                value += flow * result.values[f"h_{component}"]
-                slope += flow * result.derivatives[f"h_{component}"]["T"]
-            return value, slope, True
+            return self._energy_residual(state, target, gamma_phi_form, context)
 
         f_low, _, ok_low = residual(low)
         f_high, _, ok_high = residual(high)
@@ -588,6 +570,49 @@ class AdiabaticMixer:
                 "the liquid enthalpy increases with temperature",
             )
 
+        return self._bisect_newton(residual, low, high)
+
+    def _energy_residual(
+        self, state: StreamState, target: float, gamma_phi_form: bool, context: EvaluationContext
+    ) -> tuple[float, float, bool]:
+        """`(Hdot_out(T) - target, dHdot_out/dT, ok)` of `_close_energy` at the outlet `state`.
+
+        A composition-dependent form gives the mixture's `n_tot h` and its slope; otherwise the
+        sum over components of `n_c h_c` and `n_c dh_c/dT`, accumulated from `-target` in
+        component order. `ok` is False, with zeros, when the provider refuses the state.
+        """
+        if gamma_phi_form:
+            status, enthalpy, enthalpy_slope, _ = gamma_phi.enthalpy_and_slope(
+                self.provider, state, "LIQUID", context
+            )
+            if status != "ok":
+                return 0.0, 0.0, False
+            return enthalpy - target, enthalpy_slope, True
+        result = self.provider.evaluate_phase(
+            PropertyRequest(state=state, phase="LIQUID", properties=("h",), derivatives=("T",)),
+            context,
+        )
+        if result.status != "ok":
+            return 0.0, 0.0, False
+        value = -target
+        slope = 0.0
+        for component, flow in zip(self.components, state.n, strict=True):
+            value += flow * result.values[f"h_{component}"]
+            slope += flow * result.derivatives[f"h_{component}"]["T"]
+        return value, slope, True
+
+    @staticmethod
+    def _bisect_newton(
+        residual: Callable[[float], tuple[float, float, bool]], low: float, high: float
+    ) -> tuple[float, int, bool, str]:
+        """`_close_energy`'s iteration on a bracket `[low, high]` already checked to hold the root.
+
+        Starts at the midpoint; each iterate narrows the bracket on its residual's sign and takes
+        the Newton step when the slope is positive and the step stays strictly inside, else the
+        midpoint. Returns `(temperature, iterations, converged, message)`: converged on a zero
+        residual, a collapsed bracket or a repeated iterate; not converged, with temperature 0.0,
+        when the provider refuses an iterate or after `_MAX_ITERATIONS`.
+        """
         guess = 0.5 * (low + high)
         for iteration in range(1, _MAX_ITERATIONS + 1):
             value, slope, ok = residual(guess)
@@ -596,9 +621,9 @@ class AdiabaticMixer:
             if value == 0.0:
                 return guess, iteration, True, ""
             if value < 0.0:
-                low, f_low = guess, value
+                low = guess
             else:
-                high, f_high = guess, value
+                high = guess
             if high - low <= 0.0:
                 return guess, iteration, True, ""
 
