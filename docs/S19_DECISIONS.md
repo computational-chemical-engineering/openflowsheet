@@ -4375,3 +4375,6 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   Alternative: row "A3.3 unmet" (Frank's call). Reversible by: reverting WO9's R-1 commit. X07a-WO9 (opus-engineer,
   Opus, brief `X07a-WO9.md`) launched for R-1 to R-6. Merge preconditions (review :131-144): WO9, CI all four legs
   green, manifest `tested`, then the merge card.
+- 2026-11-20, job 555 (w5p3-4) PASS 20/20 (step 495, wilson_ig 10.0 -> 3.0): WO-P3 chain all PASS (552-555), R-W5-P3
+  merge already given. gate_report: "ALERT selected share 0% < 75%" (standing) and "ALERT queue wait median 22 min >
+  15 min" (the WO-P1 to P3 backlog of one serial lane; the queue is empty now). Action unchanged.
