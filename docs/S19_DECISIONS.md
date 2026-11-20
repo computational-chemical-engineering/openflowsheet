@@ -4549,3 +4549,11 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
 - verification.py (6.1) is the one file below G-END's 7.0 floor and needs a design-lane ruling on
   `verify_candidate` (R-W3-G3-5 (b): a test pinning `assessment_not_evaluable`, `phase_rows_not_evaluable` and
   the stop record first). Added as item (v) of the batched design round.
+- **2026-11-20, G1R run 1 delivered (opus-engineer, Opus):** wp/S19-g1r c6957580..a805a1c9, 8 steps queued as jobs
+  562, 563, 566, 568, 569, 571, 572, 574 (g1r1-1..8): revision._start_from_pass 32 -> 0, lifted_split_values 13 -> 0,
+  execution.build_execution_plan 15.2 -> 2.0 (3 steps), _solve_plan 8 -> 5 (existing `_PlanBasis`), mass.resolve_mass
+  (S1) 28 -> 0, region_problem._region_problem (S1) 19 -> 12. Files: revision 7.0 -> 8.5, execution 7.7 -> 8.5,
+  mass 8.5, region_problem 7.2. Engineer's scan 2314.5 -> 2224.3, health 8.9. Stopped: `_homotopy`/`_ptc_attempt`
+  (debt is 22/24 keyword parameters pinned by G1 plan R4: the W4 parameter-object item), `_LiftedOps.__init__`
+  (19 test-pinned keywords). Review note: a805a1c9's message lists `_KernelRefusedError` but not every exception type
+  (playbook rule 10). Reviewer after the gates (S1 steps 2 of 4).
