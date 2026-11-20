@@ -4360,3 +4360,10 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   `added` (moved_files), never `unpinned`, and `pin_problems` cannot flag them. The WO-P4 engineer measures `pin` at
   the step head (R8 Q8.1's fact); a pinned-never-read or foreign read on a group module: STOP, then the tool change.
   Alternative: the specifier's default, add the seven now. Reversible by: a W5 tools commit adding them.
+- 2026-11-20, X07a CI 44736771069 (da4c03b0): green but Windows, 7 failed (from 38): 4 P3 floating-point rows (st_cli
+  TH-C1 json golden, opt_cost_lca hand model, m04 a34, m04_quadratic a49) and 3 build-lane. X07a-WO8 (opus-engineer,
+  Opus, brief `X07a-WO8.md`): 43520d8e serve-http SIGBREAK exit 3 -> `default_int_handler` while uvicorn runs;
+  13e0e6a6 pre-push guard `guarded()` read `\` remotes as unguarded (a real bug, two cases added); REL.A20 RP.S03
+  STOPPED as Q-13 (a07 skipped on Windows by `FROZEN_WINDOWS_LIMITS` -> S13a's rule says `fail`; options A win32
+  expected line, B the node into the limits; engineer prefers A): for the X07a design-lane round with the P3 rows.
+  Pushed db051d9c; CI 44764813337 running.
