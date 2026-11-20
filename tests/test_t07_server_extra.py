@@ -111,6 +111,28 @@ def test_g19_the_recorded_closure_has_no_gpl_family_or_unresolved_licence(
         assert row["license_files"], f"{row['name']} ships no licence file"
 
 
+def _row(name: str, declared: str) -> dict[str, Any]:
+    return {
+        "name": name,
+        "license_expression": None,
+        "license": declared,
+        "license_classifiers": [],
+        "license_files": {"LICENSE.txt": "0" * 64},
+    }
+
+
+def test_g19_pywin32s_psf_is_allowed_for_pywin32_only() -> None:
+    """R-1063 (Frank, ofs-x07a-pywin32-licence A): pywin32 312 declares `PSF` (run 44615939688),
+    which passes for pywin32 alone; the same term on any other distribution is still unlisted."""
+    assert set(SCRIPT.ALLOWED_FOR) == {("pywin32", "PSF")}
+    assert "R-1063" in SCRIPT.ALLOWED_FOR[("pywin32", "PSF")]
+    assert "PSF" not in SCRIPT.ALLOWED
+    assert SCRIPT.verdict_of(_row("pywin32", "PSF")) == "ok"
+    assert SCRIPT.verdict_of(_row("typing-extensions", "PSF")) == "not-allowed"
+    assert SCRIPT.verdict_of(_row("pywin32", "LGPL-2.1")) == "gpl-family"
+    assert SCRIPT.verdict_of(_row("pywin32", "PSF-1.0")) == "not-allowed"
+
+
 def test_every_compiled_distribution_has_a_wheel_for_both_ci_architectures(
     record: dict[str, Any],
 ) -> None:
