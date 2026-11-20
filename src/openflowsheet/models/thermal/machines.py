@@ -242,10 +242,12 @@ class ThermalMachine:
     isentropic_phase: IsentropicPhase | None = None
 
     def __post_init__(self) -> None:
-        if self.machine not in MACHINE_MODEL_IDS:
-            raise SpecificationError(
-                f"{self.unit_id}: machine {self.machine!r} is not one of {tuple(MACHINE_MODEL_IDS)}"
-            )
+        """§4.4's bind-time checks, in this order, each raising `SpecificationError`: the
+        machine (`_check_machine`); the provider's admitted identity and the wiring; the
+        additive-vapour ports' forms (`_check_additive_forms`); the efficiency
+        (`_check_efficiency`); the inlet's form (`_check_inlet_form`); the outlet's form
+        (`_check_outlet_form`); the isentropic phase (`_check_isentropic_phase`)."""
+        self._check_machine()
         identity = admitted_identity(
             self.provider,
             self.unit_id,
@@ -253,18 +255,40 @@ class ThermalMachine:
             additive_vapour=self.machine != "pump",
         )
         check_wiring(self.unit_id, self.streams, self.forms)
+        self._check_additive_forms(identity)
+        self._check_efficiency()
+        phase = _INLET_PHASE[self.machine]
+        self._check_inlet_form(phase)
+        self._check_outlet_form()
+        self._check_isentropic_phase(phase)
+
+    def _check_machine(self) -> None:
+        """The machine is one of `MACHINE_MODEL_IDS`."""
+        if self.machine not in MACHINE_MODEL_IDS:
+            raise SpecificationError(
+                f"{self.unit_id}: machine {self.machine!r} is not one of {tuple(MACHINE_MODEL_IDS)}"
+            )
+
+    def _check_additive_forms(self, identity: tuple[str, str]) -> None:
+        """With an `ADDITIVE_VAPOUR` provider `identity`: both ports VAPOR (inlet first) and no
+        isentropic phase other than `vapor`, each refused with `WILSON_PORT_HINT`."""
         if identity in ADDITIVE_VAPOUR:
             for port, form in (("inlet", self.inlet_form), ("outlet", self.outlet_form)):
                 if form != "VAPOR":
                     raise _refused(self.unit_id, port, WILSON_PORT_HINT)
             if self.isentropic_phase not in (None, "vapor"):
                 raise _refused(self.unit_id, "isentropic_phase", WILSON_PORT_HINT)
+
+    def _check_efficiency(self) -> None:
+        """The efficiency lies in (0, 1]: `efficiency_outside_interval` otherwise."""
         if not 0.0 < self.efficiency <= 1.0:
             raise SpecificationError(
                 "efficiency_outside_interval\n"
                 f"{self.unit_id}: efficiency {self.efficiency} is outside (0, 1]"
             )
-        phase = _INLET_PHASE[self.machine]
+
+    def _check_inlet_form(self, phase: Phase) -> None:
+        """The inlet is the machine's inlet `phase` or SATURATED."""
         if self.inlet_form not in (phase, "SATURATED"):
             raise _refused(
                 self.unit_id,
@@ -273,6 +297,9 @@ class ThermalMachine:
                 f"(vapor_liquid at beta = {_INLET_BETA[self.machine]}), declared "
                 f"{self.inlet_form.lower()}",
             )
+
+    def _check_outlet_form(self) -> None:
+        """The outlet is one of the machine's `_OUTLET_FORMS`."""
         if self.outlet_form not in _OUTLET_FORMS[self.machine]:
             raise _refused(
                 self.unit_id,
@@ -281,6 +308,10 @@ class ThermalMachine:
                 f"{' or '.join(form.lower() for form in _OUTLET_FORMS[self.machine])}, declared "
                 f"{self.outlet_form.lower()}",
             )
+
+    def _check_isentropic_phase(self, phase: Phase) -> None:
+        """A declared isentropic phase: only a turbine's, one of `_ISENTROPIC_FORM`, and not
+        `vapor` with a SATURATED outlet, refused in that order."""
         if self.isentropic_phase is not None:
             if self.machine != "turbine":
                 raise _refused(
