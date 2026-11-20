@@ -1085,11 +1085,13 @@ def _host_real(
         if moved
         else (OLD_HOST, OLD_FLAGS, OLD_ROOT, OLD_PLATFORM)
     )
+    # The running host writes its cache directory natively (`launcher.py`, `str(root / ...)`; X07a).
+    cache = str(NEW_ROOT / ENV_DIR / "numba-cache") if moved else f"{root}/{ENV_DIR}/numba-cache"
     fingerprint = _reactor(on)["reactor"]["fingerprint"]
     fingerprint |= {
         "cpu_flags_sha256": flags,
         "cpu_model": host["cpu"],
-        "env_allowlist": {"NUMBA_CACHE_DIR": f"{root}/{ENV_DIR}/numba-cache", "PATH": "/usr/bin"},
+        "env_allowlist": {"NUMBA_CACHE_DIR": cache, "PATH": "/usr/bin"},
         "packages": {"numpy": "2.2.4", "pymrm": "2.5.0"},
         "thread_env": {"OMP_NUM_THREADS": "1"},
     }
