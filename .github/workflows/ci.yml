@@ -84,6 +84,9 @@ jobs:
       matrix:
         runner: [ubuntu-latest, ubuntu-24.04-arm, windows-latest, macos-latest]
     runs-on: ${{ matrix.runner }}
+    # X07a: a bound on every leg (the default is 360 min). Windows' pytest step alone took 175 min
+    # in run 44618922484, Linux's about 115 min; a hung test ends the job here, not at six hours.
+    timeout-minutes: 300
     defaults:
       run:
         # X07a: every step is a bash script, also on Windows (Git Bash on the hosted image).
@@ -162,7 +165,8 @@ jobs:
       - name: Run checks
         if: ${{ !cancelled() }}
         env:
-          PYTEST_ADDOPTS: -rs
+          # X07a: `f` and `E` name each failure and error in the summary (the log is read by grep).
+          PYTEST_ADDOPTS: -rsfE
           OPENFLOWSHEET_REQUIRE_COOLPROP: "1"
           # ADR 0055 D4.4 (RP §6.2, §6.10): check.sh writes pytest's and node's junit here.
           OPENFLOWSHEET_JUNIT_DIR: ${{ runner.temp }}/junit
