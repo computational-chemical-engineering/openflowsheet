@@ -4457,3 +4457,25 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   swapping the `near_critical` and `_rule` rungs changes 0 dump lines (that order rests on reading). Duplication 131
   lines in 8 runs, all partners in other files: no in-file cut; a shared module would move four providers' hash
   scopes. Batch P's chain (WO-P1 to P5) is complete; next WO-P6, the close (orchestrator).
+- **2026-11-20, batch P close (orchestrator, WO-P6).** (a) All five admitted files edited
+  (`git diff --stat 2eae72a8..da75a268 -- src/`): gate file unchanged (sha 91d97ce0). (b) K = 2a5f0322 on wp/S19-w5p,
+  12 files: corpus.json (M2 9, M3 9, M6 8 values; M9 5 moved + 7 new B7 keys), m6-requests.json byte-identical,
+  legacy.json (CoolProp implementation modules 2 -> 9), tables.sha256, builtin-sha256.txt 2eb3c86b; fixtures:
+  W5c `EXPECTED` 10 values, TH-C1.json iapws95 sha, `WILSON_V1_SHA256` 8fa9821b with the F-3 comment, L01 `MOVED`
+  pr_c1.py 0e5c7913 + register R-1067 (next free id across branches: R-1062/63 wp/X07a, R-1064 wp/X32, R-1065
+  wp/REL050, R-1066 wp/S19), M9 35 -> 42 at the five named sites (the synthetic F0 strings in test_s19_w5_gate.py
+  :327-330, :545, :575 unchanged). Ruff caught my wilson comment (E501) before K, as the batch L lesson said.
+  DECISION: W5c `EXPECTED` -> only the 10 differing values substituted from the regenerator's printout (each old
+  value unique in the file). Alternative: paste the printed block (drops the file's comments, relayouts 53 lines).
+  Reversible by: re-running the regenerator and pasting. DECISION: `tests/fixtures/st/valid/iapws95-v1.json` keeps
+  the old iapws95 sha (no L_P test reads it as identity; K1 allows only L_B fixtures). Alternative: substitute it.
+  Reversible by: one substitution commit. Both put to R-W5-P-close (D1, D2). L_P at K: 30 of 30 pass.
+  (c) W5-K1 + K5 `close` PASS ("pinned 3, unpinned 2 (CoolProp), the pinned F0 is the prediction at 2eae72a8be67
+  for 9 file(s)"; closed record `<queue>/batches/closed-2eae72a8*.json`); W5-K2 judge PASS (|E| 5; predicted M2 9,
+  M3 9, M6 8, M9 12; tables 1 pointer); W5-K3 F0 PASS 9/9 (M6 85/85, M9 42/42), registry --check clean (42
+  descriptors); W5-K7 i19_scan: W5 exception users 0, the 3 known non-W5 retarget rows. (d) W5-K4: helper
+  wp/S19-w5p-mc (worktree s19-w5p-mc) 4e85fe6b = K + wp/S19 tip 4b0a5ea8 (docs only since B_P; register conflict
+  R-1066 then R-1067), ruff clean; job 560 w5p-mc plain merge-check. (e) W5-K6 R-W5-P-close launched (reviewer,
+  Opus; brief `S19-R-W5-P-close.md`). (f) DECISION: the FR-1 release note -> CHANGELOG `## Unreleased` on wp/S19 as
+  a docs commit after the lane merge (keeps the lane's K..tip inside the close paths). Alternative: on the lane
+  after K. Reversible by: moving the commit.
