@@ -4099,3 +4099,16 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
 - 2026-11-20 ~10:30, gate_report after job 541: "ALERT selected share 0% < 75% of step gates" (standing: W5 steps on
   hashed modules fall back on import-time code); "ALERT queue wait median 66 min > 15 min" (batch L's 13-step chain
   was enqueued at once on two slots; the queue is idle now). Action unchanged.
+- **2026-11-20, X07a-WO5 delivered (opus-engineer, Opus, ~196k; 0.5 lane).** wp/X07a pushed, head 58bdd149, CI
+  44699040945 running. Part 1: licence half done (d7bb75bc `ALLOWED_FOR` admits pywin32's declared `PSF` for pywin32
+  only, `ALLOWED` unchanged; R-1063 3e5c6c9f; G19 PASS on windows-latest in 44696617122). Lock half hit the stop
+  condition: a marker line in requirements.lock -> lock_sha256 ead4edf1 -> 0f02fc83, verify_lock F2 (D2.2 admits no
+  marker), F0 M7 FAIL 52/52, 46 tests in 6 files; reverted (requirements.lock still ead4edf1, checked). Q-12 with
+  options a/b/c. Card ofs-x07a-pywin32-licence `executed` written as partly done (v3); DECISION-REQUEST
+  ofs-x07a-pywin32-lock to hub (rec A: separate hash-pinned requirements-windows.lock, R-624 pattern). Part 2: of
+  Windows 116 failed in 44670029066, ~82 fixed or rowed (portability fixes deb19a44, 2bb2c157, e9a8a214, a13356b1,
+  Linux bytes unchanged, F0 PASS 9/9, codehealth diff 62.60 -> 62.60; 47 nodes rowed: experiment child 37 under ADR
+  0033 D2, CLI transcripts 3, M07 record paths 6, pymrm SIGINT 1); ~34 left (WinError 32, signal 2, c9/s11
+  generators, msg_corpus, pre_push_guard, s03/s09, V17 manifest, t07_server_extra now red on Windows through pywin32,
+  rest). macOS leg of 44683830734 green (L5's exact set held). Next X07a: read 44699040945; X07a-WO6 for the ~34 left;
+  then the reviewer round (D-20, D-22/Q-4, Q-10, Q-11).
