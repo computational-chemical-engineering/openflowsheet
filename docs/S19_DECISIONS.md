@@ -4276,3 +4276,20 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   (k < n) and the census names their branches, from WO-P2 on -> batch brief amendment. Alternative: unchanged.
   Reversible by: dropping the amendment. Optional docstring citation at pr_c1.py:647 not taken (no gain on a tier 3
   file). Note: step 3's message says 1680 roots, the census 1689.
+- **2026-11-20, WO-P2 delivered (opus-engineer, Opus, ~225k, over the cap).** wp/S19-w5p 65504942..63cead7c,
+  `iapws95.py` health 6.2 -> 8.5, debt 39.6 -> 1.0: 31c77b9e `evaluate_phase` `_request_refusal` (job 549), 22074b67
+  `_phase_answer`, `_saturation_answers` (550), 63cead7c `_residual_jet` `_nonanalytic_series` (551). FP: arithmetic
+  multiset (250) equal; dump 59610 records over 649 states and 2000 jets sha256 c776a58f at B_P and every step (a
+  reassociated product changes it). Local W5-S2 `F0 PASS` 9/9; S3 `M2 FAIL 4/61, M3 FAIL 4/61, M6 FAIL 4/85, M9 FAIL
+  2/35` (predict holds); S4 sha line only; S7 0 edges. Coverage record per the amendment (partly executed hunks
+  listed; the dump runs every one of their lines). Deviation: `_requested_derivatives` not extracted: its reindent
+  breaks S05 A29 mutation m6's text anchor (`scripts/s05_mutations.py:100-111`), two A29 tests outside L_P.
+  DECISION: leave the 1.0 (health 8.5 >= 7.0). Alternative: a retarget commit for the m6 anchor in the batch.
+  Reversible by: that retarget in a later step.
+- **2026-11-20, finding (WO-P2): the WO-N3 and WO-P1 dump harnesses were vacuous.** Both `fpcheck.sh` ran
+  `PYTHONPATH=<tree>/src python -I`; `-I` ignores PYTHONPATH, so both sides imported the main checkout's package. The
+  R-W5-P1 reviewer's rerun likely reused it. Orchestrator spot-check (the one thing that matters), `-P` with
+  `module.__file__` asserted under each tree, in detached worktrees: pr_c1 at 2eae72a8 and 65504942, 47128 records,
+  07e423b9 both; pr_lib at cbefdc7e, 50a740f0, fd0294af, 2c5d81f6, 0844ba88 and the wp/S19 tip, 14922 records,
+  d934f55c every one. Both claims hold. Batch L harnesses use `PYTHONPATH=src` without `-I` (not affected). Rule added
+  to `S19-W3-common.md` ("Bitwise dumps: import the tree you mean").
