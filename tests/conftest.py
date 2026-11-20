@@ -140,6 +140,26 @@ FROZEN_WINDOWS_LIMITS: dict[str, str] = {
 }
 
 
+#: A registered consequence of a `FROZEN_WINDOWS_LIMITS` skip in another test (X07a review R-5,
+#: Q-13 option A): row id -> (the frozen node, the exact line it makes differ on Windows). REL.A20's
+#: RP.S03 runs `test_m07a_v0_2_gate.py` as its D selection; with a07 skipped there, S13a's rule
+#: (exit 0, one passed, none skipped) makes the selection `fail`. The rows test asserts each frozen
+#: node is still a key, so lifting the limit fails until its consequence row goes with it.
+FROZEN_WINDOWS_CONSEQUENCES: dict[str, tuple[str, str]] = {
+    "X07a-L12": (
+        "tests/test_m07a_v0_2_gate.py::test_a07_t08_a50_s_and_r_151_s_states_give_v0_1_s_answers",
+        "RP.S03 same form: fail; S13 V03.A03 pass: DIFFERS",
+    ),
+}
+
+
+def frozen_windows_consequence(row: str) -> str | None:
+    """The line `row` registers to differ on this host: on Windows while its frozen node is a key
+    of `FROZEN_WINDOWS_LIMITS`, `None` elsewhere."""
+    node, line = FROZEN_WINDOWS_CONSEQUENCES[row]
+    return line if sys.platform == "win32" and node in FROZEN_WINDOWS_LIMITS else None
+
+
 def pytest_runtest_setup(item: Any) -> None:
     """P2: a `bitwise_baseline` node runs only where its baseline's bits were recorded; on
     Windows, a node of `FROZEN_WINDOWS_LIMITS` skips with its reason."""

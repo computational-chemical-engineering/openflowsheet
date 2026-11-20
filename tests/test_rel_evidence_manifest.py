@@ -16,6 +16,7 @@ from pathlib import Path
 from typing import Any
 
 import pytest
+from conftest import frozen_windows_consequence
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
@@ -296,20 +297,35 @@ def test_rel_a20_over_0_3_0s_committed_records(tmp_path: Path) -> None:
     )
     lines = completed.stdout.splitlines()
     assert not [line for line in lines if line.startswith("invalid:")], completed.stdout
+    # X07a-L12 (review R-5, Q-13 option A): on Windows, while a07 is a frozen Windows limit,
+    # RP.S03 differs by exactly its registered line; it is set aside and the rest judged as here.
+    differs = frozen_windows_consequence(row="X07a-L12")
+    set_aside = {"RP.S03"} if differs is not None else set()
     for key in rem.SAME_FORM:
         (said,) = [line for line in lines if line.startswith(f"RP.{key} same form: ")]
-        assert said.endswith(": equal"), said
+        if f"RP.{key}" in set_aside:
+            assert said == differs, said
+        else:
+            assert said.endswith(": equal"), said
     for key in rem.CHANGED_FORM:
         assert any(line.startswith(f"RP.{key} changed form: ") for line in lines)
-    manifest = json.loads((tmp_path / "manifest.json").read_text(encoding="utf-8"))
-    results = {entry["id"]: entry["result"] for entry in manifest["checks"]}
-    (own,) = [entry for entry in manifest["checks"] if entry["id"] == "RP.S18"]
+    written = json.loads((tmp_path / "manifest.json").read_text(encoding="utf-8"))
+    manifest = _set_aside(written, set_aside)
+    results = {entry["id"]: entry["result"] for entry in written["checks"]}
+    (own,) = [entry for entry in written["checks"] if entry["id"] == "RP.S18"]
     not_pass = own["value"]["self"]["not_pass"]
-    assert not_pass and {i.removeprefix("RP.") for i in not_pass} <= set(rem.CHANGED_FORM)
+    assert set_aside <= set(not_pass), not_pass
+    judged = [i for i in not_pass if i not in set_aside]
+    assert judged and {i.removeprefix("RP.") for i in judged} <= set(rem.CHANGED_FORM)
     assert results["RP.S20"] == "pass"  # 0.3.0's n = 190 meets n >= 1
     assert results["RP.S13"] == "unsupported"  # the 0.3 line has no rc_items
-    assert any(line.startswith("RP.S18 (A-1): ") and line.endswith(": holds") for line in lines)
-    assert lines[-1] == "REL.A20: PASS" and completed.returncode == 0, completed.stdout
+    (a1,) = [line for line in lines if line.startswith("RP.S18 (A-1): ")]
+    if set_aside:
+        assert f"outside the changed form {sorted(set_aside)}; " in a1 and a1.endswith(": FAILS")
+        assert lines[-1] == "REL.A20: FAIL" and completed.returncode == 1, completed.stdout
+    else:
+        assert a1.endswith(": holds"), a1
+        assert lines[-1] == "REL.A20: PASS" and completed.returncode == 0, completed.stdout
     s13 = json.loads((S13 / "manifest.json").read_text(encoding="utf-8"))
     assert rem.rel_a20(manifest, s13)[0] is True
     assert rem.rel_a20(*_same_form_fails(manifest, s13, counterpart="pass"))[0] is False
@@ -322,6 +338,20 @@ def test_rel_a20_over_0_3_0s_committed_records(tmp_path: Path) -> None:
     (own,) = [entry for entry in no_commands["checks"] if entry["id"] == "RP.S18"]
     own["value"]["self"]["commands"] = 0
     assert rem.rel_a20(no_commands, s13)[0] is False
+
+
+def _set_aside(manifest: Mapping[str, Any], checks: set[str]) -> dict[str, Any]:
+    """A copy of `manifest` with each registered-difference check of `checks` (X07a-L12) given
+    S13's `pass` and taken out of RP.S18's `not_pass`, so that REL.A20 judges the rest; the
+    manifest itself where `checks` is empty."""
+    ours: dict[str, Any] = json.loads(json.dumps(manifest))
+    for entry in ours["checks"]:
+        if entry["id"] in checks:
+            entry["result"] = "pass"
+        if entry["id"] == "RP.S18":
+            said = entry["value"]["self"]
+            said["not_pass"] = [i for i in said["not_pass"] if i not in checks]
+    return ours
 
 
 def _same_form_fails(

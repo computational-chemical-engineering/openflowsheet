@@ -2,16 +2,22 @@
 with the code that carries them.
 
 Every `X07a-L<n>` row in the platform-limit table of `docs/X07a_DECISIONS.md` is carried by a
-`bitwise_baseline(row=...)` marker, an `assert_inspected_off_registered(..., row=...)` call or a
-`conftest.PLATFORM_DIFFERENCES` entry, and every id those carry is a row: a limit without a row
-is undocumented, and a row without a use is a limit nothing applies.
+`bitwise_baseline(row=...)` marker, an `assert_inspected_off_registered(..., row=...)` or
+`frozen_windows_consequence(row=...)` call, a `conftest.PLATFORM_DIFFERENCES` entry or a
+`conftest.FROZEN_WINDOWS_CONSEQUENCES` entry, and every id those carry is a row: a limit without a
+row is undocumented, and a row without a use is a limit nothing applies.
 """
 
 from __future__ import annotations
 
 import re
 
-from conftest import PLATFORM_DIFFERENCES, REPO_ROOT
+from conftest import (
+    FROZEN_WINDOWS_CONSEQUENCES,
+    FROZEN_WINDOWS_LIMITS,
+    PLATFORM_DIFFERENCES,
+    REPO_ROOT,
+)
 
 from openflowsheet.run.replay import REGISTERED_PLATFORMS
 
@@ -34,7 +40,8 @@ def _code_ids() -> set[str]:
         if path.name != "test_x07a_platform_rows.py"
         for row in USE.findall(path.read_text(encoding="utf-8"))
     }
-    return used | {row for nodes in PLATFORM_DIFFERENCES.values() for row, _ in nodes.values()}
+    differences = {row for nodes in PLATFORM_DIFFERENCES.values() for row, _ in nodes.values()}
+    return used | differences | set(FROZEN_WINDOWS_CONSEQUENCES)
 
 
 def test_every_row_is_carried_by_code_and_every_use_is_a_row() -> None:
@@ -49,6 +56,15 @@ def test_the_platform_differences_name_no_registered_platform() -> None:
     for nodes in PLATFORM_DIFFERENCES.values():
         for node, (row, paths) in nodes.items():
             assert ROW.fullmatch(row) and paths, node
+
+
+def test_a_frozen_limits_consequence_holds_only_while_its_limit_stands() -> None:
+    """Review R-5 (Q-13 option A): a row that follows from a `FROZEN_WINDOWS_LIMITS` skip names a
+    node that is still a key: lifting the limit fails here until the consequence row, its use and
+    its table row are retired with it."""
+    for row, (node, line) in FROZEN_WINDOWS_CONSEQUENCES.items():
+        assert ROW.fullmatch(row) and line, row
+        assert node in FROZEN_WINDOWS_LIMITS, (row, node)
 
 
 #: WO3 A11: the reproducibility statement for the two unregistered CI platforms.
