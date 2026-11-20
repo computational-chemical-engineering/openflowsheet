@@ -14,6 +14,7 @@ from __future__ import annotations
 import json
 import os
 import stat
+import sys
 import time
 from pathlib import Path
 from typing import Any
@@ -44,9 +45,18 @@ INIT = {
 }
 
 
+def _posix_only() -> None:
+    """X07a platform limit (docs/X07a_DECISIONS.md): the V17 harness runs on the Linux
+    workstation. Its token check reads POSIX mode bits (Windows reports 0o666, run 44618922484)
+    and its stand-in `claude` is a shebang script."""
+    if sys.platform == "win32":
+        pytest.skip("V17 harness: POSIX token modes and a shebang stand-in, Linux workstation only")
+
+
 def identity_claude(directory: Path, listed: list[str], leak: str = "") -> Path:
     """A fake `claude` that answers the probe with `listed` and writes `leak` to stderr; it
     records its environment keys, the token's presence and its config directory's listing."""
+    _posix_only()
     final = "Here they are.\n\n```json\n" + json.dumps({"email_addresses": listed}) + "\n```"
     result = {
         "type": "result",
@@ -88,6 +98,7 @@ print(json.dumps({result!r}), flush=True)
 
 def _operator(directory: Path) -> harness.Operator:
     """The stand-in operator: `ADDRESS`, and `TOKEN` in a 0600 token file under `directory`."""
+    _posix_only()
     directory.mkdir(parents=True, exist_ok=True)
     token_file = directory / "operator-token"
     token_file.write_text(TOKEN + "\n")
@@ -139,6 +150,7 @@ def test_the_operator_never_shows_its_secrets(tmp_path: Path) -> None:
 
 
 def test_a_token_file_is_read_and_checked(tmp_path: Path) -> None:
+    _posix_only()
     plain = tmp_path / "token"
     plain.write_text(TOKEN + "\n")
     plain.chmod(0o600)

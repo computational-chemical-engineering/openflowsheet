@@ -53,6 +53,9 @@ def _lines(path: Path) -> list[dict[str, Any]]:
 def fake_claude(directory: Path, mode: str) -> Path:
     """A stand-in `claude`: `--version` prints a version; otherwise it writes what it saw (argv,
     cwd listing, environment keys) to `seen.json` beside itself and streams per `mode`."""
+    if sys.platform == "win32":
+        # X07a platform limit (docs/X07a_DECISIONS.md): a shebang script, run with a POSIX PATH.
+        pytest.skip("the stand-in claude is a shebang script: POSIX only (run 44618922484)")
     final = "Done.\n\n```json\n" + json.dumps(FINAL) + "\n```"
     result = {
         "type": "result",

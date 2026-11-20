@@ -64,6 +64,13 @@ from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.store import ProjectStore
 
 SPAWN = multiprocessing.get_context("spawn")
+
+#: X07a platform limit (docs/X07a_DECISIONS.md): the lost worker is made by SIGKILL and judged by
+#: its POSIX exit code; Windows has neither (run 44618922484).
+NEEDS_SIGKILL = pytest.mark.skipif(
+    not hasattr(signal, "SIGKILL"),
+    reason="a worker killed by SIGKILL, judged by its POSIX exit code: Windows has no SIGKILL",
+)
 NOMINAL = "SYN-001-nominal"
 #: G6: revision_eo with a certificate, legacy_eo with a certificate, legacy_eo with a failure
 #: bundle (HOMOTOPY_STALLED), revision_eo on a T06 network, and a T05b builder.
@@ -238,6 +245,7 @@ def test_a_blocked_worker_past_its_wall_time_is_timed_out_forced(
 # -- lost processes (§8.2, §9.3) ----------------------------------------------------------------
 
 
+@NEEDS_SIGKILL
 def test_a_killed_worker_ends_its_job_worker_lost(
     app: LocalApplication, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -287,6 +295,7 @@ def test_a_store_error_ending_a_job_is_retried_not_dropped(
     assert result is not None and result.verification_status == "VERIFIED"
 
 
+@NEEDS_SIGKILL
 def test_a_retried_ending_appends_the_worker_log_once(
     app: LocalApplication, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -328,7 +337,7 @@ def test_a_killed_server_leaves_owner_lost_and_its_worker_exits(
     server.start()
     job_id, worker_pid = ready.get(timeout=PATIENCE_S)
     assert server.pid is not None
-    os.kill(server.pid, signal.SIGKILL)
+    server.kill()  # SIGKILL on POSIX, TerminateProcess on Windows
     server.join(PATIENCE_S)
     # §9.3: the orphaned worker sees its parent change at its next checkpoint and exits.
     wait_until(lambda: gone(worker_pid), "the orphaned worker to exit")

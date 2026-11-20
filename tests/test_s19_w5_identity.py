@@ -79,6 +79,17 @@ SAMPLES = {
 COMMENT = "# W5 identity experiment: a comment-only edit (never committed).\n"
 
 
+#: X07a platform limit (docs/X07a_DECISIONS.md): the facts at `BASE` come from importing that
+#: tree, which predates the platform layer and imports `fcntl` (run 44618922484). A W5 base at or
+#: after X07a's merge lifts it.
+BASE_TREE_LIMIT = "the W5 base tree imports fcntl (it predates openflowsheet._platform): POSIX only"
+
+
+def _skip_base_tree_on_windows() -> None:
+    if sys.platform == "win32":
+        pytest.skip(BASE_TREE_LIMIT)
+
+
 def _git(*arguments: str, cwd: Path = ROOT) -> str:
     return subprocess.run(
         ["git", *arguments], cwd=cwd, capture_output=True, text=True, check=True
@@ -86,6 +97,7 @@ def _git(*arguments: str, cwd: Path = ROOT) -> str:
 
 
 def _tool(*arguments: str) -> subprocess.CompletedProcess[str]:
+    _skip_base_tree_on_windows()
     return subprocess.run(
         [sys.executable, str(TOOL), *arguments], capture_output=True, text=True, check=False
     )
@@ -93,12 +105,14 @@ def _tool(*arguments: str) -> subprocess.CompletedProcess[str]:
 
 @pytest.fixture(scope="module")
 def facts() -> w5.Facts:
+    _skip_base_tree_on_windows()
     return w5.facts_at(ROOT, w5.resolve(ROOT, BASE))
 
 
 @pytest.fixture
 def scratch(tmp_path: Path) -> Iterator[Path]:
     """A detached worktree of the base, removed afterwards."""
+    _skip_base_tree_on_windows()
     tree = tmp_path / "tree"
     _git("worktree", "add", "--detach", str(tree), BASE)
     try:
