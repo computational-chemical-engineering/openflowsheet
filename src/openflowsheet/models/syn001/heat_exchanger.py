@@ -34,11 +34,11 @@ bisection for any increasing one.
 from __future__ import annotations
 
 import math
-from collections.abc import Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from functools import cache
 from pathlib import Path
-from typing import Any, Final, Literal
+from typing import Any, Final, Literal, NamedTuple
 
 from openflowsheet.canonical import file_sha256
 from openflowsheet.compile.spec import EquationSpec, PropertyBlock, QuantityKind
@@ -267,6 +267,16 @@ def _refusal(status: PropertyStatus, code: str, detail: str) -> UnitEvaluation:
 
 def _code(evaluation: UnitEvaluation) -> str:
     return evaluation.message.splitlines()[0] if evaluation.message else ""
+
+
+class _Bracket(NamedTuple):
+    """A bracket `[low, high]` of `HeatExchanger._invert`'s residual with the residuals at its
+    ends, checked to hold the root strictly inside (`f_low < 0.0 < f_high`)."""
+
+    low: float
+    f_low: float
+    high: float
+    f_high: float
 
 
 @dataclass(frozen=True)
@@ -817,14 +827,23 @@ class HeatExchanger:
         target is then that very enthalpy — and takes Newton steps kept strictly inside the
         bracket, bisecting otherwise, until the residual is exactly zero or no double lies
         between the bracket ends. Returns the end with the smaller residual, never a midpoint.
+        The residual at a temperature is `Hdot_phase - target` with its slope, from `_slope_at`
+        (or the provider's refusal); the iteration inside the checked bracket is `_bisect_newton`.
         """
+
+        def residual(temperature: float) -> tuple[float, float] | UnitEvaluation:
+            answer = self._slope_at(port, stream, phase, temperature, context)
+            if isinstance(answer, UnitEvaluation):
+                return answer
+            return answer[0] - target, answer[1]
+
         low, high = T_MIN, T_MAX
         ends: list[tuple[float, float]] = []
         for end in (low, high):
-            answer = self._slope_at(port, stream, phase, end, context)
+            answer = residual(end)
             if isinstance(answer, UnitEvaluation):
                 return answer
-            ends.append((answer[0] - target, answer[1]))
+            ends.append(answer)
         f_low, f_high = ends[0][0], ends[1][0]
         if f_low > 0.0:
             return self._outside(low)
@@ -835,12 +854,29 @@ class HeatExchanger:
         if f_high == 0.0:
             return high
 
-        guess = stream.temperature
+        return self._bisect_newton(residual, stream.temperature, _Bracket(low, f_low, high, f_high))
+
+    def _bisect_newton(
+        self,
+        residual: Callable[[float], tuple[float, float] | UnitEvaluation],
+        guess: float,
+        bracket: _Bracket,
+    ) -> float | UnitEvaluation:
+        """`_invert`'s iteration from `guess` (the side's inlet temperature) on `bracket`.
+
+        Each iterate narrows the bracket on its residual's sign; the next is the Newton step
+        when the slope is positive, else the midpoint, and the midpoint when the step is not
+        strictly inside. Returns the iterate on a zero residual or a repeated iterate, the end
+        with the smaller residual when no double lies strictly between the ends, or the
+        provider's refusal of an iterate. Raises `RuntimeError` after `_MAX_ITERATIONS` steps,
+        which a bracketed bisection on doubles cannot reach.
+        """
+        low, f_low, high, f_high = bracket
         for _ in range(_MAX_ITERATIONS):
-            answer = self._slope_at(port, stream, phase, guess, context)
+            answer = residual(guess)
             if isinstance(answer, UnitEvaluation):
                 return answer
-            value, slope = answer[0] - target, answer[1]
+            value, slope = answer
             if value == 0.0:
                 return guess
             if value < 0.0:
