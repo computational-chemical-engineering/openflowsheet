@@ -3933,3 +3933,15 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
 - 2026-11-20 ~02:15 CET, X07a-WO2 launched (opus-engineer, Opus; 0.5 lane, not S19), brief
   `docs/briefs/X07a-WO2.md` on wp/X07a (bbc48171). Facts: run 44629506428 (37049c8a) failed every check leg incl.
   ubuntu; 44629325836 windows stuck in G19 ~2.5 h.
+- **2026-11-20 ~02:45 CET, L_L measured (WO-L0 done).** Job 522 (`w5ll-probe2`, scratch d1999d3f = 838268db + a comment
+  line in each of the 16 admitted files): 10 failed, 20428 passed, 1047 s; F0 `M9 FAIL 16/35`, M1 to M8 PASS;
+  registry check fails on `builtin-sha256.txt` only. L_L = L_N's F0 (4) and F1 (5) rows plus L01 A22
+  (`test_a22_the_c1_files_are_byte_identical_to_the_l01_base`); no S10 A26 (WO-1b), no surprise. Note: a merge-check
+  without `--batch` runs no F0 or registry tier (the tests carry them). B_L = 69806a5a (the tip; docs only after
+  838268db). Gate file `<git-common-dir>/codehealth/briefs/S19-W5-batchL.json` (sha256 7ca6eee0, validate PASS:
+  admitted 16, retarget 4 = cascade, column, column_solve, region; expected failures 10); brief `S19-W5-batchL.md`
+  (K's fixture path: `tests/test_l01_records.py`). Eleven admitted files carry a cross-file `duplication` smell that
+  R4 forbids removing; unedited ones leave the set before K. WO-L1 launched (opus-engineer, brief `S19-W5-L1.md`,
+  lane `wp/S19-w5l` from 69806a5a). gate_report ALERTs: `selected share 10% < 75%`, `selected gates take 623 s > 300
+  s`, `selected/full ratio 0.55 > 0.4`; cause: this window's gates were merge-checks and probes (full suite by
+  design); action unchanged.

@@ -57,22 +57,22 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 - G1 (orchestrator/, numerics/): W3 lanes N and O closed 2026-11-19 (272011be); residuals executor.py (PR-1b, 6.1 -> 9.0, gating) and `_solve_region`'s parameter object (W4).
 - G-END (below) stays the end criterion for the whole repository.
 
-## Next actions (2026-11-20 ~01:30 CET)
+## Next actions (2026-11-20 ~02:45 CET)
 
-**Position:** main = c4a91a75. wp/S19 = 17f70aa2 (RegionCall + WO-N6 retarget merged) + docs. MB 756e1c12. Runner
-PID 1341562. Results COUNT 499 (a fresh context re-arms `$Q wait --since <COUNT from $Q status>` in the background).
-Queue empty. cce-code-health pinned at 34a30bf (requirements-codehealth.txt, `.venv-codehealth`). Batch N's K
-4178e4bc recorded (`<queue>/batches/closed-605d332f....json`). Agent running: none. On each result: gate_report, log.
+**Position:** main = c4a91a75. wp/S19 = 69806a5a + logs. MB 756e1c12. Runner PID 1341562. Results COUNT 501 (a fresh
+context re-arms `$Q wait --since <COUNT from $Q status>` in the background). cce-code-health pinned at 34a30bf.
+Agents running: WO-L1 (opus-engineer, lane `wp/S19-w5l`, worktree s19-w5l) and X07a-WO2 (opus-engineer, wp/X07a).
+On each result: gate_report, log.
 
-1. **Done since the last reset:** T6 tooling (56dc5b64: repeatable `--plans` admitting added plan files;
-   generator-only step = `enqueue --mode merge-check --batch FILE --base <parent> --head <step>`; `w5_gate.py close
-   --k K --queue-dir <queue> [--fixture PATH]`, `enqueue --batch` refuses a head containing K); WO-N6 retarget;
-   RegionCall (ADR 0076 I-21, card ofs-s19-legacy-models (b) done).
-2. **Next S19 work: W5 batch L** (card ofs-s19-legacy-models (c); ruling `docs/briefs/S19-W5-ruling.md` section 9
-   WO-L0 to WO-L3, 6.2, 6.3): the orchestrator writes the batch file at B_L = the wp/S19 tip (form of
-   `<git-common-dir>/codehealth/briefs/S19-W5-batchN.json`; list L_B's fixture paths so `close --k` needs no
-   `--fixture`), then briefs WO-L0 on a lane `wp/S19-w5l`. One S19 engineer at a time.
-3. **0.5:** X01-WO1 part A delivered, manifest `tested`, CI green (S19_DECISIONS 2026-11-20); next for X01: a
+1. **Batch L open** (card ofs-s19-legacy-models (c)): B_L = 69806a5a; gate file and brief
+   `<git-common-dir>/codehealth/briefs/S19-W5-batchL.{json,md}` (admitted 16 unit modules, retarget 4, L_L 10).
+   WO-L1 (column_unit: 34 retargets, re-export removal as interface step, health) running. Every W5-L enqueue adds
+   `--batch .../S19-W5-batchL.json`. Reviewer every 3 accepted steps (S1). Then WO-L2 (conversion_reactor,
+   kinetic_cstr, syn001/mixer, then others worst first), WO-L3 close (`close --k K --fixture tests/test_l01_records.py`;
+   L01 F-4 register ruling for edited c1 files).
+2. Three non-W5 `retarget` rows in i19_scan (column_acceptance.saturation_pairs, region_attempts.solve_ptc,
+   region_problem.check_opening): open build-lane item for a later lane.
+3. **0.5:** X07a-WO2 running (brief `docs/briefs/X07a-WO2.md` on wp/X07a bbc48171). X01-WO1 part A delivered, manifest `tested`, CI green (S19_DECISIONS 2026-11-20); next for X01: a
    reviewer pass, then a merge card via hub; open B, C, Q-1..Q-3 for the design lane (`docs/X01_DECISIONS.md` on wp/X01). X07a-WO2 next in the 0.5 slot: read CI runs 44629325836 and
    44629506428 (codehealth job failed on 44629506428), fix Windows/macOS test failures; brief to write from
    `docs/X07a_DECISIONS.md` Position (wp/X07a 37049c8a). Q-1 pywin32 licence (rights: Frank) and Q-2 F0 M7 per-platform
