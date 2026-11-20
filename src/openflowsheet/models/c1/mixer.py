@@ -298,28 +298,18 @@ class AdiabaticMixer:
     def evaluate(
         self, inlets: Mapping[str, Sequence[StreamState]], context: EvaluationContext
     ) -> UnitEvaluation:
-        connected = tuple(inlets.get("inlet", ()))
-        if len(connected) < 2 or set(inlets) - {"inlet"}:
-            raise SpecificationError(
-                f"{self.unit_id}: a mixer takes two or more inlet streams, got {inlets!r}"
-            )
-        for stream in connected:
-            if len(stream.n) != len(self.components):
-                raise SpecificationError(
-                    f"{self.unit_id}: an inlet carries {len(stream.n)} components, expected "
-                    f"{len(self.components)}"
-                )
-        pressures = {stream.pressure for stream in connected}
-        if len(pressures) != 1:
-            return UnitEvaluation(
-                status="error",
-                message=(
-                    f"inlet pressures {sorted(pressures)} are not equal. C1MIX-pressure declares "
-                    "them equal to the outlet pressure and ADR 0001 D4.5 makes a mismatch a "
-                    "validation failure, not something the unit repairs"
-                ),
-                reference_convention=REFERENCE_CONVENTION,
-            )
+        """The outlet of an adiabatic mix of the `inlet` streams at their common pressure.
+
+        The phases in order: the shape checks (`_connected_inlets`, which raises
+        `SpecificationError`); C1MIX-pressure (`_pressure_refusal`); the combined flows and, when
+        every inlet is dormant, the dormant outlet; the closure's target (`_target_enthalpy`);
+        the energy closure on the flowing inlets' temperature range (`_close_energy`); B16's
+        vapour admissibility of the outlet (`vapour_refusal`). Every refusal after the shape
+        checks is returned as a `UnitEvaluation`.
+        """
+        connected = self._connected_inlets(inlets)
+        if (pressure_refusal := self._pressure_refusal(connected)) is not None:
+            return pressure_refusal
         pressure = connected[0].pressure
         combined = tuple(
             normalize_zero(sum(stream.n[index] for stream in connected))
@@ -344,15 +334,9 @@ class AdiabaticMixer:
                 message="every inlet is dormant; the outlet temperature is a retained label",
             )
 
-        target = 0.0
-        for index, stream in flowing:
-            refused = vapour_refusal(self.provider, context, f"inlet {index}", stream)
-            if refused is not None:
-                return refused
-            contribution, failure = enthalpy_flow(self.provider, context, stream, "VAPOR")
-            if failure is not None:
-                return failure
-            target += contribution
+        target = self._target_enthalpy(flowing, context)
+        if isinstance(target, UnitEvaluation):
+            return target
 
         low = min(stream.temperature for _, stream in flowing)
         high = max(stream.temperature for _, stream in flowing)
@@ -379,6 +363,59 @@ class AdiabaticMixer:
             provider_id=PROVIDER_ID,
             reference_convention=REFERENCE_CONVENTION,
         )
+
+    def _connected_inlets(
+        self, inlets: Mapping[str, Sequence[StreamState]]
+    ) -> tuple[StreamState, ...]:
+        """The `inlet` port's streams, after the shape checks: `SpecificationError` for fewer
+        than two streams or another port, then for the first stream whose component count is
+        not the unit's."""
+        connected = tuple(inlets.get("inlet", ()))
+        if len(connected) < 2 or set(inlets) - {"inlet"}:
+            raise SpecificationError(
+                f"{self.unit_id}: a mixer takes two or more inlet streams, got {inlets!r}"
+            )
+        for stream in connected:
+            if len(stream.n) != len(self.components):
+                raise SpecificationError(
+                    f"{self.unit_id}: an inlet carries {len(stream.n)} components, expected "
+                    f"{len(self.components)}"
+                )
+        return connected
+
+    def _pressure_refusal(self, connected: tuple[StreamState, ...]) -> UnitEvaluation | None:
+        """C1MIX-pressure: an `error` evaluation when the inlet pressures are not all equal, else
+        `None`."""
+        pressures = {stream.pressure for stream in connected}
+        if len(pressures) != 1:
+            return UnitEvaluation(
+                status="error",
+                message=(
+                    f"inlet pressures {sorted(pressures)} are not equal. C1MIX-pressure declares "
+                    "them equal to the outlet pressure and ADR 0001 D4.5 makes a mismatch a "
+                    "validation failure, not something the unit repairs"
+                ),
+                reference_convention=REFERENCE_CONVENTION,
+            )
+        return None
+
+    def _target_enthalpy(
+        self, flowing: list[tuple[int, StreamState]], context: EvaluationContext
+    ) -> float | UnitEvaluation:
+        """The closure's target: the flowing inlets' vapour enthalpy flows (`enthalpy_flow`),
+        summed from 0.0 in inlet order, each inlet keyed by its index among the connected ones.
+        Returns instead, for the first inlet that fails, B16's refusal (`vapour_refusal`) or the
+        provider's failure, checked in that order per inlet."""
+        target = 0.0
+        for index, stream in flowing:
+            refused = vapour_refusal(self.provider, context, f"inlet {index}", stream)
+            if refused is not None:
+                return refused
+            contribution, failure = enthalpy_flow(self.provider, context, stream, "VAPOR")
+            if failure is not None:
+                return failure
+            target += contribution
+        return target
 
     def _close_energy(
         self,
