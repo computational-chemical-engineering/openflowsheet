@@ -351,7 +351,7 @@ def test_the_frozen_exemption_drops_admitted_paths_only(
 ) -> None:
     unset = _frozen(None)
     exempt = _frozen(_write(tmp_path / "batch.json", batch))
-    assert len(unset) == 35 and PR_LIB in unset
+    assert len(unset) == 42 and PR_LIB in unset
     assert exempt == [path for path in unset if path != PR_LIB]
     assert FEED in exempt and SYN001 in exempt
 

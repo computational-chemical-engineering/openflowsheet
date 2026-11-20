@@ -20059,3 +20059,23 @@ registration of a batch's moves happens once, at K.
 
 **Rejected.** *Leave `models/c1/mixer.py` out of batch L:* keeps the debt batch L removes from it (WO-L1 to WO-L2b),
 against G-END (S19).
+
+## R-1067 — L01.A22 (a): S19 W5 batch P moves `thermo/pr_c1.py` by a behaviour-preserving restructuring (2026-11-20)
+
+| | |
+| --- | --- |
+| Date | 2026-11-20 |
+| Decided by | Frank, Decision Desk card ofs-s19-w5-fr1-providers (option A: tier 3 admitted, batch P; ruling F-4 of `docs/briefs/S19-W5-ruling.md`); form of R-983 |
+| Normative text | `docs/briefs/S19-W5-ruling.md` (W5 batches, F-4); batch P brief `S19-W5-batchP.md` |
+| Evidence | batch P steps 486-498 accepted (gate jobs 546-559 PASS, job 556's no-gain miss re-gated as job 557); `thermo/pr_c1.py` moved in steps 486-488, jobs 546-548; W5-K2 `w5_identity.py judge --before 2eae72a8 --after K` |
+| Affected packages | L01 (A22: `tests/test_l01_records.py` `MOVED`); S19 W5 batch P |
+
+**Decision.** `src/openflowsheet/thermo/pr_c1.py`, pinned by L01.A22 at the L01 base, moves to SHA-256
+`0e5c7913efa3e34199c3bc75b3c1d5992fd6b7e1ab32e40e991e477df205142b` (S19 W5 batch P, close K). The move is a
+code-health restructuring judged behaviour-identical by the W5 gates (W5-S1 to S7 per step, with W5-S2 the identity
+pin; W5-K2 and W5-K5 at the close); `PINNED` stays the L01 base, as R-983 requires. As for R-1061, the entry is
+recorded at the batch close K, not in the moving commit: under ruling R3 of `docs/briefs/S19-W5-ruling.md` no W5 step
+re-registers.
+
+**Rejected.** *Leave `thermo/pr_c1.py` out of batch P:* keeps the debt WO-P1 removes from it (health 4.6, debt 55.7),
+against G-END (S19).

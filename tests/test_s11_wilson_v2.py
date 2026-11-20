@@ -51,8 +51,9 @@ S10_REFERENCES = {
 ENTROPY: dict[str, Any] = yaml.safe_load(
     (REPO_ROOT / "benchmarks" / "s11" / "wilson_entropy_reference.yaml").read_text(encoding="utf-8")
 )
-#: SHA-256 of `thermo/wilson_ig.py` at the S11 base `8c34ecb0`: v1 is not edited by a byte (§4.12).
-WILSON_V1_SHA256 = "4bcd8f4dc8115b6b35a246bc0bb3324dbac68291440750b9d51a369b042d64b9"
+#: SHA-256 of `thermo/wilson_ig.py` at K of S19 W5 batch P (`4bcd8f4d…` at the S11 base
+#: `8c34ecb0`): v1 is not edited since K of batch P (§4.12; S11.A75 as amended by S19 W5, F-3).
+WILSON_V1_SHA256 = "8fa9821be223642da3eac2315acf34c2962bc397fbeaf5daf3461a46e4575dc5"
 PHASES: tuple[Phase, ...] = ("LIQUID", "VAPOR")
 
 

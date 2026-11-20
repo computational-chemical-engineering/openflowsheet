@@ -37,6 +37,13 @@
       },
       "modules": [
         "openflowsheet/thermo/_coolprop_heos_fluids.py",
+        "openflowsheet/thermo/_coolprop_heos_fluids_a.py",
+        "openflowsheet/thermo/_coolprop_heos_fluids_b1.py",
+        "openflowsheet/thermo/_coolprop_heos_fluids_b2.py",
+        "openflowsheet/thermo/_coolprop_heos_fluids_b3.py",
+        "openflowsheet/thermo/_coolprop_heos_fluids_b4.py",
+        "openflowsheet/thermo/_coolprop_heos_fluids_b5.py",
+        "openflowsheet/thermo/_coolprop_heos_fluids_b6.py",
         "openflowsheet/thermo/coolprop_heos.py"
       ]
     },
