@@ -248,6 +248,7 @@ def _exact_residual(z: float, big_a: float, big_b: float) -> float:
     return float(((x + c2) * x + c1) * x + c0)
 
 
+@pytest.mark.bitwise_baseline(row="X07a-L6")
 @pytest.mark.parametrize("pressure", sorted(F2_STATES))
 def test_f2_the_counterexample_has_one_root_and_no_liquid(pressure: float) -> None:
     pure = (0.0, 0.0, 1.0, 0.0, 0.0)

@@ -200,6 +200,7 @@ def _counts() -> dict[str, int]:
     return dict(Counter(r.outcome for r in sweep().values() if isinstance(r, RegionResult)))
 
 
+@pytest.mark.bitwise_baseline(row="X07a-L10")
 def test_b34a_the_outcome_counts() -> None:
     assert _counts() == OUTCOMES
 

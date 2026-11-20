@@ -592,12 +592,10 @@ def test_f4_a_w_dependent_out_of_process_loop_converges_end_to_end(
     # Measured (this build): see build log D126.
 
 
-def test_rp2b_a_w_dependent_rerun_one_ulp_off_matches_not_bitwise(
+def _rp2b_rerun(
     nonlinear_run: tuple[Path, Any, dict[str, Any]], monkeypatch: pytest.MonkeyPatch
-) -> None:
-    """RP-2's second case (R-317, review F4) on F4's loop: the rerun's X̂ moved in its last bits at
-    k = 1 (RP-2's seam); every later iterate, inlet and residual moves with it, the experiments
-    are served from the record, and the reproduction is `MATCH`, not bitwise."""
+) -> tuple[Any, list[Any], list[Any]]:
+    """RP-2's seam on F4's loop: the report, the recorded and the rerun's iterations."""
     from test_m02_wo14 import OneUlpOnTheFirstClip
 
     from openflowsheet.orchestrator import coupling
@@ -607,19 +605,37 @@ def test_rp2b_a_w_dependent_rerun_one_ulp_off_matches_not_bitwise(
     reproduction = reproduce_bundle(
         tmp_path / "bundle", rerun=True, rerun_directory=tmp_path / "rerun", run_id="run-rerun"
     )
-    report = reproduction.report
-    assert (report.verdict, report.differences) == ("MATCH", ())
-    assert report.bitwise_floats is False
     recorded = artifacts["external-coupling.json"]["iterations"]
     rerun = read_artifact(tmp_path / "rerun", "external-coupling.json")["iterations"]
+    return reproduction.report, recorded, rerun
+
+
+def test_rp2b_a_w_dependent_rerun_one_ulp_off_matches_not_bitwise(
+    nonlinear_run: tuple[Path, Any, dict[str, Any]], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """RP-2's second case (R-317, review F4) on F4's loop: the rerun's X̂ moved in its last bits at
+    k = 1 (RP-2's seam); every later iterate, inlet and residual moves with it, the experiments
+    are served from the record, and the reproduction is `MATCH`, not bitwise."""
+    report, recorded, rerun = _rp2b_rerun(nonlinear_run, monkeypatch)
+    assert (report.verdict, report.differences) == ("MATCH", ())
+    assert report.bitwise_floats is False
     assert len(rerun) == len(recorded)
     assert rerun[1]["w"][0] != recorded[1]["w"][0]
+    served = f"external_results_replayed_from_record({len(recorded)})"
+    assert served in report.reasons
+
+
+@pytest.mark.bitwise_baseline(row="X07a-L8")
+def test_rp2b_the_seam_reaches_the_reactor_rate(
+    nonlinear_run: tuple[Path, Any, dict[str, Any]], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """RP-2's seam moves the reactor's `r_xi` in some iterate: a witness measured on the iterates
+    of the recording platform (on macOS's iterates the moved X̂ leaves every `r_xi` bit-equal)."""
+    _, recorded, rerun = _rp2b_rerun(nonlinear_run, monkeypatch)
     assert any(
         mine["units"]["reactor"]["r_xi"] != theirs["units"]["reactor"]["r_xi"]
         for mine, theirs in zip(rerun, recorded, strict=True)
     )
-    served = f"external_results_replayed_from_record({len(recorded)})"
-    assert served in report.reasons
 
 
 def test_d130_a_failure_bundle_rerun_one_ulp_off_matches_not_bitwise(

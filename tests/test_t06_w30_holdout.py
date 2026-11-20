@@ -221,6 +221,7 @@ def test_a85a_the_holdouts_margins_are_reported(case_id: str) -> None:
         )
 
 
+@pytest.mark.bitwise_baseline(row="X07a-L9")
 @pytest.mark.parametrize("case_id", REVISION_CASES)
 def test_a85b_every_holdout_split_column_is_the_rule_applied_to_its_stream(case_id: str) -> None:
     """A85 (b)'s rule, without `lifted_split_values`: heater style, `tp_state` of the start's own

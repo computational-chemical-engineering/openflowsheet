@@ -239,6 +239,11 @@ def test_run_directory_layout(one_run: tuple[Path, harness.WorkPaths, dict[str, 
     assert json.loads((run_dir / "mcp.json").read_text()) == json.loads(paths.mcp_json.read_text())
 
 
+@pytest.mark.skipif(
+    sys.platform == "darwin",
+    reason="V17 runs on the Linux workstation (R-116); on macOS the stand-in's empty cwd holds "
+    "'nonexistent' (X07a platform limit, run 44670029066)",
+)
 def test_token_placement(one_run: tuple[Path, harness.WorkPaths, dict[str, Any]]) -> None:
     run_dir, paths, seen = one_run
     token = paths.token_file.read_text().strip()

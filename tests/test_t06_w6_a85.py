@@ -140,6 +140,7 @@ def test_a85a_the_margins_are_the_measured_ones() -> None:
 # -- (b) the rule, restated -----------------------------------------------------------------------
 
 
+@pytest.mark.bitwise_baseline(row="X07a-L9")
 @pytest.mark.parametrize("case_id", REVISION_CASES)
 def test_a85b_every_published_split_column_is_the_rule_applied_to_its_stream(
     case_id: str,

@@ -114,6 +114,7 @@ def test_g1a_every_def_has_a_valid_and_an_invalid_fixture(directory: str) -> Non
         assert any(fixture["expect_error"] in error for error in errors), (path, errors)
 
 
+@pytest.mark.bitwise_baseline(row="X07a-L7")
 def test_g1a_the_fixtures_are_what_the_code_emits_today() -> None:
     module = _fixture_module()
     for name, document in module.documents().items():
