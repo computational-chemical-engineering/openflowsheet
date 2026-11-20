@@ -394,29 +394,18 @@ class AdiabaticMixer:
     def evaluate(
         self, inlets: Mapping[str, Sequence[StreamState]], context: EvaluationContext
     ) -> UnitEvaluation:
-        connected = tuple(inlets.get("inlet", ()))
-        if len(connected) < 2 or set(inlets) - {"inlet"}:
-            raise SpecificationError(
-                f"{self.unit_id}: a mixer takes two or more inlet streams, got {inlets!r}"
-            )
-        for stream in connected:
-            if len(stream.n) != len(self.components):
-                raise SpecificationError(
-                    f"{self.unit_id}: an inlet carries {len(stream.n)} components, expected "
-                    f"{len(self.components)}"
-                )
+        """The outlet of an adiabatic mix of the `inlet` streams at their common pressure.
 
-        pressures = {stream.pressure for stream in connected}
-        if len(pressures) != 1:
-            return UnitEvaluation(
-                status="error",
-                message=(
-                    f"inlet pressures {sorted(pressures)} are not equal. MIX-pressure declares "
-                    "them equal to the outlet pressure and ADR 0001 D4.5 makes a mismatch a "
-                    "validation failure, not something the unit repairs"
-                ),
-                reference_convention=self.reference_convention,
-            )
+        The phases in order: the shape checks (`_connected_inlets`, which raises
+        `SpecificationError`); MIX-pressure (`_pressure_refusal`); the combined flows and, when
+        every inlet is dormant, the dormant outlet; the closure's target (`_target_enthalpy`);
+        the energy closure on the flowing inlets' temperature range (`_close_energy`); the
+        outlet's admissibility as a liquid (`_outlet_refusal`). Every refusal after the shape
+        checks is returned as a `UnitEvaluation`.
+        """
+        connected = self._connected_inlets(inlets)
+        if (pressure_refusal := self._pressure_refusal(connected)) is not None:
+            return pressure_refusal
         pressure = connected[0].pressure
 
         combined = tuple(
@@ -441,7 +430,80 @@ class AdiabaticMixer:
                 message="every inlet is dormant; the outlet temperature is a retained label",
             )
 
-        target = 0.0
+        target = self._target_enthalpy(flowing, context)
+        if isinstance(target, UnitEvaluation):
+            return target
+
+        low = min(stream.temperature for stream in flowing)
+        high = max(stream.temperature for stream in flowing)
+        outlet_temperature, iterations, converged, message = self._close_energy(
+            combined, pressure, low, high, target, context
+        )
+        if not converged:
+            return UnitEvaluation(
+                status="not_converged",
+                iterations=iterations,
+                message=message,
+                reference_convention=self.reference_convention,
+            )
+
+        outlet = StreamState(n=combined, temperature=outlet_temperature, pressure=pressure)
+        if (outlet_refusal := self._outlet_refusal(outlet, context)) is not None:
+            return outlet_refusal
+
+        return UnitEvaluation(
+            status="ok",
+            outlets={"outlet": outlet},
+            duty=None,
+            phase_signature="LIQUID",
+            iterations=iterations,
+            provider_id=self.property_provider,
+            reference_convention=self.reference_convention,
+        )
+
+    def _connected_inlets(
+        self, inlets: Mapping[str, Sequence[StreamState]]
+    ) -> tuple[StreamState, ...]:
+        """The `inlet` port's streams, after the shape checks: `SpecificationError` for fewer
+        than two streams or another port, then for the first stream whose component count is
+        not the unit's."""
+        connected = tuple(inlets.get("inlet", ()))
+        if len(connected) < 2 or set(inlets) - {"inlet"}:
+            raise SpecificationError(
+                f"{self.unit_id}: a mixer takes two or more inlet streams, got {inlets!r}"
+            )
+        for stream in connected:
+            if len(stream.n) != len(self.components):
+                raise SpecificationError(
+                    f"{self.unit_id}: an inlet carries {len(stream.n)} components, expected "
+                    f"{len(self.components)}"
+                )
+        return connected
+
+    def _pressure_refusal(self, connected: tuple[StreamState, ...]) -> UnitEvaluation | None:
+        """MIX-pressure: an `error` evaluation when the inlet pressures are not all equal, else
+        `None`."""
+        pressures = {stream.pressure for stream in connected}
+        if len(pressures) != 1:
+            return UnitEvaluation(
+                status="error",
+                message=(
+                    f"inlet pressures {sorted(pressures)} are not equal. MIX-pressure declares "
+                    "them equal to the outlet pressure and ADR 0001 D4.5 makes a mismatch a "
+                    "validation failure, not something the unit repairs"
+                ),
+                reference_convention=self.reference_convention,
+            )
+        return None
+
+    def _target_enthalpy(
+        self, flowing: list[StreamState], context: EvaluationContext
+    ) -> float | UnitEvaluation:
+        """The closure's target: the flowing inlets' liquid enthalpy flows (`_liquid_enthalpy`),
+        summed from 0.0 in inlet order. Returns instead the provider's failure for the first
+        inlet it refuses, or an `unsupported` evaluation for the first inlet not admissible as
+        a liquid."""
+        total = 0.0
         for index, stream in enumerate(flowing):
             admissible, liquid, equivalent, failure = self._liquid_enthalpy(stream, context)
             if failure is not None:
@@ -459,75 +521,8 @@ class AdiabaticMixer:
                     ),
                     reference_convention=self.reference_convention,
                 )
-            target += liquid
-
-        low = min(stream.temperature for stream in flowing)
-        high = max(stream.temperature for stream in flowing)
-        outlet_temperature, iterations, converged, message = self._close_energy(
-            combined, pressure, low, high, target, context
-        )
-        if not converged:
-            return UnitEvaluation(
-                status="not_converged",
-                iterations=iterations,
-                message=message,
-                reference_convention=self.reference_convention,
-            )
-
-        outlet = StreamState(n=combined, temperature=outlet_temperature, pressure=pressure)
-        # Blueprint §6.3: the fixed phase set is allowed for a declared domain *with* a final
-        # admissibility check. This is that check. It fails rather than reporting a liquid
-        # enthalpy for a state whose real enthalpy is materially different.
-        admissible, _, equivalent, failure = self._liquid_enthalpy(outlet, context)
-        if failure is not None:
-            return failure
-        if not admissible:
-            return UnitEvaluation(
-                status="unsupported",
-                message=(
-                    f"the closure put the outlet at {outlet_temperature} K, where writing its "
-                    f"enthalpy as liquid would be wrong by {equivalent:.3g} K, past the "
-                    f"registered {TEMPERATURE_TOLERANCE:g} K: the outlet is not subcooled "
-                    "liquid there. The v0.0 closure is restricted to the subcooled-liquid "
-                    "domain; general PH support is T05 (plan §3.2)"
-                ),
-                reference_convention=self.reference_convention,
-            )
-
-        return UnitEvaluation(
-            status="ok",
-            outlets={"outlet": outlet},
-            duty=None,
-            phase_signature="LIQUID",
-            iterations=iterations,
-            provider_id=self.property_provider,
-            reference_convention=self.reference_convention,
-        )
-
-    def _liquid_enthalpy(
-        self, stream: StreamState, context: EvaluationContext
-    ) -> tuple[bool, float, float, UnitEvaluation | None]:
-        """`(admissible, liquid enthalpy flow, equivalent temperature error, failure)`.
-
-        Delegates to the shared kernel, so the heater and the mixer answer "may this stream be
-        written as a single phase" the same way. `failure` is non-`None` only when the provider
-        itself refused, which is passed through rather than reinterpreted.
-        """
-        admissible, liquid, equivalent, status, message = single_phase_admissible(
-            self.provider, stream, "LIQUID", self.components, context
-        )
-        if status != "ok":
-            return (
-                False,
-                0.0,
-                0.0,
-                UnitEvaluation(
-                    status=status,
-                    message=f"liquid enthalpy: {message}",
-                    reference_convention=self.reference_convention,
-                ),
-            )
-        return admissible, liquid, equivalent, None
+            total += liquid
+        return total
 
     def _close_energy(
         self,
@@ -541,7 +536,8 @@ class AdiabaticMixer:
         """Solve `Hdot_out(T) = target` on `[low, high]`. Bisection, Newton where it stays inside.
 
         Returns `(temperature, iterations, converged, message)`. Never returns a midpoint as if it
-        were a root.
+        were a root. The residual at a temperature is `_energy_residual` at the outlet state; the
+        iteration inside the checked bracket is `_bisect_newton`.
         """
         if low == high:
             # Every flowing inlet at one temperature: the outlet is at that temperature exactly,
@@ -641,3 +637,53 @@ class AdiabaticMixer:
             f"the energy closure did not converge in {_MAX_ITERATIONS} iterations on "
             f"[{low}, {high}]",
         )
+
+    def _outlet_refusal(
+        self, outlet: StreamState, context: EvaluationContext
+    ) -> UnitEvaluation | None:
+        """Blueprint §6.3: the fixed phase set is allowed for a declared domain *with* a final
+        admissibility check. This is that check. It fails rather than reporting a liquid
+        enthalpy for a state whose real enthalpy is materially different: the provider's
+        failure, or an `unsupported` evaluation when the outlet is not admissible as a liquid;
+        `None` when it is."""
+        admissible, _, equivalent, failure = self._liquid_enthalpy(outlet, context)
+        if failure is not None:
+            return failure
+        if not admissible:
+            return UnitEvaluation(
+                status="unsupported",
+                message=(
+                    f"the closure put the outlet at {outlet.temperature} K, where writing its "
+                    f"enthalpy as liquid would be wrong by {equivalent:.3g} K, past the "
+                    f"registered {TEMPERATURE_TOLERANCE:g} K: the outlet is not subcooled "
+                    "liquid there. The v0.0 closure is restricted to the subcooled-liquid "
+                    "domain; general PH support is T05 (plan §3.2)"
+                ),
+                reference_convention=self.reference_convention,
+            )
+        return None
+
+    def _liquid_enthalpy(
+        self, stream: StreamState, context: EvaluationContext
+    ) -> tuple[bool, float, float, UnitEvaluation | None]:
+        """`(admissible, liquid enthalpy flow, equivalent temperature error, failure)`.
+
+        Delegates to the shared kernel, so the heater and the mixer answer "may this stream be
+        written as a single phase" the same way. `failure` is non-`None` only when the provider
+        itself refused, which is passed through rather than reinterpreted.
+        """
+        admissible, liquid, equivalent, status, message = single_phase_admissible(
+            self.provider, stream, "LIQUID", self.components, context
+        )
+        if status != "ok":
+            return (
+                False,
+                0.0,
+                0.0,
+                UnitEvaluation(
+                    status=status,
+                    message=f"liquid enthalpy: {message}",
+                    reference_convention=self.reference_convention,
+                ),
+            )
+        return admissible, liquid, equivalent, None
