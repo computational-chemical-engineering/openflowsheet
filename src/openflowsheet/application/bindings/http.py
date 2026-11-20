@@ -45,8 +45,11 @@ import ipaddress
 import json
 import logging
 import re
+import signal
 import sys
-from collections.abc import AsyncIterator, Awaitable, Callable, Mapping
+import threading
+from collections.abc import AsyncIterator, Awaitable, Callable, Iterator, Mapping
+from contextlib import contextmanager
 from typing import Any, Final, Protocol
 from urllib.parse import unquote
 
@@ -483,11 +486,31 @@ def run(
             "tokens cross the network in clear text",
             file=sys.stderr,
         )
-    uvicorn.run(
-        application,
-        host=host,
-        port=port,
-        log_level=log_level,
-        proxy_headers=False,
-        server_header=False,
-    )
+    with _break_interrupts():
+        uvicorn.run(
+            application,
+            host=host,
+            port=port,
+            log_level=log_level,
+            proxy_headers=False,
+            server_header=False,
+        )
+
+
+@contextmanager
+def _break_interrupts() -> Iterator[None]:
+    """A requested stop returns normally on Windows too (X07a). uvicorn catches SIGINT and
+    SIGBREAK, shuts down gracefully, restores the handlers it found and raises the signal again.
+    SIGINT's found handler raises `KeyboardInterrupt`, which `uvicorn.run` swallows, so a POSIX
+    Ctrl+C returns; SIGBREAK's (Ctrl+Break, the only signal a console process group can be sent)
+    is the C runtime's default, which ends the process with exit code 3. For the serving's span
+    SIGBREAK is handled as SIGINT is. Elsewhere, and off the main thread (where uvicorn installs
+    no handlers), nothing changes."""
+    if sys.platform == "win32" and threading.current_thread() is threading.main_thread():
+        previous = signal.signal(signal.SIGBREAK, signal.default_int_handler)
+        try:
+            yield
+        finally:
+            signal.signal(signal.SIGBREAK, previous)
+    else:
+        yield
