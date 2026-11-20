@@ -654,7 +654,8 @@ def classify_exit(
       configured count, and that many iterations logged after iteration 0.
 
     Anything else is `TRF_ERROR(exit_mismatch)`: the printed outcome, the logged values and the
-    model disagree, and none of them is believed."""
+    model disagree, and none of them is believed. The optimal exit's last three outcomes are
+    `_feasible_optimal_exit`, the maximum-iterations evidence `_reached_maximum_iterations`."""
     if not iterations:
         return trf_error("exit_mismatch")
     last = iterations[-1]
@@ -664,26 +665,55 @@ def classify_exit(
             return trf_error("exit_mismatch")
         if not feasible:
             return TRF_STALLED_INCONSISTENT
-        if not accepted_steps(iterations):
-            return TRF_EXIT_WITHOUT_STEP
-        reason = unverified_reason(
+        return _feasible_optimal_exit(
             iterations,
             trust_radius=trust_radius,
             minimum_radius=minimum_radius,
             gamma_c=gamma_c,
             box_bound_exempt=box_bound_exempt,
         )
-        return TRF_CONVERGED if reason is None else exit_unverified(reason)
     if list(exit_lines) == [EXIT_FEASIBLE]:
         if WARNING_INSUFFICIENT_PROGRESS in warnings:
             return TRF_FEASIBLE_STALLED if feasible else TRF_STALLED_INCONSISTENT
         return trf_error("exit_mismatch")
-    if not exit_lines:
-        reached = [m for m in (_MAX_ITERATIONS.match(w) for w in warnings) if m is not None]
-        if (
-            len(reached) == 1
-            and int(reached[0].group(1)) == maximum_iterations
-            and last.k == maximum_iterations
-        ):
-            return TRF_MAX_ITERATIONS
+    if not exit_lines and _reached_maximum_iterations(warnings, maximum_iterations, last):
+        return TRF_MAX_ITERATIONS
     return trf_error("exit_mismatch")
+
+
+def _feasible_optimal_exit(
+    iterations: Sequence[IterationRecord],
+    *,
+    trust_radius: float,
+    minimum_radius: float,
+    gamma_c: float,
+    box_bound_exempt: bool,
+) -> Outcome:
+    """`classify_exit`'s `EXIT: Optimal solution found.` once the line agrees with the log and
+    θ_recheck is within the feasibility termination: `TRF_EXIT_WITHOUT_STEP` after no accepted
+    TRSP step, `TRF_EXIT_UNVERIFIED(<reason>)` when R-401's `unverified_reason` names one,
+    else `TRF_CONVERGED`. Pure."""
+    if not accepted_steps(iterations):
+        return TRF_EXIT_WITHOUT_STEP
+    reason = unverified_reason(
+        iterations,
+        trust_radius=trust_radius,
+        minimum_radius=minimum_radius,
+        gamma_c=gamma_c,
+        box_bound_exempt=box_bound_exempt,
+    )
+    return TRF_CONVERGED if reason is None else exit_unverified(reason)
+
+
+def _reached_maximum_iterations(
+    warnings: Sequence[str], maximum_iterations: int, last: IterationRecord
+) -> bool:
+    """`TRF_MAX_ITERATIONS`'s evidence besides the missing `EXIT:` line: exactly one TRF
+    maximum-iterations warning, naming `maximum_iterations`, and the last logged iteration
+    `last` is that iteration. Pure."""
+    reached = [m for m in (_MAX_ITERATIONS.match(w) for w in warnings) if m is not None]
+    return (
+        len(reached) == 1
+        and int(reached[0].group(1)) == maximum_iterations
+        and last.k == maximum_iterations
+    )
