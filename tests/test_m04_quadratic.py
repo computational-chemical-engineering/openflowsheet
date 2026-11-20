@@ -407,12 +407,13 @@ x = 0.2 + 0.05 * np.sin(z @ np.arange(1, 8)) + 0.01 * z[:, 0] * z[:, 3]
 dt = 100.0 + 30.0 * np.cos(z @ np.linspace(0.3, 1.1, 7)) + 5.0 * z[:, 2] ** 2
 fit = q.fit_quadratic(z.tolist(), x.tolist(), dt.tolist(), SCALING)
 s = fit.surrogate
-builds = [
-    package.__name__
+found = {
+    package.__name__: package.show_config(mode="dicts")["Build Dependencies"]["blas"]["name"]
     for package in (np, scipy)
-    if "openblas" in package.show_config(mode="dicts")["Build Dependencies"]["blas"]["name"]
-]
+}
+builds = [name for name, blas_name in found.items() if "openblas" in blas_name]
 print(json.dumps({
+    "blas": [f"{name}: {blas_name}" for name, blas_name in found.items()],
     "coefficients": [c.hex() for c in s.coefficients_x + s.coefficients_dt],
     "controlled": [os.path.basename(library.path) for library in blas.controlled()],
     "loaded": [os.path.basename(path) for path in blas._loaded_openblas()],
@@ -424,6 +425,10 @@ print(json.dumps({
 def _a49_child(mode: str, threads: int) -> dict[str, list[str]]:
     env = dict(os.environ)
     env.update(OMP_NUM_THREADS=str(threads), OPENBLAS_NUM_THREADS=str(threads))
+    if sys.platform == "darwin":
+        # Accelerate's own thread count, which the pin does not set: varied with OpenBLAS's so
+        # that A3.3 is exercised on a leg whose NumPy and SciPy use Accelerate (WO9 review W-2).
+        env["VECLIB_MAXIMUM_THREADS"] = str(threads)
     env["PYTHONPATH"] = os.pathsep.join(
         filter(None, (str(REPO_ROOT / "src"), env.get("PYTHONPATH")))
     )
@@ -457,6 +462,7 @@ def test_a49_the_fits_coefficients_are_bitwise_equal_at_one_and_eight_blas_threa
     child = children["pinned", 8]
     record_property("blas_controlled", child["controlled"])
     record_property("openblas_builds", child["openblas_builds"])
+    record_property("blas", child["blas"])
     assert child["controlled"] or not child["openblas_builds"], (
         f"OpenBLAS builds {child['openblas_builds']}, but the pin controls none"
     )
@@ -473,7 +479,7 @@ def test_a49_the_fits_coefficients_are_bitwise_equal_at_one_and_eight_blas_threa
     # passed there (build decision E40).
     if unpinned_1 == unpinned_8:
         pytest.skip(
-            f"the negative control is vacuous on this host ({os.cpu_count()} CPUs): the unpinned "
-            "fit at 1 and 8 BLAS threads agrees bitwise; the pinned claims above held (E40); "
-            f"the pin controls {child['controlled']}"
+            f"the negative control is vacuous on this host's BLAS ({', '.join(child['blas'])}): "
+            "the unpinned fit at 1 and 8 BLAS threads agrees bitwise; the pinned claims above "
+            f"held (E40); the pin controls {child['controlled']}"
         )

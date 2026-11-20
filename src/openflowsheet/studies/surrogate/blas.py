@@ -15,9 +15,12 @@ first pair of `<prefix>_get_num_threads<suffix>`/`<prefix>_set_num_threads<suffi
 `prefix` in (`scipy_openblas`, `openblas`), `suffix` in (`64_`, ``) — the symbols of the bundled
 ILP64 (NumPy) and LP64 (SciPy) builds and of a system OpenBLAS. Where no OpenBLAS is loaded
 (another BLAS, such as Accelerate), `controlled()` is empty and the pin is a no-op: OpenBLAS's
-thread variables then do not reach the fit. A3.3 is a rule on one platform (A32: "bitwise on one
-platform, whatever the thread setting"); spec §18 A1.3's classes govern comparisons across
-platforms only (X07a review R-1).
+thread variables then do not reach the fit, and that BLAS's own thread count (Accelerate's
+`VECLIB_MAXIMUM_THREADS`) is not set. m04 a49 varies `VECLIB_MAXIMUM_THREADS` with OpenBLAS's
+variables on macOS, so A3.3 is measured there too; a fit that differs with it is an A3.3 finding
+(X07a WO9 review W-2). A3.3 is a rule on one platform (A32: "bitwise on one platform, whatever
+the thread setting"); spec §18 A1.3's classes govern comparisons across platforms only (X07a
+review R-1).
 
 The limit is process-wide, as `threadpoolctl`'s is: at most one job computes per interpreter (the
 inline executor's `COMPUTE_LOCK`; the process executor's one worker per job), so no other
