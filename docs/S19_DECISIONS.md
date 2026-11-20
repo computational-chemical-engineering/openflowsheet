@@ -4293,3 +4293,4 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   07e423b9 both; pr_lib at cbefdc7e, 50a740f0, fd0294af, 2c5d81f6, 0844ba88 and the wp/S19 tip, 14922 records,
   d934f55c every one. Both claims hold. Batch L harnesses use `PYTHONPATH=src` without `-I` (not affected). Rule added
   to `S19-W3-common.md` ("Bitwise dumps: import the tree you mean").
+- 2026-11-20, WO-P3 launched (opus-engineer, brief `S19-W5-P3.md`, wilson_ig.py, same lane from 63cead7c; keeps the names other modules import; v2 in the dump for S11 A75). R-W5-P2 brief `S19-R-W5-P2.md` written (reviewer, Opus); launches on jobs 549-551 PASS.
