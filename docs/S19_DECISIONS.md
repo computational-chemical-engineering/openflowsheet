@@ -4774,3 +4774,4 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   falls back to the full suite: binding runs at collection).
 - 2026-11-21, review R-W3-APP-1 (reviewer, Opus; brief `<briefs>/S19-R-W3-APP-1.md`) launched in parallel with jobs
   632-641 (same DECISION as R-W3-TR-1).
+- 2026-11-21, tr1-4r (621) PASS, logged by hand as run-log step 526 (accepted, debt 9.0 -> 6.0). The rest of the TR chain logs itself (rerun_of cleared).
