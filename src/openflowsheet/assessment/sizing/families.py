@@ -247,10 +247,9 @@ def exchanger_utility(
         ),
     )
     limitations = list(extra_limitations)
-    if streams is not None:
-        phase_change = _phase_change(sctx, item_id, streams, dt1_f, dt2_f)
-        if phase_change is not None:
-            limitations.append(phase_change)
+    phase_change = _phase_change(sctx, item_id, streams, dt1_f, dt2_f)
+    if phase_change is not None:
+        limitations.append(phase_change)
 
     def magnitude(s: Symbols, a: Algebra) -> Expr:
         return signed(s, a)
@@ -388,12 +387,18 @@ def _u_input(
 
 
 def _phase_change(
-    sctx: SizingContext, item_id: str, streams: tuple[str, str], dt1_f: float, dt2_f: float
+    sctx: SizingContext,
+    item_id: str,
+    streams: tuple[str, str] | None,
+    dt1_f: float,
+    dt2_f: float,
 ) -> Limitation | None:
     """§4.4.1's `LMTD_ACROSS_PHASE_CHANGE` (information only): the process streams' phase
     signatures at inlet and outlet, when both are known and differ; with ΔT₁ and ΔT₂ both positive
     the detail also carries their ratio `r` and Underwood's relative error against the exact LMTD.
-    `None` when either signature is unknown or they agree."""
+    `None` without process `streams`, or when either signature is unknown or they agree."""
+    if streams is None:
+        return None
     before, after = (_signature(sctx, stream) for stream in streams)
     if before is not None and after is not None and before != after:
         detail: dict[str, Any] = {"inlet": before, "outlet": after}
