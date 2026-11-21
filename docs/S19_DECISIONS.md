@@ -4922,3 +4922,7 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   and tests/test_m07a_harvest.py. WO17 (opus-engineer, Opus; `<briefs>/X07a-WO17.md`): merge main, regenerate,
   fresh CI, then `evidence/X07a/<merge>/manifest.json` `tested` (review stays pending). Then: a merge card via hub.
 - 2026-11-21, nlp-marked suite at the AS lane head 607dee3e: 211 passed, 2 failed = g19, g20 (base), 2 skipped. AS chain all PASS (steps 542, 544, 548, 550, 552, 556, 557, 563, 566, 567).
+- 2026-11-21, all three chains PASS (app1-fix3 687 step 570 accepted-neutral; a2-11m..13m steps 569, 571, 572).
+  Shared merge helper wp/S19-mc3 (worktree s19-mc3): f8246f88 + app 486c0096 + as 2b0abb33 + a2 5ffd5fa6, no
+  conflicts; ruff, format clean; mypy 416 clean. Merge-check 688 (f8246f88..5ffd5fa6, full suite) queued. On PASS:
+  fast-forward wp/S19 (merging any docs-only commits on top), remove the helper and the three lane worktrees.
