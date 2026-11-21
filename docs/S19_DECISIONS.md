@@ -4954,3 +4954,11 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   18.6 -> 17.7, under the floor). **Commit-message correction:** 984201b1 says "20262 conflicts of the five kinds";
   the run gave 18264 (9987 ok and 1749 missing wiring as stated). Review R-W3-D1-1 (reviewer, Opus;
   `<briefs>/S19-R-W3-D1-1.md`) launched in parallel with the gates.
+- **2026-11-21, R-W3-D1-1 (reviewer, Opus, ~111k): merge after one comment fix, all nine steps.** Q1 rank steps
+  verbatim: outputs, order, every refusal unchanged; no new import, the verifier's call (certificate.py:1064) runs the
+  same function. Q2 report key order unchanged (`update` in the old write order). Q3 step 7's shared search equals the
+  old per-site loops (unique keys; `!=` on Literal strings and tuples). Q4 no float arithmetic moved. Q5 the 18264
+  correction confirmed (9987 + 18264 + 1749 = 30000). F1 (rank.py:216-217 comment named `eliminate_alias_rows` for the
+  witness moved to `_certified_elimination`) and the optional report_body docstring ("gains" -> "existing entries are
+  overwritten") fixed by the orchestrator, 089865b0, job 698 d1-fix no-gain. Notes: fuzz reached the certificate path
+  66 times (reading settles it); `_unlisted`'s O(N^2) membership predates the lane.
