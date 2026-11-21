@@ -4936,3 +4936,13 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   assessment/report.py `report_body` 22.2 (other tier; neither frozen nor registry-hashed), then <= 4 S1 steps on
   models/__init__.py `assemble` 28.6 and orchestrator/attempts.py `solve_with_attempts` 18.6. Alternative: stop W3 and
   bring the debt criterion to Frank. Reversible by: dropping the lane before merge.
+- 2026-11-21, X07a-WO17 (opus-engineer, Opus, ~95k): STOP on red, no manifest. Merge main a90be473 (pushed;
+  support-matrix regenerated, `--check` 0 problems; HARVEST_SIZE (101, 1145, 147) derived from both sides'
+  increments); registry_builtin, records_legacy_index, t08_numerical_policy, t07_schema_fixtures, F0 9/9 clean; 37
+  files 1371 passed; ruff, format, mypy clean. CI 44882659578: macos-latest FAIL 1 of 17706:
+  test_m04_iterations.py::test_a36_it2_is_admitted_after_a_coverage_only_it1 (`'NOT_PROMOTABLE' == 'PROMOTABLE'`,
+  :366); it passed on macOS at f217ca02 (run 44869026369). main's CI has no macOS leg, so F3 never ran on macOS.
+  Hypotheses: an F3 change reaching the verdict on macOS, or a macOS near-tie (BLAS threads; cf. WO10 W-2).
+  Falsifier: rerun of the failed job after the run completes (background script): pass on rerun = nondeterminism
+  (an X07a finding), fail again = deterministic, bisect F3 vs f217ca02. Engineer's leftovers for the manifest move:
+  `<scratchpad>/make_manifest.py`, support_envelope rows for limitations[0], [1], HARVEST_SIZE (101, 1146, 146).
