@@ -37,3 +37,10 @@
   host ref-x86-64); controls a-f each fail; loader RP.L01-L11 PASS at 1452d786; battery 148 passed. Engineer's two
   choices stand (bound from the checkout's N; error shape {type, message}). Pre-existing mypy note at
   wheel_data_check.py:197 (b69dc0f1, scripts not in mypy `files`). Next action 2 and 3 met; wp/REL050 pushed for CI.
+- 2026-11-21 ~16:20, X07a-WO20 (opus-engineer, Opus, ~106k): manifest `tested` at bd0b7df5 in c356211b (pushed):
+  X07a.CI run 44902051410 all seven legs; re-runs at bd0b7df5 all pass (support matrix 0 problems; registry 49
+  descriptors fc0af96b...; legacy 149; F0 9/9; 37 files 1390 passed 2 skipped; ruff/format/mypy clean; manifest tests
+  pass). Limitations [0] platforms/ADR 0007 Am3, [1] WO16 pins, [2] a36 ruling D1. Engineer's DECISION: old
+  9773c361 manifest kept (as briefed) -> HARVEST_SIZE (102, 1148, 147). Alternative: rename it away as F1 did
+  (dd97d79a). Reversible by: reverting c356211b. Accepted. c356211b touches a test and the envelope: fresh CI
+  44913734986 / Site 44913735084 for the merge card.
