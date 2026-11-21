@@ -4726,3 +4726,11 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   da6e4e82); 610-619 SKIPPED. tr1-1 (607) and tr1-2 (608) PASS. Every step on both lanes falls back to the full suite
   (the map at MB c6957580 predates the F3 merge), so each would fail on it. Both engineers told (SendMessage) to
   rebase onto da6e4e82 (tr from 07f16186, app from 68abf467) and re-enqueue with --rerun-of. Merge-check 615 running.
+- 2026-11-21 ~03:00, trust_region run 1 (opus-engineer, Opus, ~221k): lane rebased onto da6e4e82, head deb9f37c, 13
+  steps + rule-16 pin bb7076bf (trf_state readiness reasons tuple; negative controls: swap, reversed module order).
+  Jobs: tr1-1 607, tr1-2 608 PASS (old base; gate accepted the rebased base 3b943b9c); tr1-3r..12r 620-629
+  (--rerun-of 609-619), tr1-13 630. S1: 3 steps (projection `_check_call`, `project` x2). Lane scan: repo debt
+  2130.3 -> 2093.5, health 8.95 -> 8.98; projection 7.4 -> 8.4, projection_checks 7.9 -> 9.4, projection_zero_flows
+  7.9 -> 8.9, holders 8.1 -> 9.1, study 8.1 -> 8.9, trf 8.8 -> 9.3. Stops: `_certify_block`/`_persistence_rows`
+  params (cross-phase object with the lazily drawn xi), public signatures, `check_candidate` (6-param method). Review
+  (S1 cadence: 3 steps) after the chain's gates.
