@@ -806,7 +806,8 @@ def _promotion_consistency(manifest: Mapping[str, Any]) -> list[str]:
 def _qualification_consistency(manifest: Mapping[str, Any]) -> list[str]:
     """The stated qualifications against those required: none with an unfilled field, Q0
     first iff the manifest is synthetic, then the P_ref's required ones in order, the Q6 slot
-    filled (its nominal-coverage text) rather than equal to the template."""
+    filled (its nominal-coverage text) rather than equal to the template; the slots, when the
+    count is right, by `_qualification_slots`."""
     found: list[str] = []
     stated = list(manifest["qualifications"])
     for text in stated:
@@ -817,11 +818,22 @@ def _qualification_consistency(manifest: Mapping[str, Any]) -> list[str]:
     if len(stated) != len(expected_q):
         found.append(f"{len(stated)} qualifications; {len(expected_q)} are required")
     else:
-        q6_index = _Q6 + (1 if manifest["synthetic"] else 0)
-        for i, (text, required) in enumerate(zip(stated, expected_q, strict=True)):
-            if i == q6_index:
-                if not text.startswith("nominal 0.95 (finite-sample k/(n+1) = "):
-                    found.append(f"Q6 is missing: {text!r}")
-            elif text != required:
-                found.append(f"qualification {required!r} is missing")
+        found += _qualification_slots(stated, expected_q, manifest["synthetic"])
+    return found
+
+
+def _qualification_slots(
+    stated: Sequence[str], expected_q: Sequence[str], synthetic: bool
+) -> list[str]:
+    """`stated` against `expected_q`, of equal length, slot by slot: the Q6 slot (one later when
+    `synthetic`, after Q0) must hold its filled nominal-coverage text, every other slot its
+    required text."""
+    found: list[str] = []
+    q6_index = _Q6 + (1 if synthetic else 0)
+    for i, (text, required) in enumerate(zip(stated, expected_q, strict=True)):
+        if i == q6_index:
+            if not text.startswith("nominal 0.95 (finite-sample k/(n+1) = "):
+                found.append(f"Q6 is missing: {text!r}")
+        elif text != required:
+            found.append(f"qualification {required!r} is missing")
     return found
