@@ -483,9 +483,9 @@ def _promotion_refusal(
     targets: Sequence[tuple[str, Unbound]], refusal: Unbound, binding: Binding
 ) -> Unbound | None:
     """`legacy_admission`'s C4: `None` when `binding` promotes exactly the columns the targets in
-    `targets` reach (in `binding.specification_targets`), else the refusal: the first target's
-    own when it reaches no column or one `binding` does not promote, else `refusal` (a promoted
-    column no target reaches)."""
+    `targets` reach (in `binding.specification_targets`), else the refusal: the own refusal of the
+    first target that reaches no column or one `binding` does not promote, else `refusal` (a
+    promoted column no target reaches)."""
     columns = binding.specification_targets
     promoted = set(binding.promoted.values())
     for name, target_refusal in targets:
@@ -559,7 +559,8 @@ def bind_revision_or_reason(document: Mapping[str, Any]) -> Binding | Unbound:
     """Bind a SYN-001 `ProcessRevision`, or say which of the three reasons prevented it.
 
     The provider's component order and the inputs read on it come from `_canonical_inputs`,
-    which also returns the refusals of that reading."""
+    which also returns the refusals of that reading and of the instance contracts
+    (`_instance_contracts`)."""
     # R-088 Q29 (T07 design note §12.5): a non-canonical number is refused typed at entry,
     # whether or not a reader reads its field; in a field nothing reads, a digest would
     # otherwise raise untyped.
@@ -1297,8 +1298,8 @@ def _wiring_edges(wiring: Mapping[str, Any]) -> list[tuple[str, str, str]]:
 
 
 def _port_streams(wiring: Mapping[str, Any]) -> Iterator[tuple[str, str, str]]:
-    """Each (unit, port, stream) that the `Wiring` entries of `wiring` carry, lazily, in unit,
-    port and stream order."""
+    """Each (unit, port, stream) that the `Wiring` entries of `wiring` carry, lazily, in
+    `wiring`'s iteration order (units, then each unit's ports, then each port's streams)."""
     for unit, entry in wiring.items():
         for port, streams in entry.streams.items():
             for stream in streams:
