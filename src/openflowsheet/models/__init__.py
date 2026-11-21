@@ -586,6 +586,10 @@ def assemble(
     would hide it from `row_accumulation`.
 
     Scales are left empty on purpose (ADR 0001 D3.5 gives scale construction to K03).
+
+    Raises `SpecificationError` for a unit without wiring and for two units that disagree: on a
+    block's shape, and, found by `_first_conflict`, on a block's inputs, a variable's or a row's
+    kind, or a pinned input's value.
     """
 
     variable_ids: list[str] = []
@@ -623,12 +627,9 @@ def assemble(
                 raise SpecificationError(
                     f"two units declare block {block.block_id!r} with different shapes"
                 )
-        for block_id, feeding in contribution.block_inputs.items():
-            if block_inputs.get(block_id, feeding) != feeding:
-                raise SpecificationError(
-                    f"two units feed block {block_id!r} from different variables"
-                )
-            block_inputs[block_id] = feeding
+        if (block_id := _first_conflict(contribution.block_inputs, block_inputs)) is not None:
+            raise SpecificationError(f"two units feed block {block_id!r} from different variables")
+        block_inputs.update(contribution.block_inputs)
         for name in contribution.parameter_ids:
             if name not in parameter_ids:
                 parameter_ids.append(name)
@@ -640,20 +641,18 @@ def assemble(
             (contribution.variable_kinds, variable_kinds, "variable"),
             (contribution.row_kinds, row_kinds, "row"),
         ):
-            for name, kind in mapping.items():
-                if target.get(name, kind) != kind:
-                    raise SpecificationError(
-                        f"two units declare {what} {name!r} with different kinds: "
-                        f"{target[name]!r} and {kind!r}"
-                    )
-                target[name] = kind
-        for name, value in contribution.parameters.items():
-            if name in parameters and parameters[name] != value:
+            if (clashing := _first_conflict(mapping, target)) is not None:
                 raise SpecificationError(
-                    f"two units bind pinned input {name!r} to different values: "
-                    f"{parameters[name]} and {value}"
+                    f"two units declare {what} {clashing!r} with different kinds: "
+                    f"{target[clashing]!r} and {mapping[clashing]!r}"
                 )
-            parameters[name] = value
+            target.update(mapping)
+        if (pinned := _first_conflict(contribution.parameters, parameters)) is not None:
+            raise SpecificationError(
+                f"two units bind pinned input {pinned!r} to different values: "
+                f"{parameters[pinned]} and {contribution.parameters[pinned]}"
+            )
+        parameters.update(contribution.parameters)
 
     return ProblemSpec(
         label=label,
@@ -666,3 +665,12 @@ def assemble(
         variable_kinds=variable_kinds,
         row_kinds=row_kinds,
     )
+
+
+def _first_conflict[V](declared: Mapping[str, V], held: Mapping[str, V]) -> str | None:
+    """The first name in `declared`, in its order, that `held` already binds to a different value
+    (`!=`); `None` when every shared name agrees."""
+    for name, value in declared.items():
+        if name in held and held[name] != value:
+            return name
+    return None
