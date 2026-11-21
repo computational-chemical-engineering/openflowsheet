@@ -4946,3 +4946,11 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   Falsifier: rerun of the failed job after the run completes (background script): pass on rerun = nondeterminism
   (an X07a finding), fail again = deterministic, bisect F3 vs f217ca02. Engineer's leftovers for the manifest move:
   `<scratchpad>/make_manifest.py`, support_envelope rows for limitations[0], [1], HARVEST_SIZE (101, 1146, 146).
+- 2026-11-21, lane D1 run 1 (opus-engineer, Opus): wp/S19-d1 4f2719e3..4f80e089, 9 extract-phase steps (S1: 7-9),
+  jobs 689-697. rank.py 25.9 -> 2.0, report.py 30.2 -> 12.0, models/__init__.py 42.6 -> 14.0; engineer's repo scan
+  1949.1 -> 1878.4 (G-END <= 1900), health 9.06, brain 0. Fuzz base vs new: eliminate_alias_rows 40k cases 0 differ
+  (control 480), assemble 30k 0 (controls 3207, 4975, 2630). No test-only commit (report_body's characterizations exist:
+  test_e01_a_report.py:370, test_e01_a_sizing.py:218). Dropped `solve_with_attempts` (14 public params; best helper
+  18.6 -> 17.7, under the floor). **Commit-message correction:** 984201b1 says "20262 conflicts of the five kinds";
+  the run gave 18264 (9987 ok and 1749 missing wiring as stated). Review R-W3-D1-1 (reviewer, Opus;
+  `<briefs>/S19-R-W3-D1-1.md`) launched in parallel with the gates.
