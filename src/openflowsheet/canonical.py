@@ -260,8 +260,8 @@ def _canonical_number(value: float | int) -> str:
 
     The *digits* come from `repr`, which is the shortest round-trip decimal and closest-on-ties —
     exactly what ECMA-262 asks for. Only the **layout** differs between the two, and the layout is
-    the five cases below. Doing it this way keeps the delicate part (digit selection) in CPython's
-    tested implementation rather than in this file.
+    the five cases of `_number_layout`. Doing it this way keeps the delicate part (digit
+    selection) in CPython's tested implementation rather than in this file.
     """
     if isinstance(value, bool):  # bool is an int subclass; JCS keeps them distinct (D3.6)
         raise CanonicalizationError("a boolean is not a number")
@@ -300,6 +300,14 @@ def _canonical_number(value: float | int) -> str:
     stripped = digits.lstrip("0")
     n -= len(digits) - len(stripped)
     digits = stripped.rstrip("0") or "0"
+    return _number_layout(sign, digits, n)
+
+
+def _number_layout(sign: str, digits: str, n: int) -> str:
+    """`_canonical_number`'s layout (ECMA-262 `Number::toString`) of a nonzero binary64 with sign
+    `sign`, significant digits `digits` (no leading or trailing zeros; k of them) and decimal
+    exponent `n` (the value is 0.`digits` x 10^n): an integer, a decimal fraction with the point
+    inside the digits or after leading zeros, or an exponent form with one digit or more."""
     k = len(digits)
 
     if k <= n <= 21:
