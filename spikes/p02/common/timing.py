@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import platform
-import resource
 import subprocess
 import sys
 import time
@@ -43,7 +42,10 @@ def repeat_microseconds(call: Callable[[], Any], repetitions: int, warmup: int) 
 
 
 def measure_memory() -> float:
-    """Maximum resident set size of this process, in MiB."""
+    """Maximum resident set size of this process, in MiB (POSIX `resource`, imported here so that
+    the module imports on Windows, X07a)."""
+    import resource
+
     return resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024.0
 
 

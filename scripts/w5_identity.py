@@ -766,13 +766,13 @@ def table_problems(
 def held_tables(tree: Path, revision: str) -> Tables:
     """The built-in registry committed at `revision`."""
     rows = {
-        stem: json.loads(_git(tree, "show", f"{revision}:{path}"))
+        stem: json.loads(_git(tree, "show", f"{revision}:{path}", "--"))
         for stem, path in TABLE_FILES.items()
     }
     return {
         **rows,
-        "digest": _git(tree, "show", f"{revision}:{DIGEST_FILE}"),
-        "constant": _git(tree, "show", f"{revision}:{REGISTRY_CONSTANT}").strip(),
+        "digest": _git(tree, "show", f"{revision}:{DIGEST_FILE}", "--"),
+        "constant": _git(tree, "show", f"{revision}:{REGISTRY_CONSTANT}", "--").strip(),
     }
 
 
@@ -1104,7 +1104,7 @@ def command_judge(arguments: argparse.Namespace, tree: Path) -> int:
         base_tables, files, tracked(tree, before), tracked(tree, after)
     )
     registry = edited or bool(expected) or bool(still_open)
-    held = json.loads(_git(tree, "show", f"{after}:{CORPUS_FILE}"))
+    held = json.loads(_git(tree, "show", f"{after}:{CORPUS_FILE}", "--"))
     problems = judge(facts["registry"], held, predicted)
     problems += table_problems(
         expected, still_open, registry, base_tables, held_tables(tree, after)

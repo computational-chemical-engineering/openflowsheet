@@ -15,9 +15,12 @@ with `detail.reason` `iteration_not_permitted`. The `it<i>` manifest lists those
 - `it2` end to end on the smooth parent's A17 store: the 562 inherited draws are served by the cache
   (cold 488, so a budget of 487 is refused and 488 runs), the inherited failures stay failures, the
   manifest lists its predecessor and the bound 0.1, and passes the checker.
-- Through the application with the stand-in: `it2` before any `it1`, and after a PROMOTABLE `it1`,
-  is `invalid_request` / `iteration_not_permitted`; after a registered coverage-only `it1` it is
-  admitted and its manifest names that predecessor.
+- Through the application. On the smooth parent (registered for the test as in
+  `test_m04_wo9_synthetic_loop`): `it2` before any `it1`, and after A17's PROMOTABLE `it1`, is
+  `invalid_request` / `iteration_not_permitted`. On the stand-in: after a registered coverage-only
+  `it1`, `it2` is admitted and its manifest names that predecessor. No verdict of a stand-in study
+  is asserted: its scores are roundoff, so every coverage decision is near threshold (spec §9.1,
+  ADR 0036 D8; `docs/X07a-a36-ruling.md`).
 
 A coverage-only failure does not occur on the registered parents (a correct pipeline fails the
 test with probability ≈ 0.10), so `coverage_failed` builds one from a real manifest: test scores
@@ -36,8 +39,10 @@ from typing import Any
 
 import pytest
 from conftest import REPO_ROOT
+from m02_variant_support import register_variants
 
 from openflowsheet.adapters import variants
+from openflowsheet.adapters.experiments import runner as runner_module
 from openflowsheet.adapters.experiments.runner import ExperimentRunner
 from openflowsheet.adapters.experiments.store import ExperimentStore, ListArtifactSink
 from openflowsheet.application.errors import ApplicationError
@@ -67,6 +72,9 @@ from test_m04_study_job import body, read, result_of, submit  # noqa: E402
 SMOOTH = parents.synthetic_variant(parents.SMOOTH_ID)
 STANDIN = variants.registered_variant("standin-x025-v1")
 CODE = "iteration_not_permitted"
+A17 = json.loads(
+    (REPO_ROOT / "benchmarks" / "m04" / "reference_values.json").read_text(encoding="utf-8")
+)["pipeline"]["smooth_full"]["result"]
 
 
 def _runner(root: Path, variant: variants.Variant | None = None) -> ExperimentRunner:
@@ -338,11 +346,44 @@ def _refused_submission(app: LocalApplication, key: str, document: dict[str, Any
     return error.message
 
 
-def test_a36_it2_of_the_standin_through_the_application(app: LocalApplication) -> None:
-    assert "it1 has no manifest" in _refused_submission(app, "early", body(plan_id="it2"))
-    job = submit(app, "it1", body(plan_id="it1"))["job"]
-    assert result_of(app, job["job_id"])["surrogate_study"]["verdict"] == "PROMOTABLE"
-    assert "ended PROMOTABLE" in _refused_submission(app, "after", body(plan_id="it2"))
+@pytest.fixture
+def smooth_registered(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The smooth parent registered and evaluated in process, as `test_m04_wo9_synthetic_loop`
+    does; in place before the application is created."""
+    register_variants(monkeypatch)(SMOOTH)
+    monkeypatch.setattr(runner_module, "InProcessBackend", parents.backend_for())
+
+
+@pytest.fixture
+def smooth_app(smooth_registered: None, tmp_path: Path) -> Iterator[LocalApplication]:
+    application = LocalApplication.create(tmp_path / "project")
+    try:
+        yield application
+    finally:
+        application.close()
+
+
+def test_a36_it2_after_a17s_promotable_it1_through_the_application(
+    smooth_app: LocalApplication,
+) -> None:
+    app = smooth_app
+    # X07a-D1.1: it2 before any it1.
+    early = _refused_submission(app, "early", body(SMOOTH, plan_id="it2"))
+    assert "it1 has no manifest" in early
+    # X07a-D1.2: it1 through the job reproduces A17 (reference_values.json, smooth_full).
+    job = submit(app, "it1", body(SMOOTH, plan_id="it1"))["job"]
+    assert job["status"] == "completed", job["error"]
+    manifest = read(app, job["outputs"][0]["artifact_id"])
+    promotion = manifest["promotion"]
+    assert (promotion["verdict"], promotion["insufficient"], promotion["not_promotable"]) == (
+        A17["verdict"],
+        A17["insufficient"],
+        A17["not_promotable"],
+    )
+    assert (manifest["calibration"]["k"], manifest["evaluation"]["hits"]) == (A17["k"], A17["hits"])
+    assert abs(manifest["calibration"]["q_hat"] - float(A17["q_hat"])) <= 1e-10
+    # X07a-D1.3: it2 after A17's PROMOTABLE it1.
+    assert "it1 ended PROMOTABLE" in _refused_submission(app, "after", body(SMOOTH, plan_id="it2"))
     assert len(dispatch_jobs(app)) == 1  # a refusal creates no job
 
 
@@ -362,9 +403,11 @@ def test_a36_it2_is_admitted_after_a_coverage_only_it1(
     assert manifest["predecessors"] == [sha256]
     assert manifest["promotion"]["familywise_false_pass_bound"] == 0.1
     assert check_manifest(manifest) == []
-    # it2 was PROMOTABLE, so it3 is not permitted.
-    assert answer["verdict"] == "PROMOTABLE"
-    assert "it2 ended PROMOTABLE" in _refused_submission(app, "it3", body(plan_id="it3"))
+    # X07a-D1.5: the stand-in's scores vanish; its verdict and H are roundoff and not asserted.
+    assert manifest["calibration"]["q_hat"] <= 1e-10
+    assert all(s <= 1e-10 for s in manifest["evaluation"]["scores"] if s is not None)
+    assert manifest["promotion"]["insufficient"] == []
+    assert set(manifest["promotion"]["not_promotable"]) <= {"coverage_bound_below_minimum"}
 
 
 def dispatch_jobs(app: LocalApplication) -> list[Any]:

@@ -1304,7 +1304,8 @@ def campaign_sums(campaign: Path) -> dict[str, Any]:
         if line.strip():
             digest, name = line.split(maxsplit=1)
             listed[name.strip().removeprefix("./")] = digest
-    on_disk = {str(p.relative_to(campaign)) for p in campaign.rglob("*") if p.is_file()}
+    # POSIX, as `sha256sum` lists them (X07a, D-29).
+    on_disk = {p.relative_to(campaign).as_posix() for p in campaign.rglob("*") if p.is_file()}
     differ = sorted(
         name
         for name, digest in listed.items()

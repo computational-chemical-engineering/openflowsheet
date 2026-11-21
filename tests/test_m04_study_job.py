@@ -4,7 +4,8 @@ Through the application, with the registered stand-in `standin-x025-v1` (the onl
 parent that runs in the default gate): admission (a registered parent, a plan registered for it),
 the stages, the two outputs, the answer, the cache-first resubmission, the budget refusal, and
 M04's surface move decomposing onto M02's (`tests/m04_schema_support.py`). The synthetic parents
-are not reachable from a request (they are not registered), so A17–A24 run at the library level
+are reachable from a request only through the test-only registry patch
+(`test_m04_wo9_synthetic_loop`, `test_m04_iterations`), so A17–A24 run at the library level
 (`tests/test_m04_study.py`).
 
 A16's tolerances (spec §11): β_X within 10⁻¹⁴ of (0.25, 0, …), β_T within 10⁻¹² K of 0, q̂ ≤ 10⁻¹⁰.

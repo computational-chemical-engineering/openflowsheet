@@ -76,6 +76,9 @@ ENVELOPE_ID: Final = "v0.2-envelope-dev"
 RUNNER_ARCHITECTURE: Final[Mapping[str, str]] = {
     "ubuntu-latest": "x86-64",
     "ubuntu-24.04-arm": "aarch64",
+    # X07a: the Windows and macOS legs (ADR 0056 row 5).
+    "windows-latest": "windows-x86-64",
+    "macos-latest": "macos-arm64",
 }
 #: Spec §5.7's classes.
 CLASSES: Final = ("E", "S", "P", "B")

@@ -993,7 +993,7 @@ def main() -> int:
         return 3
     context = multiprocessing.get_context("spawn")
     started = time.perf_counter()
-    loads = [list(os.getloadavg())]
+    loads = [_load_average()]
     runs: list[list[dict[str, Any]]] = []
     run_s = []
     for _ in range(arguments.runs):
@@ -1006,7 +1006,7 @@ def main() -> int:
         ) as pool:
             runs.append(list(pool.map(run_point, todo)))
         run_s.append(round(time.perf_counter() - begun, 1))
-        loads.append(list(os.getloadavg()))
+        loads.append(_load_average())
     raw = arguments.out.with_suffix(".runs.json")
     raw.write_text(
         json.dumps(runs, ensure_ascii=False) + "\n", "utf-8"
@@ -1020,7 +1020,7 @@ def main() -> int:
         print(json.dumps({"G11v3-12": "refused after the runs", "refusals": refused}))
         return 3
     repeats = timing(variant)
-    loads.append(list(os.getloadavg()))
+    loads.append(_load_average())
     fingerprint_runner = file_sha256(
         Path(__file__).resolve().parents[2] / "src/openflowsheet/adapters/pymrm/child.py"
     )
@@ -1123,6 +1123,15 @@ def main() -> int:
         )
     )
     return 0
+
+
+def _load_average() -> list[float]:
+    """`os.getloadavg()` as a list; empty on Windows, which has none (X07a: the campaign runs on
+    POSIX hosts)."""
+    if sys.platform == "win32":
+        return []
+    else:
+        return list(os.getloadavg())
 
 
 if __name__ == "__main__":

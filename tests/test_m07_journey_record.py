@@ -234,6 +234,10 @@ def test_a21_a_re_run_names_the_offered_m05_record_tracked_with_its_sha256(
     )
 
 
+@pytest.mark.skipif(
+    sys.platform == "win32",
+    reason="X07a limit: the path is written by scripts/m07_journey.py, an M07 carry member",
+)
 def test_a21_r3_is_the_r3_document_of_its_m05_record(journey: tuple[Path, dict[str, Any]]) -> None:
     """Review SF3: R3's member is `_r3_document` of the M05 record it names (J*, e*, half-width,
     check id, coupling digest, store hits, budget, labels), apart from the T* re-solve and the

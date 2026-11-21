@@ -307,7 +307,7 @@ def _files(directory: Path) -> dict[str, str]:
     if not directory.is_dir():
         return {}
     return {
-        str(path.relative_to(directory)): sha256(path.read_bytes())
+        path.relative_to(directory).as_posix(): sha256(path.read_bytes())
         for path in sorted(directory.rglob("*"))
         if path.is_file()
     }
@@ -378,7 +378,7 @@ def item_check(
     wrote = {
         path: digest
         for path, digest in after.items()
-        if before.get(path) != digest and path != str(log.relative_to(rc))
+        if before.get(path) != digest and path != log.relative_to(rc).as_posix()
     }
     _check(
         checks,
@@ -387,7 +387,7 @@ def item_check(
         argv=argv,
         environment=where,
         exit_status=code,
-        output=str(log.relative_to(rc)),
+        output=log.relative_to(rc).as_posix(),
         output_sha256=sha256(log.read_bytes()),
         records=wrote,
     )

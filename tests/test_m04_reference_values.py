@@ -13,6 +13,7 @@ from __future__ import annotations
 import re
 import subprocess
 import sys
+from pathlib import Path
 
 from conftest import REPO_ROOT, load_json
 
@@ -35,9 +36,11 @@ def test_a34_the_generator_rederives_every_claim_and_the_committed_bytes() -> No
     output = completed.stdout + completed.stderr
     assert completed.returncode == 0, output
     assert re.search(rf"^{CLAIMS} claims passed$", completed.stdout, re.MULTILINE), output
+    # The generator prints the path natively (`benchmarks\\m04\\...` on Windows; X07a review R-2).
     for name in ("reference_values.json", *(f"plan-{plan}.json" for plan in PLANS)):
+        path = re.escape(str(Path("benchmarks", "m04", name)))
         assert re.search(
-            rf"^benchmarks/m04/{re.escape(name)} is byte-identical to the generator's output$",
+            rf"^{path} is byte-identical to the generator's output$",
             completed.stdout,
             re.MULTILINE,
         ), output

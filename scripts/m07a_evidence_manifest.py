@@ -310,8 +310,8 @@ def _extras(pyproject: str) -> list[str]:
 def _m_mr12_extras(inputs: Inputs) -> Part:
     """MR-12: every extra `C_α` declares and `v0.1.1` did not needs its own [A10] audit; none is
     accepted here, so a new extra fails this part."""
-    ours = _extras(t08._git("show", f"{inputs.commit}:pyproject.toml"))
-    theirs = _extras(t08._git("show", f"{V0_1_1}:pyproject.toml"))
+    ours = _extras(t08._git("show", f"{inputs.commit}:pyproject.toml", "--"))
+    theirs = _extras(t08._git("show", f"{V0_1_1}:pyproject.toml", "--"))
     new = sorted(set(ours) - set(theirs))
     value = {"extras_at_c": ours, "extras_at_v0_1_1": theirs, "new_since_v0_1_1": new}
     return ("pass" if not new else "fail"), value
@@ -405,14 +405,14 @@ def mr12_extras_v02(
 def _m_mr12_extras_v02(inputs: Inputs) -> Part:
     """`mr12_extras_v02` at `inputs.commit`, from git and the committed RC records. Not in the
     alpha's `SPECS`: the alpha's records stay judged by `_m_mr12_extras`."""
-    ours = _extras(t08._git("show", f"{inputs.commit}:pyproject.toml"))
-    theirs = _extras(t08._git("show", f"{V0_1_1}:pyproject.toml"))
+    ours = _extras(t08._git("show", f"{inputs.commit}:pyproject.toml", "--"))
+    theirs = _extras(t08._git("show", f"{V0_1_1}:pyproject.toml", "--"))
     new = sorted(set(ours) - set(theirs))
 
     def show(path: str) -> str | None:
         if not t08._git_ok("cat-file", "-e", f"{inputs.commit}:{path}"):
             return None
-        return t08._git("show", f"{inputs.commit}:{path}")
+        return t08._git("show", f"{inputs.commit}:{path}", "--")
 
     def read(path: str) -> dict[str, Any] | None:
         return _json(inputs, path) if (inputs.rc_dir / path).is_file() else None
@@ -490,14 +490,14 @@ def mr12_extras_v03_at(commit: str, step17c: Mapping[str, Any]) -> Part:
     """`mr12_extras_v03` at `commit`, its new extras and files read from git, over the step 17c
     record `step17c` (V03 spec §9.3). `scripts/v03_rc.py step17c` calls it on the record it is
     writing, and the measure on the committed record."""
-    ours = _extras(t08._git("show", f"{commit}:pyproject.toml"))
-    theirs = _extras(t08._git("show", f"{V0_2_0}:pyproject.toml"))
+    ours = _extras(t08._git("show", f"{commit}:pyproject.toml", "--"))
+    theirs = _extras(t08._git("show", f"{V0_2_0}:pyproject.toml", "--"))
     new = sorted(set(ours) - set(theirs))
 
     def show(path: str) -> str | None:
         if not t08._git_ok("cat-file", "-e", f"{commit}:{path}"):
             return None
-        return t08._git("show", f"{commit}:{path}")
+        return t08._git("show", f"{commit}:{path}", "--")
 
     return mr12_extras_v03(commit, new, show, step17c)
 
@@ -618,7 +618,9 @@ def _m_envelope(inputs: Inputs) -> Part:
     """MR-3: the envelope pinned to the alpha at `C_α`."""
     import yaml  # noqa: PLC0415
 
-    document = yaml.safe_load(t08._git("show", f"{inputs.commit}:{ENVELOPE.relative_to(ROOT)}"))
+    document = yaml.safe_load(
+        t08._git("show", f"{inputs.commit}:{ENVELOPE.relative_to(ROOT)}", "--")
+    )
     value = {"envelope_id": document.get("envelope_id"), "release": document.get("release")}
     ok = value == {"envelope_id": "v0.2-alpha-envelope-1", "release": "0.2.0a1"}
     return ("pass" if ok else "fail"), value

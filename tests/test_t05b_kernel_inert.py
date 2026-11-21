@@ -34,10 +34,12 @@ def committed() -> dict[str, Any]:
     return document
 
 
+@pytest.mark.bitwise_baseline(row="X07a-L1")
 def test_the_baseline_is_what_the_generator_emits_today(live: dict[str, Any]) -> None:
     assert baseline.render(live) == baseline.FIXTURE.read_text()
 
 
+@pytest.mark.bitwise_baseline(row="X07a-L1")
 @pytest.mark.parametrize("group", ["unit_cases", "kernel_targets", "coupled_cases"])
 def test_every_registered_call_is_bitwise_the_baseline(
     group: str, live: dict[str, Any], committed: dict[str, Any]

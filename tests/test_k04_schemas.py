@@ -88,7 +88,7 @@ def test_a31_the_fixtures_are_what_the_verifier_emits_today() -> None:
     # T04's fixtures share these schema directories and are regenerated and compared by T04's
     # own generator and test (`tests/test_t04_schemas.py`); every other file must be this one's.
     assert set(emitted) | {name for name in T04_FIXTURES if name.split("/")[0] in K04_SCHEMAS} == {
-        str(path.relative_to(FIXTURE_DIR)) for name in K04_SCHEMAS for path in fixtures(name)
+        path.relative_to(FIXTURE_DIR).as_posix() for name in K04_SCHEMAS for path in fixtures(name)
     }, "a fixture exists that nothing regenerates, or vice versa"
     for name, document in emitted.items():
         found = differences(

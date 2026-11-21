@@ -21,8 +21,6 @@ Documents are stored as their canonical JSON (ADR 0002), so what is stored is wh
 
 from __future__ import annotations
 
-import errno
-import fcntl
 import json
 import os
 import sqlite3
@@ -33,6 +31,12 @@ from pathlib import Path
 from typing import Any, Final
 
 from openflowsheet._files import atomic_write_bytes as atomic_write_bytes  # re-export, R-237
+from openflowsheet._platform import (
+    LOCK_HELD_ERRNOS,
+    lock_exclusive,
+    release_lock,
+    release_lock_file,
+)
 from openflowsheet.application.errors import ApiError
 from openflowsheet.application.inspection_types import AuditRecord, RevisionSummary
 from openflowsheet.application.job_records import (
@@ -1123,7 +1127,7 @@ class ProjectStore:
             return
         handle = os.open(self._lock_path(owner_instance), os.O_RDWR | os.O_CREAT, 0o644)
         try:
-            fcntl.flock(handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            lock_exclusive(handle)
         except OSError:
             os.close(handle)
             raise StoreError(f"owner instance {owner_instance} is already held") from None
@@ -1133,9 +1137,7 @@ class ProjectStore:
         handle = self._owner_handles.pop(owner_instance, None)
         if handle is None:
             return
-        self._lock_path(owner_instance).unlink(missing_ok=True)
-        fcntl.flock(handle, fcntl.LOCK_UN)
-        os.close(handle)
+        release_lock_file(handle, self._lock_path(owner_instance))
 
     def _probe_dead(self, owner_instance: str) -> int | None:
         """A handle holding a dead owner's lock, `-1` if its lock file is gone, `None` if alive.
@@ -1148,10 +1150,10 @@ class ProjectStore:
         except FileNotFoundError:
             return -1
         try:
-            fcntl.flock(handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            lock_exclusive(handle)
         except OSError as error:
             os.close(handle)
-            if error.errno in (errno.EWOULDBLOCK, errno.EAGAIN, errno.EACCES):
+            if error.errno in LOCK_HELD_ERRNOS:
                 return None
             raise
         return handle
@@ -1177,17 +1179,29 @@ class ProjectStore:
             handle = self._probe_dead(owner)
             if handle is None:
                 continue
+            ended = False
             try:
                 with self.writing() as connection:
                     recovered.extend(
                         job_id for job_id in job_ids if self.end_job(connection, job_id, ending)
                     )
-                self._lock_path(owner).unlink(missing_ok=True)
+                ended = True
             finally:
-                if handle >= 0:
-                    fcntl.flock(handle, fcntl.LOCK_UN)
-                    os.close(handle)
+                _close_probe(handle, self._lock_path(owner), remove=ended)
         return recovered
+
+
+def _close_probe(handle: int, path: Path, *, remove: bool) -> None:
+    """Release and close `recover`'s probe `handle` on the lock file `path` (`-1`: there is no
+    file), removing the file first when `remove` (its owner's jobs are ended)."""
+    if handle < 0:
+        if remove:
+            path.unlink(missing_ok=True)
+    elif remove:
+        release_lock_file(handle, path)
+    else:
+        release_lock(handle)
+        os.close(handle)
 
 
 def _create_tables(connection: sqlite3.Connection, project_id: str) -> None:

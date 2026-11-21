@@ -2943,7 +2943,7 @@ def _a23_local(identity_document: Mapping[str, Any]) -> tuple[bool, dict[str, An
     # (i) The provider's source, byte for byte against the base commit.
     syn001 = SOURCE / "thermo" / "syn001.py"
     base = subprocess.run(  # noqa: S603
-        ["git", "show", f"{BASE_COMMIT}:src/openflowsheet/thermo/syn001.py"],  # noqa: S607
+        ["git", "show", f"{BASE_COMMIT}:src/openflowsheet/thermo/syn001.py", "--"],  # noqa: S607
         capture_output=True,
         cwd=ROOT,
         check=True,

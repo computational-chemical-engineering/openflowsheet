@@ -205,7 +205,7 @@ def run(arguments: argparse.Namespace) -> int:
         "format": ensemble.RESULTS_FORMAT,
         "run_id": arguments.run_id,
         **provenance,
-        "starts_file": str(path.resolve().relative_to(ROOT)),
+        "starts_file": path.resolve().relative_to(ROOT).as_posix(),
         "starts_sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
         "policies": ensemble.policies(cases),
         "host": ensemble.host(),
@@ -234,7 +234,7 @@ def render(results: dict[str, Any]) -> tuple[str, dict[str, Any], bool]:
     published = json.loads((ROOT / results["starts_file"]).read_bytes())
     summary = ensemble.report(results["records"], results["cases"], published)
     holdout = None
-    if results["starts_file"] == str(HOLDOUT_FILE.relative_to(ROOT)):
+    if results["starts_file"] == HOLDOUT_FILE.relative_to(ROOT).as_posix():
         machine = results["host"]["machine_class"]
         run2 = _registered_run2(machine)
         holdout = {

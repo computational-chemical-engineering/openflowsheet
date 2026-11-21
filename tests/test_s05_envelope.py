@@ -262,7 +262,7 @@ def test_a26_the_coefficient_file_is_a_packaged_single_file() -> None:
     assert not [e for e in DIRECTORIES if e.startswith("benchmarks/s05")]
     # (b) the package copy is a link to the one repository copy, and hashes to H_C
     assert PACKAGE_COPY.is_symlink()
-    assert os.readlink(PACKAGE_COPY) == f"../../../../../{COEFFICIENT_FILE}"
+    assert Path(os.readlink(PACKAGE_COPY)).as_posix() == f"../../../../../{COEFFICIENT_FILE}"
     repository = (ROOT / COEFFICIENT_FILE).read_bytes()
     assert packaged(COEFFICIENT_FILE).read_bytes() == repository
     assert hashlib.sha256(repository).hexdigest() == REGISTERED_SHA256

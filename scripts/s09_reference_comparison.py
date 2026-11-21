@@ -97,7 +97,8 @@ def sha256(path: Path) -> str:
 
 
 def rel(path: Path) -> str:
-    return str(path.relative_to(ROOT))
+    """`path` relative to the root, POSIX: the committed keys on every platform (X07a)."""
+    return path.relative_to(ROOT).as_posix()
 
 
 def settings(cases9: dict[str, Any]) -> dict[str, Any]:
@@ -1280,7 +1281,7 @@ def sums_text() -> str:
     """SHA256SUMS over the qualification record, every tool record and comparison.json (paths
     relative to `benchmarks/s09/references/`)."""
     paths = sorted(QUALIFICATION.glob("*.json")) + sorted(RESULTS.glob("*.json")) + [TABLE]
-    return "".join(f"{sha256(p)}  {p.relative_to(REFERENCES)}\n" for p in paths)
+    return "".join(f"{sha256(p)}  {p.relative_to(REFERENCES).as_posix()}\n" for p in paths)
 
 
 def markdown(document: dict[str, Any]) -> str:

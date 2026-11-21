@@ -13,15 +13,20 @@ architectures. Two kinds of test live here:
 
 from __future__ import annotations
 
+import hashlib
+import importlib.metadata
 import importlib.util
 import json
+import re
 import subprocess
 import sys
 import tomllib
+from pathlib import Path
 from types import ModuleType
 from typing import Any
 
 import pytest
+import yaml
 from conftest import REPO_ROOT
 from packaging.requirements import Requirement
 from packaging.utils import canonicalize_name
@@ -30,6 +35,12 @@ RECORD = REPO_ROOT / "docs" / "t07-server-licences.json"
 DIRECT = {"mcp", "starlette", "uvicorn"}
 # W0.6 measured four compiled distributions in the closure, each with an aarch64 wheel.
 COMPILED = {"cffi", "cryptography", "pydantic-core", "rpds-py"}
+# R-1063 (card ofs-x07a-pywin32-lock A): `mcp`'s Windows-only pywin32, pinned in its own lock with
+# the hash of the wheel windows-latest installs (`pip download pywin32==312 --platform win_amd64
+# --python-version 3.13`; PyPI's digest of the same file agrees).
+WINDOWS_LOCK = REPO_ROOT / "requirements-windows.lock"
+WINDOWS_INSTALL = "--no-deps --require-hashes -r requirements-windows.lock"
+PYWIN32_WHEEL_SHA256 = "c53e878d15a1c44788082bfe712a905433473aa38f86375b7cf8b45e3acbaaf9"
 
 
 def _script() -> ModuleType:
@@ -67,6 +78,17 @@ def _lock() -> dict[str, str]:
     return pins
 
 
+def _windows_lock() -> dict[str, tuple[str, set[str]]]:
+    """`requirements-windows.lock`'s pins: canonical name to (version, wheel hashes)."""
+    pins: dict[str, tuple[str, set[str]]] = {}
+    for line in WINDOWS_LOCK.read_text(encoding="utf-8").splitlines():
+        if line.strip() and not line.startswith("#"):
+            name, version = line.split(" --hash", 1)[0].split("==")
+            hashes = set(re.findall(r"--hash=sha256:([0-9a-f]{64})", line))
+            pins[canonicalize_name(name)] = (version, hashes)
+    return pins
+
+
 def test_the_server_extra_pins_its_three_libraries_exactly() -> None:
     """§11.1: `mcp`, starlette and uvicorn, each `==`; nothing else is a direct requirement."""
     requirements = _server_extra()
@@ -99,6 +121,32 @@ def test_the_lock_carries_the_whole_server_closure(record: dict[str, Any]) -> No
         assert lock.get(row["name"]) == row["version"], row["name"]
 
 
+def test_the_windows_lock_pins_pywin32_alone_by_its_wheel_hash() -> None:
+    """R-1063: pywin32 312 with the windows-latest wheel's hash, and nothing else; it is not in
+    `requirements.lock`, whose bytes the lock half leaves unchanged (S07 A36 pins its digest)."""
+    assert _windows_lock() == {"pywin32": ("312", {PYWIN32_WHEEL_SHA256})}
+    assert "pywin32" not in _lock()
+
+
+def test_ci_installs_the_windows_lock_on_the_windows_leg_only() -> None:
+    """R-1063: one step of the whole workflow installs the lock, `--no-deps --require-hashes`, on
+    Windows only, and before the main lock: after it, pip finds `mcp`'s pywin32 installed and
+    checks no hash (D-30)."""
+    workflow = yaml.safe_load((REPO_ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8"))
+    installs = [
+        (job, index, step)
+        for job, spec in workflow["jobs"].items()
+        for index, step in enumerate(spec.get("steps", []))
+        if "requirements-windows.lock" in step.get("run", "")
+    ]
+    assert len(installs) == 1
+    job, index, step = installs[0]
+    assert job == "check" and WINDOWS_INSTALL in step["run"]
+    assert step["if"].replace(" ", "") == "${{runner.os=='Windows'}}"
+    runs = [step.get("run", "") for step in workflow["jobs"]["check"]["steps"]]
+    assert index < next(i for i, run in enumerate(runs) if "-r requirements.lock" in run)
+
+
 def test_g19_the_recorded_closure_has_no_gpl_family_or_unresolved_licence(
     record: dict[str, Any],
 ) -> None:
@@ -109,6 +157,28 @@ def test_g19_the_recorded_closure_has_no_gpl_family_or_unresolved_licence(
         declared = row["license_expression"] or row["license"]
         assert declared in SCRIPT.ALLOWED, row["name"]
         assert row["license_files"], f"{row['name']} ships no licence file"
+
+
+def _row(name: str, declared: str) -> dict[str, Any]:
+    return {
+        "name": name,
+        "license_expression": None,
+        "license": declared,
+        "license_classifiers": [],
+        "license_files": {"LICENSE.txt": "0" * 64},
+    }
+
+
+def test_g19_pywin32s_psf_is_allowed_for_pywin32_only() -> None:
+    """R-1063 (Frank, ofs-x07a-pywin32-licence A): pywin32 312 declares `PSF` (run 44615939688),
+    which passes for pywin32 alone; the same term on any other distribution is still unlisted."""
+    assert set(SCRIPT.ALLOWED_FOR) == {("pywin32", "PSF")}
+    assert "R-1063" in SCRIPT.ALLOWED_FOR[("pywin32", "PSF")]
+    assert "PSF" not in SCRIPT.ALLOWED
+    assert SCRIPT.verdict_of(_row("pywin32", "PSF")) == "ok"
+    assert SCRIPT.verdict_of(_row("typing-extensions", "PSF")) == "not-allowed"
+    assert SCRIPT.verdict_of(_row("pywin32", "LGPL-2.1")) == "gpl-family"
+    assert SCRIPT.verdict_of(_row("pywin32", "PSF-1.0")) == "not-allowed"
 
 
 def test_every_compiled_distribution_has_a_wheel_for_both_ci_architectures(
@@ -124,16 +194,38 @@ def test_every_compiled_distribution_has_a_wheel_for_both_ci_architectures(
             assert len(wheel["sha256"]) == 64 and wheel["file"].endswith(".whl")
 
 
+def _lf_licence_files(name: str) -> dict[str, str]:
+    """`t07_licence_inventory`'s licence-file hashes of the installed `name`, with CRLF read as LF:
+    the Windows wheels of pydantic-core 2.46.5 and rpds-py 2026.6.3 ship the licence text of the
+    Linux wheels with CRLF line endings (measured from the wheels, D-31)."""
+    distribution = importlib.metadata.distribution(name)
+    wanted = SCRIPT._licence_files(distribution)
+    files: dict[str, str] = {}
+    for entry in distribution.files or []:
+        inside = str(entry).split(".dist-info/", 1)[-1]
+        if inside in wanted:
+            data = Path(str(entry.locate())).read_bytes().replace(b"\r\n", b"\n")
+            files[inside] = hashlib.sha256(data).hexdigest()
+    return dict(sorted(files.items()))
+
+
 def test_the_installed_closure_is_the_recorded_one(record: dict[str, Any]) -> None:
     """With the extra installed, the inventory re-read from this environment equals the record in
-    every field an installed environment can show (the wheel hashes are of the downloads)."""
+    every field an installed environment can show (the wheel hashes are of the downloads). The
+    record is the Linux closure; on Windows the closure adds exactly the pins of
+    `requirements-windows.lock`, at their versions (R-1063), and their verdicts pass above; its
+    licence files are compared with CRLF read as LF (D-31)."""
     pytest.importorskip("mcp")
     fresh = SCRIPT.inventory(REPO_ROOT / "pyproject.toml", None)
     assert fresh["failures"] == []
+    rows = fresh["distributions"]
+    if sys.platform == "win32":
+        pins = {name: version for name, (version, _) in _windows_lock().items()}
+        assert {row["name"]: row["version"] for row in rows if row["name"] in pins} == pins
+        rows = [row for row in rows if row["name"] not in pins]
+        rows = [row | {"license_files": _lf_licence_files(row["name"])} for row in rows]
     strip = [{k: v for k, v in row.items() if k != "wheels"} for row in record["distributions"]]
-    assert [{k: v for k, v in row.items() if k != "wheels"} for row in fresh["distributions"]] == (
-        strip
-    )
+    assert [{k: v for k, v in row.items() if k != "wheels"} for row in rows] == strip
 
 
 def test_the_mcp_sdk_speaks_2025_06_18() -> None:

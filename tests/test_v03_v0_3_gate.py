@@ -25,6 +25,7 @@ from __future__ import annotations
 import ast
 import datetime
 import json
+import os
 import re
 import subprocess
 import sys
@@ -717,13 +718,56 @@ def _build_scratch(repo: Path) -> tuple[str, str, dict[str, str]]:
     return rc, candidate, records
 
 
+def _scratch_gate_diagnosis(
+    repo: Path, rc: str, candidate: str, records: dict[str, str], out: str
+) -> str:
+    """X07a WO14: one line (under 280 characters, so that the first line of the junit message
+    carries it) that tells apart why the gate rejects the scratch candidate, evaluated only when
+    the assertion fails (RP.S08 in REL.A20's generator child on Windows; WO13 found every record
+    in the candidate's tree). H1, the gate reads another repository: whether the `v0_1_gate`
+    namespace the engine's `git` runs in is the one the fixture patched, and whether its `ROOT`
+    is the scratch. H2, the gate judges another commit: `C` and the candidate of its first output
+    line against the ones built (`=` when equal). H3, the records are read and rejected: what the
+    engine's own `read_at` gives for `C`'s S13 manifest at the candidate (`None`, or its length
+    and whether it parses) and the engine's `blob_at` answer to the same read (its exit code
+    and the start of its output), and the gate's first reason (commit ids cut to 8 characters)."""
+    engine = v0_3_gate._main.__globals__
+    used = engine["git"].__globals__
+    root = used.get("ROOT", "-")
+    head = out.splitlines()[0] if out else ""
+    at = re.search(r"at C = ([0-9a-f]{40}); candidate ([0-9a-f]{40})", head)
+    seen_rc, seen_candidate = at.groups() if at else ("-", "-")
+    path = f"evidence/S13/{rc}/manifest.json"
+    text = engine["read_at"](candidate, path)
+    read = "None" if text is None else f"{len(text)}:{v0_2_gate._manifest(text) is not None:d}"
+    try:
+        blob = engine["blob_at"](candidate, path)
+        git_said = f"0:{blob.decode('utf-8', 'replace')[:16]!r}"
+    except subprocess.CalledProcessError as error:
+        git_said = f"{error.returncode}:{(error.stderr or b'').decode('utf-8', 'replace')[:24]!r}"
+    reasons = [line.strip() for line in out.splitlines() if line.lstrip().startswith("- ")]
+    first = re.sub(r"([0-9a-f]{8})[0-9a-f]{32}", r"\1", reasons[0])[:90] if reasons else "-"
+    names = m07._git(repo, "ls-tree", "-r", "--name-only", candidate).splitlines()
+
+    def same(seen: str, built: str) -> str:
+        return "=" if seen == built else seen[:8]
+
+    return (
+        f"WO14 tree {len(names)} miss {len(set(records) - set(names))}; "
+        f"H1 ns {used is vars(v0_1_gate):d} root {Path(root) == repo:d}; "
+        f"H2 C {same(seen_rc, rc)} cand {same(seen_candidate, candidate)}; "
+        f"H3 read_at {read} git {git_said}; "
+        f"{len(reasons)}r {first}"
+    )
+
+
 def test_a08_main_on_a_scratch_repository(
     scratch: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
-    rc, candidate, _ = _build_scratch(scratch)
+    rc, candidate, records = _build_scratch(scratch)
     code = v0_3_gate.main(["--rc", rc])
     out = capsys.readouterr().out
-    assert code == 0, out
+    assert code == 0, _scratch_gate_diagnosis(scratch, rc, candidate, records, out) + "\n" + out
     assert out.splitlines()[0] == f"v0.3 gates ({SET}) at C = {rc}; candidate {candidate}"
     assert out.splitlines()[-1] == "v0.3.0 tag may be proposed: YES"
     m07._commit(scratch, {"docs/adr/0046-test-input.md": adr("**Status:** Proposed")}, "proposed")
@@ -739,6 +783,33 @@ def test_a07_main_exits_2_on_a_w27_row(scratch: Path, capsys: pytest.CaptureFixt
     m07._commit(scratch, {VERDICTS: document(rows, rc=rc)}, "a W27 row")
     assert v0_3_gate.main(["--rc", rc]) == 2
     assert "rows for gates v0.3-gate-v1 does not claim: ['W27']" in capsys.readouterr().err
+
+
+def test_x07a_wo15_a_record_is_read_where_git_cannot_stat_its_argument(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """X07a WO15: `git show <commit>:<path>` without `--` also `lstat`s its argument as a
+    work-tree file and dies (exit 128, `failed to stat`) on any error but "missing". In REL.A20's
+    child on Windows the working directory (152 characters) and the argument (108) passed 260:
+    `Filename too long`, so `read_at` gave `None` for every record and the gate 21 reasons. The
+    scratch here is deep enough for that on Windows, and a symbolic-link loop at the argument's
+    first component gives `Too many levels of symbolic links` on POSIX."""
+    pad = "d" * max(1, 160 - len(str(tmp_path / "repo")))
+    repo = tmp_path / pad / "repo"
+    repo.mkdir(parents=True)
+    m07._git(repo, "init", "-q")
+    monkeypatch.setattr(v0_1_gate, "ROOT", repo)
+    path = f"evidence/S13/{'0' * 40}/manifest.json"
+    commit = m07._commit(repo, {path: '{"package": "S13"}\n'}, "a record")
+    if os.name == "posix":
+        (repo / f"{commit}:evidence").symlink_to(f"{commit}:evidence")
+    assert len(str(repo)) + 1 + len(f"{commit}:{path}") > 260
+    blob = ["git", "cat-file", "blob", f"{commit}:{path}"]  # takes no path, stats nothing
+    expected = subprocess.run(blob, cwd=repo, capture_output=True, check=True).stdout
+    assert json.loads(expected) == {"package": "S13"}
+    assert v0_2_gate.read_at(commit, path) == expected.decode("utf-8")
+    assert v0_2_gate.blob_at(commit, path) == expected
+    assert v0_2_gate.read_at(commit, "evidence/S13/absent.json") is None
 
 
 def test_a08_the_v0_2_script_refuses_a_0_3_0_candidate(

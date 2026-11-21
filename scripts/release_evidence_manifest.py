@@ -410,7 +410,7 @@ _HEX40 = re.compile(r"^evidence/[^/]+/[0-9a-f]{40}/manifest\.json$")
 
 def _harvest_excluded_at(commit: str) -> tuple[str, ...]:
     """`HARVEST_EXCLUDED` as `scripts/t08_support_matrix.py` declares it at `commit`."""
-    source = t08._git("show", f"{commit}:scripts/t08_support_matrix.py")
+    source = t08._git("show", f"{commit}:scripts/t08_support_matrix.py", "--")
     declared = re.search(r"^HARVEST_EXCLUDED: tuple\[str, \.\.\.\] = (.*)$", source, re.M)
     if declared is None:
         raise SystemExit(f"RP.S22: no HARVEST_EXCLUDED in t08_support_matrix.py at {commit}")
@@ -435,7 +435,7 @@ def _m_harvest(inputs: Inputs) -> Part:
     excluded = _harvest_excluded_at(added[-1]) if added else t08_support_matrix.HARVEST_EXCLUDED
     at_c = t08._git("ls-tree", "-r", "--name-only", inputs.commit, "--", prefix).splitlines()
     manifests = sorted(
-        str(path.relative_to(ROOT))
+        path.relative_to(ROOT).as_posix()
         for member in excluded
         for path in (ROOT / member).glob("**/manifest.json")
     )

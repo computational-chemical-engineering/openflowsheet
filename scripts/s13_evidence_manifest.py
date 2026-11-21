@@ -285,12 +285,12 @@ def _sha256(path: Path) -> str:
 def _show(commit: str, path: str) -> str | None:
     if not t08._git_ok("cat-file", "-e", f"{commit}:{path}"):
         return None
-    return t08._git("show", f"{commit}:{path}")
+    return t08._git("show", f"{commit}:{path}", "--")
 
 
 def _working_files(prefix: str) -> dict[str, str]:
     return {
-        str(path.relative_to(ROOT)): path.read_text(encoding="utf-8")
+        path.relative_to(ROOT).as_posix(): path.read_text(encoding="utf-8")
         for path in sorted((ROOT / prefix).glob("*.md"))
     }
 

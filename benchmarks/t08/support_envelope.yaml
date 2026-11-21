@@ -271,7 +271,9 @@ axes:
     statement: >-
       R0 structural identity on Linux x86-64 and aarch64; floats within the numerical policy each
       record names (`T08-numerical-policy-v2` for v0.1 records, ADR 0025); bitwise agreement
-      reported, never promised (ADR 0007 F1; L07).
+      reported, never promised (ADR 0007 F1; L07). macOS arm64 and Windows x86-64: bundles made on
+      the same platform identity replay exactly; bundles from another platform are inspected, not
+      reproduced (ADR 0007 D3.3, Amendment 3).
     evidence:
       - check:K05.G05.two_platform_structural_equality
       - check:T06.A45
@@ -336,8 +338,11 @@ axes:
     title: Platforms
     statement: >-
       Linux x86-64 and aarch64, Python 3.13, the one lock (L15). The C1 reactor's runs are
-      measured on x86-64 only (L44).
-    architectures: [aarch64, x86-64]
+      measured on x86-64 only (L44). Windows x86-64 and macOS arm64 run the same CI checks (X07a)
+      with the platform limits of docs/X07a_DECISIONS.md: external models are refused on Windows,
+      the nlp and reactor environments and the coolprop extra are Linux only, and F0's M7 replay
+      verdicts there await a ruling.
+    architectures: [aarch64, macos-arm64, windows-x86-64, x86-64]
     python: "3.13"
     lock_sha256: ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4
     evidence:
@@ -9819,6 +9824,37 @@ harvest:
   class: P
   to: []
   note: 'provenance note: requirements empty, a development-process package'
+- manifest: evidence/X07a/9773c361c3089ba5c4e9a84e4c63e296d53a727a/manifest.json
+  item: limitations[0]
+  sha256: bbf065970b6158a9c927c741cfb26075b780faccf57cd75879bfea2e5f1cfcda
+  class: P
+  to: []
+  note: 'provenance note: status follows CI; Amendment 3 accepted (R-1062), two unregistered platforms; review pending'
+- manifest: evidence/X07a/9773c361c3089ba5c4e9a84e4c63e296d53a727a/manifest.json
+  item: checks[2]
+  check_id: X07a.CI
+  sha256: 4264fe296b756879726a6033093eea61a284bf945141102c34c2939936bd5da3
+  class: P
+  to: []
+  note: 'provenance note: CI on four legs not yet green (Q-1 and the Windows clusters open)'
+- manifest: evidence/X07a/bd0b7df5cf082936227ba13c32150fee31da8497/manifest.json
+  item: limitations[0]
+  sha256: b0656abd855e6e6e58ef6df0c8d325ba642e2307bc8b7457874b6cab810444b8
+  class: P
+  to: []
+  note: 'provenance note: Amendment 3 accepted (R-1062), two unregistered replay platforms; Q-4, Q-10, Q-11, D-20, D-22 open; review pending'
+- manifest: evidence/X07a/bd0b7df5cf082936227ba13c32150fee31da8497/manifest.json
+  item: limitations[1]
+  sha256: 14a0591dc9bc6c4fe08e80768be2cf62548d85ff2942d86500c263aafc4175f7
+  class: P
+  to: []
+  note: 'provenance note: two byte-pinned scripts keep git show without a final -- (WO16); re-registering the pins is open'
+- manifest: evidence/X07a/bd0b7df5cf082936227ba13c32150fee31da8497/manifest.json
+  item: limitations[2]
+  sha256: 2f5f20890c300c836eb7c6395a90c31e3614daa7d155ed50f4302332d738f3ab
+  class: P
+  to: []
+  note: 'provenance note: a36 ruling D1 applied (R-1068); the stand-in verdict is not registered, macOS a36 failure a D8 observation'
 - manifest: evidence/S19/043879a41de0525fc86d6d79f271165855b11a09/manifest.json
   item: limitations[0]
   sha256: 0f1991e1f7b10870d1a9cd8e6ca5d4de10aa2b494b1f2ba7a90fa44ae52a662b

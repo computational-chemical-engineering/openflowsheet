@@ -119,6 +119,10 @@ def tilt(rungs: dict[str, Any]) -> None:
 # -- A00, A01, A02 ---------------------------------------------------------------------------------
 
 
+@pytest.mark.skipif(
+    sys.platform == "win32",
+    reason="X07a limit: the path is written by scripts/m07_journey.py, an M07 carry member",
+)
 def test_a00_the_generator_check_passes() -> None:
     completed = subprocess.run(
         [sys.executable, "-I", str(GENERATOR), "--check"],
@@ -1147,6 +1151,10 @@ def test_a24_a_replayed_evaluation_counts_store_hits_only() -> None:
 # -- A15: R2 reads M04's committed verdict ---------------------------------------------------------
 
 
+@pytest.mark.skipif(
+    sys.platform == "win32",
+    reason="X07a limit: the path is written by scripts/m07_journey.py, an M07 carry member",
+)
 def test_a15_r2_is_not_promotable_with_m04s_reasons_and_no_evaluation() -> None:
     facts = REG["journey"]["m04_facts"]
     r2 = m07.r2_rung(REPO_ROOT / facts["record"])

@@ -12,6 +12,7 @@ from __future__ import annotations
 import re
 import subprocess
 import sys
+from pathlib import Path
 
 from m03_support import (
     GENERATOR_PATH,
@@ -26,8 +27,11 @@ from m03_support import (
 REGISTERED_CLAIMS = 264
 
 _PASSED = re.compile(r"^(\d+) claims passed$", re.MULTILINE)
+# The generator prints the path natively (`benchmarks\\m03\\...` on Windows; X07a).
 _IDENTICAL = re.compile(
-    r"^benchmarks/m03/reference_values\.json is byte-identical to the generator's output$",
+    "^"
+    + re.escape(str(Path("benchmarks/m03/reference_values.json")))
+    + " is byte-identical to the generator's output$",
     re.MULTILINE,
 )
 

@@ -72,7 +72,7 @@ def manifests() -> dict[str, dict[str, Any]]:
     found: dict[str, dict[str, Any]] = {}
     for path in sorted((ROOT / "evidence").glob("*/*/manifest.json")):
         document = json.loads(path.read_text(encoding="utf-8"))
-        document["_path"] = str(path.relative_to(ROOT))
+        document["_path"] = path.relative_to(ROOT).as_posix()  # POSIX in the report (X07a, D-29)
         found[document["work_package"]] = document
     return found
 

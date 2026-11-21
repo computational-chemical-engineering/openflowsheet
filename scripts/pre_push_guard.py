@@ -42,8 +42,11 @@ class RefusalError(Exception):
 
 def guarded(url: str) -> bool:
     """Whether `url` names a `computational-chemical-engineering/openflowsheet…` repository
-    other than the archive."""
-    names = [name.removesuffix(".git") for name in REPOSITORY.findall(url.lower())]
+    other than the archive. A backslash is read as `/`: git hands the hook a Windows path
+    remote (`C:\\…\\openflowsheet.git`) as it was given (X07a)."""
+    names = [
+        name.removesuffix(".git") for name in REPOSITORY.findall(url.lower().replace("\\", "/"))
+    ]
     return any(name != ARCHIVE for name in names)
 
 

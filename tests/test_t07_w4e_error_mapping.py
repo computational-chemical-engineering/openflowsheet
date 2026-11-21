@@ -42,6 +42,13 @@ from openflowsheet.application.policy_types import Limits, ReplayPolicy
 from openflowsheet.schema_check import schema_errors
 from openflowsheet.verify.checks import VerifierError
 
+#: X07a platform limit (docs/X07a_DECISIONS.md): the lost worker is made by SIGKILL and judged by
+#: its POSIX exit code; Windows has neither (run 44618922484).
+NEEDS_SIGKILL = pytest.mark.skipif(
+    not hasattr(signal, "SIGKILL"),
+    reason="a worker killed by SIGKILL, judged by its POSIX exit code: Windows has no SIGKILL",
+)
+
 NOMINAL = "SYN-001-nominal"
 #: W3-Q1: admitted, and ending at the registered initializer's refusal (ruling round 3, Q1).
 INITIALIZER_REFUSED = "SYN-001-UL-C3X"
@@ -258,6 +265,7 @@ def test_retryable_table_a_worker_that_never_started(
         app.close()
 
 
+@NEEDS_SIGKILL
 def test_retryable_table_a_worker_that_exited_with_a_code(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

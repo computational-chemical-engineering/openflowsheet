@@ -7,7 +7,8 @@ cancel event, the cancel reason and the started event.
 
 In order, the worker:
 
-0. makes itself the leader of its own process group (`os.setpgid(0, 0)`, its first statement), so
+0. makes itself the leader of its own process group (`os.setpgid(0, 0)`, its first statement; on
+   Windows a kill-on-close Job Object, `openflowsheet._platform.isolate_process_tree`), so
    that the supervisor's forced kill reaches every child it runs (ADR 0033 D2, amending ADR 0020
    D3) — an external model's attempt never outlives a killed worker; a child must therefore never
    be given a session of its own (R-221);
@@ -60,6 +61,7 @@ from typing import TYPE_CHECKING, Final
 
 # ADR 0076 I-14: importing the registry installs the catalogue's before-freeze hook.
 import openflowsheet.registry  # noqa: F401
+from openflowsheet._platform import isolate_process_tree
 
 if TYPE_CHECKING:
     from openflowsheet.application.jobs.interrupt import CancelReason
@@ -94,8 +96,7 @@ def main(
     test_hooks: bool,
 ) -> None:
     """Run the job `job_id` of the project at `project_dir` under `owner_instance`, then exit."""
-    if hasattr(os, "setpgid"):
-        os.setpgid(0, 0)  # first: the forced kill reaches this worker's children (ADR 0033 D2)
+    isolate_process_tree()  # first: the forced kill reaches this worker's children (ADR 0033 D2)
     job_directory = Path(project_dir) / "jobs" / job_id  # `store.JOBS_DIR`, not imported here
     job_directory.mkdir(parents=True, exist_ok=True)
     _redirect_output(job_directory / WORKER_LOG)

@@ -40,9 +40,11 @@ RELEASE_RC_JOBS = {
 
 
 def _truth(expression: str, event: str, inputs: set[str]) -> bool:
-    """A job's `if`, evaluated for `event` with exactly `inputs` set (`always()` is true)."""
+    """A job's `if`, evaluated for `event` with exactly `inputs` set (`always()` is true, and
+    `cancelled()` false: the run is not cancelled)."""
     text = expression.strip().removeprefix("${{").removesuffix("}}")
     text = text.replace("github.event_name", repr(event)).replace("always()", "True")
+    text = text.replace("cancelled()", "False")
     text = re.sub(r"inputs\.([a-z0-9_]+)", lambda m: str(m.group(1) in inputs), text)
     text = text.replace("&&", " and ").replace("||", " or ")
     text = re.sub(r"!(?!=)", " not ", text)
@@ -63,7 +65,13 @@ def _runs(event: str, inputs: set[str]) -> set[str]:
 
 def test_a17_check_s_if() -> None:
     assert JOBS["check"]["if"] == CHECK_IF
-    assert JOBS["check"]["strategy"]["matrix"]["runner"] == ["ubuntu-latest", "ubuntu-24.04-arm"]
+    # X07a: the Windows and macOS legs follow the two Linux legs RP §6.2's step 1 reads.
+    assert JOBS["check"]["strategy"]["matrix"]["runner"] == [
+        "ubuntu-latest",
+        "ubuntu-24.04-arm",
+        "windows-latest",
+        "macos-latest",
+    ]
 
 
 def test_a17_the_release_rc_input() -> None:
@@ -94,7 +102,11 @@ def test_a17_the_junit_uploads() -> None:
     (upload,) = [
         step for step in steps if str(step.get("with", {}).get("name", "")).startswith("junit-")
     ]
-    assert upload["with"]["name"] == "junit-${{ runner.arch == 'ARM64' && 'aarch64' || 'x86_64' }}"
+    # X07a: the Linux legs keep `junit-<arch>` (release_rc.LEGS), the others `junit-<os>-<arch>`.
+    assert upload["with"]["name"] == (
+        "junit-${{ runner.os == 'Linux' && (runner.arch == 'ARM64' && 'aarch64' || 'x86_64')"
+        " || format('{0}-{1}', runner.os, runner.arch) }}"
+    )
     assert upload["with"]["path"] == "${{ runner.temp }}/junit/"
     assert upload["with"]["if-no-files-found"] == "error"
     assert upload["if"] == "${{ !cancelled() }}"

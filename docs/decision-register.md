@@ -20262,6 +20262,55 @@ registration of a batch's moves happens once, at K.
 **Rejected.** *Leave `models/c1/mixer.py` out of batch L:* keeps the debt batch L removes from it (WO-L1 to WO-L2b),
 against G-END (S19).
 
+## R-1062: ADR 0007 Amendment 3 accepted: exact replay on any platform; no further replay platform in 0.5 (X07a; 2026-11-20)
+
+| | |
+| --- | --- |
+| Date | 2026-11-20 |
+| Decided by | Frank, Decision Desk card ofs-x07a-adr0007-am3, option A (signed 2026-11-20T07:21:50Z, key 032ee0a5ae620a90, `VERIFIED`) |
+| Normative text | `docs/adr/0007-reproducibility-certificate-policy.md` Amendment 3 (copied from `docs/X07a-platform-ruling.md` section 5.1) |
+| Evidence | X07a-WO3 A1 (82 944 ordered pairs), A2 (64 pairs change, all same-identity pairs on unregistered platforms), A6; CI run 44670029066 (macOS F0 M7 52/52 by R1.4) |
+| Affected packages | X07a (`run/replay.py` `decide_mode`, commit b27c69a1); K05 G05 evidence unchanged |
+
+**Decision.** The `exact_replay` conditions of ADR 0007 D4 decide on any platform, registered or not; the registered
+set (D3.3: `ubuntu-latest` x86-64, `ubuntu-24.04-arm`) governs only replays whose environments differ. A platform
+joins D3.3 only by a further amendment accepted by Frank, with the evidence the amendment lists. Q-5's default holds:
+no further platform is registered in 0.5.
+
+**Rejected.** Option B (reject; same-host replay tests on macOS and Windows become platform-limit rows).
+
+## R-1063: pywin32 allowed in G19 as a Windows-only dependency of the server extra (X07a; 2026-11-20)
+
+| | |
+| --- | --- |
+| Date | 2026-11-20 |
+| Decided by | Frank, Decision Desk card ofs-x07a-pywin32-licence, option A (signed 2026-11-20, `VERIFIED`) |
+| Normative text | the card's action: "allow pywin32 (PSF-2.0, compiled) in the G19 licence policy as a Windows-only dependency of the server extra, and pin it with a Windows marker in the lock, on wp/X07a" |
+| Evidence | `docs/X07a_DECISIONS.md` Q-1 (run 44615939688: `pywin32 312: PSF (compiled) not-allowed`), Q-12 (the lock half) |
+| Affected packages | X07a (`scripts/t07_licence_inventory.py` `ALLOWED_FOR`, `tests/test_t07_server_extra.py`) |
+
+**Decision.** pywin32, which `mcp==1.30.0` requires on Windows only (`pywin32>=310; sys_platform == 'win32'`), may be
+in the server extra's closure there. G19 admits the term pywin32 312 declares (`PSF`, not the `PSF-2.0` already in
+`ALLOWED`) for pywin32 alone, through an entry keyed by distribution and term (`ALLOWED_FOR`); no other distribution
+declaring `PSF` passes, and `ALLOWED` is unchanged (S07 A41 pins its keys). The pin is not built: a marker line in
+`requirements.lock` fails ADR 0069 D2.2's grammar and moves the lock's recorded SHA-256 (Q-12).
+
+**Rejected.** Option B (keep pywin32 refused; declare the server extra a Windows platform limit).
+
+*Amended (lock half, 2026-11-20):* Frank, Decision Desk card ofs-x07a-pywin32-lock, option A (signed 2026-11-20,
+`VERIFIED`), verbatim: "pin pywin32==312 with its wheel hashes in a separate Windows-only lock
+requirements-windows.lock, installed with pip --no-deps --require-hashes on the Windows CI leg (the
+requirements-coolprop.lock pattern of R-624); requirements.lock unchanged, on wp/X07a". `requirements-windows.lock`
+at the root holds one line, `pywin32==312` with the hash of the wheel windows-latest installs
+(`pywin32-312-cp313-cp313-win_amd64.whl`, `c53e878d…aaf9`, from `pip download`; PyPI's digest agrees). The `check`
+job's Windows leg installs it with `--no-deps --require-hashes`; no other leg or job does. `requirements.lock` is
+byte-unchanged (`ead4edf1…b9c4`), so D2.2's grammar, T08.A19 and every registered bundle stand. G19's record stays the
+Linux closure; on Windows `test_the_installed_closure_is_the_recorded_one` compares the closure less the Windows
+lock's pins, which it holds to the lock's versions. Closes Q-12 (`docs/X07a_DECISIONS.md`). *Rejected:* option B (an
+ADR 0069 amendment admitting markers in D2.2 and a re-registration of the lock digest: it moves T08.A19, the A30
+records and every bundle's `lock_sha256`); option C (no pin: pywin32 resolved from `mcp`'s marker, unpinned and
+unhashed).
+
 ## R-1066 — S07 A28 and spec §16.9: the CoolProp `fluid_table_sha256` follows B7's eight generated modules (2026-11-20)
 
 | | |
@@ -20302,3 +20351,24 @@ re-registers.
 
 **Rejected.** *Leave `thermo/pr_c1.py` out of batch P:* keeps the debt WO-P1 removes from it (health 4.6, debt 55.7),
 against G-END (S19).
+
+## R-1068: M04/X07a: no test asserts an outcome that ADR 0036 D8 does not promise; A36's application half runs on A17; §6.2's ties erratum (X07a ruling D1; 2026-11-21)
+
+| | |
+| --- | --- |
+| Date | 2026-11-21 |
+| Decided by | design lane (`specifier`), X07a ruling D1 (`docs/X07a-a36-ruling.md`, c2e30791), applying ADR 0036 D8 as written (no ADR change); implemented by the build lane in X07a-WO19 |
+| Normative text | `docs/derivations/M04-spec.md` §21 (Amendment 4, copied from the ruling's section 5.2); the test edits of the ruling's section 5.1 |
+| Evidence | `docs/X07a_DECISIONS.md` WO18 (the stand-in's scores are fit roundoff; 3/200 and 7/200 verdict flips under a row permutation on Linux) and WO19; CI 44882659578, macOS jobs 136781135134 (it2 NOT_PROMOTABLE) and 136811622556 (rerun, PROMOTABLE) |
+| Affected packages | X07a (`tests/test_m04_iterations.py`, `tests/test_m04_study_job.py` docstring); M04 A36's status unchanged |
+
+**Decision.** Option A, refined. A test that needs a given surrogate-study verdict takes it from A17 (registered,
+generator-asserted margins) or from a constructed manifest, never from the stand-in `standin-x025-v1`, whose scores
+are roundoff and whose every coverage decision is near threshold (D8). A36's application half runs on the smooth
+parent registered for the test (X07a-D1.1 to D1.3); the stand-in asserts its vanishing (X07a-D1.5). §6.2's "ties with
+probability zero" is an erratum: ties do not weaken the guarantee or §6.4's false-failure bound.
+
+**Rejected.** Option B (a score floor or a `degenerate_scores` reason): an exactly fitting surrogate is not a defect
+of the method, and either variant rewrites §6.2/§6.4 after registered iterations ran under them. Option C (a macOS
+platform-limit row): the test flips under a pure roundoff change on Linux too, so it is flaky everywhere, not limited
+on one platform.

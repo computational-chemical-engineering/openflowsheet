@@ -1,0 +1,66 @@
+{
+  "work_package": "X07a",
+  "commit": "9773c361c3089ba5c4e9a84e4c63e296d53a727a",
+  "requirements": [],
+  "status": "implemented",
+  "inputs": {
+    "case_id": "X07a-WO1 and WO2 (docs/briefs/X07a-WO1.md, X07a-WO2.md; roadmap 0.5, ADR 0056 row 5; Decision Desk card ofs-05-widen option B); build decisions docs/X07a_DECISIONS.md D-1 to D-19, Q-1, Q-2, Q-3; case_hash is the SHA-256 of docs/briefs/X07a-WO1.md",
+    "case_hash": "7388bd00bbc09d6623f606860ce0671318a6bae0c5484d5089d0454663a524ef",
+    "environment_lock_hash": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+  },
+  "commands": [
+    {
+      "cmd": "PYTHONPATH=src .venv/bin/python -m pytest -q -rs -p no:cacheprovider (the 104 test files that import the changed modules, list in docs/X07a_DECISIONS.md position) tests/test_x07a_platform.py (at 4fb8a63d: 4409 passed, 26 skipped, 13 deselected, 3 xfailed in 1894 s)",
+      "cwd": ".claude/worktrees/x07a",
+      "exit_code": 0
+    },
+    {
+      "cmd": "PYTHONPATH=src .venv/bin/python scripts/corpus_identity.py --check (at a5f53590: F0 PASS: M1 50/50, M2 61/61, M3 61/61, M4 61/61, M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 35/35)",
+      "cwd": ".claude/worktrees/x07a",
+      "exit_code": 0
+    },
+    {
+      "cmd": ".venv-codehealth/bin/codehealth arch --repo . --depth 4 (0 violations, 0 cycles; 330 files)",
+      "cwd": ".claude/worktrees/x07a",
+      "exit_code": 0
+    },
+    {
+      "cmd": ".venv/bin/mypy --platform win32 (0 errors, 15 at c4a91a75); mypy --platform darwin (0 errors)",
+      "cwd": ".claude/worktrees/x07a",
+      "exit_code": 0
+    },
+    {
+      "cmd": "PYTHONPATH=src .venv/bin/python -m pytest -q -rfE -p no:cacheprovider tests/test_release_workflows.py tests/test_pre_push_guard.py tests/test_s19_w5_gate.py tests/test_s19_w5_identity.py tests/test_t07_store.py tests/test_t07_w4c_process_executor.py tests/test_t07_w4e_error_mapping.py tests/test_t07_w3a_revision_runs.py tests/test_t07_v17_c2.py tests/test_t07_w7a_harness.py (and the 12 test files that read ci.yml) (WO2, at 9e41c79a: 656 passed in 682 s)",
+      "cwd": ".claude/worktrees/x07a",
+      "exit_code": 0
+    }
+  ],
+  "checks": [
+    {
+      "id": "X07a.linux-unchanged",
+      "description": "POSIX calls of the platform layer equal the callers' former calls",
+      "result": "pass",
+      "value": "tests/test_x07a_platform.py (e); F0 PASS on the reference platform at a5f53590"
+    },
+    {
+      "id": "X07a.kill-tree",
+      "description": "forced kill ends the worker's child (falsifier: worker-only kill detected)",
+      "result": "pass",
+      "value": "tests/test_x07a_platform.py (c) on Linux; passes on macos-latest and windows-latest in run 44670029066"
+    },
+    {
+      "id": "X07a.CI",
+      "description": "CI green on four legs",
+      "result": "fail",
+      "value": "run 44670029066 at 9773c361: ubuntu-latest and ubuntu-24.04-arm success; F0 PASS on all four legs (macOS and Windows with M7 judged by R1.4); macos-latest failure (12 failed, rows X07a-L5 to L10 and two limits added by WO4 on wp/X07a); windows-latest failure (116 failed, 179 errors: G19 pywin32 (Q-1), 179 WinError 123 fixed at a99c510f, other clusters in docs/X07a_DECISIONS.md)"
+    }
+  ],
+  "artifacts": [],
+  "limitations": [
+    "Status implemented: CI is not green on all four legs. ADR 0007 Amendment 3 (exact replay on any platform; the evidence that registers a platform) is accepted (Frank, Decision Desk ofs-x07a-adr0007-am3, 2026-11-20; R-1062); REGISTERED_PLATFORMS is unchanged, so macOS arm64 (arm64, Darwin) and Windows x86-64 (AMD64, Windows) are unregistered replay platforms: bundles from another platform are inspected there, not reproduced (ADR 0007 D3.3). Platform rows X07a-L1 to L10 and the limits table in docs/X07a_DECISIONS.md; Q-1 (pywin32 licence), Q-4, Q-10, Q-11 and the reviewer items D-20, D-22 await the design lane; Windows failures beyond the named limits are partly unclassified. No reviewed status is claimed."
+  ],
+  "review": {
+    "numerical": "pending",
+    "process_model": "pending"
+  }
+}
