@@ -153,7 +153,9 @@ def eliminate_alias_rows(
     """Apply §7.2's algorithm. `residuals` are the row values at two differing states.
 
     `coefficients` is each row's Jacobian row by column id. The pattern is state-invariant for
-    these rows (they are affine), which A30 asserts separately; this reads it once.
+    these rows (they are affine), which A30 asserts separately; this reads it once. A qualifying
+    row (every nonzero coefficient on an `eligible_kind` column) is read as a copy edge by
+    `_copy_endpoints`, which raises `UnsupportedRankStructureError` when it is not one.
     """
     if len(residuals) < 2:
         raise ValueError(
@@ -172,33 +174,7 @@ def eliminate_alias_rows(
             retained.append(row_id)
             continue
 
-        offending = sorted(name for name, value in row.items() if abs(value) != 1.0)
-        if offending:
-            raise UnsupportedRankStructureError(
-                f"row {row_id!r} is over {eligible_kind} columns but has coefficients that are "
-                f"not ±1 at {offending}; this policy reads pressure *copies*, and a ratio or a "
-                "scaled drop is T01/T06's to generalize"
-            )
-        if len(row) > 2:
-            raise UnsupportedRankStructureError(
-                f"row {row_id!r} touches {len(row)} {eligible_kind} columns {sorted(row)}; this "
-                "policy reads two-node edges and a specification, not a general cycle"
-            )
-        # A copy is a *difference*. Two `+1` coefficients are a sum: `P_a + P_b − P_spec` would
-        # otherwise take `P_a` as its positive node and the constant as its negative, and be
-        # certified as `P_a − P_spec`, false at every state. The two-state witness below does
-        # catch it — measured, the mismatch varies by the second pressure — but it catches it
-        # *numerically*, and R-011's whole point is that this elimination is structural. T01's
-        # review found the same gap in its own declaration-side rule (M4, register R-021), where
-        # there is no witness to fall back on.
-        if len(row) == 2 and sum(row.values()) != 0.0:
-            raise UnsupportedRankStructureError(
-                f"row {row_id!r} is over two {eligible_kind} columns {sorted(row)} whose "
-                "coefficients do not cancel; a copy is a difference, and a sum is not one"
-            )
-
-        positive = next((name for name, value in row.items() if value > 0.0), CONST)
-        negative = next((name for name, value in row.items() if value < 0.0), CONST)
+        positive, negative = _copy_endpoints(row_id, row, eligible_kind)
         for node in (positive, negative):
             forest.add_node(node)
 
@@ -251,6 +227,41 @@ def eliminate_alias_rows(
             retained.append(row_id)
 
     return AliasElimination(retained_rows=tuple(retained), eliminated=tuple(eliminated))
+
+
+def _copy_endpoints(row_id: str, row: Mapping[str, float], eligible_kind: str) -> tuple[str, str]:
+    """The positive and negative node of `row`, a qualifying row's nonzero coefficients by column
+    id, read as the copy edge `F = x_positive − x_negative + g` (`CONST` standing for a missing
+    side). Raises `UnsupportedRankStructureError` for a coefficient that is not `±1`, for more
+    than two columns, and for two columns whose coefficients do not cancel."""
+    offending = sorted(name for name, value in row.items() if abs(value) != 1.0)
+    if offending:
+        raise UnsupportedRankStructureError(
+            f"row {row_id!r} is over {eligible_kind} columns but has coefficients that are "
+            f"not ±1 at {offending}; this policy reads pressure *copies*, and a ratio or a "
+            "scaled drop is T01/T06's to generalize"
+        )
+    if len(row) > 2:
+        raise UnsupportedRankStructureError(
+            f"row {row_id!r} touches {len(row)} {eligible_kind} columns {sorted(row)}; this "
+            "policy reads two-node edges and a specification, not a general cycle"
+        )
+    # A copy is a *difference*. Two `+1` coefficients are a sum: `P_a + P_b − P_spec` would
+    # otherwise take `P_a` as its positive node and the constant as its negative, and be
+    # certified as `P_a − P_spec`, false at every state. The two-state witness in
+    # `eliminate_alias_rows` does catch it — measured, the mismatch varies by the second
+    # pressure — but it catches it *numerically*, and R-011's whole point is that this
+    # elimination is structural. T01's review found the same gap in its own declaration-side
+    # rule (M4, register R-021), where there is no witness to fall back on.
+    if len(row) == 2 and sum(row.values()) != 0.0:
+        raise UnsupportedRankStructureError(
+            f"row {row_id!r} is over two {eligible_kind} columns {sorted(row)} whose "
+            "coefficients do not cancel; a copy is a difference, and a sum is not one"
+        )
+
+    positive = next((name for name, value in row.items() if value > 0.0), CONST)
+    negative = next((name for name, value in row.items() if value < 0.0), CONST)
+    return positive, negative
 
 
 def pressure_shifted_state(
