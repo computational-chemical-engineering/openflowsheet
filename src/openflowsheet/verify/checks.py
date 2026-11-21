@@ -1319,7 +1319,8 @@ def _column_witness(frame: _WitnessFrame, column: int, name: str, forward: bool)
     column's two maxima in the scaled form. §4.8.3 (a): a central component column with x_j > 0
     whose result is not a pass (`_not_a_pass`) is re-differenced by `escalate_column`; a resolved
     estimate replaces the maxima and clears the refusal, an unresolved one keeps the registered
-    result, a refusal included."""
+    result, a refusal included. Both maxima, the registered and the escalated, come from
+    `_scaled_maxima`."""
     step = FD_RELATIVE_STEP * frame.scaling_column[name]
     column_scale = frame.scaling_column[name]
     # Central (x + h, x - h), or on Z the forward five-point stencil (x + k h, k = 0..4).
@@ -1333,13 +1334,7 @@ def _column_witness(frame: _WitnessFrame, column: int, name: str, forward: bool)
             / frame.scaling_row[row_id]
             for row, row_id in enumerate(frame.row_ids)
         ]
-        maxima = _discrepancies(
-            scaled, column, column_scale, frame.exact, frame.row_ids, frame.scaling_row
-        )
-        if maxima is None:
-            refusal = "non_finite"
-        else:
-            on, off = maxima
+        refusal, on, off = _scaled_maxima(frame, scaled, column, column_scale)
     # §4.8.3 (a): a class-5 component column with x_j > 0 whose central result is not a pass.
     if (
         not forward
@@ -1359,19 +1354,7 @@ def _column_witness(frame: _WitnessFrame, column: int, name: str, forward: bool)
             registered=points if refusal in (None, "non_finite") else None,
         )
         if escalation.scaled is not None:
-            maxima = _discrepancies(
-                escalation.scaled,
-                column,
-                column_scale,
-                frame.exact,
-                frame.row_ids,
-                frame.scaling_row,
-            )
-            if maxima is None:
-                refusal, on, off = "non_finite", 0.0, 0.0
-            else:
-                refusal = None
-                on, off = maxima
+            refusal, on, off = _scaled_maxima(frame, escalation.scaled, column, column_scale)
         return _ColumnWitness(on, off, refusal, escalation)
     return _ColumnWitness(on, off, refusal, None)
 
@@ -1391,6 +1374,21 @@ def _stencil_difference(
             - 3.0 * points[4][row]
         ) / (12.0 * step)
     return (points[0][row] - points[1][row]) / (2.0 * step)
+
+
+def _scaled_maxima(
+    frame: _WitnessFrame, scaled: Sequence[float], column: int, column_scale: float
+) -> tuple[str | None, float, float]:
+    """`_column_witness`'s result for one scaled difference of column `column` (index) of
+    `frame`: `(None, on, off)` with `_discrepancies`' two maxima, or `("non_finite", 0.0, 0.0)`
+    when a term is not finite."""
+    maxima = _discrepancies(
+        scaled, column, column_scale, frame.exact, frame.row_ids, frame.scaling_row
+    )
+    if maxima is None:
+        return "non_finite", 0.0, 0.0
+    on, off = maxima
+    return None, on, off
 
 
 def _not_a_pass(refusal: str | None, on: float, off: float) -> bool:
