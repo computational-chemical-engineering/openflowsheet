@@ -612,3 +612,32 @@ Push from this worktree: `git -c credential.helper='!gh auth git-credential' pus
 - Linux identity: the 28 test files that read the touched scripts, 1480 passed, 3 skipped, 5 deselected before and
   after the (non-frozen) fix; the re-run of the three that failed with the frozen files edited, 289 passed.
 - ruff, format clean; mypy (393 files) clean.
+
+## WO18 (2026-11-21, macOS: a36's it2 verdict and the wall-cap race; CI 44882659578 at a90be473)
+
+- a36 (`test_a36_it2_is_admitted_after_a_coverage_only_it1`, it2 NOT_PROMOTABLE on macOS job 136781135134,
+  PROMOTABLE on its rerun 136811622556). The verdict is decided by `coverage_bound_below_minimum` in
+  `conformal.study_verdict` (hits = #test scores <= q̂ against h_min). Linux, it2 of `standin-x025-v1`: n 118,
+  k 114, q̂ 2.2204e-13, m 300, hits 286, h_min 279 (margin 7); 35 test scores equal q̂ exactly. it1: q̂ 1.5543e-13,
+  hits 285 (margin 6).
+- Cause: the stand-in is a constant response (X within 1 ulp of 0.25, 6 distinct values; ΔT exactly 0 on all 300
+  test draws), so every score is fit roundoff, quantised at ulp(0.25)/w_X = 2.22e-14 (it2 scores 5 to 11 quanta).
+  The fit's roundoff comes from LAPACK (`np.linalg.qr`, `q.T @ y`), which on macOS is Accelerate, outside the
+  A3.3 pin (CI: "the pin controls []"; W-2: Accelerate's own thread count is not set). The parent's X needs no
+  LAPACK (`boundary.py`), so the observations are platform-identical; only the fit varies.
+- Perturbation (scratch instrumentation, not committed; the same observations re-evaluated): training rows
+  permuted before the QR (the same least-squares problem, roundoff only), 200 seeds: it2 hits 275 to 300,
+  3/200 NOT_PROMOTABLE; it1 273 to 299, 7/200. `np.linalg.lstsq` (gelsd) in place of QR: it1 hits 277
+  (NOT_PROMOTABLE), it2 284. Controls: the unperturbed fit re-run 10x, identical (285, 286); OpenBLAS at 8 threads
+  unpinned, identical; ±2 ulp on every coefficient, identical (below one quantum); whole test under
+  PYTHONHASHSEED 0-7 × OPENBLAS/OMP threads 1 and 8 (16 runs), identical. No order dependence found.
+- STOP, design lane: the variation is LAPACK roundoff on a degenerate (exactly fitted) response, not an order
+  dependence or a test/runner pin. A pin for Accelerate (`BLASSetThreading`, macOS 15+) would at best make macOS
+  deterministic, not PROMOTABLE: a different LAPACK route already crosses h_min on Linux. Any fix touches the
+  stand-in, the score/tie rule, or what a36 asserts about a verdict that is roundoff-determined. Not changed.
+- Wall cap (`test_the_wall_cap_kills_the_session`, rerun job: wall_s 1.09, init None): the 1.0 s cap ran from
+  Popen and the fake's interpreter start outlasted it. Fixed in the test (c06b212b): the harness's `subprocess`
+  name is replaced by one whose Popen starts the timed wait once the init line is in the transcript or the
+  process ended; harness unchanged, every assertion kept. Stress, 50 calls under 80 busy loops on CPU 0: before
+  3/50 (47 init None, wall 1.23-1.50 s), after 50/50 (wall 2.26-2.68 s); init delayed 1.5 s in the fake: before
+  0/5, after 5/5. test_t07_w7a_harness 26 passed; ruff, format clean; mypy (410 files) clean.
