@@ -5057,3 +5057,7 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
 - DECISION-REQUEST ofs-s19-merge-main to hub: A merge before K3 (enters 0.5.0; int/0.5 rebuilt and re-run), B
   (recommended) after the v0.5.0 tag (main merged back, fresh CI, G-END numbers re-checked). Trial merge (REL050
   log): no src/ or scripts/ conflict; harvest bookkeeping and register order only. Waits for the signed card.
+- Hub filed card ofs-s19-merge-main. Verify (`decision_desk_verify.py ... --action`) against these texts verbatim:
+  A: "Merge wp/S19 (head 9fb4d5df: f814928a plus a docs-only state commit) into main now, before K3, so the S19 refactor enters 0.5.0: merge commit, run the F0 corpus identity on main, and push main only if F0 passes; then rebuild int/0.5 on the new main and re-run its CI (~2 h) before the 0.5 merge card is acted on."
+  B: "Keep 0.5.0 as scoped (R-1065): after the v0.5.0 tag, merge main back into wp/S19, run a fresh CI on both legs and re-check the G-END numbers; only if CI is green and G-END holds, merge wp/S19 into main with a merge commit, run the F0 corpus identity on main, and push main only if F0 passes."
+  Note: A pins head 9fb4d5df; the later log commits on wp/S19 (d52a7abd on) are not part of that merge.
