@@ -4815,3 +4815,6 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   wp/S19-as: families.py, surrogate/manifest.py, studies/assessment.py; <= 4 S1 on program.py, sensitivity.py,
   thermal/kernel.py; gap ~4500, debt 143) and A2 (`<briefs>/S19-W3-A2-1.md`, wp/S19-a2: validation.py, cli.py,
   revision_service.py, revision_edits.py; <= 4 S2 on canonical.py, verify/checks.py; gap ~2300, debt 92).
+- 2026-11-21, app1-5 (636) PASS step 541 (debt 27.0 -> 21.7). The new lanes enqueued before the runner stopped: 644
+  (a2-1) and 645 (as1-1) run on the old map (not killed mid-gate). All other pending jobs parked in
+  `<queue>/held-for-map/`; scratch `hold.sh` keeps parking new ones until `running/` is empty, then stops the runner.
