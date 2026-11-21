@@ -5025,3 +5025,7 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   (OQ-1: D1.5 on macOS and Windows).
 - 2026-11-21, CI 44896811906 at 2aaa5d3f complete: check ubuntu-latest and ubuntu-24.04-arm success, default-install
   and identity success, codehealth failure (region.py duplication only; lane DUP fixes it, merge-check 702).
+- **2026-11-21 ~14:30, merge-check 702 PASS (full suite, 11/11); lane DUP merged into wp/S19 (043879a4; no src diff to
+  the checked 43a073d5); `codehealth diff --base d29f1a50` PASS, 0 failures.** Pushed; CI 44909075689 running. Lane
+  and helper worktrees and wp/S19-dup removed. X07a CI 44902051410 at 14:28: macos-latest check success (D1.5 holds
+  on macOS, OQ-1), codehealth success; ubuntu x2 and windows running.
