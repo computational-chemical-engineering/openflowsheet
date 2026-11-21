@@ -33,6 +33,7 @@ import textwrap
 import threading
 from collections.abc import Iterator
 from pathlib import Path
+from types import MappingProxyType
 from typing import Any
 
 import pytest
@@ -40,6 +41,7 @@ from conftest import REPO_ROOT
 from f1_harness import FakeSite, descriptor
 
 import openflowsheet.registry as registry_module
+import openflowsheet.registry.descriptor as descriptor_module
 from openflowsheet.canonical import canonical_json
 from openflowsheet.messages.catalogue import Catalogue
 from openflowsheet.registry import (
@@ -50,6 +52,7 @@ from openflowsheet.registry import (
     discovery,
     usage,
 )
+from openflowsheet.registry.descriptor import PAYLOAD_DEFS
 
 sys.path.insert(0, str(REPO_ROOT / "scripts"))
 import registry_builtin  # noqa: E402
@@ -788,9 +791,12 @@ def test_the_generator_refuses_a_core_kind_without_a_payload_schema(
     monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
     """F1-WO6 F-5: a built-in descriptor of a core kind (ADR 0060 D1) whose payload schema is not
-    installed is refused by `--write` and `--check`, one line per descriptor, exit 1."""
+    installed is refused by `--write` and `--check`, one line per descriptor, exit 1. F3-WO1
+    installed `record_type`'s schema, so the predicate is exercised with it removed."""
     committed = {path.stem: rows for path, rows in registry_builtin.tables().items()}
     assert registry_builtin.payload_schema_problems(committed) == []
+    without = {kind: name for kind, name in PAYLOAD_DEFS.items() if kind != "record_type"}
+    monkeypatch.setattr(descriptor_module, "PAYLOAD_DEFS", MappingProxyType(without))
     synthetic = {"records": [descriptor("record_type", "syn.record")]}
     assert registry_builtin.payload_schema_problems(synthetic) == [
         "built-in records/record_type/syn.record: kind record_type is core (ADR 0060 D1) but its "

@@ -1,0 +1,17 @@
+{
+  "expect_error": "'effective' is a required property",
+  "document": {
+    "row": {
+      "assessment": "permitted",
+      "basis": "the lab's own measurement",
+      "conditions": null,
+      "date": "2026-11-18",
+      "decided_by": "local-owner",
+      "layer": "project",
+      "record_sha256": "289976bf185d64a133576e1ee019af373e584101cab2d433edb366109c1d7072",
+      "sequence": 1,
+      "source_id": "user.lab",
+      "source_sha256": "da23d5243a74596a64d68e202e451a8115ea9d596a46ba287f7c4d0136f6b274"
+    }
+  }
+}

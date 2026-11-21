@@ -1,0 +1,2112 @@
+{
+  "files": [
+    {
+      "file_sha256": "2e01ade0bc00799563fc60032099dee865f951300fca1c7822b4bb1d23f4183a",
+      "path": "benchmarks/l01/components.yaml",
+      "profile": "l01",
+      "records": [
+        {
+          "findings": [
+            {
+              "code": "fit_inputs_unhashed",
+              "params": {
+                "entry": "/molar_mass"
+              }
+            }
+          ],
+          "id": "H2",
+          "position": 0,
+          "record_type": "component",
+          "sha256": "f94d0185c927a7804f1fa001c29fc2b75d9100ee4b522580132308d3237e4b8d"
+        },
+        {
+          "findings": [
+            {
+              "code": "fit_inputs_unhashed",
+              "params": {
+                "entry": "/molar_mass"
+              }
+            }
+          ],
+          "id": "N2",
+          "position": 1,
+          "record_type": "component",
+          "sha256": "1260ba7d543f46a64c177c51f20a50c8b7fd4a2bff9481b57d5e6a474d802a53"
+        },
+        {
+          "findings": [
+            {
+              "code": "fit_inputs_unhashed",
+              "params": {
+                "entry": "/molar_mass"
+              }
+            }
+          ],
+          "id": "Ar",
+          "position": 2,
+          "record_type": "component",
+          "sha256": "a533a302d83858867567e73f1a2c24506f48898a8a51ef03a199880ce6214085"
+        },
+        {
+          "findings": [
+            {
+              "code": "fit_inputs_unhashed",
+              "params": {
+                "entry": "/molar_mass"
+              }
+            }
+          ],
+          "id": "CH4",
+          "position": 3,
+          "record_type": "component",
+          "sha256": "ca2e92244ee215808f8d239e70a0a8c7b4930d316bf41cc7ee910033745562a1"
+        },
+        {
+          "findings": [
+            {
+              "code": "fit_inputs_unhashed",
+              "params": {
+                "entry": "/molar_mass"
+              }
+            }
+          ],
+          "id": "H2O",
+          "position": 4,
+          "record_type": "component",
+          "sha256": "098ed939064415e14bbad1336c400b420250fbbfc3dd5cffeb2bb118bf286c75"
+        },
+        {
+          "findings": [
+            {
+              "code": "fit_inputs_unhashed",
+              "params": {
+                "entry": "/molar_mass"
+              }
+            }
+          ],
+          "id": "CO2",
+          "position": 5,
+          "record_type": "component",
+          "sha256": "14faed0fefbf223364bea3057542c273d776eb88f77819a5ffc39aa471e327c7"
+        },
+        {
+          "findings": [
+            {
+              "code": "fit_inputs_unhashed",
+              "params": {
+                "entry": "/molar_mass"
+              }
+            }
+          ],
+          "id": "O2",
+          "position": 6,
+          "record_type": "component",
+          "sha256": "18fa21e6a2a109ae95bb2575c94cc43dcc9463f04334da01a7ff08e7ad415e6d"
+        },
+        {
+          "findings": [
+            {
+              "code": "fit_inputs_unhashed",
+              "params": {
+                "entry": "/molar_mass"
+              }
+            }
+          ],
+          "id": "C2H6",
+          "position": 7,
+          "record_type": "component",
+          "sha256": "35108ad079f3327fa69a1dcc0c4f381b4806549b1643f89ff93fc61df229438e"
+        },
+        {
+          "findings": [
+            {
+              "code": "fit_inputs_unhashed",
+              "params": {
+                "entry": "/molar_mass"
+              }
+            }
+          ],
+          "id": "C3H8",
+          "position": 8,
+          "record_type": "component",
+          "sha256": "fa5177c5bd78b89d59a350c09f88037ae2ed4868f8f581111652aa74b41d2cfe"
+        }
+      ],
+      "reference_convention": "PR-C1-ref-v1"
+    },
+    {
+      "file_sha256": "6f154f7fbc3f4bef9fe3cb2048983cc19ad13c6b43f40d29fa944e9b719f05b9",
+      "path": "benchmarks/m01/components.yaml",
+      "profile": "m01",
+      "records": [
+        {
+          "findings": [
+            {
+              "code": "fit_inputs_unhashed",
+              "params": {
+                "entry": "/molar_mass"
+              }
+            }
+          ],
+          "id": "H2",
+          "position": 0,
+          "record_type": "component",
+          "sha256": "219ec7f1d4e9c48ed8efca6b5cf7a2cfbb353cf2ed8d6ea8c2658684f68735ba"
+        },
+        {
+          "findings": [
+            {
+              "code": "fit_inputs_unhashed",
+              "params": {
+                "entry": "/molar_mass"
+              }
+            }
+          ],
+          "id": "N2",
+          "position": 1,
+          "record_type": "component",
+          "sha256": "79e68408b1f3de4dc80c47fc271635576b4ec7e93088fed12517ef4c7f32bbd3"
+        },
+        {
+          "findings": [
+            {
+              "code": "fit_inputs_unhashed",
+              "params": {
+                "entry": "/molar_mass"
+              }
+            }
+          ],
+          "id": "NH3",
+          "position": 2,
+          "record_type": "component",
+          "sha256": "83fbd253f84885a6e97384c41c35db06f9200e5cae7848e8d4b335d02bb1f79f"
+        },
+        {
+          "findings": [
+            {
+              "code": "fit_inputs_unhashed",
+              "params": {
+                "entry": "/molar_mass"
+              }
+            }
+          ],
+          "id": "Ar",
+          "position": 3,
+          "record_type": "component",
+          "sha256": "378dfbd9d5df932d564bd1fc9ffe28478f8843d089c4823096abbcb1577c5441"
+        },
+        {
+          "findings": [
+            {
+              "code": "fit_inputs_unhashed",
+              "params": {
+                "entry": "/molar_mass"
+              }
+            }
+          ],
+          "id": "CH4",
+          "position": 4,
+          "record_type": "component",
+          "sha256": "9652bf6251790af134d9a00dec1f09c0fc6fa80d859e024420113904383f01c1"
+        }
+      ],
+      "reference_convention": "PR-C1-ref-v1"
+    },
+    {
+      "file_sha256": "2950a28ed5f1fcf87d27677f63f0a8734de1e0f7bd07d252f1ece5227bae5db7",
+      "path": "benchmarks/s05/components.yaml",
+      "profile": "s05",
+      "records": [
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "H2O"
+              }
+            }
+          ],
+          "id": "H2O",
+          "position": 0,
+          "record_type": "component",
+          "sha256": "5cfda8d64d7a089ef9288f56ab310964d2c32a7518c92ae54f126e90c6117f86"
+        }
+      ],
+      "reference_convention": "IAPWS95-ref-v1"
+    },
+    {
+      "file_sha256": "db1726957fe4be27dc1169e5b3500c8e135be8b92a3a4037a2a186120ee4f368",
+      "path": "benchmarks/s07/components.yaml",
+      "profile": "s07",
+      "records": [
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "H2O"
+              }
+            }
+          ],
+          "id": "H2O",
+          "position": 0,
+          "record_type": "component",
+          "sha256": "6d5d26e6c0fbd4a90a3db42f60fc881ccafc80693126d15b505e9b90415a8638"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "CO2"
+              }
+            }
+          ],
+          "id": "CO2",
+          "position": 1,
+          "record_type": "component",
+          "sha256": "34e4834fa662273344cdec02bfb05db0ffc483df09533319e90644629305a9b9"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "N2"
+              }
+            }
+          ],
+          "id": "N2",
+          "position": 2,
+          "record_type": "component",
+          "sha256": "f4c0b8ee96930d1a31e8ed1a18369bc2e465d2b0128823fd16e3c13065247fce"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "O2"
+              }
+            }
+          ],
+          "id": "O2",
+          "position": 3,
+          "record_type": "component",
+          "sha256": "a666612573e98e7fc5f9b05006a95072ecab401d3511de5a75413aa36d15c6ed"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "Ar"
+              }
+            }
+          ],
+          "id": "Ar",
+          "position": 4,
+          "record_type": "component",
+          "sha256": "a0be985ddcc1d6f3c13c6f589ff0b7eb5e2867fe3f0d8cfd0ce4db92c9a21342"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "CH4"
+              }
+            }
+          ],
+          "id": "CH4",
+          "position": 5,
+          "record_type": "component",
+          "sha256": "dd2f92bd6e931d4e24ce1977c4a0d923c91a416e2fab783b0f49bf13a566d62f"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "C2H6"
+              }
+            }
+          ],
+          "id": "C2H6",
+          "position": 6,
+          "record_type": "component",
+          "sha256": "a1daa7cdd40ba9c2bf1e6f0b18ac59e009dc3e5d4f4e8dc6661356047b250b53"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "C3H8"
+              }
+            }
+          ],
+          "id": "C3H8",
+          "position": 7,
+          "record_type": "component",
+          "sha256": "9ffe646faf4c6a9b3062a90999758ca10e2da451b4fd9341aea5cbec3b8e1f49"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "H2"
+              }
+            }
+          ],
+          "id": "H2",
+          "position": 8,
+          "record_type": "component",
+          "sha256": "05e36a1d3ef4007362231f1a09821880ca500fc740ca985af02a49809ef80e5f"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "1-Butene"
+              }
+            }
+          ],
+          "id": "1-Butene",
+          "position": 9,
+          "record_type": "component",
+          "sha256": "c150b63a1ab8cbd0a7f4126094ba662c26069247e0bf357db8fc63726515e068"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "Acetone"
+              }
+            }
+          ],
+          "id": "Acetone",
+          "position": 10,
+          "record_type": "component",
+          "sha256": "f75bb34b77d0edf68fc6355d33a21b2d919ae950514a0ad4a445d2eb1ccbf31d"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "Ammonia"
+              }
+            }
+          ],
+          "id": "Ammonia",
+          "position": 11,
+          "record_type": "component",
+          "sha256": "22ddef22828349d74ff6897116d60bd8e050d148928ebff124ee8cc0a23fa69a"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "Benzene"
+              }
+            }
+          ],
+          "id": "Benzene",
+          "position": 12,
+          "record_type": "component",
+          "sha256": "6d16b50a8461598fd6740e4822ca0f9b885012bceac74116f87e47b8ee035cdb"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "CarbonMonoxide"
+              }
+            }
+          ],
+          "id": "CarbonMonoxide",
+          "position": 13,
+          "record_type": "component",
+          "sha256": "35bab566f726d8a16b68d89f38ae7219201422883b1c616dbc077fb3a52866f7"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "CarbonylSulfide"
+              }
+            }
+          ],
+          "id": "CarbonylSulfide",
+          "position": 14,
+          "record_type": "component",
+          "sha256": "e85e0ba6f833b4b3b6de119c9343bb453c0b401b17bae334433f64b20510c3cf"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "Chlorine"
+              }
+            }
+          ],
+          "id": "Chlorine",
+          "position": 15,
+          "record_type": "component",
+          "sha256": "95847fa15f81dd9ddb5e968cfbf11f8e496eb5fa72d4fdd8beda6fca007c99dc"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "cis-2-Butene"
+              }
+            }
+          ],
+          "id": "cis-2-Butene",
+          "position": 16,
+          "record_type": "component",
+          "sha256": "9a6f40e675267811ccefe020ffba8f562517510aaaf8216011e8434a85e1476f"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "CycloHexane"
+              }
+            }
+          ],
+          "id": "CycloHexane",
+          "position": 17,
+          "record_type": "component",
+          "sha256": "fcf518ded2596e44d647ce5c336226f487d1e6aff0d50232c6eb64049de5cf44"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "Cyclopentane"
+              }
+            }
+          ],
+          "id": "Cyclopentane",
+          "position": 18,
+          "record_type": "component",
+          "sha256": "c0d7a76f2299ee3013265c10763705b1634609c471800e3ed3217b8bf5891e48"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "CycloPropane"
+              }
+            }
+          ],
+          "id": "CycloPropane",
+          "position": 19,
+          "record_type": "component",
+          "sha256": "4f1bed144899da4aedbd91c16d695d0b726dff791a6d9a28b403dbb89b101b2c"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "D4"
+              }
+            }
+          ],
+          "id": "D4",
+          "position": 20,
+          "record_type": "component",
+          "sha256": "8cc0922659ec46f3eb98ecd6a76af25537ce7b8f9deaf4f46c388d2b6593ce2d"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "D5"
+              }
+            }
+          ],
+          "id": "D5",
+          "position": 21,
+          "record_type": "component",
+          "sha256": "c098ef7984b3804f685605367c35ea43b540ad9d6d6aea97b5e9c0cf0410b99a"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "Deuterium"
+              }
+            }
+          ],
+          "id": "Deuterium",
+          "position": 22,
+          "record_type": "component",
+          "sha256": "aae6f974dc3770e402bc6dca7091d6f9c4287fc5a29920f5756c25b4adce49d0"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "Dichloroethane"
+              }
+            }
+          ],
+          "id": "Dichloroethane",
+          "position": 23,
+          "record_type": "component",
+          "sha256": "c5b8551ab3edb59804ec9465d7e399bf5ad98d83ff551cbb61521739ea193248"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "DiethylEther"
+              }
+            }
+          ],
+          "id": "DiethylEther",
+          "position": 24,
+          "record_type": "component",
+          "sha256": "ea75296b28921ad03934cd9f865c3cdeda85198bacc11219177ba86891e0e817"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "DimethylCarbonate"
+              }
+            }
+          ],
+          "id": "DimethylCarbonate",
+          "position": 25,
+          "record_type": "component",
+          "sha256": "e8f7d40aff06475e4cf96a6f3e5ac3451bb3ebb880f4e9aa967566978575e4f9"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "DimethylEther"
+              }
+            }
+          ],
+          "id": "DimethylEther",
+          "position": 26,
+          "record_type": "component",
+          "sha256": "4a75d78098fbbecf57f9736a069033a7171290a4dfcff46d5da56314f6467578"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "Ethanol"
+              }
+            }
+          ],
+          "id": "Ethanol",
+          "position": 27,
+          "record_type": "component",
+          "sha256": "07aac3d07f8449de7a7160b0885fc3053e3d460e4a23230afcef65d6f0f58a54"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "EthylBenzene"
+              }
+            }
+          ],
+          "id": "EthylBenzene",
+          "position": 28,
+          "record_type": "component",
+          "sha256": "bf39adebb00c55134bac4955cd5e4c86044deffec0d384b0cadda879f3b9d8d7"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "Ethylene"
+              }
+            }
+          ],
+          "id": "Ethylene",
+          "position": 29,
+          "record_type": "component",
+          "sha256": "aabae04f5e1f5829b125372ba6d818a599f92bc91f18c68e8b7ad6345e556098"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "EthyleneOxide"
+              }
+            }
+          ],
+          "id": "EthyleneOxide",
+          "position": 30,
+          "record_type": "component",
+          "sha256": "da7ca34599188fdecfabac756a85ebe7613e6a4109871749e1c50a1ee7bd299e"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "Fluorine"
+              }
+            }
+          ],
+          "id": "Fluorine",
+          "position": 31,
+          "record_type": "component",
+          "sha256": "75929b4c1f0b2283999356516eb3c32a697642ed012be61978ad3e0891677288"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "HeavyWater"
+              }
+            }
+          ],
+          "id": "HeavyWater",
+          "position": 32,
+          "record_type": "component",
+          "sha256": "f9046ebcde66317916e04c5b9daa337873ebd17d7cc6455c926b72cd6db2d948"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "HFE143m"
+              }
+            }
+          ],
+          "id": "HFE143m",
+          "position": 33,
+          "record_type": "component",
+          "sha256": "710c41279db66e6999dbd7d643f4f5603265b6bbb5dc2769c9f76420ec29d13d"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "HydrogenChloride"
+              }
+            }
+          ],
+          "id": "HydrogenChloride",
+          "position": 34,
+          "record_type": "component",
+          "sha256": "673fabf5eb57e5e40a10f66abf2c90b35c683b2c7a231c80c51593082408191a"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "HydrogenSulfide"
+              }
+            }
+          ],
+          "id": "HydrogenSulfide",
+          "position": 35,
+          "record_type": "component",
+          "sha256": "2aecc0326e019fc6cbb7fa287277e9df7e5d833ddc2bbc8c5bec8c402387507c"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "IsoButane"
+              }
+            }
+          ],
+          "id": "IsoButane",
+          "position": 36,
+          "record_type": "component",
+          "sha256": "e12ef5d72586961938be8301d71c04db5efd5d752a4587ca64123cb39eae72a6"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "IsoButene"
+              }
+            }
+          ],
+          "id": "IsoButene",
+          "position": 37,
+          "record_type": "component",
+          "sha256": "bd1fffcb1f3b67a0611effebf5c8b1d21f17626b5c6b0170ed9096ba817f193a"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "Isohexane"
+              }
+            }
+          ],
+          "id": "Isohexane",
+          "position": 38,
+          "record_type": "component",
+          "sha256": "6e67898edf654ca258f1b99e52bcede07c04786234fb62d78cf79f75ddace030"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "Isopentane"
+              }
+            }
+          ],
+          "id": "Isopentane",
+          "position": 39,
+          "record_type": "component",
+          "sha256": "b33edac26c8696d35cf94e0195685a5580da094dbb4c8a4c4df5757b4e938e56"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "Krypton"
+              }
+            }
+          ],
+          "id": "Krypton",
+          "position": 40,
+          "record_type": "component",
+          "sha256": "d8a25bc2875f6a8f544fa95507329029c583c2c6682307757ce989e8535bcffb"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "m-Xylene"
+              }
+            }
+          ],
+          "id": "m-Xylene",
+          "position": 41,
+          "record_type": "component",
+          "sha256": "a839cdaf824cb3bc8e844035b81c3a794bd7e8109f8806aa534b6c08bf01c22f"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "MD3M"
+              }
+            }
+          ],
+          "id": "MD3M",
+          "position": 42,
+          "record_type": "component",
+          "sha256": "c5ebaa3d98378dc58039ebf39e7741f8025632b743dac0f97e9693eae0601f65"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "MD4M"
+              }
+            }
+          ],
+          "id": "MD4M",
+          "position": 43,
+          "record_type": "component",
+          "sha256": "a5b0f8cf3ed5c96284f6bf129ff2e2cef72452c7ab6dfcf4814f9fc5e755643d"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "MDM"
+              }
+            }
+          ],
+          "id": "MDM",
+          "position": 44,
+          "record_type": "component",
+          "sha256": "2f7e10e75d3ac6928971d0f394872ff69e026dd039a5bf7230ba7f7a259e2593"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "Methanol"
+              }
+            }
+          ],
+          "id": "Methanol",
+          "position": 45,
+          "record_type": "component",
+          "sha256": "9833e6b76f4e8eab344e09679e214d99ff1cf7a697699f66ef7e2842be69b222"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "MethylLinoleate"
+              }
+            }
+          ],
+          "id": "MethylLinoleate",
+          "position": 46,
+          "record_type": "component",
+          "sha256": "e08f0086174ec4cc23f14567c7c84d182bed1859aac0920b21b700f19a577a9d"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "MethylLinolenate"
+              }
+            }
+          ],
+          "id": "MethylLinolenate",
+          "position": 47,
+          "record_type": "component",
+          "sha256": "0a4877da5b4993f82da0f7b717a887a5f54ae9d52c4d7864749fbb3e9cb3e50c"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "MethylOleate"
+              }
+            }
+          ],
+          "id": "MethylOleate",
+          "position": 48,
+          "record_type": "component",
+          "sha256": "ab04dd1c247c0d89151478f2753a3dd9a40166ad4e4242a193961770bcc53f52"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "MethylPalmitate"
+              }
+            }
+          ],
+          "id": "MethylPalmitate",
+          "position": 49,
+          "record_type": "component",
+          "sha256": "fb739c90b5b803327a59b2ce8e7d4421485e4c5d72744ae4a540a4fc2579f9eb"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "MethylStearate"
+              }
+            }
+          ],
+          "id": "MethylStearate",
+          "position": 50,
+          "record_type": "component",
+          "sha256": "0f6f4e2076afdc0592632d4a13c74d5ddb290b3540e476ad9ee6529b8c983254"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "MM"
+              }
+            }
+          ],
+          "id": "MM",
+          "position": 51,
+          "record_type": "component",
+          "sha256": "c31fd83a799209a2e148491c00c46f915a2ab5a710d7a9bddf53b131f75eb1b7"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "n-Butane"
+              }
+            }
+          ],
+          "id": "n-Butane",
+          "position": 52,
+          "record_type": "component",
+          "sha256": "757efcf1835febd2c39edc933f4e14e06615875518732a81f2b3af9565b3d407"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "n-Decane"
+              }
+            }
+          ],
+          "id": "n-Decane",
+          "position": 53,
+          "record_type": "component",
+          "sha256": "603ca1dab4b04ab5c8a1c71a1ee2bbfadbe894f600325910a14461832062800f"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "n-Dodecane"
+              }
+            }
+          ],
+          "id": "n-Dodecane",
+          "position": 54,
+          "record_type": "component",
+          "sha256": "de58808b30ff643b4827a60bf9c59ca64036c5c9cef9303077fd19481e22f0e7"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "n-Hexane"
+              }
+            }
+          ],
+          "id": "n-Hexane",
+          "position": 55,
+          "record_type": "component",
+          "sha256": "d192219565b366edc690f671ec703199ecc10b52c6f534268161aa284f0669ab"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "n-Nonane"
+              }
+            }
+          ],
+          "id": "n-Nonane",
+          "position": 56,
+          "record_type": "component",
+          "sha256": "0251132951f99089dc6a2833ef1ffa7917e1761a3b725c573e7cec00fdb8da36"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "n-Octane"
+              }
+            }
+          ],
+          "id": "n-Octane",
+          "position": 57,
+          "record_type": "component",
+          "sha256": "1e0fccf1c34e7beed4aa6d6d42dd93e892bbba6f625943963fa1b75ec9db1078"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "n-Pentane"
+              }
+            }
+          ],
+          "id": "n-Pentane",
+          "position": 58,
+          "record_type": "component",
+          "sha256": "71d0d886a0d2a393ef63b4282419cdfa6928bfe5d5124ff08ef11b353f1bd810"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "n-Perfluorobutane"
+              }
+            }
+          ],
+          "id": "n-Perfluorobutane",
+          "position": 59,
+          "record_type": "component",
+          "sha256": "d560227ad7d89f9f5d853f63feee5f687e5f7365ab4c05423eb98c4dde7c015d"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "n-Perfluorohexane"
+              }
+            }
+          ],
+          "id": "n-Perfluorohexane",
+          "position": 60,
+          "record_type": "component",
+          "sha256": "f736ba2f65ee914d49eadabdec7665ef8d9c7e866be8f5ca0f8c7c14364f9eaa"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "n-Perfluoropentane"
+              }
+            }
+          ],
+          "id": "n-Perfluoropentane",
+          "position": 61,
+          "record_type": "component",
+          "sha256": "4abefcf1c10eb2835c7f7ec8af16511ba92b3004bc87ac521782450bb982fdcb"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "n-Undecane"
+              }
+            }
+          ],
+          "id": "n-Undecane",
+          "position": 62,
+          "record_type": "component",
+          "sha256": "5afb2b141aced51330c266c9f8e1c1187eab9fe1a45c09c7338831567bafa919"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "Neon"
+              }
+            }
+          ],
+          "id": "Neon",
+          "position": 63,
+          "record_type": "component",
+          "sha256": "d501f05c3a6ceab2e493026b9e96cc9b98b40473cc8efb1ce3783d295ed75c09"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "Neopentane"
+              }
+            }
+          ],
+          "id": "Neopentane",
+          "position": 64,
+          "record_type": "component",
+          "sha256": "0b845894f23182721f9b091670011a865604917c9f5591cb84c557fba1a2fcd0"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "NitrousOxide"
+              }
+            }
+          ],
+          "id": "NitrousOxide",
+          "position": 65,
+          "record_type": "component",
+          "sha256": "4c2a7b70ea15543a55e64142e310d5acffb0aa6fcd288038e5f478732a86a1b1"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "Novec649"
+              }
+            }
+          ],
+          "id": "Novec649",
+          "position": 66,
+          "record_type": "component",
+          "sha256": "ba57e705d22277b7431179a16e25e7aacbed96289d45739d19a423b50161ac63"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "o-Xylene"
+              }
+            }
+          ],
+          "id": "o-Xylene",
+          "position": 67,
+          "record_type": "component",
+          "sha256": "03b769e8921619896a845733d5a2220276477018ec49355e198c53beca9c5f11"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "OrthoDeuterium"
+              }
+            }
+          ],
+          "id": "OrthoDeuterium",
+          "position": 68,
+          "record_type": "component",
+          "sha256": "f5fca64f0cefff209b55c2cd300d23f3a6f638af8eeb697fa8d358ffdece22f5"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "OrthoHydrogen"
+              }
+            }
+          ],
+          "id": "OrthoHydrogen",
+          "position": 69,
+          "record_type": "component",
+          "sha256": "a8793f58f854062bd7ed6f7a08a9be7a04ac55bf92ff745b745f6db12a7e592f"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "p-Xylene"
+              }
+            }
+          ],
+          "id": "p-Xylene",
+          "position": 70,
+          "record_type": "component",
+          "sha256": "e2e782727ea80bbfd5efc9905c006c984a10f4aa0d19a4b22ecdbc56e5de486c"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "ParaDeuterium"
+              }
+            }
+          ],
+          "id": "ParaDeuterium",
+          "position": 71,
+          "record_type": "component",
+          "sha256": "e27a70f73f5754165cc311d43c596c6b1a794cb5a54a38ca6633dda1e51342bd"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "Propylene"
+              }
+            }
+          ],
+          "id": "Propylene",
+          "position": 72,
+          "record_type": "component",
+          "sha256": "ad4231d736d7d42d43be596bf3482cea1c7b0451838782b18e9e307fb2bf1c73"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "PropyleneGlycol"
+              }
+            }
+          ],
+          "id": "PropyleneGlycol",
+          "position": 73,
+          "record_type": "component",
+          "sha256": "a30d45f9af40f45137f991c3daec90447c7f96a096bc056943802162062b4ff0"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "Propyne"
+              }
+            }
+          ],
+          "id": "Propyne",
+          "position": 74,
+          "record_type": "component",
+          "sha256": "8687b9135e20a734745ff97e75d517ff05b61e616b55773588f22e49adccdbde"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "R11"
+              }
+            }
+          ],
+          "id": "R11",
+          "position": 75,
+          "record_type": "component",
+          "sha256": "1ae72c671b31e93b6d3121a2a3654ffe0aba0a1eda12329f637aab3c6bafd5ef"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "R1123"
+              }
+            }
+          ],
+          "id": "R1123",
+          "position": 76,
+          "record_type": "component",
+          "sha256": "a313af34054f5c9701417455d34ccdc4646ccbbbbfb130d55b17bbf0c200db6b"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "R113"
+              }
+            }
+          ],
+          "id": "R113",
+          "position": 77,
+          "record_type": "component",
+          "sha256": "460c9482a1f63c2676263297984c7413d2e56d8ed2c35b11c45c952019994f87"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "R1130_E"
+              }
+            }
+          ],
+          "id": "R1130_E",
+          "position": 78,
+          "record_type": "component",
+          "sha256": "752f854fbfa21c537567f9ff0e4b103841350786b3c407ce90869b86e558fb20"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "R1132_E"
+              }
+            }
+          ],
+          "id": "R1132_E",
+          "position": 79,
+          "record_type": "component",
+          "sha256": "6269380eaf6f3b4fa75f2b6c4ba921128d836bc8606595724cfe29bf8d60da2c"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "R114"
+              }
+            }
+          ],
+          "id": "R114",
+          "position": 80,
+          "record_type": "component",
+          "sha256": "58b782e93de7dff853993fa21b0aea85f476653daa9ecad5c44c46b374c4526d"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "R115"
+              }
+            }
+          ],
+          "id": "R115",
+          "position": 81,
+          "record_type": "component",
+          "sha256": "e2966d4670dd716682a22c8fd8fb4de497c1bdde7d273c888f30c907248f5ecd"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "R116"
+              }
+            }
+          ],
+          "id": "R116",
+          "position": 82,
+          "record_type": "component",
+          "sha256": "fe4ac6d9138a3352ba86d62cd31904b135ea72d79e2d14e014fc4605f3ae48de"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "R12"
+              }
+            }
+          ],
+          "id": "R12",
+          "position": 83,
+          "record_type": "component",
+          "sha256": "a83fea943b2b380bb3b2e3025dc1b016a9822258b3f3b7d6467117a9558f253f"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "R1224YDZ"
+              }
+            }
+          ],
+          "id": "R1224YDZ",
+          "position": 84,
+          "record_type": "component",
+          "sha256": "4959a798e1279f51f2a79e242daf1da00b8522f74f8799de47058b7352d888f3"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "R123"
+              }
+            }
+          ],
+          "id": "R123",
+          "position": 85,
+          "record_type": "component",
+          "sha256": "57a5fee311efccf6f1d1c09b86540472ec01df2abc380a0e3bae9108b2f922fd"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "R1233zd_E"
+              }
+            }
+          ],
+          "id": "R1233zd_E",
+          "position": 86,
+          "record_type": "component",
+          "sha256": "90e795407f5d3b71cca78a2ad2df80eee3c29bed4722d6121cb898df5867ac97"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "R1234yf"
+              }
+            }
+          ],
+          "id": "R1234yf",
+          "position": 87,
+          "record_type": "component",
+          "sha256": "383fbc0b31f1246ebfdf5d7c432aa1acf87e52053466faeabe65f3f3fb50a212"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "R1234ze_E"
+              }
+            }
+          ],
+          "id": "R1234ze_E",
+          "position": 88,
+          "record_type": "component",
+          "sha256": "afc76bfe4a207c08726baeb296ba863483cbff44e5194aca4c342abc0f556ff9"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "R1234ze_Z"
+              }
+            }
+          ],
+          "id": "R1234ze_Z",
+          "position": 89,
+          "record_type": "component",
+          "sha256": "aedd30d6c05bf7410668a46294c9c5998d903a7a04b6c5df90f86391561f170d"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "R124"
+              }
+            }
+          ],
+          "id": "R124",
+          "position": 90,
+          "record_type": "component",
+          "sha256": "3915ad6c81b6e2199ba5d71bde8f377cfa390b3517e27989f2b7ed81e0c3c172"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "R1243zf"
+              }
+            }
+          ],
+          "id": "R1243zf",
+          "position": 91,
+          "record_type": "component",
+          "sha256": "e7e10ee4fce8c6d0f13656bc9c6cd9b2372045b7d61d7483ba7976afc3031718"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "R125"
+              }
+            }
+          ],
+          "id": "R125",
+          "position": 92,
+          "record_type": "component",
+          "sha256": "a426c5b61ad71909a95621c3056d3a39123409d8fa7d41fd69af2d22937ad910"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "R13"
+              }
+            }
+          ],
+          "id": "R13",
+          "position": 93,
+          "record_type": "component",
+          "sha256": "42d91850aa23e390713c8533cc7f2c682ad7f78fcdc6bdd259854a0206294f48"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "R1336mzz_E"
+              }
+            }
+          ],
+          "id": "R1336mzz_E",
+          "position": 94,
+          "record_type": "component",
+          "sha256": "7a7fd6dafadf05b1195da9d1d218c68f2752a93fd747c97c3e11db12c48cdb30"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "R1336mzz_Z"
+              }
+            }
+          ],
+          "id": "R1336mzz_Z",
+          "position": 95,
+          "record_type": "component",
+          "sha256": "bcf448cce95815691e501431fccad31b4c45aebcd51b287c43624abbbb6b369a"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "R134a"
+              }
+            }
+          ],
+          "id": "R134a",
+          "position": 96,
+          "record_type": "component",
+          "sha256": "1f346f51af8bf4772fe7b316811200919bda1a436164ff5d1ddf3b0b1fc8f2aa"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "R13I1"
+              }
+            }
+          ],
+          "id": "R13I1",
+          "position": 97,
+          "record_type": "component",
+          "sha256": "2ba384229f28eeeae5b1103961a30bd04754ccd9e719d916405f0f29f8cc7916"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "R14"
+              }
+            }
+          ],
+          "id": "R14",
+          "position": 98,
+          "record_type": "component",
+          "sha256": "f7ece5aa9140bbb7cfed4a93fc0df5dce23c59702b3f42ab724f7c1ecfd5dcb7"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "R141b"
+              }
+            }
+          ],
+          "id": "R141b",
+          "position": 99,
+          "record_type": "component",
+          "sha256": "464bc2ddf51124c634e75907a43218f4c5195924feed16311702f5f6d88e48ff"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "R142b"
+              }
+            }
+          ],
+          "id": "R142b",
+          "position": 100,
+          "record_type": "component",
+          "sha256": "a40e8d2c3a465fa78704d36da681f2d6fbe3cd20c002afa92bc6036e00e6b444"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "R143a"
+              }
+            }
+          ],
+          "id": "R143a",
+          "position": 101,
+          "record_type": "component",
+          "sha256": "4fb859ba0ed9328213f668ed18dddd1417d61bad030eb0929000a94ec2aaa47a"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "R152A"
+              }
+            }
+          ],
+          "id": "R152A",
+          "position": 102,
+          "record_type": "component",
+          "sha256": "a09b637200b7cd52b4021dea46f221312783ebcdd12628a312ff75394766a53e"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "R21"
+              }
+            }
+          ],
+          "id": "R21",
+          "position": 103,
+          "record_type": "component",
+          "sha256": "81169b491f8ca3f172919ba3c62dc9f42cb859b7e866ef280691066136c2ccc1"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "R218"
+              }
+            }
+          ],
+          "id": "R218",
+          "position": 104,
+          "record_type": "component",
+          "sha256": "f800824c23fd256f13193f6d870dbadcfe84babf4d8eecc74a159e28a58a75f9"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "R22"
+              }
+            }
+          ],
+          "id": "R22",
+          "position": 105,
+          "record_type": "component",
+          "sha256": "ff0206bd1989e510116347120a17d8eefc083011fc13bc6efb8d22cbb61e7dbd"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "R227EA"
+              }
+            }
+          ],
+          "id": "R227EA",
+          "position": 106,
+          "record_type": "component",
+          "sha256": "42f092e651b19ef4d5deb6d905eac74999dd09595fb0f8cd0b0bd06b3eb16452"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "R23"
+              }
+            }
+          ],
+          "id": "R23",
+          "position": 107,
+          "record_type": "component",
+          "sha256": "4cf90d5a9fb27ab893a89e7181afbd0d0619bc7519c28087eb5f8b927e8467f0"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "R236FA"
+              }
+            }
+          ],
+          "id": "R236FA",
+          "position": 108,
+          "record_type": "component",
+          "sha256": "b9edcb78870c77f8c1798e21a308981118e494a5d750dc23aee791e2d193ab59"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "R245ca"
+              }
+            }
+          ],
+          "id": "R245ca",
+          "position": 109,
+          "record_type": "component",
+          "sha256": "879da51d98a06a5946d2793fe72202ff21e6e8712d2d91f03faf00c0dcbd71f5"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "R245fa"
+              }
+            }
+          ],
+          "id": "R245fa",
+          "position": 110,
+          "record_type": "component",
+          "sha256": "105a2d8386a5fdc9118b99108426984241eac8e07b5874e36595eb5123a96658"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "R32"
+              }
+            }
+          ],
+          "id": "R32",
+          "position": 111,
+          "record_type": "component",
+          "sha256": "f9acbba35591af1174ac12dd91c9256641ed0aaa3792e8af2d2b71d7df16a962"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "R365MFC"
+              }
+            }
+          ],
+          "id": "R365MFC",
+          "position": 112,
+          "record_type": "component",
+          "sha256": "9d13163d682b36e36770e58bdae8bdc7238852bfd50418e4c393bc12006ea64e"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "R40"
+              }
+            }
+          ],
+          "id": "R40",
+          "position": 113,
+          "record_type": "component",
+          "sha256": "e20f47f5f2d2f70a30e0154239c244cdf38683a867f24bc0016366922ab22eac"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "R41"
+              }
+            }
+          ],
+          "id": "R41",
+          "position": 114,
+          "record_type": "component",
+          "sha256": "138bc76849a9ce96b9665bfa4a102f9a3d12ee1a4d00076bf4427507a132c23e"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "RC318"
+              }
+            }
+          ],
+          "id": "RC318",
+          "position": 115,
+          "record_type": "component",
+          "sha256": "dae0ce208f5f643980ad5f30e42a8d98f3d5ce5eaafc3508f7086ba3b56c5754"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "SulfurDioxide"
+              }
+            }
+          ],
+          "id": "SulfurDioxide",
+          "position": 116,
+          "record_type": "component",
+          "sha256": "3d933c62966d4ee8874303381463cfd55c2756aa4e9813e83b4514ff51a091c7"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "SulfurHexafluoride"
+              }
+            }
+          ],
+          "id": "SulfurHexafluoride",
+          "position": 117,
+          "record_type": "component",
+          "sha256": "5558f3882e984fbd70f4bab6dcfbf7f390b6b971bc04bae6922d8e8d28de5745"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "Tetrahydrofuran"
+              }
+            }
+          ],
+          "id": "Tetrahydrofuran",
+          "position": 118,
+          "record_type": "component",
+          "sha256": "7b1b959420c33b996ad81e83646e58c4c5a0104c68b08d6929bb7d961e8902d4"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "Toluene"
+              }
+            }
+          ],
+          "id": "Toluene",
+          "position": 119,
+          "record_type": "component",
+          "sha256": "f7575034b5083ca5eb4d5e087e85f197fd951f261146097a2c12673a5ef571c6"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "trans-2-Butene"
+              }
+            }
+          ],
+          "id": "trans-2-Butene",
+          "position": 120,
+          "record_type": "component",
+          "sha256": "0fc0da16dbefd599f501a853d0abb8ee0cf2bbbb6c52dfa14c34b962262a1b1c"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "VinylChloride"
+              }
+            }
+          ],
+          "id": "VinylChloride",
+          "position": 121,
+          "record_type": "component",
+          "sha256": "725e7e8f5e955e1763ca9863db5458bb2558e9a7e35d93c43cf554f4aff1c5f5"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "Xenon"
+              }
+            }
+          ],
+          "id": "Xenon",
+          "position": 122,
+          "record_type": "component",
+          "sha256": "615bcf98e097a4a36d3aef3b1bd9a955f91c748a8e1edd263a5033b5e5ad988f"
+        }
+      ],
+      "reference_convention": "COOLPROP-DEF-ref-v1"
+    },
+    {
+      "file_sha256": "033e10b3f151a83ddb6235a04e7349458a38baf6968962577bfe24099eb7c9a6",
+      "path": "benchmarks/s10/records.yaml",
+      "profile": "s10",
+      "records": [
+        {
+          "findings": [
+            {
+              "code": "fit_inputs_unhashed",
+              "params": {
+                "entry": "/molar_mass"
+              }
+            }
+          ],
+          "id": "CH3OH",
+          "position": 0,
+          "record_type": "component",
+          "sha256": "7bbd3d61738f8c194bd7f72554ff8b92c2e3d2a6589947cd6422adeed27138e2"
+        },
+        {
+          "findings": [
+            {
+              "code": "fit_inputs_unhashed",
+              "params": {
+                "entry": "/molar_mass"
+              }
+            }
+          ],
+          "id": "C2H5OH",
+          "position": 1,
+          "record_type": "component",
+          "sha256": "334d307f12eb8c5772dde40569cfde8fc24d78a80a7eafa25a7ca91520e64db3"
+        },
+        {
+          "findings": [
+            {
+              "code": "fit_inputs_unhashed",
+              "params": {
+                "entry": "/molar_mass"
+              }
+            }
+          ],
+          "id": "H2O",
+          "position": 2,
+          "record_type": "component",
+          "sha256": "99ea2be77239c7a75b129a4913662a479dd06b6dac6b7e46a6c0de6a4159b030"
+        },
+        {
+          "findings": [],
+          "id": "S10-wilson-ig-real-v1",
+          "position": null,
+          "record_type": "parameter_set",
+          "sha256": "6634ea271566e5acc59d87a55dfa2d6dc973fab7e7073190da369b5444fbd114"
+        }
+      ],
+      "reference_convention": "WILSON-IG-ref-v1"
+    },
+    {
+      "file_sha256": "234d165d4023859b61606441b0a41b54ce78c1446df91cc0bb275b2abdaab392",
+      "path": "benchmarks/s10/verification-records.yaml",
+      "profile": "s10-verification",
+      "records": [
+        {
+          "findings": [],
+          "id": "VA",
+          "position": 0,
+          "record_type": "component",
+          "sha256": "1a7568d378836d91b8c0721d56e1e802132b70cc64ad421b94cdb3a2b8367ef9"
+        },
+        {
+          "findings": [],
+          "id": "VB",
+          "position": 1,
+          "record_type": "component",
+          "sha256": "2d1d5d182cdc081d43fe89ce45db169e58c0c0aa7fd19765fc9503ca9594fe81"
+        },
+        {
+          "findings": [],
+          "id": "VC",
+          "position": 2,
+          "record_type": "component",
+          "sha256": "a1d1ecad5732eafec098976a4c2265149233af5fae53448c07a0b36af37a0226"
+        },
+        {
+          "findings": [],
+          "id": "S10-verification-v1",
+          "position": null,
+          "record_type": "parameter_set",
+          "sha256": "c13d5aaab92879e92a0c45a50be134164691fb504e69c23cc61bc22a30133c9e"
+        }
+      ],
+      "reference_convention": "S10-VER-ref-v1"
+    },
+    {
+      "file_sha256": "745950ce7ec25c96ffd20db2c3b0fd059f5de0e6b3e8e600d29f49e8c9f49628",
+      "path": "benchmarks/syn001/components.yaml",
+      "profile": "syn001",
+      "records": [
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "A"
+              }
+            }
+          ],
+          "id": "A",
+          "position": 0,
+          "record_type": "component",
+          "sha256": "03a4bfc4f7534c756f4d5ebc7404eb40de63e139ab4de83c817e6cc9ca7c283e"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "B"
+              }
+            }
+          ],
+          "id": "B",
+          "position": 1,
+          "record_type": "component",
+          "sha256": "b3fa023aa780e06ebcbaa9b8fa1a57270f79b58ff815c48960ce7b5f13eb2693"
+        },
+        {
+          "findings": [
+            {
+              "code": "anchor_defaulted",
+              "params": {
+                "component": "C"
+              }
+            }
+          ],
+          "id": "C",
+          "position": 2,
+          "record_type": "component",
+          "sha256": "e2f2eac4d97e324bd651934275abc87bfb5d83eba502db2f36b74feeab1f7019"
+        }
+      ],
+      "reference_convention": null
+    }
+  ],
+  "index_format": "openflowsheet-legacy-record-index-v1"
+}

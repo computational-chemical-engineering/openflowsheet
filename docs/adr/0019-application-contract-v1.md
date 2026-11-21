@@ -252,6 +252,37 @@ Amendment 7 is decided in ADR 0060 D11 (F1-WO4a); this paragraph points at it. A
   it is X04's `6be1c002…` (R-1010) exactly. The surface link is c_9, R-1030 (`F1_SERVED_SHA256` in
   `tests/test_t08_w2_surface_digest.py`). No other R4-G3 response moves.
 
+## Amendment 8 (Accepted 2026-11-18 with ADR 0061, Frank Peters; proposed 2026-11-05; F3) — pointer to ADR 0061
+
+Amendment 8 is decided in ADR 0061 D13 (F3-WO5b); this paragraph points at it. Additive:
+
+- **A new protocol, `Records`**, with five methods: `search_records(*, key=None, scheme=None, record_type=None,
+  cursor=None, limit=50) -> RecordPage`, `get_record(record_sha256) -> RecordView`, `register_record(*, record=None,
+  file=None, defaults=None) -> RecordRegistrationResult`, `validate_record(*, record=None, records=None,
+  components=None, reactions=None) -> RecordValidationReport` and `assess_rights(*, source_id, record_sha256, scope,
+  assessment, basis, conditions=None) -> RightsAssessmentResult`: the project's record store over the read-only legacy
+  store (D8, D9), and its rights register (D11). Rights `read` (search, get, validate), `draft` (register) and
+  `policy` (assess, not in an agent's default grant). All four transports (`POST /v1/records/search`,
+  `GET /v1/records/{record_sha256}`, `POST /v1/records`, `POST /v1/records/validate`, `POST /v1/records/rights`; MCP
+  tools of the same names; CLI `api`, plus `openflowsheet records search|get|register|validate|rights`). Their rows
+  follow `check_admission`. `register_record` and `assess_rights` write one audit row each.
+- **Refusals, existing codes only.** `invalid_request` (the schema; a cursor this list did not issue; a `source_id`
+  that is not a source of the record; a record or user file D7 or D11 refuses: the first refusal's code in
+  `detail.reason` and its `{code, params}` in `detail.refusal`, every error in `detail.errors`, `detail.pointer` the
+  request location continued by the refusal's own pointer (R-1052)), `not_found` (a record SHA no layer holds, `detail.record_sha256`, with
+  `reason: data_unavailable` when the committed legacy index names it), `unsupported` and `internal_error` by the
+  catalogue kind of a record refusal (F3 decision WO5b-1), `forbidden` (`assess_rights` without `policy`). A record
+  naming a `legacy.` source, or carrying a `legacy` member, whose SHA is not in the committed legacy index is refused
+  `reserved_namespace(legacy)` (ADR 0060's code), in the code's record variant (R-1056). D5's `ApiError` and `API_EXIT_CODES` are unchanged.
+- **Schemas.** `application-results.schema.json` gains eight `$defs` (`record_page`, `record_view`,
+  `record_registration_result`, `record_validation_report`, `rights_assessment_result`, `effective_rights`,
+  `rights_row`, `record_finding`), each a bare `$ref` to the `$def` of the same name in the new
+  `record-results.schema.json` (R-1032's structure, F3 decision WO5b-8); the report's items are a `$def` of its own
+  there, `record_report_item` (`{code, params, at}`, R-1053); no existing `$def` changes.
+- **Not unchanged:** the served MCP tool list, widened by the five tools; with them removed (`tests/f3_schema_support.py`)
+  it is F1's `e2c44b6b…` (R-1030) exactly. The surface link is c_10, R-1051 (`F3_SERVED_SHA256` in
+  `tests/test_t08_w2_surface_digest.py`). No other R4-G3 response moves.
+
 ## Amendment 13 (Accepted 2026-11-08 by Frank, with ADR 0068; Proposed 2026-11-06; ST) — pointer to ADR 0068
 
 Amendment 13 is decided in ADR 0068; this paragraph points at it (ST design note §6.1, §7).

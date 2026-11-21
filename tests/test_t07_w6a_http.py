@@ -34,6 +34,7 @@ from urllib.parse import quote
 
 import pytest
 from conftest import REPO_ROOT
+from f3_schema_support import records_requests, user_record_sha256
 from msg_support import machine_detail
 from t07_corpus import CORPUS
 
@@ -353,6 +354,9 @@ def _scenario(call: Call, raw: Callable[[str, bytes], tuple[int, Any]]) -> list[
     step("explain", {"code": "not_found"})  # ADR 0058 D7 (MSG)
     step("list_capabilities", {"kind": "unit_model", "limit": 3})  # ADR 0060 D11 (F1)
     step("check_admission", {"pair": {"unit": "thermal.heater", "method": "coolprop-heos-v1"}})
+    # ADR 0061 D13 (F3): `assess_rights` needs `policy`, which the grant does not hold (403).
+    for name, request in records_requests(user_record_sha256()):
+        step(name, request)
     # Refusals a transport can reach.
     step("get_job", {"job_id": "job-999999"})  # 404
     step("explain", {"code": "phase_regim_mismatch"})  # 404, with suggestions
@@ -400,8 +404,8 @@ def test_g14_every_http_operation_equals_dispatch_as_the_same_principal(
         got = [(status, _seq_aligned(document, offset)) for status, document in got]
         served_names = {n for n, row in OPERATIONS.items() if "http" in row.transports}
         # 19 with ADR 0019 Amendment 3's `list_audit`, 20 with ADR 0058 D7's `explain`, 21 with
-        # ADR 0068's `get_stream_table`, 23 with ADR 0060 D11's two.
-        assert len(served_names) == 23
+        # ADR 0068's `get_stream_table`, 23 with ADR 0060 D11's two, 28 with ADR 0061 D13's five.
+        assert len(served_names) == 28
         for index, ((status, document), (want_status, want)) in enumerate(
             zip(got, expected, strict=True)
         ):
@@ -416,7 +420,9 @@ def test_g14_every_http_operation_equals_dispatch_as_the_same_principal(
             "not_found",
             "invalid_request",
             "document_not_canonical",
-            "forbidden",  # `list_audit` of every principal without `policy` (ADR 0019 A3.3)
+            # `list_audit` of every principal and `assess_rights` without `policy` (ADR 0019
+            # A3.3, ADR 0061 D13)
+            "forbidden",
         }
         # The same refusals were audited on both sides, in the same order.
         assert over_http.refusals() == in_process.refusals()

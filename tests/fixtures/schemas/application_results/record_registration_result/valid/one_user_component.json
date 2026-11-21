@@ -1,0 +1,16 @@
+{
+  "results": [
+    {
+      "created": true,
+      "findings": [
+        {
+          "code": "anchor_defaulted",
+          "params": {
+            "component": "user.xenonol"
+          }
+        }
+      ],
+      "record_sha256": "289976bf185d64a133576e1ee019af373e584101cab2d433edb366109c1d7072"
+    }
+  ]
+}
