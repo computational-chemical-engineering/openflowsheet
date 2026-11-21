@@ -4896,3 +4896,9 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   line). Held jobs re-enqueued by patch-id as 667-685 (labels `<old>m`, base = the rebased parent); old JSONs to
   `<queue>/withdrawn/`. Passed before the hold, not re-gated (identical diffs): 644 a2-1, 645 as1-1, 657 as1-7, 658
   a2-8. App jobs 637-642 back in `pending/`; runner restarted, PID 4039086.
+- 2026-11-21 ~06:50, gate report: `ALERT selected share 54% < 75% of step gates` and `ALERT queue wait median 23 min >
+  15 min`. Cause of both: application/ steps (binding.py, validation.py) run code at collection, so every gate on
+  them falls back to the full suite (~25 min) whatever the map (a2-2m: `validation.py:88 runs at import or collection
+  time`). The map itself works: as1-2m selected 39 tests, 66 s (ref-base 2c5f7c3b). Action: none for the running
+  chains; tooling item for the build lane (which test modules import application/ at collection, and whether the
+  fallback can be narrowed to the importing files), not started.
