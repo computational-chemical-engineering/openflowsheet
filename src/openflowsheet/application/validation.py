@@ -750,9 +750,13 @@ def structural_checks(report: Any) -> list[Check]:
     Separated from `_structural` so that a check reachable only by a synthetic declaration — the
     `STR-06` warning, which no registered revision provokes — can still be exercised by a test
     rather than recorded as untested (M5(b) of the Fable review of T01).
+
+    One helper per check, in rule order: `_check_rank` (`STR-01`), `_check_under_specification`
+    (`STR-02`), `_check_over_specification` (`STR-03`), `_check_conflicts` (`STR-04`),
+    `_block_metrics` (`STR-05`) and, when the report has uncertified affine rows,
+    `_check_uncertified_rows` (`STR-06`).
     """
     from openflowsheet.application.binding import instance_named
-    from openflowsheet.graph.report import STATEMENTS
 
     counts = report.structural_counts
     assert counts is not None
@@ -767,89 +771,112 @@ def structural_checks(report: Any) -> list[Check]:
 
     over_specified = named(report.over_specified_units)
     checks = [
-        Check(
-            id="STR-01",
-            stage="structural_analysis",
-            result="PASS",
-            message=(
-                f"{report.finding}: {counts['equations']} equations over "
-                f"{counts['free_variables']} free variables, structural rank {counts['matched']}, "
-                f"{report.nnz} declared incidences. {STATEMENTS['S1']} {STATEMENTS['S2']} "
-                f"{STATEMENTS['S3']}"
-            ),
-        ),
-        Check(
-            id="STR-02",
-            stage="structural_analysis",
-            result="PASS" if report.deficit == 0 else "FAIL",
-            message=(
-                "no structural under-specification"
-                if report.deficit == 0
-                else (
-                    f"STRUCTURAL_UNDER_SPECIFICATION: deficit {report.deficit}. {STATEMENTS['S4']}"
-                )
-            ),
-            implicated_objects=(
-                ()
-                if report.deficit == 0
-                else report.dm_after_certificates.under_cols
-                if report.dm_after_certificates is not None
-                else ()
-            ),
-        ),
-        Check(
-            id="STR-03",
-            stage="structural_analysis",
-            result="PASS" if report.excess == 0 else "FAIL",
-            message=(
-                "no structural over-specification after certified redundancy"
-                if report.excess == 0
-                else (
-                    f"STRUCTURAL_OVER_SPECIFICATION: excess {report.excess}; "
-                    f"over-specified units {over_specified}; candidate "
-                    f"specifications {list(report.candidate_specifications)}. "
-                    f"{STATEMENTS['S4']} {STATEMENTS['S5']}"
-                )
-            ),
-            implicated_objects=() if report.excess == 0 else report.implicated_objects,
-        ),
-        Check(
-            id="STR-04",
-            stage="structural_analysis",
-            result="PASS" if not report.conflicts else "FAIL",
-            message=(
-                f"{len(report.certificates)} certified redundant rows, all consistent. "
-                f"{STATEMENTS['S6']}"
-                if not report.conflicts
-                else (
-                    "SPECIFICATION_CONFLICT: "
-                    + "; ".join(
-                        f"{instance_named(entry.row_id, instance_of)} repeats "
-                        f"{named([name for name, _ in entry.equals])} but "
-                        f"disagrees by {entry.constant_mismatch:g}, beyond {entry.tolerance:g}"
-                        for entry in report.conflicts
-                    )
-                )
-            ),
-            implicated_objects=() if not report.conflicts else report.implicated_objects,
-        ),
+        _check_rank(report, counts),
+        _check_under_specification(report),
+        _check_over_specification(report, over_specified),
+        _check_conflicts(report, named, instance_of),
         _block_metrics(report, named),
     ]
     if report.uncertified_affine_rows:
-        checks.append(
-            Check(
-                id="STR-06",
-                stage="structural_analysis",
-                result="WARN",
-                message=(
-                    "consistency not established for affine rows this policy does not read: "
-                    f"{list(report.uncertified_affine_rows)}. They are retained, not certified "
-                    "and not discarded"
-                ),
-                implicated_objects=report.uncertified_affine_rows,
-            )
-        )
+        checks.append(_check_uncertified_rows(report))
     return checks
+
+
+def _check_rank(report: Any, counts: Mapping[str, int]) -> Check:
+    """`STR-01`: the finding, the equation and free-variable counts, the structural rank and the
+    declared incidences, with statements S1 to S3. Always a `PASS`."""
+    from openflowsheet.graph.report import STATEMENTS
+
+    return Check(
+        id="STR-01",
+        stage="structural_analysis",
+        result="PASS",
+        message=(
+            f"{report.finding}: {counts['equations']} equations over "
+            f"{counts['free_variables']} free variables, structural rank {counts['matched']}, "
+            f"{report.nnz} declared incidences. {STATEMENTS['S1']} {STATEMENTS['S2']} "
+            f"{STATEMENTS['S3']}"
+        ),
+    )
+
+
+def _check_under_specification(report: Any) -> Check:
+    """`STR-02`: a `FAIL` with the deficit and statement S4, implicating the under-determined
+    columns after certified redundancy, when the deficit is not zero."""
+    from openflowsheet.graph.report import STATEMENTS
+
+    return Check(
+        id="STR-02",
+        stage="structural_analysis",
+        result="PASS" if report.deficit == 0 else "FAIL",
+        message=(
+            "no structural under-specification"
+            if report.deficit == 0
+            else (f"STRUCTURAL_UNDER_SPECIFICATION: deficit {report.deficit}. {STATEMENTS['S4']}")
+        ),
+        implicated_objects=(
+            ()
+            if report.deficit == 0
+            else report.dm_after_certificates.under_cols
+            if report.dm_after_certificates is not None
+            else ()
+        ),
+    )
+
+
+def _check_over_specification(report: Any, over_specified: list[str]) -> Check:
+    """`STR-03`: a `FAIL` with the excess, the over-specified units (`over_specified`, named by
+    their revision instances), the candidate specifications and statements S4 and S5 when the
+    excess is not zero."""
+    from openflowsheet.graph.report import STATEMENTS
+
+    return Check(
+        id="STR-03",
+        stage="structural_analysis",
+        result="PASS" if report.excess == 0 else "FAIL",
+        message=(
+            "no structural over-specification after certified redundancy"
+            if report.excess == 0
+            else (
+                f"STRUCTURAL_OVER_SPECIFICATION: excess {report.excess}; "
+                f"over-specified units {over_specified}; candidate "
+                f"specifications {list(report.candidate_specifications)}. "
+                f"{STATEMENTS['S4']} {STATEMENTS['S5']}"
+            )
+        ),
+        implicated_objects=() if report.excess == 0 else report.implicated_objects,
+    )
+
+
+def _check_conflicts(
+    report: Any, named: Callable[[Sequence[str]], list[str]], instance_of: Mapping[str, str]
+) -> Check:
+    """`STR-04`: the certified redundant rows with statement S6, or a `FAIL` naming each
+    conflicting row (by its revision instance, `instance_of`) and the rows it repeats (`named`).
+    """
+    from openflowsheet.application.binding import instance_named
+    from openflowsheet.graph.report import STATEMENTS
+
+    return Check(
+        id="STR-04",
+        stage="structural_analysis",
+        result="PASS" if not report.conflicts else "FAIL",
+        message=(
+            f"{len(report.certificates)} certified redundant rows, all consistent. "
+            f"{STATEMENTS['S6']}"
+            if not report.conflicts
+            else (
+                "SPECIFICATION_CONFLICT: "
+                + "; ".join(
+                    f"{instance_named(entry.row_id, instance_of)} repeats "
+                    f"{named([name for name, _ in entry.equals])} but "
+                    f"disagrees by {entry.constant_mismatch:g}, beyond {entry.tolerance:g}"
+                    for entry in report.conflicts
+                )
+            )
+        ),
+        implicated_objects=() if not report.conflicts else report.implicated_objects,
+    )
 
 
 def _block_metrics(report: Any, named: Callable[[Sequence[str]], list[str]]) -> Check:
@@ -898,6 +925,22 @@ def _block_metrics(report: Any, named: Callable[[Sequence[str]], list[str]]) -> 
                 f"attempt signature {named(tear.signature_units)}"
             )
         ),
+    )
+
+
+def _check_uncertified_rows(report: Any) -> Check:
+    """`STR-06`: a `WARN` naming the affine rows the certification policy does not read; they are
+    retained, neither certified nor discarded."""
+    return Check(
+        id="STR-06",
+        stage="structural_analysis",
+        result="WARN",
+        message=(
+            "consistency not established for affine rows this policy does not read: "
+            f"{list(report.uncertified_affine_rows)}. They are retained, not certified "
+            "and not discarded"
+        ),
+        implicated_objects=report.uncertified_affine_rows,
     )
 
 
