@@ -21,7 +21,9 @@ from __future__ import annotations
 
 import json
 import stat
+import subprocess
 import sys
+import time
 from dataclasses import replace
 from pathlib import Path
 from typing import Any
@@ -289,7 +291,33 @@ def _session(tmp_path: Path, mode: str, *, wall_cap_s: float, turn_cap: int | No
     )
 
 
-def test_the_wall_cap_kills_the_session(tmp_path: Path) -> None:
+def _cap_after_init(transcript: Path) -> Any:
+    """The harness's `subprocess`, with a `Popen` whose timed `wait` (the wall cap) starts once
+    the init line is in `transcript`, or the process has ended: on a slow runner the stand-in's
+    interpreter start alone outlasted the 1 s cap (macOS job 136811622556, X07a WO18), so `init`
+    raced the cap. Only the harness's name is replaced, not `subprocess.Popen` itself."""
+
+    class CapAfterInit(subprocess.Popen[bytes]):
+        def wait(self, timeout: float | None = None) -> int:
+            if timeout is not None:
+                deadline = time.monotonic() + 60.0
+                while b"\n" not in transcript.read_bytes() and self.poll() is None:
+                    if time.monotonic() > deadline:
+                        break
+                    time.sleep(0.01)
+            return super().wait(timeout)
+
+    class Subprocess:
+        Popen = CapAfterInit
+
+        def __getattr__(self, name: str) -> Any:
+            return getattr(subprocess, name)
+
+    return Subprocess()
+
+
+def test_the_wall_cap_kills_the_session(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(harness, "subprocess", _cap_after_init(tmp_path / "transcript.jsonl"))
     outcome = _session(tmp_path, "sleep", wall_cap_s=1.0, turn_cap=None)
     assert outcome.stopped == "wall_cap" and outcome.returncode != 0
     assert outcome.wall_s < 10.0 and outcome.init is not None and outcome.result is None
