@@ -390,7 +390,7 @@
     },
     {
       "id": "WHEEL-F1-F3",
-      "assertion": "F1's registry and F3's legacy record store answer from the installed wheel as from C: registry_sha256 equal, the legacy (id, record_sha256) pairs equal and as many as legacy_index.json's records (0.5 ships package data beyond 0.4.0's, RP 3.6 item 4; WF-1 to WF-5 of docs/briefs/REL050-line-0.5.md)",
+      "assertion": "F1's registry and F3's legacy record store answer from the installed wheel as from C: registry_sha256 equal; the legacy (id, record_sha256) pairs equal legacy_index.json's, all of them in the checkout and those of its package-data files in the wheel (ADR 0061 D8) (0.5 ships package data beyond 0.4.0's, RP 3.6 item 4; WF-1 to WF-5 of docs/briefs/REL050-line-0.5.md)",
       "script": "scripts/wheel_data_check.py",
       "where": "local:project",
       "command": ["python", "scripts/wheel_data_check.py", "--commit", "$C", "--f1-f3"]
