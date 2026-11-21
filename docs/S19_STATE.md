@@ -17,7 +17,7 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
   `docs/briefs/S19-digest.md`; scan JSON `<git-common-dir>/codehealth/runs/repo-wide-scan-d90b498f.json`.
 - `MB` (the test-map base, read by `.claude/skills/s19-refactor/gate.sh` from the line below; moves to milestone
   commits, `S19_DECISIONS`):
-- `MB` = `c6957580aba76ac81f3ebbf06c7623275604dd4b` (the `wp/S19` tip after W5 batch P, 2026-11-20; G-MAP 7 map: 20672 tests, failed = the B-6 four + f6; earlier MB 756e1c12, 14c6d414, 1720cc98, c3c5793e, 736f70db, bec6dbe6).
+- `MB` = `2c5f7c3b2ca30b1c31bef863e9b2abab15136230` (the `wp/S19` tip after the trust_region merge, 2026-11-21; G-MAP 8 map: 21035 tests, failed = the B-6 four; previous MB c6957580: the `wp/S19` tip after W5 batch P, 2026-11-20; G-MAP 7 map: 20672 tests, failed = the B-6 four + f6; earlier MB 756e1c12, 14c6d414, 1720cc98, c3c5793e, 736f70db, bec6dbe6).
 - A1 done: design note `docs/briefs/S19-architecture.md` (phases W0 to W4, table 4.1 with the arch numbers per
   step), ADR 0076 proposed. Config committed: scope `src/openflowsheet/*`, `repo-layers`, forbid
   `verifier-not-through-the-solver`; adoption 14 violations, 10 cycles, 79 cycle edges.
@@ -61,8 +61,7 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 
 **Position (2026-11-21 ~05:10):** main = d29f1a50. wp/S19 = 88818288 + docs (main/F3 at 68abf467, W5-S2 fix
 da6e4e82, trust_region run 1 merged at 88818288 after merge-check 643). Scan: 353 files, debt 2093.5 (target <=
-1900), health 8.98 (>= 9.0), brain 0. MB c6957580 (stale since F3: steps fall back to the full suite; move MB once
-the app chain drains, queue held). Runner PID 3031640, one job per worktree.
+1900), health 8.98 (>= 9.0), brain 0. MB 2c5f7c3b (G-MAP 8). Runner PID 3031640, one job per worktree.
 Lane: wp/S19-app (worktree s19-app), head 6afe9aa1 (c276bd57 + review docstrings): review R-W3-APP-1 merge; jobs
 632-634 PASS, 635-642 gating. Next: all PASS -> helper merge (pattern: worktree from the wp/S19 tip, `git merge
 --no-ff -F`, ruff, enqueue merge-check `--base <tip>`) -> merge -> map build (MB) -> next lanes.

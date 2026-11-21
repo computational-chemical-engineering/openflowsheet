@@ -4887,3 +4887,8 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   DECISION: keep them exempt; do not re-register released gates' pins for a latent deep-path Windows case.
   Alternative: re-register both pins. Reversible by: a later WO re-registering them. The full 28-file run was not
   repeated on the final tree (CI covers it).
+- **2026-11-21 ~05:20, G-MAP 8 PASS; MB moved to 2c5f7c3b.** 21035 tests (20922 passed, 109 skipped, 4 failed = the
+  B-6 four; f6 passed), pytest exit 1, 3968 s, 27.4 MB. Unsure set = the four; test_m04_wo9 the standing exception.
+  gate.sh reads MB from the gated tree's own S19_STATE.md, so lanes AS and A2 (from 2c5f7c3b, which still names
+  c6957580) are rebased onto this commit (docs only) and their held jobs re-enqueued with the new shas; passed steps
+  644, 645, 658 are not re-gated (identical diffs). The app lane (from da6e4e82) keeps its jobs (full suite anyway).
