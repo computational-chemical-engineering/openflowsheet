@@ -186,9 +186,10 @@ def assessment_sensitivity(
     """§4.10.1: `dy/dp` of the assessment `outputs` (ids without the prefix) at the certified
     `state` (in `host.spec.variable_ids` order) for `request`'s parameters and mode.
 
-    `scales` gives an output's scale; by default `max(|y(x*)|, 1)` (§4.10.2's output scale). A
-    refusal of `program.linearize` (an unavailable or unknown output) is returned with no host
-    run. Raises `ValueError` when the program's host variables are not the host's.
+    `scales` gives an output's scale; by default `max(|y(x*)|, 1)` (§4.10.2's output scale), the
+    choice and its check `_output_scales`'s. A refusal of `program.linearize` (an unavailable or
+    unknown output) is returned with no host run. Raises `ValueError` when the program's host
+    variables are not the host's, or for a scale that is not finite and > 0.
 
     Parameters
     ----------
@@ -243,12 +244,7 @@ def assessment_sensitivity(
             refusals=(lin,),
         )
     assert isinstance(lin, Linearization)
-    chosen = {
-        name: float((scales or {}).get(name, max(abs(lin.values[name]), 1.0))) for name in outputs
-    }
-    for name, value in chosen.items():
-        if not (math.isfinite(value) and value > 0.0):
-            raise ValueError(f"output {name!r}: the scale must be finite and > 0")
+    chosen = _output_scales(lin, outputs, scales)
     rows = _rows(lin, outputs)
     functionals = tuple(
         OutputFunctional(f"{OUTPUT_PREFIX}{name}", row, chosen[name])
@@ -290,6 +286,21 @@ def assessment_sensitivity(
         regime_slack=slack,
         limitations=limitations,
     )
+
+
+def _output_scales(
+    lin: Linearization, outputs: Sequence[str], scales: Mapping[str, float] | None
+) -> dict[str, float]:
+    """Each output's scale (§4.10.2), in `outputs` order: `scales`' own, else
+    `max(|y(x*)|, 1)` from `lin`'s values. Raises `ValueError` at the first scale that is not
+    finite and > 0."""
+    chosen = {
+        name: float((scales or {}).get(name, max(abs(lin.values[name]), 1.0))) for name in outputs
+    }
+    for name, value in chosen.items():
+        if not (math.isfinite(value) and value > 0.0):
+            raise ValueError(f"output {name!r}: the scale must be finite and > 0")
+    return chosen
 
 
 def _pattern(lin: Linearization, name: str) -> set[str]:
