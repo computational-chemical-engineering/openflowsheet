@@ -10,32 +10,40 @@ Frank 2026-11-20, "Let's go for the smaller 0.5 release"): **0.5 = X07a, F1, F3,
 and X01's selectability lead 0.6. Procedure: RP (`docs/derivations/release-procedure.md`), ADR 0055; dispatch steps
 in `docs/RELEASING.md`. Last release v0.4.0 (2026-11-11); main is `0.5.0.dev0`.
 
-## Position (2026-11-21 ~14:45)
+## Position (2026-11-21 ~15:30)
 
-- main = d29f1a50 (F1 aa2d0a4d and F3 merged; S19's 0.5 blocking set merged at c4a91a75). wp/REL050 = this branch,
-  base c4a91a75, holds R-1065 and the roadmap change (84a08a84, cc6e685e); not yet merged to main.
-- X07a: a36 ruling applied (WO19, 277b52b9 + bd0b7df5, R-1068), CI 44902051410 running (macOS and codehealth
-  green at 14:28). Then: manifest `tested` (WO17 leftovers in S19_DECISIONS 2026-11-21 X07a-WO17), merge card.
-- X01 part A (plugin docs): manifest at a0e4c546 `tested` (6db80c8c); needs one `reviewer` pass, then a merge card;
-  Q-1..Q-3 in `docs/X01_DECISIONS.md` (worktree x01) with defaults.
-- S19 (repository code health, separate campaign `s19-refactor`): wp/S19 043879a4, CI 44909075689 running; then a
-  G-END verdict and its own merge card. Behaviour is bitwise identical, so it is not a 0.5 item.
-- Not started: `release/lines/0.5.json` (V04-after review N-3; `inherits: "0.4"`), K3, the RC job, m05 REAL replay
-  re-take (RC step 14 has failed since the TRS2 -> TR09 move; ~35 min, reactor env, clean tree, mapping proof plus
-  host column).
+- main = d29f1a50 (F1, F3, S19's blocking set). wp/REL050 = bc6e6fe9 (not pushed): R-1065, campaign files, and the
+  **line file draft** `release/lines/0.5.json` + note `docs/briefs/REL050-line-0.5.md` (specifier, ~283k): claim set
+  unchanged from 0.4 (17 gates byte-identical, no RP amendment); `changed` = 10 fields; packages 0.4's 20 + F1, F3,
+  X07a, X01; required_adrs 0.4's 26 + 0007, 0057, 0060, 0061, 0076, 0077 (all Accepted at d29f1a50); "Linux only"
+  replaced by three platform phrases (true whatever X07a's legs do); three new phrases (no v2 revisions; no solve
+  reads the component store; no plugin unit model or method a solve uses); **new rc_item `WHEEL-F1-F3`** (wheel vs
+  checkout `registry_sha256` and the 149-record legacy list; its `--f1-f3` flag does not exist yet: note WF-1..WF-5
+  and four controls). RP.L01-L11 PASS at bc6e6fe9 except ADR 0061 not Accepted on this branch (passes at d29f1a50:
+  merge main first). Release tests 107 passed.
+- X07a: a36 ruling applied (WO19 277b52b9 + bd0b7df5, R-1068); CI 44902051410 (macOS, codehealth green at 14:28).
+  Manifest still `implemented`; WO17 leftovers for the move (S19_DECISIONS 2026-11-21 X07a-WO17).
+- X01: review (reviewer, Opus) "merge after fixes"; X01-WO2 (sonnet) applied all: merge main 1bd587ed, fixes
+  5634fa7f (F3 kinds, list_capabilities wording, guide-reading tests, new PAYLOAD_DEFS test with negative control),
+  79 tests passed; CI 44909945712 + Site 44909945705 running. Then: manifest `tested` at the head, merge card.
+- S19 separate (wp/S19 043879a4, CI 44909075689 running); not a 0.5 item.
+
+## Background waits running at the reset (their notices arrive in the new context)
+
+- `gh run watch 44909945712` then `44909945705` (X01 CI and Site): green -> X01 manifest move (sonnet brief), card.
+- `gh run watch 44902051410` (X07a): green on all legs -> X07a manifest move (WO17 leftovers), card.
+- `gh run watch 44909075689` (wp/S19): see S19_STATE.
 
 ## Next actions
 
-1. On X07a CI green (all four legs): manifest `tested` at the head, merge card via hub (action text per option).
-2. X01: `reviewer` pass on part A (brief file), fixes, merge card.
-3. Line file: one `specifier` pass (RP §13 (1)) for `release/lines/0.5.json`: `covers` 0.5.0, claim set (does 0.5
-   claim anything new for X07a/F1/F3/X01 docs?), `packages` (+ F1, F3, X07a, X01?), `required_adrs` (0060, 0061,
-   0057 Am. 1, X07a's ADR 0007 Am. 3), `rc_items`, `changelog_what_it_is_not`. Build-lane fields by the build lane.
-   Then RP.L01-L11 at the draft (`scripts/release_gate.py` loader).
-4. Merge wp/REL050 (+ line file) into main; K3 per RP §7.1 (version 0.5.0, envelope pin, fixtures, README); J
-   (re-takes incl. m05) and C; RC job steps 1-17 (`scripts/release_rc.py`), §9.2 order: records, lapse report and
-   Frank's message 1, `verdict` pass, ledger, manifest H1, H2, step 18 YES, H3, merge C into main.
-5. Dry run of the release workflow; Frank: dispatch, PyPI approval.
+1. Merge main into wp/REL050 (ADR 0061 then Accepted on the branch); rerun the note §7 loader command (PASS).
+2. Build lane: `WHEEL-F1-F3`'s `--f1-f3` per note (WF-1..WF-5, four controls): opus-engineer brief file.
+3. One scoped `reviewer` pass (Q-D1: release scripts and RP changed since 0.4.0, plus WHEEL-F1-F3).
+4. X07a and X01 manifests `tested` and their merge cards (one DECISION-REQUEST each via hub); both must be `tested`
+   before K3, else X07a/X01 leave `packages` and Frank is told.
+5. Merge card for wp/REL050 into main; then K3 (RP §7.1), J (re-takes incl. m05 REAL on TR09), C, RC steps 1-17,
+   RP §9.2 (lapse report and message 1: Q-F1, Q-F2 and the predicted lapses V17 carry, V14 (b), M02 N1; verdict;
+   ledger; H1, H2, step 18 YES, H3), merge C, dry run, Frank's dispatch.
 
 ## Gates (criteria fixed before the run)
 
@@ -49,6 +57,10 @@ in `docs/RELEASING.md`. Last release v0.4.0 (2026-11-11); main is `0.5.0.dev0`.
 | dry run | release workflow dry run: gate YES, build, `t08-a43-dist.json` all passed | |
 
 ## Open decisions (defaults stand unless Frank says otherwise)
+
+- Q-F1 (note §8): the 0.5 line acceptance's "ADR-F1 to ADR-F8 Accepted" (0062-0067 Proposed) -> default: the clause
+  moves to 0.6, as for 0.4. Frank, message 1.
+- Q-F2: Windows and macOS CI legs not judged at C (step 1 reads the Linux legs) -> default: no change. Message 1.
 
 - S19's merge into main relative to K3: only if its card is signed before K3; otherwise after the tag (D2.4 freeze).
 - X01 Q-1..Q-3: their defaults in `docs/X01_DECISIONS.md`.
