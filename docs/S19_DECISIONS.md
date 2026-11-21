@@ -4758,3 +4758,9 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   at the wp/S19 tip (queue held), which restores step-relative selection for the app lane.
 - 2026-11-21, nlp-marked suite at the TR lane head 93b4bf6a (orchestrator, .venv-nlp): 211 passed, 2 failed = g19,
   g20 (base failures), 2 skipped, 338 s. Rule 3 of the state file met for the TR lane.
+- 2026-11-21, tr1-3r (620) PASS but `LOG-ERROR codehealth: error: --rerun-of 609: campaign s19 has no step for this
+  tree and base`: a rebased step is a new step, not a rerun (my SendMessage asked for --rerun-of; wrong). Fixed:
+  `rerun_of` cleared in pending 622-629 (atomic rewrite; reason kept); 620 logged by hand with the queue's own
+  arguments minus --rerun-of, plus --head e4e21c29 (run-log step 525 accepted, debt 12.0 -> 9.0). 621 (running, still
+  carries 610) to be logged the same way. Note: the runner serialises one job per worktree, so the TR chain runs one
+  job at a time (~25 min each).
