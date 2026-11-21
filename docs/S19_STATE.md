@@ -57,26 +57,23 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 - G1 (orchestrator/, numerics/): W3 lanes N and O closed 2026-11-19 (272011be); residuals executor.py (PR-1b, 6.1 -> 9.0, gating) and `_solve_region`'s parameter object (W4).
 - G-END (below) stays the end criterion for the whole repository.
 
-## Next actions (2026-11-21 ~01:15 CET)
+## Next actions (2026-11-21 ~18:20 CET)
 
-**Position (2026-11-21 ~15:30): G-END code health MET; CI codehealth fixed.** main = d29f1a50. wp/S19 = 043879a4 +
-docs (pushed at 043879a4). CI 44896811906 at 2aaa5d3f: both legs green, codehealth red on region.py duplication; lane
-DUP (`_RegionSolve._record_initializer`, review R-W3-DUP-1 merge, gates 700 FAIL/701 PASS no-gain, merge-check 702
-PASS) merged at 043879a4; `codehealth diff --base d29f1a50` PASS locally. **CI 44909075689 at 043879a4 running**
-(background `gh run watch`; its notice lands in the new context). Scan numbers at 2aaa5d3f (unchanged in behaviour):
-debt 1878.4, health 9.06, brain 0, floor 7.0, arch 0/0. MB 2c5f7c3b. Runner PID 4039086 (queue empty). No lane open.
-X07a is now driven from the REL050 campaign (`.claude/worktrees/rel050/docs/REL050_STATE.md`): WO18 found a36
-roundoff-decided, ruling D1 (option A) applied by WO19, CI 44902051410.
+**Position: G-END PASSED at 043879a4** (verdict 15e1e147, `docs/reviews/S19-G-END-verdict.md`, 14/14 clauses;
+rulings: 68abf467 counts as a merge of main, 30f705d9 under batch N's K2). CI 44909075689 at 043879a4 green on all
+legs. Budget tests alone at 043879a4: f6 113.83 s, t07c 32.98 s (`<git-common-dir>/codehealth/runs/budget-043879a4/`).
+Evidence manifest `tested` at 043879a4 in f814928a (13 limitations, HARVEST_SIZE (101, 1157, 146); pushed).
+main = d29f1a50. The verdict holds only while main stays at d29f1a50 and no later commit touches src/, scripts/ or
+the identity paths. Runner PID 4039086 (queue empty). No lane open.
+**Running:** CI 44923603617 at f814928a (poller b0yo0or3j, 300 s; never `gh run watch` at the default interval).
 **Next actions (S19 close):**
-1. On CI 44909075689: green on both legs (ubuntu-latest, ubuntu-24.04-arm) and codehealth -> a `verdict` agent (design lane) on G-END with the
-   measurements above, E1-E5 (docs/briefs/S19-W5-ruling.md section 7; E5 still needs the byte-identity of the two
-   mcp_digest files to d90b498f, E4 M7's 52 values vs d90b498f), and the E2 list in S19_DECISIONS (2026-11-21 ~12:30),
-   incl. 68abf467's merge resolution. Red -> read the failing job, fix by a fresh engineer.
-2. After a met verdict: evidence manifest for S19 at the tip (`tested`; review entries per CLAUDE.md, never set by the
-   build lane), naming 43dccc21 and b1d2ae6a as post-K generator-only commits; the wall-time budget tests alone on
-   wp/S19 (f6, t07_conformance budget_of_the_scenario_runs, no gate running); then a Decision Desk merge card via hub
-   (SKILL.md "Merging a phase into main"). Merging into main waits for the user's signed card.
-3. X07a: moved to the REL050 campaign (see its state file).
+1. CI 44923603617 green -> Decision Desk merge card via hub (SKILL.md "Merging a phase into main"), coordinated with
+   REL050's merge plan (REL050_STATE next action 2): options A merge before K3 (enters 0.5; the 0.5 branches then need
+   main merged back, HARVEST_SIZE conflicts), B after the v0.5.0 tag. Red -> read the failing job, fix by a fresh engineer.
+2. After a signed, VERIFIED card: merge commit, F0 on main, push, `executed` on the card.
+3. The verdict's findings on the criterion (E2 text for regenerating merges; tool version in the G-END row; file
+   smells and "full suite" unbounded; S19_RULES names d542005, pin 34a30bf): for the campaign close, not blocking.
+
 Open build-lane items (not blocking G-END): test-map holes (source-scanning tests like recovery_edges a33;
 collection-time application/ modules); WO16's frozen scripts; R-W3-A2-1 notes 3-6 (renames); `_Assembly` frozen;
 `check_manifest`/STR pins done. Trailing behind 0.5: pre-S19 broken doc references; syn001 (tier 4) untouched.
