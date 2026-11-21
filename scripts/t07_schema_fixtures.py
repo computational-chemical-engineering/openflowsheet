@@ -46,6 +46,13 @@ two to a page) and its first item, `capability_descriptor`, and `admission_repor
 (`check_admission` of `thermal.heater` with `wilson-ig-v2`, refused `capability_missing`); the
 registry's identity, an implementation's self-hash and the distribution's version change with the
 code, not the shape, and are masked like the timestamps.
+F3 (ADR 0061 D13) adds the `Records` responses on one synthetic user record
+(`tests/f3_schema_support.user_component`): `record_registration_result` and its first finding,
+`record_finding`; `record_page` (`search_records` of `water`, two legacy records) and the first
+item's first `effective_rights`; `rights_assessment_result` (the record assessed `permitted`);
+`record_view` (the record, after the assessment) and its first row, `rights_row`;
+`record_validation_report` (the record with an empty `name`, refused). A rights row's `date` is
+masked like the timestamps.
 "Regenerates identically" is `stable` equality, as for the jobs
 (`tests/test_t07_w5e_application_results.py`).
 
@@ -69,6 +76,7 @@ sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "tests"))
 
 import yaml  # noqa: E402
+from f3_schema_support import user_component  # noqa: E402
 from t07_jobs_support import cancel_while_queued, commit, lifecycle_violations  # noqa: E402
 
 from openflowsheet.application.errors import ApplicationError  # noqa: E402
@@ -109,7 +117,7 @@ EVENT_FIXTURES = (
     "job_event/valid/ended_completed.json",
     "job_event/valid/ended_cancelled.json",
 )
-TIMESTAMPS = frozenset({"created_at", "started_at", "ended_at", "recorded_at", "at"})
+TIMESTAMPS = frozenset({"created_at", "started_at", "ended_at", "recorded_at", "at", "date"})
 RESULTS_SCHEMA = "application-results.schema.json"
 #: Each `application-results` `$def`'s valid fixture: what the response shows.
 RESULTS_VALID = {
@@ -130,6 +138,14 @@ RESULTS_VALID = {
     "capability_page": "two_property_methods",
     "capability_descriptor": "first_property_method",
     "admission_report": "heater_with_wilson_refused",
+    "record_registration_result": "one_user_component",
+    "record_finding": "anchor_defaulted",
+    "record_page": "water_two_legacy_records",
+    "effective_rights": "legacy_permitted",
+    "rights_assessment_result": "record_permitted",
+    "record_view": "user_component_assessed",
+    "rights_row": "project_record_row",
+    "record_validation_report": "empty_name_refused",
 }
 #: F1 (ADR 0060 D10, D11): members that follow the code, not the response's shape.
 REGISTRY_VOLATILE = frozenset({"registry_sha256", "self_sha256", "distribution_version"})
@@ -284,6 +300,31 @@ def application_results_documents() -> dict[str, Any]:
             responses["capability_descriptor"] = page["items"][0]
             pair = {"unit": "thermal.heater", "method": "wilson-ig-v2"}
             responses["admission_report"] = call("check_admission", {"pair": pair})
+            # F3 (ADR 0061 D13): the record store, on one user record.
+            record = user_component(synthetic=True)  # T08.A32: a committed record is synthetic
+            registered = call("register_record", {"record": record})
+            sha = registered["results"][0]["record_sha256"]
+            responses["record_registration_result"] = registered
+            responses["record_finding"] = registered["results"][0]["findings"][0]
+            page = call("search_records", {"key": "water", "limit": 2})
+            responses["record_page"] = page
+            responses["effective_rights"] = next(
+                iter(page["items"][0]["effective_rights"].values())
+            )
+            rights = {
+                "source_id": "user.lab",
+                "record_sha256": sha,
+                "scope": "record",
+                "assessment": "permitted",
+                "basis": "the lab's own measurement",
+            }
+            responses["rights_assessment_result"] = call("assess_rights", rights)
+            view = call("get_record", {"record_sha256": sha})
+            responses["record_view"] = view
+            responses["rights_row"] = view["rights"]["rows"][0]
+            responses["record_validation_report"] = call(
+                "validate_record", {"record": {**record, "name": ""}}
+            )
             violations = lifecycle_violations(application)
             if violations:
                 raise SystemExit(f"the fixture job breaks the lifecycle: {violations}")

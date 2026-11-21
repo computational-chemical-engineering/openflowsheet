@@ -21,6 +21,20 @@ export const ROUTES = freeze({
     "right": "read",
     "verb": "GET"
   },
+  "assess_rights": {
+    "members": [
+      "assessment",
+      "basis",
+      "conditions",
+      "record_sha256",
+      "scope",
+      "source_id"
+    ],
+    "path": "/v1/records/rights",
+    "path_params": [],
+    "right": "policy",
+    "verb": "POST"
+  },
   "cancel_job": {
     "members": [
       "job_id"
@@ -122,6 +136,15 @@ export const ROUTES = freeze({
   "get_project": {
     "members": [],
     "path": "/v1/project",
+    "path_params": [],
+    "right": "read",
+    "verb": "GET"
+  },
+  "get_record": {
+    "members": [
+      "record_sha256"
+    ],
+    "path": "/v1/records/{record_sha256}",
     "path_params": [],
     "right": "read",
     "verb": "GET"
@@ -252,6 +275,30 @@ export const ROUTES = freeze({
     "right": "read",
     "verb": "POST"
   },
+  "register_record": {
+    "members": [
+      "defaults",
+      "file",
+      "record"
+    ],
+    "path": "/v1/records",
+    "path_params": [],
+    "right": "draft",
+    "verb": "POST"
+  },
+  "search_records": {
+    "members": [
+      "cursor",
+      "key",
+      "limit",
+      "record_type",
+      "scheme"
+    ],
+    "path": "/v1/records/search",
+    "path_params": [],
+    "right": "read",
+    "verb": "POST"
+  },
   "submit_job": {
     "members": [
       "body",
@@ -274,6 +321,18 @@ export const ROUTES = freeze({
     "path_params": [
       "revision_id"
     ],
+    "right": "read",
+    "verb": "POST"
+  },
+  "validate_record": {
+    "members": [
+      "components",
+      "reactions",
+      "record",
+      "records"
+    ],
+    "path": "/v1/records/validate",
+    "path_params": [],
     "right": "read",
     "verb": "POST"
   },

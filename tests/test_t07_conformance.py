@@ -74,6 +74,7 @@ from typing import Any
 
 import pytest
 from conftest import REPO_ROOT
+from f3_schema_support import user_component, user_record_sha256
 from t07_corpus import CORPUS
 from t07_jobs_support import PATIENCE_S, Pause, lifecycle_violations
 from t07_mcp_support import environment
@@ -94,7 +95,7 @@ from t07_transport_support import (
     inject_newer_producers_job,
 )
 
-from openflowsheet.application.authz import grant, revoke
+from openflowsheet.application.authz import OPERATION_RIGHTS, grant, revoke
 from openflowsheet.application.jobs.executor import COMPUTE_LOCK
 from openflowsheet.application.jobs.worker import PAUSE_AT_STAGE_VARIABLE, PAUSED_FILE
 from openflowsheet.application.local import LocalApplication
@@ -123,6 +124,7 @@ VOLATILE = frozenset(
         "hostname",
         "environment",
         "timestamp",
+        "date",  # a rights row's UTC date (ADR 0061 D11)
     }
 )
 CLOCKED_REFS = frozenset({"run_manifest", "replay_bundle", "worker_log"})
@@ -354,6 +356,7 @@ class Scenario:
             "check_admission",
             {"pair": {"unit": "thermal.heatr", "method": "coolprop-heos-v1"}},
         )
+        self._records()
 
         # Revisions: commit, replay, key reuse, preview, validation, pagination, views.
         first = {"edits": _edits(CORPUS[NOMINAL]()), "expected_revision": None}
@@ -500,6 +503,33 @@ class Scenario:
             relation = "code" if c.transport == "http" else "equal"
             self.step("revoked", "get_project", {}, relation)
         return self.steps
+
+    def _records(self) -> None:
+        """ADR 0061 D13 (F3): a user record registered, registered again (idempotent), found,
+        read, validated, and assessed; a record no layer holds. `assess_rights` needs `policy`:
+        the local owner holds it, the grant does not (`forbidden`; F3 decision WO5b-7)."""
+        record = {"record": user_component()}
+        sha = user_record_sha256()
+        assert self.ok("record", "register_record", record)["results"][0]["created"] is True
+        assert self.ok("record again", "register_record", record)["results"][0]["created"] is False
+        self.ok("record search", "search_records", {"key": "999-99-5", "scheme": "cas"})
+        self.ok("record get", "get_record", {"record_sha256": sha})
+        self.ok("record validate", "validate_record", record)
+        self.step("no record", "get_record", {"record_sha256": "0" * 64})
+        rights = {
+            "source_id": "user.lab",
+            "record_sha256": sha,
+            "scope": "record",
+            "assessment": "permitted",
+            "basis": "the lab's own measurement",
+        }
+        assessed = self.step("rights", "assess_rights", rights)
+        assert (
+            (assessed["code"] == "forbidden")
+            if self.client.grant
+            else (assessed["row"]["sequence"] == 1)
+        ), assessed
+        self.ok("record rights", "get_record", {"record_sha256": sha})
 
     def _cancel_under_the_process_executor(self, solve: Callable[..., dict[str, Any]]) -> None:
         """A paused worker (A), a queued job behind it (B, one worker slot), a third over the
@@ -683,6 +713,8 @@ def test_every_reachable_api_error_code_is_reached(runs: dict[str, Run], client:
 def test_every_carried_operation_succeeds_at_least_once(runs: dict[str, Run], client: str) -> None:
     carried = {"python-inline": ALL, "python-process": SERVED["http"]}.get(client, None)
     carried = carried if carried is not None else SERVED[client]
+    if client not in ("python-inline", "cli"):  # the grant lacks `policy` (F3 decision WO5b-7)
+        carried = carried - {n for n in carried if OPERATION_RIGHTS[n] == "policy"}
     succeeded = {s.operation for s in runs[client].steps if not s.outcome[0]}
     assert succeeded == carried
 

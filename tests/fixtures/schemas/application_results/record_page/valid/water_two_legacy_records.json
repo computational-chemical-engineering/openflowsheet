@@ -1,0 +1,97 @@
+{
+  "items": [
+    {
+      "amount_basis": "mol",
+      "effective_rights": {
+        "legacy.l01": {
+          "assessment": "permitted",
+          "conditions": null,
+          "layer": "repository"
+        }
+      },
+      "id": "H2O",
+      "identifiers": {
+        "cas": "7732-18-5",
+        "formula": "H2O",
+        "inchi": "InChI=1S/H2O/h1H2",
+        "inchikey": "XLYOFNOQVPJJNP-UHFFFAOYSA-N"
+      },
+      "name": "water",
+      "record_sha256": "098ed939064415e14bbad1336c400b420250fbbfc3dd5cffeb2bb118bf286c75",
+      "record_type": "component",
+      "source_ids": [
+        "legacy.l01"
+      ],
+      "store": "legacy"
+    },
+    {
+      "amount_basis": "mol",
+      "effective_rights": {
+        "legacy.s05": {
+          "assessment": "permitted",
+          "conditions": "Publication in whole or in part is allowed in all countries provided that attribution is given to the International Association for the Properties of Water and Steam",
+          "layer": "repository"
+        }
+      },
+      "id": "H2O",
+      "identifiers": {
+        "cas": "7732-18-5",
+        "formula": "H2O"
+      },
+      "name": "water",
+      "record_sha256": "5cfda8d64d7a089ef9288f56ab310964d2c32a7518c92ae54f126e90c6117f86",
+      "record_type": "component",
+      "source_ids": [
+        "legacy.s05"
+      ],
+      "store": "legacy"
+    }
+  ],
+  "next_cursor": "eyJhZnRlciI6IjVjZmRhOGQ2NGQ3YTA4OWVmOTI4OGY1NmFiMzEwOTY0ZDJjMzJhNzUxOGM5MmFlNTRmMTI2ZTkwYzYxMTdmODYifQ",
+  "resolution": {
+    "classes": [
+      {
+        "class": [
+          "cas:7732-18-5",
+          "inchikey:XLYOFNOQVPJJNP-UHFFFAOYSA-N"
+        ],
+        "records": [
+          {
+            "name": "water",
+            "sha": "098ed939064415e14bbad1336c400b420250fbbfc3dd5cffeb2bb118bf286c75",
+            "source_ids": [
+              "legacy.l01"
+            ]
+          },
+          {
+            "name": "water",
+            "sha": "5cfda8d64d7a089ef9288f56ab310964d2c32a7518c92ae54f126e90c6117f86",
+            "source_ids": [
+              "legacy.s05"
+            ]
+          },
+          {
+            "name": "Water",
+            "sha": "6d5d26e6c0fbd4a90a3db42f60fc881ccafc80693126d15b505e9b90415a8638",
+            "source_ids": [
+              "legacy.s07"
+            ]
+          }
+        ]
+      },
+      {
+        "class": [],
+        "records": [
+          {
+            "name": "water",
+            "sha": "99ea2be77239c7a75b129a4913662a479dd06b6dac6b7e46a6c0de6a4159b030",
+            "source_ids": [
+              "legacy.s10"
+            ]
+          }
+        ]
+      }
+    ],
+    "status": "ambiguous_identity"
+  }
+}

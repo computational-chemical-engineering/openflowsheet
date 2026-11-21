@@ -33,6 +33,7 @@ from urllib.parse import urldefrag, urljoin
 import pytest
 from conftest import REPO_ROOT, load_json
 from f1_schema_support import F1_OPERATIONS
+from f3_schema_support import F3_OPERATIONS
 from jsonschema import Draft202012Validator
 from m02_schema_support import without_m02
 from m04_schema_support import without_m04
@@ -71,9 +72,15 @@ DEF_OF_OPERATION: dict[str, str] = {
     # ADR 0060 D11 (F1, ADR 0019 Amendment 7)
     "list_capabilities": "capability_page",
     "check_admission": "admission_report",
+    # ADR 0061 D13 (F3, ADR 0019 Amendment 8)
+    "search_records": "record_page",
+    "get_record": "record_view",
+    "register_record": "record_registration_result",
+    "validate_record": "record_validation_report",
+    "assess_rights": "rights_assessment_result",
 }
 #: `revision_summary`, `audit_record` and `capability_descriptor` are pages' items, each its own
-#: `$def`.
+#: `$def`. F3's `effective_rights`, `rights_row` and `record_finding` are its responses' parts.
 #: `explanation` is MSG's (ADR 0058 D3): no operation's response is it, `RunResult.failure` and
 #: a transported `ApiError`'s `detail` carry it.
 DEFS = frozenset(
@@ -83,6 +90,9 @@ DEFS = frozenset(
         "audit_record",
         "capability_descriptor",
         "explanation",
+        "effective_rights",
+        "rights_row",
+        "record_finding",
     }
 )
 #: R4-G3: SHA-256 of `canonical_json` of each operation's fully resolved response schema, taken at
@@ -308,6 +318,19 @@ SNAPSHOT_F1: dict[str, str | None] = {
     "list_capabilities": "d786a16f050783886196dbf3a12ccfd40c19fa59b934a3c5480dc925144bbe29",
     "check_admission": "d04b98395b96b33e94de4dd48678bd31c24ddb1cf7c42b1ca9455e27f25da43f",
 }
+#: F3 (ADR 0061 D13, ADR 0019 Amendment 8; R-1051): the protocol `Records`, five new rows, each
+#: its own `$def`. Taken at F3-WO5b (`validate_record` re-taken at the F3 review 2 fix round, C6:
+#: `900b2712…` -> `eb6a1cfa…`, the report items' `at`); no other snapshot moves
+#: (`f3_schema_support`), so every earlier test below skips these five rows as it skips F1's.
+SNAPSHOT_F3: dict[str, str | None] = {
+    "search_records": "e52240dd9b11ea74a2e2dd6be1e622b0a889afc8ea4f02cdbf2accd9c5ebae43",
+    "get_record": "4ec84cbffa730be82cf3e66eda167b8d2ca48c8dafba6345b49890d131fe409a",
+    "register_record": "59785fe388c3f7a54885c7c761e1c2909aca2c649289a385d3a008219e9d4f94",
+    "validate_record": "eb6a1cfac1228e68222dea0d162a130ffd885746a821d28e74c89252863b5ac0",
+    "assess_rights": "75d3f1093dd2a4e564d3e77763f5e2c4487f4f29bf147a0e68be192d524364ee",
+}
+#: The rows later than X04, each with its own snapshot (F1's and F3's).
+LATER_ROWS = F1_OPERATIONS | F3_OPERATIONS
 
 
 def _without_specifications(schema: Any) -> Any:
@@ -327,7 +350,7 @@ def _without_specifications(schema: Any) -> Any:
 
 def test_r4_g3_every_resolved_response_schema_equals_the_snapshot() -> None:
     measured = {name: _digest(resolved_response(op)) for name, op in OPERATIONS.items()}
-    assert len(measured) == 25
+    assert len(measured) == 30
     assert measured == {
         **SNAPSHOT_AT_B13D556,
         **SNAPSHOT_AMENDMENT_2,
@@ -341,8 +364,10 @@ def test_r4_g3_every_resolved_response_schema_equals_the_snapshot() -> None:
         **SNAPSHOT_ST,
         **SNAPSHOT_X04,
         **SNAPSHOT_F1,
+        **SNAPSHOT_F3,
     }
     assert set(SNAPSHOT_F1) == F1_OPERATIONS
+    assert set(SNAPSHOT_F3) == F3_OPERATIONS
     assert SNAPSHOT_ST["get_stream_table"] == SNAPSHOT_AT_B13D556["get_artifact"]
     for operation in OPERATIONS.values():
         assert "$ref" not in canonical_json(resolved_response(operation)).decode("utf-8")
@@ -363,10 +388,10 @@ def test_x04_without_its_additions_every_response_is_its_pre_x04_snapshot() -> N
         **SNAPSHOT_OPT,
         **SNAPSHOT_ST,
     }
-    assert set(before) == set(OPERATIONS) - F1_OPERATIONS
+    assert set(before) == set(OPERATIONS) - LATER_ROWS
     moved = []
     for name, operation in OPERATIONS.items():
-        if name in F1_OPERATIONS:  # F1's rows (ADR 0060) postdate X04; their own `SNAPSHOT_F1`
+        if name in LATER_ROWS:  # F1's (ADR 0060) and F3's (ADR 0061) rows postdate X04
             continue
         resolved = resolved_response(operation)
         assert _digest(without_x04(resolved)) == before[name], name
@@ -390,7 +415,7 @@ def test_opt_without_its_additions_every_response_is_its_pre_opt_snapshot() -> N
     }
     moved = []
     for name, operation in OPERATIONS.items():
-        if name in ST_OPERATIONS | F1_OPERATIONS:  # later rows, each with its own snapshot
+        if name in ST_OPERATIONS | LATER_ROWS:  # later rows, each with its own snapshot
             continue
         # X04's additions (ADR 0075) postdate OPT: they are taken out first.
         resolved = without_x04(resolved_response(operation))
@@ -412,11 +437,11 @@ def test_msg_g10_without_failure_every_response_is_its_pre_msg_snapshot() -> Non
         **SNAPSHOT_M04,
     }
     # ST's row (ADR 0068) is later than MSG and has its own snapshot (`SNAPSHOT_ST`).
-    assert set(OPERATIONS) - set(before) - ST_OPERATIONS - F1_OPERATIONS == MSG_OPERATIONS
+    assert set(OPERATIONS) - set(before) - ST_OPERATIONS - LATER_ROWS == MSG_OPERATIONS
     assert MSG_OPERATIONS == set(SNAPSHOT_MSG_EXPLAIN)
     moved = []
     for name, operation in OPERATIONS.items():
-        if name in MSG_OPERATIONS | ST_OPERATIONS | F1_OPERATIONS:
+        if name in MSG_OPERATIONS | ST_OPERATIONS | LATER_ROWS:
             continue
         # X02's (ADR 0070) and OPT's (ADR 0071) additions postdate MSG: they are taken out
         # first, the later first.
@@ -442,7 +467,7 @@ def test_x02_without_warm_start_every_response_is_its_pre_x02_snapshot() -> None
     }
     moved = []
     for name, operation in OPERATIONS.items():
-        if name in ST_OPERATIONS | F1_OPERATIONS:  # later rows, each with its own snapshot
+        if name in ST_OPERATIONS | LATER_ROWS:  # later rows, each with its own snapshot
             continue
         # OPT's (ADR 0071) and X04's (ADR 0075) additions postdate X02: they are taken out first.
         resolved = without_opt(without_x04(resolved_response(operation)))
@@ -475,14 +500,12 @@ def test_g_r6_6_list_models_moved_only_by_the_approved_additive_member() -> None
         != SNAPSHOT_AT_B13D556[name]
     ]
     # `list_audit` is ADR 0019 Amendment 3's row, `explain` ADR 0058 D7's, `get_stream_table`
-    # ADR 0068's, `list_capabilities` and `check_admission` ADR 0060 D11's.
-    assert sorted(set(OPERATIONS) - set(SNAPSHOT_AT_B13D556)) == [
-        "check_admission",
-        "explain",
-        "get_stream_table",
-        "list_audit",
-        "list_capabilities",
-    ]
+    # ADR 0068's, `list_capabilities` and `check_admission` ADR 0060 D11's, Records' five ADR
+    # 0061 D13's.
+    assert sorted(set(OPERATIONS) - set(SNAPSHOT_AT_B13D556)) == sorted(
+        ["check_admission", "explain", "get_stream_table", "list_audit", "list_capabilities"]
+        + sorted(F3_OPERATIONS)
+    )
     # ADR 0019 Amendment 3 (A3.2) moves `diff_revisions` too; its own test below.
     assert moved == ["list_models", "diff_revisions"]
 
