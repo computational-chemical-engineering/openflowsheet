@@ -4804,3 +4804,14 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   only docs since 523af45c). Helper and lane worktrees and branches removed. Scan at 88818288: 353 files, debt 2093.5,
   health 8.98, brain 0. Gate report: `ALERT queue wait median 32 min > 15 min` (the full-suite backlog; action
   unchanged: no new lane until the app chain drains, then the map build).
+- 2026-11-21 ~05:20, app1-4 (635) PASS step 540. DECISION: map build (G-MAP 8) at 2c5f7c3b now, not after the app
+  chain: the app chain falls back to the full suite regardless (binding.py at collection), the next lanes gain.
+  Alternative: wait ~3 h. Reversible by: none needed (selection only). Hold: pending app jobs 636-642 moved to
+  `<queue>/held-for-map/`; when app1-5 ends, stop the runner, build in a detached worktree at 2c5f7c3b, judge, set
+  MB, move the held jobs back to `pending/`, `$Q run --detach`.
+- 2026-11-21, next lanes (scan at 88818288: health gap to 9.0 ~2146 weighted points, debt 193.5 over 1900):
+  orchestrator region_* not a W3 lane (keyword params pinned by G1 plan R4: the W4 parameter-object item);
+  contributor.py needs a W5 split. Launched from 2c5f7c3b, both opus-engineer (Opus): AS (`<briefs>/S19-W3-AS-1.md`,
+  wp/S19-as: families.py, surrogate/manifest.py, studies/assessment.py; <= 4 S1 on program.py, sensitivity.py,
+  thermal/kernel.py; gap ~4500, debt 143) and A2 (`<briefs>/S19-W3-A2-1.md`, wp/S19-a2: validation.py, cli.py,
+  revision_service.py, revision_edits.py; <= 4 S2 on canonical.py, verify/checks.py; gap ~2300, debt 92).
