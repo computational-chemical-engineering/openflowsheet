@@ -283,20 +283,10 @@ def _eliminate(
     the rows' Jacobian by column id, the variable kinds, and the residuals (with the pinned
     parameters) at x₀ and at its pressure-shifted witness state — then each eliminated row's
     residual at x₀ within the elimination's tolerance. Returns the eliminated rows and every
-    row's residual at x₀."""
+    row's residual at x₀. The witness state's residuals are `_witness_residuals`'."""
     state = {name: float(x0[name]) for name in spec.variable_ids}
     at_x0 = _float_rows(spec, state, outputs_x0, spec.parameters)
-    reason = ""
-    second = at_x0
-    if any(spec.variable_kinds.get(name) == "pressure" for name in spec.variable_ids):
-        shifted, reason = pressure_shifted_state(
-            spec.variable_ids, spec.variable_kinds, state, domain["pressure"]
-        )
-        if not reason:
-            try:
-                second = _float_rows(spec, shifted, block_outputs(spec, shifted), spec.parameters)
-            except DomainError:
-                reason = "shifted_state_property_domain_error"
+    second, reason = _witness_residuals(spec, state, at_x0, domain)
     coefficients = {
         name: {
             column: float(value)
@@ -327,6 +317,31 @@ def _eliminate(
                 f"pressure_tolerance {row.tolerance:g}",
             )
     return elimination.eliminated, at_x0
+
+
+def _witness_residuals(
+    spec: ProblemSpec,
+    state: Mapping[str, float],
+    at_x0: dict[str, float],
+    domain: Mapping[str, tuple[float, float]],
+) -> tuple[dict[str, float], str]:
+    """The certificate's second residuals (R-274) and `""` or the reason they are not witnessed:
+    every row at the pressure-shifted witness state of `state` (`pressure_shifted_state` in
+    `domain["pressure"]`), or `at_x0` itself when no variable is a pressure, when the shift
+    gives a reason, or, with `shifted_state_property_domain_error`, when evaluating the rows
+    there raises a DomainError."""
+    reason = ""
+    second = at_x0
+    if any(spec.variable_kinds.get(name) == "pressure" for name in spec.variable_ids):
+        shifted, reason = pressure_shifted_state(
+            spec.variable_ids, spec.variable_kinds, state, domain["pressure"]
+        )
+        if not reason:
+            try:
+                second = _float_rows(spec, shifted, block_outputs(spec, shifted), spec.parameters)
+            except DomainError:
+                reason = "shifted_state_property_domain_error"
+    return second, reason
 
 
 def _certify(
