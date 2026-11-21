@@ -4921,3 +4921,4 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   `tested` and a merge card. wp/X07a lacks main d29f1a50 (F3); merge conflicts in docs/support-matrix.md (generated)
   and tests/test_m07a_harvest.py. WO17 (opus-engineer, Opus; `<briefs>/X07a-WO17.md`): merge main, regenerate,
   fresh CI, then `evidence/X07a/<merge>/manifest.json` `tested` (review stays pending). Then: a merge card via hub.
+- 2026-11-21, nlp-marked suite at the AS lane head 607dee3e: 211 passed, 2 failed = g19, g20 (base), 2 skipped. AS chain all PASS (steps 542, 544, 548, 550, 552, 556, 557, 563, 566, 567).
