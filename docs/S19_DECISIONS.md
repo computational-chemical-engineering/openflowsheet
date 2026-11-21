@@ -4745,3 +4745,8 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   Q2 Pyomo inequality order and zero-flow constants/pins unchanged; Q4 no float op in 11-13; Q5 stops agreed
   (optional: `_certify_block` could take `row_data`, does not clear the smell; not taken). Fixes 1-3: sonnet-implementer
   (Sonnet), brief `<briefs>/S19-W3-TR-1-fix1.md` (pin commit alone; B+C enqueued no-gain as tr1-fix).
+- 2026-11-21, TR-1 fixes (sonnet-implementer, Sonnet, ~71k): A 33c6b28f test-only `test_the_call_s_arguments_are_checked_in_order`
+  (tests/test_m05_projection.py, nlp-marked; 4 two-bad-argument calls, exact messages; 68 passed -m nlp; negative
+  control: `_check_promoted`/`_check_x0` swapped fails, under the earlier startswith form; the exact form is stricter,
+  not re-run). B+C 93b4bf6a (HardDomain into TYPE_CHECKING; docstring "and"), job 631 tr1-fix no-gain. Study tests
+  not run by the implementer: the orchestrator runs the full nlp-marked suite at 93b4bf6a (base failures g19, g20).
