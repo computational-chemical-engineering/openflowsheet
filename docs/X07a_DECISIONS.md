@@ -522,3 +522,44 @@ Push from this worktree: `git -c credential.helper='!gh auth git-credential' pus
 - Linux identity: REL.A20 generator before (WO12's run) and after: RP.S08 lines and manifest entry identical
   with timings normalised; the 12 same-form lines identical; REL.A20 PASS. Gates: test_v03_v0_3_gate +
   test_rel_evidence_manifest + test_v03_s13_route 100 passed; ruff, format clean; mypy (393 files) clean.
+
+## WO14 (2026-11-21, RP.S08 on Windows: the records are in the tree; CI 44826386637 at 8c41d541)
+
+- Read path (`scripts/v0_3_gate.py:182` `main` -> `v0_2_gate.main` `:1384`): `resolve_rc` and `has_commit`
+  (`v0_1_gate.py:599`, `:464`); the candidate `git rev-parse HEAD^{commit}` (`v0_2_gate.py:1430`, the first output
+  line); `files_at` (`:1284`): `ls-tree -r --name-only` over `evidence/<pkg>/` and `docs/adr/`, then `read_at`
+  (`:1276`, `git show <cand>:<path>`, `None` on a git error) of each listed manifest and of
+  `evidence/S13/<C>/manifest.json`; `manifest_problems` (`:717`): the S13 reason (absent / not JSON / wrong
+  package) and, per package, no listed manifest that parses, names its own commit and package, is `tested` and
+  whose commit `merge-base --is-ancestor` C (`:769`, the S10 reason). Every git call is `v0_1_gate.git`
+  (`:460`), `cwd=v0_1_gate.ROOT` read at call time; the fixture patches that attribute.
+- Forced on Linux (probes in the session scratchpad, `wo14/probe.py`, `probe2.py`):
+  - H1, the gate reads another repository (ROOT unpatched, or `v0_1_gate` imported a second time and bound into
+    the engine): exit 2, `error: --rc <C>: not a commit of this repository, nor of one record in release/rc-trees`,
+    no report. Windows gave exit 1 and a report of 21 reasons, so the gate's repository holds C and a HEAD at
+    0.3.0. H1 does not reproduce. (The scratch commits are deterministic within one second: a second scratch
+    built in the same second has the same C; the a08_ selection builds no second scratch before this node.)
+  - H2, another candidate: HEAD detached at C gives 85 reasons (first `docs/reviews/V03-verdicts.md does not
+    exist at the candidate`); the scratch's only other commit P has no `pyproject.toml` (git error). Neither
+    is 21. H2 does not reproduce.
+  - H3, read and rejected: three mechanisms give exactly 21 with the Windows tail (S10, S10c, S11, S12): every
+    evidence `read_at` returns `None` (first reason `no S13 manifest: ... does not exist at the candidate`),
+    the evidence text does not parse (a BOM: `... is not a JSON object`), a backslash pathspec. Ancestry false
+    gives 20. CRLF text passes. None is a mechanism the Windows child is known to have: the reads are git
+    paths built with `/` in f-strings, `PYTHONUTF8=1` is inherited, and the same node passes in the leg's
+    main suite. The cause stays unknown; per the STOP rule no fix.
+- Diagnostic (1d73d913, replaces WO13's settled tree fields): on failure, the assertion's first line gives
+  `tree N miss M`; `H1 ns <engine git in the patched namespace> root <its ROOT is the scratch>`; `H2 C = cand =`
+  (or the 8 hex the gate printed); `H3 read_at <None | len:parses> git <exit>:<start of output>` for C's S13
+  manifest at the built candidate; the gate's reason count and first reason (commit ids cut to 8). Forced lines
+  (Linux): baseline `H1 ns 1 root 1; H2 C = cand =; H3 read_at 180:1 git 0:...; 0r -`; ROOT unpatched `H1 ns 1
+  root 0 ... git 128:"fatal: path 'evidence/S1"`; imported twice `H1 ns 0 root 0`; HEAD at C `cand a6ff0a74 ...
+  51r - docs/reviews/V03-verdicts.md does not exist`; reads `None` `read_at None git 0:... 21r - no S13 manifest`;
+  parse `read_at 181:0 ... 21r - evidence/S13/a6ff0a74/manifest.json is not a JSON object`. Through pytest's junit
+  (`evidence/` in `.git/info/exclude`): `AssertionError: WO14 tree 33 miss 21; H1 ns 1 root 1; H2 C = cand =; H3
+  read_at None git 128:"fatal: path 'evidence/S1"; 21r - no S13 manifest: evidence/S13/f3a1c44f/manifest.json does
+  not exist at the candidate` (about 205 characters, under the 300 cut).
+- Linux identity: REL.A20 generator at 8c41d541 and at 1d73d913: the 12 same-form lines identical (12 equal),
+  stdout identical with timings normalised, the manifest minus `commands` identical; REL.A20 PASS both.
+- Gates: test_v03_v0_3_gate + test_rel_evidence_manifest + test_v03_s13_route 100 passed; ruff, format clean;
+  mypy (393 files) clean.
