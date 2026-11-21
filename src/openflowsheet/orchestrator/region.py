@@ -102,6 +102,7 @@ from openflowsheet.numerics.solve_record import (
     AttemptSignature,
     Checkpoint,
     Counters,
+    EventKind,
     SolveOutcome,
     SolvePolicy,
     Trace,
@@ -447,9 +448,7 @@ class _RegionSolve:
     budget: str | None = None
     homotopy: HomotopyRecord | None = None
 
-    def _record_initializer(
-        self, kind: Literal["initializer_candidate", "initializer_accepted"], message: str
-    ) -> None:
+    def _record_initializer(self, kind: EventKind, message: str) -> None:
         """One initializer record (`kind` is `initializer_candidate` or `initializer_accepted`) into
         `run`, with `message`; every other field is the start's fixed value (attempt 0, iteration 0,
         no signature or state, NaN residual and merit, fresh `Counters()`).
