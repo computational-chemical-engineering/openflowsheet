@@ -4917,3 +4917,7 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   src/openflowsheet/*). App lane reordered (same tree as 938d9393): c276bd57 -> 5a5ea0c0 (E9 label, a standalone
   docs commit, not enqueued, like a test-only commit; the merge-check's full suite covers a33) -> bd101a0b (the
   review docstrings), enqueued as app1-fix3 no-gain with base 5a5ea0c0, so its tests tier sees a33 fixed.
+- 2026-11-21, X07a CI 44869026369 at f217ca02 (WO16): GREEN on all six jobs. Next per the state file: manifest
+  `tested` and a merge card. wp/X07a lacks main d29f1a50 (F3); merge conflicts in docs/support-matrix.md (generated)
+  and tests/test_m07a_harvest.py. WO17 (opus-engineer, Opus; `<briefs>/X07a-WO17.md`): merge main, regenerate,
+  fresh CI, then `evidence/X07a/<merge>/manifest.json` `tested` (review stays pending). Then: a merge card via hub.
