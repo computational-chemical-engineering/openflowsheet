@@ -447,6 +447,25 @@ class _RegionSolve:
     budget: str | None = None
     homotopy: HomotopyRecord | None = None
 
+    def _record_initializer(
+        self, kind: Literal["initializer_candidate", "initializer_accepted"], message: str
+    ) -> None:
+        """One initializer record (`kind` is `initializer_candidate` or `initializer_accepted`) into
+        `run`, with `message`; every other field is the start's fixed value (attempt 0, iteration 0,
+        no signature or state, NaN residual and merit, fresh `Counters()`).
+        """
+        self.run.record(
+            kind=kind,
+            attempt=0,
+            iteration=0,
+            signature=(),
+            state_sha256="",
+            residual_inf_unscaled=float("nan"),
+            merit=float("nan"),
+            counters=Counters(),
+            message=message,
+        )
+
     def _open_start(
         self, context: EvaluationContext, reference: frozenset[str], band_routes: Sequence[str]
     ) -> RegionResult | None:
@@ -495,16 +514,8 @@ class _RegionSolve:
                     # ADR 0009 D3's grammar, on existing kinds (K03 A08's precedent for a projected
                     # guess): the candidate names what was supplied and what the kernel says.
                     branch = _branch(split, self.current, self.v2)
-                    self.run.record(
-                        kind="initializer_candidate",
-                        attempt=0,
-                        iteration=0,
-                        signature=(),
-                        state_sha256="",
-                        residual_inf_unscaled=float("nan"),
-                        merit=float("nan"),
-                        counters=Counters(),
-                        message=f"projected({split.stream}, {branch}, {regime})",
+                    self._record_initializer(
+                        "initializer_candidate", f"projected({split.stream}, {branch}, {regime})"
                     )
                 self.current.update(kernel)
             self.regimes[split.unit] = regime
@@ -572,16 +583,9 @@ class _RegionSolve:
         for change in changes:
             if change.split.stream not in self.projections:
                 self.projections.append(change.split.stream)
-            self.run.record(
-                kind="initializer_candidate",
-                attempt=0,
-                iteration=0,
-                signature=(),
-                state_sha256="",
-                residual_inf_unscaled=float("nan"),
-                merit=float("nan"),
-                counters=Counters(),
-                message=f"projected({change.split.stream}, {change.branch}, {change.regime})",
+            self._record_initializer(
+                "initializer_candidate",
+                f"projected({change.split.stream}, {change.branch}, {change.regime})",
             )
         return None
 
@@ -592,42 +596,18 @@ class _RegionSolve:
         """
         if self.projections:
             projected = len(self.projections)
-            self.run.record(
-                kind="initializer_accepted",
-                attempt=0,
-                iteration=0,
-                signature=(),
-                state_sha256="",
-                residual_inf_unscaled=float("nan"),
-                merit=float("nan"),
-                counters=Counters(),
-                message=f"the start with {projected} split(s) projected onto the kernel's",
+            self._record_initializer(
+                "initializer_accepted",
+                f"the start with {projected} split(s) projected onto the kernel's",
             )
         if self.v2 and self.recovery is None and band_routes:
             # §6.5 (ADR 0012 D10 F1): the traversal's band routes, after §6.2's projection records,
             # in declaration order, on T02 §6.2's existing pair of kinds.
             for unit in band_routes:
-                self.run.record(
-                    kind="initializer_candidate",
-                    attempt=0,
-                    iteration=0,
-                    signature=(),
-                    state_sha256="",
-                    residual_inf_unscaled=float("nan"),
-                    merit=float("nan"),
-                    counters=Counters(),
-                    message=f"closure_route({unit}, band)",
-                )
-            self.run.record(
-                kind="initializer_accepted",
-                attempt=0,
-                iteration=0,
-                signature=(),
-                state_sha256="",
-                residual_inf_unscaled=float("nan"),
-                merit=float("nan"),
-                counters=Counters(),
-                message=f"the start with {len(band_routes)} closure(s) from the band route",
+                self._record_initializer("initializer_candidate", f"closure_route({unit}, band)")
+            self._record_initializer(
+                "initializer_accepted",
+                f"the start with {len(band_routes)} closure(s) from the band route",
             )
 
     def attempt(self, attempt_index: int) -> RegionResult | None:
@@ -802,17 +782,7 @@ class _RegionSolve:
                 return self.closed(
                     "INITIALIZATION_FAILED", f"{WARM_START_REJECTED}(opening:{refused.check})"
                 )
-            self.run.record(
-                kind="initializer_accepted",
-                attempt=0,
-                iteration=0,
-                signature=(),
-                state_sha256="",
-                residual_inf_unscaled=float("nan"),
-                merit=float("nan"),
-                counters=Counters(),
-                message=WARM_START_SOURCE,
-            )
+            self._record_initializer("initializer_accepted", WARM_START_SOURCE)
         return None
 
     def _open(self, attempt_index: int, layout: _Layout) -> _Opened:
