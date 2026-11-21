@@ -542,7 +542,10 @@ def bind_revision(document: Mapping[str, Any]) -> Binding | None:
 
 
 def bind_revision_or_reason(document: Mapping[str, Any]) -> Binding | Unbound:
-    """Bind a SYN-001 `ProcessRevision`, or say which of the three reasons prevented it."""
+    """Bind a SYN-001 `ProcessRevision`, or say which of the three reasons prevented it.
+
+    The provider's component order and the inputs read on it come from `_canonical_inputs`,
+    which also returns the refusals of that reading."""
     # R-088 Q29 (T07 design note §12.5): a non-canonical number is refused typed at entry,
     # whether or not a reader reads its field; in a field nothing reads, a digest would
     # otherwise raise untyped.
@@ -562,17 +565,10 @@ def bind_revision_or_reason(document: Mapping[str, Any]) -> Binding | Unbound:
     # column is named or any flowsheet value read, so `Syn001Flowsheet` never sees the declared
     # order (F7: it did, and the tear path crashed on the permuted inner system).
     declared = tuple((document.get("component_set") or {}).get("components") or ())
-    try:
-        components = canonical_components(declared)
-    except RevisionError as error:
-        return Unbound(error.kind, error.code, hint=error.hint)
-    inputs = _read_inputs(document, components)
-    if isinstance(inputs, Unbound):
-        return inputs
-    contract = _instance_contracts(document, components)
-    if contract is not None:
-        return contract
-    converted, parameter_values, conversions = inputs
+    read = _canonical_inputs(document, declared)
+    if isinstance(read, Unbound):
+        return read
+    components, converted, parameter_values, conversions = read
     graph = _process_graph(document, components, WIRING, wiring_edges, matched)
 
     specifications = _specifications_in_role(document, "fixed")
@@ -722,6 +718,34 @@ def _matched_syn001(
             "the only one the binding knows",
         )
     return matched
+
+
+def _canonical_inputs(
+    document: Mapping[str, Any], declared: tuple[str, ...]
+) -> (
+    tuple[
+        tuple[str, ...],
+        dict[str, float],
+        dict[tuple[str, str], float],
+        tuple[UnitConversion, ...],
+    ]
+    | Unbound
+):
+    """The provider's order of the `declared` component set (T06 spec §8.6), then `_read_inputs`'s
+    values, instance parameters and conversions read on that order; or the first refusal: a
+    component set `canonical_components` refuses (its `RevisionError` as the `Unbound`), an input
+    `_read_inputs` refuses, or an instance contract `_instance_contracts` refuses."""
+    try:
+        components = canonical_components(declared)
+    except RevisionError as error:
+        return Unbound(error.kind, error.code, hint=error.hint)
+    inputs = _read_inputs(document, components)
+    if isinstance(inputs, Unbound):
+        return inputs
+    contract = _instance_contracts(document, components)
+    if contract is not None:
+        return contract
+    return (components, *inputs)
 
 
 def _process_graph(
