@@ -187,21 +187,14 @@ def _undetermined_columns(
     not depend on the matching found. It is not merged because the twins differ in form: integer
     columns from SciPy's matching here, string ids with `frozenset` incidence there; a merge changes
     the iteration order and so waits for a change that may alter behaviour. The equations of
-    each unknown come from `_incident_rows`."""
+    each unknown come from `_incident_rows`; each step of the walk is `_extend_undetermined`'s."""
     incident = _incident_rows(equations, size)
     # Alternating paths from the unmatched variables: variable → any incident equation → the
     # variable that equation is matched to. What they reach is the under-determined block.
     undetermined = {c for c in range(size) if column_match[c] < 0}
     frontier = sorted(undetermined)
     while frontier:
-        reached = []
-        for c in frontier:
-            for r in incident[c]:
-                partner = int(row_match[r])
-                if partner >= 0 and partner not in undetermined:
-                    undetermined.add(partner)
-                    reached.append(partner)
-        frontier = reached
+        frontier = _extend_undetermined(frontier, incident, row_match, undetermined)
     return undetermined
 
 
@@ -213,6 +206,27 @@ def _incident_rows(equations: Sequence[tuple[str, list[int]]], size: int) -> lis
         for c in cols:
             incident[c].append(r)
     return incident
+
+
+def _extend_undetermined(
+    frontier: Sequence[int],
+    incident: Sequence[Sequence[int]],
+    row_match: npt.NDArray[Any],
+    undetermined: set[int],
+) -> list[int]:
+    """One step of `_undetermined_columns`' alternating paths: for each column of `frontier` in
+    order, each equation `incident` on it, the column `row_match` pairs that equation with (none
+    when -1). Edits the walk's working state `undetermined`, adding each such column not yet in
+    it, and keeps its invariant (the columns reached so far); returns them in the order reached,
+    the next frontier."""
+    reached = []
+    for c in frontier:
+        for r in incident[c]:
+            partner = int(row_match[r])
+            if partner >= 0 and partner not in undetermined:
+                undetermined.add(partner)
+                reached.append(partner)
+    return reached
 
 
 # -- the omitted rows (R-274) ---------------------------------------------------------------------
