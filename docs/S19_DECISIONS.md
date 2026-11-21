@@ -4823,3 +4823,18 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   (19.3 -> 11.3), studies/assessment 8.3 -> 8.8 (16.0 -> 11.5); engineer's repo scan 2093.5 -> 2054.9, health 9.0.
   nlp-marked: base failures only. No S1 steps (context). Left: `exchanger_utility` 104 NLOC, 10 params (parameter
   object declined by the G4 ruling). Review R-W3-AS-1 (reviewer, Opus; `<briefs>/S19-R-W3-AS-1.md`) launched.
+- **2026-11-21, R-W3-AS-1 (reviewer, Opus): merge, all ten steps** (on the gates); no code change. Q1 no float
+  operation moved in `_shell`/`exchanger_utility`; `_ServiceRule`, `_ShellStages` are single-phase return types. Q2
+  `_phase_change` has one caller; same Limitation, same point. Q3 `check_manifest`'s order holds by construction; no
+  pin before merge.
+  **Commit-message corrections (R-W3-AS-1 findings 1, 2, 4; the commits are enqueued, so corrected here):**
+  84857123 says "check_manifest's tests compare its list": false, every test compares with `[]` or uses any/all/len
+  (test_m04_schemas.py:82, test_m04_study.py, test_m04_iterations.py, ...); the order holds by construction only.
+  80a42f8e says `_shell` 74 -> 59 NLOC: the scan says 60 (still under the long threshold 70). 80a42f8e says "no
+  rule-15 twin": `_controlling_stage` (families.py:1024) is a near-twin, not verbatim, of `_drum_controlling`
+  (families.py:618; probe ids, the drum's single-member L rule and `held`'s read point differ), so no merge.
+  Notes not acted on: `_promotion_consistency` names three of its four checks (optional rename); `_centre_consistency`'s
+  redundant `splits` keeps evaluation order.
+  Campaign item (pre-existing gap): no test pins the order across `check_manifest`'s five helpers, which reaches the
+  PlanRefusedError text (iterations.py:95-99): a test-only commit with a manifest tampered to trip the band,
+  promotion, failure and qualification checks, compared with the ordered list; negative control a swapped `extend`.
