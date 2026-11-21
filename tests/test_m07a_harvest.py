@@ -103,7 +103,10 @@ T08_MANIFEST = "evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.j
 #: X07a's (1, 1, 1) and F3's (1, 6, 0).
 #: X07a's tested manifest (`bd0b7df…`, 3 and 0; the implemented one stays) moves it on `wp/X07a`.
 #: int/0.5-r2 sums X07a's (2, 4, 1) over main ceb38cec's (101, 1157, 146).
-HARVEST_SIZE = (103, 1161, 147)
+#: X01's tested manifest (`a0e4c54…`, 4 limitations, 0 checks) on `wp/X01`: (1, 4).
+#: Its moved manifest (`bbbca49…`, 4 limitations, 0 checks; the a0e4c54 one stays) adds (1, 4).
+#: int/0.5-r2 adds X01's (2, 8, 0) to (103, 1161, 147).
+HARVEST_SIZE = (105, 1169, 147)
 #: The 0.2.0 release candidate C′ (M07 spec §25, R-485).
 C_PRIME = "ce993651ce37c1343e771b276160bd6623e43500"
 #: The commit tagged v0.2.0.
