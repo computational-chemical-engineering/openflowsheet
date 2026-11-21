@@ -51,3 +51,17 @@
   test_m07a_a50_the_harvest_size_is_the_quoted_one ((101, 1148, 146) measured); 20888 passed. Fixed by the
   orchestrator (mechanical, X07a c356211b pattern): bbbca491 four class-P harvest rows, HARVEST_SIZE (101, 1148, 146),
   matrix re-emitted (--check 0 problems; 44 passed). CI 44921749701 / Site 44921749623. Then the X01 manifest move.
+
+## 2026-11-21 ~17:30 CET: trial merge for the merge plan (after self-reset)
+
+- Trial merges onto main d29f1a50 (scratch worktree, discarded). Order X07a, X01, REL050: X07a clean; X01 conflicts
+  in `benchmarks/t08/support_envelope.yaml` (1 hunk), `docs/support-matrix.md` (2), `tests/test_m07a_harvest.py` (1);
+  REL050 conflicts in `docs/decision-register.md` (2). With S19 first: S19 clean, then X07a and X01 each conflict in the
+  same three harvest files, X07a and REL050 in the register. With S19 last: S19 conflicts in the three harvest files
+  and the register. No conflict in `src/` or `scripts/` in any order (S19 and X07a both touch `registry_builtin.py`,
+  `t05_evidence_manifest.py`, `w5_identity.py`; they merge cleanly).
+- Register numbers are disjoint (S19 R-1061, 1066, 1067; X07a R-1062, 1063, 1068; REL050 R-1065): the register
+  conflicts are append order only. Harvest resolution: union of the envelope rows, measured HARVEST_SIZE, `--emit`.
+- So S19 before or after K3 costs the same conflicts; the difference is semantic risk (S19 touches 72 `src/` files,
+  X07a 11) and S19's G-END verdict, which holds only while main stays at d29f1a50 (S19 first keeps it valid).
+- Brief `X01-WO3-manifest.md` written (dispatch on CI 44921749701 green).
