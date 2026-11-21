@@ -263,9 +263,11 @@ def _joint_blocks(
 ) -> list[tuple[tuple[str, ...], tuple[str, ...]]]:
     """§18.1 steps 1-3 up to certification, on the call's fixed `row_data` and the kept rows
     (not in `pins`) and zero flows (not in `eliminated`) the single pins leave: the candidate
-    rows R_J with their numerical incidence N_e, and the connected components of the bipartite
-    graph (R_J, Z_J) (`_components`), ordered by their first variable, rows in spec order and
-    variables in variable order."""
+    rows R_J with their numerical incidence N_e (a row is refused by
+    `_residual_or_tangent_nonzero`, by an x part of N_e that is empty or not within Z₀ less
+    `eliminated`, and by `_output_partial_nonzero`), and the connected components of the
+    bipartite graph (R_J, Z_J) (`_components`), ordered by their first variable, rows in spec
+    order and variables in variable order."""
     free = set(row_data.zero) - set(eliminated)
     index = row_data.index
     derivatives = row_data.derivatives
@@ -273,27 +275,45 @@ def _joint_blocks(
     for e, row in enumerate(row_data.equation_ids):
         if row in row_data.omitted or row in pins:
             continue
-        if row_data.residuals_x0[row] != 0.0 or any(
-            float(value) != 0.0 for value in derivatives.d[e]
-        ):
+        if _residual_or_tangent_nonzero(row_data, e, row):
             continue
         rest = row_data.incidence[row] - set(eliminated)
         columns = {k for k in rest if k in index and float(derivatives.x[e, index[k]]) != 0.0}
         if not columns or not columns <= free:
             continue
-        # A `y` or `w` column is in N_e iff the row's own partial in it is nonzero at x₀; such a
-        # column is never a zero flow, so the row is then no candidate.
-        others = sorted(k for k in rest if k not in index)
-        if others:
-            partials = differentiate(
-                assembly.built[row],
-                wrt_list=[row_data.unknowns[k] for k in others],
-                mode=Modes.reverse_numeric,
-            )
-            if any(float(value) != 0.0 for value in partials):
-                continue
+        if _output_partial_nonzero(assembly, row_data, row, rest):
+            continue
         numerical[row] = frozenset(columns)
     return _components(spec, numerical)
+
+
+def _residual_or_tangent_nonzero(row_data: _ZeroFlowRows, e: int, row: str) -> bool:
+    """Whether `row` (position `e` in spec order) has r_e(x₀) != 0.0 or a nonzero decision and
+    link tangent at x₀ (`row_data.derivatives.d[e]`): then it is no candidate of R_J (§18.1 step
+    2, Z4)."""
+    return row_data.residuals_x0[row] != 0.0 or any(
+        float(value) != 0.0 for value in row_data.derivatives.d[e]
+    )
+
+
+def _output_partial_nonzero(
+    assembly: _Assembly, row_data: _ZeroFlowRows, row: str, rest: Collection[str]
+) -> bool:
+    """Whether the built `row` has a nonzero partial at x₀ in one of its `y` or `w` columns
+    among `rest` (its structural incidence less the eliminated flows; the columns not in
+    `row_data.index`), taken in sorted order; False when it has none (§18.1 step 2)."""
+    # A `y` or `w` column is in N_e iff the row's own partial in it is nonzero at x₀; such a
+    # column is never a zero flow, so the row is then no candidate.
+    others = sorted(k for k in rest if k not in row_data.index)
+    if others:
+        partials = differentiate(
+            assembly.built[row],
+            wrt_list=[row_data.unknowns[k] for k in others],
+            mode=Modes.reverse_numeric,
+        )
+        if any(float(value) != 0.0 for value in partials):
+            return True
+    return False
 
 
 def _components(
