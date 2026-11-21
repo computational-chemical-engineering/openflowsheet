@@ -4683,3 +4683,7 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   `_check_float_arguments` twin in `affine` (:108-110) can now merge under amended rule 15 (optional); 9 other
   inline CSC column scans (tear.py, verify/*, sensitivity.py): a shared iterator is cross-module, out of scope.
   Helper wp/S19-g13r-mc (a2ba5b12 + g1r incl. fix 9bab9e72 + g3r, 811414d6; ruff clean), merge-check job 605.
+- **2026-11-21 ~01:00, G1R and G3R merged into wp/S19 (efbe6831, 80ebd99c) after merge-check 605 PASS and fix job
+  604 PASS; wp/S19 changed only docs since a2ba5b12. patch_noop 0/263. Worktrees s19-g1r, s19-g3r, s19-g13r-mc and
+  branches removed.** G-END scan at 80ebd99c: debt 2119.2 (-219 to go), health 8.93, brain 0, no file below 7.0
+  (met), arch 0/0. State rewritten for a self-reset.
