@@ -132,24 +132,13 @@ def propagate(
     return intervals, sigmas, parameters, refusals
 
 
-def _estimate_class(items: Sequence[Mapping[str, Any]]) -> int | None:
-    """§4.9: the maximum class over costed items; `none` when one was extrapolated or carries no
-    class (a quote without `accuracy_class`). Included drives and excluded items do not count."""
-    costed = [i for i in items if i["status"] == "costed"]
-    unknown = any(i["accuracy_class"] is None for i in costed)
-    extrapolated = any(i["extrapolated"] for i in costed)
-    return aace.estimate_class(
-        (int(i["accuracy_class"]) for i in costed if i["accuracy_class"] is not None),
-        extrapolated or unknown,
-    )
-
-
 def report_body(
     program: AssessmentProgram, x: Mapping[str, float], *, state_sha256: str, uncertainty: bool
 ) -> dict[str, Any]:
     """The report without `provenance` (the part A39 compares byte for byte). The values at `x`
     come from `_checked_values`; when it returns a refusal instead, the refusal joins `refusals` and
-    every output is `null`."""
+    every output is `null`. The `uncertainty` entry starts as `_aace_uncertainty`'s, and
+    `propagate` fills its propagation results when `uncertainty` is set and there are values."""
     refusals: list[Refusal] = list(program.refusals)
     withheld: dict[str, str] = dict(program.unavailable)
     values: Mapping[str, float] | None = None
@@ -185,22 +174,7 @@ def report_body(
         for key in ("purchased", "bare_module"):
             item[f"{key}_value"] = value(item[key]) if item[key] else None
     entries = _regime_entries(program, value)
-    status_unc: dict[str, Any] = {
-        "aace_class": None,
-        "aace_range": None,
-        "linear_interval": {},
-        "rss_sigma": {},
-        "parameters": [],
-        "assumptions": {
-            "linear_interval": aace.ASSUMPTIONS["worst_case"],
-            "rss_sigma": aace.ASSUMPTIONS["rss"],
-        },
-    }
-    klass = _estimate_class(items)
-    status_unc["aace_class"] = klass
-    if klass is not None:
-        low, high = aace.AACE_RANGES[klass]
-        status_unc["aace_range"] = {"low": list(low), "high": list(high)}
+    status_unc = _aace_uncertainty(items)
     if uncertainty and values is not None:
         targets = [n for n in reported if value(n) is not None]
         restricted = sections.get("lca", {}).get("restricted_theta", {})
@@ -302,6 +276,41 @@ def _regime_entries(
             }
         )
     return entries
+
+
+def _aace_uncertainty(items: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
+    """The report's `uncertainty` entry before the first-order propagation: the AACE class over
+    the costed `items` (`_estimate_class`) and its range, `None` both when there is no class,
+    empty propagation results, and the assumption label of each propagated quantity."""
+    status_unc: dict[str, Any] = {
+        "aace_class": None,
+        "aace_range": None,
+        "linear_interval": {},
+        "rss_sigma": {},
+        "parameters": [],
+        "assumptions": {
+            "linear_interval": aace.ASSUMPTIONS["worst_case"],
+            "rss_sigma": aace.ASSUMPTIONS["rss"],
+        },
+    }
+    klass = _estimate_class(items)
+    status_unc["aace_class"] = klass
+    if klass is not None:
+        low, high = aace.AACE_RANGES[klass]
+        status_unc["aace_range"] = {"low": list(low), "high": list(high)}
+    return status_unc
+
+
+def _estimate_class(items: Sequence[Mapping[str, Any]]) -> int | None:
+    """§4.9: the maximum class over costed items; `none` when one was extrapolated or carries no
+    class (a quote without `accuracy_class`). Included drives and excluded items do not count."""
+    costed = [i for i in items if i["status"] == "costed"]
+    unknown = any(i["accuracy_class"] is None for i in costed)
+    extrapolated = any(i["extrapolated"] for i in costed)
+    return aace.estimate_class(
+        (int(i["accuracy_class"]) for i in costed if i["accuracy_class"] is not None),
+        extrapolated or unknown,
+    )
 
 
 def _status(
