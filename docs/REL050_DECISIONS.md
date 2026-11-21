@@ -67,3 +67,5 @@
 - Brief `X01-WO3-manifest.md` written (dispatch on CI 44921749701 green).
 - X07a CI 44913734986 at c356211b: success on all legs (default-install, codehealth, check ubuntu-latest,
   ubuntu-24.04-arm, macos-latest, windows-latest, identity). X07a is ready for the integration branch.
+- X01 CI 44921749701 at bbbca491: success (codehealth, default-install, check ubuntu-latest, ubuntu-24.04-arm,
+  identity); Site 44921749623 success. X01-WO3 (manifest move) dispatched to sonnet-implementer.
