@@ -44,6 +44,12 @@ decision values, certified before it is used (design §4.4). Its eight numeric c
 allowed by full path under exactly those two prefixes (`OPT_REQUEST_CONTAINERS`), and its scalars
 are pinned by full path (`OPT_REQUEST_SCALARS`), the same under both.
 
+**F3 (ADR 0061 D7, Q7.A3; D13; the exception to R-088 Q26 is ADR 0061, section 'F3 ruling round 2
+applied: fix round 3'; R-1058).** `validate_record`'s `reactions` are reaction definitions in
+ADR 0061's form `{id, stoichiometry: {component key: ν}}`: the coefficients are checked for element,
+charge and molar-mass balance, nothing is stored and nothing is solved. One numeric map is allowed
+by full path and only there, `validate_record`'s `reactions/*/stoichiometry`.
+
 **(ii) The forged bundle through every transport that reaches reproduce.** A bundle of a run that
 did not converge (`SYN-001-A02-352-vapor-guess-410`, `HOMOTOPY_STALLED`), forged to carry the
 `VERIFIED` certificate of a run that did (`SYN-001-A02-360`), with a consistent index and
@@ -182,8 +188,13 @@ OPT_REQUEST_SCALARS = frozenset(
         "starts/halton",
     }
 )
+#: F3 (ADR 0061 D7; ADR 0061, section 'F3 ruling round 2 applied: fix round 3'; R-1058): a
+#: reaction's stoichiometry, checked by `validate_record`, never solved.
 ALLOWED_BY_PATH = frozenset(
-    {("submit_job", "body/inlet/n", "array")}
+    {
+        ("submit_job", "body/inlet/n", "array"),
+        ("validate_record", "reactions/*/stoichiometry", "map"),
+    }
     | {
         (operation, prefix + path, kind)
         for operation, prefix in OPT_REQUEST_PREFIXES.items()

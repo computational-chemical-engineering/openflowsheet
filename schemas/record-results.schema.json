@@ -1,0 +1,475 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/frankp/process-runtime/schemas/record-results.schema.json",
+  "title": "RecordResults",
+  "description": "ADR 0061 D13 (F3; ADR 0019 Amendment 8): the response shapes of the protocol `Records` (`search_records`, `get_record`, `register_record`, `validate_record`, `assess_rights`) and their parts. `application-results.schema.json` reaches each by a bare `$ref` of the same name, so that the `sha256` names they declare (`record_sha256`, `source_sha256`) stay in F3's numerical-policy addendum and out of the v2 policy's domain (ADR 0025 D2.3; R-1032's structure; F3 decision WO5b-8).",
+  "$defs": {
+    "record_page": {
+      "description": "ADR 0061 D13 `search_records`: a page of the records a D9 key matches (every record without a key), by SHA, each with the layer it is read from and its effective rights per source (D11); `resolution` is D9's over every match (`classes` in `detail.candidates`' form); `next_cursor` is null on the last page.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "items",
+        "next_cursor",
+        "resolution"
+      ],
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "amount_basis",
+              "effective_rights",
+              "id",
+              "identifiers",
+              "name",
+              "record_sha256",
+              "record_type",
+              "source_ids",
+              "store"
+            ],
+            "properties": {
+              "record_sha256": {
+                "$ref": "https://github.com/frankp/process-runtime/schemas/record-v2.schema.json#/$defs/sha256"
+              },
+              "record_type": {
+                "type": "string"
+              },
+              "id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "identifiers": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              },
+              "amount_basis": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "source_ids": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "store": {
+                "enum": [
+                  "project",
+                  "legacy"
+                ]
+              },
+              "effective_rights": {
+                "type": "object",
+                "additionalProperties": {
+                  "$ref": "#/$defs/effective_rights"
+                }
+              }
+            }
+          }
+        },
+        "resolution": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "classes",
+            "status"
+          ],
+          "properties": {
+            "status": {
+              "enum": [
+                "unique",
+                "ambiguous_identity",
+                "ambiguous_source",
+                "none"
+              ]
+            },
+            "classes": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "class",
+                  "records"
+                ],
+                "properties": {
+                  "class": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "records": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "name",
+                        "sha",
+                        "source_ids"
+                      ],
+                      "properties": {
+                        "sha": {
+                          "$ref": "https://github.com/frankp/process-runtime/schemas/record-v2.schema.json#/$defs/sha256"
+                        },
+                        "source_ids": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        "name": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "next_cursor": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "record_view": {
+      "description": "ADR 0061 D13 `get_record`: the record's identity projection, its `registrations` rows (D8; none for a record only the legacy store holds), the layer it is read from, and its rights: the effective assessment per source and every register row naming one of its sources (project rows first).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "record",
+        "record_sha256",
+        "registrations",
+        "rights",
+        "store"
+      ],
+      "properties": {
+        "record_sha256": {
+          "$ref": "https://github.com/frankp/process-runtime/schemas/record-v2.schema.json#/$defs/sha256"
+        },
+        "record": {
+          "type": "object"
+        },
+        "registrations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "at",
+              "findings",
+              "principal",
+              "sequence",
+              "volatile",
+              "volatile_sha"
+            ],
+            "properties": {
+              "sequence": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "volatile_sha": {
+                "$ref": "https://github.com/frankp/process-runtime/schemas/record-v2.schema.json#/$defs/sha256"
+              },
+              "volatile": {
+                "type": "object"
+              },
+              "findings": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/record_finding"
+                }
+              },
+              "at": {
+                "type": "string"
+              },
+              "principal": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "store": {
+          "enum": [
+            "project",
+            "legacy"
+          ]
+        },
+        "rights": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "effective",
+            "rows"
+          ],
+          "properties": {
+            "effective": {
+              "type": "object",
+              "additionalProperties": {
+                "$ref": "#/$defs/effective_rights"
+              }
+            },
+            "rows": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/rights_row"
+              }
+            }
+          }
+        }
+      }
+    },
+    "record_registration_result": {
+      "description": "ADR 0061 D13 `register_record`: per record, in submission order, its SHA, whether this call created its object (D8) and this submission's findings.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "results"
+      ],
+      "properties": {
+        "results": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "created",
+              "findings",
+              "record_sha256"
+            ],
+            "properties": {
+              "record_sha256": {
+                "$ref": "https://github.com/frankp/process-runtime/schemas/record-v2.schema.json#/$defs/sha256"
+              },
+              "created": {
+                "type": "boolean"
+              },
+              "findings": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/record_finding"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "record_validation_report": {
+      "description": "ADR 0061 D13 `validate_record`: D7's errors and findings of every record and reaction the request names, and the SHA of its `record` (null when it is refused or not given).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "errors",
+        "findings",
+        "record_sha256"
+      ],
+      "properties": {
+        "errors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/record_report_item"
+          }
+        },
+        "findings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/record_report_item"
+          }
+        },
+        "record_sha256": {
+          "anyOf": [
+            {
+              "$ref": "https://github.com/frankp/process-runtime/schemas/record-v2.schema.json#/$defs/sha256"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "record_report_item": {
+      "description": "F3 review 2, R-1053: an error or finding of `validate_record`'s report, `{code, params}` as `record_finding` with `at`, the request member it concerns (`/record`, `/records/<i>`, `/reactions/<i>`); each list is sorted by code, params, then `at`.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "code",
+        "params",
+        "at"
+      ],
+      "properties": {
+        "code": {
+          "type": "string",
+          "minLength": 1
+        },
+        "params": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "at": {
+          "type": "string",
+          "pattern": "^/(record|records/[0-9]+|reactions/[0-9]+)$"
+        }
+      }
+    },
+    "rights_assessment_result": {
+      "description": "ADR 0061 D13 `assess_rights`: the project register row the call appended and the effective assessment of (source, record) after it.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "effective",
+        "row"
+      ],
+      "properties": {
+        "row": {
+          "$ref": "#/$defs/rights_row"
+        },
+        "effective": {
+          "$ref": "#/$defs/effective_rights"
+        }
+      }
+    },
+    "effective_rights": {
+      "description": "ADR 0061 D11: the effective assessment of one source of one record, the layer of the row that decides it (null: no row decides, `unknown`).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "assessment",
+        "conditions",
+        "layer"
+      ],
+      "properties": {
+        "assessment": {
+          "enum": [
+            "permitted",
+            "unknown",
+            "refused"
+          ]
+        },
+        "conditions": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "layer": {
+          "enum": [
+            "project",
+            "repository",
+            null
+          ]
+        }
+      }
+    },
+    "rights_row": {
+      "description": "ADR 0061 D11: one rights register row with its layer and its insertion sequence in that layer (the repository file's row order); a null `record_sha256` is a whole-source row.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "assessment",
+        "basis",
+        "conditions",
+        "date",
+        "decided_by",
+        "layer",
+        "record_sha256",
+        "sequence",
+        "source_id",
+        "source_sha256"
+      ],
+      "properties": {
+        "source_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_sha256": {
+          "$ref": "https://github.com/frankp/process-runtime/schemas/record-v2.schema.json#/$defs/sha256"
+        },
+        "record_sha256": {
+          "anyOf": [
+            {
+              "$ref": "https://github.com/frankp/process-runtime/schemas/record-v2.schema.json#/$defs/sha256"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "assessment": {
+          "enum": [
+            "permitted",
+            "unknown",
+            "refused"
+          ]
+        },
+        "conditions": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "basis": {
+          "type": "string",
+          "minLength": 1
+        },
+        "decided_by": {
+          "type": "string",
+          "minLength": 1
+        },
+        "date": {
+          "type": "string"
+        },
+        "layer": {
+          "enum": [
+            "project",
+            "repository"
+          ]
+        },
+        "sequence": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "record_finding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "code",
+        "params"
+      ],
+      "properties": {
+        "code": {
+          "type": "string",
+          "minLength": 1
+        },
+        "params": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "ADR 0061 D7: a record refusal or notice, `{code, params}`, each code a catalogue entry."
+    }
+  }
+}

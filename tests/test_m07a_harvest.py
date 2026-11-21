@@ -93,7 +93,11 @@ T08_MANIFEST = "evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.j
 #: S19's second manifest (`4f9f2c3…`, `implemented`, 8 and 3) moves it on `wp/S19-ev`.
 #: WITNF's manifest (X10c, `8067229…`, `implemented`, 3 and 0) moves it on `wp/WITNF`.
 #: S19's third manifest (`e3e9552…`, `implemented`, 9 and 0) moves it on `wp/S19-ev2`.
-HARVEST_SIZE = (99, 1138, 146)
+#: F3's manifest (`ebdff46…`, `implemented`, 5 and 1) moves it on `wp/F3`.
+#: Its fix-round-3 move (`05ccf88…`, `implemented`, 5 and 0) moves it again on `wp/F3`.
+#: Its fix-round-4 move (`361c620…`, `implemented`, 6 and 0) moves it again on `wp/F3`.
+#: The merge of main (c4a91a75) into wp/F3 sums both moves (98, 1129) + (1, 6) + (1, 9).
+HARVEST_SIZE = (100, 1144, 146)
 #: The 0.2.0 release candidate C′ (M07 spec §25, R-485).
 C_PRIME = "ce993651ce37c1343e771b276160bd6623e43500"
 #: The commit tagged v0.2.0.

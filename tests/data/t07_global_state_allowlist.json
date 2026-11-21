@@ -273,6 +273,41 @@
       "patterns": ["ContextVar"],
       "occurrences": 1,
       "justification": "F1-WO3 (ADR 0060 D8): the usage recorder, the cross-check of a run's extensions used. A ContextVar by D8's design, so concurrent runs record separately: `usage()` sets a fresh record for its block and resets it on exit; `resolve` and `factory` add to the active record only. Default `None` (nothing recorded); a run's executor copies the context into its workers."
+    },
+    {
+      "file": "application/records_service.py",
+      "line": "@cache",
+      "patterns": ["cache"],
+      "occurrences": 1,
+      "justification": "F3 (ADR 0061 D11, R-1056): nullary `legacy_shas`, the frozenset of record SHAs of the committed legacy index (`records/legacy_index.json`, package data, immutable for the process's life); an immutable set, a pure function of that file. No job, request, project or store state: the project store is read per call, never cached."
+    },
+    {
+      "file": "records/importers/legacy.py",
+      "line": "@cache",
+      "patterns": ["cache"],
+      "occurrences": 2,
+      "justification": "F3 (ADR 0061 D12, WO2): two nullary readers of package data immutable for the process's life: `profiles` (the parsed `records/legacy_profiles.yaml`, a tuple of frozen Profile) and `committed_index` (the parsed `records/legacy_index.json`). Read only: every caller iterates or copies (the response rows are new documents); no job, request, project or store state."
+    },
+    {
+      "file": "records/model.py",
+      "line": "@cache",
+      "patterns": ["cache"],
+      "occurrences": 1,
+      "justification": "F3 (ADR 0061 D1): nullary `record_schema`, the packaged `schemas/record-v2.schema.json` parsed once (immutable for the process's life); read only (normalize's `strip_empty` builds new documents, `_target` walks it); no job, request or store state."
+    },
+    {
+      "file": "records/rights.py",
+      "line": "@cache",
+      "patterns": ["cache"],
+      "occurrences": 1,
+      "justification": "F3 (ADR 0061 D11): nullary `repository_rows`, the repository rights register (`records/rights-register.json`, package data, immutable for the process's life), each row checked; read only: responses copy each row (`{**row, ...}`), and the project register is read from the store per call, never cached. No job, request or store state."
+    },
+    {
+      "file": "records/validate.py",
+      "line": "@cache",
+      "patterns": ["cache"],
+      "occurrences": 1,
+      "justification": "F3 (ADR 0061 D7): nullary `_validator`, the record schema's Draft 2020-12 validator over `record_schema()` (packaged, immutable for the process's life; the schema holds only local references); never mutated, no job, request or store state."
     }
   ]
 }

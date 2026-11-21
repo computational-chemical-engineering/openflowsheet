@@ -1,6 +1,6 @@
 """The command line: `validate`, `solve`, `optimize`, `inspect`, `replay`, `project`, `api`,
-`explain`, `streams`, `capabilities`, `admission`, `serve-http`, `serve-mcp`. K06, gates G02 and
-G06; T07 §10.3, §11.5; OPT design §4.12; ADR 0060 D11.
+`explain`, `streams`, `capabilities`, `admission`, `records`, `serve-http`, `serve-mcp`. K06, gates
+G02 and G06; T07 §10.3, §11.5; OPT design §4.12; ADR 0060 D11; ADR 0061 D13.
 
 Blueprint D15: local Python and CLI share one contract and neither requires a network round
 trip. So this module is thin on purpose — it parses arguments, calls the application layer,
@@ -51,7 +51,7 @@ import os
 import sys
 import textwrap
 import traceback
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Final, get_args
 
@@ -761,6 +761,145 @@ def command_admission(arguments: argparse.Namespace) -> int:
     return _registry_operation("check_admission", {"pair": pair})
 
 
+def _project_operation(project: str, name: str, request: Any) -> int:
+    """ADR 0061 D13's CLI conveniences (`records ...`): `name` with `request` through `dispatch`
+    on the project opened as `LOCAL_OWNER`, as `api` sends it, so the document is the
+    operation's on every transport. The response as canonical JSON on stdout, exit 0; a refusal
+    as `api` prints it; exit 1 when the project cannot be opened."""
+    from openflowsheet.application.authz import PolicyRefusedError
+    from openflowsheet.application.errors import ApplicationError
+    from openflowsheet.application.local import LocalApplication
+    from openflowsheet.application.operations import dispatch
+    from openflowsheet.application.store_records import StoreError
+
+    try:
+        application = LocalApplication.open(project)
+    except (StoreError, PolicyRefusedError) as error:
+        print(_human_text(error), file=sys.stderr)
+        return 1
+    with application:
+        try:
+            response = dispatch(application, name, request)
+        except ApplicationError as refused:
+            return _print_refusal(refused.error)
+    _print_document(response)
+    return 0
+
+
+def _present(arguments: argparse.Namespace, *members: str) -> dict[str, Any]:
+    """The named arguments that were given, under the same names."""
+    return {
+        name: getattr(arguments, name) for name in members if getattr(arguments, name) is not None
+    }
+
+
+def _search_request(arguments: argparse.Namespace) -> dict[str, Any]:
+    return {
+        "limit": arguments.limit,
+        **_present(arguments, "key", "scheme", "record_type", "cursor"),
+    }
+
+
+def _register_request(arguments: argparse.Namespace) -> dict[str, Any]:
+    """`{record}` from `--record FILE`, or `{file, defaults?}` from `--file FILE --format F`
+    (`local_path`: the file's resolved path, F3 decision WO5b-3)."""
+    if arguments.record is not None:
+        return {"record": _load(Path(arguments.record))}
+    path = Path(arguments.file)
+    content = path.read_text(encoding="utf-8")
+    request: dict[str, Any] = {
+        "file": {"format": arguments.format, "content": content, "local_path": str(path.resolve())}
+    }
+    if arguments.defaults is not None:
+        request["defaults"] = _load(Path(arguments.defaults))
+    return request
+
+
+def _validate_request(arguments: argparse.Namespace) -> Any:
+    """`{record}` from `--record FILE`, or the whole request document `--request FILE` holds."""
+    if arguments.record is not None:
+        return {"record": _load(Path(arguments.record))}
+    return _load(Path(arguments.request))
+
+
+def _rights_request(arguments: argparse.Namespace) -> dict[str, Any]:
+    return {
+        "source_id": arguments.source,
+        "record_sha256": arguments.record_sha256,
+        "scope": arguments.scope,
+        "assessment": arguments.assessment,
+        "basis": arguments.basis,
+        **_present(arguments, "conditions"),
+    }
+
+
+#: `records <action>`: its operation and the request it sends (ADR 0061 D13).
+RECORDS_ACTIONS: Final[Mapping[str, tuple[str, Callable[[argparse.Namespace], Any]]]] = {
+    "search": ("search_records", _search_request),
+    "get": ("get_record", lambda arguments: {"record_sha256": arguments.record_sha256}),
+    "register": ("register_record", _register_request),
+    "validate": ("validate_record", _validate_request),
+    "rights": ("assess_rights", _rights_request),
+}
+
+
+def command_records(arguments: argparse.Namespace) -> int:
+    """ADR 0061 D13: the protocol `Records` on a project — `search`, `get`, `register`,
+    `validate`, `rights` (`search_records`, `get_record`, `register_record`, `validate_record`,
+    `assess_rights`)."""
+    import yaml
+
+    name, build = RECORDS_ACTIONS[arguments.records_command]
+    try:
+        request = build(arguments)
+    except (OSError, UnicodeDecodeError, ValueError, yaml.YAMLError) as error:
+        print(f"cannot read the input: {error}", file=sys.stderr)
+        return 1
+    return _project_operation(arguments.project, name, request)
+
+
+def _add_records_parser(commands: Any) -> None:
+    """`records search|get|register|validate|rights` (ADR 0061 D13)."""
+    records_command = commands.add_parser(
+        "records",
+        help="search, read, register, validate and assess component data records",
+        description=(
+            "The Records operations of ADR 0061 D13 on a project, as the local owner: each "
+            "prints the operation's response as canonical JSON (exit 0), or its ApiError as "
+            "`api` does (exit 2-16); 1 means no call was made."
+        ),
+    )
+    actions = records_command.add_subparsers(dest="records_command", required=True)
+    search = actions.add_parser("search", help="search_records: records a key matches")
+    search.add_argument("--key", default=None, help="an identifier, name, formula or SHA")
+    search.add_argument("--scheme", default=None, help="match the key in this scheme only")
+    search.add_argument("--type", dest="record_type", default=None, help="a record type")
+    search.add_argument("--cursor", default=None, help="a page's next_cursor")
+    search.add_argument("--limit", type=int, default=50, help="1 to 200")
+    get = actions.add_parser("get", help="get_record: one record, its registrations and rights")
+    get.add_argument("record_sha256", help="the record's SHA-256")
+    register = actions.add_parser("register", help="register_record: store records")
+    registered = register.add_mutually_exclusive_group(required=True)
+    registered.add_argument("--record", default=None, help="a record document (JSON or YAML)")
+    registered.add_argument("--file", default=None, help="a user data file (with --format)")
+    register.add_argument("--format", default=None, help="the user file's format")
+    register.add_argument("--defaults", default=None, help="a v1 file's defaults (JSON or YAML)")
+    validate_records = actions.add_parser("validate", help="validate_record: check records")
+    checked = validate_records.add_mutually_exclusive_group(required=True)
+    checked.add_argument("--record", default=None, help="a record document (JSON or YAML)")
+    checked.add_argument("--request", default=None, help="a whole validate_record request")
+    rights = actions.add_parser("rights", help="assess_rights: append a rights row (policy)")
+    rights.add_argument("--source", required=True, help="a source id of the record")
+    rights.add_argument("--record", dest="record_sha256", required=True, help="the record SHA")
+    rights.add_argument("--scope", choices=("record", "source"), default="record")
+    rights.add_argument("--assessment", choices=("permitted", "unknown", "refused"), required=True)
+    rights.add_argument("--basis", required=True, help="why (a licence, a contract, ...)")
+    rights.add_argument("--conditions", default=None, help="conditions of use, if any")
+    for action in (search, get, register, validate_records, rights):
+        action.add_argument("--project", required=True, help="the project directory")
+    records_command.set_defaults(handler=command_records)
+
+
 #: ST §6.3: the printed forms of `streams`.
 STREAM_FORMATS: Final[tuple[str, ...]] = ("text", "json", "csv")
 
@@ -1054,6 +1193,8 @@ def build_parser() -> argparse.ArgumentParser:
     admission_command.add_argument("--method-version", default=None, help="default: the highest")
     admission_command.add_argument("--revision", default=None, help="a revision document file")
     admission_command.set_defaults(handler=command_admission)
+
+    _add_records_parser(commands)
 
     streams_command = commands.add_parser(
         "streams",

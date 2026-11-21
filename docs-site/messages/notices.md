@@ -4,6 +4,50 @@
 
 Messages that report something worth knowing but are not failures. How to read an explanation, and how to ask for one (`openflowsheet explain <code>`, the `explain` operation), is on [Messages](index.md).
 
+<a id="anchor_defaulted"></a>
+
+## `anchor_defaulted`: A component's anchor phase was defaulted to the ideal gas
+
+**Kind:** Notice: not a failure.
+
+- **Summary:** Component &lt;component&gt; gives no formation data and no phase-specific data, so it is anchored in the ideal gas by default.
+- **Why:** Every component has one anchor phase, where its formation data fix its enthalpy and entropy. A molar record that states none, is uncharged and gives nothing phase-specific takes the ideal gas. This record and one that states the ideal gas are the same record.
+- **Do:** Nothing is needed; state an anchor phase in the record if another phase is meant.
+- **Parameters:** `component` (text)
+
+Example:
+
+```text
+Component Methanol gives no formation data and no phase-specific data, so it is anchored in the ideal gas by default.
+  Why:     Every component has one anchor phase, where its formation data fix its enthalpy and entropy. A molar record that states none, is uncharged and gives nothing phase-specific takes the ideal gas. This record and one that states the ideal gas are the same record.
+  Do:      Nothing is needed; state an anchor phase in the record if another phase is meant.
+  Kind:    Notice: not a failure.
+  Code:    anchor_defaulted (openflowsheet explain anchor_defaulted)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/notices/#anchor_defaulted
+```
+
+<a id="anchor_undetermined"></a>
+
+## `anchor_undetermined`: A component has no anchor phase
+
+**Kind:** Notice: not a failure.
+
+- **Summary:** Component &lt;component&gt; has no anchor phase.
+- **Why:** A record on a mass or segment basis that states no anchor phase, gives no formation data and nothing phase-specific has none. Its energy reference cannot be fixed, so it is refused for an elemental reference until the record states an anchor.
+- **Do:** State an anchor phase in the record.
+- **Parameters:** `component` (text)
+
+Example:
+
+```text
+Component bitumen has no anchor phase.
+  Why:     A record on a mass or segment basis that states no anchor phase, gives no formation data and nothing phase-specific has none. Its energy reference cannot be fixed, so it is refused for an elemental reference until the record states an anchor.
+  Do:      State an anchor phase in the record.
+  Kind:    Notice: not a failure.
+  Code:    anchor_undetermined (openflowsheet explain anchor_undetermined)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/notices/#anchor_undetermined
+```
+
 <a id="capability_unresolved"></a>
 
 ## `capability_unresolved`: A capability names something that is not registered
@@ -71,6 +115,50 @@ The extension acme.slurry-mixer (installed) has not been reviewed.
   Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/notices/#extension_unreviewed
 ```
 
+<a id="fit_inputs_unhashed"></a>
+
+## `fit_inputs_unhashed`: A fitted value does not identify the data it was fitted to
+
+**Kind:** Notice: not a failure.
+
+- **Summary:** The value at &lt;entry&gt; was fitted or generated, but its input data are not identified by hash.
+- **Why:** A fitted or generated value names the data it came from by hash, so that a change of those data is a change of the value. This one names none, usually because its inputs are not in the repository.
+- **Do:** Add the hashes of the input data to the value's provenance if they are available.
+- **Parameters:** `entry` (text)
+
+Example:
+
+```text
+The value at /entries/1 was fitted or generated, but its input data are not identified by hash.
+  Why:     A fitted or generated value names the data it came from by hash, so that a change of those data is a change of the value. This one names none, usually because its inputs are not in the repository.
+  Do:      Add the hashes of the input data to the value's provenance if they are available.
+  Kind:    Notice: not a failure.
+  Code:    fit_inputs_unhashed (openflowsheet explain fit_inputs_unhashed)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/notices/#fit_inputs_unhashed
+```
+
+<a id="molar_mass_inconsistent"></a>
+
+## `molar_mass_inconsistent`: A reaction's molar masses do not balance
+
+**Kind:** Notice: not a failure.
+
+- **Summary:** The molar masses of the components of reaction &lt;reaction&gt; do not balance to within the rounding of the stored values.
+- **Why:** A balanced reaction conserves mass, so the sum of the stoichiometric coefficients times the molar masses is zero up to the rounding of the stored numbers: at most four times the double-precision machine epsilon of the sum of their magnitudes. A larger sum usually means the component records take their molar masses from different atomic-weight tables. The reaction is not refused; a mass balance over it carries this imbalance.
+- **Do:** Use component records whose molar masses come from one atomic-weight table, or accept the stated imbalance.
+- **Parameters:** `reaction` (text)
+
+Example:
+
+```text
+The molar masses of the components of reaction water_formation do not balance to within the rounding of the stored values.
+  Why:     A balanced reaction conserves mass, so the sum of the stoichiometric coefficients times the molar masses is zero up to the rounding of the stored numbers: at most four times the double-precision machine epsilon of the sum of their magnitudes. A larger sum usually means the component records take their molar masses from different atomic-weight tables. The reaction is not refused; a mass balance over it carries this imbalance.
+  Do:      Use component records whose molar masses come from one atomic-weight table, or accept the stated imbalance.
+  Kind:    Notice: not a failure.
+  Code:    molar_mass_inconsistent (openflowsheet explain molar_mass_inconsistent)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/notices/#molar_mass_inconsistent
+```
+
 <a id="preview_kind"></a>
 
 ## `preview_kind`: A result used an extension of a kind still in preview
@@ -91,6 +179,50 @@ The functional_contributor acme.cost is of a kind whose format is still in previ
   Kind:    Notice: not a failure.
   Code:    preview_kind (openflowsheet explain preview_kind)
   Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/notices/#preview_kind
+```
+
+<a id="reaction_element_unchecked"></a>
+
+## `reaction_element_unchecked`: A reaction's element balance could not be checked
+
+**Kind:** Notice: not a failure.
+
+- **Summary:** The element balance of reaction &lt;reaction&gt; was not checked, because component &lt;component&gt; has no elemental composition.
+- **Why:** Element balance needs the number of atoms of each element in every component of the reaction. A pseudo-component, such as a petroleum fraction, has no elemental formula, so the balance cannot be decided and is not claimed. Charge and molar mass are still checked.
+- **Do:** Nothing is needed. Give the component an elemental composition if it has one, and the balance will be checked.
+- **Parameters:** `reaction` (text), `component` (text)
+
+Example:
+
+```text
+The element balance of reaction cracking was not checked, because component NBP_350 has no elemental composition.
+  Why:     Element balance needs the number of atoms of each element in every component of the reaction. A pseudo-component, such as a petroleum fraction, has no elemental formula, so the balance cannot be decided and is not claimed. Charge and molar mass are still checked.
+  Do:      Nothing is needed. Give the component an elemental composition if it has one, and the balance will be checked.
+  Kind:    Notice: not a failure.
+  Code:    reaction_element_unchecked (openflowsheet explain reaction_element_unchecked)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/notices/#reaction_element_unchecked
+```
+
+<a id="store_object_repaired"></a>
+
+## `store_object_repaired`: A damaged stored record file was repaired
+
+**Kind:** Notice: not a failure.
+
+- **Summary:** The stored file of record &lt;sha&gt; was damaged; registering the record replaced it with the record's bytes.
+- **Why:** Each record file is named by the SHA-256 of its bytes. This file's bytes no longer hashed to its name, so it had been changed or damaged after it was written, by something other than OpenFlowsheet or by a disk fault. The registration held bytes that hash to the name and wrote them in its place.
+- **Do:** Nothing is needed for this record. Report it, and check the disk and anything else that writes to the project's records directory.
+- **Parameters:** `sha` (text)
+
+Example:
+
+```text
+The stored file of record 0f4c2e6a9b1d3c5e7f80a2b4c6d8e0f1a3b5c7d9e1f3a5b7c9d1e3f5a7b9c1d3 was damaged; registering the record replaced it with the record's bytes.
+  Why:     Each record file is named by the SHA-256 of its bytes. This file's bytes no longer hashed to its name, so it had been changed or damaged after it was written, by something other than OpenFlowsheet or by a disk fault. The registration held bytes that hash to the name and wrote them in its place.
+  Do:      Nothing is needed for this record. Report it, and check the disk and anything else that writes to the project's records directory.
+  Kind:    Notice: not a failure.
+  Code:    store_object_repaired (openflowsheet explain store_object_repaired)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/notices/#store_object_repaired
 ```
 
 <a id="stream_enthalpy_absent"></a>

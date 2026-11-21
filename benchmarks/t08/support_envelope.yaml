@@ -282,16 +282,19 @@ axes:
   - id: interfaces
     title: Interfaces
     statement: >-
-      Python (`LocalApplication`), CLI, HTTP (`/v1`) and MCP over stdio; the twenty-five operations of
+      Python (`LocalApplication`), CLI, HTTP (`/v1`) and MCP over stdio; the thirty operations of
       `OPERATIONS`, each on the transports listed (`explain`, ADR 0058 D7, reads the message catalogue
       only; `get_stream_table`, ADR 0068, computes a finished run's stream table from its bundle and
       stores nothing; `list_capabilities` and `check_admission`, ADR 0060 D11, read the extension
-      registry only); authority from the credential only (ADR 0019).
+      registry only; the protocol `Records`, ADR 0061 D13, reads and writes the project's record
+      store and rights register over the read-only legacy store); authority from the credential
+      only (ADR 0019).
       With `serve-http --ui`, the diagnostic web shell at `/ui/` is a browser client of eighteen of
       them over HTTP and of nothing else (M06, and ST's `get_stream_table` since Frank's O3;
       L-WEB-1 to L-WEB-4).
     operations:
       artifact_bytes: [python, cli, http]
+      assess_rights: [python, cli, http, mcp]
       cancel_job: [python, cli, http, mcp]
       check_admission: [python, cli, http, mcp]
       commit_change: [python, cli, http, mcp]
@@ -301,6 +304,7 @@ axes:
       get_job: [python, cli, http, mcp]
       get_job_result: [python, cli, http, mcp]
       get_project: [python, cli, http, mcp]
+      get_record: [python, cli, http, mcp]
       get_revision: [python, cli, http, mcp]
       get_stream_table: [python, cli, http, mcp]
       inspect_structure: [python, cli, http, mcp]
@@ -311,10 +315,13 @@ axes:
       list_models: [python, cli, http, mcp]
       list_revisions: [python, cli, http, mcp]
       preview_change: [python, cli, http, mcp]
+      register_record: [python, cli, http, mcp]
       reproduce: [python, cli]
+      search_records: [python, cli, http, mcp]
       solve: [python, cli]
       submit_job: [python, cli, http, mcp]
       validate: [python, cli, http, mcp]
+      validate_record: [python, cli, http, mcp]
       wait_job: [python, cli, http, mcp]
     evidence:
       - tests/test_t07_v17_reference.py::test_g16b_reference_run
@@ -9722,6 +9729,42 @@ harvest:
   class: P
   to: []
   note: 'provenance note: witness tolerances and escalation numerics not re-examined (ruling scope)'
+- manifest: evidence/F3/6c82b53518775945b00f4a8c2e4fcee09b995c20/manifest.json
+  item: limitations[0]
+  sha256: f8b0bb0811ab60e5f8165adc661b799f27f76434ce69b272f39eaaa6b78d8739
+  class: P
+  to: []
+  note: 'provenance note: software verification of the component-data records and their five MCP operations; tested at CI run 44709885423, not reviewed'
+- manifest: evidence/F3/6c82b53518775945b00f4a8c2e4fcee09b995c20/manifest.json
+  item: limitations[1]
+  sha256: 4542b9e5b75d24069f94443aafbb8f2cc215c5ef40995d9f9aee12fc3d4ba242
+  class: P
+  to: []
+  note: 'process note: review records; the five human description reviews recorded in REVIEW.json at 6c82b535 (card ofs-f3-mcp-descriptions-human A); the expected red resolved'
+- manifest: evidence/F3/6c82b53518775945b00f4a8c2e4fcee09b995c20/manifest.json
+  item: limitations[2]
+  sha256: d52be78a2744fe8e56971c095a4ec4b349b819d3c290624b26d91a72b4878613
+  class: P
+  to: []
+  note: 'process note: card ofs-f3-qf1-rational-coefficients signed A; rational coefficients an obligation on F2 (ADR 0062)'
+- manifest: evidence/F3/6c82b53518775945b00f4a8c2e4fcee09b995c20/manifest.json
+  item: limitations[3]
+  sha256: 2a9ce256bab3c7ab7349114a8ced69078da2db09b9b2addb03045b7960e7f153
+  class: P
+  to: []
+  note: 'process note: the full suite''s second failure was the WO7 manifest''s schema check, removed with that manifest'
+- manifest: evidence/F3/6c82b53518775945b00f4a8c2e4fcee09b995c20/manifest.json
+  item: limitations[4]
+  sha256: 4dd459ff512bacf31b596e07ceebe1aafe1d5433d093a1eaf22283c6f348e0a1
+  class: P
+  to: []
+  note: 'process note: open question for the design lane (molar_mass_inconsistent signature), none blocking; fix round 3 DECISIONs ruled in F3-rulings-2'
+- manifest: evidence/F3/6c82b53518775945b00f4a8c2e4fcee09b995c20/manifest.json
+  item: limitations[5]
+  sha256: fc6aa1292f6e8ac8f92671e4b6158fb2ac1c6167087701bbc1519b01a7951452
+  class: P
+  to: []
+  note: 'provenance note: requirements empty, F3 maps to no D/A requirement (0.5 foundation package)'
 - manifest: evidence/S19/e3e955206a4f06d942b274c766573eecfddf8655/manifest.json
   item: limitations[0]
   sha256: 7b392185d6f4db1fa18ba1fff9c8a432374f4a27ba3033b578bc6a9555a94f24

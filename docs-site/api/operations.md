@@ -33,6 +33,11 @@ repository's `schemas/` directory.
 | `explain` | read | python, cli, http, mcp | `GET /v1/explain/{code}` | `explain` |
 | `list_capabilities` | read | python, cli, http, mcp | `GET /v1/capabilities` | `list_capabilities` |
 | `check_admission` | read | python, cli, http, mcp | `POST /v1/admission/check` | `check_admission` |
+| `search_records` | read | python, cli, http, mcp | `POST /v1/records/search` | `search_records` |
+| `get_record` | read | python, cli, http, mcp | `GET /v1/records/{record_sha256}` | `get_record` |
+| `register_record` | draft | python, cli, http, mcp | `POST /v1/records` | `register_record` |
+| `validate_record` | read | python, cli, http, mcp | `POST /v1/records/validate` | `validate_record` |
+| `assess_rights` | policy | python, cli, http, mcp | `POST /v1/records/rights` | `assess_rights` |
 | `artifact_bytes` | read | python, cli, http | `GET /v1/artifacts/{artifact_id}/raw` | — |
 
 ::: openflowsheet.application.operations.dispatch

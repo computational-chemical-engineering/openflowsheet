@@ -18,7 +18,8 @@
   same `solve-events` bytes (the hook changes nothing it does not raise from). Equality with the
   pre-hook base is the identity protocol's and `docs/t07-measurements.md` § W4b's (the event
   digests hold floats, which are not pinned across architectures).
-- **The lint**: no handler in `src/` can swallow a `BaseException` (below, `test_no_broad_except`).
+- **The lint**: no handler in `src/` can swallow a `BaseException` (below, `test_no_broad_except`),
+  and no `finally` can discard one (`test_no_finally_exits`).
 
 **Records versus events.** A region step runs on its own trace, whose events `execute_plan` copies
 into the plan's trace when the region returns (`orchestrator/executor.py::_absorb`); each copy is a
@@ -463,14 +464,53 @@ def broad_handlers() -> tuple[list[str], list[str]]:
     return swallowing, reraising
 
 
+def _exits(nodes: list[ast.stmt], in_loop: bool) -> bool:
+    """`nodes` hold a `return`, or a `break` or `continue` not inside a loop of their own
+    (outside nested functions and classes)."""
+    pending: list[tuple[ast.AST, bool]] = [(node, in_loop) for node in nodes]
+    while pending:
+        node, looped = pending.pop()
+        if isinstance(node, ast.FunctionDef | ast.AsyncFunctionDef | ast.Lambda | ast.ClassDef):
+            continue
+        if isinstance(node, ast.Return):
+            return True
+        if isinstance(node, ast.Break | ast.Continue) and not looped:
+            return True
+        if isinstance(node, ast.For | ast.AsyncFor | ast.While):
+            pending.extend((child, True) for child in node.body)
+            pending.extend((child, looped) for child in node.orelse)
+            continue
+        pending.extend((child, looped) for child in ast.iter_child_nodes(node))
+    return False
+
+
+def finally_exits() -> list[str]:
+    """`src/` `try` statements whose `finally` can leave by `return`, `break` or `continue`,
+    which discards the exception in flight (a `JobInterrupted` included)."""
+    hits = []
+    for path in sorted((REPO_ROOT / "src").rglob("*.py")):
+        tree = ast.parse(path.read_text(), filename=str(path))
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Try | ast.TryStar) and _exits(node.finalbody, in_loop=False):
+                hits.append(f"{path.relative_to(REPO_ROOT)}:{node.lineno}")
+    return hits
+
+
 def test_no_broad_except() -> None:
     """§8.1: `src/` has no bare `except:` and no `except BaseException` that could keep a
     `JobInterrupted` from reaching the runner. A cleanup handler that re-raises unconditionally
-    cannot, and is allowed (the store's transaction rollback and `LocalApplication.open`'s
-    close-on-failure, W2)."""
+    cannot, and is allowed (T07's store transaction rollback and `LocalApplication.open`'s
+    close-on-failure, W2), in `application/` only. Outside it, cleanup takes the `finally` form,
+    which `test_no_finally_exits` guards (`records/store.py` `_writing`, F3 ruling round 2)."""
     swallowing, reraising = broad_handlers()
     assert swallowing == []
     assert all(where.startswith("src/openflowsheet/application/") for where in reraising)
+
+
+def test_no_finally_exits() -> None:
+    """§8.1 for `finally` (F3 ruling round 2, C2): no `finally` in `src/` holds a `return`, or a
+    `break` or `continue` that leaves it, since each discards the exception in flight."""
+    assert finally_exits() == []
 
 
 def test_lint_detects() -> None:
@@ -496,3 +536,18 @@ def test_lint_detects() -> None:
     assert classify("try:\n    pass\nexcept BaseException:\n    cleanup()\n    raise\n") == [True]
     assert classify("try:\n    pass\nexcept BaseException as e:\n    raise e\n") == [True]
     assert classify("try:\n    pass\nexcept Exception:\n    pass\n") == []
+
+    def leaves(source: str) -> list[bool]:
+        return [
+            _exits(node.finalbody, in_loop=False)
+            for node in ast.walk(ast.parse(source))
+            if isinstance(node, ast.Try | ast.TryStar) and node.finalbody
+        ]
+
+    assert leaves("def f():\n    try:\n        pass\n    finally:\n        return 1\n") == [True]
+    assert leaves("for x in y:\n    try:\n        pass\n    finally:\n        break\n") == [True]
+    assert leaves(
+        "try:\n    pass\nfinally:\n    for x in y:\n        if x:\n            break\n"
+    ) == [False]
+    assert leaves("try:\n    pass\nfinally:\n    def g():\n        return 1\n    g()\n") == [False]
+    assert leaves("try:\n    pass\nfinally:\n    cleanup()\n") == [False]

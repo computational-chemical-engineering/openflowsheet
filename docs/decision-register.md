@@ -19988,6 +19988,208 @@ are inadmissible could resolve on a flat-quantized finer level (Q2.A8).
 - *`evaluated(value=inf)`:* breaks K04 A30 (inf serializes to null), puts inf into `witness_max_diff`, and a NaN in
   its place would be dropped again by the outer fold.
 
+## R-1050: ADR 0061 (F3 component data) is Accepted as on `wp/F3` at 5d085f05, with ADR 0019 Amendment 8 (the `Records` protocol, five operations) (2026-11-18)
+
+| | |
+| --- | --- |
+| Date | 2026-11-18 |
+| Decided by | Frank Peters, Decision Desk card `ofs-f3-accept-adr0061` (desk version 3), option A, signed 2026-11-18T07:24:52Z, key `032ee0a5ae620a90`; verified by the build lane with `decision_desk_verify.py` (VERIFIED). Number and block by the build lane: F3 reserves R-1050…R-1059 |
+| Normative text | `docs/adr/0061-F3-component-data.md` at 5d085f05 (only its status line changed since); ADR 0019 Amendment 8 (pointer paragraph added by F3-WO5b) |
+| Evidence | The F3-WO1 review (`docs/reviews/F3-WO1-review.md`) and F3 ruling round 1 (`docs/reviews/F3-rulings-1.md`) applied to the ADR text; build log `docs/F3_DECISIONS.md` (WO1 to WO5a) |
+| Affected packages | F3 (the rest of WO5, WO7 close-out, merge into `main`); F2 (ADR 0062 reuses D7's reaction check; open: `molar_mass_inconsistent`'s signature differs between ADR 0061 `(<reaction>)` and ADR 0062 `(<S>, <species>)`); F8 (D11's register and `data_unavailable`) |
+
+**Decision.** ADR 0061 takes effect as written at 5d085f05: records v2, identity, store, resolution, data lock, rights
+register, importers and the five `Records` operations. The build decisions of WO5a onward that the design lane has not
+yet ruled stay open for the package's reviewer pass; reversing any part of the accepted text takes a new decision
+recorded the same way.
+
+**Rejected alternatives, and why.** Option B on the card, "keep ADR 0061 Proposed; F3 stays on wp/F3 and does not
+merge": not chosen by Frank.
+
+## R-1051 — the surface chain gains link c_10 = (ADR 0061 D13, `without_f3`, `f7ec3c94…`): F3's five `Records` tools, after F1's c_9
+
+| | |
+| --- | --- |
+| Date | 2026-11-18 |
+| Decided by | build lane, F3-WO5b, applying ADR 0061 D13 (ADR 0019 Amendment 8; Accepted 2026-11-18, R-1050) in R-457's form, as F1-WO4a took c_9 (R-1030). Number from F3's block R-1050…R-1059 |
+| Normative text | ADR 0061 D13; ADR 0019 Amendment 8; `scripts/m07a_rc.py` (link c_10) |
+| Evidence | On `wp/F3` at F3-WO5b the served MCP tool list digests to `248c2e74baebcf489e012e14dff04fb0d14601d2df5d3ad88d51d0ad11e8a884` (D_10), re-taken within F3 at the F3 review 2 fix round (C6, C11) as `f7ec3c94233d30506ec2082a13c4e54d57bd540e43e97fdf877b1e3c75fed467`. `without_f3` (`tests/f3_schema_support.py`) leaves `e2c44b6b9c2a7f5689ed4f2fd96b6e9804d1a63e60a5c620d29b5b5d594bcebb` = D_9 exactly, and the chain holds down to R-133's `D_0` (`tests/test_m07a_surface_chain.py`, `tests/test_t08_w2_surface_digest.py::test_f3s_surface_move_decomposes_onto_f1s`) |
+| Affected packages | F3; M07a (`scripts/m07a_rc.py`, A37 tests); M07 (the next RC's V17 carry names c_10); T08.A18 (five description reviews) |
+
+**Decision.** `m07a_rc.LINKS` gains c_10 (R-1051; strip `strip_f3` = `without_f3`; D_10 = `f7ec3c94…`). The strip
+removes the five tools F3 added, `search_records`, `get_record`, `register_record`, `validate_record` and
+`assess_rights`; F3 changes no existing tool, text or response schema (`application-results.schema.json` gains eight
+`$defs`; every other R4-G3 snapshot is unchanged, `SNAPSHOT_F3` holds the five new rows). §5.3 item 4 pins the five
+new files at their own hashes (`m07a_rc.F3_FILE_SHA256`). The texts await the design lane's review (F3's reviewer
+pass) and Frank's; `REVIEW.json` records them pending, so `tests/test_t08_w2_description_reviews.py` stays red until
+both are recorded (T08.A18's rule; no agent marks it). A review edit to any text moves D_10: the edit re-takes D_10
+and this entry's digest within F3, not as a new link.
+
+**Rejected alternatives.** A link per operation (one ADR, one package, one move).
+
+**Watch for.** A strip that removes more than F3's five tools (`test_f3_control_c_10_left_in_place`). A later
+MCP-visible change moves D_10: it becomes c_11.
+
+## R-1052: a refused record refuses the whole `register_record` call; the shape of that refusal (F3 decisions WO5b-1, WO5b-9)
+
+| | |
+| --- | --- |
+| Date | 2026-11-18 |
+| Decided by | design lane (`reviewer`), F3 review and ruling round 2, filling a gap of ADR 0061 D13 (Accepted, R-1050), which names no refusal path for `register_record`. Number from F3's block R-1050…R-1059 |
+| Normative text | ADR 0061, section "F3 ruling round 2 applied"; `docs/reviews/F3-review-2.md` (rulings, C2); ADR 0019 Amendment 8's pointer paragraph follows it |
+| Evidence | Measured on `wp/F3` at `50e6ca04` (`docs/reviews/F3-review-2.md`, "What was run"): a record with `name: ""` renders "The record is not valid at /record."; the same document with `detail.reason` = `record_schema_invalid(/name)` renders the same; with `detail.pointer` = `/record/name` it renders "The record is not valid at /record/name." |
+| Affected packages | F3; MSG (how a `reason` link takes its params); every later caller of `register_record` (F2, F8) |
+
+**Decision.** If any record of a submission is refused, the call is refused and nothing is stored. The `ApiError` code
+follows the catalogue kind of the first refusal (`input` → `invalid_request`, `not_supported` → `unsupported`, `bug` →
+`internal_error`). `detail.reason` is that refusal's bare code and `detail.refusal` its `{code, params}`; its params
+also travel as `detail` members. `detail.pointer` is the place in the request: `/record` or `/file/content`, followed
+by the refusal's own `pointer` param when it has one. `detail.record_index` (file form) is the record's position in the
+file. `detail.errors` lists every error of every record, `[{record_index?, code, params}]`, at most 200, with
+`detail.errors_total`. A record naming a reserved source or member (R-1056) is refused before its D7 errors.
+
+**Rejected alternatives.** `detail.reason` as chain text with args (`record_schema_invalid(/name)`): MSG §3.1 puts
+`detail` members over chain args, so the rendering does not change, and an arg holding `, ` or `: ` is split wrongly.
+Per-record errors inside `results`: D13's result has no error member, and a half-stored file is harder to reason
+about. The first error only: no operation lists a user file's errors (`validate_record` takes no file).
+
+**Watch for.** A new record code with a param named `operation`, `reason`, `record_index`, `refusal` or `errors`: it
+would collide as `pointer` did. A change of MSG's precedence (§3.1) does not need this entry reopened.
+
+## R-1053: `Records`: the request and response details D13 leaves open (F3 decisions WO5b-3, -4, -5, -8)
+
+| | |
+| --- | --- |
+| Date | 2026-11-18 |
+| Decided by | design lane (`reviewer`), F3 review and ruling round 2, filling gaps of ADR 0061 D9, D12 and D13 |
+| Normative text | ADR 0061, section "F3 ruling round 2 applied"; `schemas/record-results.schema.json`; `docs/reviews/F3-review-2.md` (C5, C6) |
+| Evidence | `search_records {"limit": 1}` on a fresh project at `50e6ca04` returned 134 classes in 25 796 bytes with status `ambiguous_identity`; two inline records with the same error gave two identical report items |
+| Affected packages | F3; T07 (R4-G3 snapshots of the five operations); M07a (D_10, R-1051) |
+
+**Decision.** (1) `search_records` without `key` lists every stored record of both layers by SHA, and its
+`resolution` is `{status: none, classes: []}`: resolution answers a key (D9), and a listing asks none. `scheme` needs
+`key`. The cursor is opaque text; one this list did not issue is `invalid_request` at `/cursor`. `store` is `project`
+when the project store holds the object. (2) Rights in responses: `effective` = `{assessment, conditions, layer}`
+(`layer` null for `unknown`); a row carries its `layer` and `sequence` (repository: 1-based file order).
+(3) `register_record`'s `file` carries the client's optional `local_path` (D12: "if the client sends one"); only the
+volatile block holds it. (4) The response `$defs` live in `schemas/record-results.schema.json`, reached from
+`application-results.schema.json` by bare `$ref`s (R-1032's form). (5) An item of `RecordValidationReport`'s `errors`
+and `findings` is `{code, params, at}`, `at` the request member it concerns (`/record`, `/records/<i>`,
+`/reactions/<i>`).
+
+**Rejected alternatives.** Resolution over the whole store for a listing (it defeats `limit` and reads every object
+for every page). A fifth resolution status for "no key" (it would change D13's accepted enum). The `$defs` in
+`record-v2.schema.json` (moves the record schema's pinned SHA). Report items without `at` (errors of several records
+cannot be told apart).
+
+**Watch for.** A client that reads `resolution.status == "none"` as "no record": without a key it means "no key".
+
+## R-1054: reaction consistency: the component key labels a finding, null `elements` leaves the balance unjudged, ν may be an exact rational (F3 decisions WO5a-1, -2, -3)
+
+| | |
+| --- | --- |
+| Date | 2026-11-18 |
+| Decided by | design lane (`reviewer`), F3 review and ruling round 2, filling gaps of ADR 0061 D7 |
+| Normative text | ADR 0061 D7 and section "F3 ruling round 2 applied"; `src/openflowsheet/records/reactions.py` |
+| Evidence | `tests/test_f3_reactions.py` (E-F3-10, ratios recomputed from the YAML files); at `50e6ca04` `reactions.exact(Fraction(1, 3))` raises, and ν = −1/3, −1, 2/3 as doubles on `m01` gives `reaction_element_imbalance` |
+| Affected packages | F3; F2 (its validator calls `check_reactions`; ADR 0062 holds ν as `[p, q]`) |
+
+**Decision.** `<component>` in `reaction_element_unchecked(<reaction>, <component>)` is the stoichiometry's component
+key, not the record `id`. A component whose `elements` is null leaves that reaction's element balance unjudged: one
+notice per such component and no `reaction_element_imbalance` for the reaction; charge and molar mass are still
+checked. ν is an `int`, a finite `float` or a `fractions.Fraction`; anything else is the caller's `ValueError`.
+`validate_record` refuses a repeated reaction `id` (`invalid_request`), since the id labels the findings.
+
+**Rejected alternatives.** The record `id` as the label (two keys of one reaction may name records with one id:
+E-F3-10's mixed water). Balancing the elements of the other components (the unknown composition can carry any
+residual, so a balanced reaction with a pseudo-component would be refused). A tolerance on the element balance (D7 and
+Q7.A3 say exactly; rationals are the exact carrier).
+
+**Watch for.** Decimal coefficients through the operation (0.1 + 0.9, thirds) are not exact in binary64 and report an
+imbalance. Whether `validate_record` should take `[p, q]` is open with Frank (review file, Q-F1).
+
+## R-1055: `molar_mass_inconsistent` is the reaction check's code `(<reaction>)`; Q3.R7's species check takes the name `group_molar_mass_inconsistent(<S>, <species>)`
+
+| | |
+| --- | --- |
+| Date | 2026-11-18 |
+| Decided by | design lane (`reviewer`), F3 review and ruling round 2, on the build lane's question in F3-WO5a |
+| Normative text | ADR 0061 D7 and code table (Accepted, unchanged); ADR 0062 (Proposed), "New catalogue codes": to be edited at its acceptance pass |
+| Evidence | `docs/roadmap/foundation-rulings.md` Q3.R7 (line 520) writes `molar_mass_inconsistent(<S>, <species>)`, Q7.A3 (line 1117) `molar_mass_inconsistent(<reaction>)`; `messages/catalogue/records.yaml` registers `args: [reaction]` |
+| Affected packages | F2 (ADR 0062, `material/basis.py`); F3 unchanged |
+
+**Decision.** One code carries one argument list and one meaning. ADR 0061's `molar_mass_inconsistent(<reaction>)`
+(Q7.A3: the molar masses of a reaction's components do not balance) stands as registered. Q3.R7's check (a species'
+molar mass against the group molar masses of its basis) is a different check with a different subject and is
+registered by ADR 0062 as `group_molar_mass_inconsistent(<S>, <species>)`.
+
+**Rejected alternatives.** One signature for both (the subjects differ, and so do the explanations and remedies). Two
+variants of one entry selected by params (a positional `args` list has one form). Renaming F3's code (accepted text,
+already in the catalogue and its fixtures).
+
+**Watch for.** ADR 0062 accepted with `molar_mass_inconsistent` still in its code list.
+
+## R-1056: the `legacy` member is reserved for the legacy importer, as the `legacy.` source prefix is
+
+| | |
+| --- | --- |
+| Date | 2026-11-18 |
+| Decided by | design lane (`reviewer`), F3 review and ruling round 2, applying ADR 0061 D1 ("written by the legacy importer only") by D11's rule |
+| Normative text | ADR 0061 D1, D11 and section "F3 ruling round 2 applied"; `docs/reviews/F3-review-2.md` (M3, C3, C10) |
+| Evidence | At `50e6ca04` `register_record` stored `m01`'s H2 with its molar mass doubled, its source renamed `user.copy` and its `legacy` member kept; `legacy_views.c1_records` on five such records gives the real file's `sha256` over other molar masses |
+| Affected packages | F3; F2 and F4 (records read through `records.legacy_views`); T08 (A32's vetted-file branch) |
+
+**Decision.** A submitted record that carries a `legacy` member, like one that names a `legacy.` source, is the
+importer's exactly when its `record_sha256` is in the committed legacy index. Any other is refused
+`reserved_namespace(legacy)` by `register_record` and reported so by `validate_record`. T08.A32's vetted-file branch
+is decided by the index too (a component whose SHA the index lists under a vetted file), not by the member.
+
+**Rejected alternatives.** Trusting the member (the loader views take the provider data's hash and order from it).
+A new code (D11 already reuses ADR 0060's).
+
+**Watch for.** A new reader of `record["legacy"]` on records that are not checked against the index.
+
+## R-1057: a YAML user file may not use aliases
+
+| | |
+| --- | --- |
+| Date | 2026-11-18 |
+| Decided by | design lane (`reviewer`), F3 review and ruling round 2, filling a gap of ADR 0061 D12 (the formats `record-v2-yaml`, `component-record-v1-yaml`) |
+| Normative text | ADR 0061, section "F3 ruling round 2 applied"; `docs/reviews/F3-review-2.md` (M1, C1) |
+| Evidence | At `50e6ca04` a 903-character `record-v2-yaml` file of 24 nested aliases held `register_record` for 291.8 s before it was refused; each further line doubles the time. None of the seven legacy files uses an anchor |
+| Affected packages | F3 (`records/importers/user_file.py`, `records/normalize.py`) |
+
+**Decision.** The user-file adapter refuses YAML text that uses an alias (and so a merge key) as text that is not one
+document: one refused outcome `record_schema_invalid("")`. A request's work stays bounded by its size
+(`MAX_FILE_TEXT`). A file that holds no record is refused the same way, not answered with an empty result.
+
+**Rejected alternatives.** A node budget after parsing (more code for a feature a record file does not need). A
+timeout (it bounds the caller's wait, not the work: the worker stays busy).
+
+**Watch for.** Another operation that parses client YAML.
+
+## R-1058: R-088 Q26 admits `validate_record`'s `reactions/*/stoichiometry` map, by full path (F3 decision F3-3-2)
+
+| | |
+| --- | --- |
+| Date | 2026-11-18 |
+| Decided by | design lane (`reviewer`), F3 ruling round 2 (fix round 3), on build decision F3-3-2 (`b2399a2a`), clarifying ADR 0061 D7 (Accepted, R-1050) against R-088 Q26. Number from F3's block R-1050…R-1059 |
+| Normative text | ADR 0061, section "F3 ruling round 2 applied: fix round 3"; `docs/reviews/F3-rulings-2.md` (ruling 2) |
+| Evidence | CI 44283813577: the Q26 scan found `Finding(operation='validate_record', path=('reactions', '*', 'stoichiometry'), kind='map')` and no other numeric container in the `Records` requests; ADR 0061 D7 fixes the form `{id, stoichiometry: {component key: ν}}` |
+| Affected packages | F3 (`tests/test_t07_q26.py`); F2 (ADR 0062's `[p, q]` coefficient, when it joins `validate_record`) |
+
+**Decision.** A `validate_record` reaction's stoichiometry map is a model input, the reaction's definition: its
+coefficients are checked for balance; nothing is stored, nothing is solved, and no path leads to a solver start.
+R-088 Q26 admits it by full path and only there, as it admits M02's `body/inlet/n` and OPT's request containers. The
+exception is stated in ADR 0061; the Q26 test implements it and cites this entry.
+
+**Rejected alternatives.** A list of `{component, nu}` items (still a numeric container, and ADR 0061 names the map).
+The exception stated only in the test's docstring (every earlier Q26 exception is in an authority document: M02's
+design note §14 B2, ADR 0070, ADR 0071).
+
+**Watch for.** ADR 0062's `[p, q]` coefficient adds an integer array under the map (`reactions/*/stoichiometry/*`):
+a new path, a new row.
+
 ## R-1059: S19 W5 re-registers identities once per batch, admits the tier-3 providers under the identity pin, and judges G-END's F0 clause by E1 to E5 (ADR 0077; 2026-11-18)
 
 | | |

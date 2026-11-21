@@ -78,6 +78,14 @@ from openflowsheet.application.projection import (
     DEFAULT_DEPTH,
     DEFAULT_PAGE,
 )
+from openflowsheet.application.record_types import (
+    RecordPage,
+    RecordRegistrationResult,
+    RecordValidationReport,
+    RecordView,
+    RightsAssessmentResult,
+)
+from openflowsheet.application.records_service import RecordsService
 from openflowsheet.application.revision_service import RevisionService
 from openflowsheet.application.service_core import ServiceCore
 from openflowsheet.application.store import (
@@ -131,6 +139,7 @@ class LocalApplication:
         self._revisions = RevisionService(core, self._inspection)
         self._artifacts = ArtifactService(core, self._revisions)
         self._validation = ValidationService(core, self._revisions)
+        self._records = RecordsService(core)
         self._jobs = JobService(
             core, self._inspection, self._revisions, self._artifacts, self._validation
         )
@@ -717,6 +726,78 @@ class LocalApplication:
         (`revision`, a schema_version 1 document) takes one pair per unit instance on the
         property method its component set selects and `nTP-v1`."""
         return self._validation.check_admission(pair=pair, revision=revision)
+
+    # ------------------------------------------------- Records (ADR 0061 D13, Amendment 8)
+
+    def search_records(
+        self,
+        *,
+        key: str | None = None,
+        scheme: str | None = None,
+        record_type: str | None = None,
+        cursor: str | None = None,
+        limit: int = 50,
+    ) -> RecordPage:
+        """ADR 0061 D13: a page of the records D9's key `key` matches (in `scheme` when given;
+        every record without a key), of `record_type` when given, by SHA, each with its
+        effective rights per source (D11), and D9's resolution over every match. `read`."""
+        return self._records.search_records(
+            key=key, scheme=scheme, record_type=record_type, cursor=cursor, limit=limit
+        )
+
+    def get_record(self, record_sha256: str) -> RecordView:
+        """ADR 0061 D13: record `record_sha256`, its registrations (D8), the layer it is read
+        from and its rights (D11). `read`; an unknown SHA is `not_found`."""
+        return self._records.get_record(record_sha256)
+
+    def register_record(
+        self,
+        *,
+        record: Mapping[str, Any] | None = None,
+        file: Mapping[str, Any] | None = None,
+        defaults: Mapping[str, Any] | None = None,
+    ) -> RecordRegistrationResult:
+        """ADR 0061 D13: store `record`, or the records of a user `file` (D12, with `defaults`
+        for a v1 file), idempotently by content. `draft`; audited. A refused record refuses the
+        call and stores nothing; a record naming a `legacy.` source that is not in the
+        committed legacy index is `reserved_namespace(legacy)` (D11)."""
+        return self._records.register_record(record=record, file=file, defaults=defaults)
+
+    def validate_record(
+        self,
+        *,
+        record: Mapping[str, Any] | None = None,
+        records: Sequence[str | Mapping[str, Any]] | None = None,
+        components: Mapping[str, str] | None = None,
+        reactions: Sequence[Mapping[str, Any]] | None = None,
+    ) -> RecordValidationReport:
+        """ADR 0061 D13: D7 on `record` and `records` (SHAs or records), and the reaction checks
+        of `reactions` over `components` (key -> SHA), storing nothing. `read`."""
+        return self._records.validate_record(
+            record=record, records=records, components=components, reactions=reactions
+        )
+
+    def assess_rights(
+        self,
+        *,
+        source_id: str,
+        record_sha256: str,
+        scope: str,
+        assessment: str,
+        basis: str,
+        conditions: str | None = None,
+    ) -> RightsAssessmentResult:
+        """ADR 0061 D13: append a project register row for (`source_id`, record) or, with
+        `scope="source"`, for the whole source (D11), and return it with the effective
+        assessment after it. `policy`; audited."""
+        return self._records.assess_rights(
+            source_id=source_id,
+            record_sha256=record_sha256,
+            scope=scope,
+            assessment=assessment,
+            basis=basis,
+            conditions=conditions,
+        )
 
     def artifact_bytes(self, artifact_id: str) -> bytes:
         """§4.3, §10.4: an artifact file's bytes exactly as stored — the raw export (Python, CLI,

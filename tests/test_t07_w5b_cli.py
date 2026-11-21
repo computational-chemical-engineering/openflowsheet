@@ -42,6 +42,7 @@ from typing import Any
 import pytest
 import yaml
 from conftest import REPO_ROOT
+from f3_schema_support import records_requests, user_record_sha256
 from msg_support import machine_detail
 from t07_corpus import CORPUS
 from t07_jobs_support import lifecycle_violations
@@ -296,6 +297,7 @@ NOMINAL = "SYN-001-nominal"
 #: §11.6: the members a twin project cannot repeat (clock readings), removed before comparing.
 CLOCK_MEMBERS = frozenset(
     {"recorded_at", "created_at", "started_at", "ended_at", "elapsed_seconds", "timestamp", "at"}
+    | {"date"}  # a rights row's UTC date (ADR 0061 D11)
 )
 #: The artifacts whose bytes hold clock readings (`run-manifest.json` records `started_at` and
 #: `elapsed_seconds`, and the bundle holds the manifest): their digests and sizes are removed.
@@ -371,6 +373,7 @@ def scenario(revision_id: str, job_id: str, bundle: Path) -> list[tuple[str, dic
         ("explain", {"code": "not_found"}),  # ADR 0058 D7 (MSG)
         ("list_capabilities", {"kind": "unit_model", "limit": 3}),  # ADR 0060 D11 (F1)
         ("check_admission", {"pair": {"unit": "thermal.heater", "method": "coolprop-heos-v1"}}),
+        *records_requests(user_record_sha256()),  # ADR 0061 D13 (F3)
         ("artifact_bytes", {"artifact_id": state}),
     ]
 
