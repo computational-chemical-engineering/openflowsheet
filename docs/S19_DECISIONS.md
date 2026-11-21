@@ -4782,3 +4782,9 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   single-phase type bundles `_refused_at_construction`'s parameters. F1 (docstring: binder names the instance
   contracts) + notes 4, 6 (docstring wording) fixed by the orchestrator, 6afe9aa1, job 642 app1-fix no-gain. Note 5
   (`_Assembly` `frozen=True`, a code change) optional, not taken. Notes 2, 3 accepted as is.
+- 2026-11-21, X07a CI 44842632690 (549d10c6): Windows leg fails only REL.A20/RP.S08 again; all other legs green.
+  WO14 line: `tree 54 miss 0; H1 ns 1 root 1; H2 C = cand =; H3 read_at None git 128:"fatal: failed to stat 'b"`:
+  same repo, same candidate, records present; git refuses the gate's read. WO15 launched (opus-engineer, Opus;
+  `<briefs>/X07a-WO15.md`): first hypothesis a bytes value formatted into a git argument (`b'...'`), else the full
+  stderr and argv as the next diagnostic.
+- 2026-11-21, TR chain: tr1-5r..12r PASS (steps 527-536 incl. app1-1 531, app1-2 534); app chain running.
