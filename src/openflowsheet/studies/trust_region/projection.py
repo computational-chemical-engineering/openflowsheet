@@ -745,12 +745,30 @@ def _check_call(
     decisions: Sequence[DecisionSpec],
     links: Sequence[ExternalLinkSpec],
 ) -> None:
+    """The call's arguments, in this order, each check raising `ValueError` on the first
+    failure: `x0` (`_check_x0`), the promoted parameters (`_check_promoted`), then the links'
+    inlet variables (`_check_link_inlets`)."""
+    _check_x0(spec, x0)
+    _check_promoted(spec, decisions, links)
+    _check_link_inlets(spec, links)
+
+
+def _check_x0(spec: ProblemSpec, x0: Mapping[str, float]) -> None:
+    """`x0` has a value for every variable, then every value is finite; else `ValueError`
+    naming the variables that fail."""
     missing = [name for name in spec.variable_ids if name not in x0]
     if missing:
         raise ValueError(f"x0 has no value for {missing}")
     nonfinite = [name for name in spec.variable_ids if not math.isfinite(float(x0[name]))]
     if nonfinite:
         raise ValueError(f"x0 is not finite at {nonfinite}")
+
+
+def _check_promoted(
+    spec: ProblemSpec, decisions: Sequence[DecisionSpec], links: Sequence[ExternalLinkSpec]
+) -> None:
+    """The promoted parameters (the decisions', then each link's X and ΔT) are pinned inputs
+    of `spec`, then none is promoted twice; else `ValueError`."""
     promoted = [decision.parameter_id for decision in decisions] + [
         parameter for link in links for parameter in (link.x_param_id, link.dt_param_id)
     ]
@@ -759,6 +777,11 @@ def _check_call(
         raise ValueError(f"{unknown} are not pinned inputs of {spec.label!r}")
     if len(set(promoted)) != len(promoted):
         raise ValueError(f"a pinned input is promoted twice: {promoted}")
+
+
+def _check_link_inlets(spec: ProblemSpec, links: Sequence[ExternalLinkSpec]) -> None:
+    """Each link, in order, has `LINK_INLET_SIZE` inlet variables, all variables of `spec`;
+    else `ValueError` naming the link."""
     known = set(spec.variable_ids)
     for link in links:
         if len(link.inlet_variable_ids) != LINK_INLET_SIZE:
