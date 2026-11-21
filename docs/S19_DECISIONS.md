@@ -4995,3 +4995,13 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   Per the falsifier fixed in advance: a36 is nondeterministic on macOS, no F3 bisect. X07a-WO18 (opus-engineer, Opus;
   `<briefs>/X07a-WO18.md`): diagnose a36, fix only an order dependence or missing pin, STOP before any statistic or
   rule; remove the wall-cap race without dropping the assertion.
+- 2026-11-21 ~13:10, gate job 700 (dup-1) FAIL: `literals` (the inline `Literal[...]` on `_record_initializer.kind`
+  adds 'initializer_accepted'/'initializer_candidate') and `gain` (10.0 -> 10.0: the gate's debt does not count file
+  smells). DUP run 2 (sonnet-implementer; `<briefs>/S19-W3-DUP-2.md`): `kind: EventKind`, chain 799f81c9..head
+  re-enqueued as one `no-gain` job (label dup-2) with the reason.
+- 2026-11-21, X07a-WO18 (opus-engineer, Opus, ~118k): a36 STOP for the design lane. it2's verdict is decided by
+  LAPACK roundoff: the stand-in's response is constant, every score is fit roundoff (steps of 2.22e-14); Linux it2 hits
+  286 vs h_min 279 with 35 scores at q̂; shuffling training rows (200 seeds) flips it2 3/200 and it1 7/200, lstsq flips
+  it1 on Linux. Controls (reruns, threads, ±2 ulp, hash seeds) never flip. Wall-cap race fixed in c06b212b (cap starts
+  after the init line; stress 3/50 -> 50/50); entry d99117c5; pushed. Ruling D1 (specifier;
+  `<briefs>/X07a-D1-a36-ruling.md`, options A test-level, B method-level, C known limitation) running.
