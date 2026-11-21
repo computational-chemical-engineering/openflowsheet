@@ -427,7 +427,8 @@ def project(
     §6.1 steps 5 to 7 (rows, inequalities, objective) are `_add_constraints_and_objective`'s;
     the refusals are `_check_omitted_rows`'s (the caller's `omitted_rows`) and, after the rows,
     `_check_smooth`'s (PROJECTION_NONSMOOTH) before `_check_structure`'s and the shape check's.
-    The call's arguments are `_check_call`'s and `omitted_rows` is `_requested_rows`'."""
+    The call's arguments are `_check_call`'s and `omitted_rows` is `_requested_rows`'; the
+    eliminated zero flows' constants and pins are `_zero_constants_and_pins`'."""
     spec.validate()
     _check_call(spec, x0, decisions, external_links)
     scaling = projection_scaling(spec)
@@ -452,10 +453,7 @@ def project(
     zero, zero_blocks = _eliminate_zero_flows(
         spec, x0, assembly, omitted, residuals_x0, derivatives, external_links, scaling, decisions
     )
-    constants = {entry.variable_id: normalize_zero(0.0) for entry in zero}
-    pins = frozenset(entry.row_id for entry in zero if entry.row_id is not None) | {
-        row for block in zero_blocks for row in block.rows
-    }
+    constants, pins = _zero_constants_and_pins(zero, zero_blocks)
     bounded = sorted(set(constants) & set(variable_bounds or {}))
     if bounded:
         raise ValueError(f"variable_bounds names {bounded}, which are eliminated zero flows")
@@ -639,6 +637,19 @@ class _Expressions(NamedTuple):
     rows: list[Any]
     inequalities: list[Any]
     objective: Any
+
+
+def _zero_constants_and_pins(
+    zero: Sequence[ZeroEliminated], zero_blocks: Sequence[ZeroBlock]
+) -> tuple[dict[str, float], frozenset[str]]:
+    """The eliminated zero flows (§17.1, §18.1) as model constants, each +0.0 by variable id,
+    and the rows that leave the projection with them: each single pin's row, then every
+    certified block's rows. Pure."""
+    constants = {entry.variable_id: normalize_zero(0.0) for entry in zero}
+    pins = frozenset(entry.row_id for entry in zero if entry.row_id is not None) | {
+        row for block in zero_blocks for row in block.rows
+    }
+    return constants, pins
 
 
 def _add_constraints_and_objective(
