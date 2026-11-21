@@ -141,17 +141,28 @@ exact (digests and ids compared as strings, counts as integers; there is no floa
   `tests/test_f3_operations.py` builds it) returns a capability page in both, and the two `registry_sha256` are equal
   64-hex strings. Sanity value, measured in the checkout at `d29f1a50`: `fc0af96b7ba9b7259ce3c1336cf408f41c1805259859a788c4804502c5c7bcee`.
   It is not the expectation (S19 W5 may re-register it, ADR 0077); the checkout at C is.
-- **WF-4** `f3.legacy_records`: `search_records(limit=200)` followed through `next_cursor` to the end gives, in both,
-  items whose `store` is `legacy`; the sorted `(id, record_sha256)` lists are equal; and their length N equals the
-  number of `records` entries over `files` in `src/openflowsheet/records/legacy_index.json` at C, read by the script
-  from that file, not through the code under test, with N ≥ 1 asserted. Measured at `d29f1a50`: one page, 149 items,
-  149 distinct SHAs, and 9 + 5 + 1 + 123 + 4 + 4 + 3 = 149 index records.
-- **WF-5** record and controls: one line per check, the findings as one JSON line (the two digests, N, the wheel's
-  SHA-256), last line `wheel data check (F1, F3): PASS|FAIL`; exit 0 if and only if WF-1 to WF-4 pass, 1 otherwise,
-  2 when the checkout is not at C. The script's tests carry four controls, each of which must fail its check: (a)
-  `openflowsheet/registry/builtin/core.json` deleted from the installed package (WF-3: the call raises or the digest
-  differs); (b) the installed `openflowsheet/records/legacy_index.json` deleted (WF-4); (c) a probe document whose
-  digest is replaced by another 64-hex value (WF-3); (d) a probe document with one item dropped (WF-4's count).
+- **WF-4** `f3.legacy_records`: on each side, `search_records(limit=200)` followed through `next_cursor` to the end,
+  in at most ⌈N/200⌉ + 1 pages (otherwise the check fails by name), gives only items whose `store` is `legacy`, and
+  their sorted `(id, record_sha256)` list equals the sorted `(id, sha256)` list of the index records over that
+  side's files. The script reads both from `src/openflowsheet/records/legacy_index.json` at C, not through the code
+  under test. The checkout's files are every entry of `files`, with N records. The installed side's files are the
+  entries whose `path` P is package data at C: `openflowsheet/_data/P` is a key of `scripts/t08_dist.py`'s
+  `expected_package_files` at C (the files that `pyproject.toml`'s `[tool.setuptools.package-data]` patterns match
+  from the package directory, `_data/` links followed; T08.A43, inside WF-1, holds the wheel equal to that set).
+  They hold N_pkg records. The script asserts N ≥ 1 and N_pkg ≥ 1. The sides differ by ADR 0061 D8: only the `m01`
+  and `s10` component files are package data, and a file that is not available contributes no records. Measured at
+  `71a7328e`: N = 149 (9 + 5 + 1 + 123 + 4 + 4 + 3); package data `benchmarks/m01/components.yaml` and
+  `benchmarks/s10/records.yaml`, N_pkg = 9 (5 + 4); each side equals its index list.
+- **WF-5** record and controls: one line per check, the findings as one JSON line (the two digests, N, N_pkg and the
+  package-data paths, the wheel's SHA-256), last line `wheel data check (F1, F3): PASS|FAIL`; exit 0 if and only if WF-1
+  to WF-4 pass, 1 otherwise, 2 when the checkout is not at C. The script's tests carry six controls, each of which must
+  fail its check: (a) `openflowsheet/registry/builtin/core.json` deleted from the installed package (WF-3: the call
+  raises or the digest differs); (b) the installed `openflowsheet/records/legacy_index.json` deleted (WF-4); (c) a probe
+  document whose digest is replaced by another 64-hex value (WF-3); (d) an installed probe document with one item
+  dropped (WF-4); (e) the installed `openflowsheet/_data/benchmarks/m01/components.yaml` deleted (WF-4: the installed
+  side then lists 4 records against N_pkg = 9, so the expected list does not follow the installed package); (f) a
+  checkout probe document with one item dropped (WF-4: the sides are not compared with each other, so the checkout side
+  needs its own control). WF-4 and WF-5 stand as restated by REL050-R Ruling 1 (`docs/reviews/REL050-R-machinery.md`).
 
 What `WHEEL-F1-F3` does not establish: that F1's admission or F3's records are right (their manifests and reviews
 carry that); anything on Windows or macOS; any plugin-discovery path (WF-2 requires none installed).
