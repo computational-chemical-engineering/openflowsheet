@@ -578,7 +578,8 @@ class EFHolder:
 
         A box with a `finite_difference` policy (a parent truth, §6.5) has it formed here: the
         base value (memo, normally), then its seven points through `request_batch`, labelled
-        `purpose` (`trf_fd_point` by default; `basis_fd_point` for the affine basis, §6.6)."""
+        `purpose` (`trf_fd_point` by default; `basis_fd_point` for the affine basis, §6.6).
+        A cold request's outcome is `_cold_jacobian`'s."""
         inputs, key = self._key(args)
         start = time.perf_counter()
         with self._lock:
@@ -586,6 +587,22 @@ class EFHolder:
             if held is not None:
                 self._append("jacobian", key, "memo_hit", None, held, start)
                 return self._unwrap_jacobian(held)
+        outcome = self._cold_jacobian(inputs, purpose)
+        with self._lock:
+            self._jacobians.setdefault(key, outcome)
+            if isinstance(outcome, TruthRefused) and outcome not in self._refusals:
+                self._refusals.append(outcome)
+            self._append("jacobian", key, "cold", None, outcome, start)
+        return self._unwrap_jacobian(outcome)
+
+    def _cold_jacobian(
+        self, inputs: tuple[float, ...], purpose: str | None
+    ) -> tuple[tuple[float, ...], ...] | TruthRefused:
+        """A cold Jacobian request's outcome at `inputs`, outside the lock: the box's matrix (a
+        `finite_difference` policy's quotients over the base value and its points, requested
+        labelled `purpose`, else `box.jacobian`) as floats, a `non_finite_output` refusal when an
+        entry is not finite, or the TruthRefused the box or a point raised. A ValueError when
+        the matrix is not `n_out` x `n_in`; any other exception propagates."""
         outcome: tuple[tuple[float, ...], ...] | TruthRefused
         try:
             policy = getattr(self.box, "finite_difference", None)
@@ -609,12 +626,7 @@ class EFHolder:
                 outcome = TruthRefused("non_finite_output", self.name, "jacobian")
         except TruthRefused as refusal:
             outcome = refusal
-        with self._lock:
-            self._jacobians.setdefault(key, outcome)
-            if isinstance(outcome, TruthRefused) and outcome not in self._refusals:
-                self._refusals.append(outcome)
-            self._append("jacobian", key, "cold", None, outcome, start)
-        return self._unwrap_jacobian(outcome)
+        return outcome
 
     def _values_request(
         self, args: Sequence[float], purpose: str | None
