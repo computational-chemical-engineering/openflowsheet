@@ -85,7 +85,8 @@ def validate(
     solver_probe: Callable[[], Any] | None = None,
 ) -> ValidationReport:
     """Blueprint §4.3's order: schema (`_schema_stage`), dimensions, connectivity, components,
-    then structural analysis.
+    then structural analysis. `COND-01` and the status it implies before the structural
+    findings come from `_specification_readiness`.
 
     `now` is read once, when the report is made, for `provenance.timestamp` (T07 ruling round 1
     R3); it is injectable so that a test can fix it. Nothing else in the report depends on it.
@@ -142,26 +143,8 @@ def validate(
 
     # Task-specific structure. A draft is not a failure: D16 makes an incomplete revision
     # persistable and committable, and only a *run* requires a revision validated for its task.
-    if not specifications:
-        checks.append(
-            Check(
-                id="COND-01",
-                stage="conditional_classification",
-                result="WARN",
-                message="no specifications; the system is under-determined and this is a draft",
-            )
-        )
-        status: ValidationStatus = "DRAFT"
-    else:
-        checks.append(
-            Check(
-                id="COND-01",
-                stage="conditional_classification",
-                result="PASS",
-                message=f"{len(specifications)} specifications declared",
-            )
-        )
-        status = "READY_FOR_SIMULATION"
+    conditional, status = _specification_readiness(specifications)
+    checks.append(conditional)
 
     structural, counts, absent_reason, fallback = _structural(document, surrogates)
     checks += structural
@@ -1199,3 +1182,30 @@ def _components(
         record_check,
         _component_references(components, instances, specifications),
     ]
+
+
+def _specification_readiness(
+    specifications: Sequence[Mapping[str, Any]],
+) -> tuple[Check, ValidationStatus]:
+    """`validate`'s `COND-01` check and the status it implies before the structural findings: a
+    `WARN` and `DRAFT` when the revision declares no specifications, else a `PASS` and
+    `READY_FOR_SIMULATION`."""
+    if not specifications:
+        return (
+            Check(
+                id="COND-01",
+                stage="conditional_classification",
+                result="WARN",
+                message="no specifications; the system is under-determined and this is a draft",
+            ),
+            "DRAFT",
+        )
+    return (
+        Check(
+            id="COND-01",
+            stage="conditional_classification",
+            result="PASS",
+            message=f"{len(specifications)} specifications declared",
+        ),
+        "READY_FOR_SIMULATION",
+    )
