@@ -59,14 +59,16 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 
 ## Next actions (2026-11-21 ~01:15 CET)
 
-**Position (2026-11-21 ~12:30): G-END code health MET.** main = d29f1a50. wp/S19 = 2aaa5d3f + docs, pushed at
-2aaa5d3f (F3 merged at 68abf467; W5-S2 fix da6e4e82; W3 lanes TR 88818288, app/AS/A2 b2f62ac3/498adcf5/248e9496,
-D1 2aaa5d3f). Scan at 2aaa5d3f: debt 1878.4, health 9.06, brain 0, floor 7.0, no huge_file, arch 0/0. F0 PASS 9/9;
-mcp_digest tier 44 passed. MB 2c5f7c3b (G-MAP 8). Runner PID 4039086 (queue empty). No lane worktree open; no agent
-running. Background pollers (they survive a reset; their output lands in the new context): (a) wp/S19 CI 44896811906
-at 2aaa5d3f; (b) X07a run 44882659578: waits for completion, reruns the failed macOS job, prints FIRST and RERUN.
+**Position (2026-11-21 ~15:30): G-END code health MET; CI codehealth fixed.** main = d29f1a50. wp/S19 = 043879a4 +
+docs (pushed at 043879a4). CI 44896811906 at 2aaa5d3f: both legs green, codehealth red on region.py duplication; lane
+DUP (`_RegionSolve._record_initializer`, review R-W3-DUP-1 merge, gates 700 FAIL/701 PASS no-gain, merge-check 702
+PASS) merged at 043879a4; `codehealth diff --base d29f1a50` PASS locally. **CI 44909075689 at 043879a4 running**
+(background `gh run watch`; its notice lands in the new context). Scan numbers at 2aaa5d3f (unchanged in behaviour):
+debt 1878.4, health 9.06, brain 0, floor 7.0, arch 0/0. MB 2c5f7c3b. Runner PID 4039086 (queue empty). No lane open.
+X07a is now driven from the REL050 campaign (`.claude/worktrees/rel050/docs/REL050_STATE.md`): WO18 found a36
+roundoff-decided, ruling D1 (option A) applied by WO19, CI 44902051410.
 **Next actions (S19 close):**
-1. On (a): green on both legs (ubuntu-latest, ubuntu-24.04-arm) -> a `verdict` agent (design lane) on G-END with the
+1. On CI 44909075689: green on both legs (ubuntu-latest, ubuntu-24.04-arm) and codehealth -> a `verdict` agent (design lane) on G-END with the
    measurements above, E1-E5 (docs/briefs/S19-W5-ruling.md section 7; E5 still needs the byte-identity of the two
    mcp_digest files to d90b498f, E4 M7's 52 values vs d90b498f), and the E2 list in S19_DECISIONS (2026-11-21 ~12:30),
    incl. 68abf467's merge resolution. Red -> read the failing job, fix by a fresh engineer.
@@ -74,9 +76,7 @@ at 2aaa5d3f; (b) X07a run 44882659578: waits for completion, reruns the failed m
    build lane), naming 43dccc21 and b1d2ae6a as post-K generator-only commits; the wall-time budget tests alone on
    wp/S19 (f6, t07_conformance budget_of_the_scenario_runs, no gate running); then a Decision Desk merge card via hub
    (SKILL.md "Merging a phase into main"). Merging into main waits for the user's signed card.
-3. X07a: on (b): RERUN green on macOS = nondeterminism in test_m04_iterations a36 (an X07a finding: WO18 diagnose);
-   red again = deterministic after the F3 merge (WO18: bisect F3 vs f217ca02). Manifest move leftovers in WO17's
-   report (S19_DECISIONS 2026-11-21, X07a-WO17). Then manifest `tested` and a merge card.
+3. X07a: moved to the REL050 campaign (see its state file).
 Open build-lane items (not blocking G-END): test-map holes (source-scanning tests like recovery_edges a33;
 collection-time application/ modules); WO16's frozen scripts; R-W3-A2-1 notes 3-6 (renames); `_Assembly` frozen;
 `check_manifest`/STR pins done. Trailing behind 0.5: pre-S19 broken doc references; syn001 (tier 4) untouched.
