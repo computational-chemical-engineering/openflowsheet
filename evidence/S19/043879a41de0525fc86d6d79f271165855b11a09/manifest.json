@@ -1,0 +1,155 @@
+{
+  "work_package": "S19",
+  "commit": "043879a41de0525fc86d6d79f271165855b11a09",
+  "requirements": [],
+  "status": "tested",
+  "inputs": {
+    "case_id": "S19 (Frank, 2026-11-14: excellent code health before further development); docs/S19_RULES.md; ADR 0076; ADR 0077; this manifest covers the G-END tip 043879a4 of wp/S19, after lane DUP, judged PASSED (14 of 14 clauses) by docs/reviews/S19-G-END-verdict.md; it supersedes the e3e95520 manifest as the evidence for the merge of wp/S19 into main, which stays in place",
+    "case_hash": "06c8543ca61a41b586f4a489c12c414239165cbe3d326c2a7b84315ff0eabb09",
+    "environment_lock_hash": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+  },
+  "commands": [
+    {
+      "cmd": "codehealth scan --repo . --json (SCAN 353 files, 107493 NLOC, debt 1878.4 (17.47/kNLOC), health 9.06, functions with debt 503/5707, brain 0, file smells 48, errors 0; lowest file models/syn001/column.py 7.0; no huge_file; re-run by the G-END verdict at 8b48cd42 (diff to 043879a4: docs/S19_DECISIONS.md and docs/S19_STATE.md only) and also under cce-code-health d542005, same clause verdicts)",
+      "cwd": ".claude/worktrees/s19",
+      "exit_code": 0
+    },
+    {
+      "cmd": "codehealth arch --depth 4 (ARCH 353 files, 4292 imports, 0 violation(s), 0 cycle(s) at depth 4; same under d542005)",
+      "cwd": ".claude/worktrees/s19",
+      "exit_code": 0
+    },
+    {
+      "cmd": "merge-check 702 via .claude/skills/s19-refactor/gate_queue.py, full suite, behaviour-only, at 43a073d5 (diff to 043879a4: 11 added lines in docs/S19_DECISIONS.md): F0 PASS: M1 50/50, M2 61/61, M3 61/61, M4 61/61, M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 42/42; tests tier --full 20926 passed, 107 skipped, 3 xfailed, 0 failed; mcp_digest tier 44 passed",
+      "cwd": ".claude/worktrees/s19",
+      "exit_code": 0
+    },
+    {
+      "cmd": "E2 to E5 measurements of the G-END verdict (docs/reviews/S19-G-END-verdict.md, commit 15e1e147; docs/S19_DECISIONS.md entry '2026-11-21 ~15:10'): git log d90b498f..043879a4 over the three E2 paths (11 commits, all classed); w5_identity.py judge x4 PASS; w5_gate.py f0 and registry at 30f705d9 PASS; w5_gate.py close at 2a5f0322 PASS; registry_builtin.py --check clean (49 descriptors in 3 tables, registry_sha256 6a7550d4); corpus.json per-measure comparison against d90b498f; M7 52 x (MATCH, exact_replay, integrity true)",
+      "cwd": ".claude/worktrees/s19 and detached worktrees",
+      "exit_code": 0
+    },
+    {
+      "cmd": "PYTHONPATH=src .venv/bin/python -m pytest -q -p no:cacheprovider tests/test_t07_v17_reference.py::test_f6_the_forty_runs_fit_their_budget (run by the orchestrator at 043879a4, alone; 1 passed in 113.83 s, wall 119 s, load average 0.78 0.65 0.50; log git-common-dir codehealth/runs/budget-043879a4/test_f6_the_forty_runs_fit_their_budget.log)",
+      "cwd": ".claude/worktrees/s19",
+      "exit_code": 0
+    },
+    {
+      "cmd": "PYTHONPATH=src .venv/bin/python -m pytest -q -p no:cacheprovider tests/test_t07_conformance.py::test_the_budget_of_the_scenario_runs (run by the orchestrator at 043879a4, alone; 1 passed in 32.98 s, wall 33 s, load average 1.06 0.79 0.58; log git-common-dir codehealth/runs/budget-043879a4/test_the_budget_of_the_scenario_runs.log)",
+      "cwd": ".claude/worktrees/s19",
+      "exit_code": 0
+    },
+    {
+      "cmd": "gh run view 44909075689 --json headSha,headBranch,status,conclusion,event,jobs (the G-END verdict's one call)",
+      "cwd": ".claude/worktrees/s19",
+      "exit_code": 0
+    }
+  ],
+  "checks": [
+    {
+      "id": "S19.G-END",
+      "description": "the G-END criterion (docs/S19_STATE.md row G-END, fixed at 3d3eebe3, F0 clause amended by ADR 0077 D7): verdict docs/reviews/S19-G-END-verdict.md (commit 15e1e147, verdict agent, Opus 5.5; numerical and procedural only, no human sign-off)",
+      "result": "pass",
+      "value": "14 of 14 clauses met at 043879a4 (tree 5942b946): debt 1878.4 (bound 1900), health 9.06 (bound 9.0), brain 0, lowest file 7.0 (models/syn001/column.py), no huge_file; arch 0 cycles at depth 4, 0 violations; E1 F0 PASS 9/9 (merge-check 702 at 43a073d5; M7 52/52, M9 42/42); E2 met with two rulings (68abf467 arrived through a merge of main; 30f705d9 counted under batch N's K2); E3, E4 (M7 52 values identical to d90b498f), E5 (44 passed) met; full suite merge-check 702 20926 passed, 107 skipped, 3 xfailed, 0 failed; CI met"
+    },
+    {
+      "id": "S19.G-END-SCAN",
+      "description": "repo scan and arch at 043879a4 (G-END clauses 1 to 7)",
+      "result": "pass",
+      "value": "debt 1878.4, health 9.06 (NLOC-weighted 9.0642), brain 0, lowest file 7.0, no huge_file, one large_file (assessment/cost/contributor.py, 1111 NLOC); arch 353 files, 4292 imports, 0 violation(s), 0 cycle(s) at depth 4; also under d542005 with the same clause verdicts (file smells 49 there, 48 under the pin 34a30bf)"
+    },
+    {
+      "id": "S19.F0",
+      "description": "scripts/corpus_identity.py --check at the tip (merge-check 702 at 43a073d5, a docs-only diff to 043879a4)",
+      "result": "pass",
+      "value": "F0 PASS: M1 50/50, M2 61/61, M3 61/61, M4 61/61, M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 42/42"
+    },
+    {
+      "id": "S19.E2-RULINGS",
+      "description": "G-END clause 9 (E2): the 11 commits touching benchmarks/f0/, tests/fixtures/registry/, src/openflowsheet/registry/builtin/ since d90b498f",
+      "result": "pass",
+      "value": "met, with two rulings: 68abf467 (merge of main d29f1a50 into wp/S19) counts as arrived through a merge of main, its regenerated legacy digest 1bd31223 and registry_sha256 6a7550d4 being generator-forced (table_sha256 recomputed from committed bytes, registry_builtin.py --check clean); 30f705d9 (WO-N4) counts as a W5 re-registration commit of batch N (ruling R1 item 2, K2 at 4178e4bc); no commit after 68abf467 touches the three paths"
+    },
+    {
+      "id": "S19.E3-E4-E5",
+      "description": "G-END clauses 10 to 12",
+      "result": "pass",
+      "value": "E3 met: 74 gated steps plus WO-N4 (S3 closed by the verdict's rerun: w5 f0 PASS the prediction at 605d332fc062 holds both ways; registry PASS), K2 judge PASS x4, K5 for batch P PASS (pinned 3, unpinned 2 CoolProp); E4 met: M1, M4, M5, M7, M8 JSON-equal to d90b498f, M7 52 x (MATCH, exact_replay, integrity true); E5 met: mcp_digest 44 passed, the two digest files equal main d29f1a50"
+    },
+    {
+      "id": "S19.FULL-SUITE",
+      "description": "merge-check 702 at 43a073d5 (tests tier --full, default collection -m 'not nlp and not pymrm' minus the two gate-deselected budget tests)",
+      "result": "pass",
+      "value": "20926 passed, 107 skipped, 3 xfailed, 0 failed"
+    },
+    {
+      "id": "S19.BUDGET-F6",
+      "description": "test_t07_v17_reference f6 (the forty runs within 300 s), run alone at 043879a4",
+      "result": "pass",
+      "value": "1 passed in 113.83 s (wall 119 s), load average 0.78 0.65 0.50; run by the orchestrator at 043879a4"
+    },
+    {
+      "id": "S19.BUDGET-T07C",
+      "description": "test_t07_conformance budget_of_the_scenario_runs (the five scenario runs within 120 s), run alone at 043879a4",
+      "result": "pass",
+      "value": "1 passed in 32.98 s (wall 33 s), load average 1.06 0.79 0.58; run by the orchestrator at 043879a4; observation: after the pass, interpreter shutdown printed an 'Exception ignored' message from a t07_transport_support.ThreadStream object, 'ValueError: I/O operation on closed file' (tests/t07_transport_support.py:132), as at e3e95520"
+    },
+    {
+      "id": "S19.G-END-CI",
+      "description": "CI green on ubuntu-latest and ubuntu-24.04-arm at 043879a4",
+      "result": "pass",
+      "value": "run 44909075689, push on wp/S19, headSha 043879a41de0525fc86d6d79f271165855b11a09: check (ubuntu-latest) success, check (ubuntu-24.04-arm) success, default-install success, codehealth success, identity success; 12 other jobs skipped by their triggers"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "docs/reviews/S19-G-END-verdict.md",
+      "sha256": "f202527645539eaae2960d653a6c5f2b239fc78c92ad0aa11a65d8d7a2cf2f68",
+      "description": "the G-END verdict (15e1e147)"
+    },
+    {
+      "path": "docs/S19_DECISIONS.md",
+      "sha256": "87042b7a621cd62e401d791c6e2e5af0770c9ca5cdf04534dbefbee3684f9cf4",
+      "description": "decisions per work order and review, with the G-END measurements entry '2026-11-21 ~15:10' (hash at the time of this manifest)"
+    },
+    {
+      "path": "docs/S19_STATE.md",
+      "sha256": "06c8543ca61a41b586f4a489c12c414239165cbe3d326c2a7b84315ff0eabb09",
+      "description": "state: gates with criteria fixed before the run, and results (hash at the time of this manifest)"
+    },
+    {
+      "path": "docs/S19_RULES.md",
+      "sha256": "f9e91956f579a7ab9b68037c46f489b3d450d8dc7eac648d2571c3d277c6f0cb",
+      "description": "standing rules for every S19 worker"
+    },
+    {
+      "path": "docs/adr/0077-S19-W5-identity-reregistration.md",
+      "sha256": "ef8efc6e70537db0d7daa0ad2775e15882617cf0748a89fd75ffa40be63b1869",
+      "description": "ADR 0077 (W5 identity re-registration)"
+    },
+    {
+      "path": ".codehealth/config.toml",
+      "sha256": "6681e8b93177a1d80699476318d4ced846a38c05876e1ece8b936f986b6bf358",
+      "description": "the codehealth config: scope src/openflowsheet/*, repo-layers, the architecture ratchet, the docs records"
+    }
+  ],
+  "limitations": [
+    "Evidence class: G-END is a code-health and identity gate, not a validation of the simulator and not numerical verification against analytic or independent references; the gates prove the tested behaviour unchanged (F0's nine measures, the default test collection, the MCP digest), and behaviour no test or corpus pins is covered only by reviewers reading each step. The digests and registry_sha256 have no independent expectation and are self-consistency checks. No empirical validation or optimality evidence.",
+    "E2 ruling on 68abf467 (merge of main d29f1a50 into wp/S19): the merge-generated legacy digest 1bd31223 and registry_sha256 6a7550d4 are admitted as generator-forced; the ruling admits a merge-commit change in the three E2 paths only where each changed value is reproduced by the committed generator's --check from bytes that each arrived by a re-registration or a merge of main (verdict T1, clause 9).",
+    "E2 ruling on 30f705d9 (WO-N4, the units' factory module): counted under batch N's re-registration and K2 (ruling R1 item 2); it passed no queue gate, and its W5-S3 and W5-S4 evidence is the G-END verdict's rerun in a detached worktree (verdict T2).",
+    "Identity-bearing files changed outside E2's three paths after K: 43dccc21 (four capability fixtures) and the merge b1d2ae6a (five m05 G10 records at batch P's provider identity); both are generator-only commits after K and are named here (verdict T3, design round 2 item (iv)).",
+    "User-visible identity changes (ADR 0077 migration): registry_sha256 in list_capabilities and inspection responses; model_version of runs on the four batch P providers; v1 bundles from 0.4.x on those providers replay MISMATCH on model_version (CHANGELOG '## Unreleased') (verdict T4).",
+    "Local full suite is the default collection (-m 'not nlp and not pymrm') minus the two wall-time budget tests the gates deselect; those two were run alone at 043879a4 (S19.BUDGET-F6, S19.BUDGET-T07C) and CI runs the collection without that deselection. The nlp-marked suite is outside G-END and was not measured at the tip (last measured at 607dee3e: 211 passed, 2 failed, test_opt_cost_lca_nlp g19 and g20, base failures; studies/ unchanged since, other modules changed) (verdict T5).",
+    "Code-health scores use tool pin 34a30bf (0.4.1.dev18, complexipy 8.3.0), cross-checked under d542005 with the same clause verdicts; docs/S19_RULES.md 'Settled' still names d542005, which is stale against the pin 34a30bf (verdict T6). The G-END row names no instrument version (verdict finding C2).",
+    "48 file smells remain (47 duplication, 1 large_file); G-END does not bound them; CI's codehealth diff --base origin/main passed (verdict T7, finding C3).",
+    "F0 for M2, M3, M6, M9 checks against W5's re-recorded values; pre-S19 behaviour for those measures rests on K2 (only predicted identity keys moved) and K5 (pinned F0 PASS for tier 3), and for coolprop-heos-v1 on B7-C1 to C4, since no F0 run exercises CoolProp; for M1, M4, M5, M7, M8 identity with pre-S19 behaviour (d90b498f) is measured directly.",
+    "Portability: F0 is judged on the reference class ref-x86-64 only; aarch64 ran its own CI checks; macOS and Windows are outside G-END (F0 M7 NOT_RUN there, X07a Q-2).",
+    "Holds only while main stays at d29f1a50 and no later commit on wp/S19 touches src/, scripts/, benchmarks/f0/, tests/fixtures/registry/ or the two digest test files; otherwise clauses 1 to 8 and 12 to 14 must be re-measured (verdict 'What would change the verdict').",
+    "S19's open build-lane items are not closed: the no-op patch at test_s01_cascade_wo1.py:262, the unguarded c1_reactor_surrogate_of, the nlp lock's mpmath, the dead ValueError branch in mass.py, three non-W5 retarget rows; design round 2 items (i) to (iv); ADR 0077's FR-1 obligations before the 0.5.0 RC cut. Findings C1 to C4 on the criterion are for S19's close, not blocking.",
+    "Status tested follows CI green at 043879a4 (run 44909075689); human review of any kind is pending, and nothing here sets reviewed."
+  ],
+  "review": {
+    "numerical": "pending",
+    "process_model": "pending"
+  }
+}

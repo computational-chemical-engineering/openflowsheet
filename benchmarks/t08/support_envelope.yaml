@@ -9819,3 +9819,81 @@ harvest:
   class: P
   to: []
   note: 'provenance note: requirements empty, a development-process package'
+- manifest: evidence/S19/043879a41de0525fc86d6d79f271165855b11a09/manifest.json
+  item: limitations[0]
+  sha256: 0f1991e1f7b10870d1a9cd8e6ca5d4de10aa2b494b1f2ba7a90fa44ae52a662b
+  class: P
+  to: []
+  note: 'provenance note: code-health and identity gate, not validation or numerical verification; unpinned behaviour is covered by review only'
+- manifest: evidence/S19/043879a41de0525fc86d6d79f271165855b11a09/manifest.json
+  item: limitations[1]
+  sha256: c45c6cb9a9475e56efb6e68c4275d499a7a4b7976389e36cc6f50b7d3ba04dcb
+  class: P
+  to: []
+  note: 'provenance note: E2 ruling on 68abf467, generator-forced legacy digest 1bd31223 and registry_sha256 6a7550d4'
+- manifest: evidence/S19/043879a41de0525fc86d6d79f271165855b11a09/manifest.json
+  item: limitations[2]
+  sha256: 8b479562512ae0b7d709beaab3c262c557225471ff894937a4587c8fa736952a
+  class: P
+  to: []
+  note: 'provenance note: E2 ruling on 30f705d9 (WO-N4); no queue gate, W5-S3 and S4 evidence is the verdict''s rerun'
+- manifest: evidence/S19/043879a41de0525fc86d6d79f271165855b11a09/manifest.json
+  item: limitations[3]
+  sha256: 6342b57058715b6ade9660c20d32638fa7534f6bc4f28356d15813ec12213522
+  class: P
+  to: []
+  note: 'provenance note: identity-bearing files changed outside E2''s paths after K (43dccc21, b1d2ae6a)'
+- manifest: evidence/S19/043879a41de0525fc86d6d79f271165855b11a09/manifest.json
+  item: limitations[4]
+  sha256: c3c6cfe8b6aafd4f16cab12b27e1f62346d2eedbd2f5039fdadc98057b81b2d8
+  class: P
+  to: []
+  note: 'provenance note: user-visible identity changes of ADR 0077 (registry_sha256, model_version, v1 bundle replay MISMATCH)'
+- manifest: evidence/S19/043879a41de0525fc86d6d79f271165855b11a09/manifest.json
+  item: limitations[5]
+  sha256: c9fcee5c530a750bec7a2db4d4dd1096a839a841da19a768379b71bcbe4e8187
+  class: P
+  to: []
+  note: 'provenance note: local suite is the default collection minus two budget tests, run alone; nlp-marked suite not measured at the tip'
+- manifest: evidence/S19/043879a41de0525fc86d6d79f271165855b11a09/manifest.json
+  item: limitations[6]
+  sha256: 7b92b30a379fd4953fdfca3a90d9e9b8938cc2873aff69749df28f746f8af176
+  class: P
+  to: []
+  note: 'provenance note: scores under tool pin 34a30bf, cross-checked under d542005; S19_RULES names d542005 (stale)'
+- manifest: evidence/S19/043879a41de0525fc86d6d79f271165855b11a09/manifest.json
+  item: limitations[7]
+  sha256: 6d07c8455909604476b10f88fc648747bf83cc26f70d5d539ca126ad0a3f5c28
+  class: P
+  to: []
+  note: 'provenance note: 48 file smells remain, not bounded by G-END'
+- manifest: evidence/S19/043879a41de0525fc86d6d79f271165855b11a09/manifest.json
+  item: limitations[8]
+  sha256: fdab6014ad3280c33d3ff5f235d9653bf369a1355661ed7fcebf74287b77862c
+  class: P
+  to: []
+  note: 'provenance note: F0 for M2, M3, M6, M9 checks W5''s re-recorded values; pre-S19 behaviour rests on K2, K5, B7-C1 to C4'
+- manifest: evidence/S19/043879a41de0525fc86d6d79f271165855b11a09/manifest.json
+  item: limitations[9]
+  sha256: 79705eada196c005db09f9bc522658905a40b5f5b0d6c7a6176b15e7d958dd89
+  class: P
+  to: []
+  note: 'provenance note: F0 judged on ref-x86-64 only; macOS and Windows outside G-END'
+- manifest: evidence/S19/043879a41de0525fc86d6d79f271165855b11a09/manifest.json
+  item: limitations[10]
+  sha256: 8617d67e0b2a7233461e325f8edf09ca601c8c1aafb59ae759dbab0e15009961
+  class: P
+  to: []
+  note: 'process note: verdict holds only while main stays at d29f1a50 and no later commit touches src/, scripts/ or identity paths'
+- manifest: evidence/S19/043879a41de0525fc86d6d79f271165855b11a09/manifest.json
+  item: limitations[11]
+  sha256: 414ab14478a0dbdd0dfddb0b462eda5b45802871fe2ebb69f350e573bb627175
+  class: P
+  to: []
+  note: 'process note: S19 open build-lane items and design round 2 items not closed; review pending'
+- manifest: evidence/S19/043879a41de0525fc86d6d79f271165855b11a09/manifest.json
+  item: limitations[12]
+  sha256: cc2e72e1c1259c7dd54f3b0729a483f58bcbdb0eb49dd98aedcaf5c3594742a7
+  class: P
+  to: []
+  note: 'provenance note: status tested follows CI 44909075689; human review pending'
