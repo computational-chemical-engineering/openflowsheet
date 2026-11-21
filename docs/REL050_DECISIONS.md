@@ -31,3 +31,9 @@
   -> REL050-WF2 (opus-engineer; `<briefs>/REL050-WF2-fixes.md`).
 - 2026-11-21, X07a CI 44902051410 at bd0b7df5: all legs success (Linux x2, macOS, Windows, codehealth, identity)
   -> X07a-WO20 manifest move (opus-engineer; `<briefs>/X07a-WO20-manifest.md`).
+- 2026-11-21 ~16:05, REL050-WF2 (opus-engineer, Opus, ~123k): F-2 bfecbeb7 (only `/rc_items/7/assertion` changed),
+  F-1 text bf6adbbd, F-1+F-3 code 1452d786. `--commit 1452d786 --f1-f3`: exit 0, `wheel data check (F1, F3): PASS`
+  (registry_sha256 fc0af96b... both sides, N 149, N_pkg 9 = m01 + s10, wheel 3e85e546..., 1 page each, bound 2,
+  host ref-x86-64); controls a-f each fail; loader RP.L01-L11 PASS at 1452d786; battery 148 passed. Engineer's two
+  choices stand (bound from the checkout's N; error shape {type, message}). Pre-existing mypy note at
+  wheel_data_check.py:197 (b69dc0f1, scripts not in mypy `files`). Next action 2 and 3 met; wp/REL050 pushed for CI.
