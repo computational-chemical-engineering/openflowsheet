@@ -717,29 +717,46 @@ def _build_scratch(repo: Path) -> tuple[str, str, dict[str, str]]:
     return rc, candidate, records
 
 
-def _scratch_tree_diagnosis(repo: Path, candidate: str, records: dict[str, str]) -> str:
-    """X07a WO13: one line (under 280 characters, so that the first line of the junit message
-    carries it) on what reached the scratch candidate's commit, evaluated only when the assertion
-    fails (RP.S08 in REL.A20's generator child on Windows): the tree's path count and longest path,
-    the records missing from it, and git's own account of the first missing one."""
+def _scratch_gate_diagnosis(
+    repo: Path, rc: str, candidate: str, records: dict[str, str], out: str
+) -> str:
+    """X07a WO14: one line (under 280 characters, so that the first line of the junit message
+    carries it) that tells apart why the gate rejects the scratch candidate, evaluated only when
+    the assertion fails (RP.S08 in REL.A20's generator child on Windows; WO13 found every record
+    in the candidate's tree). H1, the gate reads another repository: whether the `v0_1_gate`
+    namespace the engine's `git` runs in is the one the fixture patched, and whether its `ROOT`
+    is the scratch. H2, the gate judges another commit: `C` and the candidate of its first output
+    line against the ones built (`=` when equal). H3, the records are read and rejected: what the
+    engine's own `read_at` gives for `C`'s S13 manifest at the candidate (`None`, or its length
+    and whether it parses) and the engine's `git` answer to the same `show` (its exit code and
+    the start of its output), and the gate's first reason (commit ids cut to 8 characters)."""
+    engine = v0_3_gate._main.__globals__
+    used = engine["git"].__globals__
+    root = used.get("ROOT", "-")
+    head = out.splitlines()[0] if out else ""
+    at = re.search(r"at C = ([0-9a-f]{40}); candidate ([0-9a-f]{40})", head)
+    seen_rc, seen_candidate = at.groups() if at else ("-", "-")
+    path = f"evidence/S13/{rc}/manifest.json"
+    text = engine["read_at"](candidate, path)
+    read = "None" if text is None else f"{len(text)}:{v0_2_gate._manifest(text) is not None:d}"
+    try:
+        blob = engine["git"]("show", f"{candidate}:{path}")
+        git_said = f"0:{blob.decode('utf-8', 'replace')[:16]!r}"
+    except subprocess.CalledProcessError as error:
+        git_said = f"{error.returncode}:{(error.stderr or b'').decode('utf-8', 'replace')[:24]!r}"
+    reasons = [line.strip() for line in out.splitlines() if line.lstrip().startswith("- ")]
+    first = re.sub(r"([0-9a-f]{8})[0-9a-f]{32}", r"\1", reasons[0])[:90] if reasons else "-"
     names = m07._git(repo, "ls-tree", "-r", "--name-only", candidate).splitlines()
-    missing = sorted(set(records) - set(names))
-    untracked = m07._git(repo, "status", "--porcelain", "--untracked-files=all").splitlines()
 
-    def said(*arguments: str) -> str:
-        done = subprocess.run(["git", *arguments], cwd=repo, capture_output=True, text=True)
-        first_line = (done.stdout + done.stderr).strip().split("\n")[0].split("\t")[0]
-        return f"{done.returncode}:{first_line[:40]}"
+    def same(seen: str, built: str) -> str:
+        return "=" if seen == built else seen[:8]
 
-    first = missing[0] if missing else ""
     return (
-        f"WO13 tree {candidate[:8]}: {len(names)} paths, max {max(map(len, names), default=0)}; "
-        f"missing {len(missing)}/{len(records)}, first {first[:17]}.. "
-        f"abs {len(str(repo / first))}; "
-        f"repo {len(str(repo))}; untracked {len(untracked)}; "
-        f"longpaths {said('config', '--get', 'core.longpaths')}; "
-        f"ignore {said('check-ignore', '-v', first) if first else '-'}; "
-        f"add-n {said('add', '-A', '-n', '--', first) if first else '-'}"
+        f"WO14 tree {len(names)} miss {len(set(records) - set(names))}; "
+        f"H1 ns {used is vars(v0_1_gate):d} root {Path(root) == repo:d}; "
+        f"H2 C {same(seen_rc, rc)} cand {same(seen_candidate, candidate)}; "
+        f"H3 read_at {read} git {git_said}; "
+        f"{len(reasons)}r {first}"
     )
 
 
@@ -749,7 +766,7 @@ def test_a08_main_on_a_scratch_repository(
     rc, candidate, records = _build_scratch(scratch)
     code = v0_3_gate.main(["--rc", rc])
     out = capsys.readouterr().out
-    assert code == 0, _scratch_tree_diagnosis(scratch, candidate, records) + "\n" + out
+    assert code == 0, _scratch_gate_diagnosis(scratch, rc, candidate, records, out) + "\n" + out
     assert out.splitlines()[0] == f"v0.3 gates ({SET}) at C = {rc}; candidate {candidate}"
     assert out.splitlines()[-1] == "v0.3.0 tag may be proposed: YES"
     m07._commit(scratch, {"docs/adr/0046-test-input.md": adr("**Status:** Proposed")}, "proposed")
