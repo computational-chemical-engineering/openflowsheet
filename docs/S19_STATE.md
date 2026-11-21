@@ -57,22 +57,17 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 - G1 (orchestrator/, numerics/): W3 lanes N and O closed 2026-11-19 (272011be); residuals executor.py (PR-1b, 6.1 -> 9.0, gating) and `_solve_region`'s parameter object (W4).
 - G-END (below) stays the end criterion for the whole repository.
 
-## Next actions (2026-11-21 ~18:20 CET)
+## Next actions (2026-11-21 ~21:30 CET)
 
-**Position: G-END PASSED at 043879a4** (verdict 15e1e147, `docs/reviews/S19-G-END-verdict.md`, 14/14 clauses;
-rulings: 68abf467 counts as a merge of main, 30f705d9 under batch N's K2). CI 44909075689 at 043879a4 green on all
-legs. Budget tests alone at 043879a4: f6 113.83 s, t07c 32.98 s (`<git-common-dir>/codehealth/runs/budget-043879a4/`).
-Evidence manifest `tested` at 043879a4 in f814928a (13 limitations, HARVEST_SIZE (101, 1157, 146); pushed).
-main = d29f1a50. The verdict holds only while main stays at d29f1a50 and no later commit touches src/, scripts/ or
-the identity paths. Runner PID 4039086 (queue empty). No lane open.
-**Running:** CI 44923603617 at f814928a (poller b0yo0or3j, 300 s; never `gh run watch` at the default interval).
-**Next actions (S19 close):**
-1. CI 44923603617 green -> Decision Desk merge card via hub (SKILL.md "Merging a phase into main"), coordinated with
-   REL050's merge plan (REL050_STATE next action 2): options A merge before K3 (enters 0.5; the 0.5 branches then need
-   main merged back, HARVEST_SIZE conflicts), B after the v0.5.0 tag. Red -> read the failing job, fix by a fresh engineer.
-2. After a signed, VERIFIED card: merge commit, F0 on main, push, `executed` on the card.
-3. The verdict's findings on the criterion (E2 text for regenerating merges; tool version in the G-END row; file
-   smells and "full suite" unbounded; S19_RULES names d542005, pin 34a30bf): for the campaign close, not blocking.
+**Position: wp/S19 MERGED INTO MAIN** (ceb38cec, card ofs-s19-merge-main choice A, VERIFIED, executed; F0 PASS on
+main; pushed). S19 enters 0.5.0 (REL050 rebuilds its integration branch int/0.5-r2 on ceb38cec). G-END PASSED at
+043879a4 (verdict 15e1e147). Runner PID 4039086 (queue empty). No lane open. Log commits on wp/S19 after 9fb4d5df
+(d52a7abd, ff2bdfc9, this state) are docs-only and not on main.
+**Next actions (S19 close, none blocking 0.5):**
+1. The verdict's findings on the criterion (E2 text for regenerating merges; tool version in the G-END row; file
+   smells and "full suite" unbounded; S19_RULES names d542005, pin 34a30bf): campaign close note.
+2. Stop the gate runner when no other campaign needs it (`kill $(cat <queue>/runner.pid)`); merge the docs-only log
+   commits into main with the next REL050 merge or after the tag (D2.4 freeze applies only to src/, schemas/, benchmarks/).
 
 Open build-lane items (not blocking G-END): test-map holes (source-scanning tests like recovery_edges a33;
 collection-time application/ modules); WO16's frozen scripts; R-W3-A2-1 notes 3-6 (renames); `_Assembly` frozen;
