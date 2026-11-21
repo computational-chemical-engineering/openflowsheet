@@ -1448,3 +1448,24 @@ unchanged. **A50 (new).** A study whose training has N_ok < 36 records IE = [`tr
 - **A47's evidence E (E29).** It names `data[*].keys_sha256`, each equal to the run manifest's
   `splits.<s>.keys_sha256`.
 - **Confirmed:** E10, E12, E14 (with R-365's wording), E25, E27, E28, E30, E32.
+
+## 21. Amendment 4 (2026-11-21): stand-in verdicts are not asserted anywhere (X07a ruling D1)
+
+*Erratum, §6.2.* Replace "with equality for continuous scores; the deterministic parent gives ties with
+probability zero." by: "with equality for continuous scores. Ties do not weaken it, and the coverage C = F(q̂)
+stochastically dominates Beta(k, n + 1 − k), so §6.4's false-failure probability stays at most its continuous value
+(0.096467 with no failures, one minus the registered `power_no_failures`). A parent
+the predictor reproduces to roundoff gives ties: the stand-in's scores are quantised at 2.22 × 10⁻¹⁴, and 35 of
+its it2 test scores equal q̂ (X07a WO18)."
+
+*§9.1, the stand-in.* Its outcomes are not asserted on any plan or route, library or application. That covers H,
+L, the verdict, the reason lists and anything that follows from them, such as an iteration's admission after it.
+Every stand-in score is within 10⁻⁸ of q̂, so every coverage decision is near threshold (ADR 0036 D8). X07a WO18
+measured both verdicts from one set of observations. What is asserted is the vanishing: q̂ ≤ 10⁻¹⁰, every
+finite test score ≤ 10⁻¹⁰, no IE reason, and no NP reason other than `coverage_bound_below_minimum`. A test that
+needs a given verdict takes it from A17 or from a constructed manifest.
+
+*M04.A36, last sentence.* "`it2` for the smooth parent after A17's PROMOTABLE `it1` is `invalid_request` /
+`iteration_not_permitted` through the application (the smooth parent registered for the test, as A47). With the
+stand-in through the application, `it2` after a registered coverage-only `it1` is admitted and lists that
+predecessor; its verdict is not asserted."

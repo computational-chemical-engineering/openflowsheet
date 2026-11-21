@@ -20290,3 +20290,24 @@ lock's pins, which it holds to the lock's versions. Closes Q-12 (`docs/X07a_DECI
 ADR 0069 amendment admitting markers in D2.2 and a re-registration of the lock digest: it moves T08.A19, the A30
 records and every bundle's `lock_sha256`); option C (no pin: pywin32 resolved from `mcp`'s marker, unpinned and
 unhashed).
+
+## R-1068: M04/X07a: no test asserts an outcome that ADR 0036 D8 does not promise; A36's application half runs on A17; §6.2's ties erratum (X07a ruling D1; 2026-11-21)
+
+| | |
+| --- | --- |
+| Date | 2026-11-21 |
+| Decided by | design lane (`specifier`), X07a ruling D1 (`docs/X07a-a36-ruling.md`, c2e30791), applying ADR 0036 D8 as written (no ADR change); implemented by the build lane in X07a-WO19 |
+| Normative text | `docs/derivations/M04-spec.md` §21 (Amendment 4, copied from the ruling's section 5.2); the test edits of the ruling's section 5.1 |
+| Evidence | `docs/X07a_DECISIONS.md` WO18 (the stand-in's scores are fit roundoff; 3/200 and 7/200 verdict flips under a row permutation on Linux) and WO19; CI 44882659578, macOS jobs 136781135134 (it2 NOT_PROMOTABLE) and 136811622556 (rerun, PROMOTABLE) |
+| Affected packages | X07a (`tests/test_m04_iterations.py`, `tests/test_m04_study_job.py` docstring); M04 A36's status unchanged |
+
+**Decision.** Option A, refined. A test that needs a given surrogate-study verdict takes it from A17 (registered,
+generator-asserted margins) or from a constructed manifest, never from the stand-in `standin-x025-v1`, whose scores
+are roundoff and whose every coverage decision is near threshold (D8). A36's application half runs on the smooth
+parent registered for the test (X07a-D1.1 to D1.3); the stand-in asserts its vanishing (X07a-D1.5). §6.2's "ties with
+probability zero" is an erratum: ties do not weaken the guarantee or §6.4's false-failure bound.
+
+**Rejected.** Option B (a score floor or a `degenerate_scores` reason): an exactly fitting surrogate is not a defect
+of the method, and either variant rewrites §6.2/§6.4 after registered iterations ran under them. Option C (a macOS
+platform-limit row): the test flips under a pure roundoff change on Linux too, so it is flaky everywhere, not limited
+on one platform.

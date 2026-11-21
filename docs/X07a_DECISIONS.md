@@ -641,3 +641,22 @@ Push from this worktree: `git -c credential.helper='!gh auth git-credential' pus
   process ended; harness unchanged, every assertion kept. Stress, 50 calls under 80 busy loops on CPU 0: before
   3/50 (47 init None, wall 1.23-1.50 s), after 50/50 (wall 2.26-2.68 s); init delayed 1.5 s in the fake: before
   0/5, after 5/5. test_t07_w7a_harness 26 passed; ruff, format clean; mypy (410 files) clean.
+
+## WO19 (2026-11-21, ruling D1 applied: a36 on A17, the stand-in's vanishing; R-1068)
+
+- Tests (277b52b9, ruling §5.1): `test_a36_it2_after_a17s_promotable_it1_through_the_application` on the smooth parent,
+  registered by a function-scoped fixture (`register_variants` + `InProcessBackend` patch) before
+  `LocalApplication.create`; `test_a36_it2_is_admitted_after_a_coverage_only_it1` loses its it2 verdict and it3
+  submission and gains D1.5. Docstrings `test_m04_iterations.py:18-23`, `test_m04_study_job.py:7-8`.
+- D1.2 (OQ-3 holds: the job path reproduces A17), Linux: PROMOTABLE, [] / [], k 114, hits 283,
+  q̂ 0.022440174316074035, |q̂ − A17| 1.80e-15 (bound 1e-10).
+- D1.5, Linux, stand-in it2: q̂ 2.2204e-13, max test score 2.4425e-13 (300 finite), max gradient error 5.41e-13,
+  `domain.admissibility_margin` 33.33, insufficient [], not_promotable [] (hits 286, verdict PROMOTABLE: recorded, not
+  asserted). Margin to 1e-10: 2.6 decades.
+- Scratch mutations (not committed, reverted): (i) the guard in `iterations.py` admitting after PROMOTABLE fails
+  D1.3 (`DID NOT RAISE` at the it2-after-it1 submission); (ii) `beta[0, 0] += 1e-12` after the fit's
+  `solve_triangular` in `quadratic.py` fails D1.5 (q̂ 4.00e-10 > 1e-10).
+- Local: test_m04_iterations, test_m04_study_job, test_m04_wo9_synthetic_loop, test_m04_wo8_replacement: 52 passed;
+  ruff, format clean; mypy (410 files) clean; `m04_reference.py --check` byte-identical.
+- Docs: M04 spec §21 (Amendment 4, ruling §5.2 verbatim); register R-1068. The WO18 macOS failure (job
+  136781135134) is a D8 observation, not a platform limit (ruling R3); the manifest is not moved in this WO.
