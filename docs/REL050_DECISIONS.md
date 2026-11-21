@@ -15,3 +15,11 @@
   HEAD; ADRs 0007, 0057, 0060, 0061, 0076, 0077 Accepted on the branch. Next action 1 met.
 - 2026-11-21, REL050-WF dispatched (opus-engineer; `<briefs>/REL050-WF-wheel-f1-f3.md`): D-5 `--f1-f3` (WF-1..WF-5,
   controls a-d) and Q-B3's phrase test (default taken). Q-B1 default stands (0.4-era packages not added).
+- 2026-11-21 ~15:30, REL050-WF (opus-engineer, Opus, ~134k): 1dee789c `--f1-f3` + `tests/test_rel_wheel_f1_f3.py`,
+  71a7328e Q-B3 phrase test; 140 passed 1 xfailed; controls a-d fail their checks; other commit -> exit 2. At HEAD
+  the item exits 1: WF-1..WF-3 PASS (registry_sha256 fc0af96b... both sides, N 149, wheel 55349000...), WF-4 FAIL:
+  wheel 9 legacy records vs checkout 149. Checked: ADR 0061 D8 (lines 274-280) says only m01/s10 component files are
+  package data, so 9 is the specified behaviour; D-5's WF-4 contradicts D8. Not a packaging fault; nothing relaxed
+  (strict xfail). DECISION: the WF-4 ruling is folded into Q-D1's scoped reviewer pass (one design pass, RP §13 (3);
+  CLAUDE.md batching) -> `<briefs>/REL050-R-machinery.md`. Alternative: a second specifier pass. Reversible by: a
+  specifier pass if the reviewer declines to rule.
