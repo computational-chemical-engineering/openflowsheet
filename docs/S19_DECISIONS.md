@@ -4788,3 +4788,6 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   `<briefs>/X07a-WO15.md`): first hypothesis a bytes value formatted into a git argument (`b'...'`), else the full
   stderr and argv as the next diagnostic.
 - 2026-11-21, TR chain: tr1-5r..12r PASS (steps 527-536 incl. app1-1 531, app1-2 534); app chain running.
+- 2026-11-21, TR chain complete: tr1-13 (630) PASS step 537, tr1-fix (631) PASS accepted-neutral step 538. Merge
+  built in helper worktree s19-tr-mc (wp/S19-tr-mc = 523af45c + merge f934fcae, ruff clean); merge-check 643 queued.
+  On PASS: fast-forward wp/S19 to f934fcae (docs commits since 523af45c, if any, merged on top).
