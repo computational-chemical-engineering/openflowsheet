@@ -4756,3 +4756,5 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
 - 2026-11-21, gate report: `ALERT queue wait median 29 min > 15 min`. Real now: 12 TR jobs (620-631) each run the
   full suite (~25 min, stale map), two slots. Action: no new lane starts until the TR chain drains; then a map build
   at the wp/S19 tip (queue held), which restores step-relative selection for the app lane.
+- 2026-11-21, nlp-marked suite at the TR lane head 93b4bf6a (orchestrator, .venv-nlp): 211 passed, 2 failed = g19,
+  g20 (base failures), 2 skipped, 338 s. Rule 3 of the state file met for the TR lane.
