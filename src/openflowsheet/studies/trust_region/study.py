@@ -320,20 +320,13 @@ def c1_constraint_values(
       (Σn / N_tubes) for the per-tube flow rows.
     - The decision box, the truth's hard-domain bounds on the inlet T and P, the link bounds on
       (X̂, ΔT̂) (M04 spec §3.2), the provider's domain on every stream temperature and pressure,
-      and non-negative molar flows; scale max(|bound|, 1) in the variable's unit."""
+      and non-negative molar flows; scale max(|bound|, 1) in the variable's unit
+      (`_bound_values`)."""
     flows = [flow_id(formulation.inlet_stream, name) for name in COMPONENTS]
     total = math.fsum(state[name] for name in flows)
     (link,) = formulation.external_links
     parameters = {link.x_param_id: coupling[0], link.dt_param_id: coupling[1]}
     values: list[ConstraintValue] = []
-
-    def bound(name: str, value: float, low: float | None, high: float | None) -> None:
-        for limit, sense, side in ((low, ">=", "lower"), (high, "<=", "upper")):
-            if limit is not None:
-                values.append(
-                    ConstraintValue(f"{name}.{side}", value, limit, sense, max(abs(limit), 1.0))  # type: ignore[arg-type]
-                )
-
     for item in formulation.inequalities:
         value = float(item.build(state, {}, parameters, FloatAlgebra()))
         reference = total / n_tubes if item.source.endswith("tube_flow_mol_s") else total
@@ -343,25 +336,40 @@ def c1_constraint_values(
             )
         )
     for decision in formulation.decisions:
-        bound(
+        values += _bound_values(
             f"decision.{decision.parameter_id}",
             decisions[decision.parameter_id],
             decision.lower,
             decision.upper,
         )
     for name, (low, high) in sorted(formulation.variable_bounds.items()):
-        bound(f"hard_domain.{name}", state[name], low, high)
+        values += _bound_values(f"hard_domain.{name}", state[name], low, high)
     for coordinate, value in zip(("X", "dT"), coupling, strict=True):
         low, high = LINK_BOUNDS[coordinate]
-        bound(f"admissibility.{coordinate}", value, low, high)
+        values += _bound_values(f"admissibility.{coordinate}", value, low, high)
     for name in sorted(state):
         kind = kinds.get(name, "")
         if kind in formulation.domain:
             low, high = formulation.domain[kind]
-            bound(f"provider_domain.{name}", state[name], low, high)
+            values += _bound_values(f"provider_domain.{name}", state[name], low, high)
         elif kind == "molar_flow":
-            bound(f"non_negative.{name}", state[name], 0.0, None)
+            values += _bound_values(f"non_negative.{name}", state[name], 0.0, None)
     return tuple(values)
+
+
+def _bound_values(
+    name: str, value: float, low: float | None, high: float | None
+) -> list[ConstraintValue]:
+    """The bound constraints of `value` named `name`: `<name>.lower` (`>=` `low`), then
+    `<name>.upper` (`<=` `high`), each only when its limit is not None, scale max(|limit|, 1).
+    Pure."""
+    values: list[ConstraintValue] = []
+    for limit, sense, side in ((low, ">=", "lower"), (high, "<=", "upper")):
+        if limit is not None:
+            values.append(
+                ConstraintValue(f"{name}.{side}", value, limit, sense, max(abs(limit), 1.0))  # type: ignore[arg-type]
+            )
+    return values
 
 
 # == the loop (§7.2-§7.5) ==========================================================================
