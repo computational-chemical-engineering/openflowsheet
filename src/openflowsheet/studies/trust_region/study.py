@@ -40,7 +40,6 @@ from openflowsheet.adapters.variants import Variant, hard_domain
 from openflowsheet.compile.reference import FloatAlgebra
 from openflowsheet.compile.spec import Expr
 from openflowsheet.models import flow_id, pressure_id, temperature_id
-from openflowsheet.models.c1.boundary import HardDomain
 from openflowsheet.models.c1.flash import TPFlash
 from openflowsheet.models.c1.heater import TPHeater
 from openflowsheet.models.c1.reactor import C1Reactor
@@ -81,6 +80,7 @@ from openflowsheet.thermo.pr_c1 import COMPONENTS
 if TYPE_CHECKING:
     from openflowsheet.compile.spec import ProblemSpec
     from openflowsheet.graph.process import ProcessGraph
+    from openflowsheet.models.c1.boundary import HardDomain
     from openflowsheet.models.revision_flowsheet import RevisionFlowsheet
     from openflowsheet.studies.trust_region.projection import Projection
     from openflowsheet.studies.trust_region.trf import TrfRun

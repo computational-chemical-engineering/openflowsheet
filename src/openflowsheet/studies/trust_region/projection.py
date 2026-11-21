@@ -643,7 +643,7 @@ def _zero_constants_and_pins(
     zero: Sequence[ZeroEliminated], zero_blocks: Sequence[ZeroBlock]
 ) -> tuple[dict[str, float], frozenset[str]]:
     """The eliminated zero flows (§17.1, §18.1) as model constants, each +0.0 by variable id,
-    and the rows that leave the projection with them: each single pin's row, then every
+    and the rows that leave the projection with them: each single pin's row and every
     certified block's rows. Pure."""
     constants = {entry.variable_id: normalize_zero(0.0) for entry in zero}
     pins = frozenset(entry.row_id for entry in zero if entry.row_id is not None) | {
