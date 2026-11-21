@@ -5023,3 +5023,5 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   2.22e-13, max score 2.44e-13 (bound 1e-10). Mutations: guard admitting after PROMOTABLE fails D1.3; +1e-12 on
   beta[0,0] fails D1.5 (q̂ 4.0e-10). 52 m04 tests + 192/1 skipped register/spec readers passed. CI 44902051410
   (OQ-1: D1.5 on macOS and Windows).
+- 2026-11-21, CI 44896811906 at 2aaa5d3f complete: check ubuntu-latest and ubuntu-24.04-arm success, default-install
+  and identity success, codehealth failure (region.py duplication only; lane DUP fixes it, merge-check 702).
