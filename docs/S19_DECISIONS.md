@@ -4913,3 +4913,7 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   stands corrected here: c276bd57 alone breaks a33. The lane's merge-check (full suite) remains the merge condition.
   Tooling note for the build lane: source-scanning tests (bijections over emitters) are invisible to coverage
   selection; candidates for an always-run list.
+- 2026-11-21, app1-fix2 (686) FAIL on scope: `out of scope: docs/recovery-edges.yaml` (a step may touch only
+  src/openflowsheet/*). App lane reordered (same tree as 938d9393): c276bd57 -> 5a5ea0c0 (E9 label, a standalone
+  docs commit, not enqueued, like a test-only commit; the merge-check's full suite covers a33) -> bd101a0b (the
+  review docstrings), enqueued as app1-fix3 no-gain with base 5a5ea0c0, so its tests tier sees a33 fixed.
