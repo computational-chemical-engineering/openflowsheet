@@ -474,7 +474,7 @@ def _analysed(
     """`_structural`'s choice of binder: the analysed report, if any; the refusal it reports, if
     any (which then decides the checks); the specification labels of the revision binder's
     columns; whether that binder was the one analysed; and the binding, declaration and graph the
-    report came from."""
+    report came from. When neither binder binds, `_reported_refusal` picks the refusal reported."""
     from openflowsheet.application.binding import (
         Binding,
         bind_revision_or_reason,
@@ -533,18 +533,8 @@ def _analysed(
             analysed = revision
             pins = pin_specifications(document)
             fallback = True
-        elif (
-            _REFUSAL_RANK[revision.kind] > _REFUSAL_RANK[binding.kind]
-            or revision.kind == binding.kind == "unsupported"
-        ):
-            refusal = revision
         else:
-            # T07 design note, ruling round 3, Q2 (amending R1.2): a tie is split by kind. An
-            # `incomplete` tie reports the legacy refusal, which names and implicates the quantity
-            # in the declaration's words (T06 A04, STR-02); an `unsupported` tie reports the
-            # revision binder's, since the legacy one speaks only of SYN-001's declaration. In the
-            # free class the revision side is the probe's refusal (ruling round 7, S1).
-            refusal = binding
+            refusal = _reported_refusal(binding, revision)
 
     return StructuralAnalysis(
         report,
@@ -580,6 +570,23 @@ def _free_class_refusal(
     if probed is not None and probed.kind in ("incomplete", "unsupported"):
         return probed
     return refusal
+
+
+def _reported_refusal(binding: Unbound, revision: Unbound) -> Unbound:
+    """The refusal `_analysed` reports when neither binder binds: the legacy binder's `binding` or
+    the revision binder's `revision`, whichever ranks higher in `_REFUSAL_RANK`, the revision
+    binder's on an `unsupported` tie and the legacy binder's on any other tie."""
+    if (
+        _REFUSAL_RANK[revision.kind] > _REFUSAL_RANK[binding.kind]
+        or revision.kind == binding.kind == "unsupported"
+    ):
+        return revision
+    # T07 design note, ruling round 3, Q2 (amending R1.2): a tie is split by kind. An
+    # `incomplete` tie reports the legacy refusal, which names and implicates the quantity
+    # in the declaration's words (T06 A04, STR-02); an `unsupported` tie reports the
+    # revision binder's, since the legacy one speaks only of SYN-001's declaration. In the
+    # free class the revision side is the probe's refusal (ruling round 7, S1).
+    return binding
 
 
 def structural_refusal(
