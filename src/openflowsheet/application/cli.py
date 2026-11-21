@@ -973,7 +973,8 @@ def command_streams(arguments: argparse.Namespace) -> int:
     in `--output`); a refusal exits with its `ApiError` code's number (§11.5); 1 when the project
     cannot be opened; 2 for a usage error. `--display-units TEXT` (ADR 0075 D7.6) prints it in a
     display preference's units, resolved against the project's ambient pressure (a bundle
-    directory has none). A job's pages are fetched with `_stream_table_request`'s requests."""
+    directory has none). A job's pages are fetched with `_stream_table_request`'s requests; the
+    table is printed by `_write_stream_table`."""
     from openflowsheet.application import stream_table, stream_table_format
     from openflowsheet.application.authz import PolicyRefusedError
     from openflowsheet.application.errors import ApplicationError
@@ -1018,17 +1019,7 @@ def command_streams(arguments: argparse.Namespace) -> int:
             if not isinstance(units, DisplayUnits):
                 return _print_refusal(units, document=as_json)
             document = stream_table.displayed(document, units)
-    render = {
-        "text": stream_table_format.to_text,
-        "json": stream_table_format.to_json,
-        "csv": stream_table_format.to_csv,
-    }[arguments.format]
-    text = render(document)
-    if arguments.output is None:
-        sys.stdout.write(text)
-    else:
-        with open(arguments.output, "w", encoding="utf-8", newline="") as out:
-            out.write(text)
+    _write_stream_table(document, arguments)
     return 0
 
 
@@ -1048,6 +1039,24 @@ def _stream_table_request(
     if arguments.display_units is not None:
         request["display_units"] = arguments.display_units
     return request
+
+
+def _write_stream_table(document: dict[str, Any], arguments: argparse.Namespace) -> None:
+    """`streams`' output: the table rendered in `--format` (text, JSON or CSV), written to stdout,
+    or to the file `--output` names."""
+    from openflowsheet.application import stream_table_format
+
+    render = {
+        "text": stream_table_format.to_text,
+        "json": stream_table_format.to_json,
+        "csv": stream_table_format.to_csv,
+    }[arguments.format]
+    text = render(document)
+    if arguments.output is None:
+        sys.stdout.write(text)
+    else:
+        with open(arguments.output, "w", encoding="utf-8", newline="") as out:
+            out.write(text)
 
 
 def build_parser() -> argparse.ArgumentParser:
