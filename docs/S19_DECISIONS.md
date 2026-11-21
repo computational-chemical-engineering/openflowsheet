@@ -4818,3 +4818,8 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
 - 2026-11-21, app1-5 (636) PASS step 541 (debt 27.0 -> 21.7). The new lanes enqueued before the runner stopped: 644
   (a2-1) and 645 (as1-1) run on the old map (not killed mid-gate). All other pending jobs parked in
   `<queue>/held-for-map/`; scratch `hold.sh` keeps parking new ones until `running/` is empty, then stops the runner.
+- 2026-11-21, lane AS run 1 (opus-engineer, Opus): wp/S19-as 2c5f7c3b..a314081c, 10 steps (jobs 645 running; 647,
+  649, 651, 654, 655, 657, 659, 660, 663 held). families 7.4 -> 8.7 (40.4 -> 14.3), surrogate/manifest 7.5 -> 9.0
+  (19.3 -> 11.3), studies/assessment 8.3 -> 8.8 (16.0 -> 11.5); engineer's repo scan 2093.5 -> 2054.9, health 9.0.
+  nlp-marked: base failures only. No S1 steps (context). Left: `exchanger_utility` 104 NLOC, 10 params (parameter
+  object declined by the G4 ruling). Review R-W3-AS-1 (reviewer, Opus; `<briefs>/S19-R-W3-AS-1.md`) launched.
