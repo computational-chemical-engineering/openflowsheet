@@ -4865,3 +4865,12 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   (splits, band, promotion, failure, qualification from a19_smooth_prefix with five tampers; m04_schemas 12 passed;
   control band/promotion swap fails at index 1). Expectations written from the code before running. Both commits carry
   the lane's Co-Authored-By line (Opus) per the brief, not the implementer's model.
+- 2026-11-21 ~04:06, G-MAP 8 build started at 2c5f7c3b (the wp/S19 tip after the TR merge; docs-only since 88818288):
+  runner 3031640 stopped by hold.sh at 04:05:27 with the queue empty (644, 645, 658 PASS: steps 543, 542, 545; 658
+  slipped past the 10 s sweep and ran alone). 25 jobs in `<queue>/held-for-map/`. Detached worktree
+  `<scratchpad>/map8`, `.venv-testmap`, PYTEST_ADDOPTS=--timeout=900, TMPDIR ~/.cache/openflowsheet/tmp-map, 8
+  workers, no `--deselect`, log `<scratchpad>/map8.log` (scratchpad
+  /tmp/claude-1000/-home-eajfpeters-Code-OpenFlowsheet/d979a9c2-9bd2-40ba-bc75-0662be196702/scratchpad). Criteria as
+  G-MAP 7 (exit 0 or 1; at least 20672 tests; failures a subset of the B-6 four + f6; no unsure test in a file over
+  ~60 s, test_m04_wo9 the standing exception). On the result: judge, set MB = 2c5f7c3b in S19_STATE, move held jobs
+  back to `pending/`, `$Q run --detach`, remove map8.
