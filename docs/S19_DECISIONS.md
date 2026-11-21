@@ -4963,3 +4963,14 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   overwritten") fixed by the orchestrator, 089865b0, job 698 d1-fix no-gain. Notes: fuzz reached the certificate path
   66 times (reading settles it); `_unlisted`'s O(N^2) membership predates the lane.
 - 2026-11-21, D1 chain complete (steps 573-582; d1-fix 698 accepted-neutral). Helper wp/S19-d1-mc = 9f8df18f + merge d4e887cc (ruff clean); merge-check 699 queued.
+- **2026-11-21 ~12:30, D1 merged into wp/S19 (2aaa5d3f) after merge-check 699 PASS (11/11; debt over touched files
+  98.7 -> 28.0); no code diff to d4e887cc. G-END code-health criteria all MET at 2aaa5d3f:** scan 353 files, debt
+  1878.4 (<= 1900), health 9.06 (>= 9.0), brain 0, lowest file 7.0 (syn001/column.py; none below 7.0), no huge_file;
+  `codehealth arch --depth 4` 0 violations, 0 cycles. E1: F0 PASS 9/9 at 2aaa5d3f (M7 52/52). E5: mcp_digest tier
+  (test_t08_w2_surface_digest + test_m07a_surface_chain) 44 passed; the files' byte-identity to d90b498f not yet
+  measured. E2: commits reachable from the tip, not from d90b498f, touching benchmarks/f0, tests/fixtures/registry or
+  registry/builtin: W5 K commits 4178e4bc (N), bfc6f84b (L), 2a5f0322 (P); W5 step 30f705d9 (WO-N4); F3 commits
+  through the merge of main (d49198df, dcd428dd, e050aed8, bfd2d7e6, 04a119e3, ebdff46f); and 68abf467, the merge
+  resolution that regenerated tables.sha256 and builtin-sha256.txt (registry_sha256 6a7550d4: neither parent's value).
+  Whether 68abf467 counts as "arrived through a merge of main" is for the G-END verdict. wp/S19 pushed (2aaa5d3f);
+  CI 44896811906 running (background poller). Lane worktrees and branches removed.
