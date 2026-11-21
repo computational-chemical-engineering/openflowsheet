@@ -138,7 +138,8 @@ def report_body(
     """The report without `provenance` (the part A39 compares byte for byte). The values at `x`
     come from `_checked_values`; when it returns a refusal instead, the refusal joins `refusals` and
     every output is `null`. The contributors' sections come from `_report_sections`, and what the
-    `derived` section withholds from `_derived_withholding`. The `uncertainty` entry starts as
+    `derived` section withholds from `_derived_withholding`; each cost item gains its values from
+    `_item_values`. The `uncertainty` entry starts as
     `_aace_uncertainty`'s, and `propagate` fills its propagation results when `uncertainty` is
     set and there are values."""
     refusals: list[Refusal] = list(program.refusals)
@@ -164,9 +165,7 @@ def report_body(
     cost = sections.get("cost", {})
     items: list[dict[str, Any]] = list(cost.get("items", ()))
     for item in items:
-        item["size"] = {q: value(f"size.{item['item_id']}.{q}") for q in item["size"]}
-        for key in ("purchased", "bare_module"):
-            item[f"{key}_value"] = value(item[key]) if item[key] else None
+        item.update(_item_values(item, value))
     entries = _regime_entries(program, value)
     status_unc = _aace_uncertainty(items)
     if uncertainty and values is not None:
@@ -278,6 +277,18 @@ def _groups(
         if group is not None:
             groups[group][output_id] = value(output_id)
     return groups
+
+
+def _item_values(item: Mapping[str, Any], value: Callable[[str], float | None]) -> dict[str, Any]:
+    """A cost item's entries at the state, read through `value`: `size`, each of the item's size
+    quantities by name, then `purchased_value` and `bare_module_value`, the value of the item's
+    `purchased` and `bare_module` output, `None` when the item names none."""
+    valued: dict[str, Any] = {
+        "size": {q: value(f"size.{item['item_id']}.{q}") for q in item["size"]}
+    }
+    for key in ("purchased", "bare_module"):
+        valued[f"{key}_value"] = value(item[key]) if item[key] else None
+    return valued
 
 
 def _regime_entries(
