@@ -4791,3 +4791,11 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
 - 2026-11-21, TR chain complete: tr1-13 (630) PASS step 537, tr1-fix (631) PASS accepted-neutral step 538. Merge
   built in helper worktree s19-tr-mc (wp/S19-tr-mc = 523af45c + merge f934fcae, ruff clean); merge-check 643 queued.
   On PASS: fast-forward wp/S19 to f934fcae (docs commits since 523af45c, if any, merged on top).
+- 2026-11-21, X07a-WO15 (opus-engineer, Opus, ~107k): ROOT CAUSE, fixed (6415dcc8, entry ee084763, pushed; CI
+  44856631374). `git show <commit>:<path>` without `--` also lstat()s the argument as a work-tree file (setup.c
+  check_filename) and dies 128 `failed to stat` on any error but ENOENT/ENOTDIR; Git for Windows without
+  core.longpaths gives ENAMETOOLONG at cwd + argument = 152 + 1 + 108 = 261 in the REL.A20 child (WO13 missed the
+  `<commit>:` prefix; the `'b` was a SHA digit, bytes hypothesis refuted). Fix: `v0_2_gate.blob_at` with `--`;
+  test forces it on Linux (a symlink loop, ELOOP): without the fix the Windows line field for field. Linux REL.A20
+  same-form lines identical. Same pattern unfixed in release_gate.py:458, :1068, m07a_evidence_manifest.py,
+  release_evidence_manifest.py:413, s05_evidence_manifest.py: a WO16 sweep once CI confirms on Windows.
