@@ -589,8 +589,9 @@ def assemble(
     Scales are left empty on purpose (ADR 0001 D3.5 gives scale construction to K03).
 
     Raises `SpecificationError` for a unit without wiring and for two units that disagree: on a
-    block's shape, and, found by `_first_conflict`, on a block's inputs, a variable's or a row's
-    kind, or a pinned input's value.
+    block's shape (`_undeclared_blocks`, which also picks each unit's new blocks), and, found by
+    `_first_conflict`, on a block's inputs, a variable's or a row's kind, or a pinned input's
+    value.
     """
 
     variable_ids: list[str] = []
@@ -617,15 +618,9 @@ def assemble(
         # the same variable; seen twice with a different shape is a bug.
         variable_ids.extend(_unlisted(contribution.variable_ids, variable_ids))
         equations.extend(contribution.equations)
-        for block in contribution.blocks:
-            existing = declared_blocks.get(block.block_id)
-            if existing is None:
-                declared_blocks[block.block_id] = block
-                blocks.append(block)
-            elif (existing.input_ids, existing.output_ids) != (block.input_ids, block.output_ids):
-                raise SpecificationError(
-                    f"two units declare block {block.block_id!r} with different shapes"
-                )
+        undeclared = _undeclared_blocks(contribution.blocks, declared_blocks)
+        declared_blocks.update(undeclared)
+        blocks.extend(undeclared.values())
         if (block_id := _first_conflict(contribution.block_inputs, block_inputs)) is not None:
             raise SpecificationError(f"two units feed block {block_id!r} from different variables")
         block_inputs.update(contribution.block_inputs)
@@ -672,6 +667,25 @@ def _unlisted(names: Sequence[str], listed: Sequence[str]) -> list[str]:
         if name not in listed and name not in fresh:
             fresh.append(name)
     return fresh
+
+
+def _undeclared_blocks(
+    contributed: Sequence[PropertyBlock], declared: Mapping[str, PropertyBlock]
+) -> dict[str, PropertyBlock]:
+    """The blocks of `contributed` whose id `declared` does not hold, by id in their order; a
+    repeated id keeps its first block. Raises `SpecificationError` when a block's input and
+    output ids differ from those of the block `declared` or an earlier contributed block holds
+    under its id."""
+    undeclared: dict[str, PropertyBlock] = {}
+    for block in contributed:
+        existing = declared.get(block.block_id, undeclared.get(block.block_id))
+        if existing is None:
+            undeclared[block.block_id] = block
+        elif (existing.input_ids, existing.output_ids) != (block.input_ids, block.output_ids):
+            raise SpecificationError(
+                f"two units declare block {block.block_id!r} with different shapes"
+            )
+    return undeclared
 
 
 def _first_conflict[V](declared: Mapping[str, V], held: Mapping[str, V]) -> str | None:
