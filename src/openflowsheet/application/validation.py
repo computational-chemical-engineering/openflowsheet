@@ -1095,33 +1095,12 @@ def _component_references(
 ) -> Check:
     """`COMP-03` (T06 spec §8.5, register R-071): every specification's `target.component`, and
     every component-keyed parameter name — declared on an instance or pinned through a
-    specification's `parameters.<name>` path — names a member of the component set."""
+    specification's `parameters.<name>` path — names a member of the component set.
 
-    def outside(parameter: str) -> str | None:
-        family, _, component = parameter.partition(".")
-        if family in _COMPONENT_KEYED_PARAMETERS and component and component not in components:
-            return component
-        return None
-
-    unknown: list[tuple[str, str]] = []
-    for instance in instances:
-        unit = str(instance.get("id", ""))
-        for parameter in instance.get("parameters") or {}:
-            component = outside(str(parameter))
-            if component is not None:
-                unknown.append((f"{unit}.{parameter}", component))
-    for entry in specifications:
-        name = str(entry.get("id", ""))
-        target = entry.get("target") or {}
-        component = target.get("component")
-        if component is not None and component not in components:
-            unknown.append((name, str(component)))
-            continue
-        path = str(target.get("path", ""))
-        if path.startswith("parameters."):
-            named = outside(path.removeprefix("parameters."))
-            if named is not None:
-                unknown.append((name, named))
+    The unknown references are the instances' (`_unknown_instance_components`) followed by the
+    specifications' (`_unknown_specification_components`), each in document order."""
+    unknown = _unknown_instance_components(components, instances)
+    unknown += _unknown_specification_components(components, specifications)
 
     return Check(
         id="COMP-03",
@@ -1138,6 +1117,54 @@ def _component_references(
         ),
         implicated_objects=tuple(name for name, _ in unknown),
     )
+
+
+def _unknown_instance_components(
+    components: Sequence[str], instances: Sequence[Mapping[str, Any]]
+) -> list[tuple[str, str]]:
+    """`COMP-03`'s instance half: `(<unit>.<parameter>, component)` for every component-keyed
+    parameter declared on an instance whose component is not in `components`, in instance and
+    then parameter order."""
+    unknown: list[tuple[str, str]] = []
+    for instance in instances:
+        unit = str(instance.get("id", ""))
+        for parameter in instance.get("parameters") or {}:
+            component = _outside_component(str(parameter), components)
+            if component is not None:
+                unknown.append((f"{unit}.{parameter}", component))
+    return unknown
+
+
+def _unknown_specification_components(
+    components: Sequence[str], specifications: Sequence[Mapping[str, Any]]
+) -> list[tuple[str, str]]:
+    """`COMP-03`'s specification half: `(<specification id>, component)` for every specification
+    whose `target.component` is not in `components`, or else whose `parameters.<name>` target
+    path names a component-keyed parameter outside it; in specification order."""
+    unknown: list[tuple[str, str]] = []
+    for entry in specifications:
+        name = str(entry.get("id", ""))
+        target = entry.get("target") or {}
+        component = target.get("component")
+        if component is not None and component not in components:
+            unknown.append((name, str(component)))
+            continue
+        path = str(target.get("path", ""))
+        if path.startswith("parameters."):
+            named = _outside_component(path.removeprefix("parameters."), components)
+            if named is not None:
+                unknown.append((name, named))
+    return unknown
+
+
+def _outside_component(parameter: str, components: Sequence[str]) -> str | None:
+    """The component a component-keyed parameter name (`nu.<c>`, `conversion.<c>`, `split.<c>`)
+    names when it is not in `components`; `None` for any other name, a family with no component
+    part, or a member of `components`."""
+    family, _, component = parameter.partition(".")
+    if family in _COMPONENT_KEYED_PARAMETERS and component and component not in components:
+        return component
+    return None
 
 
 def _components(
