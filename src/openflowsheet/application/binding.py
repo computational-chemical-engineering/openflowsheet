@@ -667,7 +667,7 @@ def bind_revision_or_reason(document: Mapping[str, Any]) -> Binding | Unbound:
     promoted_columns = {row_id: column for row_id, (_, column) in promotions.items()}
     for row_id, (name, column) in promotions.items():
         specification_ids[row_id] = name
-        row_units[row_id] = column.split(".", 1)[0] if column.split(".", 1)[0] in WIRING else ""
+        row_units[row_id] = _unit_named_first(column, WIRING)
 
     return Binding(
         spec=spec,
@@ -935,6 +935,12 @@ def _promote_specifications(
             },
         )
     return spec, promotions
+
+
+def _unit_named_first(column: str, units: Mapping[str, Any]) -> str:
+    """The unit `column`'s id names first (`<unit>.<rest>`) when it is one of `units`, else the
+    empty string (the column belongs to a stream)."""
+    return column.split(".", 1)[0] if column.split(".", 1)[0] in units else ""
 
 
 def _instance_contracts(document: Mapping[str, Any], components: Sequence[str]) -> Unbound | None:
