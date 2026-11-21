@@ -580,10 +580,11 @@ def assemble(
     """Collect unit contributions into one `ProblemSpec`.
 
     Stream variables belong to the flowsheet and are allocated here, once, in `streams` order;
-    unit-owned variables (duties) follow in `units` order. Nothing is solved and nothing is
-    eliminated: a specification row and the variable it fixes both stay, because K01's compiler
-    and K03's structural analysis are the things entitled to remove them, and removing a row here
-    would hide it from `row_accumulation`.
+    unit-owned variables (duties) follow in `units` order, each once (`_unlisted`, which also
+    keeps the pinned-input ids unique). Nothing is solved and nothing is eliminated: a
+    specification row and the variable it fixes both stay, because K01's compiler and K03's
+    structural analysis are the things entitled to remove them, and removing a row here would
+    hide it from `row_accumulation`.
 
     Scales are left empty on purpose (ADR 0001 D3.5 gives scale construction to K03).
 
@@ -611,12 +612,10 @@ def assemble(
         if connected is None:
             raise SpecificationError(f"unit {unit.unit_id!r} has no wiring")
         contribution = unit.contribute(connected, components)
-        for name in contribution.variable_ids:
-            # A two-phase stream's lifted split is named after the *stream*, so the unit that
-            # produces it and the unit that reads it ask for the same variables. Seen twice is
-            # the same variable; seen twice with a different shape is a bug.
-            if name not in variable_ids:
-                variable_ids.append(name)
+        # A two-phase stream's lifted split is named after the *stream*, so the unit that
+        # produces it and the unit that reads it ask for the same variables. Seen twice is
+        # the same variable; seen twice with a different shape is a bug.
+        variable_ids.extend(_unlisted(contribution.variable_ids, variable_ids))
         equations.extend(contribution.equations)
         for block in contribution.blocks:
             existing = declared_blocks.get(block.block_id)
@@ -630,9 +629,7 @@ def assemble(
         if (block_id := _first_conflict(contribution.block_inputs, block_inputs)) is not None:
             raise SpecificationError(f"two units feed block {block_id!r} from different variables")
         block_inputs.update(contribution.block_inputs)
-        for name in contribution.parameter_ids:
-            if name not in parameter_ids:
-                parameter_ids.append(name)
+        parameter_ids.extend(_unlisted(contribution.parameter_ids, parameter_ids))
         # `what` and not `label`: `label` is this function's own parameter, and shadowing it
         # here silently renamed every assembled problem to "row@<digest>". The gate did not
         # catch that -- the identity tests compare two model_versions to each other, and both
@@ -665,6 +662,16 @@ def assemble(
         variable_kinds=variable_kinds,
         row_kinds=row_kinds,
     )
+
+
+def _unlisted(names: Sequence[str], listed: Sequence[str]) -> list[str]:
+    """The names in `names` that `listed` does not hold, in their order, each once (a repeat
+    keeps its first place)."""
+    fresh: list[str] = []
+    for name in names:
+        if name not in listed and name not in fresh:
+            fresh.append(name)
+    return fresh
 
 
 def _first_conflict[V](declared: Mapping[str, V], held: Mapping[str, V]) -> str | None:
