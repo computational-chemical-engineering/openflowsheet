@@ -426,14 +426,12 @@ def project(
 
     §6.1 steps 5 to 7 (rows, inequalities, objective) are `_add_constraints_and_objective`'s;
     the refusals are `_check_omitted_rows`'s (the caller's `omitted_rows`) and, after the rows,
-    `_check_smooth`'s (PROJECTION_NONSMOOTH) before `_check_structure`'s and the shape check's."""
+    `_check_smooth`'s (PROJECTION_NONSMOOTH) before `_check_structure`'s and the shape check's.
+    The call's arguments are `_check_call`'s and `omitted_rows` is `_requested_rows`'."""
     spec.validate()
     _check_call(spec, x0, decisions, external_links)
     scaling = projection_scaling(spec)
-    requested = None if omitted_rows is None else frozenset(omitted_rows)
-    unknown_rows = sorted((requested or frozenset()) - set(spec.equation_ids))
-    if unknown_rows:
-        raise ValueError(f"omitted_rows names {unknown_rows}, which are not equations of the spec")
+    requested = _requested_rows(spec, omitted_rows)
 
     # R-274's set, on the model with every variable.
     assembly = _assemble(spec, x0, decisions, domain, external_links, variable_bounds, {}, ())
@@ -789,6 +787,18 @@ def _check_link_inlets(spec: ProblemSpec, links: Sequence[ExternalLinkSpec]) -> 
         strangers = [name for name in link.inlet_variable_ids if name not in known]
         if strangers:
             raise ValueError(f"link {link.unit_id!r}: {strangers} are not variables")
+
+
+def _requested_rows(
+    spec: ProblemSpec, omitted_rows: Collection[str] | None
+) -> frozenset[str] | None:
+    """The caller's `omitted_rows` as a set (None when not given), checked to be equations of
+    `spec`; else `ValueError` naming the others, sorted."""
+    requested = None if omitted_rows is None else frozenset(omitted_rows)
+    unknown_rows = sorted((requested or frozenset()) - set(spec.equation_ids))
+    if unknown_rows:
+        raise ValueError(f"omitted_rows names {unknown_rows}, which are not equations of the spec")
+    return requested
 
 
 def _tightened_bounds(
