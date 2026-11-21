@@ -32,10 +32,18 @@ ship broken and pass every other step.
 - `f1.registry_sha256` (WF-3): `list_capabilities()` through the Python binding of a fresh
   in-memory project returns a `CapabilityPage` in both, and the two `registry_sha256` are equal
   64-hex strings.
-- `f3.legacy_records` (WF-4): `search_records(limit=200)` through `next_cursor` gives, in both,
-  only items whose `store` is `legacy`; the sorted `(id, record_sha256)` lists are equal, and their
-  length is N, the number of `records` over `files` in the checkout's
-  `src/openflowsheet/records/legacy_index.json`, read here directly; N >= 1.
+- `f3.legacy_records` (WF-4, as restated by the design-lane review REL050-R, Ruling 1): on each
+  side, `search_records(limit=200)` through `next_cursor` to the end, in at most ceil(N/200) + 1
+  pages, gives only items whose `store` is `legacy`, and their sorted `(id, record_sha256)` list
+  equals the sorted `(id, sha256)` list of the index records over that side's files. Both lists
+  are read here from `src/openflowsheet/records/legacy_index.json` in `git archive` of C, not
+  through the code under test. The checkout's files are every entry of `files` (N records); the
+  installed side's are those whose `path` P is package data at C, `openflowsheet/_data/P` being a
+  key of `scripts/t08_dist.py`'s `expected_package_files` (N_pkg records). N >= 1 and N_pkg >= 1.
+  The sides differ by ADR 0061 D8: a legacy file that is not package data is not available in a
+  wheel and contributes no records. The probe itself stops after `PROBE_MAX_PAGES` pages and
+  records `pagination did not end`, so a cursor that never ends fails the check instead of
+  hanging it.
 
     python scripts/wheel_data_check.py --commit C [--out DIR] [--f1-f3]
     <venv>/bin/python -I scripts/wheel_data_check.py probe --out J [--in-checkout] [--f1-f3]
@@ -63,7 +71,7 @@ import subprocess
 import sys
 import tempfile
 import zipfile
-from collections.abc import Mapping, Sequence
+from collections.abc import Collection, Mapping, Sequence
 from pathlib import Path
 from typing import Any
 
@@ -83,10 +91,13 @@ A19_STATES: dict[str, tuple[tuple[float, float, float], float, float]] = {
     "A12": ((0.3, 0.3, 0.4), 350.0, 101325.0),
 }
 #: WHEEL-F1-F3: the entry-point group WF-2 requires empty in both probes, the committed index
-#: whose records WF-4 counts, and the form of a registry digest.
+#: whose records WF-4 lists, the form of a registry digest, WF-4's page size, and the probe's
+#: own bound on pages (REL050-R F-3), which holds well above WF-4's ceil(N/200) + 1.
 EXTENSIONS_GROUP = "openflowsheet.extensions"
 LEGACY_INDEX = Path("src/openflowsheet/records/legacy_index.json")
 HEX64 = re.compile("[0-9a-f]{64}")
+PAGE_LIMIT = 200
+PROBE_MAX_PAGES = 100
 
 
 def sha256(data: bytes) -> str:
@@ -255,7 +266,7 @@ def probe_f1f3(checkout: bool) -> dict[str, Any]:
     """WF-2 to WF-4's probe through the Python binding of a fresh in-memory project: the entry
     points of `EXTENSIONS_GROUP`, the capability page's `registry_sha256`, and every record
     `search_records` lists. A call that raises is recorded by its type and message, so that the
-    check it feeds fails by name."""
+    check it feeds fails by name; so is a cursor that has not ended after `PROBE_MAX_PAGES`."""
     import importlib.metadata  # noqa: PLC0415
 
     import openflowsheet  # noqa: PLC0415
@@ -290,8 +301,8 @@ def probe_f1f3(checkout: bool) -> dict[str, Any]:
             items: list[dict[str, Any]] = []
             pages = 0
             cursor = None
-            while True:
-                records = application.search_records(limit=200, cursor=cursor)
+            while pages < PROBE_MAX_PAGES:
+                records = application.search_records(limit=PAGE_LIMIT, cursor=cursor)
                 pages += 1
                 items += [
                     {key: item[key] for key in ("id", "record_sha256", "store")}
@@ -300,15 +311,58 @@ def probe_f1f3(checkout: bool) -> dict[str, Any]:
                 cursor = records.next_cursor
                 if cursor is None:
                     break
-            found["records"] = {"pages": pages, "items": items}
+            if cursor is None:
+                found["records"] = {"pages": pages, "items": items}
+            else:
+                unended = {"type": "Pagination", "message": "pagination did not end"}
+                found["records"] = {"pages": pages, "error": unended}
         except Exception as error:  # noqa: BLE001
             found["records"] = {"error": _raised(error)}
     return found
 
 
-def legacy_index_count(index: Mapping[str, Any]) -> int:
-    """WF-4's N: the number of `records` entries over the index's `files`."""
-    return sum(len(entry["records"]) for entry in index["files"])
+def legacy_index_pairs(
+    index: Mapping[str, Any], paths: Collection[str] | None = None
+) -> list[tuple[str, str]]:
+    """WF-4's expected list: the sorted `(id, sha256)` pairs of the index's records over its
+    `files`, or over those whose `path` is in `paths`."""
+    return sorted(
+        (record["id"], record["sha256"])
+        for entry in index["files"]
+        if paths is None or entry["path"] in paths
+        for record in entry["records"]
+    )
+
+
+def package_data_legacy_paths(
+    index: Mapping[str, Any], package_files: Collection[str]
+) -> list[str]:
+    """WF-4's installed side: the index's file paths P that are package data, that is whose
+    `openflowsheet/_data/P` is in `package_files` (`t08_dist.expected_package_files`' keys)."""
+    return sorted(
+        entry["path"]
+        for entry in index["files"]
+        if f"openflowsheet/_data/{entry['path']}" in package_files
+    )
+
+
+def legacy_expectations(tree: Path, commit: str | None = None) -> tuple[dict[str, Any], list[str]]:
+    """The committed index of the source tree `tree` and its package-data legacy paths, the
+    latter by T08.A43's own reading of `pyproject.toml`; with `commit`, `tree` is first filled
+    with `git archive` of it. Host side only: the probe imports nothing outside the standard
+    library and `openflowsheet`."""
+    import t08_dist  # noqa: PLC0415
+
+    if commit is not None:
+        t08_dist.export_commit(commit, tree)
+    index = json.loads((tree / LEGACY_INDEX).read_text(encoding="utf-8"))
+    package_files = t08_dist.expected_package_files(tree, t08_dist.pyproject(tree))
+    return index, package_data_legacy_paths(index, package_files)
+
+
+def page_bound(count: int) -> int:
+    """WF-4's bound on pages for N records: ceil(N/200) + 1."""
+    return -(-count // PAGE_LIMIT) + 1
 
 
 def _listed(document: Mapping[str, Any]) -> list[tuple[str, str]] | None:
@@ -319,11 +373,22 @@ def _listed(document: Mapping[str, Any]) -> list[tuple[str, str]] | None:
     return sorted((item.get("id"), item.get("record_sha256")) for item in items)
 
 
+def _paged(document: Mapping[str, Any], bound: int) -> bool:
+    pages = document.get("records", {}).get("pages")
+    return isinstance(pages, int) and 1 <= pages <= bound
+
+
 def f1f3_findings(
-    installed: Mapping[str, Any], checkout: Mapping[str, Any], index_count: int
+    installed: Mapping[str, Any],
+    checkout: Mapping[str, Any],
+    index_pairs: Sequence[tuple[str, str]],
+    package_pairs: Sequence[tuple[str, str]],
 ) -> dict[str, bool]:
-    """WF-2's probe clauses, WF-3 and WF-4 from the two probe documents and the index's N."""
+    """WF-2's probe clauses, WF-3 and WF-4 from the two probe documents and the index's lists:
+    `index_pairs` over every file (the checkout's, N), `package_pairs` over the package-data
+    files (the installed side's, N_pkg)."""
     sides = (installed, checkout)
+    bound = page_bound(len(index_pairs))
     digests = [side.get("capabilities", {}).get("registry_sha256") for side in sides]
     listed = [_listed(side) for side in sides]
     return {
@@ -334,10 +399,11 @@ def f1f3_findings(
         )
         and all(isinstance(digest, str) and HEX64.fullmatch(digest) for digest in digests)
         and digests[0] == digests[1],
-        "legacy_records": index_count >= 1
-        and listed[0] is not None
-        and listed[0] == listed[1]
-        and len(listed[0]) == index_count,
+        "legacy_records": len(index_pairs) >= 1
+        and len(package_pairs) >= 1
+        and all(_paged(side, bound) for side in sides)
+        and listed[0] == sorted(package_pairs)
+        and listed[1] == sorted(index_pairs),
     }
 
 
@@ -500,8 +566,12 @@ def run_f1f3_checks(commit: str, work: Path) -> tuple[list[dict[str, Any]], dict
     )
     installed = _json(installed_path)
     checkout = _json(checkout_path)
-    count = legacy_index_count(json.loads((ROOT / LEGACY_INDEX).read_text(encoding="utf-8")))
-    found = f1f3_findings(installed, checkout, count)
+    index, package_paths = legacy_expectations(work / "export", commit)
+    expected = {
+        "installed": legacy_index_pairs(index, package_paths),
+        "checkout": legacy_index_pairs(index),
+    }
+    found = f1f3_findings(installed, checkout, expected["checkout"], expected["installed"])
     sides = {"installed": installed, "checkout": checkout}
     _check(
         checks,
@@ -536,13 +606,24 @@ def run_f1f3_checks(commit: str, work: Path) -> tuple[list[dict[str, Any]], dict
             "sha256": sha256(json.dumps(listed[side]).encode())
             if listed[side] is not None
             else None,
+            "expected": len(expected[side]),
+            "equals_index": listed[side] == expected[side],
         }
         for side, doc in sides.items()
     }
-    _check(checks, "f3.legacy_records", found["legacy_records"], index_records=count, **records)
+    count = len(expected["checkout"])
+    legacy = {"n": count, "n_pkg": len(expected["installed"]), "package_data_paths": package_paths}
+    _check(
+        checks,
+        "f3.legacy_records",
+        found["legacy_records"],
+        **legacy,
+        page_bound=page_bound(count),
+        **records,
+    )
     findings = {
         "registry_sha256": digests,
-        "legacy_records": count,
+        "legacy_records": legacy,
         "wheel_sha256": sha256(wheel.read_bytes()) if wheel is not None else None,
     }
     return checks, findings
