@@ -61,7 +61,7 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 
 **Position (2026-11-21 ~05:10):** main = d29f1a50. wp/S19 = 88818288 + docs (main/F3 at 68abf467, W5-S2 fix
 da6e4e82, trust_region run 1 merged at 88818288 after merge-check 643). Scan: 353 files, debt 2093.5 (target <=
-1900), health 8.98 (>= 9.0), brain 0. MB 2c5f7c3b (G-MAP 8). Runner PID 3031640, one job per worktree.
+1900), health 8.98 (>= 9.0), brain 0. MB 2c5f7c3b (G-MAP 8). Runner PID 4039086, one job per worktree.
 Lane: wp/S19-app (worktree s19-app), head 6afe9aa1 (c276bd57 + review docstrings): review R-W3-APP-1 merge; jobs
 632-634 PASS, 635-642 gating. Next: all PASS -> helper merge (pattern: worktree from the wp/S19 tip, `git merge
 --no-ff -F`, ruff, enqueue merge-check `--base <tip>`) -> merge -> map build (MB) -> next lanes.

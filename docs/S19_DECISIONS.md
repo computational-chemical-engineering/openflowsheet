@@ -4892,3 +4892,7 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   gate.sh reads MB from the gated tree's own S19_STATE.md, so lanes AS and A2 (from 2c5f7c3b, which still names
   c6957580) are rebased onto this commit (docs only) and their held jobs re-enqueued with the new shas; passed steps
   644, 645, 658 are not re-gated (identical diffs). The app lane (from da6e4e82) keeps its jobs (full suite anyway).
+- 2026-11-21, lanes AS (d7b30915 -> 607dee3e) and A2 (70a8da4a -> 91f0c001) rebased onto 025f1054 (docs only; MB
+  line). Held jobs re-enqueued by patch-id as 667-685 (labels `<old>m`, base = the rebased parent); old JSONs to
+  `<queue>/withdrawn/`. Passed before the hold, not re-gated (identical diffs): 644 a2-1, 645 as1-1, 657 as1-7, 658
+  a2-8. App jobs 637-642 back in `pending/`; runner restarted, PID 4039086.
