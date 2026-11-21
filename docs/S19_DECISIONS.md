@@ -4874,3 +4874,8 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   G-MAP 7 (exit 0 or 1; at least 20672 tests; failures a subset of the B-6 four + f6; no unsure test in a file over
   ~60 s, test_m04_wo9 the standing exception). On the result: judge, set MB = 2c5f7c3b in S19_STATE, move held jobs
   back to `pending/`, `$Q run --detach`, remove map8.
+- 2026-11-21, X07a CI 44856631374 (ee084763): GREEN on all four legs (Windows main suite 17188 passed, was 17186 + 1
+  failed: the WO15 test ran and REL.A20 passes). WO15's cause confirmed on Windows. DECISION: WO16 sweep (the same
+  `git show <rev>:<path>` without `--` in 5 scripts, plus an ast regression test) before the manifest goes `tested`.
+  Alternative: manifest now, sweep later. Reversible by: none needed (one commit). sonnet-implementer (Sonnet),
+  `<briefs>/X07a-WO16.md`.
