@@ -4734,3 +4734,6 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   7.9 -> 8.9, holders 8.1 -> 9.1, study 8.1 -> 8.9, trf 8.8 -> 9.3. Stops: `_certify_block`/`_persistence_rows`
   params (cross-phase object with the lazily drawn xi), public signatures, `check_candidate` (6-param method). Review
   (S1 cadence: 3 steps) after the chain's gates.
+- 2026-11-21 ~03:10, DECISION: review R-W3-TR-1 (reviewer, Opus; brief `<briefs>/S19-R-W3-TR-1.md`) launched while
+  jobs 620-630 gate, not after. Alternative: wait ~2.5 h for the chain's gates (procedure order). Reversible by: a
+  failed gate's step is bisected by a fresh engineer and re-reviewed alone; the review of unchanged steps stands.
