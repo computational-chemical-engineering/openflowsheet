@@ -4753,3 +4753,6 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
 - 2026-11-21, merge-check 615 (4881224c..da6e4e82: main/F3 merge + W5-S2 fix) PASS 11/11, full suite. The main merge
   on wp/S19 stands. Next milestone (after the TR merge): move MB to the wp/S19 tip; every step now falls back to the
   full suite (~25 min) because the map at c6957580 predates the F3 merge.
+- 2026-11-21, gate report: `ALERT queue wait median 29 min > 15 min`. Real now: 12 TR jobs (620-631) each run the
+  full suite (~25 min, stale map), two slots. Action: no new lane starts until the TR chain drains; then a map build
+  at the wp/S19 tip (queue held), which restores step-relative selection for the app lane.
