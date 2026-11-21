@@ -4687,3 +4687,19 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   604 PASS; wp/S19 changed only docs since a2ba5b12. patch_noop 0/263. Worktrees s19-g1r, s19-g3r, s19-g13r-mc and
   branches removed.** G-END scan at 80ebd99c: debt 2119.2 (-219 to go), health 8.93, brain 0, no file below 7.0
   (met), arch 0/0. State rewritten for a self-reset.
+- 2026-11-21 ~01:10, resume after self-reset. G-END step 0 computed at 80ebd99c (scan JSON, NLOC-weighted health
+  8.931 = the scan's 8.93): without models/syn001 the health is 9.005 (89285 NLOC, debt 1692.4); lifting every
+  non-syn001 file below 9.0 to 9.0 gives 9.19 over the whole scope. So G-END health >= 9.0 is reachable without
+  syn001: no scope question for Frank. Weighted gap to 9.0: ~7146 (NLOC x points); application/ 5598, trust_region
+  3734, orchestrator 3658, studies/nlp 3276, assessment/sizing 1466 (syn001 9272, not needed).
+- 2026-11-21, X07a CI 44826386637 (8c41d541): Windows leg 1 failed (REL.A20, RP.S08); WO13 line `54 paths, max 68;
+  missing 0/50 ... untracked 0; longpaths 1:` refutes WO12's "records never reach the commit" (all 50 in the
+  tree). WO14 launched (opus-engineer, Opus; brief `<briefs>/X07a-WO14.md`): hypotheses H1 gate reads another repo
+  (patched v0_1_gate module not the one used), H2 another candidate, H3 manifests read but rejected.
+- 2026-11-21, DECISION: merge main (d29f1a50, F3) into wp/S19 before the application/ lane branches -> 68abf467.
+  Alternative: branch the lane without F3 (F3 touched cli.py, contract.py, local.py; a later conflict). Reversible
+  by: reset wp/S19 to 4881224c (no lane merged on top yet). Conflicts only in the two registry digests, regenerated
+  (`registry_builtin.py --write`, tables byte-unchanged, `--check` clean, registry_sha256 6a7550d4); arch 353 files
+  0/0; F0 PASS 9/9. Scan at 68abf467: 353 files, debt 2130.3, health 8.95. Merge-check job 606 (full suite) queued.
+- 2026-11-21, application/ lane run 1 launched (opus-engineer, Opus; brief `<briefs>/S19-W3-APP-1.md`, wp/S19-app
+  from 68abf467). One S19 lane only: the X07a engineer holds the second agent slot (CLAUDE.md, at most 2).

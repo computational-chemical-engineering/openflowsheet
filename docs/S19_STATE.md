@@ -57,19 +57,20 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 - G1 (orchestrator/, numerics/): W3 lanes N and O closed 2026-11-19 (272011be); residuals executor.py (PR-1b, 6.1 -> 9.0, gating) and `_solve_region`'s parameter object (W4).
 - G-END (below) stays the end criterion for the whole repository.
 
-## Next actions (2026-11-21 ~01:00 CET)
+## Next actions (2026-11-21 ~01:15 CET)
 
-**Position:** main = d29f1a50 (F3 merged). wp/S19 = this commit (G1R + G3R merged at 80ebd99c, WO-V at d831acdf,
-G10 re-take at b1d2ae6a). MB c6957580 (G-MAP 7). Runner PID 3031640 (queue empty; `$Q status` gives `results: N`;
-`wait --since N`). Agents running: none. Background at reset: a 5-min `gh run view` poller for X07a ci run
-44826386637 (WO13 diagnostic at 8c41d541; a rate-limit-safe loop, never `gh run watch`).
+**Position:** main = d29f1a50. wp/S19 = 68abf467 + docs (main/F3 merged in; merge-check job 606, full suite,
+queued; on FAIL reset wp/S19 to 4881224c before any lane merges). MB c6957580. Runner PID 3031640 (`$Q status`;
+`wait --since 584` running in background). Agents running: X07a-WO14 (opus-engineer, `<briefs>/X07a-WO14.md`, on
+wp/X07a), S19 application/ run 1 (opus-engineer, `<briefs>/S19-W3-APP-1.md`, wp/S19-app, worktree s19-app,
+labels app1-*). Scan at 68abf467: 353 files, debt 2130.3, health 8.95.
 
 0. **G-END at 80ebd99c** (scan `--repo . --json <scratch>`): 336 files, debt 2119.2 (target <= 1900: -219 left),
    health 8.93 (>= 9.0), brain 0, no file below 7.0 (MET since WO-V; lowest binding.py and syn001/column.py 7.0),
    arch 0/0 at depth 4, patch_noop 0/263. 87 files below 9.0; debt in them: models/syn001 411.3 (24 files, tier 4,
    not edited in S19), application 218.1 (12), orchestrator 195.1 (10), studies/trust_region 130.7 (8), studies/nlp
-   113.2 (6), numerics 51.9 (2). Health 9.0 without syn001 may be out of reach: compute it before the next lanes
-   (if so, a scope question for Frank via hub: the G-END split, "Waits for Frank" in SKILL.md).
+   113.2 (6), numerics 51.9 (2). Computed 2026-11-21: health 9.0 is reachable without syn001 (non-syn001 alone 9.005;
+   non-syn001 files lifted to 9.0 give 9.19; S19_DECISIONS). No scope question.
 1. **Next lanes (DECISION for the new context):** (a) application/ (binding.py 7.0 `bind_revision_or_reason` 22.6,
    revision_run 8.1, stream_table_format 7.9 `assemble` 16, coupled_run 8.0, cli 8.7 `build_parser` 13.6; S2:
    revision_run.py, run_session.py); (b) WO-C, the cascade/column_compile duplication interface step
