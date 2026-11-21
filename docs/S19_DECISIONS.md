@@ -4962,3 +4962,4 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   witness moved to `_certified_elimination`) and the optional report_body docstring ("gains" -> "existing entries are
   overwritten") fixed by the orchestrator, 089865b0, job 698 d1-fix no-gain. Notes: fuzz reached the certificate path
   66 times (reading settles it); `_unlisted`'s O(N^2) membership predates the lane.
+- 2026-11-21, D1 chain complete (steps 573-582; d1-fix 698 accepted-neutral). Helper wp/S19-d1-mc = 9f8df18f + merge d4e887cc (ruff clean); merge-check 699 queued.
