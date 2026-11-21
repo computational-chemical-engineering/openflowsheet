@@ -23,6 +23,7 @@ from openflowsheet.assessment.program import (
 )
 from openflowsheet.assessment.regimes import (
     AdmissibilityRow,
+    Regime,
     RegimeEntry,
     select_argmax,
     select_service,
@@ -173,35 +174,14 @@ def exchanger_utility(
     """An `exchanger.utility` item (§4.4.1): area `|Q|/(U F_T ΔT_lm)` against one utility.
 
     `t_in`/`t_out` are the host ids of the process inlet and outlet temperatures; `streams` the
-    process streams, when there are any, for the phase-change limitation. `_candidates`
-    refuses NO_ADMISSIBLE_UTILITY for an undeclared named utility; `_cheapest_admissible` returns
-    `None`, which this function turns into the same refusal."""
+    process streams, when there are any, for the phase-change limitation. Rule 1 (the service) is
+    `_service_rule`'s. `_candidates` refuses NO_ADMISSIBLE_UTILITY for an undeclared named
+    utility; `_cheapest_admissible` returns `None`, which this function turns into the same
+    refusal."""
     doc = sctx.item(item_id)
     regime = sctx.ctx.regime
-    service_entry_id = f"{item_id}.service"
     declared = forced_service or doc.get("service")
-    service = regime.choice(service_entry_id) or select_service(duty.value, declared)
-    # Rule 1 at Q == 0.0 with nothing declared or held takes `service_at_zero_duty` (A41).
-    service_default = (
-        (SizingInput("service", service, "", True, default_key="service_at_zero_duty"),)
-        if duty.value == 0.0 and declared is None and regime.choice(service_entry_id) is None
-        else ()
-    )
-    duty_build = duty.build
-    if service == "heating":
-        signed: FunctionalBuilder = duty_build
-    else:
-
-        def signed(s: Symbols, a: Algebra) -> Expr:
-            return -duty_build(s, a)
-
-    service_entry = RegimeEntry(
-        service_entry_id,
-        "service",
-        service,
-        "§4.3.2 rule 1",
-        (AdmissibilityRow("duty", signed, nominal(duty.value)),),
-    )
+    service, service_default, signed, service_entry = _service_rule(regime, item_id, duty, declared)
 
     # Rule 2: the utility.
     t_pi, t_po = sctx.x(t_in), sctx.x(t_out)
@@ -305,6 +285,47 @@ def exchanger_utility(
         regime_entries=(service_entry, utility_entry),
         limitations=tuple(limitations),
     )
+
+
+class _ServiceRule(NamedTuple):
+    """§4.3.2 rule 1 for an `exchanger.utility` item: the service, the `service_at_zero_duty`
+    input when the rule took that default (else empty), the duty signed for the service, and the
+    regime entry."""
+
+    service: str
+    default: tuple[SizingInput, ...]
+    signed: FunctionalBuilder
+    entry: RegimeEntry
+
+
+def _service_rule(regime: Regime, item_id: str, duty: _Duty, declared: str | None) -> _ServiceRule:
+    """§4.3.2 rule 1: the service `regime` holds for `<item>.service`, else `select_service` on the
+    duty's value and the `declared` service; the duty as heating (`Q`) or cooling (`-Q`); the
+    entry with its `duty` admissibility row."""
+    service_entry_id = f"{item_id}.service"
+    service = regime.choice(service_entry_id) or select_service(duty.value, declared)
+    # Rule 1 at Q == 0.0 with nothing declared or held takes `service_at_zero_duty` (A41).
+    service_default = (
+        (SizingInput("service", service, "", True, default_key="service_at_zero_duty"),)
+        if duty.value == 0.0 and declared is None and regime.choice(service_entry_id) is None
+        else ()
+    )
+    duty_build = duty.build
+    if service == "heating":
+        signed: FunctionalBuilder = duty_build
+    else:
+
+        def signed(s: Symbols, a: Algebra) -> Expr:
+            return -duty_build(s, a)
+
+    service_entry = RegimeEntry(
+        service_entry_id,
+        "service",
+        service,
+        "§4.3.2 rule 1",
+        (AdmissibilityRow("duty", signed, nominal(duty.value)),),
+    )
+    return _ServiceRule(service, service_default, signed, service_entry)
 
 
 def _candidates(
