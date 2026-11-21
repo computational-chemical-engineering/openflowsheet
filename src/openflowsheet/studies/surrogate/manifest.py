@@ -620,8 +620,9 @@ def check_manifest(manifest: Mapping[str, Any]) -> list[str]:
     """Every inconsistency of `manifest` that its schema cannot express (M04.A24); empty when
     none. The schema is checked first; a manifest that fails it is not read further, nor is one
     with a non-finite or non-canonical number or an unregistered plan. The splits are checked
-    by `_split_consistency`, the band by `_band_consistency`, the failure lists by
-    `_failure_consistency`, the qualifications by `_qualification_consistency`."""
+    by `_split_consistency`, the band by `_band_consistency`, the verdict and the promotion block
+    by `_promotion_consistency`, the failure lists by `_failure_consistency`, the qualifications
+    by `_qualification_consistency`."""
     invalid = schema_errors(MANIFEST_SCHEMA, manifest)
     if invalid:
         return [f"schema: {error}" for error in invalid]
@@ -664,34 +665,7 @@ def check_manifest(manifest: Mapping[str, Any]) -> list[str]:
     found.extend(_band_consistency(manifest, counts))
 
     # The verdict, re-derived from the stored metrics (spec §7.3).
-    derived = derived_verdict(manifest)
-    promotion = manifest["promotion"]
-    recorded = (
-        promotion["verdict"],
-        tuple(promotion["insufficient"]),
-        tuple(promotion["not_promotable"]),
-    )
-    if recorded != (derived.verdict, derived.insufficient, derived.not_promotable):
-        found.append(
-            f"verdict {recorded} is inconsistent with the stored metrics "
-            f"({derived.verdict}, {derived.insufficient}, {derived.not_promotable})"
-        )
-    bound = familywise_bound(
-        len(manifest["predecessors"]), derived.hits is not None and derived.h_min is not None
-    )
-    if promotion["familywise_false_pass_bound"] != bound:
-        found.append(
-            f"familywise_false_pass_bound {promotion['familywise_false_pass_bound']!r} is not "
-            f"0.05 x the iterations whose coverage test was evaluated ({bound!r})"
-        )
-    if (manifest["predictor"]["coefficients"] is None) != (
-        "training_unidentifiable" in derived.insufficient
-    ):
-        found.append("coefficients are present iff the fit is identifiable")
-    if (manifest["predictor"]["coefficients"] is None) != (
-        manifest["domain"]["admissibility_margin"] is None
-    ):
-        found.append("admissibility_margin is present iff there is a predictor")
+    found.extend(_promotion_consistency(manifest))
 
     # Spec §20 A3.2 (R-361): the failure lists, the null scores, the centres and `training_ok`
     # state one fact each; a hand-edited score, centre or count must not outlive its list.
@@ -789,6 +763,43 @@ def _band_consistency(manifest: Mapping[str, Any], counts: Mapping[Split, int]) 
         lower is not None and stored is not None and abs(float(stored) - lower) > 1e-12
     ):
         found.append(f"lower_bound {stored!r} is not L(H, m) = {lower!r}")
+    return found
+
+
+def _promotion_consistency(manifest: Mapping[str, Any]) -> list[str]:
+    """The `promotion` block and the predictor against the stored metrics (spec §7.3): the
+    verdict and its insufficient and not-promotable lists `derived_verdict`'s, the familywise
+    false-pass bound `familywise_bound`'s over the predecessors, coefficients present iff the fit
+    is identifiable, and an admissibility margin iff there is a predictor."""
+    found: list[str] = []
+    derived = derived_verdict(manifest)
+    promotion = manifest["promotion"]
+    recorded = (
+        promotion["verdict"],
+        tuple(promotion["insufficient"]),
+        tuple(promotion["not_promotable"]),
+    )
+    if recorded != (derived.verdict, derived.insufficient, derived.not_promotable):
+        found.append(
+            f"verdict {recorded} is inconsistent with the stored metrics "
+            f"({derived.verdict}, {derived.insufficient}, {derived.not_promotable})"
+        )
+    bound = familywise_bound(
+        len(manifest["predecessors"]), derived.hits is not None and derived.h_min is not None
+    )
+    if promotion["familywise_false_pass_bound"] != bound:
+        found.append(
+            f"familywise_false_pass_bound {promotion['familywise_false_pass_bound']!r} is not "
+            f"0.05 x the iterations whose coverage test was evaluated ({bound!r})"
+        )
+    if (manifest["predictor"]["coefficients"] is None) != (
+        "training_unidentifiable" in derived.insufficient
+    ):
+        found.append("coefficients are present iff the fit is identifiable")
+    if (manifest["predictor"]["coefficients"] is None) != (
+        manifest["domain"]["admissibility_margin"] is None
+    ):
+        found.append("admissibility_margin is present iff there is a predictor")
     return found
 
 
