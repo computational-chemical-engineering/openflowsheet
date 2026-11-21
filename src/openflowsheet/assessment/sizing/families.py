@@ -845,7 +845,8 @@ class _Column:
 
     def _shell(self, sctx: SizingContext, unit: UnitRef) -> SizingPlan:
         """The shell and trays (§4.4.6); a refusal here leaves the condenser and reboiler. The
-        inputs are `_shell_inputs`'s, the stage walk and its refusals `_shell_stages`'s."""
+        inputs are `_shell_inputs`'s, the stage walk and its refusals `_shell_stages`'s, the
+        controlling stage `_controlling_stage`'s."""
         structure = unit.structure.structure
         u, n = unit.unit_id, int(structure.stage_count)
         condenser, reboiler = structure.condenser != "none", structure.reboiler != "none"
@@ -861,22 +862,8 @@ class _Column:
         flows, entries, members = stages
         volume_theta, volume_records = sctx.volume_inputs(shell, flows)
         theta = [t for t, _ in inputs] + list(volume_theta)
-        probe = [OutputDef(f"size.{shell}.s{name}.diameter", "m", b) for name, b in members]
-        floats = sctx.values(probe, theta)
-        values = {name: floats[f"size.{shell}.s{name}.diameter"] for name, _ in members}
-        names = [name for name, _ in members]
-        held = sctx.ctx.regime.choice(f"{shell}.controlling")
-        controlling = held or names[select_argmax([values[name] for name in names])]
-        if len(members) > 1:
-            entries.append(
-                RegimeEntry(
-                    f"{shell}.controlling",
-                    "argmax",
-                    controlling,
-                    "§4.3.2 rule 6",
-                    argmax_rows(members, controlling, values),
-                )
-            )
+        controlling, argmax_entries = _controlling_stage(sctx, shell, members, theta)
+        entries += argmax_entries
         d2 = dict(members)[controlling]
 
         def diameter(s: Symbols, a: Algebra) -> Expr:
@@ -1032,6 +1019,35 @@ def _stage_d2(
         return 4.0 * vapour.vdot(s, a) / (math.pi * s.theta(f_flood) * s.theta(phi) * u_f)
 
     return build
+
+
+def _controlling_stage(
+    sctx: SizingContext,
+    shell: str,
+    members: list[tuple[str, FunctionalBuilder]],
+    theta: list[Theta],
+) -> tuple[str, tuple[RegimeEntry, ...]]:
+    """§4.3.2 rule 6: the shell's controlling stage, the one the regime holds for
+    `<shell>.controlling`, else the member of the largest diameter at the state (`members`'
+    `D_j²` probed with `theta`, ties `select_argmax`'s); with the `argmax` entry when there is
+    more than one member, else no entry."""
+    probe = [OutputDef(f"size.{shell}.s{name}.diameter", "m", b) for name, b in members]
+    floats = sctx.values(probe, theta)
+    values = {name: floats[f"size.{shell}.s{name}.diameter"] for name, _ in members}
+    names = [name for name, _ in members]
+    held = sctx.ctx.regime.choice(f"{shell}.controlling")
+    controlling = held or names[select_argmax([values[name] for name in names])]
+    if len(members) > 1:
+        return controlling, (
+            RegimeEntry(
+                f"{shell}.controlling",
+                "argmax",
+                controlling,
+                "§4.3.2 rule 6",
+                argmax_rows(members, controlling, values),
+            ),
+        )
+    return controlling, ()
 
 
 # -- §4.4.7 reactor.vessel -----------------------------------------------------------------------
