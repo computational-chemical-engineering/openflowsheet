@@ -973,7 +973,7 @@ def command_streams(arguments: argparse.Namespace) -> int:
     in `--output`); a refusal exits with its `ApiError` code's number (§11.5); 1 when the project
     cannot be opened; 2 for a usage error. `--display-units TEXT` (ADR 0075 D7.6) prints it in a
     display preference's units, resolved against the project's ambient pressure (a bundle
-    directory has none)."""
+    directory has none). A job's pages are fetched with `_stream_table_request`'s requests."""
     from openflowsheet.application import stream_table, stream_table_format
     from openflowsheet.application.authz import PolicyRefusedError
     from openflowsheet.application.errors import ApplicationError
@@ -1000,16 +1000,7 @@ def command_streams(arguments: argparse.Namespace) -> int:
         with application:
 
             def fetch(pointer: str, depth: int, cursor: str | None, limit: int) -> Any:
-                request: dict[str, Any] = {
-                    "job_id": arguments.job,
-                    "pointer": pointer,
-                    "depth": depth,
-                    "limit": limit,
-                }
-                if cursor is not None:
-                    request["cursor"] = cursor
-                if arguments.display_units is not None:
-                    request["display_units"] = arguments.display_units
+                request = _stream_table_request(arguments, pointer, depth, cursor, limit)
                 return dispatch(application, "get_stream_table", request)
 
             try:
@@ -1039,6 +1030,24 @@ def command_streams(arguments: argparse.Namespace) -> int:
         with open(arguments.output, "w", encoding="utf-8", newline="") as out:
             out.write(text)
     return 0
+
+
+def _stream_table_request(
+    arguments: argparse.Namespace, pointer: str, depth: int, cursor: str | None, limit: int
+) -> dict[str, Any]:
+    """`streams`' `get_stream_table` request for one page of `--job`'s table: the job, pointer,
+    depth and limit, then the cursor when there is one and `--display-units` when given."""
+    request: dict[str, Any] = {
+        "job_id": arguments.job,
+        "pointer": pointer,
+        "depth": depth,
+        "limit": limit,
+    }
+    if cursor is not None:
+        request["cursor"] = cursor
+    if arguments.display_units is not None:
+        request["display_units"] = arguments.display_units
+    return request
 
 
 def build_parser() -> argparse.ArgumentParser:
