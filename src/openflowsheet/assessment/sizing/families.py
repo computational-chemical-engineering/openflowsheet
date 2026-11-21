@@ -175,9 +175,9 @@ def exchanger_utility(
 
     `t_in`/`t_out` are the host ids of the process inlet and outlet temperatures; `streams` the
     process streams, when there are any, for the phase-change limitation. Rule 1 (the service) is
-    `_service_rule`'s. `_candidates` refuses NO_ADMISSIBLE_UTILITY for an undeclared named
-    utility; `_cheapest_admissible` returns `None`, which this function turns into the same
-    refusal."""
+    `_service_rule`'s, the `U` input and its refusal `_u_input`'s. `_candidates` refuses
+    NO_ADMISSIBLE_UTILITY for an undeclared named utility; `_cheapest_admissible` returns `None`,
+    which this function turns into the same refusal."""
     doc = sctx.item(item_id)
     regime = sctx.ctx.regime
     declared = forced_service or doc.get("service")
@@ -212,14 +212,10 @@ def exchanger_utility(
         return _refused("SIZING_INPUT_MISSING", f"{item_id}.dT_min", utility_id)
 
     # Inputs (U is required, R-856).
-    if "U" in doc:
-        u_value, u_source, u_default = float(doc["U"]), f"items.{item_id}.U", False
-    elif service in sctx.defaults.get("U_by_service", {}):
-        u_value = float(sctx.defaults["U_by_service"][service])
-        u_source, u_default = f"defaults.U_by_service.{service}", False
-    else:
-        return _refused("SIZING_INPUT_MISSING", f"{item_id}.U", f"service {service}")
-    u_theta = Theta(f"asm:item.{item_id}.U", u_value, "W/(m2*K)", u_source)
+    u_pair = _u_input(sctx, doc, item_id, service)
+    if isinstance(u_pair, SizingPlan):
+        return u_pair
+    u_theta, u_input = u_pair
     f_theta, f_input = sctx.input(item_id, "F_T", "1", default_key="F_T")
     t_us, t_ur = temperatures
     supply = Theta(f"asm:item.{item_id}.T_supply", t_us, "K", f"utilities.{utility_id}.T_supply")
@@ -265,7 +261,7 @@ def exchanger_utility(
         family="exchanger.utility",
         size={"area": size_output(item_id, "area")},
         inputs=(
-            SizingInput("U", u_value, "W/(m2*K)", u_default, u_theta.theta_id),
+            u_input,
             f_input,
             SizingInput("T_supply", t_us, "K", False, supply.theta_id),
             SizingInput("T_return", t_ur, "K", "T_return" not in chosen, back.theta_id),
@@ -372,6 +368,23 @@ def _dt_min(doc: Mapping[str, Any], utility: Mapping[str, Any]) -> float | None:
     if "dT_min" in doc:
         return float(doc["dT_min"])
     return float(utility["dT_min"]) if "dT_min" in utility else None
+
+
+def _u_input(
+    sctx: SizingContext, doc: Mapping[str, Any], item_id: str, service: str
+) -> tuple[Theta, SizingInput] | SizingPlan:
+    """The item's required `U` (R-856) as `(θ, input)`, the shape `SizingContext.input` returns:
+    the item's own (`doc`), else `defaults.U_by_service.<service>`; a
+    `SIZING_INPUT_MISSING(<item>.U)` refusal with neither."""
+    if "U" in doc:
+        u_value, u_source, u_default = float(doc["U"]), f"items.{item_id}.U", False
+    elif service in sctx.defaults.get("U_by_service", {}):
+        u_value = float(sctx.defaults["U_by_service"][service])
+        u_source, u_default = f"defaults.U_by_service.{service}", False
+    else:
+        return _refused("SIZING_INPUT_MISSING", f"{item_id}.U", f"service {service}")
+    u_theta = Theta(f"asm:item.{item_id}.U", u_value, "W/(m2*K)", u_source)
+    return u_theta, SizingInput("U", u_value, "W/(m2*K)", u_default, u_theta.theta_id)
 
 
 def _phase_change(
