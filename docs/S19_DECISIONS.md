@@ -4703,3 +4703,12 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   0/0; F0 PASS 9/9. Scan at 68abf467: 353 files, debt 2130.3, health 8.95. Merge-check job 606 (full suite) queued.
 - 2026-11-21, application/ lane run 1 launched (opus-engineer, Opus; brief `<briefs>/S19-W3-APP-1.md`, wp/S19-app
   from 68abf467). One S19 lane only: the X07a engineer holds the second agent slot (CLAUDE.md, at most 2).
+- 2026-11-21, X07a-WO14 (opus-engineer, Opus, ~134k): STOP, diagnostic only (1d73d913, entry 549d10c6, pushed; CI
+  44842632690). Forced on Linux: H1 (another repo) gives exit 2 `not a commit`, H2 (another candidate) 85 reasons:
+  both refuted; H3 (manifests read but rejected) reproduces the exact 21 reasons three ways (`read_at` None on
+  evidence paths, a BOM, a backslash pathspec), none a known Windows-child property. The new first line
+  `WO14 tree .. H3 read_at <None|len:parses> git <exit>:..` decides it on the next Windows leg. Linux REL.A20
+  byte-identical. Poller on 44842632690 in background.
+- 2026-11-21, trust_region residue run 1 launched (opus-engineer, Opus; brief `<briefs>/S19-W3-TR-1.md`, wp/S19-tr
+  from 07f16186, labels tr1-*; first item R-W3-G3R-1's rule-16 reasons pin). Branched from 07f16186, not 68abf467,
+  so its first base worktree differs from the application lane's (the jobs 562/564 race).

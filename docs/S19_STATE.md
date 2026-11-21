@@ -61,9 +61,10 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 
 **Position:** main = d29f1a50. wp/S19 = 68abf467 + docs (main/F3 merged in; merge-check job 606, full suite,
 queued; on FAIL reset wp/S19 to 4881224c before any lane merges). MB c6957580. Runner PID 3031640 (`$Q status`;
-`wait --since 584` running in background). Agents running: X07a-WO14 (opus-engineer, `<briefs>/X07a-WO14.md`, on
-wp/X07a), S19 application/ run 1 (opus-engineer, `<briefs>/S19-W3-APP-1.md`, wp/S19-app, worktree s19-app,
-labels app1-*). Scan at 68abf467: 353 files, debt 2130.3, health 8.95.
+`wait --since 584` running in background). Agents running: S19 application/ run 1 (opus-engineer, `<briefs>/S19-W3-APP-1.md`, wp/S19-app from
+68abf467, worktree s19-app, labels app1-*), S19 trust_region run 1 (opus-engineer, `<briefs>/S19-W3-TR-1.md`,
+wp/S19-tr from 07f16186, labels tr1-*). X07a: WO14 done (diagnostic 1d73d913); CI 44842632690 poller in
+background; on its result read the Windows leg's `WO14 tree` line (item 4). Scan at 68abf467: 353 files, debt 2130.3, health 8.95.
 
 0. **G-END at 80ebd99c** (scan `--repo . --json <scratch>`): 336 files, debt 2119.2 (target <= 1900: -219 left),
    health 8.93 (>= 9.0), brain 0, no file below 7.0 (MET since WO-V; lowest binding.py and syn001/column.py 7.0),
@@ -84,7 +85,7 @@ labels app1-*). Scan at 68abf467: 353 files, debt 2130.3, health 8.95.
 3. Rule (2026-11-20): a W5 batch close also runs the nlp-marked suite at K (batch P missed G10; fixed b1d2ae6a).
    Lanes touching studies/ need the nlp-marked suite at head, failures a subset of base (g19, g20 only now).
 4. **X07a (0.5):** S16 and S22 fixed by WO12 (4f3a59ea); S08 open: MAX_PATH rejected (WO13), diagnostic line
-   `WO13 tree ...` in the a08 assertion. On CI 44826386637's result: Windows leg log to scratch (`gh api
+   `WO13 tree ...` in the a08 assertion. On CI 44842632690's result (WO14 line `H3 read_at .. git ..` decides: None+git 0 = in-process git differs, 128 = git refuses the path, len:0 = parse): Windows leg log to scratch (`gh api
    repos/computational-chemical-engineering/openflowsheet/actions/jobs/<id>/logs`), grep `WO13 tree`; it names an
    ignore source, a non-zero `add -n` or untracked files: a fresh WO14 with the fix. Green on all four legs: manifest
    `tested`, then a merge card via hub. Pushes from agents need `gh auth git-credential` as helper (sandbox).
