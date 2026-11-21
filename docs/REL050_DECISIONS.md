@@ -44,3 +44,10 @@
   9773c361 manifest kept (as briefed) -> HARVEST_SIZE (102, 1148, 147). Alternative: rename it away as F1 did
   (dd97d79a). Reversible by: reverting c356211b. Accepted. c356211b touches a test and the envelope: fresh CI
   44913734986 / Site 44913735084 for the merge card.
+- 2026-11-21 ~17:00, GitHub API quota exhausted 14:56-15:25 UTC by `gh run watch` pollers at the default 3 s
+  interval (all stopped; hub told; one 300 s poller now). CI results read after the reset: wp/S19 44909075689 at
+  043879a4 success on all legs -> S19-V-GEND verdict dispatched (S19 lane). X01 44909945712 at 5634fa7f FAIL on both
+  legs, only test_a21_every_item_is_classified_once_and_resolves (a0e4c546 manifest limitations[0-3] unmapped) and
+  test_m07a_a50_the_harvest_size_is_the_quoted_one ((101, 1148, 146) measured); 20888 passed. Fixed by the
+  orchestrator (mechanical, X07a c356211b pattern): bbbca491 four class-P harvest rows, HARVEST_SIZE (101, 1148, 146),
+  matrix re-emitted (--check 0 problems; 44 passed). CI 44921749701 / Site 44921749623. Then the X01 manifest move.
