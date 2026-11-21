@@ -229,7 +229,7 @@ def _add_single_pins(
     single unknown not yet in `found`, its residual exactly 0.0, its pivot nonzero, its decision
     derivatives all 0.0) and the row to `pins`, until a pass adds nothing. Edits the caller's
     working state `found` and `pins` and keeps its invariant: `pins` are the rows that pinned or
-    certified a member of `found`."""
+    certified a member of `found`. A row's criteria are `_single_pin`'s."""
     changed = True
     while changed:
         changed = False
@@ -240,18 +240,29 @@ def _add_single_pins(
             if len(rest) != 1:
                 continue
             (j,) = rest
-            if j not in row_data.zero:
-                continue
-            e = row_data.position[row]
-            pivot = float(row_data.derivatives.x[e, row_data.index[j]])
-            if (
-                row_data.residuals_x0[row] == 0.0
-                and pivot != 0.0
-                and all(float(value) == 0.0 for value in row_data.derivatives.d[e])
-            ):
-                found[j] = ZeroEliminated(j, row, float(row_data.residuals_x0[row]), pivot)
+            pin = _single_pin(row_data, row, j)
+            if pin is not None:
+                found[j] = pin
                 pins.add(row)
                 changed = True
+
+
+def _single_pin(row_data: _ZeroFlowRows, row: str, j: str) -> ZeroEliminated | None:
+    """The flow `j`, `row`'s single unknown not yet eliminated, eliminated with `row` when it is
+    a zero flow of Z₀ (`row_data.zero`) the row pins alone (§17.1): its residual at x₀ exactly
+    0.0 (i), its pivot ∂r/∂x_j at x₀ nonzero (ii) and its decision derivatives all 0.0 (iii);
+    None when `j` is not in Z₀ or a criterion fails. Pure."""
+    if j not in row_data.zero:
+        return None
+    e = row_data.position[row]
+    pivot = float(row_data.derivatives.x[e, row_data.index[j]])
+    if (
+        row_data.residuals_x0[row] == 0.0
+        and pivot != 0.0
+        and all(float(value) == 0.0 for value in row_data.derivatives.d[e])
+    ):
+        return ZeroEliminated(j, row, float(row_data.residuals_x0[row]), pivot)
+    return None
 
 
 def _joint_blocks(
