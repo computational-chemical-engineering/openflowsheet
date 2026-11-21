@@ -69,3 +69,11 @@
   ubuntu-24.04-arm, macos-latest, windows-latest, identity). X07a is ready for the integration branch.
 - X01 CI 44921749701 at bbbca491: success (codehealth, default-install, check ubuntu-latest, ubuntu-24.04-arm,
   identity); Site 44921749623 success. X01-WO3 (manifest move) dispatched to sonnet-implementer.
+- X01-WO3 (sonnet-implementer) done: manifest `evidence/X01/bbbca491.../manifest.json` tested, commit bfd5c180
+  (pushed); HARVEST_SIZE (102, 1152, 146); F0 PASS; registry, support matrix, codehealth docs exit 0; 682 passed.
+  Spot-checked: origin wp/X01 = bfd5c180, manifest status tested, commit bbbca491.
+- Integration branch `int/0.5` (worktree `.claude/worktrees/int05`), pushed at d1df6999: main d29f1a50 + wp/X07a
+  c356211b (b5ec5060, clean) + wp/X01 bfd5c180 (e49b534c: envelope union, HARVEST_SIZE (104, 1156, 147) = main
+  (100, 1144, 146) + X07a (2, 4, 1) + X01 (2, 8, 0), matrix re-emitted, --check 0 problems) + wp/REL050 bfdd3f2d
+  (d1df6999: register R-1062, 1063, 1065, 1068 in number order). Ten touched test files: 964 passed, 20 skipped.
+  S19 not included (DECISION of 2026-11-21: S19 enters 0.5 only on a card signed before K3). CI poller bjggjcdnk.
