@@ -5005,3 +5005,12 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   it1 on Linux. Controls (reruns, threads, ±2 ulp, hash seeds) never flip. Wall-cap race fixed in c06b212b (cap starts
   after the init line; stress 3/50 -> 50/50); entry d99117c5; pushed. Ruling D1 (specifier;
   `<briefs>/X07a-D1-a36-ruling.md`, options A test-level, B method-level, C known limitation) running.
+- 2026-11-21, X07a ruling D1 (specifier, ~172k; `docs/X07a-a36-ruling.md`, c2e30791 on wp/X07a): option A refined.
+  M04 spec §9.1/§9.2 already say the stand-in's verdict is "not asserted"; ADR 0036 D8 promises cross-platform
+  verdicts only when no decision is within 1e-8 of its threshold (stand-in scores are within 2.5e-13 of q̂), so the
+  assertions at test_m04_iterations.py :344, :345, :366, :367 were coin flips. The it1-PROMOTABLE test moves to the
+  smooth parent (A17's registered PROMOTABLE it1, margin 6.85e-4); :365-367 deleted; new D1.5 (stand-in q̂ and scores
+  <= 1e-10, coverage the only reason). B rejected (ties keep the conformal bound; false failure <= 0.096467; a floor
+  would rewrite §6 after the runs), C rejected (flaky on every platform). No ADR amendment; M04 spec Amendment 4
+  (docs) and register R-1068 (R-1061..1067 taken across branches). X07a-WO19 (opus-engineer; `<briefs>/X07a-WO19.md`)
+  applies it and pushes.
