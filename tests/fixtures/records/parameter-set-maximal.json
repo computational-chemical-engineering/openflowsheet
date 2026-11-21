@@ -1,0 +1,174 @@
+{
+  "record_format": "openflowsheet-record-v2",
+  "record_type": "parameter_set",
+  "type_version": "1.0.0",
+  "id": "fixture-wilson",
+  "name": "Wilson parameters, maximal fixture set",
+  "sources": {
+    "fixture.fit": {
+      "version": "1.2.0",
+      "citation": "Fixture fit of saturation points",
+      "licence_stated": "CC0-1.0",
+      "url": "https://example.org/fit"
+    }
+  },
+  "legacy": {
+    "profile": "fixture",
+    "file": "benchmarks/fixture/components.yaml",
+    "file_sha256": "b62a52052b6d9294695602994bd32db41de0d3c71d85ab711551874740eaf0fe",
+    "position": null,
+    "file_fields": {
+      "reference_convention": "FIXTURE-ref-v1"
+    }
+  },
+  "uncertainty_statement": "Fit residuals below 1 percent.",
+  "volatile": {
+    "retrieved_at": "2026-11-18T10:15:30Z",
+    "host": "fixture-host"
+  },
+  "components": [
+    {
+      "key": "A",
+      "match": {
+        "record": "fa68cad15ae6e84fd73dbca6ea9bf838e563af4a9c9b2dcf18d79560f4f57a08"
+      }
+    },
+    {
+      "key": "B",
+      "match": {
+        "inchikey": "XLYOFNOQVPJJNP-UHFFFAOYSA-N"
+      }
+    }
+  ],
+  "entries": [
+    {
+      "property": "user.k_ab",
+      "phase": "l",
+      "indices": [
+        "A",
+        "B"
+      ],
+      "form": "constant",
+      "value": 0.05,
+      "unit": "1",
+      "kind": "dimensionless",
+      "provenance": {
+        "origin": [
+          "estimated"
+        ],
+        "derivation": "direct",
+        "source": "fixture.fit",
+        "inputs": [
+          {
+            "scheme": "file",
+            "sha256": "5d319c82597e4f088ec39424268538da41483fe41d02353b509b138737b6822f",
+            "path": "benchmarks/fixture/table.csv"
+          }
+        ],
+        "transformation": "copied from the source table"
+      },
+      "meaning": "Binary interaction",
+      "note": "user parameter"
+    },
+    {
+      "property": "wilson_lambda",
+      "indices": [
+        "A",
+        "B"
+      ],
+      "form": "constant",
+      "value": 0.4321,
+      "unit": "1",
+      "kind": "dimensionless",
+      "validity": {
+        "T": [
+          300.0,
+          350.0
+        ]
+      },
+      "uncertainty": {
+        "type": "expanded",
+        "absolute": 0.5,
+        "relative": 0.002,
+        "coverage_factor": 2.0
+      },
+      "provenance": {
+        "origin": [
+          "measured"
+        ],
+        "derivation": "fitted",
+        "source": "fixture.fit",
+        "inputs": [
+          {
+            "scheme": "file",
+            "sha256": "fbd3aaf5c12efe7997c721c1a2475ee032a40e7c97d975da020c0d4313e25b55",
+            "path": "benchmarks/fixture/nasa7-low.json"
+          },
+          {
+            "scheme": "record",
+            "sha256": "d4a5f1e26780d4bd463d906ebc3396d7f41d5d00d1c91513674461c0e380b3a4"
+          }
+        ],
+        "transformation": "Wilson fit"
+      },
+      "meaning": "Lambda A-B",
+      "note": "fit"
+    },
+    {
+      "property": "wilson_lambda",
+      "indices": [
+        "B",
+        "A"
+      ],
+      "form": "constant",
+      "value": 1.234,
+      "unit": "1",
+      "kind": "dimensionless",
+      "validity": {
+        "T": [
+          300.0,
+          350.0
+        ]
+      },
+      "uncertainty": {
+        "type": "expanded",
+        "absolute": 0.5,
+        "relative": 0.002,
+        "coverage_factor": 2.0
+      },
+      "provenance": {
+        "origin": [
+          "measured"
+        ],
+        "derivation": "fitted",
+        "source": "fixture.fit",
+        "inputs": [
+          {
+            "scheme": "file",
+            "sha256": "fbd3aaf5c12efe7997c721c1a2475ee032a40e7c97d975da020c0d4313e25b55",
+            "path": "benchmarks/fixture/nasa7-low.json"
+          },
+          {
+            "scheme": "record",
+            "sha256": "d4a5f1e26780d4bd463d906ebc3396d7f41d5d00d1c91513674461c0e380b3a4"
+          }
+        ],
+        "transformation": "Wilson fit"
+      },
+      "meaning": "Lambda B-A",
+      "note": "fit"
+    }
+  ],
+  "validity": {
+    "T": [
+      300.0,
+      350.0
+    ],
+    "P": [
+      50000.0,
+      200000.0
+    ]
+  },
+  "synthetic": false,
+  "data_set": "fixture-wilson"
+}

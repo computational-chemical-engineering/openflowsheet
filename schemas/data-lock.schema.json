@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/frankp/process-runtime/schemas/data-lock.schema.json",
+  "title": "DataLock",
+  "description": "DRAFT until ADR 0061 is Accepted (F3-WO4). ADR 0061 D10: the data lock of a process revision, derived from the revision's record SHAs and method ids and versions and from the F1 registry, never stored in the revision. `data_lock_sha256` is the SHA-256 of the lock's canonical JSON (`document_sha256`). `components` keep revision order with unique ids; `parameter_sets` are ascending and unique; `methods` are sorted by (substream, method, version key); the keys of `method_options` are among the methods' ids. Orders and the key rule a JSON Schema cannot state are `openflowsheet.records.lock.build_lock`'s. Rights never enter the lock (Q9.A2).",
+  "type": "object",
+  "required": [
+    "lock_format",
+    "components",
+    "parameter_sets",
+    "methods",
+    "method_options"
+  ],
+  "properties": {
+    "lock_format": {
+      "const": "openflowsheet-data-lock-v1"
+    },
+    "components": {
+      "description": "The revision's components in revision order: the component id and the SHA of the record it is bound to.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "record"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "record": {
+            "$ref": "#/$defs/sha256"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "parameter_sets": {
+      "description": "The SHAs of the parameter-set records the revision uses, ascending.",
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/sha256"
+      }
+    },
+    "methods": {
+      "description": "The property methods bound per substream, each with the `implementation_sha256` of its registered descriptor (ADR 0060 D3: SHA-256 of the canonical JSON of [descriptor_sha256, self_sha256]).",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "substream",
+          "method",
+          "version",
+          "implementation_sha256"
+        ],
+        "properties": {
+          "substream": {
+            "type": "string",
+            "minLength": 1
+          },
+          "method": {
+            "type": "string",
+            "minLength": 1
+          },
+          "version": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$(?!\\n)"
+          },
+          "implementation_sha256": {
+            "$ref": "#/$defs/sha256"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "method_options": {
+      "description": "The options of each locked method, by method id.",
+      "type": "object",
+      "additionalProperties": {
+        "type": "object"
+      }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$(?!\\n)"
+    }
+  }
+}

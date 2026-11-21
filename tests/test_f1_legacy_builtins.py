@@ -498,7 +498,7 @@ def test_e_f1_4_a_crlf_copy_hashes_the_same(registry: Registry, tmp_path: Path) 
 def test_the_generator_check_is_clean(capsys: pytest.CaptureFixture[str]) -> None:
     assert registry_builtin.main(["--check"]) == 0
     (line,) = capsys.readouterr().out.splitlines()
-    assert line.startswith("registry_builtin --check: clean, 42 descriptors in 2 tables")
+    assert line.startswith("registry_builtin --check: clean, 49 descriptors in 3 tables")
 
 
 def test_the_generator_check_reports_a_changed_table_by_pointer(

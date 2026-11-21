@@ -1,0 +1,135 @@
+# ADR 0061 D12: the legacy importer's profiles, one per v1 record file (F3-WO3). Read by
+# `openflowsheet.records.importers.legacy`; `scripts/records_legacy_index.py --check` holds them
+# against the files.
+#
+# `mapping` names D12's parameter rule for the file: `namespaced` (each parameter `p` a constant
+# entry `<profile>.p`, phase null), `critical` (critical constants, `ideal_gas_cp` with its
+# validity, formation `ig`), `wilson` (`ideal_gas_cp`, `vapour_pressure`, formation `ig`, and the
+# file's `wilson_lambda` as one parameter set) or `none` (no parameters).
+#
+# `provenance` is D12's classification table as the W1 P1 review confirmed it (ruling 1), by the
+# field it classifies: `molar_mass`, `formation`, a core property id, `wilson_lambda` (the
+# parameter set's entries) or `parameters` (a `namespaced` file's entries). It is identity: a
+# change here moves the records' SHAs and fails `--check` until the index is regenerated. A fit
+# input is `{scheme: file, sha256, path}`, the SHA-256 of the file's LF-normalised bytes held as a
+# committed constant (`--check` recomputes it from the checkout). `dropped_identifiers` lists,
+# by component id, the v1 identifiers D3 refuses, which the import leaves out.
+#
+# `citation` is the file's citation, the `citation` of every record's `sources` entry, the
+# parameter set's included (F3 decisions WO4-0 and WO3-5 as ruled in F3 ruling round 1: one
+# citation per legacy file, so one `source_sha256` per legacy source, D11). Where the file's
+# components cite the same text it is that text verbatim. Where they differ (m01, l01, s07, s10)
+# it is their text with each fluid's reference EOS replaced by a phrase naming the molar mass
+# note, and it differs from a component's text there only, except l01's O2, which states
+# "formation enthalpy: zero by definition" where the citation states "ATcT 1.112"
+# (`tests/test_f3_legacy.py` pins both). Each component's own v1 `rights.source` is the last line
+# of its molar mass's `note`, so its whole text is kept. Identity, as `provenance` is.
+profiles_format: openflowsheet-legacy-profiles-v1
+profiles:
+  - profile: syn001
+    file: benchmarks/syn001/components.yaml
+    source: legacy.syn001
+    citation: "Synthetic constants defined in implementation plan v1.1 §3.1; no external data"
+    mapping: namespaced
+    provenance:
+      molar_mass: {origin: [synthetic], derivation: direct}
+      parameters: {origin: [synthetic], derivation: direct}
+
+  - profile: m01
+    file: benchmarks/m01/components.yaml
+    source: legacy.m01
+    citation: "Critical constants and acentric factor: the reference EOS of each fluid (named in its molar
+      mass note); c_p: NASA TM-4513 (1993); formation enthalpy: ATcT 1.112; identifiers and molar
+      mass: chemicals 1.5.2 (MIT)"
+    mapping: critical
+    provenance: &critical
+      # Formula and atomic weights; no input file (`fit_inputs_unhashed`, pinned in the index).
+      molar_mass: {origin: [measured], derivation: generated}
+      # Reference EOS, via chemicals HEOS.
+      critical_temperature: {origin: [measured], derivation: direct}
+      critical_pressure: {origin: [measured], derivation: direct}
+      acentric_factor: {origin: [measured], derivation: direct}
+      # NASA TM-4513.
+      ideal_gas_cp: {origin: [computed], derivation: direct}
+      # ATcT, including the element zeros "by definition".
+      formation: {origin: [computed, measured], derivation: direct}
+
+  - profile: l01
+    file: benchmarks/l01/components.yaml
+    source: legacy.l01
+    citation: "Critical constants and acentric factor: the reference EOS of each fluid (named in its molar
+      mass note); c_p: NASA TM-4513 (1993); formation enthalpy: ATcT 1.112; identifiers and molar
+      mass: chemicals 1.5.2 (MIT)"
+    mapping: critical
+    provenance: *critical
+
+  - profile: s05
+    file: benchmarks/s05/components.yaml
+    source: legacy.s05
+    citation: "IAPWS R6-95(2018), Revised Release on the IAPWS Formulation 1995 for the Thermodynamic
+      Properties of Ordinary Water Substance for General and Scientific Use (2018)"
+    mapping: none
+    provenance:
+      molar_mass: {origin: [measured], derivation: direct}
+
+  - profile: s07
+    file: benchmarks/s07/components.yaml
+    source: legacy.s07
+    citation: "CoolProp 8.0.0 (MIT License, Copyright (c) Ian H. Bell and the CoolProp contributors); the
+      equation of state of each fluid is named in its molar mass note"
+    mapping: none
+    provenance:
+      molar_mass: {origin: [measured], derivation: direct}
+    # F3 decision WO3-2: CoolProp's spin-isomer labels (a CAS number with an `o` or `p` suffix)
+    # are not CAS numbers (D3, `identifier_invalid`); the records keep their id and name.
+    dropped_identifiers:
+      OrthoDeuterium: [cas]
+      OrthoHydrogen: [cas]
+      ParaDeuterium: [cas]
+
+  - profile: s10
+    file: benchmarks/s10/records.yaml
+    source: legacy.s10
+    citation: "NASA TM-4513 via Cantera 3.2.0 (ideal gas); project fits to CoolProp 8.0.0 (the equation of
+      state of each fluid is named in its molar mass note) and to K. Kurihara, M. Nakamichi, K.
+      Kojima, J. Chem. Eng. Data 38 (1993) 446-449, Table II; CIAAW 2021 (molar mass)"
+    mapping: wilson
+    provenance:
+      molar_mass: {origin: [measured], derivation: generated}
+      ideal_gas_cp: {origin: [computed], derivation: direct}
+      # H(298.15 K) of the NASA-7 polynomial.
+      formation:
+        origin: [computed, measured]
+        derivation: generated
+        inputs:
+          - scheme: file
+            sha256: b6fa77123e7ae7fcffb54890a0b93f98b798d4bb36c9327789a5dcee0bc67f51
+            path: benchmarks/s10/nasa7-low.json
+      # Fit to CoolProp 8.0.0 reference-EOS saturation pressures.
+      vapour_pressure:
+        origin: [measured]
+        derivation: fitted
+        inputs:
+          - scheme: file
+            sha256: 204d67b9a04e8aed11a868f8de58b520e601165dfc20a37e8687bee62ce85140
+            path: benchmarks/s10/saturation-points.json
+      # Fit to Kurihara 1993.
+      wilson_lambda:
+        origin: [measured]
+        derivation: fitted
+        inputs:
+          - scheme: file
+            sha256: 986641d8a6d6b6d44ac1eb3cfc8f35e39d71d72fe549978d34197a4449eb1cd3
+            path: benchmarks/s10/vle/kurihara1993_binaries.csv
+
+  - profile: s10-verification
+    file: benchmarks/s10/verification-records.yaml
+    source: legacy.s10-verification
+    citation: "Invented by the S10 design lane; no external source"
+    mapping: wilson
+    provenance:
+      molar_mass: {origin: [synthetic], derivation: direct}
+      ideal_gas_cp: {origin: [synthetic], derivation: direct}
+      formation: {origin: [synthetic], derivation: direct}
+      vapour_pressure: {origin: [synthetic], derivation: direct}
+      wilson_lambda: {origin: [synthetic], derivation: direct}

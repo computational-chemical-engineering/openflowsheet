@@ -34,6 +34,13 @@ if TYPE_CHECKING:
     from openflowsheet.application.job_requests import JobRequest
     from openflowsheet.application.jobs.model import JobStatus
     from openflowsheet.application.policy_types import ReplayPolicy
+    from openflowsheet.application.record_types import (
+        RecordPage,
+        RecordRegistrationResult,
+        RecordValidationReport,
+        RecordView,
+        RightsAssessmentResult,
+    )
     from openflowsheet.application.transaction_types import Change, SemanticDiff, TransactionResult
     from openflowsheet.application.validation_report import Task, ValidationReport
     from openflowsheet.run.replay import ReplayReport
@@ -216,3 +223,54 @@ class Inspection(Protocol):
         pair: Mapping[str, Any] | None = None,
         revision: Mapping[str, Any] | None = None,
     ) -> AdmissionReport: ...
+
+
+class Records(Protocol):
+    """ADR 0061 D13 (ADR 0019 Amendment 8): the component-data record store of the project,
+    read through `[project store, legacy store]` (D8), and its rights register (D11).
+
+    `search_records` lists the records a D9 key matches (every record without a key) with D9's
+    resolution over them; `get_record` reads one by SHA; `register_record` stores a record, or
+    the records of a user file (D12), idempotently by content; `validate_record` runs D7, and
+    the reaction checks, without storing; `assess_rights` appends a project register row
+    (right `policy`). The writes are audited."""
+
+    def search_records(
+        self,
+        *,
+        key: str | None = None,
+        scheme: str | None = None,
+        record_type: str | None = None,
+        cursor: str | None = None,
+        limit: int = 50,
+    ) -> RecordPage: ...
+
+    def get_record(self, record_sha256: str) -> RecordView: ...
+
+    def register_record(
+        self,
+        *,
+        record: Mapping[str, Any] | None = None,
+        file: Mapping[str, Any] | None = None,
+        defaults: Mapping[str, Any] | None = None,
+    ) -> RecordRegistrationResult: ...
+
+    def validate_record(
+        self,
+        *,
+        record: Mapping[str, Any] | None = None,
+        records: Sequence[str | Mapping[str, Any]] | None = None,
+        components: Mapping[str, str] | None = None,
+        reactions: Sequence[Mapping[str, Any]] | None = None,
+    ) -> RecordValidationReport: ...
+
+    def assess_rights(
+        self,
+        *,
+        source_id: str,
+        record_sha256: str,
+        scope: str,
+        assessment: str,
+        basis: str,
+        conditions: str | None = None,
+    ) -> RightsAssessmentResult: ...

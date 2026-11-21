@@ -23,6 +23,8 @@ entries:
       kind:        {type: text, optional: true, label: extension kind}
       id:          {type: text, optional: true, label: extension id}
       version:     {type: text, optional: true, label: version}
+      # ADR 0061 D13 (F3-WO5b): a record SHA no layer of the record stack holds.
+      record_sha256: {type: text, optional: true, label: record SHA}
     summary: "Nothing named[ {artifact_id}][ {revision_id}][ {job_id}] exists in this project."
     why: "The id is not one this project has recorded."
     action: "Check the id; a job's outputs list the artifact ids it wrote."
@@ -63,6 +65,12 @@ entries:
         summary: "No {kind!raw} with the id {id!raw}[ and version {version!raw}] is registered."
         why: "The extension registry holds the unit models, property methods, stream definitions and other extensions this installation provides; it is not part of the project."
         action: "Check the id; the list_capabilities operation lists every registered extension."
+      # ADR 0061 D13: `get_record`, `validate_record` and `assess_rights` read a record by its SHA
+      # through the project's record store, then the legacy store (D8).
+      - when: {has: [record_sha256]}
+        summary: "No record {record_sha256!raw} is in this project's record store or in the records this installation provides."
+        why: "A record is found by its SHA in the project's record store, then in the records that come with OpenFlowsheet."
+        action: "Check the SHA; the search_records operation finds a record by an identifier, a name or a formula, and register_record stores one in this project."
     examples:
       - params: {artifact_id: "job-000004:bundle/solution-state.json", bundle_id: "job-000004:bundle",
                  member: solution-state.json, members: [failure-bundle.json, run-manifest.json],
@@ -70,6 +78,7 @@ entries:
       - params: {artifact_id: "import-000001:bundle/x.json", bundle_id: "import-000001:bundle",
                  member: x.json, members: [a.json, b.json], members_total: 70}
       - params: {kind: unit_model, id: thermal.heatr, suggestions: [thermal.heater]}
+      - params: {record_sha256: 0f4c2e6a9b1d3c5e7f80a2b4c6d8e0f1a3b5c7d9e1f3a5b7c9d1e3f5a7b9c1d3}
 
   - code: unsupported
     family: api_error

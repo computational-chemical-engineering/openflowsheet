@@ -181,6 +181,7 @@ order = [
     "openflowsheet.application.artifact_service",
     "openflowsheet.application.revision_service",
     "openflowsheet.application.inspection_service",
+    "openflowsheet.application.records_service",
     "openflowsheet.application.service_core",
     # services
     "openflowsheet.application.jobs.executor",
@@ -220,6 +221,7 @@ order = [
     "openflowsheet.application.projection",
     "openflowsheet.application.contract",
     "openflowsheet.application.inspection_types",
+    "openflowsheet.application.record_types",
     "openflowsheet.application.job_records",
     "openflowsheet.application.job_requests",
     "openflowsheet.application.policy_types",
@@ -256,10 +258,14 @@ order = [
     "openflowsheet.orchestrator",
     "openflowsheet.run.solution_state",
     "openflowsheet.models",
+    # ADR 0061 D12 (F3 decision WO3-4): the loader views build the thermo loaders' dataclasses
+    # from records, so this one module of `records` sits above `thermo`.
+    "openflowsheet.records.legacy_views",
     "openflowsheet.thermo",
     "openflowsheet.graph",
     "openflowsheet.numerics",
     "openflowsheet.compile",
+    "openflowsheet.records",
     "openflowsheet.registry",
     "openflowsheet.messages",
     "openflowsheet.units",
@@ -329,6 +335,7 @@ to = [
     "openflowsheet.application.artifact_service",
     "openflowsheet.application.revision_service",
     "openflowsheet.application.inspection_service",
+    "openflowsheet.application.records_service",
     "openflowsheet.application.service_core",
 ]
 reason = "bindings/__init__.py: each binding reads operations.OPERATIONS, goes through operations.dispatch and adds nothing (T07 design note 11.6)"

@@ -52,8 +52,16 @@ BUILTIN_CORE_KINDS: Final = frozenset({"functional_contributor"})
 #: The payload schema of a kind, by its `$defs` name in the descriptor schema. A kind not listed
 #: has no payload schema yet (its owner ADR adds it): its payload need only be an object.
 PAYLOAD_DEFS: Final[Mapping[str, str]] = MappingProxyType(
-    {"message_entries": "payload_message_entries"}
+    {
+        "message_entries": "payload_message_entries",
+        # ADR 0061 (F3-WO1) installs the payload schemas of its three core kinds.
+        "record_type": "payload_record_type",
+        "correlation_form": "payload_correlation_form",
+        "data_source": "payload_data_source",
+    }
 )
+#: ADR 0061 D1: built-in descriptors of a core kind whose payload is still `preview`, by (kind, id).
+PREVIEW_BUILTINS: Final = frozenset({("record_type", "assay")})
 #: D6's legacy-form payload schemas, by kind. They apply to the descriptors of the built-in table
 #: named `legacy` only, which must be of one of these kinds; a descriptor of these kinds from
 #: anywhere else has the v2 form, `preview` until its ADR is Accepted (D1).
@@ -215,17 +223,38 @@ def evidence_class(effective: str, *, builtin: bool, attested: bool) -> str:
     return "reviewed" if attested else "unreviewed"
 
 
-def stability(kind: str, *, builtin: bool, legacy_form: bool) -> str:
+def stability(
+    kind: str,
+    *,
+    builtin: bool,
+    legacy_form: bool,
+    identifier: str | None = None,
+    payload: Mapping[str, Any] | None = None,
+) -> str:
     """D1's payload stability of one registered descriptor: `core` or `preview`. An extension of
     a core kind is `preview` while the kind has no payload schema (`PAYLOAD_DEFS`): its payload
-    is checked against nothing yet (F1 review SF-4)."""
+    is checked against nothing yet (F1 review SF-4). A built-in (kind, `identifier`) in
+    `PREVIEW_BUILTINS` is `preview` (ADR 0061 D1: `record_type` `assay`), and so is an extension
+    `record_type` whose `payload` names no payload schema (ADR 0061 review ruling WO1-11:
+    `payload_schema: null` is a preview type's)."""
     if kind in CORE_KINDS:
-        return "core" if builtin or kind in PAYLOAD_DEFS else "preview"
+        return _core_kind_stability(kind, builtin=builtin, identifier=identifier, payload=payload)
     if kind in LEGACY_FORM_KINDS:
         return "core" if legacy_form else "preview"
     if kind in BUILTIN_CORE_KINDS:
         return "core" if builtin else "preview"
     return "preview"
+
+
+def _core_kind_stability(
+    kind: str, *, builtin: bool, identifier: str | None, payload: Mapping[str, Any] | None
+) -> str:
+    """`stability` of a descriptor of a kind D1 marks core."""
+    if builtin:
+        return "preview" if (kind, identifier) in PREVIEW_BUILTINS else "core"
+    if kind == "record_type" and (payload or {}).get("payload_schema") is None:
+        return "preview"
+    return "core" if kind in PAYLOAD_DEFS else "preview"
 
 
 # ---------------------------------------------------------------------------------------------
