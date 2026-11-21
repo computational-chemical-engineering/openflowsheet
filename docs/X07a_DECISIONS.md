@@ -660,3 +660,18 @@ Push from this worktree: `git -c credential.helper='!gh auth git-credential' pus
   ruff, format clean; mypy (410 files) clean; `m04_reference.py --check` byte-identical.
 - Docs: M04 spec §21 (Amendment 4, ruling §5.2 verbatim); register R-1068. The WO18 macOS failure (job
   136781135134) is a D8 observation, not a platform limit (ruling R3); the manifest is not moved in this WO.
+
+## WO20 (2026-11-21, the manifest moves to `tested` at bd0b7df5; CI 44902051410 green on every leg)
+
+- `evidence/X07a/bd0b7df5…/manifest.json`, `tested`, written from the 9773c361 one (still in place, `implemented`).
+  X07a.CI pass: run 44902051410 at bd0b7df5, push, attempt 1; default-install, check on ubuntu-latest,
+  ubuntu-24.04-arm, macos-latest and windows-latest, codehealth and identity success. Limitations: [0] platforms and
+  Amendment 3, [1] the two byte-pinned `git show` sites (WO16), [2] ruling D1: what it applies, the WO18 macOS
+  failure as a D8 observation (R3), and §8's list of what it does not establish. A WO19 command entry was added.
+- DECISION: the old manifest stays (the brief's acceptance), so the harvest gains a manifest: HARVEST_SIZE
+  (101, 1145, 147) -> (102, 1148, 147), not WO17's (101, 1146, 146), which assumed a rename (F1's dd97d79a). Alternative:
+  rename as F1 did. Reversible by: `git rm` the 9773c361 manifest and its two envelope rows, HARVEST_SIZE (101, 1148, 146).
+- Re-runs at bd0b7df5 (with this commit's harvest rows): t08_support_matrix --check 0 problems (1295 items);
+  registry_builtin, records_legacy_index, t08_numerical_policy --check clean, t07_schema_fixtures same; F0 PASS
+  (M1 50/50 ... M9 35/35); 37 test files (36 by WO17's name grep, plus test_m04_iterations.py) 1390 passed, 2 skipped
+  in 478 s; ruff, format (1301 files), mypy (410 files) clean; test_evidence_manifests + harvest + W2 envelope 675 passed.

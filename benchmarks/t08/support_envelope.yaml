@@ -9837,3 +9837,21 @@ harvest:
   class: P
   to: []
   note: 'provenance note: CI on four legs not yet green (Q-1 and the Windows clusters open)'
+- manifest: evidence/X07a/bd0b7df5cf082936227ba13c32150fee31da8497/manifest.json
+  item: limitations[0]
+  sha256: b0656abd855e6e6e58ef6df0c8d325ba642e2307bc8b7457874b6cab810444b8
+  class: P
+  to: []
+  note: 'provenance note: Amendment 3 accepted (R-1062), two unregistered replay platforms; Q-4, Q-10, Q-11, D-20, D-22 open; review pending'
+- manifest: evidence/X07a/bd0b7df5cf082936227ba13c32150fee31da8497/manifest.json
+  item: limitations[1]
+  sha256: 14a0591dc9bc6c4fe08e80768be2cf62548d85ff2942d86500c263aafc4175f7
+  class: P
+  to: []
+  note: 'provenance note: two byte-pinned scripts keep git show without a final -- (WO16); re-registering the pins is open'
+- manifest: evidence/X07a/bd0b7df5cf082936227ba13c32150fee31da8497/manifest.json
+  item: limitations[2]
+  sha256: 2f5f20890c300c836eb7c6395a90c31e3614daa7d155ed50f4302332d738f3ab
+  class: P
+  to: []
+  note: 'provenance note: a36 ruling D1 applied (R-1068); the stand-in verdict is not registered, macOS a36 failure a D8 observation'

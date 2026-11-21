@@ -100,7 +100,8 @@ T08_MANIFEST = "evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.j
 #: The merge of main (c4a91a75) into wp/F3 sums both moves (98, 1129) + (1, 6) + (1, 9).
 #: The merge of main (d29f1a50) into wp/X07a sums both sides over c4a91a75's (99, 1138, 146):
 #: X07a's (1, 1, 1) and F3's (1, 6, 0).
-HARVEST_SIZE = (101, 1145, 147)
+#: X07a's tested manifest (`bd0b7df…`, 3 and 0; the implemented one stays) moves it on `wp/X07a`.
+HARVEST_SIZE = (102, 1148, 147)
 #: The 0.2.0 release candidate C′ (M07 spec §25, R-485).
 C_PRIME = "ce993651ce37c1343e771b276160bd6623e43500"
 #: The commit tagged v0.2.0.
