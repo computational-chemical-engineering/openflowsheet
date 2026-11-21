@@ -83,3 +83,18 @@
   S19 rows; register R-1061..1068 ordered; HARVEST_SIZE (103, 1161, 147)) + X01 (2daf92b9: + X01 rows; HARVEST_SIZE
   (105, 1169, 147)) + REL050 bfdd3f2d (67cc5027: register ordered). Ten touched test files: 970 passed, 20 skipped.
   Pushed; CI poller b13dft0de.
+
+## 2026-11-22: int/0.5-r2 CI red at 67cc5027; fix 1fe40db3
+
+- CI 44945609131 at 67cc5027: FAILED on all four check legs and default-install (identity failed after: "G05
+  needs two platforms; found 0", no structural artifacts). Site 44945609083 success. Causes, all S19 tooling meeting
+  X07a's checks for the first time (S19's own CI had only the two Linux legs):
+  (1) every leg: `tests/test_x07a_git_show_separator.py` flags `scripts/w5_identity.py:1213` (`git show rev:path`
+  without `--`); (2) Windows: `tests/test_s19_gate_queue.py` 3 setup errors, `gate_queue.py` imports `fcntl`;
+  (3) Windows: 4 failures in `tests/test_s19_w5_identity.py` (pin tests: `pinned_tree` worktrees the W5 base tree,
+  which imports `fcntl`; the limit X07a registered for `facts`/`scratch`/`_tool` did not cover this later fixture).
+  Linux legs otherwise 21016/21046 passed; the `DomainError` tracebacks in the logs are logged output of passing tests.
+- Fix 1fe40db3 on int/0.5-r2 (orchestrator, 4 files): `--` in `_blob`; `_skip_base_tree_on_windows()` in
+  `pinned_tree`; module `skipif` win32 in the gate-queue test; both rows in the X07a platform-limit table. Local:
+  70 passed (separator lint, gate queue, w5 identity, platform rows). Pushed; CI re-run.
+- Merge card now names int/0.5-r2 at the green tip (1fe40db3 or later), not 67cc5027.

@@ -17,17 +17,18 @@ in `docs/RELEASING.md`. Last release v0.4.0 (2026-11-11); main is `0.5.0.dev0`.
 - Package heads, all `tested`, CI green: wp/X07a c356211b (manifest at bd0b7df5; CI 44913734986 all 7 legs);
   wp/X01 bfd5c180 (manifest at bbbca491, X01-WO3; CI 44921749701 + Site 44921749623 at bbbca491); wp/REL050
   bfdd3f2d + log commits (CI 44913179654 at cac945ac).
-- **Integration branch `int/0.5-r2`** (worktree `.claude/worktrees/int05`) = 67cc5027 = ceb38cec + X07a + X01 +
-  REL050 bfdd3f2d; bookkeeping conflicts only (resolution in REL050_DECISIONS); HARVEST_SIZE (105, 1169, 147).
-  Pushed; **its CI running, poller b13dft0de** (300 s; the notice reaches the next context). The old `int/0.5`
-  (d29f1a50 base) is obsolete: delete the branch after the merge.
+- **Integration branch `int/0.5-r2`** (worktree `.claude/worktrees/int05`) = 1fe40db3 = 67cc5027 (ceb38cec + X07a
+  + X01 + REL050 bfdd3f2d; bookkeeping conflicts only) + one fix commit: S19 tooling under X07a's checks (CI
+  44945609131 red at 67cc5027: git-show separator lint, two Windows `fcntl` limits; REL050_DECISIONS 2026-11-22).
+  HARVEST_SIZE (105, 1169, 147). Pushed; **CI re-running at 1fe40db3** (poll 300 s). The old `int/0.5` (d29f1a50
+  base) is obsolete: delete the branch after the merge.
 - GitHub API: poll every 300 s, never `gh run watch` at its default interval (memory `gh-api-rate-limit`).
 
 ## Next actions
 
 1. int/0.5-r2 CI green -> DECISION-REQUEST to hub, card ofs-rel050-merge-main: A (recommended) "merge wp/X07a,
-   wp/X01 and wp/REL050 into main as the merges recorded on int/0.5-r2 (fast-forward main to int/0.5-r2 67cc5027,
-   whose three merge commits are the conflict-resolved merges), run F0 on main, push main only if F0 passes"; B
+   wp/X01 and wp/REL050 into main as the merges recorded on int/0.5-r2 (fast-forward main to int/0.5-r2 1fe40db3:
+   its three merge commits are the conflict-resolved merges, then one cross-package fix commit), run F0 on main, push main only if F0 passes"; B
    separate cards and CIs per branch. Refer to "the user"; action text per option. Red -> read the failing job.
 2. After the VERIFIED card: execute, `executed` on the card, log. Then K3 (RP §7.1; P1-P6 incl. the loader at K3),
    J (re-takes incl. m05 REAL on TR09), C, RC steps 1-17, RP §9.2 (lapse report and message 1: Q-F1, Q-F2 and the
