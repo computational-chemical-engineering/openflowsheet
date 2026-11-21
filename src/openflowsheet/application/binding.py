@@ -401,11 +401,11 @@ def legacy_admission(
     - **C5** it frees exactly one column and promotes exactly one (review-2 S3: T02 §7.1's v0.1
       pairing, which the legacy plan requires).
 
-    The first failing clause's refusal is returned."""
+    The first failing clause's refusal is returned. C1, C3 and C4 are checked by `_free_reach`,
+    `_free_unfreed` and `_promotion_refusal`; C5's refusal is `_unpaired`'s."""
     if not legacy_answers(document, refusal):
         return refusal
     specifications = list(document.get("specifications") or ())
-    columns = binding.specification_targets
     free = [entry for entry in specifications if entry.get("role") == "free"]
     unreached = _free_reach(specifications, free, binding)
     if unreached is not None:
@@ -419,13 +419,9 @@ def legacy_admission(
     if unfreed is not None:
         return unfreed
 
-    promoted = set(binding.promoted.values())
-    for name, target_refusal in targets:
-        reached = columns.get(name, ())
-        if not reached or not set(reached) <= promoted:
-            return target_refusal
-    if promoted != {column for name, _ in targets for column in columns.get(name, ())}:
-        return refusal
+    unpromoted = _promotion_refusal(targets, refusal, binding)
+    if unpromoted is not None:
+        return unpromoted
 
     if len(binding.freed) != 1 or len(binding.promoted) != 1:
         return _unpaired(free, targets, binding)
@@ -480,6 +476,24 @@ def _free_unfreed(free: Sequence[Mapping[str, Any]], binding: Binding) -> Unboun
                 f"{name} targets {_document_column(unfreed, binding)}, which the SYN-001 "
                 "formulation that solves free specifications does not pin, so it cannot be freed.",
             )
+    return None
+
+
+def _promotion_refusal(
+    targets: Sequence[tuple[str, Unbound]], refusal: Unbound, binding: Binding
+) -> Unbound | None:
+    """`legacy_admission`'s C4: `None` when `binding` promotes exactly the columns the targets in
+    `targets` reach (in `binding.specification_targets`), else the refusal: the first target's
+    own when it reaches no column or one `binding` does not promote, else `refusal` (a promoted
+    column no target reaches)."""
+    columns = binding.specification_targets
+    promoted = set(binding.promoted.values())
+    for name, target_refusal in targets:
+        reached = columns.get(name, ())
+        if not reached or not set(reached) <= promoted:
+            return target_refusal
+    if promoted != {column for name, _ in targets for column in columns.get(name, ())}:
+        return refusal
     return None
 
 
