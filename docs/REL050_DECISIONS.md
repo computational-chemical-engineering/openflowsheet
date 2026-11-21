@@ -23,3 +23,11 @@
   (strict xfail). DECISION: the WF-4 ruling is folded into Q-D1's scoped reviewer pass (one design pass, RP §13 (3);
   CLAUDE.md batching) -> `<briefs>/REL050-R-machinery.md`. Alternative: a second specifier pass. Reversible by: a
   specifier pass if the reviewer declines to rule.
+- 2026-11-21 ~15:50, REL050-R (reviewer, Opus, ~153k; c1c61a68, `docs/reviews/REL050-R-machinery.md`): merge after
+  F-1..F-3. Ruling 1: WF-4 restated (each side's (id, sha) pairs equal the index records over that side's files:
+  checkout N 149, installed package-data N_pkg 9 via `t08_dist.expected_package_files`; controls e, f added); the
+  `WHEEL-F1-F3` `assertion` string in the line file changes (F-2; `rc_items` already in `changed`, before K3).
+  Ruling 2: controls on a scratch copy sufficient. F-3: bound the page loop. Rest of scope sound (281 passed).
+  -> REL050-WF2 (opus-engineer; `<briefs>/REL050-WF2-fixes.md`).
+- 2026-11-21, X07a CI 44902051410 at bd0b7df5: all legs success (Linux x2, macOS, Windows, codehealth, identity)
+  -> X07a-WO20 manifest move (opus-engineer; `<briefs>/X07a-WO20-manifest.md`).
