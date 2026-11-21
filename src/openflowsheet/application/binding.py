@@ -641,11 +641,9 @@ def bind_revision_or_reason(document: Mapping[str, Any]) -> Binding | Unbound:
 
     removed = _freed_rows(pinned, assembly, targets)
     freed_columns = {row_id: pinned[row_id] for row_id in removed}
-    if removed:
-        spec = _without_rows_and_orphaned_parameters(spec, removed)
-        pinned = {row_id: column for row_id, column in pinned.items() if row_id not in removed}
-        for row_id in removed:
-            row_units.pop(row_id, None)
+    spec, pinned = _without_freed_rows(spec, pinned, removed)
+    for row_id in removed:
+        row_units.pop(row_id, None)
 
     # The declaration must carry the values the *revision* declares, not the ones the flowsheet
     # happens to be parameterized by. `Syn001Flowsheet` takes a single pressure, so a revision
@@ -844,6 +842,20 @@ def _freed_rows(
         row_id
         for row_id, column in pinned.items()
         if column in assembly and column not in fixed_columns
+    )
+
+
+def _without_freed_rows(
+    spec: ProblemSpec, pinned: dict[str, str], removed: tuple[str, ...]
+) -> tuple[ProblemSpec, dict[str, str]]:
+    """`spec` and the pinned rows `pinned` without the freed rows `removed`, `spec` also without
+    the parameters only those rows read (`_without_rows_and_orphaned_parameters`); both returned
+    as they are when no row is removed."""
+    if not removed:
+        return spec, pinned
+    return (
+        _without_rows_and_orphaned_parameters(spec, removed),
+        {row_id: column for row_id, column in pinned.items() if row_id not in removed},
     )
 
 
