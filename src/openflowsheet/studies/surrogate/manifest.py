@@ -573,7 +573,8 @@ def _failure_consistency(manifest: Mapping[str, Any]) -> list[str]:
     """Spec §20 A3.2's three rules (R-361): a calibration or test score is null iff its draw
     is failed or incomplete or there is no predictor; a gradient centre is `ok` with errors iff
     no index of its stencil is failed or incomplete and there is a predictor; `training_ok` is
-    the training count less its failed and incomplete draws."""
+    the training count less its failed and incomplete draws. The centres are checked by
+    `_centre_consistency`."""
     found: list[str] = []
     splits = manifest["splits"]
     predictor = manifest["predictor"]["coefficients"] is not None
@@ -590,6 +591,24 @@ def _failure_consistency(manifest: Mapping[str, Any]) -> list[str]:
                     f"{'refused' if i in refused else 'returned'} and there is "
                     f"{'a' if predictor else 'no'} predictor"
                 )
+    found += _centre_consistency(splits, manifest, predictor)
+    training = splits["training"]
+    expected = training["count"] - len(training["failed"]) - len(training["incomplete"])
+    if manifest["predictor"]["fit"]["training_ok"] != expected:
+        found.append(
+            f"training_ok {manifest['predictor']['fit']['training_ok']!r} is not the training "
+            f"count less its failed and incomplete draws ({expected})"
+        )
+    return found
+
+
+def _centre_consistency(
+    splits: Mapping[str, Any], manifest: Mapping[str, Any], predictor: bool
+) -> list[str]:
+    """Spec §20 A3.2's second rule (R-361): each gradient centre of `manifest` is `ok` with
+    errors iff no index of its stencil (the next `len(stencil_keys)` indices of the gradient
+    split in `splits`, centre by centre) is failed or incomplete and there is a `predictor`."""
+    found: list[str] = []
     refused = _refused(splits["gradient"])
     start = 0
     for centre, judged in zip(
@@ -606,13 +625,6 @@ def _failure_consistency(manifest: Mapping[str, Any]) -> list[str]:
                 f"stencil is {'clean' if clean else 'refused in part'} and there is "
                 f"{'a' if predictor else 'no'} predictor"
             )
-    training = splits["training"]
-    expected = training["count"] - len(training["failed"]) - len(training["incomplete"])
-    if manifest["predictor"]["fit"]["training_ok"] != expected:
-        found.append(
-            f"training_ok {manifest['predictor']['fit']['training_ok']!r} is not the training "
-            f"count less its failed and incomplete draws ({expected})"
-        )
     return found
 
 
