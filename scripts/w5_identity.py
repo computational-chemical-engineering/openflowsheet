@@ -186,6 +186,11 @@ def measure_facts(root: Path, legacy: Path | None, core: Path | None) -> Facts:
 
     f0 = corpus_identity(root)
     held = {"legacy": legacy or registry_builtin.TABLE, "core": core or registry_builtin.CORE_TABLE}
+    # F3 (ADR 0061): a root whose generator also writes records.json has S2 compare it too; a
+    # root from before F3 has no such table, and its generator yields none.
+    records = getattr(registry_builtin, "RECORDS_TABLE", None)
+    if records is not None:
+        held["records"] = records
     implementation: dict[str, list[str]] = {}
     for name, path in held.items():
         for row in json.loads(Path(path).read_text(encoding="utf-8")):
