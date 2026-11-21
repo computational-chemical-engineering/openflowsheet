@@ -5029,3 +5029,14 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   the checked 43a073d5); `codehealth diff --base d29f1a50` PASS, 0 failures.** Pushed; CI 44909075689 running. Lane
   and helper worktrees and wp/S19-dup removed. X07a CI 44902051410 at 14:28: macos-latest check success (D1.5 holds
   on macOS, OQ-1), codehealth success; ubuntu x2 and windows running.
+
+## 2026-11-21 ~15:10: G-END measurements at the tip 043879a4 (for the verdict)
+
+- Scan (`.venv-codehealth/bin/codehealth scan --repo .`): 353 files, debt 1878.4 (<= 1900), health 9.06 (>= 9.0),
+  brain 0, lowest file syn001/column.py 7.0 (none below), no huge_file, file smells 48, errors 0.
+  `codehealth arch --depth 4`: 0 violations, 0 cycles (353 files, 4292 imports). Same as 2aaa5d3f.
+- E4: `benchmarks/f0/corpus.json` measures at 043879a4 vs d90b498f (JSON-equal per measure): M1, M4, M5, M7 (52),
+  M8 identical; M2, M3, M6, M9 differ (the W5 K commits of E2). M7's 52 values identical: E4 met.
+- E5: the two mcp_digest files differ from d90b498f only through 0ae27230, e2e3675f, a66116d9 (F3), all ancestors of
+  main d29f1a50; their diff to d29f1a50 is empty. "Unless changed by a merge of main" applies. Tier result: 44 passed
+  at 2aaa5d3f (merge-check 702 at 043879a4 ran the full suite).
