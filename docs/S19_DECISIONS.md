@@ -4715,3 +4715,10 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
 - 2026-11-21 ~01:30, gate report: `ALERT queue wait median 31 min > 15 min` (6 h window: the previous evening's G1R/G3R
   backlog). Now: 606 started 2 s after enqueue, 607 at enqueue, 608 within 1 min; no action. tr1-1 (607) PASS, debt
   31.0 -> 21.0.
+- 2026-11-21 ~02:10, merge-check 606 (main/F3 into wp/S19, 68abf467) FAIL, 1 of 20923:
+  test_s19_w5_gate.py::test_s2_the_real_chain_passes_a_comment_edited_tier_3_step: W5-S2 `held None` for the 5
+  records.json keys (`measure_facts` read only legacy and core; the generator now yields records). Fix da6e4e82
+  (orchestrator; tooling, one function): held includes RECORDS_TABLE when the root's generator defines it. W5 tests
+  125 passed; mypy 416 clean. Not narrowed. Open for the next reviewer: TABLE_FILES (held_tables at a revision,
+  W5-S4/K1) still lists legacy and core only. Merge-check 615 (4881224c..da6e4e82) queued. Lanes app and tr branched
+  before the fix; they take it at their merge.
