@@ -240,7 +240,9 @@ def _status_summary(status: str) -> str:
 
 
 def command_inspect(arguments: argparse.Namespace) -> int:
-    """G06: what a run was, what was checked, what was found, what was **not** claimed."""
+    """G06: what a run was, what was checked, what was found, what was **not** claimed. The
+    certificate's and the failure bundle's sections, each printed when the bundle holds that
+    artifact, come from `_print_certificate_section` and `_print_failure_section`."""
     from openflowsheet.run.bundle import read_artifact, read_manifest, verify_bundle
 
     directory = Path(arguments.bundle)
@@ -260,34 +262,10 @@ def command_inspect(arguments: argparse.Namespace) -> int:
         print(f"  {key:<22}{value}")
 
     if "solution-certificate.json" in manifest.artifacts:
-        certificate = read_artifact(directory, "solution-certificate.json")
-        checks = certificate["checks"]
-        by_result: dict[str, int] = {}
-        for check in checks:
-            by_result[check["result"]] = by_result.get(check["result"], 0) + 1
-        print(f"\n=== certificate  {certificate['verification_status']}")
-        print(f"  checks            {len(checks)} ({by_result})")
-        print(f"  regularity        {certificate['regularity']['status']}")
-        print(f"  solution bound    {certificate['solution_error_bound_scaled']}")
-        failing = [check["id"] for check in checks if check["result"] == "fail"]
-        if failing:
-            print(f"  FAILING           {failing}")
-        print("\n=== what this certificate does not claim")
-        for statement in certificate["statements"]:
-            print(f"  - {statement}")
-        if certificate["limitations"]:
-            print("\n=== limitations")
-            for limitation in certificate["limitations"]:
-                print(f"  - {limitation}")
+        _print_certificate_section(directory)
 
     if "failure-bundle.json" in manifest.artifacts:
-        bundle = read_artifact(directory, "failure-bundle.json")
-        print(f"\n=== failure  {bundle['outcome']}")
-        print(f"  taxonomy          {bundle['taxonomy']}")
-        print(f"  implicated        {bundle['implicated_sources']}")
-        for action in bundle["suggested_actions"]:
-            print(f"  suggested         {action['action']} (requires permission)")
-        print(textwrap.indent(_bundle_failure_text(directory), "  "))  # MSG §3.7
+        _print_failure_section(directory)
 
     events = read_artifact(directory, "solve-events.json")
     print(f"\n=== trace  {len(events)} events")
@@ -295,6 +273,48 @@ def command_inspect(arguments: argparse.Namespace) -> int:
         outcome = f" -> {event['outcome']}" if event.get("outcome") else ""
         print(f"  {event['sequence']:>3}  {event['kind']:<16} attempt {event['attempt']}{outcome}")
     return 0 if integrity.ok else 1
+
+
+def _print_certificate_section(directory: Path) -> None:
+    """`inspect`'s certificate section: reads the bundle's `solution-certificate.json` and prints
+    its status, check counts, regularity, solution bound, failing checks, what it does not claim
+    and its limitations."""
+    from openflowsheet.run.bundle import read_artifact
+
+    certificate = read_artifact(directory, "solution-certificate.json")
+    checks = certificate["checks"]
+    by_result: dict[str, int] = {}
+    for check in checks:
+        by_result[check["result"]] = by_result.get(check["result"], 0) + 1
+    print(f"\n=== certificate  {certificate['verification_status']}")
+    print(f"  checks            {len(checks)} ({by_result})")
+    print(f"  regularity        {certificate['regularity']['status']}")
+    print(f"  solution bound    {certificate['solution_error_bound_scaled']}")
+    failing = [check["id"] for check in checks if check["result"] == "fail"]
+    if failing:
+        print(f"  FAILING           {failing}")
+    print("\n=== what this certificate does not claim")
+    for statement in certificate["statements"]:
+        print(f"  - {statement}")
+    if certificate["limitations"]:
+        print("\n=== limitations")
+        for limitation in certificate["limitations"]:
+            print(f"  - {limitation}")
+
+
+def _print_failure_section(directory: Path) -> None:
+    """`inspect`'s failure section: reads the bundle's `failure-bundle.json` and prints its
+    outcome, taxonomy, implicated sources, suggested actions and the failure text
+    (`_bundle_failure_text`)."""
+    from openflowsheet.run.bundle import read_artifact
+
+    bundle = read_artifact(directory, "failure-bundle.json")
+    print(f"\n=== failure  {bundle['outcome']}")
+    print(f"  taxonomy          {bundle['taxonomy']}")
+    print(f"  implicated        {bundle['implicated_sources']}")
+    for action in bundle["suggested_actions"]:
+        print(f"  suggested         {action['action']} (requires permission)")
+    print(textwrap.indent(_bundle_failure_text(directory), "  "))  # MSG §3.7
 
 
 def command_replay(arguments: argparse.Namespace) -> int:
