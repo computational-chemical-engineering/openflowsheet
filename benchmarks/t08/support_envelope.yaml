@@ -9855,3 +9855,51 @@ harvest:
   class: P
   to: []
   note: 'provenance note: a36 ruling D1 applied (R-1068); the stand-in verdict is not registered, macOS a36 failure a D8 observation'
+- manifest: evidence/X01/a0e4c5465875af7eff910f558210cf600554ce59/manifest.json
+  item: limitations[0]
+  sha256: 46d6c4d99871687f39e3985f201ba87a3a38f3d45776dbef786afa9a4143a9ee
+  class: P
+  to: []
+  note: 'provenance note: software verification of documentation and an example; no numerics, no D/A requirement'
+- manifest: evidence/X01/a0e4c5465875af7eff910f558210cf600554ce59/manifest.json
+  item: limitations[1]
+  sha256: c1bc10d41ef3d2191ec37506d9f429c7c543a2d6dc141ceb54b664e3c0900e8d
+  class: P
+  to: []
+  note: 'provenance note: parts B and C not delivered (B blocked on F4 and F6, C design-lane); open rows in X01_DECISIONS'
+- manifest: evidence/X01/a0e4c5465875af7eff910f558210cf600554ce59/manifest.json
+  item: limitations[2]
+  sha256: bc75a880d87cc047687a44aa9ac05801026567486fc5eba9ea46c0ebd664f6ab
+  class: P
+  to: []
+  note: 'provenance note: the test writes the example dist-info itself; a real offline wheel install was checked once by hand'
+- manifest: evidence/X01/a0e4c5465875af7eff910f558210cf600554ce59/manifest.json
+  item: limitations[3]
+  sha256: 1b08960473463d73f9cb2c03a1802c11fad23f530cccdbec0d7cfb0013aec081
+  class: P
+  to: []
+  note: 'provenance note: review pending; never set by the build lane'
+- manifest: evidence/X01/bbbca49173dacd94db6fe6dcf61e7327d1b97d80/manifest.json
+  item: limitations[0]
+  sha256: 46d6c4d99871687f39e3985f201ba87a3a38f3d45776dbef786afa9a4143a9ee
+  class: P
+  to: []
+  note: 'provenance note: software verification of documentation and an example; no numerics, no D/A requirement'
+- manifest: evidence/X01/bbbca49173dacd94db6fe6dcf61e7327d1b97d80/manifest.json
+  item: limitations[1]
+  sha256: c1bc10d41ef3d2191ec37506d9f429c7c543a2d6dc141ceb54b664e3c0900e8d
+  class: P
+  to: []
+  note: 'provenance note: parts B and C not delivered (B blocked on F4 and F6, C design-lane); open rows in X01_DECISIONS'
+- manifest: evidence/X01/bbbca49173dacd94db6fe6dcf61e7327d1b97d80/manifest.json
+  item: limitations[2]
+  sha256: bc75a880d87cc047687a44aa9ac05801026567486fc5eba9ea46c0ebd664f6ab
+  class: P
+  to: []
+  note: 'provenance note: the test writes the example dist-info itself; a real offline wheel install was checked once by hand'
+- manifest: evidence/X01/bbbca49173dacd94db6fe6dcf61e7327d1b97d80/manifest.json
+  item: limitations[3]
+  sha256: 1b08960473463d73f9cb2c03a1802c11fad23f530cccdbec0d7cfb0013aec081
+  class: P
+  to: []
+  note: 'provenance note: review pending; never set by the build lane'

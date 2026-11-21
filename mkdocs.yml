@@ -112,6 +112,7 @@ nav:
       - Revision continuation: guide/revision-continuation.md
       - Cost estimation and LCA: guide/assessment.md
       - Interfaces: guide/interfaces.md
+      - Plugins (extensions): guide/plugins.md
       - Limitations and support: guide/limitations.md
   - Messages:
       - Reading a message: messages/index.md
