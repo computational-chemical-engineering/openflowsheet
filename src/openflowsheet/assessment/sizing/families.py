@@ -805,42 +805,14 @@ class _Column:
         return plan
 
     def _shell(self, sctx: SizingContext, unit: UnitRef) -> SizingPlan:
-        """The shell and trays (§4.4.6); a refusal here leaves the condenser and reboiler."""
+        """The shell and trays (§4.4.6); a refusal here leaves the condenser and reboiler. The
+        inputs are `_shell_inputs`'s."""
         structure = unit.structure.structure
         u, n = unit.unit_id, int(structure.stage_count)
         condenser, reboiler = structure.condenser != "none", structure.reboiler != "none"
         first, last = (2 if condenser else 1), (n - 1 if reboiler else n)
         shell, trays_id = sub_item(u, "shell"), sub_item(u, "trays")
-        inputs = [
-            sctx.input(shell, "C_SB", "m/s", default_key="column_C_SB"),
-            sctx.input(
-                shell,
-                "f_flood",
-                "1",
-                item_key="flooding_fraction",
-                default_key="column_flooding_fraction",
-            ),
-            sctx.input(
-                shell,
-                "phi_active",
-                "1",
-                item_key="active_area_fraction",
-                default_key="column_active_area_fraction",
-            ),
-            sctx.input(
-                shell, "s_tray", "m", item_key="tray_spacing", default_key="column_tray_spacing"
-            ),
-            sctx.input(shell, "H_top", "m", default_key="column_H_top"),
-            sctx.input(shell, "H_bottom", "m", default_key="column_H_bottom"),
-            sctx.input(
-                shell,
-                "E_o",
-                "1",
-                item_key="overall_efficiency",
-                default_key="column_overall_efficiency",
-                structural=True,
-            ),
-        ]
+        inputs = _shell_inputs(sctx, shell)
         c_sb, f_flood, phi, s_tray, h_top, h_bottom, e_o = (t.theta_id for t, _ in inputs)
         flows: list[StreamFlow] = []
         n_tr = last - first + 1
@@ -945,6 +917,42 @@ class _Column:
             theta=tuple(theta),
             regime_entries=tuple(entries),
         )
+
+
+def _shell_inputs(sctx: SizingContext, shell: str) -> list[tuple[Theta, SizingInput]]:
+    """The shell's §4.4.6 inputs as `(θ, input)` pairs, in the order `C_SB`, `f_flood`,
+    `phi_active`, `s_tray`, `H_top`, `H_bottom`, `E_o` (structural): each from the item, else the
+    document's defaults, else the built-in default (`SizingContext.input`)."""
+    return [
+        sctx.input(shell, "C_SB", "m/s", default_key="column_C_SB"),
+        sctx.input(
+            shell,
+            "f_flood",
+            "1",
+            item_key="flooding_fraction",
+            default_key="column_flooding_fraction",
+        ),
+        sctx.input(
+            shell,
+            "phi_active",
+            "1",
+            item_key="active_area_fraction",
+            default_key="column_active_area_fraction",
+        ),
+        sctx.input(
+            shell, "s_tray", "m", item_key="tray_spacing", default_key="column_tray_spacing"
+        ),
+        sctx.input(shell, "H_top", "m", default_key="column_H_top"),
+        sctx.input(shell, "H_bottom", "m", default_key="column_H_bottom"),
+        sctx.input(
+            shell,
+            "E_o",
+            "1",
+            item_key="overall_efficiency",
+            default_key="column_overall_efficiency",
+            structural=True,
+        ),
+    ]
 
 
 def _stage_d2(
