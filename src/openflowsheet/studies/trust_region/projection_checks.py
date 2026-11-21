@@ -78,10 +78,8 @@ def _shape_check(
     variable but the decisions, with the link-EF outputs fixed and the property relations kept,
     and whether it has a perfect matching. Called after the DOF check, so it is square. The
     unknowns are the projection's: `x` at the spec positions `projected` (R-296), `y` and `w`.
-    On a failure, the refusal is `_implicit_ef_input_error`'s."""
-    import scipy.sparse as sp
-    from scipy.sparse.csgraph import maximum_bipartite_matching
-
+    The matching and the verdict are `_matching_verdict`'s; on a failure, the refusal is
+    `_implicit_ef_input_error`'s."""
     variable_index = {spec.variable_ids[i]: c for c, i in enumerate(projected)}
     n_x, n_y = len(projected), len(output_rows)
     link_parameters = [p for link in links for p in (link.x_param_id, link.dt_param_id)]
@@ -108,6 +106,20 @@ def _shape_check(
         equations.append((f"ydef:{row['block_id']}.{row['output_id']}", sorted({n_x + g, *inputs})))
     for k, parameter in enumerate(link_parameters):
         equations.append((f"link:{parameter}", [n_x + n_y + k]))
+    return _matching_verdict(equations, unknown_names, links)
+
+
+def _matching_verdict(
+    equations: Sequence[tuple[str, list[int]]],
+    unknown_names: Sequence[str],
+    links: Sequence[ExternalLinkSpec],
+) -> _ShapeVerdict:
+    """R-278's matching, pure: the maximum bipartite matching of the square incidence
+    `equations` (name, columns) over the `unknown_names`, and its verdict, with
+    `_implicit_ef_input_error`'s refusal when it is not perfect. An AssertionError when the
+    counts differ (a defect: the DOF check guarantees them equal)."""
+    import scipy.sparse as sp
+    from scipy.sparse.csgraph import maximum_bipartite_matching
 
     size = len(unknown_names)
     if len(equations) != size:  # the DOF check guarantees it; a defect otherwise
