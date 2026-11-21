@@ -4722,3 +4722,7 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   125 passed; mypy 416 clean. Not narrowed. Open for the next reviewer: TABLE_FILES (held_tables at a revision,
   W5-S4/K1) still lists legacy and core only. Merge-check 615 (4881224c..da6e4e82) queued. Lanes app and tr branched
   before the fix; they take it at their merge.
+- 2026-11-21 ~02:30, tr1-3 (609) FAIL with the same inherited W5-S2 records test as 606 (lane base 07f16186 lacks
+  da6e4e82); 610-619 SKIPPED. tr1-1 (607) and tr1-2 (608) PASS. Every step on both lanes falls back to the full suite
+  (the map at MB c6957580 predates the F3 merge), so each would fail on it. Both engineers told (SendMessage) to
+  rebase onto da6e4e82 (tr from 07f16186, app from 68abf467) and re-enqueue with --rerun-of. Merge-check 615 running.
