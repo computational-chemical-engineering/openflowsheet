@@ -302,7 +302,8 @@ def curvature(
     p(w) = Σ_j m_j v_j (w_j − w0_j) / Σ_j m_j v_j² (R-400 steps 7 and 8), an `affine_curvature`
     basis. At w₀ every added term is an exact zero, so b(w₀) and ∇b(w₀) are `affine`'s bitwise.
     A float argument (an eliminated zero flow, R-296) takes no term, as in `affine`; a non-zero
-    v_j for one, or a float that differs from its w0_j, is a `ValueError`."""
+    v_j for one, or a float that differs from its w0_j, is a `ValueError`
+    (`_check_float_arguments`)."""
     frozen_gradient = tuple(float(entry) for entry in gradient)
     frozen_w0 = tuple(float(entry) for entry in w0)
     frozen_v = tuple(float(entry) for entry in direction)
@@ -314,18 +315,26 @@ def curvature(
 
     def build(args: Sequence[Any]) -> Any:
         terms = list(zip(frozen_gradient, args, frozen_w0, frozen_v, frozen_m, strict=True))
-        moved = [a for _, a, w, _, _ in terms if isinstance(a, float) and a != w]
-        if moved:
-            raise ValueError(f"a constant argument {moved!r} differs from its start value")
-        along = [v for _, a, _, v, _ in terms if isinstance(a, float) and v != 0.0]
-        if along:
-            raise ValueError(f"the path moves an eliminated zero flow (v = {along!r})")
+        _check_float_arguments(terms)
         variable = [(g, a, w, v, m) for g, a, w, v, m in terms if not isinstance(a, float)]
         taylor = frozen_value + sum(g * (a - w) for g, a, w, _, _ in variable)
         p = sum(m * v * (a - w) for _, a, w, v, m in variable) / norm
         return (taylor + 0.5 * frozen_c * p**2) / frozen_scale
 
     return EFBasis("affine_curvature", build)
+
+
+def _check_float_arguments(terms: Sequence[tuple[float, Any, float, float, float]]) -> None:
+    """`curvature`'s check of its float arguments over `terms` = (g_j, argument, w0_j, v_j, m_j):
+    a `ValueError` naming every float that differs from its w0_j, else one naming every non-zero
+    v_j of a float (the path moves an eliminated zero flow); nothing when neither. Pure: only
+    comparisons. `affine`'s `build` makes the first check with the same message."""
+    moved = [a for _, a, w, _, _ in terms if isinstance(a, float) and a != w]
+    if moved:
+        raise ValueError(f"a constant argument {moved!r} differs from its start value")
+    along = [v for _, a, _, v, _ in terms if isinstance(a, float) and v != 0.0]
+    if along:
+        raise ValueError(f"the path moves an eliminated zero flow (v = {along!r})")
 
 
 def _stencil(d0: float, t: float) -> tuple[str, float, float, float, float, int]:
@@ -419,8 +428,8 @@ def _link_curvature(
     record: dict[str, Any],
 ) -> tuple[list[float] | None, list[list[float]] | None, str | None]:
     """Steps 4-6: the path points' inlets w₁, w₂ (the pinned inner solve's link inputs) and the
-    remainders R_k(w₁)..., R_k(w₂)... there, or the failure reason (a failed solve, a refusal
-    other than a budget one, which raises)."""
+    remainders R_k(w₁)..., R_k(w₂)... there (`_remainders`), or the failure reason (a failed
+    solve, a refusal other than a budget one, which raises)."""
     parameter = projection.decisions[0].parameter_id
     inlets: list[list[float]] = []
     for d in points:
@@ -430,6 +439,23 @@ def _link_curvature(
             return None, None, f"inner_solve:{outcome}"
         inlets.append([float(state[i]) for i in ids])
     record["w_points"] = [list(w) for w in inlets]
+    found = _remainders(holder, inlets, values, jacobian, w0)
+    if isinstance(found, str):
+        return None, None, found
+    return found, inlets, None
+
+
+def _remainders(
+    holder: Any,
+    inlets: list[list[float]],
+    values: Sequence[float],
+    jacobian: Sequence[Sequence[float]],
+    w0: Sequence[float],
+) -> list[float] | str:
+    """Step 6: the remainders R_k(w) = f_k(w) − f_k(w₀) − Σ_j J_kj (w_j − w0_j) at each inlet w
+    in turn (all outputs at w₁, then at w₂), from the holder's values at w (purpose
+    `BASIS_CURVATURE_POINT`); or the reason `refused:<code>` of the first refusal other than a
+    budget one (a budget refusal raises). Pure apart from the holder's requests."""
     remainders: list[float] = []
     for w in inlets:
         try:
@@ -437,11 +463,11 @@ def _link_curvature(
         except TruthRefused as refusal:
             if refusal.status == "budget":
                 raise
-            return None, None, f"refused:{refusal.code}"
+            return f"refused:{refusal.code}"
         for k in range(len(values)):
             linear = sum(g * (wj - w0j) for g, wj, w0j in zip(jacobian[k], w, w0, strict=True))
             remainders.append(at[k] - values[k] - linear)
-    return remainders, inlets, None
+    return remainders
 
 
 def _finish(

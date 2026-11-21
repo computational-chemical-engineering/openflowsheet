@@ -34,7 +34,7 @@ import math
 import time
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any, Final, Literal, Protocol
+from typing import TYPE_CHECKING, Any, Final, Literal, NamedTuple, Protocol
 
 from openflowsheet.adapters.variants import Variant, hard_domain
 from openflowsheet.compile.reference import FloatAlgebra
@@ -82,6 +82,7 @@ if TYPE_CHECKING:
     from openflowsheet.graph.process import ProcessGraph
     from openflowsheet.models.revision_flowsheet import RevisionFlowsheet
     from openflowsheet.studies.trust_region.projection import Projection
+    from openflowsheet.studies.trust_region.trf import TrfRun
     from openflowsheet.studies.trust_region.trf_state import EFBasis
 
 __all__ = [
@@ -948,6 +949,8 @@ class TrfStage:
     def __call__(
         self, start: ParentSolve, *, run_id: str, radius_factor: float, budget: StudyBudget
     ) -> StageRun:
+        """One TRF run from `start` (`StageRunner`), its truth ledgers by `_truth_ledgers` and
+        P2's point by `_trf_point`."""
         from openflowsheet.studies.trust_region.trf import run_trf
 
         projection = self.project_at(start)
@@ -975,40 +978,9 @@ class TrfStage:
             gradient_check=None if self.gradient_check is None else gradient_check,
             check_budgets={holder.name: [budget.cold] for holder in parents},
         )
-        cold_parent = 0
-        cold_in_process = 0
-        ledgers: dict[str, Any] = {}
-        for holder in projection.holders:
-            if not isinstance(holder.box, TruthBox):
-                continue
-            summary = holder.summary(run_id)
-            ledgers[holder.name] = summary
-            if holder.box.parent:
-                cold_parent += summary["value_cold"]
-            else:
-                cold_in_process += summary["value_cold"]
+        ledgers, cold_parent, cold_in_process = _truth_ledgers(projection, run_id)
         budget.charge(cold_in_process)
-        point = None
-        if trf_run.outcome in RETURNS_MODEL and trf_run.final is not None:
-            assert trf_run.final_state is not None
-            checks = {
-                name: found.status == "pass"
-                for name, found in (
-                    ("omitted_rows", trf_run.omitted_rows_final),
-                    ("zero_pins", trf_run.zero_pins_final),
-                )
-                if found is not None
-            }
-            assert trf_run.theta_recheck is not None
-            assert trf_run.feasibility_termination is not None
-            point = TrfPoint(
-                trf_run.final.objective,
-                trf_run.final_state,
-                projection.scaling.column,
-                trf_run.theta_recheck,
-                trf_run.feasibility_termination,
-                checks,
-            )
+        point = _trf_point(trf_run, projection)
         source_map = projection.source_map
         document = {
             "truth": [
@@ -1051,6 +1023,62 @@ class TrfStage:
             document=document,
             limitations=trf_run.basis_limitations,
         )
+
+
+class _TruthLedgers(NamedTuple):
+    """The run's truth-holder ledgers: each holder's `summary(run_id)` by name, and the cold
+    value requests summed over the parent holders and over the in-process ones."""
+
+    summary: dict[str, Any]
+    cold_parent: int
+    cold_in_process: int
+
+
+def _truth_ledgers(projection: Projection, run_id: str) -> _TruthLedgers:
+    """The `_TruthLedgers` of `projection`'s `TruthBox` holders over the run `run_id`, in
+    holder order (a later holder of the same name would win `summary`'s entry). Pure:
+    `EFHolder.summary` only counts the holder's ledger."""
+    cold_parent = 0
+    cold_in_process = 0
+    ledgers: dict[str, Any] = {}
+    for holder in projection.holders:
+        if not isinstance(holder.box, TruthBox):
+            continue
+        summary = holder.summary(run_id)
+        ledgers[holder.name] = summary
+        if holder.box.parent:
+            cold_parent += summary["value_cold"]
+        else:
+            cold_in_process += summary["value_cold"]
+    return _TruthLedgers(ledgers, cold_parent, cold_in_process)
+
+
+def _trf_point(trf_run: TrfRun, projection: Projection) -> TrfPoint | None:
+    """P2's `TrfPoint` of a run that returned a model: its final objective and state, the
+    projection's column scales, θ_recheck, `feasibility_termination` and the run's final-state
+    checks (`omitted_rows`, `zero_pins`, each when the run made it; `True` for pass). `None`
+    when the outcome is not in `RETURNS_MODEL` or the run has no `final` iteration. Pure."""
+    if trf_run.outcome in RETURNS_MODEL and trf_run.final is not None:
+        assert trf_run.final_state is not None
+        checks = {
+            name: found.status == "pass"
+            for name, found in (
+                ("omitted_rows", trf_run.omitted_rows_final),
+                ("zero_pins", trf_run.zero_pins_final),
+            )
+            if found is not None
+        }
+        assert trf_run.theta_recheck is not None
+        assert trf_run.feasibility_termination is not None
+        return TrfPoint(
+            trf_run.final.objective,
+            trf_run.final_state,
+            projection.scaling.column,
+            trf_run.theta_recheck,
+            trf_run.feasibility_termination,
+            checks,
+        )
+    return None
 
 
 def _basis_block(
