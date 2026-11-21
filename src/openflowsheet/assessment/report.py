@@ -137,9 +137,10 @@ def report_body(
 ) -> dict[str, Any]:
     """The report without `provenance` (the part A39 compares byte for byte). The values at `x`
     come from `_checked_values`; when it returns a refusal instead, the refusal joins `refusals` and
-    every output is `null`. The contributors' sections come from `_report_sections`. The
-    `uncertainty` entry starts as `_aace_uncertainty`'s, and `propagate` fills its propagation
-    results when `uncertainty` is set and there are values."""
+    every output is `null`. The contributors' sections come from `_report_sections`, and what the
+    `derived` section withholds from `_derived_withholding`. The `uncertainty` entry starts as
+    `_aace_uncertainty`'s, and `propagate` fills its propagation results when `uncertainty` is
+    set and there are values."""
     refusals: list[Refusal] = list(program.refusals)
     withheld: dict[str, str] = dict(program.unavailable)
     values: Mapping[str, float] | None = None
@@ -149,12 +150,9 @@ def report_body(
     else:
         values = checked
     sections = _report_sections(program, values)
-    derived = sections.get("derived", {})
-    for output_id in derived.get("undefined", ()):
-        refusals.append(Refusal("METRIC_UNDEFINED", output_id, "denominator ≤ 0 at the state"))
-        withheld[output_id] = "non-positive denominator at the state"
-    for output_id in derived.get("withheld", ()):
-        withheld[output_id] = "depends on an undefined derived output"
+    undefined_refusals, derived_withheld = _derived_withholding(sections.get("derived", {}))
+    refusals.extend(undefined_refusals)
+    withheld.update(derived_withheld)
 
     def value(output_id: str) -> float | None:
         if values is None or output_id in withheld:
@@ -246,6 +244,23 @@ def _report_sections(
         for name, plan in program.plans.items()
         if plan.section is not None and (values is not None or name != "derived")
     }
+
+
+def _derived_withholding(
+    derived: Mapping[str, Any],
+) -> tuple[list[Refusal], dict[str, str]]:
+    """What the `derived` section withholds at the state: a `METRIC_UNDEFINED` refusal per
+    undefined ratio (its denominator ≤ 0), in the section's order, and the withheld outputs with
+    their reasons, the undefined ratios first and then the outputs depending on one; an id listed
+    twice keeps its first place and its last reason."""
+    refusals: list[Refusal] = []
+    withheld: dict[str, str] = {}
+    for output_id in derived.get("undefined", ()):
+        refusals.append(Refusal("METRIC_UNDEFINED", output_id, "denominator ≤ 0 at the state"))
+        withheld[output_id] = "non-positive denominator at the state"
+    for output_id in derived.get("withheld", ()):
+        withheld[output_id] = "depends on an undefined derived output"
+    return refusals, withheld
 
 
 def _groups(
