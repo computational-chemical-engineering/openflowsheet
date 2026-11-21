@@ -54,7 +54,7 @@ def test_every_implemented_measure_passes(
     results, log = full
     implemented = {m: r for m, r in results.items() if m not in gate.NOT_IMPLEMENTED}
     assert all(r["status"] in ("PASS", "NOT JUDGED") for r in implemented.values()), log
-    assert results["M1"]["n"] == 50 and results["M2"]["n"] == 52 + 9 and results["M9"]["n"] == 35
+    assert results["M1"]["n"] == 50 and results["M2"]["n"] == 52 + 9 and results["M9"]["n"] == 42
     assert results["M7"]["n"] == 52 and results["M8"]["n"] == 105
     # M6 counts what carries keys: the 15 runs that key the cache and the 70-entry sample. Off
     # the reference platform the runs' key trails are not judged, so only the sample counts.
@@ -430,7 +430,7 @@ def test_m9_holds_every_legacy_unit_module_d9() -> None:
 
     legacy = gate.legacy_unit_modules()
     assert len(legacy) == 27 and set(legacy) == _manifest_modules()
-    assert set(legacy) <= set(gate.frozen_modules()) and len(gate.frozen_modules()) == 35
+    assert set(legacy) <= set(gate.frozen_modules()) and len(gate.frozen_modules()) == 42
     declared: set[str] = set()
     for name in legacy:
         module = importlib.import_module(

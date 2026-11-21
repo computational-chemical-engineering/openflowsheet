@@ -36,7 +36,7 @@ from openflowsheet.orchestrator.execution import (
     declaration_identity,
 )
 from openflowsheet.orchestrator.mass import syn001_residence_time
-from openflowsheet.orchestrator.region import solve_region, syn001_lifted_splits
+from openflowsheet.orchestrator.region import RegionCall, solve_region, syn001_lifted_splits
 from openflowsheet.orchestrator.region_result import RegionResult
 from openflowsheet.orchestrator.tear import Syn001TearProblem, solve_tear
 
@@ -235,15 +235,17 @@ def _same_root(setup: _Setup, state: Mapping[str, float]) -> bool:
 def _run(setup: _Setup, state: Mapping[str, float], core: Core) -> CoreRun:
     flowsheet = setup.binding.flowsheet
     result = solve_region(
-        compiled=setup.compiled,
-        spec=setup.binding.spec,
-        region=setup.region,
-        state=state,
-        splits=syn001_lifted_splits(flowsheet.components),
-        provider=flowsheet.provider,
-        policy=_policy(core),
-        initializer_source="user_guess",
-        mass_mapping=syn001_residence_time(flowsheet.components),
+        RegionCall(
+            compiled=setup.compiled,
+            spec=setup.binding.spec,
+            region=setup.region,
+            state=state,
+            splits=syn001_lifted_splits(flowsheet.components),
+            provider=flowsheet.provider,
+            policy=_policy(core),
+            initializer_source="user_guess",
+            mass_mapping=syn001_residence_time(flowsheet.components),
+        )
     )
     last = result.attempts[-1] if result.attempts else None
     return CoreRun(

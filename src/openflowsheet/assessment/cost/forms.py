@@ -33,7 +33,7 @@ import math
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from types import MappingProxyType
-from typing import Any, Final, Literal
+from typing import Any, Final, Literal, NamedTuple
 
 from openflowsheet.assessment.regimes import select_piece, select_size, size_units
 from openflowsheet.compile.reference import FloatAlgebra
@@ -649,7 +649,8 @@ def select(
     smallest `n ≥ n₀` with `S(n) ≤ n·S_max`, checking its domain at every `n` evaluated.
     Inputs: below `min` the floor where declared, else refused; above `max` refused; refused
     values are extrapolated on the nearest piece when `allow_extrapolation`. A non-finite or
-    non-positive quantity is refused."""
+    non-positive quantity is refused. The size regime is `_size_regime`'s, the inputs' pieces
+    `_input_pieces`'."""
     guard = form.domain(e, x, units)
     if guard is not None:
         return guard
@@ -657,71 +658,163 @@ def select(
         k: float(v) if isinstance(v, int) else v
         for k, v in form.quantities(e, x, _FLOAT, units).items()
     }
-    extrapolated: dict[str, tuple[float, float, float]] = {}
+    sized = _size_regime(_Item(form, e, x, allow_extrapolation, units), q)
+    if isinstance(sized, OutOfRange):
+        return sized
+    held_pieces = _input_pieces(form, e, q, allow_extrapolation)
+    if isinstance(held_pieces, OutOfRange):
+        return held_pieces
+    return Selection(
+        sized.size,
+        sized.n,
+        MappingProxyType(held_pieces.pieces),
+        MappingProxyType({**sized.extrapolated, **held_pieces.extrapolated}),
+    )
+
+
+class _Item(NamedTuple):
+    """One item as `select` receives it: its form and resolved entry, its float state `x`, its
+    `allow_extrapolation` and `units` (the machine's N for a drive)."""
+
+    form: Form
+    e: ResolvedEntry
+    x: Inputs
+    allow_extrapolation: bool
+    units: int
+
+
+class _Size(NamedTuple):
+    """The size regime `_size_regime` holds: `size` and `n` as in `Selection`, and the size
+    range when extrapolated."""
+
+    size: str | None
+    n: int
+    extrapolated: dict[str, tuple[float, float, float]]
+
+
+def _size_regime(item: _Item, q: Mapping[str, Expr]) -> _Size | OutOfRange:
+    """The size regime of `item` at its float quantities `q` (§4.3.2 rule 4, §10.4.4), as
+    `select`'s docstring states it, one family per helper: `_searched_size` (a size that depends
+    on N), `_drive_size` (a drive), `select_size` (a parallel form), `_single_size` (any other).
+    For a form without a size range, `_Size(None, 1, {})` unless `_unsized_refusal` refuses a
+    quantity. Refused here: a size quantity that is not finite and positive."""
+    form, e = item.form, item.e
     size_name = form.size_name(e)
-    size: str | None = None
-    n = 1
-    if size_name is not None:
-        r = e.ranges[size_name]
-        s = q[size_name]
-        if not _finite_positive(s):
+    if size_name is None:
+        refusal = _unsized_refusal(form, q)
+        return _Size(None, 1, {}) if refusal is None else refusal
+    r = e.ranges[size_name]
+    s = q[size_name]
+    if not _finite_positive(s):
+        return OutOfRange(
+            size_name,
+            form.target(size_name),
+            float("nan"),
+            r.min,
+            r.max,
+            f"{size_name} is not a finite positive value: {s!r}",
+        )
+    if form.size_depends_on_units:
+        return _searched_size(item, q, size_name, r, s)
+    if form.inherits_units:
+        return _drive_size(item, size_name, r, s)
+    if form.parallel:
+        size = select_size(s, r.min, r.max)
+        return _Size(size, size_units(size) or 1, {})
+    return _single_size(item, size_name, r, s)
+
+
+def _unsized_refusal(form: Form, q: Mapping[str, Expr]) -> OutOfRange | None:
+    """A form without a size range: the first quantity of `q` that is not finite and positive,
+    refused; `None` when there is none."""
+    for name, value in q.items():
+        if not _finite_positive(value):
             return OutOfRange(
-                size_name,
-                form.target(size_name),
+                name,
+                form.target(name),
                 float("nan"),
-                r.min,
-                r.max,
-                f"{size_name} is not a finite positive value: {s!r}",
+                0.0,
+                math.inf,
+                f"{name} is not a finite positive value: {value!r}",
             )
-        if form.size_depends_on_units:
-            if s < r.min:
-                size = "floor"
-            else:
-                n = _units_lower_bound(float(q["brake_power_hp"]), r.max)
-                while True:
-                    guard = form.domain(e, x, n) if n != units else None
-                    if guard is not None:
-                        return guard
-                    s_n = float(form.quantities(e, x, _FLOAT, n)[size_name])
-                    if s_n <= n * r.max:
-                        break
-                    n += 1
-                size = f"units:{n}"
-        elif form.inherits_units:
-            n = units
-            if s < r.min:
-                size = "floor"
-            elif s <= r.max:
-                size = f"units:{units}"
-            elif allow_extrapolation:
-                size = f"units:{units}"
-                extrapolated[size_name] = (s, r.min, r.max)
-            else:
-                return OutOfRange(size_name, form.target(size_name), s, r.min, r.max)
-        elif form.parallel:
-            size = select_size(s, r.min, r.max)
-            n = size_units(size) or 1
-        elif s < r.min:
-            size = "floor"
-        elif s <= r.max:
-            size = "units:1"
-        elif allow_extrapolation:
-            size = "units:1"
-            extrapolated[size_name] = (s, r.min, r.max)
-        else:
-            return OutOfRange(size_name, form.target(size_name), s, r.min, r.max)
-    else:
-        for name, value in q.items():
-            if not _finite_positive(value):
-                return OutOfRange(
-                    name,
-                    form.target(name),
-                    float("nan"),
-                    0.0,
-                    math.inf,
-                    f"{name} is not a finite positive value: {value!r}",
-                )
+    return None
+
+
+def _searched_size(
+    item: _Item, q: Mapping[str, Expr], size_name: str, r: Range, s: float
+) -> _Size | OutOfRange:
+    """A form whose size depends on N (§10.4.4): the floor when `S(1) = s < S_min`; otherwise
+    `units:n` for the smallest `n ≥ n₀` (`_units_lower_bound` of `q`'s brake power) with
+    `S(n) ≤ n·S_max`, the domain checked at every `n` evaluated except `item.units` (`select`
+    checked it), a domain guard returned as the refusal."""
+    if s < r.min:
+        return _Size("floor", 1, {})
+    n = _units_lower_bound(float(q["brake_power_hp"]), r.max)
+    while True:
+        guard = item.form.domain(item.e, item.x, n) if n != item.units else None
+        if guard is not None:
+            return guard
+        s_n = float(item.form.quantities(item.e, item.x, _FLOAT, n)[size_name])
+        if s_n <= n * r.max:
+            break
+        n += 1
+    return _Size(f"units:{n}", n, {})
+
+
+def _units_lower_bound(w_hp: float, s_max: float) -> int:
+    """§10.4.4: n₀, the smallest integer ≥ 1 with `W ≤ n₀·S_max` in binary64 (the brake power
+    bounds the consumed power from below, since η_m ≤ 1)."""
+    units = max(1, math.ceil(w_hp / s_max))
+    while units * s_max < w_hp:
+        units += 1
+    while units > 1 and (units - 1) * s_max >= w_hp:
+        units -= 1
+    return units
+
+
+def _drive_size(item: _Item, size_name: str, r: Range, s: float) -> _Size | OutOfRange:
+    """A drive (§9.2.4 V) at the machine's N, `item.units`: the floor below `S_min`,
+    `units:N` up to `S_max`; above it extrapolated at `units:N` when `allow_extrapolation`,
+    else refused. Its twin for one unit is `_single_size`."""
+    units = item.units
+    if s < r.min:
+        return _Size("floor", units, {})
+    if s <= r.max:
+        return _Size(f"units:{units}", units, {})
+    if item.allow_extrapolation:
+        return _Size(f"units:{units}", units, {size_name: (s, r.min, r.max)})
+    return OutOfRange(size_name, item.form.target(size_name), s, r.min, r.max)
+
+
+def _single_size(item: _Item, size_name: str, r: Range, s: float) -> _Size | OutOfRange:
+    """A form neither parallel, nor a drive, nor sized on N, at one unit: the floor below
+    `S_min`, `units:1` up to `S_max`; above it extrapolated at `units:1` when
+    `allow_extrapolation`, else refused. Its twin for a drive is `_drive_size`."""
+    if s < r.min:
+        return _Size("floor", 1, {})
+    if s <= r.max:
+        return _Size("units:1", 1, {})
+    if item.allow_extrapolation:
+        return _Size("units:1", 1, {size_name: (s, r.min, r.max)})
+    return OutOfRange(size_name, item.form.target(size_name), s, r.min, r.max)
+
+
+class _Pieces(NamedTuple):
+    """The pieces `_input_pieces` holds for the input ranges, and the inputs it extrapolated."""
+
+    pieces: dict[str, int]
+    extrapolated: dict[str, tuple[float, float, float]]
+
+
+def _input_pieces(
+    form: Form, e: ResolvedEntry, q: Mapping[str, Expr], allow_extrapolation: bool
+) -> _Pieces | OutOfRange:
+    """The piece of every input range of `form.active_ranges(e)` at the float quantities `q`
+    (§4.3.2 rule 5), a range's pieces before their dependants: below `min` the floor (piece 0)
+    where declared; within the pieces, the piece; outside, refused, or the nearest piece when
+    `allow_extrapolation` (then recorded in `extrapolated`). A non-finite input is refused."""
     pieces: dict[str, int] = {}
+    extrapolated: dict[str, tuple[float, float, float]] = {}
     inputs = [r for r in form.active_ranges(e) if r.role == "input"]
     inputs.sort(key=lambda r: r.pieces_of is not None)  # a range's pieces before their dependants
     for r in inputs:
@@ -747,18 +840,7 @@ def select(
             return OutOfRange(r.name, form.target(r.name), z, low, high)
         pieces[r.name] = 1 if z < low else len(intervals)
         extrapolated[r.name] = (z, low, high)
-    return Selection(size, n, MappingProxyType(pieces), MappingProxyType(extrapolated))
-
-
-def _units_lower_bound(w_hp: float, s_max: float) -> int:
-    """§10.4.4: n₀, the smallest integer ≥ 1 with `W ≤ n₀·S_max` in binary64 (the brake power
-    bounds the consumed power from below, since η_m ≤ 1)."""
-    units = max(1, math.ceil(w_hp / s_max))
-    while units * s_max < w_hp:
-        units += 1
-    while units > 1 and (units - 1) * s_max >= w_hp:
-        units -= 1
-    return units
+    return _Pieces(pieces, extrapolated)
 
 
 def _upper(r: Range, pieces: Mapping[str, int]) -> float:
@@ -772,18 +854,8 @@ def _upper(r: Range, pieces: Mapping[str, int]) -> float:
 def rows(form: Form, e: ResolvedEntry, sel: Selection) -> tuple[RangeRow, ...]:
     """The admissibility rows of `sel` (§4.3.1): size `units:N` `q − N·S_min`, `N·S_max − q`
     (per unit for a drive), `floor` `S_min − q`; a piece `z − lo`, `hi − z`; an input floor
-    `min − z`. An extrapolated side has no row."""
-    out: list[RangeRow] = []
-    size_name = form.size_name(e)
-    if size_name is not None and sel.size is not None:
-        r = e.ranges[size_name]
-        if sel.size == "floor":
-            out.append(RangeRow(f"{size_name}.floor", size_name, -1, r.min))
-        else:
-            scale = 1.0 if form.inherits_units else float(sel.n)
-            out.append(RangeRow(f"{size_name}.lo", size_name, 1, scale * r.min))
-            if size_name not in sel.extrapolated:
-                out.append(RangeRow(f"{size_name}.hi", size_name, -1, scale * r.max))
+    `min − z`. An extrapolated side has no row. The size rows are `_size_rows`'."""
+    out = _size_rows(form, e, sel)
     for r in form.active_ranges(e):
         if r.role != "input" or r.name not in sel.pieces:
             continue
@@ -799,3 +871,21 @@ def rows(form: Form, e: ResolvedEntry, sel: Selection) -> tuple[RangeRow, ...]:
         if value is None or value[0] <= high:
             out.append(RangeRow(f"{r.name}.hi", r.name, -1, high))
     return tuple(out)
+
+
+def _size_rows(form: Form, e: ResolvedEntry, sel: Selection) -> list[RangeRow]:
+    """The size range's rows of `sel` (§4.3.1): `floor` `S_min − q`; `units:N` `q − N·S_min`
+    and, unless the size is extrapolated, `N·S_max − q` (per unit for a drive). None for a form
+    without a size range or a selection without a size regime."""
+    out: list[RangeRow] = []
+    size_name = form.size_name(e)
+    if size_name is not None and sel.size is not None:
+        r = e.ranges[size_name]
+        if sel.size == "floor":
+            out.append(RangeRow(f"{size_name}.floor", size_name, -1, r.min))
+        else:
+            scale = 1.0 if form.inherits_units else float(sel.n)
+            out.append(RangeRow(f"{size_name}.lo", size_name, 1, scale * r.min))
+            if size_name not in sel.extrapolated:
+                out.append(RangeRow(f"{size_name}.hi", size_name, -1, scale * r.max))
+    return out

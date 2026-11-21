@@ -28,7 +28,7 @@ import openflowsheet.orchestrator.region_attempts as region_attempts
 import openflowsheet.orchestrator.region_problem as region_problem_module
 from openflowsheet.compile.casadi_backend import compile_problem
 from openflowsheet.numerics.solve_record import SolvePolicy, Trace
-from openflowsheet.orchestrator.region import solve_region, syn001_lifted_splits
+from openflowsheet.orchestrator.region import RegionCall, solve_region, syn001_lifted_splits
 from openflowsheet.orchestrator.region_result import RegionResult
 from openflowsheet.orchestrator.tear import solve_tear
 
@@ -84,15 +84,17 @@ def run_case(case_id: str, monkeypatch: pytest.MonkeyPatch) -> Run:
     monkeypatch.setattr(region_attempts, "_region_problem", observed)
     trace = Trace()
     result = solve_region(
-        compiled=compile_problem(item.binding.spec),
-        spec=item.binding.spec,
-        region=the_region(item),
-        state=dict(pre.final_state),
-        splits=syn001_lifted_splits(flowsheet.components),
-        provider=flowsheet.provider,
-        policy=POLICY,
-        trace=trace,
-        initializer_source="user_guess",
+        RegionCall(
+            compiled=compile_problem(item.binding.spec),
+            spec=item.binding.spec,
+            region=the_region(item),
+            state=dict(pre.final_state),
+            splits=syn001_lifted_splits(flowsheet.components),
+            provider=flowsheet.provider,
+            policy=POLICY,
+            trace=trace,
+            initializer_source="user_guess",
+        )
     )
     # The first call of an attempt is its opening state; the rest are its trials, in order.
     return Run(result, trace, {k: v[1:] for k, v in calls.items()})

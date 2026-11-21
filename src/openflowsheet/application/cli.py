@@ -240,7 +240,9 @@ def _status_summary(status: str) -> str:
 
 
 def command_inspect(arguments: argparse.Namespace) -> int:
-    """G06: what a run was, what was checked, what was found, what was **not** claimed."""
+    """G06: what a run was, what was checked, what was found, what was **not** claimed. The
+    certificate's and the failure bundle's sections, each printed when the bundle holds that
+    artifact, come from `_print_certificate_section` and `_print_failure_section`."""
     from openflowsheet.run.bundle import read_artifact, read_manifest, verify_bundle
 
     directory = Path(arguments.bundle)
@@ -260,34 +262,10 @@ def command_inspect(arguments: argparse.Namespace) -> int:
         print(f"  {key:<22}{value}")
 
     if "solution-certificate.json" in manifest.artifacts:
-        certificate = read_artifact(directory, "solution-certificate.json")
-        checks = certificate["checks"]
-        by_result: dict[str, int] = {}
-        for check in checks:
-            by_result[check["result"]] = by_result.get(check["result"], 0) + 1
-        print(f"\n=== certificate  {certificate['verification_status']}")
-        print(f"  checks            {len(checks)} ({by_result})")
-        print(f"  regularity        {certificate['regularity']['status']}")
-        print(f"  solution bound    {certificate['solution_error_bound_scaled']}")
-        failing = [check["id"] for check in checks if check["result"] == "fail"]
-        if failing:
-            print(f"  FAILING           {failing}")
-        print("\n=== what this certificate does not claim")
-        for statement in certificate["statements"]:
-            print(f"  - {statement}")
-        if certificate["limitations"]:
-            print("\n=== limitations")
-            for limitation in certificate["limitations"]:
-                print(f"  - {limitation}")
+        _print_certificate_section(directory)
 
     if "failure-bundle.json" in manifest.artifacts:
-        bundle = read_artifact(directory, "failure-bundle.json")
-        print(f"\n=== failure  {bundle['outcome']}")
-        print(f"  taxonomy          {bundle['taxonomy']}")
-        print(f"  implicated        {bundle['implicated_sources']}")
-        for action in bundle["suggested_actions"]:
-            print(f"  suggested         {action['action']} (requires permission)")
-        print(textwrap.indent(_bundle_failure_text(directory), "  "))  # MSG §3.7
+        _print_failure_section(directory)
 
     events = read_artifact(directory, "solve-events.json")
     print(f"\n=== trace  {len(events)} events")
@@ -295,6 +273,48 @@ def command_inspect(arguments: argparse.Namespace) -> int:
         outcome = f" -> {event['outcome']}" if event.get("outcome") else ""
         print(f"  {event['sequence']:>3}  {event['kind']:<16} attempt {event['attempt']}{outcome}")
     return 0 if integrity.ok else 1
+
+
+def _print_certificate_section(directory: Path) -> None:
+    """`inspect`'s certificate section: reads the bundle's `solution-certificate.json` and prints
+    its status, check counts, regularity, solution bound, failing checks, what it does not claim
+    and its limitations."""
+    from openflowsheet.run.bundle import read_artifact
+
+    certificate = read_artifact(directory, "solution-certificate.json")
+    checks = certificate["checks"]
+    by_result: dict[str, int] = {}
+    for check in checks:
+        by_result[check["result"]] = by_result.get(check["result"], 0) + 1
+    print(f"\n=== certificate  {certificate['verification_status']}")
+    print(f"  checks            {len(checks)} ({by_result})")
+    print(f"  regularity        {certificate['regularity']['status']}")
+    print(f"  solution bound    {certificate['solution_error_bound_scaled']}")
+    failing = [check["id"] for check in checks if check["result"] == "fail"]
+    if failing:
+        print(f"  FAILING           {failing}")
+    print("\n=== what this certificate does not claim")
+    for statement in certificate["statements"]:
+        print(f"  - {statement}")
+    if certificate["limitations"]:
+        print("\n=== limitations")
+        for limitation in certificate["limitations"]:
+            print(f"  - {limitation}")
+
+
+def _print_failure_section(directory: Path) -> None:
+    """`inspect`'s failure section: reads the bundle's `failure-bundle.json` and prints its
+    outcome, taxonomy, implicated sources, suggested actions and the failure text
+    (`_bundle_failure_text`)."""
+    from openflowsheet.run.bundle import read_artifact
+
+    bundle = read_artifact(directory, "failure-bundle.json")
+    print(f"\n=== failure  {bundle['outcome']}")
+    print(f"  taxonomy          {bundle['taxonomy']}")
+    print(f"  implicated        {bundle['implicated_sources']}")
+    for action in bundle["suggested_actions"]:
+        print(f"  suggested         {action['action']} (requires permission)")
+    print(textwrap.indent(_bundle_failure_text(directory), "  "))  # MSG §3.7
 
 
 def command_replay(arguments: argparse.Namespace) -> int:
@@ -953,7 +973,8 @@ def command_streams(arguments: argparse.Namespace) -> int:
     in `--output`); a refusal exits with its `ApiError` code's number (§11.5); 1 when the project
     cannot be opened; 2 for a usage error. `--display-units TEXT` (ADR 0075 D7.6) prints it in a
     display preference's units, resolved against the project's ambient pressure (a bundle
-    directory has none)."""
+    directory has none). A job's pages are fetched with `_stream_table_request`'s requests; the
+    table is printed by `_write_stream_table`."""
     from openflowsheet.application import stream_table, stream_table_format
     from openflowsheet.application.authz import PolicyRefusedError
     from openflowsheet.application.errors import ApplicationError
@@ -980,16 +1001,7 @@ def command_streams(arguments: argparse.Namespace) -> int:
         with application:
 
             def fetch(pointer: str, depth: int, cursor: str | None, limit: int) -> Any:
-                request: dict[str, Any] = {
-                    "job_id": arguments.job,
-                    "pointer": pointer,
-                    "depth": depth,
-                    "limit": limit,
-                }
-                if cursor is not None:
-                    request["cursor"] = cursor
-                if arguments.display_units is not None:
-                    request["display_units"] = arguments.display_units
+                request = _stream_table_request(arguments, pointer, depth, cursor, limit)
                 return dispatch(application, "get_stream_table", request)
 
             try:
@@ -1007,6 +1019,33 @@ def command_streams(arguments: argparse.Namespace) -> int:
             if not isinstance(units, DisplayUnits):
                 return _print_refusal(units, document=as_json)
             document = stream_table.displayed(document, units)
+    _write_stream_table(document, arguments)
+    return 0
+
+
+def _stream_table_request(
+    arguments: argparse.Namespace, pointer: str, depth: int, cursor: str | None, limit: int
+) -> dict[str, Any]:
+    """`streams`' `get_stream_table` request for one page of `--job`'s table: the job, pointer,
+    depth and limit, then the cursor when there is one and `--display-units` when given."""
+    request: dict[str, Any] = {
+        "job_id": arguments.job,
+        "pointer": pointer,
+        "depth": depth,
+        "limit": limit,
+    }
+    if cursor is not None:
+        request["cursor"] = cursor
+    if arguments.display_units is not None:
+        request["display_units"] = arguments.display_units
+    return request
+
+
+def _write_stream_table(document: dict[str, Any], arguments: argparse.Namespace) -> None:
+    """`streams`' output: the table rendered in `--format` (text, JSON or CSV), written to stdout,
+    or to the file `--output` names."""
+    from openflowsheet.application import stream_table_format
+
     render = {
         "text": stream_table_format.to_text,
         "json": stream_table_format.to_json,
@@ -1018,10 +1057,12 @@ def command_streams(arguments: argparse.Namespace) -> int:
     else:
         with open(arguments.output, "w", encoding="utf-8", newline="") as out:
             out.write(text)
-    return 0
 
 
 def build_parser() -> argparse.ArgumentParser:
+    """The `openflowsheet` parser. Its subcommands are added in help order, one group per helper:
+    `_add_run_parsers`, `_add_project_parser`, `_add_api_parser`, `_add_no_project_parsers`,
+    `_add_records_parser`, `_add_streams_parser` and `_add_serve_parsers`."""
     parser = argparse.ArgumentParser(
         prog="openflowsheet",
         description=(
@@ -1032,6 +1073,19 @@ def build_parser() -> argparse.ArgumentParser:
     )
     commands = parser.add_subparsers(dest="command", required=True)
 
+    _add_run_parsers(commands)
+    _add_project_parser(commands)
+    _add_api_parser(commands)
+    _add_no_project_parsers(commands)
+    _add_records_parser(commands)
+    _add_streams_parser(commands)
+    _add_serve_parsers(commands)
+    return parser
+
+
+def _add_run_parsers(commands: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
+    """`validate`, `optimize`, `solve`, `inspect` and `replay`: the commands on a revision file, a
+    registered case or a bundle directory."""
     validate_command = commands.add_parser("validate", help="validate a revision for a task")
     validate_command.add_argument("revision", help="a ProcessRevision YAML or JSON file")
     validate_command.add_argument(
@@ -1069,6 +1123,10 @@ def build_parser() -> argparse.ArgumentParser:
     replay_command.add_argument("--json", action="store_true")
     replay_command.set_defaults(handler=command_replay)
 
+
+def _add_project_parser(commands: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
+    """`project init|grant|revoke|ambient`: a project directory, its capability grants and its
+    ambient pressure."""
     project_command = commands.add_parser(
         "project",
         help="create a project and administer its capability grants and ambient pressure",
@@ -1121,6 +1179,9 @@ def build_parser() -> argparse.ArgumentParser:
     )
     ambient_command.set_defaults(handler=command_project_ambient)
 
+
+def _add_api_parser(commands: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
+    """`api`: one contract operation as the local owner."""
     api_command = commands.add_parser(
         "api",
         help="run one contract operation as the local owner and print its response",
@@ -1143,6 +1204,9 @@ def build_parser() -> argparse.ArgumentParser:
     )
     api_command.set_defaults(handler=command_api)
 
+
+def _add_no_project_parsers(commands: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
+    """`explain`, `capabilities` and `admission`: the commands that need no project."""
     explain_command = commands.add_parser(
         "explain",
         help="explain a message code (no project needed)",
@@ -1194,8 +1258,9 @@ def build_parser() -> argparse.ArgumentParser:
     admission_command.add_argument("--revision", default=None, help="a revision document file")
     admission_command.set_defaults(handler=command_admission)
 
-    _add_records_parser(commands)
 
+def _add_streams_parser(commands: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
+    """`streams`: a run's stream table and energy summary (ST §6.3)."""
     streams_command = commands.add_parser(
         "streams",
         help="print a run's stream table and energy summary",
@@ -1223,6 +1288,9 @@ def build_parser() -> argparse.ArgumentParser:
     )
     streams_command.set_defaults(handler=command_streams)
 
+
+def _add_serve_parsers(commands: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
+    """`serve-http` and `serve-mcp`: the project served over HTTP or MCP stdio."""
     http_command = commands.add_parser("serve-http", help="serve the project over HTTP (§11.2)")
     http_command.add_argument("--project", required=True, help="the project directory")
     http_command.add_argument("--host", default="127.0.0.1")
@@ -1244,8 +1312,6 @@ def build_parser() -> argparse.ArgumentParser:
         "--token-file", default=None, help=f"the capability's token (else ${TOKEN_FILE_VARIABLE})"
     )
     mcp_command.set_defaults(handler=command_serve_mcp)
-
-    return parser
 
 
 def main(argv: list[str] | None = None) -> int:

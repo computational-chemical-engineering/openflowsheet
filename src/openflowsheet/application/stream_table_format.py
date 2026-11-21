@@ -26,6 +26,7 @@ from __future__ import annotations
 import csv
 import io
 from collections.abc import Callable, Iterator, Mapping, Sequence
+from dataclasses import dataclass
 from typing import Any, Final
 
 from openflowsheet.application.errors import api_error
@@ -181,55 +182,68 @@ def _elided(value: Any) -> Mapping[str, Any] | None:
 
 
 def assemble(fetch: Fetch, *, depth: int = 12, limit: int = MAX_PAGE) -> dict[str, Any]:
-    """The whole `stream-table-v1` document from its projections (module docstring)."""
+    """The whole `stream-table-v1` document from its projections (module docstring), completed by
+    an `_Assembly` that holds the first view's `sha256`."""
     first = fetch("", depth, None, limit)
-    sha256 = first["sha256"]
+    assembly = _Assembly(fetch, depth, limit, first["sha256"])
+    document = assembly.complete(first["value"], "")
+    assert isinstance(document, dict)
+    return document
 
-    def checked(view: Mapping[str, Any]) -> Mapping[str, Any]:
-        if view["sha256"] != sha256:
-            raise api_error(
-                "internal_error",
-                "the stream table changed while it was read",
-                expected=sha256,
-                found=view["sha256"],
-                pointer=view["pointer"],
-            )
-        return view
 
-    def load(pointer: str) -> Any:
-        view = checked(fetch(pointer, depth, None, limit))
+@dataclass
+class _Assembly:
+    """`assemble`'s run: how it fetches (`fetch` at `depth`, pages of `limit`) and the `sha256`
+    of its first view, which every later view must carry. The methods are `assemble`'s former
+    mutually recursive closures; no field is written after construction."""
+
+    fetch: Fetch
+    depth: int
+    limit: int
+    sha256: Any
+
+    def complete(self, value: Any, pointer: str) -> Any:
+        marker = _elided(value)
+        if marker is not None:
+            return self.load(str(marker["pointer"]))
+        if isinstance(value, Mapping):
+            return {
+                key: self.complete(item, f"{pointer}/{escape_token(key)}")
+                for key, item in value.items()
+            }
+        if isinstance(value, list):
+            last = _elided(value[-1]) if value else None
+            if last is not None and last["pointer"] == pointer and "items" in last:
+                return self.load(pointer)  # an array cut after its first items
+            return [self.complete(item, f"{pointer}/{index}") for index, item in enumerate(value)]
+        return value
+
+    def load(self, pointer: str) -> Any:
+        view = self.checked(self.fetch(pointer, self.depth, None, self.limit))
         if not isinstance(view["value"], list):
-            return complete(view["value"], pointer)
+            return self.complete(view["value"], pointer)
         items: list[Any] = []
         while True:
             offset = len(items)
             items.extend(
-                complete(item, f"{pointer}/{offset + index}")
+                self.complete(item, f"{pointer}/{offset + index}")
                 for index, item in enumerate(view["value"])
             )
             cursor = view["next_cursor"]
             if cursor is None:
                 return items
-            view = checked(fetch(pointer, depth, cursor, limit))
+            view = self.checked(self.fetch(pointer, self.depth, cursor, self.limit))
 
-    def complete(value: Any, pointer: str) -> Any:
-        marker = _elided(value)
-        if marker is not None:
-            return load(str(marker["pointer"]))
-        if isinstance(value, Mapping):
-            return {
-                key: complete(item, f"{pointer}/{escape_token(key)}") for key, item in value.items()
-            }
-        if isinstance(value, list):
-            last = _elided(value[-1]) if value else None
-            if last is not None and last["pointer"] == pointer and "items" in last:
-                return load(pointer)  # an array cut after its first items
-            return [complete(item, f"{pointer}/{index}") for index, item in enumerate(value)]
-        return value
-
-    document = complete(first["value"], "")
-    assert isinstance(document, dict)
-    return document
+    def checked(self, view: Mapping[str, Any]) -> Mapping[str, Any]:
+        if view["sha256"] != self.sha256:
+            raise api_error(
+                "internal_error",
+                "the stream table changed while it was read",
+                expected=self.sha256,
+                found=view["sha256"],
+                pointer=view["pointer"],
+            )
+        return view
 
 
 # -- json ------------------------------------------------------------------------------------------

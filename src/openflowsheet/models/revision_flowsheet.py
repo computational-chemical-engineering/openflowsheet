@@ -467,7 +467,7 @@ def _read(
     Phases, in order: `_read_instances` (R1), the material connections (R1, R3), each checked
     by `_stream_capability` and at each end by `_endpoint`, `_port_phases` (R4), then the fixed
     specifications (R5), each read by `_fixed_specification`, whose targets `_connection_columns`
-    and `_instance_columns` resolve to columns.
+    and `_instance_columns` resolve to columns, and last the records' views, `_instance_views`.
     """
     declared_components = tuple((document.get("component_set") or {}).get("components") or ())
     basis = component_basis(document)
@@ -526,20 +526,7 @@ def _read(
 
     view = RevisionView(
         components=components,
-        instances=tuple(
-            InstanceView(
-                unit_id=unit,
-                model_id=record["model"],
-                ports={port: tuple(connected) for port, connected in record["ports"].items()},
-                directions=dict(record["directions"]),
-                phases=phases[unit],
-                parameters=dict(record["parameters"]),
-                pins=dict(record["pins"]),
-                model_version=_optional_text(record["version"]),
-                model_artifact_ref=_optional_text(record["artifact_ref"]),
-            )
-            for unit, record in instances.items()
-        ),
+        instances=_instance_views(instances, phases),
         streams=tuple(streams),
         edges=tuple(edges),
         input_mapping=InputMapping(
@@ -757,6 +744,29 @@ def _instance_columns(
         "unsupported",
         f"specification_unsupported({name})",
         _instance_hint(owner, record["model"], targets),
+    )
+
+
+def _instance_views(
+    instances: Mapping[str, Mapping[str, Any]], phases: Mapping[str, dict[str, Phase | None]]
+) -> tuple[InstanceView, ...]:
+    """The `InstanceView` of each reader record in `instances`, in record (declaration) order,
+    with the unit's R4 `phases`: copies of the record's `ports` (each port's streams as a
+    tuple), `directions`, `parameters` and `pins`, and its model's `version` and
+    `artifact_ref` as text or `None`. Reads only."""
+    return tuple(
+        InstanceView(
+            unit_id=unit,
+            model_id=record["model"],
+            ports={port: tuple(connected) for port, connected in record["ports"].items()},
+            directions=dict(record["directions"]),
+            phases=phases[unit],
+            parameters=dict(record["parameters"]),
+            pins=dict(record["pins"]),
+            model_version=_optional_text(record["version"]),
+            model_artifact_ref=_optional_text(record["artifact_ref"]),
+        )
+        for unit, record in instances.items()
     )
 
 
@@ -1104,63 +1114,34 @@ class RevisionFlowsheet:
         deadlock depends only on the graph, so a second pass from the first's `computed_torn`
         tears the same streams. Nothing is solved and nothing iterated. `_ready_unit` picks the
         unit that runs; when it finds none, `_started_unit` picks the unit to tear and `_tear` its
-        tears. `_inlet_states` gives the unit its inlets and `_outlet_states` its outlets' values.
+        tears. `_inlet_states` gives the unit its inlets, and the pass's state, a `_Traversal`,
+        takes its outlets' values by `_Traversal.complete`; `_Traversal.fail` ends a failed pass.
         """
-        value: dict[str, StreamState] = {}
-        computed: set[str] = set()
-        torn: list[str] = []
-        computed_torn: dict[str, StreamState] = {}
-        evaluations: dict[str, UnitEvaluation] = {}
-        order: list[str] = []
-
-        def fail(
-            unit: str, status: PropertyStatus, code: str, diagnostic: Diagnostic | None = None
-        ) -> FlowsheetPass:
-            return FlowsheetPass(
-                status=status,
-                streams=dict(value),
-                evaluations=dict(evaluations),
-                order=tuple(order),
-                torn=tuple(torn),
-                computed_torn=dict(computed_torn),
-                failed_unit=unit,
-                code=code,
-                diagnostic=diagnostic,
-            )
-
-        pending = list(self.instances)
-        while pending:
-            unit = self._ready_unit(pending, value)
+        run = _Traversal(pending=list(self.instances))
+        while run.pending:
+            unit = self._ready_unit(run.pending, run.value)
             if unit is None:
-                unit = self._started_unit(pending, computed)
+                unit = self._started_unit(run.pending, run.computed)
                 if unit is None:
-                    return fail(pending[0].unit_id, "error", "no_computed_inlet")
-                tears = self._tear(unit, value, computed, guesses)
-                value.update(tears)
-                torn.extend(tears)
+                    return run.fail(run.pending[0].unit_id, "error", "no_computed_inlet")
+                tears = self._tear(unit, run.value, run.computed, guesses)
+                run.value.update(tears)
+                run.torn.extend(tears)
 
             connected = self.wiring[unit.unit_id].streams
-            evaluation = unit.evaluate(_inlet_states(unit, value, connected), self.context)
+            evaluation = unit.evaluate(_inlet_states(unit, run.value, connected), self.context)
             if evaluation.status != "ok":
                 lines = evaluation.message.splitlines() or [""]
-                return fail(unit.unit_id, evaluation.status, lines[0], _sidecar(lines))
-            for stream, state in _outlet_states(unit, evaluation, connected):
-                if stream in torn:
-                    computed_torn[stream] = state
-                else:
-                    value[stream] = state
-                computed.add(stream)
-            evaluations[unit.unit_id] = evaluation
-            order.append(unit.unit_id)
-            pending = [u for u in pending if u is not unit]
+                return run.fail(unit.unit_id, evaluation.status, lines[0], _sidecar(lines))
+            run.complete(unit, evaluation, connected)
 
         return FlowsheetPass(
             status="ok",
-            streams=dict(value),
-            evaluations=dict(evaluations),
-            order=tuple(order),
-            torn=tuple(torn),
-            computed_torn=dict(computed_torn),
+            streams=dict(run.value),
+            evaluations=dict(run.evaluations),
+            order=tuple(run.order),
+            torn=tuple(run.torn),
+            computed_torn=dict(run.computed_torn),
         )
 
     def _ready_unit(
@@ -1203,6 +1184,56 @@ class RevisionFlowsheet:
                 )
             )
         return tears
+
+
+@dataclass
+class _Traversal:
+    """The state of one `RevisionFlowsheet.traverse` pass (S19 G1 recipe `closures-to-class`):
+    no frame fields; the state is the units still `pending` (declaration order), the stream
+    values found so far (`value`), the `computed` streams, the `torn` streams in tear order and
+    the values the pass `computed_torn` for them, the units' `evaluations` and the `order` they
+    ran in. `traverse` writes the tears into `value` and `torn`, `complete` what a unit that ran
+    gives; `fail` only reads the fields."""
+
+    pending: list[UnitModel]
+    value: dict[str, StreamState] = field(default_factory=dict)
+    computed: set[str] = field(default_factory=set)
+    torn: list[str] = field(default_factory=list)
+    computed_torn: dict[str, StreamState] = field(default_factory=dict)
+    evaluations: dict[str, UnitEvaluation] = field(default_factory=dict)
+    order: list[str] = field(default_factory=list)
+
+    def fail(
+        self, unit: str, status: PropertyStatus, code: str, diagnostic: Diagnostic | None = None
+    ) -> FlowsheetPass:
+        return FlowsheetPass(
+            status=status,
+            streams=dict(self.value),
+            evaluations=dict(self.evaluations),
+            order=tuple(self.order),
+            torn=tuple(self.torn),
+            computed_torn=dict(self.computed_torn),
+            failed_unit=unit,
+            code=code,
+            diagnostic=diagnostic,
+        )
+
+    def complete(
+        self, unit: UnitModel, evaluation: UnitEvaluation, connected: Mapping[str, tuple[str, ...]]
+    ) -> None:
+        """§1.5, `unit` ran with `evaluation` (status `ok`): each stream `connected` to one of its
+        outlets takes the outlet's value, in `_outlet_states` order, into `computed_torn` for a
+        torn stream and into `value` otherwise, and is `computed`; the unit's evaluation is kept,
+        it joins `order` and leaves `pending`. Writes the run's state."""
+        for stream, state in _outlet_states(unit, evaluation, connected):
+            if stream in self.torn:
+                self.computed_torn[stream] = state
+            else:
+                self.value[stream] = state
+            self.computed.add(stream)
+        self.evaluations[unit.unit_id] = evaluation
+        self.order.append(unit.unit_id)
+        self.pending = [u for u in self.pending if u is not unit]
 
 
 def _inlet_states(

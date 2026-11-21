@@ -27,12 +27,12 @@ from openflowsheet.assessment.cost.operating import annual
 from openflowsheet.assessment.defaults import default
 from openflowsheet.assessment.lca.inventory import Exchange, InventoryPlan, stream_flow
 from openflowsheet.assessment.lca.tables import LcaTable, UnitScoreTable
+from openflowsheet.assessment.linearization import Refusal
 from openflowsheet.assessment.program import (
     BuildContext,
     FunctionalBuilder,
     Limitation,
     OutputDef,
-    Refusal,
     Symbols,
     Theta,
 )
@@ -214,24 +214,7 @@ class _Planner:
                 out.unavailable.extend((i, reason) for i in ids)
                 continue
             assert unit is not None
-            terms: list[tuple[str, str]] = []
-            forbidden: list[str] = []
-            for e in exchanges:
-                table = self.tables[e.table_id]
-                letter = "q" if isinstance(table, UnitScoreTable) else "c"
-                theta_id = f"asm:lca.{letter}.{e.table_id}.{m}.{e.column}"
-                value = table.value(m, e.column)
-                assert value is not None
-                self._theta(
-                    theta_id, value, f"{unit}/{e.unit[:-2]}", f"{e.table_id} {m} {e.column}"
-                )
-                if table.rights.forbidden:
-                    out.restricted[theta_id] = (
-                        f"a score of table {e.table_id}, whose rights forbid redistribution"
-                    )
-                    if e.table_id not in forbidden:
-                        forbidden.append(e.table_id)
-                terms.append((theta_id, e.output_id))
+            terms, forbidden = self._category_terms(m, unit, exchanges)
             factor = allocation if not isinstance(allocation, Refusal) else None
             out.outputs.append(OutputDef(ids[0], f"{unit}/s", _rate(terms, factor)))
             out.outputs.append(OutputDef(ids[1], f"{unit}/yr", _annual(ids[0], hours)))
@@ -293,6 +276,31 @@ class _Planner:
         if missing:
             return f"tables without category {m}: {sorted({e.table_id for e in missing})}"
         return None
+
+    def _category_terms(
+        self, m: str, unit: str, exchanges: Sequence[Exchange]
+    ) -> tuple[list[tuple[str, str]], list[str]]:
+        """Category `m`'s rate terms `(θ id, exchange output id)`, one per exchange in order, and
+        the tables whose rights forbid redistribution, in first-use order. Registers each score
+        θ (`_theta`) and records it in `out.restricted` when its table is restricted."""
+        out = self.out
+        terms: list[tuple[str, str]] = []
+        forbidden: list[str] = []
+        for e in exchanges:
+            table = self.tables[e.table_id]
+            letter = "q" if isinstance(table, UnitScoreTable) else "c"
+            theta_id = f"asm:lca.{letter}.{e.table_id}.{m}.{e.column}"
+            value = table.value(m, e.column)
+            assert value is not None
+            self._theta(theta_id, value, f"{unit}/{e.unit[:-2]}", f"{e.table_id} {m} {e.column}")
+            if table.rights.forbidden:
+                out.restricted[theta_id] = (
+                    f"a score of table {e.table_id}, whose rights forbid redistribution"
+                )
+                if e.table_id not in forbidden:
+                    forbidden.append(e.table_id)
+            terms.append((theta_id, e.output_id))
+        return terms, forbidden
 
 
 def _one(s: Symbols, a: Algebra) -> Expr:

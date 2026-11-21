@@ -57,7 +57,7 @@ from openflowsheet.orchestrator.mass import (
     resolve_mass,
     syn001_residence_time,
 )
-from openflowsheet.orchestrator.region import solve_region, syn001_lifted_splits
+from openflowsheet.orchestrator.region import RegionCall, solve_region, syn001_lifted_splits
 from openflowsheet.orchestrator.region_attempts import region_ptc_problem
 from openflowsheet.orchestrator.region_result import RegionResult
 from openflowsheet.orchestrator.tear import Syn001TearProblem
@@ -152,18 +152,22 @@ def solve(
     compiled: Any = None,
 ) -> RegionResult:
     return solve_region(
-        compiled=compiled or item.compiled,
-        spec=item.spec,
-        region=item.region,
-        state=state,
-        splits=syn001_lifted_splits(item.flowsheet.components),
-        provider=item.flowsheet.provider,
-        policy=eo_policy(core, ptc),
-        trace=trace,
-        initializer_source="user_guess",
-        mass_mapping=(
-            syn001_residence_time(item.flowsheet.components) if mapping == "registered" else mapping
-        ),
+        RegionCall(
+            compiled=compiled or item.compiled,
+            spec=item.spec,
+            region=item.region,
+            state=state,
+            splits=syn001_lifted_splits(item.flowsheet.components),
+            provider=item.flowsheet.provider,
+            policy=eo_policy(core, ptc),
+            trace=trace,
+            initializer_source="user_guess",
+            mass_mapping=(
+                syn001_residence_time(item.flowsheet.components)
+                if mapping == "registered"
+                else mapping
+            ),
+        )
     )
 
 
@@ -964,16 +968,18 @@ def phs05(core: str = "ptc") -> Phs05:
     region = the_region(item)
     trace = Trace()
     failed = solve_region(
-        compiled=compile_problem(item.binding.spec),
-        spec=item.binding.spec,
-        region=region,
-        state=dict(pre.final_state),
-        splits=syn001_lifted_splits(flowsheet.components),
-        provider=flowsheet.provider,
-        policy=policy,
-        trace=trace,
-        initializer_source="user_guess",
-        mass_mapping=syn001_residence_time(flowsheet.components),
+        RegionCall(
+            compiled=compile_problem(item.binding.spec),
+            spec=item.binding.spec,
+            region=region,
+            state=dict(pre.final_state),
+            splits=syn001_lifted_splits(flowsheet.components),
+            provider=flowsheet.provider,
+            policy=policy,
+            trace=trace,
+            initializer_source="user_guess",
+            mass_mapping=syn001_residence_time(flowsheet.components),
+        )
     )
     return Phs05(item, region, failed, trace)
 

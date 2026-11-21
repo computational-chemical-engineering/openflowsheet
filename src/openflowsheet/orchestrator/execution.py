@@ -543,12 +543,9 @@ def specification_regions(
 
 
 def _solve_plan(
+    basis: _PlanBasis,
     *,
     plan_id: str,
-    declaration: Declaration,
-    report: StructuralReport,
-    scaling: Scaling,
-    policy: SolvePolicy,
     tear_variables: Sequence[str],
     tear_rows: Sequence[str],
     inner_variables: Sequence[str],
@@ -558,15 +555,18 @@ def _solve_plan(
     signature_units: Sequence[str],
     initializer_chain: Sequence[str],
 ) -> SolvePlan:
-    """A K03 `SolvePlan`, unchanged in shape (ADR 0009 D5), built from the declaration alone."""
+    """A K03 `SolvePlan`, unchanged in shape (ADR 0009 D5), built from the declaration alone:
+    `basis`'s declaration, structural report, scaling and policy, and the step's system."""
+    declaration = basis.declaration
+    scaling = basis.scaling
     rows = set(inner_rows) | set(tear_rows)
     columns = set(inner_variables) | set(tear_variables)
-    certificates = {entry.row_id: entry for entry in report.certificates}
+    certificates = {entry.row_id: entry for entry in basis.report.certificates}
     return SolvePlan(
         plan_id=plan_id,
         model_version=declaration.model_version,
         constants_sha256=declaration.constants_sha256,
-        policy_id=policy.policy_id,
+        policy_id=basis.policy.policy_id,
         tear_variable_ids=tuple(tear_variables),
         tear_row_ids=tuple(tear_rows),
         inner_variable_ids=tuple(inner_variables),
@@ -618,10 +618,11 @@ def build_execution_plan(
     `specifications` are the cross-unit specification regions (T02 §7.1), already delimited; a
     region absorbs every loop and every evaluation of a unit it contains.
 
-    Per process component in condensation order: the owning specification region's step once
-    (`_region_step`), an `evaluate` step for a single unit with rows, or the loop's step
-    (`_loop_step`). Raises `ValueError` for a report that is not structurally closed;
-    `_check_specifications` and `_loop_step` raise the refusals their docstrings name.
+    Per process component in condensation order: the step of the specification region that owns
+    it (`_owning_region`) once (`_region_step`), else `_unit_or_loop_step`'s: an `evaluate` step
+    for a single unit with rows, or the loop's step (`_loop_step`). Raises `ValueError` for a
+    report that is not structurally closed; `_check_specifications` and `_loop_step` raise the
+    refusals their docstrings name. The rows the steps are built from are `_retained_rows`'s.
     """
     if report.finding != "STRUCTURALLY_CLOSED" or report.tear is None:
         raise ValueError(
@@ -637,8 +638,7 @@ def build_execution_plan(
     _check_specifications(specifications, capable)
 
     loops = {tuple(loop.units): loop for loop in report.tear.loops}
-    certified = {entry.row_id for entry in report.certificates if entry.consistent}
-    retained = tuple(row for row in declaration.row_ids if row not in certified)
+    retained = _retained_rows(declaration, report)
     basis = _PlanBasis(
         label=label,
         policy=policy,
@@ -654,23 +654,15 @@ def build_execution_plan(
     placed_regions: set[int] = set()
 
     for node in condensation_order(graph):
-        owner: Region | None = next((claimed[unit] for unit in node if unit in claimed), None)
+        owner = _owning_region(claimed, node)
         if owner is not None:
             if id(owner) not in placed_regions:
                 placed_regions.add(id(owner))
                 steps.append(_region_step(basis, owner, len(steps), f"region{len(steps)}"))
             continue
-        self_loop = any(
-            connection.producer == connection.consumer == node[0]
-            for connection in graph.connections
-        )
-        if len(node) == 1 and not self_loop:
-            # A sink owns no row and has no step (T02 §3.2).
-            if node[0] in units_with_rows:
-                steps.append(PlanStep(index=len(steps), kind="evaluate", units=node))
-            continue
-
-        steps.append(_loop_step(basis, graph, node, len(steps)))
+        step = _unit_or_loop_step(basis, graph, units_with_rows, node, len(steps))
+        if step is not None:
+            steps.append(step)
 
     return ExecutionPlan(
         plan_id=f"{label}-{policy.policy_id}-execution",
@@ -724,6 +716,13 @@ def _check_specifications(
             )
 
 
+def _retained_rows(declaration: Declaration, report: StructuralReport) -> tuple[str, ...]:
+    """The declaration's rows, in its order, that no consistent certificate of `report` removes:
+    the rows every step's system is built from (pure)."""
+    certified = {entry.row_id for entry in report.certificates if entry.consistent}
+    return tuple(row for row in declaration.row_ids if row not in certified)
+
+
 @dataclass(frozen=True)
 class _PlanBasis:
     """What every step of one plan is built from: the declaration's label, the policy, the
@@ -742,6 +741,12 @@ class _PlanBasis:
     tear: TearAnalysis
 
 
+def _owning_region(claimed: Mapping[str, Region], node: tuple[str, ...]) -> Region | None:
+    """The specification region that claims the first claimed unit of the process component
+    `node`, in its unit order (pure); None when no region claims one of its units."""
+    return next((claimed[unit] for unit in node if unit in claimed), None)
+
+
 def _region_step(basis: _PlanBasis, region: Region, index: int, suffix: str) -> PlanStep:
     """The `solve_eo` step that solves `region` as one EO block, its plan id ending in `suffix`."""
     return PlanStep(
@@ -750,11 +755,8 @@ def _region_step(basis: _PlanBasis, region: Region, index: int, suffix: str) -> 
         units=region.units,
         region=region,
         solve_plan=_solve_plan(
+            basis,
             plan_id=f"{basis.label}-{basis.policy.policy_id}-{suffix}",
-            declaration=basis.declaration,
-            report=basis.report,
-            scaling=basis.scaling,
-            policy=basis.policy,
             tear_variables=(),
             tear_rows=(),
             inner_variables=region.variable_ids,
@@ -770,6 +772,28 @@ def _region_step(basis: _PlanBasis, region: Region, index: int, suffix: str) -> 
             initializer_chain=("user_guess", "sequential_pre_solve"),
         ),
     )
+
+
+def _unit_or_loop_step(
+    basis: _PlanBasis,
+    graph: ProcessGraph,
+    units_with_rows: set[str],
+    node: tuple[str, ...],
+    index: int,
+) -> PlanStep | None:
+    """The step at `index` for a process component no specification region owns (T02 §3.2): an
+    `evaluate` step for a single unit with rows (and no self-loop), None for a single unit without
+    rows, else the loop's step (`_loop_step`, which raises the refusals its docstring names)."""
+    self_loop = any(
+        connection.producer == connection.consumer == node[0] for connection in graph.connections
+    )
+    if len(node) == 1 and not self_loop:
+        # A sink owns no row and has no step (T02 §3.2).
+        if node[0] in units_with_rows:
+            return PlanStep(index=index, kind="evaluate", units=node)
+        return None
+
+    return _loop_step(basis, graph, node, index)
 
 
 def _loop_step(
@@ -811,11 +835,8 @@ def _loop_step(
         tear_streams=tear_streams,
         method=method,
         solve_plan=_solve_plan(
+            basis,
             plan_id=f"{basis.label}-{basis.policy.policy_id}-loop{index}",
-            declaration=basis.declaration,
-            report=basis.report,
-            scaling=basis.scaling,
-            policy=basis.policy,
             tear_variables=tear_variables,
             tear_rows=tear_rows,
             inner_variables=inner_variables,

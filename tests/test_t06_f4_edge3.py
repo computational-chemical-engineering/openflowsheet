@@ -2,7 +2,7 @@
 
 Design note `docs/design/T06-F4-recovery.md` §5.2 (P0–P5), §5.4 (the action), §5.5 (records) and
 §8's gates. WO4: the seams — `recovered_provenance(first_initializer_source=...)` checks the
-restart's first item against its own initializer; `solve_region(item0_opening_source=...)`
+restart's first item against its own initializer; `RegionCall(item0_opening_source=...)`
 defaults to today's constant (the registered traces are unchanged: G5a, measured outside the
 suite and by every registered trace test). WO5: G1–G4-legacy, P4's records, and the count of
 one.
@@ -76,10 +76,10 @@ def test_wo4_the_restart_provenance_names_the_restart_initializer() -> None:
 
 
 def test_wo4_the_opening_source_keyword_defaults_to_the_registered_constant() -> None:
-    for function in (region.solve_region, executor._region):
+    for function in (region.RegionCall, executor._region):
         parameter = inspect.signature(function).parameters["item0_opening_source"]
         assert parameter.default == "initializer"
-    assert inspect.signature(region.solve_region).parameters["item0_opening_source"].kind == (
+    assert inspect.signature(region.RegionCall).parameters["item0_opening_source"].kind == (
         inspect.Parameter.KEYWORD_ONLY
     )
 

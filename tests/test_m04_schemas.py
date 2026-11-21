@@ -119,3 +119,25 @@ def test_the_schemas_readme_lists_m04s_schemas() -> None:
     readme = (REPO_ROOT / "schemas" / "README.md").read_text(encoding="utf-8")
     for name in M04_SCHEMAS:
         assert f"`{name}`" in readme, name
+
+
+def test_check_manifest_reports_findings_helper_by_helper_in_a_fixed_order() -> None:
+    """The order reaches the `PlanRefusedError` text: splits, band, promotion, failure lists,
+    qualifications. One tamper per helper; membership and length checks would not notice a swap."""
+    manifest: dict[str, Any] = load_json(
+        FIXTURES / "surrogate_manifest" / "valid" / "a19_smooth_prefix.json"
+    )
+    required_last = manifest["qualifications"][-1]
+    manifest["splits"]["test"]["keys_sha256"] = "0" * 64  # _split_consistency
+    manifest["calibration"]["k"] -= 1  # _band_consistency
+    manifest["promotion"]["familywise_false_pass_bound"] = 0.5  # _promotion_consistency
+    manifest["predictor"]["fit"]["training_ok"] -= 1  # _failure_consistency
+    manifest["qualifications"][-1] = "a stray qualification"  # _qualification_consistency
+    assert check_manifest(manifest) == [
+        "test: keys_sha256 is not the keys' SHA-256",
+        "k = 37, not k(39) = 38",
+        "familywise_false_pass_bound 0.5 is not 0.05 x the iterations whose coverage test was "
+        "evaluated (0.05)",
+        "training_ok 70 is not the training count less its failed and incomplete draws (71)",
+        f"qualification {required_last!r} is missing",
+    ]

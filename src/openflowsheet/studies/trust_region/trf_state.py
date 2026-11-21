@@ -107,6 +107,8 @@ def framework_readiness(
     The keyword arguments replace what is measured, so a test can present a patched version
     string, a changed module byte or another executable (G2) without touching the environment.
     Pyomo is located without importing it; it is imported (for `pyomo.version`) only when present.
+    The three checks, in this order, are `_pyomo_version_reasons`, `_trf_module_reasons` and
+    `_trsp_executable_reasons`.
     """
     if version is None and importlib.util.find_spec("pyomo") is None:
         return FrameworkReadiness(
@@ -121,6 +123,17 @@ def framework_readiness(
             ),
         )
     reasons: list[ReadinessReason] = []
+    reasons += _pyomo_version_reasons(version)
+    reasons += _trf_module_reasons(module_dir)
+    reasons += _trsp_executable_reasons(executable)
+    return FrameworkReadiness("UNSUPPORTED" if reasons else "READY", tuple(reasons))
+
+
+def _pyomo_version_reasons(version: str | None) -> list[ReadinessReason]:
+    """The Pyomo pin's reason (`TRUST_REGION_FRAMEWORK_UNPINNED`) when `version`, or the
+    installed `pyomo.version.version` when it is None (imported here), is not `PYOMO_VERSION`;
+    empty when it is."""
+    reasons: list[ReadinessReason] = []
     if version is None:
         version = str(importlib.import_module("pyomo.version").version)
     if version != PYOMO_VERSION:
@@ -130,6 +143,16 @@ def framework_readiness(
                 f"pyomo.version.version is {version!r}; the adapter is pinned to {PYOMO_VERSION}",
             )
         )
+    return reasons
+
+
+def _trf_module_reasons(module_dir: Path | None) -> list[ReadinessReason]:
+    """The TRF modules' reasons (`TRUST_REGION_FRAMEWORK_UNPINNED`) in `module_dir`, or, when it
+    is None, in the `TRF_PACKAGE` directory `find_spec` locates (without importing the package):
+    one that `TRF_PACKAGE` is not present when there is no directory, else one per module of
+    `TRF_MODULE_SHA256` whose SHA-256 (None for a missing file) is not the pinned one, in that
+    table's order. Empty when every module matches."""
+    reasons: list[ReadinessReason] = []
     if module_dir is None:
         try:
             spec = importlib.util.find_spec(TRF_PACKAGE)
@@ -152,6 +175,14 @@ def framework_readiness(
                         f"{TRF_PACKAGE}/{name} has SHA-256 {measured}; pinned {expected}",
                     )
                 )
+    return reasons
+
+
+def _trsp_executable_reasons(executable: Path | None) -> list[ReadinessReason]:
+    """The subproblem solver's reason (`TRSP_SOLVER_UNAUDITED`) when `executable`, or
+    `trsp_executable()` when it is None, is not a file or its SHA-256 is not
+    `TRSP_EXECUTABLE_SHA256`; empty when it is the audited executable."""
+    reasons: list[ReadinessReason] = []
     if executable is None:
         executable = trsp_executable()
     if not executable.is_file():
@@ -168,7 +199,7 @@ def framework_readiness(
                     f"is {TRSP_EXECUTABLE_SHA256}",
                 )
             )
-    return FrameworkReadiness("UNSUPPORTED" if reasons else "READY", tuple(reasons))
+    return reasons
 
 
 # -- the registered configurations (D4, D8) -------------------------------------------------------
@@ -623,7 +654,8 @@ def classify_exit(
       configured count, and that many iterations logged after iteration 0.
 
     Anything else is `TRF_ERROR(exit_mismatch)`: the printed outcome, the logged values and the
-    model disagree, and none of them is believed."""
+    model disagree, and none of them is believed. The optimal exit's last three outcomes are
+    `_feasible_optimal_exit`, the maximum-iterations evidence `_reached_maximum_iterations`."""
     if not iterations:
         return trf_error("exit_mismatch")
     last = iterations[-1]
@@ -633,26 +665,55 @@ def classify_exit(
             return trf_error("exit_mismatch")
         if not feasible:
             return TRF_STALLED_INCONSISTENT
-        if not accepted_steps(iterations):
-            return TRF_EXIT_WITHOUT_STEP
-        reason = unverified_reason(
+        return _feasible_optimal_exit(
             iterations,
             trust_radius=trust_radius,
             minimum_radius=minimum_radius,
             gamma_c=gamma_c,
             box_bound_exempt=box_bound_exempt,
         )
-        return TRF_CONVERGED if reason is None else exit_unverified(reason)
     if list(exit_lines) == [EXIT_FEASIBLE]:
         if WARNING_INSUFFICIENT_PROGRESS in warnings:
             return TRF_FEASIBLE_STALLED if feasible else TRF_STALLED_INCONSISTENT
         return trf_error("exit_mismatch")
-    if not exit_lines:
-        reached = [m for m in (_MAX_ITERATIONS.match(w) for w in warnings) if m is not None]
-        if (
-            len(reached) == 1
-            and int(reached[0].group(1)) == maximum_iterations
-            and last.k == maximum_iterations
-        ):
-            return TRF_MAX_ITERATIONS
+    if not exit_lines and _reached_maximum_iterations(warnings, maximum_iterations, last):
+        return TRF_MAX_ITERATIONS
     return trf_error("exit_mismatch")
+
+
+def _feasible_optimal_exit(
+    iterations: Sequence[IterationRecord],
+    *,
+    trust_radius: float,
+    minimum_radius: float,
+    gamma_c: float,
+    box_bound_exempt: bool,
+) -> Outcome:
+    """`classify_exit`'s `EXIT: Optimal solution found.` once the line agrees with the log and
+    θ_recheck is within the feasibility termination: `TRF_EXIT_WITHOUT_STEP` after no accepted
+    TRSP step, `TRF_EXIT_UNVERIFIED(<reason>)` when R-401's `unverified_reason` names one,
+    else `TRF_CONVERGED`. Pure."""
+    if not accepted_steps(iterations):
+        return TRF_EXIT_WITHOUT_STEP
+    reason = unverified_reason(
+        iterations,
+        trust_radius=trust_radius,
+        minimum_radius=minimum_radius,
+        gamma_c=gamma_c,
+        box_bound_exempt=box_bound_exempt,
+    )
+    return TRF_CONVERGED if reason is None else exit_unverified(reason)
+
+
+def _reached_maximum_iterations(
+    warnings: Sequence[str], maximum_iterations: int, last: IterationRecord
+) -> bool:
+    """`TRF_MAX_ITERATIONS`'s evidence besides the missing `EXIT:` line: exactly one TRF
+    maximum-iterations warning, naming `maximum_iterations`, and the last logged iteration
+    `last` is that iteration. Pure."""
+    reached = [m for m in (_MAX_ITERATIONS.match(w) for w in warnings) if m is not None]
+    return (
+        len(reached) == 1
+        and int(reached[0].group(1)) == maximum_iterations
+        and last.k == maximum_iterations
+    )

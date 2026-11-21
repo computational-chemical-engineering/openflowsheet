@@ -10,9 +10,8 @@ specification of §2.1 in place of `Q_j − Q_j*`.
 **The unit layer only** (S02 spec §12 WO-1), in four modules (S19 B2): `column_spec` holds the
 specification object, the declarations and the column's ids, `column_validation` its §5
 refusals and `column_rows` the §2 declared rows; this module holds the per-stage regime forms
-with §2.3's label and the §6 analytic initializer `s02-profile-cmo-v1`. It keeps re-exporting the
-names the frozen `column_unit` imports through it until W5 (ADR 0076 I-8, I-19). The pre-solve,
-the target and acceptance are WO-2's.
+with §2.3's label and the §6 analytic initializer `s02-profile-cmo-v1`. The pre-solve, the target
+and acceptance are WO-2's.
 
 Column ids beyond S01's (build decision, `docs/S02_DECISIONS.md`): the total condenser's are
 `<U>.stage.1.{r,d}.<c>`, `<U>.stage.1.{phi,D}` and S01's `<U>.stage.1.{T,P,Q}` for `T_c`, `P_c`,
@@ -54,32 +53,18 @@ from openflowsheet.models.syn001.cascade_spec import (
     vapor_id,
     vapor_total_id,
 )
-from openflowsheet.models.syn001.column_rows import _inflow
-from openflowsheet.models.syn001.column_rows import declared_rows as declared_rows
-from openflowsheet.models.syn001.column_spec import COMPONENT_KINDS as COMPONENT_KINDS
-from openflowsheet.models.syn001.column_spec import CONDENSER as CONDENSER
-from openflowsheet.models.syn001.column_spec import END_KINDS as END_KINDS
-from openflowsheet.models.syn001.column_spec import EQUATIONS as EQUATIONS
-from openflowsheet.models.syn001.column_spec import F_REF as F_REF
-from openflowsheet.models.syn001.column_spec import FLOWSHEET_EQUATIONS as FLOWSHEET_EQUATIONS
-from openflowsheet.models.syn001.column_spec import GAMMA_PHI_KINDS as GAMMA_PHI_KINDS
-from openflowsheet.models.syn001.column_spec import INVERSE_KINDS as INVERSE_KINDS
-from openflowsheet.models.syn001.column_spec import MODEL_ID as MODEL_ID
-from openflowsheet.models.syn001.column_spec import REBOILER as REBOILER
-from openflowsheet.models.syn001.column_spec import ColumnSpec as ColumnSpec
-from openflowsheet.models.syn001.column_spec import EndSpecification as EndSpecification
-from openflowsheet.models.syn001.column_spec import FlowsheetLinks as FlowsheetLinks
+from openflowsheet.models.syn001.column_rows import _inflow, declared_rows
 from openflowsheet.models.syn001.column_spec import (
+    ColumnSpec,
     distillate_id,
     distillate_total_id,
     label_source,
+    product_flow_id,
+    product_total_id,
+    purity_flow_id,
     reflux_fraction_id,
     reflux_id,
 )
-from openflowsheet.models.syn001.column_spec import product_flow_id as product_flow_id
-from openflowsheet.models.syn001.column_spec import product_total_id as product_total_id
-from openflowsheet.models.syn001.column_spec import purity_flow_id as purity_flow_id
-from openflowsheet.models.syn001.column_spec import recovery_flow_id as recovery_flow_id
 from openflowsheet.models.syn001.column_validation import purity_reference
 from openflowsheet.models.syn001.saturation_band import band_temperature
 from openflowsheet.thermo import PropertyProvider
@@ -336,25 +321,11 @@ def _initial_state(
 
 
 __all__ = [
-    "COMPONENT_KINDS",
-    "CONDENSER",
-    "END_KINDS",
-    "EQUATIONS",
-    "GAMMA_PHI_KINDS",
     "INITIALIZER_ID",
-    "INVERSE_KINDS",
-    "MODEL_ID",
     "PHI_INITIAL",
     "PROFILE_BETAS",
-    "REBOILER",
     "ColumnRegimeForm",
-    "ColumnSpec",
-    "EndSpecification",
     "ProfileInitial",
-    "declared_rows",
-    "product_flow_id",
-    "product_total_id",
     "profile_initial",
-    "purity_flow_id",
     "regime_form",
 ]

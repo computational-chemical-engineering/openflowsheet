@@ -11,7 +11,7 @@ import math
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, replace
 from fractions import Fraction
-from typing import Any
+from typing import Any, NamedTuple
 
 from openflowsheet.assessment.linearization import Refusal
 from openflowsheet.assessment.program import (
@@ -23,6 +23,7 @@ from openflowsheet.assessment.program import (
 )
 from openflowsheet.assessment.regimes import (
     AdmissibilityRow,
+    Regime,
     RegimeEntry,
     select_argmax,
     select_service,
@@ -173,35 +174,14 @@ def exchanger_utility(
     """An `exchanger.utility` item (§4.4.1): area `|Q|/(U F_T ΔT_lm)` against one utility.
 
     `t_in`/`t_out` are the host ids of the process inlet and outlet temperatures; `streams` the
-    process streams, when there are any, for the phase-change limitation. `_candidates`
-    refuses NO_ADMISSIBLE_UTILITY for an undeclared named utility; `_cheapest_admissible` returns
-    `None`, which this function turns into the same refusal."""
+    process streams, when there are any, for the phase-change limitation. Rule 1 (the service) is
+    `_service_rule`'s, the `U` input and its refusal `_u_input`'s. `_candidates` refuses
+    NO_ADMISSIBLE_UTILITY for an undeclared named utility; `_cheapest_admissible` returns `None`,
+    which this function turns into the same refusal."""
     doc = sctx.item(item_id)
     regime = sctx.ctx.regime
-    service_entry_id = f"{item_id}.service"
     declared = forced_service or doc.get("service")
-    service = regime.choice(service_entry_id) or select_service(duty.value, declared)
-    # Rule 1 at Q == 0.0 with nothing declared or held takes `service_at_zero_duty` (A41).
-    service_default = (
-        (SizingInput("service", service, "", True, default_key="service_at_zero_duty"),)
-        if duty.value == 0.0 and declared is None and regime.choice(service_entry_id) is None
-        else ()
-    )
-    duty_build = duty.build
-    if service == "heating":
-        signed: FunctionalBuilder = duty_build
-    else:
-
-        def signed(s: Symbols, a: Algebra) -> Expr:
-            return -duty_build(s, a)
-
-    service_entry = RegimeEntry(
-        service_entry_id,
-        "service",
-        service,
-        "§4.3.2 rule 1",
-        (AdmissibilityRow("duty", signed, nominal(duty.value)),),
-    )
+    service, service_default, signed, service_entry = _service_rule(regime, item_id, duty, declared)
 
     # Rule 2: the utility.
     t_pi, t_po = sctx.x(t_in), sctx.x(t_out)
@@ -232,14 +212,10 @@ def exchanger_utility(
         return _refused("SIZING_INPUT_MISSING", f"{item_id}.dT_min", utility_id)
 
     # Inputs (U is required, R-856).
-    if "U" in doc:
-        u_value, u_source, u_default = float(doc["U"]), f"items.{item_id}.U", False
-    elif service in sctx.defaults.get("U_by_service", {}):
-        u_value = float(sctx.defaults["U_by_service"][service])
-        u_source, u_default = f"defaults.U_by_service.{service}", False
-    else:
-        return _refused("SIZING_INPUT_MISSING", f"{item_id}.U", f"service {service}")
-    u_theta = Theta(f"asm:item.{item_id}.U", u_value, "W/(m2*K)", u_source)
+    u_pair = _u_input(sctx, doc, item_id, service)
+    if isinstance(u_pair, SizingPlan):
+        return u_pair
+    u_theta, u_input = u_pair
     f_theta, f_input = sctx.input(item_id, "F_T", "1", default_key="F_T")
     t_us, t_ur = temperatures
     supply = Theta(f"asm:item.{item_id}.T_supply", t_us, "K", f"utilities.{utility_id}.T_supply")
@@ -271,10 +247,9 @@ def exchanger_utility(
         ),
     )
     limitations = list(extra_limitations)
-    if streams is not None:
-        phase_change = _phase_change(sctx, item_id, streams, dt1_f, dt2_f)
-        if phase_change is not None:
-            limitations.append(phase_change)
+    phase_change = _phase_change(sctx, item_id, streams, dt1_f, dt2_f)
+    if phase_change is not None:
+        limitations.append(phase_change)
 
     def magnitude(s: Symbols, a: Algebra) -> Expr:
         return signed(s, a)
@@ -285,7 +260,7 @@ def exchanger_utility(
         family="exchanger.utility",
         size={"area": size_output(item_id, "area")},
         inputs=(
-            SizingInput("U", u_value, "W/(m2*K)", u_default, u_theta.theta_id),
+            u_input,
             f_input,
             SizingInput("T_supply", t_us, "K", False, supply.theta_id),
             SizingInput("T_return", t_ur, "K", "T_return" not in chosen, back.theta_id),
@@ -305,6 +280,47 @@ def exchanger_utility(
         regime_entries=(service_entry, utility_entry),
         limitations=tuple(limitations),
     )
+
+
+class _ServiceRule(NamedTuple):
+    """§4.3.2 rule 1 for an `exchanger.utility` item: the service, the `service_at_zero_duty`
+    input when the rule took that default (else empty), the duty signed for the service, and the
+    regime entry."""
+
+    service: str
+    default: tuple[SizingInput, ...]
+    signed: FunctionalBuilder
+    entry: RegimeEntry
+
+
+def _service_rule(regime: Regime, item_id: str, duty: _Duty, declared: str | None) -> _ServiceRule:
+    """§4.3.2 rule 1: the service `regime` holds for `<item>.service`, else `select_service` on the
+    duty's value and the `declared` service; the duty as heating (`Q`) or cooling (`-Q`); the
+    entry with its `duty` admissibility row."""
+    service_entry_id = f"{item_id}.service"
+    service = regime.choice(service_entry_id) or select_service(duty.value, declared)
+    # Rule 1 at Q == 0.0 with nothing declared or held takes `service_at_zero_duty` (A41).
+    service_default = (
+        (SizingInput("service", service, "", True, default_key="service_at_zero_duty"),)
+        if duty.value == 0.0 and declared is None and regime.choice(service_entry_id) is None
+        else ()
+    )
+    duty_build = duty.build
+    if service == "heating":
+        signed: FunctionalBuilder = duty_build
+    else:
+
+        def signed(s: Symbols, a: Algebra) -> Expr:
+            return -duty_build(s, a)
+
+    service_entry = RegimeEntry(
+        service_entry_id,
+        "service",
+        service,
+        "§4.3.2 rule 1",
+        (AdmissibilityRow("duty", signed, nominal(duty.value)),),
+    )
+    return _ServiceRule(service, service_default, signed, service_entry)
 
 
 def _candidates(
@@ -353,13 +369,36 @@ def _dt_min(doc: Mapping[str, Any], utility: Mapping[str, Any]) -> float | None:
     return float(utility["dT_min"]) if "dT_min" in utility else None
 
 
+def _u_input(
+    sctx: SizingContext, doc: Mapping[str, Any], item_id: str, service: str
+) -> tuple[Theta, SizingInput] | SizingPlan:
+    """The item's required `U` (R-856) as `(θ, input)`, the shape `SizingContext.input` returns:
+    the item's own (`doc`), else `defaults.U_by_service.<service>`; a
+    `SIZING_INPUT_MISSING(<item>.U)` refusal with neither."""
+    if "U" in doc:
+        u_value, u_source, u_default = float(doc["U"]), f"items.{item_id}.U", False
+    elif service in sctx.defaults.get("U_by_service", {}):
+        u_value = float(sctx.defaults["U_by_service"][service])
+        u_source, u_default = f"defaults.U_by_service.{service}", False
+    else:
+        return _refused("SIZING_INPUT_MISSING", f"{item_id}.U", f"service {service}")
+    u_theta = Theta(f"asm:item.{item_id}.U", u_value, "W/(m2*K)", u_source)
+    return u_theta, SizingInput("U", u_value, "W/(m2*K)", u_default, u_theta.theta_id)
+
+
 def _phase_change(
-    sctx: SizingContext, item_id: str, streams: tuple[str, str], dt1_f: float, dt2_f: float
+    sctx: SizingContext,
+    item_id: str,
+    streams: tuple[str, str] | None,
+    dt1_f: float,
+    dt2_f: float,
 ) -> Limitation | None:
     """§4.4.1's `LMTD_ACROSS_PHASE_CHANGE` (information only): the process streams' phase
     signatures at inlet and outlet, when both are known and differ; with ΔT₁ and ΔT₂ both positive
     the detail also carries their ratio `r` and Underwood's relative error against the exact LMTD.
-    `None` when either signature is unknown or they agree."""
+    `None` without process `streams`, or when either signature is unknown or they agree."""
+    if streams is None:
+        return None
     before, after = (_signature(sctx, stream) for stream in streams)
     if before is not None and after is not None and before != after:
         detail: dict[str, Any] = {"inlet": before, "outlet": after}
@@ -805,101 +844,26 @@ class _Column:
         return plan
 
     def _shell(self, sctx: SizingContext, unit: UnitRef) -> SizingPlan:
-        """The shell and trays (§4.4.6); a refusal here leaves the condenser and reboiler."""
+        """The shell and trays (§4.4.6); a refusal here leaves the condenser and reboiler. The
+        inputs are `_shell_inputs`'s, the stage walk and its refusals `_shell_stages`'s, the
+        controlling stage `_controlling_stage`'s."""
         structure = unit.structure.structure
         u, n = unit.unit_id, int(structure.stage_count)
         condenser, reboiler = structure.condenser != "none", structure.reboiler != "none"
         first, last = (2 if condenser else 1), (n - 1 if reboiler else n)
         shell, trays_id = sub_item(u, "shell"), sub_item(u, "trays")
-        inputs = [
-            sctx.input(shell, "C_SB", "m/s", default_key="column_C_SB"),
-            sctx.input(
-                shell,
-                "f_flood",
-                "1",
-                item_key="flooding_fraction",
-                default_key="column_flooding_fraction",
-            ),
-            sctx.input(
-                shell,
-                "phi_active",
-                "1",
-                item_key="active_area_fraction",
-                default_key="column_active_area_fraction",
-            ),
-            sctx.input(
-                shell, "s_tray", "m", item_key="tray_spacing", default_key="column_tray_spacing"
-            ),
-            sctx.input(shell, "H_top", "m", default_key="column_H_top"),
-            sctx.input(shell, "H_bottom", "m", default_key="column_H_bottom"),
-            sctx.input(
-                shell,
-                "E_o",
-                "1",
-                item_key="overall_efficiency",
-                default_key="column_overall_efficiency",
-                structural=True,
-            ),
-        ]
+        inputs = _shell_inputs(sctx, shell)
         c_sb, f_flood, phi, s_tray, h_top, h_bottom, e_o = (t.theta_id for t, _ in inputs)
-        flows: list[StreamFlow] = []
         n_tr = last - first + 1
         n_act = actual_trays(n_tr, inputs[6][0].value)  # E_o, structural
-        components = sctx.ctx.view.components
-        entries: list[RegimeEntry] = []
-        members: list[tuple[str, FunctionalBuilder]] = []
-        for j in range(first, last + 1):
-            vap_ids = (
-                tuple(cascade_spec.vapor_id(u, j, c) for c in components),
-                cascade_spec.stage_temperature_id(u, j),
-                cascade_spec.stage_pressure_id(u, j),
-            )
-            liq_ids = (
-                tuple(cascade_spec.liquid_id(u, j, c) for c in components),
-                vap_ids[1],
-                vap_ids[2],
-            )
-            vapour, v_entry = sctx.flow(shell, f"stage.{j}.V", "VAPOR", state_ids=vap_ids)
-            entries.append(v_entry)
-            if isinstance(vapour, Refusal):
-                return SizingPlan(refusals=(vapour,), regime_entries=tuple(entries))
-            if vapour.dormant:
-                continue
-            liquid, l_entry = sctx.flow(
-                shell, f"stage.{j}.L", "LIQUID", target="v_L", state_ids=liq_ids
-            )
-            entries.append(l_entry)
-            if isinstance(liquid, Refusal):
-                return SizingPlan(refusals=(liquid,), regime_entries=tuple(entries))
-            if liquid.dormant:
-                return SizingPlan(
-                    refusals=(Refusal("SIZING_INPUT_UNAVAILABLE", f"{shell}.rho_L", f"stage {j}"),),
-                    regime_entries=tuple(entries),
-                )
-            flows += (vapour, liquid)
-            members.append((str(j), _stage_d2(vapour, liquid, c_sb, f_flood, phi)))
-        if not members:
-            return _refused(
-                "SIZING_INPUT_UNAVAILABLE", f"{shell}.V", "every tray's vapour is dormant"
-            )
+        stages = _shell_stages(sctx, u, shell, range(first, last + 1), (c_sb, f_flood, phi))
+        if isinstance(stages, SizingPlan):
+            return stages
+        flows, entries, members = stages
         volume_theta, volume_records = sctx.volume_inputs(shell, flows)
         theta = [t for t, _ in inputs] + list(volume_theta)
-        probe = [OutputDef(f"size.{shell}.s{name}.diameter", "m", b) for name, b in members]
-        floats = sctx.values(probe, theta)
-        values = {name: floats[f"size.{shell}.s{name}.diameter"] for name, _ in members}
-        names = [name for name, _ in members]
-        held = sctx.ctx.regime.choice(f"{shell}.controlling")
-        controlling = held or names[select_argmax([values[name] for name in names])]
-        if len(members) > 1:
-            entries.append(
-                RegimeEntry(
-                    f"{shell}.controlling",
-                    "argmax",
-                    controlling,
-                    "§4.3.2 rule 6",
-                    argmax_rows(members, controlling, values),
-                )
-            )
+        controlling, argmax_entries = _controlling_stage(sctx, shell, members, theta)
+        entries += argmax_entries
         d2 = dict(members)[controlling]
 
         def diameter(s: Symbols, a: Algebra) -> Expr:
@@ -947,6 +911,103 @@ class _Column:
         )
 
 
+def _shell_inputs(sctx: SizingContext, shell: str) -> list[tuple[Theta, SizingInput]]:
+    """The shell's §4.4.6 inputs as `(θ, input)` pairs, in the order `C_SB`, `f_flood`,
+    `phi_active`, `s_tray`, `H_top`, `H_bottom`, `E_o` (structural): each from the item, else the
+    document's defaults, else the built-in default (`SizingContext.input`)."""
+    return [
+        sctx.input(shell, "C_SB", "m/s", default_key="column_C_SB"),
+        sctx.input(
+            shell,
+            "f_flood",
+            "1",
+            item_key="flooding_fraction",
+            default_key="column_flooding_fraction",
+        ),
+        sctx.input(
+            shell,
+            "phi_active",
+            "1",
+            item_key="active_area_fraction",
+            default_key="column_active_area_fraction",
+        ),
+        sctx.input(
+            shell, "s_tray", "m", item_key="tray_spacing", default_key="column_tray_spacing"
+        ),
+        sctx.input(shell, "H_top", "m", default_key="column_H_top"),
+        sctx.input(shell, "H_bottom", "m", default_key="column_H_bottom"),
+        sctx.input(
+            shell,
+            "E_o",
+            "1",
+            item_key="overall_efficiency",
+            default_key="column_overall_efficiency",
+            structural=True,
+        ),
+    ]
+
+
+class _ShellStages(NamedTuple):
+    """The shell's stage walk (§4.4.6): the live stages' vapour and liquid flows, every stage's
+    dormant entries in stage order, and each live stage's `(j, D_j²)` member."""
+
+    flows: list[StreamFlow]
+    entries: list[RegimeEntry]
+    members: list[tuple[str, FunctionalBuilder]]
+
+
+def _shell_stages(
+    sctx: SizingContext,
+    u: str,
+    shell: str,
+    stages: range,
+    d2_theta: tuple[str, str, str],
+) -> _ShellStages | SizingPlan:
+    """The shell's trays `stages` of column `u`, each with its vapour flow and, unless the vapour
+    is dormant, its liquid flow and `_stage_d2` (`d2_theta`: the θ ids of `C_SB`, `f_flood`,
+    `phi_active`). A refusal plan, with the entries so far, at the first stage whose vapour or
+    liquid flow is refused or whose liquid is dormant; `SIZING_INPUT_UNAVAILABLE(<shell>.V)` when
+    every stage's vapour is dormant."""
+    c_sb, f_flood, phi = d2_theta
+    flows: list[StreamFlow] = []
+    components = sctx.ctx.view.components
+    entries: list[RegimeEntry] = []
+    members: list[tuple[str, FunctionalBuilder]] = []
+    for j in stages:
+        vap_ids = (
+            tuple(cascade_spec.vapor_id(u, j, c) for c in components),
+            cascade_spec.stage_temperature_id(u, j),
+            cascade_spec.stage_pressure_id(u, j),
+        )
+        liq_ids = (
+            tuple(cascade_spec.liquid_id(u, j, c) for c in components),
+            vap_ids[1],
+            vap_ids[2],
+        )
+        vapour, v_entry = sctx.flow(shell, f"stage.{j}.V", "VAPOR", state_ids=vap_ids)
+        entries.append(v_entry)
+        if isinstance(vapour, Refusal):
+            return SizingPlan(refusals=(vapour,), regime_entries=tuple(entries))
+        if vapour.dormant:
+            continue
+        liquid, l_entry = sctx.flow(
+            shell, f"stage.{j}.L", "LIQUID", target="v_L", state_ids=liq_ids
+        )
+        entries.append(l_entry)
+        if isinstance(liquid, Refusal):
+            return SizingPlan(refusals=(liquid,), regime_entries=tuple(entries))
+        if liquid.dormant:
+            return SizingPlan(
+                refusals=(Refusal("SIZING_INPUT_UNAVAILABLE", f"{shell}.rho_L", f"stage {j}"),),
+                regime_entries=tuple(entries),
+            )
+        flows += (vapour, liquid)
+        members.append((str(j), _stage_d2(vapour, liquid, c_sb, f_flood, phi)))
+    if not members:
+        return _refused("SIZING_INPUT_UNAVAILABLE", f"{shell}.V", "every tray's vapour is dormant")
+    return _ShellStages(flows, entries, members)
+
+
 def _stage_d2(
     vapour: StreamFlow, liquid: StreamFlow, c_sb: str, f_flood: str, phi: str
 ) -> FunctionalBuilder:
@@ -958,6 +1019,35 @@ def _stage_d2(
         return 4.0 * vapour.vdot(s, a) / (math.pi * s.theta(f_flood) * s.theta(phi) * u_f)
 
     return build
+
+
+def _controlling_stage(
+    sctx: SizingContext,
+    shell: str,
+    members: list[tuple[str, FunctionalBuilder]],
+    theta: list[Theta],
+) -> tuple[str, tuple[RegimeEntry, ...]]:
+    """§4.3.2 rule 6: the shell's controlling stage, the one the regime holds for
+    `<shell>.controlling`, else the member of the largest diameter at the state (`members`'
+    `D_j²` probed with `theta`, ties `select_argmax`'s); with the `argmax` entry when there is
+    more than one member, else no entry."""
+    probe = [OutputDef(f"size.{shell}.s{name}.diameter", "m", b) for name, b in members]
+    floats = sctx.values(probe, theta)
+    values = {name: floats[f"size.{shell}.s{name}.diameter"] for name, _ in members}
+    names = [name for name, _ in members]
+    held = sctx.ctx.regime.choice(f"{shell}.controlling")
+    controlling = held or names[select_argmax([values[name] for name in names])]
+    if len(members) > 1:
+        return controlling, (
+            RegimeEntry(
+                f"{shell}.controlling",
+                "argmax",
+                controlling,
+                "§4.3.2 rule 6",
+                argmax_rows(members, controlling, values),
+            ),
+        )
+    return controlling, ()
 
 
 # -- §4.4.7 reactor.vessel -----------------------------------------------------------------------

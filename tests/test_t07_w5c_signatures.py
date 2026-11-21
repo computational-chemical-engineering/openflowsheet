@@ -332,24 +332,24 @@ EXPECTED: dict[str, str] = {
     # M02's join (R-280 (a)): the C1 corpus's rows, generated at the join; the rows above are
     # unchanged by it.
     "M02:C1-LOOP-M02-v1": (
-        "binds fd646a2ddede5d18dde2ae445bf6b9e2e807c3fba3721cada6d7699e46ccac1e"
+        "binds 32325ef75ee8b35093ff36b0c0d91c00815e489d150f2376d1801ec05555eb4c"
     ),
     "M02:C1-FLASH-F1-M02-v1": (
-        "binds 048236ad9eff05e455314474db6fb80df015249ba56e525489c4919a8649271f"
+        "binds 06390baad39cf7868229006af6fd717e33b5c09466fa3d3dada336e2301b0ec5"
     ),
     "M02:C1-HEATER-M02-v1": (
-        "binds 480a8ed1bb998f323c96faa98b3759296724ad3423593c6ce15bfa18764f6bdb"
+        "binds 542ef887dc716f5d3e6083f06f4c0daf0ccefc9d3fde799566b4571d5871f71b"
     ),
     "M02:C1-MIXER-M02-v1": (
-        "binds 8d122ddb37ae3b8b3fc448a831bc024ce178df8a51cfa27fa64a6e04db0c9b86"
+        "binds c0ace9feef063355d17612737a89ac9d607f583cda205b6708dc69f3351b796d"
     ),
     "M02:C1-REACTOR-M02-v1": (
-        "binds 68f5821bd967758a371284eda807ee90bcc2b9429c1bf601b6ca48c4f8ae6e66"
+        "binds d6b67955b4c8af279a803ea8a4b39949a0f24003dea44ba1062ab577282f81ad"
     ),
     # W27 Amendment 3 §22.4 (R-302): M04's surrogate revision, bound through the corpus's fixture
     # resolver; generated at its registration. The rows above are unchanged by it.
     "M02:C1-SURROGATE-M04-v1": (
-        "binds 291932ea44010ce04fd47b8ddb916da1aa962428d4705b06da6de9f3ef7469b0"
+        "binds 5d3ce52adf5c728a10f2406714c770db8b97083640f88d0ea769760c274809c6"
     ),
     # S11 (R-810; design note §8.3, I1): the column's sample, generated at its registration. The
     # rows above are unchanged by it.
@@ -357,14 +357,14 @@ EXPECTED: dict[str, str] = {
     # S11 WO-D5 (ADR 0051): the Wilson basis selects `wilson-ig-v2`; the one moved field is the
     # flowsheet label's provider id and implementation hash (wilson-ig-v1-4bcd8f4dc811 →
     # wilson-ig-v2-8eab3b83551a), every other byte of the structure equal.
-    "S11:C-MW": ("binds 90452d2807b3ec3f6ec02c01bf70edf54184bc70ad50715b4f8b5c259d2ae58d"),
+    "S11:C-MW": ("binds 8fb2721b4d47008ae3a4b13af2050db38dcbb411a178bd296befdff5369c503d"),
     # S11 units design §5.4 (I1b, S11.A86): the `thermal.*` sample, generated at its registration
     # (a regression pin). The rows above are unchanged by it.
     # V03 (ADR 0054): the three below re-pinned after the semantic_role correction; of the pinned
     # structure only `revision_sha256` (the document's SHA-256) moved (docs/V03_DECISIONS.md).
-    "S11:TH-C1": ("binds 546ba02b122cac5da29128f9d697dcf3735be8aa5f764e6dcdd6d962238ac6c5"),
-    "S11:TH-R1": ("binds 04843a703d426ea8a5caf0336c8f92650c9a3bc459b82c0c3a2925c6af1626c1"),
-    "S11:GP-M1": ("binds ff4d8270c97f31902785f3096ba43e12489e863c8916da8b5cf4c631eeb8a01b"),
+    "S11:TH-C1": ("binds eb565109d8497d738e4649e8b6e171a165da5d2cb9e1dbe03a8699b9d841d945"),
+    "S11:TH-R1": ("binds 9b66f925e68eede0d78980c27e56fa5add078773e9bfbcf7f4df1be727ed4345"),
+    "S11:GP-M1": ("binds 004bdba06ac1702431c6a0798043ff89e893a256af577387241b57c4997f4c8a"),
 }
 
 

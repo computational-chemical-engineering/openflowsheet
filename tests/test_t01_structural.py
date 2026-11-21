@@ -1835,3 +1835,36 @@ def test_str_06_warns_about_a_row_whose_consistency_is_not_established() -> None
     assert checks["STR-06"].implicated_objects == ("p4",)
     assert checks["STR-06"].evidence_class == "structural"
     assert all(check.result != "FAIL" for check in checks.values()), "a warning is not a failure"
+
+
+def test_the_structural_checks_come_in_rule_order_with_str_06_last() -> None:
+    """The order is part of the report's contract: `STR-01` .. `STR-05`, then `STR-06` when the
+    report has uncertified affine rows; membership tests elsewhere would not notice a reorder."""
+    from openflowsheet.application.validation import structural_checks
+    from openflowsheet.graph.matching import DulmageMendelsohn
+    from openflowsheet.graph.report import StructuralReport
+
+    empty = DulmageMendelsohn((), (), (), (), (), (), 3)
+    report = StructuralReport(
+        model_version="",
+        constants_sha256="",
+        finding="STRUCTURALLY_CLOSED",
+        structural_counts={
+            "free_variables": 3,
+            "equations": 3,
+            "matched": 3,
+            "unmatched": 0,
+        },
+        nnz=5,
+        dm_full=empty,
+        dm_after_certificates=empty,
+        uncertified_affine_rows=("p4",),
+    )
+    assert [check.id for check in structural_checks(report)] == [
+        "STR-01",
+        "STR-02",
+        "STR-03",
+        "STR-04",
+        "STR-05",
+        "STR-06",
+    ]

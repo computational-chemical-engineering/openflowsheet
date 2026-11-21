@@ -559,6 +559,120 @@ The B7 step comes after the provider steps whose runs F0 exercises (`pr_c1`, `ia
 W5-S2's expected result is plain `F0 PASS`. B7 has the smallest reach of tier 3: no registered run and no committed
 fixture.
 
+### 8.1 Addendum (2026-11-20, WO-P4): A28 and the other one-file references
+
+**Status.** Design-lane addendum (`specifier`) on brief `S19-W5-P4-A28.md` (git common dir `codehealth/briefs/`).
+Base: `wp/S19` at c31f6c19. The addendum amends B7-C4 and clarifies route 1. It does not reopen the route, the D3
+form, or the order of WO-P4 and WO-P5. ADR 0077 D6 makes this section normative, so the addendum is normative with
+it. The register records it as an amendment of S07 A28 and of S07 §16.9, as it recorded R7 for S10 A26.
+
+**The gap.** Route 3 changes `fluid_table_sha256`. It names neither S07 spec §16.9, which registers the one-file
+recipe, nor A28's oracle `a28_problems` (`tests/test_s07_coolprop.py:343-357`), which recomputes that recipe. The
+WO-P4 engineer reports that both A28 tests, `tests/test_s07_coolprop.py::test_a28_identity_recipe` and
+`tests/test_s07_broad.py::test_a28_identity_recipe`, pass at ae2d5f81 (`wp/S19-w5p`). After B7 both would fail, so
+B7-C4 could not hold.
+
+**R8.1 (S07 §16.9 amended).** S07 §16.9 now carries the following, and that text governs:
+- the eight-module recipe;
+- its exact reading: bare names, raw bytes, compact canonical JSON, and UTF-8 order (index, a, b1 … b6);
+- closed-form sanity values;
+- the property restated;
+- A28 (a) to (e).
+
+Route 3 is read through §16.9. Route 1 named only `FLUIDS`. `EXCLUDED` stays a literal of the index with its text
+unchanged, because `coolprop_heos.py:213`, `:425` and `models/revision_flowsheet.py:197` read it from there. B7-C1
+extends to it: `EXCLUDED` at head equals `EXCLUDED` at B, with the same items in the same order.
+
+**R8.2 (B7-C4 amended: A28's oracle).** The build lane may make the following changes in `tests/test_s07_*`, and no
+others:
+- The eight names become a tuple of string literals in `tests/test_s07_coolprop.py`. The recipe becomes a function of
+  a directory and that tuple, written with `hashlib` and `json` only, and applied to `MODULE_PATH.parent`. It
+  imports no helper of `coolprop_heos.py` (`_implementation_sha256`, `_canonical`, `_sha256`) and nothing from
+  `openflowsheet.registry.selfhash`.
+- `a28_problems` checks A28 (a), (b) and (c), and reports missing modules as (e) requires.
+- One new test, without `needs_coolprop`, asserts A28 (d). The serialisation pin therefore runs in every
+  environment.
+- `tests/test_s07_broad.py` needs no edit, because it imports `a28_problems`.
+
+**R8.3 (placement: the R position).** The A28 change is a commit of its own, placed before B7's plan commit
+(retarget, plan, step), and kept separate from B7-C4's wheel retarget (`test_s07_registration.py:143`).
+- It is an oracle amendment, and a retarget never is one (S19 rules: a retarget never changes an assertion). It takes
+  the R position by this ruling, as R7 did.
+- At that commit alone, with the CoolProp extra, both A28 tests fail. Each `a28_problems` call returns exactly seven
+  problems, `_coolprop_heos_fluids_a.py: missing` to `_coolprop_heos_fluids_b6.py: missing`. At the step both tests
+  pass. The commit message names the two test ids and quotes that output.
+- Without the extra, both tests are skipped at R and at the step. The A28 (d) test passes at both.
+
+The R position is chosen over the step commit for four reasons:
+1. The oracle is committed while the eight modules do not exist yet, so it cannot have been fitted to the provider's
+   output.
+2. The failure at R alone and the pass at the step are the first falsifier: the oracle rejects the one-file layout.
+3. The step stays one step (S19 Git rules), with no test changed inside it.
+4. S19 already accepts a commit whose named tests fail on their own and pass again at the step (the retarget rule;
+   bisect with `--first-parent`).
+
+**R8.4 (falsifiers).** Run each at the step head, on a scratch copy of the tree and outside the gate. Use a fresh
+interpreter each time, because `_implementation_sha256` is cached. Commit nothing from them, and quote each outcome
+in the step commit message.
+- **F1 (both read the bytes).** Append one newline byte to `_coolprop_heos_fluids_b3.py`. The provider's
+  `implementation_sha256` for any instance differs from the unmodified tree's, and A28 passes in both trees, so the
+  oracle moved with the provider. C19 fails in the scratch tree, as it must.
+- **F2 (the oracle catches a wrong recipe).** Each of these provider mutations must make A28 (a) fail for every
+  instance:
+  - (i) one name, `_coolprop_heos_fluids_b3.py`, left out;
+  - (ii) the pairs hashed in the order a, b1 … b6, index;
+  - (iii) each name prefixed with `openflowsheet/thermo/`;
+  - (iv) T computed as the SHA-256 of the eight files' bytes, concatenated in NAMES order, instead of from the pair
+    list.
+- **F3 (literals, not a glob).** Add `_coolprop_heos_fluids_b7.py`, a copy of `_b6.py` that nothing imports. The
+  provider's `implementation_sha256` stays unchanged and A28 passes. `s07_reference.py --check` fails and names the
+  file (route 2).
+- **F4 (no unhashed table content).** Import F3's module in the index and append `*_b7.FLUIDS` to its `FLUIDS`.
+  A28 (c) fails.
+- **F5 (A32 m8 fails for its own reason).** At the step, `a28_problems(mutant(*M8))` returns only the §5.1
+  fluid-data problems, one per instance, and no §16.9 or `missing` problem. At R that list is also non-empty, but only
+  because of (e), which proves nothing about m8.
+
+**R8.5 (other references to the one-file table).** The search covered `fluid_table_sha256` and
+`_coolprop_heos_fluids` in `docs/`, `tests/`, `scripts/` and `src/`. For each hit, the table says whether it moves in
+the B7 step.
+
+| reference | in the B7 step? | ruling |
+| --- | --- | --- |
+| `src/openflowsheet/thermo/coolprop_heos.py:241-255` | yes | route 3, read through §16.9 |
+| the index and the seven group modules | yes, emitted by the generator | route 1 |
+| `docs/derivations/scripts/s07_reference.py`: `fluid_table` `:2009`, `TABLE_OUT` `:70`, `--emit-fluid-table` `:2075`, `--check` `:2098-2108`, docstring `:26`, `:38`, C19's statement `:341` | yes | routes 1 and 2. C19's statement becomes "--emit-fluid-table reproduces the eight committed _coolprop_heos_fluids*.py modules byte for byte, and no other is present" |
+| `docs/derivations/scripts/s07_reference.json:47` (C19's statement) | yes. `--emit` re-emits it in the step commit, and the C19 `statement` is its only change | `--check` byte-compares it, so it must move with `:341`. The orchestrator admits the path for the step. Alternative: keep `:341`'s string. The JSON then stays unchanged, and C19's text names one module while the check covers eight |
+| `tests/test_s07_coolprop.py:343-357`, plus the A28 (d) test | no: a commit of its own in the R position | R8.2, R8.3 |
+| `tests/test_s07_broad.py:36`, `:111-112` | no edit | it imports `a28_problems` |
+| `tests/test_s07_registration.py:143` | no: a retarget commit in the R position, as B7-C4 rules | the wheel must hold the seven new modules |
+| `docs/derivations/S07-spec.md` §16.8, the C19 row, §16.9 | no: amended in this commit | R8.1 |
+| `src/openflowsheet/registry/builtin/legacy.json`, `builtin-sha256.txt` | no: re-emitted at K (WO-P6) by `registry_builtin.py --write` | at the step they are B7-C3's predicted difference (R1, R5) |
+| `scripts/s07_evidence_manifest.py:86`, `:91-94`, `:838-840` | no | S19 rules: evidence-manifest scripts that hash file lists are noted for the docs pass. Noted here: at the docs pass, `TABLE` becomes the eight modules and `SOURCES` names them. No S07 manifest is re-taken before that edit, because a manifest written after B7 would record the index's hash alone as "the generated fluid table (… A28)" |
+| `tests/test_f0_corpus_identity.py:345` | no | the index stays a literal of the hash site, so it stays in M9 |
+| the four schema fixtures under `tests/fixtures/schemas/application_results/capability_{descriptor,page}/` | no | static examples of the descriptor's shape. Nothing compares them with the registry |
+| importers of `FLUIDS` and `EXCLUDED`. Tests: `test_s03_s11_refusal.py:38`, `test_s07_near_critical.py:30`, `test_s11_bases.py:46`, `test_t08_w2_inventory.py:37`, `test_f1_legacy_builtins.py:257`, the `table` imports of `test_s07_coolprop.py` and `test_s07_broad.py`. Scripts: `s07_platform_digest.py:60`, `s07_evidence_manifest.py:342`. Derivation scripts: `s11_coolprop_records.py:108` with its emitted header `:38`, `s07_measurements/m9_a31_allowances.py:25`, `wo2b_near_critical.py:20` | no | both names keep their home, the index |
+| W5 tools: `scripts/w5_identity.py:131`, `:1199`, `scripts/w5_gate.py:109`, `tests/test_s19_w5_*` | not ruled here | they are the orchestrator's (Q8.1) |
+| ADR 0046 D3 (`:59-61`), `docs/*_DECISIONS.md`, reviews, roadmap, design notes | no | these are records. "Adds its hash" reads as T, and the register entry records the amendment |
+
+**Open question.**
+- **Q8.1 (needs a fact; W5 tools, not decided here).** W5-S2 leaves `COOLPROP_FILES`
+  (`scripts/w5_gate.py:108-111`, `scripts/w5_identity.py:1198-1201`) unpinned. That set names the index and the
+  provider, but the provider will also read the seven group modules, which have no base bytes. The measurement that
+  settles it: `w5_identity.py pin` at the B7 step head. If the pin reports a pinned path never read, or a foreign
+  read, on a group module, the set must grow by the seven. Recommended default: the orchestrator adds the seven
+  before WO-P4's gate.
+
+**What this addendum does not establish.**
+- It gives no value of T for the real modules. They do not exist before the step, and A28 is a recomputation oracle,
+  not a pinned value. The only pinned values are §16.9's toys.
+- A28 (c) covers the index and the seven groups' `FLUIDS`. It does not prove that no module of the eight imports data
+  from elsewhere. The generator's review and C19 carry that.
+- The raw reading does not make T independent of the checkout's line endings, any more than `module_sha256` is. C19
+  fails on such a checkout.
+- After import, module objects can drift from the bytes on disk. That is as before B7 and is not covered here.
+- Nothing about M9, the registry or the pin beyond section 8 and Q8.1.
+
 ---
 
 ## 9. W5 work orders, in order

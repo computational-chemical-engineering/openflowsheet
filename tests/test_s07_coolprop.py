@@ -340,23 +340,66 @@ def probe_problems(provider: Provider, cid: str, tags: tuple[str, ...]) -> list[
     return problems if count else [f"no {tags} probe in ref"]
 
 
-def a28_problems(module: types.ModuleType, cids: Iterable[str] = tuple(TIER_A)) -> list[str]:
-    """§16.9's recipe from the files' bytes, and §5.1's canonical fluid hash, for `cids`."""
+#: §16.9's eight fluid-table modules, by bare name, in UTF-8 byte order (the index sorts first).
+TABLE_NAMES = (
+    "_coolprop_heos_fluids.py",
+    "_coolprop_heos_fluids_a.py",
+    "_coolprop_heos_fluids_b1.py",
+    "_coolprop_heos_fluids_b2.py",
+    "_coolprop_heos_fluids_b3.py",
+    "_coolprop_heos_fluids_b4.py",
+    "_coolprop_heos_fluids_b5.py",
+    "_coolprop_heos_fluids_b6.py",
+)
+CANONICAL: dict[str, Any] = {"sort_keys": True, "separators": (",", ":"), "ensure_ascii": True}
+
+
+def fluid_table_sha256(directory: Path, names: tuple[str, ...]) -> str:
+    """§16.9's T: SHA-256 of the canonical JSON of `[name, SHA-256 of its raw bytes]` pairs."""
+    pairs = [[n, hashlib.sha256((directory / n).read_bytes()).hexdigest()] for n in names]
+    return hashlib.sha256(json.dumps(pairs, **CANONICAL).encode()).hexdigest()
+
+
+def a28_table_problems() -> list[str]:
+    """A28 (c): the index's `FLUIDS` is the seven groups' in order; `EXCLUDED` a dict literal."""
     problems = []
-    canonical = {"sort_keys": True, "separators": (",", ":"), "ensure_ascii": True}
-    implementation = hashlib.sha256(
-        json.dumps(
-            {
-                "module_sha256": hashlib.sha256(MODULE_PATH.read_bytes()).hexdigest(),
-                "fluid_table_sha256": hashlib.sha256(
-                    (MODULE_PATH.parent / "_coolprop_heos_fluids.py").read_bytes()
-                ).hexdigest(),
-                "coolprop_version": "8.0.0",
-                "coolprop_gitrevision": "ae81610e7d23efc57f9d051c8e70a4d66e87537f",
-            },
-            **canonical,  # type: ignore[arg-type]
-        ).encode()
-    ).hexdigest()
+    groups = [importlib.import_module(f"openflowsheet.thermo.{n[:-3]}") for n in TABLE_NAMES[1:]]
+    if table.FLUIDS != tuple(row for group in groups for row in group.FLUIDS):
+        problems.append("FLUIDS is not the concatenation of the seven groups' FLUIDS")
+    index = ast.parse((MODULE_PATH.parent / TABLE_NAMES[0]).read_text("utf-8"))
+    excluded = [
+        node.value
+        for node in index.body
+        if (isinstance(node, ast.AnnAssign) and getattr(node.target, "id", None) == "EXCLUDED")
+        or (
+            isinstance(node, ast.Assign)
+            and any(getattr(t, "id", None) == "EXCLUDED" for t in node.targets)
+        )
+    ]
+    if len(excluded) != 1 or not isinstance(excluded[0], ast.Dict):
+        problems.append("the index does not assign EXCLUDED one dict literal")
+    return problems
+
+
+def a28_problems(module: types.ModuleType, cids: Iterable[str] = tuple(TIER_A)) -> list[str]:
+    """§16.9's recipe from the eight files' bytes (A28 (a), (c), (e)), and §5.1's canonical
+    fluid hash (A28 (b)), for `cids`. A missing module is a problem; (a) and (c) then wait."""
+    directory = MODULE_PATH.parent
+    problems = [f"{n}: missing" for n in TABLE_NAMES if not (directory / n).is_file()]
+    complete = not problems
+    if complete:
+        problems += a28_table_problems()
+        implementation = hashlib.sha256(
+            json.dumps(
+                {
+                    "module_sha256": hashlib.sha256(MODULE_PATH.read_bytes()).hexdigest(),
+                    "fluid_table_sha256": fluid_table_sha256(directory, TABLE_NAMES),
+                    "coolprop_version": "8.0.0",
+                    "coolprop_gitrevision": "ae81610e7d23efc57f9d051c8e70a4d66e87537f",
+                },
+                **CANONICAL,
+            ).encode()
+        ).hexdigest()
     for cid in cids:
         described = module.CoolPropHeosProvider(cid).describe()
         data = hashlib.sha256(
@@ -366,11 +409,13 @@ def a28_problems(module: types.ModuleType, cids: Iterable[str] = tuple(TIER_A)) 
                     "fluid": ROWS[cid]["name"],
                     "fluid_data_sha256": FLUIDS[cid]["fluid_data_sha256"],
                 },
-                **canonical,  # type: ignore[arg-type]
+                **CANONICAL,
             ).encode()
         ).hexdigest()
-        if (described.implementation_sha256, described.data_sha256) != (implementation, data):
+        if complete and described.implementation_sha256 != implementation:
             problems.append(f"{cid}: identity does not follow §16.9")
+        if described.data_sha256 != data:
+            problems.append(f"{cid}: data_sha256 does not follow §16.9")
         if module.fluid_data_sha256(ROWS[cid]["name"]) != FLUIDS[cid]["fluid_data_sha256"]:
             problems.append(f"{cid}: fluid_data_sha256 does not follow §5.1")
     return problems
@@ -573,6 +618,15 @@ def test_a02_a28_describe_answers_without_coolprop_with_the_same_identity(
 @needs_coolprop
 def test_a28_identity_recipe() -> None:
     assert a28_problems(cph) == []
+
+
+def test_a28_d_the_recipe_gives_the_crlf_sanity_value(tmp_path: Path) -> None:
+    assert list(TABLE_NAMES) == sorted(TABLE_NAMES, key=str.encode)
+    for n in TABLE_NAMES:
+        (tmp_path / n).write_bytes(n.encode("utf-8") + b"\r\n")
+    assert fluid_table_sha256(tmp_path, TABLE_NAMES) == (
+        "3e4e4bd2bc1a4462d487aad1d99b0fcccb1c142dff78c01d7ea225160cc3a895"
+    )
 
 
 def test_a33_the_fluid_list() -> None:
