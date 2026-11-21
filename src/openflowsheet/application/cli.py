@@ -1060,6 +1060,9 @@ def _write_stream_table(document: dict[str, Any], arguments: argparse.Namespace)
 
 
 def build_parser() -> argparse.ArgumentParser:
+    """The `openflowsheet` parser. Its subcommands are added in help order, one group per helper:
+    `_add_run_parsers`, `_add_project_parser`, `_add_api_parser`, `_add_no_project_parsers`,
+    `_add_records_parser`, `_add_streams_parser` and `_add_serve_parsers`."""
     parser = argparse.ArgumentParser(
         prog="openflowsheet",
         description=(
@@ -1070,6 +1073,19 @@ def build_parser() -> argparse.ArgumentParser:
     )
     commands = parser.add_subparsers(dest="command", required=True)
 
+    _add_run_parsers(commands)
+    _add_project_parser(commands)
+    _add_api_parser(commands)
+    _add_no_project_parsers(commands)
+    _add_records_parser(commands)
+    _add_streams_parser(commands)
+    _add_serve_parsers(commands)
+    return parser
+
+
+def _add_run_parsers(commands: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
+    """`validate`, `optimize`, `solve`, `inspect` and `replay`: the commands on a revision file, a
+    registered case or a bundle directory."""
     validate_command = commands.add_parser("validate", help="validate a revision for a task")
     validate_command.add_argument("revision", help="a ProcessRevision YAML or JSON file")
     validate_command.add_argument(
@@ -1107,6 +1123,10 @@ def build_parser() -> argparse.ArgumentParser:
     replay_command.add_argument("--json", action="store_true")
     replay_command.set_defaults(handler=command_replay)
 
+
+def _add_project_parser(commands: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
+    """`project init|grant|revoke|ambient`: a project directory, its capability grants and its
+    ambient pressure."""
     project_command = commands.add_parser(
         "project",
         help="create a project and administer its capability grants and ambient pressure",
@@ -1159,6 +1179,9 @@ def build_parser() -> argparse.ArgumentParser:
     )
     ambient_command.set_defaults(handler=command_project_ambient)
 
+
+def _add_api_parser(commands: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
+    """`api`: one contract operation as the local owner."""
     api_command = commands.add_parser(
         "api",
         help="run one contract operation as the local owner and print its response",
@@ -1181,6 +1204,9 @@ def build_parser() -> argparse.ArgumentParser:
     )
     api_command.set_defaults(handler=command_api)
 
+
+def _add_no_project_parsers(commands: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
+    """`explain`, `capabilities` and `admission`: the commands that need no project."""
     explain_command = commands.add_parser(
         "explain",
         help="explain a message code (no project needed)",
@@ -1232,8 +1258,9 @@ def build_parser() -> argparse.ArgumentParser:
     admission_command.add_argument("--revision", default=None, help="a revision document file")
     admission_command.set_defaults(handler=command_admission)
 
-    _add_records_parser(commands)
 
+def _add_streams_parser(commands: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
+    """`streams`: a run's stream table and energy summary (ST §6.3)."""
     streams_command = commands.add_parser(
         "streams",
         help="print a run's stream table and energy summary",
@@ -1261,6 +1288,9 @@ def build_parser() -> argparse.ArgumentParser:
     )
     streams_command.set_defaults(handler=command_streams)
 
+
+def _add_serve_parsers(commands: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
+    """`serve-http` and `serve-mcp`: the project served over HTTP or MCP stdio."""
     http_command = commands.add_parser("serve-http", help="serve the project over HTTP (§11.2)")
     http_command.add_argument("--project", required=True, help="the project directory")
     http_command.add_argument("--host", default="127.0.0.1")
@@ -1282,8 +1312,6 @@ def build_parser() -> argparse.ArgumentParser:
         "--token-file", default=None, help=f"the capability's token (else ${TOKEN_FILE_VARIABLE})"
     )
     mcp_command.set_defaults(handler=command_serve_mcp)
-
-    return parser
 
 
 def main(argv: list[str] | None = None) -> int:
