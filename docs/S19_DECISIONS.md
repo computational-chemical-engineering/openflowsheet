@@ -4750,3 +4750,6 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   control: `_check_promoted`/`_check_x0` swapped fails, under the earlier startswith form; the exact form is stricter,
   not re-run). B+C 93b4bf6a (HardDomain into TYPE_CHECKING; docstring "and"), job 631 tr1-fix no-gain. Study tests
   not run by the implementer: the orchestrator runs the full nlp-marked suite at 93b4bf6a (base failures g19, g20).
+- 2026-11-21, merge-check 615 (4881224c..da6e4e82: main/F3 merge + W5-S2 fix) PASS 11/11, full suite. The main merge
+  on wp/S19 stands. Next milestone (after the TR merge): move MB to the wp/S19 tip; every step now falls back to the
+  full suite (~25 min) because the map at c6957580 predates the F3 merge.
