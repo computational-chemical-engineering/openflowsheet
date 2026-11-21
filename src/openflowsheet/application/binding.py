@@ -25,7 +25,7 @@ analysis as unsupported. That is the same limitation K06's CLI already carries.
 from __future__ import annotations
 
 import copy
-from collections.abc import Mapping, Sequence
+from collections.abc import Iterator, Mapping, Sequence
 from dataclasses import dataclass, field, replace
 from typing import TYPE_CHECKING, Any, Final
 
@@ -1223,18 +1223,25 @@ def _wiring_edges(wiring: Mapping[str, Any]) -> list[tuple[str, str, str]]:
     """
     producers: dict[str, str] = {}
     consumers: dict[str, list[str]] = {}
-    for unit, entry in wiring.items():
-        for port, streams in entry.streams.items():
-            for stream in streams:
-                if port == "inlet":
-                    consumers.setdefault(stream, []).append(unit)
-                else:
-                    producers[stream] = unit
+    for unit, port, stream in _port_streams(wiring):
+        if port == "inlet":
+            consumers.setdefault(stream, []).append(unit)
+        else:
+            producers[stream] = unit
     return sorted(
         (stream, producer, consumer)
         for stream, producer in producers.items()
         for consumer in consumers.get(stream, ())
     )
+
+
+def _port_streams(wiring: Mapping[str, Any]) -> Iterator[tuple[str, str, str]]:
+    """Each (unit, port, stream) that the `Wiring` entries of `wiring` carry, lazily, in unit,
+    port and stream order."""
+    for unit, entry in wiring.items():
+        for port, streams in entry.streams.items():
+            for stream in streams:
+                yield unit, port, stream
 
 
 def _pinned_columns(spec: ProblemSpec) -> dict[str, str]:
