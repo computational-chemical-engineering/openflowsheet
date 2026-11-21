@@ -5049,3 +5049,11 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   identity paths. Findings on the criterion (E2 text for regenerating merges; tool version in the row; file smells and
   "full suite" unbounded): for S19's close, not blocking. Next: budget tests alone (running), manifest
   (`<briefs>/S19-MANIFEST-END.md`), fresh CI, merge card.
+
+## 2026-11-21 ~18:45 CET: CI green at f814928a; merge card requested
+
+- CI 44923603617 at f814928a: success (check ubuntu-24.04-arm, check ubuntu-latest, default-install, codehealth,
+  identity). Merge preconditions met (manifest tested, budget tests, CI green).
+- DECISION-REQUEST ofs-s19-merge-main to hub: A merge before K3 (enters 0.5.0; int/0.5 rebuilt and re-run), B
+  (recommended) after the v0.5.0 tag (main merged back, fresh CI, G-END numbers re-checked). Trial merge (REL050
+  log): no src/ or scripts/ conflict; harvest bookkeeping and register order only. Waits for the signed card.
