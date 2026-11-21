@@ -138,8 +138,8 @@ def report_body(
     """The report without `provenance` (the part A39 compares byte for byte). The values at `x`
     come from `_checked_values`; when it returns a refusal instead, the refusal joins `refusals` and
     every output is `null`. The contributors' sections come from `_report_sections`, and what the
-    `derived` section withholds from `_derived_withholding`; each cost item gains its values from
-    `_item_values`. The `uncertainty` entry starts as
+    `derived` section withholds from `_derived_withholding`; each cost item's existing value entries
+    are overwritten from `_item_values`. The `uncertainty` entry starts as
     `_aace_uncertainty`'s, and `propagate` fills its propagation results when `uncertainty` is
     set and there are values."""
     refusals: list[Refusal] = list(program.refusals)

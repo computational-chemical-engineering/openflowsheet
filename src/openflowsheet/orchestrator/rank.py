@@ -214,7 +214,7 @@ def _copy_endpoints(row_id: str, row: Mapping[str, float], eligible_kind: str) -
     # A copy is a *difference*. Two `+1` coefficients are a sum: `P_a + P_b − P_spec` would
     # otherwise take `P_a` as its positive node and the constant as its negative, and be
     # certified as `P_a − P_spec`, false at every state. The two-state witness in
-    # `eliminate_alias_rows` does catch it — measured, the mismatch varies by the second
+    # `_certified_elimination` does catch it — measured, the mismatch varies by the second
     # pressure — but it catches it *numerically*, and R-011's whole point is that this
     # elimination is structural. T01's review found the same gap in its own declaration-side
     # rule (M4, register R-021), where there is no witness to fall back on.
