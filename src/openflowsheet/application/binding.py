@@ -575,9 +575,7 @@ def bind_revision_or_reason(document: Mapping[str, Any]) -> Binding | Unbound:
     converted, parameter_values, conversions = inputs
     graph = _process_graph(document, components, WIRING, wiring_edges, matched)
 
-    specifications = [
-        entry for entry in (document.get("specifications") or ()) if entry.get("role") == "fixed"
-    ]
+    specifications = _specifications_in_role(document, "fixed")
     targets = {
         str(entry.get("id")): _column_targets(entry, graph, units_by_instance)
         for entry in specifications
@@ -585,9 +583,7 @@ def bind_revision_or_reason(document: Mapping[str, Any]) -> Binding | Unbound:
     values = {
         str(entry.get("id")): converted.get(str(entry.get("id")), 0.0) for entry in specifications
     }
-    freed = [
-        entry for entry in (document.get("specifications") or ()) if entry.get("role") == "free"
-    ]
+    freed = _specifications_in_role(document, "free")
     guesses, missing_guesses = _guesses(freed, converted, graph, units_by_instance)
     assembly = _assembly_values(guesses, missing_guesses)
     if isinstance(assembly, Unbound):
@@ -758,6 +754,12 @@ def _process_graph(
         ),
         instance_ids=matched,
     )
+
+
+def _specifications_in_role(document: Mapping[str, Any], role: str) -> list[Any]:
+    """The entries of the revision's `specifications` whose `role` is `role`, in declaration
+    order (none when the revision declares no specifications)."""
+    return [entry for entry in (document.get("specifications") or ()) if entry.get("role") == role]
 
 
 def _guesses(
