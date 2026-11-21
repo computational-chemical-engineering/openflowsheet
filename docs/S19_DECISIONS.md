@@ -4987,3 +4987,11 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   `<briefs>/S19-W3-DUP-1.md`, lane `wp/S19-dup` from 799f81c9, sonnet-implementer (no arithmetic touched). Alternative:
   a `[allow]` for duplication on region.py. Reversible by: reverting the lane's merge. Then reviewer (S1 every chain),
   merge-check, merge, push, fresh CI; the G-END verdict waits for that CI.
+- 2026-11-21 ~12:40, R-W3-DUP-1 (reviewer, Opus, ~63k): merge, no fix. Six records identical in kind, message,
+  fields and point of emission; keyword order irrelevant (`Trace.record` builds the `SolveEvent` dataclass); dup lines
+  51 (about 5.7%). Gate job 700 pending.
+- 2026-11-21 ~12:40, X07a falsifier result (CI 44882659578): macOS rerun 136811622556 passed a36 and failed
+  test_t07_w7a_harness::test_the_wall_cap_kills_the_session instead (init=None at wall 1.09 s, cap 1.0 s: a race).
+  Per the falsifier fixed in advance: a36 is nondeterministic on macOS, no F3 bisect. X07a-WO18 (opus-engineer, Opus;
+  `<briefs>/X07a-WO18.md`): diagnose a36, fix only an order dependence or missing pin, STOP before any statistic or
+  rule; remove the wall-cap race without dropping the assertion.
