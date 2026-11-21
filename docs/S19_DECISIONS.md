@@ -4879,3 +4879,11 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   `git show <rev>:<path>` without `--` in 5 scripts, plus an ast regression test) before the manifest goes `tested`.
   Alternative: manifest now, sweep later. Reversible by: none needed (one commit). sonnet-implementer (Sonnet),
   `<briefs>/X07a-WO16.md`.
+- 2026-11-21, X07a-WO16 (sonnet-implementer, Sonnet): f217ca02 pushed, CI 44869026369. `--` added at 30 sites in 11
+  scripts (m07a/release/s05/s13/t05/t05b evidence manifests, release_gate, test_impact, w5_identity,
+  release_rc_local); ast regression test `tests/test_x07a_git_show_separator.py` (control: release_gate.py:458 named).
+  Two frozen scripts left unchanged and exempted in the test: `v0_1_gate.py` (byte-pinned, `v0_1_gate_files_sha256`)
+  and `m07_journey.py` (`carry.journey_files`); editing them failed A13, A21 and REL.A20 (RP.S03).
+  DECISION: keep them exempt; do not re-register released gates' pins for a latent deep-path Windows case.
+  Alternative: re-register both pins. Reversible by: a later WO re-registering them. The full 28-file run was not
+  repeated on the final tree (CI covers it).
