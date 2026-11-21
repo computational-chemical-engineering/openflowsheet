@@ -98,7 +98,8 @@ T08_MANIFEST = "evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.j
 #: Its fix-round-4 move (`361c620…`, `implemented`, 6 and 0) moves it again on `wp/F3`.
 #: The merge of main (c4a91a75) into wp/F3 sums both moves (98, 1129) + (1, 6) + (1, 9).
 #: X01's tested manifest (`a0e4c54…`, 4 limitations, 0 checks) on `wp/X01`: (1, 4).
-HARVEST_SIZE = (101, 1148, 146)
+#: Its moved manifest (`bbbca49…`, 4 limitations, 0 checks; the a0e4c54 one stays) adds (1, 4).
+HARVEST_SIZE = (102, 1152, 146)
 #: The 0.2.0 release candidate C′ (M07 spec §25, R-485).
 C_PRIME = "ce993651ce37c1343e771b276160bd6623e43500"
 #: The commit tagged v0.2.0.
