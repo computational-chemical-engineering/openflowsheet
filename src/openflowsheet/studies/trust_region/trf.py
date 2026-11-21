@@ -388,25 +388,14 @@ def _preflight_phase(
     `run.forming_basis` set); a `TruthRefused` from either is the run's refusal (R-400 step 9).
     Otherwise `_refuse_basis` (it raises `TrfConfigurationRefusedError`) and `_preflight` (R-276).
     The holders' runs are ended here when the phase refuses or raises; otherwise they stay open
-    for the solve."""
+    for the solve. The check and the basis are `_check_gradient_and_form_basis`'s."""
     refused: TruthRefused | None = None
     refused_phase = "start:"
     built: Mapping[str, EFBasis] | None = None if callable(basis) else basis
     preflown = False
     try:
         try:
-            if gradient_check is not None:
-                run.checking_gradient = True
-                try:
-                    gradient_check(projection)
-                finally:
-                    run.checking_gradient = False
-            if callable(basis):
-                run.forming_basis = True
-                try:
-                    built = basis(projection)
-                finally:
-                    run.forming_basis = False
+            built = _check_gradient_and_form_basis(projection, basis, gradient_check, run)
         except TruthRefused as unhandled:
             # R-400 step 9: a refusal the check or the basis did not handle (a budget refusal)
             # is the run's outcome, `TRF_TRUTH_REFUSED(<code>)`; nothing more is asked.
@@ -421,6 +410,32 @@ def _preflight_phase(
             for holder in projection.holders:
                 holder.end_run()
     return _Preflown(refused, refused_phase, built)
+
+
+def _check_gradient_and_form_basis(
+    projection: Projection,
+    basis: Mapping[str, EFBasis] | BasisFor,
+    gradient_check: Callable[[Projection], Any] | None,
+    run: RunState,
+) -> Mapping[str, EFBasis]:
+    """`gradient_check` on `projection` when given, with `run.checking_gradient` set for its
+    duration, then the basis: `basis(projection)` with `run.forming_basis` set for its duration
+    when `basis` is a `BasisFor`, else `basis` itself. Each flag is reset however the call
+    ends; an exception from either call (a `TruthRefused` among them) propagates, so the basis is
+    not formed after a check that raised."""
+    if gradient_check is not None:
+        run.checking_gradient = True
+        try:
+            gradient_check(projection)
+        finally:
+            run.checking_gradient = False
+    if callable(basis):
+        run.forming_basis = True
+        try:
+            return basis(projection)
+        finally:
+            run.forming_basis = False
+    return basis
 
 
 class _Solved(NamedTuple):
