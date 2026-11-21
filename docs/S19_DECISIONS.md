@@ -4838,3 +4838,9 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   Campaign item (pre-existing gap): no test pins the order across `check_manifest`'s five helpers, which reaches the
   PlanRefusedError text (iterations.py:95-99): a test-only commit with a manifest tampered to trip the band,
   promotion, failure and qualification checks, compared with the ordered list; negative control a swapped `extend`.
+- 2026-11-21, lane A2 run 1 (opus-engineer, Opus): wp/S19-a2 2c5f7c3b..2a6486fe, 13 steps (S2: 11-13), jobs 644
+  (running), 646-666 held. validation 7.9 -> 9.8, cli 8.7 -> 9.5, revision_service 8.5 -> 8.8, revision_edits 8.8 ->
+  9.3, canonical 8.0 -> 9.0, verify/checks 8.2 -> 8.7; engineer's repo scan 2093.5 -> 2038.3, health 9.01. `--help`
+  dumps byte-identical; S2 identity runs 0 differences with negative controls. Stops: `command_streams` (lazy imports),
+  `_prepare` (literal drop), `_first_noncanonical` (S2 walker: a design choice), `closure_check`/`escalate_column`
+  (public params, W4). Review R-W3-A2-1 (reviewer, Opus; `<briefs>/S19-R-W3-A2-1.md`) launched.
