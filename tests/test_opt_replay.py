@@ -14,8 +14,10 @@ import sys
 from pathlib import Path
 
 import pytest
+from conftest import HOST_PLATFORM, assert_inspected_off_registered
 
 from openflowsheet.application.revision_routes import REVISION_ROUTES
+from openflowsheet.run.replay import REGISTERED_PLATFORMS
 from openflowsheet.studies.nlp.replay import (
     MANIFEST,
     is_optimization_record,
@@ -25,6 +27,10 @@ from openflowsheet.studies.nlp.replay import (
 
 REPO = Path(__file__).resolve().parents[1]
 FIXTURE = REPO / "tests" / "fixtures" / "opt" / "replay" / "OPT-A2"
+#: X07a ruling P1c: the record was written on x86-64 Linux. On a platform outside ADR 0007 D3.3's
+#: registered set the policy's answer is asserted instead of `MATCH`; `MATCH` stays judged on the
+#: registered legs.
+REGISTERED = HOST_PLATFORM in REGISTERED_PLATFORMS
 
 
 def test_g13_the_committed_record_is_an_intact_optimization_record() -> None:
@@ -44,6 +50,9 @@ def test_g13_the_committed_record_replays_to_match_without_ipopt(tmp_path: Path)
         record, rerun=True, rerun_directory=tmp_path / "rerun", routes=REVISION_ROUTES
     )
     assert report.integrity.ok
+    if not REGISTERED:
+        assert_inspected_off_registered(report, row="X07a-L4")
+        return
     assert report.differences == (), report.differences
     assert report.verdict == "MATCH", report.as_document()
     assert report.mode in ("exact_replay", "compatible_reproduction")
@@ -73,6 +82,8 @@ with tempfile.TemporaryDirectory() as work:
     report = replay_optimization(
         record, routes=REVISION_ROUTES, rerun=True, rerun_directory=Path(work) / "x"
     )
+import json
+print(json.dumps(report.as_document()))
 print(report.verdict, sorted(m for m in ("pyomo", "cyipopt") if m in sys.modules))
 """
 
@@ -85,7 +96,12 @@ def test_g11_replay_imports_neither_pyomo_nor_cyipopt() -> None:
         check=True,
         timeout=600,
     )
-    assert found.stdout.split("\n")[-2] == "MATCH []", found.stdout[-2000:]
+    lines = found.stdout.split("\n")
+    if not REGISTERED:
+        assert_inspected_off_registered(json.loads(lines[-3]), row="X07a-L4")
+        assert lines[-2] == "NOT_RUN []", found.stdout[-2000:]
+        return
+    assert lines[-2] == "MATCH []", found.stdout[-2000:]
 
 
 # -- §4.9's dispatch: `reproduce` and the CLI's `replay` ------------------------------------------
@@ -101,8 +117,11 @@ def test_g13_reproduce_imports_and_replays_an_optimization_record(tmp_path: Path
 
     with LocalApplication.create(tmp_path / "project", project_id="opt-replay") as app:
         report = app.reproduce(FIXTURE, ReplayPolicy(rerun=True))
-        assert report.differences == (), report.differences
-        assert report.verdict == "MATCH", report.as_document()
+        if not REGISTERED:
+            assert_inspected_off_registered(report, row="X07a-L4")
+        else:
+            assert report.differences == (), report.differences
+            assert report.verdict == "MATCH", report.as_document()
         imported = app.store.artifact("import-000001:bundle")
         assert imported is not None and imported.kind == "replay_bundle"
         copy = app.files_root / imported.relpath
@@ -118,7 +137,7 @@ def test_g13_reproduce_imports_and_replays_an_optimization_record(tmp_path: Path
             if ":rerun/" in row.artifact_id
         )
         starts = sorted(path.name for path in (FIXTURE / "starts").iterdir())
-        assert len(reruns) == 2 * len(starts), reruns
+        assert len(reruns) == (2 * len(starts) if REGISTERED else 0), reruns
         inspected = app.reproduce(FIXTURE, ReplayPolicy(rerun=False))
         assert (inspected.mode, inspected.verdict) == ("inspected_archived_results", "NOT_RUN")
 
@@ -130,9 +149,14 @@ def test_g13_the_cli_replays_an_optimization_record(
 
     record = tmp_path / "OPT-A2"
     shutil.copytree(FIXTURE, record)
-    assert main(["replay", str(record), "--rerun", "--json"]) == 0
+    code = main(["replay", str(record), "--rerun", "--json"])
     document = json.loads(capsys.readouterr().out)
-    assert (document["verdict"], document["differences"]) == ("MATCH", [])
+    if REGISTERED:
+        assert code == 0
+        assert (document["verdict"], document["differences"]) == ("MATCH", [])
+    else:
+        assert code == 1
+        assert_inspected_off_registered(document, row="X07a-L4")
     assert main(["replay", str(record)]) == 0
     assert "inspected_archived_results" in capsys.readouterr().out
     (record / "starts" / "0" / "candidate-revision.json").write_bytes(b"{}")

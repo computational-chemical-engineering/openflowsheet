@@ -29,6 +29,8 @@ import contextlib
 import copy
 import io
 import json
+import os
+import re
 import sys
 from collections.abc import Callable, Iterator, Mapping
 from dataclasses import dataclass, field
@@ -141,9 +143,14 @@ class Observed:
 
 
 def _portable(value: Any, root: Path) -> Any:
-    """`value` with the directory `root` written `<tmp>`."""
-    text = json.dumps(value)
-    return json.loads(text.replace(json.dumps(str(root))[1:-1], TMP))
+    """`value` with the directory `root` written `<tmp>`, and a path under it with `/`: the corpus
+    records `<tmp>/plant`, which Windows shows as `<tmp>\\plant` (X07a). POSIX: the first only."""
+    text = json.dumps(value).replace(json.dumps(str(root))[1:-1], TMP)
+    if os.sep != "/":
+        sep = json.dumps(os.sep)[1:-1]
+        under = re.escape(TMP) + "((?:" + re.escape(sep) + r"[\w.-]+)+)"
+        text = re.sub(under, lambda match: TMP + match.group(1).replace(sep, "/"), text)
+    return json.loads(text)
 
 
 def _rankine(edit: Callable[[dict[str, Any]], None] | None = None) -> dict[str, Any]:

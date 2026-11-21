@@ -1,0 +1,8 @@
+# X07a (R-1063; Decision Desk ofs-x07a-pywin32-lock, option A): the pin of pywin32, which
+# `mcp==1.30.0` requires on Windows only (`pywin32>=310; sys_platform == 'win32' and python_version
+# < '3.14'`) and which requirements.lock (a registered identity, frozen on Linux) does not carry.
+# The Windows CI leg installs it with the R-624 pattern:
+#     python -m pip install --no-deps --require-hashes -r requirements-windows.lock
+# The hash is of the cp313 win_amd64 wheel (windows-latest, Python 3.13), from `pip download`. This
+# file is not a dependency-set identity: run manifests record requirements.lock's hash only (R-140).
+pywin32==312 --hash=sha256:c53e878d15a1c44788082bfe712a905433473aa38f86375b7cf8b45e3acbaaf9

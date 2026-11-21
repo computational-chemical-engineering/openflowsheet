@@ -371,17 +371,29 @@ def step_install_check(arguments: argparse.Namespace) -> int:
     from p03_binary_inventory import _files_digest  # noqa: PLC0415
 
     machine = platform.machine()
-    summary = json.loads((ROOT / A30_SUMMARIES[machine]).read_text(encoding="utf-8"))
-    (audited,) = [d for d in summary["distributions"] if d["name"] == "casadi"]
     digest = _files_digest(metadata.distribution("casadi"))
-    check(
-        checks,
-        "a44.casadi_files_equal_a30",
-        digest == audited["files_digest"],
-        found=digest,
-        expected=audited["files_digest"],
-        summary=str(A30_SUMMARIES[machine]),
-    )
+    if machine not in A30_SUMMARIES:
+        # X07a: casadi's files are audited (A30) on the Linux machines only; elsewhere the
+        # check is failed by name, and the record is still written.
+        check(
+            checks,
+            "a44.casadi_files_equal_a30",
+            False,
+            found=digest,
+            expected=None,
+            summary=f"no A30 summary for machine {machine}",
+        )
+    else:
+        summary = json.loads((ROOT / A30_SUMMARIES[machine]).read_text(encoding="utf-8"))
+        (audited,) = [d for d in summary["distributions"] if d["name"] == "casadi"]
+        check(
+            checks,
+            "a44.casadi_files_equal_a30",
+            digest == audited["files_digest"],
+            found=digest,
+            expected=audited["files_digest"],
+            summary=str(A30_SUMMARIES[machine]),
+        )
     if machine == "x86_64":
         p03 = json.loads((ROOT / P03_CASADI_INVENTORY).read_text(encoding="utf-8"))
         files = _installed_casadi_files()
@@ -398,6 +410,8 @@ def step_install_check(arguments: argparse.Namespace) -> int:
         )
 
     console = Path(sys.executable).parent / "openflowsheet"
+    if sys.platform == "win32":  # X07a: pip puts console scripts in `Scripts\\`, as `.exe`
+        console = Path(sysconfig.get_path("scripts")) / "openflowsheet.exe"
     with tempfile.TemporaryDirectory() as scratch:
         bundle = Path(scratch) / "bundle"
         solved = subprocess.run(

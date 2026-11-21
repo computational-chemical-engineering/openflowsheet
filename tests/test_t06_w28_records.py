@@ -170,7 +170,7 @@ def test_a97a_run_writes_the_v2_record(tmp_path: Path) -> None:
     lock = hashlib.sha256((REPO_ROOT / "requirements.lock").read_bytes()).hexdigest()
     assert document["environment_lock_sha256"] == lock
     assert document["cache_condition"] == REGISTRY["ensemble"]["cache_condition"]
-    assert document["starts_file"] == str(STARTS_FILE.relative_to(REPO_ROOT))
+    assert document["starts_file"] == STARTS_FILE.relative_to(REPO_ROOT).as_posix()  # D-29
     assert document["starts_sha256"] == REGISTRY["ensemble"]["starts_sha256"]
     assert document["policies"] == ensemble.policies([CASES["STR-01"]])
     assert document["host"] == ensemble.host()

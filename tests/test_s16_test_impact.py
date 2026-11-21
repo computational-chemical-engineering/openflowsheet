@@ -8,6 +8,7 @@ nor a built map: they run in the main venv and in CI. The map build itself needs
 from __future__ import annotations
 
 import ast
+import contextlib
 import importlib.util
 import json
 import os
@@ -260,6 +261,11 @@ def test_runtime_is_inert_without_an_active_build() -> None:
         runtime.pytest_configure(None)
 
 
+@pytest.mark.skipif(
+    sys.platform == "win32",
+    reason="X07a platform limit: the test-map runtime matches an opened path by its POSIX prefix "
+    "(`root + '/'`); the map is built in the Linux test-map venv only (docs/test-impact.md)",
+)
 def test_runtime_open_record_walks_library_frames_and_drops_imports(
     tmp_path: Path, monkeypatch
 ) -> None:
@@ -413,7 +419,7 @@ def test_deleting_a_module_level_statement_falls_back(repo) -> None:
 
 
 def _with_map_rows(map_dir: Path, *statements: tuple[str, tuple[object, ...]]) -> None:
-    with sqlite3.connect(map_dir / "map.sqlite") as db:
+    with contextlib.closing(sqlite3.connect(map_dir / "map.sqlite")) as db, db:
         for statement, values in statements:
             db.execute(statement, values)
 

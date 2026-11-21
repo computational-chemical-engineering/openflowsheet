@@ -171,16 +171,17 @@ def test_g05_a_changed_dependency_cannot_produce_an_exact_replay(
 
 
 def test_d4_the_mode_table_in_full(bundle: tuple[Path, Any]) -> None:
-    """ADR 0007 D4's three rows, plus D6's thread clause."""
+    """ADR 0007 D4's three rows, plus D6's thread clause.
+
+    The environments are complete ones on a registered Linux template, never the host's with one
+    field changed (X07a ruling R1.5): on macOS that made `(aarch64, Darwin)`, an unregistered
+    platform, and expected a reproduction there."""
     _, manifest = bundle
-    recorded = manifest.environment
+    recorded = replace(manifest.environment, architecture="x86_64", os_name="Linux")
 
     assert decide_mode(recorded, recorded)[0] == "exact_replay"
 
-    other_platform = replace(
-        recorded,
-        architecture="aarch64" if recorded.architecture != "aarch64" else "x86_64",
-    )
+    other_platform = replace(recorded, architecture="aarch64")
     assert decide_mode(recorded, other_platform)[0] == "compatible_reproduction"
 
     unregistered = replace(recorded, architecture="s390x")
@@ -371,6 +372,40 @@ def test_the_structural_identity_document_contains_no_floats() -> None:
     }, "ADR 0007 D5.3: the solver counters, never the three property counters"
 
 
+#: The `(platform.machine(), platform.system())` each CI runner label reports. A label missing
+#: here fails the guard below, so a new leg cannot be mapped to a platform by guesswork (X07a
+#: ruling G-4: mapping every label without "arm" to x86-64 Linux made the guard vacuous for the
+#: macOS and Windows legs).
+CI_RUNNER_PLATFORMS: dict[str, tuple[str, str]] = {
+    "ubuntu-latest": ("x86_64", "Linux"),
+    "ubuntu-24.04-arm": ("aarch64", "Linux"),
+    "macos-latest": ("arm64", "Darwin"),
+    "windows-latest": ("AMD64", "Windows"),
+}
+
+#: The legs CI runs on platforms outside ADR 0007 D3.3's registered set (Amendment 3: they test
+#: exact replay on their own platform and promise nothing across platforms).
+UNREGISTERED_CI_PLATFORMS: frozenset[tuple[str, str]] = frozenset(
+    {("arm64", "Darwin"), ("AMD64", "Windows")}
+)
+
+
+def _assert_matrix_registers(runners: list[str]) -> None:
+    """S8: every registered platform is a leg of the matrix, and the matrix's other legs are
+    exactly the two unregistered ones. `decide_mode` promises reproduction on the registered
+    set, and a matrix that drifted from it would promise something CI has never measured."""
+    unknown = [runner for runner in runners if runner not in CI_RUNNER_PLATFORMS]
+    assert not unknown, f"runner labels without a platform in CI_RUNNER_PLATFORMS: {unknown}"
+    platforms = {CI_RUNNER_PLATFORMS[runner] for runner in runners}
+    assert REGISTERED_PLATFORMS <= platforms, (
+        f"the CI matrix runs {sorted(platforms)} and `decide_mode` promises reproduction "
+        f"on {sorted(REGISTERED_PLATFORMS)}"
+    )
+    assert platforms - REGISTERED_PLATFORMS == UNREGISTERED_CI_PLATFORMS, (
+        f"the CI matrix's unregistered legs are {sorted(platforms - REGISTERED_PLATFORMS)}"
+    )
+
+
 def test_the_ci_workflow_pins_threads_and_compares_two_platforms() -> None:
     """ADR 0007 D6 and G05, asserted against the workflow rather than assumed.
 
@@ -388,16 +423,10 @@ def test_the_ci_workflow_pins_threads_and_compares_two_platforms() -> None:
     runners = check["strategy"]["matrix"]["runner"]
     assert len(runners) >= 2, "G05 needs two platforms"
 
-    # S8: assert the registered constant *is* the matrix, rather than that an arm runner
-    # exists somewhere. The constant is what `decide_mode` promises reproduction on, and a
-    # matrix that drifted from it would promise something CI has never measured.
-    architectures = {
-        ("aarch64", "Linux") if "arm" in runner else ("x86_64", "Linux") for runner in runners
-    }
-    assert architectures == REGISTERED_PLATFORMS, (
-        f"the CI matrix runs {sorted(architectures)} and `decide_mode` promises reproduction "
-        f"on {sorted(REGISTERED_PLATFORMS)}"
-    )
+    _assert_matrix_registers(list(runners))
+    # The guard is not vacuous: without the aarch64 leg the registered pair is not measured.
+    with pytest.raises(AssertionError):
+        _assert_matrix_registers([runner for runner in runners if runner != "ubuntu-24.04-arm"])
     assert "identity" in workflow["jobs"], "the cross-platform comparison job"
     assert workflow["jobs"]["identity"]["needs"] == "check"
 
@@ -561,7 +590,7 @@ def test_m5_an_unregistered_platform_is_unknown_on_either_side(
     aarch64, and an option nobody took is not a registered platform.
     """
     _, manifest = bundle
-    recorded = manifest.environment
+    recorded = replace(manifest.environment, architecture="x86_64", os_name="Linux")
 
     assert REGISTERED_PLATFORMS == {("x86_64", "Linux"), ("aarch64", "Linux")}
     assert ("arm64", "Darwin") not in REGISTERED_PLATFORMS
@@ -766,7 +795,8 @@ def test_f4_an_unpinned_machine_cannot_claim_an_exact_replay(
     _, manifest = bundle
     for variable in THREAD_VARIABLES:
         monkeypatch.delenv(variable, raising=False)
-    unpinned = capture()
+    # A registered Linux template (X07a ruling R1.5): the rung under test is the pins one.
+    unpinned = replace(capture(), architecture="x86_64", os_name="Linux")
 
     assert not unpinned.threads_known()
     mode, reasons = decide_mode(unpinned, unpinned)
@@ -786,7 +816,7 @@ def test_s3_the_blas_identity_decides_the_mode(bundle: tuple[Path, Any]) -> None
     code a BLAS build feeds.
     """
     _, manifest = bundle
-    recorded = manifest.environment
+    recorded = replace(manifest.environment, architecture="x86_64", os_name="Linux")
     assert recorded.blas["name"] in recorded.identity()
 
     other_vendor = replace(recorded, blas={**recorded.blas, "name": "mkl"})

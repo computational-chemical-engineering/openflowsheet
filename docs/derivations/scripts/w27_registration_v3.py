@@ -713,8 +713,9 @@ def build() -> dict[str, Any]:
     return {
         "schema": SCHEMA,
         "registration_version": 3,
-        "document": str(DOC.relative_to(ROOT)),
-        "generator": str(Path(__file__).resolve().relative_to(ROOT)),
+        # POSIX on every platform (X07a): the record's bytes are the Linux ones.
+        "document": DOC.relative_to(ROOT).as_posix(),
+        "generator": Path(__file__).resolve().relative_to(ROOT).as_posix(),
         "base": {"registration_version": 2, "sha256": BASE_PINS},
         "tables": {
             "provider_methods": dict(sorted({**v2_table, **PROVIDER_ADD}.items())),

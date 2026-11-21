@@ -704,7 +704,7 @@ def _b21(gate: Mapping[str, Any]) -> tuple[bool, Any, Any]:
     ledger = Ledger()
     local = _identities_local()
     base = subprocess.run(  # noqa: S603
-        ["git", "show", "main:src/openflowsheet/thermo/syn001.py"],  # noqa: S607
+        ["git", "show", "main:src/openflowsheet/thermo/syn001.py", "--"],  # noqa: S607
         capture_output=True,
         cwd=ROOT,
         check=True,

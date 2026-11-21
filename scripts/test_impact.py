@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import argparse
 import ast
+import contextlib
 import io
 import json
 import os
@@ -136,7 +137,8 @@ class MapData:
 
     def write(self, target: Path) -> None:
         target.unlink(missing_ok=True)
-        with sqlite3.connect(target) as db:
+        # Closed, not only committed: Windows cannot unlink a file a connection holds (X07a).
+        with contextlib.closing(sqlite3.connect(target)) as db, db:
             db.executescript(SCHEMA)
             ids: dict[str, dict[str, int]] = {"files": {}, "contexts": {}, "blobs": {}}
 
@@ -537,7 +539,7 @@ def _fallback_rule(change: Change, base: str, cwd: Path) -> str | None:
     if name in ("pytest.ini", "tox.ini", "setup.cfg"):
         return f"{path}: pytest configuration may have changed"
     if path == "pyproject.toml":
-        old = git("show", f"{base}:{path}", cwd=cwd)
+        old = git("show", f"{base}:{path}", "--", cwd=cwd)
         if _pytest_section(old) != _pytest_section((cwd / path).read_text(encoding="utf-8")):
             return f"{path}: its pytest section changed"
     if path.startswith("tests/"):
@@ -575,7 +577,7 @@ def _python_rule(
     path = change.path
     if not test_map.has_lines(path):
         return _open_rule(test_map, path, required=True)
-    old = Source(git("show", f"{base}:{path}", cwd=cwd), f"{path} (base)")
+    old = Source(git("show", f"{base}:{path}", "--", cwd=cwd), f"{path} (base)")
     new = Source((cwd / path).read_text(encoding="utf-8"), path)
     selected = _open_rule(test_map, path, required=False)
     for hunk in change.hunks:
@@ -705,6 +707,7 @@ def select(
     code; a full suite must follow before the steps merge (docs/test-impact.md). `deselected` are
     node ids the run will not execute anyway (pytest `--deselect`): an unsure test among them
     selects nothing, so it does not drag its whole file into every run."""
+    test_map: TestMap | None = None
     try:
         sha = resolve(base, cwd)
         ancestor = subprocess.run(
@@ -751,6 +754,9 @@ def select(
         return Selection(_collapse(selected | (test_map.unsure - deselected)))
     except FallbackError as reason:
         return Selection(fallback=str(reason))
+    finally:
+        if test_map is not None:
+            test_map.db.close()
 
 
 def _collapse(nodes: set[str]) -> set[str]:
@@ -765,6 +771,7 @@ def select_lines(spec: str, base: str, map_dir: Path | None, cwd: Path = ROOT) -
     if match is None:
         raise SystemExit(f"--lines wants PATH:START-END, got {spec!r}")
     path, start, end = match.group(1), int(match.group(2)), int(match.group(3) or match.group(2))
+    test_map: TestMap | None = None
     try:
         sha = resolve(base, cwd)
         test_map = TestMap(map_dir or CACHE / sha)
@@ -772,6 +779,9 @@ def select_lines(spec: str, base: str, map_dir: Path | None, cwd: Path = ROOT) -
         return Selection(test_map.tests_of(contexts, spec))
     except FallbackError as reason:
         return Selection(fallback=str(reason))
+    finally:
+        if test_map is not None:
+            test_map.db.close()
 
 
 # -- build -----------------------------------------------------------------------------------------
@@ -800,7 +810,7 @@ def _fold(run: Path, root: Path, data: MapData) -> None:
     """Read the run's coverage files, open records and test records into `data`."""
     prefix = str(root) + "/"
     for path in sorted((run / "cov").glob(".coverage*")):
-        with sqlite3.connect(path) as db:
+        with contextlib.closing(sqlite3.connect(path)) as db, db:
             row = db.execute("SELECT version FROM coverage_schema").fetchone()
             if row is None:
                 # A process killed after coverage created its tables but before it wrote any row

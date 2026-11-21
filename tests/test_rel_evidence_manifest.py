@@ -12,15 +12,18 @@ import os
 import subprocess
 import sys
 from collections.abc import Mapping, Sequence
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 from typing import Any
+from xml.etree import ElementTree
 
 import pytest
+from conftest import frozen_windows_consequence
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
 import release_evidence_manifest as rem  # noqa: E402
 import release_gate as rg  # noqa: E402
+import s13_evidence_manifest as s13  # noqa: E402
 import v0_2_gate as engine  # noqa: E402
 
 C = "c" * 40
@@ -296,20 +299,38 @@ def test_rel_a20_over_0_3_0s_committed_records(tmp_path: Path) -> None:
     )
     lines = completed.stdout.splitlines()
     assert not [line for line in lines if line.startswith("invalid:")], completed.stdout
+    # X07a-L12 (review R-5, Q-13 option A): on Windows, while a07 is a frozen Windows limit,
+    # RP.S03 differs by exactly its registered line; it is set aside and the rest judged as here.
+    differs = frozen_windows_consequence(row="X07a-L12")
+    set_aside = {"RP.S03"} if differs is not None else set()
+    wrong = []
     for key in rem.SAME_FORM:
         (said,) = [line for line in lines if line.startswith(f"RP.{key} same form: ")]
-        assert said.endswith(": equal"), said
+        if f"RP.{key}" in set_aside:
+            if said != differs:
+                wrong.append(key)
+        elif not said.endswith(": equal"):
+            wrong.append(key)
+    assert not wrong, "\n\n".join(_same_form_diagnosis(key, lines, tmp_path) for key in wrong)
     for key in rem.CHANGED_FORM:
         assert any(line.startswith(f"RP.{key} changed form: ") for line in lines)
-    manifest = json.loads((tmp_path / "manifest.json").read_text(encoding="utf-8"))
-    results = {entry["id"]: entry["result"] for entry in manifest["checks"]}
-    (own,) = [entry for entry in manifest["checks"] if entry["id"] == "RP.S18"]
+    written = json.loads((tmp_path / "manifest.json").read_text(encoding="utf-8"))
+    manifest = _set_aside(written, set_aside)
+    results = {entry["id"]: entry["result"] for entry in written["checks"]}
+    (own,) = [entry for entry in written["checks"] if entry["id"] == "RP.S18"]
     not_pass = own["value"]["self"]["not_pass"]
-    assert not_pass and {i.removeprefix("RP.") for i in not_pass} <= set(rem.CHANGED_FORM)
+    assert set_aside <= set(not_pass), not_pass
+    judged = [i for i in not_pass if i not in set_aside]
+    assert judged and {i.removeprefix("RP.") for i in judged} <= set(rem.CHANGED_FORM)
     assert results["RP.S20"] == "pass"  # 0.3.0's n = 190 meets n >= 1
     assert results["RP.S13"] == "unsupported"  # the 0.3 line has no rc_items
-    assert any(line.startswith("RP.S18 (A-1): ") and line.endswith(": holds") for line in lines)
-    assert lines[-1] == "REL.A20: PASS" and completed.returncode == 0, completed.stdout
+    (a1,) = [line for line in lines if line.startswith("RP.S18 (A-1): ")]
+    if set_aside:
+        assert f"outside the changed form {sorted(set_aside)}; " in a1 and a1.endswith(": FAILS")
+        assert lines[-1] == "REL.A20: FAIL" and completed.returncode == 1, completed.stdout
+    else:
+        assert a1.endswith(": holds"), a1
+        assert lines[-1] == "REL.A20: PASS" and completed.returncode == 0, completed.stdout
     s13 = json.loads((S13 / "manifest.json").read_text(encoding="utf-8"))
     assert rem.rel_a20(manifest, s13)[0] is True
     assert rem.rel_a20(*_same_form_fails(manifest, s13, counterpart="pass"))[0] is False
@@ -322,6 +343,67 @@ def test_rel_a20_over_0_3_0s_committed_records(tmp_path: Path) -> None:
     (own,) = [entry for entry in no_commands["checks"] if entry["id"] == "RP.S18"]
     own["value"]["self"]["commands"] = 0
     assert rem.rel_a20(no_commands, s13)[0] is False
+
+
+def _same_form_diagnosis(key: str, lines: Sequence[str], out: Path, limit: int = 3000) -> str:
+    """X07a WO11: why REL.A20's same-form line for `key` is not the expected one, bounded: the
+    generator's lines for `key`, its manifest entry's value, and for each pytest selection its exit
+    code, the nodes its junit names as failed, errored or skipped (with the message's first line)
+    and the last lines of its log (`release_evidence_manifest.run_tests` writes both under
+    `artifacts`)."""
+    shown = [line for line in lines if line.startswith(f"RP.{key} ")]
+    commands: list[Mapping[str, Any]] = []
+    try:
+        written = json.loads((out / "manifest.json").read_text(encoding="utf-8"))
+        commands = written["commands"]
+        (entry,) = [e for e in written["checks"] if e["id"] == f"RP.{key}"]
+        value = entry["value"]
+        for selection in value.get("tests", {}).get("selections", []):
+            shown.append(f"selection {selection['selection']}: {selection['summary']!r}")
+        rest = {name: said for name, said in value.items() if name != "tests"}
+        if rest or "tests" not in value:
+            shown.append(f"value: {json.dumps(rest, ensure_ascii=False)[:600]}")
+    except (OSError, ValueError, KeyError) as error:
+        shown.append(f"manifest unreadable: {type(error).__name__}: {error}")
+    artifacts = out / "artifacts"
+    for junit in sorted(artifacts.glob(f"RP.{key}.junit.xml")) + sorted(
+        artifacts.glob(f"RP.{key}.*.junit.xml")
+    ):
+        label = junit.name.removesuffix(".junit.xml")
+        codes = [c.get("exit_code") for c in commands if f"{label}.junit.xml" in c.get("cmd", "")]
+        shown.append(f"{label} exit code {codes}")
+        try:
+            cases = ElementTree.parse(junit).getroot().iter("testcase")
+            for case in cases:
+                for outcome in ("failure", "error", "skipped"):
+                    found = case.find(outcome)
+                    if found is not None:
+                        message = (found.get("message") or found.text or "").strip()
+                        shown.append(
+                            f"{label} {outcome}: {case.get('classname')}::{case.get('name')}: "
+                            f"{message.splitlines()[0][:300] if message else ''}"
+                        )
+        except (OSError, ElementTree.ParseError) as error:
+            shown.append(f"{label} junit unreadable: {type(error).__name__}: {error}")
+        log = artifacts / f"{label}.log"
+        if log.is_file():
+            tail = log.read_text(encoding="utf-8", errors="replace").strip().splitlines()[-8:]
+            shown.extend(f"{label} log: {line[:300]}" for line in tail)
+    return "\n".join(shown)[:limit]
+
+
+def _set_aside(manifest: Mapping[str, Any], checks: set[str]) -> dict[str, Any]:
+    """A copy of `manifest` with each registered-difference check of `checks` (X07a-L12) given
+    S13's `pass` and taken out of RP.S18's `not_pass`, so that REL.A20 judges the rest; the
+    manifest itself where `checks` is empty."""
+    ours: dict[str, Any] = json.loads(json.dumps(manifest))
+    for entry in ours["checks"]:
+        if entry["id"] in checks:
+            entry["result"] = "pass"
+        if entry["id"] == "RP.S18":
+            said = entry["value"]["self"]
+            said["not_pass"] = [i for i in said["not_pass"] if i not in checks]
+    return ours
 
 
 def _same_form_fails(
@@ -439,3 +521,30 @@ def test_rp_s22_reads_harvest_excluded_where_the_manifest_was_written() -> None:
         "evidence/S13/",
     )
     assert rem._harvest_excluded_at(S13.name) == ()
+
+
+class _WindowsRoot(type(Path())):  # type: ignore[misc]
+    """`ROOT` as Windows hands it out: a path under it, made relative to it, prints with
+    backslashes (`WindowsPath.__str__`), while the files it names are this checkout's."""
+
+    def relative_to(self, *other: Any, **kwargs: Any) -> PureWindowsPath:
+        return PureWindowsPath(*super().relative_to(*other, **kwargs).parts)
+
+
+def test_rp_s16_and_s22_record_git_paths_where_windows_prints_backslashes(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """X07a-WO12: RP.S16 keys `docs/adr/` by path and RP.S22 matches and records
+    `evidence/<pkg>/<40 hex>/manifest.json`, both in git's `/` form. With `ROOT` behaving as on
+    Windows, each measure over 0.3.0's records gives the bytes it gives natively (CI 44799836309:
+    `ADR 0022: 0 files docs/adr/0022-*.md` and `evidence\\S13\\...\\manifest.json`)."""
+    inputs = rem.Inputs(rem.load_line("0.3"), S13.name, manifest_adrs=("0053", "0054"))
+    native = {"adrs": rem._m_adrs(inputs), "harvest": rem._m_harvest(inputs)}
+    assert native["adrs"][0] == "pass", native["adrs"]
+    assert native["harvest"][0] == "pass", native["harvest"]
+    root = _WindowsRoot(ROOT)
+    assert str((root / "docs" / "adr" / "x.md").relative_to(root)) == "docs\\adr\\x.md"
+    monkeypatch.setattr(s13, "ROOT", root)
+    monkeypatch.setattr(rem, "ROOT", root)
+    windows = {"adrs": rem._m_adrs(inputs), "harvest": rem._m_harvest(inputs)}
+    assert json.dumps(windows, sort_keys=True) == json.dumps(native, sort_keys=True)

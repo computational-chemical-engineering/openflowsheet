@@ -478,19 +478,23 @@ class SessionOutcome:
 
 def _stop(process: subprocess.Popen[bytes], grace_s: float) -> None:
     """SIGTERM the session's process group (claude and the MCP server it started), then
-    SIGKILL after `grace_s`."""
-    for sig, wait in ((signal.SIGTERM, grace_s), (signal.SIGKILL, None)):
-        try:
-            os.killpg(process.pid, sig)
-        except ProcessLookupError:
-            return
-        if wait is None:
-            break
-        try:
-            process.wait(timeout=wait)
-            return
-        except subprocess.TimeoutExpired:
-            continue
+    SIGKILL after `grace_s`. Windows has no process groups (X07a): the session process alone is
+    killed there; the V17 harness is registered on Linux."""
+    if sys.platform == "win32":
+        process.kill()
+    else:
+        for sig, wait in ((signal.SIGTERM, grace_s), (signal.SIGKILL, None)):
+            try:
+                os.killpg(process.pid, sig)
+            except ProcessLookupError:
+                return
+            if wait is None:
+                break
+            try:
+                process.wait(timeout=wait)
+                return
+            except subprocess.TimeoutExpired:
+                continue
 
 
 def run_session(

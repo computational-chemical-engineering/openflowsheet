@@ -60,7 +60,7 @@ def _document(file: str) -> dict[str, Any]:
 def test_every_committed_file_is_in_sha256sums_with_its_bytes() -> None:
     sums = _sums()
     committed = sorted(
-        str(path.relative_to(RUNS_DIR))
+        path.relative_to(RUNS_DIR).as_posix()
         for path in RUNS_DIR.rglob("*")
         if path.is_file() and path.name != "SHA256SUMS"
     )
@@ -74,11 +74,11 @@ def test_a95_a97e_the_registry_names_every_run_file_by_its_hash() -> None:
     holdout files included; the judged texts are listed too. W31's reports, replays, A98 texts and
     comparisons are in `SHA256SUMS` (`tests/test_t06_w31_runs.py` recomputes them)."""
     sums = _sums()
-    committed = {str((RUNS_DIR / name).relative_to(REPO_ROOT)) for name in sums}
+    committed = {(RUNS_DIR / name).relative_to(REPO_ROOT).as_posix() for name in sums}
     assert {entry["file"] for entry in RUNS} == {f for f in committed if f.endswith(".json")}
     assert {text["file"] for text in TEXTS} <= committed
     for entry in [*RUNS, *TEXTS]:
-        name = str((REPO_ROOT / entry["file"]).relative_to(RUNS_DIR))
+        name = (REPO_ROOT / entry["file"]).relative_to(RUNS_DIR).as_posix()
         raw = (REPO_ROOT / entry["file"]).read_bytes()
         assert hashlib.sha256(raw).hexdigest() == entry["sha256"] == sums[name], name
 

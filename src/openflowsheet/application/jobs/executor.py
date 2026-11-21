@@ -43,8 +43,6 @@ from __future__ import annotations
 
 import logging
 import multiprocessing
-import os
-import signal
 import threading
 import time
 from collections import deque
@@ -55,6 +53,7 @@ from multiprocessing.sharedctypes import Synchronized
 from multiprocessing.synchronize import Event
 from typing import Final, Literal
 
+from openflowsheet._platform import kill_process_tree
 from openflowsheet.application.errors import ApiError
 from openflowsheet.application.job_records import Job, JobEnding
 from openflowsheet.application.jobs import worker
@@ -100,14 +99,12 @@ def _kill_tree(process: BaseProcess) -> None:
     """ADR 0033 D2 (amending ADR 0020 D3): SIGKILL the worker's process group — the worker and
     every child it spawned — falling back to `Process.kill()` where there are no process groups,
     or no group led by the worker (it died before `setpgid`, or is gone). The worker's pid cannot
-    be reused while it is unreaped, so the group id names the worker's group only."""
+    be reused while it is unreaped, so the group id names the worker's group only. On Windows
+    `Process.kill()` ends the worker, and the Job Object it put itself in ends its children
+    (`openflowsheet._platform.isolate_process_tree`)."""
     pid = process.pid
-    if pid is not None and hasattr(os, "killpg") and process.is_alive():
-        try:
-            os.killpg(pid, signal.SIGKILL)
-            return
-        except (ProcessLookupError, PermissionError):
-            pass
+    if pid is not None and process.is_alive() and kill_process_tree(pid):
+        return
     process.kill()
 
 

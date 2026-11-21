@@ -16,7 +16,7 @@ import sys
 from pathlib import Path
 
 import pytest
-from conftest import REPO_ROOT
+from conftest import BASH, REPO_ROOT
 
 sys.path.insert(0, str(REPO_ROOT / "scripts"))
 import pre_push_guard  # noqa: E402
@@ -30,12 +30,14 @@ PUBLIC_URLS = (
     "ssh://git@github.com/Computational-Chemical-Engineering/OpenFlowsheet.git",
     "/tmp/x/computational-chemical-engineering/openflowsheet.git",
     "https://github.com/computational-chemical-engineering/openflowsheet-docs.git",
+    r"C:\Users\x\computational-chemical-engineering\openflowsheet.git",
 )
 UNGUARDED_URLS = (
     "https://github.com/computational-chemical-engineering/openflowsheet-dev.git",
     "git@github.com:computational-chemical-engineering/openflowsheet-dev",
     "https://github.com/someone/openflowsheet.git",
     "/tmp/elsewhere.git",
+    r"C:\Users\x\computational-chemical-engineering\openflowsheet-dev.git",
     "DISABLED-no-direct-push",
 )
 
@@ -134,14 +136,17 @@ def test_the_installed_hook_guards_git_push(tmp_path: Path) -> None:
         shutil.copy2(REPO_ROOT / "scripts" / name, repo / "scripts" / name)
     _commit(repo, "a")
     installed = subprocess.run(
-        ["bash", str(repo / "scripts" / "install-hooks.sh")],
+        [BASH, str(repo / "scripts" / "install-hooks.sh")],
         cwd=repo,
         capture_output=True,
         text=True,
         check=True,
     )
     hook = Path(_git(repo, "rev-parse", "--path-format=absolute", "--git-path", "hooks"))
-    assert installed.stdout.strip() == f"installed {hook / 'pre-push'}"
+    # The script prints git's path (`C:/...` on Windows); compared as a path (X07a).
+    printed = installed.stdout.strip()
+    assert printed.startswith("installed ")
+    assert Path(printed.removeprefix("installed ")) == hook / "pre-push"
     assert (hook / "pre-push").read_bytes() == (
         REPO_ROOT / "scripts" / "pre_push_guard.py"
     ).read_bytes()
@@ -159,17 +164,17 @@ def test_the_installed_hook_guards_git_push(tmp_path: Path) -> None:
     assert _git(remotes / "openflowsheet.git", "for-each-ref") == ""
     _git(repo, "push", "-q", str(remotes / "openflowsheet-dev.git"), "HEAD:refs/heads/main")
     # A second install is a no-op; a different hook is kept unless --force.
-    subprocess.run(["bash", str(repo / "scripts" / "install-hooks.sh")], cwd=repo, check=True)
+    subprocess.run([BASH, str(repo / "scripts" / "install-hooks.sh")], cwd=repo, check=True)
     (hook / "pre-push").write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
     refused = subprocess.run(
-        ["bash", str(repo / "scripts" / "install-hooks.sh")],
+        [BASH, str(repo / "scripts" / "install-hooks.sh")],
         cwd=repo,
         capture_output=True,
         text=True,
     )
     assert refused.returncode == 1 and "--force" in refused.stderr
     subprocess.run(
-        ["bash", str(repo / "scripts" / "install-hooks.sh"), "--force"], cwd=repo, check=True
+        [BASH, str(repo / "scripts" / "install-hooks.sh"), "--force"], cwd=repo, check=True
     )
     assert (hook / "pre-push").read_bytes() == (
         REPO_ROOT / "scripts" / "pre_push_guard.py"

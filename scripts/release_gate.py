@@ -455,7 +455,7 @@ class GitTrees:
 
     def read(self, commit: str, path: str) -> bytes | None:
         if (commit, path) not in self._read:
-            self._read[commit, path] = self._git("show", f"{commit}:{path}")
+            self._read[commit, path] = self._git("show", f"{commit}:{path}", "--")
         return self._read[commit, path]
 
 
@@ -1065,7 +1065,7 @@ def markdown(report: Mapping[str, Any], line: Line) -> str:
 def _read_at(candidate: str) -> Callable[[str], bytes | None]:
     def read(path: str) -> bytes | None:
         try:
-            return git("show", f"{candidate}:{path}")
+            return git("show", f"{candidate}:{path}", "--")
         except subprocess.CalledProcessError:
             return None
 

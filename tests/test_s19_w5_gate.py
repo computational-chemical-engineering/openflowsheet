@@ -37,6 +37,10 @@ SYN001 = f"{SRC}/thermo/syn001.py"
 
 @pytest.fixture(scope="module")
 def sets() -> dict[str, Any]:
+    # X07a platform limit (docs/X07a_DECISIONS.md): the sets at `BASE` import that tree, which
+    # predates the platform layer and imports `fcntl` (run 44618922484).
+    if sys.platform == "win32":
+        pytest.skip("the W5 base tree imports fcntl (it predates openflowsheet._platform)")
     return gate.sets_at(BASE)
 
 

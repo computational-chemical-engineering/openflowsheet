@@ -266,6 +266,7 @@ order = [
     "openflowsheet.canonical",
     "openflowsheet.resources",
     "openflowsheet._files",
+    "openflowsheet._platform",
     "openflowsheet.ir",
     "openflowsheet",
 ]

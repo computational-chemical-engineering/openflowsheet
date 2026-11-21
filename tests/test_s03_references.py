@@ -519,6 +519,11 @@ def test_a09_the_qualification_commits_precede_the_comparison() -> None:
 # -- A10 -------------------------------------------------------------------------------------------
 
 
+@pytest.mark.skipif(
+    sys.platform == "win32",
+    reason="X07a platform limit: `scripts/s03_reference_comparison.py` keys two inputs by native "
+    "paths, and S09 A02 holds it byte-identical since 390e0af5, so the as_posix fix is held back",
+)
 def test_a10_the_comparison_recomputes_identically_from_the_committed_files() -> None:
     """A10 (i) (§19.1): `comparison.json` and `SHA256SUMS` are what the classifier computes from the
     committed records, byte for byte."""

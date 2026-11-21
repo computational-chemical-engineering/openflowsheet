@@ -1,7 +1,8 @@
 # Installation
 
 OpenFlowsheet needs **Python 3.13 or newer** and runs on Linux (x86-64 and aarch64 are the tested
-platforms).
+platforms). Windows (x86-64) and macOS (arm64) are tested in CI since 0.5; see [Windows](#windows)
+and [macOS](#macos) for what differs there.
 
 ```bash
 python -m pip install openflowsheet
@@ -53,6 +54,58 @@ make check       # ruff, mypy --strict and the test suite
 ```
 
 A source checkout also carries the registered benchmark cases.
+
+## Windows
+
+Windows x86-64 is a CI platform since 0.5 (`windows-latest`, the same checks as Linux). Install
+Python 3.13 from python.org or the Microsoft Store, then in a terminal:
+
+```powershell
+py -3.13 -m pip install openflowsheet
+```
+
+What differs from Linux:
+
+- **External models** (isolation profile `external-subprocess-v1`) are refused before any process
+  starts, `environment_unavailable` with `external_execution_unsupported_platform` (ADR 0033 D2);
+  the `nlp` and reactor environments are not built or tested there. Both are planned for a later
+  release.
+- **Jobs** run in worker processes as on Linux. A worker puts itself in a Windows Job Object, so
+  that a forced kill also ends every process it started.
+- **Project directories** should be on a local NTFS drive. A path longer than 260 characters needs
+  Windows long paths enabled (`LongPathsEnabled`).
+- **From source**, use Git for Windows and run `make` and `scripts/check.sh` in Git Bash. Clone with
+  `git config --global core.autocrlf false` set first, so that the checkout has the repository's
+  line endings: identity hashes are computed over file bytes. The `server` extra needs pywin32
+  there, which `requirements.lock` does not carry; CI installs it hash-pinned before that lock:
+  `python -m pip install --no-deps --require-hashes -r requirements-windows.lock`.
+- **Replay.** macOS arm64 and Windows x86-64: bundles made on the same platform identity replay
+  exactly; bundles from another platform are inspected, not reproduced (ADR 0007 D3.3,
+  Amendment 3).
+- The `coolprop` extra installs from PyPI's Windows wheel, but its wheel audit and its tests cover
+  Linux only.
+
+## macOS
+
+macOS on Apple silicon (arm64) is a CI platform since 0.5 (`macos-latest`, the same checks as
+Linux). Install Python 3.13 (python.org, Homebrew `python@3.13` or `uv python install 3.13`), then:
+
+```bash
+python3.13 -m pip install openflowsheet
+```
+
+What differs from Linux:
+
+- **External models** run with the same process-group kill chain as on Linux but are best effort
+  (ADR 0033 D2: Linux is the registered platform); the `nlp` and reactor environments are not
+  built or tested on macOS yet.
+- Floating-point results can differ from the Linux reference in their last bits.
+- **Replay.** macOS arm64 and Windows x86-64: bundles made on the same platform identity replay
+  exactly; bundles from another platform are inspected, not reproduced (ADR 0007 D3.3,
+  Amendment 3).
+- The `coolprop` extra installs from PyPI's macOS wheel, but its wheel audit and its tests cover
+  Linux only.
+- Intel Macs are not tested.
 
 ## Verify the installation
 

@@ -23,7 +23,7 @@ import time
 import urllib.error
 import urllib.request
 from pathlib import Path
-from typing import Final
+from typing import Any, Final
 
 #: Each path the check asks for, and the content type it must arrive with.
 EXPECTED: Final[dict[str, str]] = {
@@ -35,6 +35,14 @@ EXPECTED: Final[dict[str, str]] = {
 }
 CSP_PREFIX: Final[str] = "default-src 'none'; script-src 'self';"
 START_SECONDS: Final[float] = 60.0
+#: How the server is stopped: SIGINT; on Windows, which cannot send it to a child, Ctrl+Break to a
+#: child in its own process group, which uvicorn handles as SIGBREAK (X07a).
+if sys.platform == "win32":
+    STOP: Final[int] = signal.CTRL_BREAK_EVENT
+    STOPPABLE: Final[dict[str, Any]] = {"creationflags": subprocess.CREATE_NEW_PROCESS_GROUP}
+else:
+    STOP: Final[int] = signal.SIGINT
+    STOPPABLE: Final[dict[str, Any]] = {}
 
 
 def _command() -> list[str]:
@@ -73,6 +81,7 @@ def main(argv: list[str]) -> int:
         [*command, "serve-http", "--ui", "--project", str(project), "--port", str(port)],
         stdout=log,
         stderr=subprocess.STDOUT,
+        **STOPPABLE,
     )
     results: list[tuple[str, bool, str]] = []
     try:
@@ -98,7 +107,7 @@ def main(argv: list[str]) -> int:
             ok = (status, code) == (401, "unauthenticated")
             results.append(("GET /v1/project without a token", ok, f"{status} {code}"))
     finally:
-        server.send_signal(signal.SIGINT)
+        server.send_signal(STOP)
         try:
             server.wait(timeout=30)
         except subprocess.TimeoutExpired:

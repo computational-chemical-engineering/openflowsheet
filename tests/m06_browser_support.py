@@ -17,16 +17,19 @@ that none happened (a CSP violation is reported as a console error).
 
 from __future__ import annotations
 
-import fcntl
 import json
 import os
 import shutil
 import signal
+import sys
 import threading
 import time
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any, Final
+
+if sys.platform != "win32":  # X07a: `_high` is POSIX; the smoke test skips on Windows
+    import fcntl
 
 #: §8 A6: the browser binary — `OPENFLOWSHEET_BROWSER`, else the first of these on `PATH`.
 BROWSER_VARIABLE: Final[str] = "OPENFLOWSHEET_BROWSER"

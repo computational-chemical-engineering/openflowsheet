@@ -182,12 +182,82 @@ def test_m7_one_byte_in_a_0_3_0_bundle_fails_m7(registered: dict[str, Any], tmp_
 def test_m7_judges_the_mode_only_on_the_reference_platform(registered: dict[str, Any]) -> None:
     measured = json.loads(json.dumps(registered["measures"]))
     measured["M7"][KEY]["mode"] = "compatible_reproduction"
-    elsewhere, log = gate.compare(registered, measured, "elsewhere")
+    elsewhere, log = gate.compare(registered, measured, "elsewhere", host=AARCH64)
     assert elsewhere["M7"]["status"] == "PASS" and any("mode not judged" in x for x in log)
     here, _ = gate.compare(registered, measured, registered["reference_platform"])
     assert here["M7"]["status"] == "FAIL" and here["M7"]["wrong"] == [KEY]
     measured["M7"][KEY]["verdict"] = "MISMATCH"
-    assert gate.compare(registered, measured, "elsewhere")[0]["M7"]["wrong"] == [KEY]
+    assert gate.compare(registered, measured, "elsewhere", host=AARCH64)[0]["M7"]["wrong"] == [KEY]
+
+
+AARCH64 = ("aarch64", "Linux")
+DARWIN = ("arm64", "Darwin")
+
+
+def _policy_answer_off_registered(registered: dict[str, Any]) -> dict[str, Any]:
+    """What replay gives each registered bundle on (arm64, Darwin): the reason is
+    `decide_mode`'s own, for a Linux archive replayed there."""
+    from dataclasses import replace
+
+    from openflowsheet.run.manifest import THREAD_VARIABLES, Environment
+    from openflowsheet.run.replay import decide_mode
+
+    linux = Environment(
+        architecture="x86_64",
+        os_name="Linux",
+        os_release="r",
+        python_version="3.13.1",
+        lock_sha256="a" * 64,
+        blas={"name": "openblas", "version": "0.3.28"},
+        threads={name: "1" for name in THREAD_VARIABLES},
+    )
+    mode, reasons = decide_mode(linux, replace(linux, architecture="arm64", os_name="Darwin"))
+    return {
+        key: {
+            "verdict": "NOT_RUN",
+            "mode": mode,
+            "integrity_ok": value["integrity_ok"],
+            "reasons": [*reasons, gate.M7_NOT_RERUN],
+        }
+        for key, value in registered["measures"]["M7"].items()
+    }
+
+
+def test_m7_on_an_unregistered_host_judges_the_policy_answer(registered: dict[str, Any]) -> None:
+    """X07a ruling R1.4 (WO3 A5): off the registered set the policy forbids the comparison, so
+    M7 judges its answer exactly, and each departure from it fails by name."""
+    answer = _policy_answer_off_registered(registered)
+    results, log = gate.compare(registered, {"M7": answer}, "elsewhere", subset=True, host=DARWIN)
+    assert results["M7"]["status"] == "PASS", results["M7"]
+    assert results["M7"]["n"] == len(registered["measures"]["M7"])
+    assert any(
+        line.startswith("M7: arm64/Darwin is not a registered replay platform (ADR 0007 D3.3)")
+        for line in log
+    )
+    from openflowsheet.run.lock import TEMPLATES
+
+    reason = answer[KEY]["reasons"][0]
+    for field, value in (
+        ("verdict", "MATCH"),
+        ("mode", "compatible_reproduction"),
+        ("reasons", [TEMPLATES["R_ARCHIVE"], gate.M7_NOT_RERUN]),
+        ("reasons", [TEMPLATES["R_ARCHIVE"], reason, gate.M7_NOT_RERUN]),
+        ("reasons", [reason, "a second reason"]),
+        ("reasons", [reason, gate.M7_NOT_RERUN, "a third reason"]),
+        ("reasons", [reason]),
+        ("integrity_ok", not answer[KEY]["integrity_ok"]),
+    ):
+        mutated = json.loads(json.dumps(answer))
+        mutated[KEY][field] = value
+        results, _ = gate.compare(
+            registered, {"M7": mutated}, "elsewhere", subset=True, host=DARWIN
+        )
+        assert results["M7"]["status"] == "FAIL" and results["M7"]["wrong"] == [KEY], field
+
+    # On a registered platform off the reference class, NOT_RUN still fails (unchanged).
+    results, _ = gate.compare(registered, {"M7": answer}, "elsewhere", subset=True, host=AARCH64)
+    assert results["M7"]["status"] == "FAIL"
+    assert len(results["M7"]["wrong"]) == len(registered["measures"]["M7"])
 
 
 def test_m8_a_removed_round_trip_node_fails_m8_by_name(registered: dict[str, Any]) -> None:

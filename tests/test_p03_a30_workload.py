@@ -70,6 +70,11 @@ needs_default_install = pytest.mark.skipif(
 
 
 @needs_default_install
+@pytest.mark.skipif(
+    sys.platform != "linux",
+    reason="the A30 workload reads the mapped objects from /proc/self/maps: the binary inventory "
+    "is taken on Linux (X07a platform limit, run 44670029066)",
+)
 def test_s9_5_control_a_registered_module_failing_on_pyomo_is_recorded(
     p03: ModuleType, tmp_path: Path
 ) -> None:

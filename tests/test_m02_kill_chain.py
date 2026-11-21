@@ -258,7 +258,7 @@ def test_refusals_before_any_spawn(tmp_path: Path, monkeypatch: pytest.MonkeyPat
     assert result.status == "environment_unavailable" and "no environment" in result.message
     with pytest.raises(ValueError, match="canonical"):
         launch(program, {**_request(), "deadline_s": float("nan")}, tmp_path / "nan", limits)
-    monkeypatch.setattr(launcher.sys, "platform", "win32")
+    monkeypatch.setattr(sys, "platform", "win32")
     result = launch(program, _request(), tmp_path / "windows", limits)
     assert result.status == "environment_unavailable"
     assert result.message.startswith(launcher.UNSUPPORTED_PLATFORM)
