@@ -5014,3 +5014,12 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   would rewrite §6 after the runs), C rejected (flaky on every platform). No ADR amendment; M04 spec Amendment 4
   (docs) and register R-1068 (R-1061..1067 taken across branches). X07a-WO19 (opus-engineer; `<briefs>/X07a-WO19.md`)
   applies it and pushes.
+- 2026-11-21 ~13:05, gate 701 (dup-2, no-gain, 799f81c9..30cdb575) PASS, accepted-neutral (step 584). Gate report:
+  `ALERT selected share 57% < 75% of step gates` and `ALERT queue wait median 55 min > 15 min`: the standing pair
+  (collection-time application/ modules; the G-MAP 8 hold counted from enqueue), no new action. Merge-check helper
+  worktree s19-dup-mc (885caae7 + wp/S19-dup = 43a073d5, region.py only), job 702 queued.
+- 2026-11-21, X07a-WO19 (opus-engineer, ~97k): 277b52b9 tests per ruling §5.1, bd0b7df5 docs (M04 spec §21
+  Amendment 4, R-1068, WO19 entry); pushed. Linux: D1.2 PROMOTABLE k 114 hits 283, q̂ off A17 by 1.8e-15; D1.5 q̂
+  2.22e-13, max score 2.44e-13 (bound 1e-10). Mutations: guard admitting after PROMOTABLE fails D1.3; +1e-12 on
+  beta[0,0] fails D1.5 (q̂ 4.0e-10). 52 m04 tests + 192/1 skipped register/spec readers passed. CI 44902051410
+  (OQ-1: D1.5 on macOS and Windows).
