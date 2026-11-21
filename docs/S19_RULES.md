@@ -15,7 +15,7 @@
 
 ## Settled
 
-- Tool: cce-code-health `d542005` in `.venv-codehealth` (`requirements-codehealth.txt`). Config
+- Tool: cce-code-health `34a30bf` (re-pinned from `d542005`, the pin when G-END was registered; G-END verdict T6) in `.venv-codehealth` (`requirements-codehealth.txt`). Config
   `.codehealth/config.toml`: scope `src/openflowsheet/*`; layer rules `application-layers` and `repo-layers`; forbid
   rules; frozen paths (including F0's 35 M9 modules from `scripts/codehealth_frozen.py`: never edited before W5).
 - Design: `docs/briefs/S19-architecture.md` (phases, table 4.1 with the expected `codehealth arch` numbers per

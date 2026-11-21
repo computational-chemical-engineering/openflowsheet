@@ -5066,3 +5066,10 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   181 files, +16095/-8376); F0 on main PASS (M1 50/50, M2-M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 42/42);
   main pushed (origin/main ceb38cec); `executed` written on the card (version 3). S19 is in 0.5.0. int/0.5 rebuilt
   on ceb38cec as int/0.5-r2 (REL050 log); the old int/0.5 CI 44932969763 cancelled.
+
+## 2026-11-21 ~21:45 CET: campaign close note
+
+- `docs/reviews/S19-close.md`: outcome against CB, the verdict's findings C1 to C4 recorded as open design-lane items
+  for the next code-health gate registration (none settled here), T1 to T7 carried into the release report.
+  S19_RULES "Settled" tool line now names pin `34a30bf` (T6). Baseline lowest file health from the CB trial scan:
+  1.0, 42 files below 7.0. Gate runner left idle until REL050 confirms it does not need the queue.
