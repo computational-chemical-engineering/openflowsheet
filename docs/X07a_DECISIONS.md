@@ -594,3 +594,21 @@ Push from this worktree: `git -c credential.helper='!gh auth git-credential' pus
   summaries, each by the one added test (385 -> 386 passed; 64/53/60 -> 65/54/61 deselected); REL.A20 PASS both.
 - Gates: test_v03_v0_3_gate + test_rel_evidence_manifest + test_v03_s13_route + test_m07_v0_2_gate +
   test_m07a_v0_2_gate 418 passed; ruff, format clean; mypy (393 files) clean.
+
+## WO16 (2026-11-21, `git show <rev>:<path>` ends with `--` everywhere; on top of ee084763)
+
+- Sites changed (a final `"--"` argument): `scripts/m07a_evidence_manifest.py` (the `pyproject.toml` and `ENVELOPE`
+  reads and the two `read` closures), `release_evidence_manifest.py:413`, `release_gate.py:458,1068`,
+  `s05_evidence_manifest.py` (the seven `_git("show", ...)` reads), `s13_evidence_manifest.py:288`,
+  `t05_evidence_manifest.py:2944`, `t05b_evidence_manifest.py:707`, `test_impact.py:542,580`,
+  `w5_identity.py:745,750,751,1067`, `release_rc_local.py:259` (`_git_show(at)`, `at` a `<rev>:<path>`; the scan
+  cannot see it, a name). `cat-file -e/-t` calls are not changed (not `show`/`-p`).
+- Not changed, frozen by an earlier registration: `scripts/v0_1_gate.py:483,500,501` (byte-pinned,
+  `v0_1_gate_files_sha256`, test_m07a_v0_2_gate A13) and `scripts/m07_journey.py:1710` (`carry.journey_files`,
+  byte-equal to the anchor; test_m07_journey A21). Changing them failed those tests and RP.S03 of REL.A20. Open:
+  re-registering the pins, or leaving them.
+- Test `tests/test_x07a_git_show_separator.py` (ast scan, `file:line` on failure; `FROZEN` names the two exempt files).
+  Negative control: `"--"` removed at `release_gate.py:458` fails with `scripts/release_gate.py:458`; restored.
+- Linux identity: the 28 test files that read the touched scripts, 1480 passed, 3 skipped, 5 deselected before and
+  after the (non-frozen) fix; the re-run of the three that failed with the frozen files edited, 289 passed.
+- ruff, format clean; mypy (393 files) clean.

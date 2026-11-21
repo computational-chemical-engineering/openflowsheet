@@ -539,7 +539,7 @@ def _fallback_rule(change: Change, base: str, cwd: Path) -> str | None:
     if name in ("pytest.ini", "tox.ini", "setup.cfg"):
         return f"{path}: pytest configuration may have changed"
     if path == "pyproject.toml":
-        old = git("show", f"{base}:{path}", cwd=cwd)
+        old = git("show", f"{base}:{path}", "--", cwd=cwd)
         if _pytest_section(old) != _pytest_section((cwd / path).read_text(encoding="utf-8")):
             return f"{path}: its pytest section changed"
     if path.startswith("tests/"):
@@ -577,7 +577,7 @@ def _python_rule(
     path = change.path
     if not test_map.has_lines(path):
         return _open_rule(test_map, path, required=True)
-    old = Source(git("show", f"{base}:{path}", cwd=cwd), f"{path} (base)")
+    old = Source(git("show", f"{base}:{path}", "--", cwd=cwd), f"{path} (base)")
     new = Source((cwd / path).read_text(encoding="utf-8"), path)
     selected = _open_rule(test_map, path, required=False)
     for hunk in change.hunks:

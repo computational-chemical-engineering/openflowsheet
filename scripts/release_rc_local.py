@@ -256,7 +256,7 @@ def step12_inputs(show: Callable[[str], bytes | None]) -> dict[str, bytes]:
 
 
 def _git_show(at: str) -> bytes | None:
-    done = subprocess.run(["git", "show", at], cwd=ROOT, capture_output=True)
+    done = subprocess.run(["git", "show", at, "--"], cwd=ROOT, capture_output=True)
     return done.stdout if done.returncode == 0 else None
 
 
