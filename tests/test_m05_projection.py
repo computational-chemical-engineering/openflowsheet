@@ -636,6 +636,45 @@ def test_an_unknown_omitted_row_is_refused() -> None:
         syn001_projection("P1", omitted_rows=[*SYN001_ALIAS_ROWS, "no-such-row"])
 
 
+def test_the_call_s_arguments_are_checked_in_order() -> None:
+    """With two bad arguments the first check's message is raised: x0, the promoted parameters
+    (unknown, then twice), the link inlets, then `omitted_rows` (`_check_call` before
+    `_requested_rows`)."""
+    from openflowsheet.studies.trust_region.projection import (
+        DecisionSpec,
+        ExternalLinkSpec,
+        ObjectiveSpec,
+        project,
+    )
+
+    def call(x0: Mapping[str, float], names: tuple[str, ...], **options: Any) -> Any:
+        return project(
+            tr_e1_spec(),
+            x0,
+            decisions=[DecisionSpec(name, None, None) for name in names],
+            objective=ObjectiveSpec("tr-e1-objective", "minimize", tr_e1_objective_build, 1.0),
+            domain={},
+            shape_check="exempt_oracle",
+            **options,
+        )
+
+    short_link = ExternalLinkSpec("R", "z0", "z1", ("a", "b"), None)  # type: ignore[arg-type]
+    with pytest.raises(ValueError) as refused:
+        call({}, (*TR_E1_DECISIONS, "no-such-parameter"))
+    assert str(refused.value) == f"x0 has no value for {list(tr_e1_spec().variable_ids)}"
+    with pytest.raises(ValueError) as refused:
+        call(TR_E1_START, ("z0", "z0", "no-such-parameter"))
+    assert str(refused.value) == (
+        f"['no-such-parameter'] are not pinned inputs of {tr_e1_spec().label!r}"
+    )
+    with pytest.raises(ValueError) as refused:
+        call(TR_E1_START, ("z0", "z0"), external_links=[short_link])
+    assert str(refused.value) == "a pinned input is promoted twice: ['z0', 'z0', 'z0', 'z1']"
+    with pytest.raises(ValueError) as refused:
+        call(TR_E1_START, ("z2",), external_links=[short_link], omitted_rows=["no-such-row"])
+    assert str(refused.value) == "link 'R' needs 7 inlet variables"
+
+
 # -- R-274 on the pressure alias toy (`m05_support.at_spec`) --------------------------------------
 
 

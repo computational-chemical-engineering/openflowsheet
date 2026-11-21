@@ -80,6 +80,7 @@ from openflowsheet.thermo.pr_c1 import COMPONENTS
 if TYPE_CHECKING:
     from openflowsheet.compile.spec import ProblemSpec
     from openflowsheet.graph.process import ProcessGraph
+    from openflowsheet.models.c1.boundary import HardDomain
     from openflowsheet.models.revision_flowsheet import RevisionFlowsheet
     from openflowsheet.studies.trust_region.projection import Projection
     from openflowsheet.studies.trust_region.trf import TrfRun
@@ -210,44 +211,10 @@ def c1_formulation(
     liquid = _only(flowsheet.wiring[flash.unit_id].streams["liquid"], "flash liquid outlet")
 
     flows = [flow_id(inlet, name) for name in COMPONENTS]
-    h2, n2, _, ar, ch4 = flows
+    h2, n2 = flows[0], flows[1]
     inlet_ids = (*flows, temperature_id(inlet), pressure_id(inlet))
     domain_block = hard_domain(variant)
-    ratio_low, ratio_high = domain_block.h2_n2
-
-    def inequality(
-        name: str, build: Any, bound: float, source: str, sense: str = "<="
-    ) -> InequalitySpec:
-        return InequalitySpec(name, build, bound, source, MARGIN_REL, sense)  # type: ignore[arg-type]
-
-    inequalities = [
-        inequality(
-            "hard_domain.h2_n2.lower",
-            _linear([(ratio_low, n2), (-1.0, h2)]),
-            0.0,
-            "variant.boundary.hard_domain.H2_N2",
-        ),
-        inequality(
-            "hard_domain.h2_n2.upper",
-            _linear([(1.0, h2), (-ratio_high, n2)]),
-            0.0,
-            "variant.boundary.hard_domain.H2_N2",
-        ),
-        inequality(
-            "hard_domain.inert_max",
-            _linear(
-                [(1.0, ar), (1.0, ch4)] + [(-domain_block.inert_fraction, name) for name in flows]
-            ),
-            0.0,
-            "variant.boundary.hard_domain.inert_max",
-        ),
-    ]
-    if domain_block.tube_flow is not None:
-        per_tube = _linear([(1.0 / reactor.n_tubes, name) for name in flows])
-        low, high = domain_block.tube_flow
-        source = "variant.boundary.hard_domain.tube_flow_mol_s"
-        inequalities.append(inequality("hard_domain.tube_flow.lower", per_tube, low, source, ">="))
-        inequalities.append(inequality("hard_domain.tube_flow.upper", per_tube, high, source))
+    inequalities = _hard_domain_inequalities(domain_block, flows, reactor.n_tubes)
     conversion = reactor.conversion_parameter
 
     def h2_limit(
@@ -255,7 +222,7 @@ def c1_formulation(
     ) -> Expr:
         return 3.0 * p[conversion] * v[n2] - v[h2]
 
-    inequalities.append(inequality("admissibility.h2_limit", h2_limit, 0.0, "M04 spec §3.2 A(s)"))
+    inequalities.append(_inequality("admissibility.h2_limit", h2_limit, 0.0, "M04 spec §3.2 A(s)"))
 
     def objective(
         v: Mapping[str, Expr], b: Mapping[str, Expr], p: Mapping[str, Any], a: Any
@@ -283,6 +250,52 @@ def c1_formulation(
             pressure_id(inlet): domain_block.pressure_pa,
         },
     )
+
+
+def _hard_domain_inequalities(
+    domain_block: HardDomain, flows: Sequence[str], n_tubes: float
+) -> list[InequalitySpec]:
+    """The variant's hard-domain inequalities over the reactor-inlet `flows` (in `COMPONENTS`
+    order): the H2/N2 ratio's lower and upper rows, the inert maximum, then, when
+    `domain_block` bounds it, the per-tube flow's (`n_tubes` tubes) lower and upper rows. Pure."""
+    h2, n2, _, ar, ch4 = flows
+    ratio_low, ratio_high = domain_block.h2_n2
+    inequalities = [
+        _inequality(
+            "hard_domain.h2_n2.lower",
+            _linear([(ratio_low, n2), (-1.0, h2)]),
+            0.0,
+            "variant.boundary.hard_domain.H2_N2",
+        ),
+        _inequality(
+            "hard_domain.h2_n2.upper",
+            _linear([(1.0, h2), (-ratio_high, n2)]),
+            0.0,
+            "variant.boundary.hard_domain.H2_N2",
+        ),
+        _inequality(
+            "hard_domain.inert_max",
+            _linear(
+                [(1.0, ar), (1.0, ch4)] + [(-domain_block.inert_fraction, name) for name in flows]
+            ),
+            0.0,
+            "variant.boundary.hard_domain.inert_max",
+        ),
+    ]
+    if domain_block.tube_flow is not None:
+        per_tube = _linear([(1.0 / n_tubes, name) for name in flows])
+        low, high = domain_block.tube_flow
+        source = "variant.boundary.hard_domain.tube_flow_mol_s"
+        inequalities.append(_inequality("hard_domain.tube_flow.lower", per_tube, low, source, ">="))
+        inequalities.append(_inequality("hard_domain.tube_flow.upper", per_tube, high, source))
+    return inequalities
+
+
+def _inequality(
+    name: str, build: Any, bound: float, source: str, sense: str = "<="
+) -> InequalitySpec:
+    """A C1 inequality with the study's relative margin `MARGIN_REL`."""
+    return InequalitySpec(name, build, bound, source, MARGIN_REL, sense)  # type: ignore[arg-type]
 
 
 def project_c1(
@@ -320,20 +333,13 @@ def c1_constraint_values(
       (Σn / N_tubes) for the per-tube flow rows.
     - The decision box, the truth's hard-domain bounds on the inlet T and P, the link bounds on
       (X̂, ΔT̂) (M04 spec §3.2), the provider's domain on every stream temperature and pressure,
-      and non-negative molar flows; scale max(|bound|, 1) in the variable's unit."""
+      and non-negative molar flows; scale max(|bound|, 1) in the variable's unit
+      (`_bound_values`)."""
     flows = [flow_id(formulation.inlet_stream, name) for name in COMPONENTS]
     total = math.fsum(state[name] for name in flows)
     (link,) = formulation.external_links
     parameters = {link.x_param_id: coupling[0], link.dt_param_id: coupling[1]}
     values: list[ConstraintValue] = []
-
-    def bound(name: str, value: float, low: float | None, high: float | None) -> None:
-        for limit, sense, side in ((low, ">=", "lower"), (high, "<=", "upper")):
-            if limit is not None:
-                values.append(
-                    ConstraintValue(f"{name}.{side}", value, limit, sense, max(abs(limit), 1.0))  # type: ignore[arg-type]
-                )
-
     for item in formulation.inequalities:
         value = float(item.build(state, {}, parameters, FloatAlgebra()))
         reference = total / n_tubes if item.source.endswith("tube_flow_mol_s") else total
@@ -343,25 +349,40 @@ def c1_constraint_values(
             )
         )
     for decision in formulation.decisions:
-        bound(
+        values += _bound_values(
             f"decision.{decision.parameter_id}",
             decisions[decision.parameter_id],
             decision.lower,
             decision.upper,
         )
     for name, (low, high) in sorted(formulation.variable_bounds.items()):
-        bound(f"hard_domain.{name}", state[name], low, high)
+        values += _bound_values(f"hard_domain.{name}", state[name], low, high)
     for coordinate, value in zip(("X", "dT"), coupling, strict=True):
         low, high = LINK_BOUNDS[coordinate]
-        bound(f"admissibility.{coordinate}", value, low, high)
+        values += _bound_values(f"admissibility.{coordinate}", value, low, high)
     for name in sorted(state):
         kind = kinds.get(name, "")
         if kind in formulation.domain:
             low, high = formulation.domain[kind]
-            bound(f"provider_domain.{name}", state[name], low, high)
+            values += _bound_values(f"provider_domain.{name}", state[name], low, high)
         elif kind == "molar_flow":
-            bound(f"non_negative.{name}", state[name], 0.0, None)
+            values += _bound_values(f"non_negative.{name}", state[name], 0.0, None)
     return tuple(values)
+
+
+def _bound_values(
+    name: str, value: float, low: float | None, high: float | None
+) -> list[ConstraintValue]:
+    """The bound constraints of `value` named `name`: `<name>.lower` (`>=` `low`), then
+    `<name>.upper` (`<=` `high`), each only when its limit is not None, scale max(|limit|, 1).
+    Pure."""
+    values: list[ConstraintValue] = []
+    for limit, sense, side in ((low, ">=", "lower"), (high, "<=", "upper")):
+        if limit is not None:
+            values.append(
+                ConstraintValue(f"{name}.{side}", value, limit, sense, max(abs(limit), 1.0))  # type: ignore[arg-type]
+            )
+    return values
 
 
 # == the loop (§7.2-§7.5) ==========================================================================
