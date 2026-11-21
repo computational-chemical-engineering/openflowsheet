@@ -5040,3 +5040,12 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
 - E5: the two mcp_digest files differ from d90b498f only through 0ae27230, e2e3675f, a66116d9 (F3), all ancestors of
   main d29f1a50; their diff to d29f1a50 is empty. "Unless changed by a merge of main" applies. Tier result: 44 passed
   at 2aaa5d3f (merge-check 702 at 043879a4 ran the full suite).
+- **2026-11-21 ~17:05, G-END verdict (verdict, Opus, ~225k; 15e1e147, `docs/reviews/S19-G-END-verdict.md`): PASSED,
+  14 of 14 clauses met at 043879a4.** Scan re-run matches; also under tool d542005 (the thresholds' version). Rulings:
+  68abf467 counts as arrived through a merge of main (regenerated digests have no free choice; legacy line recomputed
+  = 1bd31223; registry --check clean); 30f705d9 (WO-N4) counts under batch N's K2 (W5-S3, S4 re-run PASS at it; four
+  K2 judges and P's K5 re-run PASS). Not established: M2/M3/M6/M9 pre-S19 equivalence beyond K2/K5; portability; the
+  nlp suite at the tip. Holds only while main stays at d29f1a50 and no later commit touches src/, scripts/ or the
+  identity paths. Findings on the criterion (E2 text for regenerating merges; tool version in the row; file smells and
+  "full suite" unbounded): for S19's close, not blocking. Next: budget tests alone (running), manifest
+  (`<briefs>/S19-MANIFEST-END.md`), fresh CI, merge card.
