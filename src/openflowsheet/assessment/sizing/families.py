@@ -11,7 +11,7 @@ import math
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, replace
 from fractions import Fraction
-from typing import Any
+from typing import Any, NamedTuple
 
 from openflowsheet.assessment.linearization import Refusal
 from openflowsheet.assessment.program import (
@@ -806,7 +806,7 @@ class _Column:
 
     def _shell(self, sctx: SizingContext, unit: UnitRef) -> SizingPlan:
         """The shell and trays (§4.4.6); a refusal here leaves the condenser and reboiler. The
-        inputs are `_shell_inputs`'s."""
+        inputs are `_shell_inputs`'s, the stage walk and its refusals `_shell_stages`'s."""
         structure = unit.structure.structure
         u, n = unit.unit_id, int(structure.stage_count)
         condenser, reboiler = structure.condenser != "none", structure.reboiler != "none"
@@ -814,46 +814,12 @@ class _Column:
         shell, trays_id = sub_item(u, "shell"), sub_item(u, "trays")
         inputs = _shell_inputs(sctx, shell)
         c_sb, f_flood, phi, s_tray, h_top, h_bottom, e_o = (t.theta_id for t, _ in inputs)
-        flows: list[StreamFlow] = []
         n_tr = last - first + 1
         n_act = actual_trays(n_tr, inputs[6][0].value)  # E_o, structural
-        components = sctx.ctx.view.components
-        entries: list[RegimeEntry] = []
-        members: list[tuple[str, FunctionalBuilder]] = []
-        for j in range(first, last + 1):
-            vap_ids = (
-                tuple(cascade_spec.vapor_id(u, j, c) for c in components),
-                cascade_spec.stage_temperature_id(u, j),
-                cascade_spec.stage_pressure_id(u, j),
-            )
-            liq_ids = (
-                tuple(cascade_spec.liquid_id(u, j, c) for c in components),
-                vap_ids[1],
-                vap_ids[2],
-            )
-            vapour, v_entry = sctx.flow(shell, f"stage.{j}.V", "VAPOR", state_ids=vap_ids)
-            entries.append(v_entry)
-            if isinstance(vapour, Refusal):
-                return SizingPlan(refusals=(vapour,), regime_entries=tuple(entries))
-            if vapour.dormant:
-                continue
-            liquid, l_entry = sctx.flow(
-                shell, f"stage.{j}.L", "LIQUID", target="v_L", state_ids=liq_ids
-            )
-            entries.append(l_entry)
-            if isinstance(liquid, Refusal):
-                return SizingPlan(refusals=(liquid,), regime_entries=tuple(entries))
-            if liquid.dormant:
-                return SizingPlan(
-                    refusals=(Refusal("SIZING_INPUT_UNAVAILABLE", f"{shell}.rho_L", f"stage {j}"),),
-                    regime_entries=tuple(entries),
-                )
-            flows += (vapour, liquid)
-            members.append((str(j), _stage_d2(vapour, liquid, c_sb, f_flood, phi)))
-        if not members:
-            return _refused(
-                "SIZING_INPUT_UNAVAILABLE", f"{shell}.V", "every tray's vapour is dormant"
-            )
+        stages = _shell_stages(sctx, u, shell, range(first, last + 1), (c_sb, f_flood, phi))
+        if isinstance(stages, SizingPlan):
+            return stages
+        flows, entries, members = stages
         volume_theta, volume_records = sctx.volume_inputs(shell, flows)
         theta = [t for t, _ in inputs] + list(volume_theta)
         probe = [OutputDef(f"size.{shell}.s{name}.diameter", "m", b) for name, b in members]
@@ -953,6 +919,67 @@ def _shell_inputs(sctx: SizingContext, shell: str) -> list[tuple[Theta, SizingIn
             structural=True,
         ),
     ]
+
+
+class _ShellStages(NamedTuple):
+    """The shell's stage walk (§4.4.6): the live stages' vapour and liquid flows, every stage's
+    dormant entries in stage order, and each live stage's `(j, D_j²)` member."""
+
+    flows: list[StreamFlow]
+    entries: list[RegimeEntry]
+    members: list[tuple[str, FunctionalBuilder]]
+
+
+def _shell_stages(
+    sctx: SizingContext,
+    u: str,
+    shell: str,
+    stages: range,
+    d2_theta: tuple[str, str, str],
+) -> _ShellStages | SizingPlan:
+    """The shell's trays `stages` of column `u`, each with its vapour flow and, unless the vapour
+    is dormant, its liquid flow and `_stage_d2` (`d2_theta`: the θ ids of `C_SB`, `f_flood`,
+    `phi_active`). A refusal plan, with the entries so far, at the first stage whose vapour or
+    liquid flow is refused or whose liquid is dormant; `SIZING_INPUT_UNAVAILABLE(<shell>.V)` when
+    every stage's vapour is dormant."""
+    c_sb, f_flood, phi = d2_theta
+    flows: list[StreamFlow] = []
+    components = sctx.ctx.view.components
+    entries: list[RegimeEntry] = []
+    members: list[tuple[str, FunctionalBuilder]] = []
+    for j in stages:
+        vap_ids = (
+            tuple(cascade_spec.vapor_id(u, j, c) for c in components),
+            cascade_spec.stage_temperature_id(u, j),
+            cascade_spec.stage_pressure_id(u, j),
+        )
+        liq_ids = (
+            tuple(cascade_spec.liquid_id(u, j, c) for c in components),
+            vap_ids[1],
+            vap_ids[2],
+        )
+        vapour, v_entry = sctx.flow(shell, f"stage.{j}.V", "VAPOR", state_ids=vap_ids)
+        entries.append(v_entry)
+        if isinstance(vapour, Refusal):
+            return SizingPlan(refusals=(vapour,), regime_entries=tuple(entries))
+        if vapour.dormant:
+            continue
+        liquid, l_entry = sctx.flow(
+            shell, f"stage.{j}.L", "LIQUID", target="v_L", state_ids=liq_ids
+        )
+        entries.append(l_entry)
+        if isinstance(liquid, Refusal):
+            return SizingPlan(refusals=(liquid,), regime_entries=tuple(entries))
+        if liquid.dormant:
+            return SizingPlan(
+                refusals=(Refusal("SIZING_INPUT_UNAVAILABLE", f"{shell}.rho_L", f"stage {j}"),),
+                regime_entries=tuple(entries),
+            )
+        flows += (vapour, liquid)
+        members.append((str(j), _stage_d2(vapour, liquid, c_sb, f_flood, phi)))
+    if not members:
+        return _refused("SIZING_INPUT_UNAVAILABLE", f"{shell}.V", "every tray's vapour is dormant")
+    return _ShellStages(flows, entries, members)
 
 
 def _stage_d2(
