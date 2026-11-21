@@ -563,3 +563,34 @@ Push from this worktree: `git -c credential.helper='!gh auth git-credential' pus
   stdout identical with timings normalised, the manifest minus `commands` identical; REL.A20 PASS both.
 - Gates: test_v03_v0_3_gate + test_rel_evidence_manifest + test_v03_s13_route 100 passed; ruff, format clean;
   mypy (393 files) clean.
+
+## WO15 (2026-11-21, RP.S08 on Windows: git 128 "failed to stat"; CI 44842632690 at 549d10c6)
+
+- The failing argv: `["git", "show", "<candidate>:evidence/S13/<C>/manifest.json"]`, cwd `v0_1_gate.ROOT`
+  (`scripts/v0_1_gate.py:460`), built by `read_at` (`scripts/v0_2_gate.py:1279` at 549d10c6) from the candidate of
+  `_build_scratch` and the S13 path of `manifest_problems`; the package manifests go the same way after `files_at`.
+  Every part is a `str` (the hypothesis of a `bytes` argument does not hold: `'b` is the first hex digit of that
+  run's candidate).
+- Cause (git source, `setup.c` `check_filename`, `compat/mingw.c` `handle_long_path`): without `--`, `git show`
+  `lstat`s each revision argument as a work-tree file to rule out an ambiguous argument, and dies (exit 128,
+  `fatal: failed to stat '<arg>'`) on any errno but ENOENT/ENOTDIR. Git for Windows, `core.longpaths` unset
+  (WO13: `longpaths 1:`), gives ENAMETOOLONG once cwd + argument reach 260: the child's scratch is 152 characters
+  (WO13), the argument 108 (40 + 1 + 13 + 40 + 14), 261. The main suite's tmp path is about 50 shorter. WO13's
+  MAX_PATH check measured repo + record path (221), not repo + `<commit>:` + path.
+- Forced on Linux (symlink loop at `<candidate>:evidence` in the scratch work tree, ELOOP): the engine without the
+  fix gives exactly WO14's Windows line, `WO14 tree 54 miss 0; H1 ns 1 root 1; H2 C = cand =; H3 read_at None git
+  128:"fatal: failed to stat '0"; 21r - no S13 manifest: evidence/S13/6872b328/manifest.json does not exist at the
+  candidate`, exit 1; with the fix exit 0, `0r`. Raw git: `fatal: failed to stat '<sha>:evidence/S13/x/manifest.json':
+  Too many levels of symbolic links`, exit 128; with `--` the blob, byte-identical.
+- Fix (6415dcc8): `v0_2_gate.blob_at` ends the revisions with `--`; `read_at` and the post-release tree comparison
+  read through it. Test `test_x07a_wo15_a_record_is_read_where_git_cannot_stat_its_argument` (not in the `a08_`
+  selection): fails without the fix on Linux (`assert None == '{"package": "S13"}\n'`), forces ENAMETOOLONG on
+  Windows by a scratch of at least 160 characters. The WO14 diagnostic now reads through `blob_at`.
+- Not changed (same pattern, outside this path): `git show <commit>:<path>` without `--` in
+  `scripts/release_gate.py:458,1068`, `m07a_evidence_manifest.py`, `release_evidence_manifest.py:413`,
+  `s05_evidence_manifest.py`. They fail the same way on Windows under a deep enough cwd.
+- Linux identity: REL.A20 generator at 549d10c6 and at the fix: the 12 same-form lines identical (12 equal),
+  stdout identical with timings normalised; the manifest minus `commands` differs only in four test-count
+  summaries, each by the one added test (385 -> 386 passed; 64/53/60 -> 65/54/61 deselected); REL.A20 PASS both.
+- Gates: test_v03_v0_3_gate + test_rel_evidence_manifest + test_v03_s13_route + test_m07_v0_2_gate +
+  test_m07a_v0_2_gate 418 passed; ruff, format clean; mypy (393 files) clean.
