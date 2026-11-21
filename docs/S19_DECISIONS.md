@@ -4926,3 +4926,13 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   Shared merge helper wp/S19-mc3 (worktree s19-mc3): f8246f88 + app 486c0096 + as 2b0abb33 + a2 5ffd5fa6, no
   conflicts; ruff, format clean; mypy 416 clean. Merge-check 688 (f8246f88..5ffd5fa6, full suite) queued. On PASS:
   fast-forward wp/S19 (merging any docs-only commits on top), remove the helper and the three lane worktrees.
+- **2026-11-21 ~10:00, merge-check 688 PASS (11/11, full suite; debt over touched files 268.9 -> 124.5); lanes app,
+  AS, A2 merged into wp/S19 (b2f62ac3, 498adcf5, 248e9496; no code diff to the checked 5ffd5fa6).** Lane and helper
+  worktrees and branches removed. Scan at 248e9496: 353 files, debt 1949.1 (target <= 1900: 49.1 over), health 9.05
+  (MET), brain 0, lowest file 7.0 (syn001/column.py; floor met), no huge_file; arch 0 violations, 0 cycles at depth 4.
+  Gate report: `ALERT selected share 47% < 75%` (collection-time application/ modules, logged) and `ALERT queue wait
+  median 62 min > 15 min` (the G-MAP 8 hold: held jobs counted from enqueue); no action beyond the logged tooling item.
+- DECISION: one more W3 lane D1 for the last ~49 debt: orchestrator/rank.py `eliminate_alias_rows` 25.9 and
+  assessment/report.py `report_body` 22.2 (other tier; neither frozen nor registry-hashed), then <= 4 S1 steps on
+  models/__init__.py `assemble` 28.6 and orchestrator/attempts.py `solve_with_attempts` 18.6. Alternative: stop W3 and
+  bring the debt criterion to Frank. Reversible by: dropping the lane before merge.

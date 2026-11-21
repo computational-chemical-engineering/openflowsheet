@@ -59,17 +59,14 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 
 ## Next actions (2026-11-21 ~01:15 CET)
 
-**Position (2026-11-21 ~05:10):** main = d29f1a50. wp/S19 = 88818288 + docs (main/F3 at 68abf467, W5-S2 fix
-da6e4e82, trust_region run 1 merged at 88818288 after merge-check 643). Scan: 353 files, debt 2093.5 (target <=
-1900), health 8.98 (>= 9.0), brain 0. MB 2c5f7c3b (G-MAP 8). Runner PID 4039086, one job per worktree.
-Lane: wp/S19-app (worktree s19-app), head 6afe9aa1 (c276bd57 + review docstrings): review R-W3-APP-1 merge; jobs
-632-634 PASS, 635-642 gating. Next: all PASS -> helper merge (pattern: worktree from the wp/S19 tip, `git merge
---no-ff -F`, ruff, enqueue merge-check `--base <tip>`) -> merge -> map build (MB) -> next lanes.
-Next lanes: application/ run 2 (cli.py, validation.py 7.9, revision_service.py; revision_run.py's public-signature
-params need a W4 plan), orchestrator residue, studies/nlp (verification.py out of scope), assessment/sizing/families.py.
-X07a: WO15 root cause fixed (6415dcc8); CI 44856631374 poller in background. Green on Windows: WO16 sweep of the
-same `git show` without `--` (release_gate.py:458, :1068, m07a_evidence_manifest.py, release_evidence_manifest.py:413,
-s05_evidence_manifest.py), then manifest `tested` and a merge card via hub.
+**Position (2026-11-21 ~10:00):** main = d29f1a50. wp/S19 = 248e9496 + docs (F3 at 68abf467, W5-S2 fix da6e4e82,
+trust_region 88818288, app/AS/A2 b2f62ac3/498adcf5/248e9496 after merge-check 688). MB 2c5f7c3b (G-MAP 8). Runner
+PID 4039086, one job per worktree. Scan at 248e9496: debt 1949.1 (<= 1900: 49.1 over), health 9.05 (MET), brain 0,
+floor 7.0 met, arch 0/0. G-END open: debt; then full suite and CI on both legs at the merged tip, F0/MCP by E1-E5.
+Next: lane D1 (rank.py, report.py, then <= 4 S1 on models/__init__.py assemble, orchestrator/attempts.py), brief
+`<briefs>/S19-W3-D1-1.md`. Open build-lane items: test-map holes (source-scanning tests such as recovery_edges a33;
+collection-time application/ modules); the WO16 frozen scripts; R-W3-A2-1 notes 3-6 (no-gain renames).
+X07a: WO17 running (main merged into wp/X07a, fresh CI, then the manifest `tested`); then a merge card via hub.
 
 0. **G-END at 80ebd99c** (scan `--repo . --json <scratch>`): 336 files, debt 2119.2 (target <= 1900: -219 left),
    health 8.93 (>= 9.0), brain 0, no file below 7.0 (MET since WO-V; lowest binding.py and syn001/column.py 7.0),
