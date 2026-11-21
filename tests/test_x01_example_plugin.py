@@ -43,6 +43,7 @@ from openflowsheet.application import capabilities
 from openflowsheet.canonical import canonical_json
 from openflowsheet.messages.catalogue import Catalogue
 from openflowsheet.registry import Registry, discovery
+from openflowsheet.registry.descriptor import PAYLOAD_DEFS
 
 EXAMPLE = REPO_ROOT / "examples" / "plugins" / "demo"
 GUIDE = REPO_ROOT / "docs-site" / "guide" / "plugins.md"
@@ -207,6 +208,8 @@ _CLI = "import sys; from openflowsheet.application.cli import main; sys.exit(mai
 def test_every_snippet_is_checked_or_marked_illustrative(page: Path, site: Path) -> None:
     snippets = _snippets(page)
     assert snippets, page
+    text = page.read_text(encoding="utf-8")
+    assert len(re.findall(r"^\s*(```|~~~)", text, re.MULTILINE)) == 2 * len(snippets), page
     _install(site)
     for marker, block in snippets:
         assert marker, f"a block without a snippet marker in {page.name}:\n{block}"
@@ -242,3 +245,20 @@ def test_the_guides_listing_claim_is_what_the_cli_prints(site: Path) -> None:
         "unreviewed",
     )
     assert item["stability"] == "core"
+    guide = GUIDE.read_text(encoding="utf-8")
+    for field, value in (
+        ("entry_point", "demo"),
+        ("distribution", "openflowsheet-demo-plugin"),
+        ("origin", "installed"),
+        ("effective_status", "tested"),
+        ("evidence_class", "unreviewed"),
+        ("stability", "core"),
+    ):
+        assert f"`{field}` `{value}`" in guide.replace("\n", " "), (field, value)
+
+
+def test_the_guide_names_every_kind_with_a_payload_schema() -> None:
+    """A new schema kind in `PAYLOAD_DEFS` fails here until the guide's "Kinds" section names it."""
+    text = GUIDE.read_text(encoding="utf-8")
+    section = text.split("## Kinds in this release", 1)[1].split("(ADR 0061", 1)[0]
+    assert set(re.findall(r"`([a-z_]+)`", section)) == set(PAYLOAD_DEFS)

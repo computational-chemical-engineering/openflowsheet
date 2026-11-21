@@ -20,6 +20,9 @@ nav line), `examples/plugins/demo/`, `examples/README.md`, `tests/test_x01_examp
   would be registered `preview` with an unchecked payload, and a unit model or method would suggest a usability 0.5 does
   not have. Alternative: a `functional_contributor` (preview, never passed to E01). Reversible by: editing `package()`
   and the guide's snippets (the snippet test pins both).
+  2026-11-21 (X01-WO2, review): after F3 (ADR 0061) `record_type`, `correlation_form` and `data_source` also have payload
+  schemas (`PAYLOAD_DEFS`); a `record_type` is `core` only when it names a `payload_schema`. `message_entries` stays the
+  choice (the only one with an observable effect); the guide now names all four kinds and a test pins them.
 - **DECISION A-3: `implementation.modules` of a payload-only descriptor -> lists the catalogue file
   (`openflowsheet_demo_plugin/messages.yaml`).** D2 calls `modules` "code and data files"; listing the YAML makes an edit
   of the catalogue move `self_sha256`. With `modules: []` an edited catalogue would leave every hash unchanged. The guide
@@ -60,6 +63,7 @@ nav line), `examples/plugins/demo/`, `examples/README.md`, `tests/test_x01_examp
 - **Q-1. Should ADR 0060 D2 require `modules` to list data files a descriptor reads (A-3)?** As written, a
   `message_entries` descriptor with `modules: []` registers, and its catalogue can change with no hash moving. Default:
   the guide recommends listing them; no registry change.
+  2026-11-21: goes to the design lane after 0.5; a sha256 on the `message_entries` catalogue reference would amend ADR 0060.
 - **Q-2. Quarantine visibility.** No operation returns the snapshot's `quarantined` rows in 0.5 (`list_capabilities`
   lists registered descriptors only); a plugin author sees a quarantine only through `default_registry().snapshot()` or
   the log (only `extension_load_failed` is logged). Default: the guide documents the Python route.
