@@ -4859,3 +4859,9 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   type and position (rules 5, 12; old code).
   Campaign item (test-only pins, one Sonnet work order): STR-01..06 order (an analysed StructuralReport, ordered
   ids) before any further step on `structural_checks`; `check_manifest`'s five-helper order (R-W3-AS-1).
+- 2026-11-21, test-only pins (sonnet-implementer, Sonnet; `<briefs>/S19-W3-pins-1.md`), not enqueued: A2 70a8da4a
+  `test_the_structural_checks_come_in_rule_order_with_str_06_last` (STR-01..06; t01_structural 84 passed; control
+  STR-03 second fails at index 1); AS d7b30915 `test_check_manifest_reports_findings_helper_by_helper_in_a_fixed_order`
+  (splits, band, promotion, failure, qualification from a19_smooth_prefix with five tampers; m04_schemas 12 passed;
+  control band/promotion swap fails at index 1). Expectations written from the code before running. Both commits carry
+  the lane's Co-Authored-By line (Opus) per the brief, not the implementer's model.
