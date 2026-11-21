@@ -4902,3 +4902,14 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   time`). The map itself works: as1-2m selected 39 tests, 66 s (ref-base 2c5f7c3b). Action: none for the running
   chains; tooling item for the build lane (which test modules import application/ at collection, and whether the
   fallback can be narrowed to the importing files), not started.
+- **2026-11-21, app1-fix (642) FAIL, a real defect from app1-10 (c276bd57):** test_t08_w2_recovery_edges
+  `test_a33_the_bijection_holds`: `event:initializer_rejected@...coupled_run._announce_outer_start` emitted by the
+  code, in no row of docs/recovery-edges.yaml. c276bd57 moved the declared outer start's events into
+  `_announce_outer_start`; its own gate (641, step 560 "accepted") selected 35 tests from the map at c6957580 and did
+  not run a33 (it scans source for emitters: a selection hole only the full suite closes). 642 fell back to the full
+  suite (binding.py at collection) and caught it. Fix 938d9393 (orchestrator, one YAML line): E9 also lists the
+  `_announce_outer_start` label (solve_coupled still emits at :1095; precedent X02_DECISIONS:71); recovery_edges
+  tests 26 passed. Job 686 app1-fix2 no-gain c276bd57..938d9393 (the docstrings + the label). Step 560's acceptance
+  stands corrected here: c276bd57 alone breaks a33. The lane's merge-check (full suite) remains the merge condition.
+  Tooling note for the build lane: source-scanning tests (bijections over emitters) are invisible to coverage
+  selection; candidates for an always-run list.
