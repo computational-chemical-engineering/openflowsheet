@@ -155,7 +155,9 @@ def eliminate_alias_rows(
     `coefficients` is each row's Jacobian row by column id. The pattern is state-invariant for
     these rows (they are affine), which A30 asserts separately; this reads it once. A qualifying
     row (every nonzero coefficient on an `eligible_kind` column) is read as a copy edge by
-    `_copy_endpoints`, which raises `UnsupportedRankStructureError` when it is not one.
+    `_copy_endpoints`, which raises `UnsupportedRankStructureError` when it is not one; a copy
+    edge that closes a cycle of retained rows is eliminated with `_certified_elimination`'s
+    certificate, which raises when the redundancy is not linear or not consistent.
     """
     if len(residuals) < 2:
         raise ValueError(
@@ -180,46 +182,9 @@ def eliminate_alias_rows(
 
         if forest.connected(positive, negative):
             path = forest.path(positive, negative)
-
-            # **Why two probe states are enough here, and would not be in general.** They
-            # witness that the *mismatch* is constant; they say nothing about the linear part,
-            # being two points on a line chosen to vary in one direction. What covers the
-            # linear part is structural and has already been enforced above: every row on the
-            # path has exactly two eligible columns with coefficients ±1, so the signed sum
-            # along a path telescopes to the endpoints *identically*, and the combination
-            # cannot differ from the row it certifies. An explicit `c_e == Σ σ_k c_k` check
-            # was written here and removed: under those two guards it can never fail, and a
-            # check that cannot fail reads as coverage it does not provide.
-            # `test_a_path_of_two_node_edges_telescopes_exactly` holds the argument.
-            # A policy that relaxed either guard — a ratio, a scaled drop, a general cycle —
-            # would need that check back, which is why the reasoning is written down and not
-            # merely relied on.
-            mismatches = [
-                values[row_id] - sum(sign * values[name] for name, sign in path)
-                for values in residuals
-            ]
-            spread = max(mismatches) - min(mismatches)
-            if spread > linearity_tolerance:
-                raise UnsupportedRankStructureError(
-                    f"row {row_id!r} is structurally redundant but its mismatch is not constant: "
-                    f"{mismatches} over the probe states, spread {spread:.3e} above "
-                    f"{linearity_tolerance:g}. The identity must hold for every state or it is "
-                    "not an identity"
-                )
-            mismatch = mismatches[0]
-            if abs(mismatch) > pressure_tolerance:
-                raise SpecificationConflictError(
-                    f"SPECIFICATION_CONFLICT: row {row_id!r} repeats "
-                    f"{[(name, sign) for name, sign in path]} but disagrees with them by "
-                    f"{mismatch:g}, beyond the registered {pressure_tolerance:g}. The declared "
-                    "specifications contradict each other; there is no state satisfying both"
-                )
             eliminated.append(
-                EliminatedRow(
-                    row_id=row_id,
-                    equals=path,
-                    constant_mismatch=mismatch,
-                    tolerance=pressure_tolerance,
+                _certified_elimination(
+                    row_id, path, residuals, pressure_tolerance, linearity_tolerance
                 )
             )
         else:
@@ -262,6 +227,56 @@ def _copy_endpoints(row_id: str, row: Mapping[str, float], eligible_kind: str) -
     positive = next((name for name, value in row.items() if value > 0.0), CONST)
     negative = next((name for name, value in row.items() if value < 0.0), CONST)
     return positive, negative
+
+
+def _certified_elimination(
+    row_id: str,
+    path: tuple[tuple[str, int], ...],
+    residuals: Sequence[Mapping[str, float]],
+    pressure_tolerance: float,
+    linearity_tolerance: float,
+) -> EliminatedRow:
+    """§7.2's certificate for `row_id`, structurally redundant with the retained rows on `path`
+    (row id and traversal sign): its mismatch `F_e − Σ σ_k F_k` at each probe state in
+    `residuals`. Raises `UnsupportedRankStructureError` when the mismatches spread by more than
+    `linearity_tolerance`, and `SpecificationConflictError` when the first one exceeds
+    `pressure_tolerance` in magnitude."""
+    # **Why two probe states are enough here, and would not be in general.** They witness that
+    # the *mismatch* is constant; they say nothing about the linear part, being two points on a
+    # line chosen to vary in one direction. What covers the linear part is structural and has
+    # already been enforced by `_copy_endpoints` on every row: every row on the path has exactly
+    # two eligible columns with coefficients ±1, so the signed sum along a path telescopes to
+    # the endpoints *identically*, and the combination cannot differ from the row it certifies.
+    # An explicit `c_e == Σ σ_k c_k` check was written in this certificate and removed: under
+    # those two guards it can never fail, and a check that cannot fail reads as coverage it does
+    # not provide. `test_a_path_of_two_node_edges_telescopes_exactly` holds the argument.
+    # A policy that relaxed either guard — a ratio, a scaled drop, a general cycle — would need
+    # that check back, which is why the reasoning is written down and not merely relied on.
+    mismatches = [
+        values[row_id] - sum(sign * values[name] for name, sign in path) for values in residuals
+    ]
+    spread = max(mismatches) - min(mismatches)
+    if spread > linearity_tolerance:
+        raise UnsupportedRankStructureError(
+            f"row {row_id!r} is structurally redundant but its mismatch is not constant: "
+            f"{mismatches} over the probe states, spread {spread:.3e} above "
+            f"{linearity_tolerance:g}. The identity must hold for every state or it is "
+            "not an identity"
+        )
+    mismatch = mismatches[0]
+    if abs(mismatch) > pressure_tolerance:
+        raise SpecificationConflictError(
+            f"SPECIFICATION_CONFLICT: row {row_id!r} repeats "
+            f"{[(name, sign) for name, sign in path]} but disagrees with them by "
+            f"{mismatch:g}, beyond the registered {pressure_tolerance:g}. The declared "
+            "specifications contradict each other; there is no state satisfying both"
+        )
+    return EliminatedRow(
+        row_id=row_id,
+        equals=path,
+        constant_mismatch=mismatch,
+        tolerance=pressure_tolerance,
+    )
 
 
 def pressure_shifted_state(
