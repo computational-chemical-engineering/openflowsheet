@@ -865,6 +865,7 @@ peek()
 @pytest.fixture(scope="module")
 def pinned_tree(tmp_path_factory: pytest.TempPathFactory) -> Iterator[Path]:
     """A detached worktree of the base with `thermo/pr_c1.py` comment-edited and the probes."""
+    _skip_base_tree_on_windows()
     tree = tmp_path_factory.mktemp("pin") / "tree"
     _git("worktree", "add", "--detach", str(tree), BASE)
     try:

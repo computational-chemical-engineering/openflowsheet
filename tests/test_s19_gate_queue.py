@@ -25,6 +25,12 @@ import w5_gate  # noqa: E402
 
 QUEUE_SCRIPT = ROOT / ".claude" / "skills" / "s19-refactor" / "gate_queue.py"
 
+#: X07a platform limit (docs/X07a_DECISIONS.md, platform-limit table): the gate queue takes its
+#: locks with `fcntl` (POSIX only); it runs on the Linux gate host. Run 44945609131, 3 errors.
+pytestmark = pytest.mark.skipif(
+    sys.platform == "win32", reason="the S19 gate queue locks with fcntl: POSIX only"
+)
+
 
 def _load() -> ModuleType:
     spec = importlib.util.spec_from_file_location("s19_gate_queue_under_test", QUEUE_SCRIPT)

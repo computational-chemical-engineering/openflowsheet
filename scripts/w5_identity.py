@@ -1210,7 +1210,7 @@ _COMPREHENSION: Final = re.compile(r"\.<locals>\.<(?:listcomp|dictcomp|setcomp|g
 
 def _blob(tree: Path, revision: str, path: str) -> bytes:
     done = subprocess.run(  # noqa: S603
-        ["git", "-C", str(tree), "show", f"{revision}:{path}"],  # noqa: S607
+        ["git", "-C", str(tree), "show", f"{revision}:{path}", "--"],  # noqa: S607
         capture_output=True,
         check=False,
     )
