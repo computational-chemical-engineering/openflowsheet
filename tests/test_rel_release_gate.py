@@ -73,6 +73,23 @@ def test_the_committed_line_files_load() -> None:
     assert release_gate.load_line("0.3", reader()).document["role"] == "inheritance"
 
 
+def test_no_phrase_of_a_gate_line_is_a_substring_of_another() -> None:
+    """RP.S10 counts each phrase as a substring of the CHANGELOG section (`count == 1`), so a
+    phrase inside another would count twice; checked on every committed gate line file (line
+    0.5's design note, Q-B3)."""
+    gates = 0
+    for path in sorted((REPO_ROOT / "release" / "lines").glob("*.json")):
+        document = json.loads(path.read_text("utf-8"))
+        if document.get("role") != "gate":
+            continue
+        gates += 1
+        phrases = document["changelog_what_it_is_not"]
+        assert len(phrases) == len(set(phrases)), path.name
+        inside = [(a, b) for a in phrases for b in phrases if a != b and a in b]
+        assert inside == [], path.name
+    assert gates >= 2  # 0.4 and 0.5
+
+
 def test_a01_a_field_changed_and_not_in_changed_is_refused() -> None:
     def edit(document: dict[str, Any]) -> None:
         document["gate_set"]["packages"].append("S13")

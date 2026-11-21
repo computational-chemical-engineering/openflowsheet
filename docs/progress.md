@@ -118,7 +118,12 @@ canonicity, T07); ADR 0013 has Amendment 2 (routing on registered tolerances, T0
 - **F1 (extension registry) merged `aa2d0a4d`** (ADR 0060 Accepted, Frank 2026-11-11; R-1030 to R-1032; surface
   link c_9; both tool texts reviewed by both lanes; evidence `evidence/F1/a423093f…` tested, CI 43027599928 and
   43044509802). 0.4.0 is on PyPI and GitHub (Frank approved 2026-11-11).
-- **Then (roadmap 0.5):** F3 (component data, ADR 0061) and F2 (ADR 0062) after F1; X07a (Windows/macOS CI legs,
+- **0.5 scope narrowed (Frank, 2026-11-20, R-1065, ADR 0057 Amendment 1):** 0.5 is X07a, F1 (merged), F3 and X01's
+  plugin docs; F2, F8, X06 and X01's selectability lead 0.6. Open for 0.5: X07a (wp/X07a), F3 (wp/F3; human review recorded
+  6c82b535, then manifest and merge card), X01 part A (wp/X01, review then merge card), TOK (wp/TOK, R-1064: `grant` prints the
+  token alone), S19 W5 batch P (closes before the 0.5.0 RC cut, ADR 0077), `release/lines/0.5.json` (design pass,
+  V04-after review N-3).
+- **Was (roadmap 0.5):** F3 (component data, ADR 0061) and F2 (ADR 0062) after F1; X07a (Windows/macOS CI legs,
   needs the `workflow` scope); X01 rest; X06; `release/lines/0.5.json` (needs a design pass, V04-after review N-3);
   `m03_nlp_check.sh` to use RP §6.5's module list (V04-after review ruling (b)).
 

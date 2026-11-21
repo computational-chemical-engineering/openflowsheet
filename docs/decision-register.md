@@ -20291,6 +20291,25 @@ ADR 0069 amendment admitting markers in D2.2 and a re-registration of the lock d
 records and every bundle's `lock_sha256`); option C (no pin: pywin32 resolved from `mcp`'s marker, unpinned and
 unhashed).
 
+## R-1065: a smaller 0.5: X07a, F1, F3, X01 plugin docs; F2, F8, X06 and X01 selectability move to 0.6 (2026-11-20, Accepted)
+
+| | |
+| --- | --- |
+| Date | 2026-11-20 |
+| Decided by | Frank (session OpenFlowsheet-TR09, 2026-11-20: "Let's go for the smaller 0.5 release") |
+| Normative text | ADR 0057 Amendment 1 (D6); `docs/roadmap/roadmap.md` sections 0.5 and 0.6 |
+| Evidence | ADR 0061 migration proof (F3 additive); ADRs 0062 and 0067 (F2, F8 change stored records and identity) |
+| Affected packages | X07a, F1, F3, X01 (0.5); F2, F8, X06, X01 selectability (0.6); `release/lines/0.5.json` (to be designed) |
+
+**Decision.** As ADR 0057 Amendment 1: 0.5 ships X07a, F1, F3 and X01's plugin docs (plus the parts of X01 that need no
+F2, F4 or F6); F2, F8 and X06 lead 0.6; the v2-revision clause of the 0.5 line acceptance moves to 0.6.
+
+**Why.** One release carries one record migration: F2 and F8 change stored records and identity, and F4 to F6 build on
+the same v2 records. F3 is additive.
+
+**Rejected.** *The full 0.5 (ADR 0057 D6 as written):* two migrations of stored records across 0.5 and 0.6. *The
+smaller 0.5 plus X06:* X06 has no ADR yet; it does not change records, so it costs nothing to lead 0.6 with it.
+
 ## R-1068: M04/X07a: no test asserts an outcome that ADR 0036 D8 does not promise; A36's application half runs on A17; §6.2's ties erratum (X07a ruling D1; 2026-11-21)
 
 | | |

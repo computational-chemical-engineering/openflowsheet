@@ -86,7 +86,8 @@ the store; no code to author.
 **D6 — Release lines.** `roadmap.md` gives the order: 0.4 boundary work, F0 and W1; 0.5 X07a, F1, F3, F2, F8, X06;
 0.6 F4, F5, F6 and the multiphase packages, closing with Seider VCM; 0.7 F7, TX, X13, X07b; 0.8 the design toolkit; 0.9
 batch, relief, synthesis and electrolytes; 1.0 solids, polymers and P&ID. MSG before X04 stands (Frank). ADR 0056's
-release lines are subordinate to this order. FB-04 (1) is dropped as a 0.4 legacy fix; F5 and `std.turbine` solve it.
+release lines are subordinate to this order. *(Amended 2026-11-20, Frank, R-1065: 0.5 is X07a, F1, F3 and X01's plugin docs; F2, F8, X06
+and X01's selectability move to the head of 0.6. See "Amendment 1" below.)* FB-04 (1) is dropped as a 0.4 legacy fix; F5 and `std.turbine` solve it.
 
 **D7 — Open items, each with a proposed default.** The specifier rules on the first four at the start of W1, and each
 gates the foundation ADR named; the fifth does not gate, since ADR-F6 takes its default and X14's specification
@@ -97,6 +98,23 @@ confirms it:
 - Holdup dormancy and non-material holdups (ADR-F7): the stream rules applied to holdups; unit-owned conserved
   holdups admitted.
 - The verdict of the `heat_direction` check (ADR-F6, specified by X14): a judged check, as the exchanger's are today.
+
+## Amendment 1 (2026-11-20, Frank): a smaller 0.5 (R-1065)
+
+**D6** is amended. The 0.5 line is X07a, F1 (merged), F3, and X01's plugin documentation and example plugin with the
+parts of X01 that need no F2, F4 or F6. F2, F8 and X06 move to the head of 0.6, before F4; X01's selectability of
+library-only providers and units moves to 0.6 with F4 and F6. The 0.5 line acceptance keeps "ADR-F1 to ADR-F8
+Accepted" and "0.3.0 bundles replay everywhere"; its clause "a v2 revision with store-pinned records solves on the
+legacy route on all three OSes" moves to 0.6. `roadmap.md` carries the same change.
+
+**Reason.** F2 (`ProcessRevision` v2, the material model) and F8 (identity, replay and evidence v2) change what users
+store and how runs are identified; F4 to F6 are designed against the same v2 records (design wave W1). Shipping F2 and
+F8 in 0.5 and F4 to F6 in 0.6 would migrate stored projects and bundles twice, through an intermediate record shape
+nothing else targets. F3 is additive (ADR 0061, migration proof: v1 revisions and runs unchanged; record SHAs enter
+`content_hash` only through F2), so it stays in 0.5. X06 is independent of the foundations and has no ADR yet; it
+leads 0.6.
+
+**Unchanged.** The foundation order (F2 before F4, F8 after F2 and F3), the design waves, and every other line.
 
 ## Existing ADRs this amends, and the ADR that carries each amendment
 
