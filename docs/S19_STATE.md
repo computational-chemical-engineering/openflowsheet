@@ -59,18 +59,18 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 
 ## Next actions (2026-11-21 ~01:15 CET)
 
-**Position:** main = d29f1a50. wp/S19 = da6e4e82 + docs (main/F3 merged at 68abf467, W5-S2 records fix
-da6e4e82; merge-check 615 PASS). MB c6957580 (stale since the F3 merge: every step falls back to the full suite;
-move MB once the TR and app chains drain, queue held). Runner PID 3031640, one job per worktree at a time.
-Lanes (both rebased onto da6e4e82):
-- wp/S19-tr (worktree s19-tr), head 93b4bf6a: 13 steps + rule-16 pins bb7076bf, 33c6b28f; review R-W3-TR-1 merge,
-  fixes done (job 631). Jobs 621-631 gating; 607, 608, 620 PASS (620 logged by hand as step 525: rebased jobs are
-  new steps, `rerun_of` cleared in pending; log 621 by hand too, without --rerun-of, with --head). nlp-marked suite
-  at 93b4bf6a: base failures only. Next: all PASS -> merge-check -> merge.
-- wp/S19-app (worktree s19-app), head c276bd57: 10 steps, jobs 632-641 gating; review R-W3-APP-1 running.
-Next lanes (after MB moves): application/ run 2 (cli.py, validation.py, revision_service.py; revision_run.py S2
-needs a W4 plan for its public signatures), orchestrator residue, studies/nlp, assessment/sizing/families.py.
-X07a: CI 44842632690 poller in background (item 4).
+**Position (2026-11-21 ~05:10):** main = d29f1a50. wp/S19 = 88818288 + docs (main/F3 at 68abf467, W5-S2 fix
+da6e4e82, trust_region run 1 merged at 88818288 after merge-check 643). Scan: 353 files, debt 2093.5 (target <=
+1900), health 8.98 (>= 9.0), brain 0. MB c6957580 (stale since F3: steps fall back to the full suite; move MB once
+the app chain drains, queue held). Runner PID 3031640, one job per worktree.
+Lane: wp/S19-app (worktree s19-app), head 6afe9aa1 (c276bd57 + review docstrings): review R-W3-APP-1 merge; jobs
+632-634 PASS, 635-642 gating. Next: all PASS -> helper merge (pattern: worktree from the wp/S19 tip, `git merge
+--no-ff -F`, ruff, enqueue merge-check `--base <tip>`) -> merge -> map build (MB) -> next lanes.
+Next lanes: application/ run 2 (cli.py, validation.py 7.9, revision_service.py; revision_run.py's public-signature
+params need a W4 plan), orchestrator residue, studies/nlp (verification.py out of scope), assessment/sizing/families.py.
+X07a: WO15 root cause fixed (6415dcc8); CI 44856631374 poller in background. Green on Windows: WO16 sweep of the
+same `git show` without `--` (release_gate.py:458, :1068, m07a_evidence_manifest.py, release_evidence_manifest.py:413,
+s05_evidence_manifest.py), then manifest `tested` and a merge card via hub.
 
 0. **G-END at 80ebd99c** (scan `--repo . --json <scratch>`): 336 files, debt 2119.2 (target <= 1900: -219 left),
    health 8.93 (>= 9.0), brain 0, no file below 7.0 (MET since WO-V; lowest binding.py and syn001/column.py 7.0),
