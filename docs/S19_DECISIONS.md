@@ -4775,3 +4775,10 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
 - 2026-11-21, review R-W3-APP-1 (reviewer, Opus; brief `<briefs>/S19-R-W3-APP-1.md`) launched in parallel with jobs
   632-641 (same DECISION as R-W3-TR-1).
 - 2026-11-21, tr1-4r (621) PASS, logged by hand as run-log step 526 (accepted, debt 9.0 -> 6.0). The rest of the TR chain logs itself (rerun_of cleared).
+- **2026-11-21 ~04:10, R-W3-APP-1 (reviewer, Opus, ~98k): merge, all ten steps.** Q1 step 6's refusal ladder moved
+  verbatim as one block (first refusal unchanged by construction; rule 16 covers collected findings, not a moved
+  first-failure ladder; no pin required). Q2 step 2 one consumer, order unobservable (sorted); step 5 twins equal.
+  Q3 `_Assembly`: no shared mutation, same lifetime, same bytes. Q4 same events, same order. Q5 stop confirmed: no
+  single-phase type bundles `_refused_at_construction`'s parameters. F1 (docstring: binder names the instance
+  contracts) + notes 4, 6 (docstring wording) fixed by the orchestrator, 6afe9aa1, job 642 app1-fix no-gain. Note 5
+  (`_Assembly` `frozen=True`, a code change) optional, not taken. Notes 2, 3 accepted as is.
