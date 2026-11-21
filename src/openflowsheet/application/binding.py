@@ -1356,7 +1356,8 @@ def _flowsheet_settings(
 ) -> dict[str, Any]:
     """Read the five parameters SYN-001 is parameterized by, from the specifications' targets,
     with the feed flows in `components`' order (the provider's, T06 spec §8.6), and the split
-    fraction from its instance parameter as `read_parameter` read it (in SI, ADR 0016 D5)."""
+    fraction from its instance parameter as `read_parameter` read it (in SI, ADR 0016 D5;
+    `_split_fraction`)."""
 
     def value_for(column: str) -> float | None:
         for name, columns in targets.items():
@@ -1370,10 +1371,7 @@ def _flowsheet_settings(
     heater_temperature = value_for("S3.T")
     flash_temperature = value_for("S4.T")
 
-    split_fraction: float | None = None
-    for entry in document.get("instances") or ():
-        if "split_fraction" in (entry.get("parameters") or {}):
-            split_fraction = parameters[(str(entry.get("id")), "split_fraction")]
+    split_fraction = _split_fraction(document, parameters)
 
     missing = [
         label
@@ -1403,3 +1401,16 @@ def _flowsheet_settings(
         "flash_temperature": flash_temperature,
         "split_fraction": split_fraction,
     }
+
+
+def _split_fraction(
+    document: Mapping[str, Any], parameters: Mapping[tuple[str, str], float]
+) -> float | None:
+    """The `split_fraction` of the instance in `document` that declares one, from `parameters`
+    (by (instance id, name), as `read_parameter` read it); the last such instance's when several
+    declare one, `None` when none does."""
+    split_fraction: float | None = None
+    for entry in document.get("instances") or ():
+        if "split_fraction" in (entry.get("parameters") or {}):
+            split_fraction = parameters[(str(entry.get("id")), "split_fraction")]
+    return split_fraction
