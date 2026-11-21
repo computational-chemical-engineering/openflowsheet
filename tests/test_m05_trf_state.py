@@ -570,6 +570,32 @@ def test_readiness_names_every_failing_pin_item(tmp_path: Path) -> None:
     assert "no subproblem executable" in missing.reasons[-1].detail
 
 
+def test_readiness_reasons_tuple_is_pinned_in_order(tmp_path: Path) -> None:
+    """The whole `reasons` tuple, in order: the Pyomo version first, then one reason per module
+    of `TRF_MODULE_SHA256` in that table's order (an empty module directory: every SHA-256 is
+    None), then the missing executable."""
+    modules = tmp_path / "trustregion"
+    modules.mkdir()
+    executable = tmp_path / "absent"
+    readiness = framework_readiness(version="6.10.2", module_dir=modules, executable=executable)
+    expected = (
+        (
+            "TRUST_REGION_FRAMEWORK_UNPINNED",
+            f"pyomo.version.version is '6.10.2'; the adapter is pinned to {PYOMO_VERSION}",
+        ),
+        *(
+            (
+                "TRUST_REGION_FRAMEWORK_UNPINNED",
+                f"pyomo.contrib.trustregion/{name} has SHA-256 None; pinned {digest}",
+            )
+            for name, digest in TRF_MODULE_SHA256.items()
+        ),
+        ("TRSP_SOLVER_UNAUDITED", f"no subproblem executable at {executable}"),
+    )
+    assert readiness.status == "UNSUPPORTED"
+    assert tuple((reason.code, reason.detail) for reason in readiness.reasons) == expected
+
+
 def test_without_pyomo_the_framework_is_unavailable(monkeypatch: pytest.MonkeyPatch) -> None:
     """Design note §6.8: in the default install readiness is
     `UNSUPPORTED(TRUST_REGION_FRAMEWORK_UNAVAILABLE)` naming the audit. Pyomo is hidden from
