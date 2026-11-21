@@ -137,8 +137,9 @@ def report_body(
 ) -> dict[str, Any]:
     """The report without `provenance` (the part A39 compares byte for byte). The values at `x`
     come from `_checked_values`; when it returns a refusal instead, the refusal joins `refusals` and
-    every output is `null`. The `uncertainty` entry starts as `_aace_uncertainty`'s, and
-    `propagate` fills its propagation results when `uncertainty` is set and there are values."""
+    every output is `null`. The contributors' sections come from `_report_sections`. The
+    `uncertainty` entry starts as `_aace_uncertainty`'s, and `propagate` fills its propagation
+    results when `uncertainty` is set and there are values."""
     refusals: list[Refusal] = list(program.refusals)
     withheld: dict[str, str] = dict(program.unavailable)
     values: Mapping[str, float] | None = None
@@ -147,12 +148,7 @@ def report_body(
         refusals.append(checked)
     else:
         values = checked
-    plans = program.plans
-    sections = {
-        name: plan.section(values if values is not None else {})
-        for name, plan in plans.items()
-        if plan.section is not None and (values is not None or name != "derived")
-    }
+    sections = _report_sections(program, values)
     derived = sections.get("derived", {})
     for output_id in derived.get("undefined", ()):
         refusals.append(Refusal("METRIC_UNDEFINED", output_id, "denominator ≤ 0 at the state"))
@@ -237,6 +233,19 @@ def _checked_values(
     if violated:
         return Refusal("ASSESSMENT_REGIME_INADMISSIBLE", ",".join(violated), f"tau_feas={tau}")
     return evaluated
+
+
+def _report_sections(
+    program: AssessmentProgram, values: Mapping[str, float] | None
+) -> dict[str, dict[str, Any]]:
+    """Each contributor plan's section at `values` (`{}` without values), by plan name in the
+    program's plan order; a plan without a section is left out, and so is `derived` without
+    values."""
+    return {
+        name: plan.section(values if values is not None else {})
+        for name, plan in program.plans.items()
+        if plan.section is not None and (values is not None or name != "derived")
+    }
 
 
 def _groups(
