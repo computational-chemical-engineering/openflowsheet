@@ -4712,3 +4712,6 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
 - 2026-11-21, trust_region residue run 1 launched (opus-engineer, Opus; brief `<briefs>/S19-W3-TR-1.md`, wp/S19-tr
   from 07f16186, labels tr1-*; first item R-W3-G3R-1's rule-16 reasons pin). Branched from 07f16186, not 68abf467,
   so its first base worktree differs from the application lane's (the jobs 562/564 race).
+- 2026-11-21 ~01:30, gate report: `ALERT queue wait median 31 min > 15 min` (6 h window: the previous evening's G1R/G3R
+  backlog). Now: 606 started 2 s after enqueue, 607 at enqueue, 608 within 1 min; no action. tr1-1 (607) PASS, debt
+  31.0 -> 21.0.
