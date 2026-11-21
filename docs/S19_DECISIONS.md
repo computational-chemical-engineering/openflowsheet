@@ -4844,3 +4844,18 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   dumps byte-identical; S2 identity runs 0 differences with negative controls. Stops: `command_streams` (lazy imports),
   `_prepare` (literal drop), `_first_noncanonical` (S2 walker: a design choice), `closure_check`/`escalate_column`
   (public params, W4). Review R-W3-A2-1 (reviewer, Opus; `<briefs>/S19-R-W3-A2-1.md`) launched.
+- **2026-11-21, R-W3-A2-1 (reviewer, Opus): merge, all 13 steps** (on the gates). Q1 S2: steps 11, 13 verbatim
+  moves; step 12's merged records equal field for field, "non_finite" 3 -> 2 occurrences, a permitted rule-15 drop.
+  Q2 STR order unchanged by construction (each helper's return `ast.dump`-equal to the old literal). Q3 step 10
+  clears the smell (cognitive 22 -> 13, helper 4; accepted form 2b2d079f). Q4 CLI bytes and lazy imports unchanged;
+  step 6 flattened is `ast.dump`-identical; DECISION sequential calls kept (a tuple of builders hides call order).
+  **Commit-message corrections (findings 1, 2, 7):** 55e5ed78 says the STR list order is pinned by test_t06_identity:
+  false (`[id, result] in checks`, test_t06_identity.py:148-150; t01_structural keys by id): no test pins STR-01..06
+  order. 529dccaf says cognitive 16 -> 15: the scan says 14. 93c67f36 says the job branch's lazy imports load ~475
+  modules a bundle run never loads: the `LocalApplication`, `dispatch`, `StoreError` imports sit at the top of
+  `command_streams` and run on both paths; meant "would stop loading if moved".
+  Notes for a later no-gain commit: `_scaled_maxima` -> `_maxima_or_refusal` (rule 8); `_new_document`'s return and
+  the caller's `new` (rules 8, 13); `_check_conflicts`' redundant `instance_of`; `_add_records_parser(commands: Any)`
+  type and position (rules 5, 12; old code).
+  Campaign item (test-only pins, one Sonnet work order): STR-01..06 order (an analysed StructuralReport, ordered
+  ids) before any further step on `structural_checks`; `check_manifest`'s five-helper order (R-W3-AS-1).
