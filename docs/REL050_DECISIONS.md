@@ -77,3 +77,9 @@
   (100, 1144, 146) + X07a (2, 4, 1) + X01 (2, 8, 0), matrix re-emitted, --check 0 problems) + wp/REL050 bfdd3f2d
   (d1df6999: register R-1062, 1063, 1065, 1068 in number order). Ten touched test files: 964 passed, 20 skipped.
   S19 not included (DECISION of 2026-11-21: S19 enters 0.5 only on a card signed before K3). CI poller bjggjcdnk.
+- 2026-11-21 ~21:25 CET: card ofs-s19-merge-main signed, choice A (S19 enters 0.5.0), VERIFIED; executed: main =
+  ceb38cec (merge of wp/S19 9fb4d5df), F0 PASS on main, pushed. The DECISION "S19 relative to K3" is settled: in.
+  int/0.5 CI 44932969763 cancelled (obsolete base). int/0.5-r2 = ceb38cec + X07a (b473c716: envelope = X07a side +
+  S19 rows; register R-1061..1068 ordered; HARVEST_SIZE (103, 1161, 147)) + X01 (2daf92b9: + X01 rows; HARVEST_SIZE
+  (105, 1169, 147)) + REL050 bfdd3f2d (67cc5027: register ordered). Ten touched test files: 970 passed, 20 skipped.
+  Pushed; CI poller b13dft0de.
