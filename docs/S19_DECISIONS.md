@@ -4974,3 +4974,16 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   resolution that regenerated tables.sha256 and builtin-sha256.txt (registry_sha256 6a7550d4: neither parent's value).
   Whether 68abf467 counts as "arrived through a merge of main" is for the G-END verdict. wp/S19 pushed (2aaa5d3f);
   CI 44896811906 running (background poller). Lane worktrees and branches removed.
+
+## 2026-11-21 ~12:10: CI 44896811906 codehealth job red (region.py duplication); lane DUP
+
+- CI 44896811906 at 2aaa5d3f: job `codehealth` (`codehealth diff --base origin/main`) FAIL, one failure:
+  `src/openflowsheet/orchestrator/region.py: new file smell(s) duplication (nloc 931)`; reproduced locally (base
+  d29f1a50). region.py shrank in S19 (debt 26.0 -> 10.0), so its internal repeats crossed the 10% line: 96 of 931
+  normalised lines, partner = region.py itself (six `self.run.record(kind="initializer_*", ...)` calls, two
+  `_external_opening` calls, the `_homotopy`/`_ptc_attempt` keyword blocks). The G-END scan criteria do not include
+  file smells, which is why the local G-END check passed; CI's ratchet does.
+- DECISION: fix by one S1 step (`consolidate-duplicate`: `_RegionSolve._record_initializer`), brief
+  `<briefs>/S19-W3-DUP-1.md`, lane `wp/S19-dup` from 799f81c9, sonnet-implementer (no arithmetic touched). Alternative:
+  a `[allow]` for duplication on region.py. Reversible by: reverting the lane's merge. Then reviewer (S1 every chain),
+  merge-check, merge, push, fresh CI; the G-END verdict waits for that CI.
