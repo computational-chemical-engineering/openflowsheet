@@ -4737,3 +4737,11 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
 - 2026-11-21 ~03:10, DECISION: review R-W3-TR-1 (reviewer, Opus; brief `<briefs>/S19-R-W3-TR-1.md`) launched while
   jobs 620-630 gate, not after. Alternative: wait ~2.5 h for the chain's gates (procedure order). Reversible by: a
   failed gate's step is bisected by a fresh engineer and re-reviewed alone; the review of unchanged steps stands.
+- **2026-11-21 ~03:20, R-W3-TR-1 (reviewer, Opus, ~102k): merge, all 14 steps; no behaviour, float or identity
+  change.** (1) Step 11 (4442aa8a) `_check_call`'s first-failure order unchanged but unpinned: a test-only pin
+  before merge (three two-bad-argument calls, optional fourth across `_requested_rows`). (2) Step 9: `HardDomain`
+  import annotation-only, no cycle risk (`adapters.variants` loads it already); move to TYPE_CHECKING per the module's
+  convention. (3) Step 13 docstring "then" over a frozenset: drop. (4) bb7076bf pins table-iteration order; fine.
+  Q2 Pyomo inequality order and zero-flow constants/pins unchanged; Q4 no float op in 11-13; Q5 stops agreed
+  (optional: `_certify_block` could take `row_data`, does not clear the smell; not taken). Fixes 1-3: sonnet-implementer
+  (Sonnet), brief `<briefs>/S19-W3-TR-1-fix1.md` (pin commit alone; B+C enqueued no-gain as tr1-fix).
