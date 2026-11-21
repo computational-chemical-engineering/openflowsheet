@@ -592,12 +592,9 @@ def bind_revision_or_reason(document: Mapping[str, Any]) -> Binding | Unbound:
     try:
         # The flowsheet object needs a value for every coordinate it is parameterized by. A freed
         # one takes its guess, which is also where the pre-solve pins it (§7.5).
+        started_targets, started_values = _with_starts(targets, values, assembly)
         settings = _flowsheet_settings(
-            document,
-            components,
-            {**targets, **{f"guess:{column}": (column,) for column in assembly}},
-            {**values, **{f"guess:{column}": value for column, value in assembly.items()}},
-            parameter_values,
+            document, components, started_targets, started_values, parameter_values
         )
     except _IncompleteError as incomplete:
         return Unbound(
@@ -966,6 +963,17 @@ def _instance_contracts(document: Mapping[str, Any], components: Sequence[str]) 
     return None
 
 
+def _with_starts(
+    targets: Mapping[str, tuple[str, ...]], values: Mapping[str, float], starts: Mapping[str, float]
+) -> tuple[dict[str, tuple[str, ...]], dict[str, float]]:
+    """`targets` and `values` with an entry `guess:<column>` for each column in `starts`, targeting
+    that column at its start: how `_flowsheet_settings` reads a freed coordinate's value (§7.5)."""
+    return (
+        {**targets, **{f"guess:{column}": (column,) for column in starts}},
+        {**values, **{f"guess:{column}": value for column, value in starts.items()}},
+    )
+
+
 def _assemble(settings: Mapping[str, Any]) -> tuple[Any, ProblemSpec, dict[str, str]]:
     """The SYN-001 flowsheet at `settings`, its declaration and its row attribution. Raises the
     models' `SpecificationError` for a value a unit refuses at construction."""
@@ -1026,12 +1034,9 @@ def _refused_at_construction(
         if any(value is None for value in defaults.values()):
             return Unbound("unsupported", f"value_outside_model_domain_unattributed: {first}")
         rebuilt = {**assembly, **{c: v for c, v in defaults.items() if v is not None}}
+        started_targets, started_values = _with_starts(targets, values, rebuilt)
         settings = _flowsheet_settings(
-            document,
-            components,
-            {**targets, **{f"guess:{column}": (column,) for column in rebuilt}},
-            {**values, **{f"guess:{column}": value for column, value in rebuilt.items()}},
-            parameter_values,
+            document, components, started_targets, started_values, parameter_values
         )
         try:
             _assemble(settings)
