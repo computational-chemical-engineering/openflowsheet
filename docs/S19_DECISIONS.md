@@ -4764,3 +4764,13 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   arguments minus --rerun-of, plus --head e4e21c29 (run-log step 525 accepted, debt 12.0 -> 9.0). 621 (running, still
   carries 610) to be logged the same way. Note: the runner serialises one job per worktree, so the TR chain runs one
   job at a time (~25 min each).
+- 2026-11-21 ~03:50, application/ run 1 (opus-engineer, Opus, ~182k, over the 150k budget): rebased onto da6e4e82,
+  head c276bd57, 10 steps, jobs 632-641 (app1-1..10). binding.py 7.0 -> 8.5 (debt 43.6 -> 16.0),
+  stream_table_format 7.9 -> 8.4 (26.0 -> 10.0; `assemble` closures-to-class, RC3 EQUAL), coupled_run 8.0 -> 8.0
+  (21.0 -> 14.0). Repo debt ~2130.3 -> ~2079.7 (pre-rebase scan). Touched tests at the head 4104 passed. Stops:
+  `_refused_at_construction` 11 params (cross-phase; ruling asked in the review), `solve_coupled`/`_classified`
+  public 7 params, `semantic_diff` closure. Not started: cli.py, validation.py (7.9), revision_service.py,
+  revision_run.py (S2; its debt is public-signature params, a W4 plan). Binding tests ~33 min per commit (the map
+  falls back to the full suite: binding runs at collection).
+- 2026-11-21, review R-W3-APP-1 (reviewer, Opus; brief `<briefs>/S19-R-W3-APP-1.md`) launched in parallel with jobs
+  632-641 (same DECISION as R-W3-TR-1).

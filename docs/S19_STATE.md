@@ -59,12 +59,18 @@ Behaviour stays bitwise identical; outward interfaces may change through ADR 007
 
 ## Next actions (2026-11-21 ~01:15 CET)
 
-**Position:** main = d29f1a50. wp/S19 = 68abf467 + docs (main/F3 merged in; merge-check job 606, full suite,
-queued; on FAIL reset wp/S19 to 4881224c before any lane merges). MB c6957580. Runner PID 3031640 (`$Q status`;
-`wait --since 584` running in background). Agents running: S19 application/ run 1 (opus-engineer, `<briefs>/S19-W3-APP-1.md`, wp/S19-app from
-68abf467, worktree s19-app, labels app1-*), S19 trust_region run 1 (opus-engineer, `<briefs>/S19-W3-TR-1.md`,
-wp/S19-tr from 07f16186, labels tr1-*). X07a: WO14 done (diagnostic 1d73d913); CI 44842632690 poller in
-background; on its result read the Windows leg's `WO14 tree` line (item 4). Scan at 68abf467: 353 files, debt 2130.3, health 8.95.
+**Position:** main = d29f1a50. wp/S19 = da6e4e82 + docs (main/F3 merged at 68abf467, W5-S2 records fix
+da6e4e82; merge-check 615 PASS). MB c6957580 (stale since the F3 merge: every step falls back to the full suite;
+move MB once the TR and app chains drain, queue held). Runner PID 3031640, one job per worktree at a time.
+Lanes (both rebased onto da6e4e82):
+- wp/S19-tr (worktree s19-tr), head 93b4bf6a: 13 steps + rule-16 pins bb7076bf, 33c6b28f; review R-W3-TR-1 merge,
+  fixes done (job 631). Jobs 621-631 gating; 607, 608, 620 PASS (620 logged by hand as step 525: rebased jobs are
+  new steps, `rerun_of` cleared in pending; log 621 by hand too, without --rerun-of, with --head). nlp-marked suite
+  at 93b4bf6a: base failures only. Next: all PASS -> merge-check -> merge.
+- wp/S19-app (worktree s19-app), head c276bd57: 10 steps, jobs 632-641 gating; review R-W3-APP-1 running.
+Next lanes (after MB moves): application/ run 2 (cli.py, validation.py, revision_service.py; revision_run.py S2
+needs a W4 plan for its public signatures), orchestrator residue, studies/nlp, assessment/sizing/families.py.
+X07a: CI 44842632690 poller in background (item 4).
 
 0. **G-END at 80ebd99c** (scan `--repo . --json <scratch>`): 336 files, debt 2119.2 (target <= 1900: -219 left),
    health 8.93 (>= 9.0), brain 0, no file below 7.0 (MET since WO-V; lowest binding.py and syn001/column.py 7.0),
