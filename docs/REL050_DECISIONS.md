@@ -217,3 +217,14 @@
   reactor env's 9.1.1 and `env.verify` refused (attempt 1, uncommitted, `~/.cache/rel050-cut/journey-attempt1/`).
   Watch at step 15: `m07_journey.py run` with the tools on PYTHONPATH reproduces attempt 1; `replay` passes in both.
 - C pushed on its own as `rc/0a800e6` (RP §6.2, A-4) for the push run at C; wp/REL050 pushed at 04dc7cd6.
+
+## 2026-11-22: RC job dispatched (orchestrator)
+
+- `release_rc` dispatch at C (`gh workflow run ci.yml --ref rc/0a800e6 -f release_rc=true`): run 45019811148, beside
+  the push run 45019680845. As 0.4.0 (the orchestrator dispatches; RP §6.10).
+- W27 archive on TR09: `~/.cache/openflowsheet/w27/artifacts` (RP_DECISIONS `## 0.4.0 cut` host note), passed by
+  `--w27-artifacts`.
+- Local full gate at 71c1d04f (C + docs) started in the rel050 worktree. First start failed at once (exit 127, ruff not
+  on PATH: the worktree has no `.venv`); restarted as `PATH=$R/.venv/bin:$PATH PYTHONPATH=src scripts/gate.sh`
+  (PYTHONPATH=src checked: `openflowsheet.__file__` resolves in the worktree, not the main checkout).
+- RC work order `<briefs>/REL050-RC.md` to opus-engineer (at most 8 threads; RC tree `rc-c-050`).
