@@ -34,8 +34,7 @@ in `docs/RELEASING.md`. Last release v0.4.0 (2026-11-11); main is `0.5.0.dev0`.
 1. On A: fresh opus-engineer: `ci --ci-run 45019811148`, `step1`, `items` (`--ci-run`, `--nlp-root`, `--python
    coolprop=...`, `--python lca=...`), then records, RC record (pattern `evidence/REL040/84c66547*/tools/make_record.py.txt`,
    plus a WHEEL-F1-F3 item row), tree record, `--lapses`. Runner as `PYTHONPATH=src $R/.venv/bin/python -B`.
-2. Full gate at C re-running in `gate-c-050` (PID in `~/.cache/rel050-cut/gate/pid-C`, summary `summary-C.txt`).
-   The run at 71c1d04f failed 2 tests from a mid-run HEAD move (logged).
+2. Full gate at C: PASS (21077 passed, 107 skipped; log `~/.cache/rel050-cut/gate/gate-C-0a800e69.log`).
 3. Then message 1 via hub (Q-F1, Q-F2, lapses), verdict, ledger, H1-H3, merge card, dry run, dispatch.
 
 ## Gates (criteria fixed before the run)

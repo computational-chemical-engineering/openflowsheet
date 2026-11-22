@@ -280,3 +280,6 @@
   first on PATH for the RC runner's ci, step1 and items calls only and finishes the RC job at C (0a800e69)."
   B: as requested (reviewed runner fix, new C', CI and every RC step re-run). A signed A does not authorize retrying
   the refused download unprompted: the install is the user's hand or their approval in this session's prompt.
+- Full gate at C (0a800e69, clean worktree `gate-c-050`, PATH=$R/.venv/bin, PYTHONPATH=src): **GATE PASS**, 21077
+  passed, 107 skipped, 222 deselected, 3 xfailed (5243 s). Log `~/.cache/rel050-cut/gate/gate-C-0a800e69.log`
+  (sha256 prefix 033af1a4831e8245). Worktree removed.
