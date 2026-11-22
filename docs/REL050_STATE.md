@@ -10,7 +10,7 @@ Frank 2026-11-20, "Let's go for the smaller 0.5 release"): **0.5 = X07a, F1, F3,
 and X01's selectability lead 0.6. Procedure: RP (`docs/derivations/release-procedure.md`), ADR 0055; dispatch steps
 in `docs/RELEASING.md`. Last release v0.4.0 (2026-11-11); main is `0.5.0.dev0`.
 
-## Position (2026-11-22, RC job running)
+## Position (2026-11-22, RC job stopped on gh)
 
 - main = 1fe40db3 (the 0.5 packages; card ofs-rel050-merge-main executed). **Freeze on main** (D2.4 paths) since K3;
   hub told and records it.
@@ -27,12 +27,16 @@ in `docs/RELEASING.md`. Last release v0.4.0 (2026-11-11); main is `0.5.0.dev0`.
 
 ## Next actions
 
-1. Wait for the RC engineer's report and the gate's summary. Judge: every step result recorded, no stop; gate PASS.
-   Check `git diff --name-only C HEAD` has no D2.4 path; push wp/REL050.
-2. RP §9.2 step 2 follow-up: read `evidence/REL050/<C>/acceptance-lapses.txt`; message 1 to the user via hub
-   (DECISION-REQUEST: Q-F1, Q-F2, the lapsed decision items, frank_items in the line file); skip if empty.
-3. Then: one `verdict` pass (RP §4.7 brief); ledger; H1 (manifest at clean G), H2, step 18 YES, H3; card to merge C
-   into main; dry run; the user's dispatch and PyPI approval.
+0. **BLOCKED on the user** (DECISION-REQUEST to hub, 2026-11-22): TR09's gh 2.46.0 lacks `--json attempt`, which
+   `scripts/release_rc.py` step 1, `ci` and `items` need. A: the user installs (or allows) a current gh under
+   `~/.cache/rel050-cut/gh`, first on PATH for those calls only. B: reviewed runner fix and a new C'. Local steps 2,
+   6-16 at C already pass (eabc3ce4); kept: `rc-c-050`, `~/.cache/rel050-cut/rc/`, `~/.cache/rel050-cut/bin/rc_local.sh`.
+1. On A: fresh opus-engineer: `ci --ci-run 45019811148`, `step1`, `items` (`--ci-run`, `--nlp-root`, `--python
+   coolprop=...`, `--python lca=...`), then records, RC record (pattern `evidence/REL040/84c66547*/tools/make_record.py.txt`,
+   plus a WHEEL-F1-F3 item row), tree record, `--lapses`. Runner as `PYTHONPATH=src $R/.venv/bin/python -B`.
+2. Full gate at C re-running in `gate-c-050` (PID in `~/.cache/rel050-cut/gate/pid-C`, summary `summary-C.txt`).
+   The run at 71c1d04f failed 2 tests from a mid-run HEAD move (logged).
+3. Then message 1 via hub (Q-F1, Q-F2, lapses), verdict, ledger, H1-H3, merge card, dry run, dispatch.
 
 ## Gates (criteria fixed before the run)
 

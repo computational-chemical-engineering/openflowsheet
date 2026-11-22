@@ -265,3 +265,12 @@
 - Peak 1-min load 19.47 at 12:29Z (G11's 8 workers + runner, beside the gate and other sessions; this job <= 9
   processes). Not done: `ci`, `step1`, `items`, `records`, the RC record, the tree record, `--lapses`. Kept for
   resumption: `rc-c-050` with its artifacts, `~/.cache/rel050-cut/rc/` (venvs, nlp worktree).
+- 2026-11-22, RC result (opus-engineer, Opus, ~131k): local steps 2, 6-16 at C pass (2 3/3, 6 7/7, 7 12/12, 8 15/15,
+  9 A30 PASS, 10 2/2, 11 3/3, 12 6/6 + r375.audit, 13 3/3, 14 5/5, 15 3/3, 16 4/4; steps 14/15 host = record
+  platform). CI at C: push 45019680845 success (all four check legs), dispatch 45019811148 success. **Stop**: step 1,
+  `ci` and step 17 `items` need `gh ... --json attempt`; TR09's gh 2.46.0 (Debian) answers `Unknown JSON field:
+  "attempt"` (orchestrator reproduced). The engineer's download of an official gh tarball was refused by the
+  permission classifier; no tool edited. Kept for resumption: `rc-c-050` (records in its evidence/REL050/<C>/artifacts/rc),
+  `~/.cache/rel050-cut/rc/`, driver `~/.cache/rel050-cut/bin/rc_local.sh`.
+- DECISION-REQUEST to hub (2026-11-22): A install a current gh for the runner's ci/step1/items only (recommended);
+  B reviewed runner fallback and a new C'. Held until the user answers.
