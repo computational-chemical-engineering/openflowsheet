@@ -228,3 +228,11 @@
   on PATH: the worktree has no `.venv`); restarted as `PATH=$R/.venv/bin:$PATH PYTHONPATH=src scripts/gate.sh`
   (PYTHONPATH=src checked: `openflowsheet.__file__` resolves in the worktree, not the main checkout).
 - RC work order `<briefs>/REL050-RC.md` to opus-engineer (at most 8 threads; RC tree `rc-c-050`).
+- Full gate at 71c1d04f: **FAIL**, 2 failed, 21075 passed, 107 skipped, 222 deselected, 3 xfailed (5498 s). Both in
+  `tests/test_rel_rc_local.py` (`test_record_writes_t08_rc_v1_with_0_3_0s_path_step_and_ids`: commit 71c1d04f !=
+  95f3897c; `test_the_runner_plan_for_steps_12_14_15`: run() 1). Cause: the orchestrator's docs commit 95f3897c moved
+  HEAD in the gate's worktree mid-run. The file re-run at a stable HEAD (95f3897c): 26 passed. The failed run stays
+  recorded (log `~/.cache/rel050-cut/gate/gate-71c1d04f.log`).
+- DECISION: the gate is re-run in its own clean detached worktree at C (`gate-c-050`, 0 porcelain lines), where no
+  one commits. Alternative: re-run in rel050 with commits held. Reversible by: none needed (a run, no change).
+  Lesson: never commit in the worktree a gate runs in.
