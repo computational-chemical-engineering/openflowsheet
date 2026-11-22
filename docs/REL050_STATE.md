@@ -10,29 +10,25 @@ Frank 2026-11-20, "Let's go for the smaller 0.5 release"): **0.5 = X07a, F1, F3,
 and X01's selectability lead 0.6. Procedure: RP (`docs/derivations/release-procedure.md`), ADR 0055; dispatch steps
 in `docs/RELEASING.md`. Last release v0.4.0 (2026-11-11); main is `0.5.0.dev0`.
 
-## Position (2026-11-21 ~21:30 CET)
+## Position (2026-11-22)
 
-- **main = ceb38cec**: S19 merged (card ofs-s19-merge-main, choice A, VERIFIED, executed; F0 PASS on main). S19 is
-  in 0.5.0. Before it main was d29f1a50.
-- Package heads, all `tested`, CI green: wp/X07a c356211b (manifest at bd0b7df5; CI 44913734986 all 7 legs);
-  wp/X01 bfd5c180 (manifest at bbbca491, X01-WO3; CI 44921749701 + Site 44921749623 at bbbca491); wp/REL050
-  bfdd3f2d + log commits (CI 44913179654 at cac945ac).
-- **Integration branch `int/0.5-r2`** (worktree `.claude/worktrees/int05`) = 1fe40db3 = 67cc5027 (ceb38cec + X07a
-  + X01 + REL050 bfdd3f2d; bookkeeping conflicts only) + one fix commit: S19 tooling under X07a's checks (CI
-  44945609131 red at 67cc5027: git-show separator lint, two Windows `fcntl` limits; REL050_DECISIONS 2026-11-22).
-  HARVEST_SIZE (105, 1169, 147). Pushed; **CI 44960794993 green at 1fe40db3 (all 7 jobs); card ofs-rel050-merge-main requested from hub, waiting for the signature** (texts in REL050_DECISIONS). The old `int/0.5` (d29f1a50
-  base) is obsolete: delete the branch after the merge.
-- GitHub API: poll every 300 s, never `gh run watch` at its default interval (memory `gh-api-rate-limit`).
+- **main = 1fe40db3** (card ofs-rel050-merge-main A, VERIFIED, executed; F0 PASS on main; pushed): ceb38cec (S19) +
+  X07a + X01 + REL050 bfdd3f2d + fix 1fe40db3. wp/REL050 = 411fe0a3 (main merged in; docs-only ahead).
+- **K3 running:** opus-engineer on `<briefs>/REL050-K3.md` in worktree rel050 (REL040 manifest harvest,
+  HARVEST_EXCLUDED ("evidence/REL050/",), K3 0.5.0 / v0.5-envelope-1, P1/P3/P4/P6). K3 lives on wp/REL050 (0.4
+  precedent). P6 already holds (SMM-TR09 ref-x86-64).
+- From K3 until the dispatch main takes no D2.4 change (freeze; hub told at K3).
+- GitHub API: poll every 300 s (memory `gh-api-rate-limit`).
 
 ## Next actions
 
-1. int/0.5-r2 CI green -> DECISION-REQUEST to hub, card ofs-rel050-merge-main: A (recommended) "merge wp/X07a,
-   wp/X01 and wp/REL050 into main as the merges recorded on int/0.5-r2 (fast-forward main to int/0.5-r2 1fe40db3:
-   its three merge commits are the conflict-resolved merges, then one cross-package fix commit), run F0 on main, push main only if F0 passes"; B
-   separate cards and CIs per branch. Refer to "the user"; action text per option. Red -> read the failing job.
-2. After the VERIFIED card: execute, `executed` on the card, log. Then K3 (RP §7.1; P1-P6 incl. the loader at K3),
-   J (re-takes incl. m05 REAL on TR09), C, RC steps 1-17, RP §9.2 (lapse report and message 1: Q-F1, Q-F2 and the
-   predicted lapses V17 carry, V14 (b), M02 N1; verdict; ledger; H1, H2, step 18 YES, H3), merge C, dry run,
+1. K3 result: check the report (P1 gaps, (b) failures = RP §12 stop), push wp/REL050, tell hub the freeze is on.
+2. J (RP §7.1 bullet 3): clean worktree at K3, re-takes on TR09: five G10 records (digest-only proof), M05 REAL
+   (`m05_wo9_real.py --retake-into`, nlp env, OMP_NUM_THREADS=1; it fails replay since the TRS2 -> TR09 move, so the
+   re-take is required), M01 IDAES conformance; then the journey record (RP §4.5) -> C. Brief pattern
+   `docs/briefs/REL040-j.md`.
+3. RC steps 1-17 at C (`docs/briefs/REL040-rc.md` pattern), RP §9.2 (lapse report and message 1: Q-F1, Q-F2 and the
+   predicted lapses V17 carry, V14 (b), M02 N1; verdict; ledger; H1, H2, step 18 YES, H3), merge C (card), dry run,
    Frank's dispatch.
 
 ## Gates (criteria fixed before the run)

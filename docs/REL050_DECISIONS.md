@@ -106,3 +106,16 @@
 - Hub filed ofs-rel050-merge-main: A verbatim as above; B reworded by hub (it pushes nothing itself). Verify B against:
   B: "Do not use int/0.5-r2; file three separate Decision Desk cards, one per package (wp/X07a, wp/X01, wp/REL050), each merging into main with its own merge commit after a fresh CI run on all legs and the F0 corpus identity on main; this card pushes nothing."
   Confirmed to hub: ofs-s19-merge-main carries `executed` (at 2026-11-21T20:25:00Z, card version 3).
+
+## 2026-11-22: the 0.5 packages in main; K3 dispatched
+
+- Card ofs-rel050-merge-main signed, choice A (2026-11-22T09:35Z), `decision_desk_verify.py` VERIFIED (key
+  032ee0a5ae620a90) against option A's text above. Executed: main fast-forwarded ceb38cec -> 1fe40db3; F0 on main PASS
+  (M1 50/50, M2-M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 42/42); origin/main = 1fe40db3; `executed` on the card
+  (version 3). Old branch `int/0.5` (d29f1a50 base) obsolete, kept until the tag (deleting a remote branch waits).
+- main merged into wp/REL050 (411fe0a3, clean; diff to main docs-only). P6 measured: SMM-TR09 `ref-x86-64`, kernel
+  6.12.86+deb13-amd64.
+- DECISION: where K3 lives -> on wp/REL050 (as 0.4.0: K3 49a04731 on wp/REL040, main took it in the final merge of C).
+  Alternative: K3 as a commit on main (needs its own card). Reversible by: cherry-picking K3 to main on a card.
+- K3 work order `<briefs>/REL050-K3.md` (opus-engineer): REL040 manifest harvest + HARVEST_EXCLUDED REL050, K3
+  (0.5.0, v0.5-envelope-1, A10_PINS_0_5_0), P1/P3/P4/P6 measured.
