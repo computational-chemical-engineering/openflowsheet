@@ -10,7 +10,7 @@ Frank 2026-11-20, "Let's go for the smaller 0.5 release"): **0.5 = X07a, F1, F3,
 and X01's selectability lead 0.6. Procedure: RP (`docs/derivations/release-procedure.md`), ADR 0055; dispatch steps
 in `docs/RELEASING.md`. Last release v0.4.0 (2026-11-11); main is `0.5.0.dev0`.
 
-## Position (2026-11-22, RC job stopped on gh)
+## Position (2026-11-22, RC done; message 1 out)
 
 - main = 1fe40db3 (the 0.5 packages; card ofs-rel050-merge-main executed). **Freeze on main** (D2.4 paths) since K3;
   hub told and records it.
@@ -27,25 +27,24 @@ in `docs/RELEASING.md`. Last release v0.4.0 (2026-11-11); main is `0.5.0.dev0`.
 
 ## Next actions
 
-0. UNBLOCKED (the user approved A in chat; gh 2.103.3 in `~/.cache/rel050-cut/gh/`); RC2 work order running. Was: card `ofs-rel050-rc-gh` (filed by hub 2026-11-22; verify A against hub's reworded text in REL050_DECISIONS): TR09's gh 2.46.0 lacks `--json attempt`, which
-   `scripts/release_rc.py` step 1, `ci` and `items` need. A: the user installs (or allows) a current gh under
-   `~/.cache/rel050-cut/gh`, first on PATH for those calls only. B: reviewed runner fix and a new C'. Local steps 2,
-   6-16 at C already pass (eabc3ce4); kept: `rc-c-050`, `~/.cache/rel050-cut/rc/`, `~/.cache/rel050-cut/bin/rc_local.sh`.
-1. On A: fresh opus-engineer: `ci --ci-run 45019811148`, `step1`, `items` (`--ci-run`, `--nlp-root`, `--python
-   coolprop=...`, `--python lca=...`), then records, RC record (pattern `evidence/REL040/84c66547*/tools/make_record.py.txt`,
-   plus a WHEEL-F1-F3 item row), tree record, `--lapses`. Runner as `PYTHONPATH=src $R/.venv/bin/python -B`.
-2. Full gate at C: PASS (21077 passed, 107 skipped; log `~/.cache/rel050-cut/gate/gate-C-0a800e69.log`).
-3. Then message 1 via hub (Q-F1, Q-F2, lapses), verdict, ledger, H1-H3, merge card, dry run, dispatch.
+0. **Waiting on the user**: message 1 sent to hub (2026-11-22; Q-F1, Q-F2, V17 carry, M02 N1; option texts in
+   REL050_DECISIONS). On the doorbell: fetch each card, `decision_desk_verify.py` against the exact option text, then
+   the answers become rows in `release/acceptances.md` dated on or after 2026-11-22 (build lane, sonnet-implementer).
+1. Then one `verdict` pass over all claimed gates (RP §4.7 brief; verdict document `docs/reviews/REL050-verdicts.md`);
+   ledger; message 2 (V14 (b) and any new failing clause); H1 (manifest at a clean G), H2, step 18 YES, H3; card to
+   merge C into main; dry run; the user's dispatch and PyPI approval.
+- Done at C: RC steps 1-17 all pass (RC record 69 rows, 0 FAIL; fd50e7fc, 9e5c4ae4); lapses 1520a623 (4 stand,
+  3 lapsed); full gate PASS; CI green. gh 2.103.3 at `~/.cache/rel050-cut/gh/` (user-approved) for runner CI calls.
 
 ## Gates (criteria fixed before the run)
 
 | gate | pass criterion | result |
 | --- | --- | --- |
 | P1-P6 (RP §5.3) at K3 | every package `tested`/`reviewed` at an ancestor of K3; RP.L01-L11 hold; required ADRs Accepted or routed; host prints `ref-x86-64` | |
-| RC steps 1-17 at C | no RP §12 stop; every step's result recorded, none `unsupported` | |
+| RC steps 1-17 at C | no RP §12 stop; every step's result recorded, none `unsupported` | met: 69 rows, 0 FAIL (fd50e7fc) |
 | verdict | every claimed gate met (verdict document), or Frank's answer row | |
 | step 18 at H2 | exit 0, last line exactly `v0.5.0 tag may be proposed: YES` | |
-| CI | green on both architectures at C and at the merge into main | |
+| CI | green on both architectures at C and at the merge into main | at C: met (45019680845, 45019811148) |
 | dry run | release workflow dry run: gate YES, build, `t08-a43-dist.json` all passed | |
 
 ## Open decisions (defaults stand unless Frank says otherwise)

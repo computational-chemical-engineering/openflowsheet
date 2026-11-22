@@ -325,3 +325,17 @@
 - The full artifacts (`<rc>`, 126M) copied to `rel050`'s `evidence/REL050/<C>/artifacts/rc/` (git-ignored; `diff -rq`
   equal) before `rc-c-050`, `nlp-wt` and `idaes-wt` were removed. `~/.cache/rel050-cut/` kept (its `rcvenv` and
   `cpvenv` were editable installs of `rc-c-050` and are now stale).
+- 2026-11-22, RC2 result (opus-engineer, Opus, ~142k): step 1 4/4 (push 45019680845 success, attempt 1); `ci` exit 0
+  (13 job logs); items 9/9 pass (E01-A48, S07-F8, MR12-coolprop, MR12-lca, E01-G5-lca, E01-G6-nlp, WHEEL-DATA,
+  WHEEL-F1-F3, PTC-R1). fd50e7fc records (126 cited, 6 gzip) + RC record (69 rows, 0 FAIL); 9e5c4ae4 tree record;
+  1520a623 lapses; 1b02bc38 log. Lapses at C: 4 stand (X31 (c), Claim set, M03 N1, coolprop and lca licences),
+  3 lapsed (V14 (b) on 267 src/ptc_r1 paths; V17 carry links + served_digest; M02 N1 launcher.py), 0 unsupported:
+  as the line note predicted (served_digest moved with c_9/c_10's surface edits). Engineer DECISIONS accepted: items
+  through the runner's own step-17 interpreter and nlp-wt; identity job log by `gh api .../jobs/<id>/logs`. The
+  runner's rcvenv/cpvenv in `~/.cache/rel050-cut/rc/` were editable installs of the removed rc-c-050 (dead).
+  Orchestrator: `git diff --name-only C HEAD` no D2.4 path; RC record's only `FAIL` is its legend. wp/REL050 pushed
+  at 1b02bc38.
+- Message 1 (RP §8.5) sent to hub as one DECISION-REQUEST, four questions with option texts: Q-F1 (A move clause to
+  0.6 / B hold / C record unmet), Q-F2 (A Linux legs only / B amend §6.2 to four legs), V17 carry (A carry across c_9,
+  c_10 / B new campaign ~USD 10), M02 N1 (A keep shipping "not a sandbox" / B hold for a launcher review). V14 (b)
+  goes in message 2 (failing clause, after Judged).
