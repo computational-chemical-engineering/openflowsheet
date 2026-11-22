@@ -14,8 +14,9 @@ same results.
 
 ## Status
 
-**Early development. Version 0.4.0 is released.** Version 0.3.0 was released on 31 October 2026
-(`0.3.0.post1` is the same release with a new description and the project links; it changes no code).
+**Early development. Version 0.5.0 is released.** Version 0.4.0 was released on 11 November 2026 and
+version 0.3.0 on 31 October 2026 (`0.3.0.post1` is the same release with a new description and the project
+links; it changes no code).
 
 | | |
 | --- | --- |
