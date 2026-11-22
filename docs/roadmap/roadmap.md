@@ -51,7 +51,7 @@ Format: **package**: what it delivers · needs first · design pass.
 - **F1**: the extension registry · F0 · architect (W1).
 - **X01 rest**: plugin docs and the example plugin; the parts that need no F2, F4 or F6 · F1 · none.
 - **F3**: component records and store · F1, rulings · architect (W1).
-- *Line acceptance:* ADR-F1 to ADR-F8 Accepted (moved from 0.4, Frank 2026-11-09); 0.3.0 bundles replay everywhere.
+- *Line acceptance:* 0.3.0 bundles replay everywhere. *(Amended 2026-11-22, Frank, Decision Desk card `ofs-rel050-q-f1`, choice A: "ADR-F1 to ADR-F8 Accepted" (moved from 0.4, Frank 2026-11-09) moved to 0.6; ADRs 0062–0067 stay Proposed; ADR 0057 Amendment 2.)*
 - *(Amended 2026-11-20, Frank, R-1065: a smaller 0.5. F2, F8 and X06 move to the head of 0.6, and with them the
   clause "a v2 revision with store-pinned records solves on the legacy route on all three OSes"; X01's selectability
   of library-only providers and units moves to 0.6 with F4 and F6, which it needs. Reason: F2 and F8 change stored
@@ -72,8 +72,8 @@ Format: **package**: what it delivers · needs first · design pass.
 - **X17**: viscosity, conductivity, diffusivity · F4 · specifier.
 - **X11 rest**: data fetchers, regression, estimation flagged as estimated · F3, F4 · specifier.
 - **PrISMa**: adsorption isotherms as an equilibrium phase · F5 · specifier.
-- *Line acceptance:* a v2 revision with store-pinned records solves on the legacy route on all three OSes (from 0.5,
-  R-1065); Seider's vinyl chloride process against its Table 2.7; the textbook turbine with no declared
+- *Line acceptance:* ADR-F1 to ADR-F8 Accepted (from 0.5, Frank 2026-11-22, `ofs-rel050-q-f1`); a v2 revision with
+  store-pinned records solves on the legacy route on all three OSes (from 0.5, R-1065); Seider's vinyl chloride process against its Table 2.7; the textbook turbine with no declared
   phases; a VLLE decanter; a complete coverage matrix; `std.*` proved equivalent to the legacy units; the preview parts
   of the v2 schema frozen.
 

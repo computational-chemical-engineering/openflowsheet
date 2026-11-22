@@ -87,7 +87,7 @@ the store; no code to author.
 0.6 F4, F5, F6 and the multiphase packages, closing with Seider VCM; 0.7 F7, TX, X13, X07b; 0.8 the design toolkit; 0.9
 batch, relief, synthesis and electrolytes; 1.0 solids, polymers and P&ID. MSG before X04 stands (Frank). ADR 0056's
 release lines are subordinate to this order. *(Amended 2026-11-20, Frank, R-1065: 0.5 is X07a, F1, F3 and X01's plugin docs; F2, F8, X06
-and X01's selectability move to the head of 0.6. See "Amendment 1" below.)* FB-04 (1) is dropped as a 0.4 legacy fix; F5 and `std.turbine` solve it.
+and X01's selectability move to the head of 0.6. See "Amendment 1" below. Amended 2026-11-22, Frank: "ADR-F1 to ADR-F8 Accepted" moves to 0.6; see "Amendment 2".)* FB-04 (1) is dropped as a 0.4 legacy fix; F5 and `std.turbine` solve it.
 
 **D7 — Open items, each with a proposed default.** The specifier rules on the first four at the start of W1, and each
 gates the foundation ADR named; the fifth does not gate, since ADR-F6 takes its default and X14's specification
@@ -115,6 +115,21 @@ nothing else targets. F3 is additive (ADR 0061, migration proof: v1 revisions an
 leads 0.6.
 
 **Unchanged.** The foundation order (F2 before F4, F8 after F2 and F3), the design waves, and every other line.
+
+## Amendment 2 (2026-11-22, Frank): "ADR-F1 to ADR-F8 Accepted" moves to 0.6
+
+**D6** is amended again. The 0.5 line acceptance no longer holds "ADR-F1 to ADR-F8 Accepted"; the clause moves to the
+0.6 line acceptance, as it moved from 0.4 on 2026-11-09 (decision board `rel04-line-acceptance`). The 0.5 line
+acceptance is "0.3.0 bundles replay everywhere". `roadmap.md` carries the same change. Decision: Decision Desk card
+`ofs-rel050-q-f1`, choice A, signed 2026-11-22T22:38:54Z: "Amend ADR 0057 D6 and roadmap.md so the clause 'ADR-F1 to
+ADR-F8 Accepted' moves to the 0.6 line, as it moved from 0.4; 0.5.0 proceeds."
+
+**State at the 0.5.0 candidate C = 0a800e69.** 0060 (F1) and 0061 (F3) are Accepted; 0062 (F2), 0063 (F4), 0064 (F5),
+0065 (F6), 0066 (F7) and 0067 (F8) are Proposed.
+
+**Reason.** F4 to F6 are built in 0.6 against the same v2 records (Amendment 1's reason), so accepting their ADRs now
+gains 0.5's users nothing. The 0.5 line file's claim set and gate criteria do not read the clause (REL050 line note
+Q-F1).
 
 ## Existing ADRs this amends, and the ADR that carries each amendment
 
