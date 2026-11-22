@@ -290,3 +290,38 @@
 - DECISION: v2.103.3, not v2.105.0 (2026-11-18): the newest release at least two weeks old. Alternative: v2.105.0.
   Reversible by: pointing PATH at another version.
 - Work order `<briefs>/REL050-RC2.md` (opus-engineer): ci, step1, items, records, RC record, tree record, lapses.
+
+## 2026-11-22: the RC job at C finished: step 1, `ci`, items, records, lapse report (build lane, work order REL050-RC2)
+
+- Host SMM-TR09, kernel 6.12.86+deb13-amd64. Driver `~/.cache/rel050-cut/bin/rc2.sh` (logs `~/.cache/rel050-cut/logs/rc2-*`),
+  22:23:58-22:27:13Z, `rc-c-050` at C with 0 porcelain lines before and after. gh 2.103.3 (2026-10-26) from
+  `~/.cache/rel050-cut/gh/gh_2.103.3_linux_amd64/bin` first on PATH for these three invocations only.
+- `step1` (runner `$R/.venv/bin/python -B`, `PYTHONPATH=src`) exit 0, 4/4 (push run 45019680845 `success`, attempt 1;
+  `check` x86_64 and aarch64 `success`, no class-ratio lines; junit read on both legs).
+- `ci --ci-run 45019811148` exit 0: the dispatch's artifacts and 13 job logs into `<rc>/ci/`.
+- `items`: `local`'s own step-17 argv (`summary.txt` `step17-items`: `rcvenv` interpreter, `--python coolprop=cpvenv`,
+  `--python lca=venv-lca`, `--nlp-prefix`/`--nlp-cache` as `local`, `--nlp-root ~/.cache/rel050-cut/rc/nlp-wt`,
+  `--ci-run 45019811148`) in its step environment (`env -u PYTHONPATH`, one thread). Exit 0; 9/9 items pass: E01-A48,
+  S07-F8 (`rc-coolprop` success both legs, 4 files), MR12-coolprop, MR12-lca, E01-G5-lca (44 passed), E01-G6-nlp,
+  WHEEL-DATA, WHEEL-F1-F3 (`registry_sha256` `6a7550d4…` equal; legacy 149 in the checkout, 9 in the wheel), PTC-R1
+  (success both legs, 4 files).
+- DECISION: `items` with `local`'s step-17 interpreter (`rcvenv`) and nlp worktree (clean at C; ignored `__pycache__`
+  from step 14, as `local` would have run it), not `$R/.venv` and a new worktree. Alternative: 0.4.0's fresh
+  `items-nlp-wt`. Reversible by: re-running `items` that way.
+- `ci/job-logs/identity.log` (row 2's G05, "equal across 4 platforms"): `gh run view --job 137236877467 --log` (gh
+  2.46) wrote 0 bytes; fetched with `gh api repos/{owner}/{repo}/actions/jobs/137236877467/logs` (26775 bytes, raw form).
+- `records` (126 cited: REL040's 124 + WHEEL-F1-F3's record and log; `tools/cited.txt` sha256 977f23bb…; 6
+  gzip-compressed) exit 0. `rc/records.json` d59698fbbde69d08ff13735fd7f7b10334d97a7e6518123641c5b98965fb608c;
+  `docs/REL050-rc-record.md` c9cc33410fb5d9e17987ef923887ea0794da0c2afcfed7db6ba462e85e3843c8 (69 rows, 0 FAIL; from
+  `tools/make_record.py.txt`); `release/rc-trees/<C>.json` 1f8042d01cead04a260e5da387f2835b615ea5dc431d1bf4904e38f37f1319f6
+  (`--write-tree-record` exit 0); `acceptance-lapses.txt`
+  a618d96c0f109273e97455d028b032c9cd53e11bc7430d8d08e43bd42e47504d (`--lapses` exit 0, stderr empty).
+- Lapse report (2026-11-22): 4 stand (X31 (c), Claim set, M03 N1, coolprop and lca licences), 3 lapsed, 0 unsupported:
+  `V14 (b): lapsed (<267 paths: 265 under src/openflowsheet/, benchmarks/t08/ptc_r1/{compare,diagnose}.py>)`,
+  `V17 carry: lapsed (extract:links; extract:served_digest)`,
+  `M02 N1: lapsed (src/openflowsheet/adapters/external/launcher.py)`; verbatim in the file.
+- Commits fd50e7fc (records, RC record), 9e5c4ae4 (tree record), 1520a623 (lapse report). No D2.4 path after C.
+- Peak 1-min load 1.31 (30 s samples, `rc2-load.txt`). No §12 stop.
+- The full artifacts (`<rc>`, 126M) copied to `rel050`'s `evidence/REL050/<C>/artifacts/rc/` (git-ignored; `diff -rq`
+  equal) before `rc-c-050`, `nlp-wt` and `idaes-wt` were removed. `~/.cache/rel050-cut/` kept (its `rcvenv` and
+  `cpvenv` were editable installs of `rc-c-050` and are now stale).
