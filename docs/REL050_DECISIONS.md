@@ -381,3 +381,17 @@
   lapsed, the other four stand. `executed` written on all four cards (q-f1 done, q-f2 no change, m02-n1 done,
   v17-carry superseded).
 - Verdict work order `<briefs>/REL050-verdict.md` (verdict agent).
+
+## 2026-11-23: verdict at C and message 2
+
+- Verdict (verdict agent, Opus, ~279k; `<briefs>/REL050-verdict.md`): `docs/reviews/REL050-verdicts.md` 121d7b32,
+  Judged 2026-11-22. 15 PASS; FAIL V14 (b) (PTC ends at MID from 149 of 441 starts on both CI legs, as 0.4.0; row
+  lapsed: not releasable until a new row) and X31 (c) (pre-registered, row stands: releasable); 0 BLOCKED. It
+  recomputed 126 records, 53 t08-rc-v1 records, 7 fingerprints (V14 (b) at C `82469c08…2c40`), the 12-row chain; the
+  document parses with the gate's reader. Findings: F-1 the V14 (b) row; **F-2 the `## v0.5.0` notes must carry L46
+  (the four reactor statements) in W21's gate-table row or text, else W21 is judged again**; F-3 RP should name the
+  journey's invocation line (`PYTHONPATH=src`); F-4 step 13 skips 19 archived-history nodes (TR09 clone lacks the
+  pre-0.1.0 commits; none a W23 input); **F-5 the notes say no agent has driven F1's or F3's seven tools (V17 rests
+  on the carry)**; F-6 V11 carries L-X04-1..3 by id.
+- Message 2 sent to hub: card ofs-rel050-v14b (A renew V14 (b) as at 0.4.0 / B hold for a solver fix).
+- For the notes work order: F-2 and F-5. For RP's next amendment (design lane, not now): F-3, F-4.
