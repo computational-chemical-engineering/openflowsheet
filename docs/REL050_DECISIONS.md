@@ -119,3 +119,24 @@
   Alternative: K3 as a commit on main (needs its own card). Reversible by: cherry-picking K3 to main on a card.
 - K3 work order `<briefs>/REL050-K3.md` (opus-engineer): REL040 manifest harvest + HARVEST_EXCLUDED REL050, K3
   (0.5.0, v0.5-envelope-1, A10_PINS_0_5_0), P1/P3/P4/P6 measured.
+
+## 2026-11-22: harvest and K3 (build lane, work order REL050-K3)
+
+- ad74470b harvest: REL040's manifest (`84c6654…`, 3 limitations, 0 non-pass checks) classified 3 P (provenance note,
+  process note, release-candidate item; patterned on S13's rows at 9eceb3aa). HARVEST_EXCLUDED `("evidence/REL050/",)`;
+  `evidence/REL050/` absent. HARVEST_SIZE (105, 1169, 147) -> (106, 1172, 147), measured. `--check` 0 problems.
+  Named tests 1880 passed, 45 skipped. No other test asserts the REL040 exclusion (the other `evidence/REL040/` hits
+  in tests are synthetic fixture trees).
+- DECISION: the comment above HARVEST_EXCLUDED gains one sentence naming 0.4.0's and 0.5.0's exclusions (0.4.0's cut
+  left it saying S13). Alternative: leave the comment stale. Reversible by: reverting those three comment lines.
+- K3 = 8aaed3f25d94823d2b93524884a9f054eb0d306d: the same 11 files as 49a04731. Working form before the pin read
+  `v0.2-envelope-dev` / `0.2.0.dev0` as expected. README: "Version 0.5.0 is released. Version 0.4.0 was released on
+  11 November 2026 and version 0.3.0 on 31 October 2026 (...)". F0 PASS (M1 50/50 ... M9 42/42).
+- K3 tests: 1 failed, 1879 passed, 45 skipped. FAILED `tests/test_rel_evidence_manifest.py::
+  test_rel_a20_over_0_3_0s_committed_records` (RP.S03 and RP.S04 same-form DIFFERS), through
+  `tests/test_v03_v0_3_gate.py::test_a04_the_committed_test_holds_and_a_swap_fails` (`assert False`, line 453; it
+  fails directly too): its `RELEASE_PINS` hard-codes the 0.2.0/0.3.0/0.4.0 pairs, K3 appends A10_PINS_0_5_0 (§7.2).
+  Class (b), not the version: an RP §12 stop, reported, no expectation edited. 0.4.0 met the same at 2650fb8a
+  (RELEASE_PINS extended after K3, both controls kept). No class (a) failure in the named set.
+- P1 24/24 packages have a `tested` manifest whose sha is an ancestor of K3. P3: all 32 `required_adrs` Accepted;
+  0062-0067 Proposed and not in `required_adrs` (Q-F1). P4 `RP.L01-L11: PASS` at K3. P6 `ref-x86-64`.
