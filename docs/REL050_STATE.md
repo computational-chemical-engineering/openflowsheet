@@ -10,7 +10,7 @@ Frank 2026-11-20, "Let's go for the smaller 0.5 release"): **0.5 = X07a, F1, F3,
 and X01's selectability lead 0.6. Procedure: RP (`docs/derivations/release-procedure.md`), ADR 0055; dispatch steps
 in `docs/RELEASING.md`. Last release v0.4.0 (2026-11-11); main is `0.5.0.dev0`.
 
-## Position (2026-11-22, RC done; message 1 out)
+## Position (2026-11-22, message 1 answered; verdict)
 
 - main = 1fe40db3 (the 0.5 packages; card ofs-rel050-merge-main executed). **Freeze on main** (D2.4 paths) since K3;
   hub told and records it.
@@ -27,14 +27,13 @@ in `docs/RELEASING.md`. Last release v0.4.0 (2026-11-11); main is `0.5.0.dev0`.
 
 ## Next actions
 
-0. **Waiting on the user**: message 1 sent to hub (2026-11-22; Q-F1, Q-F2, V17 carry, M02 N1; option texts in
-   REL050_DECISIONS). On the doorbell: fetch each card, `decision_desk_verify.py` against the exact option text, then
-   the answers become rows in `release/acceptances.md` dated on or after 2026-11-22 (build lane, sonnet-implementer).
-1. Then one `verdict` pass over all claimed gates (RP §4.7 brief; verdict document `docs/reviews/REL050-verdicts.md`);
-   ledger; message 2 (V14 (b) and any new failing clause); H1 (manifest at a clean G), H2, step 18 YES, H3; card to
-   merge C into main; dry run; the user's dispatch and PyPI approval.
-- Done at C: RC steps 1-17 all pass (RC record 69 rows, 0 FAIL; fd50e7fc, 9e5c4ae4); lapses 1520a623 (4 stand,
-  3 lapsed); full gate PASS; CI green. gh 2.103.3 at `~/.cache/rel050-cut/gh/` (user-approved) for runner CI calls.
+1. **Verdict running** (`<briefs>/REL050-verdict.md`; document `docs/reviews/REL050-verdicts.md`). Judge its report:
+   every claimed gate PASS, or failing clauses listed. Then message 2 via hub (V14 (b), any new failing clause).
+2. Ledger; H1 (release manifest `tested` at a clean G, `release_evidence_manifest.py --line 0.5 --commit C --k3 K3
+   --ci-run 45019680845 --ci-run 45019811148`, pattern RP_DECISIONS `## 0.4.0 cut` H1), H2, step 18 YES at H2, H3;
+   CHANGELOG and RELEASING block; card to merge C (via wp/REL050) into main; dry run; the user's dispatch and PyPI.
+- Message 1 done: Q-F1 A (03c428f6), Q-F2 A, M02 N1 A and V17 carry (the user's chat answer) rows 6cfe0fc4; lapses
+  at HEAD: only V14 (b) lapsed. v17-c3 campaign is a 0.6 follow-up.
 
 ## Gates (criteria fixed before the run)
 

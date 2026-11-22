@@ -373,3 +373,11 @@
 - Check `release_gate.py --line 0.5 --rc C --lapses` (output in `~/.cache/rel050-cut/acc-lapses.txt`; the committed
   lapse report is untouched): V17 carry stands, M02 N1 stands, V14 (b) lapsed (unchanged, waits for message 2),
   X31 (c), Claim set, M03 N1, coolprop and lca licences stand. `tests/test_rel_*.py`: 228 passed.
+- 2026-11-22, V17: the user, asked in the REL050 chat after the v17-carry B scope finding: "Carry for 0.5, campaign in
+  0.6 (Recommended)". Card ofs-rel050-v17-carry marked `executed: not done, superseded` (hub agreed). **Follow-up for
+  0.6:** a registered V17 campaign `v17-c3` with tasks that drive F1's and F3's tools (c_9, c_10), via the design lane.
+- ACC result (sonnet-implementer, Sonnet, ~74k): 6cfe0fc4 rows, b17d9ec7 log; LINKS at C = c_1..c_10 as briefed;
+  tests/test_rel_*.py 228 passed. Orchestrator re-ran `--lapses` at b17d9ec7: V17 carry stands, M02 N1 stands, V14 (b)
+  lapsed, the other four stand. `executed` written on all four cards (q-f1 done, q-f2 no change, m02-n1 done,
+  v17-carry superseded).
+- Verdict work order `<briefs>/REL050-verdict.md` (verdict agent).
