@@ -274,3 +274,9 @@
   `~/.cache/rel050-cut/rc/`, driver `~/.cache/rel050-cut/bin/rc_local.sh`.
 - DECISION-REQUEST to hub (2026-11-22): A install a current gh for the runner's ci/step1/items only (recommended);
   B reviewed runner fallback and a new C'. Held until the user answers.
+- Card `ofs-rel050-rc-gh` filed by hub (default hold). Option texts to verify against:
+  A: "The user installs a current GitHub CLI release (official tarball, checksum verified) under ~/.cache/rel050-cut/gh
+  on SMM-TR09, or approves that install in the REL050 session's own permission prompt; the REL050 session then puts it
+  first on PATH for the RC runner's ci, step1 and items calls only and finishes the RC job at C (0a800e69)."
+  B: as requested (reviewed runner fix, new C', CI and every RC step re-run). A signed A does not authorize retrying
+  the refused download unprompted: the install is the user's hand or their approval in this session's prompt.
