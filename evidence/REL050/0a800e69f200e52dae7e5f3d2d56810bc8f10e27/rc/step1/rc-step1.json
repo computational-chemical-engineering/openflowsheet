@@ -1,0 +1,75 @@
+{
+ "checks": [
+  {
+   "attempt": 1,
+   "conclusion": "success",
+   "id": "s1.push_run",
+   "result": "pass",
+   "run_id": 45019680845,
+   "status": "completed"
+  },
+  {
+   "class_ratio_lines": [],
+   "conclusion": "success",
+   "id": "s1.check.x86_64",
+   "job": "check (ubuntu-latest)",
+   "log_sha256": "80a8e27345a65f5e66e77c2c10d5083e457ac584ff22265fcf61a864599982b4",
+   "result": "pass"
+  },
+  {
+   "class_ratio_lines": [],
+   "conclusion": "success",
+   "id": "s1.check.aarch64",
+   "job": "check (ubuntu-24.04-arm)",
+   "log_sha256": "03aa5ca337e270ea1f3a1e6d20a0093d2e2f5bb1582780905d83f4c152b83c56",
+   "result": "pass"
+  },
+  {
+   "files": {
+    "junit-aarch64": {
+     "node.xml": "47ac7a38ed57a70a8b2cfb6fb50d2c76f19719e95ee4968704f26d5cbaf04026",
+     "pytest.xml": "7897088b84ac8c3cf42265109924da8025becc63053f6aaccc0d6f15b9cc7836"
+    },
+    "junit-x86_64": {
+     "node.xml": "b8e0c05da6d1739405c01efe105252c30f712c9368c66a97ccf06efcb6d2d011",
+     "pytest.xml": "57b30a9ea097e4d6675828d9190b418d95bc73848fd9964bd002204f7b660518"
+    }
+   },
+   "id": "s1.junit",
+   "result": "pass"
+  }
+ ],
+ "format": "t08-rc-v1",
+ "passed": true,
+ "provenance": {
+  "architecture": "x86_64",
+  "commit": "0a800e69f200e52dae7e5f3d2d56810bc8f10e27",
+  "environment_lock_sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4",
+  "github_actions": false,
+  "machine_class": "ref-x86-64",
+  "python": "3.13.5",
+  "threads": {
+   "MKL_NUM_THREADS": null,
+   "OMP_NUM_THREADS": null,
+   "OPENBLAS_NUM_THREADS": null
+  },
+  "tree_clean": true
+ },
+ "runs_at_c": [
+  {
+   "attempt": 1,
+   "conclusion": "success",
+   "databaseId": 45019680845,
+   "event": "push",
+   "status": "completed"
+  },
+  {
+   "attempt": 1,
+   "conclusion": "success",
+   "databaseId": 45019811148,
+   "event": "workflow_dispatch",
+   "status": "completed"
+  }
+ ],
+ "step": "ci-push-run"
+}

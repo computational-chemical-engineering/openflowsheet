@@ -1,0 +1,42 @@
+{
+ "assertion": "E01 G6 (E01.A33-A36) in the audited nlp environment (V03 17d)",
+ "checks": [
+  {
+   "argv": [
+    "bash",
+    "scripts/m03_nlp_check.sh",
+    "/home/eajfpeters/Code/OpenFlowsheet/.venv-nlp",
+    "/home/eajfpeters/Code/OpenFlowsheet/.reference-downloads/m03-ipopt",
+    "--",
+    "-m",
+    "nlp or not nlp",
+    "tests/test_e01_b_nlp.py",
+    "tests/test_e01_integration.py"
+   ],
+   "environment": "nlp",
+   "exit_status": 0,
+   "id": "E01-G6-nlp",
+   "output": "step17/E01-G6-nlp.log",
+   "output_sha256": "6b0157be9729bc2dbac62bdf3d67b2e1e677896b94640183cb78f0180ddb7211",
+   "records": {},
+   "result": "pass"
+  }
+ ],
+ "format": "t08-rc-v1",
+ "passed": true,
+ "provenance": {
+  "architecture": "x86_64",
+  "commit": "0a800e69f200e52dae7e5f3d2d56810bc8f10e27",
+  "environment_lock_sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4",
+  "github_actions": false,
+  "machine_class": "ref-x86-64",
+  "python": "3.13.5",
+  "threads": {
+   "MKL_NUM_THREADS": "1",
+   "OMP_NUM_THREADS": "1",
+   "OPENBLAS_NUM_THREADS": "1"
+  },
+  "tree_clean": true
+ },
+ "step": "E01-G6-nlp"
+}

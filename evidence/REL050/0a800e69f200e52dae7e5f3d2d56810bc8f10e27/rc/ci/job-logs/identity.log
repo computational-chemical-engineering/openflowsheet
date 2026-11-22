@@ -1,0 +1,297 @@
+﻿2026-11-22T14:15:29.6103979Z Current runner version: '2.338.2'
+2026-11-22T14:15:29.6125523Z ##[group]Runner Image Provisioner
+2026-11-22T14:15:29.6126273Z Hosted Compute Agent
+2026-11-22T14:15:29.6126756Z Version: 20261111.635
+2026-11-22T14:15:29.6127354Z Commit: b8a594ea514ff44cadb5342986c68b1eac6e22ed
+2026-11-22T14:15:29.6127950Z Build Date: 2026-11-11T01:49:01Z
+2026-11-22T14:15:29.6128540Z Worker ID: {6fee722a-a978-4906-9738-9c6be49844a0}
+2026-11-22T14:15:29.6129155Z Region: westcentralus
+2026-11-22T14:15:29.6129628Z Cloud: Azure
+2026-11-22T14:15:29.6130112Z ##[endgroup]
+2026-11-22T14:15:29.6131246Z ##[group]Operating System
+2026-11-22T14:15:29.6131730Z Ubuntu
+2026-11-22T14:15:29.6132254Z 26.04.1
+2026-11-22T14:15:29.6132682Z LTS
+2026-11-22T14:15:29.6133494Z ##[endgroup]
+2026-11-22T14:15:29.6133946Z ##[group]Runner Image
+2026-11-22T14:15:29.6134425Z Image: ubuntu-26.04
+2026-11-22T14:15:29.6134977Z Version: 20261116.202.1
+2026-11-22T14:15:29.6136283Z Included Software: https://github.com/actions/runner-images/blob/ubuntu26/20261116.202/images/ubuntu/Ubuntu2604-Readme.md
+2026-11-22T14:15:29.6137558Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu26%2F20261116.202
+2026-11-22T14:15:29.6138340Z ##[endgroup]
+2026-11-22T14:15:29.6140849Z ##[group]GITHUB_TOKEN Permissions
+2026-11-22T14:15:29.6142869Z Actions: write
+2026-11-22T14:15:29.6143482Z ArtifactMetadata: write
+2026-11-22T14:15:29.6143986Z Attestations: write
+2026-11-22T14:15:29.6144522Z Checks: write
+2026-11-22T14:15:29.6144976Z CodeQuality: write
+2026-11-22T14:15:29.6145643Z Contents: write
+2026-11-22T14:15:29.6146162Z CopilotRequests: write
+2026-11-22T14:15:29.6146651Z Deployments: write
+2026-11-22T14:15:29.6147158Z Discussions: write
+2026-11-22T14:15:29.6147625Z Drives: write
+2026-11-22T14:15:29.6148069Z Issues: write
+2026-11-22T14:15:29.6148661Z Metadata: read
+2026-11-22T14:15:29.6149109Z Models: read
+2026-11-22T14:15:29.6149606Z Packages: write
+2026-11-22T14:15:29.6150068Z Pages: write
+2026-11-22T14:15:29.6150530Z PullRequests: write
+2026-11-22T14:15:29.6151262Z RepositoryProjects: write
+2026-11-22T14:15:29.6151765Z SecurityEvents: write
+2026-11-22T14:15:29.6152249Z Statuses: write
+2026-11-22T14:15:29.6152767Z VulnerabilityAlerts: read
+2026-11-22T14:15:29.6153300Z ##[endgroup]
+2026-11-22T14:15:29.6155305Z Secret source: Actions
+2026-11-22T14:15:29.6156074Z Cache mode: write
+2026-11-22T14:15:29.6156844Z Prepare workflow directory
+2026-11-22T14:15:29.6454677Z Prepare all required actions
+2026-11-22T14:15:29.6493864Z Getting action download info
+2026-11-22T14:15:29.9252536Z Download action repository 'actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1' (SHA:3d3c42e5aac5ba805825da76410c181273ba90b1)
+2026-11-22T14:15:30.0070004Z Download action repository 'actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c' (SHA:3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c)
+2026-11-22T14:15:30.4833456Z Download action repository 'actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97' (SHA:5fda3b95a4ea91299a34e894583c3862153e4b97)
+2026-11-22T14:15:30.6968527Z Complete job name: identity
+2026-11-22T14:15:30.7651695Z ##[group]Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+2026-11-22T14:15:30.7652567Z with:
+2026-11-22T14:15:30.7653080Z   repository: computational-chemical-engineering/openflowsheet
+2026-11-22T14:15:30.7656570Z   token: ***
+2026-11-22T14:15:30.7656947Z   ssh-strict: true
+2026-11-22T14:15:30.7657335Z   ssh-user: git
+2026-11-22T14:15:30.7657727Z   persist-credentials: true
+2026-11-22T14:15:30.7658149Z   clean: true
+2026-11-22T14:15:30.7658541Z   sparse-checkout-cone-mode: true
+2026-11-22T14:15:30.7659001Z   fetch-depth: 1
+2026-11-22T14:15:30.7659375Z   fetch-tags: false
+2026-11-22T14:15:30.7659760Z   show-progress: true
+2026-11-22T14:15:30.7660157Z   lfs: false
+2026-11-22T14:15:30.7660525Z   submodules: false
+2026-11-22T14:15:30.7660927Z   set-safe-directory: true
+2026-11-22T14:15:30.7661357Z   allow-unsafe-pr-checkout: false
+2026-11-22T14:15:30.7661973Z ##[endgroup]
+2026-11-22T14:15:31.0045610Z Syncing repository: computational-chemical-engineering/openflowsheet
+2026-11-22T14:15:31.0049325Z ##[group]Getting Git version info
+2026-11-22T14:15:31.0050639Z Working directory is '/home/runner/work/openflowsheet/openflowsheet'
+2026-11-22T14:15:31.0052305Z [command]/usr/bin/git version
+2026-11-22T14:15:31.0053117Z git version 2.56.1
+2026-11-22T14:15:31.0067560Z ##[endgroup]
+2026-11-22T14:15:31.0076875Z Temporarily overriding HOME='/home/runner/work/_temp/06fb6929-29c9-458a-9206-1a28ec54f3f8' before making global git config changes
+2026-11-22T14:15:31.0078928Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-22T14:15:31.0081202Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/openflowsheet/openflowsheet
+2026-11-22T14:15:31.0140470Z Deleting the contents of '/home/runner/work/openflowsheet/openflowsheet'
+2026-11-22T14:15:31.0142756Z ##[group]Determining repository object format
+2026-11-22T14:15:31.0144249Z ##[endgroup]
+2026-11-22T14:15:31.0144911Z ##[group]Initializing the repository
+2026-11-22T14:15:31.0147636Z [command]/usr/bin/git init /home/runner/work/openflowsheet/openflowsheet
+2026-11-22T14:15:31.0229014Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-11-22T14:15:31.0230345Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-11-22T14:15:31.0231353Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-11-22T14:15:31.0232058Z hint: call:
+2026-11-22T14:15:31.0232469Z hint:
+2026-11-22T14:15:31.0233009Z hint: 	git config --global init.defaultBranch <name>
+2026-11-22T14:15:31.0233742Z hint:
+2026-11-22T14:15:31.0234299Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-11-22T14:15:31.0235366Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-11-22T14:15:31.0236136Z hint:
+2026-11-22T14:15:31.0236545Z hint: 	git branch -m <name>
+2026-11-22T14:15:31.0237004Z hint:
+2026-11-22T14:15:31.0237662Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-11-22T14:15:31.0240024Z Initialized empty Git repository in /home/runner/work/openflowsheet/openflowsheet/.git/
+2026-11-22T14:15:31.0248759Z [command]/usr/bin/git remote add origin https://github.com/computational-chemical-engineering/openflowsheet
+2026-11-22T14:15:31.0293221Z ##[endgroup]
+2026-11-22T14:15:31.0293922Z ##[group]Disabling automatic garbage collection
+2026-11-22T14:15:31.0295789Z [command]/usr/bin/git config --local gc.auto 0
+2026-11-22T14:15:31.0324488Z ##[endgroup]
+2026-11-22T14:15:31.0325145Z ##[group]Setting up auth
+2026-11-22T14:15:31.0325970Z Removing SSH command configuration
+2026-11-22T14:15:31.0330253Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-11-22T14:15:31.0357507Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-11-22T14:15:31.0719889Z Removing HTTP extra header
+2026-11-22T14:15:31.0725005Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-22T14:15:31.0751144Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-11-22T14:15:31.0982632Z Removing includeIf entries pointing to credentials config files
+2026-11-22T14:15:31.0983856Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-22T14:15:31.1017465Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-11-22T14:15:31.1248053Z [command]/usr/bin/git config --file /home/runner/work/_temp/git-credentials-a58cfcb3-aa95-4b26-b18a-6cfb4a1e0a86.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-11-22T14:15:31.1279324Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/openflowsheet/openflowsheet/.git.path /home/runner/work/_temp/git-credentials-a58cfcb3-aa95-4b26-b18a-6cfb4a1e0a86.config
+2026-11-22T14:15:31.1306252Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/openflowsheet/openflowsheet/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-a58cfcb3-aa95-4b26-b18a-6cfb4a1e0a86.config
+2026-11-22T14:15:31.1336417Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-a58cfcb3-aa95-4b26-b18a-6cfb4a1e0a86.config
+2026-11-22T14:15:31.1363386Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-a58cfcb3-aa95-4b26-b18a-6cfb4a1e0a86.config
+2026-11-22T14:15:31.1389070Z ##[endgroup]
+2026-11-22T14:15:31.1390159Z ##[group]Fetching the repository
+2026-11-22T14:15:31.1395355Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +0a800e69f200e52dae7e5f3d2d56810bc8f10e27:refs/remotes/origin/rc/0a800e6
+2026-11-22T14:15:34.2471012Z From https://github.com/computational-chemical-engineering/openflowsheet
+2026-11-22T14:15:34.2471916Z  * [new ref]         0a800e69f200e52dae7e5f3d2d56810bc8f10e27 -> origin/rc/0a800e6
+2026-11-22T14:15:34.2478514Z [command]/usr/bin/git branch --list --remote origin/rc/0a800e6
+2026-11-22T14:15:34.2502839Z   origin/rc/0a800e6
+2026-11-22T14:15:34.2509320Z [command]/usr/bin/git rev-parse refs/remotes/origin/rc/0a800e6
+2026-11-22T14:15:34.2529458Z 0a800e69f200e52dae7e5f3d2d56810bc8f10e27
+2026-11-22T14:15:34.2532876Z ##[endgroup]
+2026-11-22T14:15:34.2533548Z ##[group]Determining the checkout info
+2026-11-22T14:15:34.2534255Z ##[endgroup]
+2026-11-22T14:15:34.2537853Z [command]/usr/bin/git sparse-checkout disable
+2026-11-22T14:15:34.2584365Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-11-22T14:15:34.2609841Z ##[group]Checking out the ref
+2026-11-22T14:15:34.2613712Z [command]/usr/bin/git checkout --progress --force -B rc/0a800e6 refs/remotes/origin/rc/0a800e6
+2026-11-22T14:15:34.8326915Z Switched to a new branch 'rc/0a800e6'
+2026-11-22T14:15:34.8329648Z branch 'rc/0a800e6' set up to track 'origin/rc/0a800e6'.
+2026-11-22T14:15:34.8383814Z ##[endgroup]
+2026-11-22T14:15:34.8434558Z [command]/usr/bin/git log -1 --format=%H
+2026-11-22T14:15:34.8454594Z 0a800e69f200e52dae7e5f3d2d56810bc8f10e27
+2026-11-22T14:15:34.8746115Z ##[group]Run actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+2026-11-22T14:15:34.8746463Z with:
+2026-11-22T14:15:34.8746641Z   pattern: structural-identity-*
+2026-11-22T14:15:34.8746849Z   path: identities
+2026-11-22T14:15:34.8747038Z   merge-multiple: false
+2026-11-22T14:15:34.8747311Z   repository: computational-chemical-engineering/openflowsheet
+2026-11-22T14:15:34.8747591Z   run-id: 45019680845
+2026-11-22T14:15:34.8747773Z   skip-decompress: false
+2026-11-22T14:15:34.8747976Z   digest-mismatch: error
+2026-11-22T14:15:34.8748152Z ##[endgroup]
+2026-11-22T14:15:35.1918453Z Found 14 artifact(s)
+2026-11-22T14:15:35.1919179Z Filtering artifacts by pattern 'structural-identity-*'
+2026-11-22T14:15:35.1934271Z Preparing to download the following artifacts:
+2026-11-22T14:15:35.1935378Z - structural-identity-windows-latest (ID: 14758410757, Size: 198139, Expected Digest: sha256:999e848c0294ed20b2fc4c34336535035e3d41ee4de4d418667f84db688cc069)
+2026-11-22T14:15:35.1936847Z - structural-identity-ubuntu-latest (ID: 14757352848, Size: 190002, Expected Digest: sha256:72b60a98922c9c5752f821b7efe3ea63c77064b6eaa9a31ea2229c7defec42dd)
+2026-11-22T14:15:35.1938256Z - structural-identity-ubuntu-24.04-arm (ID: 14756436792, Size: 190001, Expected Digest: sha256:447f1a4e3e7fb78f6082e3932935d00c075ab2bc3d80019d0b7a8994129d7b73)
+2026-11-22T14:15:35.1939655Z - structural-identity-macos-latest (ID: 14755971457, Size: 190000, Expected Digest: sha256:ff8d44b7816eb0614ac3f6166fe8ca471b19eecbb32399560a01580492c0087c)
+2026-11-22T14:15:35.5498953Z Redirecting to blob download url: https://productionresultssa12.blob.core.windows.net/actions-results/93784b00-0a4f-888a-bd80-cd020b49ab24/workflow-job-run-c10e2186-7aa0-5794-828a-3859164f6c17/artifacts/22536bfd67ae0f4206246b574d054ce30e4220dc3e36a807dbb8a6442c62fe4b.zip
+2026-11-22T14:15:35.5500495Z Starting download of artifact to: /home/runner/work/openflowsheet/openflowsheet/identities/structural-identity-macos-latest
+2026-11-22T14:15:35.5650695Z Redirecting to blob download url: https://productionresultssa12.blob.core.windows.net/actions-results/93784b00-0a4f-888a-bd80-cd020b49ab24/workflow-job-run-9b6cd1a8-e95f-53a7-83d4-3c951e6ef55a/artifacts/a8bd061afccd26c2a08b238dd0ca769d1ac2934954d09356bc80933e11ce2d67.zip
+2026-11-22T14:15:35.5651844Z Starting download of artifact to: /home/runner/work/openflowsheet/openflowsheet/identities/structural-identity-ubuntu-24.04-arm
+2026-11-22T14:15:35.5760174Z Redirecting to blob download url: https://productionresultssa12.blob.core.windows.net/actions-results/93784b00-0a4f-888a-bd80-cd020b49ab24/workflow-job-run-e33b2dee-d932-553a-9446-c9cf19985c14/artifacts/311b1d67c140c151d759f3e44d31a0a3b12b964419759907445c032ecb5d3121.zip
+2026-11-22T14:15:35.5761377Z Starting download of artifact to: /home/runner/work/openflowsheet/openflowsheet/identities/structural-identity-ubuntu-latest
+2026-11-22T14:15:35.5782725Z Redirecting to blob download url: https://productionresultssa12.blob.core.windows.net/actions-results/93784b00-0a4f-888a-bd80-cd020b49ab24/workflow-job-run-6bf3db9f-71aa-5bc9-9df2-26038c142db4/artifacts/ef221bb74224ac37c9e9ddd558f40a7f990a53cc059f1ee22cb3007961d23479.zip
+2026-11-22T14:15:35.5784746Z Starting download of artifact to: /home/runner/work/openflowsheet/openflowsheet/identities/structural-identity-windows-latest
+2026-11-22T14:15:35.7529134Z (node:2429) [DEP0005] DeprecationWarning: Buffer() is deprecated due to security and usability issues. Please use the Buffer.alloc(), Buffer.allocUnsafe(), or Buffer.from() methods instead.
+2026-11-22T14:15:35.7529987Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-11-22T14:15:35.8871862Z SHA256 digest of downloaded artifact is ff8d44b7816eb0614ac3f6166fe8ca471b19eecbb32399560a01580492c0087c
+2026-11-22T14:15:35.8872543Z Artifact download completed successfully.
+2026-11-22T14:15:35.8882609Z SHA256 digest of downloaded artifact is 999e848c0294ed20b2fc4c34336535035e3d41ee4de4d418667f84db688cc069
+2026-11-22T14:15:35.8883629Z Artifact download completed successfully.
+2026-11-22T14:15:35.8983647Z SHA256 digest of downloaded artifact is 447f1a4e3e7fb78f6082e3932935d00c075ab2bc3d80019d0b7a8994129d7b73
+2026-11-22T14:15:35.8984317Z Artifact download completed successfully.
+2026-11-22T14:15:35.9265338Z SHA256 digest of downloaded artifact is 72b60a98922c9c5752f821b7efe3ea63c77064b6eaa9a31ea2229c7defec42dd
+2026-11-22T14:15:35.9266058Z Artifact download completed successfully.
+2026-11-22T14:15:35.9266328Z Total of 4 artifact(s) downloaded
+2026-11-22T14:15:35.9270122Z Download artifact has finished successfully
+2026-11-22T14:15:35.9433832Z ##[group]Run actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+2026-11-22T14:15:35.9434178Z with:
+2026-11-22T14:15:35.9434381Z   python-version: 3.13
+2026-11-22T14:15:35.9434591Z   check-latest: false
+2026-11-22T14:15:35.9436857Z   token: ***
+2026-11-22T14:15:35.9437051Z   update-environment: true
+2026-11-22T14:15:35.9437282Z   allow-prereleases: false
+2026-11-22T14:15:35.9437498Z   freethreaded: false
+2026-11-22T14:15:35.9437696Z ##[endgroup]
+2026-11-22T14:15:36.0416164Z ##[group]Installed versions
+2026-11-22T14:15:36.0498611Z Successfully set up CPython (3.13.18)
+2026-11-22T14:15:36.0499228Z ##[endgroup]
+2026-11-22T14:15:36.0607229Z ##[group]Run python -m pip install -c requirements.lock pyyaml numpy
+2026-11-22T14:15:36.0607719Z [36;1mpython -m pip install -c requirements.lock pyyaml numpy[0m
+2026-11-22T14:15:36.0658703Z shell: /usr/bin/bash -e {0}
+2026-11-22T14:15:36.0658946Z env:
+2026-11-22T14:15:36.0659202Z   pythonLocation: /opt/hostedtoolcache/Python/3.13.18/x64
+2026-11-22T14:15:36.0659791Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.13.18/x64/lib/pkgconfig
+2026-11-22T14:15:36.0660165Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.18/x64
+2026-11-22T14:15:36.0660500Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.18/x64
+2026-11-22T14:15:36.0660835Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.18/x64
+2026-11-22T14:15:36.0661176Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.13.18/x64/lib
+2026-11-22T14:15:36.0661465Z ##[endgroup]
+2026-11-22T14:15:36.9309129Z Collecting pyyaml
+2026-11-22T14:15:36.9973925Z   Downloading PyYAML-6.0.2-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (2.1 kB)
+2026-11-22T14:15:37.1763526Z Collecting numpy
+2026-11-22T14:15:37.1962398Z   Downloading numpy-2.2.4-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (62 kB)
+2026-11-22T14:15:37.2468486Z Downloading PyYAML-6.0.2-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (759 kB)
+2026-11-22T14:15:37.3012948Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 759.5/759.5 kB 17.7 MB/s  0:00:00
+2026-11-22T14:15:37.3209083Z Downloading numpy-2.2.4-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (16.1 MB)
+2026-11-22T14:15:37.4782308Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 16.1/16.1 MB 103.1 MB/s  0:00:00
+2026-11-22T14:15:37.5541577Z Installing collected packages: pyyaml, numpy
+2026-11-22T14:15:39.1577899Z 
+2026-11-22T14:15:39.1587602Z Successfully installed numpy-2.2.4 pyyaml-6.0.2
+2026-11-22T14:15:39.2144707Z ##[group]Run python - <<'PY'
+2026-11-22T14:15:39.2145019Z [36;1mpython - <<'PY'[0m
+2026-11-22T14:15:39.2145429Z [36;1mimport json, pathlib, sys[0m
+2026-11-22T14:15:39.2145765Z [36;1mfound = sorted(pathlib.Path("identities").rglob("identity.json"))[0m
+2026-11-22T14:15:39.2146116Z [36;1mif len(found) < 2:[0m
+2026-11-22T14:15:39.2146404Z [36;1m    sys.exit(f"G05 needs two platforms; found {len(found)}")[0m
+2026-11-22T14:15:39.2146828Z [36;1mdocuments = {path.parent.name: json.loads(path.read_text()) for path in found}[0m
+2026-11-22T14:15:39.2147222Z [36;1mnames = sorted(documents)[0m
+2026-11-22T14:15:39.2147461Z [36;1mfirst = documents[names[0]][0m
+2026-11-22T14:15:39.2147693Z [36;1mfailures = [][0m
+2026-11-22T14:15:39.2147905Z [36;1msys.path.insert(0, "src")[0m
+2026-11-22T14:15:39.2148193Z [36;1mfrom openflowsheet.run.compare import differences[0m
+2026-11-22T14:15:39.2148486Z [36;1mfloats = {[0m
+2026-11-22T14:15:39.2148766Z [36;1m    path.parent.name: json.loads(path.read_text())[0m
+2026-11-22T14:15:39.2149125Z [36;1m    for path in pathlib.Path("identities").rglob("t02-floats.json")[0m
+2026-11-22T14:15:39.2149431Z [36;1m}[0m
+2026-11-22T14:15:39.2149625Z [36;1mif sorted(floats) != names:[0m
+2026-11-22T14:15:39.2149989Z [36;1m    failures.append(f"t02-floats.json from {sorted(floats)}, identities from {names}")[0m
+2026-11-22T14:15:39.2150358Z [36;1mfor name in names[1:]:[0m
+2026-11-22T14:15:39.2150597Z [36;1m    other = documents[name][0m
+2026-11-22T14:15:39.2150866Z [36;1m    for key in sorted(set(first) | set(other)):[0m
+2026-11-22T14:15:39.2151163Z [36;1m        if first.get(key) != other.get(key):[0m
+2026-11-22T14:15:39.2151474Z [36;1m            failures.append(f"{key}: {names[0]} != {name}")[0m
+2026-11-22T14:15:39.2151789Z [36;1m    if name in floats and names[0] in floats:[0m
+2026-11-22T14:15:39.2152048Z [36;1m        failures += [[0m
+2026-11-22T14:15:39.2152294Z [36;1m            f"{found} ({names[0]} vs {name})"[0m
+2026-11-22T14:15:39.2152566Z [36;1m            for found in differences([0m
+2026-11-22T14:15:39.2152815Z [36;1m                floats[name],[0m
+2026-11-22T14:15:39.2153060Z [36;1m                floats[names[0]],[0m
+2026-11-22T14:15:39.2153303Z [36;1m                "t02_floats",[0m
+2026-11-22T14:15:39.2153587Z [36;1m                # ADR 0025 W5: registered comparisons keep v1 (RC F4).[0m
+2026-11-22T14:15:39.2153924Z [36;1m                policy_id="K04-numerical-policy-v1",[0m
+2026-11-22T14:15:39.2154191Z [36;1m            )[0m
+2026-11-22T14:15:39.2154378Z [36;1m        ][0m
+2026-11-22T14:15:39.2154735Z [36;1mfor name in names:[0m
+2026-11-22T14:15:39.2155017Z [36;1m    print(f"{name}: {documents[name]['structural_sha256']}")[0m
+2026-11-22T14:15:39.2155571Z [36;1mif failures:[0m
+2026-11-22T14:15:39.2155914Z [36;1m    sys.exit("R0 structural artifacts differ across platforms:\n  " + "\n  ".join(failures))[0m
+2026-11-22T14:15:39.2156420Z [36;1mprint(f"G05: R0 structural identity equal across {len(names)} platforms")[0m
+2026-11-22T14:15:39.2156755Z [36;1mPY[0m
+2026-11-22T14:15:39.2186062Z shell: /usr/bin/bash -e {0}
+2026-11-22T14:15:39.2186288Z env:
+2026-11-22T14:15:39.2186542Z   pythonLocation: /opt/hostedtoolcache/Python/3.13.18/x64
+2026-11-22T14:15:39.2186916Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.13.18/x64/lib/pkgconfig
+2026-11-22T14:15:39.2187270Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.18/x64
+2026-11-22T14:15:39.2187593Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.18/x64
+2026-11-22T14:15:39.2187916Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.18/x64
+2026-11-22T14:15:39.2188238Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.13.18/x64/lib
+2026-11-22T14:15:39.2188521Z ##[endgroup]
+2026-11-22T14:15:39.4527129Z structural-identity-macos-latest: ed6d11f3beb78c6f1debc481c6e525ce3ccb120bd30cdfd07e470f728e082e90
+2026-11-22T14:15:39.4528335Z structural-identity-ubuntu-24.04-arm: ed6d11f3beb78c6f1debc481c6e525ce3ccb120bd30cdfd07e470f728e082e90
+2026-11-22T14:15:39.4529975Z structural-identity-ubuntu-latest: ed6d11f3beb78c6f1debc481c6e525ce3ccb120bd30cdfd07e470f728e082e90
+2026-11-22T14:15:39.4530971Z structural-identity-windows-latest: ed6d11f3beb78c6f1debc481c6e525ce3ccb120bd30cdfd07e470f728e082e90
+2026-11-22T14:15:39.4531730Z G05: R0 structural identity equal across 4 platforms
+2026-11-22T14:15:39.5018056Z Post job cleanup.
+2026-11-22T14:15:39.6106257Z Post job cleanup.
+2026-11-22T14:15:39.6786406Z [command]/usr/bin/git version
+2026-11-22T14:15:39.6819995Z git version 2.56.1
+2026-11-22T14:15:39.6846549Z Temporarily overriding HOME='/home/runner/work/_temp/aa860ee1-e3d7-410b-8510-fd738b3797d7' before making global git config changes
+2026-11-22T14:15:39.6847584Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-22T14:15:39.6850562Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/openflowsheet/openflowsheet
+2026-11-22T14:15:39.6880051Z Removing SSH command configuration
+2026-11-22T14:15:39.6884706Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-11-22T14:15:39.6914512Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-11-22T14:15:39.7161197Z Removing HTTP extra header
+2026-11-22T14:15:39.7166205Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-22T14:15:39.7197483Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-11-22T14:15:39.7430434Z Removing includeIf entries pointing to credentials config files
+2026-11-22T14:15:39.7435149Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-22T14:15:39.7456302Z includeif.gitdir:/home/runner/work/openflowsheet/openflowsheet/.git.path
+2026-11-22T14:15:39.7456839Z includeif.gitdir:/home/runner/work/openflowsheet/openflowsheet/.git/worktrees/*.path
+2026-11-22T14:15:39.7457493Z includeif.gitdir:/github/workspace/.git.path
+2026-11-22T14:15:39.7458004Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+2026-11-22T14:15:39.7464038Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/openflowsheet/openflowsheet/.git.path
+2026-11-22T14:15:39.7483737Z /home/runner/work/_temp/git-credentials-a58cfcb3-aa95-4b26-b18a-6cfb4a1e0a86.config
+2026-11-22T14:15:39.7491981Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/openflowsheet/openflowsheet/.git.path \/home\/runner\/work\/_temp\/git\-credentials\-a58cfcb3\-aa95\-4b26\-b18a\-6cfb4a1e0a86\.config
+2026-11-22T14:15:39.7528475Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/openflowsheet/openflowsheet/.git/worktrees/*.path
+2026-11-22T14:15:39.7548460Z /home/runner/work/_temp/git-credentials-a58cfcb3-aa95-4b26-b18a-6cfb4a1e0a86.config
+2026-11-22T14:15:39.7555772Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/openflowsheet/openflowsheet/.git/worktrees/*.path \/home\/runner\/work\/_temp\/git\-credentials\-a58cfcb3\-aa95\-4b26\-b18a\-6cfb4a1e0a86\.config
+2026-11-22T14:15:39.7582638Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
+2026-11-22T14:15:39.7601596Z /github/runner_temp/git-credentials-a58cfcb3-aa95-4b26-b18a-6cfb4a1e0a86.config
+2026-11-22T14:15:39.7607882Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path \/github\/runner_temp\/git\-credentials\-a58cfcb3\-aa95\-4b26\-b18a\-6cfb4a1e0a86\.config
+2026-11-22T14:15:39.7635156Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+2026-11-22T14:15:39.7654887Z /github/runner_temp/git-credentials-a58cfcb3-aa95-4b26-b18a-6cfb4a1e0a86.config
+2026-11-22T14:15:39.7659623Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path \/github\/runner_temp\/git\-credentials\-a58cfcb3\-aa95\-4b26\-b18a\-6cfb4a1e0a86\.config
+2026-11-22T14:15:39.7687503Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-11-22T14:15:39.7920212Z Removing credentials config '/home/runner/work/_temp/git-credentials-a58cfcb3-aa95-4b26-b18a-6cfb4a1e0a86.config'
+2026-11-22T14:15:39.8053634Z Cleaning up orphan processes

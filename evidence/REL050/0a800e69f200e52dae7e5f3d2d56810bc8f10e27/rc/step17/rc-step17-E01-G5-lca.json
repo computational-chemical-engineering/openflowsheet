@@ -1,0 +1,44 @@
+{
+ "assertion": "E01 G5 (E01.A24, A25) in the lca environment (V03 17d)",
+ "checks": [
+  {
+   "argv": [
+    "/home/eajfpeters/.cache/rel050-cut/rc/venv-lca/bin/python",
+    "-m",
+    "pytest",
+    "-q",
+    "-rs",
+    "-p",
+    "no:cacheprovider",
+    "tests/test_e01_b_brightway.py",
+    "tests/test_e01_b_lca.py",
+    "tests/test_e01_b_tables.py",
+    "tests/test_e01_b_cost_hand.py"
+   ],
+   "environment": "lca",
+   "exit_status": 0,
+   "id": "E01-G5-lca",
+   "output": "step17/E01-G5-lca.log",
+   "output_sha256": "e9e8b05518e958185502b0a024768c49f4eb1da80cc809cd48de394f098e26cb",
+   "records": {},
+   "result": "pass"
+  }
+ ],
+ "format": "t08-rc-v1",
+ "passed": true,
+ "provenance": {
+  "architecture": "x86_64",
+  "commit": "0a800e69f200e52dae7e5f3d2d56810bc8f10e27",
+  "environment_lock_sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4",
+  "github_actions": false,
+  "machine_class": "ref-x86-64",
+  "python": "3.13.5",
+  "threads": {
+   "MKL_NUM_THREADS": "1",
+   "OMP_NUM_THREADS": "1",
+   "OPENBLAS_NUM_THREADS": "1"
+  },
+  "tree_clean": true
+ },
+ "step": "E01-G5-lca"
+}

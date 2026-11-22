@@ -1,0 +1,17 @@
+=== pytest -m nlp (/home/eajfpeters/Code/OpenFlowsheet/.venv-nlp) ===
+........................................................................ [ 33%]
+........................................................................ [ 67%]
+.....................................................................    [100%]
+- generated xml file: /home/eajfpeters/Code/OpenFlowsheet/.claude/worktrees/rc-c-050/evidence/REL050/0a800e69f200e52dae7e5f3d2d56810bc8f10e27/artifacts/rc/step14/nlp.junit.xml -
+MSG WO-5a: 81 bundles scanned; no sidecar key in any written document
+MSG WO-6: 0 run results checked, 0 with a failure; failure non-null iff a failure_bundle output in every one
+213 passed, 75 deselected in 164.74s (0:02:44)
+--- pytest -m nlp: exit 0
+=== inventory --check (NLP-1 workload) ===
+host state (not compared): pynumero_asl_lookup_without_pyomo_config_dir '~/.pyomo/lib/libpynumero_ASL.so' -> '(none)'
+--check passed: /home/eajfpeters/.cache/rel050-cut/rc/nlp-wt/benchmarks/m03/ipopt-inventory-x86_64.json reproduced (G1 PASS G2 PASS G3 PASS G4 PASS G5 PASS G6 PASS)
+--- inventory --check: exit 0
+=== inventory --check (ipopt executable workload) ===
+--check passed: /home/eajfpeters/.cache/rel050-cut/rc/nlp-wt/benchmarks/m05/trsp-inventory-x86_64.json reproduced (G1 PASS G2 PASS G3 PASS G4 PASS G5 PASS G6 PASS)
+--- inventory --check (trsp-exe): exit 0
+=== m03_nlp_check.sh: PASSED ===
