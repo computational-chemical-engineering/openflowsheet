@@ -236,3 +236,32 @@
 - DECISION: the gate is re-run in its own clean detached worktree at C (`gate-c-050`, 0 porcelain lines), where no
   one commits. Alternative: re-run in rel050 with commits held. Reversible by: none needed (a run, no change).
   Lesson: never commit in the worktree a gate runs in.
+
+## 2026-11-22: the RC job at C (build lane, work order REL050-RC); STOPPED at `ci`/`step1`/`items` (host gh)
+
+- Host SMM-TR09, kernel 6.12.86+deb13-amd64 at start and end. RC tree `git worktree add --detach
+  .claude/worktrees/rc-c-050 0a800e69`; `git status --porcelain --ignored` 0 lines at 2026-11-22T13:02:37+01:00. W27
+  tarball SHA-256 `6d42c02fdc7e8e4c81c861d77fd5b546198a2bfd7d9c87212c97149e50ea4526` (= the registered `6d42c02f…4526`).
+- Driver `~/.cache/rel050-cut/bin/rc_local.sh` (logs `~/.cache/rel050-cut/logs/`, runner work `~/.cache/rel050-cut/rc/`):
+  `release_rc.py local --line 0.5` run by `$R/.venv/bin/python -B` with `PYTHONPATH=src` (the runner imports
+  `release_gate`, which needs `jsonschema`; the runner strips PYTHONPATH for every step), inputs as the work order,
+  `--ci-run 45019811148`. A first start with `/usr/bin/python3` died at import (`No module named 'jsonschema'`) before
+  any step; nothing written.
+- DECISION: three sequential invocations, 0.4.0's split (`2,6,7,8,9,11,13` 12:03-12:19Z; `12,10` 12:19-13:27Z;
+  `14,15,16,17` 13:27-13:40Z), so that G11's 8 workers ran alone. Alternative: one invocation. Reversible by: re-run.
+- Exits: A 0, B 0, C 1 (C-14: `step17-items` exit 1). By-design non-zero: `step14-nlp-collect-all` 2, `step16-dryrun` 1.
+- Records (pass/total, all `passed` true): 2 3/3; 6 7/7; 7 12/12; 8 15/15; 9 "A30 PASS"; 10 2/2 (0 violations);
+  11 3/3 (`differing_members` []); 12 6/6 and `r375.audit` 1/1 ("2 runs, 210 boundary points, 210 results, 210
+  attempts, 0 without a result, 32 direct points ...: PASS", job_id 420); 13 3/3; 14 5/5; 15 3/3; 16 4/4.
+  Steps 14 and 15: `host_platform` = `record_platform` = `Linux-6.12.86+deb13-amd64-x86_64-with-glibc2.41`.
+- **Stop: step 17 wrote no record.** `step17-items` died before any item ran: `release_rc.py items` calls
+  `gh run list ... --json databaseId,headSha,event,status,conclusion,attempt` (`release_rc.py:231-233`), and TR09's
+  `gh` 2.46.0 (Debian) answers `Unknown JSON field: "attempt"`. The same field is in `step1` (`_gh_runs`, :250) and
+  `ci` (`gh run view --json ...,attempt`, :422), so step 1, `ci` and step 17 cannot run on this host's gh. Not an item
+  failure; no item was judged. A newer gh outside the repository (fetching gh 2.103.3 into `~/.cache/rel050-cut/`) was
+  refused by the session's permission classifier; a tool edit is a stop. Nothing re-run.
+- CI at C: push run 45019680845 `success` (`check` x86-64, aarch64, macOS, Windows; `default-install`; `identity`;
+  `codehealth`); dispatch 45019811148 `success` (orchestrator's read).
+- Peak 1-min load 19.47 at 12:29Z (G11's 8 workers + runner, beside the gate and other sessions; this job <= 9
+  processes). Not done: `ci`, `step1`, `items`, `records`, the RC record, the tree record, `--lapses`. Kept for
+  resumption: `rc-c-050` with its artifacts, `~/.cache/rel050-cut/rc/` (venvs, nlp worktree).
