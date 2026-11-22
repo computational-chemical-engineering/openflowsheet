@@ -9981,3 +9981,21 @@ harvest:
   class: P
   to: []
   note: 'provenance note: review pending; never set by the build lane'
+- manifest: evidence/REL040/84c665477b512548f38a6335f51648732b1fe5bb/manifest.json
+  item: limitations[0]
+  sha256: b18417241ee5486ed354645f133e3e6e1b113b52c7b61a2d00a2ca78ac11fbd3
+  class: P
+  to: []
+  note: 'provenance note: REL040''s evidence class (verification at C; self-generated records are regression evidence, not validation)'
+- manifest: evidence/REL040/84c665477b512548f38a6335f51648732b1fe5bb/manifest.json
+  item: limitations[1]
+  sha256: 9de1c8ba77e95766a35434d66bd3dae3197f305f50894c50051223ad535e4b84
+  class: P
+  to: []
+  note: 'process note: REL040''s manifest was not harvested into v0.4-envelope-1 (RP §5.2); this harvest, at the 0.5 envelope, takes it'
+- manifest: evidence/REL040/84c665477b512548f38a6335f51648732b1fe5bb/manifest.json
+  item: limitations[2]
+  sha256: 87fdae780438f37e53521366593996d454f53aef5e5a6e4957697452d3f3f971
+  class: P
+  to: []
+  note: 'release-candidate item: step 18 (release_gate.py --line 0.4 --rc C) is judged from its output in the build log (R-914, RP §6.8)'

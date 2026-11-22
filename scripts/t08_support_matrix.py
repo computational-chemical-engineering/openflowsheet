@@ -510,8 +510,10 @@ def text_sha256(item: str | Mapping[str, Any]) -> str:
 #: 0.2.0 by R-485. The 0.2.0 tag (`5c82b4c`) excludes both directories. The post-0.2.0 harvest
 #: (C4) is R-485's next harvest: it reads every manifest M07a and M07 wrote. S13's own manifest
 #: (V03, written after 0.3.0's C = `a3e508e3`) is excluded from 0.3.0's harvest as M07's was from
-#: 0.2.0's; the next envelope's package harvests it (R-911).
-HARVEST_EXCLUDED: tuple[str, ...] = ("evidence/REL040/",)
+#: 0.2.0's; the next envelope's package harvests it (R-911). Since 0.4.0 the tuple names the
+#: release line's own package (RP §5.2): 0.4.0 excluded `evidence/REL040/`, 0.5.0 harvests it and
+#: excludes `evidence/REL050/`.
+HARVEST_EXCLUDED: tuple[str, ...] = ("evidence/REL050/",)
 
 
 def harvest_items(
