@@ -345,3 +345,16 @@
   judges all four check legs (reviewed change; a Windows or macOS failure at C becomes a release stop), and re-run
   step 1 at C." Verify against these. Hub's notes on the cards: q-f1 A moves the clause a second time; v17-carry hub
   leans B (evidence three releases old, never drove the c_9/c_10 tools).
+
+## 2026-11-22: message 1 answered (four cards, all VERIFIED)
+
+- `decision_desk_verify.py` VERIFIED, key 032ee0a5ae620a90, against the logged option texts:
+  ofs-rel050-q-f1 **A** (move the clause to 0.6; signed 22:38:54Z); ofs-rel050-q-f2 **A** (Linux legs only;
+  22:39:24Z); ofs-rel050-v17-carry **B** (new V17 agent campaign at C; 22:40:19Z); ofs-rel050-m02-n1 **A** (keep the
+  label, scope as at C; 22:38:34Z). Not yet executed.
+- Finding on v17-carry B (orchestrator, before acting): the card's cost line ("about USD 10, about one hour", taken
+  from the 0.4 row's alternative) understates it. The harness, preflight and scorer are hard-wired to campaign
+  `v17-c2` (preflight P1 the user's approval line in T07_DECISIONS, P8 "no runs/v17-c2/ yet"; 25 literal mentions in
+  `benchmarks/t07/v17/`), the model pin is `claude-sonnet-5`, and the 30 registered tasks never call F1's or F3's
+  tools. A new campaign needs a registered campaign (design lane), harness changes under `benchmarks/` (a D2.4 path:
+  C moves, CI and RC steps re-run at C'), and the V17 login. Reported to the user before acting.
