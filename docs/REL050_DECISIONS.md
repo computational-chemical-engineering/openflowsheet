@@ -358,3 +358,18 @@
   `benchmarks/t07/v17/`), the model pin is `claude-sonnet-5`, and the 30 registered tasks never call F1's or F3's
   tools. A new campaign needs a registered campaign (design lane), harness changes under `benchmarks/` (a D2.4 path:
   C moves, CI and RC steps re-run at C'), and the V17 login. Reported to the user before acting.
+
+## 2026-11-22: acceptance rows for V17 carry and M02 N1 at C (REL050-ACC)
+
+- `release/acceptances.md` rows replaced in place, Accepted at = C = 0a800e69; the old rows moved unedited to
+  History under "Lapsed at C = 0a800e69, 2026-11-22 (decision items)". Frank's answers verbatim: M02 N1 "Keep the label"
+  (card `ofs-rel050-m02-n1`, A); V17 carry "Carry for 0.5, campaign in 0.6 (Recommended)" (plain words; replaces
+  card `ofs-rel050-v17-carry`, whose choice B needed a registered campaign and a new candidate).
+- `LINKS` at C (`scripts/m07a_rc.py`) is exactly c_1..c_10 with R-192, R-234, R-295, R-934, R-950, R-960, R-1000,
+  R-1010, R-1030, R-1051; the V17 row names all ten.
+- Fingerprints at C (gate's `Scopes.evaluate`, candidate = this branch): V17 carry
+  `9f4fb274bec701f2d923e7594e35e490d7c22ff108c82c738fb884fdefab6615`; M02 N1
+  `7de4c9316455eb93fd2777a7161bb9c5d45d679dfb04419bb034ede64a094680`.
+- Check `release_gate.py --line 0.5 --rc C --lapses` (output in `~/.cache/rel050-cut/acc-lapses.txt`; the committed
+  lapse report is untouched): V17 carry stands, M02 N1 stands, V14 (b) lapsed (unchanged, waits for message 2),
+  X31 (c), Claim set, M03 N1, coolprop and lca licences stand. `tests/test_rel_*.py`: 228 passed.
