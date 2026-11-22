@@ -205,3 +205,15 @@
   Every number bitwise equal. No stop.
 - Peak 1-min load seen 1.52 (this work at most 7 threads). Run worktrees rc-k3-050, rc-j-050, rc-c-050 removed;
   `~/.cache/rel050-cut/` kept.
+- 2026-11-22, CI 45009971732 at 3da2c4e2 (K3 + RELEASE_PINS fix): success on all 7 jobs.
+- 2026-11-22, J result (opus-engineer, Opus, ~141k): **J = 3caa928cc82083e49184b4ee099bc9dbcb8b542b**, **C (proposed) =
+  0a800e69f200e52dae7e5f3d2d56810bc8f10e27**, log 04dc7cd6. Proofs all PASS (five G10: platform=0 other=0
+  environment=equal; REAL: version=0 other=0 environment=host, SMM-TRS2 -> SMM-TR09; IDAES: platform=1 other=0).
+  `m05_wo9_real.py --replay` REPLAY PASS (the TR09 failure since the host move is cured). Journey: refined,
+  T* 653.15 K, J 0.4525; check ACCEPT; replay bitwise; carried; 109/10794 leaves differ from 0.4.0's, all allowed
+  classes, every number bitwise. Orchestrator checks: `git diff K3 C` over the D2.4 paths = 1 IDAES file, 45
+  m05/records files, 12 journey files only; nothing in D2.4 after C. Engineer's DECISION accepted: the journey ran
+  with `PYTHONPATH=src` (0.4.0's step-3 line); the brief's nlp line with nlp-test-tools put pytest 8.3.5 ahead of the
+  reactor env's 9.1.1 and `env.verify` refused (attempt 1, uncommitted, `~/.cache/rel050-cut/journey-attempt1/`).
+  Watch at step 15: `m07_journey.py run` with the tools on PYTHONPATH reproduces attempt 1; `replay` passes in both.
+- C pushed on its own as `rc/0a800e6` (RP §6.2, A-4) for the push run at C; wp/REL050 pushed at 04dc7cd6.

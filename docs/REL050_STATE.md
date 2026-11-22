@@ -10,26 +10,27 @@ Frank 2026-11-20, "Let's go for the smaller 0.5 release"): **0.5 = X07a, F1, F3,
 and X01's selectability lead 0.6. Procedure: RP (`docs/derivations/release-procedure.md`), ADR 0055; dispatch steps
 in `docs/RELEASING.md`. Last release v0.4.0 (2026-11-11); main is `0.5.0.dev0`.
 
-## Position (2026-11-22)
+## Position (2026-11-22, C proposed)
 
-- **main = 1fe40db3** (card ofs-rel050-merge-main A, VERIFIED, executed; F0 PASS on main; pushed): ceb38cec (S19) +
-  X07a + X01 + REL050 bfdd3f2d + fix 1fe40db3. wp/REL050 = 411fe0a3 (main merged in; docs-only ahead).
-- **K3 running:** opus-engineer on `<briefs>/REL050-K3.md` in worktree rel050 (REL040 manifest harvest,
-  HARVEST_EXCLUDED ("evidence/REL050/",), K3 0.5.0 / v0.5-envelope-1, P1/P3/P4/P6). K3 lives on wp/REL050 (0.4
-  precedent). P6 already holds (SMM-TR09 ref-x86-64).
-- From K3 until the dispatch main takes no D2.4 change (freeze; hub told at K3).
-- GitHub API: poll every 300 s (memory `gh-api-rate-limit`).
+- main = 1fe40db3 (the 0.5 packages; card ofs-rel050-merge-main executed). **Freeze on main** (D2.4 paths) since K3;
+  hub told and records it.
+- wp/REL050: **K3 = 8aaed3f25d94823d2b93524884a9f054eb0d306d** (0.5.0, v0.5-envelope-1), a6d1bea8 RELEASE_PINS
+  fix (tests/), **J = 3caa928cc82083e49184b4ee099bc9dbcb8b542b**, **C = 0a800e69f200e52dae7e5f3d2d56810bc8f10e27**
+  (journey record), log 04dc7cd6. P1, P3, P4, P6 hold at K3 (REL050_DECISIONS). CI at 3da2c4e2 green (7 jobs).
+- **C pushed as branch `rc/0a800e6`**; its push CI run (RC step 1) is being watched (poll 300 s; if the notice is
+  lost: `gh run list --branch rc/0a800e6 --workflow ci`). wp/REL050 pushed at 04dc7cd6.
+- Run artifacts of J: `~/.cache/rel050-cut/` (logs, drivers, journey-attempt1).
 
 ## Next actions
 
-1. K3 result: check the report (P1 gaps, (b) failures = RP §12 stop), push wp/REL050, tell hub the freeze is on.
-2. J (RP §7.1 bullet 3): clean worktree at K3, re-takes on TR09: five G10 records (digest-only proof), M05 REAL
-   (`m05_wo9_real.py --retake-into`, nlp env, OMP_NUM_THREADS=1; it fails replay since the TRS2 -> TR09 move, so the
-   re-take is required), M01 IDAES conformance; then the journey record (RP §4.5) -> C. Brief pattern
-   `docs/briefs/REL040-j.md`.
-3. RC steps 1-17 at C (`docs/briefs/REL040-rc.md` pattern), RP §9.2 (lapse report and message 1: Q-F1, Q-F2 and the
-   predicted lapses V17 carry, V14 (b), M02 N1; verdict; ledger; H1, H2, step 18 YES, H3), merge C (card), dry run,
-   Frank's dispatch.
+1. Push CI at C green on both Linux legs (step 1 needs `check` on ubuntu-latest and ubuntu-24.04-arm, junit
+   artifacts). Red: read the failing job.
+2. RC work order: brief `<briefs>/REL050-RC.md` from `docs/briefs/REL040-rc.md` (0.4.0 part 3) and RP §6 (steps
+   1-17 at C, record `docs/REL050-rc-record.md`, records outside D2.4 paths after C). Host TR09; envs as in
+   `<briefs>/REL050-J.md`. Step 15 note: the journey runs with `PYTHONPATH=src` (J's DECISION). opus-engineer.
+3. RP §9.2 after the RC record: lapse report (`release_gate.py --line 0.5 --rc <C> --lapses`) and message 1 to the
+   user via hub (Q-F1, Q-F2, predicted lapses V17 carry, V14 (b), M02 N1; frank_items in the line file); verdict
+   (one `verdict` pass); ledger; H1, H2, step 18 YES, H3; merge C into main (card); dry run; dispatch.
 
 ## Gates (criteria fixed before the run)
 
