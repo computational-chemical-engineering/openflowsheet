@@ -20,7 +20,7 @@ in `docs/RELEASING.md`. Last release v0.4.0 (2026-11-11); main is `0.5.0.dev0`.
 - **Integration branch `int/0.5-r2`** (worktree `.claude/worktrees/int05`) = 1fe40db3 = 67cc5027 (ceb38cec + X07a
   + X01 + REL050 bfdd3f2d; bookkeeping conflicts only) + one fix commit: S19 tooling under X07a's checks (CI
   44945609131 red at 67cc5027: git-show separator lint, two Windows `fcntl` limits; REL050_DECISIONS 2026-11-22).
-  HARVEST_SIZE (105, 1169, 147). Pushed; **CI re-running at 1fe40db3** (poll 300 s). The old `int/0.5` (d29f1a50
+  HARVEST_SIZE (105, 1169, 147). Pushed; **CI 44960794993 green at 1fe40db3 (all 7 jobs); card ofs-rel050-merge-main requested from hub, waiting for the signature** (texts in REL050_DECISIONS). The old `int/0.5` (d29f1a50
   base) is obsolete: delete the branch after the merge.
 - GitHub API: poll every 300 s, never `gh run watch` at its default interval (memory `gh-api-rate-limit`).
 
