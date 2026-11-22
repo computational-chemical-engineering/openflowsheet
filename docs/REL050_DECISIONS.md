@@ -283,3 +283,10 @@
 - Full gate at C (0a800e69, clean worktree `gate-c-050`, PATH=$R/.venv/bin, PYTHONPATH=src): **GATE PASS**, 21077
   passed, 107 skipped, 222 deselected, 3 xfailed (5243 s). Log `~/.cache/rel050-cut/gate/gate-C-0a800e69.log`
   (sha256 prefix 033af1a4831e8245). Worktree removed.
+- 2026-11-22, the user in the REL050 session: "I approve that you install the recent gh version." (Option A, given in
+  this session's chat; the card `ofs-rel050-rc-gh` is not used for it.) Installed gh v2.103.3 (published 2026-10-26)
+  from cli/cli's release: `gh_2.103.3_linux_amd64.tar.gz` checksum OK against `gh_2.103.3_checksums.txt`, unpacked
+  under `~/.cache/rel050-cut/gh/`; `--json attempt` works (runs at C: push 45019680845, dispatch 45019811148, attempt 1).
+- DECISION: v2.103.3, not v2.105.0 (2026-11-18): the newest release at least two weeks old. Alternative: v2.105.0.
+  Reversible by: pointing PATH at another version.
+- Work order `<briefs>/REL050-RC2.md` (opus-engineer): ci, step1, items, records, RC record, tree record, lapses.

@@ -27,7 +27,7 @@ in `docs/RELEASING.md`. Last release v0.4.0 (2026-11-11); main is `0.5.0.dev0`.
 
 ## Next actions
 
-0. **BLOCKED on the user**, card `ofs-rel050-rc-gh` (filed by hub 2026-11-22; verify A against hub's reworded text in REL050_DECISIONS): TR09's gh 2.46.0 lacks `--json attempt`, which
+0. UNBLOCKED (the user approved A in chat; gh 2.103.3 in `~/.cache/rel050-cut/gh/`); RC2 work order running. Was: card `ofs-rel050-rc-gh` (filed by hub 2026-11-22; verify A against hub's reworded text in REL050_DECISIONS): TR09's gh 2.46.0 lacks `--json attempt`, which
    `scripts/release_rc.py` step 1, `ci` and `items` need. A: the user installs (or allows) a current gh under
    `~/.cache/rel050-cut/gh`, first on PATH for those calls only. B: reviewed runner fix and a new C'. Local steps 2,
    6-16 at C already pass (eabc3ce4); kept: `rc-c-050`, `~/.cache/rel050-cut/rc/`, `~/.cache/rel050-cut/bin/rc_local.sh`.
