@@ -140,3 +140,11 @@
   (RELEASE_PINS extended after K3, both controls kept). No class (a) failure in the named set.
 - P1 24/24 packages have a `tested` manifest whose sha is an ancestor of K3. P3: all 32 `required_adrs` Accepted;
   0062-0067 Proposed and not in `required_adrs` (Q-F1). P4 `RP.L01-L11: PASS` at K3. P6 `ref-x86-64`.
+- 2026-11-22, K3 result (opus-engineer, Opus, ~116k): ad74470b harvest (REL040 manifest: 3 limitations, all P;
+  HARVEST_SIZE (106, 1172, 147); HARVEST_EXCLUDED ("evidence/REL050/",)); **K3 = 8aaed3f25d94823d2b93524884a9f054eb0d306d**
+  (0.5.0, v0.5-envelope-1, A10_PINS_0_5_0; F0 PASS); f1331088 log. P1 24/24 tested at ancestors; P3 32/32 required
+  ADRs Accepted (0062-0067 Proposed are not in required_adrs: only Q-F1); P4 RP.L01-L11 PASS at K3; P6 ref-x86-64.
+  Stop (b): test_v03 `test_a04_the_committed_test_holds_and_a_swap_fails` (RELEASE_PINS hard-coded through 0.4.0),
+  seen through RP.S03/S04 in test_rel_a20. DECISION (orchestrator): ruled §7.2 bookkeeping, as 0.4.0's 2650fb8a;
+  fix committed after K3 (tests/, not a D2.4 path) with controls kept and the pre-0.5 tuple added. Alternative: a
+  design-lane ruling first. Reversible by: reverting that commit.
