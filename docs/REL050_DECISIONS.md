@@ -339,3 +339,9 @@
   0.6 / B hold / C record unmet), Q-F2 (A Linux legs only / B amend §6.2 to four legs), V17 carry (A carry across c_9,
   c_10 / B new campaign ~USD 10), M02 N1 (A keep shipping "not a sandbox" / B hold for a launcher review). V14 (b)
   goes in message 2 (failing clause, after Judged).
+- Hub filed message 1 as four cards: ofs-rel050-q-f1, ofs-rel050-q-f2, ofs-rel050-v17-carry, ofs-rel050-m02-n1. Texts
+  as sent except: q-f1 A = "Amend ADR 0057 D6 and roadmap.md so the clause 'ADR-F1 to ADR-F8 Accepted' moves to the
+  0.6 line, as it moved from 0.4; 0.5.0 proceeds." and q-f2 B = "Amend RP section 6.2 and release_rc.py so step 1
+  judges all four check legs (reviewed change; a Windows or macOS failure at C becomes a release stop), and re-run
+  step 1 at C." Verify against these. Hub's notes on the cards: q-f1 A moves the clause a second time; v17-carry hub
+  leans B (evidence three releases old, never drove the c_9/c_10 tools).
