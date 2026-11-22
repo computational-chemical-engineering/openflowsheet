@@ -9,6 +9,7 @@ trees are detached worktrees of the base under `tmp_path`, removed afterwards.
 
 from __future__ import annotations
 
+import ast
 import copy
 import json
 import os
@@ -79,6 +80,17 @@ SAMPLES = {
 COMMENT = "# W5 identity experiment: a comment-only edit (never committed).\n"
 
 
+#: X07a platform limit (docs/X07a_DECISIONS.md): the facts at `BASE` come from importing that
+#: tree, which predates the platform layer and imports `fcntl` (run 44618922484). A W5 base at or
+#: after X07a's merge lifts it.
+BASE_TREE_LIMIT = "the W5 base tree imports fcntl (it predates openflowsheet._platform): POSIX only"
+
+
+def _skip_base_tree_on_windows() -> None:
+    if sys.platform == "win32":
+        pytest.skip(BASE_TREE_LIMIT)
+
+
 def _git(*arguments: str, cwd: Path = ROOT) -> str:
     return subprocess.run(
         ["git", *arguments], cwd=cwd, capture_output=True, text=True, check=True
@@ -86,6 +98,7 @@ def _git(*arguments: str, cwd: Path = ROOT) -> str:
 
 
 def _tool(*arguments: str) -> subprocess.CompletedProcess[str]:
+    _skip_base_tree_on_windows()
     return subprocess.run(
         [sys.executable, str(TOOL), *arguments], capture_output=True, text=True, check=False
     )
@@ -93,12 +106,14 @@ def _tool(*arguments: str) -> subprocess.CompletedProcess[str]:
 
 @pytest.fixture(scope="module")
 def facts() -> w5.Facts:
+    _skip_base_tree_on_windows()
     return w5.facts_at(ROOT, w5.resolve(ROOT, BASE))
 
 
 @pytest.fixture
 def scratch(tmp_path: Path) -> Iterator[Path]:
     """A detached worktree of the base, removed afterwards."""
+    _skip_base_tree_on_windows()
     tree = tmp_path / "tree"
     _git("worktree", "add", "--detach", str(tree), BASE)
     try:
@@ -445,6 +460,7 @@ def test_t1_s2_and_s4_run_only_at_a_base(scratch: Path) -> None:
 
 SYN001 = f"{THERMO}/syn001.py"
 PR_C1 = f"{THERMO}/pr_c1.py"
+COOLPROP = f"{THERMO}/coolprop_heos.py"
 
 
 def test_r1_predict_refuses_tier_4_and_m7() -> None:
@@ -752,4 +768,416 @@ def test_t7_a_changed_m9_key_set_exits_1(scratch: Path) -> None:
     assert done.stdout.splitlines() == [
         "coverage: 0 new edge(s) outside a hash scope, 0 retarget(s), 0 edited hashed file(s); "
         f"M9 key set DIFFERS: added ['{unit}'], removed [] (36)"
+    ]
+
+
+def test_s7_b7_s_group_modules_are_the_m9_key_set_s_one_exception() -> None:
+    """W5-S7's M9 rule: the key set stays the base's, except for B7's group modules the diff
+    changes (scoped as in `predict`); any other key added or removed fails."""
+    base = ["src/openflowsheet/thermo/pr_c1.py"]
+    a, b1 = w5.B7_MODULES[:2]
+    assert w5.m9_key_set(base, base, []) == (True, "equal to base (1)")
+    assert w5.m9_key_set(base, [*base, a, b1], [a, b1, base[0]]) == (
+        True,
+        "equal to base plus 2 B7 group module(s) (3)",
+    )
+    other = "src/openflowsheet/thermo/_coolprop_heos_fluids_z.py"
+    for head, changed in (
+        ([*base, a], []),
+        ([*base, other], [other]),
+        ([*base, a, other], [a, other]),
+        ([], []),
+    ):
+        holds, text = w5.m9_key_set(base, head, changed)
+        assert not holds and text.startswith("DIFFERS: "), (head, changed)
+
+
+def test_s7_a_b7_step_adding_a_group_module_passes(scratch: Path) -> None:
+    """A B7-like step at the base: `coolprop_heos.py` hashes a new group module, which M9 then
+    measures; coverage passes on the B7 exception."""
+    group = w5.B7_MODULES[0]
+    (scratch / group).write_text('"""B7 group a (a scratch stand-in)."""\n', encoding="utf-8")
+    table = '(here.parent / "_coolprop_heos_fluids.py").read_bytes()'
+    path = scratch / COOLPROP
+    path.write_text(
+        path.read_text(encoding="utf-8").replace(
+            table, f'{table} + (here.parent / "{group.rsplit("/", 1)[1]}").read_bytes()'
+        ),
+        encoding="utf-8",
+    )
+    head = _commit(scratch, "a B7 group module", group, COOLPROP)
+    done = _tool("--tree", str(scratch), "coverage", "--base", BASE, "--head", head)
+    assert done.returncode == 0, done.stdout
+    assert done.stdout.splitlines()[-1] == (
+        "coverage: 0 new edge(s) outside a hash scope, 0 retarget(s), 1 edited hashed file(s); "
+        "M9 key set equal to base plus 1 B7 group module(s) (36)"
+    )
+
+
+# -- the identity pin: W5-T3 to W5-T5 (batch P) ---------------------------------------------------
+
+#: W5-T3's line: the pinned F0 of a tier 3 comment edit at the base.
+T3_LINE = (
+    "F0 PASS: M1 50/50, M2 61/61, M3 61/61, M4 61/61, M5 61/61, M6 85/85, M7 52/52, M8 105/105, "
+    "M9 35/35"
+)
+#: W5-T4's literal: Ω_a of `pr_c1.parameters` (spec §4.3), which the m02 run evaluates.
+T4_LITERAL = ("OMEGA_A: Final = 0.45724\n", "OMEGA_A: Final = 0.45725\n")
+M02 = "m02/C1-FLASH-F1-M02-v1"
+WILSON = f"{THERMO}/wilson_ig.py"
+IAPWS95 = f"{THERMO}/iapws95.py"
+WILSON_V2 = f"{THERMO}/wilson_ig_v2.py"
+#: Runs F0 in full: only where its line holds (M4 and M6's trails are judged on `ref-x86-64`).
+reference_only = pytest.mark.skipif(
+    w5.corpus_identity().reference_class() != "ref-x86-64",
+    reason="the pinned F0's line is the reference platform's",
+)
+PROBE = '''"""A pinned probe: the base's identity reads, against the head's text."""
+import hashlib
+import json
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path.cwd() / "scripts"))
+import corpus_identity as f0
+from openflowsheet.thermo import pr_c1
+
+path = Path(pr_c1.__file__)
+print(json.dumps({
+    "describe": pr_c1.PrC1Provider().describe().implementation_sha256,
+    "m9": f0.m9()["src/openflowsheet/thermo/pr_c1.py"],
+    "text": hashlib.sha256(path.read_text(encoding="utf-8").encode()).hexdigest(),
+}))
+'''
+FOREIGN = '''"""A read of a pinned file outside the identity sites."""
+from pathlib import Path
+
+
+def peek() -> bytes:
+    with Path("src/openflowsheet/thermo/pr_c1.py").open("rb") as handle:
+        return handle.read()
+
+
+peek()
+'''
+
+
+@pytest.fixture(scope="module")
+def pinned_tree(tmp_path_factory: pytest.TempPathFactory) -> Iterator[Path]:
+    """A detached worktree of the base with `thermo/pr_c1.py` comment-edited and the probes."""
+    _skip_base_tree_on_windows()
+    tree = tmp_path_factory.mktemp("pin") / "tree"
+    _git("worktree", "add", "--detach", str(tree), BASE)
+    try:
+        _append(tree, PR_C1, COMMENT)
+        for name, text in {"probe": PROBE, "foreign": FOREIGN, "idle": "print('idle')\n"}.items():
+            (tree / "scripts" / f"w5_{name}.py").write_text(text, encoding="utf-8")
+        exits = "import sys\n\nimport w5_probe  # noqa: F401\n\nsys.exit(int(sys.argv[1]))\n"
+        (tree / "scripts" / "w5_exit.py").write_text(exits, encoding="utf-8")
+        yield tree
+    finally:
+        _git("worktree", "remove", "--force", str(tree))
+        _git("worktree", "prune")
+
+
+def _pin(tree: Path, *command: str, registry: str | None = None) -> tuple[Any, list[str], Any]:
+    """`pin --base BASE` of `command` in `tree`: (the completed run, its lines, its JSON)."""
+    record = tree.parent / "pin.json"
+    options = ["--registry", registry] if registry else []
+    done = subprocess.run(
+        [sys.executable, str(TOOL), "--tree", str(tree), "pin", "--base", BASE, *options]
+        + ["--json", str(record), "--", *command],
+        cwd=tree,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    return done, done.stdout.splitlines(), json.loads(record.read_text(encoding="utf-8"))
+
+
+def test_t3_the_pin_serves_the_base_bytes_to_the_identity_sites_only(
+    facts: w5.Facts, pinned_tree: Path
+) -> None:
+    """W5-T3's mechanism: the provider's hash and M9 read the base bytes, a text read the head's;
+    each pinned read is recorded with its caller (W5-T5)."""
+    done, lines, record = _pin(pinned_tree, "scripts/w5_probe.py")
+    assert done.returncode == 0, done.stdout + done.stderr
+    seen = json.loads(lines[0])
+    registered = facts["registry"]["measures"]["M9"][PR_C1]
+    assert seen["m9"] == registered
+    assert seen["describe"] == registered
+    assert seen["describe"][:12] == w5.prefix_of(facts, "pr-c1-v1")
+    head = (pinned_tree / PR_C1).read_bytes()
+    assert seen["text"] == w5.corpus_identity().sha256(head) != registered
+    assert record["pinned"] == [PR_C1] and record["unpinned"] == []
+    assert [(r["caller"], r["site"]) for r in record["reads"]] == [
+        ("scripts/corpus_identity.py:m9<-scripts/w5_probe.py:<module>", True),
+        (
+            f"{PR_C1}:_implementation_sha256<-{PR_C1}:PrC1Provider.describe",
+            True,
+        ),
+    ]
+    assert lines[-1].startswith("pin PASS: base 8d31b89ea3f8, |E| 1, pinned 1 (2 read(s)")
+    assert lines[-1].endswith("vacuous 0, foreign 0; command exit 0")
+
+
+def test_t3_the_command_s_exit_status_is_the_pin_s(pinned_tree: Path) -> None:
+    """A clean pin exits with the command's status (F0's 1 on a FAIL stays 1)."""
+    done, lines, record = _pin(pinned_tree, "scripts/w5_exit.py", "1")
+    assert done.returncode == 1 and record["exit"] == 1, done.stdout + done.stderr
+    assert lines[-1].startswith("pin PASS: ") and lines[-1].endswith("command exit 1")
+
+
+def test_t5_a_pinned_file_never_read_is_vacuous(pinned_tree: Path) -> None:
+    done, lines, record = _pin(pinned_tree, "scripts/w5_idle.py")
+    assert done.returncode == w5.PIN_FAILED, done.stdout
+    assert f"PIN VACUOUS {PR_C1}" in lines and record["vacuous"] == [PR_C1]
+    assert lines[-1].startswith("pin FAIL: ")
+
+
+def test_t5_a_read_outside_the_identity_sites_is_foreign(pinned_tree: Path) -> None:
+    done, lines, record = _pin(pinned_tree, "scripts/w5_foreign.py")
+    assert done.returncode == w5.PIN_FAILED, done.stdout
+    (foreign,) = [line for line in lines if line.startswith("PIN FOREIGN READ ")]
+    assert foreign.startswith(f"PIN FOREIGN READ {PR_C1} scripts/w5_foreign.py:peek<-")
+    assert record["foreign"] == [[PR_C1, foreign.split(" ", 4)[4]]]
+    assert lines[-1].startswith("pin FAIL: ") and "foreign 1" in lines[-1]
+
+
+def test_k5_the_registry_is_served_from_a_revision(pinned_tree: Path) -> None:
+    """W5-K5's `--registry`: F0's registry, read as text, is the revision's; unread, vacuous."""
+    reader = pinned_tree / "scripts" / "w5_registry.py"
+    reader.write_text(
+        "import hashlib\nimport sys\nfrom pathlib import Path\n\n"
+        "sys.path.insert(0, str(Path.cwd() / 'scripts'))\n"
+        "import w5_probe  # noqa: F401  (the pinned reads)\n\n"
+        "text = Path('benchmarks/f0/corpus.json').read_text(encoding='utf-8')\n"
+        "print(hashlib.sha256(text.encode()).hexdigest())\n",
+        encoding="utf-8",
+    )
+    corpus = pinned_tree / w5.CORPUS_FILE
+    corpus.write_text("{}\n", encoding="utf-8")
+    done, lines, record = _pin(pinned_tree, "scripts/w5_registry.py", registry=BASE)
+    assert done.returncode == 0, done.stdout + done.stderr
+    base_bytes = _git("show", f"{BASE}:{w5.CORPUS_FILE}").encode()
+    assert lines[1] == w5.corpus_identity().sha256(base_bytes)
+    assert any(line.startswith(f"PIN REGISTRY {w5.CORPUS_FILE} ") for line in lines)
+    done, lines, _ = _pin(pinned_tree, "scripts/w5_probe.py", registry=BASE)
+    assert done.returncode == w5.PIN_FAILED and f"PIN VACUOUS {w5.CORPUS_FILE}" in lines
+    _git("checkout", "--", w5.CORPUS_FILE, cwd=pinned_tree)
+
+
+def _functions(text: str) -> dict[str, ast.AST]:
+    """Every function of a module by its qualified name."""
+    found: dict[str, ast.AST] = {}
+
+    def visit(node: ast.AST, prefix: str) -> None:
+        for child in ast.iter_child_nodes(node):
+            if isinstance(child, ast.FunctionDef | ast.ClassDef):
+                name = f"{prefix}{child.name}"
+                if isinstance(child, ast.FunctionDef):
+                    found[name] = child
+                visit(child, f"{name}.{'<locals>.' if isinstance(child, ast.FunctionDef) else ''}")
+
+    visit(ast.parse(text), "")
+    return found
+
+
+def _reads_bytes(function: ast.AST) -> bool:
+    """A `.read_bytes()` call, or an `.open("rb")` call, in the function's own body."""
+    for node in ast.walk(function):
+        if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute):
+            if node.func.attr == "read_bytes":
+                return True
+            if node.func.attr == "open" and [ast.unparse(a) for a in node.args] == ["'rb'"]:
+                return True
+    return False
+
+
+def test_t5_the_reach_list_is_the_one_measured_at_the_base(facts: w5.Facts) -> None:
+    """W5-T5's committed list against 8d31b89e: each site is a function there that reads bytes;
+    every provider hash site has one; the unit callers are exactly the `_artifact_hash`
+    functions that call `canonical.file_sha256`."""
+    for file, qualname in (*w5.PIN_SITES, w5.PIN_UNIT_READER):
+        functions = _functions(_git("show", f"{BASE}:{file}"))
+        assert qualname in functions and _reads_bytes(functions[qualname]), (file, qualname)
+    assert set(facts["sites"]) <= {file for file, _ in w5.PIN_SITES}
+    callers = set()
+    for file in _git("ls-tree", "-r", "--name-only", BASE, "src/openflowsheet/models").split():
+        if file.endswith(".py"):
+            hashing = _functions(_git("show", f"{BASE}:{file}")).get(w5.PIN_UNIT_HASH)
+            if hashing is not None and "file_sha256(" in ast.unparse(hashing):
+                callers.add(file)
+    assert sorted(callers) == sorted(w5.PIN_UNIT_CALLERS)
+    assert len(w5.PIN_UNIT_CALLERS) == 23
+
+
+def test_s2_a_changed_hash_scope_is_left_unpinned(facts: w5.Facts) -> None:
+    """W5-S2's exception from the B7 step on: B7's new CoolProp scope (its hash site and its
+    registry implementation set, both gaining the group modules) leaves both CoolProp files
+    unpinned; a provider whose scope is the base's stays pinned; a file absent at head too."""
+    head = copy.deepcopy(facts)
+    fluids = "src/openflowsheet/thermo/_coolprop_heos_fluids.py"
+    for site in head["sites"].values():
+        if fluids in site["files"]:
+            site["files"] = sorted({*site["files"], *w5.B7_MODULES})
+    for key, modules in head["generated"].items():
+        if fluids in modules:
+            head["generated"][key] = sorted({*modules, *w5.B7_MODULES})
+    files = [PR_C1, *w5.COOLPROP_FILES, *w5.B7_MODULES]
+    pinned, unpinned = w5.pin_plan(facts, head, files, set(files))
+    assert pinned == [PR_C1] and unpinned == sorted(w5.COOLPROP_FILES)
+    assert w5.pin_plan(facts, facts, files, set(files) - {PR_C1}) == (
+        sorted(w5.COOLPROP_FILES),
+        [PR_C1],
+    )
+
+
+def test_s2_b7_s_group_modules_are_predicted_measured_not_registered(facts: w5.Facts) -> None:
+    """The pinned F0 from the B7 step on fails on exactly the CoolProp keys: the two files' M9,
+    the seven group modules (measured, not registered), the coolprop sample pair."""
+    moved, registry = w5.predict(facts, [*w5.COOLPROP_FILES, *w5.B7_MODULES])
+    assert registry
+    assert moved["M9"] == {*w5.COOLPROP_FILES, *w5.B7_MODULES}
+    assert moved["M6"] == {
+        f"sample/provider/coolprop-heos-v1/{n}" for n in ("evaluate_phase", "flash")
+    }
+    assert not any(moved[m] for m in ("M1", "M2", "M3", "M4", "M5", "M7", "M8"))
+    assert "M6 FAIL 2/85, M7 52/52, M8 105/105, M9 FAIL 9/35" in w5.f0_line(facts, moved)
+
+
+def test_s2_predict_of_no_file_is_the_base_line() -> None:
+    """`predict --files` with no path: E is empty, and the line is F0 PASS with B's counts."""
+    done = _tool("predict", "--base", BASE, "--files")
+    assert done.returncode == 0, done.stdout
+    assert done.stdout.splitlines()[-1] == f"predict: base 8d31b89ea3f8, |E| 0; predicted {T3_LINE}"
+
+
+M02_TRACE = '''"""The lines of `pr_c1.parameters` that load NAME, and those the m02 run executes."""
+import ast
+import json
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path.cwd() / "scripts"))
+import corpus_identity as f0
+from openflowsheet.thermo import pr_c1
+
+source = Path(pr_c1.__file__).read_text(encoding="utf-8")
+(function,) = [
+    node for node in ast.walk(ast.parse(source))
+    if isinstance(node, ast.FunctionDef) and node.name == "parameters"
+]
+lines = {n.lineno for n in ast.walk(function) if isinstance(n, ast.Name) and n.id == sys.argv[1]}
+codes, stack = [], [pr_c1.parameters.__wrapped__.__code__]
+while stack:
+    code = stack.pop()
+    codes.append(code)
+    stack += [c for c in code.co_consts if hasattr(c, "co_code")]
+hit = set()
+monitoring = sys.monitoring
+monitoring.use_tool_id(monitoring.PROFILER_ID, "w5-t4")
+monitoring.register_callback(
+    monitoring.PROFILER_ID, monitoring.events.LINE, lambda code, line: hit.add(line)
+)
+pr_c1.parameters.cache_clear()
+for code in codes:
+    monitoring.set_local_events(monitoring.PROFILER_ID, code, monitoring.events.LINE)
+f0.runs([("m02", "C1-FLASH-F1-M02-v1")])
+print(json.dumps({"lines": sorted(lines), "executed": sorted(lines & hit)}))
+'''
+
+
+def test_t4_the_m02_run_reads_the_literal(scratch: Path) -> None:
+    """W5-T4's literal is on the m02 path: the run evaluates both lines of `pr_c1.parameters`
+    that load Ω_a (its cache cleared first)."""
+    assert T4_LITERAL[0] in (scratch / PR_C1).read_text(encoding="utf-8")
+    (scratch / "scripts" / "w5_trace.py").write_text(M02_TRACE, encoding="utf-8")
+    done = subprocess.run(
+        [sys.executable, "scripts/w5_trace.py", "OMEGA_A"],
+        cwd=scratch,
+        env={**os.environ, "PYTHONPATH": str(scratch / "src")},
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert done.returncode == 0, done.stderr[-2000:]
+    traced = json.loads(done.stdout.splitlines()[-1])
+    assert traced == {"lines": [287, 289], "executed": [287, 289]}
+
+
+def _pinned_f0(tree: Path) -> tuple[Any, str, w5.Moved]:
+    log = tree.parent / "f0.log"
+    done, _, _ = _pin(tree, "scripts/corpus_identity.py", "--check", "--log", str(log))
+    line, moved = w5.log_moved(log)
+    return done, line, moved
+
+
+@reference_only
+def test_t3_the_pinned_f0_of_the_six_tier_3_edits_passes(facts: w5.Facts, scratch: Path) -> None:
+    """W5-T3, the edits of x5, x6 and x7 and of the other three tier 3 files (`wilson_ig_v2.py`
+    and the CoolProp pair) together: the pinned F0 is the base's line."""
+    tier_3 = (PR_C1, IAPWS95, WILSON, WILSON_V2, *w5.COOLPROP_FILES)
+    assert sorted(tier_3) == sorted(w5.tiers(facts)[3])
+    for name in tier_3:
+        _append(scratch, name, COMMENT)
+    done, line, _ = _pinned_f0(scratch)
+    assert done.returncode == 0, done.stdout[-3000:]
+    assert line == T3_LINE
+    assert done.stdout.splitlines()[-1].startswith("pin PASS: base 8d31b89ea3f8, |E| 6, pinned 6")
+
+
+@reference_only
+def test_t4_a_changed_literal_fails_the_pinned_f0_on_m02(scratch: Path) -> None:
+    """W5-T4: Ω_a changed in its last digit; the identities stay the base's (the pin), so the
+    pinned F0 fails on the m02 run's results alone."""
+    path = scratch / PR_C1
+    path.write_text(path.read_text(encoding="utf-8").replace(*T4_LITERAL), encoding="utf-8")
+    done, line, moved = _pinned_f0(scratch)
+    assert done.returncode == 1, done.stdout[-3000:]
+    assert line.startswith("F0 FAIL: ")
+    failing = {(m, key) for m, keys in moved.items() for key in keys}
+    assert failing and {m for m, _ in failing} <= {"M3", "M4", "M5"}
+    assert {key for _, key in failing} == {M02}
+    assert done.stdout.splitlines()[-1].endswith("vacuous 0, foreign 0; command exit 1")
+
+
+# -- the pin's blind spots: F0's line coverage of a step's hunks (review R-W5-P0-pin, item 5) ----
+
+
+def test_hunks_reports_which_changed_hunks_the_m02_run_executes(scratch: Path) -> None:
+    """`scripts/w5_hunks.py` (not a gate): of three hunks at the base, W5-T4's literal runs (a
+    module-level line, so on import), a line of `iapws95.py` does not run under m02 alone, and
+    the appended comment has no code."""
+    path = scratch / PR_C1
+    path.write_text(
+        path.read_text(encoding="utf-8").replace(*T4_LITERAL) + COMMENT, encoding="utf-8"
+    )
+    literal = path.read_text(encoding="utf-8").splitlines().index(T4_LITERAL[1].strip()) + 1
+    end = len(path.read_text(encoding="utf-8").splitlines())
+    iapws95 = scratch / IAPWS95
+    text = iapws95.read_text(encoding="utf-8")
+    function = next(
+        n for n in ast.parse(text).body if isinstance(n, ast.FunctionDef) and len(n.body) > 1
+    )
+    line = function.body[1].lineno
+    lines = text.splitlines(keepends=True)
+    lines[line - 1] = lines[line - 1].rstrip("\n") + "  # W5\n"
+    iapws95.write_text("".join(lines), encoding="utf-8")
+    tool = scratch / "scripts" / "w5_hunks.py"
+    tool.write_bytes((ROOT / "scripts" / "w5_hunks.py").read_bytes())
+    done = subprocess.run(
+        [sys.executable, str(tool), "--base", BASE, "--run", M02],
+        cwd=scratch,
+        env={**os.environ, "PYTHONPATH": str(scratch / "src")},
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert done.returncode == 0, done.stderr[-2000:]
+    assert done.stdout.splitlines() == [
+        f"NOT EXECUTED {IAPWS95}:{line}-{line} 0/1",
+        f"EXECUTED {PR_C1}:{literal}-{literal} 1/1",
+        f"NO CODE {PR_C1}:{end}-{end}",
+        "hunks 3: executed 1, not executed 1, no code 1, deletions 0 (in-process F0 code only)",
     ]

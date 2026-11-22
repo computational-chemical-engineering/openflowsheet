@@ -37,13 +37,13 @@ import json
 import math
 import signal
 import subprocess
-import sys
 import time
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Final, Literal
 
+from openflowsheet._platform import is_windows
 from openflowsheet.adapters.external.protocol import (
     EXIT_ENVIRONMENT_MISMATCH,
     EXIT_LIFELINE_LOST,
@@ -208,7 +208,7 @@ def launch(
     and records its end in `progress`, also when an interrupt propagates. A child that ended within
     its deadline other than with `EXIT_OK` ends as `_exit_failure` reads its exit.
     """
-    if sys.platform == "win32":
+    if is_windows():  # ADR 0033 D2: Windows is refused before spawn
         return _unavailable(f"{UNSUPPORTED_PLATFORM}: external-subprocess-v1 refuses Windows")
     if not program.environment_root.is_dir():
         return _unavailable(

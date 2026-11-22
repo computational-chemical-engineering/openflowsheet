@@ -149,7 +149,9 @@ NOT_BINDABLE: Final = "syn001.cascade"
 SURROGATE_OF: Final[Mapping[str, str]] = {"c1.reactor_surrogate": "c1.reactor"}
 #: D6: the optional dependency whose `pyproject.toml` extra is a method's `pip_extra`.
 OPTIONAL_DEPENDENCY: Final[Mapping[str, str]] = {"coolprop-heos-v1": "CoolProp"}
-#: D6's factories (`implementation.factory`).
+#: D6's factories (`implementation.factory`): the units' builders (ADR 0076 I-19) and the
+#: methods' binder.
+UNIT_BUILDERS: Final = "openflowsheet.application.model_builders"
 BINDER: Final = "openflowsheet.application.revision_binding"
 METHOD_FACTORY: Final = {"module": BINDER, "attribute": "basis_provider", "key": None}
 #: The `reference_convention` of a provider constructed once per component (D6).
@@ -422,7 +424,9 @@ def units() -> list[dict[str, Any]]:
             "signature": signatures.get(model_id),
         }
         factory = (
-            {"module": BINDER, "attribute": "MODEL_BUILDERS", "key": model_id} if bindable else None
+            {"module": UNIT_BUILDERS, "attribute": "MODEL_BUILDERS", "key": model_id}
+            if bindable
+            else None
         )
         found.append(
             _descriptor(
@@ -743,12 +747,12 @@ def write() -> int:
         path.parent.mkdir(parents=True, exist_ok=True)
         texts[path.stem] = render(rows)
         committed[path.stem] = json.loads(texts[path.stem])
-        path.write_text(texts[path.stem], encoding="utf-8")
+        path.write_text(texts[path.stem], encoding="utf-8", newline="\n")
         written.append(f"{len(rows)} descriptors ({_summary(rows)}) to {_shown(path)}")
-    DIGEST_RECORD.write_text(digest_record(texts), encoding="utf-8")
+    DIGEST_RECORD.write_text(digest_record(texts), encoding="utf-8", newline="\n")
     constant = registry_constant(committed)
     CONSTANT.parent.mkdir(parents=True, exist_ok=True)
-    CONSTANT.write_text(constant + "\n", encoding="utf-8")
+    CONSTANT.write_text(constant + "\n", encoding="utf-8", newline="\n")
     written.append(f"{_shown(DIGEST_RECORD)}; registry_sha256 {constant} to {_shown(CONSTANT)}")
     print("registry_builtin --write: " + "; ".join(written))
     return 0

@@ -82,7 +82,11 @@ from openflowsheet.numerics.solve_record import (  # noqa: E402
     Trace,
 )
 from openflowsheet.orchestrator.attempts import solve_with_attempts  # noqa: E402
-from openflowsheet.orchestrator.region import solve_region, syn001_lifted_splits  # noqa: E402
+from openflowsheet.orchestrator.region import (  # noqa: E402
+    RegionCall,
+    solve_region,
+    syn001_lifted_splits,
+)
 from openflowsheet.orchestrator.tear import Syn001TearProblem, solve_tear  # noqa: E402
 
 REFERENCE = ROOT / "benchmarks" / "t03" / "reference_values.yaml"
@@ -465,17 +469,19 @@ def _a02_revision(
 
     def solve(trace: Trace) -> Any:
         return solve_region(
-            compiled=compiled,
-            spec=item.binding.spec,
-            region=region,
-            state=start,
-            splits=syn001_lifted_splits(flowsheet.components),
-            provider=flowsheet.provider,
-            policy=policy,
-            trace=trace,
-            # T03 §8.1 as amended (review S2): the freed coordinate's user value seeds the
-            # region, through the pre-solve — the tests' source for these regions.
-            initializer_source="user_guess",
+            RegionCall(
+                compiled=compiled,
+                spec=item.binding.spec,
+                region=region,
+                state=start,
+                splits=syn001_lifted_splits(flowsheet.components),
+                provider=flowsheet.provider,
+                policy=policy,
+                trace=trace,
+                # T03 §8.1 as amended (review S2): the freed coordinate's user value seeds the
+                # region, through the pre-solve — the tests' source for these regions.
+                initializer_source="user_guess",
+            )
         )
 
     observed = Observed(case_id, policy, tuple(compiled.structural_pattern()), item.binding.spec)

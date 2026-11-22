@@ -31,7 +31,7 @@ import dataclasses
 import math
 import struct
 import time
-from collections.abc import Callable, Mapping, Sequence
+from collections.abc import Callable, Collection, Iterator, Mapping, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
 from types import MappingProxyType
@@ -42,11 +42,12 @@ import numpy as np
 from openflowsheet.compile.casadi_backend import (
     ParametricTwin,
     TwinEvaluationError,
+    TwinMatrix,
     compile_parametric_twin,
     compile_problem,
 )
 from openflowsheet.compile.spec import ProblemSpec
-from openflowsheet.compiled import CompiledProblem, EvaluationContext
+from openflowsheet.compiled import CompiledProblem, EvaluationContext, JacobianResult
 from openflowsheet.models.lifted import AdmissibilityRefusal, LiftedSplit
 from openflowsheet.models.revision_flowsheet import RevisionFlowsheet, si_unit
 from openflowsheet.numerics.scaling import REGISTERED_NOMINALS, Scaling
@@ -221,7 +222,8 @@ def decision_map(
     A probe may move at most one parameter, to the written value bitwise, and nothing else; a
     probe at the base value moves none. Across a decision's probes exactly one parameter is
     named, and at every probe it holds the written value. The specification clause is
-    `_specification_refusal`, the probes at the box's ends `_end_probes`."""
+    `_specification_refusal`, the probes at the box's ends `_end_probes`, the parameter they
+    name `_probed_parameter`."""
     base = routes.bind(ROUTE, document, surrogates=surrogates)
     if not routes.is_route(base):
         raise RevisionUnboundError(base)
@@ -235,24 +237,10 @@ def decision_map(
             refusals.append(refused)
             continue
         probes, why = _end_probes(document, decision, binding, routes, surrogates)
-        named = sorted({parameter for _, moved, _ in probes for parameter in moved})
-        if not why and len(named) != 1:
-            why = (
-                f"the probes moved {named}"
-                if named
-                else "no probe moved a parameter (no end of the box is off the base value)"
-            )
-        if not why:
-            (parameter,) = named
-            # A probe at the base value moves nothing; there too the parameter holds the value.
-            wrong = [value for value, _, held in probes if _bits(held[parameter]) != _bits(value)]
-            if wrong:
-                why = f"the probe at {wrong[0]!r} did not set {parameter} to it"
-            elif parameter in parameters.values():
-                why = f"{parameter} is already another decision's parameter"
-            else:
-                parameters[name] = parameter
-                continue
+        parameter, why = _probed_parameter(probes, why, parameters.values())
+        if parameter is not None:
+            parameters[name] = parameter
+            continue
         refusals.append(
             DecisionRefusal(
                 "DECISION_NOT_CONTINUOUS", name, f"DECISION_NOT_CONTINUOUS({name}): {why}"
@@ -319,6 +307,36 @@ def _end_probes(
             break
         probes.append((value, moved, probe.binding.spec.parameters))
     return probes, why
+
+
+def _probed_parameter(
+    probes: list[tuple[float, list[str], Mapping[str, float]]],
+    why: str,
+    taken: Collection[str],
+) -> tuple[str | None, str]:
+    """The one parameter `_end_probes`' `probes` name, as `(parameter, why)` with `why` empty; or
+    `(None, why)` with the reason the decision is not continuous: `_end_probes`' own `why`
+    when not empty, else the probes moved no parameter or several, a probe did not set the
+    parameter to its value bitwise, or the parameter is already in `taken` (another decision's).
+    Pure."""
+    named = sorted({parameter for _, moved, _ in probes for parameter in moved})
+    if not why and len(named) != 1:
+        why = (
+            f"the probes moved {named}"
+            if named
+            else "no probe moved a parameter (no end of the box is off the base value)"
+        )
+    if not why:
+        (parameter,) = named
+        # A probe at the base value moves nothing; there too the parameter holds the value.
+        wrong = [value for value, _, held in probes if _bits(held[parameter]) != _bits(value)]
+        if wrong:
+            why = f"the probe at {wrong[0]!r} did not set {parameter} to it"
+        elif parameter in taken:
+            why = f"{parameter} is already another decision's parameter"
+        else:
+            return parameter, why
+    return None, why
 
 
 def two_phase_margin(
@@ -611,7 +629,9 @@ class RevisionNlpHost:
         """§9 A-2's R: the held rows (labels excluded) whose exact Jacobian at the point is `0.0`
         over every free column outside `zeros` and every decision, and non-zero over some column
         of `zeros`. Free-column entries from the compiled problem's Jacobian at the point (held
-        columns at their certified values), decision entries from the twin's `∂F/∂p`."""
+        columns at their certified values), decision entries from the twin's `∂F/∂p`; a column's
+        non-zero candidate rows from `_nonzero_rows`. Raises `ValueError` (a defect) when the
+        Jacobian at the point does not evaluate."""
         assert point.spec is not None and point.state is not None
         spec = system.spec
         x = np.array([float(point.state[name]) for name in spec.variable_ids], dtype=np.float64)
@@ -636,19 +656,13 @@ class RevisionNlpHost:
             if column not in free:
                 continue
             into = touches_zero if column in zeros else touches_other
-            for offset in range(jacobian.indptr[position], jacobian.indptr[position + 1]):
-                row = jacobian.row_ids[jacobian.indices[offset]]
-                if row in candidates and jacobian.data[offset] != 0.0:
-                    into.add(row)
+            into.update(_nonzero_rows(jacobian, position, candidates))
         decision_ids = tuple(self._specifications)
         parameters = self.twin(decision_ids).jacobian_p(
             x, {name: float(point.parameters[name]) for name in decision_ids}
         )
         for position in range(len(parameters.col_ids)):
-            for offset in range(parameters.indptr[position], parameters.indptr[position + 1]):
-                row = parameters.row_ids[parameters.indices[offset]]
-                if row in candidates and parameters.data[offset] != 0.0:
-                    touches_other.add(row)
+            touches_other.update(_nonzero_rows(parameters, position, candidates))
         return tuple(row for row in system.rows if row in touches_zero and row not in touches_other)
 
     def regimes(self, point: CertifiedPoint) -> RegimeRecord:
@@ -897,3 +911,14 @@ class RevisionNlpHost:
                 ),
             )
         return handle.phase
+
+
+def _nonzero_rows(
+    matrix: JacobianResult | TwinMatrix, position: int, candidates: Collection[str]
+) -> Iterator[str]:
+    """The rows of `candidates` with a non-zero entry in column `position` of the CSC `matrix`,
+    lazily in storage order (a row stored twice is yielded twice). Pure."""
+    for offset in range(matrix.indptr[position], matrix.indptr[position + 1]):
+        row = matrix.row_ids[matrix.indices[offset]]
+        if row in candidates and matrix.data[offset] != 0.0:
+            yield row

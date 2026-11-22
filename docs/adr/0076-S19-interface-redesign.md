@@ -380,6 +380,22 @@ I-1 to I-19. Inventory, evaluation-order ledger, work orders and gates: `docs/br
   behind a kind flag); absorbing `verify.table._Routing` into `Judging` (its fields are the routing phase's results,
   built after provider evaluations; it is built by keyword in the new routing phase instead).
 
+### Addendum I-21 (2026-11-20): `solve_region` takes its parameter object
+
+*Added by the build lane (S19 orchestrator, review R-W4-RC-N6 fix 1) on Frank's Decision Desk card
+`ofs-s19-legacy-models`, choice A (2026-11-19, verified): "S19 runs G2's remainder, W5 batch L (...) and solve_region's
+parameter object, behaviour bitwise identical, G-END unchanged". The public name is the orchestrator's decision
+(S19_DECISIONS 2026-11-20); the design lane may amend it. Normative like I-1 to I-20.*
+
+- **I-21** `openflowsheet.orchestrator.region.RegionCall`: a frozen, keyword-only dataclass whose 21 fields are the
+  former keywords of `solve_region` with the same defaults (`trace` defaults to `None`); field docs live on the class.
+  - changed (signature only): `region.solve_region(call: RegionCall)`;
+  - added: `region.RegionCall` (the former private `_RegionCall`, renamed; in `__all__`).
+
+  No shims: every caller (orchestrator.executor, models.syn001.cascade_solve, 12 test modules, 3 scripts,
+  benchmarks/t04/basin.py) builds a `RegionCall` with the values it passed as keywords. Behaviour is bitwise identical.
+  Not taken: keeping the object private behind the keyword signature (callers outside the module build it).
+
 ## Alternatives rejected
 
 - **Keep every old path as a permanent re-export.** Contradicts D19, and a re-export keeps the old module on every
@@ -465,6 +481,7 @@ I-1 to I-19. Inventory, evaluation-order ledger, work orders and gates: `docs/br
 | I-15 | forced-refusal tests outside gate before (asserting all but the `exception` detail); interface; tests outside gate after (`exception == "AdmissibilityRefusal"`, the K pin) | `added` (models/lifted.py: `AdmissibilityRefusal`), `callers` (tests that expect `VerifierError` from a region path, listed at the base) | after: the `orchestrator.region -> verify.checks` adoption line goes |
 | I-19 | sweep commits outside gate (docs, refusals.yaml:1378); interface for any re-export left | `removed` | none |
 | I-20 (addendum) | test commit outside gate before a (tests/test_m02_wo8_verifier.py: the `_judging` helper); interface a; interface b; retarget outside gate before c (tests/test_s11_gp_verifier.py: four calls; tests/s11_gp_support.py: the spy); interface c | a: `added` (table_kit.py: `Judging`; gamma_phi_units.py: `admissibility_checks`, `require_composition_dependent`), `changed` (gamma_phi_units.py: `split_checks`; pr_c1.py: `split_checks`, `declared_port_checks`), `callers` (tests/test_m02_wo8_verifier.py); b: `added` (table_kit.py: `DeclaredStream`, `declared_streams`, `degenerate_split_rows`, `independent_split_rows`); c: `removed` (gamma_phi_units.py: `revision_checks`) | none (no new module; `openflowsheet.verify` is one layer entry) |
+| I-21 (addendum) | retarget outside gate before the plan (tests/test_t06_f4_edge3.py: test_wo4 reads `RegionCall`'s signature); interface | `renamed` (`_RegionCall` -> `RegionCall`), `added` (`RegionCall`), `changed` (`solve_region`), `literals_removed` (the keyword defaults) | none |
 
 Recommended W4 order: I-6, I-3, I-1, I-2, I-7, I-8, I-5, I-4, I-5b, I-9, I-14, I-10, I-11, I-15, I-13, I-12a, I-12b,
 I-12c, I-12d, I-19. Hard constraints: I-14 after I-9; I-5 before I-12a; I-5b before I-9 (R-1044); I-10 before I-12c; I-11 before I-12d.

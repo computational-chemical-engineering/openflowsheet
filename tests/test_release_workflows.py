@@ -29,7 +29,7 @@ from typing import Any
 
 import pytest
 import yaml
-from conftest import REPO_ROOT
+from conftest import BASH, REPO_ROOT
 
 WORKFLOWS = REPO_ROOT / ".github" / "workflows"
 RELEASE = "release.yml"
@@ -238,7 +238,7 @@ def _run(
         **env,
     }
     return subprocess.run(
-        ["bash", "-e", "-c", script], cwd=repo, env=environment, capture_output=True, text=True
+        [BASH, "-e", "-c", script], cwd=repo, env=environment, capture_output=True, text=True
     )
 
 
@@ -418,7 +418,7 @@ def test_m07a_a23_github_release_marks_pre_releases(
     (bin_dir / "gh").chmod(0o755)
     arguments = tmp_path / "gh-arguments"
     result = subprocess.run(
-        ["bash", "-e", "-c", step("github-release", "Create the GitHub release")["run"]],
+        [BASH, "-e", "-c", step("github-release", "Create the GitHub release")["run"]],
         cwd=work,
         env={
             **os.environ,

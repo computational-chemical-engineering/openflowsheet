@@ -44,7 +44,7 @@
    },
    "C19": {
     "count": 0,
-    "statement": "--emit-fluid-table reproduces the committed _coolprop_heos_fluids.py byte for byte"
+    "statement": "--emit-fluid-table reproduces the eight committed _coolprop_heos_fluids*.py modules byte for byte, and no other is present"
    },
    "C2": {
     "count": 130,

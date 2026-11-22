@@ -332,7 +332,7 @@ def identity(base: str | None) -> tuple[bool, dict[str, Any]]:
     def block(revision: str) -> Any:
         import yaml
 
-        return yaml.safe_load(_git("show", f"{revision}:{envelope}"))
+        return yaml.safe_load(_git("show", f"{revision}:{envelope}", "--"))
 
     def l40(document: Mapping[str, Any]) -> dict[str, Any]:
         (row,) = [row for row in document["limitations"] if row["id"] == "L40"]
@@ -342,18 +342,22 @@ def identity(base: str | None) -> tuple[bool, dict[str, Any]]:
     old_l40, new_l40 = l40(old), l40(new)
     old["limitations"] = [row for row in old["limitations"] if row["id"] != "L40"]
     new["limitations"] = [row for row in new["limitations"] if row["id"] != "L40"]
-    notice = _git("show", "HEAD:NOTICE")
-    before = " ".join(_git("show", f"{base}:NOTICE").decode().split())
+    notice = _git("show", "HEAD:NOTICE", "--")
+    before = " ".join(_git("show", f"{base}:NOTICE", "--").decode().split())
     hashes = {
         "notice": hashlib.sha256(notice).hexdigest(),
         "notice_first_bytes": hashlib.sha256(notice[:A33_OLD_NOTICE_BYTES]).hexdigest(),
-        "module": hashlib.sha256(_git("show", "HEAD:" + shown(MODULE))).hexdigest(),
-        "coefficients": hashlib.sha256(_git("show", "HEAD:" + shown(COEFFICIENTS))).hexdigest(),
+        "module": hashlib.sha256(_git("show", "HEAD:" + shown(MODULE), "--")).hexdigest(),
+        "coefficients": hashlib.sha256(
+            _git("show", "HEAD:" + shown(COEFFICIENTS), "--")
+        ).hexdigest(),
     }
     old_statements, old_attributed = _module_statements(
-        _git("show", f"{base}:{inventory}").decode()
+        _git("show", f"{base}:{inventory}", "--").decode()
     )
-    new_statements, new_attributed = _module_statements(_git("show", f"HEAD:{inventory}").decode())
+    new_statements, new_attributed = _module_statements(
+        _git("show", f"HEAD:{inventory}", "--").decode()
+    )
     expected = {
         "openflowsheet/_data/benchmarks/s05/iapws95_coefficients.json": A33_COEFFICIENTS_SHA256
     }
@@ -404,7 +408,7 @@ def check_harvest(measured: str) -> int:
         return 1
 
     def at(revision: str, path: str) -> bytes:
-        return _git("show", f"{revision}:{path}")
+        return _git("show", f"{revision}:{path}", "--")
 
     def size(revision: str) -> tuple[tuple[int, ...], str]:
         tree = ast.parse(at(revision, harvest_test).decode())

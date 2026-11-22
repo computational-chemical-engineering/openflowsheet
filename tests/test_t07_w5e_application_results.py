@@ -604,7 +604,9 @@ def test_the_fixtures_are_what_real_responses_emit_today() -> None:
     from t07_schema_fixtures import application_results_documents, stable
 
     emitted = application_results_documents()
-    committed = sorted(str(path.relative_to(FIXTURES.parent)) for path in FIXTURES.rglob("*.json"))
+    committed = sorted(
+        path.relative_to(FIXTURES.parent).as_posix() for path in FIXTURES.rglob("*.json")
+    )
     assert sorted(emitted) == committed
     for name, document in emitted.items():
         assert stable(document) == stable(load_json(FIXTURES.parent / name)), name

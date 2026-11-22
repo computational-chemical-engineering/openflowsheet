@@ -1,0 +1,40 @@
+# ADR 0076 W4 (Decision Desk card ofs-s19-legacy-models, item (b); brief S19-W4-RegionCall):
+# solve_region takes its parameter object. `codehealth gate --mode interface` reads this plan from
+# the plan commit.
+id = "w4-region-call"
+approved_by = "Frank Peters, 2026-11-19, Decision Desk ofs-s19-legacy-models choice A (VERIFIED 2026-11-19); ADR 0076 accepted (Decision Desk ofs-adr0076-accept)"
+reason = """Card ofs-s19-legacy-models (b): solve_region's 21 keywords become its parameter \
+object. The private frame _RegionCall (orchestrator/region.py) becomes the public RegionCall, \
+@dataclass(frozen=True, kw_only=True), the same 21 fields, types and defaults as solve_region's \
+keywords (trace gains solve_region's default None; kw_only keeps every field keyword-only, as the \
+keywords were, and lets trace keep its place before initializer_source). RegionCall joins \
+region.py's __all__. solve_region(call: RegionCall) -> RegionResult forwards call to \
+_solve_region unchanged and answers a kernel refusal from call.state and call.spec as before. \
+The field paragraphs of solve_region's docstring move verbatim onto RegionCall (one place). \
+Every caller wraps the keywords it passed in RegionCall(...), same keywords, same values, same \
+evaluation order: src orchestrator/executor.py and models/syn001/cascade_solve.py; tests, scripts \
+and benchmarks/t04/basin.py; test_t08_w4_warm_starts.py annotates its _solve_region spies with \
+region_module.RegionCall (the rename). No adapted defs: every solve_region fake and spy takes \
+*args, **kwargs and forwards them unchanged. The one test that read solve_region's signature \
+(test_t06_f4_edge3 test_wo4) was retargeted to RegionCall before this plan (ac98d5d8). \
+Behaviour bitwise identical. Literals: solve_region's dropped keyword item0_opening_source \
+takes the copies its annotation and default held ("initializer" twice, "eo_recovery_start" once); \
+RegionCall's field keeps its own (it was _RegionCall's). No literal is added."""
+removed = []
+renamed = {"src/openflowsheet/orchestrator/region.py:_RegionCall" = "src/openflowsheet/orchestrator/region.py:RegionCall"}
+changed = ["src/openflowsheet/orchestrator/region.py:solve_region"]
+added = ["src/openflowsheet/orchestrator/region.py:RegionCall"]
+new_files = []
+callers = ["tests/**", "scripts/**", "benchmarks/**"]
+
+[[literals_removed]]
+file = "src/openflowsheet/orchestrator/region.py"
+literal = "initializer"
+count = 2
+reason = "solve_region's keyword item0_opening_source goes: its Literal annotation and its default"
+
+[[literals_removed]]
+file = "src/openflowsheet/orchestrator/region.py"
+literal = "eo_recovery_start"
+count = 1
+reason = "solve_region's keyword item0_opening_source goes: its Literal annotation"

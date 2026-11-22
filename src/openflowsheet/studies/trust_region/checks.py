@@ -611,7 +611,8 @@ def check_candidate(
     limitations: Sequence[str] = (),
 ) -> CandidateCheck:
     """Stage B at the candidate `at` (module docstring). `p2_reference` gives P2's reference
-    re-solve (stage A's surrogate-backed one); without it the targeted solve is the reference."""
+    re-solve (stage A's surrogate-backed one); without it the targeted solve is the reference.
+    P4, P3 and P2 on the targeted solve's certified state are `_certified_state_checks`."""
     checks: dict[str, CheckResult] = {}
     solves: list[ParentSolve] = []
 
@@ -654,20 +655,7 @@ def check_candidate(
     checks["P1"] = targeted_check(targeted)
     if not checks["P1"].passed:
         return result(PARENT_CHECK_FAILED)
-    checks["P4"] = regime_check(targeted, reference_regimes)
-    checks["P3"] = constraint_check(targeted)
-    if trf_point is None:
-        checks["P2"] = CheckResult(
-            "P2", None, {"applicable": False}, judged=False, reason=P2_NO_TRF_POINT
-        )
-    else:
-        assert targeted.state is not None and targeted.objective is not None
-        reference = (
-            p2_reference(targeted)
-            if p2_reference is not None
-            else P2Reference("parent_targeted_check", targeted.objective, targeted.state)
-        )
-        checks["P2"] = gross_agreement(trf_point, reference)
+    checks.update(_certified_state_checks(targeted, reference_regimes, trf_point, p2_reference))
     for name in ("P4", "P3", "P2"):
         if checks[name].passed is False:
             return result(FAILURE_STATUS[name])
@@ -701,3 +689,31 @@ def check_candidate(
     curvature, halfwidth = _curvatures(sense, decisions, targeted, e_star, poll)
     status = PARENT_LOCAL_EVIDENCE if checks["P5"].passed else NOT_STATIONARY_AT_DELTA
     return result(status, None, poll, floor, curvature, halfwidth)
+
+
+def _certified_state_checks(
+    targeted: ParentSolve,
+    reference_regimes: Mapping[str, str],
+    trf_point: TrfPoint | None,
+    p2_reference: Callable[[ParentSolve], P2Reference] | None,
+) -> dict[str, CheckResult]:
+    """P4, P3 and P2 on the targeted solve's certified state, keyed by check in that order (the
+    module docstring: they cost no solve and are always evaluated together). P2 is not
+    applicable without a TRF point (`P2_NO_TRF_POINT`); its reference is `p2_reference`'s
+    re-solve when given, else the targeted solve. Pure apart from what `p2_reference` does."""
+    checks: dict[str, CheckResult] = {}
+    checks["P4"] = regime_check(targeted, reference_regimes)
+    checks["P3"] = constraint_check(targeted)
+    if trf_point is None:
+        checks["P2"] = CheckResult(
+            "P2", None, {"applicable": False}, judged=False, reason=P2_NO_TRF_POINT
+        )
+    else:
+        assert targeted.state is not None and targeted.objective is not None
+        reference = (
+            p2_reference(targeted)
+            if p2_reference is not None
+            else P2Reference("parent_targeted_check", targeted.objective, targeted.state)
+        )
+        checks["P2"] = gross_agreement(trf_point, reference)
+    return checks

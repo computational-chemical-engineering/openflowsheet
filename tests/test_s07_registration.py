@@ -140,7 +140,8 @@ def test_a29_a_built_sdist_and_wheel_hold_no_coolprop_file_and_no_fluid_json(
     # controls: the provider module and its fluid table (the project's own code) are shipped
     assert "src/openflowsheet/thermo/coolprop_heos.py" in sdist
     assert "openflowsheet/thermo/coolprop_heos.py" in wheel
-    assert "openflowsheet/thermo/_coolprop_heos_fluids.py" in wheel
+    for group in ("", "_a", "_b1", "_b2", "_b3", "_b4", "_b5", "_b6"):
+        assert f"openflowsheet/thermo/_coolprop_heos_fluids{group}.py" in wheel
     # (b) the wheel's Requires-Dist names CoolProp only under the coolprop extra
     with zipfile.ZipFile(built["wheel"]) as archive:
         (metadata,) = [n for n in archive.namelist() if n.endswith(".dist-info/METADATA")]

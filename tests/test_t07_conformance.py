@@ -829,6 +829,16 @@ def test_smoke_the_cli_as_a_subprocess(tmp_path: Path) -> None:
 _LISTENING = re.compile(r"Uvicorn running on http://127\.0\.0\.1:(\d+)")
 
 
+#: X07a: Windows has no SIGINT to send to a child; uvicorn stops on SIGBREAK there, which
+#: Ctrl+Break delivers to a child started in its own process group.
+if sys.platform == "win32":
+    STOP = signal.CTRL_BREAK_EVENT
+    STOPPABLE: dict[str, Any] = {"creationflags": subprocess.CREATE_NEW_PROCESS_GROUP}
+else:
+    STOP = signal.SIGINT
+    STOPPABLE: dict[str, Any] = {}
+
+
 def test_smoke_serve_http_on_a_loopback_port(tmp_path: Path) -> None:
     """`openflowsheet serve-http` as an operator starts it (port 0: the kernel's choice, read
     from uvicorn's log): a real socket, the grant's token, a solve in a process worker to
@@ -849,6 +859,7 @@ def test_smoke_serve_http_on_a_loopback_port(tmp_path: Path) -> None:
             stderr=subprocess.STDOUT,
             env=environment(None),
             cwd=str(REPO_ROOT),
+            **STOPPABLE,
         )
     try:
         wait_until(
@@ -880,7 +891,7 @@ def test_smoke_serve_http_on_a_loopback_port(tmp_path: Path) -> None:
         assert (run["outcome"], run["verification_status"]) == ("CONVERGED", "VERIFIED")
         assert (project / "jobs" / job_id / "worker.log").is_file()  # a process worker ran it
     finally:
-        server.send_signal(signal.SIGINT)
+        server.send_signal(STOP)
         try:
             code = server.wait(timeout=60)
         except subprocess.TimeoutExpired:

@@ -49,7 +49,7 @@ def _region_case(case_id: str) -> dict[str, Any]:
 
     from openflowsheet.compile.casadi_backend import compile_problem
     from openflowsheet.numerics.solve_record import Trace
-    from openflowsheet.orchestrator.region import solve_region, syn001_lifted_splits
+    from openflowsheet.orchestrator.region import RegionCall, solve_region, syn001_lifted_splits
     from openflowsheet.orchestrator.tear import solve_tear
 
     item = structure(revision(case_id))
@@ -57,15 +57,17 @@ def _region_case(case_id: str) -> dict[str, Any]:
     pre, _ = solve_tear(flowsheet)
     trace = Trace()
     result = solve_region(
-        compiled=compile_problem(item.binding.spec),
-        spec=item.binding.spec,
-        region=the_region(item),
-        state=dict(pre.final_state or {}),
-        splits=syn001_lifted_splits(flowsheet.components),
-        provider=flowsheet.provider,
-        policy=POLICY,
-        trace=trace,
-        initializer_source="user_guess",
+        RegionCall(
+            compiled=compile_problem(item.binding.spec),
+            spec=item.binding.spec,
+            region=the_region(item),
+            state=dict(pre.final_state or {}),
+            splits=syn001_lifted_splits(flowsheet.components),
+            provider=flowsheet.provider,
+            policy=POLICY,
+            trace=trace,
+            initializer_source="user_guess",
+        )
     )
     return {
         "outcome": result.outcome,

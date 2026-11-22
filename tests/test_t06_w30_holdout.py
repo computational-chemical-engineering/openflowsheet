@@ -46,7 +46,7 @@ INDICES = list(range(20, 40))
 def test_a99a_the_file_is_the_registered_one() -> None:
     assert hashlib.sha256(HOLDOUT_BYTES).hexdigest() == ENTRY["starts_sha256"]
     assert canonical_json(HOLDOUT) == HOLDOUT_BYTES
-    assert ENTRY["starts_file"] == str(HOLDOUT_FILE.relative_to(REPO_ROOT))
+    assert ENTRY["starts_file"] == HOLDOUT_FILE.relative_to(REPO_ROOT).as_posix()
     assert ENTRY["run_id"] == ensemble.HOLDOUT_RUN_ID == "holdout1"
     assert (ENTRY["start_indices"]["first"], ENTRY["start_indices"]["last"]) == (20, 39)
     assert list(ensemble.HOLDOUT_INDICES) == INDICES
@@ -221,30 +221,46 @@ def test_a85a_the_holdouts_margins_are_reported(case_id: str) -> None:
         )
 
 
+@pytest.mark.bitwise_baseline(row="X07a-L9")
 @pytest.mark.parametrize("case_id", REVISION_CASES)
 def test_a85b_every_holdout_split_column_is_the_rule_applied_to_its_stream(case_id: str) -> None:
     """A85 (b)'s rule, without `lifted_split_values`: heater style, `tp_state` of the start's own
-    `(n, T, P)` (status `ok`); products style, the sums of the product streams' recorded flows."""
+    `(n, T, P)` (status `ok`). The products style is the next test's, on every leg (X07a review
+    R-6)."""
     flowsheet = _binding(case_id).flowsheet
     for split, style in _splits(case_id):
+        if style != "outlet":
+            continue
         for start in BY_CASE[case_id]["starts"]:
             vector = start["vector"]
-            if style == "outlet":
-                result = tp_state(
-                    flowsheet.provider, _stream(case_id, split, vector), flowsheet.context
-                )
-                assert result.status == "ok", (case_id, start["start"], split.unit)
-                assert result.vapor is not None and result.liquid is not None
-                expected = {
-                    **dict(zip(split.vapor, result.vapor.n, strict=True)),
-                    **dict(zip(split.liquid, result.liquid.n, strict=True)),
-                    split.vapor_total: sum(result.vapor.n),
-                    split.liquid_total: sum(result.liquid.n),
-                }
-            else:
-                expected = {
-                    split.vapor_total: sum(float(vector[column]) for column in split.vapor),
-                    split.liquid_total: sum(float(vector[column]) for column in split.liquid),
-                }
+            result = tp_state(
+                flowsheet.provider, _stream(case_id, split, vector), flowsheet.context
+            )
+            assert result.status == "ok", (case_id, start["start"], split.unit)
+            assert result.vapor is not None and result.liquid is not None
+            expected = {
+                **dict(zip(split.vapor, result.vapor.n, strict=True)),
+                **dict(zip(split.liquid, result.liquid.n, strict=True)),
+                split.vapor_total: sum(result.vapor.n),
+                split.liquid_total: sum(result.liquid.n),
+            }
+            for column, value in expected.items():
+                assert _same(value, vector[column]), (case_id, start["start"], column)
+
+
+@pytest.mark.parametrize("case_id", REVISION_CASES)
+def test_a85b_every_holdout_products_split_total_is_the_sum_of_its_flows(case_id: str) -> None:
+    """X07a-L9's companion on every leg (review R-6, ruling P2): products style, the sums of the
+    product streams' recorded flows, Python `sum` over the committed floats in declaration
+    order, so the same bits on every platform."""
+    for split, style in _splits(case_id):
+        if style == "outlet":
+            continue
+        for start in BY_CASE[case_id]["starts"]:
+            vector = start["vector"]
+            expected = {
+                split.vapor_total: sum(float(vector[column]) for column in split.vapor),
+                split.liquid_total: sum(float(vector[column]) for column in split.liquid),
+            }
             for column, value in expected.items():
                 assert _same(value, vector[column]), (case_id, start["start"], column)

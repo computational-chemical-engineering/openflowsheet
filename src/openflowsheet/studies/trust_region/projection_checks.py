@@ -78,10 +78,8 @@ def _shape_check(
     variable but the decisions, with the link-EF outputs fixed and the property relations kept,
     and whether it has a perfect matching. Called after the DOF check, so it is square. The
     unknowns are the projection's: `x` at the spec positions `projected` (R-296), `y` and `w`.
-    On a failure, the refusal is `_implicit_ef_input_error`'s."""
-    import scipy.sparse as sp
-    from scipy.sparse.csgraph import maximum_bipartite_matching
-
+    The matching and the verdict are `_matching_verdict`'s; on a failure, the refusal is
+    `_implicit_ef_input_error`'s."""
     variable_index = {spec.variable_ids[i]: c for c, i in enumerate(projected)}
     n_x, n_y = len(projected), len(output_rows)
     link_parameters = [p for link in links for p in (link.x_param_id, link.dt_param_id)]
@@ -108,6 +106,20 @@ def _shape_check(
         equations.append((f"ydef:{row['block_id']}.{row['output_id']}", sorted({n_x + g, *inputs})))
     for k, parameter in enumerate(link_parameters):
         equations.append((f"link:{parameter}", [n_x + n_y + k]))
+    return _matching_verdict(equations, unknown_names, links)
+
+
+def _matching_verdict(
+    equations: Sequence[tuple[str, list[int]]],
+    unknown_names: Sequence[str],
+    links: Sequence[ExternalLinkSpec],
+) -> _ShapeVerdict:
+    """R-278's matching, pure: the maximum bipartite matching of the square incidence
+    `equations` (name, columns) over the `unknown_names`, and its verdict, with
+    `_implicit_ef_input_error`'s refusal when it is not perfect. An AssertionError when the
+    counts differ (a defect: the DOF check guarantees them equal)."""
+    import scipy.sparse as sp
+    from scipy.sparse.csgraph import maximum_bipartite_matching
 
     size = len(unknown_names)
     if len(equations) != size:  # the DOF check guarantees it; a defect otherwise
@@ -175,21 +187,14 @@ def _undetermined_columns(
     not depend on the matching found. It is not merged because the twins differ in form: integer
     columns from SciPy's matching here, string ids with `frozenset` incidence there; a merge changes
     the iteration order and so waits for a change that may alter behaviour. The equations of
-    each unknown come from `_incident_rows`."""
+    each unknown come from `_incident_rows`; each step of the walk is `_extend_undetermined`'s."""
     incident = _incident_rows(equations, size)
     # Alternating paths from the unmatched variables: variable → any incident equation → the
     # variable that equation is matched to. What they reach is the under-determined block.
     undetermined = {c for c in range(size) if column_match[c] < 0}
     frontier = sorted(undetermined)
     while frontier:
-        reached = []
-        for c in frontier:
-            for r in incident[c]:
-                partner = int(row_match[r])
-                if partner >= 0 and partner not in undetermined:
-                    undetermined.add(partner)
-                    reached.append(partner)
-        frontier = reached
+        frontier = _extend_undetermined(frontier, incident, row_match, undetermined)
     return undetermined
 
 
@@ -201,6 +206,27 @@ def _incident_rows(equations: Sequence[tuple[str, list[int]]], size: int) -> lis
         for c in cols:
             incident[c].append(r)
     return incident
+
+
+def _extend_undetermined(
+    frontier: Sequence[int],
+    incident: Sequence[Sequence[int]],
+    row_match: npt.NDArray[Any],
+    undetermined: set[int],
+) -> list[int]:
+    """One step of `_undetermined_columns`' alternating paths: for each column of `frontier` in
+    order, each equation `incident` on it, the column `row_match` pairs that equation with (none
+    when -1). Edits the walk's working state `undetermined`, adding each such column not yet in
+    it, and keeps its invariant (the columns reached so far); returns them in the order reached,
+    the next frontier."""
+    reached = []
+    for c in frontier:
+        for r in incident[c]:
+            partner = int(row_match[r])
+            if partner >= 0 and partner not in undetermined:
+                undetermined.add(partner)
+                reached.append(partner)
+    return reached
 
 
 # -- the omitted rows (R-274) ---------------------------------------------------------------------
@@ -257,20 +283,10 @@ def _eliminate(
     the rows' Jacobian by column id, the variable kinds, and the residuals (with the pinned
     parameters) at x₀ and at its pressure-shifted witness state — then each eliminated row's
     residual at x₀ within the elimination's tolerance. Returns the eliminated rows and every
-    row's residual at x₀."""
+    row's residual at x₀. The witness state's residuals are `_witness_residuals`'."""
     state = {name: float(x0[name]) for name in spec.variable_ids}
     at_x0 = _float_rows(spec, state, outputs_x0, spec.parameters)
-    reason = ""
-    second = at_x0
-    if any(spec.variable_kinds.get(name) == "pressure" for name in spec.variable_ids):
-        shifted, reason = pressure_shifted_state(
-            spec.variable_ids, spec.variable_kinds, state, domain["pressure"]
-        )
-        if not reason:
-            try:
-                second = _float_rows(spec, shifted, block_outputs(spec, shifted), spec.parameters)
-            except DomainError:
-                reason = "shifted_state_property_domain_error"
+    second, reason = _witness_residuals(spec, state, at_x0, domain)
     coefficients = {
         name: {
             column: float(value)
@@ -301,6 +317,31 @@ def _eliminate(
                 f"pressure_tolerance {row.tolerance:g}",
             )
     return elimination.eliminated, at_x0
+
+
+def _witness_residuals(
+    spec: ProblemSpec,
+    state: Mapping[str, float],
+    at_x0: dict[str, float],
+    domain: Mapping[str, tuple[float, float]],
+) -> tuple[dict[str, float], str]:
+    """The certificate's second residuals (R-274) and `""` or the reason they are not witnessed:
+    every row at the pressure-shifted witness state of `state` (`pressure_shifted_state` in
+    `domain["pressure"]`), or `at_x0` itself when no variable is a pressure, when the shift
+    gives a reason, or, with `shifted_state_property_domain_error`, when evaluating the rows
+    there raises a DomainError."""
+    reason = ""
+    second = at_x0
+    if any(spec.variable_kinds.get(name) == "pressure" for name in spec.variable_ids):
+        shifted, reason = pressure_shifted_state(
+            spec.variable_ids, spec.variable_kinds, state, domain["pressure"]
+        )
+        if not reason:
+            try:
+                second = _float_rows(spec, shifted, block_outputs(spec, shifted), spec.parameters)
+            except DomainError:
+                reason = "shifted_state_property_domain_error"
+    return second, reason
 
 
 def _certify(

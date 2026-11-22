@@ -31,6 +31,8 @@ rate-based columns, among others), is in the
 ## Install
 
 OpenFlowsheet needs Python 3.13 or newer and runs on Linux (x86-64 and aarch64 are tested).
+Windows (x86-64) and macOS (arm64) are tested in CI since 0.5, with the limits the
+[installation guide](https://computational-chemical-engineering.github.io/openflowsheet/getting-started/install/) lists.
 
 ```bash
 python -m pip install openflowsheet

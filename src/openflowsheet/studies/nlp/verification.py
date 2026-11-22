@@ -44,7 +44,7 @@ import numpy.typing as npt
 
 from openflowsheet.assessment.linearization import Linearization, Refusal
 from openflowsheet.assessment.quantities import ASSESSMENT_PREFIX
-from openflowsheet.compile.casadi_backend import TwinEvaluationError
+from openflowsheet.compile.casadi_backend import TwinEvaluationError, TwinMatrix
 from openflowsheet.compile.reference import state_vector
 from openflowsheet.compile.spec import ProblemSpec
 from openflowsheet.models.syn001.flowsheet import Syn001Flowsheet
@@ -292,8 +292,7 @@ def verify_candidate(
     # judged no further.
     if state is None or (held is not None and not admitted):
         reason = "no_simulation" if state is None else "resolve_not_certified"
-        for check in names[1:]:
-            checks[check] = VerificationCheck(check, "not_evaluated", {"reason": reason})
+        checks = _not_evaluated(checks, names[1:], reason)
         return CandidateVerification(
             decisions=values,
             checks=tuple(checks[check] for check in names),
@@ -312,34 +311,26 @@ def verify_candidate(
     assert point.spec is not None  # a point with a state was bound
     scaling = Scaling.from_spec(point.spec)
     checks["V2"] = _gross(scaling, state, optimizer_state, held)
-    record = host.regimes(point)
-    # §9 A-2: V4 re-derives the zero subsystem at the re-solve (its held system's).
-    zero = (held.zero, host.held_system(point).zero) if held is not None else None
-    checks["V4"] = _regimes(record, regimes, held, point.signature, zero=zero)
+    inputs = _RegimeInputs(
+        record=host.regimes(point),
+        declared=regimes,
+        held=held,
+        signature=point.signature,
+        # §9 A-2: V4 re-derives the zero subsystem at the re-solve (its held system's).
+        zero=(held.zero, host.held_system(point).zero) if held is not None else None,
+    )
+    checks["V4"] = _regimes(
+        inputs.record, inputs.declared, inputs.held, inputs.signature, zero=inputs.zero
+    )
     assessment: _Assessment | None = None
     if binding is not None:
         evaluated = _assessment(point.spec, formulation, binding, state, values, closure)
         checks["V7"] = _regime_held(binding, state, values)
         if isinstance(evaluated, str):
-            for check in ("V3", "V5", "V6"):
-                checks[check] = VerificationCheck(
-                    check, "not_evaluated", {"reason": f"assessment_not_evaluable: {evaluated}"}
-                )
-            return CandidateVerification(
-                decisions=values,
-                checks=tuple(checks[check] for check in names),
-                objective=None,
-                constraint_values={},
-                slacks={},
-                active_set=(),
-                kkt=None,
-                certificate_id=certificate.certificate_id if certificate else None,
-                state_sha256=certificate.target_state_sha256 if certificate else None,
-                simulation_state=dict(state),
-                sensitivity=None,
-                point=point,
-                basis=basis,
+            checks = _not_evaluated(
+                checks, ("V3", "V5", "V6"), f"assessment_not_evaluable: {evaluated}"
             )
+            return _stopped(values, names, checks, point, basis)
         assessment = evaluated
     resolved = point
     at = state if assessment is None else assessment.point
@@ -350,25 +341,10 @@ def verify_candidate(
     if phase is not None and phase.rows:
         found = _phase_terms(point.spec, phase, state, values)
         if isinstance(found, str):
-            for check in ("V3", "V5", "V6"):
-                checks[check] = VerificationCheck(
-                    check, "not_evaluated", {"reason": f"phase_rows_not_evaluable: {found}"}
-                )
-            return CandidateVerification(
-                decisions=values,
-                checks=tuple(checks[check] for check in names),
-                objective=None,
-                constraint_values={},
-                slacks={},
-                active_set=(),
-                kkt=None,
-                certificate_id=certificate.certificate_id if certificate else None,
-                state_sha256=certificate.target_state_sha256 if certificate else None,
-                simulation_state=dict(state),
-                sensitivity=None,
-                point=point,
-                basis=basis,
+            checks = _not_evaluated(
+                checks, ("V3", "V5", "V6"), f"phase_rows_not_evaluable: {found}"
             )
+            return _stopped(values, names, checks, point, basis)
         rows = found
         constraints = (*constraints, *rows.constraints)
         at = {**at, **rows.point}
@@ -378,21 +354,7 @@ def verify_candidate(
     slacks, active, checks["V3"] = _feasibility(formulation, constraints, values, constraint_values)
     held_units: tuple[str, ...] = ()
     if phase is not None:
-        # OPT §4.6 V4: a split whose phase row is active is recorded, not judged by its margin.
-        active_rows = [item.target for item in active if item.target in set(phase.ids)]
-        held_units = tuple(phase.row(row).unit for row in active_rows if phase.row(row).split)
-        checks["V4"] = _regimes(
-            record,
-            regimes,
-            held,
-            point.signature,
-            phase_active=held_units,
-            phase_rows=active_rows,
-            zero=zero,
-            not_closure_test=(
-                _not_closure_test(phase, record, state, rows) if rows is not None else ()
-            ),
-        )
+        held_units, checks["V4"] = _phase_regimes(inputs, phase, active, state, rows)
     sensitivity, kkt, checks["V5"] = _kkt(
         host, resolved, formulation, constraints, at, active, assessment, rows, held_units
     )
@@ -450,6 +412,48 @@ def _resolve_admission(
     return VerificationCheck("V1", "pass" if admitted else "fail", v1), admitted, basis
 
 
+def _not_evaluated(
+    checks: Mapping[str, VerificationCheck], which: Sequence[str], reason: str
+) -> dict[str, VerificationCheck]:
+    """`checks` with each check in `which` added (in that order) as `not_evaluated` for
+    `reason`; `checks` itself is not changed."""
+    return {
+        **checks,
+        **{check: VerificationCheck(check, "not_evaluated", {"reason": reason}) for check in which},
+    }
+
+
+def _stopped(
+    values: Mapping[str, float],
+    names: Sequence[str],
+    checks: Mapping[str, VerificationCheck],
+    point: CertifiedPoint,
+    basis: str | None,
+) -> CandidateVerification:
+    """The record of a candidate judged no further after V1's stop let it pass (the re-solve
+    `point` has a state; without a held system V1 may have failed): the assessment's or the
+    phase rows' stop, `checks` in `names` order, no values, and the re-solve's certificate,
+    state and V1 `basis`."""
+    certificate = point.certificate
+    state = point.state
+    assert state is not None  # V1's stop returned on a point without a state
+    return CandidateVerification(
+        decisions=values,
+        checks=tuple(checks[check] for check in names),
+        objective=None,
+        constraint_values={},
+        slacks={},
+        active_set=(),
+        kkt=None,
+        certificate_id=certificate.certificate_id if certificate else None,
+        state_sha256=certificate.target_state_sha256 if certificate else None,
+        simulation_state=dict(state),
+        sensitivity=None,
+        point=point,
+        basis=basis,
+    )
+
+
 # -- the assessment (E01 §4.10.3) -----------------------------------------------------------------
 
 
@@ -492,16 +496,8 @@ def _assessment(
     if isinstance(lin, Refusal):
         return f"{lin.code}({lin.target})"
     assert isinstance(lin, Linearization)
-    rows: dict[str, dict[str, float]] = {name: {} for name in closure.output_ids}
-    matrix = lin.d_dx
-    for j, variable_id in enumerate(matrix.col_ids):
-        for k in range(matrix.indptr[j], matrix.indptr[j + 1]):
-            rows[matrix.row_ids[matrix.indices[k]]][variable_id] = float(matrix.data[k])
-    direct = {name: np.zeros(len(decision_ids)) for name in closure.output_ids}
-    matrix = lin.d_dp
-    for j in range(len(matrix.col_ids)):
-        for k in range(matrix.indptr[j], matrix.indptr[j + 1]):
-            direct[matrix.row_ids[matrix.indices[k]]][j] = float(matrix.data[k])
+    rows = _d_dx_by_output(lin.d_dx, closure.output_ids)
+    direct = _d_dd_by_output(lin.d_dp, closure.output_ids, decision_ids)
     values = {name: float(evaluated[name]) for name in closure.output_ids}
     admissibility = tuple(
         InequalityConstraint(
@@ -518,6 +514,32 @@ def _assessment(
         d_dx=rows,
         d_dd=direct,
     )
+
+
+def _d_dx_by_output(matrix: TwinMatrix, output_ids: Sequence[str]) -> dict[str, dict[str, float]]:
+    """`∂y/∂x` from the linearization's canonical CSC `matrix` (one column per variable), by
+    output as `{variable_id: value}`: every output in `output_ids` has a row, empty where its
+    row has no entry (canonical CSC repeats no position)."""
+    rows: dict[str, dict[str, float]] = {name: {} for name in output_ids}
+    for j, variable_id in enumerate(matrix.col_ids):
+        for k in range(matrix.indptr[j], matrix.indptr[j + 1]):
+            rows[matrix.row_ids[matrix.indices[k]]][variable_id] = float(matrix.data[k])
+    return rows
+
+
+def _d_dd_by_output(
+    matrix: TwinMatrix, output_ids: Sequence[str], decision_ids: Sequence[str]
+) -> dict[str, npt.NDArray[np.float64]]:
+    """`∂y/∂d` from the linearization's canonical CSC `matrix` (one column per decision, in
+    decision order), by output as a dense vector over `decision_ids`: zero where the output's
+    row has no entry (canonical CSC repeats no position)."""
+    direct: dict[str, npt.NDArray[np.float64]] = {
+        name: np.zeros(len(decision_ids)) for name in output_ids
+    }
+    for j in range(len(matrix.col_ids)):
+        for k in range(matrix.indptr[j], matrix.indptr[j + 1]):
+            direct[matrix.row_ids[matrix.indices[k]]][j] = float(matrix.data[k])
+    return direct
 
 
 @dataclass(frozen=True)
@@ -737,6 +759,47 @@ def _constraint_feasibility(
                     ActiveConstraint(name, "constraint", constraint.constraint_id, side, slack)  # type: ignore[arg-type]
                 )
     return _ConstraintFeasibility(slacks, violated, active)
+
+
+@dataclass(frozen=True)
+class _RegimeInputs:
+    """V4's inputs fixed at the re-solve (OPT §4.6): the re-solve's regime record, the declared
+    regimes, the start's held system, the re-solve's attempt signature, and the (start's,
+    re-solve's) zero subsystems on a held system (§9 A-2), `None` without one."""
+
+    record: RegimeRecord
+    declared: Mapping[str, str]
+    held: HeldSystem | None
+    signature: Any
+    zero: tuple[ZeroSubsystem | None, ZeroSubsystem | None] | None
+
+
+def _phase_regimes(
+    inputs: _RegimeInputs,
+    phase: PhaseRows,
+    active: Sequence[ActiveConstraint],
+    state: Mapping[str, float],
+    rows: _PhaseTerms | None,
+) -> tuple[tuple[str, ...], VerificationCheck]:
+    """V4 with the start's phase rows (OPT §4.7): (the units of the split rows in V3's active set
+    `active`, V4's check). With the rows' terms `rows` V4 also names the guarded splits whose row
+    is not their closure's test (§9 A-3, `_not_closure_test`); without them, none."""
+    # OPT §4.6 V4: a split whose phase row is active is recorded, not judged by its margin.
+    active_rows = [item.target for item in active if item.target in set(phase.ids)]
+    held_units = tuple(phase.row(row).unit for row in active_rows if phase.row(row).split)
+    check = _regimes(
+        inputs.record,
+        inputs.declared,
+        inputs.held,
+        inputs.signature,
+        phase_active=held_units,
+        phase_rows=active_rows,
+        zero=inputs.zero,
+        not_closure_test=(
+            _not_closure_test(phase, inputs.record, state, rows) if rows is not None else ()
+        ),
+    )
+    return held_units, check
 
 
 def _regimes(

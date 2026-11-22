@@ -16,6 +16,7 @@ The verdict fails on
 - an **unresolved** licence: no expression, no `License` field, no classifier and no licence file;
 - a licence **outside `ALLOWED`**: G19 itself only forbids the two above, but a new licence family
   is a design-lane question too (T07 W6d brief), so the list is closed and every entry is justified.
+  `ALLOWED_FOR` admits a term for one named distribution only (pywin32's `PSF`, R-1063).
 
 `compiled` is read from the installed wheel's `WHEEL` file (`Root-Is-Purelib: false`, or a tag other
 than `*-none-any`). The wheel SHA-256s are of the wheel files themselves, which an installed
@@ -70,6 +71,15 @@ ALLOWED: dict[str, str] = {
     "base closure through jsonschema",
     "MPL-2.0": "weak, file-level copyleft, used unmodified; certifi (httpx's CA bundle, no drop-in "
     "replacement). Accepted by the build lane under ADR 0006: docs/T07_DECISIONS.md, decision E5",
+}
+
+# A term allowed for one distribution only, keyed by (PEP 503 name, declared term): a ruling that
+# admits one distribution's term does not open that family to the rest of the closure, and a new
+# term declared by the same distribution fails again.
+ALLOWED_FOR: dict[tuple[str, str], str] = {
+    ("pywin32", "PSF"): "Python Software Foundation licence, compiled; `mcp`'s Windows-only "
+    "requirement, absent from a Linux or macOS closure. Allowed as a Windows-only dependency of "
+    "the server extra by Frank (Decision Desk ofs-x07a-pywin32-licence, option A): R-1063",
 }
 
 
@@ -178,7 +188,7 @@ def verdict_of(entry: dict[str, Any]) -> str:
         return "gpl-family"
     if not (declared or entry["license_classifiers"] or entry["license_files"]):
         return "unresolved"
-    if declared not in ALLOWED:
+    if declared not in ALLOWED and (entry["name"], declared) not in ALLOWED_FOR:
         return "not-allowed"
     return "ok"
 

@@ -28,6 +28,11 @@ or tolerance changes. Register R-625.
 keep a derived 1e-10 in both tiers; answers within 1 % of T_c get per-state allowances from G3's Psat bound and
 their own pressure sensitivity; x86-64 stays bitwise. Register R-627.
 
+**Amendment (S19 W5 B7, ADR 0077; 2026-11-20, §16.9).** The S19 W5 ruling §8 splits the fluid table into eight
+generated modules. `fluid_table_sha256` moves from its one-file form to ADR 0060 D3's self-hash shape over the eight
+modules, and A28's oracle follows, as A28 (a) to (e). The amendment also amends §16.8's table bullet and the scope of
+C19. No fluid, stored value or tolerance changes.
+
 ## 0. Read this first
 
 - CoolProp supplies **only** the Helmholtz energy partials α°, αʳ in (δ, τ) up to total order 3, at a (T, ρ) the
@@ -968,7 +973,7 @@ refused phase), the refusal probes with their controls (C14), and the A10/A11 te
 | C16 | §16.5.2 |
 | C17 | the output file is at most 1.5e6 bytes |
 | C18 | κ ≥ 1.5 × max over the M fluids with T_t ≥ 20 K of (T_m(P)/T_t − 1)/(P − p_t) on C9's grid |
-| C19 | `--emit-fluid-table` reproduces the committed `_coolprop_heos_fluids.py` byte for byte (checked by `--check`) |
+| C19 | `--emit-fluid-table` reproduces the committed `_coolprop_heos_fluids.py` byte for byte (checked by `--check`). *Amendment S19 W5 B7 (§16.9): from the B7 step, this covers all eight modules, and `--check` fails on any other `_coolprop_heos_fluids*.py` in that directory.* |
 
 - **Output additions.** `fluids` (id → CoolProp name, CAS, `BibTeX_EOS`, tier, bound, verification string,
   limitation strings), `excluded` (name → reason), `published_checks` (the file's SHA-256 and the rows per fluid), and
@@ -978,7 +983,8 @@ refused phase), the refusal probes with their controls (C14), and the A10/A11 te
 ### 16.8 Provider amendments
 
 - **The fluid table is its own module,** `src/openflowsheet/thermo/_coolprop_heos_fluids.py`. It holds data only, as
-  Python literals.
+  Python literals. *Amendment S19 W5 B7 (§16.9): from the B7 step, the table is eight generated modules, the index of
+  this name and seven groups. `FLUIDS` and `EXCLUDED` keep their home in the index.*
   - Per fluid: id, CoolProp name, CAS, tier, bound, `BibTeX_EOS`, R, M, T_red, ρ_red, §6.1's constants, the canary,
     `FLUID_DATA_SHA256`, and the verification and limitation strings.
   - `EXCLUDED`: name → reason.
@@ -1005,12 +1011,82 @@ refused phase), the refusal probes with their controls (C14), and the A10/A11 te
 - **Cost.** One `AbstractState` per instance, created at the first evaluation, as before. Nothing per fluid is loaded
   from CoolProp before an instance's first evaluation.
 
-### 16.9 Identity (amends §5.1; R-619 extended by R-623)
+### 16.9 Identity (amends §5.1; R-619 extended by R-623; amended S19 W5 B7, ADR 0077)
 
-- `implementation_sha256` = SHA-256 of the canonical JSON of `{"module_sha256": <SHA-256 of coolprop_heos.py's
+- ~~`implementation_sha256` = SHA-256 of the canonical JSON of `{"module_sha256": <SHA-256 of coolprop_heos.py's
   bytes>, "fluid_table_sha256": <SHA-256 of _coolprop_heos_fluids.py's bytes>, "coolprop_version": "8.0.0",
   "coolprop_gitrevision": "ae81610e…"}`. A change to any fluid's constants changes every instance's implementation
-  hash. There is one table and one identity, so a cache keyed on it can never mix table versions.
+  hash. There is one table and one identity, so a cache keyed on it can never mix table versions.~~
+  This struck text is superseded by the amendment below from the B7 step commit on. The provider follows it at every
+  earlier commit.
+
+**Amendment (S19 W5 B7, ADR 0077; 2026-11-20).** Authority: ADR 0077 D6, which makes the S19 W5 ruling
+(`docs/briefs/S19-W5-ruling.md`) §8 normative, together with that section's addendum §8.1. The amendment governs from
+the B7 step commit on. It changes no fluid, no stored value and no tolerance.
+
+- **The table** is eight generated modules in `src/openflowsheet/thermo/` (ruling §8 route 1):
+  - the index `_coolprop_heos_fluids.py`, which defines `FLUIDS` as the concatenation of the groups' `FLUIDS` and holds
+    `EXCLUDED` as a literal;
+  - the group `_coolprop_heos_fluids_a.py` (tier A, 9 entries);
+  - the groups `_coolprop_heos_fluids_b1.py` to `_b6.py` (tier B: 20, 20, 20, 20, 20 and 14 entries, in §16.3 order).
+- **`implementation_sha256`** = SHA-256 of the canonical JSON of `{"module_sha256": <SHA-256 of coolprop_heos.py's
+  bytes>, "fluid_table_sha256": T, "coolprop_version": "8.0.0", "coolprop_gitrevision": "ae81610e…"}`. Only T
+  changes.
+- **T** = `sha256(canonical_json([[n, sha256(bytes of n)] for n in NAMES]))`. NAMES are the eight file names in
+  UTF-8 byte order: `_coolprop_heos_fluids.py`, `_coolprop_heos_fluids_a.py`, `_coolprop_heos_fluids_b1.py`, …,
+  `_coolprop_heos_fluids_b6.py`. The index sorts first because `.` is 0x2E and `_` is 0x5F. This is the shape of
+  ADR 0060 D3's self-hash, read exactly as follows.
+  1. `n` is the bare file name, the string literal that `coolprop_heos.py` holds. It is not D3's import-root path
+     `openflowsheet/thermo/<n>`.
+  2. "bytes of n" are the raw bytes of `<directory of coolprop_heos.py>/<n>`. D3's CRLF normalisation is not applied,
+     because `module_sha256` applies none either. The generator writes LF line ends (`s07_reference.py:2068`), and C19
+     byte-compares its output. `_coolprop_heos_fluids.py` and `coolprop_heos.py` hold 0 CR bytes at c31f6c19. So on
+     every tree where C19 passes, the raw reading and the normalised one give the same T.
+  3. `canonical_json` is `json.dumps(x, sort_keys=True, separators=(",", ":"), ensure_ascii=True)`, encoded as UTF-8.
+     That is the provider's `_canonical` and A28's `canonical`. For this list of ASCII strings it gives the same bytes
+     as ADR 0002 D3's `canonical_json` (measured below).
+  4. Every SHA-256 is the lowercase 64-character hex digest, and T enters the outer object as that string.
+
+  The bytes hashed for T are therefore exactly
+  `[["_coolprop_heos_fluids.py","<hex>"],["_coolprop_heos_fluids_a.py","<hex>"],…,["_coolprop_heos_fluids_b6.py","<hex>"]]`.
+  A file's bytes enter T only through its own digest, next to its own name. So moving a line from one module to
+  another changes T, and no split of the table can hash like another split.
+- **Sanity values (closed form; A28 (d) asserts the first one).** Put eight files in an empty directory, each holding
+  its own name in UTF-8 followed by CRLF (`n.encode("utf-8") + b"\r\n"`). Then
+  T = `3e4e4bd2bc1a4462d487aad1d99b0fcccb1c142dff78c01d7ea225160cc3a895`.
+  With LF in place of CRLF, T = `d2b26ebc4a3c1a93e8d2e0f267935712651e0abe0b554470eed64331dcd5b419`. That value equals
+  `openflowsheet.registry.selfhash.self_sha256(<that directory>, NAMES)`, measured 2026-11-20 at c31f6c19 with
+  Python 3.13.5. So wherever no CR byte occurs, the recipe is D3's self-hash. On the CRLF files, each wrong reading
+  gives a different T: CRLF normalised `d2b26ebc…`; the order a, b1 … b6, index `c88ba695…`; import-root paths
+  `7ab27c28…`; JSON with the default separators `3c48a4cf…`; the index left out `c6957a4f…`; each name paired with
+  the next name's digest `0c3bb515…`. A few lines of `hashlib` and `json` reproduce all seven values from the
+  definitions above.
+- **The property, restated.** "One table and one identity, so a cache keyed on it can never mix table versions" still
+  holds as worded. One file met its condition by construction. Eight files meet it only if checked: every value of
+  `FLUIDS` and `EXCLUDED` must come from bytes inside the eight hashed files.
+  - A28 (c) checks this for `FLUIDS` and for `EXCLUDED` at the level of the index.
+  - Given that, a change to any byte of any of the eight modules changes T, and therefore every instance's
+    `implementation_sha256`. No table content lies outside T.
+  - A further `_coolprop_heos_fluids*.py` file that nothing imports holds no table content and does not enter T. C19
+    refuses it (ruling §8 route 2).
+  - A28 (c) does not prove that no module of the eight imports data from elsewhere. The generator's review and C19
+    carry that (ruling §8.1, "What this addendum does not establish").
+- **A28 under this amendment** (§9's row, and §16.10's "A28 with §16.9's recipe"). Every part is exact, because it
+  compares hex strings or literal structure and involves no floating point.
+  - (a) Each instance's `implementation_sha256` equals the recipe above. The test recomputes it from the eight names,
+    held as literals in the test, using `hashlib` and `json` only. It imports no helper of `coolprop_heos.py` and none
+    of `openflowsheet.registry`.
+  - (b) `data_sha256` and `fluid_data_sha256` are checked as before (§5.1, unchanged).
+  - (c) The index's `FLUIDS` equals the concatenation of the seven groups' `FLUIDS`. The groups are imported by literal
+    name, in the order a, b1, …, b6. The index's source also assigns `EXCLUDED` a dict literal: one
+    `ast.AnnAssign` or `ast.Assign` whose value is an `ast.Dict`.
+  - (d) The test's recipe function returns the CRLF sanity value above on the eight toy files. This part needs no
+    CoolProp, so it runs in every environment.
+  - (e) A missing named module is reported as a problem that names it (`<n>: missing`), not raised as an exception.
+    (a) and (c) are then not evaluated, so a tree without the split gives exactly one such problem per missing
+    module.
+
+  The part "equal with and without CoolProp installed" is unchanged.
 - `data_sha256` keeps its form: per instance, the version, the fluid name and that fluid's canonical JSON hash. The
   broad set adds no shared data hash, because each instance's data are its own fluid's.
 - The guard (§5.2) is unchanged and runs per instance: G3 checks the instance's fluid hash and G4 its canary.

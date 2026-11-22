@@ -27,7 +27,8 @@ from importlib.resources import files
 from types import MappingProxyType
 from typing import Any, Final, Literal
 
-from openflowsheet.assessment.program import Limitation, Refusal
+from openflowsheet.assessment.linearization import Refusal
+from openflowsheet.assessment.program import Limitation
 
 __all__ = [
     "SHIPPED_RATES",

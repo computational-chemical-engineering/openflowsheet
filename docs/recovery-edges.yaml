@@ -397,6 +397,7 @@ rows:
     labels:
       - event:initializer_rejected@openflowsheet.orchestrator.executor._reject_initializer
       - event:initializer_rejected@openflowsheet.application.coupled_run.solve_coupled
+      - event:initializer_rejected@openflowsheet.application.coupled_run._announce_outer_start
     failure_tests:
       - tests/test_t08_w4_warm_starts.py::test_b43_an_incompatible_candidate_is_rejected_to_the_traversal
       - tests/test_t08_w4_warm_starts.py::test_b44_a_tampered_candidate_is_rejected_for_integrity

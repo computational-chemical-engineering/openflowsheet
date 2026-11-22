@@ -1049,7 +1049,8 @@ def solve_coupled(
     it is checked for compatibility (its unit ids are the external units'), projected into the
     bounds and opened — the coupling's k = 0 inner solve at w₀ must converge, else w₀ is rejected
     and the coupling begins again from the variant's `coupling.initial`. Once open, w₀ is the
-    run's start: there is no fallback after acceptance. `None` changes nothing."""
+    run's start: there is no fallback after acceptance; its resolution is written to `trace` by
+    `_announce_outer_start` before it is opened. `None` changes nothing."""
     units = external_units(binding)
     if not units:
         raise CouplingUnsupportedError("no_external_unit")
@@ -1084,11 +1085,7 @@ def solve_coupled(
     coupling_start: dict[str, Any] | None = None
     if coupled_start is not None:
         start = coupled_start
-        for source in (start.profiles or {}).values():
-            if source.status == "rejected":
-                _coupling_event(trace, "initializer_rejected", _rejected(str(source.reason)))
-        present = "absent" if start.record["status"] == "absent" else "present"
-        _coupling_event(trace, "initializer_candidate", f"coupling_warm_start({present})")
+        _announce_outer_start(trace, start)
         coupling_start = dict(start.record)
         if start.record["status"] == "accepted":
             coupling, coupling_start = _open_outer_start(
@@ -1185,6 +1182,18 @@ def _chained_evaluate(
     if start is None:
         return experiments.evaluate(unit, variant, inlet)
     return experiments.evaluate(unit, variant, inlet, start=start)
+
+
+def _announce_outer_start(trace: Trace | None, start: CoupledStart) -> None:
+    """ADR 0070 D3: write the declared outer start `start`'s resolution to `trace` (through
+    `_coupling_event`): an `initializer_rejected` event for each of its profile sources that was
+    rejected, in `start.profiles` order, then the `initializer_candidate` event naming whether its
+    record is absent or present."""
+    for source in (start.profiles or {}).values():
+        if source.status == "rejected":
+            _coupling_event(trace, "initializer_rejected", _rejected(str(source.reason)))
+    present = "absent" if start.record["status"] == "absent" else "present"
+    _coupling_event(trace, "initializer_candidate", f"coupling_warm_start({present})")
 
 
 def _open_outer_start(

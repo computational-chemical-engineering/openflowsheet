@@ -1,0 +1,132 @@
+{
+  "work_package": "X01",
+  "commit": "bbbca49173dacd94db6fe6dcf61e7327d1b97d80",
+  "requirements": [],
+  "status": "tested",
+  "inputs": {
+    "case_id": "X01-WO1 (docs/briefs/X01-WO1.md, card ofs-05-widen option B): X01 rest part A, the plugin path ADR 0060 F1-WO3 unblocks (ADR 0060:540-541); moved to bbbca491: main d29f1a50 (F3) merged in (1bd587ed), the reviewer's part A fixes (5634fa7f: docs-site/guide/plugins.md, tests/test_x01_example_plugin.py, docs/X01_DECISIONS.md), T08 harvest rows for the a0e4c546 manifest's limitations and HARVEST_SIZE (101, 1148, 146) (bbbca491); the a0e4c546 manifest stays",
+    "case_hash": "09fa174617a14e41021939749b99a9fdf46e0e17ff4681ef70e14a03860aa448",
+    "environment_lock_hash": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+  },
+  "commands": [
+    {
+      "cmd": "PYTHONPATH=src ../../../.venv/bin/python -m pytest -q -p no:cacheprovider tests/test_x01_example_plugin.py tests/test_m07a_harvest.py tests/test_t08_w2_support_envelope.py tests/test_f1_discovery.py tests/test_p03_binary_audit.py tests/test_t08_w2_inventory.py (the three named files plus every test file that names plugins or entry_points; 112 passed in 46.32 s; the full suite ran in CI, not locally)",
+      "cwd": ".claude/worktrees/x01",
+      "exit_code": 0
+    },
+    {
+      "cmd": "PYTHONPATH=src ../../../.venv/bin/python scripts/corpus_identity.py --check (F0 PASS: M1 50/50, M2 61/61, M3 61/61, M4 61/61, M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 35/35)",
+      "cwd": ".claude/worktrees/x01",
+      "exit_code": 0
+    },
+    {
+      "cmd": "PYTHONPATH=src ../../../.venv/bin/python scripts/registry_builtin.py --check (clean, 49 descriptors in 3 tables; table digests held; registry_sha256 fc0af96b7ba9b7259ce3c1336cf408f41c1805259859a788c4804502c5c7bcee)",
+      "cwd": ".claude/worktrees/x01",
+      "exit_code": 0
+    },
+    {
+      "cmd": "PYTHONPATH=src ../../../.venv/bin/python scripts/t08_support_matrix.py --check (0 problems before and after this manifest's harvest rows; HARVEST_SIZE (102, 1152, 146); --emit regenerated docs/support-matrix.md)",
+      "cwd": ".claude/worktrees/x01",
+      "exit_code": 0
+    },
+    {
+      "cmd": "../../../.venv-codehealth/bin/codehealth docs --repo . --ref bbbca491 (800 docs, 28022 references, 23617 ok, 282 broken in living docs, 1239 in records)",
+      "cwd": ".claude/worktrees/x01",
+      "exit_code": 0
+    },
+    {
+      "cmd": "/usr/bin/python3 -m pip install --no-deps --no-build-isolation --no-index --target SCRATCH/site examples/plugins/demo (system Python 3.13.5; one-off check that a real wheel install gives the same entry_points.txt and package data; then openflowsheet capabilities --prefix demo. listed demo.messages (distribution openflowsheet-demo-plugin 0.1.0, origin installed, effective_status tested) and explain demo.feed_too_wet printed its entry, both exit 0)",
+      "cwd": "scratch copy of examples/plugins/demo",
+      "exit_code": 0
+    },
+    {
+      "cmd": "ruff check and ruff format --check on tests/test_x01_example_plugin.py tests/test_m07a_harvest.py (All checks passed; 2 files already formatted)",
+      "cwd": ".claude/worktrees/x01",
+      "exit_code": 0
+    }
+  ],
+  "checks": [
+    {
+      "id": "X01.A.discovered",
+      "description": "the example, installed from its own pyproject.toml, is found by discovery.entry_points and registered whole: demo.messages with entry_point demo, distribution openflowsheet-demo-plugin 0.1.0, origin installed, effective_status tested, evidence_class unreviewed, stability core; self_sha256 recomputed independently by D3; notice extension_unreviewed; demo.feed_too_wet reaches the catalogue",
+      "result": "pass",
+      "value": "test_the_example_is_discovered_and_listed_with_its_namespace_and_flags"
+    },
+    {
+      "id": "X01.A.refusals",
+      "description": "a second distribution declaring demo quarantines both (namespace_conflict); an entry point not named after the document's namespace is extension_invalid at /namespace",
+      "result": "pass",
+      "value": "test_a_second_distribution_declaring_demo_quarantines_both, test_an_entry_point_not_named_after_the_documents_namespace_is_refused"
+    },
+    {
+      "id": "X01.A.snippets",
+      "description": "every fenced block in the guide and the example README is a verbatim file part, a CLI or Python run with the example installed, or marked illustrative; three mutations (changed entry point in a file snippet, unknown code in a CLI snippet, a removed marker) each fail it",
+      "result": "pass",
+      "value": "test_every_snippet_is_checked_or_marked_illustrative[guide,readme], test_the_guides_listing_claim_is_what_the_cli_prints"
+    },
+    {
+      "id": "X01.A.identity",
+      "description": "no registry behaviour, schema, built-in table, builtin-sha256.txt, catalogue identity or MODEL_BASES change: F0 corpus identity and registry_builtin --check unchanged",
+      "result": "pass",
+      "value": "corpus_identity PASS at bbbca491; registry_builtin --check clean (49 descriptors, main's F3 additions included)"
+    },
+    {
+      "id": "X01.CI",
+      "description": "CI green on both architectures (check ubuntu-latest, check ubuntu-24.04-arm) and the Site workflow (mkdocs build --strict)",
+      "result": "pass",
+      "value": "CI run 44921749701 (ci) at bbbca49173dacd94db6fe6dcf61e7327d1b97d80: codehealth, default-install, check (ubuntu-latest), check (ubuntu-24.04-arm) and identity success, the other jobs skipped; Site run 44921749623 (mkdocs build --strict) success (confirmed with gh run view --json jobs,headSha and --json conclusion,headSha)"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "docs-site/guide/plugins.md",
+      "sha256": "763bc03952bd86810ac8f6d68f5829e5f4ba3bb8187a2408cefcd19642b61fcc",
+      "description": "the plugin-author guide (user guide, 'Plugins (extensions)')"
+    },
+    {
+      "path": "examples/plugins/demo/pyproject.toml",
+      "sha256": "4d860caae522841b1f86e99aec1209cc343e7b8a31be12db2ace0d6177472341",
+      "description": "the example plugin's distribution metadata (entry point demo)"
+    },
+    {
+      "path": "examples/plugins/demo/src/openflowsheet_demo_plugin/__init__.py",
+      "sha256": "0523ff3c6bd7ba701467d63d895c69d59cb2422f069ca7feb5af2072b4ebce49",
+      "description": "the example's package() document"
+    },
+    {
+      "path": "examples/plugins/demo/src/openflowsheet_demo_plugin/messages.yaml",
+      "sha256": "e758b8227e3dcbb61386253e3117ee09e9a74ef4d88e5af273e66d53cc39ca14",
+      "description": "the example's message catalogue"
+    },
+    {
+      "path": "examples/plugins/demo/README.md",
+      "sha256": "186b7531774b1e0b7a5fdb7ed86aff3242494d1c663e09232d47204f0f1b9a1d",
+      "description": "the example's README"
+    },
+    {
+      "path": "tests/test_x01_example_plugin.py",
+      "sha256": "af9de6c506821938162652296507ab2cbcdcbb35f763bf6da1db8ce69a62ee49",
+      "description": "discovery of the example through entry_points, refusals, snippet checks"
+    },
+    {
+      "path": "docs/X01_DECISIONS.md",
+      "sha256": "0657e4b8283b451a3e08ab2e44c35fbf882a0a018bfd2d25b8d8121a50dc91bb",
+      "description": "build decisions A-1..A-6, open rows B and C, questions Q-1..Q-3"
+    },
+    {
+      "path": "docs/briefs/X01-WO1.md",
+      "sha256": "09fa174617a14e41021939749b99a9fdf46e0e17ff4681ef70e14a03860aa448",
+      "description": "the work order"
+    }
+  ],
+  "limitations": [
+    "Evidence class: software verification of documentation and an example against the registry's discovery; no numerics. requirements is empty: X01 part A maps to no D/A requirement.",
+    "Part B (pr-lib-v1 and syn001.cascade selectable) is blocked on F4 and F6 and part C (ADR 0052 amendment for extension contributors) is design-lane work; both are open rows in docs/X01_DECISIONS.md, not delivered here.",
+    "The test installs the example by writing its dist-info from pyproject.toml, not with an installer; a real offline wheel install was checked once by hand (commands[4]).",
+    "Status is never reviewed by the build lane; the review block stays pending."
+  ],
+  "review": {
+    "numerical": "pending",
+    "process_model": "pending"
+  }
+}

@@ -81,7 +81,10 @@ memory).
     `found`; fixed in dbe6a5d3)
 14. A commit message describes the moved unit in the terms the docstring uses. (review 5: b92b0490)
 15. A lifted check with a verbatim twin elsewhere in the module (same messages): name the twin in the commit. Merging
-    the two drops string literals, which the bitwise gate refuses, so the merge waits for a behaviour-level change.
+    the twins into one helper that every former site calls passes the gate's `literals` check (cce-code-health
+    6529f47 on: a count may drop when every scope that reached the literal still reaches it); deleting one copy still
+    fails. Merge only where the records are equal field for field; text that differs stays at the call site
+    (S19 design round 2, item (v), 2026-11-20; it replaces the S17 reading that a merge waits for a behaviour change).
     (review 6: cae099ae, transactions.py `_check_array_index` and `_apply_at`; WO6: runner.py `solve` and `optimize`
     share the R5 `verification_weakening_refused` block) Before naming a helper after a standard (RFC 6901, JSON
     Schema), grep the shared layer for an implementation; name it as the twin, the differences that block the merge,

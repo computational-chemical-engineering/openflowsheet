@@ -37,7 +37,14 @@ from openflowsheet.graph.analysis import analyse
 from openflowsheet.graph.report import StructuralReport
 from openflowsheet.graph.trace import trace_declaration
 from openflowsheet.messages.diagnostic import Diagnostic
-from openflowsheet.models import Wiring, duty_id, flow_id, pressure_id, temperature_id
+from openflowsheet.models import (
+    UnitEvaluation,
+    Wiring,
+    duty_id,
+    flow_id,
+    pressure_id,
+    temperature_id,
+)
 from openflowsheet.models.revision_flowsheet import FlowsheetPass, RevisionFlowsheet
 from openflowsheet.models.syn001.conversion_reactor import extent_id
 from openflowsheet.models.syn001.ph_kernel import PHState
@@ -62,6 +69,7 @@ from openflowsheet.thermo import StreamState
 
 if TYPE_CHECKING:
     from openflowsheet.application.revision_binding import RevisionBinding
+    from openflowsheet.models.lifted import LiftedSplit
 
 __all__ = [
     "INITIALIZER_ID",
@@ -184,38 +192,15 @@ def _start_from_pass(
     """§2.2 steps 3–6 on one successful pass: the streams, the units' reported duty, work and
     extent (and S11's `owned` columns), each lifted split re-split from its stream, and the band
     routes — or the unit whose split the kernel refused. `traversal_start` calls it on pass 2
-    (pass 1 when nothing is torn); `restart_start` on the last pass its sequence kept."""
-    wanted = set(variable_ids)
-    values: dict[str, float] = {}
-    for stream in flowsheet.streams:
-        carried = traversed.streams[stream]
-        for index, component in enumerate(flowsheet.components):
-            values[flow_id(stream, component)] = carried.n[index]
-        values[temperature_id(stream)] = carried.temperature
-        values[pressure_id(stream)] = carried.pressure
+    (pass 1 when nothing is torn); `restart_start` on the last pass its sequence kept.
 
+    Its phases, in order: `_stream_values` (the streams), `_reported_values` (per unit, what it
+    reports), `lifted_split_values` (the splits), the completeness check (`ValueError`), and
+    `_band_routes` (the record)."""
+    wanted = set(variable_ids)
+    values = _stream_values(flowsheet, traversed)
     for unit, evaluation in traversed.evaluations.items():
-        duty = duty_id(unit)
-        if duty in wanted:
-            reported = [x for x in (evaluation.duty, evaluation.transferred_duty) if x is not None]
-            if len(reported) != 1:
-                raise ValueError(
-                    f"{unit} reports duty={evaluation.duty!r} and "
-                    f"transferred_duty={evaluation.transferred_duty!r}; {duty} needs exactly one"
-                )
-            values[duty] = reported[0]
-        for name, reported_value in (
-            (work_id(unit), evaluation.work),
-            (extent_id(unit), evaluation.extent),
-        ):
-            if name in wanted:
-                if reported_value is None:
-                    raise ValueError(f"{unit} reports no value for its column {name}")
-                values[name] = reported_value
-        # S11 §4.7.5: the columns a unit owns beyond these (the embedded column's state).
-        for name, owned_value in evaluation.owned.items():
-            if name in wanted:
-                values[name] = owned_value
+        values.update(_reported_values(unit, evaluation, wanted))
 
     split_values = lifted_split_values(
         flowsheet,
@@ -230,13 +215,63 @@ def _start_from_pass(
     for name in variable_ids:
         if name not in values:
             raise ValueError(f"initial_state_incomplete({name})")
+    band_routes = _band_routes(flowsheet, traversed)
+    return TraversalStart({name: values[name] for name in variable_ids}, band_routes)
+
+
+def _stream_values(flowsheet: RevisionFlowsheet, traversed: FlowsheetPass) -> dict[str, float]:
+    """§2.2 step 3: every stream's flows, temperature and pressure as the pass carried them, in
+    the flowsheet's stream order."""
+    values: dict[str, float] = {}
+    for stream in flowsheet.streams:
+        carried = traversed.streams[stream]
+        for index, component in enumerate(flowsheet.components):
+            values[flow_id(stream, component)] = carried.n[index]
+        values[temperature_id(stream)] = carried.temperature
+        values[pressure_id(stream)] = carried.pressure
+    return values
+
+
+def _reported_values(unit: str, evaluation: UnitEvaluation, wanted: set[str]) -> dict[str, float]:
+    """§2.2 step 4 for one unit: the duty, work and extent it reports and the columns it owns,
+    each only where `wanted` (the declaration's columns) holds it. A duty column needs exactly
+    one of `duty` and `transferred_duty`, and a wanted work or extent column a value: else a
+    defect (`ValueError`). Later entries win on a repeated name, as in one dict built in order."""
+    values: dict[str, float] = {}
+    duty = duty_id(unit)
+    if duty in wanted:
+        reported = [x for x in (evaluation.duty, evaluation.transferred_duty) if x is not None]
+        if len(reported) != 1:
+            raise ValueError(
+                f"{unit} reports duty={evaluation.duty!r} and "
+                f"transferred_duty={evaluation.transferred_duty!r}; {duty} needs exactly one"
+            )
+        values[duty] = reported[0]
+    for name, reported_value in (
+        (work_id(unit), evaluation.work),
+        (extent_id(unit), evaluation.extent),
+    ):
+        if name in wanted:
+            if reported_value is None:
+                raise ValueError(f"{unit} reports no value for its column {name}")
+            values[name] = reported_value
+    # S11 §4.7.5: the columns a unit owns beyond these (the embedded column's state).
+    for name, owned_value in evaluation.owned.items():
+        if name in wanted:
+            values[name] = owned_value
+    return values
+
+
+def _band_routes(flowsheet: RevisionFlowsheet, traversed: FlowsheetPass) -> tuple[str, ...]:
+    """The units whose PH closure on this pass answered by the band route, in declaration order
+    (ADR 0012 D10 F1's record)."""
     band_routes: list[str] = []
     for model in flowsheet.units():
         answered = traversed.evaluations.get(model.unit_id)
         if answered is not None and answered.closure is not None:
             if answered.closure.route == "band":
                 band_routes.append(model.unit_id)
-    return TraversalStart({name: values[name] for name in variable_ids}, tuple(band_routes))
+    return tuple(band_routes)
 
 
 @dataclass(frozen=True)
@@ -262,7 +297,9 @@ def lifted_split_values(
     split unit's PH closure, `None` where the unit closed by TP or the stream is not a unit's
     closure. `_start_from_pass` passes one traversal pass's; T06's ensemble passes a perturbed
     start's streams with no closure (spec §6.2: the split is a function of the stream). Returns
-    the split columns, or the first split the kernel refused, in declaration order.
+    the split columns, or the first split the kernel refused, in declaration order. An
+    outlet-style split's columns and refusal are `_outlet_split_columns`'s; a flash-style split's
+    totals are summed here.
     """
     out: dict[str, float] = {}
     instances = instances_of(flowsheet)
@@ -271,37 +308,50 @@ def lifted_split_values(
     }
     for split in lifted_splits(instances, flowsheet.components):
         if styles[split.unit] == "outlet":
-            closure = closures[split.unit]
-            if closure is not None:
-                # T05b spec §6.4 (ADR 0012 D5): the split the unit's PH closure returned. On the
-                # bracket route it is the provider's TP flash at the outlet's (n, T*, P) (T05
-                # spec §4.4 step 6) — the re-flash below, bit for bit; on the saturation and band
-                # routes the re-flash would lose the vapour fraction (`ln K_B(T_sat) = 0`: the
-                # flash calls a pure stream at T_sat liquid).
-                resplit = closure.split
-            else:
-                # A TP closure (the K02 heater, the outlet-temperature reactor) or a dormant
-                # outlet: the provider's TP flash at the outlet's (n, T, P) (design note §2.2
-                # step 5), which is the split the unit's own closure computed.
-                resplit = tp_state(flowsheet.provider, streams[split.stream], flowsheet.context)
-            if (
-                resplit is None
-                or resplit.status != "ok"
-                or resplit.vapor is None
-                or resplit.liquid is None
-            ):
-                status = "absent" if resplit is None else str(resplit.status)
-                return SplitRefusal(split.unit, split.stream, status)
-            for index, (vapor, liquid) in enumerate(zip(split.vapor, split.liquid, strict=True)):
-                out[vapor] = resplit.vapor.n[index]
-                out[liquid] = resplit.liquid.n[index]
-            out[split.vapor_total] = sum(resplit.vapor.n)
-            out[split.liquid_total] = sum(resplit.liquid.n)
+            columns = _outlet_split_columns(flowsheet, split, streams, closures)
+            if isinstance(columns, SplitRefusal):
+                return columns
+            out.update(columns)
         else:
             # Flash style: the split is the product streams, already assigned.
             out[split.vapor_total] = sum(values[name] for name in split.vapor)
             out[split.liquid_total] = sum(values[name] for name in split.liquid)
     return out
+
+
+def _outlet_split_columns(
+    flowsheet: RevisionFlowsheet,
+    split: LiftedSplit,
+    streams: Mapping[str, StreamState],
+    closures: Mapping[str, PHState | None],
+) -> dict[str, float] | SplitRefusal:
+    """§2.2 step 5 for one outlet-style split: its per-component vapour and liquid columns and
+    its two totals, re-split from the unit's PH closure where `closures` holds one, else by the
+    provider's TP flash of its stream; or the refusal when that split is absent, not `ok`, or
+    lacks a phase."""
+    closure = closures[split.unit]
+    if closure is not None:
+        # T05b spec §6.4 (ADR 0012 D5): the split the unit's PH closure returned. On the
+        # bracket route it is the provider's TP flash at the outlet's (n, T*, P) (T05
+        # spec §4.4 step 6) — the re-flash below, bit for bit; on the saturation and band
+        # routes the re-flash would lose the vapour fraction (`ln K_B(T_sat) = 0`: the
+        # flash calls a pure stream at T_sat liquid).
+        resplit = closure.split
+    else:
+        # A TP closure (the K02 heater, the outlet-temperature reactor) or a dormant
+        # outlet: the provider's TP flash at the outlet's (n, T, P) (design note §2.2
+        # step 5), which is the split the unit's own closure computed.
+        resplit = tp_state(flowsheet.provider, streams[split.stream], flowsheet.context)
+    if resplit is None or resplit.status != "ok" or resplit.vapor is None or resplit.liquid is None:
+        status = "absent" if resplit is None else str(resplit.status)
+        return SplitRefusal(split.unit, split.stream, status)
+    columns: dict[str, float] = {}
+    for index, (vapor, liquid) in enumerate(zip(split.vapor, split.liquid, strict=True)):
+        columns[vapor] = resplit.vapor.n[index]
+        columns[liquid] = resplit.liquid.n[index]
+    columns[split.vapor_total] = sum(resplit.vapor.n)
+    columns[split.liquid_total] = sum(resplit.liquid.n)
+    return columns
 
 
 def _check_torn(first: FlowsheetPass, traversed: FlowsheetPass) -> None:

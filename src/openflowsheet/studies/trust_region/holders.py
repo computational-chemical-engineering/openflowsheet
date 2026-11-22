@@ -578,7 +578,8 @@ class EFHolder:
 
         A box with a `finite_difference` policy (a parent truth, §6.5) has it formed here: the
         base value (memo, normally), then its seven points through `request_batch`, labelled
-        `purpose` (`trf_fd_point` by default; `basis_fd_point` for the affine basis, §6.6)."""
+        `purpose` (`trf_fd_point` by default; `basis_fd_point` for the affine basis, §6.6).
+        A cold request's outcome is `_cold_jacobian`'s."""
         inputs, key = self._key(args)
         start = time.perf_counter()
         with self._lock:
@@ -586,6 +587,22 @@ class EFHolder:
             if held is not None:
                 self._append("jacobian", key, "memo_hit", None, held, start)
                 return self._unwrap_jacobian(held)
+        outcome = self._cold_jacobian(inputs, purpose)
+        with self._lock:
+            self._jacobians.setdefault(key, outcome)
+            if isinstance(outcome, TruthRefused) and outcome not in self._refusals:
+                self._refusals.append(outcome)
+            self._append("jacobian", key, "cold", None, outcome, start)
+        return self._unwrap_jacobian(outcome)
+
+    def _cold_jacobian(
+        self, inputs: tuple[float, ...], purpose: str | None
+    ) -> tuple[tuple[float, ...], ...] | TruthRefused:
+        """A cold Jacobian request's outcome at `inputs`, outside the lock: the box's matrix (a
+        `finite_difference` policy's quotients over the base value and its points, requested
+        labelled `purpose`, else `box.jacobian`) as floats, a `non_finite_output` refusal when an
+        entry is not finite, or the TruthRefused the box or a point raised. A ValueError when
+        the matrix is not `n_out` x `n_in`; any other exception propagates."""
         outcome: tuple[tuple[float, ...], ...] | TruthRefused
         try:
             policy = getattr(self.box, "finite_difference", None)
@@ -609,12 +626,7 @@ class EFHolder:
                 outcome = TruthRefused("non_finite_output", self.name, "jacobian")
         except TruthRefused as refusal:
             outcome = refusal
-        with self._lock:
-            self._jacobians.setdefault(key, outcome)
-            if isinstance(outcome, TruthRefused) and outcome not in self._refusals:
-                self._refusals.append(outcome)
-            self._append("jacobian", key, "cold", None, outcome, start)
-        return self._unwrap_jacobian(outcome)
+        return outcome
 
     def _values_request(
         self, args: Sequence[float], purpose: str | None
@@ -736,7 +748,8 @@ class EFHolder:
         recorded in aggregate, design note §8.1); `by_purpose`, the requests carrying each of
         `SUMMARY_PURPOSES` (S16); and `pmp_point_equals_start` (§8.3): TRF asked for the PMP
         point's gradient — the one gradient before iteration 0 is logged — at the start value's
-        key, so the PMP point added no key and no `trf_pmp_value` request."""
+        key, so the PMP point added no key and no `trf_pmp_value` request. The `by_purpose`
+        counts are `_purpose_counts`'."""
         entries = [entry for entry in self.ledger if run_id is None or entry.run_id == run_id]
         counts = {
             f"{call}_{served}": 0
@@ -747,10 +760,7 @@ class EFHolder:
             counts[f"{entry.call}_{entry.served}"] += 1
         counts["requests"] = len(entries)
         counts["refused"] = sum(1 for entry in entries if entry.status != "ok")
-        by_purpose = {purpose: 0 for purpose in SUMMARY_PURPOSES}
-        for entry in entries:
-            if entry.purpose in by_purpose:
-                by_purpose[entry.purpose] += 1
+        by_purpose = self._purpose_counts(entries)
         starts = {e.inputs_sha256 for e in entries if e.purpose == TRF_START_VALUE}
         summary: dict[str, Any] = dict(counts)
         summary["by_purpose"] = by_purpose
@@ -759,6 +769,16 @@ class EFHolder:
             for entry in entries
         )
         return summary
+
+    @staticmethod
+    def _purpose_counts(entries: Sequence[HolderRequest]) -> dict[str, int]:
+        """How many of `entries` carry each of `SUMMARY_PURPOSES`, in that order (S16); the
+        other purposes are not counted. Pure."""
+        by_purpose = {purpose: 0 for purpose in SUMMARY_PURPOSES}
+        for entry in entries:
+            if entry.purpose in by_purpose:
+                by_purpose[entry.purpose] += 1
+        return by_purpose
 
     # -- internals ------------------------------------------------------------------------------
 

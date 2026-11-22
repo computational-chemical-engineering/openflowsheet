@@ -11,8 +11,6 @@ from __future__ import annotations
 
 import json
 import multiprocessing
-import os
-import signal
 import sqlite3
 import threading
 from pathlib import Path
@@ -350,7 +348,7 @@ def test_recovery_ends_the_jobs_of_a_killed_owner_as_owner_lost(tmp_path: Path) 
         assert job is not None and job.status == "running"
 
     assert child.pid is not None
-    os.kill(child.pid, signal.SIGKILL)
+    child.kill()  # SIGKILL on POSIX, TerminateProcess on Windows
     child.join(60)
 
     with LocalApplication.open(directory) as recovering:

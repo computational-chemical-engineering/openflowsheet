@@ -1,0 +1,9 @@
+catalogue: openflowsheet-messages-v1
+namespace: demo
+entries:
+  - code: demo.feed_too_wet
+    family: refusal
+    kind: input
+    complete: false
+    title: Feed too wet for the demo dryer
+    summary: The demo dryer refuses a feed whose water fraction is above its limit.

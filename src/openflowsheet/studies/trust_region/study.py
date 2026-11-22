@@ -34,7 +34,7 @@ import math
 import time
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any, Final, Literal, Protocol
+from typing import TYPE_CHECKING, Any, Final, Literal, NamedTuple, Protocol
 
 from openflowsheet.adapters.variants import Variant, hard_domain
 from openflowsheet.compile.reference import FloatAlgebra
@@ -80,8 +80,10 @@ from openflowsheet.thermo.pr_c1 import COMPONENTS
 if TYPE_CHECKING:
     from openflowsheet.compile.spec import ProblemSpec
     from openflowsheet.graph.process import ProcessGraph
+    from openflowsheet.models.c1.boundary import HardDomain
     from openflowsheet.models.revision_flowsheet import RevisionFlowsheet
     from openflowsheet.studies.trust_region.projection import Projection
+    from openflowsheet.studies.trust_region.trf import TrfRun
     from openflowsheet.studies.trust_region.trf_state import EFBasis
 
 __all__ = [
@@ -209,44 +211,10 @@ def c1_formulation(
     liquid = _only(flowsheet.wiring[flash.unit_id].streams["liquid"], "flash liquid outlet")
 
     flows = [flow_id(inlet, name) for name in COMPONENTS]
-    h2, n2, _, ar, ch4 = flows
+    h2, n2 = flows[0], flows[1]
     inlet_ids = (*flows, temperature_id(inlet), pressure_id(inlet))
     domain_block = hard_domain(variant)
-    ratio_low, ratio_high = domain_block.h2_n2
-
-    def inequality(
-        name: str, build: Any, bound: float, source: str, sense: str = "<="
-    ) -> InequalitySpec:
-        return InequalitySpec(name, build, bound, source, MARGIN_REL, sense)  # type: ignore[arg-type]
-
-    inequalities = [
-        inequality(
-            "hard_domain.h2_n2.lower",
-            _linear([(ratio_low, n2), (-1.0, h2)]),
-            0.0,
-            "variant.boundary.hard_domain.H2_N2",
-        ),
-        inequality(
-            "hard_domain.h2_n2.upper",
-            _linear([(1.0, h2), (-ratio_high, n2)]),
-            0.0,
-            "variant.boundary.hard_domain.H2_N2",
-        ),
-        inequality(
-            "hard_domain.inert_max",
-            _linear(
-                [(1.0, ar), (1.0, ch4)] + [(-domain_block.inert_fraction, name) for name in flows]
-            ),
-            0.0,
-            "variant.boundary.hard_domain.inert_max",
-        ),
-    ]
-    if domain_block.tube_flow is not None:
-        per_tube = _linear([(1.0 / reactor.n_tubes, name) for name in flows])
-        low, high = domain_block.tube_flow
-        source = "variant.boundary.hard_domain.tube_flow_mol_s"
-        inequalities.append(inequality("hard_domain.tube_flow.lower", per_tube, low, source, ">="))
-        inequalities.append(inequality("hard_domain.tube_flow.upper", per_tube, high, source))
+    inequalities = _hard_domain_inequalities(domain_block, flows, reactor.n_tubes)
     conversion = reactor.conversion_parameter
 
     def h2_limit(
@@ -254,7 +222,7 @@ def c1_formulation(
     ) -> Expr:
         return 3.0 * p[conversion] * v[n2] - v[h2]
 
-    inequalities.append(inequality("admissibility.h2_limit", h2_limit, 0.0, "M04 spec §3.2 A(s)"))
+    inequalities.append(_inequality("admissibility.h2_limit", h2_limit, 0.0, "M04 spec §3.2 A(s)"))
 
     def objective(
         v: Mapping[str, Expr], b: Mapping[str, Expr], p: Mapping[str, Any], a: Any
@@ -282,6 +250,52 @@ def c1_formulation(
             pressure_id(inlet): domain_block.pressure_pa,
         },
     )
+
+
+def _hard_domain_inequalities(
+    domain_block: HardDomain, flows: Sequence[str], n_tubes: float
+) -> list[InequalitySpec]:
+    """The variant's hard-domain inequalities over the reactor-inlet `flows` (in `COMPONENTS`
+    order): the H2/N2 ratio's lower and upper rows, the inert maximum, then, when
+    `domain_block` bounds it, the per-tube flow's (`n_tubes` tubes) lower and upper rows. Pure."""
+    h2, n2, _, ar, ch4 = flows
+    ratio_low, ratio_high = domain_block.h2_n2
+    inequalities = [
+        _inequality(
+            "hard_domain.h2_n2.lower",
+            _linear([(ratio_low, n2), (-1.0, h2)]),
+            0.0,
+            "variant.boundary.hard_domain.H2_N2",
+        ),
+        _inequality(
+            "hard_domain.h2_n2.upper",
+            _linear([(1.0, h2), (-ratio_high, n2)]),
+            0.0,
+            "variant.boundary.hard_domain.H2_N2",
+        ),
+        _inequality(
+            "hard_domain.inert_max",
+            _linear(
+                [(1.0, ar), (1.0, ch4)] + [(-domain_block.inert_fraction, name) for name in flows]
+            ),
+            0.0,
+            "variant.boundary.hard_domain.inert_max",
+        ),
+    ]
+    if domain_block.tube_flow is not None:
+        per_tube = _linear([(1.0 / n_tubes, name) for name in flows])
+        low, high = domain_block.tube_flow
+        source = "variant.boundary.hard_domain.tube_flow_mol_s"
+        inequalities.append(_inequality("hard_domain.tube_flow.lower", per_tube, low, source, ">="))
+        inequalities.append(_inequality("hard_domain.tube_flow.upper", per_tube, high, source))
+    return inequalities
+
+
+def _inequality(
+    name: str, build: Any, bound: float, source: str, sense: str = "<="
+) -> InequalitySpec:
+    """A C1 inequality with the study's relative margin `MARGIN_REL`."""
+    return InequalitySpec(name, build, bound, source, MARGIN_REL, sense)  # type: ignore[arg-type]
 
 
 def project_c1(
@@ -319,20 +333,13 @@ def c1_constraint_values(
       (Σn / N_tubes) for the per-tube flow rows.
     - The decision box, the truth's hard-domain bounds on the inlet T and P, the link bounds on
       (X̂, ΔT̂) (M04 spec §3.2), the provider's domain on every stream temperature and pressure,
-      and non-negative molar flows; scale max(|bound|, 1) in the variable's unit."""
+      and non-negative molar flows; scale max(|bound|, 1) in the variable's unit
+      (`_bound_values`)."""
     flows = [flow_id(formulation.inlet_stream, name) for name in COMPONENTS]
     total = math.fsum(state[name] for name in flows)
     (link,) = formulation.external_links
     parameters = {link.x_param_id: coupling[0], link.dt_param_id: coupling[1]}
     values: list[ConstraintValue] = []
-
-    def bound(name: str, value: float, low: float | None, high: float | None) -> None:
-        for limit, sense, side in ((low, ">=", "lower"), (high, "<=", "upper")):
-            if limit is not None:
-                values.append(
-                    ConstraintValue(f"{name}.{side}", value, limit, sense, max(abs(limit), 1.0))  # type: ignore[arg-type]
-                )
-
     for item in formulation.inequalities:
         value = float(item.build(state, {}, parameters, FloatAlgebra()))
         reference = total / n_tubes if item.source.endswith("tube_flow_mol_s") else total
@@ -342,25 +349,40 @@ def c1_constraint_values(
             )
         )
     for decision in formulation.decisions:
-        bound(
+        values += _bound_values(
             f"decision.{decision.parameter_id}",
             decisions[decision.parameter_id],
             decision.lower,
             decision.upper,
         )
     for name, (low, high) in sorted(formulation.variable_bounds.items()):
-        bound(f"hard_domain.{name}", state[name], low, high)
+        values += _bound_values(f"hard_domain.{name}", state[name], low, high)
     for coordinate, value in zip(("X", "dT"), coupling, strict=True):
         low, high = LINK_BOUNDS[coordinate]
-        bound(f"admissibility.{coordinate}", value, low, high)
+        values += _bound_values(f"admissibility.{coordinate}", value, low, high)
     for name in sorted(state):
         kind = kinds.get(name, "")
         if kind in formulation.domain:
             low, high = formulation.domain[kind]
-            bound(f"provider_domain.{name}", state[name], low, high)
+            values += _bound_values(f"provider_domain.{name}", state[name], low, high)
         elif kind == "molar_flow":
-            bound(f"non_negative.{name}", state[name], 0.0, None)
+            values += _bound_values(f"non_negative.{name}", state[name], 0.0, None)
     return tuple(values)
+
+
+def _bound_values(
+    name: str, value: float, low: float | None, high: float | None
+) -> list[ConstraintValue]:
+    """The bound constraints of `value` named `name`: `<name>.lower` (`>=` `low`), then
+    `<name>.upper` (`<=` `high`), each only when its limit is not None, scale max(|limit|, 1).
+    Pure."""
+    values: list[ConstraintValue] = []
+    for limit, sense, side in ((low, ">=", "lower"), (high, "<=", "upper")):
+        if limit is not None:
+            values.append(
+                ConstraintValue(f"{name}.{side}", value, limit, sense, max(abs(limit), 1.0))  # type: ignore[arg-type]
+            )
+    return values
 
 
 # == the loop (§7.2-§7.5) ==========================================================================
@@ -948,6 +970,8 @@ class TrfStage:
     def __call__(
         self, start: ParentSolve, *, run_id: str, radius_factor: float, budget: StudyBudget
     ) -> StageRun:
+        """One TRF run from `start` (`StageRunner`), its truth ledgers by `_truth_ledgers` and
+        P2's point by `_trf_point`."""
         from openflowsheet.studies.trust_region.trf import run_trf
 
         projection = self.project_at(start)
@@ -975,40 +999,9 @@ class TrfStage:
             gradient_check=None if self.gradient_check is None else gradient_check,
             check_budgets={holder.name: [budget.cold] for holder in parents},
         )
-        cold_parent = 0
-        cold_in_process = 0
-        ledgers: dict[str, Any] = {}
-        for holder in projection.holders:
-            if not isinstance(holder.box, TruthBox):
-                continue
-            summary = holder.summary(run_id)
-            ledgers[holder.name] = summary
-            if holder.box.parent:
-                cold_parent += summary["value_cold"]
-            else:
-                cold_in_process += summary["value_cold"]
+        ledgers, cold_parent, cold_in_process = _truth_ledgers(projection, run_id)
         budget.charge(cold_in_process)
-        point = None
-        if trf_run.outcome in RETURNS_MODEL and trf_run.final is not None:
-            assert trf_run.final_state is not None
-            checks = {
-                name: found.status == "pass"
-                for name, found in (
-                    ("omitted_rows", trf_run.omitted_rows_final),
-                    ("zero_pins", trf_run.zero_pins_final),
-                )
-                if found is not None
-            }
-            assert trf_run.theta_recheck is not None
-            assert trf_run.feasibility_termination is not None
-            point = TrfPoint(
-                trf_run.final.objective,
-                trf_run.final_state,
-                projection.scaling.column,
-                trf_run.theta_recheck,
-                trf_run.feasibility_termination,
-                checks,
-            )
+        point = _trf_point(trf_run, projection)
         source_map = projection.source_map
         document = {
             "truth": [
@@ -1051,6 +1044,62 @@ class TrfStage:
             document=document,
             limitations=trf_run.basis_limitations,
         )
+
+
+class _TruthLedgers(NamedTuple):
+    """The run's truth-holder ledgers: each holder's `summary(run_id)` by name, and the cold
+    value requests summed over the parent holders and over the in-process ones."""
+
+    summary: dict[str, Any]
+    cold_parent: int
+    cold_in_process: int
+
+
+def _truth_ledgers(projection: Projection, run_id: str) -> _TruthLedgers:
+    """The `_TruthLedgers` of `projection`'s `TruthBox` holders over the run `run_id`, in
+    holder order (a later holder of the same name would win `summary`'s entry). Pure:
+    `EFHolder.summary` only counts the holder's ledger."""
+    cold_parent = 0
+    cold_in_process = 0
+    ledgers: dict[str, Any] = {}
+    for holder in projection.holders:
+        if not isinstance(holder.box, TruthBox):
+            continue
+        summary = holder.summary(run_id)
+        ledgers[holder.name] = summary
+        if holder.box.parent:
+            cold_parent += summary["value_cold"]
+        else:
+            cold_in_process += summary["value_cold"]
+    return _TruthLedgers(ledgers, cold_parent, cold_in_process)
+
+
+def _trf_point(trf_run: TrfRun, projection: Projection) -> TrfPoint | None:
+    """P2's `TrfPoint` of a run that returned a model: its final objective and state, the
+    projection's column scales, θ_recheck, `feasibility_termination` and the run's final-state
+    checks (`omitted_rows`, `zero_pins`, each when the run made it; `True` for pass). `None`
+    when the outcome is not in `RETURNS_MODEL` or the run has no `final` iteration. Pure."""
+    if trf_run.outcome in RETURNS_MODEL and trf_run.final is not None:
+        assert trf_run.final_state is not None
+        checks = {
+            name: found.status == "pass"
+            for name, found in (
+                ("omitted_rows", trf_run.omitted_rows_final),
+                ("zero_pins", trf_run.zero_pins_final),
+            )
+            if found is not None
+        }
+        assert trf_run.theta_recheck is not None
+        assert trf_run.feasibility_termination is not None
+        return TrfPoint(
+            trf_run.final.objective,
+            trf_run.final_state,
+            projection.scaling.column,
+            trf_run.theta_recheck,
+            trf_run.feasibility_termination,
+            checks,
+        )
+    return None
 
 
 def _basis_block(

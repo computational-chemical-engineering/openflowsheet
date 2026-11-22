@@ -1,0 +1,19 @@
+# A minimal OpenFlowsheet extension distribution (X01; ADR 0060 D7). The guide that explains it is
+# docs-site/guide/plugins.md; tests/test_x01_example_plugin.py discovers it.
+[build-system]
+requires = ["setuptools>=78.1.1"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "openflowsheet-demo-plugin"
+version = "0.1.0"
+description = "Example OpenFlowsheet extension: one message catalogue in the namespace demo"
+requires-python = ">=3.13"
+license = "Apache-2.0"
+dependencies = ["openflowsheet"]
+
+[project.entry-points."openflowsheet.extensions"]
+demo = "openflowsheet_demo_plugin:package"
+
+[tool.setuptools.package-data]
+openflowsheet_demo_plugin = ["messages.yaml"]

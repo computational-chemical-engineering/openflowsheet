@@ -61,12 +61,7 @@ from openflowsheet.models.syn001.column_acceptance import (
     saturation_errors,
     single_phase_specified_stage,
 )
-from openflowsheet.models.syn001.column_acceptance import products as products
-from openflowsheet.models.syn001.column_compile import closure_types as closure_types
 from openflowsheet.models.syn001.column_compile import compile_column, slots
-from openflowsheet.models.syn001.column_compile import lifted_splits as lifted_splits
-from openflowsheet.models.syn001.column_compile import split_temperatures as split_temperatures
-from openflowsheet.models.syn001.column_compile import zero_flow_forms as zero_flow_forms
 from openflowsheet.models.syn001.column_endpoint import (
     MAX_SWEEPS,
     PRESOLVE_ID,
@@ -641,15 +636,10 @@ __all__ = [
     "CandidateRecord",
     "ColumnSolution",
     "StageARecord",
-    "closure_types",
     "continuation",
-    "lifted_splits",
-    "products",
     "recover",
     "reentry_trigger",
     "solve_column",
     "solve_target",
-    "split_temperatures",
     "target_attempt",
-    "zero_flow_forms",
 ]

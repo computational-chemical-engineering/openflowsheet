@@ -297,8 +297,8 @@ class RevisionService:
         """Steps 4–6 from one snapshot: the new document, its validation and its diff.
 
         Raised: an optimization task (U05). Rejected: an expected or restore revision that does not
-        exist, a new revision id that is taken, an edit path that does not resolve, and a
-        promotion `_check_promotion` refuses."""
+        exist, a new revision id that is taken, and, from `_new_document`, an edit path that does
+        not resolve and a promotion `_check_promotion` refuses."""
         if change.task == "optimization":
             # U05 (T08 review 2, Ruling 1), as `validate` refuses it: no optimization formulation
             # is checked in v0.1. Audited, before the snapshot is read or anything is built.
@@ -352,6 +352,34 @@ class RevisionService:
         if refusal is not None:
             code, message, detail = refusal
             return self._rejected(operation, idempotency_key, code, message, **detail)
+        new = self._new_document(expected, start, change, operation, idempotency_key)
+        if isinstance(new, TransactionResult):
+            return new
+        document, reports = new
+        revision = Revision(
+            revision_id=revision_id, document=document, parent_revision=expected_revision
+        )
+        return _Prepared(
+            revision=revision,
+            report=validation.validate(
+                revision.as_document(), change.task, surrogates=self._core.surrogates()
+            ),
+            diff=semantic_diff(expected, document),
+            replacements=reports,
+        )
+
+    def _new_document(
+        self,
+        expected: Mapping[str, Any],
+        start: Mapping[str, Any],
+        change: Change,
+        operation: str,
+        idempotency_key: str,
+    ) -> tuple[Any, tuple[ReplacementReport, ...]] | TransactionResult:
+        """`_prepare`'s new document and its promotion reports: `change.edits` applied to `start`,
+        the result canonical, the promotions from `expected` checked (`_check_promotion`) and, when
+        there are any, their report hashes written into the provenance. Rejected: an edit path
+        that does not resolve, and a promotion `_check_promotion` refuses."""
         try:
             built = apply_edits(start, change.edits)
         except EditPathError as error:
@@ -378,17 +406,7 @@ class RevisionService:
             return rejected
         if reports:
             document = json.loads(canonical_json(_with_report_hashes(document, reports)))
-        revision = Revision(
-            revision_id=revision_id, document=document, parent_revision=expected_revision
-        )
-        return _Prepared(
-            revision=revision,
-            report=validation.validate(
-                revision.as_document(), change.task, surrogates=self._core.surrogates()
-            ),
-            diff=semantic_diff(expected, document),
-            replacements=reports,
-        )
+        return document, reports
 
     def _check_promotion(
         self,

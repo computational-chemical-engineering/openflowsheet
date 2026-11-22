@@ -71,6 +71,7 @@ from pyomo.contrib.pynumero.interfaces.external_grey_box import (
 )
 from pyomo.contrib.pynumero.interfaces.pyomo_grey_box_nlp import PyomoNLPWithGreyBoxBlocks
 
+from openflowsheet._platform import LOADED_LIBRARY_MODE
 from openflowsheet.compile.casadi_backend import TwinEvaluationError
 from openflowsheet.models.syn001.flowsheet import Syn001Flowsheet
 from openflowsheet.studies.nlp.closure import (
@@ -670,7 +671,7 @@ def openmp_runtimes() -> list[dict[str, Any]]:
     runtimes = []
     for path in sorted(paths):
         try:
-            library = ctypes.CDLL(str(path), mode=os.RTLD_NOLOAD | os.RTLD_LAZY)
+            library = ctypes.CDLL(str(path), mode=LOADED_LIBRARY_MODE)
             get_max_threads = library.omp_get_max_threads
         except (OSError, AttributeError):
             threads = None

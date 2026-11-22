@@ -20,13 +20,42 @@ file's `base`, not the step's `{base}`.
     w5_gate.py f0                         W5-S3: `corpus_identity.py --check --log L`, then
                                           `w5_identity.py predict --base B --max-tier T
                                           --against-log L`, and the summary line fails no
-                                          measure but M9
+                                          measure but M9 (batch P: but M2, M3, M6 and M9)
+    w5_gate.py pin [--close]              W5-S2 (batch P steps): `w5_identity.py pin --base B
+                                          -- corpus_identity.py --check --log L` exits 0 or 1,
+                                          not 3 (a vacuous or foreign read); the files it leaves
+                                          unpinned are CoolProp files only (B7's new hash
+                                          scope); and `predict --base B --files <those and B7's
+                                          group modules> --against-log L` holds both ways: F0
+                                          PASS with B's counts, or exactly the CoolProp keys.
+                                          --close is W5-K5 at the batch close K: the same, with
+                                          F0's registry served from B (`pin --registry B`);
+                                          `close` runs it for batch P.
+                                          Batches N and L: not applicable, exit 0
     w5_gate.py registry                   W5-S4: `predict --base B --max-tier T --against-tables`
-    w5_gate.py scope [--plans GLOB]       W5-S1: `git diff --name-only B..HEAD` is a subset of
+    w5_gate.py scope [--plans GLOB ...]   W5-S1: `git diff --name-only B..HEAD` is a subset of
                                           admitted + generator + retarget, with no tier 4 file;
-                                          also allowed: a .py file absent at B in the directory of
-                                          an admitted tier 1 file (a split, ruling R4) and a file
-                                          matching GLOB (a restructure step's plan)
+                                          also allowed, if absent at B: a .py file in the directory
+                                          of an admitted tier 1 file (a split, ruling R4) and a
+                                          file matching a GLOB (a restructure or interface step's
+                                          plan; --plans repeats). A plan file that exists at B is
+                                          in scope only if the batch admits it or names it
+    w5_gate.py close --k K --queue-dir DIR [--batch FILE] [--fixture PATH ...]
+                                          W5-K1 (ruling 6.3) of the batch close K, with the batch
+                                          from --batch or S19_W5_BATCH: B an ancestor of K, `git
+                                          diff --name-only K^..K` inside CLOSE_PATHS + the
+                                          --fixture paths (L_B's fixtures and constants, which the
+                                          batch file does not name), and M6_REQUESTS byte-identical
+                                          at B and K. Prints `W5-K1 PASS` or `W5-K1 FAIL` with the
+                                          offending paths (exit 0 or 1). Batch P: then W5-K5
+                                          (`pin --close`), in this tree, which must be K and
+                                          clean (else exit 2); K is recorded only if it passes
+                                          (`W5-K1 PASS, W5-K5 FAIL`, the pin's exit code if it
+                                          does not). On PASS it records K in
+                                          DIR/batches/closed-<B>.json (`k`, `batch`, `base`,
+                                          `batch_sha256`, `fixtures`); `gate_queue.py enqueue
+                                          --batch` then refuses a head that contains K. A record
+                                          of another K for B is refused (exit 2)
     w5_gate.py coverage                   W5-S7: `w5_identity.py coverage --base B --head HEAD`
     w5_gate.py tests --log L -- CMD ...   W5-S6: CMD (test_impact.py run, which writes L and
                                           reports with -rfE); on exit 1 the failed and errored
@@ -42,8 +71,8 @@ file's `base`, not the step's `{base}`.
 
 The batch file: `{"batch": "N", "base": "<40-hex B>", "max_tier": 2, "admitted": [...],
 "generator": [...], "retarget": [...], "expected_failures": [...], "standing_failures": [...]}`.
-Batch P needs W5-S2 (the identity pin), which is not implemented: it is refused. A refusal
-exits 2; a tier verdict exits 0 (pass) or 1 (fail), or the code of the command it ran.
+Batch P takes `max_tier` 3, N and L 1 or 2. A refusal exits 2; a tier verdict exits 0 (pass) or
+1 (fail), or the code of the command it ran.
 Standard library only: gate.sh runs `batch` under any Python 3.
 """
 
@@ -68,9 +97,20 @@ ROOT: Final = Path(__file__).resolve().parent.parent
 VARIABLE: Final = "S19_W5_BATCH"
 LISTS: Final = ("admitted", "generator", "retarget", "expected_failures", "standing_failures")
 KEYS: Final = ("batch", "base", "max_tier", *LISTS)
-#: The batches this mode gates. P (tier 3 and B7) needs the pin, W5-S2.
-BATCHES: Final = ("N", "L")
+#: The batches this mode gates (ruling R3). P (tier 3 and B7) takes the pin, W5-S2 and W5-K5.
+BATCHES: Final = ("N", "L", "P")
 MAX_TIERS: Final = (1, 2)
+#: Batch P's `max_tier`, and the measures its W5-S3 summary line may fail (ruling 6.2: M1, M4,
+#: M5, M7 and M8 pass in every batch; in N and L also M2, M3 and M6).
+P_MAX_TIER: Final = 3
+P_FAILING: Final = ("M2", "M3", "M6", "M9")
+#: W5-S2's exception: the files the pin may leave unpinned (B7 changes their hash scope).
+COOLPROP_FILES: Final = (
+    "src/openflowsheet/thermo/_coolprop_heos_fluids.py",
+    "src/openflowsheet/thermo/coolprop_heos.py",
+)
+#: `w5_identity.py pin`'s exit code for a failed pin (a vacuous or a foreign read, W5-T5).
+PIN_FAILED: Final = 3
 SHA: Final = re.compile(r"[0-9a-f]{40}")
 REFUSED: Final = 2
 #: F0's summary line parts (`corpus_identity.summary`): a passing and a failing measure.
@@ -82,6 +122,16 @@ SECTION: Final = re.compile(r"^=+ .* =+$")
 #: test_impact.py's header of each pytest call in its log, and pytest's closing counts line
 #: (test_impact's SUMMARY, or a call that collected nothing).
 CALL: Final = "$ "
+#: W5-K1 (ruling 6.3): the paths a batch close K may change besides L_B's fixtures and constants,
+#: and the file `corpus_identity.py --record` rewrites that must come out byte-identical.
+CLOSE_PATHS: Final = (
+    "benchmarks/f0/corpus.json",
+    "tests/fixtures/registry/builtin-sha256.txt",
+    "src/openflowsheet/registry/builtin/legacy.json",
+    "src/openflowsheet/registry/builtin/core.json",
+    "src/openflowsheet/registry/builtin/tables.sha256",
+)
+M6_REQUESTS: Final = "benchmarks/f0/m6-requests.json"
 CLOSING: Final = re.compile(
     r"^=*\s*(?:\d+ (?:passed|failed|error|skipped|deselected)|no tests ran)\b.* in [\d.]+s"
 )
@@ -101,17 +151,16 @@ def structure(document: Any) -> list[str]:
     problems = [f"missing key {key!r}" for key in KEYS if key not in document]
     problems += [f"unknown key {key!r}" for key in sorted(set(document) - set(KEYS))]
     batch = document.get("batch")
-    if batch == "P":
-        problems.append(
-            "batch P needs W5-S2 (the identity pin, `w5_identity.py pin`), which is not implemented"
-        )
-    elif "batch" in document and batch not in BATCHES:
+    if "batch" in document and batch not in BATCHES:
         problems.append(f"batch {batch!r}: not one of {', '.join(BATCHES)} (ruling R3)")
     base = document.get("base")
     if "base" in document and not (isinstance(base, str) and SHA.fullmatch(base)):
         problems.append(f"base {base!r}: not a 40-hex commit sha")
     tier = document.get("max_tier")
-    if "max_tier" in document and (type(tier) is not int or tier not in MAX_TIERS):
+    if batch == "P":
+        if "max_tier" in document and (type(tier) is not int or tier != P_MAX_TIER):
+            problems.append(f"max_tier {tier!r}: batch P's is {P_MAX_TIER} (ruling R3)")
+    elif "max_tier" in document and (type(tier) is not int or tier not in MAX_TIERS):
         problems.append(f"max_tier {tier!r}: not one of {MAX_TIERS} (tier 3 is batch P's)")
     for key in LISTS:
         value = document.get(key, [])
@@ -197,6 +246,11 @@ def batch_files(queue: Path, base: str) -> dict[str, list[str]]:
     return found
 
 
+def closed_record(queue: Path, base: str) -> Path:
+    """The batch close record of batch base `base` (read by `gate_queue.py enqueue --batch`)."""
+    return queue / "batches" / f"closed-{base}.json"
+
+
 def from_environment() -> dict[str, Any]:
     name = os.environ.get(VARIABLE)
     if not name:
@@ -242,11 +296,12 @@ def changed(base: str, *, added: bool = False) -> list[str]:
     return sorted(done.stdout.split())
 
 
-def plan_file(path: str, plans: str | None) -> bool:
-    """Whether `path` matches the restructure plans' glob, a file pattern in one directory."""
-    return plans is not None and (
-        posixpath.dirname(path) == posixpath.dirname(plans)
-        and fnmatch.fnmatchcase(posixpath.basename(path), posixpath.basename(plans))
+def plan_file(path: str, plans: Iterable[str]) -> bool:
+    """Whether `path` matches one of the plans' globs, each a file pattern in one directory."""
+    return any(
+        posixpath.dirname(path) == posixpath.dirname(glob)
+        and fnmatch.fnmatchcase(posixpath.basename(path), posixpath.basename(glob))
+        for glob in plans
     )
 
 
@@ -255,21 +310,23 @@ def scope_problems(
     document: Mapping[str, Any],
     tiers: Mapping[str, Sequence[str]],
     added: Iterable[str] = (),
-    plans: str | None = None,
+    plans: Iterable[str] = (),
 ) -> list[str]:
     """W5-S1: every changed path is admitted, the generator's or a named retarget, and none is a
-    tier 4 file. Also allowed: a new module (in `added`, absent at B) in the directory of an
+    tier 4 file. Also allowed, if new (in `added`, absent at B): a module in the directory of an
     admitted tier 1 file, which a tier 1 split adds (ruling R4: tier 1 files may be split within
-    their directory), and a restructure step's plan file (`plans`, the glob config.toml passes)."""
+    their directory), and a restructure or interface step's plan file (`plans`, the globs
+    config.toml passes). A plan file that exists at B is not admitted by the glob."""
     allowed = {path for key in ("admitted", "generator", "retarget") for path in document[key]}
     excluded = set(tiers["4"])
     split_into = {posixpath.dirname(path) for path in set(document["admitted"]) & set(tiers["1"])}
     new = set(added)
+    plans = tuple(plans)
     problems = []
     for path in sorted(set(files)):
         if path in excluded:
             problems.append(f"{path}: tier 4 (excluded, ruling R1)")
-        elif path in allowed or plan_file(path, plans):
+        elif path in allowed or (path in new and plan_file(path, plans)):
             continue
         elif path in new and path.endswith(".py") and posixpath.dirname(path) in split_into:
             continue
@@ -278,18 +335,66 @@ def scope_problems(
     return problems
 
 
-def f0_line_problems(line: str) -> list[str]:
-    """W5-S3 for batches N and L: `F0 PASS` or `F0 FAIL` with no failing measure but M9."""
+def close_problems(base: str, k: str, fixtures: Iterable[str], cwd: Path = ROOT) -> list[str]:
+    """W5-K1: the paths K changes (against its first parent) outside CLOSE_PATHS and `fixtures`,
+    and M6_REQUESTS unless its blob at K is the one at B (equal blobs are equal bytes)."""
+    done = _git("diff", "--name-only", "--no-renames", f"{k}^", k, cwd=cwd)
+    if done.returncode != 0:
+        raise BatchRefusedError(f"git diff {k[:12]}^..{k[:12]}: {done.stderr.strip()}")
+    allowed = {*CLOSE_PATHS, *fixtures}
+    problems = [
+        f"{path}: outside W5-K1's list (and no --fixture)"
+        for path in sorted(set(done.stdout.split()) - allowed)
+    ]
+    blobs = [
+        _git("rev-parse", "--verify", "-q", f"{rev}:{M6_REQUESTS}", cwd=cwd) for rev in (base, k)
+    ]
+    if any(blob.returncode != 0 for blob in blobs) or blobs[0].stdout != blobs[1].stdout:
+        problems.append(f"{M6_REQUESTS}: not byte-identical between B {base[:12]} and K {k[:12]}")
+    return problems
+
+
+def record_close(
+    queue: Path, document: Mapping[str, Any], k: str, batch_sha256: str, fixtures: Sequence[str]
+) -> Path:
+    """Write the close record of `document`'s batch at K; refused if B has one for another K."""
+    path = closed_record(queue, document["base"])
+    if path.is_file():
+        recorded = read(path)
+        if not isinstance(recorded, dict) or recorded.get("k") != k:
+            raise BatchRefusedError(f"{path}: batch base already closed at another K: {recorded}")
+    path.parent.mkdir(parents=True, exist_ok=True)
+    record = {
+        "batch": document["batch"],
+        "base": document["base"],
+        "k": k,
+        "batch_sha256": batch_sha256,
+        "fixtures": sorted(fixtures),
+    }
+    temporary = path.with_name(f".{path.name}.tmp")
+    temporary.write_text(json.dumps(record, indent=1) + "\n", encoding="utf-8")
+    os.replace(temporary, path)
+    return path
+
+
+def f0_line_problems(line: str, batch: str = "N") -> list[str]:
+    """W5-S3: `F0 PASS` or `F0 FAIL` with no failing measure but M9 (batches N and L), or but
+    M2, M3, M6 and M9 (batch P)."""
     head, _, parts = line.partition(": ")
     if head not in ("F0 PASS", "F0 FAIL") or not parts:
         return [f"summary line {line!r}: not an F0 summary"]
+    allowed, which = (
+        (P_FAILING, "in batch P only M2, M3, M6 and M9")
+        if batch == "P"
+        else (("M9",), "in batches N and L only M9")
+    )
     problems = []
     for part in parts.split(", "):
         failing = F0_FAIL.fullmatch(part)
-        if failing and failing.group(1) == "M9":
+        if failing and failing.group(1) in allowed:
             continue
         if not F0_PASS.fullmatch(part):
-            problems.append(f"summary line: {part!r} (in batches N and L only M9 may fail)")
+            problems.append(f"summary line: {part!r} ({which} may fail)")
     return problems
 
 
@@ -454,6 +559,39 @@ def command_batch_check(arguments: argparse.Namespace) -> int:
     return 0 if len(found) <= 1 else 1
 
 
+def command_close(arguments: argparse.Namespace) -> int:
+    done = _git("rev-parse", "--verify", "-q", f"{arguments.k}^{{commit}}")
+    if done.returncode != 0:
+        raise BatchRefusedError(f"--k {arguments.k}: no such commit")
+    k = done.stdout.strip()
+    name = arguments.batch or os.environ.get(VARIABLE)
+    if not name:
+        raise BatchRefusedError(f"close: no --batch and {VARIABLE} is not set")
+    document = load(Path(name), k)
+    fixtures = arguments.fixture or []
+    problems = close_problems(document["base"], k, fixtures)
+    for problem in problems:
+        print(problem)
+    where = f"K {k[:12]} of batch {document['batch']} (base {document['base'][:12]})"
+    if problems:
+        print(f"W5-K1 FAIL: {where}, {len(problems)} path(s) outside the close")
+        return 1
+    if document["batch"] == "P":
+        head = _git("rev-parse", "HEAD").stdout.strip()
+        if head != k or dirty():
+            raise BatchRefusedError(
+                f"close: W5-K5 runs F0 in this tree, which must be K {k[:12]} and clean "
+                f"(HEAD {head[:12]})"
+            )
+        pinned = pin_verdict(document, close=True)
+        if pinned != 0:
+            print(f"W5-K1 PASS, W5-K5 FAIL: {where}; K not recorded")
+            return pinned
+    record = record_close(Path(arguments.queue_dir), document, k, digest(Path(name)), fixtures)
+    print(f"W5-K1 PASS: {where}, {len(fixtures)} fixture path(s); recorded in {record}")
+    return 0
+
+
 def command_f0(_: argparse.Namespace) -> int:
     document = from_environment()
     base, tier = document["base"], str(document["max_tier"])
@@ -480,7 +618,7 @@ def command_f0(_: argparse.Namespace) -> int:
         predicted = identity(
             "predict", "--base", base, "--max-tier", tier, "--against-log", str(log)
         )
-    problems = f0_line_problems(line)
+    problems = f0_line_problems(line, document["batch"])
     for problem in problems:
         print(problem)
     if predicted.returncode != 0 or problems:
@@ -489,6 +627,69 @@ def command_f0(_: argparse.Namespace) -> int:
         return 1
     print(f"w5 f0 (W5-S3) PASS: the prediction at {base[:12]} holds both ways; {line}")
     return 0
+
+
+def pin_problems(record: Mapping[str, Any]) -> list[str]:
+    """W5-S2's problems of a `pin --json` record beyond its exit code: a file left unpinned
+    outside the CoolProp exception."""
+    return [
+        f"{path}: unpinned (hash scope changed since B), outside W5-S2's CoolProp exception"
+        for path in record["unpinned"]
+        if path not in COOLPROP_FILES
+    ]
+
+
+def pin_verdict(document: Mapping[str, Any], close: bool) -> int:
+    """W5-S2 (a batch P step) or, with `close`, W5-K5 (its close K) of this tree; prints the
+    verdict line and returns its exit code."""
+    check = "W5-K5" if close else "W5-S2"
+    if document["batch"] != "P":
+        print(f"w5 pin ({check}) PASS: not applicable to batch {document['batch']} (batch P only)")
+        return 0
+    base = document["base"]
+    with tempfile.TemporaryDirectory() as directory:
+        log, out = Path(directory) / "f0.log", Path(directory) / "pin.json"
+        registry = ["--registry", base] if close else []
+        f0 = ["scripts/corpus_identity.py", "--check", "--log", str(log)]
+        code = identity("pin", "--base", base, "--json", str(out), *registry, "--", *f0).returncode
+        if code not in (0, 1) or not out.is_file() or not log.is_file():
+            reason = "a vacuous or foreign read" if code == PIN_FAILED else "not an F0 verdict"
+            print(f"w5 pin ({check}) FAIL: pin exit {code} ({reason})")
+            return code if code not in (0, 1) else 1
+        record = json.loads(out.read_text(encoding="utf-8"))
+        lines = log.read_text(encoding="utf-8").splitlines()
+        line = lines[0] if lines else ""
+        files = record["moved_files"]
+        predicted = identity(
+            "predict",
+            "--base",
+            base,
+            "--max-tier",
+            str(P_MAX_TIER),
+            "--files",
+            *files,
+            "--against-log",
+            str(log),
+        )
+    problems = pin_problems(record)
+    for problem in problems:
+        print(problem)
+    if predicted.returncode != 0 or problems:
+        why = [f"predict exit {predicted.returncode}"] if predicted.returncode else []
+        print(f"w5 pin ({check}) FAIL: {', '.join(why + problems)}; {line}")
+        return 1
+    left = (
+        f"unpinned {len(record['unpinned'])} (CoolProp)" if record["unpinned"] else "none unpinned"
+    )
+    print(
+        f"w5 pin ({check}) PASS: pinned {len(record['pinned'])}, {left}, the pinned F0 is the "
+        f"prediction at {base[:12]} for {len(files)} file(s); {line}"
+    )
+    return 0
+
+
+def command_pin(arguments: argparse.Namespace) -> int:
+    return pin_verdict(from_environment(), arguments.close)
 
 
 def command_registry(_: argparse.Namespace) -> int:
@@ -521,7 +722,7 @@ def command_scope(arguments: argparse.Namespace) -> int:
     files = changed(document["base"])
     added = changed(document["base"], added=True)
     tiers = sets_at(document["base"])["tiers"]
-    problems = scope_problems(files, document, tiers, added, arguments.plans)
+    problems = scope_problems(files, document, tiers, added, arguments.plans or ())
     for problem in problems:
         print(problem)
     verdict = f"FAIL: {len(problems)} path(s) outside the batch" if problems else "PASS"
@@ -557,10 +758,27 @@ def main(argv: Sequence[str] | None = None) -> int:
     batch_check = commands.add_parser("batch-check")
     batch_check.add_argument("--queue-dir", required=True)
     batch_check.add_argument("--base", required=True)
+    close = commands.add_parser("close")
+    close.add_argument("--k", required=True, help="the batch close commit K")
+    close.add_argument("--queue-dir", required=True, help="the gate queue; K is recorded there")
+    close.add_argument("--batch", help=f"the batch file (default: {VARIABLE})")
+    close.add_argument(
+        "--fixture",
+        action="append",
+        help="a file of L_B's fixtures and constants that K may change (W5-K1); repeatable",
+    )
     for name in ("f0", "registry", "coverage"):
         commands.add_parser(name)
+    pin = commands.add_parser("pin")
+    pin.add_argument(
+        "--close", action="store_true", help="W5-K5 at the batch close: F0's registry from B"
+    )
     scope = commands.add_parser("scope")
-    scope.add_argument("--plans", help="the glob of the restructure plan files a W5 step may add")
+    scope.add_argument(
+        "--plans",
+        action="append",
+        help="a glob of the plan files a W5 step may add (restructure, interface); repeatable",
+    )
     tests = commands.add_parser("tests")
     tests.add_argument("--log", required=True)
     tests.add_argument("command", nargs=argparse.REMAINDER)
@@ -569,7 +787,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         "validate": command_validate,
         "batch": command_batch,
         "batch-check": command_batch_check,
+        "close": command_close,
         "f0": command_f0,
+        "pin": command_pin,
         "registry": command_registry,
         "scope": command_scope,
         "coverage": command_coverage,

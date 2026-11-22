@@ -426,14 +426,13 @@ def project(
 
     §6.1 steps 5 to 7 (rows, inequalities, objective) are `_add_constraints_and_objective`'s;
     the refusals are `_check_omitted_rows`'s (the caller's `omitted_rows`) and, after the rows,
-    `_check_smooth`'s (PROJECTION_NONSMOOTH) before `_check_structure`'s and the shape check's."""
+    `_check_smooth`'s (PROJECTION_NONSMOOTH) before `_check_structure`'s and the shape check's.
+    The call's arguments are `_check_call`'s and `omitted_rows` is `_requested_rows`'; the
+    eliminated zero flows' constants and pins are `_zero_constants_and_pins`'."""
     spec.validate()
     _check_call(spec, x0, decisions, external_links)
     scaling = projection_scaling(spec)
-    requested = None if omitted_rows is None else frozenset(omitted_rows)
-    unknown_rows = sorted((requested or frozenset()) - set(spec.equation_ids))
-    if unknown_rows:
-        raise ValueError(f"omitted_rows names {unknown_rows}, which are not equations of the spec")
+    requested = _requested_rows(spec, omitted_rows)
 
     # R-274's set, on the model with every variable.
     assembly = _assemble(spec, x0, decisions, domain, external_links, variable_bounds, {}, ())
@@ -454,10 +453,7 @@ def project(
     zero, zero_blocks = _eliminate_zero_flows(
         spec, x0, assembly, omitted, residuals_x0, derivatives, external_links, scaling, decisions
     )
-    constants = {entry.variable_id: normalize_zero(0.0) for entry in zero}
-    pins = frozenset(entry.row_id for entry in zero if entry.row_id is not None) | {
-        row for block in zero_blocks for row in block.rows
-    }
+    constants, pins = _zero_constants_and_pins(zero, zero_blocks)
     bounded = sorted(set(constants) & set(variable_bounds or {}))
     if bounded:
         raise ValueError(f"variable_bounds names {bounded}, which are eliminated zero flows")
@@ -643,6 +639,19 @@ class _Expressions(NamedTuple):
     objective: Any
 
 
+def _zero_constants_and_pins(
+    zero: Sequence[ZeroEliminated], zero_blocks: Sequence[ZeroBlock]
+) -> tuple[dict[str, float], frozenset[str]]:
+    """The eliminated zero flows (§17.1, §18.1) as model constants, each +0.0 by variable id,
+    and the rows that leave the projection with them: each single pin's row and every
+    certified block's rows. Pure."""
+    constants = {entry.variable_id: normalize_zero(0.0) for entry in zero}
+    pins = frozenset(entry.row_id for entry in zero if entry.row_id is not None) | {
+        row for block in zero_blocks for row in block.rows
+    }
+    return constants, pins
+
+
 def _add_constraints_and_objective(
     assembly: _Assembly,
     spec: ProblemSpec,
@@ -745,12 +754,30 @@ def _check_call(
     decisions: Sequence[DecisionSpec],
     links: Sequence[ExternalLinkSpec],
 ) -> None:
+    """The call's arguments, in this order, each check raising `ValueError` on the first
+    failure: `x0` (`_check_x0`), the promoted parameters (`_check_promoted`), then the links'
+    inlet variables (`_check_link_inlets`)."""
+    _check_x0(spec, x0)
+    _check_promoted(spec, decisions, links)
+    _check_link_inlets(spec, links)
+
+
+def _check_x0(spec: ProblemSpec, x0: Mapping[str, float]) -> None:
+    """`x0` has a value for every variable, then every value is finite; else `ValueError`
+    naming the variables that fail."""
     missing = [name for name in spec.variable_ids if name not in x0]
     if missing:
         raise ValueError(f"x0 has no value for {missing}")
     nonfinite = [name for name in spec.variable_ids if not math.isfinite(float(x0[name]))]
     if nonfinite:
         raise ValueError(f"x0 is not finite at {nonfinite}")
+
+
+def _check_promoted(
+    spec: ProblemSpec, decisions: Sequence[DecisionSpec], links: Sequence[ExternalLinkSpec]
+) -> None:
+    """The promoted parameters (the decisions', then each link's X and ΔT) are pinned inputs
+    of `spec`, then none is promoted twice; else `ValueError`."""
     promoted = [decision.parameter_id for decision in decisions] + [
         parameter for link in links for parameter in (link.x_param_id, link.dt_param_id)
     ]
@@ -759,6 +786,11 @@ def _check_call(
         raise ValueError(f"{unknown} are not pinned inputs of {spec.label!r}")
     if len(set(promoted)) != len(promoted):
         raise ValueError(f"a pinned input is promoted twice: {promoted}")
+
+
+def _check_link_inlets(spec: ProblemSpec, links: Sequence[ExternalLinkSpec]) -> None:
+    """Each link, in order, has `LINK_INLET_SIZE` inlet variables, all variables of `spec`;
+    else `ValueError` naming the link."""
     known = set(spec.variable_ids)
     for link in links:
         if len(link.inlet_variable_ids) != LINK_INLET_SIZE:
@@ -766,6 +798,18 @@ def _check_call(
         strangers = [name for name in link.inlet_variable_ids if name not in known]
         if strangers:
             raise ValueError(f"link {link.unit_id!r}: {strangers} are not variables")
+
+
+def _requested_rows(
+    spec: ProblemSpec, omitted_rows: Collection[str] | None
+) -> frozenset[str] | None:
+    """The caller's `omitted_rows` as a set (None when not given), checked to be equations of
+    `spec`; else `ValueError` naming the others, sorted."""
+    requested = None if omitted_rows is None else frozenset(omitted_rows)
+    unknown_rows = sorted((requested or frozenset()) - set(spec.equation_ids))
+    if unknown_rows:
+        raise ValueError(f"omitted_rows names {unknown_rows}, which are not equations of the spec")
+    return requested
 
 
 def _tightened_bounds(

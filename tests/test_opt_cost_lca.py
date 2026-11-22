@@ -24,6 +24,7 @@ from test_e01_b_lca import P4_DOC  # noqa: E402
 
 from openflowsheet.application import validation  # noqa: E402
 from openflowsheet.application.revision_routes import REVISION_ROUTES
+from openflowsheet.run.compare import V2_RELATIVE_TOLERANCE  # noqa: E402
 from openflowsheet.schema_check import schema_errors  # noqa: E402
 from openflowsheet.studies.nlp.closure import SolverAvailability  # noqa: E402
 from openflowsheet.studies.nlp.request import static_readiness  # noqa: E402
@@ -85,12 +86,29 @@ def test_validate_warns_on_the_assessment_checks_it_defers(case: str) -> None:
     assert schema_errors("validation-report.schema.json", report.as_document()) == []
 
 
+@cache
+def _p1_check() -> dict[str, float]:
+    check: dict[str, float] = _hand().p1_check()
+    return check
+
+
+@pytest.mark.bitwise_baseline(row="X07a-L11")
 def test_the_hand_model_reproduces_p1() -> None:
     """The state → sizes → cost_hand chain on P1's own state equals the P1 fixture's sizes and
-    operating cost (cost_hand's inputs) to rounding."""
-    check = _hand().p1_check()
+    operating cost (cost_hand's inputs) to rounding. The fixture's sizes were recorded on Linux,
+    so the 1e-13 bound, below the policy, is a claim about those bits (X07a review R-4, P2)."""
+    check = _p1_check()
     assert check["sizes_worst_relative"] <= 1e-13, check
     assert check["opex_total_relative"] <= 1e-13, check
+
+
+def test_the_hand_model_reproduces_p1_under_the_policy() -> None:
+    """X07a-L11's companion on every leg: the same chain within T08-numerical-policy-v2's
+    relative tolerance (ADR 0007 D2.1)."""
+    check = _p1_check()
+    assert V2_RELATIVE_TOLERANCE == 1e-9
+    assert check["sizes_worst_relative"] <= V2_RELATIVE_TOLERANCE, check
+    assert check["opex_total_relative"] <= V2_RELATIVE_TOLERANCE, check
 
 
 def test_the_recorded_expectations_reproduce_at_their_points() -> None:

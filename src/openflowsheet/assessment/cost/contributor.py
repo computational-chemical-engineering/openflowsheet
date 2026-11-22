@@ -16,7 +16,7 @@ import json
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field, replace
 from pathlib import Path
-from typing import Any, Final
+from typing import Any, Final, NamedTuple
 
 from openflowsheet.assessment.cost import capital, forms, operating, quotes, sets
 from openflowsheet.assessment.cost.index import (
@@ -30,13 +30,13 @@ from openflowsheet.assessment.cost.index import (
     series_from,
 )
 from openflowsheet.assessment.defaults import default
+from openflowsheet.assessment.linearization import Refusal
 from openflowsheet.assessment.program import (
     BuildContext,
     ContributionPlan,
     FunctionalBuilder,
     Limitation,
     OutputDef,
-    Refusal,
     Symbols,
     Theta,
     register_contributor,
@@ -204,6 +204,14 @@ def _covered(target: str, excluded: Mapping[str, str]) -> bool:
     return any(target == x or target.startswith(x + ".") for x in excluded)
 
 
+class _MaterialCosts(NamedTuple):
+    """The material lines of `_Planner._material_costs`, by the sum each one joins."""
+
+    lines: list[str]
+    revenues: list[str]
+    blocked: list[str]
+
+
 class _Planner:
     """One planning pass of the `cost` contributor."""
 
@@ -231,19 +239,10 @@ class _Planner:
     # -- basis (§4.6) ----------------------------------------------------------------------------
 
     def basis(self) -> None:
+        """The cost basis: the target basis (`_target_basis`), the exchange rates, the
+        index series (shipped, plus declared ones whose sha256 matches) and the operation θ."""
         basis = dict(self.doc["basis"])
-        escalation = dict(basis.get("escalation_series", {}))
-        for currency in ("USD", "EUR"):
-            if currency not in escalation:
-                escalation[currency] = str(default(f"escalation_series.{currency}").value)
-                self._defaulted(f"escalation_series.{currency}", escalation[currency])
-        lf_doc = basis.get("location_factor")
-        if lf_doc is None:
-            lf = float(default("basis.location_factor").value)
-            self._defaulted("basis.location_factor", lf)
-        else:
-            lf = float(lf_doc["value"])
-        self.target = TargetBasis(str(basis["currency"]), int(basis["year"]), escalation, lf)
+        self.target = self._target_basis(basis)
         rates_id = basis.get("exchange_rates")
         if rates_id is None:
             rates_id = str(default("exchange_rates").value)
@@ -271,6 +270,22 @@ class _Planner:
                 value, provenance = float(entry.value), f"default {entry.key}: {entry.text}"
                 self._defaulted(f"operation.{key}", value)
             self.op[key] = self._theta(f"asm:operation.{key}", value, unit, provenance, structural)
+
+    def _target_basis(self, basis: Mapping[str, Any]) -> TargetBasis:
+        """The target basis of the declared `basis`: currency, year, the escalation series per
+        currency and the location factor, each series and the factor defaulted when missing."""
+        escalation = dict(basis.get("escalation_series", {}))
+        for currency in ("USD", "EUR"):
+            if currency not in escalation:
+                escalation[currency] = str(default(f"escalation_series.{currency}").value)
+                self._defaulted(f"escalation_series.{currency}", escalation[currency])
+        lf_doc = basis.get("location_factor")
+        if lf_doc is None:
+            lf = float(default("basis.location_factor").value)
+            self._defaulted("basis.location_factor", lf)
+        else:
+            lf = float(lf_doc["value"])
+        return TargetBasis(str(basis["currency"]), int(basis["year"]), escalation, lf)
 
     def _defaulted(self, key: str, value: Any, target: str = "") -> None:
         self.defaulted.append({"key": key, "value": value, "target": target})
@@ -348,41 +363,40 @@ class _Planner:
         machines: Mapping[str, SizedItem],
         already: bool,
     ) -> Refusal | None:
+        """Cost `item` into `record` (§4.5), or the refusal that stops it.
+
+        A quoted item (`quote` in its document) is priced by `_quote`. A drive its machine's
+        entry includes (`_including_machine`) is recorded by `_record_included`. Otherwise the
+        entry from `_entry`, the inputs from `_form_inputs`, the unit count from `_units`, the
+        form's selection held by `_held`, its extrapolation (`_record_extrapolated`) and regime
+        (`_regime`), the escalation from `_escalation`, the source from `_entry_source`, the
+        defaulted options (`_defaulted`) and the capital outputs from `_capital`.
+
+        None when the item is costed or is an included drive, and when an input is missing and
+        `already` (a sizing refusal targets the item); `_quote` and `_capital` pass their None
+        through. The refusals: `_entry`'s, `SIZING_INPUT_UNAVAILABLE` for the first missing
+        input, `CORRELATION_OUT_OF_RANGE` for a selection out of range, `_escalation`'s, and
+        those `_quote` and `_capital` return.
+        """
         doc = self._item_doc(item)
         if "quote" in doc:
             return self._quote(item, record, values, quotes.quote_from(doc["quote"]))
-        if item.family == "machine.drive":
-            machine = machines.get(item.unit_id)
-            if machine is not None and machine.item_id in self.included_drive:
-                record.included_in = machine.item_id
-                record.source = {"included_in": machine.item_id}
-                purchased = f"capex.purchased.{item.item_id}"
-                self.outputs.append(OutputDef(purchased, self.target.currency, lambda s, a: 0.0))
-                record.purchased = purchased
-                record.bare_module = f"capex.bare_module.{item.item_id}"
-                self.outputs.append(
-                    OutputDef(record.bare_module, self.target.currency, lambda s, a: 0.0)
-                )
-                return None
+        included_in = self._including_machine(item, machines)
+        if included_in is not None:
+            self._record_included(item, record, included_in)
+            return None
         found = self._entry(item, doc)
         if isinstance(found, Refusal):
             return found
         cost_set, e = found
         form = forms.FORMS[e.form]
-        x_float: dict[str, Any] = {}
-        x_build: dict[str, FunctionalBuilder] = {}
-        for name in form.inputs:
-            got = self._input(item, record, e, name, values)
-            if got is None:
-                if already:
-                    return None
-                return Refusal("SIZING_INPUT_UNAVAILABLE", f"{item.item_id}.{name}")
-            x_float[name], x_build[name] = got
-        units = 1
-        if form.inherits_units:
-            machine = machines.get(item.unit_id)
-            if machine is not None and machine.item_id in self.selections:
-                units = self.selections[machine.item_id].n
+        inputs = self._form_inputs(item, record, e, form, values)
+        if isinstance(inputs, str):
+            if already:
+                return None
+            return Refusal("SIZING_INPUT_UNAVAILABLE", f"{item.item_id}.{inputs}")
+        x_float, x_build = inputs
+        units = self._units(item, form, machines)
         allow = bool(doc.get("allow_extrapolation", False))
         sel = forms.select(form, e, x_float, allow_extrapolation=allow, units=units)
         if isinstance(sel, forms.OutOfRange):
@@ -395,15 +409,7 @@ class _Planner:
         self.selections[item.item_id] = sel
         if e.includes_drive:
             self.included_drive.add(item.item_id)
-        for name, (value, low, high) in sel.extrapolated.items():
-            record.extrapolated = True
-            self.limitations.append(
-                Limitation(
-                    "CORRELATION_EXTRAPOLATED",
-                    f"{item.item_id}.{form.target(name)}",
-                    {"value": value, "range": [low, high]},
-                )
-            )
+        self._record_extrapolated(item.item_id, form, sel, record)
         self._regime(item.item_id, form, e, sel, x_build, record)
         source = SourceBasis(
             str(cost_set.document["basis"]["currency"]),
@@ -420,7 +426,95 @@ class _Planner:
         )
         rr = entry_doc.get("uncertainty", {}).get("relative_range")
         record.relative_range = None if rr is None else (float(rr[0]), float(rr[1]))
-        record.source = {
+        record.source = self._entry_source(e, cost_set, entry_doc)
+        for name in e.defaulted:
+            self._defaulted(f"option.{name}", e.options[name], item.item_id)
+
+        def base(s: Symbols, a: Algebra) -> Expr:
+            x = {name: build(s, a) for name, build in x_build.items()}
+            return form.cost(e, x, sel, a)
+
+        return self._capital(item, record, base, factor, doc, entry_doc)
+
+    def _including_machine(self, item: SizedItem, machines: Mapping[str, SizedItem]) -> str | None:
+        """The item id of the machine whose cost entry includes drive `item` (§9.2.7).
+
+        None when `item` is not a `machine.drive`, its unit has no costed machine yet, or that
+        machine's entry does not include the drive.
+        """
+        if item.family == "machine.drive":
+            machine = machines.get(item.unit_id)
+            if machine is not None and machine.item_id in self.included_drive:
+                return machine.item_id
+        return None
+
+    def _record_included(self, item: SizedItem, record: ItemCost, included_in: str) -> None:
+        """Record drive `item` as included in machine `included_in`: zero purchased and
+        bare-module outputs, and `record`'s source naming the machine."""
+        record.included_in = included_in
+        record.source = {"included_in": included_in}
+        purchased = f"capex.purchased.{item.item_id}"
+        self.outputs.append(OutputDef(purchased, self.target.currency, lambda s, a: 0.0))
+        record.purchased = purchased
+        record.bare_module = f"capex.bare_module.{item.item_id}"
+        self.outputs.append(OutputDef(record.bare_module, self.target.currency, lambda s, a: 0.0))
+
+    def _form_inputs(
+        self,
+        item: SizedItem,
+        record: ItemCost,
+        e: forms.ResolvedEntry,
+        form: forms.Form,
+        values: Mapping[str, float],
+    ) -> tuple[dict[str, Any], dict[str, FunctionalBuilder]] | str:
+        """The form's inputs from `_input`, in `form.inputs` order: (floats, builders).
+
+        The name of the first input `_input` has no value for, when there is one; the inputs
+        after it are not read.
+        """
+        x_float: dict[str, Any] = {}
+        x_build: dict[str, FunctionalBuilder] = {}
+        for name in form.inputs:
+            got = self._input(item, record, e, name, values)
+            if got is None:
+                return name
+            x_float[name], x_build[name] = got
+        return x_float, x_build
+
+    def _units(self, item: SizedItem, form: forms.Form, machines: Mapping[str, SizedItem]) -> int:
+        """The number of units the form prices: the selected count of the item's machine when
+        the form inherits units and that machine has a selection, else 1."""
+        if form.inherits_units:
+            machine = machines.get(item.unit_id)
+            if machine is not None and machine.item_id in self.selections:
+                return self.selections[machine.item_id].n
+        return 1
+
+    def _record_extrapolated(
+        self, item_id: str, form: forms.Form, sel: forms.Selection, record: ItemCost
+    ) -> None:
+        """Per input the selection extrapolates, in its order: mark `record` extrapolated and
+        add limitation `CORRELATION_EXTRAPOLATED` with the value and the range."""
+        for name, (value, low, high) in sel.extrapolated.items():
+            record.extrapolated = True
+            self.limitations.append(
+                Limitation(
+                    "CORRELATION_EXTRAPOLATED",
+                    f"{item_id}.{form.target(name)}",
+                    {"value": value, "range": [low, high]},
+                )
+            )
+
+    @staticmethod
+    def _entry_source(
+        e: forms.ResolvedEntry, cost_set: sets.CostSet, entry_doc: Mapping[str, Any]
+    ) -> dict[str, Any]:
+        """An item's `source` record (§4.5.5) for its resolved entry `e` of `cost_set`.
+
+        `entry_doc` is the entry's document. The record carries `amended` when the entry has
+        amended numbers and `index_basis` when its cost is converted by the source's ratio.
+        """
+        source: dict[str, Any] = {
             "set": e.set_id,
             "entry": e.entry_id,
             "form": e.form,
@@ -441,21 +535,14 @@ class _Planner:
         }
         if e.amended:
             # §10.4.8: each amended number the resolved entry carries, with its effective value.
-            record.source["amended"] = {path: dict(a) for path, a in sorted(e.amended.items())}
+            source["amended"] = {path: dict(a) for path, a in sorted(e.amended.items())}
         if e.ratio != 1.0:
             index = entry_doc["index_basis"]
-            record.source["index_basis"] = (
+            source["index_basis"] = (
                 f"{index['series']} {sets._number(index['value']):g} → "
                 f"{cost_set.index_value:g} by the source's ratio"
             )
-        for name in e.defaulted:
-            self._defaulted(f"option.{name}", e.options[name], item.item_id)
-
-        def base(s: Symbols, a: Algebra) -> Expr:
-            x = {name: build(s, a) for name, build in x_build.items()}
-            return form.cost(e, x, sel, a)
-
-        return self._capital(item, record, base, factor, doc, entry_doc)
+        return source
 
     def _quote(
         self, item: SizedItem, record: ItemCost, values: Mapping[str, float], q: quotes.Quote
@@ -544,7 +631,9 @@ class _Planner:
     def _entry(
         self, item: SizedItem, doc: Mapping[str, Any]
     ) -> tuple[sets.CostSet, forms.ResolvedEntry] | Refusal:
-        """§4.5.3: the item's `correlation`, else the set's first entry of its family."""
+        """§4.5.3: the item's `correlation`, else the set's first entry of its family.
+
+        The entry comes from `_set_entry`, its options from `_options`."""
         declared = doc.get("correlation")
         set_id = declared["set"] if declared else self.doc.get("correlation_set")
         if set_id is None:
@@ -556,17 +645,9 @@ class _Planner:
         for ref in dict(self.doc.get("data", {})).get("sets", ()):
             if ref["id"] == set_id and ref["sha256"] != document_sha256(cost_set.document):
                 return Refusal("NO_CORRELATION", item.item_id, f"{set_id}: sha256 mismatch")
-        if declared:
-            try:
-                entry = cost_set.entry(str(declared["entry"]))
-            except KeyError as error:
-                return Refusal("NO_CORRELATION", item.item_id, str(error))
-        else:
-            orientation = item.options.get("orientation")
-            found = sets.entry_for(cost_set, item.family, orientation)
-            if found is None:
-                return Refusal("NO_CORRELATION", item.item_id, f"{set_id} has no {item.family}")
-            entry = found
+        entry = self._set_entry(item, cost_set, declared, set_id)
+        if isinstance(entry, Refusal):
+            return entry
         if entry.form == "generic-v1":
             return Refusal(
                 "NO_CORRELATION",
@@ -581,6 +662,24 @@ class _Planner:
         if isinstance(resolved, sets.NoCorrelation):
             return Refusal("NO_CORRELATION", item.item_id, resolved.detail)
         return cost_set, resolved
+
+    @staticmethod
+    def _set_entry(
+        item: SizedItem, cost_set: sets.CostSet, declared: Any, set_id: Any
+    ) -> sets.CostEntry | Refusal:
+        """The item's entry of `cost_set`: the `declared` correlation's entry, else the set's
+        first entry of the item's family and orientation (§4.5.3); NO_CORRELATION when absent."""
+        if declared:
+            try:
+                return cost_set.entry(str(declared["entry"]))
+            except KeyError as error:
+                return Refusal("NO_CORRELATION", item.item_id, str(error))
+        else:
+            orientation = item.options.get("orientation")
+            found = sets.entry_for(cost_set, item.family, orientation)
+            if found is None:
+                return Refusal("NO_CORRELATION", item.item_id, f"{set_id} has no {item.family}")
+            return found
 
     def _options(
         self, item: SizedItem, doc: Mapping[str, Any], entry: sets.CostEntry
@@ -614,53 +713,82 @@ class _Planner:
         name: str,
         values: Mapping[str, float],
     ) -> tuple[Any, FunctionalBuilder] | None:
+        """The value and the builder of form input `name`, by its source.
+
+        A sizing output (`_size_input`), the design pressure (`_pressure_input`), the shell
+        thickness (`_thickness_input`) or the actuator count (`_n_act_input`); None when that
+        source has no value. Raises KeyError for an input with no source.
+        """
         if name in _SIZE_INPUT:
-            quantity = _SIZE_INPUT[name]
-            if item.family == "machine.drive" and name == "power":
-                # §9.2.7: the motor reads the machine's total shaft power W, not W/η.
-                quantity_id = f"size.{item.unit_id}.power"
-                if quantity_id not in values:
-                    return None
-                return values[quantity_id], _out(quantity_id)
-            output_id = item.size.get(quantity)
-            if output_id is None or output_id not in values:
-                return None
-            return values[output_id], _out(output_id)
+            return self._size_input(item, name, values)
         if name == "design_pressure":
-            p = item.design_pressure
-            if p is None:
-                return None
-            if isinstance(p, str):
-                value = self.sctx.x(p)
-                record.inputs.append(
-                    {"name": name, "value": value, "unit": "Pa", "defaulted": False}
-                )
-                return value, lambda s, a: s.x(p)
-            record.inputs.append({"name": name, "value": p, "unit": "Pa", "defaulted": False})
-            return float(p), lambda s, a: p
+            return self._pressure_input(item, record, name)
         if name == "thickness":
-            doc = self._item_doc(item)
-            if "shell_thickness" in doc:
-                value, provenance, dflt = (
-                    float(doc["shell_thickness"]),
-                    f"items.{item.item_id}.shell_thickness",
-                    False,
-                )
-            else:
-                value = e.continuous["shell_thickness_in"] * forms.INCH_M
-                provenance, dflt = f"{e.set_id} {e.entry_id} shell_thickness_in default", True
-                self._defaulted("shell_thickness", value, item.item_id)
-            theta = self._theta(f"asm:item.{item.item_id}.t_shell", value, "m", provenance)
-            record.inputs.append(
-                {"name": "t_shell", "value": value, "unit": "m", "defaulted": dflt}
-            )
-            return value, lambda s, a: s.theta(theta.theta_id)
+            return self._thickness_input(item, record, e)
         if name == "n_act":
-            n_act = item.options.get("N_act")
-            if n_act is None:
-                return None
-            return int(n_act), lambda s, a: int(n_act)
+            return self._n_act_input(item)
         raise KeyError(f"form input {name!r} has no source")
+
+    @staticmethod
+    def _size_input(
+        item: SizedItem, name: str, values: Mapping[str, float]
+    ) -> tuple[Any, FunctionalBuilder] | None:
+        """A sizing-output input: the item's size quantity for `name`, or for a drive's `power`
+        its machine's shaft power; None when that output has no value."""
+        quantity = _SIZE_INPUT[name]
+        if item.family == "machine.drive" and name == "power":
+            # §9.2.7: the motor reads the machine's total shaft power W, not W/η.
+            quantity_id = f"size.{item.unit_id}.power"
+            if quantity_id not in values:
+                return None
+            return values[quantity_id], _out(quantity_id)
+        output_id = item.size.get(quantity)
+        if output_id is None or output_id not in values:
+            return None
+        return values[output_id], _out(output_id)
+
+    def _pressure_input(
+        self, item: SizedItem, record: ItemCost, name: str
+    ) -> tuple[Any, FunctionalBuilder] | None:
+        """The design pressure: a variable's value or a number, recorded in `record.inputs`;
+        None when the item has none."""
+        p = item.design_pressure
+        if p is None:
+            return None
+        if isinstance(p, str):
+            value = self.sctx.x(p)
+            record.inputs.append({"name": name, "value": value, "unit": "Pa", "defaulted": False})
+            return value, lambda s, a: s.x(p)
+        record.inputs.append({"name": name, "value": p, "unit": "Pa", "defaulted": False})
+        return float(p), lambda s, a: p
+
+    def _thickness_input(
+        self, item: SizedItem, record: ItemCost, e: forms.ResolvedEntry
+    ) -> tuple[Any, FunctionalBuilder]:
+        """The shell thickness θ: the item's `shell_thickness`, else the entry's default
+        `shell_thickness_in` (defaulted); recorded in `record.inputs` as `t_shell`."""
+        doc = self._item_doc(item)
+        if "shell_thickness" in doc:
+            value, provenance, dflt = (
+                float(doc["shell_thickness"]),
+                f"items.{item.item_id}.shell_thickness",
+                False,
+            )
+        else:
+            value = e.continuous["shell_thickness_in"] * forms.INCH_M
+            provenance, dflt = f"{e.set_id} {e.entry_id} shell_thickness_in default", True
+            self._defaulted("shell_thickness", value, item.item_id)
+        theta = self._theta(f"asm:item.{item.item_id}.t_shell", value, "m", provenance)
+        record.inputs.append({"name": "t_shell", "value": value, "unit": "m", "defaulted": dflt})
+        return value, lambda s, a: s.theta(theta.theta_id)
+
+    @staticmethod
+    def _n_act_input(item: SizedItem) -> tuple[Any, FunctionalBuilder] | None:
+        """The actuator count option `N_act`; None when the item has none."""
+        n_act = item.options.get("N_act")
+        if n_act is None:
+            return None
+        return int(n_act), lambda s, a: int(n_act)
 
     def _held(
         self, item_id: str, form: forms.Form, e: forms.ResolvedEntry, sel: forms.Selection
@@ -733,26 +861,16 @@ class _Planner:
     # -- sums and the chain (§4.7.1) -------------------------------------------------------------
 
     def chain(self) -> None:
+        """The capital sums `capex.sum_purchased` and `capex.sum_bare_module`, then the capital
+        chain (`_capital_chain`) and its outputs (`_chain_outputs`).
+
+        Without a valid chain, `capex.total` and `capex.fci` are unavailable.
+        """
         cur = self.target.currency
         purchased = [r.purchased for r in self.records if r.purchased is not None]
         bare = [r.bare_module for r in self.records if r.bare_module is not None]
         quoted_bm = [r.item_id for r in self.records if r.purchased is None]
-        capital_doc = self.doc.get("capital")
-        chain: capital.Chain | None = None
-        if capital_doc is not None:
-            try:
-                if "chain" in capital_doc:
-                    chain = capital.load_chain(str(capital_doc["chain"]))
-                else:
-                    chain = capital.chain_from(
-                        capital_doc.get("steps", ()),
-                        str(capital_doc.get("capital_total")),
-                        str(capital_doc.get("fci")),
-                    )
-            except capital.ChainError as error:
-                self.refusals.append(
-                    Refusal("ASSESSMENT_OUTPUT_UNKNOWN", "capex.total", str(error))
-                )
+        chain = self._capital_chain()
         if chain is not None and "sum_bare_module" in chain.bases:
             self.refusals.extend(Refusal("BARE_MODULE_FACTOR_MISSING", i) for i in self.missing_fbm)
         refused = self.capital_refused
@@ -773,6 +891,35 @@ class _Planner:
             self.unavailable["capex.total"] = "no capital chain declared or the chain is malformed"
             self.unavailable["capex.fci"] = self.unavailable["capex.total"]
             return
+        self._chain_outputs(chain, cur)
+
+    def _capital_chain(self) -> capital.Chain | None:
+        """The declared capital chain: a shipped `chain` by id, else one from `steps`.
+
+        None when `capital` is not declared, or when the chain is malformed (refusal
+        `ASSESSMENT_OUTPUT_UNKNOWN` on `capex.total`).
+        """
+        capital_doc = self.doc.get("capital")
+        chain: capital.Chain | None = None
+        if capital_doc is not None:
+            try:
+                if "chain" in capital_doc:
+                    chain = capital.load_chain(str(capital_doc["chain"]))
+                else:
+                    chain = capital.chain_from(
+                        capital_doc.get("steps", ()),
+                        str(capital_doc.get("capital_total")),
+                        str(capital_doc.get("fci")),
+                    )
+            except capital.ChainError as error:
+                self.refusals.append(
+                    Refusal("ASSESSMENT_OUTPUT_UNKNOWN", "capex.total", str(error))
+                )
+        return chain
+
+    def _chain_outputs(self, chain: capital.Chain, cur: str) -> None:
+        """The outputs of the chain's steps in chain order, then the aliases `capex.total` and
+        `capex.fci`; each is unavailable instead when an output it depends on is."""
         for step in chain.steps:
             output_id = f"capex.{step.name}"
             deps = [f"capex.{t.of}" for t in step.terms]
@@ -820,16 +967,49 @@ class _Planner:
         )
 
     def opex(self) -> None:
+        """§4.7.2: the operating cost lines and their sums `opex.total` and `revenue.total`.
+
+        The lines come in phase order: utilities (`_utility_costs`), materials
+        (`_material_costs`), fixed lines (`_fixed_costs`). `opex.total` is blocked by the items
+        whose operating cost was refused (`opex_refused`), the refused utility lines, a missing
+        electricity utility, and the refused material and fixed lines; `revenue.total` by the
+        refused revenue lines.
+        """
         cur = f"{self.target.currency}/yr"
         h = self.op["hours_per_year"].theta_id
-        lines: list[str] = []
         blocked: list[str] = list(self.opex_refused)
+        lines, utilities_blocked = self._utility_costs(cur, h)
+        blocked += utilities_blocked
+        electric = {i.item_id for i in self.sizing.items if i.electricity is not None}
+        if electric and not any(u["kind"] == "electricity" for u in self.doc.get("utilities", ())):
+            blocked.append("electricity")
+            self.unavailable["opex.utility.electricity"] = "no utility of kind electricity declared"
+        materials = self._material_costs(cur, h)
+        lines += materials.lines
+        blocked += materials.blocked
+        fixed_lines, fixed_blocked = self._fixed_costs(cur)
+        lines += fixed_lines
+        blocked += fixed_blocked
+        self._sum("opex.total", lines, cur, blocked)
+        revenues = materials.revenues
+        unpriced = [r for r in revenues if r in self.unavailable]
+        self._sum(
+            "revenue.total", [r for r in revenues if r not in self.unavailable], cur, unpriced
+        )
+
+    def _utility_costs(self, cur: str, h: str) -> tuple[list[str], list[str]]:
+        """The utility lines `opex.utility.<id>`: (the costed line ids, the refused line ids).
+
+        A utility no sized item uses has no line. A line is refused when its price, or its
+        declared export price, is refused (recorded in `unavailable`). The users come from
+        `_utility_users`; the export price of a utility with generating users from
+        `_export_price`.
+        """
+        lines: list[str] = []
+        blocked: list[str] = []
         for utility in self.doc.get("utilities", ()):
             u = str(utility["utility_id"])
-            if utility["kind"] == "electricity":
-                users = [i for i in self.sizing.items if i.electricity is not None and i.power]
-            else:
-                users = [i for i in self.sizing.items if i.utility == u and i.duty is not None]
+            users = self._utility_users(utility, u)
             if not users:
                 continue
             output_id = f"opex.utility.{u}"
@@ -840,21 +1020,11 @@ class _Planner:
                 continue
             consume = [i for i in users if i.electricity != "generation"]
             generate = [i for i in users if i.electricity == "generation"]
-            export = price
-            if generate:
-                if "export_price" in utility:
-                    got = self._price(
-                        f"utility.{u}.export_price", utility["export_price"], operating.ENERGY_PER
-                    )
-                    if got is None:
-                        blocked.append(output_id)
-                        self.unavailable[output_id] = "export price refused"
-                        continue
-                    export = got
-                else:
-                    self.limitations.append(Limitation("ELECTRICITY_NETTED", u))
-                    self._defaulted("electricity_export_price", "import", u)
-
+            export = self._export_price(utility, u, price) if generate else price
+            if export is None:
+                blocked.append(output_id)
+                self.unavailable[output_id] = "export price refused"
+                continue
             self.outputs.append(
                 OutputDef(
                     output_id,
@@ -865,11 +1035,41 @@ class _Planner:
                 )
             )
             lines.append(output_id)
-        electric = {i.item_id for i in self.sizing.items if i.electricity is not None}
-        if electric and not any(u["kind"] == "electricity" for u in self.doc.get("utilities", ())):
-            blocked.append("electricity")
-            self.unavailable["opex.utility.electricity"] = "no utility of kind electricity declared"
+        return lines, blocked
+
+    def _utility_users(self, utility: Mapping[str, Any], u: str) -> list[SizedItem]:
+        """The sized items that use utility `u`, in sizing order.
+
+        For a utility of kind `electricity`, the items with an electricity role and a power;
+        otherwise the items with a duty on `u`.
+        """
+        if utility["kind"] == "electricity":
+            return [i for i in self.sizing.items if i.electricity is not None and i.power]
+        return [i for i in self.sizing.items if i.utility == u and i.duty is not None]
+
+    def _export_price(self, utility: Mapping[str, Any], u: str, price: Theta) -> Theta | None:
+        """The export price of utility `u`, which has generating users.
+
+        Its declared `export_price`, or None when `_price` refuses that; without one, the
+        import `price` (limitation `ELECTRICITY_NETTED`, `electricity_export_price` defaulted).
+        """
+        if "export_price" in utility:
+            return self._price(
+                f"utility.{u}.export_price", utility["export_price"], operating.ENERGY_PER
+            )
+        self.limitations.append(Limitation("ELECTRICITY_NETTED", u))
+        self._defaulted("electricity_export_price", "import", u)
+        return price
+
+    def _material_costs(self, cur: str, h: str) -> _MaterialCosts:
+        """The priced material lines: `opex.material.<s>`, `opex.waste.<s>` and `revenue.<s>`.
+
+        Emissions and unpriced materials have no line. A refused price is recorded in
+        `unavailable`; a refused revenue line stays in `revenues`, the others go to `blocked`.
+        """
+        lines: list[str] = []
         revenues: list[str] = []
+        blocked: list[str] = []
         masses = self.ctx.view.molar_masses()
         for material in self.doc.get("materials", ()):
             role, s_id = str(material["role"]), str(material["connection"])
@@ -889,6 +1089,16 @@ class _Planner:
             flow = self._flow(s_id, basis, material.get("component"), price.unit, masses)
             self.outputs.append(OutputDef(output_id, cur, _flow_cost(flow, price.theta_id, h)))
             (revenues if prefix == "revenue" else lines).append(output_id)
+        return _MaterialCosts(lines, revenues, blocked)
+
+    def _fixed_costs(self, cur: str) -> tuple[list[str], list[str]]:
+        """The fixed lines `opex.fixed.<line>`: (the costed line ids, the refused line ids).
+
+        A line declared as a fraction of a capital output that is unavailable is refused
+        (recorded in `unavailable`). No fixed line at all is limitation `FIXED_OPEX_UNDECLARED`.
+        """
+        lines: list[str] = []
+        blocked: list[str] = []
         fixed = list(self.doc.get("fixed_opex", ()))
         if not fixed:
             self.limitations.append(Limitation("FIXED_OPEX_UNDECLARED"))
@@ -916,11 +1126,7 @@ class _Planner:
                 )
                 self.outputs.append(OutputDef(output_id, cur, _scaled(t.theta_id, of)))
             lines.append(output_id)
-        self._sum("opex.total", lines, cur, blocked)
-        unpriced = [r for r in revenues if r in self.unavailable]
-        self._sum(
-            "revenue.total", [r for r in revenues if r not in self.unavailable], cur, unpriced
-        )
+        return lines, blocked
 
     def _flow(
         self, stream: str, basis: str, component: str | None, unit: str, masses: Mapping[str, float]
@@ -1007,18 +1213,10 @@ class _Planner:
 
     def drives(self) -> None:
         """Replace each electric drive's `W/η_drive` (θ) by `W/η_m(W/N)` when the set has a
-        `machine.drive` entry; the θ `eta_drive` is then not created (§9.2.7)."""
-        set_id = self.doc.get("correlation_set")
-        motor: forms.ResolvedEntry | None = None
-        if set_id is not None:
-            try:
-                cost_set = sets.load_set(str(set_id))
-            except KeyError:
-                cost_set = None
-            entry = None if cost_set is None else sets.entry_for(cost_set, "machine.drive")
-            if cost_set is not None and entry is not None and entry.form == "sslw-motor-v1":
-                found = sets.resolve(cost_set, entry.entry_id, {})
-                motor = found if isinstance(found, forms.ResolvedEntry) else None
+        `machine.drive` entry; the θ `eta_drive` is then not created (§9.2.7).
+
+        The motor entry is `_motor_entry`'s; without one nothing is replaced."""
+        motor = self._motor_entry()
         self.motor = motor
         if motor is None:
             return
@@ -1049,6 +1247,26 @@ class _Planner:
             outputs=tuple(outputs),
             theta=tuple(t for t in self.sizing.theta if t.theta_id not in dropped),
         )
+
+    def _motor_entry(self) -> forms.ResolvedEntry | None:
+        """The resolved `machine.drive` entry of the declared `correlation_set`, when its form
+        is `sslw-motor-v1`.
+
+        None when no set is declared, the set does not load (KeyError), it has no drive entry,
+        the entry has another form, or it does not resolve.
+        """
+        set_id = self.doc.get("correlation_set")
+        motor: forms.ResolvedEntry | None = None
+        if set_id is not None:
+            try:
+                cost_set = sets.load_set(str(set_id))
+            except KeyError:
+                cost_set = None
+            entry = None if cost_set is None else sets.entry_for(cost_set, "machine.drive")
+            if cost_set is not None and entry is not None and entry.form == "sslw-motor-v1":
+                found = sets.resolve(cost_set, entry.entry_id, {})
+                motor = found if isinstance(found, forms.ResolvedEntry) else None
+        return motor
 
     def plan(self) -> ContributionPlan:
         self.included_drive: set[str] = set()

@@ -8,6 +8,7 @@ nor a built map: they run in the main venv and in CI. The map build itself needs
 from __future__ import annotations
 
 import ast
+import contextlib
 import importlib.util
 import json
 import os
@@ -260,6 +261,11 @@ def test_runtime_is_inert_without_an_active_build() -> None:
         runtime.pytest_configure(None)
 
 
+@pytest.mark.skipif(
+    sys.platform == "win32",
+    reason="X07a platform limit: the test-map runtime matches an opened path by its POSIX prefix "
+    "(`root + '/'`); the map is built in the Linux test-map venv only (docs/test-impact.md)",
+)
 def test_runtime_open_record_walks_library_frames_and_drops_imports(
     tmp_path: Path, monkeypatch
 ) -> None:
@@ -413,7 +419,7 @@ def test_deleting_a_module_level_statement_falls_back(repo) -> None:
 
 
 def _with_map_rows(map_dir: Path, *statements: tuple[str, tuple[object, ...]]) -> None:
-    with sqlite3.connect(map_dir / "map.sqlite") as db:
+    with contextlib.closing(sqlite3.connect(map_dir / "map.sqlite")) as db, db:
         for statement, values in statements:
             db.execute(statement, values)
 
@@ -809,6 +815,11 @@ def test_since_on_the_command_line(repo, capsys: pytest.CaptureFixture[str]) -> 
 TOOLING_PATH = re.compile(r"(^|/)\.(codehealth|claude)(/|$)")
 #: The selector and its tests name the prefixes; they do not read the trees.
 TOOLING_NAMERS = ("scripts/test_impact.py", "tests/test_s16_test_impact.py")
+#: Tests that do run campaign tooling under .claude/ (S19 T6: the gate queue's batch-close
+#: refusal; S19 W5 WO-P0: the w5_pin tier and the pin chain read .codehealth/config.toml). The
+#: selector skips a .claude/ change, so a change to that tooling alone selects none of them:
+#: they run on the full suite (merge-check, CI) and in the tooling lane's acceptance.
+TOOLING_TESTS = ("tests/test_s19_gate_queue.py", "tests/test_s19_w5_gate.py")
 
 
 def _tooling_readers(root: Path) -> list[str]:
@@ -832,14 +843,17 @@ def _tooling_readers(root: Path) -> list[str]:
 
 
 def test_no_test_reads_campaign_tooling(tmp_path: Path) -> None:
-    """The premise of TOOLING_PREFIXES: no code a test runs names .codehealth/ or .claude/.
+    """The premise of TOOLING_PREFIXES: no code a test runs names .codehealth/ or .claude/,
+    except the declared TOOLING_TESTS (each of which does, so the list cannot go stale).
 
     String literals in the Python of tests/, src/, scripts/ and benchmarks/ are scanned, not data
     files: two fixtures record absolute worktree paths (".../.claude/worktrees/...") that no test
     opens. Falsifier, checked below: a test module that opens ".codehealth/config.toml" is found.
     A path assembled from fragments ('".clau" + "de"') is not seen; the map's open record is.
     """
-    assert _tooling_readers(ROOT) == []
+    readers = _tooling_readers(ROOT)
+    assert [where for where in readers if where.rsplit(":", 1)[0] not in TOOLING_TESTS] == []
+    assert {where.rsplit(":", 1)[0] for where in readers} == set(TOOLING_TESTS)
     (tmp_path / "tests").mkdir()
     planted = 'open(".codehealth/config.toml")\nP = ".claude.json"\n'
     (tmp_path / "tests/test_x.py").write_text(planted)

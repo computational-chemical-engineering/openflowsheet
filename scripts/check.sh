@@ -32,7 +32,8 @@ if [ -n "${OPENFLOWSHEET_JUNIT_DIR:-}" ]; then
     mkdir -p "${OPENFLOWSHEET_JUNIT_DIR}"
     junit_pytest=(--junitxml="${OPENFLOWSHEET_JUNIT_DIR}/pytest.xml")
 fi
-run_step "pytest" pytest -q -rs "${junit_pytest[@]}"
+# X07a: `f` and `E` name each failure and error in the summary (a CI log is read by grep).
+run_step "pytest" pytest -q -rsfE "${junit_pytest[@]}"
 
 # M06 (design note §8 Layer B, ADR 0030 D6): the web shell's Node tests, on Node's built-in
 # runner (a test-time tool; no package.json, no npm). The quoted glob is expanded by Node >= 22.

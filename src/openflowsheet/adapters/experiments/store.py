@@ -17,7 +17,8 @@ assigns it; so call accounting is a query and the store schema does not change. 
 files are written and nothing is recorded. `adapters` never imports `application`, which sits
 above it.
 
-**Concurrency.** `experiments/locks/<key>.lock` is taken with `flock(LOCK_EX | LOCK_NB)`, retried
+**Concurrency.** `experiments/locks/<key>.lock` is taken with `flock(LOCK_EX | LOCK_NB)` (its
+Windows equivalent there, `openflowsheet._platform.lock_exclusive`), retried
 every 0.2 s with the cooperative check between tries; the kernel drops it when its holder dies, so
 there is no stale claim. Two holders of one key are impossible within one project directory on a
 local filesystem (network filesystems with unreliable `flock` are a stated limitation, §11).
@@ -26,7 +27,6 @@ local filesystem (network filesystems with unreliable `flock` are a stated limit
 from __future__ import annotations
 
 import dataclasses
-import fcntl
 import hashlib
 import json
 import os
@@ -37,6 +37,7 @@ from pathlib import Path
 from typing import Any, Final, Protocol
 
 from openflowsheet._files import atomic_write_bytes
+from openflowsheet._platform import close_locked, lock_exclusive
 from openflowsheet.canonical import canonical_json, file_sha256
 
 __all__ = ["EXPERIMENTS_DIR", "LOCK_POLL_S", "ArtifactSink", "ExperimentStore", "ListArtifactSink"]
@@ -180,7 +181,7 @@ class ExperimentStore:
             _acquire_lock(handle, check)
             yield
         finally:
-            os.close(handle)  # closing the descriptor releases the lock
+            close_locked(handle)  # closing the descriptor releases the lock
 
     # -- reads ---------------------------------------------------------------------------------
 
@@ -286,7 +287,7 @@ def _acquire_lock(handle: int, check: Callable[[], None] | None) -> None:
     `LOCK_POLL_S` seconds; between tries `check`, if given, is called and may raise."""
     while True:
         try:
-            fcntl.flock(handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            lock_exclusive(handle)
             return
         except BlockingIOError:
             if check is not None:

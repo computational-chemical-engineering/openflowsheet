@@ -51,8 +51,9 @@ MKL_NUM_THREADS = "1"
 # --batch FILE` sets S19_W5_BATCH to a copy of the batch file. Then `w5_scope` (W5-S1), `w5_coverage`
 # (W5-S7) and `w5_registry` (W5-S4) judge the step against the batch base B, `tests` passes when its
 # failures lie in the batch's expected and standing failures (W5-S6) and `f0` checks F0's moved keys
-# against the prediction (W5-S3), all through scripts/w5_gate.py. Unset, the three W5 tiers pass at once
-# and every other tier runs its command unchanged.
+# against the prediction (W5-S3), all through scripts/w5_gate.py. `w5_pin` (W5-S2, WO-P0) runs F0 under
+# `w5_identity.py pin` for a batch P step and passes at once for batches N and L (`pin` says "not
+# applicable"). Unset, the four W5 tiers pass at once and every other tier runs its command unchanged.
 
 [[gate.tier]]
 name = "w5_scope"
@@ -60,7 +61,7 @@ timeout = 600
 kind = "command"
 cadence = "step"
 behaviour = false
-cmd = 'V="${OPENFLOWSHEET_VENV:-$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")/.venv}/bin"; [ -n "${S19_W5_BATCH:-}" ] || { echo "w5_scope: S19_W5_BATCH unset, not a W5 step: pass"; exit 0; }; PYTHONPATH=src "$V/python" scripts/w5_gate.py scope --plans ".codehealth/restructure/*.toml"'
+cmd = 'V="${OPENFLOWSHEET_VENV:-$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")/.venv}/bin"; [ -n "${S19_W5_BATCH:-}" ] || { echo "w5_scope: S19_W5_BATCH unset, not a W5 step: pass"; exit 0; }; PYTHONPATH=src "$V/python" scripts/w5_gate.py scope --plans ".codehealth/restructure/*.toml" --plans ".codehealth/interface/*.toml"'
 
 [[gate.tier]]
 name = "w5_coverage"
@@ -125,6 +126,14 @@ kind = "command"
 cadence = "step"
 detect_exit = [1, 124]
 cmd = 'V="${OPENFLOWSHEET_VENV:-$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")/.venv}/bin"; if [ -z "${S19_W5_BATCH:-}" ]; then PYTHONPATH=src "$V/python" scripts/corpus_identity.py --check; else PYTHONPATH=src "$V/python" scripts/w5_gate.py f0; fi'
+
+[[gate.tier]]
+name = "w5_pin"
+timeout = 1800
+kind = "command"
+cadence = "step"
+detect_exit = [1, 124]
+cmd = 'V="${OPENFLOWSHEET_VENV:-$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")/.venv}/bin"; [ -n "${S19_W5_BATCH:-}" ] || { echo "w5_pin: S19_W5_BATCH unset, not a W5 step: pass"; exit 0; }; PYTHONPATH=src "$V/python" scripts/w5_gate.py pin'
 
 [[gate.tier]]
 name = "mcp_digest"
@@ -266,6 +275,7 @@ order = [
     "openflowsheet.canonical",
     "openflowsheet.resources",
     "openflowsheet._files",
+    "openflowsheet._platform",
     "openflowsheet.ir",
     "openflowsheet",
 ]

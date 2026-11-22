@@ -1273,10 +1273,19 @@ def journey_carry(journey: str, rc: str) -> Carry:
 # -- reading the candidate ---------------------------------------------------------------------
 
 
+def blob_at(commit: str, path: str) -> bytes:
+    """`path`'s bytes at `commit` (`CalledProcessError` if it has no such file). The `--` ends
+    the revisions: without it git also `lstat`s `<commit>:<path>` as a work-tree file to rule out
+    an ambiguous argument, and dies (exit 128, `failed to stat`) on any error but "missing", such
+    as Windows' `Filename too long` once the working directory and the argument pass 260
+    characters (X07a WO15)."""
+    return git("show", f"{commit}:{path}", "--")
+
+
 def read_at(commit: str, path: str) -> str | None:
     """`path`'s text at `commit`, or `None` if it has no such file."""
     try:
-        return git("show", f"{commit}:{path}").decode("utf-8")
+        return blob_at(commit, path).decode("utf-8")
     except subprocess.CalledProcessError:
         return None
 
@@ -1343,8 +1352,8 @@ def post_release_differences(rc: str, candidate: str) -> list[str]:
         if path in POST_RELEASE_FREE:
             continue
         if path in ours and path in theirs and ours[path].split()[0] == theirs[path].split()[0]:
-            before = git("show", f"{rc}:{path}")
-            after = git("show", f"{candidate}:{path}")
+            before = blob_at(rc, path)
+            after = blob_at(candidate, path)
             if path == "pyproject.toml":
                 if _project_beside_allowance(before) == _project_beside_allowance(after):
                     continue

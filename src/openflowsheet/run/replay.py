@@ -50,6 +50,9 @@ ReplayVerdict = Literal["MATCH", "MISMATCH", "NOT_RUN"]
 #: Both sides are checked. An *archive recorded* on an unregistered platform is as unknown as
 #: a current one: measured before the fix, a bundle claiming s390x replayed as
 #: `compatible_reproduction` on x86-64, which asserted a comparability nothing supports.
+#:
+#: The set governs reproduction across environments; an exact replay compares a run with itself
+#: on one platform identity and needs no registration (ADR 0007 Amendment 3).
 REGISTERED_PLATFORMS: frozenset[tuple[str, str]] = frozenset(
     {("x86_64", "Linux"), ("aarch64", "Linux")}
 )
@@ -87,7 +90,11 @@ def decide_mode(recorded: Environment, current: Environment) -> tuple[ReplayMode
     """D4's table, evaluated before anything runs, the first rung that holds deciding the mode
     with its one reason (`exact_replay`, with none, when no rung holds). Every reason is named,
     not summarized. The first rung is `_unverified_lock_reason`, the last
-    `_unset_thread_pins_reason`."""
+    `_unset_thread_pins_reason`.
+
+    ADR 0007 Amendment 3: after the lock rungs, equal identity, BLAS version and thread pins,
+    known on both sides, are `exact_replay` on any platform, registered or not. Registration
+    is checked only for a replay whose environments differ."""
     reasons: list[str] = []
 
     if (reason := _unverified_lock_reason(recorded, current)) is not None:
@@ -101,7 +108,9 @@ def decide_mode(recorded: Environment, current: Environment) -> tuple[ReplayMode
         )
         return "inspected_archived_results", tuple(reasons)
 
-    identity, current_identity = recorded.identity(), current.identity()
+    if _alike_and_pinned(recorded, current):
+        return "exact_replay", tuple(reasons)
+
     for label, where in (("recorded on", recorded), ("running on", current)):
         if (where.architecture, where.os_name) not in REGISTERED_PLATFORMS:
             reasons.append(
@@ -110,6 +119,7 @@ def decide_mode(recorded: Environment, current: Environment) -> tuple[ReplayMode
             )
             return "inspected_archived_results", tuple(reasons)
 
+    identity, current_identity = recorded.identity(), current.identity()
     if identity != current_identity:
         reasons.append(
             f"platform identity differs: recorded {identity}, current {current_identity}"
@@ -139,6 +149,18 @@ def decide_mode(recorded: Environment, current: Environment) -> tuple[ReplayMode
         return "compatible_reproduction", tuple(reasons)
 
     return "exact_replay", tuple(reasons)
+
+
+def _alike_and_pinned(recorded: Environment, current: Environment) -> bool:
+    """ADR 0007 Amendment 3's exact rung: equal identity, BLAS version and thread pins, the pins
+    known on both sides."""
+    if not (recorded.threads_known() and current.threads_known()):
+        return False
+    return (
+        recorded.identity() == current.identity()
+        and recorded.same_blas_version(current)
+        and recorded.same_threads(current)
+    )
 
 
 def _unverified_lock_reason(recorded: Environment, current: Environment) -> str | None:

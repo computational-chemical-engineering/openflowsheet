@@ -28,7 +28,7 @@ from openflowsheet.numerics.solve_record import SolvePolicy, Trace
 from openflowsheet.orchestrator import revision as revision_module
 from openflowsheet.orchestrator.mass import residence_time
 from openflowsheet.orchestrator.policies import T05B_V2
-from openflowsheet.orchestrator.region import solve_region
+from openflowsheet.orchestrator.region import RegionCall, solve_region
 from openflowsheet.orchestrator.region_result import RegionResult
 from openflowsheet.orchestrator.splits import (
     closure_types,
@@ -650,20 +650,22 @@ def solve_from_v2(
     splits = lifted_splits(instances, flowsheet.components)
     types = closure_types(flowsheet.units())
     return solve_region(
-        compiled=compile_problem(spec),
-        spec=spec,
-        region=step.region,
-        state={column: state[column] for column in spec.variable_ids},
-        splits=splits,
-        provider=flowsheet.provider,
-        policy=policy,
-        initializer_source="user_guess",
-        mass_mapping=residence_time(flowsheet.wiring, flowsheet.components),
-        closure_types=types,
-        zero_flow_forms=zero_flow_forms(instances, splits, types, flowsheet.components),
-        dormancy_forms=dormancy_forms(instances, flowsheet.units(), flowsheet.components),
-        split_temperatures=split_temperatures(instances, splits),
-        trace=trace,
+        RegionCall(
+            compiled=compile_problem(spec),
+            spec=spec,
+            region=step.region,
+            state={column: state[column] for column in spec.variable_ids},
+            splits=splits,
+            provider=flowsheet.provider,
+            policy=policy,
+            initializer_source="user_guess",
+            mass_mapping=residence_time(flowsheet.wiring, flowsheet.components),
+            closure_types=types,
+            zero_flow_forms=zero_flow_forms(instances, splits, types, flowsheet.components),
+            dormancy_forms=dormancy_forms(instances, flowsheet.units(), flowsheet.components),
+            split_temperatures=split_temperatures(instances, splits),
+            trace=trace,
+        )
     )
 
 

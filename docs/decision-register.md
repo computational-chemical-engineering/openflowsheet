@@ -20242,6 +20242,75 @@ without any judgement.
 **Rejected.** *Keep `main` as the oracle:* blocks W5 batch N (circular, above). *List the test as a standing
 failure:* hides a guard the batch needs.
 
+## R-1061 — L01.A22 (a): S19 W5 batch L moves `models/c1/mixer.py` by a behaviour-preserving restructuring (2026-11-20)
+
+| | |
+| --- | --- |
+| Date | 2026-11-20 |
+| Decided by | Frank, Decision Desk card ofs-s19-legacy-models (option A, item (c), batch L; ruling F-4 of `docs/briefs/S19-W5-ruling.md`); form of R-983 |
+| Normative text | `docs/briefs/S19-W5-ruling.md` (W5 batches, F-4); batch L brief `S19-W5-batchL.md` |
+| Evidence | batch L steps 468-485 accepted (gate jobs 523-540 PASS; `c1/mixer.py` moved in steps 479-480, jobs 534-535); W5-K2 `w5_identity.py judge --before 69806a5a --after K` |
+| Affected packages | L01 (A22: `tests/test_l01_records.py` `MOVED`); S19 W5 batch L |
+
+**Decision.** `src/openflowsheet/models/c1/mixer.py`, pinned by L01.A22 at the L01 base, moves to SHA-256
+`970c19124478e13afb7dca61b126ed0cfd3f429185ffc882a0898d2b013e3a20` (S19 W5 batch L, close K). The move is a
+code-health restructuring judged behaviour-identical by the W5 gates (W5-S1 to S7 per step, W5-K2 at the close);
+`PINNED` stays the L01 base, as R-983 requires. The entry is recorded at the batch close K, not in the moving
+commit as R-983's text asks: under ruling R3 of `docs/briefs/S19-W5-ruling.md` no W5 step re-registers, so the
+registration of a batch's moves happens once, at K.
+
+**Rejected.** *Leave `models/c1/mixer.py` out of batch L:* keeps the debt batch L removes from it (WO-L1 to WO-L2b),
+against G-END (S19).
+
+## R-1062: ADR 0007 Amendment 3 accepted: exact replay on any platform; no further replay platform in 0.5 (X07a; 2026-11-20)
+
+| | |
+| --- | --- |
+| Date | 2026-11-20 |
+| Decided by | Frank, Decision Desk card ofs-x07a-adr0007-am3, option A (signed 2026-11-20T07:21:50Z, key 032ee0a5ae620a90, `VERIFIED`) |
+| Normative text | `docs/adr/0007-reproducibility-certificate-policy.md` Amendment 3 (copied from `docs/X07a-platform-ruling.md` section 5.1) |
+| Evidence | X07a-WO3 A1 (82 944 ordered pairs), A2 (64 pairs change, all same-identity pairs on unregistered platforms), A6; CI run 44670029066 (macOS F0 M7 52/52 by R1.4) |
+| Affected packages | X07a (`run/replay.py` `decide_mode`, commit b27c69a1); K05 G05 evidence unchanged |
+
+**Decision.** The `exact_replay` conditions of ADR 0007 D4 decide on any platform, registered or not; the registered
+set (D3.3: `ubuntu-latest` x86-64, `ubuntu-24.04-arm`) governs only replays whose environments differ. A platform
+joins D3.3 only by a further amendment accepted by Frank, with the evidence the amendment lists. Q-5's default holds:
+no further platform is registered in 0.5.
+
+**Rejected.** Option B (reject; same-host replay tests on macOS and Windows become platform-limit rows).
+
+## R-1063: pywin32 allowed in G19 as a Windows-only dependency of the server extra (X07a; 2026-11-20)
+
+| | |
+| --- | --- |
+| Date | 2026-11-20 |
+| Decided by | Frank, Decision Desk card ofs-x07a-pywin32-licence, option A (signed 2026-11-20, `VERIFIED`) |
+| Normative text | the card's action: "allow pywin32 (PSF-2.0, compiled) in the G19 licence policy as a Windows-only dependency of the server extra, and pin it with a Windows marker in the lock, on wp/X07a" |
+| Evidence | `docs/X07a_DECISIONS.md` Q-1 (run 44615939688: `pywin32 312: PSF (compiled) not-allowed`), Q-12 (the lock half) |
+| Affected packages | X07a (`scripts/t07_licence_inventory.py` `ALLOWED_FOR`, `tests/test_t07_server_extra.py`) |
+
+**Decision.** pywin32, which `mcp==1.30.0` requires on Windows only (`pywin32>=310; sys_platform == 'win32'`), may be
+in the server extra's closure there. G19 admits the term pywin32 312 declares (`PSF`, not the `PSF-2.0` already in
+`ALLOWED`) for pywin32 alone, through an entry keyed by distribution and term (`ALLOWED_FOR`); no other distribution
+declaring `PSF` passes, and `ALLOWED` is unchanged (S07 A41 pins its keys). The pin is not built: a marker line in
+`requirements.lock` fails ADR 0069 D2.2's grammar and moves the lock's recorded SHA-256 (Q-12).
+
+**Rejected.** Option B (keep pywin32 refused; declare the server extra a Windows platform limit).
+
+*Amended (lock half, 2026-11-20):* Frank, Decision Desk card ofs-x07a-pywin32-lock, option A (signed 2026-11-20,
+`VERIFIED`), verbatim: "pin pywin32==312 with its wheel hashes in a separate Windows-only lock
+requirements-windows.lock, installed with pip --no-deps --require-hashes on the Windows CI leg (the
+requirements-coolprop.lock pattern of R-624); requirements.lock unchanged, on wp/X07a". `requirements-windows.lock`
+at the root holds one line, `pywin32==312` with the hash of the wheel windows-latest installs
+(`pywin32-312-cp313-cp313-win_amd64.whl`, `c53e878d…aaf9`, from `pip download`; PyPI's digest agrees). The `check`
+job's Windows leg installs it with `--no-deps --require-hashes`; no other leg or job does. `requirements.lock` is
+byte-unchanged (`ead4edf1…b9c4`), so D2.2's grammar, T08.A19 and every registered bundle stand. G19's record stays the
+Linux closure; on Windows `test_the_installed_closure_is_the_recorded_one` compares the closure less the Windows
+lock's pins, which it holds to the lock's versions. Closes Q-12 (`docs/X07a_DECISIONS.md`). *Rejected:* option B (an
+ADR 0069 amendment admitting markers in D2.2 and a re-registration of the lock digest: it moves T08.A19, the A30
+records and every bundle's `lock_sha256`); option C (no pin: pywin32 resolved from `mcp`'s marker, unpinned and
+unhashed).
+
 ## R-1065: a smaller 0.5: X07a, F1, F3, X01 plugin docs; F2, F8, X06 and X01 selectability move to 0.6 (2026-11-20, Accepted)
 
 | | |
@@ -20260,3 +20329,65 @@ the same v2 records. F3 is additive.
 
 **Rejected.** *The full 0.5 (ADR 0057 D6 as written):* two migrations of stored records across 0.5 and 0.6. *The
 smaller 0.5 plus X06:* X06 has no ADR yet; it does not change records, so it costs nothing to lead 0.6 with it.
+
+## R-1066 — S07 A28 and spec §16.9: the CoolProp `fluid_table_sha256` follows B7's eight generated modules (2026-11-20)
+
+| | |
+| --- | --- |
+| Date | 2026-11-20 |
+| Decided by | design lane (`specifier`), addendum §8.1 to `docs/briefs/S19-W5-ruling.md` (ADR 0077 D6, B7's route); commit 73fd64ae |
+| Normative text | `docs/derivations/S07-spec.md` §16.9 (amendment, pointers in §16.8 and the C19 row); ruling §8.1 (R8.1 to R8.5) |
+| Evidence | to come with WO-P4 (S19 W5 batch P): A28 tests fail at the R commit alone with exactly the seven `<group>: missing` problems and pass at the step; falsifiers F1 to F4 of R8.4; B7-C1 to C4 |
+| Affected packages | S07 (A28, C19); S19 W5 batch P (WO-P4, `tests/test_s07_coolprop.py` oracle, `docs/derivations/scripts/s07_reference.json` C19 statement) |
+
+**Decision.** With B7 the CoolProp fluid table is eight generated modules (index plus `_a`, `_b1` to `_b6`).
+§16.9's `fluid_table_sha256` becomes the ADR 0060 D3 self-hash over the eight names as string literals in UTF-8
+order with their raw bytes; A28's oracle `a28_problems` recomputes it from the eight literal names without any
+helper of `coolprop_heos.py`, and a new A28 (d) test (no `needs_coolprop`) pins the serialisation on toys. The
+oracle change is its own commit in the R position before B7's plan commit. "One table, one identity" holds, now
+checked by A28 (c) (the index's `FLUIDS` is the seven groups' `FLUIDS` joined in order).
+
+**Rejected.** *Keep the one-file recipe:* the index file no longer holds the data, so its bytes would not identify
+the table. *Leave C19's statement unchanged in `s07_reference.json`:* C19 would name one module while its check
+covers eight.
+
+## R-1067 — L01.A22 (a): S19 W5 batch P moves `thermo/pr_c1.py` by a behaviour-preserving restructuring (2026-11-20)
+
+| | |
+| --- | --- |
+| Date | 2026-11-20 |
+| Decided by | Frank, Decision Desk card ofs-s19-w5-fr1-providers (option A: tier 3 admitted, batch P; ruling F-4 of `docs/briefs/S19-W5-ruling.md`); form of R-983 |
+| Normative text | `docs/briefs/S19-W5-ruling.md` (W5 batches, F-4); batch P brief `S19-W5-batchP.md` |
+| Evidence | batch P steps 486-498 accepted (gate jobs 546-559 PASS, job 556's no-gain miss re-gated as job 557); `thermo/pr_c1.py` moved in steps 486-488, jobs 546-548; W5-K2 `w5_identity.py judge --before 2eae72a8 --after K` |
+| Affected packages | L01 (A22: `tests/test_l01_records.py` `MOVED`); S19 W5 batch P |
+
+**Decision.** `src/openflowsheet/thermo/pr_c1.py`, pinned by L01.A22 at the L01 base, moves to SHA-256
+`0e5c7913efa3e34199c3bc75b3c1d5992fd6b7e1ab32e40e991e477df205142b` (S19 W5 batch P, close K). The move is a
+code-health restructuring judged behaviour-identical by the W5 gates (W5-S1 to S7 per step, with W5-S2 the identity
+pin; W5-K2 and W5-K5 at the close); `PINNED` stays the L01 base, as R-983 requires. As for R-1061, the entry is
+recorded at the batch close K, not in the moving commit: under ruling R3 of `docs/briefs/S19-W5-ruling.md` no W5 step
+re-registers.
+
+**Rejected.** *Leave `thermo/pr_c1.py` out of batch P:* keeps the debt WO-P1 removes from it (health 4.6, debt 55.7),
+against G-END (S19).
+
+## R-1068: M04/X07a: no test asserts an outcome that ADR 0036 D8 does not promise; A36's application half runs on A17; §6.2's ties erratum (X07a ruling D1; 2026-11-21)
+
+| | |
+| --- | --- |
+| Date | 2026-11-21 |
+| Decided by | design lane (`specifier`), X07a ruling D1 (`docs/X07a-a36-ruling.md`, c2e30791), applying ADR 0036 D8 as written (no ADR change); implemented by the build lane in X07a-WO19 |
+| Normative text | `docs/derivations/M04-spec.md` §21 (Amendment 4, copied from the ruling's section 5.2); the test edits of the ruling's section 5.1 |
+| Evidence | `docs/X07a_DECISIONS.md` WO18 (the stand-in's scores are fit roundoff; 3/200 and 7/200 verdict flips under a row permutation on Linux) and WO19; CI 44882659578, macOS jobs 136781135134 (it2 NOT_PROMOTABLE) and 136811622556 (rerun, PROMOTABLE) |
+| Affected packages | X07a (`tests/test_m04_iterations.py`, `tests/test_m04_study_job.py` docstring); M04 A36's status unchanged |
+
+**Decision.** Option A, refined. A test that needs a given surrogate-study verdict takes it from A17 (registered,
+generator-asserted margins) or from a constructed manifest, never from the stand-in `standin-x025-v1`, whose scores
+are roundoff and whose every coverage decision is near threshold (D8). A36's application half runs on the smooth
+parent registered for the test (X07a-D1.1 to D1.3); the stand-in asserts its vanishing (X07a-D1.5). §6.2's "ties with
+probability zero" is an erratum: ties do not weaken the guarantee or §6.4's false-failure bound.
+
+**Rejected.** Option B (a score floor or a `degenerate_scores` reason): an exactly fitting surrogate is not a defect
+of the method, and either variant rewrites §6.2/§6.4 after registered iterations ran under them. Option C (a macOS
+platform-limit row): the test flips under a pure roundoff change on Linux too, so it is flaky everywhere, not limited
+on one platform.

@@ -140,39 +140,55 @@ def test_a85a_the_margins_are_the_measured_ones() -> None:
 # -- (b) the rule, restated -----------------------------------------------------------------------
 
 
+@pytest.mark.bitwise_baseline(row="X07a-L9")
 @pytest.mark.parametrize("case_id", REVISION_CASES)
 def test_a85b_every_published_split_column_is_the_rule_applied_to_its_stream(
     case_id: str,
 ) -> None:
     """Heater style: `tp_state` of the start's own `(n, T, P)` — status `ok` — with the vapour
-    and liquid flows for `vap.<c>`/`liq.<c>` and their sums in component order for `V`/`L`;
-    products style: the sums of the product streams' recorded flows for the totals."""
+    and liquid flows for `vap.<c>`/`liq.<c>` and their sums in component order for `V`/`L`. The
+    products style is the next test's, on every leg (X07a review R-6)."""
     flowsheet = _binding(case_id).flowsheet
+    splits = [split for split, style in _splits(case_id) if style == "outlet"]
     checked = 0
-    for split, style in _splits(case_id):
+    for split in splits:
         for start in BY_CASE[case_id]["starts"]:
             vector = start["vector"]
-            if style == "outlet":
-                result = tp_state(
-                    flowsheet.provider, _stream(case_id, split, vector), flowsheet.context
-                )
-                assert result.status == "ok", (case_id, start["start"], split.unit)
-                assert result.vapor is not None and result.liquid is not None
-                expected = {
-                    **dict(zip(split.vapor, result.vapor.n, strict=True)),
-                    **dict(zip(split.liquid, result.liquid.n, strict=True)),
-                    split.vapor_total: sum(result.vapor.n),
-                    split.liquid_total: sum(result.liquid.n),
-                }
-            else:
-                expected = {
-                    split.vapor_total: sum(float(vector[column]) for column in split.vapor),
-                    split.liquid_total: sum(float(vector[column]) for column in split.liquid),
-                }
+            result = tp_state(
+                flowsheet.provider, _stream(case_id, split, vector), flowsheet.context
+            )
+            assert result.status == "ok", (case_id, start["start"], split.unit)
+            assert result.vapor is not None and result.liquid is not None
+            expected = {
+                **dict(zip(split.vapor, result.vapor.n, strict=True)),
+                **dict(zip(split.liquid, result.liquid.n, strict=True)),
+                split.vapor_total: sum(result.vapor.n),
+                split.liquid_total: sum(result.liquid.n),
+            }
             for column, value in expected.items():
                 assert _same(value, vector[column]), (case_id, start["start"], column)
                 checked += 1
-    assert checked > 0 or not _splits(case_id)
+    assert checked > 0 or not splits
+
+
+@pytest.mark.parametrize("case_id", REVISION_CASES)
+def test_a85b_every_published_products_split_total_is_the_sum_of_its_flows(case_id: str) -> None:
+    """X07a-L9's companion on every leg (review R-6, ruling P2): products style, the sums of the
+    product streams' recorded flows for the totals, Python `sum` over the committed floats in
+    declaration order, so the same bits on every platform."""
+    splits = [split for split, style in _splits(case_id) if style != "outlet"]
+    checked = 0
+    for split in splits:
+        for start in BY_CASE[case_id]["starts"]:
+            vector = start["vector"]
+            expected = {
+                split.vapor_total: sum(float(vector[column]) for column in split.vapor),
+                split.liquid_total: sum(float(vector[column]) for column in split.liquid),
+            }
+            for column, value in expected.items():
+                assert _same(value, vector[column]), (case_id, start["start"], column)
+                checked += 1
+    assert checked > 0 or not splits
 
 
 def test_a85b_the_rule_covers_the_measured_2800_values() -> None:

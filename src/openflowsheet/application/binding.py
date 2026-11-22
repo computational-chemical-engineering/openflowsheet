@@ -25,7 +25,7 @@ analysis as unsupported. That is the same limitation K06's CLI already carries.
 from __future__ import annotations
 
 import copy
-from collections.abc import Mapping, Sequence
+from collections.abc import Iterator, Mapping, Sequence
 from dataclasses import dataclass, field, replace
 from typing import TYPE_CHECKING, Any, Final
 
@@ -401,11 +401,11 @@ def legacy_admission(
     - **C5** it frees exactly one column and promotes exactly one (review-2 S3: T02 §7.1's v0.1
       pairing, which the legacy plan requires).
 
-    The first failing clause's refusal is returned."""
+    The first failing clause's refusal is returned. C1, C3 and C4 are checked by `_free_reach`,
+    `_free_unfreed` and `_promotion_refusal`; C5's refusal is `_unpaired`'s."""
     if not legacy_answers(document, refusal):
         return refusal
     specifications = list(document.get("specifications") or ())
-    columns = binding.specification_targets
     free = [entry for entry in specifications if entry.get("role") == "free"]
     unreached = _free_reach(specifications, free, binding)
     if unreached is not None:
@@ -419,13 +419,9 @@ def legacy_admission(
     if unfreed is not None:
         return unfreed
 
-    promoted = set(binding.promoted.values())
-    for name, target_refusal in targets:
-        reached = columns.get(name, ())
-        if not reached or not set(reached) <= promoted:
-            return target_refusal
-    if promoted != {column for name, _ in targets for column in columns.get(name, ())}:
-        return refusal
+    unpromoted = _promotion_refusal(targets, refusal, binding)
+    if unpromoted is not None:
+        return unpromoted
 
     if len(binding.freed) != 1 or len(binding.promoted) != 1:
         return _unpaired(free, targets, binding)
@@ -480,6 +476,24 @@ def _free_unfreed(free: Sequence[Mapping[str, Any]], binding: Binding) -> Unboun
                 f"{name} targets {_document_column(unfreed, binding)}, which the SYN-001 "
                 "formulation that solves free specifications does not pin, so it cannot be freed.",
             )
+    return None
+
+
+def _promotion_refusal(
+    targets: Sequence[tuple[str, Unbound]], refusal: Unbound, binding: Binding
+) -> Unbound | None:
+    """`legacy_admission`'s C4: `None` when `binding` promotes exactly the columns the targets in
+    `targets` reach (in `binding.specification_targets`), else the refusal: the own refusal of the
+    first target that reaches no column or one `binding` does not promote, else `refusal` (a
+    promoted column no target reaches)."""
+    columns = binding.specification_targets
+    promoted = set(binding.promoted.values())
+    for name, target_refusal in targets:
+        reached = columns.get(name, ())
+        if not reached or not set(reached) <= promoted:
+            return target_refusal
+    if promoted != {column for name, _ in targets for column in columns.get(name, ())}:
+        return refusal
     return None
 
 
@@ -542,7 +556,11 @@ def bind_revision(document: Mapping[str, Any]) -> Binding | None:
 
 
 def bind_revision_or_reason(document: Mapping[str, Any]) -> Binding | Unbound:
-    """Bind a SYN-001 `ProcessRevision`, or say which of the three reasons prevented it."""
+    """Bind a SYN-001 `ProcessRevision`, or say which of the three reasons prevented it.
+
+    The provider's component order and the inputs read on it come from `_canonical_inputs`,
+    which also returns the refusals of that reading and of the instance contracts
+    (`_instance_contracts`)."""
     # R-088 Q29 (T07 design note §12.5): a non-canonical number is refused typed at entry,
     # whether or not a reader reads its field; in a field nothing reads, a digest would
     # otherwise raise untyped.
@@ -562,22 +580,13 @@ def bind_revision_or_reason(document: Mapping[str, Any]) -> Binding | Unbound:
     # column is named or any flowsheet value read, so `Syn001Flowsheet` never sees the declared
     # order (F7: it did, and the tear path crashed on the permuted inner system).
     declared = tuple((document.get("component_set") or {}).get("components") or ())
-    try:
-        components = canonical_components(declared)
-    except RevisionError as error:
-        return Unbound(error.kind, error.code, hint=error.hint)
-    inputs = _read_inputs(document, components)
-    if isinstance(inputs, Unbound):
-        return inputs
-    contract = _instance_contracts(document, components)
-    if contract is not None:
-        return contract
-    converted, parameter_values, conversions = inputs
+    read = _canonical_inputs(document, declared)
+    if isinstance(read, Unbound):
+        return read
+    components, converted, parameter_values, conversions = read
     graph = _process_graph(document, components, WIRING, wiring_edges, matched)
 
-    specifications = [
-        entry for entry in (document.get("specifications") or ()) if entry.get("role") == "fixed"
-    ]
+    specifications = _specifications_in_role(document, "fixed")
     targets = {
         str(entry.get("id")): _column_targets(entry, graph, units_by_instance)
         for entry in specifications
@@ -585,9 +594,7 @@ def bind_revision_or_reason(document: Mapping[str, Any]) -> Binding | Unbound:
     values = {
         str(entry.get("id")): converted.get(str(entry.get("id")), 0.0) for entry in specifications
     }
-    freed = [
-        entry for entry in (document.get("specifications") or ()) if entry.get("role") == "free"
-    ]
+    freed = _specifications_in_role(document, "free")
     guesses, missing_guesses = _guesses(freed, converted, graph, units_by_instance)
     assembly = _assembly_values(guesses, missing_guesses)
     if isinstance(assembly, Unbound):
@@ -596,12 +603,9 @@ def bind_revision_or_reason(document: Mapping[str, Any]) -> Binding | Unbound:
     try:
         # The flowsheet object needs a value for every coordinate it is parameterized by. A freed
         # one takes its guess, which is also where the pre-solve pins it (§7.5).
+        started_targets, started_values = _with_starts(targets, values, assembly)
         settings = _flowsheet_settings(
-            document,
-            components,
-            {**targets, **{f"guess:{column}": (column,) for column in assembly}},
-            {**values, **{f"guess:{column}": value for column, value in assembly.items()}},
-            parameter_values,
+            document, components, started_targets, started_values, parameter_values
         )
     except _IncompleteError as incomplete:
         return Unbound(
@@ -645,11 +649,9 @@ def bind_revision_or_reason(document: Mapping[str, Any]) -> Binding | Unbound:
 
     removed = _freed_rows(pinned, assembly, targets)
     freed_columns = {row_id: pinned[row_id] for row_id in removed}
-    if removed:
-        spec = _without_rows_and_orphaned_parameters(spec, removed)
-        pinned = {row_id: column for row_id, column in pinned.items() if row_id not in removed}
-        for row_id in removed:
-            row_units.pop(row_id, None)
+    spec, pinned = _without_freed_rows(spec, pinned, removed)
+    for row_id in removed:
+        row_units.pop(row_id, None)
 
     # The declaration must carry the values the *revision* declares, not the ones the flowsheet
     # happens to be parameterized by. `Syn001Flowsheet` takes a single pressure, so a revision
@@ -673,7 +675,7 @@ def bind_revision_or_reason(document: Mapping[str, Any]) -> Binding | Unbound:
     promoted_columns = {row_id: column for row_id, (_, column) in promotions.items()}
     for row_id, (name, column) in promotions.items():
         specification_ids[row_id] = name
-        row_units[row_id] = column.split(".", 1)[0] if column.split(".", 1)[0] in WIRING else ""
+        row_units[row_id] = _unit_named_first(column, WIRING)
 
     return Binding(
         spec=spec,
@@ -733,6 +735,34 @@ def _matched_syn001(
     return matched
 
 
+def _canonical_inputs(
+    document: Mapping[str, Any], declared: tuple[str, ...]
+) -> (
+    tuple[
+        tuple[str, ...],
+        dict[str, float],
+        dict[tuple[str, str], float],
+        tuple[UnitConversion, ...],
+    ]
+    | Unbound
+):
+    """The provider's order of the `declared` component set (T06 spec §8.6), then `_read_inputs`'s
+    values, instance parameters and conversions read on that order; or the first refusal: a
+    component set `canonical_components` refuses (its `RevisionError` as the `Unbound`), an input
+    `_read_inputs` refuses, or an instance contract `_instance_contracts` refuses."""
+    try:
+        components = canonical_components(declared)
+    except RevisionError as error:
+        return Unbound(error.kind, error.code, hint=error.hint)
+    inputs = _read_inputs(document, components)
+    if isinstance(inputs, Unbound):
+        return inputs
+    contract = _instance_contracts(document, components)
+    if contract is not None:
+        return contract
+    return (components, *inputs)
+
+
 def _process_graph(
     document: Mapping[str, Any],
     components: Sequence[str],
@@ -758,6 +788,12 @@ def _process_graph(
         ),
         instance_ids=matched,
     )
+
+
+def _specifications_in_role(document: Mapping[str, Any], role: str) -> list[Any]:
+    """The entries of the revision's `specifications` whose `role` is `role`, in declaration
+    order (none when the revision declares no specifications)."""
+    return [entry for entry in (document.get("specifications") or ()) if entry.get("role") == role]
 
 
 def _guesses(
@@ -845,6 +881,20 @@ def _freed_rows(
     )
 
 
+def _without_freed_rows(
+    spec: ProblemSpec, pinned: dict[str, str], removed: tuple[str, ...]
+) -> tuple[ProblemSpec, dict[str, str]]:
+    """`spec` and the pinned rows `pinned` without the freed rows `removed`, `spec` also without
+    the parameters only those rows read (`_without_rows_and_orphaned_parameters`); both returned
+    as they are when no row is removed."""
+    if not removed:
+        return spec, pinned
+    return (
+        _without_rows_and_orphaned_parameters(spec, removed),
+        {row_id: column for row_id, column in pinned.items() if row_id not in removed},
+    )
+
+
 def _without_rows_and_orphaned_parameters(
     spec: ProblemSpec, removed: tuple[str, ...]
 ) -> ProblemSpec:
@@ -923,6 +973,12 @@ def _promote_specifications(
     return spec, promotions
 
 
+def _unit_named_first(column: str, units: Mapping[str, Any]) -> str:
+    """The unit `column`'s id names first (`<unit>.<rest>`) when it is one of `units`, else the
+    empty string (the column belongs to a stream)."""
+    return column.split(".", 1)[0] if column.split(".", 1)[0] in units else ""
+
+
 def _instance_contracts(document: Mapping[str, Any], components: Sequence[str]) -> Unbound | None:
     """T07 ruling round 6, R6-W6: every matched instance satisfies `instance_contract` under the
     model it names — the parameters that model reads and the port phases it takes — or the first
@@ -944,6 +1000,17 @@ def _instance_contracts(document: Mapping[str, Any], components: Sequence[str]) 
     except RevisionError as error:
         return Unbound(error.kind, error.code, hint=error.hint)
     return None
+
+
+def _with_starts(
+    targets: Mapping[str, tuple[str, ...]], values: Mapping[str, float], starts: Mapping[str, float]
+) -> tuple[dict[str, tuple[str, ...]], dict[str, float]]:
+    """`targets` and `values` with an entry `guess:<column>` for each column in `starts`, targeting
+    that column at its start: how `_flowsheet_settings` reads a freed coordinate's value (§7.5)."""
+    return (
+        {**targets, **{f"guess:{column}": (column,) for column in starts}},
+        {**values, **{f"guess:{column}": value for column, value in starts.items()}},
+    )
 
 
 def _assemble(settings: Mapping[str, Any]) -> tuple[Any, ProblemSpec, dict[str, str]]:
@@ -1006,12 +1073,9 @@ def _refused_at_construction(
         if any(value is None for value in defaults.values()):
             return Unbound("unsupported", f"value_outside_model_domain_unattributed: {first}")
         rebuilt = {**assembly, **{c: v for c, v in defaults.items() if v is not None}}
+        started_targets, started_values = _with_starts(targets, values, rebuilt)
         settings = _flowsheet_settings(
-            document,
-            components,
-            {**targets, **{f"guess:{column}": (column,) for column in rebuilt}},
-            {**values, **{f"guess:{column}": value for column, value in rebuilt.items()}},
-            parameter_values,
+            document, components, started_targets, started_values, parameter_values
         )
         try:
             _assemble(settings)
@@ -1221,18 +1285,25 @@ def _wiring_edges(wiring: Mapping[str, Any]) -> list[tuple[str, str, str]]:
     """
     producers: dict[str, str] = {}
     consumers: dict[str, list[str]] = {}
-    for unit, entry in wiring.items():
-        for port, streams in entry.streams.items():
-            for stream in streams:
-                if port == "inlet":
-                    consumers.setdefault(stream, []).append(unit)
-                else:
-                    producers[stream] = unit
+    for unit, port, stream in _port_streams(wiring):
+        if port == "inlet":
+            consumers.setdefault(stream, []).append(unit)
+        else:
+            producers[stream] = unit
     return sorted(
         (stream, producer, consumer)
         for stream, producer in producers.items()
         for consumer in consumers.get(stream, ())
     )
+
+
+def _port_streams(wiring: Mapping[str, Any]) -> Iterator[tuple[str, str, str]]:
+    """Each (unit, port, stream) that the `Wiring` entries of `wiring` carry, lazily, in
+    `wiring`'s iteration order (units, then each unit's ports, then each port's streams)."""
+    for unit, entry in wiring.items():
+        for port, streams in entry.streams.items():
+            for stream in streams:
+                yield unit, port, stream
 
 
 def _pinned_columns(spec: ProblemSpec) -> dict[str, str]:
@@ -1286,7 +1357,8 @@ def _flowsheet_settings(
 ) -> dict[str, Any]:
     """Read the five parameters SYN-001 is parameterized by, from the specifications' targets,
     with the feed flows in `components`' order (the provider's, T06 spec §8.6), and the split
-    fraction from its instance parameter as `read_parameter` read it (in SI, ADR 0016 D5)."""
+    fraction from its instance parameter as `read_parameter` read it (in SI, ADR 0016 D5;
+    `_split_fraction`)."""
 
     def value_for(column: str) -> float | None:
         for name, columns in targets.items():
@@ -1300,10 +1372,7 @@ def _flowsheet_settings(
     heater_temperature = value_for("S3.T")
     flash_temperature = value_for("S4.T")
 
-    split_fraction: float | None = None
-    for entry in document.get("instances") or ():
-        if "split_fraction" in (entry.get("parameters") or {}):
-            split_fraction = parameters[(str(entry.get("id")), "split_fraction")]
+    split_fraction = _split_fraction(document, parameters)
 
     missing = [
         label
@@ -1333,3 +1402,16 @@ def _flowsheet_settings(
         "flash_temperature": flash_temperature,
         "split_fraction": split_fraction,
     }
+
+
+def _split_fraction(
+    document: Mapping[str, Any], parameters: Mapping[tuple[str, str], float]
+) -> float | None:
+    """The `split_fraction` of the instance in `document` that declares one, from `parameters`
+    (by (instance id, name), as `read_parameter` read it); the last such instance's when several
+    declare one, `None` when none does."""
+    split_fraction: float | None = None
+    for entry in document.get("instances") or ():
+        if "split_fraction" in (entry.get("parameters") or {}):
+            split_fraction = parameters[(str(entry.get("id")), "split_fraction")]
+    return split_fraction

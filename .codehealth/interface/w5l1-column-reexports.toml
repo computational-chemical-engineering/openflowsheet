@@ -1,0 +1,41 @@
+# ADR 0076 W5 batch L, WO-L1's second step (docs/briefs/S19-W5-ruling.md, WO-L1 row; I-19):
+# models/syn001/{cascade, column, column_solve}.py and orchestrator/region.py stop re-exporting the 34
+# names the frozen column_unit.py took through them, now that it imports each from its home.
+# `codehealth gate --mode interface` reads this plan from the plan commit.
+id = "w5l1-column-reexports"
+approved_by = "Frank Peters, 2026-11-14, ADR 0076 accepted (Decision Desk ofs-adr0076-accept); W5 ruling WO-L1; card ofs-s19-legacy-models (c)"
+reason = """ADR 0076 I-19 (no shims) and W5 ruling WO-L1: with models/syn001/column_unit.py importing \
+its 34 bindings from their homes (WO-L1 step 1, d30c0006: cascade_spec, cascade_failure, \
+column_spec, column_rows, column_compile, column_acceptance, models.lifted), the I-19 W5 \
+exception rows go. models/syn001/cascade.py: CascadeFailure, InletState, inlet_stream, \
+stage_pressure_id, stage_row_id, stage_temperature_id lose their `as` aliases (cascade uses them) \
+and BOTTOM, TOP, SideFeed, _TOKEN are no longer imported; BOTTOM, TOP, CascadeFailure, \
+InletState, SideFeed leave __all__. models/syn001/column.py: ColumnSpec, declared_rows, \
+product_flow_id, product_total_id, purity_flow_id lose their aliases (column uses them) and \
+COMPONENT_KINDS, CONDENSER, END_KINDS, EQUATIONS, EndSpecification, FLOWSHEET_EQUATIONS, F_REF, \
+FlowsheetLinks, GAMMA_PHI_KINDS, INVERSE_KINDS, MODEL_ID, REBOILER, recovery_flow_id are no \
+longer imported; 14 of the 18 leave __all__ (F_REF, FLOWSHEET_EQUATIONS, FlowsheetLinks, \
+recovery_flow_id were never listed). models/syn001/column_solve.py: closure_types, lifted_splits, \
+products, split_temperatures, zero_flow_forms are no longer imported (column_solve uses none of \
+them) and leave __all__. orchestrator/region.py: StagedSplits is no longer imported and leaves \
+__all__. The module docstrings of cascade.py and column.py drop their sentence on these \
+re-exports; column_unit.py's docstrings name column_rows.declared_rows and \
+column_compile.lifted_splits for the old column/column_solve paths. Imports, __all__ and those \
+docstring sentences only. An AST inventory over src, tests, scripts and benchmarks (from-imports \
+at any depth, module-alias attribute reads, getattr/setattr, dotted strings) finds no other use \
+of the 34 names through the four modules (step commit message). Not retargeted: the archival \
+design probes docs/derivations/scripts/s08_design/block_endpoint_prototype.py:13,15 and \
+contract_closure_probe.py:64,65 (design history, not obligations). None of the four files is \
+registry-hashed or frozen. cce-code-health counts imports as API only in __init__.py, so the \
+four __all__ lists are the listed change (STOP 1 ruling, as i8f and w5n2)."""
+removed = []
+renamed = {}
+changed = [
+    "src/openflowsheet/models/syn001/cascade.py:__all__",
+    "src/openflowsheet/models/syn001/column.py:__all__",
+    "src/openflowsheet/models/syn001/column_solve.py:__all__",
+    "src/openflowsheet/orchestrator/region.py:__all__",
+]
+added = []
+new_files = []
+callers = []

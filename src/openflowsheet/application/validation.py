@@ -85,7 +85,8 @@ def validate(
     solver_probe: Callable[[], Any] | None = None,
 ) -> ValidationReport:
     """Blueprint §4.3's order: schema (`_schema_stage`), dimensions, connectivity, components,
-    then structural analysis.
+    then structural analysis. `COND-01` and the status it implies before the structural
+    findings come from `_specification_readiness`.
 
     `now` is read once, when the report is made, for `provenance.timestamp` (T07 ruling round 1
     R3); it is injectable so that a test can fix it. Nothing else in the report depends on it.
@@ -142,26 +143,8 @@ def validate(
 
     # Task-specific structure. A draft is not a failure: D16 makes an incomplete revision
     # persistable and committable, and only a *run* requires a revision validated for its task.
-    if not specifications:
-        checks.append(
-            Check(
-                id="COND-01",
-                stage="conditional_classification",
-                result="WARN",
-                message="no specifications; the system is under-determined and this is a draft",
-            )
-        )
-        status: ValidationStatus = "DRAFT"
-    else:
-        checks.append(
-            Check(
-                id="COND-01",
-                stage="conditional_classification",
-                result="PASS",
-                message=f"{len(specifications)} specifications declared",
-            )
-        )
-        status = "READY_FOR_SIMULATION"
+    conditional, status = _specification_readiness(specifications)
+    checks.append(conditional)
 
     structural, counts, absent_reason, fallback = _structural(document, surrogates)
     checks += structural
@@ -491,7 +474,7 @@ def _analysed(
     """`_structural`'s choice of binder: the analysed report, if any; the refusal it reports, if
     any (which then decides the checks); the specification labels of the revision binder's
     columns; whether that binder was the one analysed; and the binding, declaration and graph the
-    report came from."""
+    report came from. When neither binder binds, `_reported_refusal` picks the refusal reported."""
     from openflowsheet.application.binding import (
         Binding,
         bind_revision_or_reason,
@@ -550,18 +533,8 @@ def _analysed(
             analysed = revision
             pins = pin_specifications(document)
             fallback = True
-        elif (
-            _REFUSAL_RANK[revision.kind] > _REFUSAL_RANK[binding.kind]
-            or revision.kind == binding.kind == "unsupported"
-        ):
-            refusal = revision
         else:
-            # T07 design note, ruling round 3, Q2 (amending R1.2): a tie is split by kind. An
-            # `incomplete` tie reports the legacy refusal, which names and implicates the quantity
-            # in the declaration's words (T06 A04, STR-02); an `unsupported` tie reports the
-            # revision binder's, since the legacy one speaks only of SYN-001's declaration. In the
-            # free class the revision side is the probe's refusal (ruling round 7, S1).
-            refusal = binding
+            refusal = _reported_refusal(binding, revision)
 
     return StructuralAnalysis(
         report,
@@ -597,6 +570,23 @@ def _free_class_refusal(
     if probed is not None and probed.kind in ("incomplete", "unsupported"):
         return probed
     return refusal
+
+
+def _reported_refusal(binding: Unbound, revision: Unbound) -> Unbound:
+    """The refusal `_analysed` reports when neither binder binds: the legacy binder's `binding` or
+    the revision binder's `revision`, whichever ranks higher in `_REFUSAL_RANK`, the revision
+    binder's on an `unsupported` tie and the legacy binder's on any other tie."""
+    if (
+        _REFUSAL_RANK[revision.kind] > _REFUSAL_RANK[binding.kind]
+        or revision.kind == binding.kind == "unsupported"
+    ):
+        return revision
+    # T07 design note, ruling round 3, Q2 (amending R1.2): a tie is split by kind. An
+    # `incomplete` tie reports the legacy refusal, which names and implicates the quantity
+    # in the declaration's words (T06 A04, STR-02); an `unsupported` tie reports the
+    # revision binder's, since the legacy one speaks only of SYN-001's declaration. In the
+    # free class the revision side is the probe's refusal (ruling round 7, S1).
+    return binding
 
 
 def structural_refusal(
@@ -760,9 +750,13 @@ def structural_checks(report: Any) -> list[Check]:
     Separated from `_structural` so that a check reachable only by a synthetic declaration — the
     `STR-06` warning, which no registered revision provokes — can still be exercised by a test
     rather than recorded as untested (M5(b) of the Fable review of T01).
+
+    One helper per check, in rule order: `_check_rank` (`STR-01`), `_check_under_specification`
+    (`STR-02`), `_check_over_specification` (`STR-03`), `_check_conflicts` (`STR-04`),
+    `_block_metrics` (`STR-05`) and, when the report has uncertified affine rows,
+    `_check_uncertified_rows` (`STR-06`).
     """
     from openflowsheet.application.binding import instance_named
-    from openflowsheet.graph.report import STATEMENTS
 
     counts = report.structural_counts
     assert counts is not None
@@ -777,89 +771,112 @@ def structural_checks(report: Any) -> list[Check]:
 
     over_specified = named(report.over_specified_units)
     checks = [
-        Check(
-            id="STR-01",
-            stage="structural_analysis",
-            result="PASS",
-            message=(
-                f"{report.finding}: {counts['equations']} equations over "
-                f"{counts['free_variables']} free variables, structural rank {counts['matched']}, "
-                f"{report.nnz} declared incidences. {STATEMENTS['S1']} {STATEMENTS['S2']} "
-                f"{STATEMENTS['S3']}"
-            ),
-        ),
-        Check(
-            id="STR-02",
-            stage="structural_analysis",
-            result="PASS" if report.deficit == 0 else "FAIL",
-            message=(
-                "no structural under-specification"
-                if report.deficit == 0
-                else (
-                    f"STRUCTURAL_UNDER_SPECIFICATION: deficit {report.deficit}. {STATEMENTS['S4']}"
-                )
-            ),
-            implicated_objects=(
-                ()
-                if report.deficit == 0
-                else report.dm_after_certificates.under_cols
-                if report.dm_after_certificates is not None
-                else ()
-            ),
-        ),
-        Check(
-            id="STR-03",
-            stage="structural_analysis",
-            result="PASS" if report.excess == 0 else "FAIL",
-            message=(
-                "no structural over-specification after certified redundancy"
-                if report.excess == 0
-                else (
-                    f"STRUCTURAL_OVER_SPECIFICATION: excess {report.excess}; "
-                    f"over-specified units {over_specified}; candidate "
-                    f"specifications {list(report.candidate_specifications)}. "
-                    f"{STATEMENTS['S4']} {STATEMENTS['S5']}"
-                )
-            ),
-            implicated_objects=() if report.excess == 0 else report.implicated_objects,
-        ),
-        Check(
-            id="STR-04",
-            stage="structural_analysis",
-            result="PASS" if not report.conflicts else "FAIL",
-            message=(
-                f"{len(report.certificates)} certified redundant rows, all consistent. "
-                f"{STATEMENTS['S6']}"
-                if not report.conflicts
-                else (
-                    "SPECIFICATION_CONFLICT: "
-                    + "; ".join(
-                        f"{instance_named(entry.row_id, instance_of)} repeats "
-                        f"{named([name for name, _ in entry.equals])} but "
-                        f"disagrees by {entry.constant_mismatch:g}, beyond {entry.tolerance:g}"
-                        for entry in report.conflicts
-                    )
-                )
-            ),
-            implicated_objects=() if not report.conflicts else report.implicated_objects,
-        ),
+        _check_rank(report, counts),
+        _check_under_specification(report),
+        _check_over_specification(report, over_specified),
+        _check_conflicts(report, named, instance_of),
         _block_metrics(report, named),
     ]
     if report.uncertified_affine_rows:
-        checks.append(
-            Check(
-                id="STR-06",
-                stage="structural_analysis",
-                result="WARN",
-                message=(
-                    "consistency not established for affine rows this policy does not read: "
-                    f"{list(report.uncertified_affine_rows)}. They are retained, not certified "
-                    "and not discarded"
-                ),
-                implicated_objects=report.uncertified_affine_rows,
-            )
-        )
+        checks.append(_check_uncertified_rows(report))
     return checks
+
+
+def _check_rank(report: Any, counts: Mapping[str, int]) -> Check:
+    """`STR-01`: the finding, the equation and free-variable counts, the structural rank and the
+    declared incidences, with statements S1 to S3. Always a `PASS`."""
+    from openflowsheet.graph.report import STATEMENTS
+
+    return Check(
+        id="STR-01",
+        stage="structural_analysis",
+        result="PASS",
+        message=(
+            f"{report.finding}: {counts['equations']} equations over "
+            f"{counts['free_variables']} free variables, structural rank {counts['matched']}, "
+            f"{report.nnz} declared incidences. {STATEMENTS['S1']} {STATEMENTS['S2']} "
+            f"{STATEMENTS['S3']}"
+        ),
+    )
+
+
+def _check_under_specification(report: Any) -> Check:
+    """`STR-02`: a `FAIL` with the deficit and statement S4, implicating the under-determined
+    columns after certified redundancy, when the deficit is not zero."""
+    from openflowsheet.graph.report import STATEMENTS
+
+    return Check(
+        id="STR-02",
+        stage="structural_analysis",
+        result="PASS" if report.deficit == 0 else "FAIL",
+        message=(
+            "no structural under-specification"
+            if report.deficit == 0
+            else (f"STRUCTURAL_UNDER_SPECIFICATION: deficit {report.deficit}. {STATEMENTS['S4']}")
+        ),
+        implicated_objects=(
+            ()
+            if report.deficit == 0
+            else report.dm_after_certificates.under_cols
+            if report.dm_after_certificates is not None
+            else ()
+        ),
+    )
+
+
+def _check_over_specification(report: Any, over_specified: list[str]) -> Check:
+    """`STR-03`: a `FAIL` with the excess, the over-specified units (`over_specified`, named by
+    their revision instances), the candidate specifications and statements S4 and S5 when the
+    excess is not zero."""
+    from openflowsheet.graph.report import STATEMENTS
+
+    return Check(
+        id="STR-03",
+        stage="structural_analysis",
+        result="PASS" if report.excess == 0 else "FAIL",
+        message=(
+            "no structural over-specification after certified redundancy"
+            if report.excess == 0
+            else (
+                f"STRUCTURAL_OVER_SPECIFICATION: excess {report.excess}; "
+                f"over-specified units {over_specified}; candidate "
+                f"specifications {list(report.candidate_specifications)}. "
+                f"{STATEMENTS['S4']} {STATEMENTS['S5']}"
+            )
+        ),
+        implicated_objects=() if report.excess == 0 else report.implicated_objects,
+    )
+
+
+def _check_conflicts(
+    report: Any, named: Callable[[Sequence[str]], list[str]], instance_of: Mapping[str, str]
+) -> Check:
+    """`STR-04`: the certified redundant rows with statement S6, or a `FAIL` naming each
+    conflicting row (by its revision instance, `instance_of`) and the rows it repeats (`named`).
+    """
+    from openflowsheet.application.binding import instance_named
+    from openflowsheet.graph.report import STATEMENTS
+
+    return Check(
+        id="STR-04",
+        stage="structural_analysis",
+        result="PASS" if not report.conflicts else "FAIL",
+        message=(
+            f"{len(report.certificates)} certified redundant rows, all consistent. "
+            f"{STATEMENTS['S6']}"
+            if not report.conflicts
+            else (
+                "SPECIFICATION_CONFLICT: "
+                + "; ".join(
+                    f"{instance_named(entry.row_id, instance_of)} repeats "
+                    f"{named([name for name, _ in entry.equals])} but "
+                    f"disagrees by {entry.constant_mismatch:g}, beyond {entry.tolerance:g}"
+                    for entry in report.conflicts
+                )
+            )
+        ),
+        implicated_objects=() if not report.conflicts else report.implicated_objects,
+    )
 
 
 def _block_metrics(report: Any, named: Callable[[Sequence[str]], list[str]]) -> Check:
@@ -908,6 +925,22 @@ def _block_metrics(report: Any, named: Callable[[Sequence[str]], list[str]]) -> 
                 f"attempt signature {named(tear.signature_units)}"
             )
         ),
+    )
+
+
+def _check_uncertified_rows(report: Any) -> Check:
+    """`STR-06`: a `WARN` naming the affine rows the certification policy does not read; they are
+    retained, neither certified nor discarded."""
+    return Check(
+        id="STR-06",
+        stage="structural_analysis",
+        result="WARN",
+        message=(
+            "consistency not established for affine rows this policy does not read: "
+            f"{list(report.uncertified_affine_rows)}. They are retained, not certified "
+            "and not discarded"
+        ),
+        implicated_objects=report.uncertified_affine_rows,
     )
 
 
@@ -1095,33 +1128,12 @@ def _component_references(
 ) -> Check:
     """`COMP-03` (T06 spec §8.5, register R-071): every specification's `target.component`, and
     every component-keyed parameter name — declared on an instance or pinned through a
-    specification's `parameters.<name>` path — names a member of the component set."""
+    specification's `parameters.<name>` path — names a member of the component set.
 
-    def outside(parameter: str) -> str | None:
-        family, _, component = parameter.partition(".")
-        if family in _COMPONENT_KEYED_PARAMETERS and component and component not in components:
-            return component
-        return None
-
-    unknown: list[tuple[str, str]] = []
-    for instance in instances:
-        unit = str(instance.get("id", ""))
-        for parameter in instance.get("parameters") or {}:
-            component = outside(str(parameter))
-            if component is not None:
-                unknown.append((f"{unit}.{parameter}", component))
-    for entry in specifications:
-        name = str(entry.get("id", ""))
-        target = entry.get("target") or {}
-        component = target.get("component")
-        if component is not None and component not in components:
-            unknown.append((name, str(component)))
-            continue
-        path = str(target.get("path", ""))
-        if path.startswith("parameters."):
-            named = outside(path.removeprefix("parameters."))
-            if named is not None:
-                unknown.append((name, named))
+    The unknown references are the instances' (`_unknown_instance_components`) followed by the
+    specifications' (`_unknown_specification_components`), each in document order."""
+    unknown = _unknown_instance_components(components, instances)
+    unknown += _unknown_specification_components(components, specifications)
 
     return Check(
         id="COMP-03",
@@ -1138,6 +1150,54 @@ def _component_references(
         ),
         implicated_objects=tuple(name for name, _ in unknown),
     )
+
+
+def _unknown_instance_components(
+    components: Sequence[str], instances: Sequence[Mapping[str, Any]]
+) -> list[tuple[str, str]]:
+    """`COMP-03`'s instance half: `(<unit>.<parameter>, component)` for every component-keyed
+    parameter declared on an instance whose component is not in `components`, in instance and
+    then parameter order."""
+    unknown: list[tuple[str, str]] = []
+    for instance in instances:
+        unit = str(instance.get("id", ""))
+        for parameter in instance.get("parameters") or {}:
+            component = _outside_component(str(parameter), components)
+            if component is not None:
+                unknown.append((f"{unit}.{parameter}", component))
+    return unknown
+
+
+def _unknown_specification_components(
+    components: Sequence[str], specifications: Sequence[Mapping[str, Any]]
+) -> list[tuple[str, str]]:
+    """`COMP-03`'s specification half: `(<specification id>, component)` for every specification
+    whose `target.component` is not in `components`, or else whose `parameters.<name>` target
+    path names a component-keyed parameter outside it; in specification order."""
+    unknown: list[tuple[str, str]] = []
+    for entry in specifications:
+        name = str(entry.get("id", ""))
+        target = entry.get("target") or {}
+        component = target.get("component")
+        if component is not None and component not in components:
+            unknown.append((name, str(component)))
+            continue
+        path = str(target.get("path", ""))
+        if path.startswith("parameters."):
+            named = _outside_component(path.removeprefix("parameters."), components)
+            if named is not None:
+                unknown.append((name, named))
+    return unknown
+
+
+def _outside_component(parameter: str, components: Sequence[str]) -> str | None:
+    """The component a component-keyed parameter name (`nu.<c>`, `conversion.<c>`, `split.<c>`)
+    names when it is not in `components`; `None` for any other name, a family with no component
+    part, or a member of `components`."""
+    family, _, component = parameter.partition(".")
+    if family in _COMPONENT_KEYED_PARAMETERS and component and component not in components:
+        return component
+    return None
 
 
 def _components(
@@ -1172,3 +1232,30 @@ def _components(
         record_check,
         _component_references(components, instances, specifications),
     ]
+
+
+def _specification_readiness(
+    specifications: Sequence[Mapping[str, Any]],
+) -> tuple[Check, ValidationStatus]:
+    """`validate`'s `COND-01` check and the status it implies before the structural findings: a
+    `WARN` and `DRAFT` when the revision declares no specifications, else a `PASS` and
+    `READY_FOR_SIMULATION`."""
+    if not specifications:
+        return (
+            Check(
+                id="COND-01",
+                stage="conditional_classification",
+                result="WARN",
+                message="no specifications; the system is under-determined and this is a draft",
+            ),
+            "DRAFT",
+        )
+    return (
+        Check(
+            id="COND-01",
+            stage="conditional_classification",
+            result="PASS",
+            message=f"{len(specifications)} specifications declared",
+        ),
+        "READY_FOR_SIMULATION",
+    )

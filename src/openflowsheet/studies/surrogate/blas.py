@@ -8,13 +8,19 @@ identity, so the fit runs under one thread whatever `OPENBLAS_NUM_THREADS`/`OMP_
 `single_blas_thread` sets every OpenBLAS loaded in the process to one thread through the
 library's own API and restores each previous count on exit.
 
-The loaded libraries are found in `/proc/self/maps` (Linux) and opened with `RTLD_NOLOAD`, so
-nothing is loaded that the process had not loaded; each is driven by the first pair of
-`<prefix>_get_num_threads<suffix>`/`<prefix>_set_num_threads<suffix>` it exports, `prefix` in
-(`scipy_openblas`, `openblas`), `suffix` in (`64_`, ``) — the symbols of the bundled ILP64 (NumPy)
-and LP64 (SciPy) builds and of a system OpenBLAS. Where no OpenBLAS is loaded (another BLAS, or a
-platform without `/proc`), `controlled()` is empty and the pin is a no-op: the manifest is then
-bitwise only at a fixed thread setting (spec §18 A1.3's platform classes govern).
+The loaded libraries are found by `_platform.loaded_libraries` (`/proc/self/maps` on Linux, the
+dynamic loader's images on macOS, the process's modules on Windows) and opened with
+`LOADED_LIBRARY_MODE`, so nothing is loaded that the process had not loaded; each is driven by the
+first pair of `<prefix>_get_num_threads<suffix>`/`<prefix>_set_num_threads<suffix>` it exports,
+`prefix` in (`scipy_openblas`, `openblas`), `suffix` in (`64_`, ``) — the symbols of the bundled
+ILP64 (NumPy) and LP64 (SciPy) builds and of a system OpenBLAS. Where no OpenBLAS is loaded
+(another BLAS, such as Accelerate), `controlled()` is empty and the pin is a no-op: OpenBLAS's
+thread variables then do not reach the fit, and that BLAS's own thread count (Accelerate's
+`VECLIB_MAXIMUM_THREADS`) is not set. m04 a49 varies `VECLIB_MAXIMUM_THREADS` with OpenBLAS's
+variables on macOS, so A3.3 is measured there too; a fit that differs with it is an A3.3 finding
+(X07a WO9 review W-2). A3.3 is a rule on one platform (A32: "bitwise on one platform, whatever
+the thread setting"); spec §18 A1.3's classes govern comparisons across platforms only (X07a
+review R-1).
 
 The limit is process-wide, as `threadpoolctl`'s is: at most one job computes per interpreter (the
 inline executor's `COMPUTE_LOCK`; the process executor's one worker per job), so no other
@@ -28,14 +34,14 @@ import os
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass
-from pathlib import Path
 from typing import Final
+
+from openflowsheet._platform import LOADED_LIBRARY_MODE, loaded_libraries
 
 __all__ = ["BlasLibrary", "controlled", "single_blas_thread"]
 
 _PREFIXES: Final = ("scipy_openblas", "openblas")
 _SUFFIXES: Final = ("64_", "")
-_MAPS: Final = Path("/proc/self/maps")
 
 
 @dataclass(frozen=True)
@@ -49,21 +55,12 @@ class BlasLibrary:
 
 def _loaded_openblas() -> list[str]:
     """The paths of the loaded shared objects whose file name names OpenBLAS, sorted."""
-    try:
-        maps = _MAPS.read_text(encoding="utf-8")
-    except OSError:
-        return []
-    paths = set()
-    for line in maps.splitlines():
-        fields = line.split(None, 5)
-        if len(fields) == 6 and "openblas" in os.path.basename(fields[5]).lower():
-            paths.add(fields[5].strip())
-    return sorted(paths)
+    return [path for path in loaded_libraries() if "openblas" in os.path.basename(path).lower()]
 
 
 def _library(path: str) -> BlasLibrary | None:
     try:
-        handle = ctypes.CDLL(path, mode=os.RTLD_NOLOAD | os.RTLD_LAZY)
+        handle = ctypes.CDLL(path, mode=LOADED_LIBRARY_MODE)
     except OSError:
         return None
     for prefix in _PREFIXES:
@@ -78,8 +75,7 @@ def _library(path: str) -> BlasLibrary | None:
 
 
 def controlled() -> tuple[BlasLibrary, ...]:
-    """Every loaded OpenBLAS whose thread count this module can set (empty off Linux or with
-    another BLAS)."""
+    """Every loaded OpenBLAS whose thread count this module can set (empty with another BLAS)."""
     found = (_library(path) for path in _loaded_openblas())
     return tuple(library for library in found if library is not None)
 

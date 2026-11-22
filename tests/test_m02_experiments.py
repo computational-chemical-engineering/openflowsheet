@@ -46,7 +46,7 @@ from pathlib import Path
 from typing import Any
 
 import pytest
-from conftest import REPO_ROOT
+from conftest import NEEDS_EXTERNAL_CHILD, REPO_ROOT
 
 from openflowsheet.adapters import variants
 from openflowsheet.adapters.experiments.runner import ExperimentOutcome, ExperimentRunner
@@ -139,6 +139,7 @@ def _statuses(outcome: ExperimentOutcome) -> list[str]:
 # -- the in-process path is M01's stand-in -------------------------------------------------------
 
 
+@NEEDS_EXTERNAL_CHILD
 def test_the_standin_result_is_m01s_envelope_and_the_childs_outlet_is_bitwise_equal(
     project: Project,
 ) -> None:
@@ -213,6 +214,7 @@ def test_g4c_twice_the_flow_over_twice_the_tubes_is_another_experiment(project: 
 # -- (d): retry, and a transient outcome is never cached ------------------------------------------
 
 
+@NEEDS_EXTERNAL_CHILD
 def test_g4d_a_crash_is_retried_once_and_never_cached(project: Project) -> None:
     variant = synthetic_variant("abort", ["abort"])
     first = _run(project.runner(), variant)
@@ -227,6 +229,7 @@ def test_g4d_a_crash_is_retried_once_and_never_cached(project: Project) -> None:
     assert [a["attempt"] for a in third.attempts] == [3, 4]
 
 
+@NEEDS_EXTERNAL_CHILD
 def test_r251_an_exception_inside_the_model_is_a_cached_deterministic_refusal(
     project: Project,
 ) -> None:
@@ -260,6 +263,7 @@ def test_r251_an_exception_inside_the_model_is_a_cached_deterministic_refusal(
     assert len(project.records().attempts(first.key)) == 1
 
 
+@NEEDS_EXTERNAL_CHILD
 @pytest.mark.parametrize(
     ("hook", "pointer"),
     [("nonfinite", "/tube_outlet/flows/2"), ("nonfinite_diag", "/diagnostics/nonfinite_diag")],
@@ -295,6 +299,7 @@ def test_g11v3_7_a_nonfinite_value_is_a_cached_deterministic_refusal(
     assert len(project.records().attempts(first.key)) == 1
 
 
+@NEEDS_EXTERNAL_CHILD
 def test_g11v3_7_a_refusal_with_a_nonfinite_diagnostic_keeps_its_stage(project: Project) -> None:
     variant = synthetic_variant("s1-nonfinite-diag", ["not_accepted(S1)", "nonfinite_diag"])
     first = _run(project.runner(), variant)
@@ -314,6 +319,7 @@ def _refuse_constant(name: str) -> None:
     raise AssertionError(f"the written document holds {name}")
 
 
+@NEEDS_EXTERNAL_CHILD
 def test_r251_a_memory_error_inside_the_model_is_a_crash_retried_once(project: Project) -> None:
     variant = synthetic_variant("memory-error", ["raise(MemoryError)"])
     first = _run(project.runner(), variant)
@@ -327,6 +333,7 @@ def test_r251_a_memory_error_inside_the_model_is_a_crash_retried_once(project: P
     assert not again.cache_hit and [a["attempt"] for a in again.attempts] == [3, 4]
 
 
+@NEEDS_EXTERNAL_CHILD
 def test_a_timeout_is_not_retried(project: Project) -> None:
     variant = synthetic_variant("slow", ["sleep(60)"], timeout_s=1.0)
     outcome = _run(project.runner(), variant)
@@ -335,6 +342,7 @@ def test_a_timeout_is_not_retried(project: Project) -> None:
     assert outcome.envelope["code"] == "external_timed_out" and outcome.transient
 
 
+@NEEDS_EXTERNAL_CHILD
 def test_a_changed_fingerprint_ends_the_attempt_environment_changed(project: Project) -> None:
     outcome = _run(project.runner(), synthetic_variant("alt", ["fingerprint(alt)"]))
     _valid(outcome)
@@ -359,6 +367,7 @@ def test_a_failed_handshake_is_an_attempt_keyed_on_the_unmeasured_fingerprint(
     assert outcome.request["environment_fingerprint_sha256"] == unmeasured
 
 
+@NEEDS_EXTERNAL_CHILD
 def test_a_cancel_during_the_evaluation_leaves_a_cancelled_attempt(project: Project) -> None:
     variant = synthetic_variant("sleepy", ["sleep(60)"])
     runner = project.runner()
@@ -416,6 +425,7 @@ def test_g4g_a_pressure_drop_above_the_convention_is_retained(project: Project) 
 # -- (h): bypass, the determinism monitor ---------------------------------------------------------
 
 
+@NEEDS_EXTERNAL_CHILD
 def test_g4h_a_bypassed_repeat_is_compared_bitwise(project: Project) -> None:
     variant = synthetic_variant("ok", ["ok"])
     first = _run(project.runner(), variant)
@@ -427,6 +437,7 @@ def test_g4h_a_bypassed_repeat_is_compared_bitwise(project: Project) -> None:
     assert project.records().result_path(first.key).read_bytes() == before
 
 
+@NEEDS_EXTERNAL_CHILD
 def test_g4h_a_nondeterministic_repeat_is_a_finding_and_the_result_stands(
     project: Project,
 ) -> None:
@@ -458,6 +469,7 @@ def _contend(root: str, barrier: Any, queue: Any) -> None:
         store.close()
 
 
+@NEEDS_EXTERNAL_CHILD
 def test_g4i_two_processes_on_one_key_execute_it_once(project: Project) -> None:
     context = multiprocessing.get_context("spawn")
     barrier = context.Barrier(2)
@@ -489,6 +501,7 @@ def test_a_variant_with_another_boundary_is_refused(project: Project) -> None:
         _run(project.runner(), variant)
 
 
+@NEEDS_EXTERNAL_CHILD
 def test_a_crashing_handshake_is_retried_as_a_handshake(project: Project) -> None:
     outcome = _run(project.runner(), synthetic_variant("bad-env", ["handshake:abort"]))
     _valid(outcome)
@@ -498,6 +511,7 @@ def test_a_crashing_handshake_is_retried_as_a_handshake(project: Project) -> Non
     assert len(handshakes) == 2 and outcome.transient
 
 
+@NEEDS_EXTERNAL_CHILD
 def test_a_handshake_measured_on_its_retry_is_the_one_the_key_carries(project: Project) -> None:
     """A crashed handshake is retried before the key exists: the request is keyed on the
     fingerprint the retry measured, never on the unmeasured one, and the crash is attempt 1."""
@@ -522,6 +536,7 @@ def test_a_handshake_measured_on_its_retry_is_the_one_the_key_carries(project: P
 # -- R-236: the handshake's own budget, and one handshake per job ---------------------------------
 
 
+@NEEDS_EXTERNAL_CHILD
 def test_the_handshake_and_the_evaluation_have_separate_retry_budgets(project: Project) -> None:
     """R-236: a job whose handshake needed its retry still gives the experiment its own."""
     variant = synthetic_variant("flaky-env-abort", ["handshake:abort_first", "abort"])
@@ -532,6 +547,7 @@ def test_the_handshake_and_the_evaluation_have_separate_retry_budgets(project: P
     assert outcome.transient and outcome.envelope["code"] == "external_crashed"
 
 
+@NEEDS_EXTERNAL_CHILD
 def test_a_job_keeps_its_failed_handshake_and_never_handshakes_again(project: Project) -> None:
     """R-236: after the job's handshake failed (with its retry), a second experiment of the job
     is not handshaken again; its one attempt records the job's frozen failure, keyed on the same
@@ -556,6 +572,7 @@ def test_a_job_keeps_its_failed_handshake_and_never_handshakes_again(project: Pr
     assert len(fingerprints) == 1
 
 
+@NEEDS_EXTERNAL_CHILD
 def test_a_job_keeps_its_measured_handshake(project: Project) -> None:
     """R-236 / §6.1: one handshake per job and variant, however many experiments it runs."""
     variant = synthetic_variant("ok-twice", ["ok"])
@@ -597,6 +614,7 @@ def test_the_store_records_through_a_list_sink_without_an_application(tmp_path: 
         assert record["name"] == first.key and path.stat().st_size == record["size_bytes"]
 
 
+@NEEDS_EXTERNAL_CHILD
 def test_e32_a_relative_and_an_absolute_open_give_one_key(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

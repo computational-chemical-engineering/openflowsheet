@@ -11,7 +11,7 @@ from here, and `transactions` re-exports every public name for K06's callers.
 from __future__ import annotations
 
 import copy
-from collections.abc import Mapping, Sequence
+from collections.abc import Iterator, Mapping, Sequence
 from dataclasses import replace
 from typing import Any, Final
 
@@ -147,7 +147,7 @@ def semantic_diff(before: Mapping[str, Any], after: Mapping[str, Any]) -> Semant
 
     Descriptive fields are excluded on purpose: two revisions differing only in their title are
     the same process, and a diff that said otherwise would make every retitle look like an
-    edit to the model.
+    edit to the model. The keys compared at each pair of mappings come from `_compared_keys`.
     """
     added: list[str] = []
     removed: list[str] = []
@@ -155,10 +155,7 @@ def semantic_diff(before: Mapping[str, Any], after: Mapping[str, Any]) -> Semant
 
     def walk(left: Any, right: Any, path: str) -> None:
         if isinstance(left, Mapping) and isinstance(right, Mapping):
-            for key in sorted(set(left) | set(right)):
-                if not path and key in CONTENT_HASH_EXCLUDED:
-                    continue
-                where = f"{path}.{key}" if path else key
+            for key, where in _compared_keys(left, right, path):
                 if key not in left:
                     added.append(where)
                 elif key not in right:
@@ -170,6 +167,18 @@ def semantic_diff(before: Mapping[str, Any], after: Mapping[str, Any]) -> Semant
 
     walk(before, after, "")
     return SemanticDiff(tuple(added), tuple(removed), tuple(changed))
+
+
+def _compared_keys(
+    left: Mapping[Any, Any], right: Mapping[Any, Any], path: str
+) -> Iterator[tuple[Any, str]]:
+    """`semantic_diff`'s keys of two mappings at `path`, in sorted order, each with its dotted
+    path; at the root (`path` empty) the descriptive fields `CONTENT_HASH_EXCLUDED` are skipped.
+    Lazy: each key is judged when the walk asks for it."""
+    for key in sorted(set(left) | set(right)):
+        if not path and key in CONTENT_HASH_EXCLUDED:
+            continue
+        yield key, f"{path}.{key}" if path else key
 
 
 #: ADR 0019 Amendment 3 (A3.2): the members `element_diff` pairs, in its order.

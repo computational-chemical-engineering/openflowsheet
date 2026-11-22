@@ -67,6 +67,7 @@ import math
 import re
 from collections.abc import Iterable, Mapping, Sequence
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 import numpy.typing as npt
@@ -259,8 +260,8 @@ def _canonical_number(value: float | int) -> str:
 
     The *digits* come from `repr`, which is the shortest round-trip decimal and closest-on-ties —
     exactly what ECMA-262 asks for. Only the **layout** differs between the two, and the layout is
-    the five cases below. Doing it this way keeps the delicate part (digit selection) in CPython's
-    tested implementation rather than in this file.
+    the five cases of `_number_layout`. Doing it this way keeps the delicate part (digit
+    selection) in CPython's tested implementation rather than in this file.
     """
     if isinstance(value, bool):  # bool is an int subclass; JCS keeps them distinct (D3.6)
         raise CanonicalizationError("a boolean is not a number")
@@ -299,6 +300,14 @@ def _canonical_number(value: float | int) -> str:
     stripped = digits.lstrip("0")
     n -= len(digits) - len(stripped)
     digits = stripped.rstrip("0") or "0"
+    return _number_layout(sign, digits, n)
+
+
+def _number_layout(sign: str, digits: str, n: int) -> str:
+    """`_canonical_number`'s layout (ECMA-262 `Number::toString`) of a nonzero binary64 with sign
+    `sign`, significant digits `digits` (no leading or trailing zeros; k of them) and decimal
+    exponent `n` (the value is 0.`digits` x 10^n): an integer, a decimal fraction with the point
+    inside the digits or after leading zeros, or an exponent form with one digit or more."""
     k = len(digits)
 
     if k <= n <= 21:
@@ -332,6 +341,8 @@ def _canonical_string(value: str) -> str:
 
 
 def _canonical(value: object) -> str:
+    """The canonical JSON text of `value` (ADR 0002 D3); an object's keys are checked by
+    `_object_keys`."""
     if value is None:
         return "null"
     if isinstance(value, bool):
@@ -345,12 +356,7 @@ def _canonical(value: object) -> str:
         # none does — `component_set.components` order *is* the component order (ADR 0001 D2.1).
         return "[" + ",".join(_canonical(item) for item in value) + "]"
     if isinstance(value, Mapping):
-        keys = list(value)
-        non_string = [key for key in keys if not isinstance(key, str)]
-        if non_string:
-            raise CanonicalizationError(f"object keys must be strings; got {non_string!r}")
-        if len(set(keys)) != len(keys):
-            raise CanonicalizationError("object has duplicate keys")
+        keys = _object_keys(value)
         # RFC 8785 §3.2.3 sorts by UTF-16 code units, not code points. The two orders differ only
         # when a key contains a character outside the BMP — and they *do* differ there, which is
         # why `sort_keys=True` is not an implementation of this rule.
@@ -361,6 +367,18 @@ def _canonical(value: object) -> str:
         f"{type(value).__name__} is outside the JSON data model (ADR 0002 D3.6); a date, "
         "timestamp, set or binary node is written as a string before canonicalization"
     )
+
+
+def _object_keys(value: Mapping[Any, Any]) -> list[str]:
+    """An object's keys in its own order, refused typed (`CanonicalizationError`) when any key is
+    not a string, and then when a key repeats."""
+    keys = list(value)
+    non_string = [key for key in keys if not isinstance(key, str)]
+    if non_string:
+        raise CanonicalizationError(f"object keys must be strings; got {non_string!r}")
+    if len(set(keys)) != len(keys):
+        raise CanonicalizationError("object has duplicate keys")
+    return keys
 
 
 def canonical_json(document: object) -> bytes:
