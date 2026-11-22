@@ -424,8 +424,9 @@ def _alpha_tests_with(pairs: tuple[tuple[str, str], ...]) -> str:
 
 
 #: Every release's pin pairs in release order (RP §7.2, RP.S04): 0.2.0's, 0.3.0's, then each later
-#: release's, as `test_m07_v0_2_gate.py` declares them (0.4.0's appended at 0.4.0's K3).
-RELEASE_PINS = m07.A10_PINS_0_2_0 + m07.A10_PINS_0_3_0 + m07.A10_PINS_0_4_0
+#: release's, as `test_m07_v0_2_gate.py` declares them (0.4.0's appended at 0.4.0's K3, 0.5.0's at
+#: 0.5.0's K3).
+RELEASE_PINS = m07.A10_PINS_0_2_0 + m07.A10_PINS_0_3_0 + m07.A10_PINS_0_4_0 + m07.A10_PINS_0_5_0
 
 
 def _a31_b_holds(source: str) -> bool:
@@ -452,9 +453,13 @@ def test_a04_the_committed_test_holds_and_a_swap_fails() -> None:
     pairs = ast.literal_eval(loop.iter)
     assert _a31_b_holds(_alpha_tests_with(pairs))
     tagged = pairs[: len(pairs) - len(RELEASE_PINS)]
-    swapped = tagged + m07.A10_PINS_0_3_0 + m07.A10_PINS_0_2_0 + m07.A10_PINS_0_4_0
+    swapped = (
+        tagged + m07.A10_PINS_0_3_0 + m07.A10_PINS_0_2_0 + m07.A10_PINS_0_4_0 + m07.A10_PINS_0_5_0
+    )
     assert not _a31_b_holds(_alpha_tests_with(swapped))
     assert not _a31_b_holds(_alpha_tests_with(tagged + m07.A10_PINS_0_2_0 + m07.A10_PINS_0_3_0))
+    pre_0_5 = tagged + m07.A10_PINS_0_2_0 + m07.A10_PINS_0_3_0 + m07.A10_PINS_0_4_0
+    assert not _a31_b_holds(_alpha_tests_with(pre_0_5))
 
 
 def test_a04_the_pairs_undo_a_0_3_0_pin() -> None:
