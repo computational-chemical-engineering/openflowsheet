@@ -148,3 +148,60 @@
   seen through RP.S03/S04 in test_rel_a20. DECISION (orchestrator): ruled §7.2 bookkeeping, as 0.4.0's 2650fb8a;
   fix committed after K3 (tests/, not a D2.4 path) with controls kept and the pre-0.5 tuple added. Alternative: a
   design-lane ruling first. Reversible by: reverting that commit.
+
+## 2026-11-22: the re-takes at K3 (J) and the journey at J (C) (build lane, work order REL050-J)
+
+- Host SMM-TR09 (`ref-x86-64`), kernel 6.12.86+deb13-amd64 at start and at every heavy start. Run tree
+  `git worktree add --detach .claude/worktrees/rc-k3-050 8aaed3f2`; `git status --porcelain --ignored` 0 lines at
+  2026-11-22T10:57:46+01:00, before the first re-take. Outputs, logs and drivers: `~/.cache/rel050-cut/` (`bin/`,
+  `logs/`). nlp: `$R/.venv-nlp` under env -i (HOME, PATH, LANG=C.UTF-8), OMP 1, PYOMO_CONFIG_DIR, PYTHONNOUSERSITE=1,
+  PYTHONPATH=src:<nlp-test-tools>. IDAES: `$R/.venv-idaes` as step 11 runs it (-I, PYTHONPATH unset, OMP/OPENBLAS/MKL
+  1, IDAES_DATA). Reactor env `pymrm-6089593-032a050c6cf3` used as is (not rebuilt).
+- Re-takes, 7 single-threaded processes in parallel: the five by REL040's `g10_case.py` (`run_case` + `write_files`),
+  5-7 s each, exit 0; IDAES 8 s, exit 0; REAL `--retake-into` exit 0 in 2017 s, DECISION_STABLE, T* =
+  653.1500351610193, study_cold 48, `child-logs kept=0`, file set equal to the committed one.
+- Proofs (each exit 0; `--old-version 0.5.0.dev0 --old-host SMM-TR09` for the five, read from the committed coupling
+  records and sidecars; REAL `--old-platform 'Linux-6.12.113+deb13-amd64-x86_64-with-glibc2.41' --old-host SMM-TRS2`;
+  IDAES `--old-platform` the same string):
+  - `RETAKE-DIGEST-ONLY PASS trust-region-study-tr-e2: changed-digests=41 digest=146 timing=20 path=0 version=4 platform=0 other=0 environment=equal host=0`
+  - `RETAKE-DIGEST-ONLY PASS trust-region-study-tr-e2-far: changed-digests=79 digest=320 timing=35 path=0 version=7 platform=0 other=0 environment=equal host=0`
+  - `RETAKE-DIGEST-ONLY PASS trust-region-study-tr-e2-fd: changed-digests=70 digest=215 timing=20 path=0 version=4 platform=0 other=0 environment=equal host=0`
+  - `RETAKE-DIGEST-ONLY PASS trust-region-study-loop-r: changed-digests=91 digest=285 timing=26 path=0 version=3 platform=0 other=0 environment=equal host=0`
+  - `RETAKE-DIGEST-ONLY PASS trust-region-study-loop-s: changed-digests=37 digest=124 timing=20 path=0 version=4 platform=0 other=0 environment=equal host=0`
+  - `RETAKE-DIGEST-ONLY PASS trust-region-study-real: changed-digests=105 digest=569 timing=528 path=128 version=0 platform=4 other=0 environment=host host=79`
+  - `IDAES-RETAKE PASS differing=environment.platform platform=1 inputs=0 other=0` (HM-28 as predicted)
+  REAL meets HM-27 (`platform=4`, `host=79`). Its `digest` 569 / `changed-digests` 105 exceed H7's 504 / 103 (same tool
+  since 64074f8a, same committed REAL since e0a3d6b7): the request's `provider_identity_sha256` (the provider's
+  `describe()`, implementation hashes included) moved with 0.5's source, and with it every experiment key. Digest
+  class, not part of the pass rule (HM-27 does not predict `changed-digests`); `other=0`, so every number is equal.
+- **J = 3caa928cc82083e49184b4ee099bc9dbcb8b542b** (parent 3da2c4e2 = K3 + a6d1bea8 tests + docs logs): 46 files,
+  written/changed TR-E2 8/7, TR-E2-FAR 11/10, TR-E2-FD 8/7, LOOP-R 7/6, LOOP-S 8/6, REAL 9/9 (its sidecar moves
+  SMM-TRS2 -> SMM-TR09), IDAES 1/1. At J: `-m nlp tests/test_m05_g10_replay.py` 5 passed; `m05_wo9_real.py --replay`
+  `REPLAY PASS REAL differences=0` (7 s; the TR09 failure since the host move is cured, WO-H4); `tests/test_m05_*retake*.py
+  tests/test_m01_idaes_retake_diff.py tests/test_m07_journey_record.py` 159 passed, 4 deselected.
+- Journey attempt 1 (clean `rc-j-050` at J, 0 lines at 11:34:06) with the brief's nlp line, PYTHONPATH=src:<nlp-test-tools>:
+  exit 3 in 7 s, `INSUFFICIENT_EVIDENCE`, R1/R3 `UNSUPPORTED(reactor_environment_unavailable)`. Cause measured:
+  `m07_journey.reactor_available` runs M02's `env.verify`, which then reads nlp-test-tools' `pytest 8.3.5` and
+  `iniconfig 2.3.0` ahead of the reactor env's pinned 9.1.1 / 2.3.1 (`packages` != `locked packages`, those two only);
+  with PYTHONPATH=src it returns True. Not committed; kept in `~/.cache/rel050-cut/journey-attempt1/`.
+  - DECISION: the journey runs with PYTHONPATH=src, as 0.4.0's step 3 (`journey.sh`, b40d48d1) and 0.3.0's did; the
+    brief's generic nlp line does not apply to `m07_journey.py run`. Alternative: stop and ask. Reversible by:
+    discarding C and re-running. For RC step 15: `replay` at C passes in both lines (below); a step that runs
+    `m07_journey.py run` with the tools on PYTHONPATH would meet attempt 1's outcome.
+- Journey attempt 2: worktree removed and re-added at J (0 lines at 11:36:07), PYTHONPATH=src, else as above. Exit 0,
+  4558 s. refined, T* = 653.1500351610193 K BOUND_LOWER, J = 0.4524965242483627; R0 INDIFFERENT 673.15, R1 DECIDED
+  653.15 (cold 36, 2139 s), R2 SURROGATE_NOT_PROMOTABLE, R3 DECISION_STABLE (re-run, carry_identity_differs from anchor
+  8aaed3f2; cold 48, 2011 s); journey wall 4556 s.
+- **C (proposed) = 0a800e69f200e52dae7e5f3d2d56810bc8f10e27**, the record under `benchmarks/m07/journey/<J>/` (12 files).
+  In a clean worktree at C (`rc-c-050`, 0 lines): `check` ACCEPT; `replay` bitwise, 25 s, with PYTHONPATH=src and with
+  src:<nlp-test-tools> (step 15's line), tree still clean after; OMP_NUM_THREADS=2 exit 2 (refused, as designed);
+  `v0_2_gate.journey_carry(J, C)` carried; `tests/test_m07_journey_record.py` 90 passed, 5 deselected.
+- Against 0.4.0's record at e0a3d6b7: 109 of 10794 leaves differ, all allowed: walls (R0/R1 grid wall_s 9+9, budget
+  spent R0/R1/R3, accounting R0/R1/R3/journey/t_star_resolve, R3 t_star_resolve), digests (coupling_sha256 and
+  run_sha256 in R0/R1 grid and artifacts 9 each, R3 candidate coupling_record_sha256, parent_checks R0/R1/R3/journey
+  run_sha256), `commit`, R3's `m05_record` (path, sha256, offered.sha256, offered.anchor). 38 more than 0.4.0's 71:
+  the R0/R1 `run_sha256` digests (36 + 2 parent_checks); their input was not traced (inferred: the source change, as
+  for REAL's provider identity).
+  Every number bitwise equal. No stop.
+- Peak 1-min load seen 1.52 (this work at most 7 threads). Run worktrees rc-k3-050, rc-j-050, rc-c-050 removed;
+  `~/.cache/rel050-cut/` kept.
