@@ -103,3 +103,6 @@
   DECISION-REQUEST ofs-rel050-merge-main to hub. Verify against these texts verbatim:
   A: "Fast-forward main from ceb38cec to int/0.5-r2 at 1fe40db3 (the merges of wp/X07a c356211b, wp/X01 bfd5c180 and wp/REL050 bfdd3f2d onto ceb38cec, plus the cross-package fix commit 1fe40db3; CI 44960794993 green on all 7 jobs), run the F0 corpus identity on main, and push main only if F0 passes."
   B: "Do not use int/0.5-r2; merge wp/X07a, wp/X01 and wp/REL050 into main one at a time, each with its own merge commit, a fresh CI run on all legs and its own Decision Desk card, then run the F0 corpus identity on main and push main only if F0 passes."
+- Hub filed ofs-rel050-merge-main: A verbatim as above; B reworded by hub (it pushes nothing itself). Verify B against:
+  B: "Do not use int/0.5-r2; file three separate Decision Desk cards, one per package (wp/X07a, wp/X01, wp/REL050), each merging into main with its own merge commit after a fresh CI run on all legs and the F0 corpus identity on main; this card pushes nothing."
+  Confirmed to hub: ofs-s19-merge-main carries `executed` (at 2026-11-21T20:25:00Z, card version 3).
