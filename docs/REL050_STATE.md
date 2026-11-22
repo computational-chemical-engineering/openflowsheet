@@ -27,8 +27,7 @@ in `docs/RELEASING.md`. Last release v0.4.0 (2026-11-11); main is `0.5.0.dev0`.
 
 ## Next actions
 
-1. **Verdict done** (121d7b32: 15 PASS; V14 (b) FAIL needs a row, X31 (c) FAIL releasable). Message 2 out: card `ofs-rel050-v14b`; on VERIFIED, the row (fingerprint at C `82469c08...2c40`, pattern 6cfe0fc4).
-   Notes must carry L46 (F-2) and the F1/F3 tools statement (F-5).
+1. **REL050-H running** (`<briefs>/REL050-H.md`): ledger, notes (F-2 L46, F-5 F1/F3 tools, F-6), H1, H2, step 18 YES, H3. All 7 acceptances stand (V14 (b) row renewed, card ofs-rel050-v14b executed).
 2. Ledger; H1 (release manifest `tested` at a clean G, `release_evidence_manifest.py --line 0.5 --commit C --k3 K3
    --ci-run 45019680845 --ci-run 45019811148`, pattern RP_DECISIONS `## 0.4.0 cut` H1), H2, step 18 YES at H2, H3;
    CHANGELOG and RELEASING block; card to merge C (via wp/REL050) into main; dry run; the user's dispatch and PyPI.

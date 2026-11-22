@@ -395,3 +395,7 @@
   on the carry)**; F-6 V11 carries L-X04-1..3 by id.
 - Message 2 sent to hub: card ofs-rel050-v14b (A renew V14 (b) as at 0.4.0 / B hold for a solver fix).
 - For the notes work order: F-2 and F-5. For RP's next amendment (design lane, not now): F-3, F-4.
+- 2026-11-23, card ofs-rel050-v14b VERIFIED (choice A, signed 2026-11-22T23:44:56Z, key 032ee0a5ae620a90). V14 (b)
+  row renewed at C (fingerprint `82469c08…2c40`, the verdict's F-1 value; old row to history). `--lapses` at HEAD:
+  7 × stands. tests/test_rel_*.py 228 passed. `executed` written on the card.
+- Work order `<briefs>/REL050-H.md` (opus-engineer): ledger, `## v0.5.0` notes (F-2, F-5, F-6), H1, H2, step 18, H3.
