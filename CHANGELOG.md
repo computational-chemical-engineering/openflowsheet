@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+## v0.5.1 — unreleased
+
+*Notes at the release candidate C' = `ee934680d94879032b34ae8649baa31ff5a210c8` (RP §9.2 step 3; line `0.5`, gate set
+`v0.5-gate-v1`, envelope `v0.5-envelope-2`, evidence package REL051). Nothing below is released until the tag; the
+tag and every publication are the user's. 0.5.1 is a patch release of 0.5.0: one fix (X32) and a current PyPI page.
+It claims what 0.5.0 claims, V11–V20, W21–W26 and X31; W27 is not claimed. The verdicts are
+`docs/reviews/REL051-verdicts.md` (judged 2026-11-23); at C' two gates FAIL, each with a standing acceptance, as
+stated below.*
+
 ### Fixed
 
 - `README.md`'s status (the PyPI page) described 0.3.0: its table, its claims line and the quickstart's download tag
@@ -13,6 +22,98 @@
   A script that parsed `grant`'s stdout now reads the token as the whole of stdout, and the `capability`,
   `principal` and `rights` lines from stderr; `--capability-id` fixes the capability id in advance, for a later
   `revoke` (R-1064).
+
+### The release procedure for a patch release (RP amendment A-14, R-1069)
+
+- A minor line can now carry a patch release with its own evidence package. The loader check RP.L11 takes the id of
+  `<line>.Z` for the largest Z the line's `covers` admits (`scripts/release_gate.py`), and RP.S02's version table is
+  built around that release (`scripts/release_evidence_manifest.py`); a line that covers only `<line>.0` is checked
+  as before. The 0.5 line covers 0.5.0 and 0.5.1, with package REL051 for 0.5.1. No change to the simulator.
+
+### Gates (V11–V20, W21–W26, X31), as `scripts/release_gate.py --line 0.5 --rc C --markdown` prints them
+
+A FAIL is printed FAIL and a BLOCKED gate BLOCKED.
+
+| Gate | Verdict at C | Required evidence | Clauses and travelling limitations |
+| --- | --- | --- | --- |
+| V11 | PASS | Semantic diff, drafts, task validation, units/references, real migration when applicable | limitations: L38, L-X04-1, L-X04-2, L-X04-3 |
+| V12 | PASS | Required unit library with per-model definition of done | limitations: L02, L26, L27, L28, L29, L30, L-CSTR-1, L-CSTR-2, L-CSTR-3 |
+| V13 | PASS | DM/SCC/BTF, tear and EO, scaling and initialization | limitations: L10, L22, L23, L24, L36, L38, L43, L-WS-1, L-WS-2 |
+| V14 | FAIL | Homotopy, qualified PTC/SER and three bounded recovery edges | failing: V14 (b); V14 (b) FAIL, accepted by Frank 2026-11-23 (release/acceptances.md D3); limitations: L01, L08, L20, L21, L43, L-COL-10 |
+| V15 | PASS | Frozen phases, EO cross-unit spec, multiple-root evidence | limitations: L02, L14, L19, L20, L33, L-COL-5 |
+| V16 | PASS | 30+ distinct cases, eight shared comparisons, two both-reference cases where feasible, registered 20x20 ensemble | limitations: L16, L17, L18, L32 |
+| V17 | PASS | Local/HTTP/MCP, ten agent tasks, >=80% success, zero unauthorized actions/false verification | limitations: L11, L12, L13 |
+| V18 | PASS | Distribution/data gates, local rank evidence, qualified energy checks, all recovery edges tested | limitations: L03, L05, L06, L15, L19, L25, L34, L37, L39, L40, L41 |
+| V19 | PASS | Real-chemistry dossier with usable data/kinetics/property/reference route | — |
+| V20 | PASS | >=95% nominal robustness, correct invalid-structure handling, no adversarial false verification | limitations: L04, L07, L09, L31, L32, L38 |
+| W21 | PASS | PyMRM boundary/accuracy/execution and provenance | limitations: L05, L06, L07, L15, L19, L20, L44, L45, L46, L48 |
+| W22 | PASS | One validated needed nonideal property route | limitations: L42, L47 |
+| W23 | PASS | Surrogate conservation/domain/derivative/default UQ and promotion | limitations: L49 |
+| W24 | PASS | Fixed-topology optimization, eligible trust-region example and parent-model checks | limitations: L19, L44, L46, L48, L49 |
+| W25 | PASS | End-to-end real reactor refinement with honest evidence limits | limitations: L44, L45, L46, L48, L49 |
+| W26 | PASS | Diagnostic web shell through shared contract | limitations: L-WEB-1, L-WEB-2, L-WEB-3, L-WEB-4 |
+| X31 | FAIL | Four matched column cases, invalid specs/phases, two independent references where available | failing: X31 (c); X31 (c) FAIL, accepted by Frank 2026-10-30 (release/acceptances.md D3); limitations: L-COL-1, L-COL-2, L-COL-3, L-COL-4, L-COL-5, L-COL-6, L-COL-7, L-COL-8, L-COL-9, L-COL-10 |
+| W27 | not claimed | External agent benchmark adaptation attempted; inaccessible assets disclosed | — |
+
+- **V14 FAIL** on V14 (b): PTC ends at the saddle from 149 of 441 starts on both CI architectures, the registered
+  failure, unchanged since 0.4.0. Its acceptance of 2026-11-22 lapsed at C' because `src/openflowsheet/` changed;
+  the user accepted it again on 2026-11-23.
+- **X31 FAIL** on X31 (c): S09's three-tool outcome, "met where available, 3 of 4"; its acceptance stands at C'.
+- **V17 PASS** rests on the carry of `v17-c2`'s agent evidence (on the R-137 surface) across ten links, R-192 to
+  R-1051, as at 0.5.0. No agent has yet driven F1's or F3's tools; a campaign `v17-c3` is planned for 0.6.
+- **W26 PASS**: G14 not judged at 0.5.1: W27 registration v1 refuses this build (ADR 0050 D9, W27-R63); W27 not
+  claimed.
+
+The accepted failure clauses in force at C' (RP.S10):
+
+- V14 (b) FAIL, accepted by Frank 2026-11-23 (release/acceptances.md)
+- X31 (c) FAIL, accepted by Frank 2026-10-30 (release/acceptances.md)
+
+**Travelling limitations.** The ids in the table are rows of the envelope `v0.5-envelope-2`
+(`benchmarks/t08/support_envelope.yaml`).
+
+W21's PASS rests on envelope row L46, which travels with W21, W24 and W25:
+
+- L46: No reactor result has been compared with experimental data by this project. The group's published comparison (Gargiulo et al. 2025 §3.1, of Rossetti et al. 2006's rate law) is the group's evidence. Every real-reactor number is the group's model at the pin, a regression, and its discretization bias is 1.0–1.4 % in NH₃ (M02 design note §13).
+
+**Acceptances.**
+
+All seven rows of `release/acceptances.md` stand at C' (`release_gate.py --line 0.5 --rc C --lapses`):
+
+- V14 (b): accepted 2026-11-23, "Accept for 0.5.1 (Recommended)" (the 2026-11-22 row lapsed at C').
+- X31 (c): accepted 2026-10-30, stands.
+- Claim set (V11 to V20, W21 to W26 and X31 claimed; W27 not claimed): accepted 2026-10-30, stands.
+- V17 carry (ten links, R-192 to R-1051): accepted 2026-11-22, stands.
+- M02 N1 (the reactor child process ships with its no-isolation label): accepted 2026-11-22, stands.
+- M03 N1 (the licences of the optional `nlp` extra): accepted 2026-10-30, stands.
+- coolprop and lca licences: accepted 2026-10-30, stands.
+
+### What it is not
+
+The 0.5 line's registered phrases (its W27 phrase, which names 0.5.0, holds for 0.5.1 too).
+
+- numerical verification, not empirical validation
+- no global optimality
+- the release is judged on Linux only, not on Windows or macOS
+- bundles reproduce across platforms only between Linux x86-64 and aarch64
+- the nlp and reactor environments and the coolprop extra are Linux only, and Windows refuses external models
+- not a sandbox
+- the stand-in reactor is synthetic
+- the optimization routes need the optional nlp extra
+- the CoolProp provider needs the optional coolprop extra
+- cost and LCA results are assessment estimates with an accuracy class
+- cost and LCA are Python-only
+- no ecoinvent data
+- Wilson is vapour-liquid only; no liquid-liquid split
+- no automatic liquid/vapour regime switching for pure fluids
+- X31: one independent reference for the refluxed absorber
+- no rate-based column models
+- no W27 claim in 0.5.0
+- no CFD or Peclet refinement
+- no external benchmark score
+- no v2 revision documents
+- no solve reads the component record store
+- a plugin adds no unit model or property method that a solve uses
 
 ## v0.5.0 — unreleased
 
