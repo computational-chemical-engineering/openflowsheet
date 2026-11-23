@@ -109,6 +109,12 @@ canonicity, T07); ADR 0013 has Amendment 2 (routing on registered tolerances, T0
 
 ## Next executable action
 
+**REL050 (0.5.0 release, `wp/REL050`, C = `0a800e69`), SMM-TR09, 2026-11-23.** Ledger (15 PASS, V14 and X31 FAIL
+accepted), notes `## v0.5.0`, H1 manifest `tested` 31/31 (`ee519d46`), H2 none, step 18 at H2 `v0.5.0 tag may be
+proposed: YES` (log SHA-256 `01263a5d…`); build log `docs/REL050_DECISIONS.md`. **Next:** push `wp/REL050`, CI on
+both architectures, merge into `main` on Frank's signed card, the release workflow dry run, then Frank's dispatch
+with `rc` = C; the PyPI approval is Frank's.
+
 **0.4.0 released and published (tag `v0.4.0` = `b6cdf552`, run 42937243741; PyPI and GitHub release 2026-11-11).** Development moved to SMM-TR09 (2026-11-10).
 
 **0.5 line (from 2026-11-11, SMM-TR09):**

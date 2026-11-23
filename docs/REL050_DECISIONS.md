@@ -399,3 +399,34 @@
   row renewed at C (fingerprint `82469c08…2c40`, the verdict's F-1 value; old row to history). `--lapses` at HEAD:
   7 × stands. tests/test_rel_*.py 228 passed. `executed` written on the card.
 - Work order `<briefs>/REL050-H.md` (opus-engineer): ledger, `## v0.5.0` notes (F-2, F-5, F-6), H1, H2, step 18, H3.
+
+## 2026-11-23: ledger, notes, H1, H2, step 18 at H2 (build lane, work order REL050-H; RP §9.2 steps 3-7)
+
+- Ledger `8c661099` (RP.S17): `docs/requirements.yaml` from `docs/reviews/REL050-verdicts.md` at C: 15 PASS, V14 FAIL
+  (V14 (b)), X31 FAIL (X31 (c)), equal to 0.4.0's released ledger, so no verdict moves; 0.5.0 notes on V14, V17 and
+  X31. New `tests/test_rel050_ledger.py` (test_rel040_ledger.py's pattern, baseline 0.4.0 at `b6cdf552`, plus the
+  failing clauses and no gate citing `evidence/REL050/`): 7 passed; controls (V14 to PASS, a REL050 evidence path)
+  4 failed. Ledger and rel tests 285 passed, 1 skipped.
+- Notes `6f9ccbe3` (RP §10): `## v0.5.0` with X07a, F1, F3, X01 part A, S16/S17/S19 and WITNF, each with its manifest;
+  the `--markdown` gate table; the RP.S10 lines (V14 (b) 2026-11-22, X31 (c) 2026-10-30); limitations by id (F-6:
+  V11 carries L-X04-1..3 by id); L46 verbatim (F-2); V17's carry, no agent on F1's or F3's tools, `v17-c3` for 0.6
+  (F-5); the seven acceptance rows (M02 N1 without the registered phrase). The Unreleased provider entry (S19 W5, in
+  C) moved into v0.5.0. 22 phrases once each; CHANGELOG-reading tests 337 passed, 2 skipped. RELEASING.md unchanged
+  (0.4.0's notes commits did not touch it).
+- **H1 = `ee519d46`**: at G = `6f9ccbe3` (clean tree): `PYTHONPATH=src:. .venv/bin/python
+  scripts/release_evidence_manifest.py --line 0.5 --commit 0a800e69f200e52dae7e5f3d2d56810bc8f10e27 --k3
+  8aaed3f25d94823d2b93524884a9f054eb0d306d --ci-run 45019680845 --ci-run 45019811148 --tmp
+  ~/.cache/rel050-cut/manifest-tmp` → `REL050 tested 0a800e69: 31 checks, 31 pass, 0 fail, 0 unsupported; not pass:
+  none`, exit 0. SHA-256 `ffe596321dc1c04e1cc1df76f0842db533d87f46445b13cebaa56d34e909768e`.
+- **H2: nothing to mark.** RP.S16 (a): 32 required ADRs, `problems` [], `manifest_adrs` []. H2 = H1 = `ee519d46`.
+- **Step 18 at H2** (HEAD `ee519d46`, clean): `PYTHONPATH=src .venv/bin/python scripts/release_gate.py --line 0.5
+  --rc 0a800e69f200e52dae7e5f3d2d56810bc8f10e27` → exit 0; log `evidence/REL050/<C>/artifacts/step18-H2.log`
+  (git-ignored, 50 lines), SHA-256 `01263a5d35a84abcb6eee00d9be7761cec4a3a60a4d3eecaa149b384bbac5c52`; last line
+  **`v0.5.0 tag may be proposed: YES`**. Items: tree equal to C; RC record passed; manifests tested; envelope pinned;
+  ADRs every one Accepted; Frank's answers every one accepted (7 standing acceptances, scope unchanged).
+- RP.S08's R part: first line `v0.5 gates (v0.5-gate-v1) at C = 0a800e69…; candidate ee519d46…`; 18 gate rows (17
+  claimed in order, then `W27  not claimed (v0.5-gate-v1)`); non-PASS rows V14 = FAIL, X31 = FAIL; last line YES.
+- D2.4: `git diff --name-only <C> HEAD` touches none of `src/ schemas/ benchmarks/ requirements*.lock pyproject.toml
+  MANIFEST.in README.md LICENSE NOTICE`. No stop hit.
+- Next (RP §9.2 step 8): push `wp/REL050`, CI on both architectures, merge into `main` (Frank's signed card), the
+  release workflow dry run, then Frank's dispatch with `rc` = C; the tag, the dispatch and the PyPI approval are his.
