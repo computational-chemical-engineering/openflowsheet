@@ -460,3 +460,14 @@
 - Card ofs-rel050-dispatch VERIFIED (choice A, signed 2026-11-23T08:12:54Z, key 50ad2f710ab1ebe8). origin/main =
   63b00504 unchanged. Dispatched `gh workflow run release.yml --ref main -f version=0.5.0 -f
   rc=0a800e69f200e52dae7e5f3d2d56810bc8f10e27 -f dry_run=false` -> run 45136944315. PyPI approval is the user's.
+
+## 2026-11-23: 0.5.0 released
+
+- Release run 45136944315: gate, tag, build, pypi (the user's approval in the GitHub environment), github-release all
+  success. Tag `v0.5.0` = 63b005046f34ff25a1f4dacb34645a78ce49f79b; PyPI `openflowsheet` latest 0.5.0; GitHub release
+  v0.5.0 published 2026-11-23T09:31:34Z.
+- System gh on TR09 is now 2.105.0 (the user, apt). The private gh 2.103.3 in `~/.cache/rel050-cut/gh/` deleted on
+  the user's answer in this chat ("Delete it").
+- Pause until Thu 2026-11-26 13:00 (the user, via hub): no new agents. Open from card ofs-rel050-dispatch A: RP §7.4's
+  working form (0.6.0.dev0, working envelope, RELEASED gains 0.5.0, the five G10 re-takes with `--old-host`), push
+  main, lift the freeze. Precedent: RP_DECISIONS `## 0.4.0 after the tag` (b618f2fe; its G10 re-take hit a stop).

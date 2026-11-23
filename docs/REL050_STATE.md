@@ -10,7 +10,7 @@ Frank 2026-11-20, "Let's go for the smaller 0.5 release"): **0.5 = X07a, F1, F3,
 and X01's selectability lead 0.6. Procedure: RP (`docs/derivations/release-procedure.md`), ADR 0055; dispatch steps
 in `docs/RELEASING.md`. Last release v0.4.0 (2026-11-11); main is `0.5.0.dev0`.
 
-## Position (2026-11-23, merged into main; dry run)
+## Position (2026-11-23, 0.5.0 released; post-tag open)
 
 - main = 1fe40db3 (the 0.5 packages; card ofs-rel050-merge-main executed). **Freeze on main** (D2.4 paths) since K3;
   hub told and records it.
@@ -27,13 +27,15 @@ in `docs/RELEASING.md`. Last release v0.4.0 (2026-11-11); main is `0.5.0.dev0`.
 
 ## Next actions
 
-1. **Release run 45136944315** dispatched (card ofs-rel050-dispatch A). Waits for the user's PyPI approval in the GitHub environment. After tag v0.5.0 + publish: RP 7.4 working form 0.6.0.dev0 on main, push, lift the freeze (tell hub), write executed on the card.
-2. Green: DECISION-REQUEST to hub for the user's real dispatch (same inputs, dry_run unticked) and the PyPI approval
-   (both the user's; RP §9.2 step 8, ADR 0021 D5). Then RP §7.4's post-tag working form (0.6.0.dev0) on a branch, and
-   lift the freeze (tell hub).
-- Done: main = 63b00504 (card ofs-rel050-merge-c executed, F0 PASS). Step 18 YES; H1 ee519d46; verdict 121d7b32.
-- 0.6 follow-ups: V17 campaign `v17-c3` driving F1/F3 tools; RP amendment for verdict F-3 (journey invocation line)
-  and F-4 (archived-history skips on TR09).
+1. **0.5.0 RELEASED** (tag v0.5.0 = 63b00504; PyPI; GitHub release 2026-11-23T09:31Z).
+2. Open (card ofs-rel050-dispatch A, not yet `executed`): RP §7.4 working form on a branch from v0.5.0: version
+   0.6.0.dev0 (RP §7.1's set), envelope `v0.2-envelope-dev`/`0.2.0.dev0`, `RELEASED` gains 0.5.0 = 63b00504, RELEASING
+   "After a tag", the five G10 re-takes (R-458, `--old-host SMM-TR09`), tests reading version and envelope; CI; then
+   push main and lift the freeze (tell hub); write `executed` on the card. Pattern: RP_DECISIONS `## 0.4.0 after the
+   tag` (b618f2fe). **Pause until Thu 2026-11-26 13:00: no new agents**; the user decides whether the session does it
+   alone before then.
+3. 0.6 follow-ups: V17 campaign `v17-c3` (F1/F3 tools); RP amendment for verdict F-3, F-4; the 0.6 line file
+   inheriting 0.5.
 
 ## Gates (criteria fixed before the run)
 
