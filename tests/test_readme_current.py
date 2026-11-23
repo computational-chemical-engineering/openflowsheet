@@ -4,9 +4,11 @@ PyPI renders `README.md` as the long description and resolves no relative link, 
 image in it is absolute (`https://`). Its status names the release the version belongs to: at a
 release version (`X.Y.Z`, `X.Y.Z{a|b|rc}N`) that version, at a post-release `X.Y.Z.postN` its
 release `X.Y.Z` and the post-release itself (R-922), and at a `.devN` version between releases the
-newest released version (`RELEASED`, `tests/test_v02_main_version.py`). The cut commit of every
-release updates it (`docs/RELEASING.md`). `[project.urls]`, the links in PyPI's sidebar, has the
-six keys below, every one an `https://` URL. Each check has a negative control.
+newest released version (`RELEASED`, `tests/test_v02_main_version.py`). The status table's
+first row is `Released in <that release>` (a post-release's base) and the quickstart downloads
+from its tag (REL051). The cut commit of every release updates the whole section
+(`docs/RELEASING.md`). `[project.urls]`, the links in PyPI's sidebar, has the six keys
+below, every one an `https://` URL. Each check has a negative control.
 
 MSG-G9 (FB-01): the Python quickstart runs twice in one directory, with the change set copied
 there — both runs print `CONVERGED VERIFIED`, and the second opens the project the first made.
@@ -76,6 +78,45 @@ def status_problems(text: str, version: str, released: Iterable[str]) -> list[st
     ]
 
 
+def page_release(version: str, released: Iterable[str]) -> str:
+    """The release the page describes at `version`.
+
+    A release version itself, a post-release's base, a `.devN`'s newest release.
+    """
+    parsed = Version(version)
+    if parsed.is_devrelease:
+        return page_release(max(released, key=Version), released)
+    if parsed.is_postrelease:
+        return parsed.base_version
+    return version
+
+
+#: The quickstart's raw download URLs, one per tag they name.
+_RAW_TAG = re.compile(
+    r"https://raw\.githubusercontent\.com/computational-chemical-engineering/openflowsheet/([^/\s]+)/"
+)
+
+
+def release_row_problems(text: str, version: str, released: Iterable[str]) -> list[str]:
+    """The status table's first row names the release; every quickstart download, its tag."""
+    release = page_release(version, released)
+    problems = []
+    match = re.search(r"^## Status\n(.*?)(?=^## )", text, re.MULTILINE | re.DOTALL)
+    rows = re.findall(r"^\| ([^|]+?) \|", match[1] if match else "", re.MULTILINE)
+    rows = [row for row in rows if row.strip() and set(row.strip()) != {"-"}]
+    if not rows or rows[0] != f"Released in {release}":
+        problems.append(f"the status table's first row is not 'Released in {release}': {rows[:1]}")
+    tags = _RAW_TAG.findall(text)
+    if not tags:
+        problems.append("the quickstart downloads nothing from a tag")
+    problems += [
+        f"the quickstart downloads from {tag!r}, not 'v{release}'"
+        for tag in tags
+        if tag != f"v{release}"
+    ]
+    return problems
+
+
 def url_problems(urls: Mapping[str, str] | None) -> list[str]:
     if not urls:
         return ["pyproject.toml has no [project.urls]"]
@@ -138,6 +179,36 @@ def test_status_control(version: str, status: str, named: bool) -> None:
     text = f"# T\n\n## Status\n\n{status}\n\n## Next\n"
     assert (status_problems(text, version, ("0.2.0a1", "0.2.0")) == []) is named
     assert status_problems("# T\n\nVersion 0.3.0 is released.\n", version, RELEASED) != []
+
+
+def test_readme_table_and_quickstart_name_the_release() -> None:
+    assert release_row_problems(README, VERSION, RELEASED) == []
+
+
+_RAW = "https://raw.githubusercontent.com/computational-chemical-engineering/openflowsheet"
+
+
+@pytest.mark.parametrize(
+    ("version", "row", "tag", "named"),
+    [
+        ("0.5.1", "Released in 0.5.1", "v0.5.1", True),
+        ("0.5.1", "Released in 0.5.0", "v0.5.1", False),
+        ("0.5.1", "Released in 0.5.1", "v0.3.0", False),
+        ("0.5.1", "Released in 0.5.1", "main", False),
+        ("0.3.0.post1", "Released in 0.3.0", "v0.3.0", True),
+        ("0.3.0.post1", "Released in 0.3.0.post1", "v0.3.0", False),
+        ("0.6.0.dev0", "Released in 0.2.0", "v0.2.0", True),
+        ("0.6.0.dev0", "Released in 0.6.0.dev0", "v0.2.0", False),
+    ],
+)
+def test_release_row_control(version: str, row: str, tag: str, named: bool) -> None:
+    text = (
+        f"# T\n\n## Status\n\n| | |\n| --- | --- |\n| {row} | x |\n| Established | y |\n\n"
+        f"## Quickstart\n\n```bash\ncurl -sLO {_RAW}/{tag}/examples/a.json\n```\n"
+    )
+    assert (release_row_problems(text, version, ("0.2.0a1", "0.2.0")) == []) is named
+    elsewhere = text.replace(_RAW, "https://example.org")
+    assert release_row_problems(elsewhere, version, ("0.2.0",)) != []
 
 
 def test_project_urls_are_the_six_https_links() -> None:

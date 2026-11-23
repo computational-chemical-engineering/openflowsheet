@@ -4,6 +4,9 @@
 
 ### Fixed
 
+- `README.md`'s status (the PyPI page) described 0.3.0: its table, its claims line and the quickstart's download tag
+  now name the current release, and `tests/test_readme_current.py` checks the table's first row and the tag at every
+  release (REL051).
 - `openflowsheet project grant` prints the token alone on standard output and the capability, principal and
   rights on standard error, so the Coding Agents recipe `grant ... > token.txt` writes the file
   `serve-mcp --token-file` reads. In 0.4.0 the five labelled lines went to stdout and `serve-mcp` refused the file.

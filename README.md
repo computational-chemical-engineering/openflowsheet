@@ -14,19 +14,20 @@ same results.
 
 ## Status
 
-**Early development. Version 0.5.0 is released.** Version 0.4.0 was released on 11 November 2026 and
-version 0.3.0 on 31 October 2026 (`0.3.0.post1` is the same release with a new description and the project
-links; it changes no code).
+**Early development. Version 0.5.0 is released** (23 November 2026). Version 0.4.0 was released on 11 November
+2026 and version 0.3.0 on 31 October 2026 (`0.3.0.post1` is the same release with a new description and the
+project links; it changes no code).
 
 | | |
 | --- | --- |
-| Released in 0.3.0 | Everything 0.2.0 has — the application contract (local, HTTP and MCP), the unit-model library, the planner, the verifier with its certificate or typed failure, the replay bundle, the Peng–Robinson route of the ammonia-synthesis loop, the pinned PyMRM reactor as a unit model, sensitivities, studies and the NLP bridge, surrogate evidence, the trust-region study and the diagnostic web shell — and, new in 0.3.0: countercurrent equilibrium-stage columns with their MESH model, purity, recovery and stage-temperature specifications and one-phase sections (S01, S02, S06, S08, S08b); blind column comparisons with an independent implementation, IDAES, DWSIM and BioSTEAM (S03, S09); IAPWS-95 water (S05); CoolProp's Helmholtz equations of state for 123 pure fluids as an optional extra (S07); the Wilson liquid-mixture method for methanol–ethanol–water with TP and PH flash and the column (S10, S10-C); all of these selectable in flowsheets, with the seven `thermal.*` units (S11); and cost estimation and LCA as post-solve functionals of a verified state (S12/E01). The supported envelope is the [support matrix](https://github.com/computational-chemical-engineering/openflowsheet/blob/main/docs/support-matrix.md): unlisted is unsupported |
+| Released in 0.5.0 | The application contract (Python, the command line, HTTP and MCP), the unit-model library, the planner, the verifier with its certificate or typed failure, and the replay bundle; the Peng–Robinson route of the ammonia-synthesis loop with the pinned PyMRM reactor as a unit model; sensitivities, studies, the NLP bridge, surrogate evidence, the trust-region study and the diagnostic web shell; countercurrent equilibrium-stage columns (MESH) with blind comparisons against an independent implementation, IDAES, DWSIM and BioSTEAM; IAPWS-95 water, CoolProp's Helmholtz equations of state for 123 pure fluids as an optional extra, and the Wilson liquid-mixture method for methanol–ethanol–water; cost estimation and LCA as post-solve functionals of a verified state. New in 0.4.0: optimisation of revision flowsheets (`optimize`), declared warm starts, revision-region continuation, the stream table, display units at the boundary, replay from the installed wheel and the message-code catalogue. New in 0.5.0: Windows and macOS in CI (the release is still judged on Linux), the extension registry (`list_capabilities`, `check_admission`), the component record store (`search_records` and four more `Records` operations; no solve reads it yet) and the plugin guide. The supported envelope is the [support matrix](https://github.com/computational-chemical-engineering/openflowsheet/blob/main/docs/support-matrix.md): unlisted is unsupported |
 | Established | Numerical verification against independent references, for example the P01 oracle against 20-digit reference values (7.1e-15 worst relative deviation); agreement with IDAES, DWSIM and BioSTEAM on shared column cases, which share the equations and are therefore not validation |
 | Validation against data | The Wilson method is within its pre-registered bands against measured vapour–liquid equilibrium of methanol–ethanol–water (ternary at 101.3 kPa; binaries with water at 323–333 K); methanol's liquid enthalpy and heat capacity are not within band against CoolProp. The C1 loop and its reactor results are not empirically validated |
 | **Not** established | Optimality evidence; human numerical or process-modeling review — `review.numerical` and `review.process_model` are `pending` in every evidence manifest and no agent may set them |
 
-What 0.3.0 claims, and what it is not (Linux only, no global optimality, no liquid–liquid split, no
-rate-based columns, among others), is in the
+What 0.5.0 claims, and what it is not (judged on Linux only, no global optimality, no liquid–liquid split, no
+rate-based columns, no solve that reads the component record store, a plugin that adds no unit model a solve uses,
+among others), is in the
 [changelog](https://github.com/computational-chemical-engineering/openflowsheet/blob/main/CHANGELOG.md).
 
 ## Install
@@ -51,7 +52,7 @@ python -m pip install openflowsheet
 Solve a once-through Rankine cycle on IAPWS-95 water from a ready-made change set:
 
 ```bash
-curl -sLO https://raw.githubusercontent.com/computational-chemical-engineering/openflowsheet/v0.3.0/examples/rankine-cycle.changeset.json
+curl -sLO https://raw.githubusercontent.com/computational-chemical-engineering/openflowsheet/v0.5.0/examples/rankine-cycle.changeset.json
 ```
 
 ```python
