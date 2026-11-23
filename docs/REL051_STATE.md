@@ -30,11 +30,16 @@ command used at 0.5.0.
 - **J' = 6cf18bb1**, **C' = ee934680d94879032b34ae8649baa31ff5a210c8** (journey record; check ACCEPT, replay bitwise,
   carried, 71/10794 leaves differ from 0.5.0's, all allowed). C' pushed as `rc/ee93468`: push run 45204749193,
   release_rc dispatch 45204778756.
-- Running (no agent): RC local `rc_local.sh` PID 3261459 in `rc-c-051`, driver log
-  `~/.cache/rel051-cut/logs/rc-driver.txt` (EXIT line); full gate `gate_c.sh` in `gate-c-051`, summary
-  `~/.cache/rel051-cut/gate/summary.txt` (EXIT line). When RC local ends and both CI runs are done: `rc2.sh` (step1, ci,
-  items; system gh 2.105.0), then records, RC record `docs/REL051-rc-record.md`, tree record, `--lapses` (0.5.0's RC
-  work order `<briefs>/REL050-RC.md` and `-RC2.md` for the commands), then step 7 (lapses) and step 8 (the verdict).
+- Done at C': full gate PASS (21126 passed); RC local A/B/C exit 0, items 9/9 inside `local`; `ci` fetch exit 0
+  (second call); identity job log fetched by hand (redo it from the push run's latest attempt). RC artifacts in
+  `.claude/worktrees/rc-c-051/evidence/REL051/<C'>/artifacts/rc`.
+- Waiting: push run 45204749193 attempt 2 (attempt 1 lost its x86_64 runner; DECISION in the log). Then: re-fetch
+  `ci/job-logs/identity.log` from attempt 2 (`gh api --allow-escape-sequences .../actions/jobs/<id>/logs`, expect
+  "equal across 4 platforms"); `release_rc.py step1 --rc <rc> --commit <C'>` (system gh); `records --to
+  evidence/REL051/<C'>/rc --cited <cited> --rc-record docs/REL051-rc-record.md --package REL051` (cited list: 0.5.0's
+  `tools/cited.txt` adapted); RC record by `python ~/.cache/rel051-cut/bin/make_record.py <rc> docs/REL051-rc-record.md
+  <artifacts/rc> release/lines/0.5.json`; `release_gate.py --line 0.5 --rc <C'> --write-tree-record`; `--lapses`.
+  All commits in rel051 (docs, evidence/REL051, release/rc-trees only), then the verdict (step 8).
 - CHANGELOG `## v0.5.1` (moving Unreleased's two Fixed bullets under it) is written at step 9 (notes), as 0.5.0 did.
 
 ## Plan (each step logged in REL051_DECISIONS with real numbers)

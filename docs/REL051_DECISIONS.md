@@ -70,3 +70,28 @@
   re-created clean `rc-c-051` (0 lines; the first one held replay caches), PID 3261459, driver log
   `~/.cache/rel051-cut/logs/rc-driver.txt`. Full gate at C' in clean `gate-c-051` (0 lines), `gate_c.sh`, summary
   `~/.cache/rel051-cut/gate/summary.txt`. No commit in either tree.
+- CI green: 42bafc14 (ci 45182284925, Site 45182284725); K3' push tip 36b64053 (ci 45184678563, Site 45184678643).
+- Full gate at C' in clean `gate-c-051` (0 lines before and after, HEAD unchanged): **GATE PASS ee934680: 21126 passed,
+  107 skipped, 223 deselected, 3 xfailed, 2 warnings in 5504.65 s** (log `~/.cache/rel051-cut/gate/`). Worktree removed.
+- RC local: A (2,6,7,8,9,11,13) exit 0 15:24-15:39Z; B (12,10) exit 0 15:39-16:47Z; C (14-17) started 16:47Z.
+- RC local C (14-17) exit 0 16:47-17:02Z; driver done. Runner summary (55 lines, as 0.5.0's 55): non-zero only
+  `step14-nlp-collect-all exit 2` and `step16-dryrun exit 1` (step 16 (d)'s registered refusal), both as at 0.5.0;
+  `step17-items` exit 0 here (system gh 2.105.0 has `--json attempt`; 0.5.0's stop does not recur): 9/9 items pass
+  (E01-A48, E01-G5-lca 44 passed, E01-G6-nlp, MR12-coolprop, MR12-lca A42, WHEEL-DATA, WHEEL-F1-F3, S07-F8 and PTC-R1
+  `success` both legs from dispatch 45204778756 attempt 1).
+- CI at C': dispatch 45204778756 success (attempt 1); Site 45204748872 success; push 45204749193 still running.
+- `ci --ci-run 45204778756` attempt 1 exit 1: `gh run download` stopped after 5 of 14 artifacts, no job logs (log
+  `~/.cache/rel051-cut/logs/rc2-ci-attempt1.log`); a manual `gh run download` of the same run into an empty scratch
+  directory got all 14. DECISION: a transient fetch failure, not a step result: the partial `<rc>/ci/` (only this call's
+  output) removed and `ci` run once more: exit 0, 14 artifacts and 13 job logs, none empty. Alternative: stop and ask.
+  Reversible by: deleting `<rc>/ci/` and fetching again.
+- RC records checked against 0.5.0's committed ones before writing the RC record: every judged record's checks equal
+  except commit, paths, digests, run ids, J', times; step 13's junit 961 tests vs 949 (12 more
+  `tests.test_evidence_manifests` cases, the manifests added since 0.5.0's C); A30's `files_digest` of 8 pure-Python
+  distributions at unchanged versions (inferred, not traced: the RC venv path moved rel050-cut -> rel051-cut), object
+  counts and checks equal; dist/install `0.5.1`; G11/G12 experiment keys moved (provider identity, as at 0.5.0).
+- Push run 45204749193 at C': `check (ubuntu-latest)` attempt 1 **failure**, annotation "The hosted runner lost
+  communication with the server..." during "Run checks" (infrastructure, no test result); aarch64, macOS, codehealth
+  success. DECISION: re-run that failed job once when the run completes (attempt 2); RP §6.2 takes the push run at its
+  latest attempt and lists every attempt so that a retry is visible to the verdict; no step re-runs CI. Alternative:
+  record step 1 failed and ask the user. Reversible by: nothing to undo (attempt 1 stays recorded).
