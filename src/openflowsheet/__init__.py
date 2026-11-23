@@ -11,6 +11,6 @@ until their packages start, per implementation plan §2.
 No functionality yet; introduced by package P00 (repository bootstrap only).
 """
 
-__version__ = "0.5.0"
+__version__ = "0.5.1"
 
 __all__ = ["__version__"]
