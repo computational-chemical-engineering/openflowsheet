@@ -450,3 +450,10 @@
   build success (`T08.A43: PASS`, t08-a43-dist.json, a43.* all PASS), tag/pypi/github-release skipped.
 - DECISION-REQUEST to hub: card ofs-rel050-dispatch (A the session dispatches, the user approves PyPI; B the user
   dispatches; C hold).
+- Card ofs-rel050-dispatch filed by hub. Verify against: A "The REL050 session dispatches the release workflow on main
+  with version 0.5.0, rc 0a800e69f200e52dae7e5f3d2d56810bc8f10e27 and dry_run unticked; the user approves the PyPI
+  upload in the GitHub environment when it asks; only after the workflow has tagged v0.5.0 and published, the REL050
+  session commits main's working form 0.6.0.dev0 (RP 7.4), pushes main and lifts the freeze on main." B "The user
+  dispatches the release workflow and approves PyPI themselves (same inputs, dry_run unticked); only after the
+  workflow has tagged v0.5.0 and published, the REL050 session commits main's working form 0.6.0.dev0 (RP 7.4), pushes
+  main and lifts the freeze on main." C "Hold the 0.5.0 release; main stays frozen."
