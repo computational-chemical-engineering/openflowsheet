@@ -109,6 +109,15 @@ canonicity, T07); ADR 0013 has Amendment 2 (routing on registered tolerances, T0
 
 ## Next executable action
 
+**REL051 (0.5.1 patch release, `wp/REL051`, C' = `ee934680`), SMM-TR09, 2026-11-23.** X32 merged; README status
+current; RP amendment A-14 (a patch release on a line: RP.L11 and RP.S02, R-1069). K3' `8f7ce045`, J' `6cf18bb1`, C'
+journey record. RC steps 1-17 pass (push run at attempt 2 after a lost runner); full gate at C' PASS (21126 passed).
+Verdicts `docs/reviews/REL051-verdicts.md`: 15 PASS, V14 and X31 FAIL accepted (V14 (b) renewed by the user in chat).
+Ledger, notes `## v0.5.1`, H1 manifest `tested` 31/31 (`142daa49`), H2 none, step 18 at H2 `v0.5.1 tag may be
+proposed: YES` (log SHA-256 `4ada7d22…`); build log `docs/REL051_DECISIONS.md`. **Next:** push `wp/REL051`, CI,
+merge into `main` (the user's answer in chat), F0 on main, the release workflow dry run, the dispatch with `rc` = C'
+(the user's answer in chat); the PyPI approval is the user's; then main's working form 0.6.0.dev0 (RP §7.4).
+
 **REL050 (0.5.0 release, `wp/REL050`, C = `0a800e69`), SMM-TR09, 2026-11-23.** Ledger (15 PASS, V14 and X31 FAIL
 accepted), notes `## v0.5.0`, H1 manifest `tested` 31/31 (`ee519d46`), H2 none, step 18 at H2 `v0.5.0 tag may be
 proposed: YES` (log SHA-256 `01263a5d…`); build log `docs/REL050_DECISIONS.md`. **Next:** push `wp/REL050`, CI on

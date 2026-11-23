@@ -119,3 +119,23 @@
 - A-14 second part: `version_table(name, patch)` and `_m_version_table` with `line_release`; RP §11.1 and §17.7;
   register R-1069 amended. Release tests 244 passed (new: table test, `[0.5]` case, two controls).
 - F-10 not acted on (would need a new C'); recorded for 0.6's README.
+
+## 2026-11-23: ledger, notes, H1, H2, step 18 at H2 (RP §9.2 steps 3-7; this session, no agent)
+
+- Ledger a09c4284 (RP.S17): 0.5.1 notes on V14 (the user's row 66e7b7dd), V17, X31; no verdict moves against 0.5.0's
+  released ledger. `tests/test_rel051_ledger.py` (baseline v0.5.0 63b00504): 7 passed; control (V14 to PASS) 2 failed.
+- Notes a186facc (RP §10): `## v0.5.1` with X32 and the README (from Unreleased), A-14, the `--markdown` table, the
+  RP.S10 lines (V14 (b) 2026-11-23, X31 (c) 2026-10-30), W26's G14 sentence, L46 verbatim (F-2), the seven rows, the
+  22 phrases once each (RP.S10 measure pass; a first draft quoted the W27 phrase twice, reworded). Notes tests 440
+  passed, 2 skipped. F-9 (version headings say "unreleased"): the house form; DECISION: fix the released headings in
+  the post-tag working-form commit on main. Alternative: now. Reversible by: one heading edit.
+- H1 first run (at a186facc) exit 1: `REL051 implemented ee934680: 31 checks, 29 pass, 2 fail` (RP.S11, RP.S18):
+  the RC record's step-1 row said "attempt 1, `failure` ...", which `rc_record_problems` reads as a failed step.
+  8cdccd04 rewords the cell (no status word; the step passed at attempt 2) and regenerates the record from the
+  committed generator. **H1 = 142daa49** at G = 8cdccd04 (clean): `REL051 tested ee934680: 31 checks, 31 pass, 0 fail,
+  0 unsupported`, exit 0, manifest SHA-256 822f0c68ee4986ddf3be6a3e7bd76cb07a0420922d3d034c675191c6ce6dd026.
+- H2: nothing to mark (RP.S16: 32 required ADRs, problems [], manifest_adrs []). H2 = H1.
+- **Step 18 at H2** (HEAD 142daa49, clean): `release_gate.py --line 0.5 --rc ee934680...` exit 0, last line
+  **`v0.5.1 tag may be proposed: YES`**; log `evidence/REL051/<C'>/artifacts/step18-H2.log` (git-ignored), SHA-256
+  4ada7d22adeb6f22fca1cf71bc66676c74fa5761f17e29a7ae182ef9f4d6945f. All seven standing acceptances, scope unchanged.
+- D2.4: `git diff --name-only C' HEAD` touches none of the D2.4 paths.
