@@ -34,7 +34,10 @@ in `docs/RELEASING.md`. Last release v0.4.0 (2026-11-11); main is `0.5.0.dev0`.
    push main and lift the freeze (tell hub); write `executed` on the card. Pattern: RP_DECISIONS `## 0.4.0 after the
    tag` (b618f2fe). **Pause until Thu 2026-11-26 13:00: no new agents**; the user decides whether the session does it
    alone before then.
-3. 0.6 follow-ups: V17 campaign `v17-c3` (F1/F3 tools); RP amendment for verdict F-3, F-4; the 0.6 line file
+3. **Thursday 2026-11-26 13:00 order (proposed; the user decides):** (a) `0.5.0.post1` README fix (R-922) or fold it into
+   0.5.1; (b) 0.5.1 patch release with X32 and other ready fixes (scan wp/* for tested+reviewed unmerged); (c) the
+   0.6.0.dev0 working form after the last 0.5.x; (d) RP amendment: K3 precondition P7 (ready fixes merged or named).
+4. 0.6 follow-ups: V17 campaign `v17-c3` (F1/F3 tools); RP amendment for verdict F-3, F-4; the 0.6 line file
    inheriting 0.5.
 
 ## Gates (criteria fixed before the run)

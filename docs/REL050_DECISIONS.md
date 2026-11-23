@@ -471,3 +471,17 @@
 - Pause until Thu 2026-11-26 13:00 (the user, via hub): no new agents. Open from card ofs-rel050-dispatch A: RP §7.4's
   working form (0.6.0.dev0, working envelope, RELEASED gains 0.5.0, the five G10 re-takes with `--old-host`), push
   main, lift the freeze. Precedent: RP_DECISIONS `## 0.4.0 after the tag` (b618f2fe; its G10 re-take hit a stop).
+- 2026-11-23, the user: post-tag work (RP §7.4) waits until the pause ends Thu 2026-11-26 13:00 (answer in this chat).
+- 2026-11-23, the user (chat): the PyPI page's README describes 0.3.0 under "Version 0.5.0 is released" (Status
+  table, "What 0.3.0 claims", quickstart from `v0.3.0`); 0.4.0 had the same. Cause: the cut updates only the status
+  sentence (RELEASING "Per release" step 1; `test_readme_current.py` checks only that). Proposed: `0.5.0.post1`
+  (R-922: README, versions, changelog only) before the 0.6.0.dev0 working form; RELEASING step 1 and the README test
+  widened. Recommended for Thursday; the user's call.
+- 2026-11-23, the user via research-TR09: why is X32 (grant's token on stdout alone; tested, reviewed, CI green
+  2026-11-20; the user: "start it, ship with 0.5", in S19's log) not in 0.5.0, and a 0.5.1 with it. Cause (process
+  gap, orchestrator's): REL050's scope came from R-1065 and its rules; the S19-log instruction never reached REL050's
+  state or rules and no merge card for X32 was filed before K3. Proposed rule: a K3 precondition (P7) lists every
+  tested+reviewed unmerged wp/* branch: merged before K3 or named as a known issue in the notes (RP amendment, design
+  lane). 0.5.1 = a patch release (X32 changes src/), needs `covers` widened and the full RC procedure: plan from
+  Thursday. Workaround read from v0.5.0's code: token.txt must hold only the value (grant prints `token      <value>`,
+  cli.py:422; serving.py strips whitespace only): `grant ... | awk '$1=="token"{print $2}' > token.txt`.
