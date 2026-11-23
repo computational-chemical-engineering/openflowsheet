@@ -347,10 +347,12 @@ def _m_line(inputs: Inputs) -> Part:
     return ("pass" if not found else "fail"), value
 
 
-def version_table(name: str) -> tuple[list[str], list[str]]:
-    """RP.S02's table T-V(M.m): the covered versions, and the not covered."""
+def version_table(name: str, patch: int = 0) -> tuple[list[str], list[str]]:
+    """RP.S02's table T-V(M.m) around the line's release `M.m.Z` (`patch` = Z, RP amendment A-14):
+    the covered versions, and the not covered. At Z = 0 it is the table of §11.1 as first
+    registered (Table T-V3 for 0.3)."""
     major, minor = (int(part) for part in name.split("."))
-    base = f"{major}.{minor}.0"
+    base = f"{major}.{minor}.{patch}"
     covered = [base, f"{base}b1", f"{base}rc1", f"{base}rc12"]
     not_covered = [
         f"{base}a1",
@@ -359,10 +361,10 @@ def version_table(name: str) -> tuple[list[str], list[str]]:
         f"{base}rc01",
         f"{base}.dev0",
         f"{base}.post1",
-        f"{major}.{minor}.1",
+        f"{major}.{minor}.{patch + 1}",
         f"{major}.{minor}",
-        f"{major}.{minor}0.0",
-        f"{major + 1}.{minor}.0",
+        f"{major}.{minor}0.{patch}",
+        f"{major + 1}.{minor}.{patch}",
         f"{base} ",
     ]
     if minor >= 1:
@@ -371,9 +373,13 @@ def version_table(name: str) -> tuple[list[str], list[str]]:
 
 
 def _m_version_table(inputs: Inputs) -> Part:
-    """RP.S02: `gate_set_of` over T-V(M.m) gives the line's gate set exactly for the covered."""
+    """RP.S02: `gate_set_of` over T-V(M.m) gives the line's gate set exactly for the covered. The
+    table is built around the line's release `M.m.Z`, Z as RP.L11 reads it (A-14)."""
     release = inputs.line.release()
-    covered, not_covered = version_table(inputs.line.name)
+    line_release = rg.line_release(inputs.line.name, inputs.gate_set.covers.pattern)
+    if line_release is None:
+        return "fail", {"misclassified": [], "reason": "covers admits no release M.m.Z"}
+    covered, not_covered = version_table(inputs.line.name, int(line_release.rsplit(".", 1)[1]))
     name = inputs.gate_set.name
     wrong = [v for v in covered if getattr(engine.gate_set_of(v, release), "name", None) != name]
     wrong += [v for v in not_covered if engine.gate_set_of(v, release) is not None]

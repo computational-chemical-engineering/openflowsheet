@@ -95,3 +95,27 @@
   success. DECISION: re-run that failed job once when the run completes (attempt 2); RP §6.2 takes the push run at its
   latest attempt and lists every attempt so that a retry is visible to the verdict; no step re-runs CI. Alternative:
   record step 1 failed and ask the user. Reversible by: nothing to undo (attempt 1 stays recorded).
+- RC records committed: e8326949 (126 records, RC record 69 rows, 0 FAIL), e20cd9e9 (tree record), b6779017 (lapse
+  report: V14 (b) lapsed by `src/openflowsheet/__init__.py` and `application/cli.py`; six rows stand). Push run
+  45204749193 attempt 2 success on every job (identity "equal across 4 platforms", log re-fetched from attempt 2);
+  step 1 PASS 4/4. RC trees removed.
+- Verdict: brief `<briefs>/REL051-verdict.md`, one `verdict` agent started (the only agent of 0.5.1). The user asked
+  why an agent ran ("I thought no additional agents would be used..."); told it is the one narrow verdict pass the
+  state file records from the REL050 chat; asked in chat: the user chose "Let it finish".
+
+## 2026-11-23: the verdicts at C' and the two answers
+
+- Verdict agent (`verdict`, Opus at the highest effort, ~227k tokens, 11 min): `docs/reviews/REL051-verdicts.md`,
+  commit 50871b17. 15 PASS; V14 FAIL (V14 (b): PTC at MID from 149 of 441 starts on both CI legs, as at 0.5.0); X31
+  FAIL (X31 (c), pre-registered). None BLOCKED. A-14 (RP.L11) sound and falsified by its controls, but incomplete: F-7,
+  RP.S02's table lists `M.m.1` as not covered (measured: `_m_version_table` fail, `['0.5.1']`). Findings F-8 (notes
+  need `## v0.5.1` with the README's phrases, the two FAILs, L46, the G14 sentence), F-9 (CHANGELOG headings
+  "unreleased"), F-10 (two README omissions; a fix needs a new C'; not required for 0.5.1), F-11 (the quickstart URL
+  resolves after the tag). Orchestrator check of F-7: confirmed in `version_table` (the old table misclassifies
+  0.5.1).
+- Asked in chat; the user: V14 (b) "Accept for 0.5.1 (Recommended)"; RP.S02 "Extend A-14 (Recommended)".
+- V14 (b) row renewed (commit after 50871b17): fingerprint at C' 5718167d…c509 recomputed with `release_gate.Scopes`
+  (control: 82469c08… at 0a800e69 equals the committed row's); `--lapses` at HEAD: all seven rows stand.
+- A-14 second part: `version_table(name, patch)` and `_m_version_table` with `line_release`; RP §11.1 and §17.7;
+  register R-1069 amended. Release tests 244 passed (new: table test, `[0.5]` case, two controls).
+- F-10 not acted on (would need a new C'); recorded for 0.6's README.

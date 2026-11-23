@@ -89,7 +89,16 @@ def test_s02_the_version_table_is_t_v3_for_0_3() -> None:
     assert rem.version_table("1.0")[1][-1] == "1.0.0 "
 
 
-@pytest.mark.parametrize("line", ["0.3", "0.4"])
+def test_s02_the_table_follows_the_line_s_release() -> None:
+    """RP A-14: T-V around `M.m.Z`; at Z = 0 the registered table (REL.A20's same form)."""
+    assert rem.version_table("0.3", 0) == rem.version_table("0.3")
+    covered, not_covered = rem.version_table("0.5", 1)
+    assert covered == ["0.5.1", "0.5.1b1", "0.5.1rc1", "0.5.1rc12"]
+    assert "0.5.2" in not_covered and "0.5.1.post1" in not_covered and "0.5.1 " in not_covered
+    assert "0.4.0" in not_covered and "0.5.1" not in not_covered and len(not_covered) == 13
+
+
+@pytest.mark.parametrize("line", ["0.3", "0.4", "0.5"])
 def test_s02_and_s05_hold_for_the_committed_lines(line: str, tmp_path: Path) -> None:
     inputs = rem.Inputs(rem.load_line(line), C, evidence=tmp_path)
     assert rem._m_version_table(inputs)[0] == "pass"
@@ -106,6 +115,18 @@ def test_s02_and_s05_controls(tmp_path: Path) -> None:
         line = rg.Line(({**document, "gate_set": gate_set}, *inputs.line.chain[1:]))
         result, value = measure(rem.Inputs(line, C, evidence=tmp_path))
         assert result == "fail", value
+
+
+def test_s02_controls_for_a_patch_release(tmp_path: Path) -> None:
+    """The 0.5 line (Z = 1) fails RP.S02 when `covers` misses 0.5.1's b/rc forms or admits its
+    alpha. (A `covers` admitting 0.5.2 moves Z to 2; RP.L11 refuses that line's REL051.)"""
+    line = rem.load_line("0.5")
+    document = dict(line.document)
+    for covers in (r"0\.5\.[01]", r"0\.5\.[01](?:(?:a|b|rc)[1-9][0-9]*)?"):
+        gate_set = {**document["gate_set"], "covers": covers}
+        changed = rg.Line(({**document, "gate_set": gate_set}, *line.chain[1:]))
+        result, value = rem._m_version_table(rem.Inputs(changed, C, evidence=tmp_path))
+        assert result == "fail", (covers, value)
 
 
 # -- R: the changed-form assertions, a passing record and one control per changed rule ----------

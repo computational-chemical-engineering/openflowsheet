@@ -932,7 +932,10 @@ whether the standing form equals it (§11.2).
   `M.m`, `M.m0.0`, `(M+1).m.0`, `M.m.0 ` (trailing space), and, for m ≥ 1, `M.(m-1).0` and `M.(m-1).0rc1`. Each
   number is written in decimal (`M.m0.0` for 0.3 is `0.30.0`). A post-release form is admitted only by R-922's separate
   rule (§7.5), never by `covers`. For 0.3 the table is Table T-V3 exactly, 4 covered and 13 not, and the 0.3 and 0.4
-  `covers` patterns classify their tables correctly (measured 2026-11-06). 0.3.0: V03.A02. Same form.
+  `covers` patterns classify their tables correctly (measured 2026-11-06). For a patch release (amendment A-14, §17.7)
+  the table is built around the line's release `M.m.Z` (Z as RP.L11 reads it): every `M.m.0` above reads `M.m.Z`,
+  `M.m.1` reads `M.m.(Z+1)`, `M.m0.0` reads `M.m0.Z` and `(M+1).m.0` reads `(M+1).m.Z`; at Z = 0 it is the table
+  above. 0.3.0: V03.A02. Same form.
 - **RP.S03** (D). The legacy lines are unchanged: their tests pass with node ids unchanged (REL.A04), and their entries
   equal their registrations. 0.3.0: V03.A03. Same form.
 - **RP.S04** (D). `test_a10_…`'s loop tuple is `tagged` plus every release's pin pairs in release order (§7.2). A
@@ -1385,3 +1388,13 @@ the review's (M-1, M-2, S-1 to S-5, S-7, rulings 3 to 7) and WO-R7's tests (`doc
   `tests/test_rel_release_gate.py` `test_l11_a_patch_release_takes_its_own_id` (`REL051` passing on the 0.5 line;
   `REL050` there, `REL051` with `covers` narrowed to 0.5.0, and a `covers` with no `0.5.Z`, each refused) and the A-10
   tests unchanged. ADR 0074 is not edited: O-3 named an RP amendment as its default, and RP is the normative text.
+- **A-14, second part (§11.1 RP.S02; REL051 verdict F-7, 2026-11-23, the user: "Extend A-14").** RP.S02's version
+  table T-V(M.m) registered `M.m.1` as not covered, so a line whose `covers` admits its patch release failed RP.S02
+  (measured at C' = ee934680: `_m_version_table` fail, misclassified `['0.5.1']`), and its release manifest could not
+  be `tested`. The table is now built around the line's release `M.m.Z` (text in §11.1). At Z = 0 it is unchanged, so
+  the 0.3 and 0.4 lines and REL.A20's same-form comparison with 0.3.0 (§11.2) are unaffected.
+  `scripts/release_evidence_manifest.py` implements it (`version_table(name, patch)`, `_m_version_table` reading
+  `release_gate.line_release`). Evidence: `tests/test_rel_evidence_manifest.py`
+  `test_s02_the_table_follows_the_line_s_release`, `test_s02_and_s05_hold_for_the_committed_lines[0.5]` and
+  `test_s02_controls_for_a_patch_release` (a `covers` missing 0.5.1's b/rc forms, and one admitting its alpha, each
+  fail); the Z = 0 table misclassifies the committed 0.5 line's `0.5.1`, as the verdict measured.

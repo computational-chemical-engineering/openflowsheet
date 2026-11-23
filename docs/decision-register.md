@@ -20437,3 +20437,9 @@ Both could not pass.
 **Rejected.** *Keep REL050 with no machinery change* (first chosen in chat, withdrawn the same day when RP.S22 was
 found to fail). *An independent reviewer pass on the change:* the user chose to have the single 0.5.1 verdict agent
 judge it. *Stop 0.5.1 and fold X32 into 0.6.0.*
+
+*Amended (2026-11-23, the user in chat: "Extend A-14"; REL051 verdict F-7):* A-14 gains a second part. RP.S02's
+version table is built around the line's release `M.m.Z` (`M.m.(Z+1)` not covered); at Z = 0 it is unchanged. Without
+it RP.S02 failed at C' (misclassified `0.5.1`) and the release manifest could not be `tested`. `scripts/` and RP are not
+D2.4 paths, so C' stands. *Rejected:* narrowing `covers` to 0.5.1 alone (the verdict measured five misclassified
+versions); stopping 0.5.1.
