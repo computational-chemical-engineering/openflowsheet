@@ -1,0 +1,8 @@
+same surrogate_manifest/valid/a19_smooth_prefix.json
+same surrogate_manifest/invalid/missing_schema_version.json
+same model_evidence/valid/a19_smooth_prefix.json
+same model_evidence/invalid/missing_schema_version.json
+same surrogate_study_body/valid/standin_prefix.json
+same surrogate_study_body/invalid/missing_parent.json
+same surrogate_study_result/valid/standin_prefix.json
+same surrogate_study_result/invalid/missing_verdict.json

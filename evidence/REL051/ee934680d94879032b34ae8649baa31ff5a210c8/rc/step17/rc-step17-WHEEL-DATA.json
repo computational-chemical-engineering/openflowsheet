@@ -1,0 +1,37 @@
+{
+ "assertion": "the wheel holds the ship set and E01's data; Wilson binds from it (V03.A17, A19)",
+ "checks": [
+  {
+   "argv": [
+    "/home/eajfpeters/.cache/rel051-cut/rc/rcvenv/bin/python",
+    "scripts/wheel_data_check.py",
+    "--commit",
+    "ee934680d94879032b34ae8649baa31ff5a210c8"
+   ],
+   "environment": "project",
+   "exit_status": 0,
+   "id": "WHEEL-DATA",
+   "output": "step17/WHEEL-DATA.log",
+   "output_sha256": "17e9e79040b0f6216ae46b04552a766bff41668bba5826eccb03c252c5d2d8ad",
+   "records": {},
+   "result": "pass"
+  }
+ ],
+ "format": "t08-rc-v1",
+ "passed": true,
+ "provenance": {
+  "architecture": "x86_64",
+  "commit": "ee934680d94879032b34ae8649baa31ff5a210c8",
+  "environment_lock_sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4",
+  "github_actions": false,
+  "machine_class": "ref-x86-64",
+  "python": "3.13.5",
+  "threads": {
+   "MKL_NUM_THREADS": "1",
+   "OMP_NUM_THREADS": "1",
+   "OPENBLAS_NUM_THREADS": "1"
+  },
+  "tree_clean": true
+ },
+ "step": "WHEEL-DATA"
+}

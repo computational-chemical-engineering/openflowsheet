@@ -1,0 +1,43 @@
+{
+ "assertion": "T08's registered PTC-R1 comparison runs to completion at C on both legs (N-2)",
+ "checks": [
+  {
+   "artifacts": {
+    "ptc-r1-ubuntu-24.04-arm/results-ci-aarch64.json": "8c2e792f3c25eebb8b812a4275438f116150e6340948fbce43d33fa4ec282bd0",
+    "ptc-r1-ubuntu-24.04-arm/results-ci-aarch64.md": "74ea035d066acdcc96c487a54f47ee56f280aa0e1de7be3d2228ee6f0278c6fe",
+    "ptc-r1-ubuntu-latest/results-ci-x86-64.json": "e7f2a61f6c056634257f2b03a4da9601d2132d81aa78561dec209cf50cc112c1",
+    "ptc-r1-ubuntu-latest/results-ci-x86-64.md": "a683a6132ed3c0370197e7db6519aef7b4600047b7336e9637f53d359f8b45fe"
+   },
+   "conclusions": {
+    "ptc-r1 (ubuntu-24.04-arm)": "success",
+    "ptc-r1 (ubuntu-latest)": "success"
+   },
+   "download": {
+    "attempt": 1,
+    "exit_status": 0,
+    "files": 4,
+    "run_id": 45204778756
+   },
+   "id": "PTC-R1",
+   "job": "ptc-r1",
+   "result": "pass"
+  }
+ ],
+ "format": "t08-rc-v1",
+ "passed": true,
+ "provenance": {
+  "architecture": "x86_64",
+  "commit": "ee934680d94879032b34ae8649baa31ff5a210c8",
+  "environment_lock_sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4",
+  "github_actions": false,
+  "machine_class": "ref-x86-64",
+  "python": "3.13.5",
+  "threads": {
+   "MKL_NUM_THREADS": "1",
+   "OMP_NUM_THREADS": "1",
+   "OPENBLAS_NUM_THREADS": "1"
+  },
+  "tree_clean": true
+ },
+ "step": "PTC-R1"
+}

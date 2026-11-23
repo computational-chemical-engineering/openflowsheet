@@ -1,0 +1,117 @@
+{
+ "checks": [
+  {
+   "attempt": 2,
+   "conclusion": "success",
+   "id": "s1.push_run",
+   "result": "pass",
+   "run_id": 45204749193,
+   "status": "completed"
+  },
+  {
+   "class_ratio_lines": [
+    "\ufeff2026-11-23T19:42:12.9295884Z ##[group]Run python scripts/s07_platform_digest.py --report",
+    "^[[36;1mpython scripts/s07_platform_digest.py --report^[[0m",
+    "shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}",
+    "env:",
+    "  OPENBLAS_NUM_THREADS: 1",
+    "  OMP_NUM_THREADS: 1",
+    "  MKL_NUM_THREADS: 1",
+    "  pythonLocation: /opt/hostedtoolcache/Python/3.13.18/x64",
+    "  PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.13.18/x64/lib/pkgconfig",
+    "  Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.18/x64",
+    "  Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.18/x64",
+    "  Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.18/x64",
+    "  LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.13.18/x64/lib",
+    "  OPENFLOWSHEET_REQUIRE_COOLPROP: 1",
+    "##[endgroup]",
+    "S07 A31 (x86_64): bit-identical",
+    "  class T: 20774 compared, 0 differ, 0 fail; worst u -",
+    "  class N: 2172 compared, 0 differ, 0 fail; worst u -",
+    "  class S: 0 compared, 0 differ, 0 fail; worst u -",
+    "  report: /home/runner/work/openflowsheet/openflowsheet/evidence/S07/artifacts/a31_report_x86_64.json",
+    "\ufeff2026-11-23T19:42:16.8788192Z ##[group]Run python docs/derivations/scripts/s11_thermal_reference.py --check",
+    "^[[36;1mpython docs/derivations/scripts/s11_thermal_reference.py --check^[[0m",
+    "shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}",
+    "env:",
+    "  OPENBLAS_NUM_THREADS: 1",
+    "  OMP_NUM_THREADS: 1",
+    "  MKL_NUM_THREADS: 1",
+    "  pythonLocation: /opt/hostedtoolcache/Python/3.13.18/x64",
+    "  PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.13.18/x64/lib/pkgconfig",
+    "  Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.18/x64",
+    "  Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.18/x64",
+    "  Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.18/x64",
+    "  LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.13.18/x64/lib",
+    "##[endgroup]",
+    "check (R-843): bitwise on x86_64; the classed comparison, for the record:",
+    "  class energy: worst |delta|/bound 0.000e+00 at $.saturation.H2O[0].h_liquid",
+    "  class entropy: worst |delta|/bound 0.000e+00 at $.saturation.H2O[0].s_liquid",
+    "  class unit: worst |delta|/bound 0.000e+00 at $.grid.H2O[2].nominal.Q",
+    "  class relative: worst |delta|/bound 0.000e+00 at $.fluids.H2O.T_c",
+    "  class flash: worst |delta|/bound 0.000e+00 at $.grid.H2O[0].ph.T",
+    "OK: benchmarks/s11/thermal_reference.yaml matches CoolProp 8.0.0"
+   ],
+   "conclusion": "success",
+   "id": "s1.check.x86_64",
+   "job": "check (ubuntu-latest)",
+   "log_sha256": "afd45054e5e1faa0224e23357d5a1bb649c40f0dc43150a2076c473e2a79d5f3",
+   "result": "pass"
+  },
+  {
+   "class_ratio_lines": [],
+   "conclusion": "success",
+   "id": "s1.check.aarch64",
+   "job": "check (ubuntu-24.04-arm)",
+   "log_sha256": "cae293ea1e9904243bf02ca2341ec4ddfa98815331c4ac6494f35c9971641255",
+   "result": "pass"
+  },
+  {
+   "files": {
+    "junit-aarch64": {
+     "node.xml": "f409b8ee38a8c79963fc288b8caa34d2f0e41ade65d16573810d46405ae3fcae",
+     "pytest.xml": "7afbe8eae3cd175087d936ce689e118e2f13c33dbb31536fee99a411388ca408"
+    },
+    "junit-x86_64": {
+     "node.xml": "0417b4b225d6618e2e85b88041dcaea0f320322b80232de2d60cef7173fce551",
+     "pytest.xml": "24edd27bcf5aaa2f2df1844c2b23a62379beb4a75f80ce90123469c5f4af4288"
+    }
+   },
+   "id": "s1.junit",
+   "result": "pass"
+  }
+ ],
+ "format": "t08-rc-v1",
+ "passed": true,
+ "provenance": {
+  "architecture": "x86_64",
+  "commit": "ee934680d94879032b34ae8649baa31ff5a210c8",
+  "environment_lock_sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4",
+  "github_actions": false,
+  "machine_class": "ref-x86-64",
+  "python": "3.13.5",
+  "threads": {
+   "MKL_NUM_THREADS": null,
+   "OMP_NUM_THREADS": null,
+   "OPENBLAS_NUM_THREADS": null
+  },
+  "tree_clean": true
+ },
+ "runs_at_c": [
+  {
+   "attempt": 2,
+   "conclusion": "success",
+   "databaseId": 45204749193,
+   "event": "push",
+   "status": "completed"
+  },
+  {
+   "attempt": 1,
+   "conclusion": "success",
+   "databaseId": 45204778756,
+   "event": "workflow_dispatch",
+   "status": "completed"
+  }
+ ],
+ "step": "ci-push-run"
+}

@@ -1,0 +1,38 @@
+{
+ "assertion": "F1's registry and F3's legacy record store answer from the installed wheel as from C: registry_sha256 equal; the legacy (id, record_sha256) pairs equal legacy_index.json's, all of them in the checkout and those of its package-data files in the wheel (ADR 0061 D8) (0.5 ships package data beyond 0.4.0's, RP 3.6 item 4; WF-1 to WF-5 of docs/briefs/REL050-line-0.5.md)",
+ "checks": [
+  {
+   "argv": [
+    "/home/eajfpeters/.cache/rel051-cut/rc/rcvenv/bin/python",
+    "scripts/wheel_data_check.py",
+    "--commit",
+    "ee934680d94879032b34ae8649baa31ff5a210c8",
+    "--f1-f3"
+   ],
+   "environment": "project",
+   "exit_status": 0,
+   "id": "WHEEL-F1-F3",
+   "output": "step17/WHEEL-F1-F3.log",
+   "output_sha256": "0747406f3dac7f2320a7e7c6fa3a7da72d72003725516a70e5da7d6dce6199df",
+   "records": {},
+   "result": "pass"
+  }
+ ],
+ "format": "t08-rc-v1",
+ "passed": true,
+ "provenance": {
+  "architecture": "x86_64",
+  "commit": "ee934680d94879032b34ae8649baa31ff5a210c8",
+  "environment_lock_sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4",
+  "github_actions": false,
+  "machine_class": "ref-x86-64",
+  "python": "3.13.5",
+  "threads": {
+   "MKL_NUM_THREADS": "1",
+   "OMP_NUM_THREADS": "1",
+   "OPENBLAS_NUM_THREADS": "1"
+  },
+  "tree_clean": true
+ },
+ "step": "WHEEL-F1-F3"
+}

@@ -1,0 +1,44 @@
+{
+ "checks": [
+  {
+   "command": "python scripts/release_gate.py --line 0.5 --rc ee934680d94879032b34ae8649baa31ff5a210c8 --carry-journey 6cf18bb1",
+   "exit_code": 0,
+   "id": "a21.carry_journey",
+   "line": "RC step 15: the journey at 6cf18bb1 carried",
+   "result": "pass"
+  },
+  {
+   "command": "python scripts/m07_journey.py check 6cf18bb1",
+   "exit_code": 0,
+   "id": "a21.check",
+   "last_line": "check: ACCEPT",
+   "result": "pass"
+  },
+  {
+   "command": "nlp env, OMP_NUM_THREADS=1: python scripts/m07_journey.py replay 6cf18bb1",
+   "exit_code": 0,
+   "host_platform": "Linux-6.12.86+deb13-amd64-x86_64-with-glibc2.41",
+   "id": "a21.replay",
+   "last_line": "replay: bitwise",
+   "record_platform": "Linux-6.12.86+deb13-amd64-x86_64-with-glibc2.41",
+   "result": "pass"
+  }
+ ],
+ "format": "t08-rc-v1",
+ "passed": true,
+ "provenance": {
+  "architecture": "x86_64",
+  "commit": "ee934680d94879032b34ae8649baa31ff5a210c8",
+  "environment_lock_sha256": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4",
+  "github_actions": false,
+  "machine_class": "ref-x86-64",
+  "python": "3.13.5",
+  "threads": {
+   "MKL_NUM_THREADS": "1",
+   "OMP_NUM_THREADS": "1",
+   "OPENBLAS_NUM_THREADS": "1"
+  },
+  "tree_clean": true
+ },
+ "step": "w25-journey"
+}
