@@ -20414,3 +20414,26 @@ probability zero" is an erratum: ties do not weaken the guarantee or §6.4's fal
 of the method, and either variant rewrites §6.2/§6.4 after registered iterations ran under them. Option C (a macOS
 platform-limit row): the test flips under a pure roundoff change on Linux too, so it is flaky everywhere, not limited
 on one platform.
+
+## R-1069: 0.5.1 is a patch release on the 0.5 line with its own evidence package REL051; RP.L11 takes the id of the largest release `covers` admits (RP A-14; REL051; 2026-11-23)
+
+| | |
+| --- | --- |
+| Date | 2026-11-23 |
+| Decided by | the user (REL051 session chat, 2026-11-23: "Option 1"; for 0.5.1 chat answers replace the Decision Desk cards) |
+| Normative text | `docs/derivations/release-procedure.md` §3.4 RP.L11 and §17.7 (amendment A-14); `release/lines/0.5.json` (`gate_set.covers`, `evidence_package`, `verdict_document`, `rc_record`, `packages`, `_comment`) |
+| Evidence | `tests/test_rel_release_gate.py` `test_l11_a_patch_release_takes_its_own_id` (pass and three controls) and the A-10 tests unchanged; RP.S22's check `scripts/release_evidence_manifest.py` `_m_harvest` (why REL050 could not be kept) |
+| Affected packages | REL051 (the 0.5.1 patch release); RP (S15) amendment A-14; `scripts/release_gate.py` (`line_release`, RP.L11); `tests/test_rel050_ledger.py` (reads the 0.5 line file as tagged `v0.5.0`) |
+
+**Decision.** The patch release 0.5.1 is gated by the 0.5 line file. Its `covers` admits `0.5.1` (and its b/rc
+pre-releases) besides `0.5.0`; `packages` gains X32; `evidence_package` is `REL051`, `verdict_document`
+`docs/reviews/REL051-verdicts.md` and `rc_record` `docs/REL051-rc-record.md`. RP.L11 (A-14) requires the id of
+`<line>.Z` for the largest Z that `covers` admits, so a line that admits only `<line>.0` keeps A-10's rule.
+
+**Why.** RP never planned a patch release on a line. A-10's RP.L11 required `<line>.0`'s id, REL050; but RP.S22
+requires C's tree to hold nothing under `evidence/<evidence_package>/`, and `evidence/REL050/` holds 0.5.0's records.
+Both could not pass.
+
+**Rejected.** *Keep REL050 with no machinery change* (first chosen in chat, withdrawn the same day when RP.S22 was
+found to fail). *An independent reviewer pass on the change:* the user chose to have the single 0.5.1 verdict agent
+judge it. *Stop 0.5.1 and fold X32 into 0.6.0.*

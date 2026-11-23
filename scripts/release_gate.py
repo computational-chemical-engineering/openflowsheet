@@ -13,7 +13,7 @@ with exit 2 when any of RP's checks RP.L01–RP.L11 fails (§3.4): the schema, t
 acyclic `inherits` chain, `changed` exact in both directions against the inherited line (§3.2,
 REL.A01), the `tests` globs and the `criteria`, `documents` and `scripts` paths at `C` (RP.L05,
 RP.L08), the keys of `gates`, the `rc` pairs, the clause grammar, the decision items, and a gate
-line's `evidence_package` (RP.L11, ADR 0074 O-3). Its
+line's `evidence_package` (RP.L11, ADR 0074 O-3, RP amendment A-14). Its
 `gate_set` is the engine's `GateSet`, with `acceptances` in the place of `policy_adr`. Every line
 admits post-releases as the legacy lines do (RP §7.5, R-922).
 
@@ -146,6 +146,20 @@ def release_package_id(release: str) -> str:
             raise ValueError(f"{release!r}: {component} has {k} digits, beyond `z` (ADR 0074 D2)")
         codes.append(component if k == 1 else chr(ord("a") + k - 1) + component)
     return "REL" + "".join(codes)
+
+
+#: The patch numbers RP.L11 searches: ADR 0074 D1 admits components of at most four digits.
+PATCHES: Final = range(10_000)
+
+
+def line_release(name: str, covers: str) -> str | None:
+    """RP.L11 (amendment A-14): `<line>.Z` for the largest Z in `PATCHES` whose `<line>.Z`
+    `covers` fullmatches; `None` when it admits none. A line that gates its first release covers
+    `<line>.0` (its id `<line>.0`'s, as A-10 had it); a patch release on the line widens `covers`
+    to its `<line>.Z` and takes that id (REL051, R-1069)."""
+    pattern = re.compile(covers)
+    admitted = [patch for patch in PATCHES if pattern.fullmatch(f"{name}.{patch}")]
+    return f"{name}.{admitted[-1]}" if admitted else None
 
 
 def line_path(name: str) -> str:
@@ -347,11 +361,13 @@ def line_problems(line: Line, read: Callable[[str], bytes | None]) -> list[str]:
         if gate not in claimed:
             problems.append(f"{at}: RP.L10: rejudge_waits [{gate}, {item}]: {gate} is not claimed")
     if document["role"] == "gate":
-        expected = release_package_id(f"{line.name}.0")
-        if entry["evidence_package"] != expected:
+        release = line_release(line.name, entry["covers"])
+        if release is None:
+            problems.append(f"{at}: RP.L11: covers admits no release {line.name}.Z")
+        elif entry["evidence_package"] != (expected := release_package_id(release)):
             problems.append(
                 f"{at}: RP.L11: evidence_package {entry['evidence_package']!r} is not "
-                f"{expected!r}, ADR 0074 D2's id of {line.name}.0"
+                f"{expected!r}, ADR 0074 D2's id of {release}"
             )
     return problems
 

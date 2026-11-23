@@ -1,14 +1,15 @@
 """RP.S17 (`docs/derivations/release-procedure.md`; RP §9.2 step 3): the ledger
 `docs/requirements.yaml` after the 0.5.0 verdicts, in the pattern of `tests/test_rel040_ledger.py`.
 
-For the seventeen gates the 0.5 line's gate set claims (`release/lines/0.5.json`, read by
-`scripts/release_gate.py`'s own loader) the ledger's verdict equals the verdict document's
-(`docs/reviews/REL050-verdicts.md`, read by the engine's parser as the gate reads it). At C =
-`0a800e69` that is 15 PASS, V14 FAIL (V14 (b)) and X31 FAIL (X31 (c)), as 0.4.0 released them, so
-the ledger moves no verdict against 0.4.0's released ledger. Every cited manifest of a claimed gate
-exists; W27 is not claimed and keeps its 0.4.0 entry. No gate cites
+For the seventeen gates the 0.5 line's gate set claims (`release/lines/0.5.json` as tagged
+`v0.5.0`, read by `scripts/release_gate.py`'s own loader) the ledger's verdict equals the verdict
+document's (`docs/reviews/REL050-verdicts.md`, read by the engine's parser as the gate reads it).
+At C = `0a800e69` that is 15 PASS, V14 FAIL (V14 (b)) and X31 FAIL (X31 (c)), as 0.4.0 released
+them, so the ledger moves no verdict against 0.4.0's released ledger. Every cited manifest of a
+claimed gate exists; W27 is not claimed and keeps its 0.4.0 entry. No gate cites
 `evidence/REL050/<C>/manifest.json`: it does not exist at the candidate (the gate's own manifests
-item). The working tree's ledger is covered for all 27 gates by `tests/test_requirements_ledger.py`.
+item). The working tree's ledger is covered for all 27 gates by
+`tests/test_requirements_ledger.py`.
 """
 
 from __future__ import annotations
@@ -31,14 +32,19 @@ RC = re.compile(r"^\*\*Release candidate:\*\* `([0-9a-f]{40})`", re.MULTILINE)
 C = "0a800e69f200e52dae7e5f3d2d56810bc8f10e27"
 #: The commit tagged `v0.4.0` (`git rev-list -n1 v0.4.0`; `tests/test_v02_main_version.py`).
 RELEASE_0_4_0_COMMIT = "b6cdf552013330c68f2fde7291c5447daae31801"
+#: The commit tagged `v0.5.0` (`git rev-list -n1 v0.5.0`). The 0.5 line file is read there: 0.5.1
+#: (REL051, R-1069) names its own verdicts and RC record in the same line file.
+RELEASE_0_5_0_COMMIT = "63b005046f34ff25a1f4dacb34645a78ce49f79b"
 
 
-def read(path: str) -> bytes | None:
-    file = REPO_ROOT / path
-    return file.read_bytes() if file.is_file() else None
+def read_at_0_5_0(path: str) -> bytes | None:
+    shown = subprocess.run(
+        ["git", "show", f"{RELEASE_0_5_0_COMMIT}:{path}"], cwd=REPO_ROOT, capture_output=True
+    )
+    return shown.stdout if shown.returncode == 0 else None
 
 
-GATE_SET = release_gate.load_line("0.5", read).gate_set
+GATE_SET = release_gate.load_line("0.5", read_at_0_5_0).gate_set
 VERDICTS = REPO_ROOT / GATE_SET.verdict_document
 
 

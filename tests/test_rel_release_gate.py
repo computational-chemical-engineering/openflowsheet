@@ -269,6 +269,42 @@ def test_l11_0_4_with_rel050_is_refused_and_rel040_passes() -> None:
     ]
 
 
+def line_0_5(edit: Callable[[dict[str, Any]], None]) -> Callable[[str], bytes | None]:
+    """The working tree's 0.5 line file with one edit."""
+    document = json.loads((REPO_ROOT / "release" / "lines" / "0.5.json").read_text("utf-8"))
+    edit(document)
+    return reader(**{"release/lines/0.5.json": document})
+
+
+def test_l11_a_patch_release_takes_its_own_id() -> None:
+    """RP.L11 (amendment A-14, R-1069): the id is `<line>.Z`'s for the largest Z `covers` admits.
+    The 0.5 line covering 0.5.0 and 0.5.1 passes with `REL051`; controls: `REL050` there, `REL051`
+    with `covers` narrowed to 0.5.0, and a `covers` admitting no `0.5.Z`."""
+    assert release_gate.line_release("0.5", r"0\.5\.[01](?:(?:b|rc)[1-9][0-9]*)?") == "0.5.1"
+    assert release_gate.line_release("0.4", LINE_0_4["gate_set"]["covers"]) == "0.4.0"
+    assert release_gate.line_release("0.5", r"0\.5\.0rc1") is None
+
+    def package(value: str, covers: str | None = None) -> Callable[[dict[str, Any]], None]:
+        def edit(document: dict[str, Any]) -> None:
+            document["gate_set"]["evidence_package"] = value
+            if covers is not None:
+                document["gate_set"]["covers"] = covers
+
+        return edit
+
+    assert release_gate.load_line("0.5", line_0_5(package("REL051"))).name == "0.5"
+    assert refusal(line_0_5(package("REL050")), "0.5") == [
+        "line 0.5: RP.L11: evidence_package 'REL050' is not 'REL051', ADR 0074 D2's id of 0.5.1"
+    ]
+    narrowed = r"0\.5\.0(?:(?:b|rc)[1-9][0-9]*)?"
+    assert refusal(line_0_5(package("REL051", narrowed)), "0.5") == [
+        "line 0.5: RP.L11: evidence_package 'REL051' is not 'REL050', ADR 0074 D2's id of 0.5.0"
+    ]
+    assert refusal(line_0_5(package("REL051", r"0\.5\.0rc1")), "0.5") == [
+        "line 0.5: RP.L11: covers admits no release 0.5.Z"
+    ]
+
+
 @pytest.mark.parametrize(
     ("release", "expected"),
     [

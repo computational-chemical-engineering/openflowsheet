@@ -18,11 +18,13 @@
   "_comment": [
     "The 0.5 line (RP section 3; R-1065, ADR 0057 Amendment 1: X07a, F1, F3, X01's plugin docs). DRAFT, REL050-L1.",
     "The claim set, the clause and gates[*] are 0.4's unchanged. Why each changed field differs, what is carried,",
-    "and what 0.5 does not claim: docs/briefs/REL050-line-0.5.md. Build-lane fields there are proposals."
+    "and what 0.5 does not claim: docs/briefs/REL050-line-0.5.md. Build-lane fields there are proposals.",
+    "0.5.1 (REL051; the user, 2026-11-23): covers admits 0.5.1, packages gain X32, the verdicts and RC record are",
+    "REL051's, and evidence_package is REL051, the id of the largest release covers admits (RP.L11, amendment A-14; R-1069)."
   ],
   "gate_set": {
     "name": "v0.5-gate-v1",
-    "covers": "0\\.5\\.0(?:(?:b|rc)[1-9][0-9]*)?",
+    "covers": "0\\.5\\.[01](?:(?:b|rc)[1-9][0-9]*)?",
     "claimed": [
       "V11",
       "V12",
@@ -45,11 +47,11 @@
     "not_claimed": ["W27"],
     "clause": "\\b(?:V(?:1[1-9]|20)|W2[1-6]|X31) \\([a-z0-9]+\\)",
     "acceptances": "release/acceptances.md",
-    "verdict_document": "docs/reviews/REL050-verdicts.md",
-    "rc_record": "docs/REL050-rc-record.md",
+    "verdict_document": "docs/reviews/REL051-verdicts.md",
+    "rc_record": "docs/REL051-rc-record.md",
     "rc_steps": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17],
     "rc_last_step": 18,
-    "evidence_package": "REL050",
+    "evidence_package": "REL051",
     "packages": [
       "F1",
       "F3",
@@ -74,7 +76,8 @@
       "S11",
       "S12",
       "X01",
-      "X07a"
+      "X07a",
+      "X32"
     ],
     "envelope_id": "v0.5-envelope-1",
     "required_adrs": [

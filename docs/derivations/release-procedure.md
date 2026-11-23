@@ -165,8 +165,10 @@ fails. Each check has a control: a copy of the committed file with one change, w
 - **RP.L10.** Every `frank_items` entry has exactly one row in the decisions table of `acceptances`; `links_item` and
   every `rejudge_waits` item are in `frank_items`; every `rejudge_waits` gate is claimed. Control: `rejudge_waits`
   gains `["W27", "M02 N1"]`.
-- **RP.L11** (amendment A-10, §17.3; ADR 0074 O-3, 2026-11-09). For `role` `gate`, `gate_set.evidence_package`
-  equals ADR 0074 D2's id of `<line>.0`. Control: `0.4.json` with `REL050`.
+- **RP.L11** (amendment A-10, §17.3; ADR 0074 O-3, 2026-11-09; amendment A-14, §17.7). For `role` `gate`,
+  `gate_set.evidence_package` equals ADR 0074 D2's id of `<line>.Z`, where Z is the largest patch number (0 to 9 999)
+  for which `covers` fullmatches `<line>.Z`; a `covers` that admits no `<line>.Z` is refused. Controls: `0.4.json`
+  with `REL050`; the 0.5 line covering 0.5.0 and 0.5.1 with `REL050`.
 
 RP.L05 and RP.L08 are checked at C (the commit is read with `git`), because the files they name are the candidate's.
 RP.L08 fails today, on purpose: `scripts/wheel_data_check.py`, the script of item `WHEEL-DATA`, does not exist at
@@ -1367,3 +1369,19 @@ the review's (M-1, M-2, S-1 to S-5, S-7, rulings 3 to 7) and WO-R7's tests (`doc
   failed their after-tag proof on TR09 only in the sidecar's host name, CPU model and CPU count, with `other=0`.
   REAL holds the CPU model, the CPU flags and the environment path in 76 fingerprint leaves, which R-1008's proof
   holds equal. T06's reference class names TRS2's CPU model, so on TR09 step 6 fails and F0 stops judging M4.
+
+### 17.7 Amendment A-14 (REL051, 2026-11-23; R-1069)
+
+- **A-14 (§3.4 RP.L11; §3.1 D1.5 unchanged).** RP.L11's "ADR 0074 D2's id of `<line>.0`" becomes "ADR 0074 D2's id
+  of `<line>.Z`, where Z is the largest patch number (0 to 9 999) for which `covers` fullmatches `<line>.Z`; a
+  `covers` that admits no `<line>.Z` is refused", with the control "the 0.5 line covering 0.5.0 and 0.5.1 with
+  `REL050`" added. Why: A-10 assumed one release per line. A patch release `X.Y.Z` (Z ≥ 1) on a line widens the
+  line's `covers` to admit it and, by D1.5, has its own package id. Under A-10 it had to keep `<line>.0`'s id, and
+  then RP.S22 fails at its C, because `evidence/<line>.0's id/` already holds the earlier release's records. A-10's
+  purpose holds: an inherited, unchanged `evidence_package` is still refused (a 0.5 line keeping `REL040`), and a
+  line whose `covers` admits `<line>.0` only still needs `<line>.0`'s id. Nothing else in RP changes: the patch
+  release follows §5 to §9 as any release does, with its own `HARVEST_EXCLUDED` (§5.2), which harvests the previous
+  release's manifest on the line. `scripts/release_gate.py` implements it (`line_release`, `PATCHES`). Evidence:
+  `tests/test_rel_release_gate.py` `test_l11_a_patch_release_takes_its_own_id` (`REL051` passing on the 0.5 line;
+  `REL050` there, `REL051` with `covers` narrowed to 0.5.0, and a `covers` with no `0.5.Z`, each refused) and the A-10
+  tests unchanged. ADR 0074 is not edited: O-3 named an RP amendment as its default, and RP is the normative text.
