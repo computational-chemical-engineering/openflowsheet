@@ -2,8 +2,60 @@
 
 ## Unreleased
 
-### Changed
+## v0.5.0 — unreleased
 
+*Notes at the release candidate C = `0a800e69f200e52dae7e5f3d2d56810bc8f10e27` (RP §9.2 step 3; line `0.5`, gate
+set `v0.5-gate-v1`, envelope `v0.5-envelope-1`). Nothing below is released until the tag; the tag and every
+publication are Frank's. 0.5.0 is the smaller release Frank chose (R-1065, ADR 0057 Amendment 1): X07a, F1, F3 and
+X01's plugin guide, with the S19 code-health work. It claims V11–V20, W21–W26 and X31; W27 is not claimed. The
+verdicts are `docs/reviews/REL050-verdicts.md` (judged 2026-11-22); at C two gates FAIL, each with Frank's standing
+acceptance, as stated below. The roadmap's 0.5 line acceptance is not a release gate; its "ADR-F1 to ADR-F8 Accepted"
+moved to 0.6 (ADR 0057 Amendment 2, Frank).*
+
+### X07a — Windows and macOS in CI (ADR 0007 Amendment 3)
+
+- The CI suite also runs on Windows x86-64 and macOS arm64, within X07a's registered platform limits (platform rows
+  X07a-L1 to L10 and the limits table in `docs/X07a_DECISIONS.md`). A bundle made on one of them replays exactly on
+  the same platform identity (R-1062); a bundle from another platform is inspected there, not reproduced. The release
+  gate still reads the two Linux legs only (Frank, 2026-11-21). Manifest `evidence/X07a/bd0b7df5…/manifest.json`, CI
+  run 44902051410 (all four check legs green).
+
+### F1 — the extension registry (ADR 0060)
+
+- One registry of what the build provides and what installed extensions add: typed descriptors with a self-hash,
+  capability tokens, and a computed admission of unit and method pairs. Two new operations on every transport
+  (Python, CLI, HTTP, MCP): `list_capabilities` and `check_admission`; on the CLI also `openflowsheet capabilities`
+  and `openflowsheet admission`. The built-in registry ships as package data. Manifest
+  `evidence/F1/a423093f…/manifest.json`.
+
+### F3 — component data core (ADR 0061)
+
+- Component and parameter-set records (records v2) with content identity, a local record store, a data lock, a
+  rights register and importers. Five new `Records` operations on every transport: `search_records`, `get_record`,
+  `register_record`, `validate_record` and `assess_rights`; on the CLI `openflowsheet records search|get|register|
+  validate|rights`. The five MCP descriptions had a human review. Records are held, validated and assessed in 0.5.0;
+  the property routes of a solve do not use them yet (see "What it is not"). Manifest
+  `evidence/F3/6c82b535…/manifest.json`.
+
+### X01 — the plugin guide (part A)
+
+- `docs-site/guide/plugins.md`: how to write and install a plugin, with a worked example, its entry point and
+  descriptor, message entries, discovery, namespaces and quarantine, trust and the evidence flags, and how to list the
+  installed plugins. Every snippet is checked by a test. Plugins are listed and admitted through F1's registry; making
+  a plugin's units or methods selectable (part B) is planned for 0.6. Manifest
+  `evidence/X01/bbbca491…/manifest.json`.
+
+### S16, S17 and S19 — code health (ADR 0076, ADR 0077)
+
+- No new capability. S19 restructured the source tree into checked layers (0 import cycles, modules split, the
+  identity of the registered run corpus kept at every step, F0); S17 did the same first for `application/`; S16 added
+  test-impact selection for development (`scripts/test_impact.py`). Python import paths moved without compatibility
+  re-exports (ADR 0076): for example the display conversion lives only in `openflowsheet.units.display`, and K06's
+  `transactions.Application` facade is gone. Manifests `evidence/S19/043879a4…/manifest.json`,
+  `evidence/S17/36127495…/manifest.json` and `evidence/S16/ef915499…/manifest.json`.
+- The derivative witness refuses a non-finite term as `non_finite` instead of counting it as a failed value (WITNF,
+  R-1046); a column that stays non-finite ends the witness `unsupported` and the verdict `UNVERIFIED`. Finite terms
+  are bitwise unchanged.
 - Five property providers carry a new implementation SHA-256, and with it a new `model_version`: `pr-c1-v1`,
   `iapws95-v1`, `wilson-ig-v1`, `wilson-ig-v2` and `coolprop-heos-v1`. Their source was restructured for code health
   (S19 W5 batch P; ADR 0077, R-1059): functions extracted inside each file, and the CoolProp fluid table split into
@@ -12,6 +64,92 @@
   bundle written earlier on one of these providers, released 0.4.x bundles included, replays `MISMATCH` on
   `model_version`; re-solving gives the same numbers under the new label. L01's pin of `thermo/pr_c1.py` moves by
   registered ruling (R-1067), and S11 A75 now reads "v1 is not edited since K of batch P".
+
+### Gates (V11–V20, W21–W26, X31), as `scripts/release_gate.py --line 0.5 --rc C --markdown` prints them
+
+A FAIL is printed FAIL and a BLOCKED gate BLOCKED.
+
+| Gate | Verdict at C | Required evidence | Clauses and travelling limitations |
+| --- | --- | --- | --- |
+| V11 | PASS | Semantic diff, drafts, task validation, units/references, real migration when applicable | limitations: L38, L-X04-1, L-X04-2, L-X04-3 |
+| V12 | PASS | Required unit library with per-model definition of done | limitations: L02, L26, L27, L28, L29, L30, L-CSTR-1, L-CSTR-2, L-CSTR-3 |
+| V13 | PASS | DM/SCC/BTF, tear and EO, scaling and initialization | limitations: L10, L22, L23, L24, L36, L38, L43, L-WS-1, L-WS-2 |
+| V14 | FAIL | Homotopy, qualified PTC/SER and three bounded recovery edges | failing: V14 (b); V14 (b) FAIL, accepted by Frank 2026-11-22 (release/acceptances.md D3); limitations: L01, L08, L20, L21, L43, L-COL-10 |
+| V15 | PASS | Frozen phases, EO cross-unit spec, multiple-root evidence | limitations: L02, L14, L19, L20, L33, L-COL-5 |
+| V16 | PASS | 30+ distinct cases, eight shared comparisons, two both-reference cases where feasible, registered 20x20 ensemble | limitations: L16, L17, L18, L32 |
+| V17 | PASS | Local/HTTP/MCP, ten agent tasks, >=80% success, zero unauthorized actions/false verification | limitations: L11, L12, L13 |
+| V18 | PASS | Distribution/data gates, local rank evidence, qualified energy checks, all recovery edges tested | limitations: L03, L05, L06, L15, L19, L25, L34, L37, L39, L40, L41 |
+| V19 | PASS | Real-chemistry dossier with usable data/kinetics/property/reference route | — |
+| V20 | PASS | >=95% nominal robustness, correct invalid-structure handling, no adversarial false verification | limitations: L04, L07, L09, L31, L32, L38 |
+| W21 | PASS | PyMRM boundary/accuracy/execution and provenance | limitations: L05, L06, L07, L15, L19, L20, L44, L45, L46, L48 |
+| W22 | PASS | One validated needed nonideal property route | limitations: L42, L47 |
+| W23 | PASS | Surrogate conservation/domain/derivative/default UQ and promotion | limitations: L49 |
+| W24 | PASS | Fixed-topology optimization, eligible trust-region example and parent-model checks | limitations: L19, L44, L46, L48, L49 |
+| W25 | PASS | End-to-end real reactor refinement with honest evidence limits | limitations: L44, L45, L46, L48, L49 |
+| W26 | PASS | Diagnostic web shell through shared contract | limitations: L-WEB-1, L-WEB-2, L-WEB-3, L-WEB-4 |
+| X31 | FAIL | Four matched column cases, invalid specs/phases, two independent references where available | failing: X31 (c); X31 (c) FAIL, accepted by Frank 2026-10-30 (release/acceptances.md D3); limitations: L-COL-1, L-COL-2, L-COL-3, L-COL-4, L-COL-5, L-COL-6, L-COL-7, L-COL-8, L-COL-9, L-COL-10 |
+| W27 | not claimed | External agent benchmark adaptation attempted; inaccessible assets disclosed | — |
+
+- **V14 FAIL** on V14 (b): PTC ends at the saddle from 149 of 441 starts on both CI architectures, the registered
+  failure, unchanged since 0.4.0. Its acceptance of 2026-11-10 lapsed at C because `src/openflowsheet/` changed;
+  Frank accepted it again on 2026-11-22.
+- **X31 FAIL** on X31 (c): S09's three-tool outcome, "met where available, 3 of 4"; its acceptance stands at C.
+- **V17 PASS** rests on Frank's carry of `v17-c2`'s agent evidence (on the R-137 surface) across ten links, R-192 to
+  R-1051. No agent has yet driven F1's or F3's tools, and no agent run was made on 0.5.0's surface; those tools are
+  covered by their own tests. A new campaign, `v17-c3`, with tasks that drive them, is planned for 0.6.
+
+The accepted failure clauses in force at C (RP.S10):
+
+- V14 (b) FAIL, accepted by Frank 2026-11-22 (release/acceptances.md)
+- X31 (c) FAIL, accepted by Frank 2026-10-30 (release/acceptances.md)
+
+**Travelling limitations.** The ids in the table are rows of the envelope `v0.5-envelope-1`
+(`benchmarks/t08/support_envelope.yaml`). V11 now carries L-X04-1 to L-X04-3 by id (the widened limitation grammar,
+R-1009), so their texts no longer travel here.
+
+W21's PASS rests on envelope row L46, which travels with W21, W24 and W25:
+
+- L46: No reactor result has been compared with experimental data by this project. The group's published comparison (Gargiulo et al. 2025 §3.1, of Rossetti et al. 2006's rate law) is the group's evidence. Every real-reactor number is the group's model at the pin, a regression, and its discretization bias is 1.0–1.4 % in NH₃ (M02 design note §13).
+
+**Frank's acceptances.**
+
+All seven rows of `release/acceptances.md` stand at C (`release_gate.py --line 0.5 --rc C --lapses`):
+
+- V14 (b): accepted 2026-11-22, "Accept as at 0.4.0" (the 2026-11-10 row lapsed at C).
+- X31 (c): accepted 2026-10-30, stands.
+- Claim set (V11 to V20, W21 to W26 and X31 claimed; W27 not claimed): accepted 2026-10-30, stands.
+- V17 carry (`v17-c2`'s agent evidence carried across R-192, R-234, R-295, R-934, R-950, R-960, R-1000, R-1010,
+  R-1030 and R-1051): accepted 2026-11-22, "Carry for 0.5, campaign in 0.6 (Recommended)" (the 2026-11-10 row lapsed
+  at C).
+- M02 N1 (the reactor child process ships with its no-isolation label): accepted 2026-11-22, "Keep the label" (the
+  2026-10-30 row lapsed at C).
+- M03 N1 (the licences of the optional `nlp` extra): accepted 2026-10-30, stands.
+- coolprop and lca licences: accepted 2026-10-30, stands.
+
+### What it is not
+
+- numerical verification, not empirical validation
+- no global optimality
+- the release is judged on Linux only, not on Windows or macOS
+- bundles reproduce across platforms only between Linux x86-64 and aarch64
+- the nlp and reactor environments and the coolprop extra are Linux only, and Windows refuses external models
+- not a sandbox
+- the stand-in reactor is synthetic
+- the optimization routes need the optional nlp extra
+- the CoolProp provider needs the optional coolprop extra
+- cost and LCA results are assessment estimates with an accuracy class
+- cost and LCA are Python-only
+- no ecoinvent data
+- Wilson is vapour-liquid only; no liquid-liquid split
+- no automatic liquid/vapour regime switching for pure fluids
+- X31: one independent reference for the refluxed absorber
+- no rate-based column models
+- no W27 claim in 0.5.0
+- no CFD or Peclet refinement
+- no external benchmark score
+- no v2 revision documents
+- no solve reads the component record store
+- a plugin adds no unit model or property method that a solve uses
 
 ## v0.4.0 — unreleased
 
