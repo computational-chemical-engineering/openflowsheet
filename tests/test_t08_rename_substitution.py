@@ -148,11 +148,19 @@ def test_with_the_pre_rename_self_hashes_a_run_emits_the_pre_rename_fixtures(
 
 
 def test_the_cli_pins_moved_by_the_rename_only() -> None:
-    from test_t07_w5b_cli import PINS, msg_reversed_text, opt_reversed_cli_text
+    from test_t07_w5b_cli import (
+        PINS,
+        msg_reversed_text,
+        opt_reversed_cli_text,
+        tok_reversed_cli_text,
+    )
 
     # MSG (ADR 0058) moved two records after the rename; reversed first (`msg_reversed`), after
     # OPT's U05 refusal (ADR 0071, OPT design §4.11, `opt_reversed`), which postdates MSG.
-    text = msg_reversed_text(opt_reversed_cli_text(PINS.read_text(encoding="utf-8")))
+    # R-1064's `project grant` layout (`tok_reversed`) postdates OPT and is reversed before both.
+    text = msg_reversed_text(
+        opt_reversed_cli_text(tok_reversed_cli_text(PINS.read_text(encoding="utf-8")))
+    )
     before = renamed_back_cli_text(text)
     assert before != text
     assert hashlib.sha256(before.encode("utf-8")).hexdigest() == PINS_PRE_RENAME_SHA256

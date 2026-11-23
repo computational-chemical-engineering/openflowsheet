@@ -1,0 +1,79 @@
+{
+ "work_package": "X32",
+ "commit": "2725fa7d973d00bea308d67b6aa4c845a6beb1ba",
+ "requirements": [],
+ "status": "tested",
+ "inputs": {
+  "case_id": "X32 (formerly TOK): the Coding Agents page's recipe `openflowsheet project grant ... > token.txt`, then `serve-mcp --token-file token.txt` (docs-site/agents.md, case_hash its sha256); register R-1064",
+  "case_hash": "02a0aa9e963048a3ded84f6f81c155406e4952d454a1e7062e5e8b9dca6fad47",
+  "environment_lock_hash": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+ },
+ "commands": [
+  {
+   "cmd": "ruff check and ruff format --check on src/openflowsheet/application/cli.py tests/test_t07_authz.py tests/test_t07_w5b_cli.py tests/test_t08_rename_substitution.py tests/test_tok_grant_token_file.py",
+   "cwd": ".claude/worktrees/tok",
+   "exit_code": 0
+  },
+  {
+   "cmd": "PYTHONPATH=src .venv/bin/python -m mypy src/openflowsheet/application/cli.py",
+   "cwd": ".claude/worktrees/tok",
+   "exit_code": 0
+  },
+  {
+   "cmd": "PYTHONPATH=src .venv/bin/python -m pytest -q -p no:cacheprovider tests/test_tok_grant_token_file.py tests/test_t07_authz.py tests/test_t07_w5b_cli.py tests/test_t08_rename_substitution.py tests/test_m07a_changelog.py tests/test_t08_w4_changelog.py",
+   "cwd": ".claude/worktrees/tok",
+   "exit_code": 0
+  },
+  {
+   "cmd": "CI run 44734187451 on wp/X32 at 083839ec (2725fa7d plus this manifest, its T08 harvest row, docs/support-matrix.md and HARVEST_SIZE; no code): check (ubuntu-latest) success, check (ubuntu-24.04-arm) success, identity success, default-install success, codehealth success",
+   "cwd": "GitHub Actions",
+   "exit_code": 0
+  }
+ ],
+ "checks": [
+  {
+   "id": "X32.recipe",
+   "description": "tests/test_tok_grant_token_file.py runs the page's own `grant ... > token.txt` and loads the written file through serving.token_capability; stdout is the token alone, stderr carries the capability and rights",
+   "result": "pass"
+  },
+  {
+   "id": "X32.pins",
+   "description": "the CLI pins regenerated for a deliberate output change; only `project grant cap-1` moved (stdout, stderr); the pins' SHA-256 chain to T07 holds (test_t07_w5b_cli, test_t08_rename_substitution)",
+   "result": "pass"
+  },
+  {
+   "id": "X32.local",
+   "description": "89 passed (command 3); ruff check, ruff format --check and mypy clean on the files changed since c4a91a75 (commands 1 and 2)",
+   "result": "pass"
+  },
+  {
+   "id": "X32.ci",
+   "description": "CI run 44734187451 at 083839ec (2725fa7d plus records only): required jobs check (ubuntu-latest), check (ubuntu-24.04-arm), identity, default-install all success",
+   "result": "pass"
+  }
+ ],
+ "artifacts": [
+  {
+   "path": "tests/fixtures/t07/cli-existing-commands.json",
+   "sha256": "53c83f59308bba826335adab34270713eaba64308bfd9b9d66c061f4e188ae47",
+   "description": "the CLI pins after TOK"
+  },
+  {
+   "path": "tests/test_tok_grant_token_file.py",
+   "sha256": "3a5e5e5f0141f9cf4a3dd07b866b53c04e98b9e4e4ac6dfd82968ec3c7822b45",
+   "description": "the recipe tests"
+  },
+  {
+   "path": "docs-site/agents.md",
+   "sha256": "02a0aa9e963048a3ded84f6f81c155406e4952d454a1e7062e5e8b9dca6fad47",
+   "description": "the Coding Agents page the recipe test reads"
+  }
+ ],
+ "limitations": [
+  "Evidence class: software verification on ref-x86-64 and CI. Status is tested: CI run 44734187451 ran at 083839ec, which is the commit field 2725fa7d plus records only (this manifest, its T08 harvest row, docs/support-matrix.md, HARVEST_SIZE); CI 44720447549 at 2725fa7d itself failed only on the then-unharvested manifest. macOS and Windows legs are X07a's. The recipe test runs `grant` in-process and does not start a serve-mcp subprocess (a by-hand MCP probe on the workstation did). The full suite and F0 were not re-run locally; CI ran them. One design-lane reviewer pass returned merge after fixes; fixes 1, 2 and 4 are in 2725fa7d, fix 3 (the ruff and mypy commands) is this manifest. No reviewed status is claimed by the build lane."
+ ],
+ "review": {
+  "numerical": "not_applicable",
+  "process_model": "not_applicable"
+ }
+}

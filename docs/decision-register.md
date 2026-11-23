@@ -20311,6 +20311,29 @@ ADR 0069 amendment admitting markers in D2.2 and a re-registration of the lock d
 records and every bundle's `lock_sha256`); option C (no pin: pywin32 resolved from `mcp`'s marker, unpinned and
 unhashed).
 
+## R-1064: `project grant` prints its token alone on stdout, so the documented `> token.txt` works with `serve-mcp` (X32, formerly TOK; 2026-11-20)
+
+| | |
+| --- | --- |
+| Date | 2026-11-20 |
+| Decided by | Frank (ship the fix with 0.5, 2026-11-20); build lane, inside T07 §10.3 ("print its token once") |
+| Normative text | this entry; `docs-site/agents.md` (Coding Agents, MCP) |
+| Evidence | `tests/test_tok_grant_token_file.py` runs the page's own `grant ... > token.txt` and loads the file through `serving.token_capability`; `tests/test_t07_w5b_cli.py` pins the new layout, and `tok_reversed` restores the pre-TOK record exactly (the pins' SHA-256 chain to T07 holds) |
+| Affected packages | X32 (this fix; package id after X31, the evidence schema's pattern); T07 (the CLI's `project grant`; `tests/fixtures/t07/cli-existing-commands.json`); docs-site agents and CLI tutorial; docs/web-shell.md |
+
+**Decision.** `openflowsheet project grant` writes the token alone, one line, to standard output, and the
+capability id, principal, rights and the shown-once note to standard error. `serve-mcp --token-file` is unchanged:
+it reads the whole file, stripped, as the token. A script that read the `capability` line from stdout (for a
+later `revoke`) reads it from stderr now, or fixes the id in advance with `--capability-id`.
+
+**Why.** A user following the Coding Agents page reported (2026-11-18) that `grant ... > token.txt` wrote the five
+labelled lines that 0.4.0 prints on stdout, which `serve-mcp` refuses ("the token matches no current grant"). Reproduced on
+`main` c4a91a75 and in v0.4.0; no test ran the documented redirect.
+
+**Rejected.** *`serve-mcp` parses `grant`'s labelled output:* fixes the symptom, leaves `grant`'s stdout awkward for
+every other script, and makes the token-file format two formats. *An ADR:* T07 §10.3 fixes only "print its token
+once", which still holds; the stdout/stderr split is a binding detail.
+
 ## R-1065: a smaller 0.5: X07a, F1, F3, X01 plugin docs; F2, F8, X06 and X01 selectability move to 0.6 (2026-11-20, Accepted)
 
 | | |

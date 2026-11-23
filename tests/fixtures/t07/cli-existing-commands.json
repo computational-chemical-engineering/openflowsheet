@@ -144,8 +144,8 @@
    "cap-1"
   ],
   "exit": 0,
-  "stdout": "capability cap-1\nprincipal  agent-1\nrights     draft,execute,read\ntoken      <TOKEN>\n(the token is shown once; the project stores only its SHA-256)\n",
-  "stderr": ""
+  "stdout": "<TOKEN>\n",
+  "stderr": "capability cap-1\nprincipal  agent-1\nrights     draft,execute,read\n(the token, on standard output, is shown once; the project stores only its SHA-256)\n"
  },
  {
   "argv": [

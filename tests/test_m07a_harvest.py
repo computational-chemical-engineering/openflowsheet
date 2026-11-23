@@ -108,7 +108,9 @@ T08_MANIFEST = "evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.j
 #: Its moved manifest (`bbbca49…`, 4 limitations, 0 checks; the a0e4c54 one stays) adds (1, 4).
 #: int/0.5-r2 adds X01's (2, 8, 0) to (103, 1161, 147).
 #: REL040's manifest (`84c6654…`, `tested`, 3 and 0), harvested for 0.5.0, moves it on `wp/REL050`.
-HARVEST_SIZE = (106, 1172, 147)
+#: X32's manifest (`2725fa7…`, `implemented`, 1 and 0) moves it on `wp/X32`.
+#: wp/REL051 adds X32's (1, 1, 0) to (106, 1172, 147).
+HARVEST_SIZE = (107, 1173, 147)
 #: The 0.2.0 release candidate C′ (M07 spec §25, R-485).
 C_PRIME = "ce993651ce37c1343e771b276160bd6623e43500"
 #: The commit tagged v0.2.0.

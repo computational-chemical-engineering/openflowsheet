@@ -15,7 +15,7 @@ design note are listed in [As built](#as-built-departures-from-the-design-note).
 ```bash
 openflowsheet project init ./plant --project-id plant          # once
 openflowsheet project grant --project ./plant --principal frank --rights read,execute
-#   prints the token once: prt_…
+#   prints the token once, alone on stdout: prt_… (the capability and rights on stderr)
 openflowsheet serve-http --project ./plant --ui
 #   openflowsheet: web shell at http://127.0.0.1:8765/ui/
 ```

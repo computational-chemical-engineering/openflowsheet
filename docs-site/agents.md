@@ -32,7 +32,8 @@ openflowsheet project grant --project plant --principal agent --rights read,draf
 claude mcp add openflowsheet -- openflowsheet serve-mcp --project "$PWD/plant" --token-file "$PWD/token.txt"
 ```
 
-`grant` prints the token once; keep the file private. Authority comes from the credential only:
+`grant` prints the token once, alone on standard output, so the redirect writes exactly the file
+`serve-mcp` reads; the capability, principal and rights go to standard error. Keep the file private. Authority comes from the credential only:
 the server never trusts an identity a request claims, and every call — refused ones included — is
 in the project's audit log (`list_audit`).
 

@@ -76,10 +76,15 @@ With the `server` extra, the same operations are served over HTTP and MCP. Both 
 token, granted once:
 
 ```bash
-openflowsheet project grant --project plant --principal me --rights read,draft,execute  # prints a token once
+openflowsheet project grant --project plant --principal me --rights read,draft,execute > token.txt  # the token, once
 openflowsheet serve-http --project plant --ui      # http://127.0.0.1:8765/v1 and the web shell at /ui/
 openflowsheet serve-mcp --project plant --token-file token.txt
 ```
+
+`token.txt` holds the token alone; keep the file private (with the default umask other users can read it). The web
+shell signs in with that token: paste the file's contents into its sign-in form, or open
+`http://127.0.0.1:8765/ui/#/?token=<the token>` once (the shell stores it for the session and removes it from the
+address).
 
 The HTTP server binds to loopback unless `--allow-remote` is given. See
 [Interfaces](../guide/interfaces.md) and [Coding Agents](../agents.md).
