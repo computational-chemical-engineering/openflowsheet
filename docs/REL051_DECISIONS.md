@@ -29,3 +29,16 @@
   REL050 chat before the /clear, recorded in this state file. `tests/test_rel050_ledger.py` now reads the line file
   at v0.5.0 (63b00504). Note for K3': `RELEASED` in tests/test_v02_main_version.py lacks 0.5.0 (63b00504); add it at
   K3' when the version leaves 0.5.0.
+
+## 2026-11-23: K3'
+
+- 2b74e60d: REL050's manifest harvested (3 limitations, P), HARVEST_EXCLUDED ("evidence/REL051/",), HARVEST_SIZE
+  (108, 1176, 147) measured; matrix --check 0 problems; 1449 passed, 43 skipped.
+- DECISION: envelope id -> `v0.5-envelope-2` (content differs from 0.5.0's `-1`). Alternative: keep `-1` with release
+  0.5.1. Reversible by: the line file's envelope_id, the envelope header and `ENVELOPE_ID`.
+- **K3' = 8f7ce045** (full sha in `git rev-parse 8f7ce045`): 0.5.1 in the version files, README, envelope
+  v0.5-envelope-2/0.5.1, A10_PINS_0_5_1, RELEASE_PINS, RELEASED + 0.5.0. K3 brief test set: 1982 passed, 45 skipped,
+  no failure (the G10 records' version tests are not in that set; J' re-takes them). F0 PASS (M1 50/50, M2 61/61,
+  M3 61/61, M4 61/61, M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 42/42).
+- Preconditions at K3' (`~/.cache/rel051-cut/bin/preconditions.py`): P1 all 25 packages have a tested manifest at an
+  ancestor (X32 2725fa7d); P3 all required ADRs Accepted; P4 RP.L01-L11 PASS; P6 `ref-x86-64`.

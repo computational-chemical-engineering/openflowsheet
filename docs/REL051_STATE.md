@@ -20,7 +20,14 @@ command used at 0.5.0.
 
 ## Position
 
-- wp/REL051 created at 63b00504. Nothing done yet.
+- Step 1 done (68982da7, X32 merged). Step 2 done (87e28c64, README + test). Step 3 done (42bafc14): RP amendment
+  A-14 (RP.L11 takes `<line>.Z`'s id), line file with evidence_package **REL051** (R-1069, the user chose "Option 1"
+  in chat; "Keep REL050" was withdrawn because RP.S22 fails on `evidence/REL050/`). Pushed 42bafc14; CI watched by
+  `~/.cache/rel051-cut/bin/ci_wait.sh <sha>` (polls every 300 s).
+- K3' done: 2b74e60d (REL050 harvested), **K3' = 8f7ce045** (0.5.1, envelope v0.5-envelope-2). K3' tests 1982
+  passed; F0 PASS; P1, P3, P4, P6 hold. Next: push, CI at 8f7ce045, then step 5 (J': re-takes from a clean detached
+  worktree at K3', drivers in `~/.cache/rel051-cut/bin/` adapted from rel050's; `<briefs>/REL050-J.md`).
+- CHANGELOG `## v0.5.1` (moving Unreleased's two Fixed bullets under it) is written at step 9 (notes), as 0.5.0 did.
 
 ## Plan (each step logged in REL051_DECISIONS with real numbers)
 
