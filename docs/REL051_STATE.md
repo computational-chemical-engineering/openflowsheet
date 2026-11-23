@@ -27,12 +27,14 @@ command used at 0.5.0.
 - K3' done: 2b74e60d (REL050 harvested), **K3' = 8f7ce045** (0.5.1, envelope v0.5-envelope-2). K3' tests 1982
   passed; F0 PASS; P1, P3, P4, P6 hold. Next: push, CI at 8f7ce045, then step 5 (J': re-takes from a clean detached
   worktree at K3', drivers in `~/.cache/rel051-cut/bin/` adapted from rel050's; `<briefs>/REL050-J.md`).
-- **J' = 6cf18bb16682426947bba9d6ecc29e5f8e8dda41** (42 files; all six proofs PASS other=0; IDAES byte-identical).
-  Post-J tests `tests_j.sh` (summary `~/.cache/rel051-cut/logs/tests-j-summary.txt`, DONE line). Journey running in
-  clean `.claude/worktrees/rc-j-051` at J' (0 lines, 15:06:02), `journey.sh`, about 76 min; summary
-  `~/.cache/rel051-cut/logs/journey-summary.txt` (EXIT line). Then: copy `benchmarks/m07/journey/<J'>/` from rc-j-051
-  into wp/REL051 and commit it: that commit is **C'**. Then check ACCEPT, replay bitwise in a clean worktree at C',
-  journey_carry(J', C'), leaf diff vs 0.5.0's record (`leafdiff.py`), test_m07_journey_record.
+- **J' = 6cf18bb1**, **C' = ee934680d94879032b34ae8649baa31ff5a210c8** (journey record; check ACCEPT, replay bitwise,
+  carried, 71/10794 leaves differ from 0.5.0's, all allowed). C' pushed as `rc/ee93468`: push run 45204749193,
+  release_rc dispatch 45204778756.
+- Running (no agent): RC local `rc_local.sh` PID 3261459 in `rc-c-051`, driver log
+  `~/.cache/rel051-cut/logs/rc-driver.txt` (EXIT line); full gate `gate_c.sh` in `gate-c-051`, summary
+  `~/.cache/rel051-cut/gate/summary.txt` (EXIT line). When RC local ends and both CI runs are done: `rc2.sh` (step1, ci,
+  items; system gh 2.105.0), then records, RC record `docs/REL051-rc-record.md`, tree record, `--lapses` (0.5.0's RC
+  work order `<briefs>/REL050-RC.md` and `-RC2.md` for the commands), then step 7 (lapses) and step 8 (the verdict).
 - CHANGELOG `## v0.5.1` (moving Unreleased's two Fixed bullets under it) is written at step 9 (notes), as 0.5.0 did.
 
 ## Plan (each step logged in REL051_DECISIONS with real numbers)
