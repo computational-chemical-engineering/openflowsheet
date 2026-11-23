@@ -27,7 +27,7 @@ in `docs/RELEASING.md`. Last release v0.4.0 (2026-11-11); main is `0.5.0.dev0`.
 
 ## Next actions
 
-1. Dry run 45134619467 PASSED (gate YES, build, A43 PASS). Waiting on card `ofs-rel050-dispatch` (A session dispatches + user approves PyPI / B user dispatches / C hold).
+1. **Release run 45136944315** dispatched (card ofs-rel050-dispatch A). Waits for the user's PyPI approval in the GitHub environment. After tag v0.5.0 + publish: RP 7.4 working form 0.6.0.dev0 on main, push, lift the freeze (tell hub), write executed on the card.
 2. Green: DECISION-REQUEST to hub for the user's real dispatch (same inputs, dry_run unticked) and the PyPI approval
    (both the user's; RP §9.2 step 8, ADR 0021 D5). Then RP §7.4's post-tag working form (0.6.0.dev0) on a branch, and
    lift the freeze (tell hub).
