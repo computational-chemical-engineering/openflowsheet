@@ -10007,3 +10007,21 @@ harvest:
   class: P
   to: []
   note: 'provenance note: software verification of the grant token-file recipe, in-process; tested on CI 44734187451 (records-only commit on top); one design-lane review, fixes in; F0 and the full suite by CI'
+- manifest: evidence/REL050/0a800e69f200e52dae7e5f3d2d56810bc8f10e27/manifest.json
+  item: limitations[0]
+  sha256: b18417241ee5486ed354645f133e3e6e1b113b52c7b61a2d00a2ca78ac11fbd3
+  class: P
+  to: []
+  note: 'provenance note: REL050''s evidence class (verification at C; self-generated records are regression evidence, not validation)'
+- manifest: evidence/REL050/0a800e69f200e52dae7e5f3d2d56810bc8f10e27/manifest.json
+  item: limitations[1]
+  sha256: a9df229d3d29290bc174a9337df61db7a0f6f3d40c7a6d4e686d3a764e77590e
+  class: P
+  to: []
+  note: 'process note: REL050''s manifest was not harvested into v0.5-envelope-1 (RP §5.2); this harvest, at 0.5.1''s envelope, takes it'
+- manifest: evidence/REL050/0a800e69f200e52dae7e5f3d2d56810bc8f10e27/manifest.json
+  item: limitations[2]
+  sha256: f74722f154bb04591faa8c5b62abf32ec965dbd69cf1fc5025a27520e59d39bb
+  class: P
+  to: []
+  note: 'release-candidate item: step 18 (release_gate.py --line 0.5 --rc C) is judged from its output in the build log (R-914, RP §6.8)'

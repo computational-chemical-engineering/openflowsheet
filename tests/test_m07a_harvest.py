@@ -10,7 +10,8 @@ after C′; both belong to the next harvest (R-485). Those assertions about `C_�
 M07's. At 0.3.0 `HARVEST_EXCLUDED` named `evidence/S13/`, S13's own manifest, written after 0.3.0's
 C (R-911), as R-485 excluded M07's from 0.2.0's harvest. At 0.4.0 it names `evidence/REL040/`,
 the 0.4 line's own package, written after C; S13's manifest is harvested. At 0.5.0 it names
-`evidence/REL050/` and REL040's manifest is harvested (RP §5.2). The harvest's size is held
+`evidence/REL050/` and REL040's manifest is harvested (RP §5.2). At 0.5.1 (REL051, R-1069) it names
+`evidence/REL051/` and REL050's manifest is harvested. The harvest's size is held
 equal to `HARVEST_SIZE`, which M07a's manifest quotes at `C_α` (MR-5); a new manifest moves it,
 and this test with it.
 
@@ -110,7 +111,8 @@ T08_MANIFEST = "evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.j
 #: REL040's manifest (`84c6654…`, `tested`, 3 and 0), harvested for 0.5.0, moves it on `wp/REL050`.
 #: X32's manifest (`2725fa7…`, `implemented`, 1 and 0) moves it on `wp/X32`.
 #: wp/REL051 adds X32's (1, 1, 0) to (106, 1172, 147).
-HARVEST_SIZE = (107, 1173, 147)
+#: REL050's manifest (`0a800e6…`, `tested`, 3 and 0), harvested for 0.5.1, moves it on `wp/REL051`.
+HARVEST_SIZE = (108, 1176, 147)
 #: The 0.2.0 release candidate C′ (M07 spec §25, R-485).
 C_PRIME = "ce993651ce37c1343e771b276160bd6623e43500"
 #: The commit tagged v0.2.0.
@@ -189,9 +191,10 @@ def test_m07a_a50_nothing_is_excluded_from_the_harvest_at_c_alpha() -> None:
 
 def test_c4_the_post_0_2_0_harvest_reads_m07a_and_m07() -> None:
     """R-485's next harvest (C4): nothing is excluded, and every item of the manifests R-485
-    deferred is in the harvest and classified once in the envelope. Only REL050's own directory is
-    excluded at 0.5.0 (0.4.0 excluded `evidence/REL040/`; 0.3.0 `evidence/S13/`, R-911)."""
-    assert matrix.HARVEST_EXCLUDED == ("evidence/REL050/",)
+    deferred is in the harvest and classified once in the envelope. Only REL051's own directory is
+    excluded at 0.5.1 (0.5.0 excluded `evidence/REL050/`, 0.4.0 `evidence/REL040/`; 0.3.0
+    `evidence/S13/`, R-911)."""
+    assert matrix.HARVEST_EXCLUDED == ("evidence/REL051/",)
     items = matrix.harvest_items()
     classified = [(entry["manifest"], entry["item"]) for entry in matrix.load()["harvest"]]
     for directory, size in DEFERRED_BY_R485.items():
@@ -215,7 +218,7 @@ def test_r911_s13s_manifest_is_excluded_and_nothing_else() -> None:
     assert listed == "", listed
     excluded = [path for path in matrix._manifests() if path.startswith(matrix.HARVEST_EXCLUDED)]
     assert all(
-        re.fullmatch(r"evidence/REL050/[0-9a-f]{40}/manifest\.json", path) for path in excluded
+        re.fullmatch(r"evidence/REL051/[0-9a-f]{40}/manifest\.json", path) for path in excluded
     )
     harvested = {path for path, _ in matrix.harvest_items()}
     assert S13A_MANIFEST in harvested
@@ -223,6 +226,8 @@ def test_r911_s13s_manifest_is_excluded_and_nothing_else() -> None:
     assert any(path.startswith("evidence/S13/") for path in harvested)
     # 0.5.0's harvest takes REL040's manifest, which 0.4.0's excluded (RP §5.2).
     assert any(path.startswith("evidence/REL040/") for path in harvested)
+    # 0.5.1's harvest takes REL050's manifest, which 0.5.0's excluded (RP §5.2, R-1069).
+    assert any(path.startswith("evidence/REL050/") for path in harvested)
 
 
 def test_m07a_a50_t08s_manifest_is_harvested_in_full() -> None:

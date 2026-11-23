@@ -513,8 +513,9 @@ def text_sha256(item: str | Mapping[str, Any]) -> str:
 #: (V03, written after 0.3.0's C = `a3e508e3`) is excluded from 0.3.0's harvest as M07's was from
 #: 0.2.0's; the next envelope's package harvests it (R-911). Since 0.4.0 the tuple names the
 #: release line's own package (RP §5.2): 0.4.0 excluded `evidence/REL040/`, 0.5.0 harvests it and
-#: excludes `evidence/REL050/`.
-HARVEST_EXCLUDED: tuple[str, ...] = ("evidence/REL050/",)
+#: excludes `evidence/REL050/`; 0.5.1 (REL051, R-1069) harvests REL050's and excludes
+#: `evidence/REL051/`.
+HARVEST_EXCLUDED: tuple[str, ...] = ("evidence/REL051/",)
 
 
 def harvest_items(
