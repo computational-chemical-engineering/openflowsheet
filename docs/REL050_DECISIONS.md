@@ -430,3 +430,9 @@
   MANIFEST.in README.md LICENSE NOTICE`. No stop hit.
 - Next (RP §9.2 step 8): push `wp/REL050`, CI on both architectures, merge into `main` (Frank's signed card), the
   release workflow dry run, then Frank's dispatch with `rc` = C; the tag, the dispatch and the PyPI approval are his.
+- 2026-11-23, REL050-H result (opus-engineer, Opus, ~175k): ledger 8c661099 (verdicts unchanged from 0.4.0's ledger;
+  new `tests/test_rel050_ledger.py`, 7 passed, controls fail as designed); notes 6f9ccbe3 (F-2 L46 verbatim, F-5,
+  F-6; 22 registered phrases once each); **H1 ee519d46** (`REL050 tested 0a800e69: 31 checks, 31 pass, 0 fail, 0
+  unsupported`, sha256 `ffe59632…768e`); H2 = H1 (32 required ADRs, no problems); **step 18 at H2 YES** (exit 0, log
+  sha256 `01263a5d…5c52`); **H3 77d20401**. Orchestrator re-ran step 18 at 77d20401: exit 0, `v0.5.0 tag may be
+  proposed: YES`. origin/main = 1fe40db3 is an ancestor of HEAD (the merge is a fast-forward). Pushed; CI 45086710551.

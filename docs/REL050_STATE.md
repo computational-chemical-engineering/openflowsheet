@@ -10,7 +10,7 @@ Frank 2026-11-20, "Let's go for the smaller 0.5 release"): **0.5 = X07a, F1, F3,
 and X01's selectability lead 0.6. Procedure: RP (`docs/derivations/release-procedure.md`), ADR 0055; dispatch steps
 in `docs/RELEASING.md`. Last release v0.4.0 (2026-11-11); main is `0.5.0.dev0`.
 
-## Position (2026-11-22, message 1 answered; verdict)
+## Position (2026-11-23, step 18 YES; CI before the merge card)
 
 - main = 1fe40db3 (the 0.5 packages; card ofs-rel050-merge-main executed). **Freeze on main** (D2.4 paths) since K3;
   hub told and records it.
@@ -27,12 +27,12 @@ in `docs/RELEASING.md`. Last release v0.4.0 (2026-11-11); main is `0.5.0.dev0`.
 
 ## Next actions
 
-1. **REL050-H running** (`<briefs>/REL050-H.md`): ledger, notes (F-2 L46, F-5 F1/F3 tools, F-6), H1, H2, step 18 YES, H3. All 7 acceptances stand (V14 (b) row renewed, card ofs-rel050-v14b executed).
-2. Ledger; H1 (release manifest `tested` at a clean G, `release_evidence_manifest.py --line 0.5 --commit C --k3 K3
-   --ci-run 45019680845 --ci-run 45019811148`, pattern RP_DECISIONS `## 0.4.0 cut` H1), H2, step 18 YES at H2, H3;
-   CHANGELOG and RELEASING block; card to merge C (via wp/REL050) into main; dry run; the user's dispatch and PyPI.
-- Message 1 done: Q-F1 A (03c428f6), Q-F2 A, M02 N1 A and V17 carry (the user's chat answer) rows 6cfe0fc4; lapses
-  at HEAD: only V14 (b) lapsed. v17-c3 campaign is a 0.6 follow-up.
+1. CI 45086710551 at 77d20401 (H3 + log): green on both Linux legs -> DECISION-REQUEST to hub, card to merge
+   wp/REL050 into main (fast-forward from 1fe40db3; then F0 `scripts/corpus_identity.py --check` on main, push).
+2. After the merge: release workflow dry run (`docs/RELEASING.md` "Per release"): gate YES, build, `t08-a43-dist.json`
+   all passed. Then the user's dispatch (`rc` = C = 0a800e69) and PyPI approval; then RP §7.4's post-tag working form.
+- Done: verdict 121d7b32; all 7 acceptances stand; ledger 8c661099; notes 6f9ccbe3; H1 ee519d46 (31/31 tested);
+  H2 = H1; step 18 YES at H2 and at 77d20401; H3 77d20401.
 
 ## Gates (criteria fixed before the run)
 
@@ -40,8 +40,8 @@ in `docs/RELEASING.md`. Last release v0.4.0 (2026-11-11); main is `0.5.0.dev0`.
 | --- | --- | --- |
 | P1-P6 (RP §5.3) at K3 | every package `tested`/`reviewed` at an ancestor of K3; RP.L01-L11 hold; required ADRs Accepted or routed; host prints `ref-x86-64` | |
 | RC steps 1-17 at C | no RP §12 stop; every step's result recorded, none `unsupported` | met: 69 rows, 0 FAIL (fd50e7fc) |
-| verdict | every claimed gate met (verdict document), or Frank's answer row | |
-| step 18 at H2 | exit 0, last line exactly `v0.5.0 tag may be proposed: YES` | |
+| verdict | every claimed gate met (verdict document), or Frank's answer row | met: 15 PASS, V14 (b) and X31 (c) FAIL with standing rows (121d7b32) |
+| step 18 at H2 | exit 0, last line exactly `v0.5.0 tag may be proposed: YES` | met at ee519d46 and 77d20401 |
 | CI | green on both architectures at C and at the merge into main | at C: met (45019680845, 45019811148) |
 | dry run | release workflow dry run: gate YES, build, `t08-a43-dist.json` all passed | |
 
