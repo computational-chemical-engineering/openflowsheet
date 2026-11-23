@@ -775,6 +775,11 @@ gates:
     # 0.5.0 (RP §9.2 step 3, RP.S17): `docs/reviews/REL050-verdicts.md` at C = `0a800e69` judges V14 FAIL on clause
     # V14 (b) again (PTC ends at the saddle from 149 of 441 starts on both CI legs); the 2026-11-10 row lapsed at C (src
     # changed), and Frank's new row (2026-11-22, `release/acceptances.md`, 1428ef7f) makes the FAIL releasable.
+    #
+    # 0.5.1 (RP §9.2 step 3, RP.S17): `docs/reviews/REL051-verdicts.md` at C' = `ee934680` judges V14 FAIL on clause
+    # V14 (b) again (PTC ends at the saddle from 149 of 441 starts on both CI legs); the 2026-11-22 row lapsed at C'
+    # (`cli.py` and the version changed), and the user's new row (2026-11-23, `release/acceptances.md`, 66e7b7dd)
+    # makes the FAIL releasable.
     verdict: FAIL
     evidence:
       - evidence/M07/ce993651ce37c1343e771b276160bd6623e43500/manifest.json
@@ -812,6 +817,9 @@ gates:
     # 0.5.0 (RP §9.2 step 3, RP.S17): `docs/reviews/REL050-verdicts.md` at C = `0a800e69` judges V17 PASS on Frank's
     # `V17 carry` row for the ten links R-192 to R-1051 (2026-11-22, `release/acceptances.md`, 6cfe0fc4): `v17-c2`'s
     # agent evidence, carried; no agent has driven F1's or F3's tools (a `v17-c3` campaign is planned for 0.6).
+    #
+    # 0.5.1 (RP §9.2 step 3, RP.S17): `docs/reviews/REL051-verdicts.md` at C' = `ee934680` judges V17 PASS on the same
+    # `V17 carry` row, which stands at C'.
     verdict: PASS
     evidence:
       - evidence/M07/ce993651ce37c1343e771b276160bd6623e43500/manifest.json
@@ -944,6 +952,9 @@ gates:
     #
     # 0.5.0 (RP §9.2 step 3, RP.S17): `docs/reviews/REL050-verdicts.md` at C = `0a800e69` judges X31 FAIL on clause
     # X31 (c) again (S09 verdict 3 unchanged); the standing acceptance row `X31 (c)` stands at C.
+    #
+    # 0.5.1 (RP §9.2 step 3, RP.S17): `docs/reviews/REL051-verdicts.md` at C' = `ee934680` judges X31 FAIL on clause
+    # X31 (c) again; the row `X31 (c)` stands at C'.
     verdict: FAIL
     evidence:
       - evidence/S03/930aad1b162d0dc27276e64a5b67ce857a7cdf97/manifest.json
