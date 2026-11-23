@@ -21,7 +21,7 @@ edits a row. Table rows are longer than 120 columns because a table row cannot w
 
 | D3 clause | Frank's acceptance | Scope | Fingerprint | Accepted at |
 | --- | --- | --- | --- | --- |
-| V14 (b) | accepted, 2026-11-22, Frank, verbatim: "Accept as at 0.4.0" (Decision Desk card `ofs-rel050-v14b`, choice A, signed 2026-11-22T23:44:56Z: "Accept V14 (b) for 0.5.0 as at 0.4.0: PTC ends at the saddle from 149 of 441 starts on both CI legs, unchanged; the V14 (b) acceptance row is renewed at C = 0a800e69 with scope as before.") | `paths:src/openflowsheet/**,benchmarks/t08/ptc_r1/**,docs/reviews/T08-verdict-V14b.md` | `82469c086226671b8b0b39ed5603ef141112dd0f9fc405a8a77bd58f9ec92c40` | `0a800e69f200e52dae7e5f3d2d56810bc8f10e27` |
+| V14 (b) | accepted, 2026-11-23, Frank, verbatim: "Accept for 0.5.1 (Recommended)" (asked in the REL051 session chat, where for 0.5.1 the user's chat answers replace Decision Desk cards; the option read: "add a new row 'V14 (b)' to release/acceptances.md dated 2026-11-23, Accepted at C' = ee934680 ... V14 stays FAIL in the notes and the release can proceed, as at 0.5.0"; PTC ends at the saddle from 149 of 441 starts on both CI legs, unchanged) | `paths:src/openflowsheet/**,benchmarks/t08/ptc_r1/**,docs/reviews/T08-verdict-V14b.md` | `5718167d51f860377e9ec03dd80ebd6e6081b2492dcb54f13915a6f418ccf509` | `ee934680d94879032b34ae8649baa31ff5a210c8` |
 | X31 (c) | accepted, 2026-10-30 — Frank, verbatim: "Accept (Recommended)" (the default in this row; asked in plain words after W21's new judgement) | `paths:docs/reviews/S09-verdicts.md,benchmarks/s03/**,benchmarks/s09/**` | `59503316001e10b9c3760e41271d5be31f515cdd99a6581fe6f6e87276611864` | `a3e508e35fc5451fe56fa7b70941621992d35b50` |
 
 ## Decision items
@@ -79,6 +79,10 @@ Replaced rows are moved here unedited, each with the date and the C at which it 
 - Lapsed at C = 84c66547, 2026-11-10 (decision items):
 
   | V17 carry | carry `v17-c2`'s agent evidence (V17, and T08.B50's surface) across R-192, R-234 and R-295, with no new link at C (V03.A23). Alternative: a new V17 campaign (about USD 10, one hour) | accepted, 2026-10-30 — Frank, verbatim: "Reuse 0.2.0's (Recommended)" (the default in this row; asked in plain words after W21's new judgement) | `extract:links + extract:served_digest` | `367fdf465f7793d9c4224da4617130993a05d1f029b749b593d2f97d6c2d98f6` | `a3e508e35fc5451fe56fa7b70941621992d35b50` |
+
+- Lapsed at C' = ee934680, 2026-11-23 (failure clauses):
+
+  | V14 (b) | accepted, 2026-11-22, Frank, verbatim: "Accept as at 0.4.0" (Decision Desk card `ofs-rel050-v14b`, choice A, signed 2026-11-22T23:44:56Z: "Accept V14 (b) for 0.5.0 as at 0.4.0: PTC ends at the saddle from 149 of 441 starts on both CI legs, unchanged; the V14 (b) acceptance row is renewed at C = 0a800e69 with scope as before.") | `paths:src/openflowsheet/**,benchmarks/t08/ptc_r1/**,docs/reviews/T08-verdict-V14b.md` | `82469c086226671b8b0b39ed5603ef141112dd0f9fc405a8a77bd58f9ec92c40` | `0a800e69f200e52dae7e5f3d2d56810bc8f10e27` |
 
 - Lapsed at C = 0a800e69, 2026-11-22 (failure clauses):
 
