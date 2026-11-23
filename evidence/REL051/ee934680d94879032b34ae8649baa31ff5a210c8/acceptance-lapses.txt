@@ -1,0 +1,8 @@
+acceptance lapses at C = ee934680d94879032b34ae8649baa31ff5a210c8, 2026-11-23
+V14 (b): lapsed (src/openflowsheet/__init__.py, src/openflowsheet/application/cli.py)
+X31 (c): stands
+Claim set: stands
+V17 carry: stands
+M02 N1: stands
+M03 N1: stands
+coolprop and lca licences: stands
