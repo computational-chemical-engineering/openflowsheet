@@ -22,7 +22,7 @@ def row(step, assertion, where, result, paths, judge=None):
     return f"| {step} | {assertion} | {where} | {result} | {rec} | {sha} |"
 X, A = "ubuntu-latest", "ubuntu-24.04-arm"
 R = []
-R.append(row(1, "RP §6.2 (D4.1, D4.3)", "CI push run 45204749193 at `C`, attempt 2", "success (push run `success` at its latest attempt 2; `check (ubuntu-latest)` and `check (ubuntu-24.04-arm)` `success`; junit read on both legs; attempt 1, `failure` on that leg by a lost runner, is in the build log)", ["step1/rc-step1.json"], "step1/rc-step1.json"))
+R.append(row(1, "RP §6.2 (D4.1, D4.3)", "CI push run 45204749193 at `C`, attempt 2", "success (push run `success` at its latest attempt 2; `check (ubuntu-latest)` and `check (ubuntu-24.04-arm)` `success`; junit read on both legs; attempt 1, whose x86-64 runner lost contact, is in the build log)", ["step1/rc-step1.json"], "step1/rc-step1.json"))
 R.append(row(1, "(the two `check` logs, R-376 skip lines)", "CI push run", "—", ["step1/check-x86_64.log", "step1/check-aarch64.log", "step1-skips/x86_64.txt", "step1-skips/aarch64.txt"]))
 R.append(row(2, "T08.A42", "local `ref-x86-64`", "minus-t07 `24af004a…` as registered; unchanged under the trial version `0.1.0`", ["identity/rc-identity.json"], "identity/rc-identity.json"))
 for leg in (X, A):
