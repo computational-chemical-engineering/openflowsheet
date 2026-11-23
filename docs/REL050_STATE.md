@@ -27,8 +27,7 @@ in `docs/RELEASING.md`. Last release v0.4.0 (2026-11-11); main is `0.5.0.dev0`.
 
 ## Next actions
 
-1. Release dry run 45134619467 at main 63b00504 (`version=0.5.0`, `rc=C`, dry_run): gate YES, build,
-   `t08-a43-dist.json` all passed. Red: read the failing job; stop and report.
+1. Dry run 45134619467 PASSED (gate YES, build, A43 PASS). Waiting on card `ofs-rel050-dispatch` (A session dispatches + user approves PyPI / B user dispatches / C hold).
 2. Green: DECISION-REQUEST to hub for the user's real dispatch (same inputs, dry_run unticked) and the PyPI approval
    (both the user's; RP §9.2 step 8, ADR 0021 D5). Then RP §7.4's post-tag working form (0.6.0.dev0) on a branch, and
    lift the freeze (tell hub).
@@ -45,7 +44,7 @@ in `docs/RELEASING.md`. Last release v0.4.0 (2026-11-11); main is `0.5.0.dev0`.
 | verdict | every claimed gate met (verdict document), or Frank's answer row | met: 15 PASS, V14 (b) and X31 (c) FAIL with standing rows (121d7b32) |
 | step 18 at H2 | exit 0, last line exactly `v0.5.0 tag may be proposed: YES` | met at ee519d46 and 77d20401 |
 | CI | green on both architectures at C and at the merge into main | met: at C 45019680845/45019811148; at H3 45086710551 |
-| dry run | release workflow dry run: gate YES, build, `t08-a43-dist.json` all passed | |
+| dry run | release workflow dry run: gate YES, build, `t08-a43-dist.json` all passed | met: 45134619467 |
 
 ## Open decisions (defaults stand unless Frank says otherwise)
 

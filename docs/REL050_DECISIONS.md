@@ -446,3 +446,7 @@
   pushed; origin/main = 63b00504. `executed` written on the card.
 - Release workflow dry run dispatched: `gh workflow run release.yml --ref main -f version=0.5.0 -f
   rc=0a800e69f200e52dae7e5f3d2d56810bc8f10e27 -f dry_run=true` -> run 45134619467 at 63b00504.
+- Dry run 45134619467: success. gate success (`v0.5.0 tag may be proposed: YES`; V14 FAIL, X31 FAIL rows printed),
+  build success (`T08.A43: PASS`, t08-a43-dist.json, a43.* all PASS), tag/pypi/github-release skipped.
+- DECISION-REQUEST to hub: card ofs-rel050-dispatch (A the session dispatches, the user approves PyPI; B the user
+  dispatches; C hold).
