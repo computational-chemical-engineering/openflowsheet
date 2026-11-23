@@ -10,7 +10,7 @@ Frank 2026-11-20, "Let's go for the smaller 0.5 release"): **0.5 = X07a, F1, F3,
 and X01's selectability lead 0.6. Procedure: RP (`docs/derivations/release-procedure.md`), ADR 0055; dispatch steps
 in `docs/RELEASING.md`. Last release v0.4.0 (2026-11-11); main is `0.5.0.dev0`.
 
-## Position (2026-11-23, step 18 YES; CI before the merge card)
+## Position (2026-11-23, merged into main; dry run)
 
 - main = 1fe40db3 (the 0.5 packages; card ofs-rel050-merge-main executed). **Freeze on main** (D2.4 paths) since K3;
   hub told and records it.
@@ -27,12 +27,14 @@ in `docs/RELEASING.md`. Last release v0.4.0 (2026-11-11); main is `0.5.0.dev0`.
 
 ## Next actions
 
-1. CI 45086710551 at 77d20401 (H3 + log): green on both Linux legs -> DECISION-REQUEST to hub, card to merge
-   wp/REL050 into main (fast-forward from 1fe40db3; then F0 `scripts/corpus_identity.py --check` on main, push).
-2. After the merge: release workflow dry run (`docs/RELEASING.md` "Per release"): gate YES, build, `t08-a43-dist.json`
-   all passed. Then the user's dispatch (`rc` = C = 0a800e69) and PyPI approval; then RP §7.4's post-tag working form.
-- Done: verdict 121d7b32; all 7 acceptances stand; ledger 8c661099; notes 6f9ccbe3; H1 ee519d46 (31/31 tested);
-  H2 = H1; step 18 YES at H2 and at 77d20401; H3 77d20401.
+1. Release dry run 45134619467 at main 63b00504 (`version=0.5.0`, `rc=C`, dry_run): gate YES, build,
+   `t08-a43-dist.json` all passed. Red: read the failing job; stop and report.
+2. Green: DECISION-REQUEST to hub for the user's real dispatch (same inputs, dry_run unticked) and the PyPI approval
+   (both the user's; RP §9.2 step 8, ADR 0021 D5). Then RP §7.4's post-tag working form (0.6.0.dev0) on a branch, and
+   lift the freeze (tell hub).
+- Done: main = 63b00504 (card ofs-rel050-merge-c executed, F0 PASS). Step 18 YES; H1 ee519d46; verdict 121d7b32.
+- 0.6 follow-ups: V17 campaign `v17-c3` driving F1/F3 tools; RP amendment for verdict F-3 (journey invocation line)
+  and F-4 (archived-history skips on TR09).
 
 ## Gates (criteria fixed before the run)
 
@@ -42,7 +44,7 @@ in `docs/RELEASING.md`. Last release v0.4.0 (2026-11-11); main is `0.5.0.dev0`.
 | RC steps 1-17 at C | no RP §12 stop; every step's result recorded, none `unsupported` | met: 69 rows, 0 FAIL (fd50e7fc) |
 | verdict | every claimed gate met (verdict document), or Frank's answer row | met: 15 PASS, V14 (b) and X31 (c) FAIL with standing rows (121d7b32) |
 | step 18 at H2 | exit 0, last line exactly `v0.5.0 tag may be proposed: YES` | met at ee519d46 and 77d20401 |
-| CI | green on both architectures at C and at the merge into main | at C: met (45019680845, 45019811148) |
+| CI | green on both architectures at C and at the merge into main | met: at C 45019680845/45019811148; at H3 45086710551 |
 | dry run | release workflow dry run: gate YES, build, `t08-a43-dist.json` all passed | |
 
 ## Open decisions (defaults stand unless Frank says otherwise)

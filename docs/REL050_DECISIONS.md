@@ -436,3 +436,13 @@
   unsupported`, sha256 `ffe59632…768e`); H2 = H1 (32 required ADRs, no problems); **step 18 at H2 YES** (exit 0, log
   sha256 `01263a5d…5c52`); **H3 77d20401**. Orchestrator re-ran step 18 at 77d20401: exit 0, `v0.5.0 tag may be
   proposed: YES`. origin/main = 1fe40db3 is an ancestor of HEAD (the merge is a fast-forward). Pushed; CI 45086710551.
+
+## 2026-11-23: the merge into main and the dry run
+
+- CI 45086710551 at 77d20401 (H3): success on all four check legs, identity, default-install, codehealth.
+- Card ofs-rel050-merge-c VERIFIED (choice A, signed 2026-11-23T07:49:19Z, key 50ad2f710ab1ebe8), text "...push main
+  only if F0 passes". F0 on a clean worktree at 63b00504: PASS (M1 50/50, M2-M5 61/61, M6 85/85, M7 52/52, M8 105/105,
+  M9 42/42). main fast-forwarded 1fe40db3 -> 63b005046f34ff25a1f4dacb34645a78ce49f79b in the main checkout (clean) and
+  pushed; origin/main = 63b00504. `executed` written on the card.
+- Release workflow dry run dispatched: `gh workflow run release.yml --ref main -f version=0.5.0 -f
+  rc=0a800e69f200e52dae7e5f3d2d56810bc8f10e27 -f dry_run=true` -> run 45134619467 at 63b00504.
