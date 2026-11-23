@@ -27,6 +27,11 @@ command used at 0.5.0.
 - K3' done: 2b74e60d (REL050 harvested), **K3' = 8f7ce045** (0.5.1, envelope v0.5-envelope-2). K3' tests 1982
   passed; F0 PASS; P1, P3, P4, P6 hold. Next: push, CI at 8f7ce045, then step 5 (J': re-takes from a clean detached
   worktree at K3', drivers in `~/.cache/rel051-cut/bin/` adapted from rel050's; `<briefs>/REL050-J.md`).
+- J' running: clean run tree `.claude/worktrees/rc-k3-051` at 8f7ce045 (porcelain --ignored 0 lines, 14:31:20).
+  `retakes.sh` detached, PID in `~/.cache/rel051-cut/logs/retakes.pid`, summary `~/.cache/rel051-cut/logs/summary.txt`
+  (ALLDONE when finished). G10 x5 and IDAES done and PROVED (PASS, other=0; counts equal 0.5.0's; IDAES differing
+  none). On REAL's EXIT: run `bash ~/.cache/rel051-cut/bin/proofs_g10_idaes.sh` (last two lines are REAL's proof,
+  --old-platform Linux-6.12.86+deb13... --old-host SMM-TR09), then copy the proved files into wp/REL051 as commit J'.
 - CHANGELOG `## v0.5.1` (moving Unreleased's two Fixed bullets under it) is written at step 9 (notes), as 0.5.0 did.
 
 ## Plan (each step logged in REL051_DECISIONS with real numbers)
