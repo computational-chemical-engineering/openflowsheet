@@ -179,3 +179,11 @@
   0252f93f (five G10 re-takes from a clean worktree at 8a2c5b17, all PASS `--old-version 0.5.1 --old-host SMM-TR09`,
   other=0, counts equal J''s; nlp G10 replay 5 passed); 42b06d69 (F-9 headings dated); b37d30c0 (wp/REL051's log).
   HARVEST_EXCLUDED stays `evidence/REL051/` until the next envelope's package harvests REL051's manifest (RP §5.2).
+- CI 45349280631 at 37ded530: **failure** on all four check legs, by `ruff check` only (E501, a 102-character comment
+  in `scripts/t08_support_matrix.py` written in 8a2c5b17 without running ruff on it); pytest passed on every leg
+  (x86-64 21129 passed) and node 105/105; `identity` failed as a consequence ("G05 needs two platforms; found 0").
+  Fixed in the next commit; ruff check, ruff format --check and mypy pass locally before the push.
+- The user on CI load ("too much testing and CI going on"): of this release's 11 full ci runs, 4 tested docs-only
+  commits pushed for backup and 1 repeated a green commit after main's fast-forward. Chosen: push only when CI must
+  judge a commit (memory `push-only-when-ci-must-judge`); the CI config changes and cancelling main's duplicate run
+  were offered and not chosen.
