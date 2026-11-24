@@ -163,3 +163,19 @@
 - On the user's chat answer: dispatched `gh workflow run release.yml --ref main -f version=0.5.1 -f rc=ee934680... -f
   dry_run=false` (origin/main = ca65ec1a) -> run 45299519224: gate, tag, build success; tag `v0.5.1` (object
   9c950102) on ca65ec1a. `pypi` waits for the user's approval in the GitHub environment (still waiting 4 h later).
+
+## 2026-11-24: 0.5.1 released; main's working form 0.6.0.dev0
+
+- Release run 45299519224: gate, tag, build, pypi (the user's approval in the GitHub environment), github-release all
+  success. Tag `v0.5.1` (object 9c950102) = ca65ec1acaa965bf6caceda5bd9aff10daccc365; PyPI files
+  `openflowsheet-0.5.1-py3-none-any.whl` and `openflowsheet-0.5.1.tar.gz` (the JSON summary still said 0.5.0 from its
+  cache); GitHub release v0.5.1 published 2026-11-24T07:25:36Z.
+- The user: "The release is done while there is still some CI running. Is this not a bit strange?" Measured: at the
+  real dispatch (00:43:52Z) main's push run 45299190806 at ca65ec1a (started 00:41:22Z) was still running; it ended
+  success, as did every other run. ca65ec1a was already green as wp/REL051 (45277785189), and the gate reads only C''s
+  runs. Rule taken (memory `release-wait-for-main-ci`): the real dispatch waits for main's push-run CI.
+- Working form on `wp/REL051-after` (from main ca65ec1a): 8a2c5b17 (0.6.0.dev0, envelope v0.2-envelope-dev /
+  0.2.0.dev0, `ENVELOPE_ID`, RELEASED + 0.5.1 = ca65ec1a, RELEASING line; version-sensitive tests 2510 passed);
+  0252f93f (five G10 re-takes from a clean worktree at 8a2c5b17, all PASS `--old-version 0.5.1 --old-host SMM-TR09`,
+  other=0, counts equal J''s; nlp G10 replay 5 passed); 42b06d69 (F-9 headings dated); b37d30c0 (wp/REL051's log).
+  HARVEST_EXCLUDED stays `evidence/REL051/` until the next envelope's package harvests REL051's manifest (RP §5.2).

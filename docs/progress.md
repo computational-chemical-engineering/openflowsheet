@@ -109,6 +109,10 @@ canonicity, T07); ADR 0013 has Amendment 2 (routing on registered tolerances, T0
 
 ## Next executable action
 
+**0.5.1 released 2026-11-24** (tag `v0.5.1` = `ca65ec1a`, PyPI, GitHub release); main carries `0.6.0.dev0` with the
+working envelope and re-taken G10 records (`wp/REL051-after`); the freeze on main is lifted. Log
+`docs/REL051_DECISIONS.md`.
+
 **REL051 (0.5.1 patch release, `wp/REL051`, C' = `ee934680`), SMM-TR09, 2026-11-23.** X32 merged; README status
 current; RP amendment A-14 (a patch release on a line: RP.L11 and RP.S02, R-1069). K3' `8f7ce045`, J' `6cf18bb1`, C'
 journey record. RC steps 1-17 pass (push run at attempt 2 after a lost runner); full gate at C' PASS (21126 passed).

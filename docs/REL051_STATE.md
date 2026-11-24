@@ -20,17 +20,10 @@ command used at 0.5.0.
 
 ## Position
 
-- **0.5.1 tagged, not yet on PyPI.** main = ca65ec1a (wp/REL051 H3, fast-forward; F0 PASS; pushed). Release run
-  45299519224: gate, tag (`v0.5.1` on ca65ec1a), build success; **`pypi` waits for the user's approval** in the GitHub
-  `pypi` environment (Review deployments). Then `github-release` runs by itself.
-- After it publishes (check: `gh run view 45299519224`, PyPI JSON, `gh release view v0.5.1`): the post-tag working
-  form on main (RP §7.4; 0.5.0's precedent in `docs/RELEASING.md` "After a tag" and `git log --grep 'working form'`):
-  version 0.6.0.dev0 in the version files, envelope back to `v0.2-envelope-dev` / `0.2.0.dev0`, `ENVELOPE_ID`,
-  `RELEASED` gains "0.5.1": ca65ec1a, the five in-process G10 records re-taken with proof (`--old-version 0.5.1`),
-  README status at a dev version (names 0.5.1), CHANGELOG headings of released versions (verdict F-9). Then push main,
-  tell hub the freeze on main is lifted, and commit this log in wp/REL051.
-- Everything before: steps 1-9 done; records, verdicts (50871b17), ledger, notes, H1 142daa49 tested 31/31, step 18
-  YES. One agent used (the verdict). A-14 (RP.L11 + RP.S02) in RP §17.7, R-1069.
+- **Done.** 0.5.1 released 2026-11-24 (tag `v0.5.1` = ca65ec1a; PyPI; GitHub release). main carries 0.6.0.dev0 with
+  the working envelope and re-taken G10 records (`wp/REL051-after`, fast-forwarded into main after F0; see the log's
+  last entry). The freeze on main is lifted (hub told). Open for 0.6: README F-10 (cost/LCA Python-only, `optimize`
+  needs the nlp extra), the next envelope harvests REL051's manifest, a `v17-c3` campaign.
 
 ## Plan (each step logged in REL051_DECISIONS with real numbers)
 
