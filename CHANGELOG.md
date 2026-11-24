@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-## v0.5.1 — unreleased
+## v0.5.1 — released 2026-11-24
 
 *Notes at the release candidate C' = `ee934680d94879032b34ae8649baa31ff5a210c8` (RP §9.2 step 3; line `0.5`, gate set
 `v0.5-gate-v1`, envelope `v0.5-envelope-2`, evidence package REL051). Nothing below is released until the tag; the
@@ -115,7 +115,7 @@ The 0.5 line's registered phrases (its W27 phrase, which names 0.5.0, holds for 
 - no solve reads the component record store
 - a plugin adds no unit model or property method that a solve uses
 
-## v0.5.0 — unreleased
+## v0.5.0 — released 2026-11-23
 
 *Notes at the release candidate C = `0a800e69f200e52dae7e5f3d2d56810bc8f10e27` (RP §9.2 step 3; line `0.5`, gate
 set `v0.5-gate-v1`, envelope `v0.5-envelope-1`). Nothing below is released until the tag; the tag and every
@@ -264,7 +264,7 @@ All seven rows of `release/acceptances.md` stand at C (`release_gate.py --line 0
 - no solve reads the component record store
 - a plugin adds no unit model or property method that a solve uses
 
-## v0.4.0 — unreleased
+## v0.4.0 — released 2026-11-11
 
 *Notes at the release candidate C = `84c665477b512548f38a6335f51648732b1fe5bb` (RP §9.2 step 3; line `0.4`, gate
 set `v0.4-gate-v1`, envelope `v0.4-envelope-1`). Nothing below is released until the tag; the tag and every
