@@ -139,3 +139,27 @@
   **`v0.5.1 tag may be proposed: YES`**; log `evidence/REL051/<C'>/artifacts/step18-H2.log` (git-ignored), SHA-256
   4ada7d22adeb6f22fca1cf71bc66676c74fa5761f17e29a7ae182ef9f4d6945f. All seven standing acceptances, scope unchanged.
 - D2.4: `git diff --name-only C' HEAD` touches none of the D2.4 paths.
+
+## 2026-11-23: merge and dispatch answers (the user, in chat)
+
+- Merge: "Merge when green (Recommended)": "once CI at ca65ec1a is green on all check legs, fast-forward main 63b00504
+  -> ca65ec1a in the main checkout, run F0 on main, and push main only if F0 passes. Then dispatch the release workflow
+  as a dry run (version 0.5.1, rc ee934680, dry_run ticked)."
+- Dispatch: "Session dispatches (Recommended)": "if the dry run succeeds, this session dispatches release.yml on main
+  with version 0.5.1, rc ee934680d94879032b34ae8649baa31ff5a210c8 and dry_run unticked. You approve the PyPI upload in
+  the GitHub 'pypi' environment when it asks. Only after the workflow has tagged v0.5.1 and published does the session
+  commit main's working form 0.6.0.dev0 (RP 7.4), push main, and lift the freeze."
+
+## 2026-11-24: the merge into main and the dry run
+
+- CI 45277785189 at ca65ec1a (H3): success on all four check legs, identity, default-install, codehealth (attempt 1).
+- On the user's chat answer: main fast-forwarded 63b00504 -> ca65ec1acaa965bf6caceda5bd9aff10daccc365 in the main
+  checkout (clean; origin/main was 63b00504). F0 on a clean worktree at ca65ec1a: PASS (M1 50/50, M2-M5 61/61, M6
+  85/85, M7 52/52, M8 105/105, M9 42/42). main pushed; origin/main = ca65ec1a.
+- Release workflow dry run: `gh workflow run release.yml --ref main -f version=0.5.1 -f rc=ee934680... -f
+  dry_run=true` -> run 45299190200.
+- Dry run 45299190200: success (gate `v0.5.1 tag may be proposed: YES`, V14 and X31 FAIL rows; build success; tag,
+  pypi, github-release skipped); notes.md is the `## v0.5.1` section.
+- On the user's chat answer: dispatched `gh workflow run release.yml --ref main -f version=0.5.1 -f rc=ee934680... -f
+  dry_run=false` (origin/main = ca65ec1a) -> run 45299519224: gate, tag, build success; tag `v0.5.1` (object
+  9c950102) on ca65ec1a. `pypi` waits for the user's approval in the GitHub environment (still waiting 4 h later).
