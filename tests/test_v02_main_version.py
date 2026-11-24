@@ -29,6 +29,7 @@ RELEASED = {
     "0.3.0.post1": "b059e7ab272ad8bc162fe2205c5112604210e4e4",
     "0.4.0": "b6cdf552013330c68f2fde7291c5447daae31801",
     "0.5.0": "63b005046f34ff25a1f4dacb34645a78ce49f79b",
+    "0.5.1": "ca65ec1acaa965bf6caceda5bd9aff10daccc365",
 }
 #: R-193's working envelope.
 WORKING_ENVELOPE = ("v0.2-envelope-dev", "0.2.0.dev0")
