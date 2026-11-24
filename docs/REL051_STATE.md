@@ -20,27 +20,17 @@ command used at 0.5.0.
 
 ## Position
 
-- Step 1 done (68982da7, X32 merged). Step 2 done (87e28c64, README + test). Step 3 done (42bafc14): RP amendment
-  A-14 (RP.L11 takes `<line>.Z`'s id), line file with evidence_package **REL051** (R-1069, the user chose "Option 1"
-  in chat; "Keep REL050" was withdrawn because RP.S22 fails on `evidence/REL050/`). Pushed 42bafc14; CI watched by
-  `~/.cache/rel051-cut/bin/ci_wait.sh <sha>` (polls every 300 s).
-- K3' done: 2b74e60d (REL050 harvested), **K3' = 8f7ce045** (0.5.1, envelope v0.5-envelope-2). K3' tests 1982
-  passed; F0 PASS; P1, P3, P4, P6 hold. Next: push, CI at 8f7ce045, then step 5 (J': re-takes from a clean detached
-  worktree at K3', drivers in `~/.cache/rel051-cut/bin/` adapted from rel050's; `<briefs>/REL050-J.md`).
-- **J' = 6cf18bb1**, **C' = ee934680d94879032b34ae8649baa31ff5a210c8** (journey record; check ACCEPT, replay bitwise,
-  carried, 71/10794 leaves differ from 0.5.0's, all allowed). C' pushed as `rc/ee93468`: push run 45204749193,
-  release_rc dispatch 45204778756.
-- Done at C': full gate PASS (21126 passed); RC local A/B/C exit 0, items 9/9 inside `local`; `ci` fetch exit 0
-  (second call); identity job log fetched by hand (redo it from the push run's latest attempt). RC artifacts in
-  `.claude/worktrees/rc-c-051/evidence/REL051/<C'>/artifacts/rc`.
-- Waiting: push run 45204749193 attempt 2 (attempt 1 lost its x86_64 runner; DECISION in the log). Then: re-fetch
-  `ci/job-logs/identity.log` from attempt 2 (`gh api --allow-escape-sequences .../actions/jobs/<id>/logs`, expect
-  "equal across 4 platforms"); `release_rc.py step1 --rc <rc> --commit <C'>` (system gh); `records --to
-  evidence/REL051/<C'>/rc --cited <cited> --rc-record docs/REL051-rc-record.md --package REL051` (cited list: 0.5.0's
-  `tools/cited.txt` adapted); RC record by `python ~/.cache/rel051-cut/bin/make_record.py <rc> docs/REL051-rc-record.md
-  <artifacts/rc> release/lines/0.5.json`; `release_gate.py --line 0.5 --rc <C'> --write-tree-record`; `--lapses`.
-  All commits in rel051 (docs, evidence/REL051, release/rc-trees only), then the verdict (step 8).
-- CHANGELOG `## v0.5.1` (moving Unreleased's two Fixed bullets under it) is written at step 9 (notes), as 0.5.0 did.
+- **0.5.1 tagged, not yet on PyPI.** main = ca65ec1a (wp/REL051 H3, fast-forward; F0 PASS; pushed). Release run
+  45299519224: gate, tag (`v0.5.1` on ca65ec1a), build success; **`pypi` waits for the user's approval** in the GitHub
+  `pypi` environment (Review deployments). Then `github-release` runs by itself.
+- After it publishes (check: `gh run view 45299519224`, PyPI JSON, `gh release view v0.5.1`): the post-tag working
+  form on main (RP §7.4; 0.5.0's precedent in `docs/RELEASING.md` "After a tag" and `git log --grep 'working form'`):
+  version 0.6.0.dev0 in the version files, envelope back to `v0.2-envelope-dev` / `0.2.0.dev0`, `ENVELOPE_ID`,
+  `RELEASED` gains "0.5.1": ca65ec1a, the five in-process G10 records re-taken with proof (`--old-version 0.5.1`),
+  README status at a dev version (names 0.5.1), CHANGELOG headings of released versions (verdict F-9). Then push main,
+  tell hub the freeze on main is lifted, and commit this log in wp/REL051.
+- Everything before: steps 1-9 done; records, verdicts (50871b17), ledger, notes, H1 142daa49 tested 31/31, step 18
+  YES. One agent used (the verdict). A-14 (RP.L11 + RP.S02) in RP §17.7, R-1069.
 
 ## Plan (each step logged in REL051_DECISIONS with real numbers)
 
