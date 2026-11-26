@@ -35,6 +35,10 @@
   squash; stage named paths, never `git add -A`; pushes need
   `git -c credential.helper= -c credential.helper='!gh auth git-credential' push`. Delete a worktree when its branch
   lands. Never copy the V17 login token (R-116); never read or touch `~/.config/procsim/`.
+- **Every work order's acceptance includes the surface suites** (added 2026-11-26 after F2-WO1's miss):
+  `tests/test_t07_*.py` and `tests/test_t08_w2_*.py` (the served-interface and `list_models` digests) besides F0. A
+  change that moves a served digest registers the move in the same work order (the F1/F3/X04 `without_<pkg>` pattern
+  in `tests/test_t08_w2_surface_digest.py`).
 - **Runs:** tests a commit touches run locally; the full gate (`scripts/gate.sh`) only before a release-candidate cut,
   in its own clean detached worktree (`PATH=<main>/.venv/bin:$PATH PYTHONPATH=src`), no commits during the run. Long
   runs go through `.claude/skills/line06/run.sh` (one summary line, log in a file, PID recorded). GitHub: poll CI every

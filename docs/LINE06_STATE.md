@@ -46,7 +46,8 @@ F2-WO1 PASS (log); D1 PASS (ADR 0078 Proposed, `dcbab9b7`). Running (the cap of 
 acceptance, re-run F0 on the branch, log. Next briefs: F2-WO3 (ids and layout), X06-WO2 (branches; ADR 0078 Q8: merge
 order with F2). Cards open: `ofs-x06-accept-adr0078` (verify with the pinned text in the log),
 `ofs-x06-mcp-clients`. After Q1: R-110 status line, roadmap resume move, target-architecture X06 row. F2 ruling
-round (batched, at F2's reviewer pass): WO1-4, WO1-1, WO1-9, M = 1 for kg.
+round (batched, at F2's reviewer pass): WO1-4, WO1-1, WO1-9, M = 1 for kg, WO2-1, WO2-7. Running now: F2-WO2b
+(register the served-surface move, brief `docs/briefs/LINE06-F2-WO2b.md`) and X06-WO1.
 
 ## Decisions settled (Decision Desk, 2026-11-26, each choice A, VERIFIED, `executed` written)
 

@@ -74,3 +74,19 @@ Reversible by: <how>.` Package build decisions go in the package's own file (`do
   `segment_molar_mass` bounded > 0), WO1-9 (formation kinds per amount basis) and "M = 1 for kg records in reaction
   checks". Defaults: (a) a v2 request type in F4; the rest as built.
 - F2-WO2 brief `docs/briefs/LINE06-F2-WO2.md`; opus-engineer launched (background, worktree f2).
+- **MISS, F2-WO1 (found by WO2's engineer, 2026-11-26):** WO1's 14 quantity kinds moved the served interface; 16 tests
+  fail at ed5fb6c0 (5 test_t07_w5e: list_models 854fab33 vs snapshot 12d88245; 11 test_t08_w2_surface_digest: served
+  9a4b4eb3 vs registered f7ec3c94). Confirmed by the orchestrator: 16 failed, 33 passed. Cause: the WO1 brief's
+  acceptance named no surface suite and the orchestrator's judgment did not run one; F0 does not read the served
+  digest. WO1's verdict stands corrected: PASS on its five items, FAIL on "existing suites green". Fix: F2-WO2b
+  (register the move, F3 pattern). Rule added to LINE06_RULES: every WO runs tests/test_t07_*.py and
+  tests/test_t08_w2_*.py and registers any served-digest move itself.
+- F2-WO2 judged PASS on its four items (2026-11-26): commits 1529859b, 88cc22b8, worktree clean; 276,450 tokens, 28
+  min. E-F2-7: tests/test_f2_basis.py 41 tests against an independent generator
+  (docs/derivations/scripts/f2_basis_reference.py, 67 claims; Q3.R7 worst 0.43 eps, margin 9.2x); 9 template/family
+  SHA pins (nTP-v1 d0a6d025 unchanged); registry_builtin --check clean, 57 descriptors in 4 tables, registry_sha256
+  6a7550d4 -> 844d9ba7 (by design; legacy/core/records tables byte-identical); 938 passed; F0 unchanged. Orchestrator
+  re-runs: tests/test_f2_*.py 186 passed; registry_builtin --check clean. Design-lane flags batched for F2's ruling
+  round: WO2-1 (Q3.R1 (iii) rational lambda per group row), WO2-7 (templates in a new table material.json, payload
+  {instance_schema}); WO2-8 kinds not marked core while ADR 0062 is Proposed.
+- F2-WO2b brief docs/briefs/LINE06-F2-WO2b.md; opus-engineer launched (background, worktree f2).
