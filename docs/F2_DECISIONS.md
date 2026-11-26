@@ -124,3 +124,47 @@ Files: `src/openflowsheet/material/{basis,definitions}.py`, `schemas/connection-
   typed refusals and their parameters (`species_basis_*`, `group_amount_negative`, `molar_mass_inconsistent`) are the
   revision validator's (WO4, E-F2-9). Q3.R1 names no code for a failed (i) or (ii) at the definition level; WO4 needs
   one (default: `species_basis_incompatible(<method>, <S>)`, Q3.R5's).
+- **DECISION WO2-5. An instance is `{template: <id>, <parameters>}`; D3's preimage `body` is the normalised instance
+  without `template`** (so `nTP-v1`'s body is `{}`, as D3 states; the template is named once, in the triple).
+  `schemas/connection-definition.schema.json` is a `oneOf` over the five templates' closed grammars.
+- **DECISION WO2-6. One spelling per instance.** Every substream member is required (`grids: []`, `attributes: []`
+  when empty) and every attribute member (`components`, `grid` may be `null`); a group's content holds non-zero
+  integers only (a zero is omitted, D11's stoichiometry precedent). Normalisation is D3's list, nothing more: groups
+  by id, attributes by (kind, components) with substream scope (`null`) before any list and lists by their UTF-8
+  tuples; grids, substreams, components and species keep their given order. Alternative: optional members with
+  defaults (two spellings, two SHAs).
+- **DECISION WO2-7. The templates live in a fourth built-in table, `registry/builtin/material.json`**, with ADR
+  0062's four phase families; the legacy table admits only legacy-form payloads. Each template's payload is
+  `{instance_schema: {package, path, pointer, sha256}}` (its grammar in `connection-definition.schema.json` and that
+  file's SHA, as a record type names its schema), so an edit of a grammar moves the template's descriptor; modules
+  empty, status `implemented`, version 1.0.0. No v2 payload schema for `connection_definition` is installed (the brief
+  lists five kinds; ADR 0062 states no template payload), so extension definitions stay object-only and `preview`.
+  **Design-lane question**: the template payload (default: as built).
+- **DECISION WO2-8. The five payload envelopes (D5, D6) are installed in `PAYLOAD_DEFS`, the kinds are not added to
+  `CORE_KINDS`**: "per ADR-F2" is `preview` until ADR 0062 is Accepted (ADR 0060 D1), so the built-in families and
+  templates register `preview`; on Acceptance the five kinds join `CORE_KINDS` (one line) and the families become core.
+  Readings where D5 is terse: `phase_family`'s payload is the empty object (the vocabulary is the id, semantics
+  ADR-F5's); quantity kinds are strings (the descriptor schema refs no other schema, as `correlation_form`'s kinds);
+  `derived_quantity.output` is `"builtin"` or `{vocabulary_item}`, `spec` exactly two `[name, kind]` pairs,
+  `candidates` `"method"` or a non-empty list of renderings; an inequality term is `[number, string]`. The rules D5
+  states beyond a schema (`attribute_redundant`, "phase_family descriptors are built-in only", family ids matching
+  `^[A-Z][A-Z0-9_]*$`) are not enforced by the registry yet: **left for WO4** (the synthetic test family `std.L` is a
+  built-in of a test table).
+- **Identity.** `legacy.json`, `core.json`, `records.json` byte-identical; `nTP-v1`'s `descriptor_sha256` unchanged
+  (`d0a6d025…`). By design: `tables.sha256` moves on every line (the descriptor schema's bytes enter each table's
+  digest; core `f34f1b98`→`3538f634`, legacy `1bd31223`→`c2d5190f`, records `6e48244d`→`c6861f41`, material new
+  `98354b4b`) and E-F1-5's `registry_sha256` `6a7550d4`→`844d9ba7`. No F0 check reads either (`corpus_identity.py`
+  reads neither file nor the registry). Tests that pinned the table set were updated, not relaxed:
+  `test_f1_builtin_identity.py` (the table names), `test_f1_legacy_builtins.py` (57 descriptors in 4 tables; the
+  process registry's legacy rows still equal the legacy table's, the four templates beside them).
+- **Revert recipes** (WO2-5 to WO2-8 share one commit, the built-ins commit): WO2-8 alone is the five `PAYLOAD_DEFS`
+  lines, the five `$defs/payload_*` of `extension-descriptor.schema.json`, the guide paragraph
+  (`docs-site/guide/plugins.md`, held by `test_x01_example_plugin.py`) and the payload tests of
+  `tests/test_f2_definitions.py`, then `scripts/registry_builtin.py --write`.
+- **Found, not caused, by WO2: 16 tests fail at the WO1 head `ed5fb6c0`** and identically after WO2:
+  `tests/test_t07_w5e_application_results.py` (5: `list_models`' resolved response schema `854fab33…` against the
+  snapshot `12d88245…`) and `tests/test_t08_w2_surface_digest.py` (11: the served tool list `9a4b4eb3…` against F3's
+  registered `f7ec3c94…`). Cause: WO1's 14 kinds widen `quantity.schema.json`'s kind enum, which `list_models`'
+  output schema reaches. WO2 moves neither digest (measured equal before and after). An F2 surface move needs
+  registering as F3's was (a decomposition test, `without_f2`, and its R-number): **left for the orchestrator**
+  (WO7's close-out or a WO1 fix).

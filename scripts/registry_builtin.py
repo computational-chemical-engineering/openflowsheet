@@ -4,8 +4,9 @@
     python scripts/registry_builtin.py --check   # regenerates them in memory and compares
 
 The tables are package data under `src/openflowsheet/registry/builtin/`: `legacy.json` (D6),
-`core.json` (D7: the E01 contributors) and `records.json` (ADR 0061, F3-WO1). `--check` fails
-with the JSON pointers at which a committed table differs from the regenerated one.
+`core.json` (D7: the E01 contributors), `records.json` (ADR 0061, F3-WO1) and `material.json`
+(ADR 0062, F2-WO2). `--check` fails with the JSON pointers at which a committed table differs from
+the regenerated one.
 
 Two digests are written beside them and held by `--check`:
 
@@ -50,6 +51,15 @@ module (`DATA_SOURCE_MODULES`, F3 decision WO3-6, filled at F3-WO5b). Every one'
 `implemented` until F3's close-out. A record type's `payload_schema` carries the SHA-256 of the
 schema file's LF-normalised bytes (ADR 0061 review ruling WO1-11), so an edit of the record schema
 moves the descriptor and fails `--check`.
+
+`material.json` holds ADR 0062's built-in connection-definition templates (D3: `mat-v1`,
+`heat-v1`, `work-v1`, `signal-v1`; `nTP-v1` stays in the legacy table) and phase families (D6:
+`VAPOR`, `LIQUID`, `FLUID`, `SOLID`), read from `openflowsheet.material.definitions.TEMPLATES` and
+`openflowsheet.material.phase_id.FAMILIES`. A template's payload names its instance grammar in
+`connection-definition.schema.json` with that file's SHA-256 (as a record type's does), so an edit
+of the grammar moves the template's descriptor and fails `--check`; a family's payload is empty.
+Every one's modules are empty (the descriptor is its whole content) and its status `implemented`
+until F2's close-out.
 """
 
 from __future__ import annotations
@@ -71,6 +81,7 @@ SOURCE: Final = ROOT / "src"
 TABLE: Final = SOURCE / "openflowsheet" / "registry" / "builtin" / "legacy.json"
 CORE_TABLE: Final = SOURCE / "openflowsheet" / "registry" / "builtin" / "core.json"
 RECORDS_TABLE: Final = SOURCE / "openflowsheet" / "registry" / "builtin" / "records.json"
+MATERIAL_TABLE: Final = SOURCE / "openflowsheet" / "registry" / "builtin" / "material.json"
 #: SF-8: each table's `discovery.table_sha256`, package data beside the tables.
 DIGEST_RECORD: Final = SOURCE / "openflowsheet" / "registry" / "builtin" / "tables.sha256"
 #: E-F1-5: the built-in registry's `registry_sha256`.
@@ -588,6 +599,60 @@ def records() -> list[dict[str, Any]]:
     return found
 
 
+# -- material (ADR 0062) ---------------------------------------------------------------------
+
+#: F2-WO2: the status of ADR 0062's built-ins until F2's close-out (an evidence field, unhashed).
+MATERIAL_STATUS: Final = "implemented"
+#: ADR 0062 D3: the schema file of the connection-definition instances, in the package.
+DEFINITION_SCHEMA_PATH: Final = "_data/schemas/connection-definition.schema.json"
+
+
+def material() -> list[dict[str, Any]]:
+    """ADR 0062's built-in connection-definition templates (D3) and phase families (D6)."""
+    from openflowsheet.material.definitions import TEMPLATES
+    from openflowsheet.material.phase_id import FAMILIES
+    from openflowsheet.registry.selfhash import file_sha
+
+    sha = file_sha(SOURCE, f"openflowsheet/{DEFINITION_SCHEMA_PATH}")
+    found = []
+    for name, template in TEMPLATES.items():
+        schema = {
+            "package": "openflowsheet",
+            "path": DEFINITION_SCHEMA_PATH,
+            "pointer": template.pointer,
+            "sha256": sha,
+        }
+        found.append(
+            _descriptor(
+                "connection_definition",
+                name,
+                template.title,
+                requires=[],
+                provides=[f"conn:{name}"],
+                modules=[],
+                factory=None,
+                payload={"instance_schema": schema},
+                version=template.version,
+                status=MATERIAL_STATUS,
+            )
+        )
+    for family in FAMILIES:
+        found.append(
+            _descriptor(
+                "phase_family",
+                family,
+                f"Phase family {family}",
+                requires=[],
+                provides=[f"phase:{family}"],
+                modules=[],
+                factory=None,
+                payload={},
+                status=MATERIAL_STATUS,
+            )
+        )
+    return found
+
+
 # -- the tables ------------------------------------------------------------------------------
 
 
@@ -610,9 +675,19 @@ def records_table() -> list[dict[str, Any]]:
     return _sorted(records())
 
 
+def material_table() -> list[dict[str, Any]]:
+    """The material table (`material.json`), sorted by (kind, id)."""
+    return _sorted(material())
+
+
 def tables() -> dict[Path, list[dict[str, Any]]]:
     """Each built-in table's file and its regenerated rows."""
-    return {TABLE: table(), CORE_TABLE: core_table(), RECORDS_TABLE: records_table()}
+    return {
+        TABLE: table(),
+        CORE_TABLE: core_table(),
+        RECORDS_TABLE: records_table(),
+        MATERIAL_TABLE: material_table(),
+    }
 
 
 def render(rows: Sequence[Mapping[str, Any]]) -> str:

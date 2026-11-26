@@ -1,0 +1,214 @@
+[
+  {
+    "data_rights": null,
+    "descriptor_format": "openflowsheet-extension-v1",
+    "id": "heat-v1",
+    "implementation": {
+      "factory": null,
+      "modules": []
+    },
+    "kind": "connection_definition",
+    "limitations": [],
+    "payload": {
+      "instance_schema": {
+        "package": "openflowsheet",
+        "path": "_data/schemas/connection-definition.schema.json",
+        "pointer": "/$defs/heat_v1",
+        "sha256": "41bbfca03a3e1ee3b4ca96469f3b82ca4f2f12c473913152298f6beb724bb969"
+      }
+    },
+    "pip_extra": null,
+    "platforms": [
+      "any"
+    ],
+    "provides": [
+      "conn:heat-v1"
+    ],
+    "requires": [],
+    "status": "implemented",
+    "title": "Heat connection definition heat-v1",
+    "version": "1.0.0"
+  },
+  {
+    "data_rights": null,
+    "descriptor_format": "openflowsheet-extension-v1",
+    "id": "mat-v1",
+    "implementation": {
+      "factory": null,
+      "modules": []
+    },
+    "kind": "connection_definition",
+    "limitations": [],
+    "payload": {
+      "instance_schema": {
+        "package": "openflowsheet",
+        "path": "_data/schemas/connection-definition.schema.json",
+        "pointer": "/$defs/mat_v1",
+        "sha256": "41bbfca03a3e1ee3b4ca96469f3b82ca4f2f12c473913152298f6beb724bb969"
+      }
+    },
+    "pip_extra": null,
+    "platforms": [
+      "any"
+    ],
+    "provides": [
+      "conn:mat-v1"
+    ],
+    "requires": [],
+    "status": "implemented",
+    "title": "Material connection definition mat-v1",
+    "version": "1.0.0"
+  },
+  {
+    "data_rights": null,
+    "descriptor_format": "openflowsheet-extension-v1",
+    "id": "signal-v1",
+    "implementation": {
+      "factory": null,
+      "modules": []
+    },
+    "kind": "connection_definition",
+    "limitations": [],
+    "payload": {
+      "instance_schema": {
+        "package": "openflowsheet",
+        "path": "_data/schemas/connection-definition.schema.json",
+        "pointer": "/$defs/signal_v1",
+        "sha256": "41bbfca03a3e1ee3b4ca96469f3b82ca4f2f12c473913152298f6beb724bb969"
+      }
+    },
+    "pip_extra": null,
+    "platforms": [
+      "any"
+    ],
+    "provides": [
+      "conn:signal-v1"
+    ],
+    "requires": [],
+    "status": "implemented",
+    "title": "Signal connection definition signal-v1",
+    "version": "1.0.0"
+  },
+  {
+    "data_rights": null,
+    "descriptor_format": "openflowsheet-extension-v1",
+    "id": "work-v1",
+    "implementation": {
+      "factory": null,
+      "modules": []
+    },
+    "kind": "connection_definition",
+    "limitations": [],
+    "payload": {
+      "instance_schema": {
+        "package": "openflowsheet",
+        "path": "_data/schemas/connection-definition.schema.json",
+        "pointer": "/$defs/work_v1",
+        "sha256": "41bbfca03a3e1ee3b4ca96469f3b82ca4f2f12c473913152298f6beb724bb969"
+      }
+    },
+    "pip_extra": null,
+    "platforms": [
+      "any"
+    ],
+    "provides": [
+      "conn:work-v1"
+    ],
+    "requires": [],
+    "status": "implemented",
+    "title": "Work connection definition work-v1",
+    "version": "1.0.0"
+  },
+  {
+    "data_rights": null,
+    "descriptor_format": "openflowsheet-extension-v1",
+    "id": "FLUID",
+    "implementation": {
+      "factory": null,
+      "modules": []
+    },
+    "kind": "phase_family",
+    "limitations": [],
+    "payload": {},
+    "pip_extra": null,
+    "platforms": [
+      "any"
+    ],
+    "provides": [
+      "phase:FLUID"
+    ],
+    "requires": [],
+    "status": "implemented",
+    "title": "Phase family FLUID",
+    "version": "1.0.0"
+  },
+  {
+    "data_rights": null,
+    "descriptor_format": "openflowsheet-extension-v1",
+    "id": "LIQUID",
+    "implementation": {
+      "factory": null,
+      "modules": []
+    },
+    "kind": "phase_family",
+    "limitations": [],
+    "payload": {},
+    "pip_extra": null,
+    "platforms": [
+      "any"
+    ],
+    "provides": [
+      "phase:LIQUID"
+    ],
+    "requires": [],
+    "status": "implemented",
+    "title": "Phase family LIQUID",
+    "version": "1.0.0"
+  },
+  {
+    "data_rights": null,
+    "descriptor_format": "openflowsheet-extension-v1",
+    "id": "SOLID",
+    "implementation": {
+      "factory": null,
+      "modules": []
+    },
+    "kind": "phase_family",
+    "limitations": [],
+    "payload": {},
+    "pip_extra": null,
+    "platforms": [
+      "any"
+    ],
+    "provides": [
+      "phase:SOLID"
+    ],
+    "requires": [],
+    "status": "implemented",
+    "title": "Phase family SOLID",
+    "version": "1.0.0"
+  },
+  {
+    "data_rights": null,
+    "descriptor_format": "openflowsheet-extension-v1",
+    "id": "VAPOR",
+    "implementation": {
+      "factory": null,
+      "modules": []
+    },
+    "kind": "phase_family",
+    "limitations": [],
+    "payload": {},
+    "pip_extra": null,
+    "platforms": [
+      "any"
+    ],
+    "provides": [
+      "phase:VAPOR"
+    ],
+    "requires": [],
+    "status": "implemented",
+    "title": "Phase family VAPOR",
+    "version": "1.0.0"
+  }
+]
