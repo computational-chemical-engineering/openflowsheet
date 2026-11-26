@@ -41,6 +41,8 @@ repository's `schemas/` directory.
 | `list_branches` | read | python, cli, http, mcp | `GET /v1/branches` | `list_branches` |
 | `create_branch` | draft | python, cli, http, mcp | `POST /v1/branches` | `create_branch` |
 | `delete_branch` | draft | python, cli, http, mcp | `POST /v1/branches/{name}/delete` | `delete_branch` |
+| `register_solve_policy` | draft | python, cli, http, mcp | `POST /v1/solve-policies` | `register_solve_policy` |
+| `get_solve_policy` | read | python, cli, http, mcp | `GET /v1/solve-policies/{policy_id}` | `get_solve_policy` |
 | `artifact_bytes` | read | python, cli, http | `GET /v1/artifacts/{artifact_id}/raw` | — |
 
 ::: openflowsheet.application.operations.dispatch

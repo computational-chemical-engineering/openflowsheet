@@ -244,6 +244,7 @@ def test_policy_unsupported_on_route_is_the_unsupported_code(
         budgets=Budgets(),
         limits=Limits(),
         active_jobs=0,
+        project_policies={},
     )
     assert isinstance(refused, ApiError)
     assert (refused.code, refused.http_status) == ("unsupported", 501)

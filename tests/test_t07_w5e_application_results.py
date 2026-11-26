@@ -83,6 +83,9 @@ DEF_OF_OPERATION: dict[str, str] = {
     "list_branches": "branch_page",
     "create_branch": "branch_result",
     "delete_branch": "branch_result",
+    # ADR 0078 D4.5 (X06)
+    "register_solve_policy": "solve_policy_registration",
+    "get_solve_policy": "solve_policy_view",
 }
 #: `revision_summary`, `audit_record` and `capability_descriptor` are pages' items, each its own
 #: `$def`. F3's `effective_rights`, `rights_row` and `record_finding` are its responses' parts.
@@ -340,6 +343,8 @@ SNAPSHOT_F3: dict[str, str | None] = {
 #: optimization report's candidate ChangeSet, which gained the optional `branch` (D2.4). Taken at
 #: X06-WO2; with X06's additions removed (`tests/x06_schema_support.py`) each moved row is its
 #: earlier value again (`test_x06_without_its_additions_every_response_is_its_pre_x06_snapshot`).
+#: X06-WO3 (D4.5) adds the two `SolvePolicies` rows (`solve_policy_registration`,
+#: `solve_policy_view`, which embeds `solve-policy.schema.json`); no earlier row moved.
 SNAPSHOT_X06: dict[str, str | None] = {
     "submit_job": "37062a2659f7d42d53c863f3c36e14105c6459086cafa47a3a4dc206bcaca93d",
     "get_job": "e93cc75b9fceebc21d7be6bac868709a67edbc37db9a01567a3f1f253b44bbcf",
@@ -350,6 +355,8 @@ SNAPSHOT_X06: dict[str, str | None] = {
     "list_branches": "b0986117381b92f6bee2e609a9afdece1fee48e7400110d8e1fd764f17f2a397",
     "create_branch": "a138701b640a4ffe3a0e9feac58ca3d9a397ffb3a4b93601fde4ddeb02e59cb7",
     "delete_branch": "a138701b640a4ffe3a0e9feac58ca3d9a397ffb3a4b93601fde4ddeb02e59cb7",
+    "register_solve_policy": "4a3a5b104fcce374826c09e6c8dc66da9f28c49310308e35c76184ffdc889379",
+    "get_solve_policy": "528b6090c542396444ad87474a81f91be98599d875aedd85d3cd52be7b23a6fd",
 }
 #: The rows later than X04, each with its own snapshot (F1's, F3's and X06's).
 LATER_ROWS = F1_OPERATIONS | F3_OPERATIONS | X06_OPERATIONS
@@ -372,7 +379,7 @@ def _without_specifications(schema: Any) -> Any:
 
 def test_r4_g3_every_resolved_response_schema_equals_the_snapshot() -> None:
     measured = {name: _digest(resolved_response(op)) for name, op in OPERATIONS.items()}
-    assert len(measured) == 33
+    assert len(measured) == 35
     assert measured == {
         **SNAPSHOT_AT_B13D556,
         **SNAPSHOT_AMENDMENT_2,

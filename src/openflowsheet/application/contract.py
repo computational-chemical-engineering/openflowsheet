@@ -28,6 +28,8 @@ if TYPE_CHECKING:
         ModelRegistryView,
         ProjectSummary,
         RevisionSummary,
+        SolvePolicyRegistration,
+        SolvePolicyView,
         SubmitResult,
     )
     from openflowsheet.application.job_records import Job, JobEvent, JobResult, RunResult
@@ -299,3 +301,17 @@ class Branches(Protocol):
     def delete_branch(
         self, *, name: str, expected_revision: str, idempotency_key: str
     ) -> BranchResult: ...
+
+
+class SolvePolicies(Protocol):
+    """ADR 0078 D4 (ADR 0019 Amendment 18): project solve policies. A project registers a
+    solve-policy document under a `user.` id once (`draft`); the id is never re-bound, and a job
+    names it as it names an offered policy. Registration checks every member the schema leaves
+    open against the solver's registries, so an unknown value is refused there, never at run
+    time. A policy changes how the solver searches, never what the verifier accepts."""
+
+    def register_solve_policy(
+        self, *, policy: Mapping[str, Any], idempotency_key: str
+    ) -> SolvePolicyRegistration: ...
+
+    def get_solve_policy(self, *, policy_id: str) -> SolvePolicyView: ...

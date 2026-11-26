@@ -95,6 +95,7 @@ from t07_transport_support import (
     dispatched,
     inject_newer_producers_job,
 )
+from x06_schema_support import solve_policy_document
 
 from openflowsheet.application.authz import OPERATION_RIGHTS, grant, revoke
 from openflowsheet.application.jobs.executor import COMPUTE_LOCK
@@ -386,6 +387,7 @@ class Scenario:
         self.ok("diff", "diff_revisions", {"from_revision": rev1, "to_revision": rev3})
         self.ok("structure", "inspect_structure", {"revision_id": rev2, "depth": 2})
         self._branches(rev2)
+        self._solve_policies()
 
         # Refusals that create nothing.
         self.step("no job", "get_job", {"job_id": "job-999999"})
@@ -412,6 +414,7 @@ class Scenario:
         self.step("weakening", "submit_job", solve("s-loose", check_tolerances={"molar_flow": 1.0}))
         self.step("call budget", "submit_job", solve("s-calls", max_property_calls=10**9))
         self.step("no policy", "submit_job", solve("s-policy", policy_id="no-such-policy"))
+        self.step("no project policy", "submit_job", solve("s-user", policy_id="user.absent"))
         if c.grant:
             wall = {**solve("s-wall"), "budgets": {"wall_time_s": 10.0**6}}
             self.step("wall budget", "submit_job", wall)
@@ -533,6 +536,30 @@ class Scenario:
             else (assessed["row"]["sequence"] == 1)
         ), assessed
         self.ok("record rights", "get_record", {"record_sha256": sha})
+
+    def _solve_policies(self) -> None:
+        """ADR 0078 D4 (X06-WO3): a project policy registered (and the registration replayed,
+        found to exist and to conflict, and refused for its id and for an unregistered value),
+        then read, beside an offered policy, a benchmark name that is not offered and an
+        unknown id."""
+        policy = solve_policy_document("user.conformance")
+        register = {"policy": policy, "idempotency_key": "p1"}
+        assert self.ok("policy", "register_solve_policy", register)["status"] == "registered"
+        assert self.ok("policy replayed", "register_solve_policy", register)["status"] == "replayed"
+        again = {**register, "idempotency_key": "p2"}
+        assert self.ok("policy exists", "register_solve_policy", again)["status"] == "exists"
+        other = {"policy": {**policy, "max_attempts": 3}, "idempotency_key": "p3"}
+        assert self.ok("policy conflict", "register_solve_policy", other)["status"] == "conflict"
+        named = {"policy": {**policy, "policy_id": "mine"}, "idempotency_key": "p4"}
+        self.step("policy id", "register_solve_policy", named)
+        unknown = {**policy, "initializer_chain": ["user_guess"]}
+        self.step(
+            "policy value", "register_solve_policy", {"policy": unknown, "idempotency_key": "p5"}
+        )
+        self.ok("policy read", "get_solve_policy", {"policy_id": "user.conformance"})
+        self.ok("offered policy", "get_solve_policy", {"policy_id": "T06-revision-v2"})
+        self.step("benchmark policy", "get_solve_policy", {"policy_id": "T02-eo"})
+        self.step("no such policy", "get_solve_policy", {"policy_id": "user.absent"})
 
     def _branches(self, base: str) -> None:
         """ADR 0078 D2 (X06-WO2): a branch created at `base` (and the create replayed, and refused

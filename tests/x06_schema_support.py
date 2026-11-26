@@ -5,7 +5,8 @@ collected.
 returned with the same members taken out, copied). From X06-WO2 (branches, D2) they are:
 
 - the three tools of the protocol `Branches`, `list_branches`, `create_branch` and
-  `delete_branch` (`X06_OPERATIONS`);
+  `delete_branch`, and from X06-WO3 (solve policies, D4) the two of `SolvePolicies`,
+  `register_solve_policy` and `get_solve_policy` (`X06_OPERATIONS`);
 - the optional `branch` member of the ChangeSet (`change-set.schema.json`), wherever the ChangeSet
   is served: `commit_change`'s and `preview_change`'s `inputSchema` and the optimization
   report's `candidate.change_set` in `get_job_result`'s `outputSchema` (an object schema whose
@@ -25,8 +26,16 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Final
 
-#: The operations X06 added (ADR 0078 D2.5): their rows, and their MCP tools, are new.
-X06_OPERATIONS: Final = frozenset({"list_branches", "create_branch", "delete_branch"})
+#: The operations X06 added (ADR 0078 D2.5, D4.5): their rows, and their MCP tools, are new.
+X06_OPERATIONS: Final = frozenset(
+    {
+        "list_branches",
+        "create_branch",
+        "delete_branch",
+        "register_solve_policy",
+        "get_solve_policy",
+    }
+)
 #: The description files X06 changed (operation name -> MCP tool name) and their pre-X06 copies.
 X06_DESCRIPTIONS: Final = {"commit_change": "commit_change", "preview_change": "preview_change"}
 PRE_X06_TEXTS: Final = Path(__file__).resolve().parent / "fixtures" / "x06" / "pre_x06_descriptions"
@@ -85,4 +94,23 @@ def branches_requests(revision_id: str) -> list[tuple[str, dict[str, Any]]]:
             "delete_branch",
             {"name": "what-if", "expected_revision": revision_id, "idempotency_key": "b2"},
         ),
+    ]
+
+
+def solve_policy_document(policy_id: str = "user.copy") -> dict[str, Any]:
+    """`T06-revision-v2`'s document with only `policy_id` changed (ADR 0078 E-X06-12)."""
+    from openflowsheet.orchestrator.policies import T06_REVISION_V2
+
+    return {**T06_REVISION_V2.as_document(), "policy_id": policy_id}
+
+
+def solve_policies_requests() -> list[tuple[str, dict[str, Any]]]:
+    """One succeeding request of each `SolvePolicies` operation (ADR 0078 D4.5): a copy of the
+    revision path's policy registered, then read."""
+    return [
+        (
+            "register_solve_policy",
+            {"policy": solve_policy_document(), "idempotency_key": "sp1"},
+        ),
+        ("get_solve_policy", {"policy_id": "user.copy"}),
     ]

@@ -580,6 +580,46 @@
           "reviewed_at": null
         }
       ]
+    },
+    "register_solve_policy": {
+      "tool": "register_solve_policy",
+      "file": "register_solve_policy.md",
+      "sha256": "b44285ee509954656550a7b1ec91c7131909aec966858e922a3062ee76d034b6",
+      "characters": 1363,
+      "reviews": [
+        {
+          "review_kind": "design-lane",
+          "status": "pending_design_review",
+          "reviewed_by": null,
+          "reviewed_at": null
+        },
+        {
+          "review_kind": "human",
+          "status": "pending",
+          "reviewed_by": null,
+          "reviewed_at": null
+        }
+      ]
+    },
+    "get_solve_policy": {
+      "tool": "get_solve_policy",
+      "file": "get_solve_policy.md",
+      "sha256": "d471d3547aff611b701ba26a38402205109ac30ce4eb81f3ba2313f7de8b185a",
+      "characters": 690,
+      "reviews": [
+        {
+          "review_kind": "design-lane",
+          "status": "pending_design_review",
+          "reviewed_by": null,
+          "reviewed_at": null
+        },
+        {
+          "review_kind": "human",
+          "status": "pending",
+          "reviewed_by": null,
+          "reviewed_at": null
+        }
+      ]
     }
   }
 }

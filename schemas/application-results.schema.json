@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/frankp/process-runtime/schemas/application-results.schema.json",
   "title": "ApplicationResults",
-  "description": "T07 design note §11.3–§11.4 and ruling round 4 (W5a-Q2); ADR 0019 Amendment 1. The response shapes of the JobControl and Inspection operations in `OPERATIONS` that have no published schema of their own, one `$def` each, named in snake_case after the Python result type (`types.py`, `contract.py`), a page `<item>_page`. The members are those `operations.py` stated at `9b541df`, moved unchanged. Every string and key of a response is bounded (§10.4) before it is carried. `job`, `job-event`, `job_result`, `run-result`, `transaction-result`, `validation-report` and `replay-report` stay in their own schemas, referenced from here. ADR 0060 D11 (ADR 0019 Amendment 7) adds `capability_page` (its items `capability_descriptor`) and `admission_report`. ADR 0078 D2.5 (ADR 0019 Amendment 18) adds `branch_page` (its items `branch`) and `branch_result`.",
+  "description": "T07 design note §11.3–§11.4 and ruling round 4 (W5a-Q2); ADR 0019 Amendment 1. The response shapes of the JobControl and Inspection operations in `OPERATIONS` that have no published schema of their own, one `$def` each, named in snake_case after the Python result type (`types.py`, `contract.py`), a page `<item>_page`. The members are those `operations.py` stated at `9b541df`, moved unchanged. Every string and key of a response is bounded (§10.4) before it is carried. `job`, `job-event`, `job_result`, `run-result`, `transaction-result`, `validation-report` and `replay-report` stay in their own schemas, referenced from here. ADR 0060 D11 (ADR 0019 Amendment 7) adds `capability_page` (its items `capability_descriptor`) and `admission_report`. ADR 0078 D2.5 (ADR 0019 Amendment 18) adds `branch_page` (its items `branch`) and `branch_result`; ADR 0078 D4.5 adds `solve_policy_registration` and `solve_policy_view`.",
   "$defs": {
     "submit_result": {
       "type": "object",
@@ -1315,6 +1315,84 @@
               "type": "null"
             }
           ]
+        }
+      }
+    },
+    "solve_policy_registration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "policy_id",
+        "policy_sha256",
+        "conflict"
+      ],
+      "description": "ADR 0078 D4.5: `register_solve_policy`'s result. `registered`: the id is now bound to the document's canonical bytes; `exists`: it was bound to these bytes already; `conflict`: to other bytes, both hashes in `conflict` (`expected_sha256` the request's, `actual_sha256` the stored one, which `policy_sha256` repeats); `replayed`: the original result of the same request under the same key. An id is never re-bound.",
+      "properties": {
+        "status": {
+          "enum": [
+            "registered",
+            "exists",
+            "replayed",
+            "conflict"
+          ]
+        },
+        "policy_id": {
+          "type": "string"
+        },
+        "policy_sha256": {
+          "$ref": "https://github.com/frankp/process-runtime/schemas/job.schema.json#/$defs/sha256"
+        },
+        "conflict": {
+          "anyOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "expected_sha256",
+                "actual_sha256"
+              ],
+              "properties": {
+                "expected_sha256": {
+                  "$ref": "https://github.com/frankp/process-runtime/schemas/job.schema.json#/$defs/sha256"
+                },
+                "actual_sha256": {
+                  "$ref": "https://github.com/frankp/process-runtime/schemas/job.schema.json#/$defs/sha256"
+                }
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "solve_policy_view": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "policy_id",
+        "policy_sha256",
+        "origin",
+        "document"
+      ],
+      "description": "ADR 0078 D4.5: `get_solve_policy`'s result: an offered (`builtin`) or project-registered (`project`) solve policy, its `policy_sha256` (the SHA-256 of the document's canonical bytes, as a run manifest records it) and the document.",
+      "properties": {
+        "policy_id": {
+          "type": "string"
+        },
+        "policy_sha256": {
+          "$ref": "https://github.com/frankp/process-runtime/schemas/job.schema.json#/$defs/sha256"
+        },
+        "origin": {
+          "enum": [
+            "builtin",
+            "project"
+          ]
+        },
+        "document": {
+          "$ref": "https://github.com/frankp/process-runtime/schemas/solve-policy.schema.json"
         }
       }
     }

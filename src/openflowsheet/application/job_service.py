@@ -41,6 +41,7 @@ from openflowsheet.application.revision_run import Route, select_route
 from openflowsheet.application.revision_service import RevisionService, encode_cursor
 from openflowsheet.application.revisions import Revision
 from openflowsheet.application.service_core import ServiceCore
+from openflowsheet.application.solve_policy_service import SolvePolicyService
 from openflowsheet.application.store import IMPORTS_DIR
 from openflowsheet.application.store_records import (
     ActiveJobLimitError,
@@ -76,8 +77,10 @@ class JobService:
         revisions: RevisionService,
         artifacts: ArtifactService,
         validation: ValidationService,
+        policies: SolvePolicyService,
     ) -> None:
         self._core = core
+        self._policies = policies
         self._inspection = inspection
         self._revisions = revisions
         self._artifacts = artifacts
@@ -463,7 +466,8 @@ class JobService:
         from openflowsheet.run.manifest import policy_sha256
 
         route = select_route(revision.as_document(), surrogates=self._core.surrogates())
-        resolved = resolve_policies(route, body) if isinstance(route, Route) else None
+        project = self._policies.project_policies("get_job_result", body.policy_id)
+        resolved = resolve_policies(route, body, project) if isinstance(route, Route) else None
         if not isinstance(route, Route) or not isinstance(resolved, tuple):
             raise api_error(
                 "internal_error",

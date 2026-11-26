@@ -51,7 +51,7 @@ from t07_mcp_support import (
     in_session,
     project_with_grant,
 )
-from x06_schema_support import branches_requests
+from x06_schema_support import branches_requests, solve_policies_requests
 
 from openflowsheet.application.authz import revoke
 from openflowsheet.application.documents import validate_inline
@@ -284,6 +284,10 @@ async def _scenario(session: Session, direct: LocalApplication, record: Transcri
     for name, request in branches_requests(second):
         relation = "equal" if name == "list_branches" else "replay"
         await pair(name, name, request, relation)
+    # ADR 0078 D4.5 (X06): the direct call replays the MCP call's registration.
+    for name, request in solve_policies_requests():
+        relation = "equal" if name == "get_solve_policy" else "replay"
+        await pair(name, name, request, relation)
 
     solve = {"operation": "solve", "idempotency_key": "w6b-solve", "body": {"revision_id": second}}
     error, submitted = await call(session, "submit_job", solve)
@@ -428,7 +432,9 @@ def test_g14_every_mcp_operation_equals_dispatch_as_the_same_principal(
             created = [{**item, "created": False} for item in via_mcp["results"]]
             assert via_direct == {"results": created}, pair.label
         else:  # the direct call replays the effect the MCP call made
-            assert via_mcp["status"] in ("committed", "created", "deleted"), pair.label
+            assert via_mcp["status"] in ("committed", "created", "deleted", "registered"), (
+                pair.label
+            )
             assert via_direct["status"] == "replayed", pair.label
             assert via_mcp | {"status": "replayed"} == via_direct, pair.label
 
@@ -519,6 +525,7 @@ def test_every_effect_is_the_session_principals(transcript: Transcript) -> None:
         "commit_change",
         "create_branch",
         "delete_branch",
+        "register_solve_policy",
         "submit_job",
         "cancel_job",
         "cancel_job",

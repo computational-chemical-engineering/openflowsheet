@@ -32,6 +32,7 @@ from f3_schema_support import records_requests, user_component
 from msg_support import machine_detail
 from t07_corpus import CORPUS
 from t07_jobs_support import commit, lifecycle_violations
+from x06_schema_support import solve_policies_requests, solve_policy_document
 
 from openflowsheet.application.authz import OPERATION_RIGHTS, grant
 from openflowsheet.application.contract import (
@@ -40,6 +41,7 @@ from openflowsheet.application.contract import (
     Inspection,
     JobControl,
     Records,
+    SolvePolicies,
 )
 from openflowsheet.application.documents import validate_inline
 from openflowsheet.application.errors import ApplicationError
@@ -126,6 +128,19 @@ TABLE: dict[str, tuple[str, tuple[str, str] | None, str | None, tuple[str, ...]]
     "list_branches": ("read", ("GET", "/v1/branches"), "list_branches", ALL),
     "create_branch": ("draft", ("POST", "/v1/branches"), "create_branch", ALL),
     "delete_branch": ("draft", ("POST", "/v1/branches/{name}/delete"), "delete_branch", ALL),
+    # ADR 0078 D4.5 (X06): project solve policies
+    "register_solve_policy": (
+        "draft",
+        ("POST", "/v1/solve-policies"),
+        "register_solve_policy",
+        ALL,
+    ),
+    "get_solve_policy": (
+        "read",
+        ("GET", "/v1/solve-policies/{policy_id}"),
+        "get_solve_policy",
+        ALL,
+    ),
     "artifact_bytes": (
         "read",
         ("GET", "/v1/artifacts/{artifact_id}/raw"),
@@ -159,12 +174,13 @@ def test_every_protocol_method_is_exactly_one_row() -> None:
         *_protocol_methods(Inspection),
         *_protocol_methods(Records),
         *_protocol_methods(Branches),
+        *_protocol_methods(SolvePolicies),
     ]
     # Inspection's ninth is `list_audit` (ADR 0019 Amendment 3), its tenth `explain` (ADR 0058 D7),
     # its eleventh `get_stream_table` (ADR 0068), its twelfth and thirteenth `list_capabilities`
     # and `check_admission` (ADR 0060 D11); Records' five are ADR 0061 D13's; Branches' three are
-    # ADR 0078 D2.5's.
-    assert len(methods) == len(set(methods)) == 4 + 7 + 13 + 5 + 3
+    # ADR 0078 D2.5's; SolvePolicies' two D4.5's.
+    assert len(methods) == len(set(methods)) == 4 + 7 + 13 + 5 + 3 + 2
     rows = [operation.method for operation in OPERATIONS.values()]
     assert sorted(rows) == sorted([*methods, "artifact_bytes"])
     for name, operation in OPERATIONS.items():
@@ -186,8 +202,8 @@ def test_the_table_is_section_4_3s() -> None:
     # 19 routes with ADR 0019 Amendment 3's `list_audit`, which has no MCP tool (17 stay); ADR 0058
     # D7's `explain` adds one of each, ADR 0068's `get_stream_table` one more, and ADR 0060
     # D11's `list_capabilities` and `check_admission` two more, ADR 0061 D13's Records five,
-    # ADR 0078 D2.5's Branches three.
-    assert len(http) == len(set(http)) == 31 and len(tools) == len(set(tools)) == 29
+    # ADR 0078 D2.5's Branches three, D4.5's SolvePolicies two.
+    assert len(http) == len(set(http)) == 33 and len(tools) == len(set(tools)) == 31
     for operation in OPERATIONS.values():
         assert ("http" in operation.transports) == (operation.http is not None)
         assert ("mcp" in operation.transports) == (operation.mcp_tool is not None)
@@ -420,6 +436,7 @@ def _success_path(app: LocalApplication, tmp_path: Path) -> list[tuple[str, dict
             "delete_branch",
             {"name": "w", "expected_revision": revision_id, "idempotency_key": "b2"},
         ),
+        *solve_policies_requests(),  # ADR 0078 D4.5 (X06)
         ("artifact_bytes", {"artifact_id": state}),
     ]
 
@@ -450,6 +467,7 @@ def test_every_operation_succeeds_through_dispatch_and_meets_its_response_schema
             "assess_rights",
             "create_branch",
             "delete_branch",
+            "register_solve_policy",
         ):
             continue
         operation = OPERATIONS[name]
@@ -543,6 +561,12 @@ def _probe(name: str, text: str, other_job: str) -> dict[str, Any]:
             "expected_revision": "rev-000001",
             "idempotency_key": "probe",
         },
+        # ADR 0078 D4.5 (X06): a policy no project registered; an id outside `user.`.
+        "get_solve_policy": {"policy_id": "user.absent"},
+        "register_solve_policy": {
+            "policy": solve_policy_document("probe"),
+            "idempotency_key": "probe",
+        },
         "artifact_bytes": {"artifact_id": "job-999999:bundle/run-manifest.json"},
     }[name]
 
@@ -581,8 +605,8 @@ def test_g11_every_subset_and_every_operation_through_dispatch(app: LocalApplica
                 assert allowed == (needed <= set(rights)), (rights, name, text)
                 cells += 1
     # with ADR 0068's `get_stream_table`, ADR 0060 D11's two, ADR 0061 D13's five and ADR 0078
-    # D2.5's three
-    assert cells == 64 * 33
+    # D2.5's three and D4.5's two
+    assert cells == 64 * 35
     assert app.get_job(others_job).status == "completed", "the probes changed nothing"
 
 
@@ -723,6 +747,9 @@ def test_g13_every_response_is_bounded_and_the_raw_export_is_exact(
     call("create_branch", {"name": "w", "revision_id": b, "idempotency_key": "branch"})
     call("list_branches", {})
     call("delete_branch", {"name": "w", "expected_revision": b, "idempotency_key": "unbranch"})
+    # ADR 0078 D4.5 (X06): a project policy registered and read.
+    for name, request in solve_policies_requests():
+        call(name, request)
     job = call(
         "submit_job",
         {"operation": "solve", "idempotency_key": "solve-a", "body": {"revision_id": a}},

@@ -963,6 +963,17 @@ class ProjectStore:
             ).fetchone()
         return None if row is None else ArtifactRow(*row)
 
+    @staticmethod
+    def artifact_in(connection: sqlite3.Connection, artifact_id: str) -> ArtifactRow | None:
+        """`artifact` inside the caller's transaction (ADR 0078 D4.4: a write-once id is read
+        and bound in one write transaction)."""
+        row = connection.execute(
+            "SELECT artifact_id, job_id, kind, name, sha256, size_bytes, relpath,"
+            " parent_artifact_id FROM artifacts WHERE artifact_id = ?",
+            (artifact_id,),
+        ).fetchone()
+        return None if row is None else ArtifactRow(*row)
+
     def artifacts_of_kind(self, kind: str) -> list[ArtifactRow]:
         """Every registered artifact of `kind`, in id order (M04: the surrogate manifests an
         iteration's admission reads, spec §18 A1.2)."""

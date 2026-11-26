@@ -271,15 +271,15 @@ def check_a20(envelope: Mapping[str, Any], facts: Mapping[str, Any] | None = Non
     syn001 = [model for model in claimed["models"] if model.startswith("syn001.")]
     thermal = [model for model in claimed["models"] if model.startswith("thermal.")]
     if (
-        len(claimed["operations"]) != 33
+        len(claimed["operations"]) != 35
         or len(syn001) != 14
         or len(thermal) != 7
         or len(claimed["models"]) != 30
     ):
         problems.append(
-            "A20: spec §9 registers 20 operations (33 with ADR 0019 A3.3, ADR 0058 D7, ADR 0068, "
-            "ADR 0060 D11, ADR 0061 D13 and ADR 0078 D2.5) and 13 models (30 with S11's column "
-            "and seven "
+            "A20: spec §9 registers 20 operations (35 with ADR 0019 A3.3, ADR 0058 D7, ADR 0068, "
+            "ADR 0060 D11, ADR 0061 D13 and ADR 0078 D2.5, D4.5) and 13 models (30 with S11's "
+            "column and seven "
             "thermal.* models, M02's eight C1 models and M04's surrogate)"
         )
     return problems

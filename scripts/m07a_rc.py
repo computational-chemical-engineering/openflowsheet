@@ -78,16 +78,18 @@ function, a registered digest and Frank's carry extended to name it):
   `validate_record`'s report items `at` (`153b892e…`) and whose C11 applied the design lane's
   edits to four of the five texts (`tests/test_t08_w2_surface_digest.py`'s `F3_SERVED_SHA256`).
   F3 changed no existing text; its five files are pinned at their own hashes (`F3_FILE_SHA256`).
-- c_12, R-1073 (ADR 0078 D6, ADR 0019 Amendment 18): X06's branches (X06-WO2, D2) — the three
-  tools of the protocol `Branches` (`list_branches`, `create_branch`, `delete_branch`), the
+- c_12, R-1073 (ADR 0078 D6, ADR 0019 Amendment 18): X06's branches (X06-WO2, D2) and solve
+  policies (X06-WO3, D4) — the three tools of the protocol `Branches` (`list_branches`,
+  `create_branch`, `delete_branch`) and the two of `SolvePolicies` (`register_solve_policy`,
+  `get_solve_policy`), the
   ChangeSet's optional `branch` member wherever the ChangeSet is served, and the two description
   texts it changed (`commit_change.md`, `preview_change.md`, restored from their pre-X06 copies),
-  stripped by `tests/x06_schema_support.py`'s `without_x06`; `D_12` = `7e8393a5…`, measured at
-  X06-WO2 on `wp/X06` (`tests/test_t08_w2_surface_digest.py`'s `X06_SERVED_SHA256`). On `wp/X06`
-  it decomposes onto c_10 (F3): F2's c_11 (R-1072) is not on the branch, and whichever of the two
-  merges second decomposes onto the first's. Its three new files are pinned at their own hashes
-  (`X06_FILE_SHA256`); item 4 judges the two changed texts in their pre-X06 form
-  (`texts_before_links`).
+  stripped by `tests/x06_schema_support.py`'s `without_x06`; `D_12` = `4a80f77f…`, measured at
+  X06-WO3 on `wp/X06` (`7e8393a5…` at X06-WO2; `tests/test_t08_w2_surface_digest.py`'s
+  `X06_SERVED_SHA256`). On `wp/X06` it decomposes onto c_10 (F3): F2's c_11 (R-1072) is not on
+  the branch, and whichever of the two merges second decomposes onto the first's. Its five new
+  files are pinned at their own hashes (`X06_FILE_SHA256`); item 4 judges the two changed texts
+  in their pre-X06 form (`texts_before_links`).
 
 The released 0.2.0a1 ran the two-link chain (its committed record at `C_α²`); a re-run of the
 alpha's step 8 uses this script at the tag.
@@ -181,6 +183,8 @@ X06_FILE_SHA256: Final = {
     "create_branch": "c5a5108a87a6eb0a36cf3c3e3a828c702728ac37f5f6381b94c07143302199a6",
     "delete_branch": "0220874b57aecf2be3314c72b9558ab027c2ccf9155360e18750b77884abba3c",
     "list_branches": "73b23d6b7c8e6b4ae3aef988de477945c1c0c63647fb3aff9a03a18b78b3083f",
+    "get_solve_policy": "d471d3547aff611b701ba26a38402205109ac30ce4eb81f3ba2313f7de8b185a",
+    "register_solve_policy": "b44285ee509954656550a7b1ec91c7131909aec966858e922a3062ee76d034b6",
 }
 #: The two changed files as R-133 carried them: their reviewed hashes in `REVIEW.json` as v0.1.0
 #: released it (`PUBLIC_ROOT`).
@@ -398,7 +402,7 @@ LINKS: Final = (
         "c_12",
         "R-1073",
         strip_x06,
-        "7e8393a55d8f45e5e44c21f33b4c91389130c882fa80cb47887621a891aa236e",
+        "4a80f77fae8bc9f387900b2f50cc9524f50bbd31151a05cb1c0080da1927d746",
     ),
 )
 
@@ -524,7 +528,7 @@ def description_problems(texts: Mapping[str, str]) -> list[str]:
         problems.append(
             f"tools {sorted(texts)} are not v17-c2's 17, MSG's explain, ST's get_stream_table, "
             "F1's list_capabilities and check_admission, F3's five Records tools and X06's three "
-            "Branches tools"
+            "Branches and two SolvePolicies tools"
         )
     for name in sorted(set(texts) & set(pinned)):
         if name in CHANGED:

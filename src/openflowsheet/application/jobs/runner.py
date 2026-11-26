@@ -84,6 +84,7 @@ from typing import Any, Final, Self
 from openflowsheet.adapters import variants
 from openflowsheet.adapters.experiments.runner import ExperimentRunner
 from openflowsheet.adapters.experiments.store import ArtifactSink, ExperimentStore
+from openflowsheet.application import solve_policy_registry
 from openflowsheet.application.admission import (
     resolve_policies,
     stored_surrogate_manifests,
@@ -139,6 +140,7 @@ from openflowsheet.canonical import canonical_json, directory_hash, file_sha256
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models.lifted import AdmissibilityRefusal
 from openflowsheet.numerics.solve_record import SolvePolicy, Trace
+from openflowsheet.orchestrator.policy_validation import is_project_policy_id
 from openflowsheet.orchestrator.warm_start import EXPLICIT, WARM_START_SOURCE, WarmStartCandidate
 from openflowsheet.run.bundle import ARTIFACT_DIR, MANIFEST_NAME, BundleError, read_artifact
 from openflowsheet.run.manifest import RunManifest, policy_sha256
@@ -402,6 +404,20 @@ def _failed(
     return WorkerResult(status="failed", reason=reason, interruption=None, error=error, run=run)
 
 
+def _project_policies(
+    store: ProjectStore, root: Path, policy_id: str
+) -> Mapping[str, SolvePolicy] | WorkerResult:
+    """ADR 0078 D4.6: the project's registered solve policies for re-resolving `policy_id` at
+    the `resolve` stage (read only for a project policy's id), or the job's end `store_error`
+    when a registration is damaged."""
+    if not is_project_policy_id(policy_id):
+        return {}
+    try:
+        return solve_policy_registry.load(store, root)
+    except solve_policy_registry.SolvePolicyStoreError as error:
+        return _failed(_error("internal_error", str(error)), None, "store_error")
+
+
 def _interrupted(interrupted: JobInterrupted, run: Mapping[str, Any] | None) -> WorkerResult:
     """§8.1: a cooperative stop is `timed_out` for the deadline, `cancelled` otherwise."""
     status: TerminalStatus = (
@@ -654,7 +670,10 @@ class _Body:
                     run,
                 )
             selected = route
-            resolved = resolve_policies(route, body)
+            project = _project_policies(store, self.context.root, body.policy_id)
+            if isinstance(project, WorkerResult):
+                return project
+            resolved = resolve_policies(route, body, project)
             if isinstance(resolved, ApiError):
                 return _failed(resolved, run)
             policy, check_policy = resolved
@@ -1143,7 +1162,11 @@ class _Body:
                     ),
                     None,
                 )
-            resolved = resolve_policies(Route(ROUTE, None), body.solve_body())
+            solve_body = body.solve_body()
+            project = _project_policies(store, self.context.root, solve_body.policy_id)
+            if isinstance(project, WorkerResult):
+                return project
+            resolved = resolve_policies(Route(ROUTE, None), solve_body, project)
             if isinstance(resolved, ApiError):
                 return _failed(resolved, None)
             policy, check_policy = resolved

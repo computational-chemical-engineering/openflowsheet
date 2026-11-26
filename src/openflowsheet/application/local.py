@@ -55,6 +55,8 @@ from openflowsheet.application.inspection_types import (
     ModelRegistryView,
     ProjectSummary,
     RevisionSummary,
+    SolvePolicyRegistration,
+    SolvePolicyView,
     SubmitResult,
 )
 from openflowsheet.application.job_records import (
@@ -89,6 +91,7 @@ from openflowsheet.application.record_types import (
 from openflowsheet.application.records_service import RecordsService
 from openflowsheet.application.revision_service import RevisionService
 from openflowsheet.application.service_core import ServiceCore
+from openflowsheet.application.solve_policy_service import SolvePolicyService
 from openflowsheet.application.store import (
     ProjectStore,
 )
@@ -142,14 +145,20 @@ class LocalApplication:
     def _bind(self, core: ServiceCore) -> None:
         """The services over `core` (`__init__`; `authenticated`, with a core of its own)."""
         self._core = core
-        self._inspection = InspectionService(core)
+        self._policies = SolvePolicyService(core)
+        self._inspection = InspectionService(core, self._policies)
         self._revisions = RevisionService(core, self._inspection)
         self._artifacts = ArtifactService(core, self._revisions)
-        self._validation = ValidationService(core, self._revisions)
+        self._validation = ValidationService(core, self._revisions, self._policies)
         self._records = RecordsService(core)
         self._branches = BranchService(core)
         self._jobs = JobService(
-            core, self._inspection, self._revisions, self._artifacts, self._validation
+            core,
+            self._inspection,
+            self._revisions,
+            self._artifacts,
+            self._validation,
+            self._policies,
         )
 
     # ------------------------------------------------------------------------- construction
@@ -836,6 +845,26 @@ class LocalApplication:
         return self._branches.delete_branch(
             name=name, expected_revision=expected_revision, idempotency_key=idempotency_key
         )
+
+    # ------------------------------------------ SolvePolicies (ADR 0078 D4, Amendment 18)
+
+    def register_solve_policy(
+        self, *, policy: Mapping[str, Any], idempotency_key: str
+    ) -> SolvePolicyRegistration:
+        """ADR 0078 D4.5: bind the `user.` id of the solve-policy document `policy` to its
+        canonical bytes, once. `draft`; audited. Returned: `registered`, `exists` (the id is
+        bound to these bytes), `conflict` (to others; both hashes in `conflict`) or `replayed`
+        (same key, same request). Raised: a schema error, an id outside `user.…`
+        (`solve_policy_id_invalid`) or a member the solver would not read as written
+        (`solve_policy_invalid`), each `invalid_request` at its pointer; a key reused with
+        another request."""
+        return self._policies.register_solve_policy(policy=policy, idempotency_key=idempotency_key)
+
+    def get_solve_policy(self, *, policy_id: str) -> SolvePolicyView:
+        """ADR 0078 D4.5: an offered (`builtin`) or registered (`project`) solve policy and
+        its document. `read`. Raised: a benchmark-registered name that is not offered
+        (`unsupported`), any other id (`not_found`), as admission refuses them."""
+        return self._policies.get_solve_policy(policy_id=policy_id)
 
     def artifact_bytes(self, artifact_id: str) -> bytes:
         """§4.3, §10.4: an artifact file's bytes exactly as stored — the raw export (Python, CLI,

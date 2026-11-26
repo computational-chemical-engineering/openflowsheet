@@ -54,7 +54,8 @@ item's first `effective_rights`; `rights_assessment_result` (the record assessed
 `record_validation_report` (the record with an empty `name`, refused). A rights row's `date` is
 masked like the timestamps. X06 (ADR 0078 D2.5) adds `branch_result` (`create_branch` of
 `what-if` at the parent), `branch_page` (`list_branches`: `head` and `what-if`) and its first
-item, `branch`.
+item, `branch`; X06-WO3 (D4.5) adds `solve_policy_registration` (`register_solve_policy` of
+`user.copy`, `T06-revision-v2` renamed) and `solve_policy_view` (`get_solve_policy` of it).
 "Regenerates identically" is `stable` equality, as for the jobs
 (`tests/test_t07_w5e_application_results.py`).
 
@@ -80,6 +81,7 @@ sys.path.insert(0, str(ROOT / "tests"))
 import yaml  # noqa: E402
 from f3_schema_support import user_component  # noqa: E402
 from t07_jobs_support import cancel_while_queued, commit, lifecycle_violations  # noqa: E402
+from x06_schema_support import solve_policies_requests  # noqa: E402
 
 from openflowsheet.application.errors import ApplicationError  # noqa: E402
 from openflowsheet.application.job_requests import (  # noqa: E402
@@ -151,6 +153,8 @@ RESULTS_VALID = {
     "branch_result": "created_at_the_parent",
     "branch_page": "head_and_one_branch",
     "branch": "head",
+    "solve_policy_registration": "user_copy_registered",
+    "solve_policy_view": "user_copy",
 }
 #: F1 (ADR 0060 D10, D11): members that follow the code, not the response's shape.
 REGISTRY_VOLATILE = frozenset({"registry_sha256", "self_sha256", "distribution_version"})
@@ -338,6 +342,10 @@ def application_results_documents() -> dict[str, Any]:
             branches = call("list_branches", {})
             responses["branch_page"] = branches
             responses["branch"] = branches["items"][0]
+            # X06 (ADR 0078 D4.5): a renamed copy of the revision path's policy, registered.
+            for name, request in solve_policies_requests():
+                key = "solve_policy_registration" if name == "register_solve_policy" else None
+                responses[key or "solve_policy_view"] = call(name, request)
             violations = lifecycle_violations(application)
             if violations:
                 raise SystemExit(f"the fixture job breaks the lifecycle: {violations}")

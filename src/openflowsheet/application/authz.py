@@ -94,6 +94,9 @@ OPERATION_RIGHTS: Final[Mapping[str, Right]] = {
     "list_branches": "read",
     "create_branch": "draft",
     "delete_branch": "draft",
+    # ADR 0078 D4.5 (X06): project solve policies; registering needs `draft` (Q5)
+    "register_solve_policy": "draft",
+    "get_solve_policy": "read",
     # raw export (Python, CLI, HTTP)
     "artifact_bytes": "read",
 }

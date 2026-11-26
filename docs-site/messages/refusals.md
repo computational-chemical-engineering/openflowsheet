@@ -2883,6 +2883,105 @@ The file acme/units/mixer.py of extension acme.slurry-mixer cannot be read, so i
 
 - **Summary:** Refused: single phase admissible.
 
+<a id="solve_policy_id_invalid"></a>
+
+## `solve_policy_id_invalid`: A project solve policy's id outside the user namespace
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+- **Summary:** A solve policy registered in a project needs an id of the form user.&lt;name&gt;; see &lt;pointer&gt;.
+- **Why:** The project's own solve policies are kept apart from the offered ones by their ids: each starts with user., then a letter or digit, then up to 63 letters, digits, underscores, dots or hyphens. An id without that prefix could be mistaken for an offered or benchmark policy.
+- **Do:** Give the policy an id such as user.my-variant and register it again.
+- **Parameters:** `pointer` (text, optional)
+
+Example:
+
+```text
+A solve policy registered in a project needs an id of the form user.<name>; see /policy/policy_id.
+  Why:     The project's own solve policies are kept apart from the offered ones by their ids: each starts with user., then a letter or digit, then up to 63 letters, digits, underscores, dots or hyphens. An id without that prefix could be mistaken for an offered or benchmark policy.
+  Do:      Give the policy an id such as user.my-variant and register it again.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    solve_policy_id_invalid, in invalid_request (openflowsheet explain solve_policy_id_invalid)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#solve_policy_id_invalid
+```
+
+Example:
+
+```text
+A solve policy registered in a project needs an id of the form user.<name>.
+  Why:     The project's own solve policies are kept apart from the offered ones by their ids: each starts with user., then a letter or digit, then up to 63 letters, digits, underscores, dots or hyphens. An id without that prefix could be mistaken for an offered or benchmark policy.
+  Do:      Give the policy an id such as user.my-variant and register it again.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    solve_policy_id_invalid, in invalid_request (openflowsheet explain solve_policy_id_invalid)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#solve_policy_id_invalid
+```
+
+<a id="solve_policy_invalid"></a>
+
+## `solve_policy_invalid`: A solve policy member the solver would not read as written
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+- **Summary:** A member of the solve policy is not one the solver reads as written: &lt;pointer&gt;.
+- **Why:** A solve policy is checked when it is registered, so that a job never fails on it later. Each member must survive the solver's own reading unchanged, and each open value (an initializer, the linear solver, a quantity kind of a tolerance or scale, the recycle policy) must be one the solver knows. A tear set names one flowsheet's streams, so a project policy carries none.
+- **Do:** Start from get_solve_policy of an offered policy, change only the members you need to values the solver registers, and register the document again.
+- **Parameters:** `pointer` (text, optional)
+
+Example:
+
+```text
+A member of the solve policy is not one the solver reads as written: /policy/initializer_chain/0.
+  Why:     A solve policy is checked when it is registered, so that a job never fails on it later. Each member must survive the solver's own reading unchanged, and each open value (an initializer, the linear solver, a quantity kind of a tolerance or scale, the recycle policy) must be one the solver knows. A tear set names one flowsheet's streams, so a project policy carries none.
+  Do:      Start from get_solve_policy of an offered policy, change only the members you need to values the solver registers, and register the document again.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    solve_policy_invalid, in invalid_request (openflowsheet explain solve_policy_invalid)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#solve_policy_invalid
+```
+
+Example:
+
+```text
+A member of the solve policy is not one the solver reads as written.
+  Why:     A solve policy is checked when it is registered, so that a job never fails on it later. Each member must survive the solver's own reading unchanged, and each open value (an initializer, the linear solver, a quantity kind of a tolerance or scale, the recycle policy) must be one the solver knows. A tear set names one flowsheet's streams, so a project policy carries none.
+  Do:      Start from get_solve_policy of an offered policy, change only the members you need to values the solver registers, and register the document again.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    solve_policy_invalid, in invalid_request (openflowsheet explain solve_policy_invalid)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#solve_policy_invalid
+```
+
+<a id="solve_policy_not_found"></a>
+
+## `solve_policy_not_found`: A project solve policy the project has not registered
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+- **Summary:** This project has registered no solve policy &lt;policy_id&gt;.
+- **Why:** An id that starts with user. names a solve policy registered in this project. None is registered under this id: it was never registered here, or it was registered in another project.
+- **Do:** Read the registered ids in get_project's solve_policies, or register the policy with register_solve_policy first.
+- **Parameters:** `policy_id` (text, optional)
+
+Example:
+
+```text
+This project has registered no solve policy user.my-variant.
+  Why:     An id that starts with user. names a solve policy registered in this project. None is registered under this id: it was never registered here, or it was registered in another project.
+  Do:      Read the registered ids in get_project's solve_policies, or register the policy with register_solve_policy first.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    solve_policy_not_found, in not_found (openflowsheet explain solve_policy_not_found)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#solve_policy_not_found
+```
+
+Example:
+
+```text
+This project has registered no solve policy.
+  Why:     An id that starts with user. names a solve policy registered in this project. None is registered under this id: it was never registered here, or it was registered in another project.
+  Do:      Read the registered ids in get_project's solve_policies, or register the policy with register_solve_policy first.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    solve_policy_not_found, in not_found (openflowsheet explain solve_policy_not_found)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#solve_policy_not_found
+```
+
 <a id="specification_conflict"></a>
 
 ## `specification_conflict`: Specification conflict

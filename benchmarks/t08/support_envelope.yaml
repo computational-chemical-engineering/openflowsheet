@@ -231,7 +231,9 @@ axes:
       policy (`T06-revision-v2` on `revision_eo`, `T04-W12` on `legacy_eo`). PTC is selectable by
       explicit policy only (`T08-ptc-v1`) and is experimental (L01); compatible warm starts by
       explicit policy only (`T08-warm-v1`, R-124; L-WS-1, L-WS-2); revision continuation on
-      recovery edge 3 by explicit policy only (`RRC-revision-v1`, ADR 0072, R-995).
+      recovery edge 3 by explicit policy only (`RRC-revision-v1`, ADR 0072, R-995). A project may
+      register further, immutable policies under `user.` ids (ADR 0078 D4), each checked against
+      the solver's registries at registration; the verifier reads none of them.
     members: [RRC-revision-v1, T04-W12, T06-revision-v2, T08-ptc-v1, T08-warm-v1]
     evidence:
       - tests/test_t07_w5a_inspection.py::test_get_project_states_the_project_and_the_caller
@@ -239,6 +241,7 @@ axes:
       - tests/test_t08_ptc_r1_case.py::test_the_policies_are_t06_revision_v2_with_only_the_registered_changes
       - tests/test_t08_w4_warm_starts.py::test_t08_warm_v1_is_t06_revision_v2_with_only_the_chain_changed
       - tests/test_rrc_edge3.py::test_the_policy_differs_from_t06_revision_v2_in_its_edge_only
+      - tests/test_x06_solve_policies.py::test_e_x06_12_a_renamed_copy_solves_to_the_same_state
       - doc:docs/reviews/T08-verdict-V14b.md
 
   - id: globalization_and_recovery
@@ -288,13 +291,14 @@ axes:
   - id: interfaces
     title: Interfaces
     statement: >-
-      Python (`LocalApplication`), CLI, HTTP (`/v1`) and MCP over stdio; the thirty-three operations
+      Python (`LocalApplication`), CLI, HTTP (`/v1`) and MCP over stdio; the thirty-five operations
       of `OPERATIONS`, each on the transports listed (`explain`, ADR 0058 D7, reads the message catalogue
       only; `get_stream_table`, ADR 0068, computes a finished run's stream table from its bundle and
       stores nothing; `list_capabilities` and `check_admission`, ADR 0060 D11, read the extension
       registry only; the protocol `Records`, ADR 0061 D13, reads and writes the project's record
       store and rights register over the read-only legacy store; the protocol `Branches`, ADR 0078
-      D2, names refs of the project store and moves only them); authority from the credential
+      D2, names refs of the project store and moves only them; the protocol `SolvePolicies`, ADR
+      0078 D4, registers immutable `user.` solve policies as job-less artifacts); authority from the credential
       only (ADR 0019).
       With `serve-http --ui`, the diagnostic web shell at `/ui/` is a browser client of eighteen of
       them over HTTP and of nothing else (M06, and ST's `get_stream_table` since Frank's O3;
@@ -315,6 +319,7 @@ axes:
       get_project: [python, cli, http, mcp]
       get_record: [python, cli, http, mcp]
       get_revision: [python, cli, http, mcp]
+      get_solve_policy: [python, cli, http, mcp]
       get_stream_table: [python, cli, http, mcp]
       inspect_structure: [python, cli, http, mcp]
       list_audit: [python, cli, http]
@@ -326,6 +331,7 @@ axes:
       list_revisions: [python, cli, http, mcp]
       preview_change: [python, cli, http, mcp]
       register_record: [python, cli, http, mcp]
+      register_solve_policy: [python, cli, http, mcp]
       reproduce: [python, cli]
       search_records: [python, cli, http, mcp]
       solve: [python, cli]
@@ -476,8 +482,8 @@ unsupported:
 
   - id: U08
     capability: >-
-      Resume, in-band policy administration, MCP over HTTP, solve policies beyond the offered
-      four
+      Resume, in-band policy administration, MCP over HTTP, the benchmark-registered solve
+      policies that are not offered
     outcome: >-
       R-110: a resume request is outside the job-operation enum and refused by the request schema;
       no operation administers policies and no HTTP route serves MCP; a registered policy that is not offered is `unsupported`, an

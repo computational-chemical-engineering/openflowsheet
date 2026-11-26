@@ -168,10 +168,10 @@ F1_SERVED_SHA256 = "e2c44b6b9c2a7f5689ed4f2fd96b6e9804d1a63e60a5c620d29b5b5d594b
 #: items' `at`; C11: the design lane's edits to four texts; `scripts/m07a_rc.py`'s `D_10`).
 #: Without them it is `F1_SERVED_SHA256` (c_10).
 F3_SERVED_SHA256 = "f7ec3c94233d30506ec2082a13c4e54d57bd540e43e97fdf877b1e3c75fed467"
-#: X06 (ADR 0078 D6, R-1073): the served digest with X06-WO2's branches over F3's list, measured at
-#: X06-WO2 on `wp/X06` (`scripts/m07a_rc.py`'s `D_12`). Without them, with the two texts
-#: restored, it is `F3_SERVED_SHA256` (c_12 onto c_10 on `wp/X06`).
-X06_SERVED_SHA256 = "7e8393a55d8f45e5e44c21f33b4c91389130c882fa80cb47887621a891aa236e"
+#: X06 (ADR 0078 D6, R-1073): the served digest with X06-WO2's branches and X06-WO3's solve
+#: policies over F3's list, measured at X06-WO3 on `wp/X06` (`scripts/m07a_rc.py`'s `D_12`).
+#: Without them, with the two texts restored, it is `F3_SERVED_SHA256` (c_12 onto c_10 on `wp/X06`).
+X06_SERVED_SHA256 = "4a80f77fae8bc9f387900b2f50cc9524f50bbd31151a05cb1c0080da1927d746"
 #: The files N1 and N2 changed; the only difference from `v17-c2`'s served texts.
 CHANGED = ("commit_change", "validate")
 #: Each description's SHA-256 as `v17-c2` served it: the table of
@@ -533,18 +533,26 @@ def test_f3s_surface_move_decomposes_onto_f1s(mcp: ModuleType) -> None:
 def test_x06s_surface_move_decomposes_onto_f3s(mcp: ModuleType) -> None:
     """X06 (ADR 0078 D6, R-1073; E-X06-22): the served list is `X06_SERVED_SHA256`; minus X06's
     additions, with its two texts restored, it is F3's (`F3_SERVED_SHA256`, which decomposes onto
-    F1's and the earlier lists above). X06-WO2 added the three `Branches` tools after F3's, each
-    served from its file; the tools that moved are the two that serve the ChangeSet as a request
-    (`commit_change`, `preview_change`: the `branch` member and the text) and `get_job_result`
-    (the optimization report's candidate ChangeSet), and nothing else moved."""
+    F1's and the earlier lists above). X06-WO2 added the three `Branches` tools after F3's and
+    X06-WO3 the two `SolvePolicies` tools after them, each served from its file; the tools that
+    moved are the two that serve the ChangeSet as a request (`commit_change`, `preview_change`:
+    the `branch` member and the text) and `get_job_result` (the optimization report's candidate
+    ChangeSet), and nothing else moved."""
     served = _tools(mcp)
     stripped = without_x06(served)
     assert _digest(served) == X06_SERVED_SHA256
     assert _digest(stripped) == F3_SERVED_SHA256
     names = [t["name"] for t in served]
     added = [t for t in served if t["name"] in {OPERATIONS[n].mcp_tool for n in X06_OPERATIONS}]
-    assert [t["name"] for t in added] == ["list_branches", "create_branch", "delete_branch"]
-    assert names[-3:] == ["list_branches", "create_branch", "delete_branch"]
+    x06_tools = [
+        "list_branches",
+        "create_branch",
+        "delete_branch",
+        "register_solve_policy",
+        "get_solve_policy",
+    ]
+    assert [t["name"] for t in added] == x06_tools
+    assert names[-5:] == x06_tools
     for tool in added:
         assert tool["description"] == (DESCRIPTIONS / f"{tool['name']}.md").read_text("utf-8")
     kept = [t for t in served if t not in added]

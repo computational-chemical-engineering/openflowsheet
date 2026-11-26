@@ -1903,3 +1903,50 @@ entries:
         params: {name: what-if}
       - chain: [not_found, branch_not_found]
         params: {}
+  # X06 (ADR 0078 D4.3, D4.6): project solve policies. A policy is checked once, when it is
+  # registered; a job naming a `user.` id the project has not registered is `not_found`.
+  - code: solve_policy_id_invalid
+    family: refusal
+    kind: input
+    complete: true
+    title: A project solve policy's id outside the user namespace
+    params:
+      pointer: {type: text, optional: true, label: member}
+    summary: "A solve policy registered in a project needs an id of the form user.<name>[; see {pointer!raw}]."
+    why: "The project's own solve policies are kept apart from the offered ones by their ids: each starts with user., then a letter or digit, then up to 63 letters, digits, underscores, dots or hyphens. An id without that prefix could be mistaken for an offered or benchmark policy."
+    action: "Give the policy an id such as user.my-variant and register it again."
+    examples:
+      - chain: [invalid_request, solve_policy_id_invalid]
+        params: {pointer: /policy/policy_id}
+      - chain: [invalid_request, solve_policy_id_invalid]
+        params: {}
+  - code: solve_policy_invalid
+    family: refusal
+    kind: input
+    complete: true
+    title: A solve policy member the solver would not read as written
+    params:
+      pointer: {type: text, optional: true, label: member}
+    summary: "A member of the solve policy is not one the solver reads as written[: {pointer!raw}]."
+    why: "A solve policy is checked when it is registered, so that a job never fails on it later. Each member must survive the solver's own reading unchanged, and each open value (an initializer, the linear solver, a quantity kind of a tolerance or scale, the recycle policy) must be one the solver knows. A tear set names one flowsheet's streams, so a project policy carries none."
+    action: "Start from get_solve_policy of an offered policy, change only the members you need to values the solver registers, and register the document again."
+    examples:
+      - chain: [invalid_request, solve_policy_invalid]
+        params: {pointer: /policy/initializer_chain/0}
+      - chain: [invalid_request, solve_policy_invalid]
+        params: {}
+  - code: solve_policy_not_found
+    family: refusal
+    kind: input
+    complete: true
+    title: A project solve policy the project has not registered
+    params:
+      policy_id: {type: text, optional: true, label: policy}
+    summary: "This project has registered no solve policy[ {policy_id!raw}]."
+    why: "An id that starts with user. names a solve policy registered in this project. None is registered under this id: it was never registered here, or it was registered in another project."
+    action: "Read the registered ids in get_project's solve_policies, or register the policy with register_solve_policy first."
+    examples:
+      - chain: [not_found, solve_policy_not_found]
+        params: {policy_id: user.my-variant}
+      - chain: [not_found, solve_policy_not_found]
+        params: {}

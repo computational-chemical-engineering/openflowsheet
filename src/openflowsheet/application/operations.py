@@ -4,10 +4,11 @@
 `JobControl`'s seven, `Inspection`'s thirteen (`list_audit` is ADR 0019 Amendment 3's, `explain`
 ADR 0058 D7's, `get_stream_table` ADR 0068's, `list_capabilities` and `check_admission` ADR 0060
 D11's), `Records`' five (ADR 0061 D13, ADR 0019 Amendment 8), `Branches`' three (ADR 0078 D2,
-ADR 0019 Amendment 18) — and `artifact_bytes`, the raw export. A row names its method, the right
-it needs, its request and response schemas, its HTTP verb and path, its MCP tool, the transports
-that carry it and its tool description. Python (through `dispatch`), the
-CLI, HTTP and MCP read this table and nothing else, and add nothing to what it says.
+ADR 0019 Amendment 18), `SolvePolicies`' two (ADR 0078 D4) — and `artifact_bytes`, the raw
+export. A row names its method, the right it needs, its request and response schemas, its HTTP
+verb and path, its MCP tool, the transports that carry it and its tool description. Python
+(through `dispatch`), the CLI, HTTP and MCP read this table and nothing else, and add nothing to
+what it says.
 
 `dispatch(app, name, request)` does, in this order:
 
@@ -50,6 +51,7 @@ from openflowsheet.application.contract import (
     JobControl,
     Page,
     Records,
+    SolvePolicies,
 )
 from openflowsheet.application.documents import published_schemas, validate_inline
 from openflowsheet.application.errors import ApiError, ApiErrorCode, ApplicationError, api_error
@@ -78,8 +80,8 @@ TRANSPORT_WAIT_CAP_S: Final[float] = 30.0
 MAX_EVENT_PAGE: Final[int] = 500
 
 
-class Dispatchable(Application, JobControl, Inspection, Records, Branches, Protocol):
-    """What `dispatch` calls: the five protocols, the raw export, and the audit of a refusal
+class Dispatchable(Application, JobControl, Inspection, Records, Branches, SolvePolicies, Protocol):
+    """What `dispatch` calls: the six protocols, the raw export, and the audit of a refusal
     made before a method was reached (`LocalApplication`)."""
 
     def artifact_bytes(self, artifact_id: str) -> bytes: ...
@@ -381,6 +383,17 @@ def _decode_preview(document: Mapping[str, Any]) -> dict[str, Any]:
         {**document, "idempotency_key": PREVIEW_KEY}
     )
     return {"change": change, "expected_revision": expected_revision}
+
+
+def _decode_keyed(name: str, *names: str) -> Callable[[Mapping[str, Any]], dict[str, Any]]:
+    """A keyed write's members, its idempotency key outside the reserved prefix."""
+    members = _members(*names, "idempotency_key")
+
+    def decode(document: Mapping[str, Any]) -> dict[str, Any]:
+        _unreserved(document["idempotency_key"], name)
+        return members(document)
+
+    return decode
 
 
 def _decode_branch_write(name: str) -> Callable[[Mapping[str, Any]], dict[str, Any]]:
@@ -783,6 +796,23 @@ OPERATIONS: Final[Mapping[str, Operation]] = {
             _result("branch_result"),
             ("POST", "/v1/branches/{name}/delete"),
             decode=_decode_branch_write("delete_branch"),
+        ),
+        # SolvePolicies: ADR 0078 D4.5 (X06, ADR 0019 Amendment 18), project solve policies
+        _row(
+            "register_solve_policy",
+            "draft",
+            _object({"policy": _ref("solve-policy.schema.json"), "idempotency_key": ID}),
+            _result("solve_policy_registration"),
+            ("POST", "/v1/solve-policies"),
+            decode=_decode_keyed("register_solve_policy", "policy"),
+        ),
+        _row(
+            "get_solve_policy",
+            "read",
+            _object({"policy_id": ID}),
+            _result("solve_policy_view"),
+            ("GET", "/v1/solve-policies/{policy_id}"),
+            decode=_members("policy_id"),
         ),
         # The raw export (Python, CLI, HTTP; never MCP)
         _row(
