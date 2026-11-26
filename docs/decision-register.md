@@ -20519,7 +20519,7 @@ link is renumbered c_11 and F2's c_12 in the second branch's merge commit.
 | Date | 2026-11-26 |
 | Decided by | orchestrator (LINE06), build lane |
 | Normative text | ADR 0078 D6, ADR 0019 Amendment 18 (pointer, X06-WO5) |
-| Evidence | to come: `tests/test_m07a_surface_chain.py` green on wp/X06 with `strip_x06` and `D_12` = `X06_SERVED_SHA256` |
+| Evidence | X06-WO2 (`2213296b` on wp/X06): `tests/test_m07a_surface_chain.py` 37 passed with `strip_x06`; `D_12` = `X06_SERVED_SHA256` = `7e8393a55d8f45e5e44c21f33b4c91389130c882fa80cb47887621a891aa236e`, decomposing onto c_10 `f7ec3c94…` (F3) |
 | Affected packages | X06; F2 (R-1072) |
 
 **Decision.** X06's tools (from WO2 on) are chain link c_12, onto c_10 on wp/X06 until the merge; the second branch to

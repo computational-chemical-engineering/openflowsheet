@@ -121,3 +121,17 @@ Reversible by: <how>.` Package build decisions go in the package's own file (`do
   VERIFIED A (23:15:29Z). Applied on main: R-1071 Accepted with both action texts, R-110 status line, roadmap X06 row
   (resume removed) and F7 row (resume from X06), target-architecture X06 row. `executed` written (versions 3, 3).
   Pending: ADR 0078's status line on wp/X06 after X06-WO2 ends (no commit into a worktree an engineer is using).
+- X06-WO2 judged PASS (2026-11-27): commits 30f3aac2, 8e7b818d, 2213296b, 46001a81; worktree clean; 393,571 tokens,
+  80 min. test_x06_branches 22 passed (E-X06-6, 8 with 20 trials x 3 races in threads and two processes, falsifier
+  shown, 9, 10); test_x06_change_set_golden 3 passed over 303 recorded ChangeSet requests (WO2-1: from benchmarks/
+  transcripts at aa5822ac, no tests/fixtures file validates as a ChangeSet); E-X06-22 X06_SERVED_SHA256 7e8393a5 ->
+  without_x06 = F3's f7ec3c94; chain c_12 (R-1073) 37 passed; battery 3321 passed, 1 failed = the description-review
+  gate test_t08_w2_description_reviews (T08.A18: design-lane AND human review of every MCP text, red until recorded):
+  five texts (commit_change, preview_change, list_branches, create_branch, delete_branch). Orchestrator re-run:
+  test_x06_branches + golden + chain + t08_w2_surface_digest 73 passed; F0 on wp/X06 at 7ca42a0e running
+  (f0-x06-wo2). For the X06 reviewer (ruling): WO2-4 (commit_change re-prepares when a commit on another ref took its
+  auto-assigned id; a commit-path behaviour change), WO2-7 (commit_change.md tightened to fit 1500 chars).
+- DECISION: description reviews -> batched once at X06 close-out (design lane in X06's reviewer pass; the user's
+  review by one card listing every new or changed text with its hash). Alternative: per WO. Reversible: anytime.
+- ADR 0078 status line set Accepted on wp/X06 (7ca42a0e, status line only). R-1073 evidence row filled on main.
+- X06-WO3 brief docs/briefs/LINE06-X06-WO3.md written.

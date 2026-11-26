@@ -38,16 +38,30 @@ the ADR acceptances of card `ofs-line06-adr-clause`; X06's exits.
 Parallelism: at most two agents. F2 first; D1 runs beside F2 once the X06 scope card is answered; F8-WO1 can start
 once F2-WO4 is on wp/F2 (F8 branches from wp/F2's head, merges after F2).
 
-## Next action
+## Next action (written for a self-reset, 2026-11-27; no agent running)
 
-Done: D1, F2-WO1 (miss fixed by WO2b), F2-WO2, F2-WO2b, X06-WO1; F2-WO3 reported (being confirmed by the
-orchestrator's battery `battery-f2-wo3`, log `~/.cache/line06/battery-f2-wo3.log`; script in the session scratchpad
-`battery_f2.sh`: the named suites plus F0 on the f2 worktree). On PASS: launch `opus-engineer` on
-`docs/briefs/LINE06-F2-WO4.md`. Running: `opus-engineer` on X06-WO2 (branches + chain link c_12). When it ends: judge,
-then set ADR 0078's status line to Accepted on wp/X06 (cards below), then X06-WO3 (solve policies). ADR 0078 is
-**Accepted** (2026-11-26), with Q4 static bearer. F2 ruling batch (at F2's reviewer pass): WO1-4, WO1-1, WO1-9, M = 1
-for kg, WO2-1, WO2-7, WO3-6. X06 reviewer: WO1-1 (unused serve functions), stateless tools/call without initialize.
-At F2's merge: the register block conflict (WO3-1).
+Done and judged: D1, F2-WO1 (miss fixed by WO2b), F2-WO2, F2-WO2b, X06-WO1, X06-WO2 (log). ADR 0078 **Accepted**
+(status line on wp/X06 `7ca42a0e`). Heads: wp/F2 `41177bcf` (WO3 reported), wp/X06 `7ca42a0e`.
+
+**Two detached jobs are running** (their completion notices arrive in the new context; each prints one line):
+1. `battery-f2-wo3`: the named suites plus F0 on the f2 worktree at `41177bcf` (script: session scratchpad
+   `battery_f2.sh`; log `~/.cache/line06/battery-f2-wo3.log`, read only by `tail`). PASS = pytest 0 failed and the
+   last line `F0 PASS: M1 50/50, M2 61/61, M3 61/61, M4 61/61, M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 42/42`.
+   On PASS: log "F2-WO3 judged PASS" and launch `opus-engineer` on `docs/briefs/LINE06-F2-WO4.md`. On FAIL: grep the
+   log for FAILED, log the miss, brief a fix order.
+2. `f0-x06-wo2`: F0 on wp/X06 at `7ca42a0e` (log `~/.cache/line06/f0-x06-wo2.log`). On PASS (same counts): launch
+   `opus-engineer` on `docs/briefs/LINE06-X06-WO3.md`. On FAIL: stop and log.
+If a notice is missed: `tail -3 ~/.cache/line06/<name>.log`, and `cat ~/.cache/line06/<name>.pid` + `ps -p` to see
+whether it still runs.
+
+Then, per report: `git -C <worktree> status`, ListAgents, judge on the brief's acceptance (surface suites included),
+re-run F0 on the branch, log. Remaining F2: WO4, WO5 (probes), WO6 (lowering, ADR 0019 Amendment 9 pointer; locate
+"dispatch in the application layer" by recon first), WO7 close-out, then F2's `reviewer` pass with the ruling batch
+(WO1-4, WO1-1, WO1-9, M = 1 for kg, WO2-1, WO2-7, WO3-6), then the ADR 0062 acceptance card. Remaining X06: WO3,
+WO4 (administration), WO5 close-out, `reviewer` pass (rulings: WO1-1 unused serve functions, stateless tools/call
+without initialize, WO2-4 commit re-prepare, WO2-7), then one card for the user's review of every new or changed
+MCP description text (gate T08.A18), then the merge card. At F2's merge: the register-block conflict (WO3-1). F8
+starts after F2-WO4 and WO6 (branch from wp/F2).
 
 ## Decisions settled (Decision Desk, 2026-11-26, each choice A, VERIFIED, `executed` written)
 
