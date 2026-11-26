@@ -135,3 +135,5 @@ Reversible by: <how>.` Package build decisions go in the package's own file (`do
   review by one card listing every new or changed text with its hash). Alternative: per WO. Reversible: anytime.
 - ADR 0078 status line set Accepted on wp/X06 (7ca42a0e, status line only). R-1073 evidence row filled on main.
 - X06-WO3 brief docs/briefs/LINE06-X06-WO3.md written.
+- 2026-11-27: f0-x06-wo2 PASS on wp/X06 7ca42a0e (F0 PASS: M1 50/50, M2 61/61, M3 61/61, M4 61/61, M5 61/61,
+  M6 85/85, M7 52/52, M8 105/105, M9 42/42). X06-WO3 launched (opus-engineer, brief docs/briefs/LINE06-X06-WO3.md).
