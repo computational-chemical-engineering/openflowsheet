@@ -5049,3 +5049,27 @@ Runner 2763884 alive; job 303 running, 304 queued; wait --since 288 --idle s19-g
   identity paths. Findings on the criterion (E2 text for regenerating merges; tool version in the row; file smells and
   "full suite" unbounded): for S19's close, not blocking. Next: budget tests alone (running), manifest
   (`<briefs>/S19-MANIFEST-END.md`), fresh CI, merge card.
+
+## 2026-11-21 ~18:45 CET: CI green at f814928a; merge card requested
+
+- CI 44923603617 at f814928a: success (check ubuntu-24.04-arm, check ubuntu-latest, default-install, codehealth,
+  identity). Merge preconditions met (manifest tested, budget tests, CI green).
+- DECISION-REQUEST ofs-s19-merge-main to hub: A merge before K3 (enters 0.5.0; int/0.5 rebuilt and re-run), B
+  (recommended) after the v0.5.0 tag (main merged back, fresh CI, G-END numbers re-checked). Trial merge (REL050
+  log): no src/ or scripts/ conflict; harvest bookkeeping and register order only. Waits for the signed card.
+- Hub filed card ofs-s19-merge-main. Verify (`decision_desk_verify.py ... --action`) against these texts verbatim:
+  A: "Merge wp/S19 (head 9fb4d5df: f814928a plus a docs-only state commit) into main now, before K3, so the S19 refactor enters 0.5.0: merge commit, run the F0 corpus identity on main, and push main only if F0 passes; then rebuild int/0.5 on the new main and re-run its CI (~2 h) before the 0.5 merge card is acted on."
+  B: "Keep 0.5.0 as scoped (R-1065): after the v0.5.0 tag, merge main back into wp/S19, run a fresh CI on both legs and re-check the G-END numbers; only if CI is green and G-END holds, merge wp/S19 into main with a merge commit, run the F0 corpus identity on main, and push main only if F0 passes."
+  Note: A pins head 9fb4d5df; the later log commits on wp/S19 (d52a7abd on) are not part of that merge.
+- 2026-11-21 ~21:25 CET: card ofs-s19-merge-main signed, choice A; `decision_desk_verify.py` VERIFIED (key
+  032ee0a5ae620a90) against the action text above. Executed: merge commit ceb38cec on main (wp/S19 at 9fb4d5df,
+  181 files, +16095/-8376); F0 on main PASS (M1 50/50, M2-M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 42/42);
+  main pushed (origin/main ceb38cec); `executed` written on the card (version 3). S19 is in 0.5.0. int/0.5 rebuilt
+  on ceb38cec as int/0.5-r2 (REL050 log); the old int/0.5 CI 44932969763 cancelled.
+
+## 2026-11-21 ~21:45 CET: campaign close note
+
+- `docs/reviews/S19-close.md`: outcome against CB, the verdict's findings C1 to C4 recorded as open design-lane items
+  for the next code-health gate registration (none settled here), T1 to T7 carried into the release report.
+  S19_RULES "Settled" tool line now names pin `34a30bf` (T6). Baseline lowest file health from the CB trial scan:
+  1.0, 42 files below 7.0. Gate runner left idle until REL050 confirms it does not need the queue.
