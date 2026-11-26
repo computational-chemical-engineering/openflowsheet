@@ -57,25 +57,40 @@ Format: **package**: what it delivers · needs first · design pass.
   of library-only providers and units moves to 0.6 with F4 and F6, which it needs. Reason: F2 and F8 change stored
   records and identity, and F4 to F6 are designed against the same v2 records, so one release carries one migration.)*
 
-### 0.6: multiphase core and generic units
+### 0.6: the v2 revision, identity v2 and remote agents
 
-- **F2**: material model and revision schema v2 · F1, rulings · architect (W1). *(from 0.5, R-1065)*
-- **F8**: identity and replay v2 · F2, F3 · architect (W1). *(from 0.5, R-1065)*
-- **X06**: MCP over HTTP, branches, job resume, further solve policies · nothing · architect. *(from 0.5, R-1065)*
+*(Amended 2026-11-26, the user, R-1070, ADR 0057 Amendment 3: 0.6 is F2, F8 and X06; campaign LINE06.)*
+
+- **F2**: material model and revision schema v2 · F1, F3, rulings · architect (W1, ADR 0062).
+- **F8**: identity and replay v2, work orders WO1 to WO3 (manifest, bundle v2, replay) and WO5 (platform records) ·
+  F2, F3, X07a · architect (W1, ADR 0067). WO4 (evidence, after F4-WO4) and WO6 (wiring, after F6-WO4) go with F4 and
+  F6; WO7 stays in TX.
+- **X06**: MCP over HTTP, branches, job resume, further solve policies, policy administration · nothing · architect
+  (ADR 0078, to be written; scope on card `ofs-line06-x06-scope`).
+- *Line acceptance:* a v2 revision with store-pinned records solves on the legacy route on all three OSes (from 0.5,
+  R-1065); ADR 0062, ADR 0067 and ADR 0078 Accepted (default of card `ofs-line06-adr-clause`; before it, the clause
+  read "ADR-F1 to ADR-F8 Accepted", from 0.5, `ofs-rel050-q-f1`); X06's exits.
+
+### After 0.6: multiphase core and generic units
+
+*(Left 0.6 on 2026-11-26, R-1070. The line they form is card `ofs-line06-rest`: default a new 0.7 with each later line
+one up and 1.0 unchanged; alternative, joined with dynamics in 0.7. Until the answer, the headings below keep their
+numbers.)*
+
 - **X01 selectability**: library-only providers and units become selectable · F2, F4, F6 · none. *(from 0.5, R-1065)*
 - **F4**: property methods and thermo interface · F2, F3 · architect (W1).
 - **F5**: phase equilibrium, including regime discovery (FB-04 part 2) · F4 · architect (W1).
 - **F6**: unit framework v2 and the `std.*` seed · F5 · architect (W1).
+- **F8 WO4 and WO6**: evidence classes (after F4-WO4) and v2-compiled runs writing bundle v2 (after F6-WO4) · F4, F6.
 - **X10 gaps**: every physically meaningful unit × basis pair built or refused with a reason · F6 · none.
 - **X09**: PR liquid regime, pure-ammonia flash, wider reactor box · F6 · specifier.
 - **X08**: decanter and extraction (LLE, VLLE) · F6 · specifier.
 - **X17**: viscosity, conductivity, diffusivity · F4 · specifier.
 - **X11 rest**: data fetchers, regression, estimation flagged as estimated · F3, F4 · specifier.
 - **PrISMa**: adsorption isotherms as an equilibrium phase · F5 · specifier.
-- *Line acceptance:* ADR-F1 to ADR-F8 Accepted (from 0.5, Frank 2026-11-22, `ofs-rel050-q-f1`); a v2 revision with
-  store-pinned records solves on the legacy route on all three OSes (from 0.5, R-1065); Seider's vinyl chloride process against its Table 2.7; the textbook turbine with no declared
-  phases; a VLLE decanter; a complete coverage matrix; `std.*` proved equivalent to the legacy units; the preview parts
-  of the v2 schema frozen.
+- *Line acceptance:* ADR 0063 to 0066 Accepted (default of `ofs-line06-adr-clause`); Seider's vinyl chloride process
+  against its Table 2.7; the textbook turbine with no declared phases; a VLLE decanter; a complete coverage matrix;
+  `std.*` proved equivalent to the legacy units; the preview parts of the v2 schema frozen.
 
 ### 0.7: dynamics
 
@@ -131,7 +146,7 @@ Format: **package**: what it delivers · needs first · design pass.
   must name the missing capability.
 - **Equivalence** (F6). `std.*` must match the legacy units on the same physical quantities, first on the old state
   variables, then on the new ones.
-- **Freeze points.** The v2 core at the end of W1; the method, phase-assertion and template slots at the end of 0.6.
+- **Freeze points.** The v2 core at the end of W1; the method, phase-assertion and template slots at the end of the multiphase-core line (0.6 before R-1070).
 - **Package gates:** the integrator against IDAS (TX), LOA against enumeration (X24), F6 scaling, F4 batching.
 - **Always:** the full gate before a merge to `main`, and CI green on both architectures (CLAUDE.md).
 

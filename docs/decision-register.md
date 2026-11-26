@@ -20443,3 +20443,33 @@ version table is built around the line's release `M.m.Z` (`M.m.(Z+1)` not covere
 it RP.S02 failed at C' (misclassified `0.5.1`) and the release manifest could not be `tested`. `scripts/` and RP are not
 D2.4 paths, so C' stands. *Rejected:* narrowing `covers` to 0.5.1 alone (the verdict measured five misclassified
 versions); stopping 0.5.1.
+
+## R-1070: 0.6 is F2, F8 (WO1 to WO3, WO5) and X06; F4 to F6 and the packages on them leave the 0.6 line (2026-11-26, Accepted)
+
+| | |
+| --- | --- |
+| Date | 2026-11-26 |
+| Decided by | the user, session OpenFlowsheet-TR09 chat, 2026-11-26: "let's go for 0.6 = F2 + F8 + X06" |
+| Normative text | ADR 0057 Amendment 3 (D6); `docs/roadmap/roadmap.md` section 0.6 and "After 0.6" |
+| Evidence | ADR 0067 work orders (WO4 needs F4-WO4, WO6 needs F6-WO4, WO7 is TX); ADR 0062 work orders (none needs F4 to F6); the cost estimate in the session (0.6 as planned: about 80 work orders, 6 to 9 weeks) |
+| Affected packages | F2, F8, X06 (0.6); F4, F5, F6, X01 selectability, X10 gaps, X09, X08, X17, X11 rest, PrISMa (after 0.6); `release/lines/0.6.json` (draft); campaign LINE06 |
+
+**Decision.** The 0.6 line is F2 (ADR 0062, all work orders), F8's work orders that need neither F4 nor F6 (ADR 0067
+WO1 to WO3 and WO5) and X06 (ADR 0078, to be written). Its line acceptance keeps "a v2 revision with store-pinned
+records solves on the legacy route on all three OSes". The rest of the planned 0.6 (F4, F5, F6, X01 selectability, X10
+gaps, X09, X08, X17, X11 rest, PrISMa, F8-WO4 and WO6, and the acceptance clauses Seider VCM, the turbine with no
+declared phases, the VLLE decanter, the coverage matrix, `std.*` equivalence and the preview freeze) leaves 0.6.
+
+**Open, on the Decision Desk (defaults in brackets):** where the packages that leave go (`ofs-line06-rest`: [a new
+0.7 line, later lines one up]); which ADR acceptances the 0.6 line keeps (`ofs-line06-adr-clause`: [ADR 0062, ADR 0067
+and X06's ADR; 0063 to 0066 move with the packages that build them]); X06's scope for its architect pass
+(`ofs-line06-x06-scope`: [ADR 0056 row 8 in full, in its order]).
+
+**Why.** 0.6 as planned was about twice 0.5's planned size. F2 and F8 are the one record migration of R-1065 and stand
+without F4 to F6 (v2 documents lower to the legacy route); X06 is independent of the foundations.
+
+**Rejected.** *0.6 as planned:* 6 to 9 weeks before the next release. *F2 and F8 without X06:* X06 changes no records
+and has the clearest user value (remote agents over MCP); leaving it out saves little.
+
+**Risk accepted.** F4 to F6 are built after F2's v2 records ship. A change they need in those records is an ADR 0062
+amendment and a second migration; the W1 design (the v2 core frozen at W1's end, R-928) is what keeps that unlikely.

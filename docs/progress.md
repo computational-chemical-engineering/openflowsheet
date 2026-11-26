@@ -109,6 +109,12 @@ canonicity, T07); ADR 0013 has Amendment 2 (routing on registered tolerances, T0
 
 ## Next executable action
 
+**LINE06 (the 0.6 line: F2, F8 WO1 to WO3 and WO5, X06; R-1070, ADR 0057 Amendment 3), SMM-TR09, from 2026-11-26.**
+Plans updated, `release/lines/0.6.json` drafted (LINE06-L0, loads clean), campaign files `docs/LINE06_STATE.md`,
+`docs/LINE06_RULES.md`, `docs/LINE06_DECISIONS.md`, skill `line06`. Three Decision Desk cards requested
+(`ofs-line06-rest`, `ofs-line06-adr-clause`, `ofs-line06-x06-scope`). **Next:** P1 (F2 premise check), then F2-WO1 on
+`wp/F2`. F4 to F6 and the packages on them are "After 0.6" in `roadmap.md`.
+
 **0.5.1 released 2026-11-24** (tag `v0.5.1` = `ca65ec1a`, PyPI, GitHub release); main carries `0.6.0.dev0` with the
 working envelope and re-taken G10 records (`wp/REL051-after`); the freeze on main is lifted. Log
 `docs/REL051_DECISIONS.md`.

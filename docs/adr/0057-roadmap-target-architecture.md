@@ -87,7 +87,7 @@ the store; no code to author.
 0.6 F4, F5, F6 and the multiphase packages, closing with Seider VCM; 0.7 F7, TX, X13, X07b; 0.8 the design toolkit; 0.9
 batch, relief, synthesis and electrolytes; 1.0 solids, polymers and P&ID. MSG before X04 stands (Frank). ADR 0056's
 release lines are subordinate to this order. *(Amended 2026-11-20, Frank, R-1065: 0.5 is X07a, F1, F3 and X01's plugin docs; F2, F8, X06
-and X01's selectability move to the head of 0.6. See "Amendment 1" below. Amended 2026-11-22, Frank: "ADR-F1 to ADR-F8 Accepted" moves to 0.6; see "Amendment 2".)* FB-04 (1) is dropped as a 0.4 legacy fix; F5 and `std.turbine` solve it.
+and X01's selectability move to the head of 0.6. See "Amendment 1" below. Amended 2026-11-22, Frank: "ADR-F1 to ADR-F8 Accepted" moves to 0.6; see "Amendment 2". Amended 2026-11-26, the user: 0.6 is F2, F8 (WO1 to WO3, WO5) and X06; see "Amendment 3".)* FB-04 (1) is dropped as a 0.4 legacy fix; F5 and `std.turbine` solve it.
 
 **D7 — Open items, each with a proposed default.** The specifier rules on the first four at the start of W1, and each
 gates the foundation ADR named; the fifth does not gate, since ADR-F6 takes its default and X14's specification
@@ -130,6 +130,23 @@ ADR-F8 Accepted' moves to the 0.6 line, as it moved from 0.4; 0.5.0 proceeds."
 **Reason.** F4 to F6 are built in 0.6 against the same v2 records (Amendment 1's reason), so accepting their ADRs now
 gains 0.5's users nothing. The 0.5 line file's claim set and gate criteria do not read the clause (REL050 line note
 Q-F1).
+
+## Amendment 3 (2026-11-26, the user): 0.6 is F2, F8 and X06 (R-1070)
+
+**D6** is amended a third time. The 0.6 line is F2 (ADR 0062), F8's work orders WO1 to WO3 and WO5 (ADR 0067), and X06
+(its ADR, 0078, to be written by an architect pass). Its line acceptance keeps "a v2 revision with store-pinned records
+solves on the legacy route on all three OSes" and the ADR acceptances card `ofs-line06-adr-clause` settles (default:
+0062, 0067 and 0078 Accepted). F4, F5, F6, X01's selectability, X10 gaps, X09, X08, X17, X11 rest, PrISMa, F8-WO4 and
+F8-WO6 leave 0.6 with the acceptance clauses that need them (Seider VCM, the turbine with no declared phases, the VLLE
+decanter, the coverage matrix, `std.*` equivalence, the preview freeze). Where they go is card `ofs-line06-rest`
+(default: a new 0.7 line "multiphase core and generic units", each later line one up, 1.0 unchanged). `roadmap.md`
+carries the same change. Decision: the user in chat, 2026-11-26: "let's go for 0.6 = F2 + F8 + X06".
+
+**Reason.** 0.6 as planned held about 80 work orders (6 to 9 weeks). F2 and F8 are the one record migration of
+Amendment 1 and need none of F4 to F6: v2 documents lower to the legacy route (ADR 0062 D8). X06 needs no foundation.
+
+**Unchanged.** The foundation order (F2 before F4, F8 after F2 and F3), the W1 designs, Amendment 1's one-migration
+rule for F2 and F8 (they ship together), and every line after the one the moved packages join.
 
 ## Existing ADRs this amends, and the ADR that carries each amendment
 
