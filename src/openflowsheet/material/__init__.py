@@ -8,6 +8,14 @@ It sits below `thermo`, whose contract it serves, and imports nothing above it.
 
 from __future__ import annotations
 
-from openflowsheet.material.state import StreamState
+from openflowsheet.material.phase_id import PhaseId, PhaseSet, phase_set, render_phase_set
+from openflowsheet.material.state import EvaluationState, StreamState
 
-__all__ = ["StreamState"]
+__all__ = [
+    "EvaluationState",
+    "PhaseId",
+    "PhaseSet",
+    "StreamState",
+    "phase_set",
+    "render_phase_set",
+]

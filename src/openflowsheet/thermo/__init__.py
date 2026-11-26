@@ -48,8 +48,11 @@ from typing import Literal, Protocol, runtime_checkable
 
 from openflowsheet.compiled import EvaluationContext, PhaseSignature
 
-# ADR 0062 D2: the state types live in `openflowsheet.material.state`, below this layer, and are
-# re-exported here; `StreamState` is that module's, byte for byte as K02 wrote it here.
+# ADR 0062 D2: the provider-level types live in `openflowsheet.material`, below this layer, and are
+# re-exported here; `StreamState` is `material.state`'s, byte for byte as K02 wrote it here.
+from openflowsheet.material.phase_id import PhaseId as PhaseId
+from openflowsheet.material.phase_id import PhaseSet as PhaseSet
+from openflowsheet.material.state import EvaluationState as EvaluationState
 from openflowsheet.material.state import StreamState as StreamState
 
 #: What a provider was asked for and whether it could answer. There is deliberately no value

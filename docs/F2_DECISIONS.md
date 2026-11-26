@@ -37,3 +37,30 @@ Files: `schemas/units.json`, `schemas/quantity.schema.json` (kind enum), `src/op
   `src` clean. Alternatives: `material` above `thermo` with no runtime re-export (the annotations under
   `TYPE_CHECKING`), departing from D2's "re-exported"; or a lazy upward import (a new layer violation). **Design-lane
   question** (an ADR premise the post-S19 layout contradicts; this is the reading that changes no byte).
+- **STOP WO1-4. `PropertyRequest.state` and `.phase` are not widened.** D2 widens them to `StreamState |
+  EvaluationState` and `Phase | PhaseId` "with no runtime change". Measured: with both widened, `mypy src` (strict,
+  `warn_unreachable`) fails with 51 errors in 7 modules, all identity-bearing legacy providers that F0 M9 freezes
+  (`thermo/pr_c1.py` 13, `wilson_ig.py` 11, `coolprop_heos.py` 8, `iapws95.py` 8, `syn001.py` 7, `pr_lib.py` 3,
+  `wilson_ig_v2.py` 1: `.is_dormant`, `.total_flow`, `Phase`-typed helpers). Passing would need an edit of a frozen
+  module (moves M9) or a relaxed type check, both refused by the rules. Kept narrow; the types are re-exported and the
+  exact cache keys both forms at run time (WO1-5), so F4's adapters can build requests either way. **Design-lane
+  question**: (a) a v2 request type of ADR-F4's beside `PropertyRequest`; (b) widen and add a mypy override for the 7
+  frozen modules; (c) amend D2 to drop the widening. Default (a).
+- **DECISION WO1-6. Phase-id reading.** `PhaseId(family, qualifier, ordinal)` has no defaults (D2's signature) and
+  refuses at construction a family outside `VAPOR, LIQUID, FLUID, SOLID` (D6: `phase_family` is built-in only), a
+  qualifier outside `cid | cid,form | model=mid` (the component alphabet of `process-revision.schema.json`, `form`
+  D6's, `mid` F1's `ID_PATTERN`, copied so that `thermo` does not import the registry, a test holds them equal) and an
+  ordinal that is not an `int` >= 1. The parser is test-only, as D6 says ("Parse (test-only)"):
+  `tests/f2/phase_id_parse.py`, not `phase_id.py` as the brief has it. A phase set is non-empty and distinct;
+  `render_phase_set` refuses a tuple not in canonical order; a one-phase set renders as its phase. E-F2-5's "no v2 id
+  equals a legacy id" is read for phase ids as: a rendering equals a legacy `Phase` value only for that very phase
+  (D6 keeps `LIQUID`, `VAPOR` "as today") and never `TWO_PHASE` or `ZERO_FLOW`. Alternatives: defaults
+  `(qualifier=None, ordinal=1)`; families open to the pattern. Lives in `material/phase_id.py`.
+- **DECISION WO1-7. `EvaluationState` checks its attribute order.** D2 says the attributes are "sorted by key bytes";
+  `__post_init__` refuses (`ValueError`) keys not strictly increasing by UTF-8 bytes, so equal states have one form
+  and one cache key. `to_stream_state` refuses a state with attributes (D2). Attribute keys' spelling is not checked
+  here (kinds come with WO2). Alternative: sort on construction. Lives in `material/state.py`.
+- **E-F2-1 reading.** "Every stream of every corpus run" is every `StreamState` constructed while F0's 61 corpus runs
+  are solved as F0 solves them (`StreamState.__init__` recorded): 99,538 built, 21,903 bitwise distinct; each
+  `from_stream_state(s).to_stream_state()` equals `s` by `struct.pack('<d')` per float and `n` is the same tuple
+  object. `tests/test_f2_material_types.py::test_e_f2_1_every_corpus_stream_round_trips_bitwise`.
