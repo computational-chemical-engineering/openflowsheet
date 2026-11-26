@@ -41,3 +41,4 @@ Reversible by: <how>.` Package build decisions go in the package's own file (`do
   gate). New modules (`material/`, `revision_v2/`, `tests/f2/`) do not exist yet, as expected. Open for WO6's brief:
   "dispatch in the application layer" names no file; locate it then (recon).
 - Worktree `.claude/worktrees/f2`, branch wp/F2 at d00f659a. Brief `docs/briefs/LINE06-F2-WO1.md`.
+- 2026-11-26: the user: "go". opus-engineer launched on F2-WO1 (background, worktree f2).
