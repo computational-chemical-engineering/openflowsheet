@@ -129,3 +129,19 @@ def main(argv: list[str]) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main(sys.argv[1:]))
+
+
+def test_branch_head_and_an_absent_branch_give_the_same_bytes() -> None:
+    """D2.4: `branch: "head"` is the main line and is omitted like an absent `branch`; a named
+    branch is written, so it is part of the request's hash."""
+    golden = {entry["source"]: entry for entry in _golden()}
+    sources = [*_fixture_requests(), *_transcript_requests()]
+    assert sources
+    for source, _, document in sources:
+        expected = golden[source]["normalized"]
+        on_head = normalized({**document, "branch": "head"})
+        assert canonical_json(on_head).decode("utf-8") == expected
+        on_branch = normalized({**document, "branch": "what-if"})
+        assert on_branch == {**json.loads(expected), "branch": "what-if"}
+    assert Change(branch="head").as_change_set(None, "k") == Change().as_change_set(None, "k")
+    assert "branch" not in Change().as_change_set(None, "k")

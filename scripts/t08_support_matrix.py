@@ -261,7 +261,8 @@ def check_a20(envelope: Mapping[str, Any], facts: Mapping[str, Any] | None = Non
     # 20 operations, ADR 0058 D7 (MSG, accepted by Frank on 2026-11-05) `explain` and ADR 0068
     # (ST, ADR 0019 Amendment 13, accepted by Frank on 2026-11-08) `get_stream_table`, and ADR
     # 0060 D11 (F1, ADR 0019 Amendment 7) `list_capabilities` and `check_admission`, and ADR 0061
-    # D13 (F3, ADR 0019 Amendment 8) the five `Records` operations; this file is v0.2's working
+    # D13 (F3, ADR 0019 Amendment 8) the five `Records` operations, and ADR 0078 D2.5 (X06, ADR
+    # 0019 Amendment 18) the three `Branches` operations; this file is v0.2's working
     # envelope (R-193), v0.1's stays as released.
     # M02's join (R-280 (c)) adds the eight C1 models to spec §9's 13 SYN-001 models, and W27
     # Amendment 3 (R-301) M04's `c1.reactor_surrogate`; S11 (ADR 0050, R-810) binds S02's
@@ -270,14 +271,15 @@ def check_a20(envelope: Mapping[str, Any], facts: Mapping[str, Any] | None = Non
     syn001 = [model for model in claimed["models"] if model.startswith("syn001.")]
     thermal = [model for model in claimed["models"] if model.startswith("thermal.")]
     if (
-        len(claimed["operations"]) != 30
+        len(claimed["operations"]) != 33
         or len(syn001) != 14
         or len(thermal) != 7
         or len(claimed["models"]) != 30
     ):
         problems.append(
-            "A20: spec §9 registers 20 operations (30 with ADR 0019 A3.3, ADR 0058 D7, ADR 0068, "
-            "ADR 0060 D11 and ADR 0061 D13) and 13 models (30 with S11's column and seven "
+            "A20: spec §9 registers 20 operations (33 with ADR 0019 A3.3, ADR 0058 D7, ADR 0068, "
+            "ADR 0060 D11, ADR 0061 D13 and ADR 0078 D2.5) and 13 models (30 with S11's column "
+            "and seven "
             "thermal.* models, M02's eight C1 models and M04's surrogate)"
         )
     return problems

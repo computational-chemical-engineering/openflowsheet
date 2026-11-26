@@ -1873,3 +1873,33 @@ entries:
         params: {origin: "http://elsewhere.example"}
       - chain: [forbidden, origin_refused]
         params: {}
+  # X06 (ADR 0078 D2.3, D2.4): branches. `head` is the main line's name, never a branch's; a
+  # commit, preview or delete naming a branch the project does not hold is `not_found`.
+  - code: branch_name_reserved
+    family: refusal
+    kind: input
+    complete: true
+    title: The name head given to a branch
+    params:
+      name: {type: text, optional: true, label: name}
+    summary: "The name head is reserved for the project's main line, so no branch can have it."
+    why: "A project keeps its main line under the name head; a branch is a second name for a line of revisions next to it. Creating or deleting a branch called head would replace or remove the main line, so the name is refused."
+    action: "Choose another name for the branch. To work on the main line, leave out the branch, or give head as the branch of a change."
+    examples:
+      - chain: [invalid_request, branch_name_reserved]
+        params: {name: head}
+  - code: branch_not_found
+    family: refusal
+    kind: input
+    complete: true
+    title: A branch the project does not hold
+    params:
+      name: {type: text, optional: true, label: branch}
+    summary: "The project has no branch[ {name!raw}]."
+    why: "A change on a branch, its preview and a branch deletion each name an existing branch. This name is not one of them: it was never created, or it was deleted since."
+    action: "List the project's branches with list_branches and use one of their names, or create the branch from a revision with create_branch first."
+    examples:
+      - chain: [not_found, branch_not_found]
+        params: {name: what-if}
+      - chain: [not_found, branch_not_found]
+        params: {}

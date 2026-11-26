@@ -16,9 +16,10 @@ import json
 import sqlite3
 from collections.abc import Mapping
 from dataclasses import dataclass, replace
-from typing import Any, Final
+from typing import Any, Final, NoReturn
 
 from openflowsheet.application import validation
+from openflowsheet.application.branch_service import BRANCH_NOT_FOUND, ref_name
 from openflowsheet.application.contract import Page, Projection
 from openflowsheet.application.errors import ApiError, ApiErrorCode, ApplicationError
 from openflowsheet.application.inspection_service import InspectionService
@@ -39,13 +40,20 @@ from openflowsheet.application.revisions import Revision
 from openflowsheet.application.service_core import ServiceCore
 from openflowsheet.application.store import HEAD, ProjectStore, atomic_write_bytes
 from openflowsheet.application.store_records import ArtifactRow, AuditEntry, LedgerRow
-from openflowsheet.application.transaction_types import Change, SemanticDiff, TransactionResult
+from openflowsheet.application.transaction_types import (
+    Change,
+    SemanticDiff,
+    TransactionResult,
+)
 from openflowsheet.application.validation_report import ValidationReport
 from openflowsheet.canonical import canonical_json, document_sha256, first_noncanonical
 from openflowsheet.schema_check import DocumentSchemaError, validate_document
 
 #: ADR 0035 D3: where a promotion's reports live under the files root.
 REPLACEMENTS_DIR: Final = "replacements"
+#: ADR 0078 E-X06-8: how often a commit assigns its revision id again when a concurrent commit on
+#: another ref took the one it was assigned (X06 decision WO2-4).
+ASSIGNED_ID_ATTEMPTS: Final = 8
 
 
 class RevisionService:
@@ -70,75 +78,88 @@ class RevisionService:
         request_sha256 = document_sha256(request)
         principal_id = caller.principal_id
         store = self._core.store
+        ref = ref_name(change.branch)
 
         with store.reading() as connection:
             prior = store.ledger_lookup(connection, principal_id, operation, idempotency_key)
-            head = store.head(connection)
+            tip = store.ref(connection, ref)
         if prior is not None:
             return self._replayed(prior, request_sha256, idempotency_key)
-        if expected_revision != head:
-            return _conflict(expected_revision, head, idempotency_key)
+        if ref != HEAD and tip is None:
+            self.refuse_unknown_branch(operation, change.branch)
+        if expected_revision != tip:
+            return _conflict(expected_revision, tip, idempotency_key)
 
-        prepared = self._prepare(change, expected_revision, idempotency_key, operation)
-        if isinstance(prepared, TransactionResult):
-            return prepared
+        # ADR 0078 E-X06-8: an assigned id another ref's commit took meanwhile is assigned
+        # again (a named id is the caller's, and is refused below).
+        for _ in range(ASSIGNED_ID_ATTEMPTS):
+            prepared = self._prepare(change, expected_revision, idempotency_key, operation)
+            if isinstance(prepared, TransactionResult):
+                return prepared
 
-        revision = prepared.revision
-        result: TransactionResult | None = None
-        with store.writing() as connection:
-            prior = store.ledger_lookup(connection, principal_id, operation, idempotency_key)
-            actual = store.head(connection)
-            taken = store.get_revision(connection, revision.revision_id) is not None
-            if prior is None and actual == expected_revision and not taken:
-                store.commit_revision(
-                    connection,
-                    revision,
-                    principal_id=principal_id,
-                    capability_id=caller.capability_id,
-                    policy_sha256=self._core.policy.current().policy_sha256,
-                    ref=HEAD,
-                )
-                # ADR 0035 D3: a promotion's reports, stored and registered with the revision.
-                self._store_replacements(connection, revision.revision_id, prepared.replacements)
-                invalidations = (
-                    tuple(store.evidence_for_revision(connection, expected_revision))
-                    if expected_revision is not None
-                    else ()
-                )
-                result = TransactionResult(
-                    status="committed",
-                    revision_id=revision.revision_id,
-                    validation=prepared.report,
-                    diff=prepared.diff,
-                    invalidations=invalidations,
-                    idempotency_key=idempotency_key,
-                )
-                store.ledger_insert(
-                    connection,
-                    principal_id,
-                    operation,
-                    idempotency_key,
-                    request_sha256,
-                    result.as_document(),
-                )
-                store.audit(
-                    connection,
-                    AuditEntry(
+            revision = prepared.revision
+            result: TransactionResult | None = None
+            with store.writing() as connection:
+                prior = store.ledger_lookup(connection, principal_id, operation, idempotency_key)
+                actual = store.ref(connection, ref)
+                gone = ref != HEAD and actual is None
+                taken = store.get_revision(connection, revision.revision_id) is not None
+                if prior is None and not gone and actual == expected_revision and not taken:
+                    store.commit_revision(
+                        connection,
+                        revision,
                         principal_id=principal_id,
                         capability_id=caller.capability_id,
-                        operation=operation,
-                        outcome="allowed",
-                        request_sha256=request_sha256,
-                        effect=f"revision:{revision.revision_id}",
-                    ),
-                )
-        if result is not None:
-            return result
-        # Another writer got in between the snapshot and the lock; say which way it moved.
-        if prior is not None:
-            return self._replayed(prior, request_sha256, idempotency_key)
-        if actual != expected_revision:
-            return _conflict(expected_revision, actual, idempotency_key)
+                        policy_sha256=self._core.policy.current().policy_sha256,
+                        ref=ref,
+                    )
+                    # ADR 0035 D3: a promotion's reports, stored and registered with it.
+                    self._store_replacements(
+                        connection, revision.revision_id, prepared.replacements
+                    )
+                    invalidations = (
+                        tuple(store.evidence_for_revision(connection, expected_revision))
+                        if expected_revision is not None
+                        else ()
+                    )
+                    result = TransactionResult(
+                        status="committed",
+                        revision_id=revision.revision_id,
+                        validation=prepared.report,
+                        diff=prepared.diff,
+                        invalidations=invalidations,
+                        idempotency_key=idempotency_key,
+                    )
+                    store.ledger_insert(
+                        connection,
+                        principal_id,
+                        operation,
+                        idempotency_key,
+                        request_sha256,
+                        result.as_document(),
+                    )
+                    store.audit(
+                        connection,
+                        AuditEntry(
+                            principal_id=principal_id,
+                            capability_id=caller.capability_id,
+                            operation=operation,
+                            outcome="allowed",
+                            request_sha256=request_sha256,
+                            effect=f"revision:{revision.revision_id}",
+                        ),
+                    )
+            if result is not None:
+                return result
+            # Another writer got in between the snapshot and the lock; say which way it moved.
+            if prior is not None:
+                return self._replayed(prior, request_sha256, idempotency_key)
+            if gone:
+                self.refuse_unknown_branch(operation, change.branch)
+            if actual != expected_revision:
+                return _conflict(expected_revision, actual, idempotency_key)
+            if change.new_revision_id is not None:
+                break
         return self._rejected(
             operation,
             idempotency_key,
@@ -180,6 +201,12 @@ class RevisionService:
         )
         if rejected is not None:
             return rejected
+        ref = ref_name(change.branch)
+        if ref != HEAD:
+            with self._core.store.reading() as connection:
+                tip = self._core.store.ref(connection, ref)
+            if tip is None:
+                self.refuse_unknown_branch(operation, change.branch)
         prepared = self._prepare(change, expected_revision, "", operation)
         if isinstance(prepared, TransactionResult):
             return prepared
@@ -223,6 +250,18 @@ class RevisionService:
         before = self.revision(from_revision, operation)
         after = self.revision(to_revision, operation)
         return revision_diff(before.document, after.document)
+
+    def refuse_unknown_branch(self, operation: str, name: str | None) -> NoReturn:
+        """ADR 0078 D2.4: a branch with no `refs` row, `not_found` (`detail.code =
+        branch_not_found`), audited."""
+        self._core.refuse(
+            "not_found",
+            f"{BRANCH_NOT_FOUND}: no branch {name!r} in this project",
+            operation=operation,
+            pointer="/branch" if operation in ("commit_change", "preview_change") else "/name",
+            code=BRANCH_NOT_FOUND,
+            name=name,
+        )
 
     def revision(self, revision_id: str, operation: str) -> Revision:
         with self._core.store.reading() as connection:

@@ -41,7 +41,13 @@ if TYPE_CHECKING:
         RecordView,
         RightsAssessmentResult,
     )
-    from openflowsheet.application.transaction_types import Change, SemanticDiff, TransactionResult
+    from openflowsheet.application.transaction_types import (
+        Branch,
+        BranchResult,
+        Change,
+        SemanticDiff,
+        TransactionResult,
+    )
     from openflowsheet.application.validation_report import Task, ValidationReport
     from openflowsheet.run.replay import ReplayReport
 
@@ -274,3 +280,22 @@ class Records(Protocol):
         basis: str,
         conditions: str | None = None,
     ) -> RightsAssessmentResult: ...
+
+
+class Branches(Protocol):
+    """ADR 0078 D2 (ADR 0019 Amendment 18): named refs of the project store. A branch is a
+    name and the revision it points at; `head` is the main line and reserved. `list_branches`
+    lists `head` first, then the branches by name; `create_branch` and `delete_branch` are
+    idempotent by key and answer a stale or occupied ref with the domain result `conflict`. A
+    commit on a branch is `commit_change` with `Change.branch`; promoting it is `commit_change`
+    on `head` with `restore_from` its tip. No stored document names a branch (C7)."""
+
+    def list_branches(self, *, cursor: str | None = None, limit: int = 50) -> Page[Branch]: ...
+
+    def create_branch(
+        self, *, name: str, revision_id: str, idempotency_key: str
+    ) -> BranchResult: ...
+
+    def delete_branch(
+        self, *, name: str, expected_revision: str, idempotency_key: str
+    ) -> BranchResult: ...

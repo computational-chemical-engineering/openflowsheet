@@ -38,6 +38,9 @@ repository's `schemas/` directory.
 | `register_record` | draft | python, cli, http, mcp | `POST /v1/records` | `register_record` |
 | `validate_record` | read | python, cli, http, mcp | `POST /v1/records/validate` | `validate_record` |
 | `assess_rights` | policy | python, cli, http, mcp | `POST /v1/records/rights` | `assess_rights` |
+| `list_branches` | read | python, cli, http, mcp | `GET /v1/branches` | `list_branches` |
+| `create_branch` | draft | python, cli, http, mcp | `POST /v1/branches` | `create_branch` |
+| `delete_branch` | draft | python, cli, http, mcp | `POST /v1/branches/{name}/delete` | `delete_branch` |
 | `artifact_bytes` | read | python, cli, http | `GET /v1/artifacts/{artifact_id}/raw` | — |
 
 ::: openflowsheet.application.operations.dispatch

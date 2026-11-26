@@ -1,0 +1,6 @@
+{
+  "expect_error": "'name' is a required property",
+  "document": {
+    "revision_id": "syn001-edited"
+  }
+}

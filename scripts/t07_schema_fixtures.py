@@ -52,7 +52,9 @@ F3 (ADR 0061 D13) adds the `Records` responses on one synthetic user record
 item's first `effective_rights`; `rights_assessment_result` (the record assessed `permitted`);
 `record_view` (the record, after the assessment) and its first row, `rights_row`;
 `record_validation_report` (the record with an empty `name`, refused). A rights row's `date` is
-masked like the timestamps.
+masked like the timestamps. X06 (ADR 0078 D2.5) adds `branch_result` (`create_branch` of
+`what-if` at the parent), `branch_page` (`list_branches`: `head` and `what-if`) and its first
+item, `branch`.
 "Regenerates identically" is `stable` equality, as for the jobs
 (`tests/test_t07_w5e_application_results.py`).
 
@@ -146,6 +148,9 @@ RESULTS_VALID = {
     "record_view": "user_component_assessed",
     "rights_row": "project_record_row",
     "record_validation_report": "empty_name_refused",
+    "branch_result": "created_at_the_parent",
+    "branch_page": "head_and_one_branch",
+    "branch": "head",
 }
 #: F1 (ADR 0060 D10, D11): members that follow the code, not the response's shape.
 REGISTRY_VOLATILE = frozenset({"registry_sha256", "self_sha256", "distribution_version"})
@@ -325,6 +330,14 @@ def application_results_documents() -> dict[str, Any]:
             responses["record_validation_report"] = call(
                 "validate_record", {"record": {**record, "name": ""}}
             )
+            # X06 (ADR 0078 D2.5): a branch at the parent, and the refs listed.
+            responses["branch_result"] = call(
+                "create_branch",
+                {"name": "what-if", "revision_id": parent, "idempotency_key": "fixture-branch"},
+            )
+            branches = call("list_branches", {})
+            responses["branch_page"] = branches
+            responses["branch"] = branches["items"][0]
             violations = lifecycle_violations(application)
             if violations:
                 raise SystemExit(f"the fixture job breaks the lifecycle: {violations}")

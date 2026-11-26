@@ -41,6 +41,7 @@ from openflowsheet.application.authz import (
     StaticPolicy,
     authenticate,
 )
+from openflowsheet.application.branch_service import BranchService
 from openflowsheet.application.contract import Page, Projection
 from openflowsheet.application.errors import ApiErrorCode, api_error
 from openflowsheet.application.inspection_service import InspectionService
@@ -95,7 +96,13 @@ from openflowsheet.application.store_records import (
     StoreError,
     coded_store_error,
 )
-from openflowsheet.application.transaction_types import Change, SemanticDiff, TransactionResult
+from openflowsheet.application.transaction_types import (
+    Branch,
+    BranchResult,
+    Change,
+    SemanticDiff,
+    TransactionResult,
+)
 from openflowsheet.application.validation_report import Task, ValidationReport
 from openflowsheet.application.validation_service import ValidationService
 from openflowsheet.registry import default_registry
@@ -140,6 +147,7 @@ class LocalApplication:
         self._artifacts = ArtifactService(core, self._revisions)
         self._validation = ValidationService(core, self._revisions)
         self._records = RecordsService(core)
+        self._branches = BranchService(core)
         self._jobs = JobService(
             core, self._inspection, self._revisions, self._artifacts, self._validation
         )
@@ -398,9 +406,11 @@ class LocalApplication:
         Parameters
         ----------
         change
-            The edits to apply to the head (`Change`), with its optional new revision id.
+            The edits to apply to the head (`Change`), with its optional new revision id; with
+            `branch`, to that branch's tip, which the commit moves instead (ADR 0078 D2.4).
         expected_revision
-            The head the change was written against; `None` for a project's first revision.
+            The head (or the branch's tip) the change was written against; `None` for a
+            project's first revision (on `head` only).
         idempotency_key
             A key of the caller's choosing: the same key with the same request returns the
             first result (`replayed`) and never commits twice.
@@ -797,6 +807,34 @@ class LocalApplication:
             assessment=assessment,
             basis=basis,
             conditions=conditions,
+        )
+
+    # ------------------------------------------------ Branches (ADR 0078 D2, Amendment 18)
+
+    def list_branches(self, *, cursor: str | None = None, limit: int = 50) -> Page[Branch]:
+        """ADR 0078 D2.5: the project's refs, `head` first when it exists, then the branches by
+        name in bytewise ascending order, each with the revision it points at. `read`."""
+        return self._branches.list_branches(cursor=cursor, limit=limit)
+
+    def create_branch(self, *, name: str, revision_id: str, idempotency_key: str) -> BranchResult:
+        """ADR 0078 D2.5: a branch `name` pointing at the stored revision `revision_id`. `draft`;
+        audited. Returned: `created`, `replayed` (same key, same request) or `conflict` (the name
+        exists; `conflict.actual` is its tip). Raised: `head` as the name
+        (`branch_name_reserved`), an unknown revision (`not_found`), a key reused with another
+        request."""
+        return self._branches.create_branch(
+            name=name, revision_id=revision_id, idempotency_key=idempotency_key
+        )
+
+    def delete_branch(
+        self, *, name: str, expected_revision: str, idempotency_key: str
+    ) -> BranchResult:
+        """ADR 0078 D2.5: delete branch `name` if its tip is `expected_revision`; its revisions
+        stay. `draft`; audited. Returned: `deleted`, `replayed` or `conflict` (another tip, in
+        `conflict.actual`). Raised: `head` as the name (`branch_name_reserved`), an unknown
+        branch (`not_found`, `branch_not_found`), a key reused with another request."""
+        return self._branches.delete_branch(
+            name=name, expected_revision=expected_revision, idempotency_key=idempotency_key
         )
 
     def artifact_bytes(self, artifact_id: str) -> bytes:

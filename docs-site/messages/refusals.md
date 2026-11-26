@@ -679,6 +679,61 @@ The anchor phase s:ice-Ih of component H2O is not allowed.
 
 - **Summary:** Refused: block energy refused.
 
+<a id="branch_name_reserved"></a>
+
+## `branch_name_reserved`: The name head given to a branch
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+- **Summary:** The name head is reserved for the project's main line, so no branch can have it.
+- **Why:** A project keeps its main line under the name head; a branch is a second name for a line of revisions next to it. Creating or deleting a branch called head would replace or remove the main line, so the name is refused.
+- **Do:** Choose another name for the branch. To work on the main line, leave out the branch, or give head as the branch of a change.
+- **Parameters:** `name` (text, optional)
+
+Example:
+
+```text
+The name head is reserved for the project's main line, so no branch can have it.
+  Why:     A project keeps its main line under the name head; a branch is a second name for a line of revisions next to it. Creating or deleting a branch called head would replace or remove the main line, so the name is refused.
+  Do:      Choose another name for the branch. To work on the main line, leave out the branch, or give head as the branch of a change.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    branch_name_reserved, in invalid_request (openflowsheet explain branch_name_reserved)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#branch_name_reserved
+```
+
+<a id="branch_not_found"></a>
+
+## `branch_not_found`: A branch the project does not hold
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+- **Summary:** The project has no branch &lt;name&gt;.
+- **Why:** A change on a branch, its preview and a branch deletion each name an existing branch. This name is not one of them: it was never created, or it was deleted since.
+- **Do:** List the project's branches with list_branches and use one of their names, or create the branch from a revision with create_branch first.
+- **Parameters:** `name` (text, optional)
+
+Example:
+
+```text
+The project has no branch what-if.
+  Why:     A change on a branch, its preview and a branch deletion each name an existing branch. This name is not one of them: it was never created, or it was deleted since.
+  Do:      List the project's branches with list_branches and use one of their names, or create the branch from a revision with create_branch first.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    branch_not_found, in not_found (openflowsheet explain branch_not_found)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#branch_not_found
+```
+
+Example:
+
+```text
+The project has no branch.
+  Why:     A change on a branch, its preview and a branch deletion each name an existing branch. This name is not one of them: it was never created, or it was deleted since.
+  Do:      List the project's branches with list_branches and use one of their names, or create the branch from a revision with create_branch first.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    branch_not_found, in not_found (openflowsheet explain branch_not_found)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#branch_not_found
+```
+
 <a id="capability_missing"></a>
 
 ## `capability_missing`: The unit model cannot be used with this property method

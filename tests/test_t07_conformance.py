@@ -385,6 +385,7 @@ class Scenario:
         self.ok("revision array 2", "get_revision", {**view, "cursor": part["next_cursor"]})
         self.ok("diff", "diff_revisions", {"from_revision": rev1, "to_revision": rev3})
         self.ok("structure", "inspect_structure", {"revision_id": rev2, "depth": 2})
+        self._branches(rev2)
 
         # Refusals that create nothing.
         self.step("no job", "get_job", {"job_id": "job-999999"})
@@ -532,6 +533,38 @@ class Scenario:
             else (assessed["row"]["sequence"] == 1)
         ), assessed
         self.ok("record rights", "get_record", {"record_sha256": sha})
+
+    def _branches(self, base: str) -> None:
+        """ADR 0078 D2 (X06-WO2): a branch created at `base` (and the create replayed, and refused
+        as a conflict and for the reserved name), previewed on, committed on (and the commit
+        conflicted and refused for an unknown branch), listed over two pages, and deleted (and
+        the delete conflicted and refused once the branch is gone). The head does not move."""
+        create = {"name": "what-if", "revision_id": base, "idempotency_key": "b1"}
+        assert self.ok("branch", "create_branch", create)["status"] == "created"
+        assert self.ok("branch replayed", "create_branch", create)["status"] == "replayed"
+        again = {**create, "idempotency_key": "b2"}
+        assert self.ok("branch exists", "create_branch", again)["status"] == "conflict"
+        self.step(
+            "branch head", "create_branch", {**create, "name": "head", "idempotency_key": "b3"}
+        )
+        edit = [{"operation": "set", "path": ["description"], "value": "what-if"}]
+        on = {"edits": edit, "expected_revision": base, "branch": "what-if"}
+        self.ok("branch preview", "preview_change", on)
+        on = {**on, "idempotency_key": "b4"}
+        tip = self.ok("branch commit", "commit_change", on)["revision_id"]
+        stale = {**on, "idempotency_key": "b5"}
+        assert self.ok("branch stale", "commit_change", stale)["status"] == "conflict"
+        self.step(
+            "no branch", "commit_change", {**on, "idempotency_key": "b6", "branch": "nowhere"}
+        )
+        page = self.ok("branches 1", "list_branches", {"limit": 1})
+        assert page["next_cursor"] is not None
+        self.ok("branches 2", "list_branches", {"limit": 1, "cursor": page["next_cursor"]})
+        delete = {"name": "what-if", "expected_revision": base, "idempotency_key": "b7"}
+        assert self.ok("branch stale delete", "delete_branch", delete)["status"] == "conflict"
+        delete = {**delete, "expected_revision": tip, "idempotency_key": "b8"}
+        assert self.ok("branch delete", "delete_branch", delete)["status"] == "deleted"
+        self.step("branch gone", "delete_branch", {**delete, "idempotency_key": "b9"})
 
     def _cancel_under_the_process_executor(self, solve: Callable[..., dict[str, Any]]) -> None:
         """A paused worker (A), a queued job behind it (B, one worker slot), a third over the

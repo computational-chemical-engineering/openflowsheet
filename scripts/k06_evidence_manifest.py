@@ -35,7 +35,7 @@ from openflowsheet.application.job_records import EffectiveBudgets  # noqa: E402
 from openflowsheet.application.job_requests import JobRequest, SolveBody  # noqa: E402
 from openflowsheet.application.local import LocalApplication  # noqa: E402
 from openflowsheet.application.revisions import Revision, content_hash  # noqa: E402
-from openflowsheet.application.store import HEAD
+from openflowsheet.application.store import HEAD  # noqa: E402
 from openflowsheet.application.transaction_types import (  # noqa: E402
     ChangeSet,
     Edit,

@@ -443,8 +443,8 @@ def test_e_x06_2_tools_list_over_http_is_stdios_and_the_registered_digest(
     stdio = [tool.model_dump(mode="json", by_alias=True, exclude_none=True) for tool in over_stdio]
     assert canonical_json(over_http) == canonical_json(stdio)
     digest = hashlib.sha256(canonical_json(over_http)).hexdigest()
-    # The registered served digest; X06-WO2 re-points this at its `X06_SERVED_SHA256` (D6).
-    assert digest == harness.tool_descriptions_sha256() == surface.F3_SERVED_SHA256
+    # The registered served digest (D6; X06-WO2's `X06_SERVED_SHA256`).
+    assert digest == harness.tool_descriptions_sha256() == surface.X06_SERVED_SHA256
 
 
 # ========================================================= E-X06-4: callers isolated per request

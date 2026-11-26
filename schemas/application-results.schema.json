@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/frankp/process-runtime/schemas/application-results.schema.json",
   "title": "ApplicationResults",
-  "description": "T07 design note §11.3–§11.4 and ruling round 4 (W5a-Q2); ADR 0019 Amendment 1. The response shapes of the JobControl and Inspection operations in `OPERATIONS` that have no published schema of their own, one `$def` each, named in snake_case after the Python result type (`types.py`, `contract.py`), a page `<item>_page`. The members are those `operations.py` stated at `9b541df`, moved unchanged. Every string and key of a response is bounded (§10.4) before it is carried. `job`, `job-event`, `job_result`, `run-result`, `transaction-result`, `validation-report` and `replay-report` stay in their own schemas, referenced from here. ADR 0060 D11 (ADR 0019 Amendment 7) adds `capability_page` (its items `capability_descriptor`) and `admission_report`.",
+  "description": "T07 design note §11.3–§11.4 and ruling round 4 (W5a-Q2); ADR 0019 Amendment 1. The response shapes of the JobControl and Inspection operations in `OPERATIONS` that have no published schema of their own, one `$def` each, named in snake_case after the Python result type (`types.py`, `contract.py`), a page `<item>_page`. The members are those `operations.py` stated at `9b541df`, moved unchanged. Every string and key of a response is bounded (§10.4) before it is carried. `job`, `job-event`, `job_result`, `run-result`, `transaction-result`, `validation-report` and `replay-report` stay in their own schemas, referenced from here. ADR 0060 D11 (ADR 0019 Amendment 7) adds `capability_page` (its items `capability_descriptor`) and `admission_report`. ADR 0078 D2.5 (ADR 0019 Amendment 18) adds `branch_page` (its items `branch`) and `branch_result`.",
   "$defs": {
     "submit_result": {
       "type": "object",
@@ -1217,6 +1217,106 @@
     },
     "rights_assessment_result": {
       "$ref": "https://github.com/frankp/process-runtime/schemas/record-results.schema.json#/$defs/rights_assessment_result"
+    },
+    "branch": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "revision_id"
+      ],
+      "description": "ADR 0078 D2.5: a ref by its public name (`head`, or a branch's name) and the revision it points at.",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "revision_id": {
+          "type": "string"
+        }
+      }
+    },
+    "branch_page": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "items",
+        "next_cursor"
+      ],
+      "description": "ADR 0078 D2.5: `list_branches`: `head` first when it exists, then the branches by name in bytewise ascending order.",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/branch"
+          }
+        },
+        "next_cursor": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 1024
+        }
+      }
+    },
+    "branch_result": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "name",
+        "revision_id",
+        "conflict"
+      ],
+      "description": "ADR 0078 D2.5: `create_branch`'s and `delete_branch`'s result. `revision_id` is the branch's tip after the call (`null` after a delete; the unchanged tip on a conflict). A create of an existing name is `conflict` with `expected: null`; a delete against a stale tip is `conflict` with the tip as `actual`.",
+      "properties": {
+        "status": {
+          "enum": [
+            "created",
+            "deleted",
+            "replayed",
+            "conflict"
+          ]
+        },
+        "name": {
+          "type": "string"
+        },
+        "revision_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "conflict": {
+          "anyOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "expected",
+                "actual"
+              ],
+              "properties": {
+                "expected": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "actual": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
     }
   }
 }

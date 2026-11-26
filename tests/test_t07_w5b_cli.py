@@ -49,6 +49,7 @@ from t07_jobs_support import lifecycle_violations
 from t08_d1_substitution import d1_str05_reversed_message
 from t08_rename_substitution import record_process_runtime, renamed_back_cli_text
 from t08_v2_substitution import CLI_STRUCTURAL_SUBSTITUTION, record_v1, v2_reversed_cli_text
+from x06_schema_support import branches_requests
 
 from openflowsheet.application.cli import API_EXIT_CODES, TOKEN_FILE_VARIABLE, main
 from openflowsheet.application.job_requests import JobRequest, SolveBody
@@ -417,6 +418,7 @@ def scenario(revision_id: str, job_id: str, bundle: Path) -> list[tuple[str, dic
         ("list_capabilities", {"kind": "unit_model", "limit": 3}),  # ADR 0060 D11 (F1)
         ("check_admission", {"pair": {"unit": "thermal.heater", "method": "coolprop-heos-v1"}}),
         *records_requests(user_record_sha256()),  # ADR 0061 D13 (F3)
+        *branches_requests(revision_id),  # ADR 0078 D2.5 (X06)
         ("artifact_bytes", {"artifact_id": state}),
     ]
 

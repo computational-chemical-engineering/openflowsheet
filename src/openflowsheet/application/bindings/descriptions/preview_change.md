@@ -1,4 +1,4 @@
-Preview a change: apply the edits to a copy and return what commit_change would report, with status "previewed", no revision id, the validation report and the semantic diff. Arguments are commit_change's without "idempotency_key": "edits", "expected_revision", and optionally "new_revision_id", "restore_from", "task" and "author".
+Preview a change: apply the edits to a copy and return what commit_change would report, with status "previewed", no revision id, the validation report and the semantic diff. Arguments are commit_change's without "idempotency_key": "edits", "expected_revision", and optionally "new_revision_id", "restore_from", "task", "author" and "branch" (an unknown branch is refused branch_not_found).
 
 Effect: none. Nothing is written, the head does not move, and no key is used. Right needed: read.
 

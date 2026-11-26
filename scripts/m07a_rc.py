@@ -78,6 +78,16 @@ function, a registered digest and Frank's carry extended to name it):
   `validate_record`'s report items `at` (`153b892e…`) and whose C11 applied the design lane's
   edits to four of the five texts (`tests/test_t08_w2_surface_digest.py`'s `F3_SERVED_SHA256`).
   F3 changed no existing text; its five files are pinned at their own hashes (`F3_FILE_SHA256`).
+- c_12, R-1073 (ADR 0078 D6, ADR 0019 Amendment 18): X06's branches (X06-WO2, D2) — the three
+  tools of the protocol `Branches` (`list_branches`, `create_branch`, `delete_branch`), the
+  ChangeSet's optional `branch` member wherever the ChangeSet is served, and the two description
+  texts it changed (`commit_change.md`, `preview_change.md`, restored from their pre-X06 copies),
+  stripped by `tests/x06_schema_support.py`'s `without_x06`; `D_12` = `7e8393a5…`, measured at
+  X06-WO2 on `wp/X06` (`tests/test_t08_w2_surface_digest.py`'s `X06_SERVED_SHA256`). On `wp/X06`
+  it decomposes onto c_10 (F3): F2's c_11 (R-1072) is not on the branch, and whichever of the two
+  merges second decomposes onto the first's. Its three new files are pinned at their own hashes
+  (`X06_FILE_SHA256`); item 4 judges the two changed texts in their pre-X06 form
+  (`texts_before_links`).
 
 The released 0.2.0a1 ran the two-link chain (its committed record at `C_α²`); a re-run of the
 alpha's step 8 uses this script at the tag.
@@ -164,6 +174,13 @@ F3_FILE_SHA256: Final = {
     "register_record": "de9cb3b51546e2a35836dd67771fbb439ab57a84a34655ad4ec87db881aedc20",
     "search_records": "3e9067682714ce53c370d643c345f920fa3f22755abf2a604485202437b9059d",
     "validate_record": "7661ac4dbef2a2c9c881c2d35eab35b2393dfec0265689e2c45315a1447fb502",
+}
+#: c_12 (R-1073, ADR 0078 D2.5): the three tools X06-WO2 added, their files pinned as F3's are.
+#: Their reviews (design lane; Frank's) are pending in `REVIEW.json`.
+X06_FILE_SHA256: Final = {
+    "create_branch": "c5a5108a87a6eb0a36cf3c3e3a828c702728ac37f5f6381b94c07143302199a6",
+    "delete_branch": "0220874b57aecf2be3314c72b9558ab027c2ccf9155360e18750b77884abba3c",
+    "list_branches": "73b23d6b7c8e6b4ae3aef988de477945c1c0c63647fb3aff9a03a18b78b3083f",
 }
 #: The two changed files as R-133 carried them: their reviewed hashes in `REVIEW.json` as v0.1.0
 #: released it (`PUBLIC_ROOT`).
@@ -294,6 +311,17 @@ def strip_f3(tools: Tools) -> Tools:
     return stripped
 
 
+def strip_x06(tools: Tools) -> Tools:
+    """s_12 (R-1073): `tools` without X06's additions (`x06_schema_support.without_x06`), with the
+    two description texts X06 changed restored."""
+    t08_rc._tests_on_path()
+    from x06_schema_support import without_x06  # noqa: PLC0415
+
+    stripped = without_x06(copy.deepcopy(tools))
+    assert isinstance(stripped, list)
+    return stripped
+
+
 @dataclass(frozen=True)
 class Link:
     """One registered surface change c_k: its register entry, its strip function s_k, and the
@@ -365,6 +393,12 @@ LINKS: Final = (
         "R-1051",
         strip_f3,
         "f7ec3c94233d30506ec2082a13c4e54d57bd540e43e97fdf877b1e3c75fed467",
+    ),
+    Link(
+        "c_12",
+        "R-1073",
+        strip_x06,
+        "7e8393a55d8f45e5e44c21f33b4c91389130c882fa80cb47887621a891aa236e",
     ),
 )
 
@@ -452,15 +486,19 @@ def description_texts() -> dict[str, str]:
 
 def texts_before_links(texts: Mapping[str, str]) -> dict[str, str]:
     """`texts` (operation name -> description file) with every link's description change undone:
-    c_6's two files (OPT) in their pre-OPT form and c_8's two (X04) in their pre-X04 form. The
-    other links changed no existing text (MSG's c_4 added `explain.md`, ST's c_7
-    `get_stream_table.md`, F1's c_9 `list_capabilities.md` and `check_admission.md`, F3's c_10
-    five `Records` files, each pinned at its own hash)."""
+    c_6's two files (OPT) in their pre-OPT form, c_8's two (X04) in their pre-X04 form and c_12's
+    two (X06) in their pre-X06 form. The other links changed no existing text (MSG's c_4 added
+    `explain.md`, ST's c_7 `get_stream_table.md`, F1's c_9 `list_capabilities.md` and
+    `check_admission.md`, F3's c_10 five `Records` files, X06's c_12 three `Branches` files, each
+    pinned at its own hash)."""
     t08_rc._tests_on_path()
     from opt_schema_support import OPT_DESCRIPTIONS, pre_opt_text  # noqa: PLC0415
     from x04_schema_support import X04_DESCRIPTIONS, pre_x04_text  # noqa: PLC0415
+    from x06_schema_support import X06_DESCRIPTIONS, pre_x06_text  # noqa: PLC0415
 
     def before(name: str, text: str) -> str:
+        if name in X06_DESCRIPTIONS:
+            return pre_x06_text(name)
         if name in X04_DESCRIPTIONS:
             return pre_x04_text(name)
         return pre_opt_text(name) if name in OPT_DESCRIPTIONS else text
@@ -471,8 +509,8 @@ def texts_before_links(texts: Mapping[str, str]) -> dict[str, str]:
 def description_problems(texts: Mapping[str, str]) -> list[str]:
     """§5.3 item 4 on `texts` (operation name -> description file): one line per failure. The
     tools are `v17-c2`'s 17, MSG's `explain` (c_4), ST's `get_stream_table` (c_7), F1's
-    `list_capabilities` and `check_admission` (c_9) and F3's five `Records` tools (c_10), each
-    file at its pinned hash."""
+    `list_capabilities` and `check_admission` (c_9), F3's five `Records` tools (c_10) and X06's
+    three `Branches` tools (c_12), each file at its pinned hash."""
     problems: list[str] = []
     pinned = {
         **V17_C2_FILE_SHA256,
@@ -480,11 +518,13 @@ def description_problems(texts: Mapping[str, str]) -> list[str]:
         **ST_FILE_SHA256,
         **F1_FILE_SHA256,
         **F3_FILE_SHA256,
+        **X06_FILE_SHA256,
     }
     if sorted(texts) != sorted(pinned):
         problems.append(
             f"tools {sorted(texts)} are not v17-c2's 17, MSG's explain, ST's get_stream_table, "
-            "F1's list_capabilities and check_admission and F3's five Records tools"
+            "F1's list_capabilities and check_admission, F3's five Records tools and X06's three "
+            "Branches tools"
         )
     for name in sorted(set(texts) & set(pinned)):
         if name in CHANGED:
@@ -497,6 +537,8 @@ def description_problems(texts: Mapping[str, str]) -> list[str]:
             expected, source = F1_FILE_SHA256[name], "F1's"
         elif name in F3_FILE_SHA256:
             expected, source = F3_FILE_SHA256[name], "F3's"
+        elif name in X06_FILE_SHA256:
+            expected, source = X06_FILE_SHA256[name], "X06's"
         else:
             expected, source = V17_C2_FILE_SHA256[name], "v17-c2's"
         found = hashlib.sha256(texts[name].encode("utf-8")).hexdigest()

@@ -90,6 +90,10 @@ OPERATION_RIGHTS: Final[Mapping[str, Right]] = {
     "register_record": "draft",
     "validate_record": "read",
     "assess_rights": "policy",
+    # ADR 0078 D2.5 (X06, ADR 0019 Amendment 18): branches; a write moves only a named ref
+    "list_branches": "read",
+    "create_branch": "draft",
+    "delete_branch": "draft",
     # raw export (Python, CLI, HTTP)
     "artifact_bytes": "read",
 }

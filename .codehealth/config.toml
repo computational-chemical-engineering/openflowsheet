@@ -182,6 +182,7 @@ order = [
     "openflowsheet.application.revision_service",
     "openflowsheet.application.inspection_service",
     "openflowsheet.application.records_service",
+    "openflowsheet.application.branch_service",
     "openflowsheet.application.service_core",
     # services
     "openflowsheet.application.jobs.executor",
@@ -337,6 +338,7 @@ to = [
     "openflowsheet.application.revision_service",
     "openflowsheet.application.inspection_service",
     "openflowsheet.application.records_service",
+    "openflowsheet.application.branch_service",
     "openflowsheet.application.service_core",
 ]
 reason = "bindings/__init__.py: each binding reads operations.OPERATIONS, goes through operations.dispatch and adds nothing (T07 design note 11.6)"

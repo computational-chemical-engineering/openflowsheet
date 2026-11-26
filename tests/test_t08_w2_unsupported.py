@@ -45,7 +45,6 @@ from openflowsheet.models.revision_flowsheet import (
     canonical_components,
     component_basis,
 )
-from openflowsheet.schema_check import schema_errors
 from openflowsheet.thermo import pr_c1
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -178,13 +177,6 @@ def test_u06_a_time_member_is_a_schema_refusal() -> None:
     document = CORPUS["SYN-001-nominal"]()
     document["specifications"][0]["time"] = {"start": 0.0, "end": 60.0}
     _schema_refusal(document, "time")
-
-
-def test_u08_a_change_set_naming_a_branch_is_refused_by_its_schema() -> None:
-    change = {"edits": [], "expected_revision": None, "idempotency_key": "k", "branch": "b"}
-    assert schema_errors("change-set.schema.json", change) != []
-    del change["branch"]
-    assert schema_errors("change-set.schema.json", change) == []
 
 
 @pytest.mark.parametrize("name", ["install", "policy", "publish", "set_policy", "register_policy"])

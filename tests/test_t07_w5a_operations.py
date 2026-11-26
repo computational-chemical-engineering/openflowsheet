@@ -34,7 +34,13 @@ from t07_corpus import CORPUS
 from t07_jobs_support import commit, lifecycle_violations
 
 from openflowsheet.application.authz import OPERATION_RIGHTS, grant
-from openflowsheet.application.contract import Application, Inspection, JobControl, Records
+from openflowsheet.application.contract import (
+    Application,
+    Branches,
+    Inspection,
+    JobControl,
+    Records,
+)
 from openflowsheet.application.documents import validate_inline
 from openflowsheet.application.errors import ApplicationError
 from openflowsheet.application.job_requests import JobRequest, SolveBody
@@ -116,6 +122,10 @@ TABLE: dict[str, tuple[str, tuple[str, str] | None, str | None, tuple[str, ...]]
     "register_record": ("draft", ("POST", "/v1/records"), "register_record", ALL),
     "validate_record": ("read", ("POST", "/v1/records/validate"), "validate_record", ALL),
     "assess_rights": ("policy", ("POST", "/v1/records/rights"), "assess_rights", ALL),
+    # ADR 0078 D2.5 (X06, ADR 0019 Amendment 18): branches
+    "list_branches": ("read", ("GET", "/v1/branches"), "list_branches", ALL),
+    "create_branch": ("draft", ("POST", "/v1/branches"), "create_branch", ALL),
+    "delete_branch": ("draft", ("POST", "/v1/branches/{name}/delete"), "delete_branch", ALL),
     "artifact_bytes": (
         "read",
         ("GET", "/v1/artifacts/{artifact_id}/raw"),
@@ -148,11 +158,13 @@ def test_every_protocol_method_is_exactly_one_row() -> None:
         *_protocol_methods(JobControl),
         *_protocol_methods(Inspection),
         *_protocol_methods(Records),
+        *_protocol_methods(Branches),
     ]
     # Inspection's ninth is `list_audit` (ADR 0019 Amendment 3), its tenth `explain` (ADR 0058 D7),
     # its eleventh `get_stream_table` (ADR 0068), its twelfth and thirteenth `list_capabilities`
-    # and `check_admission` (ADR 0060 D11); Records' five are ADR 0061 D13's.
-    assert len(methods) == len(set(methods)) == 4 + 7 + 13 + 5
+    # and `check_admission` (ADR 0060 D11); Records' five are ADR 0061 D13's; Branches' three are
+    # ADR 0078 D2.5's.
+    assert len(methods) == len(set(methods)) == 4 + 7 + 13 + 5 + 3
     rows = [operation.method for operation in OPERATIONS.values()]
     assert sorted(rows) == sorted([*methods, "artifact_bytes"])
     for name, operation in OPERATIONS.items():
@@ -173,8 +185,9 @@ def test_the_table_is_section_4_3s() -> None:
     tools = [op.mcp_tool for op in OPERATIONS.values() if op.mcp_tool is not None]
     # 19 routes with ADR 0019 Amendment 3's `list_audit`, which has no MCP tool (17 stay); ADR 0058
     # D7's `explain` adds one of each, ADR 0068's `get_stream_table` one more, and ADR 0060
-    # D11's `list_capabilities` and `check_admission` two more, ADR 0061 D13's Records five.
-    assert len(http) == len(set(http)) == 28 and len(tools) == len(set(tools)) == 26
+    # D11's `list_capabilities` and `check_admission` two more, ADR 0061 D13's Records five,
+    # ADR 0078 D2.5's Branches three.
+    assert len(http) == len(set(http)) == 31 and len(tools) == len(set(tools)) == 29
     for operation in OPERATIONS.values():
         assert ("http" in operation.transports) == (operation.http is not None)
         assert ("mcp" in operation.transports) == (operation.mcp_tool is not None)
@@ -400,6 +413,13 @@ def _success_path(app: LocalApplication, tmp_path: Path) -> list[tuple[str, dict
         ("list_capabilities", {"kind": "unit_model", "id_prefix": "thermal.", "limit": 2}),
         ("check_admission", {"pair": {"unit": "thermal.heater", "method": "coolprop-heos-v1"}}),
         *records_requests(record),
+        # ADR 0078 D2.5 (X06): a branch created at the revision, listed and deleted.
+        ("create_branch", {"name": "w", "revision_id": revision_id, "idempotency_key": "b1"}),
+        ("list_branches", {"limit": 2}),
+        (
+            "delete_branch",
+            {"name": "w", "expected_revision": revision_id, "idempotency_key": "b2"},
+        ),
         ("artifact_bytes", {"artifact_id": state}),
     ]
 
@@ -428,6 +448,8 @@ def test_every_operation_succeeds_through_dispatch_and_meets_its_response_schema
             "artifact_bytes",
             "register_record",
             "assess_rights",
+            "create_branch",
+            "delete_branch",
         ):
             continue
         operation = OPERATIONS[name]
@@ -513,6 +535,14 @@ def _probe(name: str, text: str, other_job: str) -> dict[str, Any]:
             "assessment": "permitted",
             "basis": text,
         },
+        # ADR 0078 D2.5 (X06): a revision and a branch no project holds.
+        "list_branches": {"limit": 1},
+        "create_branch": {"name": "probe", "revision_id": "rev-missing", "idempotency_key": "p"},
+        "delete_branch": {
+            "name": "probe",
+            "expected_revision": "rev-000001",
+            "idempotency_key": "probe",
+        },
         "artifact_bytes": {"artifact_id": "job-999999:bundle/run-manifest.json"},
     }[name]
 
@@ -550,8 +580,9 @@ def test_g11_every_subset_and_every_operation_through_dispatch(app: LocalApplica
                     assert refused.code != "unauthenticated", (rights, name)
                 assert allowed == (needed <= set(rights)), (rights, name, text)
                 cells += 1
-    # with ADR 0068's `get_stream_table`, ADR 0060 D11's two and ADR 0061 D13's five
-    assert cells == 64 * 30
+    # with ADR 0068's `get_stream_table`, ADR 0060 D11's two, ADR 0061 D13's five and ADR 0078
+    # D2.5's three
+    assert cells == 64 * 33
     assert app.get_job(others_job).status == "completed", "the probes changed nothing"
 
 
@@ -688,6 +719,10 @@ def test_g13_every_response_is_bounded_and_the_raw_export_is_exact(
             "conditions": HOSTILE * 10,
         },
     )
+    # ADR 0078 D2.5 (X06): a branch at the hostile revision, listed and deleted.
+    call("create_branch", {"name": "w", "revision_id": b, "idempotency_key": "branch"})
+    call("list_branches", {})
+    call("delete_branch", {"name": "w", "expected_revision": b, "idempotency_key": "unbranch"})
     job = call(
         "submit_job",
         {"operation": "solve", "idempotency_key": "solve-a", "body": {"revision_id": a}},

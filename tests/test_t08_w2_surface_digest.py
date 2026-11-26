@@ -80,6 +80,15 @@ protocol `Records` — so the served digest moves to `F3_SERVED_SHA256`. With F3
 first (`without_f3`, `tests/f3_schema_support.py`) the list is F1's served digest `e2c44b6b…`
 exactly (`test_f3s_surface_move_decomposes_onto_f1s`), and every decomposition below holds as
 before.
+
+**X06 (ADR 0078 D6, ADR 0019 Amendment 18; R-1073) widens it again, additively** — from X06-WO2
+the three tools of the protocol `Branches`, the ChangeSet's optional `branch` member wherever the
+ChangeSet is served, and the `branch` sentence in `commit_change.md` and `preview_change.md` — so
+the served digest moves to `X06_SERVED_SHA256`. With X06's additions removed and the two texts
+restored from their pre-X06 copies first (`without_x06`, `tests/x06_schema_support.py`) the list
+is F3's served digest `f7ec3c94…` exactly (`test_x06s_surface_move_decomposes_onto_f3s`), and
+every decomposition below holds as before. Whichever of X06 and F2 merges second decomposes onto
+the first's (ADR 0078 D6).
 """
 
 from __future__ import annotations
@@ -100,6 +109,7 @@ from opt_schema_support import OPT_DESCRIPTIONS, pre_opt_text, without_opt
 from st_schema_support import ST_OPERATIONS, without_st
 from x02_schema_support import without_x02
 from x04_schema_support import X04_DESCRIPTIONS, pre_x04_text, without_x04
+from x06_schema_support import X06_DESCRIPTIONS, X06_OPERATIONS, pre_x06_text, without_x06
 
 from openflowsheet.application.operations import OPERATIONS
 from openflowsheet.canonical import canonical_json
@@ -109,7 +119,12 @@ V17_C2_TEXTS = REPO_ROOT / "tests" / "fixtures" / "t08" / "v17_c2_descriptions"
 MCP_OPERATIONS = sorted(name for name, op in OPERATIONS.items() if "mcp" in op.transports)
 #: The MCP operations before MSG (ADR 0058 D7 added `explain`, whose text `v17-c2` never served).
 PRE_MSG_MCP_OPERATIONS = sorted(
-    set(MCP_OPERATIONS) - MSG_OPERATIONS - ST_OPERATIONS - F1_OPERATIONS - F3_OPERATIONS
+    set(MCP_OPERATIONS)
+    - MSG_OPERATIONS
+    - ST_OPERATIONS
+    - F1_OPERATIONS
+    - F3_OPERATIONS
+    - X06_OPERATIONS
 )
 
 #: R-133: the served descriptions' digest after N1 and N2 (`harness.tool_descriptions_sha256`).
@@ -153,6 +168,10 @@ F1_SERVED_SHA256 = "e2c44b6b9c2a7f5689ed4f2fd96b6e9804d1a63e60a5c620d29b5b5d594b
 #: items' `at`; C11: the design lane's edits to four texts; `scripts/m07a_rc.py`'s `D_10`).
 #: Without them it is `F1_SERVED_SHA256` (c_10).
 F3_SERVED_SHA256 = "f7ec3c94233d30506ec2082a13c4e54d57bd540e43e97fdf877b1e3c75fed467"
+#: X06 (ADR 0078 D6, R-1073): the served digest with X06-WO2's branches over F3's list, measured at
+#: X06-WO2 on `wp/X06` (`scripts/m07a_rc.py`'s `D_12`). Without them, with the two texts
+#: restored, it is `F3_SERVED_SHA256` (c_12 onto c_10 on `wp/X06`).
+X06_SERVED_SHA256 = "7e8393a55d8f45e5e44c21f33b4c91389130c882fa80cb47887621a891aa236e"
 #: The files N1 and N2 changed; the only difference from `v17-c2`'s served texts.
 CHANGED = ("commit_change", "validate")
 #: Each description's SHA-256 as `v17-c2` served it: the table of
@@ -188,9 +207,17 @@ def _tools(mcp: ModuleType) -> list[dict[str, Any]]:
     return [tool.model_dump(mode="json", exclude_none=True) for tool in mcp.tools()]
 
 
+def _before_x06(mcp: ModuleType) -> list[dict[str, Any]]:
+    """The served tool list without X06's additions (`without_x06`), F3's list."""
+    stripped = without_x06(_tools(mcp))
+    assert isinstance(stripped, list)
+    return stripped
+
+
 def _before_f3(mcp: ModuleType) -> list[dict[str, Any]]:
-    """The served tool list without F3's five tools (`without_f3`), F1's list."""
-    stripped = without_f3(_tools(mcp))
+    """The served tool list without X06's additions and F3's five tools (`without_f3`), F1's
+    list."""
+    stripped = without_f3(_before_x06(mcp))
     assert isinstance(stripped, list)
     return stripped
 
@@ -298,8 +325,10 @@ def test_m02s_surface_move_decomposes_onto_the_base(mcp: ModuleType) -> None:
 
 
 def _pre_opt_file(name: str) -> str:
-    """Operation `name`'s description file, OPT's two in their pre-OPT form and X04's two in their
-    pre-X04 form."""
+    """Operation `name`'s description file, OPT's two in their pre-OPT form, X04's two in their
+    pre-X04 form and X06's two in their pre-X06 form."""
+    if name in X06_DESCRIPTIONS:
+        return pre_x06_text(name)
     if name in X04_DESCRIPTIONS:
         return pre_x04_text(name)
     if name in OPT_DESCRIPTIONS:
@@ -314,7 +343,7 @@ def test_the_served_files_differ_from_v17_c2_in_exactly_the_two_reviewed_files()
     served = {name: _sha256(_pre_opt_file(name)) for name in PRE_MSG_MCP_OPERATIONS}
     files = {name: (DESCRIPTIONS / f"{name}.md").read_text("utf-8") for name in MCP_OPERATIONS}
     assert sorted(n for n in MCP_OPERATIONS if files[n] != _pre_opt_file(n)) == sorted(
-        {*OPT_DESCRIPTIONS, *X04_DESCRIPTIONS}
+        {*OPT_DESCRIPTIONS, *X04_DESCRIPTIONS, *X06_DESCRIPTIONS}
     )
     changed = sorted(
         name for name in PRE_MSG_MCP_OPERATIONS if served[name] != V17_C2_FILE_SHA256[name]
@@ -490,7 +519,7 @@ def test_f3s_surface_move_decomposes_onto_f1s(mcp: ModuleType) -> None:
     is F1's (`F1_SERVED_SHA256`, which decomposes onto X04's and the earlier lists above). F3
     added the five `Records` tools, each served from its file, and moved no other tool at all:
     name, description, input or output schema."""
-    served = _tools(mcp)
+    served = _before_x06(mcp)  # X06's additions postdate F3
     stripped = without_f3(served)
     assert _digest(served) == F3_SERVED_SHA256
     assert _digest(stripped) == F1_SERVED_SHA256
@@ -499,3 +528,34 @@ def test_f3s_surface_move_decomposes_onto_f1s(mcp: ModuleType) -> None:
     assert [t for t in served if t not in added] == stripped
     for tool in added:
         assert tool["description"] == (DESCRIPTIONS / f"{tool['name']}.md").read_text("utf-8")
+
+
+def test_x06s_surface_move_decomposes_onto_f3s(mcp: ModuleType) -> None:
+    """X06 (ADR 0078 D6, R-1073; E-X06-22): the served list is `X06_SERVED_SHA256`; minus X06's
+    additions, with its two texts restored, it is F3's (`F3_SERVED_SHA256`, which decomposes onto
+    F1's and the earlier lists above). X06-WO2 added the three `Branches` tools after F3's, each
+    served from its file; the tools that moved are the two that serve the ChangeSet as a request
+    (`commit_change`, `preview_change`: the `branch` member and the text) and `get_job_result`
+    (the optimization report's candidate ChangeSet), and nothing else moved."""
+    served = _tools(mcp)
+    stripped = without_x06(served)
+    assert _digest(served) == X06_SERVED_SHA256
+    assert _digest(stripped) == F3_SERVED_SHA256
+    names = [t["name"] for t in served]
+    added = [t for t in served if t["name"] in {OPERATIONS[n].mcp_tool for n in X06_OPERATIONS}]
+    assert [t["name"] for t in added] == ["list_branches", "create_branch", "delete_branch"]
+    assert names[-3:] == ["list_branches", "create_branch", "delete_branch"]
+    for tool in added:
+        assert tool["description"] == (DESCRIPTIONS / f"{tool['name']}.md").read_text("utf-8")
+    kept = [t for t in served if t not in added]
+    assert [t["name"] for t in kept] == [t["name"] for t in stripped]
+    retexted = {
+        t["name"]
+        for t, u in zip(kept, stripped, strict=True)
+        if t["description"] != u["description"]
+    }
+    assert retexted == {OPERATIONS[name].mcp_tool for name in X06_DESCRIPTIONS}
+    moved = {t["name"] for t, u in zip(kept, stripped, strict=True) if t != u}
+    assert moved == {
+        OPERATIONS[name].mcp_tool for name in ("commit_change", "preview_change", "get_job_result")
+    }

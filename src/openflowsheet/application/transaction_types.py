@@ -1,5 +1,6 @@
 """The transaction documents of the application contract v1 (T07 design note §5.2, ADR 0019 D2;
-ADR 0076 I-12a): `Edit`, `Change`, `ChangeSet`, `SemanticDiff` and `TransactionResult`.
+ADR 0076 I-12a): `Edit`, `Change`, `ChangeSet`, `SemanticDiff` and `TransactionResult`; and the
+branch results of ADR 0078 D2.5, `Branch` and `BranchResult`.
 
 They are defined here once (K06's `transactions.py` facade is gone, ADR 0076 I-11); the
 transaction core that produces them (`apply_edits`, `semantic_diff`) lives in `revision_edits`
@@ -10,7 +11,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from dataclasses import dataclass
-from typing import Any, Literal, Self
+from typing import Any, Final, Literal, Self
 
 from openflowsheet.application.documents import checked
 from openflowsheet.application.errors import ApiError
@@ -23,6 +24,10 @@ from openflowsheet.schema_check import validate_document
 
 EditOperation = Literal["set", "remove", "append"]
 TransactionStatus = Literal["committed", "replayed", "conflict", "rejected", "previewed"]
+#: ADR 0078 D2.3: the main line's reserved name; a ChangeSet's `branch` of this value is no branch.
+HEAD_REF: Final[str] = "head"
+#: ADR 0078 D2.5: `create_branch`'s and `delete_branch`'s outcomes.
+BranchStatus = Literal["created", "deleted", "replayed", "conflict"]
 
 
 # ================================================================================ ApiError §5.8
@@ -109,6 +114,10 @@ class Change:
         The task the new revision is validated for.
     author
         Recorded in the revision's provenance.
+    branch
+        ADR 0078 D2.4: the branch whose tip the change is written against and moves; `None`
+        (or `"head"`) is the main line. It is a request member only: no stored document holds
+        it (C7).
     """
 
     edits: tuple[Edit, ...] = ()
@@ -116,9 +125,13 @@ class Change:
     restore_from: str | None = None
     task: Task = "simulation"
     author: str = "unknown"
+    branch: str | None = None
 
     def as_change_set(self, expected_revision: str | None, idempotency_key: str) -> dict[str, Any]:
-        return {
+        """The normalized ChangeSet: every member written, defaults included, except `branch`,
+        which is written only when it names a branch (absent or `"head"`, it is omitted, so
+        every request without a branch keeps its bytes and `request_sha256`, ADR 0078 E-X06-7)."""
+        document = {
             "edits": [edit.as_document() for edit in self.edits],
             "expected_revision": expected_revision,
             "idempotency_key": idempotency_key,
@@ -127,6 +140,9 @@ class Change:
             "task": self.task,
             "author": self.author,
         }
+        if self.branch is not None and self.branch != HEAD_REF:
+            document["branch"] = self.branch
+        return document
 
     @classmethod
     def from_change_set(cls, document: Mapping[str, Any]) -> tuple[Self, str | None, str]:
@@ -141,6 +157,7 @@ class Change:
                 restore_from=d.get("restore_from"),
                 task=d.get("task", "simulation"),
                 author=d.get("author", "unknown"),
+                branch=d.get("branch"),
             ),
             document,
         )
@@ -162,6 +179,7 @@ class ChangeSet:
     task: Task = "simulation"
     author: str = "unknown"
     restore_from: str | None = None
+    branch: str | None = None
 
     @property
     def change(self) -> Change:
@@ -171,6 +189,7 @@ class ChangeSet:
             restore_from=self.restore_from,
             task=self.task,
             author=self.author,
+            branch=self.branch,
         )
 
     def as_document(self) -> dict[str, Any]:
@@ -188,6 +207,7 @@ class ChangeSet:
             task=change.task,
             author=change.author,
             restore_from=change.restore_from,
+            branch=change.branch,
         )
 
 
@@ -330,4 +350,50 @@ class TransactionResult:
             conflict=dict(document["conflict"]) if document["conflict"] is not None else None,
             idempotency_key=document["idempotency_key"],
             error=error_build(document["error"]),
+        )
+
+
+# ================================================================== branches (ADR 0078 D2.5)
+
+
+@dataclass(frozen=True)
+class Branch:
+    """ADR 0078 D2.5: one item of `list_branches`: a ref's public name (`head`, or a branch's
+    name) and the revision it points at."""
+
+    name: str
+    revision_id: str
+
+    def as_document(self) -> dict[str, Any]:
+        return {"name": self.name, "revision_id": self.revision_id}
+
+
+@dataclass(frozen=True)
+class BranchResult:
+    """ADR 0078 D2.5: `create_branch`'s and `delete_branch`'s result. `revision_id` is the
+    branch's tip after the call (`None` after a delete, the unchanged tip on a conflict);
+    `conflict` is `{expected, actual}` on a conflict, else `None`."""
+
+    status: BranchStatus
+    name: str
+    revision_id: str | None
+    conflict: Mapping[str, str | None] | None = None
+
+    def as_document(self) -> dict[str, Any]:
+        return {
+            "status": self.status,
+            "name": self.name,
+            "revision_id": self.revision_id,
+            "conflict": dict(self.conflict) if self.conflict is not None else None,
+        }
+
+    @classmethod
+    def _build(cls, document: Mapping[str, Any]) -> Self:
+        """The inverse of `as_document`, unvalidated: for documents this code wrote itself."""
+        conflict = document["conflict"]
+        return cls(
+            status=document["status"],
+            name=document["name"],
+            revision_id=document["revision_id"],
+            conflict=dict(conflict) if conflict is not None else None,
         )

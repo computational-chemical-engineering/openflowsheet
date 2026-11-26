@@ -3,10 +3,10 @@
 `OPERATIONS` is the only routing source: one row per protocol method — `Application`'s four,
 `JobControl`'s seven, `Inspection`'s thirteen (`list_audit` is ADR 0019 Amendment 3's, `explain`
 ADR 0058 D7's, `get_stream_table` ADR 0068's, `list_capabilities` and `check_admission` ADR 0060
-D11's), `Records`' five (ADR 0061 D13, ADR 0019 Amendment 8) — and
-`artifact_bytes`, the raw export. A row names its method, the right it needs, its request and
-response schemas, its HTTP verb and path, its MCP tool, the transports that carry it and its tool
-description. Python (through `dispatch`), the
+D11's), `Records`' five (ADR 0061 D13, ADR 0019 Amendment 8), `Branches`' three (ADR 0078 D2,
+ADR 0019 Amendment 18) — and `artifact_bytes`, the raw export. A row names its method, the right
+it needs, its request and response schemas, its HTTP verb and path, its MCP tool, the transports
+that carry it and its tool description. Python (through `dispatch`), the
 CLI, HTTP and MCP read this table and nothing else, and add nothing to what it says.
 
 `dispatch(app, name, request)` does, in this order:
@@ -43,7 +43,14 @@ from dataclasses import dataclass
 from functools import cache
 from typing import Any, Final, Literal, Protocol
 
-from openflowsheet.application.contract import Application, Inspection, JobControl, Page, Records
+from openflowsheet.application.contract import (
+    Application,
+    Branches,
+    Inspection,
+    JobControl,
+    Page,
+    Records,
+)
 from openflowsheet.application.documents import published_schemas, validate_inline
 from openflowsheet.application.errors import ApiError, ApiErrorCode, ApplicationError, api_error
 from openflowsheet.application.inspection_types import AuditRecord, RevisionSummary
@@ -57,7 +64,7 @@ from openflowsheet.application.projection import (
     bound_document,
     bound_text,
 )
-from openflowsheet.application.transaction_types import Change
+from openflowsheet.application.transaction_types import Branch, Change
 from openflowsheet.canonical import first_noncanonical
 from openflowsheet.schema_check import SCHEMA_BASE, DocumentSchemaError
 
@@ -71,8 +78,8 @@ TRANSPORT_WAIT_CAP_S: Final[float] = 30.0
 MAX_EVENT_PAGE: Final[int] = 500
 
 
-class Dispatchable(Application, JobControl, Inspection, Records, Protocol):
-    """What `dispatch` calls: the four protocols, the raw export, and the audit of a refusal
+class Dispatchable(Application, JobControl, Inspection, Records, Branches, Protocol):
+    """What `dispatch` calls: the five protocols, the raw export, and the audit of a refusal
     made before a method was reached (`LocalApplication`)."""
 
     def artifact_bytes(self, artifact_id: str) -> bytes: ...
@@ -173,9 +180,11 @@ PREVIEW_REQUEST: Final = _object(
     },
     {
         name: _change_set_member(name)
-        for name in ("new_revision_id", "restore_from", "task", "author")
+        for name in ("new_revision_id", "restore_from", "task", "author", "branch")
     },
 )
+#: ADR 0078 D2.3: a branch's public name.
+BRANCH_NAME: Final = _ref("change-set.schema.json#/$defs/branch_name")
 
 
 def _result(name: str) -> dict[str, str]:
@@ -372,6 +381,17 @@ def _decode_preview(document: Mapping[str, Any]) -> dict[str, Any]:
         {**document, "idempotency_key": PREVIEW_KEY}
     )
     return {"change": change, "expected_revision": expected_revision}
+
+
+def _decode_branch_write(name: str) -> Callable[[Mapping[str, Any]], dict[str, Any]]:
+    """ADR 0078 D2.5: a branch write's members, its idempotency key outside the reserved prefix."""
+    members = _members("name", "revision_id", "expected_revision", "idempotency_key")
+
+    def decode(document: Mapping[str, Any]) -> dict[str, Any]:
+        _unreserved(document["idempotency_key"], name)
+        return members(document)
+
+    return decode
 
 
 def _decode_submit(document: Mapping[str, Any]) -> dict[str, Any]:
@@ -737,6 +757,32 @@ OPERATIONS: Final[Mapping[str, Operation]] = {
             decode=_members(
                 "source_id", "record_sha256", "scope", "assessment", "conditions", "basis"
             ),
+        ),
+        # Branches: ADR 0078 D2.5 (X06, ADR 0019 Amendment 18), named refs of the project store
+        _row(
+            "list_branches",
+            "read",
+            _object({}, {"cursor": CURSOR, "limit": _limit(MAX_PAGE)}),
+            _result("branch_page"),
+            ("GET", "/v1/branches"),
+            decode=_members("cursor", "limit"),
+            encode=_page_of(Branch.as_document),
+        ),
+        _row(
+            "create_branch",
+            "draft",
+            _object({"name": BRANCH_NAME, "revision_id": ID, "idempotency_key": ID}),
+            _result("branch_result"),
+            ("POST", "/v1/branches"),
+            decode=_decode_branch_write("create_branch"),
+        ),
+        _row(
+            "delete_branch",
+            "draft",
+            _object({"name": BRANCH_NAME, "expected_revision": ID, "idempotency_key": ID}),
+            _result("branch_result"),
+            ("POST", "/v1/branches/{name}/delete"),
+            decode=_decode_branch_write("delete_branch"),
         ),
         # The raw export (Python, CLI, HTTP; never MCP)
         _row(
