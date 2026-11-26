@@ -64,3 +64,13 @@ Reversible by: <how>.` Package build decisions go in the package's own file (`do
   writes refused on a server bound beyond loopback, no override in 0.6; Q5 registering a solve policy needs the draft
   right; Q6 the seven benchmark-registered policies stay unsupported." If ADR 0078 changes after dcbab9b7 (an X06 WO
   must not edit it), tell hub before it is signed.
+- F2-WO1 judged PASS (2026-11-26): 7 commits on wp/F2 (9431853b..ed5fb6c0), worktree clean; 238,800 tokens, 31 min.
+  E-F2-1: 99,538 StreamStates from F0's 61 corpus runs (21,903 distinct) round-trip bitwise; phase-id E-F2-5: 10^4
+  generated, 7,169 distinct renderings, render/parse inverse; kg branches flipped; battery 2440 passed, 1 skipped, 3
+  xfailed; ruff, mypy src clean. Orchestrator re-runs: tests/test_f2_material_types.py 44 passed; F0 on wp/F2 PASS,
+  M1 50/50, M2-M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 42/42 (unchanged from main).
+- STOP WO1-4 accepted as correct: widening `PropertyRequest.state`/`.phase` (ADR 0062 D2) gives 51 mypy errors in 7
+  M9-frozen legacy providers; not applied. Batched for F2's ruling round with the engineer's flags WO1-1 (only
+  `segment_molar_mass` bounded > 0), WO1-9 (formation kinds per amount basis) and "M = 1 for kg records in reaction
+  checks". Defaults: (a) a v2 request type in F4; the rest as built.
+- F2-WO2 brief `docs/briefs/LINE06-F2-WO2.md`; opus-engineer launched (background, worktree f2).

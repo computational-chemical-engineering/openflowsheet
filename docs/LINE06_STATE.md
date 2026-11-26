@@ -40,12 +40,13 @@ once F2-WO4 is on wp/F2 (F8 branches from wp/F2's head, merges after F2).
 
 ## Next action
 
-D1 done (ADR 0078 Proposed, `dcbab9b7` on wp/X06; log). Two agents running (the cap): `opus-engineer` on F2-WO1
-(worktree `f2`, brief `docs/briefs/LINE06-F2-WO1.md`) and `opus-engineer` on X06-WO1 (worktree `x06`, brief
-`docs/briefs/LINE06-X06-WO1.md`, MCP over HTTP, static bearer per the default of `ofs-x06-mcp-clients`). On each
-report: `git -C <worktree> status`, ListAgents, judge on the brief's acceptance, log. Then F2-WO2/WO3 and X06-WO2
-briefs (X06 WOs run one at a time, in ADR 0078's order). Cards requested from hub: `ofs-x06-accept-adr0078`,
-`ofs-x06-mcp-clients`. After Q1 is answered: R-110 status line, roadmap resume move, target-architecture X06 row.
+F2-WO1 PASS (log); D1 PASS (ADR 0078 Proposed, `dcbab9b7`). Running (the cap of two): `opus-engineer` on F2-WO2
+(worktree `f2`, brief `docs/briefs/LINE06-F2-WO2.md`) and `opus-engineer` on X06-WO1 (worktree `x06`, brief
+`docs/briefs/LINE06-X06-WO1.md`). On each report: `git -C <worktree> status`, ListAgents, judge on the brief's
+acceptance, re-run F0 on the branch, log. Next briefs: F2-WO3 (ids and layout), X06-WO2 (branches; ADR 0078 Q8: merge
+order with F2). Cards open: `ofs-x06-accept-adr0078` (verify with the pinned text in the log),
+`ofs-x06-mcp-clients`. After Q1: R-110 status line, roadmap resume move, target-architecture X06 row. F2 ruling
+round (batched, at F2's reviewer pass): WO1-4, WO1-1, WO1-9, M = 1 for kg.
 
 ## Decisions settled (Decision Desk, 2026-11-26, each choice A, VERIFIED, `executed` written)
 
