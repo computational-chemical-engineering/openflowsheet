@@ -1,4 +1,4 @@
-"""The MCP binding: the official SDK's low-level server over stdio (T07 W6b; design note §11.3).
+"""The MCP binding: the official SDK's low-level server (T07 W6b; design note §11.3).
 
 Everything it serves comes from `operations.OPERATIONS`, and every call goes through
 `operations.dispatch`; it adds nothing (§11.6).
@@ -28,6 +28,9 @@ and opens the project with the capability it presents, and `LocalApplication` re
 project policy on every call, so a revoked or expired capability is refused on its next call
 (§10.2). No argument is consulted for authority.
 
+**Carriers** (ADR 0078 D1.2): this module serves stdio; `bindings.mcp_http` serves the same
+`build_server` and the same `tools()` over streamable HTTP, at `/mcp` of `serve-http`.
+
 **Imports** are the contract (`contract`, `types`, `operations`, `projection`), the standard
 library, `mcp` and `anyio` (§11.6 (2); a test holds the graph).
 """
@@ -38,7 +41,7 @@ import json
 import logging
 import os
 import sys
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from functools import cache
 from pathlib import Path
 from typing import Any, Final
@@ -213,15 +216,17 @@ def call(
         return _error_result(tool, refused.error)
     except Exception:
         _LOG.exception("MCP tool %s: internal error", operation.name)
-        return _error_result(
-            tool,
-            ApiError(
-                code="internal_error", message=INTERNAL_ERROR_MESSAGE, retryable=False, detail={}
-            ),
-        )
+        return _error_result(tool, _internal_error())
     assert isinstance(response, dict)
     return mcp_types.CallToolResult(
         content=[_text(tool, response)], structuredContent=response, isError=False
+    )
+
+
+def _internal_error() -> ApiError:
+    """§10.4: a defect, as every response shows it; the traceback is the caller's to log."""
+    return ApiError(
+        code="internal_error", message=INTERNAL_ERROR_MESSAGE, retryable=False, detail={}
     )
 
 
@@ -257,8 +262,14 @@ def _text(tool: str, document: Mapping[str, Any]) -> mcp_types.TextContent:
 # ================================================================================= serving
 
 
-def build_server(app: Dispatchable) -> Server[Any, Any]:
-    """The low-level server over `app`: `list_tools` and `call_tool`, nothing else."""
+def build_server(caller: Callable[[], Dispatchable]) -> Server[Any, Any]:
+    """The low-level server: `list_tools` and `call_tool`, nothing else.
+
+    `caller()` is the application a tool call acts as, obtained on every call (ADR 0078 D1.4):
+    over stdio the one the server was started as, over streamable HTTP the one the request's
+    bearer credential resolved to (`bindings.mcp_http`). A `caller()` that raises is a defect,
+    `internal_error`, never a fallback to another caller.
+    """
     server: Server[Any, Any] = Server(SERVER_NAME)
 
     @server.list_tools()  # type: ignore[no-untyped-call, misc]
@@ -267,6 +278,11 @@ def build_server(app: Dispatchable) -> Server[Any, Any]:
 
     @server.call_tool(validate_input=False)  # type: ignore[misc]
     async def call_tool(tool: str, arguments: dict[str, Any]) -> mcp_types.CallToolResult:
+        try:
+            app = caller()
+        except Exception:
+            _LOG.exception("MCP tool call: no caller to act as")
+            return _error_result(tool, _internal_error())
         return await anyio.to_thread.run_sync(call, app, tool, arguments)
 
     return server
@@ -274,7 +290,7 @@ def build_server(app: Dispatchable) -> Server[Any, Any]:
 
 async def run_stdio(app: Dispatchable, stdout: anyio.AsyncFile[str] | None = None) -> None:
     """Serve `app` over stdin and `stdout` (default: the process's) until stdin closes."""
-    server = build_server(app)
+    server = build_server(lambda: app)
     async with stdio_server(stdout=stdout) as (read_stream, write_stream):
         await server.run(read_stream, write_stream, server.create_initialization_options())
 

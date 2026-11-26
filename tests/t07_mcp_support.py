@@ -103,7 +103,7 @@ def in_memory[T](app: Any, body: Callable[[Session], Awaitable[T]]) -> T:
     async def main() -> T:
         with anyio.fail_after(SESSION_TIMEOUT_S):
             async with create_connected_server_and_client_session(
-                build_server(app), raise_exceptions=True
+                build_server(lambda: app), raise_exceptions=True
             ) as session:
                 return await body(session)
 

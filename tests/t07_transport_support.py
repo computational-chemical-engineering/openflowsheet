@@ -253,7 +253,7 @@ class McpClient(Client):
         self.session = self.stack.enter_context(
             self.portal.wrap_async_context_manager(
                 create_connected_server_and_client_session(
-                    build_server(self.owner), raise_exceptions=True
+                    build_server(lambda: self.owner), raise_exceptions=True
                 )
             )
         )
