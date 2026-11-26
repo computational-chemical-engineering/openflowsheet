@@ -40,8 +40,10 @@ once F2-WO4 is on wp/F2 (F8 branches from wp/F2's head, merges after F2).
 
 ## Next action
 
-P1, then the brief for F2-WO1 (`docs/briefs/LINE06-F2-WO1.md`; worktree `.claude/worktrees/f2`, branch `wp/F2` from
-`main`). Before D1: wait for `ofs-line06-x06-scope`.
+P1 passed (log). Worktree `.claude/worktrees/f2` (wp/F2 at d00f659a) and brief `docs/briefs/LINE06-F2-WO1.md` are
+ready. Launch `opus-engineer` on that brief when the user says go (the user approved the plan, not yet the spend).
+Then judge WO1 on its five acceptance items, and brief WO2 and WO3. Before D1: wait for `ofs-line06-x06-scope`. Cards
+filed by hub 2026-11-26, open; hub rings when signed.
 
 ## Open decisions (Decision Desk, through hub; defaults)
 
