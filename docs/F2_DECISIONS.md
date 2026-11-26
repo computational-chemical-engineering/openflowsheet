@@ -25,3 +25,15 @@ Files: `schemas/units.json`, `schemas/quantity.schema.json` (kind enum), `src/op
   `source: "ADR 0062 D1 (display only until F2)"` (the generator's C10 check confirms F2's entries equal them). MSG's
   `J/(mol*K)` spelling (`refusals.yaml`, ADR 0075 line 362) is not touched here: catalogue entries are WO7's.
   Alternative: freeze `DISPLAY_KINDS` at the pre-F2 set (departs from ADR 0075 D2.1's text).
+- **DECISION WO1-3. `StreamState` is defined in `material/state.py`, re-exported by `thermo`.** ADR 0062 D2 puts the
+  new types in `openflowsheet/material/` re-exported from `openflowsheet.thermo` (so `thermo` imports `material`),
+  while `EvaluationState.to_stream_state` returns a `StreamState` (so `material` needs it): with `StreamState` left in
+  `thermo` that is an import cycle, which the S19 layer order (`.codehealth/config.toml`, every nesting level) refuses
+  in either direction. The class moved verbatim (no character of its body changed); `openflowsheet.thermo.StreamState`
+  is the same object, so every import, `repr`, equality, pickle by name and cache key is unchanged; only
+  `StreamState.__module__` reads `openflowsheet.material.state`. `material` sits directly below `thermo` in the layer
+  order and in `tests/test_package_imports.py` `LAYERS`. Inert, proved: F0 PASS with the pinned counts (M1 50/50, M2-M5
+  61/61, M6 85/85, M7 52/52, M8 105/105, M9 42/42), `tests/test_k02*.py` and `test_package_imports.py` 340 passed, mypy
+  `src` clean. Alternatives: `material` above `thermo` with no runtime re-export (the annotations under
+  `TYPE_CHECKING`), departing from D2's "re-exported"; or a lazy upward import (a new layer violation). **Design-lane
+  question** (an ADR premise the post-S19 layout contradicts; this is the reading that changes no byte).
