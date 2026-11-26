@@ -168,3 +168,22 @@ Files: `src/openflowsheet/material/{basis,definitions}.py`, `schemas/connection-
   output schema reaches. WO2 moves neither digest (measured equal before and after). An F2 surface move needs
   registering as F3's was (a decomposition test, `without_f2`, and its R-number): **left for the orchestrator**
   (WO7's close-out or a WO1 fix).
+
+## WO2b: F2's served-surface move registered (2026-11-26)
+
+- **Registered as F3's was.** `tests/f2_schema_support.py`: `without_f2(node)` drops, from every enum that ends in
+  ADR 0062 D1's 14 kinds (`F2_KINDS`, WO1's order), those 14 values and the description's sentence `F2_KIND_NOTE`;
+  any other node is copied unchanged, so it composes with every `without_*` (ADR 0078 D6). Pins:
+  `F2_SERVED_SHA256` = `9a4b4eb3bd9f28e6…` (`tests/test_t08_w2_surface_digest.py`) and `SNAPSHOT_F2["list_models"]` =
+  `854fab3332da26b0…` (`tests/test_t07_w5e_application_results.py`). The kind enum is served in `list_models` alone
+  (its two `specifications` places: pins and choice options); no other resolved response and no other tool carries it.
+- **Proofs.** `test_f2s_surface_move_decomposes_onto_f3s`: without F2's kinds the served list is F3's `f7ec3c94…`;
+  only `list_models` moved, only its two kind schemas, each by exactly the 14 kinds and the sentence.
+  `test_f2_without_its_additions_every_response_is_its_pre_f2_snapshot`: every one of the 30 resolved responses is its
+  pre-F2 snapshot after `without_f2`, and exactly `list_models` moved (to `12d88245…` again). The earlier
+  decompositions take F2's additions out first (the latest first). The ADR 0019 pointer comes in WO6.
+- **Open: link c_11 of `scripts/m07a_rc.py`.** `tests/test_m07a_surface_chain.py` fails 18 (on `88cc22b8` and after
+  this order): the chain ends at F3's c_10 (`D_10` = `f7ec3c94…`) and the served list is now `9a4b4eb3…`. F3 closed
+  that with link c_10 and its register entry R-1051 (`a66116d9`). F2 needs `strip_f2` (`without_f2`), a link c_11
+  with `D_11` = `F2_SERVED_SHA256`, and an R-number in `docs/decision-register.md`, whose allocation this order does
+  not own (X06 runs concurrently). Left for the orchestrator, with the ADR 0019 pointer (WO6).

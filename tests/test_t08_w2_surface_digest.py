@@ -80,6 +80,13 @@ protocol `Records` — so the served digest moves to `F3_SERVED_SHA256`. With F3
 first (`without_f3`, `tests/f3_schema_support.py`) the list is F1's served digest `e2c44b6b…`
 exactly (`test_f3s_surface_move_decomposes_onto_f1s`), and every decomposition below holds as
 before.
+
+**F2 (ADR 0062 D1) widens it again, additively** — ADR 0062 D1's 14 quantity kinds at the end of
+`quantity.schema.json`'s kind enum, and one sentence of its description, served in `list_models`'
+`outputSchema` — so the served digest moves to `F2_SERVED_SHA256`. With F2's additions removed
+first (`without_f2`, `tests/f2_schema_support.py`) the list is F3's served digest `f7ec3c94…`
+exactly (`test_f2s_surface_move_decomposes_onto_f3s`), and every decomposition below holds as
+before.
 """
 
 from __future__ import annotations
@@ -92,6 +99,7 @@ from typing import Any
 import pytest
 from conftest import REPO_ROOT, load_yaml
 from f1_schema_support import F1_OPERATIONS, without_f1
+from f2_schema_support import F2_KIND_NOTE, F2_KINDS, without_f2
 from f3_schema_support import F3_OPERATIONS, without_f3
 from m02_schema_support import without_m02
 from m04_schema_support import without_m04
@@ -153,6 +161,10 @@ F1_SERVED_SHA256 = "e2c44b6b9c2a7f5689ed4f2fd96b6e9804d1a63e60a5c620d29b5b5d594b
 #: items' `at`; C11: the design lane's edits to four texts; `scripts/m07a_rc.py`'s `D_10`).
 #: Without them it is `F1_SERVED_SHA256` (c_10).
 F3_SERVED_SHA256 = "f7ec3c94233d30506ec2082a13c4e54d57bd540e43e97fdf877b1e3c75fed467"
+#: F2 (ADR 0062 D1): the served digest with D1's 14 quantity kinds in `list_models`' output schema
+#: over F3's list, measured at F2-WO2b on `wp/F2` (WO1 moved it; WO2 left it where WO1 did).
+#: Without them it is `F3_SERVED_SHA256`.
+F2_SERVED_SHA256 = "9a4b4eb3bd9f28e68e25828d8796bec73e8feb49aa6e12b80df0d43f990442a1"
 #: The files N1 and N2 changed; the only difference from `v17-c2`'s served texts.
 CHANGED = ("commit_change", "validate")
 #: Each description's SHA-256 as `v17-c2` served it: the table of
@@ -188,9 +200,16 @@ def _tools(mcp: ModuleType) -> list[dict[str, Any]]:
     return [tool.model_dump(mode="json", exclude_none=True) for tool in mcp.tools()]
 
 
+def _before_f2(mcp: ModuleType) -> list[dict[str, Any]]:
+    """The served tool list without F2's 14 kinds (`without_f2`), F3's list."""
+    stripped = without_f2(_tools(mcp))
+    assert isinstance(stripped, list)
+    return stripped
+
+
 def _before_f3(mcp: ModuleType) -> list[dict[str, Any]]:
-    """The served tool list without F3's five tools (`without_f3`), F1's list."""
-    stripped = without_f3(_tools(mcp))
+    """The served tool list without F2's kinds and F3's five tools (`without_f3`), F1's list."""
+    stripped = without_f3(_before_f2(mcp))
     assert isinstance(stripped, list)
     return stripped
 
@@ -490,7 +509,7 @@ def test_f3s_surface_move_decomposes_onto_f1s(mcp: ModuleType) -> None:
     is F1's (`F1_SERVED_SHA256`, which decomposes onto X04's and the earlier lists above). F3
     added the five `Records` tools, each served from its file, and moved no other tool at all:
     name, description, input or output schema."""
-    served = _tools(mcp)
+    served = _before_f2(mcp)  # F2's kinds postdate F3
     stripped = without_f3(served)
     assert _digest(served) == F3_SERVED_SHA256
     assert _digest(stripped) == F1_SERVED_SHA256
@@ -499,3 +518,46 @@ def test_f3s_surface_move_decomposes_onto_f1s(mcp: ModuleType) -> None:
     assert [t for t in served if t not in added] == stripped
     for tool in added:
         assert tool["description"] == (DESCRIPTIONS / f"{tool['name']}.md").read_text("utf-8")
+
+
+def test_f2s_surface_move_decomposes_onto_f3s(mcp: ModuleType) -> None:
+    """F2 (ADR 0062 D1): the served list is `F2_SERVED_SHA256`; minus F2's 14 kinds it is F3's
+    (`F3_SERVED_SHA256`, which decomposes onto F1's and the earlier lists above). F2 added no tool
+    and changed no tool's name or description text; the one tool that moved is `list_models`, in
+    exactly its two kind enums (pins' and choice options' `specifications`), each by exactly the
+    14 kinds and the description's one sentence."""
+    served = _tools(mcp)
+    stripped = without_f2(served)
+    assert _digest(served) == F2_SERVED_SHA256
+    assert _digest(stripped) == F3_SERVED_SHA256
+    assert [(t["name"], t["description"]) for t in served] == [
+        (t["name"], t["description"]) for t in stripped
+    ]
+    moved = [(t, u) for t, u in zip(served, stripped, strict=True) if t != u]
+    assert [t["name"] for t, _ in moved] == [OPERATIONS["list_models"].mcp_tool]
+    ((tool, before),) = moved
+    assert tool["inputSchema"] == before["inputSchema"]
+    pins = ("pins", "items", "properties", "specifications")
+    options = ("choices", "items", "properties", "options", "items", "properties", "specifications")
+    for path in (pins, options):
+        kind, kind_before = (_at(t["outputSchema"], path) for t in (tool, before))
+        assert kind["enum"] == [*kind_before["enum"], *F2_KINDS]
+        assert kind["description"] == kind_before["description"] + F2_KIND_NOTE
+        # Nothing else in the kind's schema moved.
+        assert {k: v for k, v in kind.items() if k not in ("enum", "description")} == {
+            k: v for k, v in kind_before.items() if k not in ("enum", "description")
+        }
+    # With the two kinds put back, the tool is F3's exactly: nothing else in it moved.
+    for path in (pins, options):
+        _at(tool["outputSchema"], path).update(_at(before["outputSchema"], path))
+    assert tool == before
+
+
+def _at(schema: dict[str, Any], path: tuple[str, ...]) -> dict[str, Any]:
+    """The `kind` property schema of the `specifications` items at `path` under `models`' items."""
+    node: Any = schema["properties"]["models"]["items"]["properties"]
+    for key in path:
+        node = node[key]
+    kind = node["items"]["properties"]["kind"]
+    assert isinstance(kind, dict)
+    return kind
