@@ -90,3 +90,13 @@ Reversible by: <how>.` Package build decisions go in the package's own file (`do
   round: WO2-1 (Q3.R1 (iii) rational lambda per group row), WO2-7 (templates in a new table material.json, payload
   {instance_schema}); WO2-8 kinds not marked core while ADR 0062 is Proposed.
 - F2-WO2b brief docs/briefs/LINE06-F2-WO2b.md; opus-engineer launched (background, worktree f2).
+- X06-WO1 judged PASS (2026-11-26): 7 commits on wp/X06 (ce0efbdd..203f7e97), worktree clean; 276,592 tokens, 62 min.
+  E-X06-1 (six-client conformance, 36 passed, McpHttpClient 80 steps 11.3 s), E-X06-2..5 (test_x06_mcp_http 25
+  passed); battery 2501 passed, 28 skipped, 3 xfailed (incl. t07, mcp/http, MSG, surface digest); catalogue sha
+  re-taken 9ac09855 -> a767cab0 for origin_refused (F3 precedent). Q9 on mcp 1.30.0: batch 400/-32602; wrong Accept
+  406/-32600; text/plain 400; bad protocol version 400/-32600; non-JSON 400/-32700; notification 202; tools/call
+  without initialize 200 and runs (stateless, authenticated). Orchestrator: ADR 0078 unchanged since dcbab9b7 (card
+  pin holds); test_x06_mcp_http + t08_w2_surface_digest + t07_w5e 74 passed; F0 on wp/X06 PASS, counts as main.
+  For the X06 reviewer: WO1-1 (http.serve and web.serve no longer used by the CLI: remove?), the uninitialized
+  tools/call in stateless mode.
+- X06-WO2 brief docs/briefs/LINE06-X06-WO2.md; opus-engineer launched (background, worktree x06).
