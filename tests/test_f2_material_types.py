@@ -23,14 +23,19 @@ from typing import Any
 import pytest
 from f2.phase_id_parse import parse_phase_id, parse_phase_set
 
+from openflowsheet.compiled import EvaluationContext
 from openflowsheet.material import phase_id as phase_ids
 from openflowsheet.material import state as material_state
 from openflowsheet.material.phase_id import FAMILIES, PhaseId, phase_set, render_phase_set
 from openflowsheet.registry.tokens import ID_PATTERN
 from openflowsheet.thermo import (
     EvaluationState,
+    PropertyRequest,
+    PropertyResult,
     StreamState,
 )
+from openflowsheet.thermo.cache import ExactPropertyCache
+from openflowsheet.thermo.syn001 import Syn001Provider
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
@@ -125,6 +130,92 @@ def test_the_types_are_re_exported_by_thermo() -> None:
     assert thermo.EvaluationState is material_state.EvaluationState
     assert thermo.PhaseId is phase_ids.PhaseId
     assert thermo.PhaseSet is phase_ids.PhaseSet
+
+
+# -- D2: the exact-cache keys -------------------------------------------------------------------
+
+
+CONTEXT = EvaluationContext(model_version="f2-wo1", constants_sha256="0" * 64)
+
+
+class _Recording:
+    """A provider that answers every property request with one fixed result and counts calls."""
+
+    def __init__(self) -> None:
+        self.inner = Syn001Provider()
+        self.calls = 0
+
+    def describe(self) -> Any:
+        return self.inner.describe()
+
+    def evaluate_phase(self, request: PropertyRequest, context: EvaluationContext) -> Any:
+        self.calls += 1
+        return PropertyResult(status="ok", phase_signature="LIQUID", values={"h": 1.0})
+
+    def flash(self, request: Any, context: EvaluationContext) -> Any:
+        raise AssertionError("not used")
+
+
+def _key(cache: ExactPropertyCache, state: object, phase: object = "LIQUID") -> str:
+    request = PropertyRequest(state=state, phase=phase, properties=("h",))  # type: ignore[arg-type]
+    return cache._property_key(request, CONTEXT)
+
+
+@pytest.fixture
+def cache() -> ExactPropertyCache:
+    return ExactPropertyCache(_Recording())
+
+
+def _stream(cache: ExactPropertyCache) -> StreamState:
+    n = len(cache.describe().components)
+    return StreamState(tuple(0.25 * (i + 1) for i in range(n)), 330.0, 101325.0)
+
+
+def test_d2_an_evaluation_state_without_attributes_keys_as_its_stream_state(
+    cache: ExactPropertyCache,
+) -> None:
+    s = _stream(cache)
+    assert _key(cache, EvaluationState.from_stream_state(s)) == _key(cache, s)
+
+
+def test_d2_attributes_enter_the_key_exactly(cache: ExactPropertyCache) -> None:
+    s = _stream(cache)
+    plain = _key(cache, EvaluationState.from_stream_state(s))
+    one = EvaluationState(s.n, s.temperature, s.pressure, (("probe.m", (1.0, 2.0)),))
+    ulp = EvaluationState(
+        s.n, s.temperature, s.pressure, (("probe.m", (1.0, float.fromhex("0x1.0000000000001p+1"))),)
+    )
+    renamed = EvaluationState(s.n, s.temperature, s.pressure, (("probe.n", (1.0, 2.0)),))
+    split = EvaluationState(
+        s.n, s.temperature, s.pressure, (("probe.m", (1.0,)), ("probe.m[A]", (2.0,)))
+    )
+    keys = {plain, *(_key(cache, state) for state in (one, ulp, renamed, split))}
+    assert len(keys) == 5
+    assert _key(cache, one) == _key(cache, EvaluationState(*dataclasses.astuple(one)))
+
+
+def test_d2_a_phase_id_keys_by_its_rendering(cache: ExactPropertyCache) -> None:
+    s = _stream(cache)
+    assert _key(cache, s, PhaseId("LIQUID", None, 1)) == _key(cache, s, "LIQUID")
+    assert _key(cache, s, PhaseId("VAPOR", None, 1)) == _key(cache, s, "VAPOR")
+    others = {_key(cache, s, p) for p in (PhaseId("LIQUID", None, 2), PhaseId("FLUID", None, 1))}
+    assert len(others | {_key(cache, s, "LIQUID")}) == 3
+
+
+def test_d2_one_result_serves_both_request_forms(cache: ExactPropertyCache) -> None:
+    s = _stream(cache)
+    context = CONTEXT
+    cache.evaluate_phase(PropertyRequest(state=s, phase="LIQUID", properties=("h",)), context)
+    cache.evaluate_phase(
+        PropertyRequest(
+            state=EvaluationState.from_stream_state(s),  # type: ignore[arg-type]
+            phase=PhaseId("LIQUID", None, 1),  # type: ignore[arg-type]
+            properties=("h",),
+        ),
+        context,
+    )
+    assert cache._provider.calls == 1  # type: ignore[attr-defined]
+    assert cache.counters.cache_hits == 1
 
 
 # -- D6: phase ids ------------------------------------------------------------------------------

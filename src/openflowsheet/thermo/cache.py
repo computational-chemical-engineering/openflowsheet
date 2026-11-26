@@ -37,8 +37,10 @@ from typing import Final
 from openflowsheet.canonical import document_sha256, state_sha256
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.thermo import (
+    EvaluationState,
     FlashRequest,
     FlashResult,
+    PhaseId,
     PropertyCapabilities,
     PropertyProvider,
     PropertyRequest,
@@ -113,11 +115,32 @@ class FlashGuess:
     source_state_sha256: str
 
 
-def _state_document(state: StreamState, components: Sequence[str]) -> dict[str, object]:
-    """The exact numerical inputs of a state, hashed at full precision and never quantized."""
+def _state_document(
+    state: StreamState | EvaluationState, components: Sequence[str]
+) -> dict[str, object]:
+    """The exact numerical inputs of a state, hashed at full precision and never quantized.
+
+    ADR 0062 D2: an `EvaluationState` is keyed by n, T, P **and** its attributes, each attribute's
+    values hashed in its key's order; one without attributes is the `StreamState` it round-trips to
+    (E-F2-1) and keys exactly as that stream does, whose key is byte-unchanged (F0 M6)."""
     names = (*(f"n_{component}" for component in components), "T", "P")
     values = (*state.n, state.temperature, state.pressure)
-    return {"order": list(names), "vector_sha256": state_sha256(list(values), names)}
+    document: dict[str, object] = {
+        "order": list(names),
+        "vector_sha256": state_sha256(list(values), names),
+    }
+    if isinstance(state, EvaluationState) and state.attributes:
+        document["attributes"] = [
+            [key, state_sha256(list(found), [f"{key}#{index}" for index in range(len(found))])]
+            for key, found in state.attributes
+        ]
+    return document
+
+
+def _phase_key(phase: object) -> object:
+    """ADR 0062 D2: a `PhaseId` keys by its rendering (D6), so the unqualified first `LIQUID` or
+    `VAPOR` keys as the legacy `Phase` value it renders as; a `Phase` is unchanged (F0 M6)."""
+    return phase.render() if isinstance(phase, PhaseId) else phase
 
 
 class ExactPropertyCache:
@@ -196,7 +219,7 @@ class ExactPropertyCache:
                 **self._identity(context),
                 "kind": "evaluate_phase",
                 "state": _state_document(request.state, self._capabilities.components),
-                "phase": request.phase,
+                "phase": _phase_key(request.phase),
                 "properties": list(request.properties),
                 "derivatives": list(request.derivatives),
             }

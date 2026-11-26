@@ -64,3 +64,10 @@ Files: `schemas/units.json`, `schemas/quantity.schema.json` (kind enum), `src/op
   are solved as F0 solves them (`StreamState.__init__` recorded): 99,538 built, 21,903 bitwise distinct; each
   `from_stream_state(s).to_stream_state()` equals `s` by `struct.pack('<d')` per float and `n` is the same tuple
   object. `tests/test_f2_material_types.py::test_e_f2_1_every_corpus_stream_round_trips_bitwise`.
+- **DECISION WO1-5. D2's exact-cache keys** (`thermo/cache.py`; numbered before WO1-6 in the brief's order, committed
+  after it). `_state_document` keeps the `StreamState` document byte for byte (F0 M6 85/85 after the change); an
+  `EvaluationState` adds `attributes: [[key, state_sha256(values, ["<key>#0", ...])], ...]` in key order **only when
+  it has attributes**, so one without attributes keys exactly as the `StreamState` it round-trips to (one state, one
+  key, one result for both request forms; tested). `_phase_key` keys a `PhaseId` by its rendering, so
+  `PhaseId("LIQUID", None, 1)` keys as `"LIQUID"`. Flash keys are untouched (`FlashRequest` is not widened, D2).
+  Alternative: an `attributes` member always present (an `EvaluationState` would never share a `StreamState` entry).
