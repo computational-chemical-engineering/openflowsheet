@@ -202,3 +202,36 @@ Files: `src/openflowsheet/material/{basis,definitions}.py`, `schemas/connection-
   orchestrator's). The merge resolves the register hunk by taking main's R-1071 and R-1073 around this entry.
   Alternative: no register assertion in the c_11 test (a weaker test than c_10's). Reversible: revert the register
   commit and drop the test's last five lines.
+- **Built.** `src/openflowsheet/material/vid.py` (D7: `VariableId`, render only; the closed field table;
+  `legacy_variable_id` = `models`' `flow_id`/`temperature_id`/`pressure_id`, duplicated because `material` sits below
+  `models`, a test pins the equality), `src/openflowsheet/material/layout.py` (D8: `MaterialLayout.build`,
+  `state(x, c)`, `value(x, c)`, `document()`), `tests/f2/vid_parse.py` (the left inverse),
+  `tests/test_f2_vid_layout.py` (36 tests). E-F2-5 (ids): 10^4 structures, 8,756 distinct renderings, parse inverts
+  each, 0 collisions, 0 equal to any of 37,457 legacy-form ids, qualified phases on all four families. E-F2-6: 2,000
+  generated revisions, 3,514 material states and 59,935 slots bit for bit against an independent D3 builder (shuffled
+  variable order, foreign ids, `±0.0`, 5e-324); `vid_parse` not importable from `src/` (subprocess, `-I`), no `src/`
+  import of it, no string-splitting call in `vid.py`/`layout.py`. Three order mutations (attribute component order,
+  class order, group order) each fail the suite. WO4's fixtures and WO5's probes extend E-F2-6 to their states.
+- **DECISION WO3-2. `MaterialState`** (D8 names it; no ADR defines it): `connection`, `definition_sha256`,
+  `thermal_coordinate`, `substreams` (`SubstreamState`: `substream`, `carried`, `attributes`, each in layout order),
+  `thermal` (h in J/kg or T in K), `pressure`; `is_dormant` per D4 on both. ADR-F4/F6 may widen it.
+- **DECISION WO3-3. Layout inputs.** `build(connections, facts, variable_ids)`: each slot's `variable_index` is the
+  position of its rendered id in the problem's variable order (render, never parse). `MaterialFacts`: component-set
+  order (`nTP-v1`), per component `amount_basis`, molar mass (`None` for `kg`, M = 1), charge; per attribute kind
+  `scope`, `partition`, `classed`, `quantity_kind`. M_g is `basis.group_molar_masses` at build.
+- **DECISION WO3-4. Slot quantity kinds.** Carried amount by basis (`mol` molar_flow, `kg` mass_flow, `segment_mol`
+  segment_molar_flow); a class its component's; a group molar_flow; an attribute its kind's; `h` specific_enthalpy,
+  `T`, `P`, `Q` heat_rate, `W` power, `s` the instance's kind.
+- **DECISION WO3-5. D3's "component order" for non-partition attributes** is the substream's component order, not the
+  attribute's own list order (normalisation keeps that list as given). Changes no byte; for the ruling round.
+- **DECISION WO3-6. What the layout refuses (`ValueError`, ahead of WO4's typed codes):** a group basis whose species
+  are not exactly the substream's components, or with a partition attribute (D3 is silent on a group basis over a
+  subset); a partition attribute without components or classes; a component in two partition attributes; a classed
+  attribute without its substream's grid; a slot id missing from the variable order or shared by two slots. The id
+  structure does not encode index roles (`n[x]` is a component or a group by the definition), so two slots of one
+  connection rendering alike is refused here.
+- **DECISION WO3-7. Field-table shapes.** Connection `n`: on a substream, 1-2 indices; `a`: on a substream, 1-3;
+  `h T P Q W s`: no substream, no index. State-point fields: substream and indices free (ADR-F5/F6 fix them).
+- **DECISION WO3-8. `material_layout`** = per connection `connection`, `definition`, `definition_sha256`, `slots`
+  (`substream`, `field`, `index` with class indices as JSON integers, `quantity_kind`); no M and no dormancy
+  partition (floats stay out of R0). No schema file yet (E-F2-10 is WO6's).
