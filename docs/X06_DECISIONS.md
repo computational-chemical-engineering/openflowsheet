@@ -53,3 +53,15 @@ Batch (JSON array): 400, JSON-RPC -32602. Accept `text/plain`, or `text/event-st
 JSON: 400, -32700. Notification: 202, empty body. None of these runs a tool (no refusal audited). A `tools/call`
 without `initialize`: 200, runs (stateless: no session requires it). The guard answers `GET`, `DELETE`, `PUT` with 405.
 The SDK client negotiates protocol `2025-11-25`; no `Mcp-Session-Id` is sent.
+
+## X06-WO2 (branches, D2), 2026-11-26
+
+- **DECISION WO2-1. E-X06-7's sources.** At `aa5822ac` no JSON file under `tests/fixtures/` validates against
+  `change-set.schema.json` (0 of 840), so the ADR's set alone gives an empty list, which E-X06-7 forbids. The golden
+  list (`tests/fixtures/x06/change_set_golden.json`, written by `tests/test_x06_change_set_golden.py --write` in a
+  detached worktree at `aa5822ac`) takes that set (still empty) plus every `commit_change` and `preview_change` tool
+  input recorded in the committed transcripts under `benchmarks/` (V17 c1/c2, OpenIDAES-450): 78 commits and 225
+  previews that validate (8 previews do not and are skipped), 303 entries, each normalized as the operation does
+  (preview completed by the key `preview`). These are real requests agents sent, which is what the test protects.
+  Alternative: synthetic ChangeSet fixtures written now (proves less: they never hashed under the old code in use).
+  Reversible by: deleting the transcript source from the module and adding fixtures. ADR divergence, reported.
