@@ -65,9 +65,9 @@ Format: **package**: what it delivers · needs first · design pass.
 - **F8**: identity and replay v2, work orders WO1 to WO3 (manifest, bundle v2, replay) and WO5 (platform records) ·
   F2, F3, X07a · architect (W1, ADR 0067). WO4 (evidence, after F4-WO4) and WO6 (wiring, after F6-WO4) go with F4 and
   F6; WO7 stays in TX.
-- **X06**: MCP over HTTP, branches, job resume, further solve policies, policy administration · nothing · architect
-  (ADR 0078 Proposed, `dcbab9b7` on wp/X06; ADR 0056 row 8 in full, in its order: card `ofs-line06-x06-scope`, choice
-  A; job resume proposed for deferral to F7 D14 in 0.8, the ADR's Q1, awaiting the user).
+- **X06**: MCP over HTTP, branches, further solve policies, policy administration · nothing · architect
+  (ADR 0078 Accepted, `ofs-x06-accept-adr0078`; designed on ADR 0056 row 8 in full, card `ofs-line06-x06-scope`; job
+  resume moved to F7 D14 in 0.8, the ADR's Q1; MCP clients send a static bearer, OAuth later, `ofs-x06-mcp-clients`).
 - *Line acceptance:* a v2 revision with store-pinned records solves on the legacy route on all three OSes (from 0.5,
   R-1065); ADR 0062, ADR 0067 and ADR 0078 Accepted (card `ofs-line06-adr-clause`, choice A, signed
   2026-11-26T20:39:05Z; before it the clause read "ADR-F1 to ADR-F8 Accepted", from 0.5, `ofs-rel050-q-f1`); X06's
@@ -99,7 +99,8 @@ is unchanged.)*
 
 *(Was 0.7 until 2026-11-26; card `ofs-line06-rest`, choice A.)*
 
-- **F7**: problem layer v2 · F6 · architect (W1).
+- **F7**: problem layer v2, including job resume from checkpoints (ADR 0066 D14; from X06, ADR 0078 Q1) · F6 ·
+  architect (W1).
 - **TX**: transient simulation with controllers and co-simulation · F7, F8 · architect and specifier.
 - **X13**: Gibbs and kinetic reactors · F6 · specifier.
 - **X07b**: optimisation and reactor environments on three OSes · X07a, F8 · none.

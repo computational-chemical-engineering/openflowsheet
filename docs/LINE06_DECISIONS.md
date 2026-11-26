@@ -109,3 +109,15 @@ Reversible by: <how>.` Package build decisions go in the package's own file (`do
   second merge if X06 merges first. Alternative: allocate at merge time. Reversible by: renumbering in m07a_rc.py.
   Rule widened to tests/test_m07a_surface_chain.py. X06-WO2's engineer told by message to add c_12 in WO2.
 - F2-WO3 brief docs/briefs/LINE06-F2-WO3.md (first commit c_11, then D7/D8); opus-engineer launched (background).
+- F2-WO3 report (2026-11-27): commits ee0e145d, 70c1aaec, baf4bd11, 41177bcf; 221,708 tokens, 55 min. Chain suite 34
+  passed (18 failed before); E-F2-5 ids 10^4 structures, 8,756 distinct, none equal to 37,457 legacy ids; E-F2-6 3,514
+  states / 59,935 slots bitwise, three planted orderings caught; WO2b residue fixed in test_m02_schemas g1c and
+  test_m04_study_job a42. The engineer did not rerun the whole named set after that fix: the orchestrator runs it
+  (battery-f2-wo3, with F0). DECISION WO3-1 (R-1072 copied onto wp/F2 with evidence, ee0e145d): accepted; at F2's
+  merge the register block is resolved to main's R-1071..R-1073 plus wp/F2's evidence row. WO3-6 joins the ruling
+  batch. F2-WO4 brief written (docs/briefs/LINE06-F2-WO4.md), launch after the battery.
+- 2026-11-27: hub's doorbell; cards verified: ofs-x06-accept-adr0078 VERIFIED A (signed 2026-11-26T23:14:33Z, the
+  pinned text "at dcbab9b7"; ADR 0078 unchanged at wp/X06 head, `git diff dcbab9b7 HEAD` empty), ofs-x06-mcp-clients
+  VERIFIED A (23:15:29Z). Applied on main: R-1071 Accepted with both action texts, R-110 status line, roadmap X06 row
+  (resume removed) and F7 row (resume from X06), target-architecture X06 row. `executed` written (versions 3, 3).
+  Pending: ADR 0078's status line on wp/X06 after X06-WO2 ends (no commit into a worktree an engineer is using).

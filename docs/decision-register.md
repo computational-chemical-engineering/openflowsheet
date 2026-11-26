@@ -2706,7 +2706,7 @@ FQ1 (R-1016: inputs unchanged in 0.4).
 
 ## R-110 — v0.1 excludes resume, branches, in-band policy administration, MCP over HTTP and further solve policies, each reported explicitly unsupported
 
-**Lifted as policy (Frank, 2026-11-01; R-925, ADR 0056): package X06.** The behaviour below stays until that package lands.
+**Lifted as policy (Frank, 2026-11-01; R-925, ADR 0056): package X06.** The behaviour below stays until that package lands. *(Status 2026-11-26, R-1071, ADR 0078 Accepted: lifted by X06 for MCP over HTTP, branches, further solve policies and in-band administration; resume stands until F7 D14, 0.8.)*
 
 | | |
 | --- | --- |
@@ -20475,12 +20475,12 @@ and has the clearest user value (remote agents over MCP); leaving it out saves l
 **Risk accepted.** F4 to F6 are built after F2's v2 records ship. A change they need in those records is an ADR 0062
 amendment and a second migration; the W1 design (the v2 core frozen at W1's end, R-928) is what keeps that unlikely.
 
-## R-1071: X06 application capabilities, ADR 0078 (2026-11-26, Proposed)
+## R-1071: X06 application capabilities, ADR 0078 (2026-11-26, Accepted 2026-11-26)
 
 | | |
 | --- | --- |
 | Date | 2026-11-26 |
-| Decided by | design lane (`architect`, LINE06 D1); acceptance is the user's (Decision Desk, requested) |
+| Decided by | design lane (`architect`, LINE06 D1); **accepted by the user**, Decision Desk `ofs-x06-accept-adr0078`, choice A, signed 2026-11-26T23:14:33Z ("Accept ADR 0078 as written at dcbab9b7 with its defaults"); Q4: `ofs-x06-mcp-clients`, choice A, signed 23:15:29Z ("Static bearer header only in 0.6 (Claude Code and SDK clients); OAuth (RFC 9728 metadata and an authorization server) is a later package.") |
 | Normative text | `docs/adr/0078-X06-application-capabilities.md` (on wp/X06, `dcbab9b7`) |
 | Evidence | to come: E-X06-1 to E-X06-24 |
 | Affected packages | X06 (0.6); F7 (0.8, D14 takes job resume if Q1 is accepted); R-110 |
@@ -20492,7 +20492,10 @@ job resume deferred to F7 D14 in 0.8 (D3); project-registered immutable `user.*`
 administration, off by default behind an operator switch, no escalation, writes refused beyond loopback (D5). No
 stored record, run identity or store schema changes. Five work orders (WO1 to WO4 Opus, WO5 Sonnet).
 
-**Open for the user:** Q1 to Q6 of the ADR's risks section, and Q4's fact (which MCP clients must connect).
+**Settled by the user (both cards above):** Q1 resume deferred to F7 D14 (0.8); Q2 administration off by default behind a
+per-project operator switch; Q3 administration writes refused beyond loopback, no override in 0.6; Q4 static bearer
+only, OAuth later; Q5 `draft` right to register a solve policy; Q6 the seven benchmark-registered policies stay
+`unsupported`.
 
 ## R-1072: F2's surface link c_11 in the v0.2 surface chain (2026-11-26, reserved)
 

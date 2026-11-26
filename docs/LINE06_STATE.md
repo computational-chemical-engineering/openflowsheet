@@ -40,14 +40,14 @@ once F2-WO4 is on wp/F2 (F8 branches from wp/F2's head, merges after F2).
 
 ## Next action
 
-Done: D1, F2-WO1 (with a recorded miss, fixed by WO2b), F2-WO2, F2-WO2b, X06-WO1 (log). Running (the cap of two):
-`opus-engineer` on F2-WO3 (worktree `f2`, `docs/briefs/LINE06-F2-WO3.md`: chain link c_11 then ids and layout) and
-`opus-engineer` on X06-WO2 (worktree `x06`, `docs/briefs/LINE06-X06-WO2.md`, plus chain link c_12 by message). On each
-report: `git -C <worktree> status`, ListAgents, judge on the brief's acceptance (surface suites included), re-run F0 on
-the branch, log. Next briefs: F2-WO4 (revision v2), X06-WO3 (solve policies). Cards open: `ofs-x06-accept-adr0078`
-(verify with the pinned text in the log), `ofs-x06-mcp-clients`. After Q1: R-110 status line, roadmap resume move,
-target-architecture X06 row. F2 ruling round (batched, at F2's reviewer pass): WO1-4, WO1-1, WO1-9, M = 1 for kg,
-WO2-1, WO2-7. X06 reviewer: WO1-1 (unused serve functions), stateless tools/call without initialize.
+Done: D1, F2-WO1 (miss fixed by WO2b), F2-WO2, F2-WO2b, X06-WO1; F2-WO3 reported (being confirmed by the
+orchestrator's battery `battery-f2-wo3`, log `~/.cache/line06/battery-f2-wo3.log`; script in the session scratchpad
+`battery_f2.sh`: the named suites plus F0 on the f2 worktree). On PASS: launch `opus-engineer` on
+`docs/briefs/LINE06-F2-WO4.md`. Running: `opus-engineer` on X06-WO2 (branches + chain link c_12). When it ends: judge,
+then set ADR 0078's status line to Accepted on wp/X06 (cards below), then X06-WO3 (solve policies). ADR 0078 is
+**Accepted** (2026-11-26), with Q4 static bearer. F2 ruling batch (at F2's reviewer pass): WO1-4, WO1-1, WO1-9, M = 1
+for kg, WO2-1, WO2-7, WO3-6. X06 reviewer: WO1-1 (unused serve functions), stateless tools/call without initialize.
+At F2's merge: the register block conflict (WO3-1).
 
 ## Decisions settled (Decision Desk, 2026-11-26, each choice A, VERIFIED, `executed` written)
 
@@ -57,9 +57,12 @@ WO2-1, WO2-7. X06 reviewer: WO1-1 (unused serve functions), stateless tools/call
   0066 to 0.8. Applied likewise.
 - `ofs-line06-x06-scope`: X06's architect pass designs ADR 0056 row 8 in full, in its order. In the D1 brief.
 
+- `ofs-x06-accept-adr0078` (A, VERIFIED, executed): ADR 0078 accepted as written at dcbab9b7 with Q1-Q3, Q5, Q6 defaults.
+- `ofs-x06-mcp-clients` (A, VERIFIED, executed): static bearer only in 0.6; OAuth later.
+
 ## Open decisions (later, not yet requested)
 
-ADR 0062 acceptance (before F2m), ADR 0067 (before F8m), ADR 0078 (after D1); each merge; the release cards.
+ADR 0062 acceptance (before F2m), ADR 0067 (before F8m); each merge; the release cards.
 
 ## Estimate (extrapolated, not measured)
 
