@@ -1,7 +1,7 @@
 """T07 W6e: the conformance suite — no transport adds anything to `dispatch` (§11.6 (3), G14).
 
 Design note `docs/design/T07-jobs-and-bindings.md` §11.6 (3), §16 G14. **One scenario**
-(`Scenario.run`) runs against five clients, each on a fresh project (same project id, same policy
+(`Scenario.run`) runs against six clients, each on a fresh project (same project id, same policy
 file, so ids, ordinals and every `policy_sha256` agree):
 
 | client | transport | executor | caller | compared with |
@@ -11,6 +11,7 @@ file, so ids, ordinals and every `policy_sha256` agree):
 | `PythonClient` (process) | `dispatch` on one owner | process | the grant | (reference) |
 | `HttpClient` | httpx `ASGITransport` | process | the grant (bearer) | Python (process) |
 | `McpClient` | the SDK's in-memory client session | process | the grant | Python (process) |
+| `McpHttpClient` | SDK streamable HTTP, `/mcp` | process | the grant (bearer) | Python (process) |
 
 **Why two references.** The CLI runs jobs inline only (W5b-Q1: a one-shot command closes its
 project, and closing a process executor ends its jobs), and each `api` call opens the project as
@@ -35,10 +36,11 @@ the comparison, each for a stated reason, never for a transport's convenience:
   `queued` or `running`; a cancel of a running job: `running` or already `cancelled`). The
   members a running job changes (`status`, `progress`, `event_count`, `outputs`, `ending`,
   `error`) are compared in the job's final read instead, which is `equal`.
-- `code`: HTTP's refusal of a revoked credential. §10.2 has HTTP present its token on every
-  request, so a revoked token is refused by the transport before any method runs (401,
-  `unauthenticated`, its own message, not audited); in-process and over MCP the capability was
-  authenticated at open, and the method refuses it. The code and `retryable` must agree.
+- `code`: HTTP's refusal of a revoked credential, on the REST routes and on `/mcp` (ADR 0078
+  D1.5). §10.2 has HTTP present its token on every request, so a revoked token is refused by the
+  transport before any method runs (401, `unauthenticated`, its own message, not audited);
+  in-process and over MCP stdio the capability was authenticated at open, and the method refuses
+  it. The code and `retryable` must agree.
 
 **Scenarios**: every operation's success path; every `ApiError` code each transport can reach
 (`REACHABLE`); duplicate submit and commit, and key reuse; cancel of a queued job, of a running
@@ -80,13 +82,12 @@ from t07_jobs_support import PATIENCE_S, Pause, lifecycle_violations
 from t07_mcp_support import environment
 from t07_process_support import wait_until
 from t07_transport_support import (
-    ALL,
     NEWER_JOB,
-    SERVED,
     CliClient,
     Client,
     HttpClient,
     McpClient,
+    McpHttpClient,
     Outcome,
     PythonInline,
     PythonProcess,
@@ -154,6 +155,7 @@ REACHABLE = {
     "python-process": _COMMON | _GRANT | {"unsupported"},
     "http": _COMMON | _GRANT | {"unsupported"},
     "mcp": _COMMON | _GRANT,
+    "mcp-http": _COMMON | _GRANT,
 }
 pytestmark = pytest.mark.filterwarnings(
     "ignore:Using `httpx` with `starlette.testclient` is deprecated"
@@ -500,7 +502,7 @@ class Scenario:
         # A revoked grant is refused on its next call (§10.2).
         if c.grant:
             revoke(c.project, CAPABILITY)
-            relation = "code" if c.transport == "http" else "equal"
+            relation = "code" if c.transport in ("http", "mcp-http") else "equal"
             self.step("revoked", "get_project", {}, relation)
         return self.steps
 
@@ -600,6 +602,7 @@ class Scenario:
 @dataclass
 class Run:
     client: str
+    carries: frozenset[str]
     steps: list[Step]
     wall_s: float
     violations: dict[str, Any]
@@ -614,7 +617,7 @@ def _project(root: Path, name: str, policy: bytes) -> Path:
 
 @pytest.fixture(scope="module")
 def runs(tmp_path_factory: pytest.TempPathFactory) -> dict[str, Run]:
-    """The scenario on each of the five clients (module docstring), each on a fresh project."""
+    """The scenario on each of the six clients (module docstring), each on a fresh project."""
     pytest.importorskip("mcp")
     pytest.importorskip("httpx")
     root = tmp_path_factory.mktemp("conformance")
@@ -637,6 +640,7 @@ def runs(tmp_path_factory: pytest.TempPathFactory) -> dict[str, Run]:
         "python-process": lambda p: PythonProcess(p, capability),
         "http": lambda p: HttpClient(p, token),
         "mcp": lambda p: McpClient(p, capability),
+        "mcp-http": lambda p: McpHttpClient(p, token),
     }
     arm = InlineArm()
     done: dict[str, Run] = {}
@@ -654,12 +658,12 @@ def runs(tmp_path_factory: pytest.TempPathFactory) -> dict[str, Run]:
                 client.close()
             with LocalApplication.open(client.project) as app:
                 violations = {k: v for k, v in lifecycle_violations(app).items() if k != NEWER_JOB}
-            done[name] = Run(name, steps, time.monotonic() - began, violations)
+            done[name] = Run(name, client.carries, steps, time.monotonic() - began, violations)
         total = time.monotonic() - started
     timings = ", ".join(
         f"{run.client} {len(run.steps)} steps {run.wall_s:.1f} s" for run in done.values()
     )
-    print(f"\nT07 conformance: 5 scenario runs in {total:.1f} s wall ({timings})")
+    print(f"\nT07 conformance: {len(done)} scenario runs in {total:.1f} s wall ({timings})")
     return done
 
 
@@ -668,14 +672,19 @@ def runs(tmp_path_factory: pytest.TempPathFactory) -> dict[str, Run]:
 
 @pytest.mark.parametrize(
     ("transport", "reference"),
-    [("cli", "python-inline"), ("http", "python-process"), ("mcp", "python-process")],
+    [
+        ("cli", "python-inline"),
+        ("http", "python-process"),
+        ("mcp", "python-process"),
+        ("mcp-http", "python-process"),
+    ],
 )
 def test_g14_every_transport_equals_dispatch(
     runs: dict[str, Run], transport: str, reference: str
 ) -> None:
     """Every step, in order, equal to the reference's same step (module docstring)."""
     got, expected = runs[transport].steps, runs[reference].steps
-    carried = SERVED[transport]
+    carried = runs[transport].carries
     assert [s.label for s in got] == [s.label for s in expected if s.operation in carried]
     assert len({s.label for s in got}) == len(got)
     by_label = {s.label: s for s in expected}
@@ -711,8 +720,7 @@ def test_every_reachable_api_error_code_is_reached(runs: dict[str, Run], client:
 
 @pytest.mark.parametrize("client", sorted(REACHABLE))
 def test_every_carried_operation_succeeds_at_least_once(runs: dict[str, Run], client: str) -> None:
-    carried = {"python-inline": ALL, "python-process": SERVED["http"]}.get(client, None)
-    carried = carried if carried is not None else SERVED[client]
+    carried = runs[client].carries
     if client not in ("python-inline", "cli"):  # the grant lacks `policy` (F3 decision WO5b-7)
         carried = carried - {n for n in carried if OPERATION_RIGHTS[n] == "policy"}
     succeeded = {s.operation for s in runs[client].steps if not s.outcome[0]}
@@ -758,7 +766,7 @@ def test_the_cancellations_and_the_duplicates_behave(runs: dict[str, Run], clien
     assert (cancelled_ended["status"], cancelled_ended["cancel_requested"]) == ("completed", False)
 
 
-@pytest.mark.parametrize("client", ["cli", "http", "mcp"])
+@pytest.mark.parametrize("client", ["cli", "http", "mcp", "mcp-http"])
 def test_j5_d_every_transport_serves_the_newer_producers_job_whole(
     runs: dict[str, Run], client: str
 ) -> None:
@@ -780,7 +788,7 @@ def test_j5_d_every_transport_serves_the_newer_producers_job_whole(
 
 
 def test_the_budget_of_the_scenario_runs(runs: dict[str, Run]) -> None:
-    """§11.6: ≤ 120 s for the module on the reference host. The five scenario runs are the bulk;
+    """§11.6: ≤ 120 s for the module on the reference host. The six scenario runs are the bulk;
     they are held to it here, the smoke tests' share is in `--durations`."""
     total = sum(run.wall_s for run in runs.values())
     assert total <= 120.0, {run.client: round(run.wall_s, 1) for run in runs.values()}

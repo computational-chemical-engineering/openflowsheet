@@ -1,10 +1,11 @@
-"""The four transports as clients of one project, for the T07 W6e conformance and injection suites.
+"""The transports as clients of one project, for the T07 W6e conformance and injection suites.
 
 Not collected. Each client calls an operation of `OPERATIONS` by name with a request document and
 returns `(is an error, the response)` — the response document, the raw export's bytes, or the
 `ApiError` document — after checking what its transport itself promises: the CLI's exit code and
 canonical JSON line (§11.5), HTTP's status of each code (§5.8), MCP's framing line (§10.6) and the
-SDK's validation of each success against the tool's `outputSchema`.
+SDK's validation of each success against the tool's `outputSchema`. MCP has two carriers, the
+SDK's in-memory streams (`McpClient`, as stdio) and streamable HTTP (`McpHttpClient`, ADR 0078 D1).
 
 `inject_newer_producers_job` writes, as a newer producer would, a job with an output and events of
 kinds this code does not know (ADR 0008 A1 J5 (d)).
@@ -259,20 +260,121 @@ class McpClient(Client):
         )
 
     def call(self, name: str, request: Any) -> Outcome:
-        from openflowsheet.application.bindings.mcp import FRAMING
-
         tool = OPERATIONS[name].mcp_tool
         assert tool is not None
-        result = self.portal.call(self.session.call_tool, tool, request)
-        (content,) = result.content
-        line, _, rendered = content.text.partition("\n")
-        assert line == FRAMING.format(tool=tool)
-        assert json.loads(rendered) == result.structuredContent
-        return bool(result.isError), result.structuredContent
+        return _tool_outcome(tool, self.portal.call(self.session.call_tool, tool, request))
 
     def close(self) -> None:
         self.stack.close()
         self.owner.close()
+
+
+def _tool_outcome(tool: str, result: Any) -> Outcome:
+    """A tool result as an outcome, after checking §10.6's framing of its text content."""
+    from openflowsheet.application.bindings.mcp import FRAMING
+
+    (content,) = result.content
+    line, _, rendered = content.text.partition("\n")
+    assert line == FRAMING.format(tool=tool)
+    assert json.loads(rendered) == result.structuredContent
+    return bool(result.isError), result.structuredContent
+
+
+#: The address `McpHttpClient`'s application believes it serves (its served origins'); no socket.
+MCP_HTTP_HOST, MCP_HTTP_PORT = "127.0.0.1", 8765
+
+
+class McpHttpClient(Client):
+    """The SDK's streamable-HTTP client (`streamable_http_client`) over httpx's `ASGITransport`
+    into `serve-http`'s application (`serving.http_application`: the REST routes and `/mcp`), its
+    lifespan running; the owner opened as `serve-http` opens it (the local owner, process
+    executor), every request carrying the grant's bearer token (ADR 0078 D1, E-X06-1).
+
+    A session per call, `initialize` first: the server is stateless (D1.3), so a session holds
+    nothing between calls. A refusal of the guard (D1.5; in the scenario, the revoked
+    credential's 401) is an HTTP status the SDK raises on, which ends its session; it is
+    returned as the outcome, its `ApiError` document at its code's status (§5.8)."""
+
+    transport, mode, grant, carries = "mcp-http", "process", True, SERVED["mcp"]
+
+    def __init__(self, project: Path, token: str) -> None:
+        import httpx
+        from anyio.from_thread import start_blocking_portal
+
+        from openflowsheet.application.serving import http_application
+
+        super().__init__(project)
+        self.owner = process_owner(project, None)
+        application = http_application(self.owner, host=MCP_HTTP_HOST, port=MCP_HTTP_PORT)
+        self.stack = contextlib.ExitStack()
+        self.portal = self.stack.enter_context(start_blocking_portal())
+        self.stack.enter_context(
+            self.portal.wrap_async_context_manager(application.router.lifespan_context(application))
+        )
+        self.recorder = _Refusals(httpx.ASGITransport(app=application))
+        self.client = httpx.AsyncClient(
+            transport=self.recorder,  # type: ignore[arg-type]  # duck-typed: httpx is lazy here
+            base_url=f"http://{MCP_HTTP_HOST}:{MCP_HTTP_PORT}",
+            headers={"Authorization": f"Bearer {token}"},
+            timeout=None,
+        )
+
+    async def _call(self, tool: str, request: Any) -> Any:
+        from mcp import ClientSession
+        from mcp.client.streamable_http import streamable_http_client
+
+        url = f"http://{MCP_HTTP_HOST}:{MCP_HTTP_PORT}/mcp"
+        async with (
+            streamable_http_client(url, http_client=self.client) as (read, write, _),
+            ClientSession(read, write) as session,
+        ):
+            await session.initialize()
+            return await session.call_tool(tool, request)
+
+    def call(self, name: str, request: Any) -> Outcome:
+        tool = OPERATIONS[name].mcp_tool
+        assert tool is not None
+        self.recorder.refused.clear()
+        try:
+            result = self.portal.call(self._call, tool, request)
+        except Exception:
+            if not self.recorder.refused:
+                raise
+            ((status, content),) = self.recorder.refused
+            document = json.loads(content)
+            assert schema_errors("api-error.schema.json", document) == []
+            assert status == API_ERROR_HTTP_STATUS[document["code"]], (name, status, document)
+            return True, document
+        assert self.recorder.refused == []
+        return _tool_outcome(tool, result)
+
+    def close(self) -> None:
+        self.portal.call(self.client.aclose)
+        self.stack.close()
+        self.owner.close()
+
+
+class _Refusals:
+    """An httpx transport that records every response of status 400 or above, read whole."""
+
+    def __init__(self, inner: Any) -> None:
+        self.inner = inner
+        self.refused: list[tuple[int, bytes]] = []
+
+    async def handle_async_request(self, request: Any) -> Any:
+        import httpx
+
+        response = await self.inner.handle_async_request(request)
+        if response.status_code < 400:
+            return response
+        content = await response.aread()
+        self.refused.append((response.status_code, content))
+        return httpx.Response(
+            response.status_code, headers=response.headers, content=content, request=request
+        )
+
+    async def aclose(self) -> None:
+        await self.inner.aclose()
 
 
 def inject_newer_producers_job(project: Path) -> None:
