@@ -276,7 +276,7 @@ and enum values (ADR 0002 D7.1; migration report: no instance migrated, no store
 ## Work orders (`wp/F8`; at most two engineers at a time)
 
 *(Line note, 2026-11-26, R-1070, ADR 0057 Amendment 3: WO1 to WO3 and WO5 are built in 0.6, WO1 to WO3 no longer
-in 0.5; WO4 and WO6 go with F4 and F6 to the line after 0.6; WO7 stays in TX. The table's line labels are as designed.)*
+in 0.5; WO4 and WO6 go with F4 and F6 to 0.7; WO7 stays in TX. The table's line labels are as designed.)*
 
 | # | WO | Content and files | Acceptance | Identity | Lane |
 | --- | --- | --- | --- | --- | --- |

@@ -14,10 +14,10 @@ the ADR acceptances of card `ofs-line06-adr-clause`; X06's exits.
 - `main` = the planning commit (local; last pushed head `4c7d3d6a`, 0.6.0.dev0). Cleanup done: every secondary
   worktree removed (all clean and contained in `main` or a kept branch), the S19 gate-queue daemon stopped, wp/REL050
   and wp/S19 log commits merged (docs only). No job of this campaign is running.
-- Plans updated: R-1070; ADR 0057 Amendment 3; `roadmap.md` 0.6 and "After 0.6"; line notes in ADR 0062 and 0067.
+- Plans updated: R-1070; ADR 0057 Amendment 3; `roadmap.md` 0.6, new 0.7, 0.8 to 0.10; line notes in ADR 0062 and 0067.
 - `release/lines/0.6.json` DRAFT (LINE06-L0): loads clean, `line_release` 0.6.0, release tests 406 passed. Field
   reasons and what LINE06-L1 must still design: `docs/briefs/LINE06-line-0.6.md`.
-- Decision Desk: three cards requested through hub (below). Nothing built yet.
+- Decision Desk: the three cards settled (below). F2-WO1 and D1 running.
 
 ## Order and gates (pass criteria fixed before the run; the orchestrator judges each, a miss is recorded as a miss)
 
@@ -27,7 +27,7 @@ the ADR acceptances of card `ofs-line06-adr-clause`; X06's exits.
 | F2 | wp/F2, WO1 to WO6, then WO7 close-out | opus-engineer (WO1 to WO6), sonnet-implementer (WO7) | E-F2-1 to E-F2-10 pass; F0 PASS (all nine checks); tests touched pass locally; manifest `tested` |
 | F2r | one `reviewer` pass on wp/F2, fix round | reviewer, then engineer | no open must-fix |
 | F2m | ADR 0062 Accepted (card), CI green on every leg at the pushed head, merge, F0 on main | the user, orchestrator | card VERIFIED; CI `success` on all four OS legs; F0 PASS on main |
-| D1 | X06 architect pass: ADR 0078 Proposed with work orders and exits | architect | ADR committed; scope as card `ofs-line06-x06-scope` |
+| D1 | X06 architect pass: ADR 0078 Proposed with work orders and exits | architect | ADR committed; ADR 0056 row 8 in full (card A); every deferral argued |
 | F8 | wp/F8, WO1 to WO3 (after F2-WO4 and WO6 on wp/F2), WO5 | opus-engineer; sonnet-implementer for WO5 with an Opus review | E-F8-1 to E-F8-6, E-F8-8, E-F8-10 pass; F0 PASS; manifest `tested` |
 | F8r, F8m | reviewer pass; ADR 0067 Accepted; CI; merge; F0 | as F2r, F2m | as F2r, F2m |
 | X06 | wp/X06 per ADR 0078's work orders, after its acceptance | opus-engineer / sonnet-implementer | ADR 0078's exits pass; F0 PASS; manifest `tested` |
@@ -40,22 +40,22 @@ once F2-WO4 is on wp/F2 (F8 branches from wp/F2's head, merges after F2).
 
 ## Next action
 
-P1 passed (log). Worktree `.claude/worktrees/f2` (wp/F2 at d00f659a) and brief `docs/briefs/LINE06-F2-WO1.md` are
-ready. `opus-engineer` launched on that brief 2026-11-26 (the user: "go"); running in the background, in the f2
-worktree. On its report: `git -C .claude/worktrees/f2 status` and ListAgents first.
-Then judge WO1 on its five acceptance items, and brief WO2 and WO3. Before D1: wait for `ofs-line06-x06-scope`. Cards
-filed by hub 2026-11-26, open; hub rings when signed.
+Two agents running (the cap): `opus-engineer` on F2-WO1 (worktree `f2`, brief `docs/briefs/LINE06-F2-WO1.md`) and
+`architect` on D1 (worktree `x06`, branch wp/X06, brief `docs/briefs/LINE06-X06-architect.md`, ADR 0078). On each
+report: `git -C <worktree> status`, ListAgents, judge on the brief's acceptance, log. Then: F2-WO2 and WO3 briefs;
+after ADR 0078: register R-1071, progress pointer, and a DECISION-REQUEST for its acceptance (with its open questions).
 
-## Open decisions (Decision Desk, through hub; defaults)
+## Decisions settled (Decision Desk, 2026-11-26, each choice A, VERIFIED, `executed` written)
 
-- `ofs-line06-rest`: where F4 to F6 and the packages on them go. Default A: a new 0.7 "multiphase core and generic
-  units", each later line one up, 1.0 unchanged. B: joined with dynamics in 0.7. Applying either is a roadmap and
-  ADR 0057 edit; until then `roadmap.md` holds them under "After 0.6".
-- `ofs-line06-adr-clause`: the 0.6 line acceptance keeps ADR 0062, 0067 and 0078 Accepted; 0063 to 0066 move with
-  their packages (A, default), or 0.6 keeps "ADR-F1 to ADR-F8 Accepted" (B).
-- `ofs-line06-x06-scope`: ADR 0056 row 8 in full, in its order (A, default), or MCP over HTTP and job resume only (B).
-- Later, not yet requested: ADR 0062 acceptance (before F2m), ADR 0067 (before F8m), ADR 0078 (after D1); each merge;
-  the release cards.
+- `ofs-line06-rest`: new 0.7 "multiphase core and generic units"; dynamics 0.8, design toolkit 0.9,
+  batch/relief/synthesis/electrolytes 0.10; 1.0 unchanged. Applied in `roadmap.md`, ADR 0057 Amendment 3, R-1070.
+- `ofs-line06-adr-clause`: the 0.6 line acceptance requires ADR 0062, 0067 and 0078 Accepted; 0063 to 0065 to 0.7,
+  0066 to 0.8. Applied likewise.
+- `ofs-line06-x06-scope`: X06's architect pass designs ADR 0056 row 8 in full, in its order. In the D1 brief.
+
+## Open decisions (later, not yet requested)
+
+ADR 0062 acceptance (before F2m), ADR 0067 (before F8m), ADR 0078 (after D1); each merge; the release cards.
 
 ## Estimate (extrapolated, not measured)
 

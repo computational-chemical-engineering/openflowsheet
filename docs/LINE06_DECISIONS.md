@@ -42,3 +42,12 @@ Reversible by: <how>.` Package build decisions go in the package's own file (`do
   "dispatch in the application layer" names no file; locate it then (recon).
 - Worktree `.claude/worktrees/f2`, branch wp/F2 at d00f659a. Brief `docs/briefs/LINE06-F2-WO1.md`.
 - 2026-11-26: the user: "go". opus-engineer launched on F2-WO1 (background, worktree f2).
+- 2026-11-26 ~20:50Z: hub's doorbell; the three cards fetched (decisions/<id>, keys) and verified with
+  `decision_desk_verify.py` against the exact action texts sent: ofs-line06-rest VERIFIED A (signed 20:39:40Z),
+  ofs-line06-adr-clause VERIFIED A (20:39:05Z), ofs-line06-x06-scope VERIFIED A (20:39:22Z), key 032ee0a5ae620a90.
+  Applied: roadmap.md (0.7 multiphase core, 0.8 dynamics with ADR 0066, 0.9 toolkit, 0.10 batch; 0.7 acceptance ADR
+  0063-0065; freeze point end of 0.7; "Swap 0.8 and 0.9"), ADR 0057 D6 note and Amendment 3 "Settled", R-1070
+  "Settled", ADR 0062/0067 line notes "0.7". `executed` written on the three cards (versions 3, 3, 4).
+- D1 brief `docs/briefs/LINE06-X06-architect.md`; worktree `.claude/worktrees/x06`, branch wp/X06 at aa5822ac;
+  `architect` launched (background). Facts given: R-110, C1/C6/C7, the note's "resume of long jobs through F7" (F7 now
+  0.8, so resume is the expected deferral argument), F0 counts, no record or identity change.

@@ -20460,10 +20460,11 @@ records solves on the legacy route on all three OSes". The rest of the planned 0
 gaps, X09, X08, X17, X11 rest, PrISMa, F8-WO4 and WO6, and the acceptance clauses Seider VCM, the turbine with no
 declared phases, the VLLE decanter, the coverage matrix, `std.*` equivalence and the preview freeze) leaves 0.6.
 
-**Open, on the Decision Desk (defaults in brackets):** where the packages that leave go (`ofs-line06-rest`: [a new
-0.7 line, later lines one up]); which ADR acceptances the 0.6 line keeps (`ofs-line06-adr-clause`: [ADR 0062, ADR 0067
-and X06's ADR; 0063 to 0066 move with the packages that build them]); X06's scope for its architect pass
-(`ofs-line06-x06-scope`: [ADR 0056 row 8 in full, in its order]).
+**Settled on the Decision Desk, 2026-11-26, each choice A (verified):** the packages that leave form a new 0.7
+"multiphase core and generic units", and dynamics, the design toolkit and batch/relief/synthesis/electrolytes move to
+0.8, 0.9 and 0.10, 1.0 unchanged (`ofs-line06-rest`); the 0.6 line acceptance requires ADR 0062, 0067 and 0078
+Accepted, 0063 to 0065 move to 0.7 and 0066 to 0.8 (`ofs-line06-adr-clause`); X06's architect pass designs ADR 0056
+row 8 in full, in its order (`ofs-line06-x06-scope`). ADR 0057 Amendment 3 records the action texts.
 
 **Why.** 0.6 as planned was about twice 0.5's planned size. F2 and F8 are the one record migration of R-1065 and stand
 without F4 to F6 (v2 documents lower to the legacy route); X06 is independent of the foundations.
