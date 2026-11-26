@@ -28,9 +28,9 @@ the summation order. Per reaction:
 
 These are validation-class findings (Q9), never a verification verdict. Input that is not of this
 shape (a stoichiometry key with no record, a ν that is not a finite number, a record without a
-molar mass) is a caller's error (`ValueError`): the operation's request schema screens it, and a
-record without a molar mass (`kg`) is refused before it can be registered
-(`amount_basis_unsupported`).
+molar mass) is a caller's error (`ValueError`): the operation's request schema screens it. A `kg`
+record has no molar mass; since F2-WO1 admits the basis it can be registered, and a reaction over
+it is refused `invalid_request` by the records service, which catches this `ValueError`.
 """
 
 from __future__ import annotations

@@ -26,15 +26,15 @@ VOLATILE: Final = "volatile"
 #: D2 step 5, D3: the member D6 derives when it is absent.
 ANCHOR: Final = "anchor_phase"
 
-#: D7: the amount bases admitted now. `segment_mol` and `kg` wait for ADR-F2's quantity kinds
-#: (`amount_basis_unsupported`); admitting one is a one-line change of this table.
-ADMITTED_BASES: Final = frozenset({"mol"})
+#: D7: the amount bases admitted. `segment_mol` and `kg` waited for ADR-F2's quantity kinds
+#: (`amount_basis_unsupported`); ADR 0062 D1 registers them, and F2-WO1 admits both here.
+ADMITTED_BASES: Final = frozenset({"mol", "segment_mol", "kg"})
 #: D3, Q7.R2: the kind of `molar_mass` per amount basis; `kg` has no molar mass.
 MOLAR_MASS_KINDS: Final[Mapping[str, str]] = MappingProxyType(
     {"mol": "molar_mass", "segment_mol": "segment_molar_mass"}
 )
-#: D3: the kind of a formation or transition enthalpy and entropy on the `mol` basis. Entropy has
-#: no registered kind yet (risk 6): an `s` Constant is `record_unit_invalid` until ADR-F2 adds it.
+#: D3: the kind of a formation or transition enthalpy and entropy on the `mol` basis
+#: (`molar_entropy` is ADR 0062 D1's, risk 6).
 FORMATION_KINDS: Final[Mapping[str, str]] = MappingProxyType(
     {"h": "molar_enthalpy", "s": "molar_entropy"}
 )

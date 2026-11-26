@@ -159,8 +159,8 @@ def _basis_errors(record: Mapping[str, Any]) -> list[Coded]:
 
 def _formation_unit_errors(record: Mapping[str, Any]) -> list[Coded]:
     """`record_unit_invalid(<entry>)` for a formation or transition `h` not of `molar_enthalpy`,
-    an `s` not of `molar_entropy` (not yet registered, ADR 0061 risk 6), or a unit that is not
-    the kind's SI unit."""
+    an `s` not of `molar_entropy` (ADR 0062 D1 registers it, ADR 0061 risk 6), or a unit that is
+    not the kind's SI unit."""
     found = []
     for name in ("formation", "transitions"):
         for index, item in enumerate(record.get(name, [])):

@@ -71,3 +71,14 @@ Files: `schemas/units.json`, `schemas/quantity.schema.json` (kind enum), `src/op
   key, one result for both request forms; tested). `_phase_key` keys a `PhaseId` by its rendering, so
   `PhaseId("LIQUID", None, 1)` keys as `"LIQUID"`. Flash keys are untouched (`FlashRequest` is not widened, D2).
   Alternative: an `attributes` member always present (an `EvaluationState` would never share a `StreamState` entry).
+- **DECISION WO1-8. The basis gate is lifted as ADR 0061 D7 says, "a one-line table change".** `ADMITTED_BASES` is
+  `{"mol", "segment_mol", "kg"}`; the `amount_basis_unsupported` code, its catalogue entry and the check stay (no schema
+  -valid record reaches it now; catalogue bytes unchanged). Flipped tests: `test_e_f3_3_the_fixtures_register_since_adr
+  _0062_d1` (the component fixture's three `s` Constants are `molar_entropy` now, and the segment fixture registers with
+  `anchor_undetermined`; this one already failed from the kinds commit `9431853b` on, which registered
+  `molar_entropy`), `test_e_f3_13_kg_has_no_anchor_and_registers_since_adr_f2` (E-F3-13, Q2.A10 (b): null anchor,
+  `anchor_undetermined`, registered, idempotent), `test_f3_user_file::test_a_v2_record_d2_refuses_keeps_its_errors`
+  (a charged `kg` record is refused `amount_basis_invalid(charge_nonzero)`, no longer `amount_basis_unsupported`).
+  A reaction over a `kg` record keeps the existing path: `records.reactions` raises `ValueError` (no molar mass), the
+  records service refuses `invalid_request`; docstring updated. **Design-lane question for WO2**: should the reaction
+  check use D4's M = 1 for `kg` instead (Q7.R3)? Default: unchanged.
