@@ -161,6 +161,19 @@
    ],
    "source": "schemas/units.json"
   },
+  "number_flow": {
+   "si_unit": "1/s",
+   "dimension": [
+    0,
+    0,
+    -1,
+    0,
+    0,
+    0,
+    0
+   ],
+   "source": "schemas/units.json"
+  },
   "power": {
    "si_unit": "W",
    "dimension": [
@@ -182,6 +195,84 @@
     -2,
     0,
     0,
+    0,
+    0
+   ],
+   "source": "schemas/units.json"
+  },
+  "segment_molar_enthalpy": {
+   "si_unit": "J/mol",
+   "dimension": [
+    2,
+    1,
+    -2,
+    0,
+    -1,
+    0,
+    0
+   ],
+   "source": "schemas/units.json"
+  },
+  "segment_molar_entropy": {
+   "si_unit": "J/(mol K)",
+   "dimension": [
+    2,
+    1,
+    -2,
+    -1,
+    -1,
+    0,
+    0
+   ],
+   "source": "schemas/units.json"
+  },
+  "segment_molar_flow": {
+   "si_unit": "mol/s",
+   "dimension": [
+    0,
+    0,
+    -1,
+    0,
+    1,
+    0,
+    0
+   ],
+   "source": "schemas/units.json"
+  },
+  "segment_molar_heat_capacity": {
+   "si_unit": "J/(mol K)",
+   "dimension": [
+    2,
+    1,
+    -2,
+    -1,
+    -1,
+    0,
+    0
+   ],
+   "source": "schemas/units.json"
+  },
+  "segment_molar_mass": {
+   "si_unit": "kg/mol",
+   "dimension": [
+    0,
+    1,
+    0,
+    0,
+    -1,
+    0,
+    0
+   ],
+   "source": "schemas/units.json"
+  },
+  "segment_molar_volume": {
+   "si_unit": "m3/mol",
+   "dimension": [
+    3,
+    0,
+    0,
+    0,
+    -1,
     0,
     0
    ],
@@ -212,6 +303,32 @@
     0
    ],
    "source": "ADR 0062 D1 (display only until F2)"
+  },
+  "specific_heat_capacity": {
+   "si_unit": "J/(kg K)",
+   "dimension": [
+    2,
+    0,
+    -2,
+    -1,
+    0,
+    0,
+    0
+   ],
+   "source": "schemas/units.json"
+  },
+  "specific_volume": {
+   "si_unit": "m3/kg",
+   "dimension": [
+    3,
+    -1,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "source": "schemas/units.json"
   },
   "temperature": {
    "si_unit": "K",

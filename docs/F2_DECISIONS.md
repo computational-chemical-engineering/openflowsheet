@@ -17,3 +17,11 @@ Files: `schemas/units.json`, `schemas/quantity.schema.json` (kind enum), `src/op
   bounds are declared per quantity). `specific_volume` and `segment_molar_volume` do not copy `molar_volume`'s `0.0`:
   partial and excess volumes may be negative. Alternative: `0.0` for both volumes too. Lives in `schemas/units.json`
   and `units._KIND_LOWER_BOUNDS_EXCLUSIVE`. **Design-lane question** (unit semantics the ADR does not state).
+- **DECISION WO1-2. Display kinds follow the kind table.** ADR 0075 D2.1 defines the display kinds as "the kinds of
+  `schemas/units.json`" plus its five display-only kinds, so the nine D1 kinds that were not among the five
+  (`specific_volume`, `specific_heat_capacity`, `segment_*` (6), `number_flow`) become display kinds with their SI unit
+  as the only spelling (no display row). `docs/derivations/scripts/x04_reference.json` is re-emitted by its generator
+  (`--emit`, which reads `units.json`): 117 lines added, none changed; `--check` passes. The five keep their
+  `source: "ADR 0062 D1 (display only until F2)"` (the generator's C10 check confirms F2's entries equal them). MSG's
+  `J/(mol*K)` spelling (`refusals.yaml`, ADR 0075 line 362) is not touched here: catalogue entries are WO7's.
+  Alternative: freeze `DISPLAY_KINDS` at the pre-F2 set (departs from ADR 0075 D2.1's text).
