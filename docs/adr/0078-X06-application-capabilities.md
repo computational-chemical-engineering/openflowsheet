@@ -1,7 +1,12 @@
 # ADR 0078: X06, application capabilities: MCP over streamable HTTP, branches, solve policies, in-band administration; job resume deferred to F7 D14
 
-**Status:** **Proposed, 2026-11-26.** LINE06 D1 (`docs/briefs/LINE06-X06-architect.md`). Takes effect when Accepted on
-a signed Decision Desk card; built in 0.6 on `wp/X06` (R-1070, ADR 0057 Amendment 3).
+**Status:** **Accepted, 2026-11-26** (the user, Decision Desk `ofs-x06-accept-adr0078`, choice A, signed
+2026-11-26T23:14:33Z: "Accept ADR 0078 as written at dcbab9b7 with its defaults: Q1 job resume deferred to F7 D14
+(0.8); Q2 in-band administration off by default behind a per-project operator switch; Q3 administration writes refused
+on a server bound beyond loopback, no override in 0.6; Q5 registering a solve policy needs the draft right; Q6 the
+seven benchmark-registered policies stay unsupported."; Q4: `ofs-x06-mcp-clients`, choice A, static bearer only in
+0.6, OAuth later; R-1071). Proposed 2026-11-26, LINE06 D1 (`docs/briefs/LINE06-X06-architect.md`); built in 0.6 on
+`wp/X06` (R-1070, ADR 0057 Amendment 3). The text below is unchanged from `dcbab9b7`.
 **Author:** design lane (`architect`). **Scope:** ADR 0056 row 8 in full and in its order (Decision Desk card
 `ofs-line06-x06-scope`, choice A, signed 2026-11-26): MCP over HTTP, branches, job resume, further solve policies,
 policy administration. **This ADR proposes deferring one part, job resume, to F7 (D3 below), for the user's
