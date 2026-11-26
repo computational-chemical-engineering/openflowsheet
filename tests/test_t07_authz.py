@@ -44,7 +44,7 @@ from openflowsheet.application.policy_types import (
     ProjectPolicy,
 )
 from openflowsheet.application.revisions import Revision
-from openflowsheet.application.store import POLICY_NAME, ProjectStore
+from openflowsheet.application.store import HEAD, POLICY_NAME, ProjectStore
 from openflowsheet.schema_check import DocumentSchemaError
 
 #: §10.1, transcribed. `read`: inspect, validate, preview, jobs and artifacts; `draft`:
@@ -277,6 +277,7 @@ def project(tmp_path: Path) -> Path:
             store.commit_revision(
                 connection,
                 Revision(revision_id="rev-1", document={"title": "t"}, parent_revision=None),
+                ref=HEAD,
                 principal_id=owner.principal_id,
                 capability_id=owner.capability_id,
                 policy_sha256=owner.policy.policy_sha256,

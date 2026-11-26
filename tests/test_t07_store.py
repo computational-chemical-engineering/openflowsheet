@@ -24,7 +24,13 @@ from openflowsheet.application.jobs.model import check_lifecycle
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.policy_types import LOCAL_OWNER_PRINCIPAL, ProjectPolicy
 from openflowsheet.application.revisions import Revision
-from openflowsheet.application.store import DATABASE_NAME, POLICY_NAME, STORE_SCHEMA, ProjectStore
+from openflowsheet.application.store import (
+    DATABASE_NAME,
+    HEAD,
+    POLICY_NAME,
+    STORE_SCHEMA,
+    ProjectStore,
+)
 from openflowsheet.application.store_records import IdempotencyKeyReusedError, StoreError
 
 SPAWN = multiprocessing.get_context("spawn")
@@ -37,6 +43,7 @@ def commit(application: LocalApplication, revision_id: str, document: dict[str, 
         store.commit_revision(
             connection,
             Revision(revision_id=revision_id, document=document, parent_revision=None),
+            ref=HEAD,
             principal_id=application.principal_id,
             capability_id=LOCAL_OWNER_PRINCIPAL,
             policy_sha256=support.POLICY_SHA256,

@@ -33,6 +33,7 @@ from openflowsheet.application.revisions import (
     RevisionStore,
     content_hash,
 )
+from openflowsheet.application.store import HEAD
 from openflowsheet.application.transaction_types import ChangeSet, Edit, TransactionResult
 from openflowsheet.application.validation import validate
 
@@ -53,6 +54,7 @@ def application(revision: dict[str, Any]) -> Iterator[LocalApplication]:
         store.commit_revision(
             connection,
             Revision(revision_id=revision["revision_id"], document=revision),
+            ref=HEAD,
             principal_id=app.principal_id,
             capability_id=app.capability_id,
             policy_sha256=app.policy.policy_sha256,

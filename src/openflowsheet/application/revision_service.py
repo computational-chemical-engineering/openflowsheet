@@ -37,7 +37,7 @@ from openflowsheet.application.revision_edits import (
 )
 from openflowsheet.application.revisions import Revision
 from openflowsheet.application.service_core import ServiceCore
-from openflowsheet.application.store import ProjectStore, atomic_write_bytes
+from openflowsheet.application.store import HEAD, ProjectStore, atomic_write_bytes
 from openflowsheet.application.store_records import ArtifactRow, AuditEntry, LedgerRow
 from openflowsheet.application.transaction_types import Change, SemanticDiff, TransactionResult
 from openflowsheet.application.validation_report import ValidationReport
@@ -96,6 +96,7 @@ class RevisionService:
                     principal_id=principal_id,
                     capability_id=caller.capability_id,
                     policy_sha256=self._core.policy.current().policy_sha256,
+                    ref=HEAD,
                 )
                 # ADR 0035 D3: a promotion's reports, stored and registered with the revision.
                 self._store_replacements(connection, revision.revision_id, prepared.replacements)
