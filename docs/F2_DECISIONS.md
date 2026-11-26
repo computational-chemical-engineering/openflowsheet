@@ -92,3 +92,35 @@ Files: `schemas/units.json`, `schemas/quantity.schema.json` (kind enum), `src/op
   `test_f3_record_model.py::test_d7_formation_kinds_follow_the_amount_basis` (3 bases x 3 kind pairs). Alternative:
   lift the gate alone (admits dimensionally wrong `kg` and `segment_mol` formation data). Isolated in its own commit;
   **design-lane confirmation** wanted (unit semantics read from D1's Use column, not stated as a rule).
+
+## F2-WO2 (definitions and bases), 2026-11-26
+
+Files: `src/openflowsheet/material/{basis,definitions}.py`, `schemas/connection-definition.schema.json`,
+`schemas/extension-descriptor.schema.json` (payload `$defs`), `src/openflowsheet/registry/descriptor.py`,
+`scripts/registry_builtin.py`, `src/openflowsheet/registry/builtin/material.json`,
+`docs/derivations/scripts/f2_basis_reference.{py,json}`, `tests/test_f2_basis.py`, `tests/test_f2_definitions.py`.
+
+- **E-F2-7 reading.** "[gen]" is a reference generator, `docs/derivations/scripts/f2_basis_reference.py` (imports
+  nothing of `openflowsheet`; `--check` byte-compares), that decides every case by routes other than `basis.py`'s
+  (Bareiss ranks and rank-nullity; a breakpoint search for (iii); Cramer's rule for Q3.R7; the normal equations for C;
+  the ruling's own stated Π) and refuses to emit when one of its 67 claims fails. `tests/test_f2_basis.py` (41 tests)
+  compares `basis.py` with it exactly. Species masses are synthetic test constants (IUPAC conventional atomic weights
+  minus z m_e, rounded once). Measured: Q3.R7's worst deficit over the 11 bases is 0.434 ε·scale (MEA, against the 4ε
+  bound: margin 9.2x); the electron-mass control (Na+ given the neutral atom's mass) misses it by 2.1e10 ε·scale and
+  reports `NaCl`.
+- **DECISION WO2-1. Q3.R1 (iii) reads "admits a non-negative A" as: for every group row g a rational λ_g exists with
+  A_g + λ_g z ≥ 0** (the shift Q3.A2 (d) itself uses; on electroneutral n_s ≥ 0 it gives b ≥ 0, which is what (iii)
+  protects). λ need not be an integer. Alternative: integer λ, or the declared A ≥ 0 only. **Design-lane question.**
+- **DECISION WO2-2. Q3.R5's Π e_s is the particular solution with free reaction coefficients 0** (reduced row echelon
+  form over R restricted to the dropped species, reactions in declared order); it must come out integer, else the
+  boundary is refused. Q3.A6 (d)'s stated image MEA + HCO3- - H2O is what it gives; b′ = C b does not depend on the
+  choice when a C exists (C A R d = 0 for any alternative R d). Alternative: a lattice search for an integer image.
+- **DECISION WO2-3. Species match across a boundary by id; a shared id with another charge is refused.** The record
+  part of "same record and charge" is the caller's (WO4 can key species by id and record SHA).
+- **DECISION WO2-4. Q3.R7's bound reads Σ_g |A_gs M_g|** (a magnitude; equal to the ruling's Σ_g A_gs M_g when A ≥ 0
+  and M_g ≥ 0) and is evaluated exactly on the rounded M_g and μ that are recorded. Alternative: the signed sum (can be
+  negative for a non-monotone declaration).
+- **Codes not assigned here.** `basis.py` returns the facts (each of (i), (ii), (iii), rank, ζ, Π, C, drops); the
+  typed refusals and their parameters (`species_basis_*`, `group_amount_negative`, `molar_mass_inconsistent`) are the
+  revision validator's (WO4, E-F2-9). Q3.R1 names no code for a failed (i) or (ii) at the definition level; WO4 needs
+  one (default: `species_basis_incompatible(<method>, <S>)`, Q3.R5's).
