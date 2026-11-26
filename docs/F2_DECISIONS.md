@@ -187,3 +187,18 @@ Files: `src/openflowsheet/material/{basis,definitions}.py`, `schemas/connection-
   that with link c_10 and its register entry R-1051 (`a66116d9`). F2 needs `strip_f2` (`without_f2`), a link c_11
   with `D_11` = `F2_SERVED_SHA256`, and an R-number in `docs/decision-register.md`, whose allocation this order does
   not own (X06 runs concurrently). Left for the orchestrator, with the ADR 0019 pointer (WO6).
+
+## F2-WO3 (surface link c_11, variable ids, layout), 2026-11-26
+
+- **c_11 closed.** `scripts/m07a_rc.py` gains `strip_f2` (s_11 = `without_f2`) and link c_11 (R-1072, `D_11` =
+  `9a4b4eb3…` = `F2_SERVED_SHA256`), on top of c_10. `tests/test_m07a_surface_chain.py`: the earlier links' tests strip
+  F2 first (the latest first), every control carries c_11; new `test_f2_link_c_11_is_f2s_strip_and_digest` and
+  `test_f2_control_c_11_left_in_place`. 34 passed, 0 failed (18 failed before). Item 4 is unchanged: F2 adds no tool
+  and changes no description file.
+- **DECISION WO3-1. R-1072's entry is carried onto wp/F2 with its evidence filled.** The c_4 to c_10 pattern asserts
+  that the link's register entry carries `D_k` and `D_{k-1}` in full; R-1072 exists on `main` only (`af1fb212`,
+  "reserved", evidence "to come"). Appended on wp/F2 after R-1070 with main's text, its Evidence row filled with the
+  two full digests and the two test names; heading and decision text unchanged (status stays "reserved"; the
+  orchestrator's). The merge resolves the register hunk by taking main's R-1071 and R-1073 around this entry.
+  Alternative: no register assertion in the c_11 test (a weaker test than c_10's). Reversible: revert the register
+  commit and drop the test's last five lines.
