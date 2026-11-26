@@ -65,3 +65,49 @@ The SDK client negotiates protocol `2025-11-25`; no `Mcp-Session-Id` is sent.
   (preview completed by the key `preview`). These are real requests agents sent, which is what the test protects.
   Alternative: synthetic ChangeSet fixtures written now (proves less: they never hashed under the old code in use).
   Reversible by: deleting the transcript source from the module and adding fixtures. ADR divergence, reported.
+- **DECISION WO2-2. `ChangeSet` (K06's one-object form) gains `branch` too.** The ADR names only `Change`; without
+  it `ChangeSet.from_document` would drop a request's `branch` silently. Its `as_document` goes through
+  `Change.as_change_set`, so the omission rule (absent or `"head"`) is one rule. Reversible by removing the field.
+- **DECISION WO2-3. Where the branch types and checks live.** `Branch` and `BranchResult` are in
+  `transaction_types.py` (contract vocabulary, beside `TransactionResult`; no new layer). `ref_name`,
+  `BRANCH_NOT_FOUND` and `BRANCH_NAME_RESERVED` are in `branch_service.py`, which `revision_service` imports (the
+  layer order puts `branch_service` below it). `head`'s public spelling is `transaction_types.HEAD_REF`; the store's
+  row name stays `store.HEAD`. Alternative: a `branch_types.py` module and layer.
+- **DECISION WO2-4. A commit re-assigns an auto id taken by a concurrent commit on another ref.** E-X06-8's "a branch
+  commit racing a head commit → both succeed" cannot hold otherwise: both prepare `rev-<next ordinal>` from one
+  snapshot, and the second writer found the id taken and returned `rejected revision_id_taken`. `commit_change` now
+  prepares again (fresh id, re-validated, outside the lock) when, inside the lock, its ref is still at
+  `expected_revision` and only the assigned id was taken; at most `ASSIGNED_ID_ATTEMPTS = 8` times. A caller-named
+  id is never re-assigned. Head-only behaviour is unchanged (a taken id there means the head moved: `conflict`, as
+  before). Falsifier: with 1 attempt the `mixed` race fails in threads and processes. Escalation item: this is a
+  behaviour change of `commit_change` the ADR did not state (it states the outcome).
+- **DECISION WO2-5. Preview checks that the branch exists** (`not_found branch_not_found`, audited), and nothing
+  else about it (no tip check, as a preview has no head check). Alternative: ignore `branch` in a preview.
+- **DECISION WO2-6. Branch writes and their records.** Ledger rows are written only for `created` and `deleted` (as
+  `commit_change` ledgers only `committed`); a `conflict` is re-judged on retry. Request hash: `document_sha256` of
+  the request as the operation's schema states it (`{name, revision_id, idempotency_key}` /
+  `{name, expected_revision, idempotency_key}`). Audit effect `branch:<name>:created|deleted`. Conflicts are not
+  audited (as `commit_change`'s). `list_branches`' cursor is `base64url(canonical {"after": <last name>})`, `head`
+  standing before every branch. The HTTP `delete_branch` takes `name` from the path only (the body repeating it is
+  §11.3's "given more than once").
+- **DECISION WO2-7. Description texts.** `commit_change.md` was at its 1500-character bound; the `branch` sentence
+  fits by tightening four phrases (no meaning removed; the generated target table untouched; 1499 characters).
+  Both changed texts and the three new ones are recorded `pending` in `REVIEW.json`, so
+  `test_t08_w2_description_reviews.py` stays red (by its design) until the design lane and the user review the five
+  hashes. Pre-X06 copies: `tests/fixtures/x06/pre_x06_descriptions/`.
+- **DECISION WO2-8. Surface registration.** `X06_SERVED_SHA256 = 7e8393a5…`; `without_x06` removes the three tools,
+  the ChangeSet's `branch` wherever served (also the optimization report's `candidate.change_set` inside
+  `get_job_result`'s `outputSchema`, which `$ref`s the ChangeSet) and restores the two texts: the result is F3's
+  `f7ec3c94…` exactly. Chain link c_12 (R-1073) in `scripts/m07a_rc.py` onto c_10; R-1073's register entry is on
+  `main`, so the c_12 test does not read the register (the c_10 form does); its digests go there at the merge.
+- **DECISION WO2-9. The support envelope follows the lifted limitation.** `benchmarks/t08/support_envelope.yaml`:
+  U08 no longer names branches (capability, outcome, and its evidence line), and
+  `test_u08_a_change_set_naming_a_branch_is_refused_by_its_schema` is removed (its premise is what R-110's lift
+  for branches reverses; E-X06-6 tests the name pattern's refusals). The interfaces row lists the three operations
+  and reads "thirty-three"; `scripts/t08_support_matrix.py`'s A20 count is 33; `docs/support-matrix.md`
+  regenerated. U08 still names MCP over HTTP, which WO1 served: left for WO5 (not this WO's change).
+- **DECISION WO2-10. Fixtures.** `scripts/t07_schema_fixtures.py` emits `branch_result`, `branch_page` and `branch`
+  from real responses; the two `message_entry` fixtures' catalogue sha256 re-taken for the two new entries (as
+  WO1 did for `origin_refused`). R4-G3: `SNAPSHOT_X06` holds the three new rows and the six job rows that embed the
+  optimization report's candidate ChangeSet; `without_x06` restores each to its earlier snapshot. The G14 suites
+  (CLI, HTTP, MCP) run `x06_schema_support.branches_requests`.
