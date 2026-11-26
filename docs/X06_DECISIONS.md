@@ -111,3 +111,73 @@ The SDK client negotiates protocol `2025-11-25`; no `Mcp-Session-Id` is sent.
   WO1 did for `origin_refused`). R4-G3: `SNAPSHOT_X06` holds the three new rows and the six job rows that embed the
   optimization report's candidate ChangeSet; `without_x06` restores each to its earlier snapshot. The G14 suites
   (CLI, HTTP, MCP) run `x06_schema_support.branches_requests`.
+
+## X06-WO3 (solve policies, D4), 2026-11-27
+
+Files: `orchestrator/policy_validation.py`; `application/{solve_policy_registry,solve_policy_service}.py`;
+`admission.py` (`policy_id_refusal`, `resolve_policies(…, project_policies)`), `validation_service.py`,
+`job_service.py`, `jobs/runner.py`, `inspection_service.py`, `inspection_types.py`, `contract.py`
+(`SolvePolicies`), `operations.py`, `authz.py`, `local.py`, `store.py` (`artifact_in`); two description texts;
+`application-results` `$defs`; three catalogue entries; layers; `tests/test_x06_solve_policies.py`.
+
+- **DECISION WO3-1. The registries of D4.3 (d).** `initializer_chain` entries ⊂ {`compatible_warm_start`,
+  `traversal-G0-v1`} (the executor reads only the first; the second is the registered initializer, and the two are
+  every offered chain's values). `linear_solver` must equal the registered SuperLU document member for member (the
+  executor never reads the policy's: any other value would record a solver that did not run). `residual_tolerances`
+  and `scales` keys ⊂ the solver's residual kinds (`models.lifted_tolerance.KIND_TOLERANCE`: `heat_rate`,
+  `molar_flow`, `molar_flow_squared`, `pressure`, `temperature`; `units.KINDS` lacks `molar_flow_squared`).
+  `recycle.policy_id` ∈ {`T02-recycle-policy-v1`}. `recycle.tear_streams` is refused: it names one flowsheet's
+  streams, there is no registry, and D4.3 says every open string under `recycle` is checked at registration, never
+  at run time. `globalization` has no open string (const, enum, numbers, fraction patterns). Escalation item: the
+  `tear_streams` refusal and the exact `linear_solver` match are the strictest readings; both offered-policy copies
+  pass (all five, test). Alternative: accept `tear_streams` and leave its run-time check.
+- **DECISION WO3-2. `solve_policy_problems` returns `PolicyProblem(pointer, message, code)`**, a NamedTuple (the ADR
+  writes `(pointer, message)`): the service needs the `detail.code`; `None` for a schema error (plain
+  `invalid_request`). The refusal's pointer is `/policy` + the problem's.
+- **DECISION WO3-3. The registry is read only for a `user.` id.** Admission (`validation_service`), the runner's two
+  `resolve` stages (`solve`, `optimize`'s solve body) and `get_job_result`'s re-resolution call
+  `solve_policy_registry.load` only when the requested id matches D4.1's pattern; an offered, `default` or unknown id
+  never reads the store, so a damaged registration cannot change an offered policy's behaviour (test). A damaged one
+  (file missing or not hashing to its row) is `internal_error` at admission (audited) and `failed store_error` in the
+  runner. Alternative: load on every resolution (the ADR's text is silent on when).
+- **DECISION WO3-4. Where things live.** `SolvePolicyRegistration`, `SolvePolicyView` in `inspection_types.py`
+  (contract vocabulary, so `contract.py` can name them). `ProjectStore.artifact_in(connection, id)`, a read inside
+  the caller's transaction (no schema change). `solve_policy_registry` sits directly above `authz`,
+  `solve_policy_service` directly above `service_core` (both added to the `transports-through-operations` list).
+- **DECISION WO3-5. Registration records.** Only `registered` is ledgered and audited (effect
+  `solve_policy:<id>:registered`), as WO2-6; `exists` and `conflict` are re-judged on a retry (write-once makes the
+  answer stable). Request hash `document_sha256({policy, idempotency_key})`. On `conflict`, `policy_sha256` is the
+  stored hash, `conflict.expected_sha256` the request's, `actual_sha256` the stored.
+- **DECISION WO3-6. Refusals.** `admission.policy_id_refusal` is step 4's judgment, shared by `get_solve_policy`: the
+  seven benchmark names and a non-`user.` unknown id keep today's documents byte for byte (fixture); an unregistered
+  `user.` id is `not_found`, `detail {code: solve_policy_not_found, policy_id}`, the message led by the code.
+  `get_solve_policy("default")` is `not_found` with the unknown-id document (`default` names no policy of its own).
+- **DECISION WO3-7. Texts.** `register_solve_policy.md` (1363 characters) and `get_solve_policy.md` (690), recorded
+  pending in `REVIEW.json`. `submit_job.md` is unchanged (ids are discovered through `get_project`; the new texts
+  name the route). The description-review gate now lists seven texts.
+- **DECISION WO3-8. Surface.** `X06_SERVED_SHA256 = 4a80f77f…` (c_12's `D_12`); `without_x06` removes the two tools
+  too (`X06_OPERATIONS`) and decomposes onto F3's `f7ec3c94…`; `X06_FILE_SHA256` gains the two files. R4-G3:
+  `SNAPSHOT_X06` gains the two rows; no earlier row moved. The support envelope: 35 operations, the `solve_policies`
+  axis states project policies (evidence E-X06-12), U08 now names "the benchmark-registered solve policies that are
+  not offered"; A20's count 35; `docs/support-matrix.md` regenerated. The conformance scenario gains
+  `_solve_policies` (ten steps) and a `user.absent` solve refusal on all six clients.
+- **DECISION WO3-9. E-X06-15's pre-X06 fixture** (`tests/fixtures/x06/pre_x06_policy_surface.json`) was taken at
+  `aa5822ac` in a detached scratch worktree: `get_project` of project `x06-get-project` and `solve`'s refusals of the
+  seven names and `no-such-policy`. The test substitutes `server.package_version` with the running version (equal at
+  both commits today), so a release bump does not break it.
+
+### Q7 measured: a path dispatches on the policy's name (STOP, design lane)
+
+E-X06-12 passes: `user.copy` (`T06-revision-v2`'s document, only `policy_id` changed) solves SYN-001-nominal to a
+byte-identical `solution-state.json` (equal `state_sha256`), `CONVERGED`/`VERIFIED`; the certificate differs only in
+`policy_id` and `plan_id` (which embeds the id); the manifest's `policy_sha256` is `user.copy`'s. **E-X06-13 fails**:
+`run.bundle.verify_bundle` → `_cross_check_solve_path` resolves `solve-path.json`'s `policy_requested` **by name**
+through `orchestrator.policies.resolve_policy`; `user.copy` resolves to nothing, so the bundle's integrity is
+`{ok: false, tampered: [solve-path.json]}` and a fresh project reproduces it `inspected_archived_results`/`NOT_RUN`
+(the `T06-revision-v2` bundle: `compatible_reproduction`/`MATCH`). This contradicts the ADR's context ("replay
+rebuilds the policy from that file … never by id lookup") for the integrity check. Not fixed here. The choice the
+build lane would make: for a `user.` `policy_requested`, the candidate is `SolvePolicy.from_document(solve-policy.json)`
+with its `policy_id` equal to the request (the manifest-hash comparison as for the others); every existing bundle is
+judged as today. It touches replay identity, so it waits for the design lane. Tests: E-X06-13 is `xfail(strict=True)`
+with this reason; `test_q7_the_bundle_check_resolves_the_requested_policy_by_name` pins the cause. E-X06-13's
+`optimize` half was not run (no `nlp` extra in this environment).
