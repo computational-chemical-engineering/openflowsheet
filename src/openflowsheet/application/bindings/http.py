@@ -81,6 +81,11 @@ MAX_BODY_BYTES: Final[int] = 1 << 20
 CONTENT_SHA256_HEADER: Final[str] = "X-Content-SHA256"
 #: The raw export is sent in pieces of this size.
 STREAM_CHUNK_BYTES: Final[int] = 1 << 16
+#: §11.2: what a server bound beyond the loopback interface says on stderr (`run`).
+NO_TLS_WARNING: Final[str] = (
+    "openflowsheet: serving on {host}:{port} without TLS (v0.1 has none); bearer tokens cross the "
+    "network in clear text"
+)
 #: §4.3: the operations HTTP carries, in the table's order.
 HTTP_OPERATIONS: Final[tuple[Operation, ...]] = tuple(
     operation for operation in OPERATIONS.values() if "http" in operation.transports
@@ -472,20 +477,18 @@ def run(
     port: int = DEFAULT_PORT,
     allow_remote: bool = False,
     log_level: str = "info",
+    warning: str = NO_TLS_WARNING,
 ) -> None:
     """`serve`'s rules — loopback unless `allow_remote`, the no-TLS warning, uvicorn's options —
-    applied to an application built over `create_app` (`bindings.web` adds the shell to it)."""
+    applied to an application built over `create_app` (`bindings.web` adds the shell to it,
+    `serving.serve_http` MCP at `/mcp`, which passes a `warning` naming it)."""
     if not is_loopback(host):
         if not allow_remote:
             raise ValueError(
                 f"{host!r} is not a loopback address; serving beyond this host needs "
                 "allow_remote (--allow-remote), and v0.1 has no TLS"
             )
-        print(
-            f"openflowsheet: serving on {host}:{port} without TLS (v0.1 has none); bearer "
-            "tokens cross the network in clear text",
-            file=sys.stderr,
-        )
+        print(warning.format(host=host, port=port), file=sys.stderr)
     with _break_interrupts():
         uvicorn.run(
             application,

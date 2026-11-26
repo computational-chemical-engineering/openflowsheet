@@ -641,11 +641,11 @@ def test_the_servers_refuse_to_start_on_a_directory_that_is_no_project(
 def test_serve_http_serves_an_owner_opened_with_the_process_executor(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    """`serve-http` hands `bindings.http.serve` the project opened with the process executor
+    """`serve-http` hands `serving.serve_http` the project opened with the process executor
     (§9.1: a server's jobs each run in their own worker) and its arguments as given, and closes
     the owner once serving returns. (The conformance suite serves a real one over loopback.)"""
     pytest.importorskip("starlette")
-    from openflowsheet.application.bindings import http
+    from openflowsheet.application import serving
     from openflowsheet.application.jobs.executor import ProcessExecutor
 
     directory = tmp_path / "project"
@@ -657,10 +657,10 @@ def test_serve_http_serves_an_owner_opened_with_the_process_executor(
         assert owner.project_id == "w6e-serve"
         seen.append(options)
 
-    monkeypatch.setattr(http, "serve", serve)
+    monkeypatch.setattr(serving, "serve_http", serve)
     argv = ["serve-http", "--project", str(directory), "--host", "::1", "--port", "9000"]
     assert run_cli(argv) == (0, "", "")
-    assert seen == [{"host": "::1", "port": 9000, "allow_remote": False}]
+    assert seen == [{"host": "::1", "port": 9000, "allow_remote": False, "ui": False}]
 
 
 def test_api_runs_jobs_inline_only(project: Path) -> None:

@@ -36,8 +36,9 @@ bundle directory through `stream_table.from_bundle` — as `text`, `json` or `cs
 (and, with `--format json`, the projected `ApiError` document on stdout).
 
 **The servers** (§11.2, §10.2). `serve-http` opens the project with the process executor and
-serves it with `bindings.http.serve` until interrupted (with `--ui`, `bindings.web.serve`, which
-adds the diagnostic web shell at `/ui/`, M06); `serve-mcp` is `serving.serve_mcp`, over stdio.
+serves it with `serving.serve_http` until interrupted: the REST routes and MCP over streamable
+HTTP at `/mcp` (ADR 0078 D1), and with `--ui` the diagnostic web shell at `/ui/` (M06);
+`serve-mcp` is `serving.serve_mcp`, over stdio.
 Both need the `server` extra; without it, or when the project cannot be opened, or (`--ui`) when
 the shell's packaged files are missing, they refuse to start with exit 1 and the reason on stderr.
 """
@@ -648,8 +649,9 @@ def _loopback(host: str) -> bool:
 
 def command_serve_http(arguments: argparse.Namespace) -> int:
     """§11.2: `serve-http --project DIR [--host 127.0.0.1] [--port 8765] [--allow-remote]
-    [--ui]`. `--ui` (M06, ADR 0030 D3) also serves the diagnostic web shell at `/ui/`
-    (`bindings.web`); without it nothing differs, and `bindings.web` is not even imported."""
+    [--ui]`, served by `serving.serve_http`: the REST routes and MCP at `/mcp` (ADR 0078 D1).
+    `--ui` (M06, ADR 0030 D3) also serves the diagnostic web shell at `/ui/` (`bindings.web`);
+    without it `bindings.web` is not even imported."""
     if not _loopback(arguments.host) and not arguments.allow_remote:
         print(
             f"--host {arguments.host} is not loopback: pass --allow-remote (there is no TLS in "
@@ -659,10 +661,11 @@ def command_serve_http(arguments: argparse.Namespace) -> int:
         return 2
     from openflowsheet.application.authz import PolicyRefusedError
     from openflowsheet.application.local import LocalApplication
+    from openflowsheet.application.serving import serve_http
     from openflowsheet.application.store_records import StoreError
 
     try:
-        from openflowsheet.application.bindings import http as binding
+        from openflowsheet.application.bindings import http, mcp_http  # noqa: F401
     except ImportError:
         print(
             "serve-http: refused to start: the HTTP server needs the `server` extra: "
@@ -670,7 +673,6 @@ def command_serve_http(arguments: argparse.Namespace) -> int:
             file=sys.stderr,
         )
         return 1
-    serve = binding.serve
     if arguments.ui:
         from openflowsheet.application.bindings import web
 
@@ -679,18 +681,18 @@ def command_serve_http(arguments: argparse.Namespace) -> int:
         except web.WebShellMissingError as error:
             print(f"serve-http: refused to start: {_human_text(error)}", file=sys.stderr)
             return 1
-        serve = web.serve
     try:
         application = LocalApplication.open(arguments.project, executor="process")
     except (StoreError, PolicyRefusedError) as error:
         print(f"serve-http: refused to start: {_human_text(error)}", file=sys.stderr)
         return 1
     with application:
-        serve(
+        serve_http(
             application,
             host=arguments.host,
             port=arguments.port,
             allow_remote=arguments.allow_remote,
+            ui=arguments.ui,
         )
     return 0
 
@@ -1298,7 +1300,9 @@ def _add_streams_parser(commands: argparse._SubParsersAction[argparse.ArgumentPa
 
 def _add_serve_parsers(commands: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
     """`serve-http` and `serve-mcp`: the project served over HTTP or MCP stdio."""
-    http_command = commands.add_parser("serve-http", help="serve the project over HTTP (§11.2)")
+    http_command = commands.add_parser(
+        "serve-http", help="serve the project over HTTP: the REST routes and MCP at /mcp (§11.2)"
+    )
     http_command.add_argument("--project", required=True, help="the project directory")
     http_command.add_argument("--host", default="127.0.0.1")
     http_command.add_argument("--port", type=int, default=8765)
