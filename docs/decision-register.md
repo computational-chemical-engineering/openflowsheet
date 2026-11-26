@@ -20474,3 +20474,22 @@ and has the clearest user value (remote agents over MCP); leaving it out saves l
 
 **Risk accepted.** F4 to F6 are built after F2's v2 records ship. A change they need in those records is an ADR 0062
 amendment and a second migration; the W1 design (the v2 core frozen at W1's end, R-928) is what keeps that unlikely.
+
+## R-1071: X06 application capabilities, ADR 0078 (2026-11-26, Proposed)
+
+| | |
+| --- | --- |
+| Date | 2026-11-26 |
+| Decided by | design lane (`architect`, LINE06 D1); acceptance is the user's (Decision Desk, requested) |
+| Normative text | `docs/adr/0078-X06-application-capabilities.md` (on wp/X06, `dcbab9b7`) |
+| Evidence | to come: E-X06-1 to E-X06-24 |
+| Affected packages | X06 (0.6); F7 (0.8, D14 takes job resume if Q1 is accepted); R-110 |
+
+**Decision (proposed).** MCP over streamable HTTP at `/mcp` on `serve-http` (stateless mode of the pinned mcp 1.30.0,
+bearer checked per request, Origin rule, 413 on oversize; D1); branches as rows of the store's existing `refs` table,
+an optional `branch` member of a ChangeSet outside the request hash when absent or `head`, three operations (D2);
+job resume deferred to F7 D14 in 0.8 (D3); project-registered immutable `user.*` solve policies (D4); in-band policy
+administration, off by default behind an operator switch, no escalation, writes refused beyond loopback (D5). No
+stored record, run identity or store schema changes. Five work orders (WO1 to WO4 Opus, WO5 Sonnet).
+
+**Open for the user:** Q1 to Q6 of the ADR's risks section, and Q4's fact (which MCP clients must connect).

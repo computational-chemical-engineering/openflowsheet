@@ -40,10 +40,12 @@ once F2-WO4 is on wp/F2 (F8 branches from wp/F2's head, merges after F2).
 
 ## Next action
 
-Two agents running (the cap): `opus-engineer` on F2-WO1 (worktree `f2`, brief `docs/briefs/LINE06-F2-WO1.md`) and
-`architect` on D1 (worktree `x06`, branch wp/X06, brief `docs/briefs/LINE06-X06-architect.md`, ADR 0078). On each
-report: `git -C <worktree> status`, ListAgents, judge on the brief's acceptance, log. Then: F2-WO2 and WO3 briefs;
-after ADR 0078: register R-1071, progress pointer, and a DECISION-REQUEST for its acceptance (with its open questions).
+D1 done (ADR 0078 Proposed, `dcbab9b7` on wp/X06; log). Two agents running (the cap): `opus-engineer` on F2-WO1
+(worktree `f2`, brief `docs/briefs/LINE06-F2-WO1.md`) and `opus-engineer` on X06-WO1 (worktree `x06`, brief
+`docs/briefs/LINE06-X06-WO1.md`, MCP over HTTP, static bearer per the default of `ofs-x06-mcp-clients`). On each
+report: `git -C <worktree> status`, ListAgents, judge on the brief's acceptance, log. Then F2-WO2/WO3 and X06-WO2
+briefs (X06 WOs run one at a time, in ADR 0078's order). Cards requested from hub: `ofs-x06-accept-adr0078`,
+`ofs-x06-mcp-clients`. After Q1 is answered: R-110 status line, roadmap resume move, target-architecture X06 row.
 
 ## Decisions settled (Decision Desk, 2026-11-26, each choice A, VERIFIED, `executed` written)
 

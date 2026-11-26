@@ -66,7 +66,8 @@ Format: **package**: what it delivers · needs first · design pass.
   F2, F3, X07a · architect (W1, ADR 0067). WO4 (evidence, after F4-WO4) and WO6 (wiring, after F6-WO4) go with F4 and
   F6; WO7 stays in TX.
 - **X06**: MCP over HTTP, branches, job resume, further solve policies, policy administration · nothing · architect
-  (ADR 0078, to be written; ADR 0056 row 8 in full, in its order: card `ofs-line06-x06-scope`, choice A).
+  (ADR 0078 Proposed, `dcbab9b7` on wp/X06; ADR 0056 row 8 in full, in its order: card `ofs-line06-x06-scope`, choice
+  A; job resume proposed for deferral to F7 D14 in 0.8, the ADR's Q1, awaiting the user).
 - *Line acceptance:* a v2 revision with store-pinned records solves on the legacy route on all three OSes (from 0.5,
   R-1065); ADR 0062, ADR 0067 and ADR 0078 Accepted (card `ofs-line06-adr-clause`, choice A, signed
   2026-11-26T20:39:05Z; before it the clause read "ADR-F1 to ADR-F8 Accepted", from 0.5, `ofs-rel050-q-f1`); X06's

@@ -51,3 +51,10 @@ Reversible by: <how>.` Package build decisions go in the package's own file (`do
 - D1 brief `docs/briefs/LINE06-X06-architect.md`; worktree `.claude/worktrees/x06`, branch wp/X06 at aa5822ac;
   `architect` launched (background). Facts given: R-110, C1/C6/C7, the note's "resume of long jobs through F7" (F7 now
   0.8, so resume is the expected deferral argument), F0 counts, no record or identity change.
+- D1 judged PASS (2026-11-26): `architect` committed ADR 0078 Proposed alone on wp/X06 (`dcbab9b7`, 436 lines),
+  worktree clean; 244,895 tokens, 88 tool uses, 18 min. All five parts designed; resume deferral to F7 D14 (0.8)
+  argued (D3); 5 WOs (4 Opus, 1 Sonnet), 24 exits. Spot-checks: `refs` table exists (`application/store.py:90`);
+  `mcp==1.30.0` in requirements.lock:21. Open: Q1-Q6 (user), Q4 fact (MCP clients), Q7-Q9 facts measured by WOs.
+  Applied: R-1071 (Proposed), roadmap X06 row. Held until Q1 is answered: R-110 status line, roadmap resume move,
+  target-architecture X06 row.
+- X06-WO1 brief `docs/briefs/LINE06-X06-WO1.md`; opus-engineer launched (background, worktree x06). Cards requested: ofs-x06-accept-adr0078 (A: accept with Q1-Q3, Q5, Q6 defaults), ofs-x06-mcp-clients (A: static bearer, OAuth later).
