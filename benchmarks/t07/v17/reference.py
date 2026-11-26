@@ -238,7 +238,7 @@ class McpClient(Client):
         self.portal = self._stack.enter_context(start_blocking_portal())
         self.session = self._stack.enter_context(
             self.portal.wrap_async_context_manager(
-                create_connected_server_and_client_session(mcp.build_server(self.app))
+                create_connected_server_and_client_session(mcp.build_server(lambda: self.app))
             )
         )
 
