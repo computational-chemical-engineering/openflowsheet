@@ -33,10 +33,18 @@ ADMITTED_BASES: Final = frozenset({"mol", "segment_mol", "kg"})
 MOLAR_MASS_KINDS: Final[Mapping[str, str]] = MappingProxyType(
     {"mol": "molar_mass", "segment_mol": "segment_molar_mass"}
 )
-#: D3: the kind of a formation or transition enthalpy and entropy on the `mol` basis
-#: (`molar_entropy` is ADR 0062 D1's, risk 6).
-FORMATION_KINDS: Final[Mapping[str, str]] = MappingProxyType(
-    {"h": "molar_enthalpy", "s": "molar_entropy"}
+#: D3: the kinds of a formation or transition enthalpy and entropy per amount basis: "per unit
+#: amount" (D3), so per mol, per segment-mol or per kg, by ADR 0062 D1's kinds (`molar_entropy`
+#: closes risk 6; `segment_molar_enthalpy`, `segment_molar_entropy`, `specific_enthalpy` and
+#: `specific_entropy` are its uses for Δf h° and s° on the other bases; F2 decision WO1-9).
+FORMATION_KINDS: Final[Mapping[str, Mapping[str, str]]] = MappingProxyType(
+    {
+        "mol": MappingProxyType({"h": "molar_enthalpy", "s": "molar_entropy"}),
+        "segment_mol": MappingProxyType(
+            {"h": "segment_molar_enthalpy", "s": "segment_molar_entropy"}
+        ),
+        "kg": MappingProxyType({"h": "specific_enthalpy", "s": "specific_entropy"}),
+    }
 )
 #: D4: the variables a constant entry's validity may name.
 CONSTANT_VARIABLES: Final = ("T", "P")

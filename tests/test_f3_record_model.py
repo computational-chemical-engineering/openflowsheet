@@ -568,6 +568,30 @@ def _formation(phase: str) -> dict[str, Any]:
     }
 
 
+#: (h kind, unit), (s kind, unit) per amount basis: ADR 0062 D1's kinds (F2 decision WO1-9).
+BASIS_FORMATION_KINDS = {
+    "mol": (("molar_enthalpy", "J/mol"), ("molar_entropy", "J/(mol K)")),
+    "segment_mol": (("segment_molar_enthalpy", "J/mol"), ("segment_molar_entropy", "J/(mol K)")),
+    "kg": (("specific_enthalpy", "J/kg"), ("specific_entropy", "J/(kg K)")),
+}
+
+
+@pytest.mark.parametrize("basis", BASIS_FORMATION_KINDS)
+def test_d7_formation_kinds_follow_the_amount_basis(basis: str) -> None:
+    """D3: Δf h° and s° are per unit amount, so of the basis's kind; the kinds of another basis
+    are `record_unit_invalid` at `h` and at `s` (F2-WO1, decision WO1-9)."""
+    for other, ((h_kind, h_unit), (s_kind, s_unit)) in BASIS_FORMATION_KINDS.items():
+        document = _anchor_record(0, basis, ["ig"], [])
+        if basis == "segment_mol":
+            document["molar_mass"]["kind"] = "segment_molar_mass"
+        formation = document["formation"][0]
+        formation["h"].update(kind=h_kind, unit=h_unit)
+        formation["s"] = {**formation["h"], "value": 100.0, "kind": s_kind, "unit": s_unit}
+        outcome = identify(document)
+        refused = [("record_unit_invalid", {"entry": f"/formation/0/{p}"}) for p in ("h", "s")]
+        assert _codes(outcome.errors) == ([] if other == basis else refused), (basis, other)
+
+
 # -- E-F3-13 (synthetic part) ---------------------------------------------------------------------
 
 

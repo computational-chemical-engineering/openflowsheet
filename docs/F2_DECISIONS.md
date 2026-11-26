@@ -82,3 +82,13 @@ Files: `schemas/units.json`, `schemas/quantity.schema.json` (kind enum), `src/op
   A reaction over a `kg` record keeps the existing path: `records.reactions` raises `ValueError` (no molar mass), the
   records service refuses `invalid_request`; docstring updated. **Design-lane question for WO2**: should the reaction
   check use D4's M = 1 for `kg` instead (Q7.R3)? Default: unchanged.
+- **DECISION WO1-9. Formation and transition kinds follow the amount basis.** ADR 0061 D3 states Δf h° and s° "per
+  unit amount" but `FORMATION_KINDS` held only the `mol` kinds, harmless while only `mol` registered. With the gate
+  lifted, a `kg` record's Δf h° in J/mol would register and one in J/kg would be refused. ADR 0062 D1's Use column
+  names the kinds: `segment_molar_enthalpy` "h, Δf h° per segment-mol", `segment_molar_entropy` "s, s° per
+  segment-mol", `specific_enthalpy` "h of a `kg`-basis component", `specific_entropy` "s of a `kg` component". So
+  `FORMATION_KINDS` is per basis (`mol`: `molar_*`; `segment_mol`: `segment_molar_*`; `kg`: `specific_*`); `mol`
+  records validate exactly as before (F3 304/304, the legacy import unchanged). Test:
+  `test_f3_record_model.py::test_d7_formation_kinds_follow_the_amount_basis` (3 bases x 3 kind pairs). Alternative:
+  lift the gate alone (admits dimensionally wrong `kg` and `segment_mol` formation data). Isolated in its own commit;
+  **design-lane confirmation** wanted (unit semantics read from D1's Use column, not stated as a rule).
