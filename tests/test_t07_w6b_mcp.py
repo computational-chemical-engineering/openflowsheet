@@ -93,6 +93,8 @@ ALLOWED_THIRD_PARTY = {"mcp", "anyio", "starlette", "uvicorn"}
 #: through `openflowsheet.resources` (standard library only).
 ALLOWED_PER_MODULE = {
     "web.py": {"openflowsheet.application.bindings.http", "openflowsheet.resources"},
+    # ADR 0078 D1.7: MCP over streamable HTTP serves the stdio binding's server; never `http`.
+    "mcp_http.py": {"openflowsheet.application.bindings.mcp"},
 }
 
 

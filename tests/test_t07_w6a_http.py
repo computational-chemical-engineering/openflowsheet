@@ -67,6 +67,8 @@ ALLOWED_APPLICATION = {
 #: files through `openflowsheet.resources` (standard library only; held below).
 ALLOWED_PER_MODULE = {
     "web.py": {"openflowsheet.application.bindings.http", "openflowsheet.resources"},
+    # ADR 0078 D1.7: MCP over streamable HTTP serves the stdio binding's server; never `http`.
+    "mcp_http.py": {"openflowsheet.application.bindings.mcp"},
 }
 #: `anyio` too: §11.3 names `anyio.to_thread.run_sync`, the SDK's own dependency (W6b decision).
 ALLOWED_THIRD_PARTY = {"starlette", "uvicorn", "mcp", "anyio"}

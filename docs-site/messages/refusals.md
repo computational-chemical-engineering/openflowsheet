@@ -1833,6 +1833,39 @@ Directory 'plant' is not a project: it holds no project database.
 
 - **Summary:** Refused: opening not settled.
 
+<a id="origin_refused"></a>
+
+## `origin_refused`: A request to /mcp from a web page of another origin
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+- **Summary:** The request to /mcp was refused: it came from a web page at &lt;origin&gt; that this server does not serve.
+- **Why:** A browser names the origin of the page that sends a request. The /mcp endpoint accepts requests from the origins of the address it is served on and from programs that name no origin (MCP clients), and refuses the rest, so that a page of another site cannot reach the server through a browser.
+- **Do:** Connect an MCP client program to /mcp with the Authorization: Bearer header configured; a web page of another origin cannot use this server.
+- **Parameters:** `origin` (text, optional)
+
+Example:
+
+```text
+The request to /mcp was refused: it came from a web page at http://elsewhere.example that this server does not serve.
+  Why:     A browser names the origin of the page that sends a request. The /mcp endpoint accepts requests from the origins of the address it is served on and from programs that name no origin (MCP clients), and refuses the rest, so that a page of another site cannot reach the server through a browser.
+  Do:      Connect an MCP client program to /mcp with the Authorization: Bearer header configured; a web page of another origin cannot use this server.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    origin_refused, in forbidden (openflowsheet explain origin_refused)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#origin_refused
+```
+
+Example:
+
+```text
+The request to /mcp was refused: it came from a web page that this server does not serve.
+  Why:     A browser names the origin of the page that sends a request. The /mcp endpoint accepts requests from the origins of the address it is served on and from programs that name no origin (MCP clients), and refuses the rest, so that a page of another site cannot reach the server through a browser.
+  Do:      Connect an MCP client program to /mcp with the Authorization: Bearer header configured; a web page of another origin cannot use this server.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    origin_refused, in forbidden (openflowsheet explain origin_refused)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#origin_refused
+```
+
 <a id="out_of_domain"></a>
 
 ## `out_of_domain`: A state outside the range of the property method
