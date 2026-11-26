@@ -137,3 +137,5 @@ Reversible by: <how>.` Package build decisions go in the package's own file (`do
 - X06-WO3 brief docs/briefs/LINE06-X06-WO3.md written.
 - 2026-11-27: f0-x06-wo2 PASS on wp/X06 7ca42a0e (F0 PASS: M1 50/50, M2 61/61, M3 61/61, M4 61/61, M5 61/61,
   M6 85/85, M7 52/52, M8 105/105, M9 42/42). X06-WO3 launched (opus-engineer, brief docs/briefs/LINE06-X06-WO3.md).
+- 2026-11-27: F2-WO3 judged PASS at wp/F2 41177bcf: battery 5070 passed, 28 skipped, 3 xfailed, 0 failed; F0 PASS
+  (M1 50/50 ... M9 42/42, unchanged). F2-WO4 launched (opus-engineer, docs/briefs/LINE06-F2-WO4.md).
