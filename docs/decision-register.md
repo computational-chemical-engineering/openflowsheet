@@ -20493,3 +20493,31 @@ administration, off by default behind an operator switch, no escalation, writes 
 stored record, run identity or store schema changes. Five work orders (WO1 to WO4 Opus, WO5 Sonnet).
 
 **Open for the user:** Q1 to Q6 of the ADR's risks section, and Q4's fact (which MCP clients must connect).
+
+## R-1072: F2's surface link c_11 in the v0.2 surface chain (2026-11-26, reserved)
+
+| | |
+| --- | --- |
+| Date | 2026-11-26 |
+| Decided by | orchestrator (LINE06), build lane; the link's content follows the c_4 to c_10 pattern of `scripts/m07a_rc.py` |
+| Normative text | ADR 0062 D1 (the 14 quantity kinds), ADR 0019 Amendment 9 (pointer, F2-WO6) |
+| Evidence | to come: `tests/test_m07a_surface_chain.py` green on wp/F2 with `strip_f2` and `D_11` = `F2_SERVED_SHA256` (`9a4b4eb3…`) |
+| Affected packages | F2; X06 (its link is c_12, R-1073) |
+
+**Decision.** F2's move of the served surface (the kind enum in `list_models` and the served tools, registered by
+F2-WO2b, `7b2a995c`) is chain link c_11: `strip_f2` takes F2's additions out and the digest returns to c_10's (F3).
+**Merge order:** links are numbered in the order the surface moved (F2 first); if X06 merges into `main` first, its
+link is renumbered c_11 and F2's c_12 in the second branch's merge commit.
+
+## R-1073: X06's surface link c_12 (2026-11-26, reserved)
+
+| | |
+| --- | --- |
+| Date | 2026-11-26 |
+| Decided by | orchestrator (LINE06), build lane |
+| Normative text | ADR 0078 D6, ADR 0019 Amendment 18 (pointer, X06-WO5) |
+| Evidence | to come: `tests/test_m07a_surface_chain.py` green on wp/X06 with `strip_x06` and `D_12` = `X06_SERVED_SHA256` |
+| Affected packages | X06; F2 (R-1072) |
+
+**Decision.** X06's tools (from WO2 on) are chain link c_12, onto c_10 on wp/X06 until the merge; the second branch to
+merge decomposes onto the first's (ADR 0078 D6; R-1072's merge-order rule).

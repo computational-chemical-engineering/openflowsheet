@@ -40,14 +40,14 @@ once F2-WO4 is on wp/F2 (F8 branches from wp/F2's head, merges after F2).
 
 ## Next action
 
-F2-WO1 PASS (log); D1 PASS (ADR 0078 Proposed, `dcbab9b7`). Running (the cap of two): `opus-engineer` on F2-WO2
-(worktree `f2`, brief `docs/briefs/LINE06-F2-WO2.md`) and `opus-engineer` on X06-WO1 (worktree `x06`, brief
-`docs/briefs/LINE06-X06-WO1.md`). On each report: `git -C <worktree> status`, ListAgents, judge on the brief's
-acceptance, re-run F0 on the branch, log. Next briefs: F2-WO3 (ids and layout), X06-WO2 (branches; ADR 0078 Q8: merge
-order with F2). Cards open: `ofs-x06-accept-adr0078` (verify with the pinned text in the log),
-`ofs-x06-mcp-clients`. After Q1: R-110 status line, roadmap resume move, target-architecture X06 row. F2 ruling
-round (batched, at F2's reviewer pass): WO1-4, WO1-1, WO1-9, M = 1 for kg, WO2-1, WO2-7. Running now: F2-WO2b
-(register the served-surface move, brief `docs/briefs/LINE06-F2-WO2b.md`) and X06-WO1.
+Done: D1, F2-WO1 (with a recorded miss, fixed by WO2b), F2-WO2, F2-WO2b, X06-WO1 (log). Running (the cap of two):
+`opus-engineer` on F2-WO3 (worktree `f2`, `docs/briefs/LINE06-F2-WO3.md`: chain link c_11 then ids and layout) and
+`opus-engineer` on X06-WO2 (worktree `x06`, `docs/briefs/LINE06-X06-WO2.md`, plus chain link c_12 by message). On each
+report: `git -C <worktree> status`, ListAgents, judge on the brief's acceptance (surface suites included), re-run F0 on
+the branch, log. Next briefs: F2-WO4 (revision v2), X06-WO3 (solve policies). Cards open: `ofs-x06-accept-adr0078`
+(verify with the pinned text in the log), `ofs-x06-mcp-clients`. After Q1: R-110 status line, roadmap resume move,
+target-architecture X06 row. F2 ruling round (batched, at F2's reviewer pass): WO1-4, WO1-1, WO1-9, M = 1 for kg,
+WO2-1, WO2-7. X06 reviewer: WO1-1 (unused serve functions), stateless tools/call without initialize.
 
 ## Decisions settled (Decision Desk, 2026-11-26, each choice A, VERIFIED, `executed` written)
 

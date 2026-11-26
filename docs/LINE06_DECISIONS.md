@@ -100,3 +100,12 @@ Reversible by: <how>.` Package build decisions go in the package's own file (`do
   For the X06 reviewer: WO1-1 (http.serve and web.serve no longer used by the CLI: remove?), the uninitialized
   tools/call in stateless mode.
 - X06-WO2 brief docs/briefs/LINE06-X06-WO2.md; opus-engineer launched (background, worktree x06).
+- F2-WO2b judged PASS on its brief (2026-11-26): 7b2a995c; 132,096 tokens, 31 min; the 16 tests green
+  (test_t07_w5e + test_t08_w2_surface_digest 51/51 with two decomposition tests); families 4017 passed, 0 failed; F0
+  unchanged. Pins: F2_SERVED_SHA256 9a4b4eb3 (without_f2 -> F3's f7ec3c94), SNAPSHOT_F2 list_models 854fab33 (-> 12d88245).
+  Found: tests/test_m07a_surface_chain.py 18 failed (confirmed: 18 failed, 65 passed across the three files), a
+  third surface suite the WO1 rule did not name.
+- DECISION: chain links -> F2 c_11 (R-1072), X06 c_12 (R-1073), reserved now in the register; renumbered in the
+  second merge if X06 merges first. Alternative: allocate at merge time. Reversible by: renumbering in m07a_rc.py.
+  Rule widened to tests/test_m07a_surface_chain.py. X06-WO2's engineer told by message to add c_12 in WO2.
+- F2-WO3 brief docs/briefs/LINE06-F2-WO3.md (first commit c_11, then D7/D8); opus-engineer launched (background).
