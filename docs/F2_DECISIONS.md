@@ -235,3 +235,8 @@ Files: `src/openflowsheet/material/{basis,definitions}.py`, `schemas/connection-
 - **DECISION WO3-8. `material_layout`** = per connection `connection`, `definition`, `definition_sha256`, `slots`
   (`substream`, `field`, `index` with class indices as JSON integers, `quantity_kind`); no M and no dormancy
   partition (floats stay out of R0). No schema file yet (E-F2-10 is WO6's).
+- **WO2b residue fixed.** The acceptance battery found one failure outside the brief's named suites:
+  `tests/test_m02_schemas.py::test_g1c_...` (`list_models` at `854fab33…` = `SNAPSHOT_F2`, not M02's base `12d88245…`),
+  and `tests/test_m04_study_job.py::test_a42_...` likewise: both decompositions lacked `without_f2` (WO2b covered
+  t07/t08/m07a). Both now take F2's additions out first, the later first; nothing relaxed. Sweep of M0x, MSG, X0x,
+  OPT, ST suites after the fix: 4,390 passed, 0 failed.
