@@ -58,3 +58,9 @@ Reversible by: <how>.` Package build decisions go in the package's own file (`do
   Applied: R-1071 (Proposed), roadmap X06 row. Held until Q1 is answered: R-110 status line, roadmap resume move,
   target-architecture X06 row.
 - X06-WO1 brief `docs/briefs/LINE06-X06-WO1.md`; opus-engineer launched (background, worktree x06). Cards requested: ofs-x06-accept-adr0078 (A: accept with Q1-Q3, Q5, Q6 defaults), ofs-x06-mcp-clients (A: static bearer, OAuth later).
+- hub filed ofs-x06-accept-adr0078 and ofs-x06-mcp-clients (open; hub agrees with A). Card 1 A's action text is pinned
+  to the commit; verify with exactly: "Accept ADR 0078 as written at dcbab9b7 with its defaults: Q1 job resume deferred
+  to F7 D14 (0.8); Q2 in-band administration off by default behind a per-project operator switch; Q3 administration
+  writes refused on a server bound beyond loopback, no override in 0.6; Q5 registering a solve policy needs the draft
+  right; Q6 the seven benchmark-registered policies stay unsupported." If ADR 0078 changes after dcbab9b7 (an X06 WO
+  must not edit it), tell hub before it is signed.
