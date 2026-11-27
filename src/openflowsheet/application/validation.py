@@ -40,6 +40,8 @@ if TYPE_CHECKING:
     from openflowsheet.graph.process import ProcessGraph
     from openflowsheet.graph.trace import Declaration
     from openflowsheet.models.revision_flowsheet import RevisionError
+    from openflowsheet.registry.tokens import Coded
+    from openflowsheet.revision_v2 import RevisionV2, ValidationContext
     from openflowsheet.studies.nlp.closure import ReadinessCode
     from openflowsheet.studies.nlp.request import StaticReadiness
     from openflowsheet.units import UnitConversion
@@ -106,6 +108,12 @@ def validate(
     schema_outcome = _schema_stage(document, task, now)
     if isinstance(schema_outcome, ValidationReport):
         return schema_outcome
+    if document.get("schema_version") == 2:
+        # ADR 0062 D12 (ADR 0019 Amendment 9): every later stage reads the lowered document.
+        lowered = _v2_stage(document, task, now)
+        if isinstance(lowered, ValidationReport):
+            return lowered
+        document = lowered
     checks: list[Check] = [schema_outcome]
 
     instances = list(document.get("instances") or [])
@@ -412,15 +420,138 @@ def _schema_stage(
 
 def _first_schema_error(document: Mapping[str, Any]) -> tuple[str, str] | None:
     """The first `process-revision.schema.json` error of a canonical `document`, as `(pointer,
-    message)`, or `None`. The document is read as JSON reads it (a tuple is an array, any mapping
-    an object): the schema judges the document's canonical form, not its Python spelling."""
+    message)`, or `None`; for a `schema_version` 2 document, the first error of
+    `process-revision-v2.schema.json` (ADR 0062 D11; ADR 0002 D7.5: never read as the other). The
+    document is read as JSON reads it (a tuple is an array, any mapping an object): the schema
+    judges the document's canonical form, not its Python spelling."""
     from openflowsheet.schema_check import schema_errors
 
-    errors = schema_errors("process-revision.schema.json", _as_json(document))
+    name = V2_SCHEMA if document.get("schema_version") == 2 else "process-revision.schema.json"
+    errors = schema_errors(name, _as_json(document))
     if not errors:
         return None
     pointer, _, message = errors[0].partition(": ")
     return pointer, message
+
+
+#: ADR 0062 D11: the schema of a `schema_version` 2 revision.
+V2_SCHEMA: Final[str] = "process-revision-v2.schema.json"
+
+
+def _v2_stage(
+    document: Mapping[str, Any], task: Task, now: Callable[[], str]
+) -> Mapping[str, Any] | ValidationReport:
+    """ADR 0062 D12 (ADR 0019 Amendment 9) for a schema-valid v2 `document`: its lowering, which
+    every later stage reads, or the schema-only `INVALID` report of every refusal of its rules
+    (`revision_v2.validate` against `revision_context`) and of its lowering
+    (`construct_unavailable`), sorted, in `SCHEMA-01`'s message (F2 decision WO6b-3). The
+    validator's notices are not reported here: the report has no field for them, and
+    `check_admission` reports them."""
+    from openflowsheet.models.revision_flowsheet import legacy_providers
+    from openflowsheet.revision_v2 import LoweringError, lower, parse
+    from openflowsheet.revision_v2 import validate as v2_validate
+
+    revision = parse(document)
+    errors, _ = v2_validate(revision, revision_context(revision))
+    refusals: list[Coded] = list(errors)
+    try:
+        lowered = lower(revision, legacy_providers())
+    except LoweringError as error:
+        refusals += error.refusals
+    if not refusals:
+        return lowered
+    unique = {coded.sort_key(): coded for coded in refusals}
+    rendered = [rendered_coded(unique[key]) for key in sorted(unique)]
+    return ValidationReport(
+        revision_id=_revision_id(document),
+        task=task,
+        status="INVALID",
+        checks=(
+            Check(
+                id="SCHEMA-01",
+                stage="schema",
+                result="FAIL",
+                message="; ".join(rendered),
+                implicated_objects=(),
+            ),
+        ),
+        structural_counts=None,
+        structural_counts_absent_reason="the revision is not well formed",
+        provenance={"produced_by": SCHEMA_ONLY_PRODUCED_BY, "timestamp": now()},
+    )
+
+
+def rendered_coded(coded: Coded) -> str:
+    """A typed refusal as `<code>(<param values, in order>)`, as `revision_v2` renders it."""
+    return f"{coded.code}({', '.join(coded.params.values())})"
+
+
+def revision_context(revision: RevisionV2) -> ValidationContext:
+    """The `revision_v2.ValidationContext` of a parsed v2 `revision`, from what this build holds
+    (ADR 0062 D12; F2 decision WO6b-4): each component whose record is a legacy component record
+    (ADR 0061 D12), with the molar mass its file's basis gives it, a molar amount basis and no
+    charge; the attribute kinds the registry holds; each model of the builder table with its
+    ports, a material port taking its `state_definition` (`nTP-v1`); the legacy providers and
+    their native conventions. No property method confines a component or forms a solid (ADR-F4,
+    F5), and no model declares a manipulable parameter (D9, F6)."""
+    from openflowsheet.application.model_signatures import MODEL_SIGNATURES
+    from openflowsheet.material.layout import AttributeKind, ComponentFacts
+    from openflowsheet.models.revision_flowsheet import (
+        RevisionError,
+        component_basis,
+        legacy_providers,
+    )
+    from openflowsheet.registry import default_registry
+    from openflowsheet.revision_v2 import ModelFacts, PortFacts, ValidationContext
+    from openflowsheet.revision_v2.lower import legacy_records
+
+    records = legacy_records()
+    components: dict[str, ComponentFacts] = {}
+    for entry in revision.document["component_set"]["components"]:
+        found = records.get(entry["record"])
+        if found is None:
+            continue
+        selection = {
+            "component_set": {"record_source": found.file, "components": [found.component]}
+        }
+        try:
+            masses = component_basis(selection).molecular_weights
+        except RevisionError:
+            continue
+        if found.component in masses:
+            components[entry["id"]] = ComponentFacts("mol", masses[found.component])
+    attribute_kinds = {
+        registered.document["id"]: AttributeKind(
+            *(registered.document["payload"][key] for key in _ATTRIBUTE_FIELDS)
+        )
+        for registered in default_registry().descriptors(["attribute_kind"])
+    }
+    models = {
+        model: ModelFacts(
+            {
+                port.name: PortFacts(
+                    port.kind,
+                    port.direction,
+                    frozenset(() if port.state_definition is None else (port.state_definition,)),
+                )
+                for port in signature.ports
+            }
+        )
+        for model, signature in MODEL_SIGNATURES.items()
+    }
+    providers = legacy_providers()
+    known = (*providers.registered.values(), providers.otherwise)
+    return ValidationContext(
+        components,
+        attribute_kinds,
+        models,
+        frozenset(provider.provider for provider in known),
+        frozenset(provider.convention for provider in known),
+    )
+
+
+#: `AttributeKind`'s fields, in order, as an `attribute_kind` descriptor's payload names them.
+_ATTRIBUTE_FIELDS: Final = ("scope", "partition", "classed", "quantity_kind")
 
 
 def _as_json(node: Any) -> Any:

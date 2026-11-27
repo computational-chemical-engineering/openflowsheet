@@ -290,3 +290,107 @@ def test_row_13_verify_bundle_judges_a_v2_state_by_its_own_rules() -> None:
                 directory, {states.NAME: ""}, missing=[], tampered=[]
             )
             assert seen[-1] == expected
+
+
+# -- rows 7 to 10: validation, admission and the revision operations (Amendment 9) ---------------
+
+
+def _now() -> str:
+    return "2026-11-27T00:00:00Z"
+
+
+@pytest.mark.parametrize("name", sorted(CORPUS))
+def test_row_7_validate_reports_a_raised_revision_as_its_v1_document(name: str) -> None:
+    """Row 7: `validate` reads a v2 document with the v2 schema and F2's rules, then reports its
+    lowering's report: equal to the v1 document's for 49 of M1's 50. `SYN-001-T06-STR06` names a
+    component outside the set in a specification, which v1 reports at COMP-03 and the v2 rules
+    refuse at SCHEMA-01 (`component_unknown(D)`); both `INVALID`."""
+    from openflowsheet.application.validation import validate  # noqa: PLC0415
+
+    original = CORPUS[name]()
+    v1 = validate(original, now=_now).as_document()
+    v2 = validate(_raised(original), now=_now).as_document()
+    if name == "SYN-001-T06-STR06":
+        assert (v1["status"], v2["status"]) == ("INVALID", "INVALID")
+        assert [c["message"] for c in v2["checks"]] == ["component_unknown(D)"]
+    else:
+        assert v2 == v1
+
+
+def test_row_7_validate_refuses_by_the_v2_schema_and_by_lowering() -> None:
+    from openflowsheet.application.validation import validate  # noqa: PLC0415
+
+    raised = _raised(_base())
+    del raised["convention"]
+    (check,) = validate(raised, now=_now).checks
+    assert (check.id, check.result) == ("SCHEMA-01", "FAIL")
+    assert check.message.startswith("schema_invalid()")
+    (check,) = validate(_energy(_raised(_base())), now=_now).checks
+    assert (check.id, check.result) == ("SCHEMA-01", "FAIL")
+    assert "construct_unavailable(" in check.message
+
+
+def test_rows_8_9_check_admission_admits_a_v2_draft_as_its_lowering() -> None:
+    """Rows 8 and 9: the draft form reads a v2 revision; its pairs are the v1 draft's."""
+    from openflowsheet.application.local import LocalApplication  # noqa: PLC0415
+
+    with LocalApplication.in_memory() as app:
+        v1 = app.check_admission(revision=_base()).as_document()
+        v2 = app.check_admission(revision=_raised(_base())).as_document()
+    assert v2 == v1
+
+
+def test_rows_8_9_check_admission_refuses_a_non_expressible_v2_draft() -> None:
+    from openflowsheet.application.errors import ApplicationError  # noqa: PLC0415
+    from openflowsheet.application.local import LocalApplication  # noqa: PLC0415
+
+    with LocalApplication.in_memory() as app, pytest.raises(ApplicationError) as caught:
+        app.check_admission(revision=_energy(_raised(_base())))
+    error = caught.value.error
+    assert error.code == "revision_unsupported"
+    # The energy connection on a material port: the validator's refusal first (sorted), and the
+    # lowering's `construct_unavailable` beside it.
+    assert error.detail["unbound"] == "unsupported(connection_kind_unsupported(S1, U-FEED.outlet))"
+    assert "construct_unavailable(energy:S1, F6)" in error.detail["hint"]
+
+
+def test_rows_10_11_12_commit_preview_diff_and_run_a_v2_revision() -> None:
+    """Row 10: `preview_change` and `commit_change` accept a v2 document (its `ChangeSet` paths
+    address v2 fields), `diff_revisions` diffs two v2 revisions; row 11: the stored hash is v2's;
+    row 12: `solve` runs it and the run result references the v2 revision."""
+    from openflowsheet.application.local import LocalApplication  # noqa: PLC0415
+    from openflowsheet.application.transaction_types import Change, Edit  # noqa: PLC0415
+    from openflowsheet.revision_v2 import content_hash  # noqa: PLC0415
+
+    raised = _raised(_base())
+    body = {k: v for k, v in raised.items() if k not in ("revision_id", "parent_revision")}
+    with LocalApplication.in_memory() as app:
+        change = Change(edits=tuple(Edit("set", (key,), value) for key, value in body.items()))
+        preview = app.preview_change(change, None)
+        assert preview.status == "previewed", preview
+        committed = app.commit_change(change, None, "f2-wo6b-1")
+        assert committed.status == "committed", committed
+        first = committed.revision_id
+        assert first is not None
+        assert committed.validation is not None
+        assert committed.validation.status == "READY_FOR_SIMULATION"
+        stored = app.get_revision(first).as_document()
+        assert stored["value"]["content_hash"] == content_hash({**raised, "revision_id": first})
+        edit = Change(edits=(Edit("set", ("specifications", 0, "value"), 2.0),))
+        second = app.commit_change(edit, first, "f2-wo6b-2")
+        assert second.status == "committed", second
+        assert second.revision_id is not None
+        diff = app.diff_revisions(first, second.revision_id).as_document()
+        assert diff != app.diff_revisions(first, first).as_document()
+        result = app.solve(first, "default")
+        assert result.revision_id == first
+        assert result.revision_content_sha256 == stored["value"]["content_hash"]
+        assert result.outcome == "CONVERGED", result
+    original = {k: v for k, v in _base().items() if k not in ("revision_id", "parent_revision")}
+    with LocalApplication.in_memory() as app:
+        change = Change(edits=tuple(Edit("set", (key,), value) for key, value in original.items()))
+        committed = app.commit_change(change, None, "f2-wo6b-v1")
+        assert committed.revision_id == first
+        v1 = app.solve(first, "default")
+    # The job's run is the v1 run: the same structural identity (D8).
+    assert (result.structural_sha256, result.solve_path) == (v1.structural_sha256, v1.solve_path)

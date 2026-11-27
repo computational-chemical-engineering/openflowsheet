@@ -277,7 +277,7 @@ def _draft_pairs(revision: Mapping[str, Any]) -> tuple[str, list[tuple[str, str]
     if version != 1:
         raise api_error(
             "revision_unsupported",
-            f"check_admission reads a schema_version 1 revision in this build, not {version}",
+            f"check_admission reads a schema_version 1 or 2 revision in this build, not {version}",
         )
     if not isinstance(revision.get("component_set", {}), Mapping):
         raise _invalid("/component_set", "component_set is an object")
@@ -309,6 +309,41 @@ def _draft_pairs(revision: Mapping[str, Any]) -> tuple[str, list[tuple[str, str]
     return method, found
 
 
+def _lowered_draft(revision: Mapping[str, Any]) -> tuple[Mapping[str, Any], tuple[Coded, ...]]:
+    """ADR 0062 D12 (ADR 0019 Amendment 9) for a `schema_version` 2 draft: its lowering, from
+    which the pairs are read as from a v1 draft, and the notices of F2's checks
+    (`revision_v2.validate` against `validation.revision_context`). The v2 schema's refusal is
+    `invalid_request` at its pointer; F2's errors and the lowering's `construct_unavailable` refuse
+    it `revision_unsupported`, the first in `detail.unbound`, all of them in `detail.hint`, sorted
+    (F2 decision WO6b-5)."""
+    from openflowsheet.application.validation import rendered_coded, revision_context
+    from openflowsheet.models.revision_flowsheet import legacy_providers
+    from openflowsheet.revision_v2 import LoweringError, RevisionV2Error, lower, parse, validate
+
+    try:
+        parsed = parse(revision)
+    except RevisionV2Error as error:
+        pointer = error.coded.params["pointer"]
+        message = f"the v2 revision schema refuses {pointer or '/'}"
+        raise _unreadable(f"/revision{pointer}", message) from error
+    errors, notices = validate(parsed, revision_context(parsed))
+    refusals = list(errors)
+    try:
+        lowered = lower(parsed, legacy_providers())
+    except LoweringError as error:
+        refusals += error.refusals
+    if refusals:
+        unique = {coded.sort_key(): coded for coded in refusals}
+        rendered = [rendered_coded(unique[key]) for key in sorted(unique)]
+        raise api_error(
+            "revision_unsupported",
+            "the v2 revision is refused by ADR 0062's rules or does not lower to v1",
+            unbound=f"unsupported({rendered[0]})",
+            hint="; ".join(rendered),
+        )
+    return lowered, notices
+
+
 def _union(notices: Sequence[tuple[Coded, ...]]) -> tuple[Mapping[str, Any], ...]:
     """Every pair's notices once each, in the registry's notice order (code, then params by
     name; F1 decisions W1-12, W4a-4)."""
@@ -323,12 +358,16 @@ def admission_report(
     revision: Mapping[str, Any] | None = None,
 ) -> AdmissionReport:
     """D11 `check_admission`. The pair form: one pair's verdict. The draft form (`revision`, a
-    schema_version 1 document): one verdict per unit instance, `admitted` their conjunction."""
+    schema_version 1 or 2 document): one verdict per unit instance, `admitted` their conjunction.
+    A v2 draft is read as its lowering, with F2's checks (`_lowered_draft`, ADR 0062 D12)."""
     if (pair is None) == (revision is None):
         raise api_error("invalid_request", "send exactly one of pair and revision")
+    checked: tuple[Coded, ...] = ()
     if revision is not None:
         if not isinstance(revision, Mapping):
             raise _unreadable("/revision", "revision is a ProcessRevision document, an object")
+        if revision.get("schema_version") == 2:
+            revision, checked = _lowered_draft(revision)
         method, instances = _draft_pairs(revision)
         verdicts = [
             _pair(
@@ -348,5 +387,5 @@ def admission_report(
         registry_sha256=registry.registry_sha256,
         admitted=all(entry.admitted for entry in pairs),
         pairs=pairs,
-        notices=_union([notices for _, notices in verdicts]),
+        notices=_union([*(notices for _, notices in verdicts), checked]),
     )
