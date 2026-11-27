@@ -223,3 +223,5 @@ Reversible by: <how>.` Package build decisions go in the package's own file (`do
   DECISION: one fresh architect ruling pass F2-R1 now (brief docs/briefs/LINE06-F2-R1.md) beside F2-WO6b (brief
   docs/briefs/LINE06-F2-WO6b.md), which builds on the current reading. Alternative: hold WO6b. Reversible by: a fix
   WO after the ruling.
+
+- 2026-11-27: resumed after self-reset; launched architect F2-R1 (D12 rulings) and opus-engineer F2-WO6b in .claude/worktrees/f2 (logs ~/.cache/line06/f2-r1, f2-wo6b). Card ofs-x06-descriptions-human still open.
