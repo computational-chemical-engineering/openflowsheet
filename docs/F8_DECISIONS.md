@@ -470,3 +470,16 @@ the working tree, run, and reverted (not committed).
   `solution-state.json` (tampered), with `artifacts` a list, with `artifacts` a string: 6 passed. Controls: reasons
   left `(reason,)`: 6 of 6 fail (KILLED); the guard back to `artifacts or {}`: the list and string cases, 4 of 6,
   fail with `AttributeError` (KILLED). `test_f8_replay_v2`: 64 passed.
+- **Item 4 (S2). D5 steps 3 and 4 on the v2 path, and the order across steps, are pinned** (`tests/test_f8_replay_v2.py`):
+  (a) `test_d5_another_platform_and_a_changed_built_in_rerun_as_a_compatible_reproduction` (x two cases):
+  `compatible_reproduction`, reasons exactly (the environment's one reason, `extension_changed(...)`), rerun and
+  compared, `MATCH`, bitwise; (b) `test_d5_a_changed_lock_and_a_changed_built_in_rerun_nothing` (x two cases):
+  `inspected_archived_results` / `NOT_RUN`, reasons (the lock's, `extension_changed(...)`), no differences;
+  (c) `test_d5_reasons_accumulate_in_step_order` (GP-C1, manifest rewritten with policy `x-unknown-policy-v9`,
+  integrity still ok; `data_source` row removed from the registry; C2H5OH absent from the store): `NOT_RUN`, reasons
+  exactly (policy, `extension_unavailable`, `data_unavailable`), and on the other registered platform (policy, the
+  environment's, `extension_unavailable`, `data_unavailable`). 6 passed. Controls over the whole file (70 tests):
+  `policy_reasons` and `environment_reasons` swapped at the reasons line: 1 fails, (c) on the other platform
+  (KILLED; the review's (c) as written has no environment reason, so the platform variant is what kills it);
+  `mode == "exact_replay" and` dropped from the changed-built-in rule: 2 fail, (b) both cases (KILLED). Before this
+  item both mutations survived the file (measured: the pre-item file, 64 passed under each).

@@ -55,7 +55,13 @@ from openflowsheet.run import bundle_v2
 from openflowsheet.run.bundle import ARTIFACT_DIR, MANIFEST_NAME, read_artifact
 from openflowsheet.run.manifest import Environment
 from openflowsheet.run.manifest_v2 import ReplayModeRefusedError
-from openflowsheet.run.replay import ReplayReport, Rerun, replay
+from openflowsheet.run.replay import (
+    ReplayReport,
+    Rerun,
+    decide_mode,
+    replay,
+    unknown_policy_reason,
+)
 from openflowsheet.run.replay_v2 import (
     FAILED_INTEGRITY,
     NO_RERUN,
@@ -574,6 +580,92 @@ def test_e_f8_5_a_changed_unused_extension_changes_neither_mode_nor_verdict(
     assert report.registry_comparison is not None
     assert report.registry_comparison["unused_differences"] == 1
     assert report.registry_comparison["changed"] == []
+
+
+# ------------------------------------------------------- D5 steps 3 and 4, and the order of steps
+
+
+def _other_platform(recorded: Recorded) -> Environment:
+    """The recorded environment on the other registered architecture."""
+    here = _environment(recorded)
+    other = v1_reports.OTHER_ARCHITECTURE.get(here.architecture, "x86_64")
+    return dataclasses.replace(here, architecture=other)
+
+
+def test_d5_another_platform_and_a_changed_built_in_rerun_as_a_compatible_reproduction(
+    plain: Recorded, plain_rerun: RerunV2
+) -> None:
+    """Review F8 S2 (a): step 4's compatible reproduction stays one when a used built-in also
+    changed; the reasons are the environment's, then step 5's; the rerun is compared."""
+    key = _used(plain, "unit_model")
+    registry = edited_registry({key: {"self_sha256": "0" * 64}})
+    current = _other_platform(plain)
+    mode, environment_reasons = decide_mode(_environment(plain), current)
+    assert mode == "compatible_reproduction" and len(environment_reasons) == 1
+    report = _valid(
+        replay_v2(plain.v2, plain_rerun, current=current, registry=registry, store=_local())
+    )
+    assert report.mode == "compatible_reproduction"
+    assert report.reasons == (*environment_reasons, f"extension_changed({', '.join(key)})")
+    assert report.verdict == "MATCH", report.differences
+    assert report.bitwise_floats is True
+
+
+def test_d5_a_changed_lock_and_a_changed_built_in_rerun_nothing(
+    plain: Recorded, plain_rerun: RerunV2
+) -> None:
+    """Review F8 S2 (b): a changed built-in turns only an exact replay into a compatible
+    reproduction; under a changed lock the archive is inspected (ADR 0007 D4), never rerun."""
+    key = _used(plain, "unit_model")
+    registry = edited_registry({key: {"self_sha256": "0" * 64}})
+    current = dataclasses.replace(_environment(plain), lock_sha256="f" * 64)
+    mode, environment_reasons = decide_mode(_environment(plain), current)
+    assert mode == "inspected_archived_results" and len(environment_reasons) == 1
+    report = _valid(
+        replay_v2(plain.v2, plain_rerun, current=current, registry=registry, store=_local())
+    )
+    assert (report.mode, report.verdict) == ("inspected_archived_results", "NOT_RUN")
+    assert report.reasons == (*environment_reasons, f"extension_changed({', '.join(key)})")
+    assert report.differences == ()
+
+
+@pytest.mark.parametrize("platform", ["recorded", "other"])
+def test_d5_reasons_accumulate_in_step_order(
+    gp: Recorded, gp_rerun: RerunV2, tmp_path: Path, platform: str
+) -> None:
+    """Review F8 S2 (c): an unknown policy (step 3), a missing used extension (step 5) and an
+    absent referenced record (step 6) are all listed, in step order, and nothing is rerun. On the
+    other registered platform step 4's reason sits between steps 3 and 5."""
+    directory = tmp_path / "bundle"
+    shutil.copytree(gp.v2, directory)
+    unknown = "x-unknown-policy-v9"
+    manifest, _ = bundle_v2.read_manifest(directory)
+    edited = dataclasses.replace(manifest, numerical_policy_id=unknown)
+    (directory / MANIFEST_NAME).write_bytes(canonical_json(edited.as_document()))
+    assert bundle_v2.verify_bundle(directory).ok
+
+    key = _used(gp, "data_source")
+    absent = _sha_of(gp, REFERENCED[1])
+    current = _environment(gp) if platform == "recorded" else _other_platform(gp)
+    _, environment_reasons = decide_mode(_environment(gp), current)
+    assert len(environment_reasons) == (0 if platform == "recorded" else 1)
+    report = _valid(
+        replay_v2(
+            directory,
+            gp_rerun,
+            current=current,
+            registry=edited_registry({key: None}),
+            store=_local(frozenset({absent})),
+        )
+    )
+    assert (report.mode, report.verdict) == ("inspected_archived_results", "NOT_RUN")
+    assert report.reasons == (
+        unknown_policy_reason(unknown),
+        *environment_reasons,
+        f"extension_unavailable({', '.join(key)})",
+        f"data_unavailable({absent})",
+    )
+    assert report.differences == ()
 
 
 # ------------------------------------------------------------------------------------- E-F8-6
