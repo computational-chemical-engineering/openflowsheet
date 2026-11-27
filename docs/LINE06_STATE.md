@@ -9,15 +9,16 @@ Procedure: `.claude/skills/line06/SKILL.md`. Host SMM-TR09 (`ref-x86-64`); orche
 Amendment 3. Line acceptance: a v2 revision with store-pinned records solves on the legacy route on all three OSes;
 the ADR acceptances of card `ofs-line06-adr-clause`; X06's exits.
 
-## Position (2026-11-26)
+## Position (2026-11-27, 14:20)
 
-- `main` = the planning commit (local; last pushed head `4c7d3d6a`, 0.6.0.dev0). Cleanup done: every secondary
-  worktree removed (all clean and contained in `main` or a kept branch), the S19 gate-queue daemon stopped, wp/REL050
-  and wp/S19 log commits merged (docs only). No job of this campaign is running.
-- Plans updated: R-1070; ADR 0057 Amendment 3; `roadmap.md` 0.6, new 0.7, 0.8 to 0.10; line notes in ADR 0062 and 0067.
-- `release/lines/0.6.json` DRAFT (LINE06-L0): loads clean, `line_release` 0.6.0, release tests 406 passed. Field
-  reasons and what LINE06-L1 must still design: `docs/briefs/LINE06-line-0.6.md`.
-- Decision Desk: the three cards settled (below). F2-WO1 and D1 running.
+- All three packages built, reviewed and fixed; nothing merged into `main` yet. `main` local, last pushed `4c7d3d6a`.
+- **F2** (ADR 0062 **Accepted**): origin wp/F2 = `4b820b97` (full gate PASS 21725 passed). Local wp/F2 = `2757eb37`
+  (one docs commit after: stale D_11 corrected). CI running.
+- **F8** (ADR 0067 + ADR 0019 Amendment 12 **Accepted**): local wp/F8 = `4daff37f` (contains wp/F2 4b820b97, review
+  fix round F8-FR, manifest `evidence/F8/18676313.../manifest.json` tested). Card `ofs-f8-accept-adr0067` VERIFIED;
+  push of exactly `14409696` waits for its full gate. Merges after F2.
+- **X06** (ADR 0078 Accepted): origin wp/X06 = `a514896c` (X06-CI1 fixes; full gate PASS 21303 passed). CI running.
+- `release/lines/0.6.json` DRAFT (LINE06-L0); release campaign not started.
 
 ## Order and gates (pass criteria fixed before the run; the orchestrator judges each, a miss is recorded as a miss)
 
@@ -38,70 +39,39 @@ the ADR acceptances of card `ofs-line06-adr-clause`; X06's exits.
 Parallelism: at most two agents. F2 first; D1 runs beside F2 once the X06 scope card is answered; F8-WO1 can start
 once F2-WO4 is on wp/F2 (F8 branches from wp/F2's head, merges after F2).
 
-## Next action (2026-11-27, written for a self-reset; NO agent of this session is running)
+## Next action (2026-11-27 14:20, written for a self-reset; NO agent of this session is running)
 
-Judged PASS since the morning (details: `docs/LINE06_DECISIONS.md`): F2-R1, F2-WO6b, WO6c, WO7 (+WO7-4), the F2 review
-(`docs/reviews/F2-review.md`) and F2-WO8; F8-WO1 (+WO1b, R-1076 c_13), F8-WO2, F8-WO3. Heads: wp/F2 `6913c4a0` (j16 fixture fix on a64f93fb)
-(manifest `evidence/F2/fb75c409.../manifest.json`, `tested`), wp/F8 `25e5ed36`, wp/X06 `1b9561a3` (pushed).
+Background jobs (they survive the reset; their notices arrive in the new context):
+1. **F2 CI waiter**: `~/.cache/line06/ci/wait_runs.sh wp/F2 4b820b97ee0fa0ab95da9a387a0a0cbefd90644c`, log
+   `~/.cache/line06/ci/f2-4b820b97.log`. On all legs `success` (check jobs with `gh run view <id> --json jobs`;
+   `codehealth` is informational): DECISION-REQUEST to hub for the F2 merge card (A: "Merge wp/F2 at 2757eb37 into
+   main with a merge commit, run F0 on main, push main." B: "Do not merge F2 yet."; say "recommendation", not "hub
+   recommendation"; note 2757eb37 = pushed 4b820b97 + one docs commit). On failure: grep the failed log
+   (`gh run view <id> --log-failed > file`), fix order to an opus-engineer.
+2. **X06 CI waiter**: same script for `wp/X06 a514896c0dca95a436626f8ce67eb477855b6f18`, log
+   `~/.cache/line06/ci/x06-a514896c.log`. On green: X06 merge card via hub. Mention on the card for design-lane
+   notice: DECISION X06-CI1-1 (new addendum `benchmarks/x06/numerical_policy_external.yaml` classifies
+   `expected_sha256`/`actual_sha256` exact; R-1032 precedent).
+3. **F8 full gate**: nohup in detached worktree `.claude/worktrees/f8-gate` at `14409696`; summary
+   `~/.cache/line06/f8-gate/gate-14409696.summary` (a background waiter prints it). On `GATE PASS`: push
+   `git -c credential.helper= -c credential.helper='!gh auth git-credential' push origin 14409696:refs/heads/wp/F8`,
+   CI waiter, write `executed` on card `ofs-f8-accept-adr0067` (ArtifactData update, current version 2 or later;
+   re-read first). On FAIL: no push, tell hub, `executed` PARTIAL (ADR accepted `4daff37f`, push withheld). Then
+   `git worktree remove .claude/worktrees/f8-gate`.
 
-**Running (2026-11-27, 13:40):**
-- F2: full gate on wp/F2 `4b820b97` (summary `~/.cache/line06/f2-j16/gate-4b820b97.summary`). Card `ofs-f2-push-ci` A
-  VERIFIED: on gate PASS, `git push origin 4b820b97:refs/heads/wp/F2` (with the gh credential helper), CI waiter
-  `~/.cache/line06/ci/wait_runs.sh wp/F2 <full sha>`, write `executed`. Then fix stale D_11 `9a4b4eb3` in ADR 0019
-  Amendment 9 (l.307) and `docs/interfaces-frozen.md:114` on wp/F2 (docs, local, no push).
-- F8: all WOs + review fix round done (wp/F8 `14409696`, contains wp/F2 4b820b97). Full gate in detached worktree
-  `.claude/worktrees/f8-gate` (summary `~/.cache/line06/f8-gate/gate-14409696.summary`; remove the worktree after).
-  ADR 0067 card requested from hub (A: accept as corrected + push 14409696 if the gate passes). Merges after F2.
-- X06: X06-CI1 `opus-engineer` running its second full gate in `.claude/worktrees/x06-gate` (head `a514896c`;
-  first gate: 1 failed, fixed). Judge on its report.
+**Merge order into main:** whichever of F2 / X06 is green first merges first (merge card each). The second
+re-decomposes its surface chain onto the first's digest (R-1072/R-1073: X06's c_12 `D_12` vs F2's c_11 `D_11`
+`8eee5313`): that is an opus-engineer work order on the second branch, then its gate, push, CI, merge card. F8 merges
+after F2 (wp/F8 must first merge the final wp/F2 and main). After each merge: F0 on main
+(`scripts/corpus_identity.py --check`), push main, delete the worktree.
 
-**X06:** CI run 45962988409 at `1b9561a3` FAILED (11 tests + codehealth; see LINE06_DECISIONS). Running: X06-CI1
-`opus-engineer` in `.claude/worktrees/x06` (brief `docs/briefs/LINE06-X06-CI1.md`, logs `~/.cache/line06/x06-ci1/`).
-On PASS (full gate + codehealth diff + F0): push wp/X06 (a wp/ branch push for CI is in the orchestrator's lane per
-the skill's merge order; only merges, ADRs and release steps wait for the user), waiter, then the merge card. New rule: full local gate and `codehealth diff --base origin/main` pass before any package push.
+**Rules learnt today** (LINE06_DECISIONS 2026-11-27): the full local gate (`scripts/gate.sh`, ~1.5 h, run in a
+detached worktree) passes before any package push; the codehealth diff is informational, not a push gate. Branch
+pushes for CI are the orchestrator's (a card only when the user's card bundles it). Code health to file with
+`code_health`: S2 (AttributeError on `reproduce` of a named bundle), `render_error` without a code prefix (X06
+review ruling 9), F2 `application/validation.py` large_file (nloc 1003).
 
-**F8 next:** review done (`docs/reviews/F8-review.md`, main `6636a8a8`: M1, M2, S1-S6; not ready until F8-FR). On the
-gate passing (F2's head final): launch `opus-engineer` with `docs/briefs/LINE06-F8-FR0.md` (merge wp/F2 into wp/F8,
-c_13 onto D_11 `8eee5313`, catalogue re-pin, HARVEST_SIZE from the run), judge, then `docs/briefs/LINE06-F8-FR.md`
-(the nine review items, one Opus engineer), judge, then the ADR 0067 acceptance card via hub (edits before acceptance:
-D7 fold F8-WO5-0, WO6 row per ruling 2, optionally N7). If the gate fails: fix on wp/F2 first, update FR0's head.
-
-**Was next (F8):** write `docs/briefs/LINE06-F8-WO5.md` (ADR 0067 D7 per-platform reference records, `run/platform_refs.py`,
-invariant test; E-F8-8; Sonnet `sonnet-implementer`, then an Opus `opus-engineer` review of its diff, per the WO table).
-Read D7 (`docs/adr/0067-F8-identity-replay-evidence.md` line ~152), risk 5 (reuse ADR 0025's layout if it exists; X07a
-`tests/test_x07a_*`), `docs/F8_DECISIONS.md`. Then F8 close-out (ADR 0019 Amendment 12 pointer paragraph, evidence
-manifest `tested`), then the F8 `reviewer` pass with the ruling batch WO1-1 and WO3-1 to WO3-10 (WO3-1: D5 step 7's
-served stack has no consumer until v2-compiled runs), fix round, ADR 0067 acceptance card.
-Before F8's merge: merge wp/F2's final head into wp/F8; re-decompose c_13 onto F2's D_11 `8eee5313…`; re-pin the
-catalogue digest (wp/F2 `3af0a794`, wp/F8 `4ca46ea4`: a conflict to resolve); the v03 reds go away with F2's fixes.
-
-**F2:** WO1-WO8 done; ADR 0062 D2/D11/D12 edited. Cards OPEN on the Decision Desk (filed by hub, it rings):
-`ofs-f2-accept-adr0062` (A action: "Mark ADR 0062 Accepted as corrected before acceptance at wp/F2 a64f93fb (D12 per
-F2-R1, D2 PropertyRequest not widened, D11 h_mass revision-wide, E-F2-9 state_degenerate_in_definition and Q6.A2
-registration half deferred to F5/F6), then push wp/F2 for CI.") and `ofs-f2-check-admission-human` (A action: "Record
-the user's human review as reviewed for check_admission.md at SHA-256
-f111234f5e1ec6027056cf638d40f3776570fade25207919f32ddd49affb0eea (wp/F2 a64f93fb), in REVIEW.json."). On a ring:
-ArtifactData `get` collection `decisions` and `list` collection `keys` (desk
-https://claude.ai/artifact/AYGJBJRbCziMn7pSELMELA, same `out_dir` D in the scratchpad), then
-`python3 ~/.claude/tools/decision_desk_verify.py D <id> --action "<A text>"`; on VERIFIED: set ADR 0062 Status
-Accepted (date, card id); record the review in REVIEW.json (human entry: status reviewed, reviewed_by "the user,
-Decision Desk ofs-f2-check-admission-human", reviewed_at the date; keep `ensure_ascii` JSON, indent 2); run
-`tests/test_t08_w2_description_reviews.py`; write `executed` (update with `if_version`); push wp/F2 with
-`git -c credential.helper= -c credential.helper='!gh auth git-credential' push -u origin wp/F2`; CI waiter
-`~/.cache/line06/ci/wait_runs.sh wp/F2 <sha>` in the background; on green on all legs a merge card via hub.
-
-**X06:** card `ofs-x06-descriptions-human` VERIFIED A and executed; review recorded (wp/X06 `1b9561a3`), pushed.
-CI running (ci 45962988409, Site 45962988390; background waiter, log `~/.cache/line06/ci/x06-1b9561a3.log`; if the
-session died, rerun `~/.cache/line06/ci/wait_runs.sh wp/X06 1b9561a3f104d90bbae2a86faef07800b0f0ef76`). On green on
-all legs: X06 merge card (DECISION-REQUEST to hub; action text per option; the user, not first names). After the
-merge: F0 on main, push main, delete the worktree; the second of F2/X06 to merge decomposes onto the first's digest.
-
-At F2's merge: the register-block conflict (WO3-1) and the surface-chain order with X06 (R-1072/R-1073: the second
-to merge decomposes onto the first's digest). Code health to file with `code_health`: S2 (AttributeError escapes
-`reproduce` on a named bundle), `render_error` without a code prefix (X06 review ruling 9).
-Process rules: every brief gives the engineer its own log dir `~/.cache/line06/<wo>/`; wait on log lines, not
-`kill -0`; an agent "waiting on its own background work" after its report may hold a stale watcher: check the
-worktree for its processes (`/proc/<pid>/cwd`), then TaskStop it.
+**After the three merges:** L3 (line clause on CI), then REL060 (rel050 skill order; `docs/briefs/LINE06-line-0.6.md`).
 
 ## Decisions settled (Decision Desk, 2026-11-26, each choice A, VERIFIED, `executed` written)
 
