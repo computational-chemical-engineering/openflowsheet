@@ -517,3 +517,21 @@ the working tree, run, and reverted (not committed).
   `RerunV2` (WO3-5), replacing M2's interim refusal. Placed in the Acceptance cell. The ADR is Proposed; the
   acceptance card lists this edit with the D7 fold (WO5-0) and the WO5 row's obligation (item 6). Reversible by:
   reverting this commit.
+- **Item 9 (S6). The battery at head `18676313`** (`~/.cache/line06/f8-fr/battery.sh`, logs `b-*.log`, summary
+  `battery.sum`; 13 of 13 steps exit 0): ruff check clean; ruff format --check 1356 files formatted; mypy `src` 371
+  files clean; `test_f8_*` 160 passed (bundle_v2 21, manifest_v2 34, platform_refs 35, replay_v2 70);
+  `test_k05_replay` 30; `test_x07a_*` 18; `test_msg_*` 186 passed, 3 xfailed; `test_t07_*` 2144 passed, 28 skipped;
+  `test_t08_w2_*` 145; `test_m07a_surface_chain` 38; `test_m07a_harvest` 5 (old manifest); `test_evidence_manifests`
+  + `test_k06_application` 694 passed, 19 skipped; F0 PASS, M1 50/50, M2 61/61, M3 61/61, M4 61/61, M5 61/61,
+  M6 85/85, M7 52/52, M8 105/105, M9 42/42. No served digest moved (the surface suites pass with their pins
+  unchanged; no fixture written in the round).
+- **DECISION F8-FR-3. The manifest moves:** `evidence/F8/18676313…/manifest.json` (`tested`, 13 checks: 11 pass, 2
+  `not_applicable`; 4 limitations, E-F8-6's vacuity stated in its check and in `limitations[2]`; only the commands
+  run at that head) replaces `evidence/F8/32981fb3…` (removed, with its 7 envelope rows), as F2's (`2bba85c3`) and
+  F3's moves did; the `fail` row `F8.INHERITED-RED` is gone (test_j16 green since F8-FR0). Alternative: keep the old
+  manifest beside the new one, as X07a and X01 did (rejected: it would keep a `fail` check of a branch that no longer
+  fails in the harvest). Reversible by: restoring the old file and its rows. 6 envelope rows (class P) for the new
+  manifest; `docs/support-matrix.md` re-emitted (`t08_support_matrix.py --check`: 0 problems). `HARVEST_SIZE`
+  measured by `test_m07a_harvest` with the new manifest: (110, 1184, 154) -> (110, 1184, 153) (one non-pass check
+  fewer). With the manifest present: `test_m07a_harvest` + `test_evidence_manifests` +
+  `test_t08_w2_support_envelope`: 723 passed, 19 skipped.

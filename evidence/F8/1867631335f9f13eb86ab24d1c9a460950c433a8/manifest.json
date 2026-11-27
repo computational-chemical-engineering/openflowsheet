@@ -1,0 +1,180 @@
+{
+  "work_package": "F8",
+  "commit": "1867631335f9f13eb86ab24d1c9a460950c433a8",
+  "requirements": [],
+  "status": "tested",
+  "inputs": {
+    "case_id": "ADR 0067 (Proposed) exit tests E-F8-1 to E-F8-10 for the 0.6 line (WO1 to WO3 and WO5); build decisions docs/F8_DECISIONS.md; work orders F8-WO1 to F8-WO5, F8-CO, F8-FR0 and F8-FR (docs/briefs/LINE06-F8-*.md); review docs/reviews/F8-review.md; ADR 0019 Amendment 12 pointer paragraph",
+    "case_hash": "25150abd65aa0d4aa7a7a7d8085596b2e77400e9b712d59021fa56822fd15d74",
+    "environment_lock_hash": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+  },
+  "commands": [
+    {
+      "cmd": "PATH=/home/eajfpeters/Code/OpenFlowsheet/.venv/bin:$PATH PYTHONPATH=src python -m pytest -q -p no:cacheprovider tests/test_f8_*.py (4 files): 160 passed in 26.30s; per file (collected) bundle_v2 21, manifest_v2 34, platform_refs 35, replay_v2 70",
+      "cwd": ".claude/worktrees/f8",
+      "exit_code": 0
+    },
+    {
+      "cmd": "PATH=/home/eajfpeters/Code/OpenFlowsheet/.venv/bin:$PATH PYTHONPATH=src python -m pytest -q -p no:cacheprovider tests/test_k05_replay.py: 30 passed in 55.58s",
+      "cwd": ".claude/worktrees/f8",
+      "exit_code": 0
+    },
+    {
+      "cmd": "PATH=/home/eajfpeters/Code/OpenFlowsheet/.venv/bin:$PATH PYTHONPATH=src python -m pytest -q -p no:cacheprovider tests/test_x07a_*.py: 18 passed in 4.72s",
+      "cwd": ".claude/worktrees/f8",
+      "exit_code": 0
+    },
+    {
+      "cmd": "PATH=/home/eajfpeters/Code/OpenFlowsheet/.venv/bin:$PATH PYTHONPATH=src python -m pytest -q -p no:cacheprovider tests/test_msg_*.py: 186 passed, 3 xfailed in 44.26s",
+      "cwd": ".claude/worktrees/f8",
+      "exit_code": 0
+    },
+    {
+      "cmd": "PATH=/home/eajfpeters/Code/OpenFlowsheet/.venv/bin:$PATH PYTHONPATH=src python -m pytest -q -p no:cacheprovider tests/test_t07_*.py: 2144 passed, 28 skipped in 1254.33s (0:20:54)",
+      "cwd": ".claude/worktrees/f8",
+      "exit_code": 0
+    },
+    {
+      "cmd": "PATH=/home/eajfpeters/Code/OpenFlowsheet/.venv/bin:$PATH PYTHONPATH=src python -m pytest -q -p no:cacheprovider tests/test_t08_w2_*.py: 145 passed in 120.22s (0:02:00)",
+      "cwd": ".claude/worktrees/f8",
+      "exit_code": 0
+    },
+    {
+      "cmd": "PATH=/home/eajfpeters/Code/OpenFlowsheet/.venv/bin:$PATH PYTHONPATH=src python -m pytest -q -p no:cacheprovider tests/test_m07a_surface_chain.py: 38 passed in 22.76s",
+      "cwd": ".claude/worktrees/f8",
+      "exit_code": 0
+    },
+    {
+      "cmd": "PATH=/home/eajfpeters/Code/OpenFlowsheet/.venv/bin:$PATH PYTHONPATH=src python -m pytest -q -p no:cacheprovider tests/test_m07a_harvest.py (before this manifest): 5 passed in 3.11s",
+      "cwd": ".claude/worktrees/f8",
+      "exit_code": 0
+    },
+    {
+      "cmd": "PATH=/home/eajfpeters/Code/OpenFlowsheet/.venv/bin:$PATH PYTHONPATH=src python -m pytest -q -p no:cacheprovider tests/test_evidence_manifests.py tests/test_k06_application.py: 694 passed, 19 skipped in 5.47s",
+      "cwd": ".claude/worktrees/f8",
+      "exit_code": 0
+    },
+    {
+      "cmd": "PATH=/home/eajfpeters/Code/OpenFlowsheet/.venv/bin:$PATH PYTHONPATH=src python scripts/corpus_identity.py --check --log ~/.cache/line06/f8-fr/f0-detail.log: F0 PASS: M1 50/50, M2 61/61, M3 61/61, M4 61/61, M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 42/42 (log /home/eajfpeters/.cache/line06/f8-fr/f0-detail.log)",
+      "cwd": ".claude/worktrees/f8",
+      "exit_code": 0
+    },
+    {
+      "cmd": "PATH=/home/eajfpeters/Code/OpenFlowsheet/.venv/bin:$PATH PYTHONPATH=src ruff check .: All checks passed!",
+      "cwd": ".claude/worktrees/f8",
+      "exit_code": 0
+    },
+    {
+      "cmd": "PATH=/home/eajfpeters/Code/OpenFlowsheet/.venv/bin:$PATH PYTHONPATH=src ruff format --check .: 1356 files already formatted",
+      "cwd": ".claude/worktrees/f8",
+      "exit_code": 0
+    },
+    {
+      "cmd": "PATH=/home/eajfpeters/Code/OpenFlowsheet/.venv/bin:$PATH PYTHONPATH=src mypy src: Success: no issues found in 371 source files",
+      "cwd": ".claude/worktrees/f8",
+      "exit_code": 0
+    }
+  ],
+  "checks": [
+    {
+      "id": "F8.E-F8-1",
+      "description": "every committed 0.3.0 bundle replays byte-identically (52 bundles, four scenarios); a v1 report carries no Amendment 12 member; forced_replay stays refused (tests/test_f8_replay_v2.py::test_e_f8_1_*)",
+      "result": "pass",
+      "value": "test_f8_replay_v2.py 70 passed; test_k05_replay.py 30 passed in 55.58s"
+    },
+    {
+      "id": "F8.E-F8-2",
+      "description": "a v2 bundle round-trips: manifest validates; data-lock.json and registry-snapshot.json hash to their manifest values; the integrity check covers records/ and reports, without raising, a records index or lock that does not parse or lacks D3's shape (tests/test_f8_bundle_v2.py::test_e_f8_2_*; tests/test_f8_manifest_v2.py::test_e_f8_2_*; tests/test_f8_replay_v2.py::test_a_malformed_v2_document_is_reported_tampered_not_raised)",
+      "result": "pass",
+      "value": "test_f8_bundle_v2.py 21 passed; test_f8_manifest_v2.py 34 passed; test_f8_replay_v2.py 70 passed"
+    },
+    {
+      "id": "F8.E-F8-3",
+      "description": "embedding: a record whose sources are all permitted is embedded; unknown or refused is referenced only; re-assessing a source changes no data_lock_sha256, structural_sha256 or r0_sha256 (tests/test_f8_bundle_v2.py::test_e_f8_3_*)",
+      "result": "pass",
+      "value": "test_f8_bundle_v2.py 21 passed"
+    },
+    {
+      "id": "F8.E-F8-4",
+      "description": "Q9.A8: a referenced record absent from the store gives inspected_archived_results / NOT_RUN with data_unavailable(the sha); two absent both listed sorted; embedded records replay and match (tests/test_f8_replay_v2.py::test_e_f8_4_*)",
+      "result": "pass",
+      "value": "test_f8_replay_v2.py 70 passed"
+    },
+    {
+      "id": "F8.E-F8-5",
+      "description": "registry: changed used non-built-in is extension_changed / NOT_RUN; changed used built-in reruns as compatible_reproduction with reason extension_changed, also on the other registered platform, and is inspected under a changed lock; changed unused changes neither mode nor verdict; reasons accumulate in D5's step order; the recorded snapshot is ADR 0060 D10's document (tests/test_f8_replay_v2.py::test_e_f8_5_*, test_d5_*)",
+      "result": "pass",
+      "value": "test_f8_replay_v2.py 70 passed"
+    },
+    {
+      "id": "F8.E-F8-6",
+      "description": "usage: the usage set is within extensions_used, which holds vacuously on this line (empty usage set, asserted; F8-WO6 owes a non-empty one); the undeclared-use control is the evidence: a hidden resolve is MISMATCH with extension_use_undeclared; a rerun without a usage set does not match (tests/test_f8_replay_v2.py::test_e_f8_6_*)",
+      "result": "pass",
+      "value": "test_f8_replay_v2.py 70 passed; first clause vacuous (usage == ())"
+    },
+    {
+      "id": "F8.E-F8-8",
+      "description": "per-platform records: the comparator picks the platform's record and refuses a stale one; the R0-equality and departure-value invariant holds over the repository's cases (0 cases); a fake platform with a beyond-policy float uses its record and reports platform_reference_used; every registered platform has an id (tests/test_f8_platform_refs.py)",
+      "result": "pass",
+      "value": "test_f8_platform_refs.py 35 passed"
+    },
+    {
+      "id": "F8.E-F8-10",
+      "description": "v1-path runs write no new member; every committed v1 manifest keeps its structural identity; the v1 bundle a v2 rerun writes is a v1 bundle (tests/test_f8_manifest_v2.py::test_e_f8_10_*, tests/test_f8_bundle_v2.py::test_e_f8_10_*; M3, M4 in F0)",
+      "result": "pass",
+      "value": "test_f8_manifest_v2.py 34 passed; test_f8_bundle_v2.py 21 passed; F0 PASS: M1 50/50, M2 61/61, M3 61/61, M4 61/61, M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 42/42 (log /home/eajfpeters/.cache/line06/f8-fr/f0-detail.log)"
+    },
+    {
+      "id": "F8.E-F8-7",
+      "description": "Evidence (Q9.A4 to A7): F8-WO4, goes with F4 to the line after 0.6 (ADR 0067 line note, R-1070); no test in this line",
+      "result": "not_applicable",
+      "value": "not_in_scope: WO4 reads the F4 hook (ADR 0063 D7, F4-WO4)"
+    },
+    {
+      "id": "F8.E-F8-9",
+      "description": "forced_replay (with TX): F8-WO7, stays in TX (ADR 0067 line note, R-1070); forced_replay is reserved and refused construct_unavailable(forced_replay, TX) (tests/test_f8_replay_v2.py::test_e_f8_1_forced_replay_stays_refused)",
+      "result": "not_applicable",
+      "value": "not_in_scope: WO7, 0.7 with TX"
+    },
+    {
+      "id": "F8.F0",
+      "description": "F0 identity check at the head",
+      "result": "pass",
+      "value": "F0 PASS: M1 50/50, M2 61/61, M3 61/61, M4 61/61, M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 42/42 (log /home/eajfpeters/.cache/line06/f8-fr/f0-detail.log) (log ~/.cache/line06/f8-fr/f0-detail.log)"
+    },
+    {
+      "id": "F8.SURFACE",
+      "description": "surface suites: tests/test_t07_*.py, tests/test_t08_w2_*.py, tests/test_m07a_surface_chain.py (served-interface, list_models and chain digests, c_13 R-1076); no served digest moved in the fix round",
+      "result": "pass",
+      "value": "t07 2144 passed, 28 skipped in 1254.33s (0:20:54); t08_w2 145 passed in 120.22s (0:02:00); chain 38 passed in 22.76s"
+    },
+    {
+      "id": "F8.DISPATCH",
+      "description": "review F8 M2: the served reproduce (with and without a rerun) and the CLI inspect dispatch on bundle_format: a v2 bundle is inspected (rerun reason construct_unavailable(v2 bundle rerun, F8-WO6)), an unknown format is bundle_format_unsupported, the CLI refuses it with exit 1 (tests/test_f8_replay_v2.py::test_the_served_reproduce_*, test_the_cli_*)",
+      "result": "pass",
+      "value": "test_f8_replay_v2.py 70 passed"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "docs/adr/0067-F8-identity-replay-evidence.md",
+      "sha256": "25150abd65aa0d4aa7a7a7d8085596b2e77400e9b712d59021fa56822fd15d74",
+      "description": "ADR 0067 (Proposed; built as written, LINE06 rules; edits before acceptance F8-WO5-0, F8-FR-1 and the WO5 row's obligation)"
+    },
+    {
+      "path": "docs/adr/0019-application-contract-v1.md",
+      "sha256": "fb1763962af8cc101821a23687eb3138e2f32203f2a6d979fb97450ce58b81cd",
+      "description": "ADR 0019 with Amendment 12 (pointer to ADR 0067), at the commit named above"
+    }
+  ],
+  "limitations": [
+    "Evidence class: software verification of the F8 identity and replay work (bundle and manifest v2, replay of a v2 bundle, per-platform records) against ADR 0067's exit tests, using a test-only v2 bundle factory over the committed corpus. Status is tested at 18676313 (wp/F2 merged in, the F8 review's fix round F8-FR applied) by local runs; no CI run has judged it. Not reviewed: the fix round is not re-reviewed, and the user's acceptance of ADR 0067 is pending.",
+    "Not in scope of this line: E-F8-7 (WO4, evidence report, with F4) and E-F8-9 (WO7, forced_replay, with TX). The wiring of v2-compiled runs (WO6) is not built, so E-F8-2 holds on the factory's bundles, not on real v2-compiled runs, and the application's reproduce of a v2 bundle with a rerun is refused construct_unavailable(v2 bundle rerun, F8-WO6) until WO6.",
+    "E-F8-6's first clause (the usage set lies within extensions_used) holds vacuously on this line: the factory's reruns of v1 revisions record an empty usage set, which the test asserts; the undeclared-use control (a hidden resolve gives extension_use_undeclared) is the evidence.",
+    "The manifest's own commit adds this file, its harvest rows and the HARVEST_SIZE pin after the commands ran at the head above; the harvest and evidence-manifest tests were rerun with it present (docs/F8_DECISIONS.md, F8-FR item 9)."
+  ],
+  "review": {
+    "numerical": "pending",
+    "process_model": "pending"
+  }
+}
