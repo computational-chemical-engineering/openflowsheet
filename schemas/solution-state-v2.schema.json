@@ -1,0 +1,135 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/frankp/process-runtime/schemas/solution-state-v2.schema.json",
+  "title": "SolutionStateV2",
+  "description": "ADR 0062 D8: the `solution-state.json` of a v2-compiled run. `solution-state-v1`'s fields (`state_sha256`, `variable_ids`, `variables`, with the same meaning) plus `material_layout`, per laid-out connection its definition, the definition's SHA-256 (D3) and its slots in layout order without `variable_index` (each slot's variable is the one its rendered id names in `variable_ids`), and `state_points`, each state point's id and its phase signature's rendering (D6). Legacy runs and runs of a lowered document (D12) write `solution-state-v1` unchanged. `material_layout` and `state_points` hold no float and are R0 (`run.identity.r0_projection`); the values and their digest are not. The cross-checks JSON Schema cannot express are `openflowsheet.run.solution_state.inconsistencies_v2`.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "state_sha256",
+    "variable_ids",
+    "variables",
+    "material_layout",
+    "state_points"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "solution-state-v2"
+    },
+    "state_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "variable_ids": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "variables": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "number"
+      }
+    },
+    "material_layout": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "connection",
+          "definition",
+          "definition_sha256",
+          "slots"
+        ],
+        "properties": {
+          "connection": {
+            "type": "string",
+            "minLength": 1
+          },
+          "definition": {
+            "type": "string",
+            "minLength": 1
+          },
+          "definition_sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "slots": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "substream",
+                "field",
+                "index",
+                "quantity_kind"
+              ],
+              "properties": {
+                "substream": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "minLength": 1
+                },
+                "field": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "index": {
+                  "type": "array",
+                  "items": {
+                    "oneOf": [
+                      {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      {
+                        "type": "integer",
+                        "minimum": 1
+                      }
+                    ]
+                  }
+                },
+                "quantity_kind": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "state_points": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "point",
+          "signature"
+        ],
+        "properties": {
+          "point": {
+            "type": "string",
+            "minLength": 1
+          },
+          "signature": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  }
+}

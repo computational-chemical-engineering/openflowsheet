@@ -40,6 +40,7 @@
   "run-manifest.schema.json",
   "run-result.schema.json",
   "solution-certificate.schema.json",
+  "solution-state-v2.schema.json",
   "solution-state.schema.json",
   "solve-event.schema.json",
   "solve-plan.schema.json",
