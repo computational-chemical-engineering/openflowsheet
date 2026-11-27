@@ -325,3 +325,40 @@ Amendment 12 members), `1b3b55f2` (tests, re-record tool, E-F8-1 expectation).
   `bbdcfb51ae0d95785f91507b1596fefa5753e6c6ab55ad7b49147afd92516d0d`. No other fixture or served digest moved.
 - Mutation controls (not committed), each KILLED: `select_reference` ignoring the record (2 fail); invariant skipping
   R0 (1); invariant skipping `reference_sha256` (1); loader skipping the self-hash check (1).
+
+## F8-WO5 Opus review (build lane, 2026-11-27; review of 369150d3..dcf4b89f)
+
+- **DECISION F8-WO5-R1. The loader refuses what spec 4's "validates the above" covers but `dcf4b89f` let through as a
+  `TypeError`, `ZeroDivisionError` or silent acceptance:** a file not named `<case>.<platform>.json` for its own `case`
+  and `platform` (spec 2; a record copied to another case or platform was selected and its notice named the file's
+  platform, not the record's); a departure value that is not a number, a bound <= 0, a non-boolean `near_threshold`; a
+  non-string `platform`. The self-hash check now precedes the file-name check (a tampered `case` reports
+  `bad self_sha256`). Non-finite numbers need no check of their own: the self-hash's canonical JSON refuses them
+  (`CanonicalizationError`, a `ValueError`). Alternative: spec 4's list only. Reversible by: reverting the commit.
+- **DECISION F8-WO5-R2. `invariant_problems` reports per-platform records without their reference record** (`all_cases`
+  derives the reference path from a per-platform file; before, a missing one raised `FileNotFoundError` in the sweep).
+- **DECISION F8-WO5-R3. Point 2 measured (GP-C1, `/home/eajfpeters/.cache/line06/f8-wo5r/r0probe.log`):
+  `r0_projection` is right about counters; F8-WO5-4's reason was imprecise.** GP-C1 has 6 events; the counters are
+  cumulative and the projection carries the last event's three solver counters (`identity.py:84-85`), here
+  `residual_calls 1, jacobian_calls 0, factorizations 0`. +1 on `residual_calls`, `jacobian_calls` or `factorizations`
+  of the last event (`solve_closed`) moves `r0_sha256` (3/3); +1 on `property_calls`, `requested_evaluations`,
+  `cache_hits` there does not (ADR 0007 D1 "recorded, not reproducible", D5.3); +1 on any counter of event 0 does not.
+  No FINDING on the replay path. The R0 invariant test now changes an id and the last event's `residual_calls`
+  (acceptance 3: "an id or a counter"). Event `message` is outside `_event_r0` by R-104, not an omission.
+- **DECISION F8-WO5-R4. F8-WO5-3 answered: a v2-policy case is cheap.** `declared_kinds(select_route(revision)
+  .binding.spec)` (as `f8_bundle_v2_support.rerun_v2` does) gives GP-C1's 32 kinds; `test_selection_under_the_v2_policy`
+  runs the selection under `T08-numerical-policy-v2`. The v1 tests stay.
+- Tests strengthened (`tests/test_f8_platform_refs.py`, 19 -> 29 passed): the reference-platform selection asserts the
+  one difference is the moved float at its path and value, against a self-comparison control (before: any non-empty
+  list passed); the fake platform is first compared against the reference by `compare_to_reference`; unknown id
+  `solaris-sparc`; file name; malformed departures (4); missing reference record; CRLF and indented file loads (ADR
+  0060 D3). Mutation controls (not committed), each KILLED: file-name check removed (1 fail), departure value check (3),
+  `near_threshold` check (1), missing-reference guard (1), `select_reference` ignoring the record (v2 test, 1).
+- Acceptance: ruff, ruff format --check, mypy src clean; `tests/test_f8_*.py tests/test_x07a_*.py
+  tests/test_t07_w5e_*.py` 178 passed (before the counter case); F0 PASS: M1 50/50, M2-M5 61/61, M6 85/85, M7 52/52,
+  M8 105/105, M9 42/42. No served digest moved (no catalogue or schema change).
+- Left for the F8 `reviewer` pass: (a) `select_reference` does not check the record's `reference_sha256` against the
+  reference record at selection time (D7 puts the invariant in a test over every case; a stale record would be used
+  between a re-record and the next sweep); (b) no check that a departure's `reference_value` and `platform_value` are
+  the values at its `path` in the two records (the path syntax is unspecified); (c) `registered_platform_ids()` drops a
+  registered pair missing from `PLATFORM_IDS` silently (fail-safe: such a platform's records are refused).
