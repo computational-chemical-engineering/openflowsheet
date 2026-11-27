@@ -30,7 +30,7 @@ of the request's shape — is an `ApiError` bounded by `operations.project_error
 its code has in §5.8; there is no second error shape.
 
 **Safe defaults** (decisions the note leaves open, logged in `docs/T07_DECISIONS.md`): no CORS
-(a browser's preflight is refused like any other unknown method), no TLS, and `serve` binds the
+(a browser's preflight is refused like any other unknown method), no TLS, and `run` binds the
 loopback interface unless `allow_remote` is given, when it says on stderr that there is no TLS.
 
 **Imports** (§11.6 (2)): `contract`, `types`, `operations` and `projection` of the application,
@@ -453,23 +453,6 @@ def is_loopback(host: str) -> bool:
         return False
 
 
-def serve(
-    owner: Owner,
-    *,
-    host: str = DEFAULT_HOST,
-    port: int = DEFAULT_PORT,
-    allow_remote: bool = False,
-    log_level: str = "info",
-) -> None:
-    """§11.2: serve `owner` over HTTP with uvicorn until interrupted. `serve-http`'s body.
-
-    The caller opens the owner (`LocalApplication.open(project, executor="process")`) and closes
-    it once this returns. A host other than the loopback interface is refused unless
-    `allow_remote`, and then served with a warning on stderr that v0.1 has no TLS.
-    """
-    run(create_app(owner), host=host, port=port, allow_remote=allow_remote, log_level=log_level)
-
-
 def run(
     application: Starlette,
     *,
@@ -479,9 +462,11 @@ def run(
     log_level: str = "info",
     warning: str = NO_TLS_WARNING,
 ) -> None:
-    """`serve`'s rules — loopback unless `allow_remote`, the no-TLS warning, uvicorn's options —
-    applied to an application built over `create_app` (`bindings.web` adds the shell to it,
-    `serving.serve_http` MCP at `/mcp`, which passes a `warning` naming it)."""
+    """Serve `application` with uvicorn until interrupted: loopback unless `allow_remote`, the
+    no-TLS warning, uvicorn's options. Its one caller is `serving.serve_http`, which builds the
+    application over `create_app` (with the shell of `bindings.web` under `--ui` and MCP at
+    `/mcp`), marks the owner `serving_remote` beyond loopback (ADR 0078 D5.3) and passes a
+    `warning` naming `/mcp`."""
     if not is_loopback(host):
         if not allow_remote:
             raise ValueError(

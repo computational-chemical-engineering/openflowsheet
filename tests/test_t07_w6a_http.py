@@ -714,11 +714,22 @@ def test_an_untyped_exception_is_500_with_a_fixed_message(
 # =================================================================================== serving
 
 
-def test_serve_binds_the_loopback_interface_unless_told_otherwise(http: Any) -> None:
+def test_serve_binds_the_loopback_interface_unless_told_otherwise(
+    http: Any, served: Served, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """`serving.serve_http`, the one public serving path (X06 review M1), refuses a host beyond
+    loopback without `allow_remote` before anything is served."""
+    import uvicorn
+
+    from openflowsheet.application.serving import serve_http
+
+    started: list[Any] = []
+    monkeypatch.setattr(uvicorn, "run", lambda application, **_: started.append(application))
     assert http.DEFAULT_HOST == "127.0.0.1"
     for host in ("127.0.0.1", "127.0.0.2", "::1", "localhost"):
         assert http.is_loopback(host), host
     for host in ("0.0.0.0", "::", "192.168.1.10", "example.org"):
         assert not http.is_loopback(host), host
         with pytest.raises(ValueError, match="allow_remote"):
-            http.serve(object(), host=host)
+            serve_http(served.owner, host=host, port=http.DEFAULT_PORT)
+    assert started == []
