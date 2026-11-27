@@ -42,7 +42,8 @@ from f8_bundle_v2_support import (
     schema_errors,
 )
 
-from openflowsheet.application import revision_run
+from openflowsheet.application import cli, revision_run
+from openflowsheet.application.revision_replay import V2_RERUN_UNAVAILABLE, reproduce_bundle
 from openflowsheet.canonical import canonical_json, document_sha256, file_sha256
 from openflowsheet.records.importers.legacy import available_records
 from openflowsheet.records.lock import data_lock_sha256
@@ -57,6 +58,7 @@ from openflowsheet.run.manifest_v2 import ReplayModeRefusedError
 from openflowsheet.run.replay import ReplayReport, Rerun, replay
 from openflowsheet.run.replay_v2 import (
     FAILED_INTEGRITY,
+    NO_RERUN,
     NO_USAGE,
     RerunV2,
     bundle_format,
@@ -258,6 +260,67 @@ def test_an_unknown_bundle_format_is_unsupported(plain: Recorded, tmp_path: Path
     assert report.reasons == ("bundle_format_unsupported(openflowsheet-bundle-v3)",)
     assert report.integrity.ok
     assert report.registry_comparison is None and report.data_availability is None
+
+
+def _reformatted(source: Path, directory: Path, value: str) -> Path:
+    """A copy of the bundle `source` whose manifest names `bundle_format` `value`."""
+    shutil.copytree(source, directory)
+    path = directory / MANIFEST_NAME
+    document = json.loads(path.read_text(encoding="utf-8"))
+    document["bundle_format"] = value
+    path.write_text(json.dumps(document), encoding="utf-8")
+    return directory
+
+
+@pytest.mark.parametrize("rerun", [False, True], ids=["inspect", "rerun"])
+def test_the_served_reproduce_of_a_v2_bundle_is_inspected(
+    plain: Recorded, tmp_path: Path, rerun: bool
+) -> None:
+    """Review F8 M2: `reproduce_bundle` dispatches on `bundle_format` before the v1 reader. A v2
+    bundle is inspected, and with a rerun asked the reason names the construct F8-WO6 owes
+    (DECISION F8-FR-2)."""
+    with gate.pinned_threads():
+        result = reproduce_bundle(
+            plain.v2, rerun=rerun, rerun_directory=tmp_path / "rerun", run_id="f8-fr-m2"
+        )
+    report = _valid(result.report)
+    assert (report.mode, report.verdict) == ("inspected_archived_results", "NOT_RUN")
+    assert report.integrity.ok
+    assert report.reasons == ((V2_RERUN_UNAVAILABLE,) if rerun else (NO_RERUN,)), report.reasons
+    assert result.rerun_manifest is None
+    assert not (tmp_path / "rerun").exists()
+
+
+@pytest.mark.parametrize("rerun", [False, True], ids=["inspect", "rerun"])
+def test_the_served_reproduce_of_an_unknown_format_is_unsupported(
+    plain: Recorded, tmp_path: Path, rerun: bool
+) -> None:
+    directory = _reformatted(plain.v2, tmp_path / "bundle", "openflowsheet-bundle-v3")
+    result = reproduce_bundle(
+        directory, rerun=rerun, rerun_directory=tmp_path / "rerun", run_id="f8-fr-m2"
+    )
+    report = _valid(result.report)
+    assert (report.mode, report.verdict) == ("inspected_archived_results", "NOT_RUN")
+    assert report.reasons == ("bundle_format_unsupported(openflowsheet-bundle-v3)",)
+    assert result.rerun_manifest is None
+
+
+def test_the_cli_inspects_a_v2_bundle(plain: Recorded, capsys: pytest.CaptureFixture[str]) -> None:
+    """Review F8 M2: `inspect` reads a v2 bundle with the v2 reader."""
+    assert cli.main(["inspect", str(plain.v2)]) == 0
+    out = capsys.readouterr().out
+    assert f"structural sha256 {plain.manifest.structural_sha256}" in out
+    assert "integrity         ok" in out
+
+
+def test_the_cli_refuses_to_inspect_an_unknown_format(
+    plain: Recorded, tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    directory = _reformatted(plain.v2, tmp_path / "bundle", "openflowsheet-bundle-v3")
+    assert cli.main(["inspect", str(directory)]) == 1
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    assert "bundle_format_unsupported(openflowsheet-bundle-v3)" in captured.err
 
 
 def test_a_failed_integrity_check_reruns_nothing(

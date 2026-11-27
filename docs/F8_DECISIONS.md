@@ -441,3 +441,23 @@ the working tree, run, and reverted (not committed).
   `inspected_archived_results` / `NOT_RUN`, `FAILED_INTEGRITY` first, the file in `integrity.tampered`. Control: the
   test against the unfixed `bundle_v2.py` (HEAD `00d094c0`): 8 of 8 fail (KILLED). `test_f8_*`: 130 passed.
 
+- **Item 2 (M2). `reproduce_bundle`'s rerun path and the CLI's `inspect` dispatch on `bundle_format`.**
+  `revision_replay._rerunnable_manifest`, before `verify_bundle`: a manifest naming any `bundle_format` stages
+  `compare` and returns `_inspected(directory, reason)`, the reason `V2_RERUN_UNAVAILABLE` for
+  `openflowsheet-bundle-v2` and none for any other value (the report already says `bundle_format_unsupported`).
+  `cli.command_inspect` reads a v2 bundle with `bundle_v2.read_manifest` / `verify_bundle`, and refuses any other
+  value with the layered text of `bundle_format_unsupported(<value>)` on stderr, exit 1. A v1 bundle carries no
+  `bundle_format`, so neither v1 path changes.
+- **DECISION F8-FR-2. The construct name is `v2 bundle rerun`, foundation `F8-WO6`:**
+  `construct_unavailable(v2 bundle rerun, F8-WO6)`, the review's wording, through the existing catalogue entry (no
+  catalogue change, so no digest moves). Alternative: a new code `v2_rerun_unavailable` (rejected: a catalogue and
+  digest change for an interim refusal WO6 removes). Reversible by: changing `V2_RERUN_UNAVAILABLE`.
+- Item 2 tests (`tests/test_f8_replay_v2.py`, x two cases): `reproduce_bundle` with and without a rerun on the factory
+  bundle (inspected / `NOT_RUN`, reasons exactly `(construct_unavailable(v2 bundle rerun, F8-WO6),)` and
+  `(no rerun was supplied,)`, no rerun bundle written) and on a `-v3` copy (reasons exactly
+  `(bundle_format_unsupported(openflowsheet-bundle-v3),)`); CLI `inspect` on the v2 bundle (exit 0, its
+  `structural_sha256`, integrity ok) and on the `-v3` copy (exit 1, nothing on stdout, the coded reason on stderr):
+  12 passed. Controls: the `_rerunnable_manifest` dispatch disabled: the 4 rerun cases fail with the review's
+  `TypeError: Environment.__init__() got an unexpected keyword argument 'registry'` (KILLED); `cli.py` at HEAD: the 4
+  CLI cases fail (KILLED). `test_t07_w5b_cli`, `test_k06_application`, `test_k05_replay`, `test_f8_replay_v2`: 119
+  passed.
