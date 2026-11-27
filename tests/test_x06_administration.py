@@ -461,39 +461,61 @@ async def mcp_call(
 def test_e_x06_18_the_token_is_shown_once_and_written_nowhere(
     tmp_path: Path, caplog: pytest.LogCaptureFixture, capfd: pytest.CaptureFixture[str]
 ) -> None:
+    """One grant through each carrier (X06 review S2): REST, MCP over HTTP, MCP stdio (the SDK's
+    in-memory session into `build_server`) and in-process, all inside one DEBUG log capture and
+    one output capture. Each token is in its own response only and authenticates the next call."""
     caplog.set_level(logging.DEBUG)
-    directory, _, admin_token = make_project(tmp_path)
+    directory, admin, admin_token = make_project(tmp_path)
     request = a_grant("cap-new", "g1", rights=["read"], expires_at=None)
+    tokens: dict[str, str] = {}
     seen: dict[str, Any] = {}
+    # MCP stdio and in-process, acting as the administrator.
+    with LocalApplication.open(directory, capability=admin) as owner:
+        called = stdio_call(owner, "grant_capability", a_grant("cap-stdio", "g2", expires_at=None))
+        assert called["isError"] is False, called
+        tokens["mcp stdio"] = called["structured"]["token"]
+        error, document = dispatched(
+            owner, "grant_capability", a_grant("cap-python", "g3", expires_at=None)
+        )
+        assert not error, document
+        tokens["in-process"] = document["token"]
 
     async def body(client: httpx.AsyncClient) -> None:
         granted = await rest(client, admin_token, "POST", "/v1/policy/grants", request)
         assert granted.status_code == 200, granted.text
         seen["granted"] = granted.json()
-        token = seen["granted"]["token"]
+        tokens["rest"] = seen["granted"]["token"]
         replay = await rest(client, admin_token, "POST", "/v1/policy/grants", request)
         seen["replay"] = replay.json()
-        # The next REST call and the next MCP-over-HTTP call act as the new grant.
-        project = await rest(client, token, "GET", "/v1/project")
-        assert project.status_code == 200, project.text
-        called = await mcp_call(client, token, "get_project", {})
-        assert called.status_code == 200 and called.json()["result"]["isError"] is False
-        assert called.json()["result"]["structuredContent"] == project.json()
+        over_http = await mcp_call(
+            client, admin_token, "grant_capability", a_grant("cap-mcp", "g4", expires_at=None)
+        )
+        assert over_http.status_code == 200 and over_http.json()["result"]["isError"] is False
+        tokens["mcp over http"] = over_http.json()["result"]["structuredContent"]["token"]
+        # The next REST call and the next MCP-over-HTTP call act as each new grant.
+        for carrier, token in tokens.items():
+            project = await rest(client, token, "GET", "/v1/project")
+            assert project.status_code == 200, (carrier, project.text)
+            called = await mcp_call(client, token, "get_project", {})
+            assert called.status_code == 200 and called.json()["result"]["isError"] is False
+            assert called.json()["result"]["structuredContent"] == project.json(), carrier
         # The store's bytes while the owner holds them (the WAL not yet checkpointed).
         seen["live"] = b"".join(
             path.read_bytes() for path in sorted(directory.glob(f"{DATABASE_NAME}*"))
         )
 
     served(directory, body)
-    token = seen["granted"]["token"]
-    assert token.startswith("prt_") and len(token) == 47
+    assert len(set(tokens.values())) == 4
+    for carrier, token in tokens.items():
+        assert token.startswith("prt_") and len(token) == 47, carrier
     assert (seen["replay"]["status"], seen["replay"]["token"]) == ("replayed", None)
     assert seen["replay"]["capability"] == seen["granted"]["capability"]
     # The next MCP stdio call: `serve-mcp` resolves its token file to this capability.
     token_file = tmp_path / "token"
-    token_file.write_text(token + "\n", encoding="utf-8")
+    token_file.write_text(tokens["rest"] + "\n", encoding="utf-8")
     capability = token_capability(directory, token_file)
     assert capability.capability_id == "cap-new"
+    token_file.unlink()
     with LocalApplication.open(directory, capability=capability) as owner:
         assert stdio_call(owner, "get_project")["isError"] is False
     # Nowhere: the store (and its WAL), the policy file, the captured logs and output.
@@ -506,13 +528,16 @@ def test_e_x06_18_the_token_is_shown_once_and_written_nowhere(
         ("logs", caplog.text.encode("utf-8")),
         ("output", (out + err).encode("utf-8")),
     ):
-        assert token.encode() not in data, name
-        assert token.removeprefix("prt_").encode() not in data, name
+        for carrier, token in tokens.items():
+            assert token.encode() not in data, (name, carrier)
+            assert token.removeprefix("prt_").encode() not in data, (name, carrier)
         assert b"prt_" not in data, name
     assert caplog.records  # something was logged at DEBUG
 
 
-def stdio_call(owner: LocalApplication, tool: str) -> dict[str, Any]:
+def stdio_call(
+    owner: LocalApplication, tool: str, arguments: dict[str, Any] | None = None
+) -> dict[str, Any]:
     """One `tools/call` through the SDK's in-memory session into `build_server`, the server
     `serve-mcp` runs over stdio, acting as `owner`."""
     from mcp.shared.memory import create_connected_server_and_client_session
@@ -523,7 +548,7 @@ def stdio_call(owner: LocalApplication, tool: str) -> dict[str, Any]:
         async with create_connected_server_and_client_session(
             build_server(lambda: owner), raise_exceptions=True
         ) as session:
-            result = await session.call_tool(tool, {})
+            result = await session.call_tool(tool, arguments or {})
             return {"isError": result.isError, "structured": result.structuredContent}
 
     return anyio.run(run)
