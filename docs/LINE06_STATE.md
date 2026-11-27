@@ -41,13 +41,18 @@ once F2-WO4 is on wp/F2 (F8 branches from wp/F2's head, merges after F2).
 ## Next action (2026-11-27, written for a self-reset; NO agent of this session is running)
 
 Judged PASS since the morning (details: `docs/LINE06_DECISIONS.md`): F2-R1, F2-WO6b, WO6c, WO7 (+WO7-4), the F2 review
-(`docs/reviews/F2-review.md`) and F2-WO8; F8-WO1 (+WO1b, R-1076 c_13), F8-WO2, F8-WO3. Heads: wp/F2 `a64f93fb`
+(`docs/reviews/F2-review.md`) and F2-WO8; F8-WO1 (+WO1b, R-1076 c_13), F8-WO2, F8-WO3. Heads: wp/F2 `6913c4a0` (j16 fixture fix on a64f93fb)
 (manifest `evidence/F2/fb75c409.../manifest.json`, `tested`), wp/F8 `25e5ed36`, wp/X06 `1b9561a3` (pushed).
 
-**Running (2026-11-27):** F8 close-out (`sonnet-implementer`, brief `docs/briefs/LINE06-F8-CO.md`: ADR 0019 Amendment
-12 pointer, `evidence/F8/<head>/manifest.json` tested, gate; wp/F8 from `a4b0ede1`, logs `~/.cache/line06/f8-co/`).
-F8-WO5 and its Opus review judged PASS (`a4b0ede1`). If the session died: check the f8 worktree log/status and judge
-on that brief. Then the F8 `reviewer` pass with the ruling batch (WO1-1, WO3-1..10, the two WO5 review leftovers).
+**Running (2026-11-27):** (1) the F8 `reviewer` pass (brief `docs/briefs/F8-reviewer.md`, wp/F8 `5406f812`,
+deliverable `docs/reviews/F8-review.md` committed on main); then a fix round (one Opus engineer) and the ADR 0067
+acceptance card. (2) Full local gate on wp/F2 `6913c4a0` (`scripts/gate.sh`, log
+`~/.cache/line06/f2-j16/gate-6913c4a0.log`; if lost, rerun it in `.claude/worktrees/f2` with the main .venv PATH and
+PYTHONPATH=src). Card `ofs-f2-accept-adr0062` is now v2; its A text: "Mark ADR 0062 Accepted as corrected before
+acceptance at wp/F2 a64f93fb (D12 per F2-R1, D2 PropertyRequest not widened, D11 h_mass revision-wide, E-F2-9
+state_degenerate_in_definition and Q6.A2 registration half deferred to F5/F6), then push wp/F2 at 6913c4a0 (a64f93fb
+plus the test-fixture fix 6913c4a0, DECISION F2-J16) for CI, only if the local gate on 6913c4a0 passes." F8 done
+through close-out (`5406f812`); at the F2-into-F8 merge recompute `HARVEST_SIZE` to (110, 1184, 154) (F8-CO-4).
 
 **Was next (F8):** write `docs/briefs/LINE06-F8-WO5.md` (ADR 0067 D7 per-platform reference records, `run/platform_refs.py`,
 invariant test; E-F8-8; Sonnet `sonnet-implementer`, then an Opus `opus-engineer` review of its diff, per the WO table).
