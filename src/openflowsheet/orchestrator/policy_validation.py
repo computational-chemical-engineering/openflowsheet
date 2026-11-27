@@ -69,6 +69,8 @@ REGISTERED_LINEAR_SOLVER: Final[Mapping[str, Any]] = SolvePolicy(
 QUANTITY_KINDS: Final = frozenset(KIND_TOLERANCE)
 #: D4.3 (d): the recycle policies the solver knows (ADR 0009 D2).
 RECYCLE_POLICY_IDS: Final = frozenset({RecyclePolicy().policy_id})
+#: `_paired`'s stand-in for the member one side of a pair of mappings lacks.
+_ABSENT: Final = object()
 
 
 class PolicyProblem(NamedTuple):
@@ -178,15 +180,26 @@ def _registry_problems(document: Mapping[str, Any]) -> list[PolicyProblem]:
 def _first_difference(expected: Any, actual: Any) -> str:
     """The pointer of the first member where `actual` differs from `expected` (`""` when the
     values differ as wholes)."""
-    if isinstance(expected, Mapping) and isinstance(actual, Mapping):
-        for key in sorted(set(expected) | set(actual)):
-            if key not in expected or key not in actual:
-                return "/" + _escape(str(key))
-            if canonical_json(expected[key]) != canonical_json(actual[key]):
-                return "/" + _escape(str(key)) + _first_difference(expected[key], actual[key])
-        return ""
-    if isinstance(expected, list) and isinstance(actual, list) and len(expected) == len(actual):
-        for index, (left, right) in enumerate(zip(expected, actual, strict=True)):
-            if canonical_json(left) != canonical_json(right):
-                return f"/{index}" + _first_difference(left, right)
+    for token, left, right in _paired(expected, actual):
+        if left is _ABSENT or right is _ABSENT:
+            return "/" + token
+        if canonical_json(left) != canonical_json(right):
+            return "/" + token + _first_difference(left, right)
     return ""
+
+
+def _paired(expected: Any, actual: Any) -> list[tuple[str, Any, Any]]:
+    """The members `_first_difference` compares, in its order, as `(pointer token, expected's,
+    actual's)`, `_ABSENT` for a key one side lacks: the keys of two mappings, sorted, or the
+    items of two lists of one length; none for any other pair."""
+    if isinstance(expected, Mapping) and isinstance(actual, Mapping):
+        return [
+            (_escape(str(key)), expected.get(key, _ABSENT), actual.get(key, _ABSENT))
+            for key in sorted(set(expected) | set(actual))
+        ]
+    if isinstance(expected, list) and isinstance(actual, list) and len(expected) == len(actual):
+        return [
+            (str(index), left, right)
+            for index, (left, right) in enumerate(zip(expected, actual, strict=True))
+        ]
+    return []
