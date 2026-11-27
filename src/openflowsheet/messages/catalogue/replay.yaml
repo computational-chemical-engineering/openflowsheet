@@ -72,3 +72,17 @@ entries:
     action: "Report it with the bundle: the run depends on an extension its identity does not name."
     examples:
       - params: {kind: property_method, id: pr-c1}
+
+  # D7 (F8-WO5): the comparison used a per-platform reference record, not the reference platform's.
+  - code: platform_reference_used
+    family: notice
+    kind: notice
+    complete: true
+    title: The comparison used this platform's own reference record
+    args: [platform]
+    params: {platform: {type: text, label: platform}}
+    summary: "The result was compared with the reference record made for {platform!raw}, not the reference platform's."
+    why: "A reference case holds one record for the reference platform. Where a float exceeds the numerical policy on another registered platform, a per-platform record sits beside it; it has the same R0 projection and states the floats, the policy bound and the near-threshold flags that account for the difference. The comparison used that record because this platform has one."
+    action: "None. The notice only says which record the comparison was made against."
+    examples:
+      - params: {platform: linux-aarch64}
