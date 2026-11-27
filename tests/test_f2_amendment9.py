@@ -66,7 +66,8 @@ def _bundles(run_set: str, name: str) -> tuple[Path, Path]:
     """The v1 run and the raised v2 document's run of one revision, solved as F0 solves it."""
     if (run_set, name) in _SOLVED:
         return _SOLVED[(run_set, name)]
-    scratch = _SOLVED[("", "")][0] / f"{run_set}-{name}"
+    # A case name may hold ":" (g8/T05b:DZ-3), which no Windows path may contain.
+    scratch = _SOLVED[("", "")][0] / f"{run_set}-{name.replace(':', '_')}"
     original = gate.revision_document(run_set, name)
     raised = _raised(copy.deepcopy(original))
     assert raised["schema_version"] == 2
