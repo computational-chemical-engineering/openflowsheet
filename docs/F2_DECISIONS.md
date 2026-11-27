@@ -794,3 +794,9 @@ Files: `revision_v2/{lower,raise_v1}.py`, `tests/test_f2_lowering.py`, `tests/da
   `test_an_initialization_hint_raises_and_lowers_to_its_bytes` (`tests/test_f2_lowering.py`): a `T` guess on NET-02's
   second connection moves the v1 hash, survives `raise_v1`, the raised `content_hash` is `content_hash(raised)` and
   moves without the hint, and the lowering has the original's canonical bytes and v1 hash. 1 passed.
+- **DECISION WO8-11 (N1). `component_basis` refuses a raw `schema_version` 2 document**:
+  `RevisionError("unsupported", "schema_invalid(/schema_version)", hint=...)`. The review names no code; this one is
+  already registered (`schema_invalid`, the pointer form `lowered_document` raises for a v2 schema refusal), so the
+  catalogue does not move. Alternative: a new code (catalogue entry, digest re-pin). Reversible by this commit alone.
+  Test `test_n1_component_basis_refuses_a_raw_v2_document` (`tests/test_f2_amendment9.py`), with the lowering
+  selecting the v1 document's basis. `test_f2_amendment9.py` + `test_f2_lowering.py`: 225 passed, 1 deselected.

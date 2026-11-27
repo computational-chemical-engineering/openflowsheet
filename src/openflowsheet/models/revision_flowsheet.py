@@ -215,7 +215,16 @@ def component_basis(document: Mapping[str, Any]) -> ComponentBasis:
     """The basis `document`'s `component_set.record_source` selects (ADR 0034 D8, R-231; ADR 0050
     D1): the registry of S11 design §4.1, top to bottom by string equality, SYN-001's otherwise.
     A CoolProp revision whose components are not exactly one admitted fluid raises
-    `RevisionError("unsupported", "components_unsupported")`."""
+    `RevisionError("unsupported", "components_unsupported")`. A `schema_version` 2 document has no
+    `record_source` and is read as its lowering (`lowered_document`) first: given raw, it raises
+    `RevisionError("unsupported", "schema_invalid(/schema_version)")`, never SYN-001's basis
+    (F2 review N1)."""
+    if document.get("schema_version") == 2:
+        raise RevisionError(
+            "unsupported",
+            "schema_invalid(/schema_version)",
+            hint="a schema_version 2 document selects its basis as its lowering (lowered_document)",
+        )
     component_set = document.get("component_set") or {}
     source = component_set.get("record_source")
     if source == pr_c1.RECORDS_PATH:

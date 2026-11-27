@@ -288,6 +288,22 @@ def test_rows_4_5_6_readers_of_a_bundle_read_the_lowered_document() -> None:
     assert (target2.row_ids, target2.column_ids) == (target1.row_ids, target1.column_ids)
 
 
+def test_n1_component_basis_refuses_a_raw_v2_document() -> None:
+    """F2 review N1: a raw v2 document has no `record_source`; `component_basis` refuses it typed
+    rather than selecting SYN-001's basis, and its lowering selects the v1 document's basis."""
+    from openflowsheet.models.revision_flowsheet import component_basis  # noqa: PLC0415
+
+    original = _base()
+    raised = _raised(original)
+    with pytest.raises(RevisionError) as refused:
+        component_basis(raised)
+    assert (refused.value.kind, refused.value.code) == (
+        "unsupported",
+        "schema_invalid(/schema_version)",
+    )
+    assert component_basis(lowered_document(raised)) == component_basis(original)
+
+
 def test_row_11_content_hash_of_a_v2_document_is_revision_v2s() -> None:
     from openflowsheet.application.revisions import Revision, content_hash  # noqa: PLC0415
     from openflowsheet.revision_v2 import content_hash as v2_content_hash  # noqa: PLC0415
