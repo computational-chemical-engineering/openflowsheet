@@ -828,3 +828,7 @@ Files: `revision_v2/{lower,raise_v1}.py`, `tests/test_f2_lowering.py`, `tests/da
   `test_t08_w2_description_reviews` (check_admission.md, waits for card `ofs-f2-check-admission-human`) and
   `test_s19_w5_gate::test_s2_the_real_chain_passes_a_comment_edited_tier_3_step` (S19 W5 S2: F2's connection
   definitions absent from the held implementation sets)), so wp/F2 was NOT pushed.
+- **DECISION F2-S2 (orchestrator, 2026-11-27). `scripts/w5_identity.py` `measure_facts` holds F2's `material.json`
+  beside F3's `records.json`** (same `getattr` pattern), so S2 compares the table F2 added: before, `sets --check`
+  failed S2 with the five material rows "held None, generated []"; after, `sets --check` PASS and
+  `tests/test_s19_w5_gate.py` 63 passed. Alternative: treat a missing row as an empty set (would hide a missing table).
