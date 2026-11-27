@@ -594,6 +594,16 @@ The component H2O breaks the amount-basis rule molar_mass_absent.
   Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#amount_basis_invalid
 ```
 
+<a id="amount_basis_mismatch"></a>
+
+## `amount_basis_mismatch`: Amount basis mismatch
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+*No plain-language explanation is written yet; the summary is the technical one.*
+
+- **Summary:** Refused: amount basis mismatch.
+
 <a id="amount_basis_unsupported"></a>
 
 ## `amount_basis_unsupported`: Records on this amount basis cannot be stored yet
@@ -638,6 +648,36 @@ The anchor phase s:ice-Ih of component H2O is not allowed.
   Code:    anchor_phase_invalid (openflowsheet explain anchor_phase_invalid)
   Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#anchor_phase_invalid
 ```
+
+<a id="attribute_grid_mismatch"></a>
+
+## `attribute_grid_mismatch`: Attribute grid mismatch
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+*No plain-language explanation is written yet; the summary is the technical one.*
+
+- **Summary:** Refused: attribute grid mismatch.
+
+<a id="attribute_on_zero_parent"></a>
+
+## `attribute_on_zero_parent`: Attribute on zero parent
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+*No plain-language explanation is written yet; the summary is the technical one.*
+
+- **Summary:** Refused: attribute on zero parent.
+
+<a id="attribute_redundant"></a>
+
+## `attribute_redundant`: Attribute redundant
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+*No plain-language explanation is written yet; the summary is the technical one.*
+
+- **Summary:** Refused: attribute redundant.
 
 <a id="basis_mismatch"></a>
 
@@ -838,6 +878,16 @@ The key C2H6O matches more than one stored record.
 
 - **Summary:** Refused: connection kind unsupported.
 
+<a id="construct_unavailable"></a>
+
+## `construct_unavailable`: Construct unavailable
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+*No plain-language explanation is written yet; the summary is the technical one.*
+
+- **Summary:** Refused: construct unavailable.
+
 <a id="continuation_level"></a>
 
 ## `continuation_level`: Continuation level
@@ -923,6 +973,16 @@ The record 0f4c2e6a9b1d3c5e7f80a2b4c6d8e0f1a3b5c7d9e1f3a5b7c9d1e3f5a7b9c1d3 is n
 *No plain-language explanation is written yet; the summary is the technical one.*
 
 - **Summary:** Refused: declaration mismatch.
+
+<a id="definition_incompatible"></a>
+
+## `definition_incompatible`: Definition incompatible
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+*No plain-language explanation is written yet; the summary is the technical one.*
+
+- **Summary:** Refused: definition incompatible.
 
 <a id="dependency_missing"></a>
 
@@ -1244,6 +1304,16 @@ The property_method pr-lib-v1 is registered and listed, but this version cannot 
 
 - **Summary:** Refused: failure bundle unmapped.
 
+<a id="feed_not_electroneutral"></a>
+
+## `feed_not_electroneutral`: Feed not electroneutral
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+*No plain-language explanation is written yet; the summary is the technical one.*
+
+- **Summary:** Refused: feed not electroneutral.
+
 <a id="flash_failed"></a>
 
 ## `flash_failed`: The phase split of a stream could not be computed
@@ -1289,6 +1359,16 @@ The formula of component CH3OH does not match its elemental composition.
   Code:    formula_elements_invalid (openflowsheet explain formula_elements_invalid)
   Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#formula_elements_invalid
 ```
+
+<a id="group_amount_negative"></a>
+
+## `group_amount_negative`: Group amount negative
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+*No plain-language explanation is written yet; the summary is the technical one.*
+
+- **Summary:** Refused: group amount negative.
 
 <a id="homotopy_stalled"></a>
 
@@ -1869,6 +1949,16 @@ The solve stopped: no step along its search direction reduced the error.
   Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#out_of_domain
 ```
 
+<a id="parameter_binding_conflict"></a>
+
+## `parameter_binding_conflict`: Parameter binding conflict
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+*No plain-language explanation is written yet; the summary is the technical one.*
+
+- **Summary:** Refused: parameter binding conflict.
+
 <a id="parameter_kind_unsupported"></a>
 
 ## `parameter_kind_unsupported`: Parameter kind unsupported
@@ -1888,6 +1978,16 @@ The solve stopped: no step along its search direction reduced the error.
 *No plain-language explanation is written yet; the summary is the technical one.*
 
 - **Summary:** Refused: parameter missing.
+
+<a id="parameter_not_manipulable"></a>
+
+## `parameter_not_manipulable`: Parameter not manipulable
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+*No plain-language explanation is written yet; the summary is the technical one.*
+
+- **Summary:** Refused: parameter not manipulable.
 
 <a id="parameter_quantity_invalid"></a>
 
@@ -2464,6 +2564,16 @@ The provenance of the value at /molar_mass has no origin, or names a source the 
 
 - **Summary:** Refused: ptc mapping invalid.
 
+<a id="quantity_kind_mismatch"></a>
+
+## `quantity_kind_mismatch`: Quantity kind mismatch
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+*No plain-language explanation is written yet; the summary is the technical one.*
+
+- **Summary:** Refused: quantity kind mismatch.
+
 <a id="rate_not_finite"></a>
 
 ## `rate_not_finite`: Rate not finite
@@ -2785,6 +2895,16 @@ The file acme/units/mixer.py of extension acme.slurry-mixer cannot be read, so i
   Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#self_hash_unavailable
 ```
 
+<a id="signal_kind_mismatch"></a>
+
+## `signal_kind_mismatch`: Signal kind mismatch
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+*No plain-language explanation is written yet; the summary is the technical one.*
+
+- **Summary:** Refused: signal kind mismatch.
+
 <a id="single_phase_admissible"></a>
 
 ## `single_phase_admissible`: Single phase admissible
@@ -2794,6 +2914,36 @@ The file acme/units/mixer.py of extension acme.slurry-mixer cannot be read, so i
 *No plain-language explanation is written yet; the summary is the technical one.*
 
 - **Summary:** Refused: single phase admissible.
+
+<a id="solid_role_conflict"></a>
+
+## `solid_role_conflict`: Solid role conflict
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+*No plain-language explanation is written yet; the summary is the technical one.*
+
+- **Summary:** Refused: solid role conflict.
+
+<a id="species_basis_incompatible"></a>
+
+## `species_basis_incompatible`: Species basis incompatible
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+*No plain-language explanation is written yet; the summary is the technical one.*
+
+- **Summary:** Refused: species basis incompatible.
+
+<a id="species_basis_redundant"></a>
+
+## `species_basis_redundant`: Species basis redundant
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+*No plain-language explanation is written yet; the summary is the technical one.*
+
+- **Summary:** Refused: species basis redundant.
 
 <a id="specification_conflict"></a>
 
@@ -3242,6 +3392,26 @@ A change is checked for the task "simulation" only; this version cannot check it
 *No plain-language explanation is written yet; the summary is the technical one.*
 
 - **Summary:** Refused: terminal refinement.
+
+<a id="thermal_coordinate_mismatch"></a>
+
+## `thermal_coordinate_mismatch`: Thermal coordinate mismatch
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+*No plain-language explanation is written yet; the summary is the technical one.*
+
+- **Summary:** Refused: thermal coordinate mismatch.
+
+<a id="unit_coordinate_unsupported"></a>
+
+## `unit_coordinate_unsupported`: Unit coordinate unsupported
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+*No plain-language explanation is written yet; the summary is the technical one.*
+
+- **Summary:** Refused: unit coordinate unsupported.
 
 <a id="unknown_specification"></a>
 

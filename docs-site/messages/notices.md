@@ -203,6 +203,16 @@ The element balance of reaction cracking was not checked, because component NBP_
   Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/notices/#reaction_element_unchecked
 ```
 
+<a id="species_basis_not_monotone"></a>
+
+## `species_basis_not_monotone`: Species basis not monotone
+
+**Kind:** Notice: not a failure.
+
+*No plain-language explanation is written yet; the summary is the technical one.*
+
+- **Summary:** Notice: species basis not monotone.
+
 <a id="store_object_repaired"></a>
 
 ## `store_object_repaired`: A damaged stored record file was repaired

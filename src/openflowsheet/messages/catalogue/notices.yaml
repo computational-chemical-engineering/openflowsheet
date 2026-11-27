@@ -49,3 +49,11 @@ entries:
     action: "Nothing needs fixing if the stream is meant to be idle. If it should carry material, check the specifications and splits upstream of {stream}."
     examples:
       - params: {stream: S7}
+
+  # ADR 0062 (F2-WO4): a recorded limitation of a conserved basis (Q3.R1 (iii)); prose in F2-WO7.
+  - code: species_basis_not_monotone
+    family: notice
+    kind: notice
+    complete: false
+    title: Species basis not monotone
+    summary: 'Notice: species basis not monotone.'

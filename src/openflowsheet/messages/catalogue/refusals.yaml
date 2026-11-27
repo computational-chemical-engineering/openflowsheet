@@ -1856,3 +1856,107 @@ entries:
     see_also: [stream_enthalpy_absent]
     examples:
       - params: {subject: S6, quantity: H_flow}
+
+  # ADR 0062 (F2-WO4): the v2 revision validator's codes; incomplete until F2-WO7 writes their prose.
+  - code: solid_role_conflict
+    family: refusal
+    kind: input
+    complete: false
+    title: Solid role conflict
+    summary: 'Refused: solid role conflict.'
+  - code: species_basis_redundant
+    family: refusal
+    kind: input
+    complete: false
+    title: Species basis redundant
+    summary: 'Refused: species basis redundant.'
+  - code: species_basis_incompatible
+    family: refusal
+    kind: input
+    complete: false
+    title: Species basis incompatible
+    summary: 'Refused: species basis incompatible.'
+  - code: group_amount_negative
+    family: refusal
+    kind: input
+    complete: false
+    title: Group amount negative
+    summary: 'Refused: group amount negative.'
+  - code: feed_not_electroneutral
+    family: refusal
+    kind: input
+    complete: false
+    title: Feed not electroneutral
+    summary: 'Refused: feed not electroneutral.'
+  - code: attribute_redundant
+    family: refusal
+    kind: input
+    complete: false
+    title: Attribute redundant
+    summary: 'Refused: attribute redundant.'
+  - code: attribute_grid_mismatch
+    family: refusal
+    kind: input
+    complete: false
+    title: Attribute grid mismatch
+    summary: 'Refused: attribute grid mismatch.'
+  - code: attribute_on_zero_parent
+    family: refusal
+    kind: input
+    complete: false
+    title: Attribute on zero parent
+    summary: 'Refused: attribute on zero parent.'
+  - code: amount_basis_mismatch
+    family: refusal
+    kind: input
+    complete: false
+    title: Amount basis mismatch
+    summary: 'Refused: amount basis mismatch.'
+  - code: thermal_coordinate_mismatch
+    family: refusal
+    kind: input
+    complete: false
+    title: Thermal coordinate mismatch
+    summary: 'Refused: thermal coordinate mismatch.'
+  - code: unit_coordinate_unsupported
+    family: refusal
+    kind: input
+    complete: false
+    title: Unit coordinate unsupported
+    summary: 'Refused: unit coordinate unsupported.'
+  - code: definition_incompatible
+    family: refusal
+    kind: input
+    complete: false
+    title: Definition incompatible
+    summary: 'Refused: definition incompatible.'
+  - code: signal_kind_mismatch
+    family: refusal
+    kind: input
+    complete: false
+    title: Signal kind mismatch
+    summary: 'Refused: signal kind mismatch.'
+  - code: parameter_not_manipulable
+    family: refusal
+    kind: input
+    complete: false
+    title: Parameter not manipulable
+    summary: 'Refused: parameter not manipulable.'
+  - code: parameter_binding_conflict
+    family: refusal
+    kind: input
+    complete: false
+    title: Parameter binding conflict
+    summary: 'Refused: parameter binding conflict.'
+  - code: construct_unavailable
+    family: refusal
+    kind: input
+    complete: false
+    title: Construct unavailable
+    summary: 'Refused: construct unavailable.'
+  - code: quantity_kind_mismatch
+    family: refusal
+    kind: input
+    complete: false
+    title: Quantity kind mismatch
+    summary: 'Refused: quantity kind mismatch.'
