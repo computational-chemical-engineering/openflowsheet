@@ -40,18 +40,21 @@ once F2-WO4 is on wp/F2 (F8 branches from wp/F2's head, merges after F2).
 
 ## Next action (2026-11-27, two agents RUNNING)
 
-Done and judged since the reset: F2-R1 (2781db50), F2-WO6b (b417eae3; 249/249 + F0 PASS), ADR 0062 D12 replaced per
-F2-R1 (df796cc2), P8 F8 premise check (0 open rows, table in the log). Heads: wp/F2 `df796cc2`+, wp/F8 `df796cc2`+
-(worktree `.claude/worktrees/f8`), wp/X06 `487609e7`.
+Done and judged since the reset (details in `docs/LINE06_DECISIONS.md`): F2-R1, F2-WO6b, F2-WO6c, F2-WO7 (+ the
+orchestrator's WO7-4 fix: `optimize_revision` lowers), ADR 0062 D12 replaced (df796cc2); P8 premise check; F8-WO1
+(committed part; STOPs 8 and 9 -> R-1076, F8's surface link c_13). Heads: wp/F2 `39244e80` (manifest
+`evidence/F2/a3081770.../manifest.json`, `tested`), wp/F8 `1b7e1b51`, wp/X06 `487609e7`.
 
-**Running:** (1) `opus-engineer` F2-WO6c (`docs/briefs/LINE06-F2-WO6c.md`, wp/F2, log `~/.cache/line06/f2-wo6c/`);
-(2) `opus-engineer` F8-WO1 (`docs/briefs/LINE06-F8-WO1.md`, wp/F8, log `~/.cache/line06/f8-wo1/`). If this session
-dies: check each worktree's `git log`, `git status` and processes (`/proc/<pid>/cwd`); judge on the brief's acceptance.
+**Running:** (1) `reviewer` on `docs/briefs/F2-reviewer.md` (reads wp/F2; commits only `docs/reviews/F2-review.md` on
+main; log `~/.cache/line06/f2rev/`); (2) `opus-engineer` F8-WO1b (`docs/briefs/LINE06-F8-WO1b.md`, wp/F8, log
+`~/.cache/line06/f8-wo1b/`). If this session dies: check `git log` on main and in `.claude/worktrees/f8`, processes by
+`/proc/<pid>/cwd`; judge on the brief's acceptance.
 
-On F2-WO6c's report: judge (rerun `tests/test_f2_lowering.py tests/test_f2_amendment9.py` + F0); then F2-WO7 brief
-(Sonnet): catalogue prose for WO4-16's 18 entries, `check_admission` description re-pin (WO6b-6; served digest c_11),
-an optimization-job-on-v2 test, manifest `tested`. On F8-WO1's report: judge, then F8-WO2 brief (bundle writer, test-only
-factory; E-F8-2, E-F8-3), then WO3, WO5. wp/F8 merges wp/F2's later head before its own merge.
+On the F2 review: write the fix-round brief from its work order (Opus, wp/F2; includes the v03 A29/A31 ruling, the
+`check_admission.md` re-pin with its c_11 surface move, catalogue corrections); then refresh the manifest, then the
+ADR 0062 acceptance card via hub (with F2-R1's line, open item (2) of the R1 section, and any line the reviewer
+names). On F8-WO1b: judge; mirror R-1076's evidence cell to main; then F8-WO2 brief (bundle writer, test-only
+factory; E-F8-2, E-F8-3), WO3, WO5; wp/F8 merges wp/F2's later head before its own merge.
 
 **Waiting on the user:** card `ofs-x06-descriptions-human` (filed by hub, open; texts in
 `docs/reviews/X06-descriptions-for-user.md`). Hub rings when signed. Then: fetch the card (ArtifactData `get`
