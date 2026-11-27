@@ -1,6 +1,9 @@
 # ADR 0062 — F2: material model, connection definitions, phase and variable ids, `ProcessRevision` v2
 
-**Status:** **Proposed, 2026-11-05.** Design wave W1, pass P2 (ADR 0057, R-928). Takes effect when Accepted after the W1
+**Status:** **Accepted, 2026-11-27** (the user, Decision Desk `ofs-f2-accept-adr0062` v2, choice A, signed
+2026-11-27T11:12:54Z: accepted as corrected before acceptance at wp/F2 a64f93fb: D12 per F2-R1, D2 PropertyRequest not
+widened, D11 h_mass revision-wide, E-F2-9 state_degenerate_in_definition and Q6.A2 registration half deferred to
+F5/F6). Proposed 2026-11-05. Design wave W1, pass P2 (ADR 0057, R-928). Takes effect when Accepted after the W1
 reviewer pass over ADRs 0062–0064; built in 0.5 on `wp/F2`. The core (D13) freezes at the end of W1 (R-929).
 **Author:** design lane (`architect`). **Brief:** `docs/roadmap/brief-architect-W1-P2.md`.
 **Refines:** `target-architecture.md` §2.1, §3 F2, §8. Departures are marked **[departure]** with their reason.

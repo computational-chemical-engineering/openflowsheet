@@ -823,3 +823,8 @@ Files: `revision_v2/{lower,raise_v1}.py`, `tests/test_f2_lowering.py`, `tests/da
   files; content unchanged; the test is not touched.** After: `test_adr_0002_a1_integers.py` +
   `test_f2_revision_v2.py` 175 passed; F0 PASS (M1 50/50, M2-M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 42/42).
   Alternative: catch `JSONDecodeError` in the test (a weaker check). Reversible by: reverting this commit.
+- **ADR 0062 Accepted, 2026-11-27** (Decision Desk `ofs-f2-accept-adr0062` v2, choice A, VERIFIED). The card's push
+  of 6913c4a0 was conditional on the local full gate on 6913c4a0 passing; it failed (2 failed, 21723 passed:
+  `test_t08_w2_description_reviews` (check_admission.md, waits for card `ofs-f2-check-admission-human`) and
+  `test_s19_w5_gate::test_s2_the_real_chain_passes_a_comment_edited_tier_3_step` (S19 W5 S2: F2's connection
+  definitions absent from the held implementation sets)), so wp/F2 was NOT pushed.
