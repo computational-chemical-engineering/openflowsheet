@@ -181,3 +181,19 @@ with its `policy_id` equal to the request (the manifest-hash comparison as for t
 judged as today. It touches replay identity, so it waits for the design lane. Tests: E-X06-13 is `xfail(strict=True)`
 with this reason; `test_q7_the_bundle_check_resolves_the_requested_policy_by_name` pins the cause. E-X06-13's
 `optimize` half was not run (no `nlp` extra in this environment).
+
+### R-088 Q26 measured: `register_solve_policy` accepts a numeric map (STOP, design lane)
+
+`tests/test_t07_q26.py::test_t07_q26_no_external_state` fails: its static scan finds
+`Finding(operation='register_solve_policy', path=('policy', 'scales'), kind='map')`. D4.5's request carries a whole
+solve-policy document, whose `scales` is a map of quantity kind to number; Q26 allows a numeric map only by full path
+with a recorded exception (as F3's `validate_record` `reactions/*/stoichiometry`, ADR 0061), and ADR 0078 names none.
+Not relaxed here (brief: no test passes by relaxing a check). The choice the build lane would make: allow
+`register_solve_policy`'s `policy/scales` by full path, citing ADR 0078 D4.3: its keys are registered kinds, its
+values policy constants checked once, the solver reads none of them (`policy.scales` is read nowhere in `src/`), and
+nothing from it reaches a solver state; `residual_tolerances` is not flagged (a map of objects). Needs a design-lane
+exception recorded as F3's was.
+
+- **DECISION WO3-10. Reachable codes.** `get_solve_policy` of `T02-eo` makes `unsupported` reachable over MCP (stdio
+  and HTTP), so the conformance `REACHABLE` table gives all six clients `unsupported`. The CLI's G14 scenario runs
+  `solve_policies_requests()` too.
