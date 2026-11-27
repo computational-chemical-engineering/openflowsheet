@@ -32,12 +32,14 @@ from typing import Any, Final, Protocol, SupportsFloat
 from openflowsheet.material.basis import group_molar_masses
 from openflowsheet.material.definitions import LEGACY_TEMPLATE, normalise_instance, species_basis
 from openflowsheet.material.vid import VariableId, legacy_variable_id
+from openflowsheet.registry.tokens import Coded
 
 __all__ = [
     "AttributeKind",
     "ComponentFacts",
     "ConnectionInput",
     "ConnectionLayout",
+    "LayoutRefusalError",
     "MaterialFacts",
     "MaterialLayout",
     "MaterialState",
@@ -45,6 +47,7 @@ __all__ = [
     "SubstreamLayout",
     "SubstreamState",
     "Vector",
+    "draft_connection",
 ]
 
 #: The carried amount's quantity kind per component amount basis (ADR 0061, ADR 0062 D1).
@@ -54,6 +57,17 @@ THERMAL: Final = {"h_mass": ("h", "specific_enthalpy"), "T": ("T", "temperature"
 #: The one slot of an energy or signal connection (D3's table; `signal-v1` takes its kind from the
 #: instance).
 SINGLE: Final = {"heat-v1": ("Q", "heat_rate"), "work-v1": ("W", "power"), "signal-v1": ("s", "")}
+
+
+class LayoutRefusalError(ValueError):
+    """A definition the layout cannot place, for a reason ADR 0062's catalogue names (F2-WO4):
+    `coded` is the typed refusal the revision validator reports for the same definition first
+    (`attribute_grid_mismatch`, `attribute_redundant`). The layout's other refusals stay plain
+    `ValueError`s (F2 decision WO3-6)."""
+
+    def __init__(self, coded: Coded, message: str) -> None:
+        super().__init__(message)
+        self.coded = coded
 
 
 @dataclass(frozen=True, slots=True)
@@ -236,10 +250,15 @@ def _ntp_substream(facts: MaterialFacts, slots: _Slots) -> SubstreamLayout:
 
 
 def _mat_substream(
-    substream: Mapping[str, Any], facts: MaterialFacts, slots: _Slots
+    substream: Mapping[str, Any], facts: MaterialFacts, slots: _Slots, definition: str
 ) -> SubstreamLayout:
     """One `mat-v1` substream of the normalised instance, in D3's order."""
     sid: str = substream["id"]
+
+    def refusal(code: str, kind: str, message: str) -> LayoutRefusalError:
+        params = {"definition": definition, "substream": sid, "kind": kind}
+        return LayoutRefusalError(Coded(code, params), f"{sid}: {message}")
+
     components: list[str] = list(substream["components"])
     grids = {grid["id"]: len(grid["edges"]) - 1 for grid in substream["grids"]}
 
@@ -247,7 +266,8 @@ def _mat_substream(
         if not kind.classed:
             return ()
         if attribute["grid"] not in grids:
-            raise ValueError(f"{sid}: attribute {attribute['kind']!r} has no grid of its substream")
+            message = f"attribute {attribute['kind']!r} has no grid of its substream"
+            raise refusal("attribute_grid_mismatch", attribute["kind"], message)
         return tuple(range(1, grids[attribute["grid"]] + 1))
 
     partitioned: dict[str, tuple[int, ...]] = {}
@@ -260,7 +280,10 @@ def _mat_substream(
         if attribute["components"] is None or not kind.classed:
             raise ValueError(f"{sid}: partition attribute {attribute['kind']!r} names no classes")
         for component in attribute["components"]:
-            if component in partitioned or component not in components:
+            if component in partitioned:
+                message = f"{component!r} is in two partition attributes"
+                raise refusal("attribute_redundant", attribute["kind"], message)
+            if component not in components:
                 raise ValueError(f"{sid}: {component!r} is not one partitionable component")
             partitioned[component] = classes(attribute, kind)
 
@@ -301,9 +324,10 @@ def _mat_substream(
     return SubstreamLayout(sid, substream["kind"], tuple(carried), tuple(attributes), tuple(masses))
 
 
-def _connection(
-    given: ConnectionInput, facts: MaterialFacts, positions: Mapping[str, int]
-) -> ConnectionLayout:
+def draft_connection(given: ConnectionInput, facts: MaterialFacts) -> ConnectionLayout:
+    """`given`'s layout before placement: its slots in D3's order, each with `variable_index`
+    -1. The validator (F2-WO4) renders a connection's ids from it (`variable_id`), never parses
+    one; `MaterialLayout.build` places it in a variable order."""
     instance = normalise_instance(given.instance)
     template: str = instance["template"]
     slots = _Slots()
@@ -314,7 +338,9 @@ def _connection(
         substreams = (_ntp_substream(facts, slots),)
     elif template == "mat-v1":
         thermal = instance["thermal_coordinate"]
-        substreams = tuple(_mat_substream(s, facts, slots) for s in instance["substreams"])
+        substreams = tuple(
+            _mat_substream(s, facts, slots, given.definition) for s in instance["substreams"]
+        )
     elif template in SINGLE:
         field, kind = SINGLE[template]
         slots.add(None, field, (), kind or instance["quantity_kind"])
@@ -324,7 +350,7 @@ def _connection(
         field, kind = THERMAL[thermal]
         slots.add(None, field, (), kind)
         slots.add(None, "P", (), "pressure")
-    draft = ConnectionLayout(
+    return ConnectionLayout(
         given.connection,
         given.definition,
         given.definition_sha256,
@@ -333,6 +359,12 @@ def _connection(
         tuple(Slot(s, f, i, k, -1) for s, f, i, k in slots.entries),
         substreams,
     )
+
+
+def _connection(
+    given: ConnectionInput, facts: MaterialFacts, positions: Mapping[str, int]
+) -> ConnectionLayout:
+    draft = draft_connection(given, facts)
     placed = []
     for slot in draft.slots:
         vid = draft.variable_id(slot)
@@ -345,10 +377,10 @@ def _connection(
         draft.connection,
         draft.definition,
         draft.definition_sha256,
-        template,
-        thermal,
+        draft.template,
+        draft.thermal_coordinate,
         tuple(placed),
-        substreams,
+        draft.substreams,
     )
 
 
@@ -409,6 +441,22 @@ class MaterialLayout:
             float(x[slots[-2].variable_index]),
             float(x[slots[-1].variable_index]),
         )
+
+    def temperature_substream(self, x: Vector, connection: str) -> str | None:
+        """The substream whose model fixes `connection`'s T in `x` (Q8.R5, R6; E-F2-8's Q8.A4):
+        `mixed` when it flows, else the first flowing substream in instance order; `None` when the
+        stream is dormant (its T is undefined, D4). Substreams share `ĥ` and `P`, so one flowing
+        substream's T(ĥ, P) is the stream's."""
+        layout = self._connections[connection]
+        state = self.state(x, connection)
+        flowing = [
+            (placed.kind, found.substream)
+            for placed, found in zip(layout.substreams, state.substreams, strict=True)
+            if not found.is_dormant
+        ]
+        mixed = [substream for kind, substream in flowing if kind == "mixed"]
+        ordered = mixed + [substream for _, substream in flowing]
+        return ordered[0] if ordered else None
 
     def value(self, x: Vector, connection: str) -> float:
         """The one value of an energy or signal connection in `x` (`~Q`, `~W`, `~s`)."""
