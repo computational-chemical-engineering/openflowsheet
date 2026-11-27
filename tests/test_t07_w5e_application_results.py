@@ -24,6 +24,7 @@ amended; ADR 0019 Amendment 1; gates R4-G3 and R4-G4).
 from __future__ import annotations
 
 import hashlib
+import os
 import sys
 import tempfile
 from pathlib import Path
@@ -675,9 +676,12 @@ def test_r4_g3_every_def_has_a_valid_and_an_invalid_fixture(name: str) -> None:
         assert any(fixture["expect_error"] in error for error in errors), (path, errors)
 
 
-def test_the_fixtures_are_what_real_responses_emit_today() -> None:
+def test_the_fixtures_are_what_real_responses_emit_today(monkeypatch: pytest.MonkeyPatch) -> None:
     """R-015: regenerated from real responses, the fixtures are equal with the members that differ
     between generations masked (timestamps, output digests and sizes, the git commit)."""
+    # `_pin_threads` sets the pins for the rest of the process: set them here, undone at teardown.
+    for name in ("OPENBLAS_NUM_THREADS", "OMP_NUM_THREADS", "MKL_NUM_THREADS"):
+        monkeypatch.setenv(name, os.environ.get(name, "1"))
     sys.path.insert(0, str(REPO_ROOT / "scripts"))
     from t07_schema_fixtures import application_results_documents, stable
 
