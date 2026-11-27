@@ -615,3 +615,26 @@ Files: `models/revision_flowsheet.py` (`legacy_providers`, `lowered_document`, `
   pin version 3 as `revision_unsupported` and a v1 body labelled 2 as `invalid_request` (WO6b-5), and that file with
   `tests/test_f2_amendment9.py` passes 249/249 at the next commit. E-F2-3 run half: 56/56 (47 `g8` + 9 basis cases;
   the 5 `k05` are not revision documents; the 3 M1 revisions without a run route as their v1 documents).
+
+## F2-WO6c (ruling F2-R1's two amendments), 2026-11-27
+
+Files: `revision_v2/{lower,raise_v1}.py`, `tests/test_f2_lowering.py`, `tests/data/t07_global_state_allowlist.json`,
+`tests/test_t07_global_state.py`. Commit `fa97cddd`.
+
+- **DECISION WO6c-1. `file_parameter_sets(path)` returns record SHA-256s** (the v2 schema's `parameter_sets` items are
+  `sha`), in the order the legacy index entry lists them (a `parameter_set` record has no `position`); `()` for a file
+  with none or a path the index does not hold. `s10`: `S10-wilson-ig-real-v1` (`6634ea27...`); `s10-verification`:
+  `S10-verification-v1` (`c13d5aaa...`); the other five files: none.
+- **DECISION WO6c-2. `thermal_coordinate` is checked unconditionally** (with the other D11 fields in `_unclassified`),
+  not only when the component set names one file: D12 gates only `convention`, `property_methods` and
+  `parameter_sets`. `parameter_sets` moved into the one-file check with the convention and methods (`_one_file`).
+- **DECISION WO6c-3. G20 registers the new cache** (WO6a's `7ce12c23` pattern): `revision_v2/lower.py` `@cache`
+  occurrences 2 -> 3, the total `cache` pin 49 -> 50.
+- **Raised `s10` v2 `content_hash` moves** (unreleased test data; no test pinned them, so nothing re-pinned): GP-C1
+  `d4120e66` -> `61ec8610`, GP-C2 `b3e711f7` -> `82e9821e`, GP-C3 `f0937d32` -> `03054252`, GP-M1 `9a365d08` ->
+  `42d173ec`, GP-M2 `4e5551e0` -> `8848a951`. Their lowered v1 bytes are unchanged (library half 59/59).
+- **Gate** (`~/.cache/line06/f2-wo6c/acc.log`): `tests/test_f2_lowering.py` 96 passed (93 - 1 + 4);
+  `tests/test_f2_amendment9.py` 124 passed (E-F2-3 run half 56/56 inside); `tests/test_f2_revision_v2.py` 107;
+  `tests/test_f1_draft_admission.py` 125; surface suites 2320 passed, 1 failed, 28 skipped, the failure G20's
+  (WO6c-3), then `test_t07_global_state.py` + lowering 99/99 after the fix; F0 PASS M1 50/50, M2-M5 61/61, M6 85/85,
+  M7 52/52, M8 105/105, M9 42/42; ruff, ruff format --check, `mypy src` (367 files) clean. No served digest moved.
