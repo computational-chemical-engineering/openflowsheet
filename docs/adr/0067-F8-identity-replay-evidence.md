@@ -300,7 +300,7 @@ in 0.5; WO4 and WO6 go with F4 and F6 to the line after 0.6; WO7 stays in TX. Th
 | 2 | **F8-WO2** (0.5) Bundle writer | `run/bundle_v2.py`; embedding via ADR 0061 D11; test-only v2 bundle factory (a corpus case rerun and recorded as v2) | E-F8-2, E-F8-3 | no | Opus |
 | 3 | **F8-WO3** (0.5) Replay | dispatch in `run/replay.py`; `run/replay_v2.py`; usage cross-check; a re-record tool for registered v2 cases | E-F8-1, -4, -5, -6 | no | Opus |
 | 4 | **F8-WO4** (0.6, after F4-WO4) Evidence | `run/evidence.py`; reads the F4 hook (ADR 0063 D7, built by F4-WO4) | E-F8-7 | no | Opus |
-| 5 | **F8-WO5** (0.6, or with the first platform registration under ADR 0007 Amendment 3, whichever is first) Platform records | `run/platform_refs.py`; invariant test | E-F8-8 | no | Sonnet, Opus review |
+| 5 | **F8-WO5** (0.6, or with the first platform registration under ADR 0007 Amendment 3, whichever is first) Platform records | `run/platform_refs.py`; invariant test | E-F8-8. *Obligation for the first real per-platform record (edit before acceptance, F8-FR item 6, review F8 S5 (b)(ii)): the record departs from the reference beyond the policy only at its `departures`, which needs the record to name its policy.* | no | Sonnet, Opus review |
 | 6 | **F8-WO6** (0.6, after F6-WO4) Wiring | v2-compiled runs write bundle v2; a merge prerequisite of `wp/F6` | E-F8-2 on real v2 runs | no | Opus |
 | 7 | **F8-WO7** (0.7, in TX) Decision records, `forced_replay`, exchange records | `run/decisions.py`; route hooks | E-F8-9; Q9.A9 | no | Opus |
 

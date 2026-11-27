@@ -6,7 +6,9 @@ exceeds the numerical policy on another registered platform, a per-platform reco
 `<dir>/<case>.<platform-id>.json` lies beside it. The comparator uses the current platform's
 record if one exists, else the reference's, and reports `platform_reference_used(<platform>)`.
 The invariant (`invariant_problems`) is that a per-platform record's R0 projection is the
-reference's and that it was made against the reference record it names.
+reference's, that it was made against the reference record it names, and that each departure's
+`path` (an RFC 6901 JSON Pointer into `artifacts`) holds its `reference_value` in the reference
+record and its `platform_value` in the per-platform record.
 """
 
 from __future__ import annotations
@@ -126,6 +128,11 @@ def load_platform_record(path: Path) -> dict[str, Any]:
     paths = [row.get("path") if isinstance(row, dict) else None for row in rows]
     if any(not isinstance(item, str) for item in paths) or paths != sorted(paths):  # type: ignore[type-var]
         raise ValueError(f"{path}: departures must be sorted by path")
+    if not all(item.startswith("/") for item in paths):  # type: ignore[union-attr]
+        raise ValueError(
+            f"{path}: a departure's path is an RFC 6901 JSON Pointer into `artifacts` "
+            "(it starts with '/')"
+        )
     for row in rows:
         if set(row) != _DEPARTURE_MEMBERS:
             raise ValueError(f"{path}: a departure's members must be {sorted(_DEPARTURE_MEMBERS)}")
@@ -149,11 +156,21 @@ def load_platform_record(path: Path) -> dict[str, Any]:
 
 
 def select_reference(case_path: Path, platform_id: str) -> tuple[Mapping[str, Any], str | None]:
-    """The artifacts to compare against, and the platform id if a per-platform record gave them."""
+    """The artifacts to compare against, and the platform id if a per-platform record gave them.
+    A per-platform record not made against the reference record beside it (its
+    `reference_sha256` is not that record's) is refused with `ValueError`: it is stale, and the
+    comparison never falls back silently (F8-FR, review F8 S5 (a))."""
+    reference = _load(case_path)
     per_platform = platform_record_path(case_path, platform_id)
     if per_platform.is_file():
-        return record_artifacts(load_platform_record(per_platform)), platform_id
-    return record_artifacts(_load(case_path)), None
+        record = load_platform_record(per_platform)
+        if record["reference_sha256"] != record_sha256(reference):
+            raise ValueError(
+                f"{per_platform}: reference_sha256 is not the reference record's: the record is "
+                "stale and is not used (re-make it against the reference record)"
+            )
+        return record_artifacts(record), platform_id
+    return record_artifacts(reference), None
 
 
 def compare_to_reference(
@@ -195,7 +212,37 @@ def invariant_problems(case_path: Path) -> list[str]:
             problems.append(f"{path}: reference_sha256 is not the reference record's")
         if canonical_json(r0_projection(record_artifacts(record))) != reference_r0:
             problems.append(f"{path}: R0 projection differs from the reference record's")
+        for row in record["departures"]:
+            for name, artifacts in (
+                ("reference_value", record_artifacts(reference)),
+                ("platform_value", record_artifacts(record)),
+            ):
+                value = pointer_value(artifacts, row["path"])
+                if not (_real(value) and value == row[name]):
+                    problems.append(
+                        f"{path}: departure {row['path']!r}: the value there is not its {name}"
+                    )
     return problems
+
+
+def pointer_value(artifacts: Mapping[str, Any], pointer: str) -> Any:
+    """The value an RFC 6901 JSON Pointer (a departure's `path`, e.g.
+    `/solution-state.json/values/3`) names in `artifacts`, or `None` when it names nothing."""
+    if not pointer.startswith("/"):
+        return None
+    node: Any = artifacts
+    for token in pointer[1:].split("/"):
+        token = token.replace("~1", "/").replace("~0", "~")
+        if isinstance(node, dict) and token in node:
+            node = node[token]
+        elif isinstance(node, list) and token.isdigit() and str(int(token)) == token:
+            index = int(token)
+            if index >= len(node):
+                return None
+            node = node[index]
+        else:
+            return None
+    return node
 
 
 def all_cases(roots: Iterable[Path]) -> list[Path]:

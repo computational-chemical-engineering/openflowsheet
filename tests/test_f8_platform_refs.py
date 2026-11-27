@@ -11,7 +11,11 @@ Mutation controls (run by hand, not committed; each makes the named tests fail):
 - refusals: `load_platform_record` skips its self-hash check (`test_refusal_bad_self_hash`),
   its file-name check (`test_refusal_file_name_not_the_case`) or its departure value checks
   (`test_refusal_malformed_departure`); `invariant_problems` skips the missing-reference guard
-  (`test_invariant_reports_a_missing_reference_record`).
+  (`test_invariant_reports_a_missing_reference_record`);
+- F8-FR item 6: `select_reference` skips its `reference_sha256` check
+  (`test_selection_refuses_a_stale_per_platform_record`); `invariant_problems` skips the
+  departure values (`test_invariant_reports_swapped_departure_values`,
+  `test_invariant_reports_a_path_that_names_nothing`).
 """
 
 from __future__ import annotations
@@ -86,7 +90,12 @@ def _moved(artifacts: dict[str, Any]) -> tuple[dict[str, Any], str, float, float
         parent = parent[key]
     before = parent[path[-1]]
     parent[path[-1]] = 2.0 * before + 1.0
-    return moved, "solution-state.json/" + "/".join(map(str, path)), before, parent[path[-1]]
+    return moved, _pointer(("solution-state.json", *path)), before, parent[path[-1]]
+
+
+def _pointer(parts: tuple[Any, ...]) -> str:
+    """RFC 6901: the JSON Pointer of `parts` into `artifacts`."""
+    return "".join("/" + str(part).replace("~", "~0").replace("/", "~1") for part in parts)
 
 
 def _write(path: Path, document: Any) -> None:
@@ -155,6 +164,12 @@ def test_platform_ids_and_registered_set() -> None:
     assert current_platform() in set(PLATFORM_IDS.values()) | {None}
 
 
+def test_every_registered_platform_has_an_id() -> None:
+    """Review F8 S5 (c): a registered (machine, system) pair without an id would be dropped from
+    `registered_platform_ids` silently."""
+    assert set(replay.REGISTERED_PLATFORMS) <= set(PLATFORM_IDS)
+
+
 def test_platform_record_path() -> None:
     assert platform_record_path(Path("d/GP-C1.json"), AARCH64) == Path("d/GP-C1.linux-aarch64.json")
 
@@ -187,7 +202,8 @@ def test_selection_reference_platform_uses_the_reference(
     row = _departure(case_path)
     # The one difference is the moved float, at its path, with its value.
     assert len(found) == 1, found
-    assert row["path"].replace("/", ".") in found[0] and repr(row["platform_value"]) in found[0]
+    assert row["path"][1:].replace("/", ".") in found[0]
+    assert repr(row["platform_value"]) in found[0]
     assert notices == []
     assert select_reference(case_path, REFERENCE_PLATFORM)[1] is None
 
@@ -247,6 +263,21 @@ def test_fake_platform_uses_its_record(
     ]
 
 
+def test_selection_refuses_a_stale_per_platform_record(case: tuple[Path, dict[str, Any]]) -> None:
+    """Review F8 S5 (a): a per-platform record made against another reference record than the
+    one beside it is refused, between a re-record and the invariant sweep, not used."""
+    case_path, moved = case
+    document = json.loads(case_path.read_text(encoding="utf-8"))
+    document["case"] = "re-recorded"
+    _write(case_path, document)
+    with pytest.raises(ValueError, match="stale"):
+        select_reference(case_path, AARCH64)
+    with pytest.raises(ValueError, match="stale"):
+        compare_to_reference(case_path, moved, AARCH64, policy_id=V1_POLICY_ID)
+    # The reference platform reads the reference record alone.
+    assert select_reference(case_path, REFERENCE_PLATFORM)[1] is None
+
+
 # --- E-F8-8 invariant --------------------------------------------------------------------------
 
 
@@ -300,6 +331,39 @@ def test_invariant_reports_stale_reference_sha(case: tuple[Path, dict[str, Any]]
     _write(case_path, document)
     problems = invariant_problems(case_path)
     assert len(problems) == 1 and "reference_sha256" in problems[0]
+
+
+def test_invariant_reports_swapped_departure_values(case: tuple[Path, dict[str, Any]]) -> None:
+    """Review F8 S5 (b)(i): the value at a departure's path is its `reference_value` in the
+    reference record and its `platform_value` in the per-platform record. Swapping the two keeps
+    the ratio, so only this check sees it."""
+    case_path, _ = case
+
+    def swap(document: dict[str, Any]) -> None:
+        row = document["departures"][0]
+        before, after = row["reference_value"], row["platform_value"]
+        row["reference_value"], row["platform_value"] = after, before
+
+    _edited(case, swap)
+    problems = invariant_problems(case_path)
+    assert len(problems) == 2, problems
+    assert "not its reference_value" in problems[0] and "not its platform_value" in problems[1]
+
+
+def test_invariant_reports_a_path_that_names_nothing(case: tuple[Path, dict[str, Any]]) -> None:
+    case_path, _ = case
+    _edited(case, lambda d: d["departures"][0].update(path="/solution-state.json/no-such-member"))
+    problems = invariant_problems(case_path)
+    assert len(problems) == 2 and all("the value there is not" in item for item in problems)
+
+
+def test_pointer_value_is_rfc_6901() -> None:
+    artifacts = {"a.json": {"x/y": [1.5, {"m~n": 2.5}], "": 3.5}}
+    assert platform_refs.pointer_value(artifacts, "/a.json/x~1y/0") == 1.5
+    assert platform_refs.pointer_value(artifacts, "/a.json/x~1y/1/m~0n") == 2.5
+    assert platform_refs.pointer_value(artifacts, "/a.json/") == 3.5
+    for pointer in ("a.json/x~1y/0", "/a.json/x~1y/01", "/a.json/x~1y/2", "/a.json/x/y/0", "/b"):
+        assert platform_refs.pointer_value(artifacts, pointer) is None, pointer
 
 
 # --- refusals (spec 4) -------------------------------------------------------------------------
@@ -390,11 +454,17 @@ def test_refusal_empty_departures(case: tuple[Path, dict[str, Any]]) -> None:
 def test_refusal_unsorted_departures(case: tuple[Path, dict[str, Any]]) -> None:
     def edit(document: dict[str, Any]) -> None:
         first = document["departures"][0]
-        second = {**first, "path": "a/" + first["path"]}
+        second = {**first, "path": "/a" + first["path"]}
         document["departures"] = [first, second]
 
     path = _edited(case, edit)
     with pytest.raises(ValueError, match="sorted by path"):
+        load_platform_record(path)
+
+
+def test_refusal_a_path_that_is_not_a_json_pointer(case: tuple[Path, dict[str, Any]]) -> None:
+    path = _edited(case, lambda d: d["departures"][0].update(path=d["departures"][0]["path"][1:]))
+    with pytest.raises(ValueError, match="RFC 6901"):
         load_platform_record(path)
 
 

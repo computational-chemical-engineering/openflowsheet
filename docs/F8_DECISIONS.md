@@ -488,3 +488,19 @@ the working tree, run, and reverted (not committed).
   record an empty usage set, GP-C1 and TH-C1), and the undeclared-use control
   (`test_e_f8_6_a_hidden_resolve_is_extension_use_undeclared`, usage non-empty there) is the evidence. The test
   fails when real v2 runs arrive. E-F8-6 tests: 6 passed. The manifest's E-F8-6 row says so (item 9).
+- **Item 6 (S5). Per-platform records, leftovers (a), (b)(i) and (c) closed; (b)(ii) an obligation.**
+  (a) `select_reference` loads `<case>.json` and refuses (`ValueError`, "stale") a per-platform record whose
+  `reference_sha256` is not that file's `record_sha256`. (b)(i) A departure's `path` is an RFC 6901 JSON Pointer into
+  `artifacts` (`/solution-state.json/...`; `load_platform_record` refuses one not starting with `/`), resolved by
+  `platform_refs.pointer_value`; `invariant_problems` checks that the value there is the row's `reference_value` in
+  the reference record and its `platform_value` in the per-platform record (one problem per side). (c)
+  `test_every_registered_platform_has_an_id`: `set(replay.REGISTERED_PLATFORMS) <= set(PLATFORM_IDS)`. The test
+  helper writes pointers (`_pointer`, `~0`/`~1` escaped). New tests: the stale refusal, swapped departure values,
+  a path naming nothing, the pointer grammar, a non-pointer path refused, (c). `test_f8_platform_refs`: 35 passed.
+  Controls: (a) dropped: `test_selection_refuses_a_stale_per_platform_record` fails (KILLED); the departure-value
+  check dropped: the swapped-values and names-nothing tests fail (KILLED; a swap keeps the ratio, so before this item
+  nothing saw it). No per-platform record exists in the repository (`test_invariant_holds_over_the_repository`: 0
+  cases), so the path format moves no committed byte.
+- **Obligation F8-FR-S5(b)(ii) (for the first real per-platform record, not built now):** the record departs from the
+  reference beyond the policy only at its `departures`; checking it needs the record to name its policy. Recorded in
+  ADR 0067's WO5 row as an edit before acceptance.
