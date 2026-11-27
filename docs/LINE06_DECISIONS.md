@@ -295,3 +295,9 @@ Reversible by: <how>.` Package build decisions go in the package's own file (`do
   for CI, only if the local full gate on 4b820b97 passes." Waiting for the gate (summary
   `~/.cache/line06/f2-j16/gate-4b820b97.summary`); on PASS push exactly 4b820b97 (`git push origin 4b820b97:refs/heads/wp/F2`
   even if wp/F2 has moved), CI waiter, then `executed`.
+- 2026-11-27 **F8-FR0 judged PASS** (wp/F8 merge `b3d73fce` of wp/F2 4b820b97, `00d094c0`; opus-engineer): 8 conflicts
+  kept both sides; D_13 `c11d3877...` -> `3571c5c3f57abe2a...` (strip_f8 = F2's `8eee5313...`, strip_f2 of that =
+  `f7ec3c94...`; only `get_job_result` moves); catalogue `3af0a794`/`bbdcfb51` -> `43687c797072dc45...`;
+  HARVEST_SIZE (110, 1184, 154) measured; F0 PASS; all listed suites 0 failed; v03 reds gone. Orchestrator rerun:
+  surface chain + digest + harvest 57 passed. Leftover (F2 docs, after F2's gate): ADR 0019 Amendment 9 (l.307) and
+  `docs/interfaces-frozen.md:114` still name the old D_11 `9a4b4eb3...`.
