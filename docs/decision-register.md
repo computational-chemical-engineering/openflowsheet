@@ -20551,6 +20551,6 @@ verdict would depend on the project).
 | Affected packages | X06 |
 
 **Decision.** `policy/scales` (registered quantity kind to positive constant) is the one numeric map R-088 Q26 admits
-in the `SolvePolicies` requests, by that full path only; the request's 39 numeric scalars are pinned by full path.
+in the `SolvePolicies` requests, by that full path only; the request's numeric scalars are pinned by full path (40: the ruling counted 39; X06-WO3b DECISION WO3b-1 adds `policy/admissibility_epsilon`, open for the reviewer).
 Precedent: F3's `validate_record` `reactions/*/stoichiometry` (R-1058). Rejected: refusing `scales` in a user policy
 (would change ADR 0078 D4).

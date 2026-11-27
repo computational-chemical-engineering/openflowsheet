@@ -151,3 +151,9 @@ Reversible by: <how>.` Package build decisions go in the package's own file (`do
   solve-policy.json, store never consulted (R-1074); Q26 -> `policy/scales` admitted by full path, 39 scalars pinned
   (R-1075). Both clarify Accepted ADR 0078; no user card (F3's R-1058 form). New find: `is_project_policy_id` needs
   fullmatch. X06-WO3b brief written (docs/briefs/LINE06-X06-WO3b.md), launched on opus-engineer.
+- 2026-11-27: X06-WO3b judged PASS at wp/X06 4ca7ce3c: test_x06_solve_policies 22 passed 0 xfailed; test_t07_q26
+  6 passed (spot-check rerun of both files: 28 passed); bundle gate 63/60/b42b1ec439d1683c unchanged; surface 2619
+  passed, 1 failed (description-review gate, by design), 3 xfailed (pre-existing); ruff, mypy clean; F0 PASS.
+  WO3b-1 (40th scalar `policy/admissibility_epsilon`, the ruling counted 39) goes to X06's reviewer batch; R-1075 text
+  amended to say so. For WO5: E-X06-13 optimize half `not run` (no nlp extra). Code-health item S2: an
+  AttributeError escapes `reproduce` on a named bundle (to file with code_health). X06-WO4 brief written, launched.
