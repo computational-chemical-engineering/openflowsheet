@@ -15,8 +15,9 @@ cover; each test asserts what the code does today and nothing more.
   `_prepare` (unchanged).
 - **U06** — ADR 0008 D1: a time-varying specification is not representable; a profile value or a
   time member is `SCHEMA-01` `INVALID`.
-- **U08** (R-110) — branches: a change set naming one is refused by its schema; in-band policy
-  administration and MCP over HTTP: no operation or route exists (ADR 0019 D4; MCP is stdio).
+- **U08** (R-110) — MCP over HTTP: no `/v1/` operation route serves it (ADR 0019 D4). X06 lifted
+  R-110 for branches (ADR 0078 D2) and in-band policy administration (D5): their U08 tests are
+  gone with the limitation.
 - **U13** — ADR 0006 D1: no mode-B artifact (container, installer, wheelhouse) is tracked.
 - **U14** — no CRAFTS / OpenIDAES-450 comparison is registered or shipped.
 """
@@ -177,11 +178,6 @@ def test_u06_a_time_member_is_a_schema_refusal() -> None:
     document = CORPUS["SYN-001-nominal"]()
     document["specifications"][0]["time"] = {"start": 0.0, "end": 60.0}
     _schema_refusal(document, "time")
-
-
-@pytest.mark.parametrize("name", ["install", "policy", "publish", "set_policy", "register_policy"])
-def test_u08_no_operation_administers_policies(name: str) -> None:
-    assert name not in OPERATIONS
 
 
 def test_u08_mcp_is_not_served_over_http() -> None:

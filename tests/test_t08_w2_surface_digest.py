@@ -83,7 +83,8 @@ before.
 
 **X06 (ADR 0078 D6, ADR 0019 Amendment 18; R-1073) widens it again, additively** — from X06-WO2
 the three tools of the protocol `Branches`, the ChangeSet's optional `branch` member wherever the
-ChangeSet is served, and the `branch` sentence in `commit_change.md` and `preview_change.md` — so
+ChangeSet is served, and the `branch` sentence in `commit_change.md` and `preview_change.md`; from
+X06-WO3 the two tools of `SolvePolicies` and from X06-WO4 the four of `Administration` — so
 the served digest moves to `X06_SERVED_SHA256`. With X06's additions removed and the two texts
 restored from their pre-X06 copies first (`without_x06`, `tests/x06_schema_support.py`) the list
 is F3's served digest `f7ec3c94…` exactly (`test_x06s_surface_move_decomposes_onto_f3s`), and
@@ -168,10 +169,11 @@ F1_SERVED_SHA256 = "e2c44b6b9c2a7f5689ed4f2fd96b6e9804d1a63e60a5c620d29b5b5d594b
 #: items' `at`; C11: the design lane's edits to four texts; `scripts/m07a_rc.py`'s `D_10`).
 #: Without them it is `F1_SERVED_SHA256` (c_10).
 F3_SERVED_SHA256 = "f7ec3c94233d30506ec2082a13c4e54d57bd540e43e97fdf877b1e3c75fed467"
-#: X06 (ADR 0078 D6, R-1073): the served digest with X06-WO2's branches and X06-WO3's solve
-#: policies over F3's list, measured at X06-WO3 on `wp/X06` (`scripts/m07a_rc.py`'s `D_12`).
+#: X06 (ADR 0078 D6, R-1073): the served digest with X06-WO2's branches, X06-WO3's solve
+#: policies and X06-WO4's administration over F3's list, measured at X06-WO4 on `wp/X06`
+#: (`scripts/m07a_rc.py`'s `D_12`; `4a80f77f…` at X06-WO3).
 #: Without them, with the two texts restored, it is `F3_SERVED_SHA256` (c_12 onto c_10 on `wp/X06`).
-X06_SERVED_SHA256 = "4a80f77fae8bc9f387900b2f50cc9524f50bbd31151a05cb1c0080da1927d746"
+X06_SERVED_SHA256 = "d0f0c8b71d30e17cd3296107203a78dfdf235d4133a640de88a487c5a411db9f"
 #: The files N1 and N2 changed; the only difference from `v17-c2`'s served texts.
 CHANGED = ("commit_change", "validate")
 #: Each description's SHA-256 as `v17-c2` served it: the table of
@@ -534,7 +536,8 @@ def test_x06s_surface_move_decomposes_onto_f3s(mcp: ModuleType) -> None:
     """X06 (ADR 0078 D6, R-1073; E-X06-22): the served list is `X06_SERVED_SHA256`; minus X06's
     additions, with its two texts restored, it is F3's (`F3_SERVED_SHA256`, which decomposes onto
     F1's and the earlier lists above). X06-WO2 added the three `Branches` tools after F3's and
-    X06-WO3 the two `SolvePolicies` tools after them, each served from its file; the tools that
+    X06-WO3 the two `SolvePolicies` tools after them and X06-WO4 the four `Administration` tools
+    after those, each served from its file; the tools that
     moved are the two that serve the ChangeSet as a request (`commit_change`, `preview_change`:
     the `branch` member and the text) and `get_job_result` (the optimization report's candidate
     ChangeSet), and nothing else moved."""
@@ -550,9 +553,13 @@ def test_x06s_surface_move_decomposes_onto_f3s(mcp: ModuleType) -> None:
         "delete_branch",
         "register_solve_policy",
         "get_solve_policy",
+        "get_policy",
+        "grant_capability",
+        "revoke_capability",
+        "set_ambient_pressure",
     ]
     assert [t["name"] for t in added] == x06_tools
-    assert names[-5:] == x06_tools
+    assert names[-9:] == x06_tools
     for tool in added:
         assert tool["description"] == (DESCRIPTIONS / f"{tool['name']}.md").read_text("utf-8")
     kept = [t for t in served if t not in added]
