@@ -138,7 +138,9 @@ LIVE = frozenset({"status", "progress", "event_count", "outputs", "ending", "err
 #: `revision_unsupported` (G9: a READY corpus revision always has a route; W3c reaches it only by
 #: replacing `select_route`) and `internal_error` (a defect). Not reachable as the local owner
 #: (§10.2: all rights, no limits): `forbidden`, `unauthenticated`, `limit_exceeded`. MCP has no
-#: raw export, the one `unsupported` a request can reach.
+#: raw export, the one `unsupported` a request could reach before X06-WO3; `get_solve_policy` of
+#: a benchmark-registered name that is not offered (ADR 0078 D4.5, Q6) reaches it on every
+#: transport.
 _COMMON = {
     "invalid_request",
     "document_not_canonical",
@@ -155,8 +157,8 @@ REACHABLE = {
     "cli": _COMMON | {"unsupported"},
     "python-process": _COMMON | _GRANT | {"unsupported"},
     "http": _COMMON | _GRANT | {"unsupported"},
-    "mcp": _COMMON | _GRANT,
-    "mcp-http": _COMMON | _GRANT,
+    "mcp": _COMMON | _GRANT | {"unsupported"},
+    "mcp-http": _COMMON | _GRANT | {"unsupported"},
 }
 pytestmark = pytest.mark.filterwarnings(
     "ignore:Using `httpx` with `starlette.testclient` is deprecated"
