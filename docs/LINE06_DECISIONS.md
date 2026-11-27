@@ -342,3 +342,5 @@ Reversible by: <how>.` Package build decisions go in the package's own file (`do
   Noted: ADR 0019 Amendment 9 heading "Proposed" on wp/F2 although ADR 0062 Accepted; to ask on the F2 merge card.
 - 2026-11-27 F2 gate PASS at `80cdcfb3` (21725 passed, 107 skipped, 3 xfailed, 1:31:27); pushed `4b820b97..80cdcfb3`
   to origin wp/F2; CI waiter log `~/.cache/line06/ci/f2-80cdcfb3.log`.
+- 2026-11-27 X06 gate PASS at `73b3a83d` (21303 passed, 107 skipped, 3 xfailed, 1:31:00); pushed `a514896c..73b3a83d`
+  to origin wp/X06; CI waiter log `~/.cache/line06/ci/x06-73b3a83d.log`.

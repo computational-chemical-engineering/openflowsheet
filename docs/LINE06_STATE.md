@@ -21,9 +21,8 @@ the ADR acceptances of card `ofs-line06-adr-clause`; X06's exits.
   `d0bc2996`; touched tests 219 passed; full gate running (worktree `.claude/worktrees/f8-gate`, PID
   `~/.cache/line06/f8-ci1/gate.pid`, summary `~/.cache/line06/f8-ci1/gate-d0bc2996.summary`). Merges after F2.
 - **X06** (ADR 0078 Accepted): CI at origin `a514896c` FAILED only `default-install` (run 46014554722; all check legs,
-  identity green): `mcp_http` missing from the isolation test's server-extra list. Fix X06-CI2 on local wp/X06
-  `73b3a83d`; full gate running (worktree `.claude/worktrees/x06-gate`, PID `~/.cache/line06/x06-ci2/gate.pid`,
-  summary `~/.cache/line06/x06-ci2/gate-73b3a83d.summary`).
+  identity green): `mcp_http` missing from the isolation test's server-extra list. Fix X06-CI2 at `73b3a83d`: gate PASS 21303
+  passed, pushed to origin wp/X06, CI running.
 - `release/lines/0.6.json` DRAFT (LINE06-L0); release campaign not started.
 
 ## Order and gates (pass criteria fixed before the run; the orchestrator judges each, a miss is recorded as a miss)
@@ -51,10 +50,9 @@ Background jobs (they survive the reset; their notices arrive in the new context
 1. **F2 CI waiter** at `80cdcfb3` (gate PASS 21725 passed; pushed), log `~/.cache/line06/ci/f2-80cdcfb3.log`. On all
    legs green: F2 merge card (A: "Merge wp/F2 at 80cdcfb3 into main with a merge commit, marking ADR 0019 Amendment 9
    Accepted with ADR 0062 in the merge commit, run F0 on main, push main." B: "Do not merge F2 yet."). On failure: fix.
-2. **X06 gate at 73b3a83d** (X06-CI2). On `GATE PASS`: push `73b3a83d:refs/heads/wp/X06` (same command form as F2),
-   CI waiter (log `~/.cache/line06/ci/x06-73b3a83d.log`), remove the gate worktree. On all legs green: X06 merge card
-   (A: "Merge wp/X06 at 73b3a83d into main with a merge commit, run F0 on main, push main." B: "Do not merge X06
-   yet."); mention DECISION X06-CI1-1 on it for design-lane notice.
+2. **X06 CI waiter** at `73b3a83d` (gate PASS 21303 passed; pushed), log `~/.cache/line06/ci/x06-73b3a83d.log`. On
+   all legs green: X06 merge card (A: "Merge wp/X06 at 73b3a83d into main with a merge commit, run F0 on main, push
+   main." B: "Do not merge X06 yet."); mention DECISION X06-CI1-1 on it for design-lane notice.
 3. **F8 gate at d0bc2996** (F8-CI1). On `GATE PASS`: push `d0bc2996:refs/heads/wp/F8` (orchestrator's push), CI
    waiter (log `~/.cache/line06/ci/f8-d0bc2996.log`), remove the gate worktree. F8 merges after F2.
 
