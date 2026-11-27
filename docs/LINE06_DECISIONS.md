@@ -277,3 +277,7 @@ Reversible by: <how>.` Package build decisions go in the package's own file (`do
   (`scripts/gate.sh`) and `codehealth diff --base origin/main` pass on its head.** Reason: gate-by-risk let 11 reds
   through to a 2.5 h four-leg CI run. Alternative: per-risk only (the rule as written). Reversible by: dropping the
   step; it costs compute, not tokens.
+- 2026-11-27 Card `ofs-f2-accept-adr0062` (v2, choice A) **VERIFIED** (signed 11:12:54Z, key 032ee0a5ae620a90). Plan:
+  when the local gate on 6913c4a0 ends PASS, push wp/F2 at exactly 6913c4a0, start the CI waiter, then commit ADR 0062
+  Status Accepted on wp/F2 (local, docs only, after the pushed head), then write `executed`. If the gate fails: no
+  push; report to hub; `executed` records the partial result.
