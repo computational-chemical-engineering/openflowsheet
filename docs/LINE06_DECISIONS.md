@@ -356,3 +356,13 @@ Reversible by: <how>.` Package build decisions go in the package's own file (`do
   Alternative: wait for the sign-off. Reversible by: `git -C .claude/worktrees/x06 reset --hard 73b3a83d` (local only).
   Brief `docs/briefs/LINE06-X06-FR0.md`; opus-engineer. Chain order note: c_13 (F8) decomposes onto c_12 (X06) only
   if X06 merges before F8; otherwise renumber at the later merge.
+- 2026-11-27 **X06-FR0 judged PASS** (wp/X06 merge `1e340ac4` of wp/F2 80cdcfb3, + `9f020edd` decisions; opus-engineer,
+  ~187k tokens, 28 min): 17 conflicts kept both sides; D_12 `7792576e...` -> `ba4b5ce59af4ac4c...` (strip_x06 = F2's
+  `8eee5313...`, strip_f2 of that = `f7ec3c94...`); catalogue fixtures (X06 `0be6166f`, F2 `3af0a794`) -> `41dc5421...`
+  (464 entries); HARVEST_SIZE (110, 1184, 152) measured; runner.py: F2's `lowered_document` line moved into X06's
+  `_Body._resolve`; F0 PASS; all listed groups 0 failed. Orchestrator rerun: surface chain + surface digest 53 passed.
+  Full gate on 9f020edd started in detached worktree `.claude/worktrees/x06-gate` (PID 512899, summary
+  `~/.cache/line06/x06-gate/gate-9f020edd.summary`).
+- 2026-11-27 **F8 CI FAILED** at `d0bc2996` (run 46047518103): only Windows, 4 of 18445 (test-side `str(relative_to)`
+  artifact names). Fix F8-CI2 by the orchestrator on wp/F8 `50b3af17` (DECISION F8-CI2-1; two files 91 passed).
+  Not pushed: F8 next merges main after F2 and X06 (chain c_13 onto X06's c_12), then gate, push, CI.

@@ -43,7 +43,7 @@ the ADR acceptances of card `ofs-line06-adr-clause`; X06's exits.
 Parallelism: at most two agents. F2 first; D1 runs beside F2 once the X06 scope card is answered; F8-WO1 can start
 once F2-WO4 is on wp/F2 (F8 branches from wp/F2's head, merges after F2).
 
-## Next action (2026-11-27 14:20, written for a self-reset; NO agent of this session is running)
+## Next action (2026-11-27 21:40; NO agent of this session is running)
 
 Background jobs (they survive the reset; their notices arrive in the new context):
 1. **F2 CI GREEN** at `80cdcfb3` (run 46041020889, all legs; codehealth informational). Merge card `ofs-f2-merge`
@@ -53,14 +53,14 @@ Background jobs (they survive the reset; their notices arrive in the new context
    C: "Do not merge F2 yet; nothing is pushed." Hub rings on sign-off. (Former waiter text:) F2 CI waiter at `80cdcfb3` (gate PASS 21725 passed; pushed), log `~/.cache/line06/ci/f2-80cdcfb3.log`. On all
    legs green: F2 merge card (A: "Merge wp/F2 at 80cdcfb3 into main with a merge commit, marking ADR 0019 Amendment 9
    Accepted with ADR 0062 in the merge commit, run F0 on main, push main." B: "Do not merge F2 yet."). On failure: fix.
-2. **X06 CI GREEN** at `73b3a83d` (run 46044426797, all legs). **X06-FR0 running** (opus-engineer, background, worktree
-   x06, brief `docs/briefs/LINE06-X06-FR0.md`): merge wp/F2 80cdcfb3 into wp/X06, re-chain c_12 onto F2's D_11.
-   On its report: judge on the brief's acceptance, then full gate in a detached worktree, push, CI, X06 merge card
-   (after F2's merge; merge main into wp/X06 first). (Former waiter text:) X06 CI waiter at `73b3a83d` (gate PASS 21303 passed; pushed), log `~/.cache/line06/ci/x06-73b3a83d.log`. On
-   all legs green: X06 merge card (A: "Merge wp/X06 at 73b3a83d into main with a merge commit, run F0 on main, push
-   main." B: "Do not merge X06 yet."); mention DECISION X06-CI1-1 on it for design-lane notice.
-3. **F8 CI waiter** at `d0bc2996` (gate PASS 21895 passed; pushed), log `~/.cache/line06/ci/f8-d0bc2996.log`. On
-   green: F8 waits for F2's merge (then merges main into wp/F8, gate, push, CI, merge card). On failure: fix.
+2. **X06**: CI green at 73b3a83d; X06-FR0 PASS (wp/X06 `9f020edd` = merge of wp/F2 80cdcfb3; D_12 `ba4b5ce5...`
+   onto F2's D_11). **Full gate running** on 9f020edd in detached worktree `.claude/worktrees/x06-gate`, PID 512899
+   (setsid), summary `~/.cache/line06/x06-gate/gate-9f020edd.summary`, log `.../gate-9f020edd.log`. A waiter prints it; else check
+   the summary file on wake (about 21:35 + 1.5 h). On PASS and after F2's merge into main: merge main into wp/X06
+   (expect trivial: F2 already in), push wp/X06, CI waiter, X06 merge card. On FAIL: grep the log, fix.
+3. **F8**: CI at d0bc2996 FAILED only Windows 4 tests (test-side path spelling); fixed F8-CI2 on local wp/F8 `50b3af17`,
+   not pushed. F8 merges after F2 and X06: then merge main into wp/F8 (re-chain c_13 onto X06's c_12, an
+   opus-engineer work order like X06-FR0), gate, push, CI, merge card.
 
 Open item for the F2 merge card: ADR 0019 Amendment 9's heading still says "Proposed 2026-11-27" on wp/F2 while ADR
 0062 is Accepted; whether card `ofs-f2-accept-adr0062` covered it is not recorded. Ask on the F2 merge card (option
