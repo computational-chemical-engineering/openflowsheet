@@ -3,8 +3,9 @@ only).
 
 `raise_v1` inverts `lower`'s field map: each component id becomes `{id, record}` with the SHA of
 its legacy record in `component_set.record_source` (the committed legacy index; ADR 0061 D12), and
-`parameter_sets` is empty; `convention` is the native convention of the provider ADR 0050 D1
-assigns to that file and `property_methods` is `{default: that provider, overrides: []}`;
+`parameter_sets` lists that file's legacy parameter-set records (`file_parameter_sets`);
+`convention` is the native convention of the provider ADR 0050 D1 assigns to that file and
+`property_methods` is `{default: that provider, overrides: []}`;
 `materials` is `{thermal_coordinate: T, definitions: []}` (D11: `T` admits `nTP-v1` and legacy
 units), with no reaction set and no section; a connection's `state_definition` and
 `component_mapping` become `definition: nTP-v1`. A stated `content_hash` is recomputed for the v2
@@ -23,6 +24,7 @@ from openflowsheet.material.definitions import LEGACY_TEMPLATE
 from openflowsheet.revision_v2.canonical import content_hash
 from openflowsheet.revision_v2.lower import (
     LegacyProviders,
+    file_parameter_sets,
     legacy_records,
 )
 
@@ -78,7 +80,10 @@ def raise_v1(document: Mapping[str, Any], providers: LegacyProviders) -> dict[st
         if key in document:
             raised[key] = document[key]
     raised["convention"] = provider.convention
-    raised["component_set"] = {"components": components, "parameter_sets": []}
+    raised["component_set"] = {
+        "components": components,
+        "parameter_sets": list(file_parameter_sets(source)),
+    }
     raised["materials"] = {"thermal_coordinate": THERMAL_COORDINATE, "definitions": []}
     raised["reaction_sets"] = []
     raised["property_methods"] = {"default": provider.provider, "overrides": []}

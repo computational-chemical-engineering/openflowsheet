@@ -35,6 +35,7 @@ from openflowsheet.revision_v2.lower import (
     LegacyProviders,
     LoweringError,
     file_components,
+    file_parameter_sets,
     legacy_records,
     lower,
 )
@@ -386,10 +387,58 @@ def test_refused_phase_assertion() -> None:
     assert _refusals(document) == _unavailable((f"phase_assertion:{connection['id']}", "F5"))
 
 
-def test_refused_parameter_sets() -> None:
+#: The legacy index's one parameter-set record of `benchmarks/s10/records.yaml` (ADR 0061 D12).
+S10_SET = "S10-wilson-ig-real-v1"
+
+
+def _s10_set() -> str:
+    from openflowsheet.records.importers.legacy import committed_index  # noqa: PLC0415
+
+    (entry,) = (e for e in committed_index()["files"] if e["path"] == "benchmarks/s10/records.yaml")
+    (record,) = (r for r in entry["records"] if r["record_type"] == "parameter_set")
+    assert record["id"] == S10_SET
+    return str(record["sha256"])
+
+
+def test_raised_s10_document_states_the_file_parameter_set() -> None:
+    """F2-R1: a raised `s10` document states the one parameter set its Wilson run reads; the
+    raised SYN-001 base states none (its file has none)."""
+    assert _raised("GP-C1")["component_set"]["parameter_sets"] == [_s10_set()]
+    assert file_parameter_sets("benchmarks/s10/records.yaml") == (_s10_set(),)
+    assert _raised()["component_set"]["parameter_sets"] == []
+    assert file_parameter_sets("benchmarks/syn001/components.yaml") == ()
+
+
+def test_refused_parameter_sets_other_than_the_file() -> None:
+    """F2-R1: `parameter_sets` must be the file's legacy parameter-set records, no more, no less."""
+    gp = _raised("GP-C1")
+    gp["component_set"]["parameter_sets"] = []
+    assert _refusals(gp) == _unavailable(("parameter_sets", "F4"))
+    for stated in ([_s10_set()], ["0" * 64]):
+        document = _raised()
+        document["component_set"]["parameter_sets"] = stated
+        assert _refusals(document) == _unavailable(("parameter_sets", "F4"))
+
+
+def test_parameter_sets_are_not_checked_for_two_files() -> None:
+    """F2-R1 / WO4-6: with records of two files, only the component refusals."""
     document = _raised()
-    document["component_set"]["parameter_sets"] = ["0" * 64]
-    assert _refusals(document) == _unavailable(("parameter_sets", "F4"))
+    document["component_set"]["parameter_sets"] = [_s10_set()]
+    water = next(
+        sha
+        for sha, record in legacy_records().items()
+        if record == ("benchmarks/s05/components.yaml", "H2O")
+    )
+    document["component_set"]["components"].append({"id": "H2O", "record": water})
+    assert _refusals(document) == _unavailable(("component_set", "F4"))
+
+
+def test_refused_thermal_coordinate_other_than_t() -> None:
+    """F2-R1, D12 (b): `h_mass` is refused by lowering itself (the binder lowers without
+    `validate`)."""
+    document = _raised()
+    document["materials"]["thermal_coordinate"] = "h_mass"
+    assert _refusals(document) == _unavailable(("thermal_coordinate:h_mass", "F6"))
 
 
 def test_materials_are_dropped_whatever_they_hold() -> None:
