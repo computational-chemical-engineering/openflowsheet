@@ -139,3 +139,11 @@ Reversible by: <how>.` Package build decisions go in the package's own file (`do
   M6 85/85, M7 52/52, M8 105/105, M9 42/42). X06-WO3 launched (opus-engineer, brief docs/briefs/LINE06-X06-WO3.md).
 - 2026-11-27: F2-WO3 judged PASS at wp/F2 41177bcf: battery 5070 passed, 28 skipped, 3 xfailed, 0 failed; F0 PASS
   (M1 50/50 ... M9 42/42, unchanged). F2-WO4 launched (opus-engineer, docs/briefs/LINE06-F2-WO4.md).
+- 2026-11-27: X06-WO3 judged MISS on two acceptance items, both correctly stopped (no check relaxed): E-X06-13
+  (xfail strict: `run.bundle._cross_check_solve_path` resolves `policy_requested` by name, Q7) and
+  `test_t07_q26_no_external_state` (`register_solve_policy` `policy/scales` numeric map, no R-088 Q26 exception).
+  Rest: E-X06-11, -12, -14, -15, -22 pass (17 passed, 1 xfailed); surface battery 2696 passed / 5 failed at 7dd78915,
+  3 fixed in 6562cc1a; description-review gate red by design (7 texts); ruff, mypy clean; F0 PASS at 7dd78915.
+  Head wp/X06 c526de6a. Both touch replay identity / an R-088 exception, so not batched:
+  DECISION: one fresh `architect` pass for both rulings now (brief docs/briefs/LINE06-X06-R1.md), then a small fix
+  WO; X06-WO4 waits for it. Alternative: batch into X06's reviewer pass. Reversible by: none needed (advice only).
