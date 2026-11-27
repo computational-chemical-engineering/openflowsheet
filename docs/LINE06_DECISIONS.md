@@ -263,3 +263,10 @@ Reversible by: <how>.` Package build decisions go in the package's own file (`do
   PASS. R3: `r0_projection` is correct (last-event `residual_calls`, `jacobian_calls`, `factorizations` +1 each move
   R0 on GP-C1; event 0 and property counters do not); no finding. R4: a v2-policy selection test added. For the F8
   reviewer: selection does not re-check `reference_sha256`; departures' values are not checked against the records.
+- 2026-11-27 **F8 close-out judged PASS after an orchestrator fix** (wp/F8 `5406f812`): Amendment 12 pointer
+  (`32981fb3`), manifest `evidence/F8/32981fb3.../manifest.json` tested (`2c0aed2e`); F0 PASS; f8 122, k05 30, x07a
+  18, t07_w5e 39, msg 186 + 3 xfailed. STOP F8-CO-3 (harvest pin; brief forbade tests/) resolved by the orchestrator:
+  7 P rows, `HARVEST_SIZE` (109, 1180, 150), DECISION F8-CO-4 (717 passed, 19 skipped). Found: `test_j16` red on
+  wp/F2 (green on main): F2-WO4's flow-style fixtures; fixed on wp/F2 `6913c4a0` (DECISION F2-J16; F0 PASS). Hub
+  amended card `ofs-f2-accept-adr0062` (v2): push wp/F2 at 6913c4a0 only if the local gate on it passes. Full local
+  gate on 6913c4a0 started (log `~/.cache/line06/f2-j16/gate-6913c4a0.log`). F8 reviewer brief `docs/briefs/F8-reviewer.md`.
