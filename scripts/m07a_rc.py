@@ -84,6 +84,15 @@ function, a registered digest and Frank's carry extended to name it):
   `without_f2`; `D_11` = `9a4b4eb3…`, measured at F2-WO2b on `wp/F2`
   (`tests/test_t08_w2_surface_digest.py`'s `F2_SERVED_SHA256`). F2 adds no tool and changes no
   description text, so item 4 is unchanged by it.
+- c_13, R-1076 (ADR 0067 D5, ADR 0019 Amendment 12): F8's replay-report additions, the reserved
+  mode `forced_replay` and the two optional members `registry_comparison` and
+  `data_availability`, served in `get_job_result`'s `outputSchema` (D3's artifact kinds move only
+  R4-G3 snapshots: MCP serves the kind enum opened), stripped by `tests/f8_schema_support.py`'s
+  `without_f8`; `D_13` = `c11d3877…`, measured at F8-WO1b on `wp/F8`
+  (`tests/test_t08_w2_surface_digest.py`'s `F8_SERVED_SHA256`). On `wp/F8`, which branches from
+  `wp/F2`, it decomposes onto F2's c_11 (X06's c_12 is not on the branch; R-1072's merge-order
+  rule renumbers the links when the branches merge). F8 adds no tool and changes no description
+  text, so item 4 is unchanged by it.
 
 The released 0.2.0a1 ran the two-link chain (its committed record at `C_α²`); a re-run of the
 alpha's step 8 uses this script at the tag.
@@ -311,6 +320,17 @@ def strip_f2(tools: Tools) -> Tools:
     return stripped
 
 
+def strip_f8(tools: Tools) -> Tools:
+    """s_13 (R-1076): `tools` without F8's replay-report mode and members
+    (`f8_schema_support.without_f8`)."""
+    t08_rc._tests_on_path()
+    from f8_schema_support import without_f8  # noqa: PLC0415
+
+    stripped = without_f8(copy.deepcopy(tools))
+    assert isinstance(stripped, list)
+    return stripped
+
+
 @dataclass(frozen=True)
 class Link:
     """One registered surface change c_k: its register entry, its strip function s_k, and the
@@ -388,6 +408,12 @@ LINKS: Final = (
         "R-1072",
         strip_f2,
         "9a4b4eb3bd9f28e68e25828d8796bec73e8feb49aa6e12b80df0d43f990442a1",
+    ),
+    Link(
+        "c_13",
+        "R-1076",
+        strip_f8,
+        "c11d38778d2f8aba8240a6a2b5ee9d9e1e7b93c5c6fae4cc40ca82177cb50ddd",
     ),
 )
 
@@ -478,7 +504,8 @@ def texts_before_links(texts: Mapping[str, str]) -> dict[str, str]:
     c_6's two files (OPT) in their pre-OPT form and c_8's two (X04) in their pre-X04 form. The
     other links changed no existing text (MSG's c_4 added `explain.md`, ST's c_7
     `get_stream_table.md`, F1's c_9 `list_capabilities.md` and `check_admission.md`, F3's c_10
-    five `Records` files, each pinned at its own hash; F2's c_11 changed no file and added none)."""
+    five `Records` files, each pinned at its own hash; F2's c_11 and F8's c_13 changed no file and
+    added none)."""
     t08_rc._tests_on_path()
     from opt_schema_support import OPT_DESCRIPTIONS, pre_opt_text  # noqa: PLC0415
     from x04_schema_support import X04_DESCRIPTIONS, pre_x04_text  # noqa: PLC0415

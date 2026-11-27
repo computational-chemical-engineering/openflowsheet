@@ -42,7 +42,7 @@ ALPHA_SURFACE = (
     REPO_ROOT / "evidence" / "M07a" / C_ALPHA_2 / "rc" / "surface" / "rc-alpha-surface.json"
 )
 REGISTER = REPO_ROOT / "docs" / "decision-register.md"
-L0, L1, L2, L3, L4, L5, L6, L7, L8, L9, L10 = m07a_rc.LINKS
+L0, L1, L2, L3, L4, L5, L6, L7, L8, L9, L10, L11 = m07a_rc.LINKS
 
 
 @pytest.fixture
@@ -59,7 +59,8 @@ def assert_the_unmodified_list_passes(served: list[dict[str, Any]]) -> None:
 def test_m07a_a37_the_chain_holds_on_the_served_list(served: list[dict[str, Any]]) -> None:
     rows = m07a_rc.chain(served)
     assert [(r["item"], r["link"]) for r in rows] == [
-        (1, "c_11"),
+        (1, "c_13"),
+        (2, "c_13"),
         (2, "c_11"),
         (2, "c_10"),
         (2, "c_9"),
@@ -96,8 +97,8 @@ def test_m07a_a37_control_i_a_member_added_to_another_tools_output_schema(
     (tool,) = [t for t in served if t["name"] == "get_project"]
     tool["outputSchema"]["properties"]["probe"] = {"type": "string"}
     rows = m07a_rc.chain(served)
-    assert m07a_rc.first_failure(rows) == "c_11 (R-1072)"
-    assert [r["pass"] for r in rows[:10]] == [False] * 10
+    assert m07a_rc.first_failure(rows) == "c_13 (R-1076)"
+    assert [r["pass"] for r in rows[:11]] == [False] * 11
 
 
 def one_member_too_many(strip: Any) -> Any:
@@ -129,9 +130,10 @@ def test_m07a_a37_control_ii_s_m_strips_one_member_too_many(
         L8,
         L9,
         L10,
+        L11,
     )
     rows = m07a_rc.chain(served, links)
-    assert all(row["pass"] for row in rows[:9])
+    assert all(row["pass"] for row in rows[:10])
     assert m07a_rc.first_failure(rows) == "c_3 (R-295)"
 
 
@@ -152,9 +154,10 @@ def test_m07a_a37_control_ii_prime_an_inner_link_strips_one_member_too_many(
         L8,
         L9,
         L10,
+        L11,
     )
     rows = m07a_rc.chain(served, links)
-    assert all(row["pass"] for row in rows[:10])
+    assert all(row["pass"] for row in rows[:11])
     assert m07a_rc.first_failure(rows) == "c_2 (R-234)"
 
 
@@ -170,10 +173,10 @@ def test_m07a_a37_control_iv_elements_left_in_place(served: list[dict[str, Any]]
     assert_the_unmodified_list_passes(served)
     links = (
         m07a_rc.Link("c_1", "R-192", lambda tools: tools, L0.digest),
-        *(L1, L2, L3, L4, L5, L6, L7, L8, L9, L10),
+        *(L1, L2, L3, L4, L5, L6, L7, L8, L9, L10, L11),
     )
     rows = m07a_rc.chain(served, links)
-    assert [r["pass"] for r in rows[:11]] == [True] * 11
+    assert [r["pass"] for r in rows[:12]] == [True] * 12
     assert m07a_rc.first_failure(rows) == "c_1 (R-192)"
 
 
@@ -277,10 +280,10 @@ def test_msg_g10_control_c_4_left_in_place(served: list[dict[str, Any]]) -> None
     links = (
         *(L0, L1, L2),
         m07a_rc.Link("c_4", "R-934", lambda tools: tools, L3.digest),
-        *(L4, L5, L6, L7, L8, L9, L10),
+        *(L4, L5, L6, L7, L8, L9, L10, L11),
     )
     rows = m07a_rc.chain(served, links)
-    assert all(row["pass"] for row in rows[:8])
+    assert all(row["pass"] for row in rows[:9])
     assert m07a_rc.first_failure(rows) == "c_4 (R-934)"
 
 
@@ -306,10 +309,10 @@ def test_x02_control_c_5_left_in_place(served: list[dict[str, Any]]) -> None:
     links = (
         *(L0, L1, L2, L3),
         m07a_rc.Link("c_5", "R-950", lambda tools: tools, L4.digest),
-        *(L5, L6, L7, L8, L9, L10),
+        *(L5, L6, L7, L8, L9, L10, L11),
     )
     rows = m07a_rc.chain(served, links)
-    assert all(row["pass"] for row in rows[:7])
+    assert all(row["pass"] for row in rows[:8])
     assert m07a_rc.first_failure(rows) == "c_5 (R-950)"
 
 
@@ -336,7 +339,7 @@ def test_opt_control_c_6_left_in_place(served: list[dict[str, Any]]) -> None:
     links = (
         *(L0, L1, L2, L3, L4),
         m07a_rc.Link("c_6", "R-960", lambda tools: tools, L5.digest),
-        *(L6, L7, L8, L9, L10),
+        *(L6, L7, L8, L9, L10, L11),
     )
     rows = m07a_rc.chain(served, links)
     assert all(row["pass"] for row in rows[:3])
@@ -364,6 +367,7 @@ def test_opt_control_c_6_restores_the_texts_only_with_the_strip(
         L8,
         L9,
         L10,
+        L11,
     )
     rows = m07a_rc.chain(served, links)
     assert all(row["pass"] for row in rows[:3])
@@ -382,8 +386,8 @@ def test_st_g12_link_c_7_is_sts_strip_and_digest(served: list[dict[str, Any]]) -
 
     assert m07a_rc.strip_st(served) == without_st(copy.deepcopy(served))
     assert L6.digest == surface.ST_SERVED_SHA256
-    # X04's c_8, F1's c_9, F3's c_10 and F2's c_11 postdate ST
-    before_f2 = m07a_rc.strip_f2(served)
+    # X04's c_8, F1's c_9, F3's c_10, F2's c_11 and F8's c_13 postdate ST
+    before_f2 = m07a_rc.strip_f2(m07a_rc.strip_f8(served))
     before_x04 = m07a_rc.strip_x04(m07a_rc.strip_f1(m07a_rc.strip_f3(before_f2)))
     assert m07a_rc.digest(m07a_rc.strip_st(before_x04)) == L5.digest == surface.OPT_SERVED_SHA256
     register = REGISTER.read_text(encoding="utf-8")
@@ -417,6 +421,7 @@ def test_st_g12_control_c_7_left_in_place(served: list[dict[str, Any]]) -> None:
         L8,
         L9,
         L10,
+        L11,
     )
     rows = m07a_rc.chain(served, links)
     assert rows[0]["pass"] and rows[1]["pass"]
@@ -430,8 +435,8 @@ def test_x04_link_c_8_is_x04s_strip_and_digest(served: list[dict[str, Any]]) -> 
     import test_t08_w2_surface_digest as surface
     from x04_schema_support import without_x04
 
-    # F1's c_9, F3's c_10 and F2's c_11 postdate X04
-    before_f1 = m07a_rc.strip_f1(m07a_rc.strip_f3(m07a_rc.strip_f2(served)))
+    # F1's c_9, F3's c_10, F2's c_11 and F8's c_13 postdate X04
+    before_f1 = m07a_rc.strip_f1(m07a_rc.strip_f3(m07a_rc.strip_f2(m07a_rc.strip_f8(served))))
     assert m07a_rc.strip_x04(before_f1) == without_x04(copy.deepcopy(before_f1))
     assert L7.digest == surface.X04_SERVED_SHA256
     assert m07a_rc.digest(m07a_rc.strip_x04(before_f1)) == L6.digest == surface.ST_SERVED_SHA256
@@ -469,6 +474,7 @@ def test_x04_control_c_8_left_in_place(served: list[dict[str, Any]]) -> None:
         L8,
         L9,
         L10,
+        L11,
     )
     rows = m07a_rc.chain(served, links)
     assert rows[0]["pass"]
@@ -484,7 +490,14 @@ def test_x04_control_c_8_restores_the_texts_only_with_the_strip(
     from x04_schema_support import X04_DESCRIPTIONS, _without
 
     assert_the_unmodified_list_passes(served)
-    links = (*m07a_rc.LINKS[:7], m07a_rc.Link("c_8", "R-1010", _without, L7.digest), L8, L9, L10)
+    links = (
+        *m07a_rc.LINKS[:7],
+        m07a_rc.Link("c_8", "R-1010", _without, L7.digest),
+        L8,
+        L9,
+        L10,
+        L11,
+    )
     rows = m07a_rc.chain(served, links)
     assert rows[0]["pass"]
     assert m07a_rc.first_failure(rows) == "c_8 (R-1010)"
@@ -500,7 +513,8 @@ def test_f1_link_c_9_is_f1s_strip_and_digest(served: list[dict[str, Any]]) -> No
     import test_t08_w2_surface_digest as surface
     from f1_schema_support import without_f1
 
-    before_f3 = m07a_rc.strip_f3(m07a_rc.strip_f2(served))  # F3's c_10, F2's c_11 postdate F1
+    # F3's c_10, F2's c_11 and F8's c_13 postdate F1
+    before_f3 = m07a_rc.strip_f3(m07a_rc.strip_f2(m07a_rc.strip_f8(served)))
     assert m07a_rc.strip_f1(before_f3) == without_f1(copy.deepcopy(before_f3))
     assert L8.digest == surface.F1_SERVED_SHA256 == m07a_rc.digest(before_f3)
     assert m07a_rc.digest(m07a_rc.strip_f1(before_f3)) == L7.digest == surface.X04_SERVED_SHA256
@@ -532,6 +546,7 @@ def test_f1_control_c_9_left_in_place(served: list[dict[str, Any]]) -> None:
         m07a_rc.Link("c_9", "R-1030", lambda tools: tools, L8.digest),
         L9,
         L10,
+        L11,
     )
     rows = m07a_rc.chain(served, links)
     assert rows[0]["pass"]
@@ -545,7 +560,7 @@ def test_f3_link_c_10_is_f3s_strip_and_digest(served: list[dict[str, Any]]) -> N
     import test_t08_w2_surface_digest as surface
     from f3_schema_support import without_f3
 
-    before_f2 = m07a_rc.strip_f2(served)  # F2's c_11 postdates F3
+    before_f2 = m07a_rc.strip_f2(m07a_rc.strip_f8(served))  # c_11, c_13 postdate F3
     assert m07a_rc.strip_f3(before_f2) == without_f3(copy.deepcopy(before_f2))
     assert L9.digest == surface.F3_SERVED_SHA256 == m07a_rc.digest(before_f2)
     assert m07a_rc.digest(m07a_rc.strip_f3(before_f2)) == L8.digest == surface.F1_SERVED_SHA256
@@ -576,6 +591,7 @@ def test_f3_control_c_10_left_in_place(served: list[dict[str, Any]]) -> None:
         *m07a_rc.LINKS[:9],
         m07a_rc.Link("c_10", "R-1051", lambda tools: tools, L9.digest),
         L10,
+        L11,
     )
     rows = m07a_rc.chain(served, links)
     assert rows[0]["pass"]
@@ -589,9 +605,10 @@ def test_f2_link_c_11_is_f2s_strip_and_digest(served: list[dict[str, Any]]) -> N
     import test_t08_w2_surface_digest as surface
     from f2_schema_support import without_f2
 
-    assert m07a_rc.strip_f2(served) == without_f2(copy.deepcopy(served))
-    assert L10.digest == surface.F2_SERVED_SHA256 == m07a_rc.digest(served)
-    assert m07a_rc.digest(m07a_rc.strip_f2(served)) == L9.digest == surface.F3_SERVED_SHA256
+    before_f8 = m07a_rc.strip_f8(served)  # F8's c_13 postdates F2
+    assert m07a_rc.strip_f2(before_f8) == without_f2(copy.deepcopy(before_f8))
+    assert L10.digest == surface.F2_SERVED_SHA256 == m07a_rc.digest(before_f8)
+    assert m07a_rc.digest(m07a_rc.strip_f2(before_f8)) == L9.digest == surface.F3_SERVED_SHA256
     register = REGISTER.read_text(encoding="utf-8")
     start = register.index("\n## R-1072")
     end = register.find("\n## R-", start + 1)
@@ -602,7 +619,39 @@ def test_f2_link_c_11_is_f2s_strip_and_digest(served: list[dict[str, Any]]) -> N
 def test_f2_control_c_11_left_in_place(served: list[dict[str, Any]]) -> None:
     """A c_11 whose strip takes nothing out fails at c_11: F2's kinds reach F3's digest."""
     assert_the_unmodified_list_passes(served)
-    links = (*m07a_rc.LINKS[:10], m07a_rc.Link("c_11", "R-1072", lambda tools: tools, L10.digest))
+    links = (
+        *m07a_rc.LINKS[:10],
+        m07a_rc.Link("c_11", "R-1072", lambda tools: tools, L10.digest),
+        L11,
+    )
     rows = m07a_rc.chain(served, links)
     assert rows[0]["pass"]
     assert m07a_rc.first_failure(rows) == "c_11 (R-1072)"
+
+
+def test_f8_link_c_13_is_f8s_strip_and_digest(served: list[dict[str, Any]]) -> None:
+    """c_13 (R-1076, ADR 0067 D5, ADR 0019 Amendment 12): `without_f8` is the strip, `D_13` the
+    served digest the surface-digest test registers (F8-WO1b), `D_11` (F2's) is what the strip
+    leaves on `wp/F8` (X06's c_12 is not on the branch), and R-1076's register entry carries
+    both (R-457's form)."""
+    import test_t08_w2_surface_digest as surface
+    from f8_schema_support import without_f8
+
+    assert (L10.name, L11.name, L11.register) == ("c_11", "c_13", "R-1076")
+    assert m07a_rc.strip_f8(served) == without_f8(copy.deepcopy(served))
+    assert L11.digest == surface.F8_SERVED_SHA256 == m07a_rc.digest(served)
+    assert m07a_rc.digest(m07a_rc.strip_f8(served)) == L10.digest == surface.F2_SERVED_SHA256
+    register = REGISTER.read_text(encoding="utf-8")
+    start = register.index("\n## R-1076")
+    end = register.find("\n## R-", start + 1)
+    entry = register[start : end if end != -1 else None]
+    assert L11.digest in entry and L10.digest in entry
+
+
+def test_f8_control_c_13_left_in_place(served: list[dict[str, Any]]) -> None:
+    """A c_13 whose strip takes nothing out fails at c_13: F8's additions reach F2's digest."""
+    assert_the_unmodified_list_passes(served)
+    links = (*m07a_rc.LINKS[:11], m07a_rc.Link("c_13", "R-1076", lambda tools: tools, L11.digest))
+    rows = m07a_rc.chain(served, links)
+    assert rows[0]["pass"]
+    assert m07a_rc.first_failure(rows) == "c_13 (R-1076)"

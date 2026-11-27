@@ -20488,3 +20488,19 @@ amendment and a second migration; the W1 design (the v2 core frozen at W1's end,
 F2-WO2b, `7b2a995c`) is chain link c_11: `strip_f2` takes F2's additions out and the digest returns to c_10's (F3).
 **Merge order:** links are numbered in the order the surface moved (F2 first); if X06 merges into `main` first, its
 link is renumbered c_11 and F2's c_12 in the second branch's merge commit.
+
+## R-1076: F8's surface link c_13 (2026-11-27, reserved)
+
+| | |
+| --- | --- |
+| Date | 2026-11-27 |
+| Decided by | orchestrator (LINE06), build lane; the link's content follows the c_4 to c_12 pattern of `scripts/m07a_rc.py` |
+| Normative text | ADR 0067 D3 (artifact kinds in `job.schema.json`), D5 (`ReplayReport` Amendment 12: `forced_replay` in `mode`, `registry_comparison`, `data_availability`) |
+| Evidence | F8-WO1b on wp/F8 (`docs/F8_DECISIONS.md`, F8-WO1b gate numbers): `tests/test_m07a_surface_chain.py` green with `strip_f8`; `D_13` = `F8_SERVED_SHA256` = `c11d38778d2f8aba8240a6a2b5ee9d9e1e7b93c5c6fae4cc40ca82177cb50ddd`, decomposing onto c_11 `9a4b4eb3bd9f28e68e25828d8796bec73e8feb49aa6e12b80df0d43f990442a1` (F2); only `get_job_result`'s served replay report moved. `tests/test_t07_w5e_application_results.py` green: 9 R4-G3 snapshots re-pinned (`SNAPSHOT_F8`: `solve`, `reproduce`, the seven job operations), each returned to its pre-F8 value by `without_f8` |
+| Affected packages | F8; F2 (R-1072), X06 (R-1073) |
+
+**Decision.** F8's moves of the served surface (the replay-report members and the job artifact kinds) are one chain
+link, c_13, with `strip_f8` (chain) and `without_f8` (the R4-G3 snapshot decompositions) taking F8's additions out.
+On wp/F8, which branches from wp/F2, c_13 decomposes onto F2's c_11 until the merges. R-1072's merge-order rule
+holds: links are renumbered in the order their branches merge into `main`, and the later branch decomposes onto the
+earlier one's digest in its merge commit. F8 merges after F2 (LINE06 order).

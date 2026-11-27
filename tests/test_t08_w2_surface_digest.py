@@ -87,6 +87,14 @@ before.
 first (`without_f2`, `tests/f2_schema_support.py`) the list is F3's served digest `f7ec3c94…`
 exactly (`test_f2s_surface_move_decomposes_onto_f3s`), and every decomposition below holds as
 before.
+
+**F8 (ADR 0067 D5, ADR 0019 Amendment 12; R-1076) widens it again, additively** — the replay
+report's reserved mode `forced_replay` and its two optional members `registry_comparison` and
+`data_availability`, served in `get_job_result`'s `outputSchema` (D3's artifact kinds do not reach
+the served list: MCP serves J5's consumer reading, the enum opened) — so the served digest moves
+to `F8_SERVED_SHA256`. With F8's additions removed first (`without_f8`,
+`tests/f8_schema_support.py`) the list is F2's served digest `9a4b4eb3…` exactly
+(`test_f8s_surface_move_decomposes_onto_f2s`), and every decomposition below holds as before.
 """
 
 from __future__ import annotations
@@ -101,6 +109,7 @@ from conftest import REPO_ROOT, load_yaml
 from f1_schema_support import F1_OPERATIONS, without_f1
 from f2_schema_support import F2_KIND_NOTE, F2_KINDS, without_f2
 from f3_schema_support import F3_OPERATIONS, without_f3
+from f8_schema_support import F8_REPLAY_MODE, F8_REPORT_MEMBERS, without_f8
 from m02_schema_support import without_m02
 from m04_schema_support import without_m04
 from msg_schema_support import MSG_OPERATIONS, without_msg
@@ -165,6 +174,10 @@ F3_SERVED_SHA256 = "f7ec3c94233d30506ec2082a13c4e54d57bd540e43e97fdf877b1e3c75fe
 #: over F3's list, measured at F2-WO2b on `wp/F2` (WO1 moved it; WO2 left it where WO1 did).
 #: Without them it is `F3_SERVED_SHA256`.
 F2_SERVED_SHA256 = "9a4b4eb3bd9f28e68e25828d8796bec73e8feb49aa6e12b80df0d43f990442a1"
+#: F8 (ADR 0067 D5, R-1076): the served digest with the replay report's reserved mode and its two
+#: members in `get_job_result`'s output schema over F2's list, measured at F8-WO1b on `wp/F8`
+#: (`scripts/m07a_rc.py`'s `D_13`). Without them it is `F2_SERVED_SHA256` (c_13).
+F8_SERVED_SHA256 = "c11d38778d2f8aba8240a6a2b5ee9d9e1e7b93c5c6fae4cc40ca82177cb50ddd"
 #: The files N1 and N2 changed; the only difference from `v17-c2`'s served texts.
 CHANGED = ("commit_change", "validate")
 #: Each description's SHA-256 as `v17-c2` served it: the table of
@@ -200,9 +213,16 @@ def _tools(mcp: ModuleType) -> list[dict[str, Any]]:
     return [tool.model_dump(mode="json", exclude_none=True) for tool in mcp.tools()]
 
 
+def _before_f8(mcp: ModuleType) -> list[dict[str, Any]]:
+    """The served tool list without F8's replay-report additions (`without_f8`), F2's list."""
+    stripped = without_f8(_tools(mcp))
+    assert isinstance(stripped, list)
+    return stripped
+
+
 def _before_f2(mcp: ModuleType) -> list[dict[str, Any]]:
-    """The served tool list without F2's 14 kinds (`without_f2`), F3's list."""
-    stripped = without_f2(_tools(mcp))
+    """The served tool list without F8's additions and F2's 14 kinds (`without_f2`), F3's list."""
+    stripped = without_f2(_before_f8(mcp))
     assert isinstance(stripped, list)
     return stripped
 
@@ -526,7 +546,7 @@ def test_f2s_surface_move_decomposes_onto_f3s(mcp: ModuleType) -> None:
     and changed no tool's name or description text; the one tool that moved is `list_models`, in
     exactly its two kind enums (pins' and choice options' `specifications`), each by exactly the
     14 kinds and the description's one sentence."""
-    served = _tools(mcp)
+    served = _before_f8(mcp)  # F8's additions postdate F2
     stripped = without_f2(served)
     assert _digest(served) == F2_SERVED_SHA256
     assert _digest(stripped) == F3_SERVED_SHA256
@@ -550,6 +570,38 @@ def test_f2s_surface_move_decomposes_onto_f3s(mcp: ModuleType) -> None:
     # With the two kinds put back, the tool is F3's exactly: nothing else in it moved.
     for path in (pins, options):
         _at(tool["outputSchema"], path).update(_at(before["outputSchema"], path))
+    assert tool == before
+
+
+def test_f8s_surface_move_decomposes_onto_f2s(mcp: ModuleType) -> None:
+    """F8 (ADR 0067 D5, R-1076): the served list is `F8_SERVED_SHA256`; minus F8's additions it is
+    F2's (`F2_SERVED_SHA256`, which decomposes onto F3's and the earlier lists above). F8 added no
+    tool and changed no tool's name or description text; the one tool that moved is
+    `get_job_result`, in exactly its replay report: `mode` by the one reserved value and the
+    properties by the two optional members, nothing else."""
+    served = _tools(mcp)
+    stripped = without_f8(served)
+    assert _digest(served) == F8_SERVED_SHA256
+    assert _digest(stripped) == F2_SERVED_SHA256
+    assert [(t["name"], t["description"]) for t in served] == [
+        (t["name"], t["description"]) for t in stripped
+    ]
+    moved = [(t, u) for t, u in zip(served, stripped, strict=True) if t != u]
+    assert [t["name"] for t, _ in moved] == [OPERATIONS["get_job_result"].mcp_tool]
+    ((tool, before),) = moved
+    assert tool["inputSchema"] == before["inputSchema"]
+    (report,) = tool["outputSchema"]["properties"]["replay_report"]["anyOf"][:1]
+    (report_before,) = before["outputSchema"]["properties"]["replay_report"]["anyOf"][:1]
+    assert report["properties"]["mode"]["enum"] == [
+        *report_before["properties"]["mode"]["enum"],
+        F8_REPLAY_MODE,
+    ]
+    assert sorted(set(report["properties"]) - set(report_before["properties"])) == sorted(
+        F8_REPORT_MEMBERS
+    )
+    assert report["required"] == report_before["required"]  # both members optional
+    # With the report put back, the tool is F2's exactly: nothing else in it moved.
+    tool["outputSchema"]["properties"]["replay_report"]["anyOf"][0] = report_before
     assert tool == before
 
 

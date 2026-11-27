@@ -35,6 +35,7 @@ from conftest import REPO_ROOT, load_json
 from f1_schema_support import F1_OPERATIONS
 from f2_schema_support import F2_KINDS, F2_MOVED_OPERATIONS, without_f2
 from f3_schema_support import F3_OPERATIONS
+from f8_schema_support import F8_MOVED_OPERATIONS, F8_REPORT_MEMBERS, without_f8
 from jsonschema import Draft202012Validator
 from m02_schema_support import without_m02
 from m04_schema_support import without_m04
@@ -338,6 +339,24 @@ SNAPSHOT_F3: dict[str, str | None] = {
 SNAPSHOT_F2: dict[str, str | None] = {
     "list_models": "854fab3332da26b0f51e5f6cb113095238e2f8f3db52a61196e83c536de16541",
 }
+#: F8 (ADR 0067 D3, D5; ADR 0019 Amendment 12; R-1076, F8-WO1b): the replay report's reserved mode
+#: `forced_replay` and its two optional members, which `reproduce` serves and the job's result
+#: embeds (`get_job`, `cancel_job`, `get_job_result`), and D3's seven artifact kinds, which every
+#: response listing artifacts reaches. Re-taken over each row's earlier value (`reproduce`'s at
+#: `b13d556`, `list_job_events`' OPT's, the others X04's); with F8's additions removed
+#: (`tests/f8_schema_support.py`) each is that value again, and no other snapshot moves
+#: (`test_f8_without_its_additions_every_response_is_its_pre_f8_snapshot`).
+SNAPSHOT_F8: dict[str, str | None] = {
+    "solve": "c16899780d90326523d603be73c78038a4c26e3a3abe77d5fa40b52a505c9ab4",
+    "reproduce": "2251b1df84cf3b623f6b5e83c30c4c792d2547c779d1defad26c637bb544c822",
+    "submit_job": "2821206f78707a70c501e13162ff1d6ccf4260c0d1f1686c49264fba49c93bb9",
+    "get_job": "8026df21ff28270ba76a71fb1f3c6b5c28965ee50b6677850ae7d63f4e4e723b",
+    "list_jobs": "44153df81e3e16bdb14a57c3c545d846080fa898edd9ff5a7cbc6dc903e3272d",
+    "list_job_events": "899d4dabedede30164f742f81790c1badfbc564d3cf9c138d3807e084331ea8c",
+    "wait_job": "75137a9d14e41010df8b63bedbeb057f860e7d29853c6c4b97030cbe26d4d118",
+    "cancel_job": "8026df21ff28270ba76a71fb1f3c6b5c28965ee50b6677850ae7d63f4e4e723b",
+    "get_job_result": "bddb2dd5885380864895764319d474dc5a94f857b29e4fb14daff43b22ce7597",
+}
 #: The rows later than X04, each with its own snapshot (F1's and F3's).
 LATER_ROWS = F1_OPERATIONS | F3_OPERATIONS
 
@@ -375,9 +394,11 @@ def test_r4_g3_every_resolved_response_schema_equals_the_snapshot() -> None:
         **SNAPSHOT_F1,
         **SNAPSHOT_F3,
         **SNAPSHOT_F2,
+        **SNAPSHOT_F8,
     }
     assert set(SNAPSHOT_F1) == F1_OPERATIONS
     assert set(SNAPSHOT_F2) == F2_MOVED_OPERATIONS
+    assert set(SNAPSHOT_F8) == F8_MOVED_OPERATIONS
     assert set(SNAPSHOT_F3) == F3_OPERATIONS
     assert SNAPSHOT_ST["get_stream_table"] == SNAPSHOT_AT_B13D556["get_artifact"]
     for operation in OPERATIONS.values():
@@ -404,7 +425,8 @@ def test_x04_without_its_additions_every_response_is_its_pre_x04_snapshot() -> N
     for name, operation in OPERATIONS.items():
         if name in LATER_ROWS:  # F1's (ADR 0060) and F3's (ADR 0061) rows postdate X04
             continue
-        resolved = without_f2(resolved_response(operation))  # F2's additions postdate X04
+        # F8's and F2's additions postdate X04
+        resolved = without_f2(without_f8(resolved_response(operation)))
         assert _digest(without_x04(resolved)) == before[name], name
         if _digest(resolved) != before[name]:
             moved.append(name)
@@ -429,7 +451,7 @@ def test_opt_without_its_additions_every_response_is_its_pre_opt_snapshot() -> N
         if name in ST_OPERATIONS | LATER_ROWS:  # later rows, each with its own snapshot
             continue
         # X04's (ADR 0075) and F2's (ADR 0062) additions postdate OPT: they are taken out first.
-        resolved = without_x04(without_f2(resolved_response(operation)))
+        resolved = without_x04(without_f2(without_f8(resolved_response(operation))))
         assert _digest(without_opt(resolved)) == before[name], name
         if _digest(resolved) != before[name]:
             moved.append(name)
@@ -456,7 +478,9 @@ def test_msg_g10_without_failure_every_response_is_its_pre_msg_snapshot() -> Non
             continue
         # X02's (ADR 0070) and OPT's (ADR 0071) additions postdate MSG: they are taken out
         # first, the later first.
-        resolved = without_x02(without_opt(without_x04(without_f2(resolved_response(operation)))))
+        resolved = without_x02(
+            without_opt(without_x04(without_f2(without_f8(resolved_response(operation)))))
+        )
         assert _digest(without_msg(resolved)) == before[name], name
         if _digest(resolved) != before[name]:
             moved.append(name)
@@ -482,11 +506,45 @@ def test_x02_without_warm_start_every_response_is_its_pre_x02_snapshot() -> None
             continue
         # OPT's (ADR 0071), X04's (ADR 0075) and F2's (ADR 0062) additions postdate X02: they are
         # taken out first.
-        resolved = without_opt(without_x04(without_f2(resolved_response(operation))))
+        resolved = without_opt(without_x04(without_f2(without_f8(resolved_response(operation)))))
         assert _digest(without_x02(resolved)) == before[name], name
         if _digest(resolved) != before[name]:
             moved.append(name)
     assert sorted(moved) == sorted(SNAPSHOT_X02)
+
+
+def test_f8_without_its_additions_every_response_is_its_pre_f8_snapshot() -> None:
+    """R4-G3 for F8 (ADR 0067 D3, D5; R-1076): with F8's replay-report members, reserved mode and
+    artifact kinds removed, every resolved response is its snapshot before F8 (F2's included),
+    exactly the operations of `SNAPSHOT_F8` moved, and the two members are optional."""
+    before = {
+        **SNAPSHOT_AT_B13D556,
+        **SNAPSHOT_AMENDMENT_2,
+        **SNAPSHOT_AMENDMENT_3,
+        **SNAPSHOT_M02,
+        **SNAPSHOT_M04,
+        **SNAPSHOT_MSG,
+        **SNAPSHOT_MSG_EXPLAIN,
+        **SNAPSHOT_X02,
+        **SNAPSHOT_OPT,
+        **SNAPSHOT_ST,
+        **SNAPSHOT_X04,
+        **SNAPSHOT_F1,
+        **SNAPSHOT_F3,
+        **SNAPSHOT_F2,
+    }
+    assert set(before) == set(OPERATIONS)  # F8 adds no operation
+    moved = []
+    for name, operation in OPERATIONS.items():
+        resolved = resolved_response(operation)
+        assert _digest(without_f8(resolved)) == before[name], name
+        if _digest(resolved) != before[name]:
+            moved.append(name)
+    assert sorted(moved) == sorted(SNAPSHOT_F8)
+    report = resolved_response(OPERATIONS["reproduce"])
+    assert report["properties"]["mode"]["enum"][-1] == "forced_replay"
+    assert set(F8_REPORT_MEMBERS) <= set(report["properties"])
+    assert not set(F8_REPORT_MEMBERS) & set(report["required"])
 
 
 def test_f2_without_its_additions_every_response_is_its_pre_f2_snapshot() -> None:
@@ -512,7 +570,7 @@ def test_f2_without_its_additions_every_response_is_its_pre_f2_snapshot() -> Non
     assert set(before) == set(OPERATIONS)  # F2 adds no operation
     moved = []
     for name, operation in OPERATIONS.items():
-        resolved = resolved_response(operation)
+        resolved = without_f8(resolved_response(operation))  # F8's additions postdate F2
         assert _digest(without_f2(resolved)) == before[name], name
         if _digest(resolved) != before[name]:
             moved.append(name)
@@ -562,7 +620,11 @@ def test_g_r6_6_list_models_moved_only_by_the_approved_additive_member() -> None
             without_m02(
                 without_m04(
                     without_msg(
-                        without_x02(without_opt(without_x04(resolved_response(OPERATIONS[name]))))
+                        without_x02(
+                            without_opt(
+                                without_x04(without_f8(resolved_response(OPERATIONS[name])))
+                            )
+                        )
                     )
                 )
             )
