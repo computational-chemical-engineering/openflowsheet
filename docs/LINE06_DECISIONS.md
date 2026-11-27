@@ -311,3 +311,7 @@ Reversible by: <how>.` Package build decisions go in the package's own file (`do
   executed: pushed origin wp/F2 = 4b820b97 (new branch). CI waiter: `~/.cache/line06/ci/f2-4b820b97.log`. Then on
   wp/F2 (local, docs only, after the pushed head): stale D_11 in ADR 0019 Amendment 9 and `docs/interfaces-frozen.md`
   corrected to `8eee5313...`, ADR 0062 Accepted there; tests reading them 522 passed. wp/F8 picks this up at its merge.
+- 2026-11-27 Card `ofs-f8-accept-adr0067` (A) **VERIFIED** (signed 12:53:40Z, key 032ee0a5ae620a90). ADR 0067 and ADR
+  0019 Amendment 12 marked Accepted on wp/F8 `4daff37f` (local, after 14409696). Push of exactly 14409696 waits for
+  the F8 gate (summary `~/.cache/line06/f8-gate/gate-14409696.summary`; background waiter prints it); then
+  `executed`.
