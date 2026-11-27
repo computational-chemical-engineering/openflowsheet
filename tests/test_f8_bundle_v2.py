@@ -177,7 +177,7 @@ def test_e_f8_2_the_lock_and_the_snapshot_hash_to_their_manifest_values(case: Re
 
 def test_e_f8_2_the_index_covers_every_file_under_artifacts(case: Recorded) -> None:
     root = case.v2 / bundle_v1.ARTIFACT_DIR
-    files = {str(path.relative_to(root)) for path in root.rglob("*") if path.is_file()}
+    files = {path.relative_to(root).as_posix() for path in root.rglob("*") if path.is_file()}
     assert files == set(case.manifest.artifacts)
     embedded = {sha for sha, entry in _entries(case.v2).items() if entry["embedded"]}
     assert {bundle_v2.record_name(sha) for sha in embedded} <= files

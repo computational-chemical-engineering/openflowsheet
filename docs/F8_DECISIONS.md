@@ -548,3 +548,13 @@ the working tree, run, and reverted (not committed).
     Linux x86_64 and aarch64 legs run it. Alternative: record the bundle under a forged Linux environment (more
     machinery for the same check). Reversible by: reverting the commit.
   - wp/F2 `80cdcfb3` (F2-CI1) merged into wp/F8 for the Windows E-F2-3 path and the identity job.
+
+## F8-CI2 (CI run 46047518103 at `d0bc2996`: Windows 4 failed of 18445), 2026-11-27
+
+- DECISION F8-CI2-1 (orchestrator): the four Windows reds are test-side path spelling, not product: E-F8-2's
+  `test_e_f8_2_the_index_covers_every_file_under_artifacts[gp,th]` and
+  `test_a_non_canonical_embedded_record_is_store_object_corrupt[GP-C1,TH-C1]` built artifact names with
+  `str(path.relative_to(root))` ("records\\<sha>.json" against the index's "records/<sha>.json"). Both now use
+  `.as_posix()`; the forged record is written with `write_bytes` so Windows newline translation cannot change the
+  bytes its name hashes. Linux: the two files 91 passed. All other legs (ubuntu x86/arm, macOS, default-install,
+  identity) green on d0bc2996. Not pushed: wp/F8 next merges main after F2 (and X06), then gate, push, CI.

@@ -468,7 +468,7 @@ def test_a_non_canonical_embedded_record_is_store_object_corrupt(
     data = json.dumps(json.loads((root / bundle_v2.record_name(old)).read_bytes()), indent=1)
     forged = hashlib.sha256(data.encode("utf-8")).hexdigest()
     (root / bundle_v2.record_name(old)).unlink()
-    (root / bundle_v2.record_name(forged)).write_text(data, encoding="utf-8")
+    (root / bundle_v2.record_name(forged)).write_bytes(data.encode("utf-8"))
     lock = json.loads(json.dumps(plain.lock).replace(old, forged))
     (root / bundle_v2.DATA_LOCK_NAME).write_bytes(canonical_json(lock))
     index = read_artifact(directory, bundle_v2.RECORDS_INDEX_NAME)
@@ -480,7 +480,7 @@ def test_a_non_canonical_embedded_record_is_store_object_corrupt(
     rebuilt = dataclasses.replace(
         manifest,
         artifacts={
-            str(path.relative_to(root)): file_sha256(path)
+            path.relative_to(root).as_posix(): file_sha256(path)
             for path in sorted(root.rglob("*"))
             if path.is_file()
         },
