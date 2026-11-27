@@ -426,7 +426,7 @@ def find_source(
         )
         revision = store.get_revision(connection, source_revision_id)
     assert revision is not None, source_revision_id
-    source_document = revision.as_document()
+    source_document: Mapping[str, Any] = revision.as_document()
     # ADR 0062 D8: a v2 ancestor is read as its lowering, as the target is (`jobs/runner.py`).
     # One that does not lower keeps its stored form, which A2 refuses `source_binding(...)`.
     try:
