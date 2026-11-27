@@ -51,6 +51,12 @@ acceptance at wp/F2 a64f93fb (D12 per F2-R1, D2 PropertyRequest not widened, D11
 state_degenerate_in_definition and Q6.A2 registration half deferred to F5/F6), then push wp/F2 at 6913c4a0 (a64f93fb
 plus the test-fixture fix 6913c4a0, DECISION F2-J16) for CI, only if the local gate on 6913c4a0 passes."
 
+**X06:** CI run 45962988409 at `1b9561a3` FAILED (11 tests + codehealth; see LINE06_DECISIONS). Running: X06-CI1
+`opus-engineer` in `.claude/worktrees/x06` (brief `docs/briefs/LINE06-X06-CI1.md`, logs `~/.cache/line06/x06-ci1/`).
+On PASS (full gate + codehealth diff + F0): push wp/X06 (re-push of a pushed branch for CI; the earlier push was
+already authorised by card ofs-x06-descriptions-human? NO: check; if no card covers a re-push, ask hub), waiter, then
+the merge card. New rule: full local gate and `codehealth diff --base origin/main` pass before any package push.
+
 **F8 next:** review done (`docs/reviews/F8-review.md`, main `6636a8a8`: M1, M2, S1-S6; not ready until F8-FR). On the
 gate passing (F2's head final): launch `opus-engineer` with `docs/briefs/LINE06-F8-FR0.md` (merge wp/F2 into wp/F8,
 c_13 onto D_11 `8eee5313`, catalogue re-pin, HARVEST_SIZE from the run), judge, then `docs/briefs/LINE06-F8-FR.md`
