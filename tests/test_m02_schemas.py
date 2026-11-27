@@ -29,6 +29,7 @@ from opt_schema_support import without_opt
 from st_schema_support import ST_OPERATIONS
 from x02_schema_support import without_x02
 from x04_schema_support import without_x04
+from x06_schema_support import X06_OPERATIONS, without_x06
 
 from openflowsheet.application.documents import published_schemas
 from openflowsheet.schema_check import SCHEMA_BASE, schema_errors
@@ -267,15 +268,17 @@ def test_g1c_without_m02s_additions_every_response_is_its_pre_m02_snapshot() -> 
     before = {**r4.SNAPSHOT_AT_B13D556, **r4.SNAPSHOT_AMENDMENT_2, **r4.SNAPSHOT_AMENDMENT_3}
     moved = []
     for name, operation in OPERATIONS.items():
-        # MSG's `explain` row (ADR 0058 D7) and ST's `get_stream_table` row (ADR 0068) postdate
-        # the snapshot.
-        if name in MSG_OPERATIONS | ST_OPERATIONS | F1_OPERATIONS | F3_OPERATIONS:
+        # MSG's `explain` row (ADR 0058 D7), ST's `get_stream_table` row (ADR 0068) and F1's, F3's
+        # and X06's (ADR 0078) rows postdate the snapshot.
+        if name in MSG_OPERATIONS | ST_OPERATIONS | F1_OPERATIONS | F3_OPERATIONS | X06_OPERATIONS:
             continue
         # M04's (ADR 0037 D6), MSG's (ADR 0058), X02's (ADR 0070), OPT's (ADR 0071, ADR 0019
-        # Amendment 16) and X04's (ADR 0075, Amendment 17) additions are taken out first, the later
-        # first: they postdate this snapshot.
+        # Amendment 16), X04's (ADR 0075, Amendment 17) and X06's (ADR 0078, Amendment 18)
+        # additions are taken out first, the later first: they postdate this snapshot.
         resolved = without_m04(
-            without_msg(without_x02(without_opt(without_x04(r4.resolved_response(operation)))))
+            without_msg(
+                without_x02(without_opt(without_x04(without_x06(r4.resolved_response(operation)))))
+            )
         )
         assert r4._digest(without_m02(resolved)) == before[name], name
         if r4._digest(resolved) != before[name]:

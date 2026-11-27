@@ -580,3 +580,6 @@ Brief `docs/briefs/LINE06-X06-CI1.md`, build lane. The same ten tests failed on 
   (`solve_policies_requests(base="T04-W12")`; the default stays the revision path's for the request corpora and
   E-X06-12). `--write` changed exactly the four `solve_policy_*` fixtures. Alternative: a new exemption in the three
   guards (no precedent). Reversible by: reverting the commit.
+- **Item 3 (no decision).** `test_g1c_*` (M02) and `test_a42_*` (M04) skip `X06_OPERATIONS` and take `without_x06`
+  out first, as they do F1's, F3's and X04's: the six job rows X06 moved (the candidate ChangeSet's `branch`) then
+  decompose onto their snapshots.
