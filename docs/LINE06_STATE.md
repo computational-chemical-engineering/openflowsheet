@@ -44,10 +44,10 @@ Judged PASS since the morning (details: `docs/LINE06_DECISIONS.md`): F2-R1, F2-W
 (`docs/reviews/F2-review.md`) and F2-WO8; F8-WO1 (+WO1b, R-1076 c_13), F8-WO2, F8-WO3. Heads: wp/F2 `a64f93fb`
 (manifest `evidence/F2/fb75c409.../manifest.json`, `tested`), wp/F8 `25e5ed36`, wp/X06 `1b9561a3` (pushed).
 
-**Running (2026-11-27):** the Opus review of F8-WO5 (`opus-engineer`, brief `docs/briefs/LINE06-F8-WO5-review.md`, wp/F8
-from `dcf4b89f`, logs `~/.cache/line06/f8-wo5r/`). F8-WO5 judged PASS at `dcf4b89f` (errata E-D7 folded, DECISION
-F8-WO5-0, `369150d3`). If the session died: check `git -C .claude/worktrees/f8 log`/status and judge on that brief.
-Then F8 close-out, the F8 `reviewer` pass with the ruling batch.
+**Running (2026-11-27):** F8 close-out (`sonnet-implementer`, brief `docs/briefs/LINE06-F8-CO.md`: ADR 0019 Amendment
+12 pointer, `evidence/F8/<head>/manifest.json` tested, gate; wp/F8 from `a4b0ede1`, logs `~/.cache/line06/f8-co/`).
+F8-WO5 and its Opus review judged PASS (`a4b0ede1`). If the session died: check the f8 worktree log/status and judge
+on that brief. Then the F8 `reviewer` pass with the ruling batch (WO1-1, WO3-1..10, the two WO5 review leftovers).
 
 **Was next (F8):** write `docs/briefs/LINE06-F8-WO5.md` (ADR 0067 D7 per-platform reference records, `run/platform_refs.py`,
 invariant test; E-F8-8; Sonnet `sonnet-implementer`, then an Opus `opus-engineer` review of its diff, per the WO table).
