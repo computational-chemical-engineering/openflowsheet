@@ -53,7 +53,10 @@ Background jobs (they survive the reset; their notices arrive in the new context
    C: "Do not merge F2 yet; nothing is pushed." Hub rings on sign-off. (Former waiter text:) F2 CI waiter at `80cdcfb3` (gate PASS 21725 passed; pushed), log `~/.cache/line06/ci/f2-80cdcfb3.log`. On all
    legs green: F2 merge card (A: "Merge wp/F2 at 80cdcfb3 into main with a merge commit, marking ADR 0019 Amendment 9
    Accepted with ADR 0062 in the merge commit, run F0 on main, push main." B: "Do not merge F2 yet."). On failure: fix.
-2. **X06 CI waiter** at `73b3a83d` (gate PASS 21303 passed; pushed), log `~/.cache/line06/ci/x06-73b3a83d.log`. On
+2. **X06 CI GREEN** at `73b3a83d` (run 46044426797, all legs). **X06-FR0 running** (opus-engineer, background, worktree
+   x06, brief `docs/briefs/LINE06-X06-FR0.md`): merge wp/F2 80cdcfb3 into wp/X06, re-chain c_12 onto F2's D_11.
+   On its report: judge on the brief's acceptance, then full gate in a detached worktree, push, CI, X06 merge card
+   (after F2's merge; merge main into wp/X06 first). (Former waiter text:) X06 CI waiter at `73b3a83d` (gate PASS 21303 passed; pushed), log `~/.cache/line06/ci/x06-73b3a83d.log`. On
    all legs green: X06 merge card (A: "Merge wp/X06 at 73b3a83d into main with a merge commit, run F0 on main, push
    main." B: "Do not merge X06 yet."); mention DECISION X06-CI1-1 on it for design-lane notice.
 3. **F8 CI waiter** at `d0bc2996` (gate PASS 21895 passed; pushed), log `~/.cache/line06/ci/f8-d0bc2996.log`. On
