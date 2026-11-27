@@ -57,15 +57,11 @@ On F8-WO2: judge (E-F8-2, E-F8-3, F0); then F8-WO3 brief (replay: dispatch in `r
 usage cross-check, re-record tool; E-F8-1, -4, -5, -6), then WO5 (Sonnet, Opus review; E-F8-8), close-out (ADR 0019
 Amendment 12 pointer, manifest). wp/F8 merges wp/F2's final head and re-decomposes c_13 onto F2's new D_11.
 
-**Waiting on the user:** card `ofs-x06-descriptions-human` (filed by hub, open; texts in
-`docs/reviews/X06-descriptions-for-user.md`). Hub rings when signed. Then: fetch the card (ArtifactData `get`
-collection `decisions` and `list` collection `keys`, same `out_dir` D), run
-`python3 ~/.claude/tools/decision_desk_verify.py D ofs-x06-descriptions-human --action "<the signed option's text>"`;
-on VERIFIED A: record `human` `reviewed` (reviewed_by "the user, Decision Desk ofs-x06-descriptions-human",
-reviewed_at the date) for the 11 texts in wp/X06's `REVIEW.json` at the listed hashes (one commit), run
-`tests/test_t08_w2_description_reviews.py` (must pass), write `executed` on the card, push wp/X06 (CI must judge it;
-poll `gh run` every 300 s at most), then on CI green on all legs a merge card via hub. Option B: apply the user's
-edits, fresh design-lane review of each edited text, then record.
+**X06:** card `ofs-x06-descriptions-human` VERIFIED A and executed; review recorded (wp/X06 `1b9561a3`), pushed.
+CI running (ci 45962988409, Site 45962988390; background waiter, log `~/.cache/line06/ci/x06-1b9561a3.log`; if the
+session died, rerun `~/.cache/line06/ci/wait_runs.sh wp/X06 1b9561a3f104d90bbae2a86faef07800b0f0ef76`). On green on
+all legs: X06 merge card (DECISION-REQUEST to hub; action text per option; the user, not first names). After the
+merge: F0 on main, push main, delete the worktree; the second of F2/X06 to merge decomposes onto the first's digest.
 
 Then F2, after WO6c and WO7: F2 reviewer with the ruling batch
 (WO1-4, WO1-1, WO1-9, M = 1 for kg, WO2-1, WO2-7, WO3-6, WO4-7, WO4-8, WO4-9, WO4-15, Q-WO5-a, Q-WO5-b, Q-WO5-c,
