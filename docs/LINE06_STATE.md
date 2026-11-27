@@ -18,8 +18,7 @@ the ADR acceptances of card `ofs-line06-adr-clause`; X06's exits.
 - **F8** (ADR 0067 + ADR 0019 Amendment 12 **Accepted**, card executed): CI at origin `14409696` FAILED (run
   46014961220): F2's two causes, Windows bundle integrity ("\" vs "/" in the present-file listing) and the D5
   other-platform test on unregistered hosts (macOS, Windows). Fix F8-CI1 + merge of wp/F2 80cdcfb3 on local wp/F8
-  `d0bc2996`; touched tests 219 passed; full gate running (worktree `.claude/worktrees/f8-gate`, PID
-  `~/.cache/line06/f8-ci1/gate.pid`, summary `~/.cache/line06/f8-ci1/gate-d0bc2996.summary`). Merges after F2.
+  `d0bc2996`; touched tests 219 passed; gate PASS 21895 passed; pushed, CI running. Merges after F2.
 - **X06** (ADR 0078 Accepted): CI at origin `a514896c` FAILED only `default-install` (run 46014554722; all check legs,
   identity green): `mcp_http` missing from the isolation test's server-extra list. Fix X06-CI2 at `73b3a83d`: gate PASS 21303
   passed, pushed to origin wp/X06, CI running.
@@ -53,8 +52,8 @@ Background jobs (they survive the reset; their notices arrive in the new context
 2. **X06 CI waiter** at `73b3a83d` (gate PASS 21303 passed; pushed), log `~/.cache/line06/ci/x06-73b3a83d.log`. On
    all legs green: X06 merge card (A: "Merge wp/X06 at 73b3a83d into main with a merge commit, run F0 on main, push
    main." B: "Do not merge X06 yet."); mention DECISION X06-CI1-1 on it for design-lane notice.
-3. **F8 gate at d0bc2996** (F8-CI1). On `GATE PASS`: push `d0bc2996:refs/heads/wp/F8` (orchestrator's push), CI
-   waiter (log `~/.cache/line06/ci/f8-d0bc2996.log`), remove the gate worktree. F8 merges after F2.
+3. **F8 CI waiter** at `d0bc2996` (gate PASS 21895 passed; pushed), log `~/.cache/line06/ci/f8-d0bc2996.log`. On
+   green: F8 waits for F2's merge (then merges main into wp/F8, gate, push, CI, merge card). On failure: fix.
 
 Open item for the F2 merge card: ADR 0019 Amendment 9's heading still says "Proposed 2026-11-27" on wp/F2 while ADR
 0062 is Accepted; whether card `ofs-f2-accept-adr0062` covered it is not recorded. Ask on the F2 merge card (option

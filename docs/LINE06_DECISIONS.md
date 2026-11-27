@@ -344,3 +344,5 @@ Reversible by: <how>.` Package build decisions go in the package's own file (`do
   to origin wp/F2; CI waiter log `~/.cache/line06/ci/f2-80cdcfb3.log`.
 - 2026-11-27 X06 gate PASS at `73b3a83d` (21303 passed, 107 skipped, 3 xfailed, 1:31:00); pushed `a514896c..73b3a83d`
   to origin wp/X06; CI waiter log `~/.cache/line06/ci/x06-73b3a83d.log`.
+- 2026-11-27 F8 gate PASS at `d0bc2996` (21895 passed, 107 skipped, 3 xfailed, 1:31:28); pushed `14409696..d0bc2996`
+  to origin wp/F8; CI waiter log `~/.cache/line06/ci/f8-d0bc2996.log`.
