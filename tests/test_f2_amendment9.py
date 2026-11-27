@@ -117,6 +117,50 @@ def test_e_f2_3_raised_run_writes_the_v1_bundle(run_set: str, name: str) -> None
         assert documents2[state]["schema_version"] == "solution-state-v1"
 
 
+def test_f2_r1_a_coolprop_one_fluid_revision_runs_as_its_v1_run(tmp_path: Path) -> None:
+    """F2-R1 R1-1, run half (F2 review S7), under the CoolProp extra: S11's `TH-C2` (one S07 fluid,
+    R134a, `coolprop-heos-v1`) raised and solved as F0 solves a revision writes the v1 run's
+    manifest identity, artifact index and `solution-state.json` bytes. The library half is
+    `tests/test_f2_lowering.py`'s `test_a_permuted_component_set_lowers_in_its_order`."""
+    from s07_coolprop_support import require_coolprop  # noqa: PLC0415
+
+    require_coolprop()
+    original = json.loads((ROOT / "benchmarks/s11/thermal/TH-C2.json").read_text("utf-8"))
+    assert original["component_set"]["record_source"] == "benchmarks/s07/components.yaml"
+    assert len(original["component_set"]["components"]) == 1
+    raised = _raised(copy.deepcopy(original))
+    assert raised["property_methods"]["default"] == "coolprop-heos-v1"
+    with gate.pinned_threads():
+        gate.solve("s11", "TH-C2", tmp_path / "v1", original)
+        gate.solve("s11", "TH-C2", tmp_path / "v2", raised)
+    (manifest1, documents1), (manifest2, documents2) = (
+        gate.artifacts(tmp_path / side) for side in ("v1", "v2")
+    )
+    assert manifest1.outcome == "CONVERGED"
+    for field in (
+        "run_id",
+        "model_version",
+        "constants_sha256",
+        "policy_id",
+        "plan_id",
+        "check_policy_sha256",
+        "policy_sha256",
+        "artifact_r0_sha256",
+        "numerical_policy_id",
+        "artifacts",
+        "outcome",
+        "verification_status",
+        "reproducibility_class",
+    ):
+        assert getattr(manifest2, field) == getattr(manifest1, field), field
+    assert list(gate.state_hashes(documents2)) == list(gate.state_hashes(documents1))
+    state = "solution-state.json"
+    assert state in documents1
+    assert (tmp_path / "v2" / "artifacts" / state).read_bytes() == (
+        tmp_path / "v1" / "artifacts" / state
+    ).read_bytes()
+
+
 def test_e_f2_3_m1_revisions_outside_the_run_set_route_as_v1() -> None:
     """The M1 revisions with no registered run: the raised document routes as the v1 one."""
     from openflowsheet.application.revision_run import NoRoute, Route, select_route  # noqa: PLC0415

@@ -784,3 +784,13 @@ Files: `revision_v2/{lower,raise_v1}.py`, `tests/test_f2_lowering.py`, `tests/da
   `test_every_description_is_reviewed_by_both_lanes` (`check_admission: human pending`), the v17 file test (fixed
   after, 13 passed), and `test_a21_every_item_is_classified_once_and_resolves` (WO7's manifest `a3081770…`
   limitations unmapped in `benchmarks/t08/support_envelope.yaml`; pre-existing, closed with item 12's manifest).
+- **DECISION WO8-10 (S7, S8). The CoolProp run half and the `initialization_hint` test.** S7:
+  `test_f2_r1_a_coolprop_one_fluid_revision_runs_as_its_v1_run` (`tests/test_f2_amendment9.py`), gated by
+  `s07_coolprop_support.require_coolprop()` (the repo's CoolProp marker: skips without CoolProp 8.0.0, fails under
+  `OPENFLOWSHEET_REQUIRE_COOLPROP=1` as CI's `check` job sets): S11's `TH-C2` (one S07 fluid, R134a,
+  `coolprop-heos-v1`; the corpus's one-fluid CoolProp revision) raised and solved by `corpus_identity.solve` as the
+  v1 document is: the manifest identity fields, artifact index, state hashes and `solution-state.json` bytes equal;
+  outcome `CONVERGED`. 1 passed locally (CoolProp 8.0.0 in `.venv`). S8:
+  `test_an_initialization_hint_raises_and_lowers_to_its_bytes` (`tests/test_f2_lowering.py`): a `T` guess on NET-02's
+  second connection moves the v1 hash, survives `raise_v1`, the raised `content_hash` is `content_hash(raised)` and
+  moves without the hint, and the lowering has the original's canonical bytes and v1 hash. 1 passed.

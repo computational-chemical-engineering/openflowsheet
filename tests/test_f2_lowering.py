@@ -143,6 +143,36 @@ def test_a_stated_content_hash_names_its_own_document() -> None:
     assert canonical_json(lowered) == canonical_json(original)
 
 
+def test_an_initialization_hint_raises_and_lowers_to_its_bytes() -> None:
+    """F2 review S8: no corpus revision carries `initialization_hint`, which enters `content_hash`
+    and `revision.json`. Set on a corpus connection, it raises, lowers to the same canonical bytes
+    and v1 hash, and a stated `content_hash` round-trips with the hint present."""
+    original = CORPUS_REVISIONS[BASE]()
+    guess = {
+        "value": 360.0,
+        "unit": "K",
+        "dimension": [0, 0, 0, 1, 0, 0, 0],
+        "kind": "temperature",
+        "meaning": "A guess of the stream temperature",
+        "role": "free",
+    }
+    original["connections"][1]["initialization_hint"] = {"T": guess}
+    validate_document("process-revision.schema.json", original)
+    without = CORPUS_REVISIONS[BASE]()
+    assert v1_content_hash(original) != v1_content_hash(without)
+    original["content_hash"] = v1_content_hash(original)
+    raised = raise_v1(original, _providers())
+    assert raised["connections"][1]["initialization_hint"] == {"T": guess}
+    assert raised["content_hash"] == content_hash(raised)
+    hintless = copy.deepcopy(raised)
+    del hintless["connections"][1]["initialization_hint"]
+    assert content_hash(hintless) != raised["content_hash"]
+    lowered = lower(parse(raised), _providers())
+    validate_document("process-revision.schema.json", lowered)
+    assert canonical_json(lowered) == canonical_json(original)
+    assert v1_content_hash(lowered) == v1_content_hash(original) == original["content_hash"]
+
+
 def test_raise_refuses_a_document_outside_the_inverse() -> None:
     original = CORPUS_REVISIONS[BASE]()
     original["component_set"]["record_source"] = "benchmarks/elsewhere.yaml"
