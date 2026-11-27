@@ -346,3 +346,7 @@ Reversible by: <how>.` Package build decisions go in the package's own file (`do
   to origin wp/X06; CI waiter log `~/.cache/line06/ci/x06-73b3a83d.log`.
 - 2026-11-27 F8 gate PASS at `d0bc2996` (21895 passed, 107 skipped, 3 xfailed, 1:31:28); pushed `14409696..d0bc2996`
   to origin wp/F8; CI waiter log `~/.cache/line06/ci/f8-d0bc2996.log`.
+- 2026-11-27 **F2 CI green at 80cdcfb3** (run 46041020889: four check legs, default-install, identity `success`;
+  codehealth red, informational). DECISION-REQUEST `ofs-f2-merge` sent to hub (A: merge + ADR 0019 Amendment 9
+  Accepted; B: merge, Amendment 9 Proposed; C: do not merge). main..80cdcfb3: main's 82 commits since the merge base
+  touch no src, tests or schemas.

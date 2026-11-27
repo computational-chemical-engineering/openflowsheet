@@ -46,7 +46,8 @@ once F2-WO4 is on wp/F2 (F8 branches from wp/F2's head, merges after F2).
 ## Next action (2026-11-27 14:20, written for a self-reset; NO agent of this session is running)
 
 Background jobs (they survive the reset; their notices arrive in the new context):
-1. **F2 CI waiter** at `80cdcfb3` (gate PASS 21725 passed; pushed), log `~/.cache/line06/ci/f2-80cdcfb3.log`. On all
+1. **F2 CI GREEN** at `80cdcfb3` (run 46041020889, all legs; codehealth informational). Merge card `ofs-f2-merge`
+   requested from hub 2026-11-27 ~19:50; on VERIFIED do the chosen action. (Former waiter text:) F2 CI waiter at `80cdcfb3` (gate PASS 21725 passed; pushed), log `~/.cache/line06/ci/f2-80cdcfb3.log`. On all
    legs green: F2 merge card (A: "Merge wp/F2 at 80cdcfb3 into main with a merge commit, marking ADR 0019 Amendment 9
    Accepted with ADR 0062 in the merge commit, run F0 on main, push main." B: "Do not merge F2 yet."). On failure: fix.
 2. **X06 CI waiter** at `73b3a83d` (gate PASS 21303 passed; pushed), log `~/.cache/line06/ci/x06-73b3a83d.log`. On
