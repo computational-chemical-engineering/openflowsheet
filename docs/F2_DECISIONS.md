@@ -420,3 +420,22 @@ Files: `src/openflowsheet/revision_v2/{lower,raise_v1}.py`, `tests/f2/legacy_pro
   argument). `materials` is dropped whatever it holds, as D12 says (`phase_order_keys` included).
   Construct spellings follow `validate`'s `kind:id` (`convention:<id>`, `derived:<id>`).
   Isolated in one commit. *Needs:* a ruling per field (refuse, or drop when empty).
+
+### WO6b dispatch map (measured at WO6a on a raised `SYN-001-T06-NET02`, `~/.cache/line06/f2wo6a/v2today.py`)
+
+| # | Site | What a v2 document meets today | WO6b |
+| --- | --- | --- | --- |
+| 1 | `models/revision_flowsheet.py:384` `parse_revision` | misread as v1: `RevisionError(unsupported, components_unsupported)` (the component entries are objects) | D12 dispatch on `schema_version` (2: `revision_v2.parse`, `lower` for the v1 path); v1 reader untouched |
+| 2 | `application/revision_binding.py:547` (revision binder) | `Unbound` from row 1's error | read the lowered document |
+| 3 | `application/binding.py:995` (legacy binder) | row 1's error | as 2 |
+| 4 | `application/stream_table.py:263` | row 1's error | as 2 |
+| 5 | `verify/certificate.py:444` | row 1's error, through its `RevisionError` branch | as 2 (the verifier must read what the binder read) |
+| 6 | `studies/nlp/boundary.py:115` | row 1's error, not caught there | as 2 |
+| 7 | `application/validation.py:388` / `:413` `_first_schema_error` | `schema_invalid` at the root: additional properties `convention`, `materials`, `property_methods`, `reaction_sets`, `sections` | v2 schema (`revision_v2.parse`) and `revision_v2.validate` with a context from the stores |
+| 8 | `application/capabilities.py:274-280` `_draft_pairs` | `api_error(revision_unsupported)`, "schema_version 1 ... not 2" | admit 2 (D11's draft form; ADR 0060 D11) |
+| 9 | `application/validation_service.py:57` `validate`, `:247` `check_admission` | rows 7 and 8 | Amendment 9; F2's checks into `AdmissionReport` notices/refusals |
+| 10 | `application/revision_service.py:61` `commit_change`, `:173` `preview_change`, `:219` `diff_revisions` (`local.py:386`, `:507`) | refused by the v1 schema gate (row 7) | Amendment 9: accept v2; `ChangeSet` paths address v2 fields unchanged |
+| 11 | `application/revisions.py:67`, `application/store.py:368` `content_hash` | v1's rule over the document as given: equal to `revision_v2.content_hash` only when every definition is in D3's normal form (WO4-3) | `revision_v2.content_hash` for v2 |
+| 12 | `application/revision_run.py:205` `select_route`, `:754` `run_revision_session` | no route (rows 2, 3) | run submission of v2 (E-F2-3 run half: the lowered run's artifacts byte-identical, manifest revision ref v2) |
+| 13 | `run/bundle.py:175`, `:195` `verify_bundle` | a `solution-state-v2` fails `inconsistencies` (v1 schema) | dispatch to `inconsistencies_v2` on `schema_version` (only v2-compiled runs write v2, ADR-F6; lowered runs write v1) |
+| 14 | `LegacyProviders` | built in tests only (`tests/f2/legacy_providers.py`, WO6a-1) | build it in the application from `component_basis` and the providers' conventions |
