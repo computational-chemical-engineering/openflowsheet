@@ -350,3 +350,33 @@ hashed changes (D11):
   description texts), now `6be1c002…` (chain link c_8 of `scripts/m07a_rc.py`, R-1010; `X04_SERVED_SHA256` in
   `tests/test_t08_w2_surface_digest.py`); with X04's additions removed (`tests/x04_schema_support.py`) it is ST's
   `553b7612…` (R-1000) exactly. Nine R4-G3 responses move (`SNAPSHOT_X04`); stripped, each is its earlier snapshot.
+
+## Amendment 18 (Proposed; X06) — pointer to ADR 0078
+
+Amendment 18 is decided in ADR 0078 (D1, D2, D4, D5, D6; exit tests E-X06-1 to E-X06-24); this paragraph points at
+it. The ADR is Accepted (2026-11-26, the user, Decision Desk `ofs-x06-accept-adr0078`); this amendment is Proposed
+until the X06 merge card. Additive; no `required` list changes, nothing stored or hashed changes, and the store
+schema stays `t07-store-v1`:
+
+- **Three sibling protocols**, nine operations, each on all four transports: `Branches` (`list_branches`,
+  `create_branch`, `delete_branch`; D2.5), `SolvePolicies` (`register_solve_policy`, `get_solve_policy`; D4.5) and
+  `Administration` (`get_policy`, `grant_capability`, `revoke_capability`, `set_ambient_pressure`; D5.2). Rights
+  `read` and `draft` for the first two; `policy` for the third, whose three writes also need the operator's switch
+  (D5.1). D4's "no in-band `policy` operation" is replaced by D5; in-band `install` and `publish` stay excluded.
+- **MCP over streamable HTTP (D1).** The MCP transport gains a second carrier: `serve-http` serves `/mcp`
+  (stateless, JSON responses, bearer per request). The `Transport` literal gains no value and the tool list is the
+  same object on both carriers.
+- **Members and `$defs`.** `change-set.schema.json` gains the optional `branch` and the `$def` `branch_name` (D2.4);
+  `project-policy.schema.json` the optional `administration: {in_band: true}` (D5.1);
+  `application-results.schema.json` the `$defs` `branch`, `branch_page`, `branch_result`,
+  `solve_policy_registration`, `solve_policy_view`, `grant_result`, `revoke_result` and `ambient_pressure_result`.
+- **Refusals.** No `ApiError` code is added (the enum stays closed). New `detail.code` values, each with a catalogue
+  entry: `origin_refused`, `branch_name_reserved`, `branch_not_found`, `solve_policy_id_invalid`,
+  `solve_policy_invalid`, `solve_policy_not_found`, `administration_disabled`, `administration_remote_refused`,
+  `grant_exceeds_caller`, `revoke_exceeds_caller`, `capability_not_found`, `capability_exists`.
+- **Not added:** job resume (D3: deferred to F7 D14, 0.8); the ADR 0078 D4 offering of the seven benchmark-registered
+  policies.
+- **Not unchanged:** the served MCP tool list, widened by the nine tools and two description texts
+  (`commit_change.md`, `preview_change.md`), now `d0f0c8b7…` (chain link c_12 of
+  `scripts/m07a_rc.py`, R-1073; `X06_SERVED_SHA256` in `tests/test_t08_w2_surface_digest.py`); with X06's additions
+  removed (`tests/x06_schema_support.py`, `without_x06`) it is F3's `f7ec3c94…` exactly.

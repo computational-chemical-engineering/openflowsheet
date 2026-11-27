@@ -481,3 +481,30 @@ Commits: `ad7f28b7` (R4-G3 rows, `$defs`, fixtures), `822d1362` (surface move, s
   (the Q26 STOP and the review gate); `test_x06_*` + MSG + doc pages 276 passed, 3 xfailed; ruff, format, mypy clean;
   bundle gate 63, 60, `b42b1ec439d1683c`; F0 PASS (M1 50/50, M2-M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 42/42).
 
+
+## X06-WO5 (close-out), 2026-11-27
+
+Items 1 to 4 and 6 are documents (`docs/interfaces-frozen.md`, ADR 0019 Amendment 18, `docs-site/guide/interfaces.md`,
+`CHANGELOG.md`); item 7 is test code; item 5 is `evidence/X06/<commit>/manifest.json`.
+
+- **DECISION WO5-1. The isolation fix covers three callers, not one.** `_pin_threads` is called by
+  `application_results_documents`, `job_documents` and `documents`; their tests (`test_t07_w5e_application_results`,
+  `test_t07_adr0008_jobs`, `test_t07_w3e_solution_state`) each set the three pins with `monkeypatch.setenv` (the
+  value already present, else `1`) before the call, so `setdefault` is a no-op and teardown restores the
+  environment. Without the other two, the same leak would reach `test_x06_solve_policies.py` through them. No
+  generated fixture changed (`git status` clean after the run). Alternative: the w5e test only. Reversible by:
+  reverting the commit.
+- **E-X06-23, store schema.** `STORE_SCHEMA` is `t07-store-v1` (`src/openflowsheet/application/store.py:72`;
+  `tests/test_t07_store.py` asserts it, passing). `git diff --stat main...HEAD -- schemas/` lists three files, each
+  justified by ADR 0078:
+
+  | File | Change | ADR 0078 member |
+  | --- | --- | --- |
+  | `schemas/change-set.schema.json` | optional `branch`, `$defs/branch_name` (+9) | D2.4 (request member; D2.3 name pattern) |
+  | `schemas/project-policy.schema.json` | optional `administration: {in_band: true}`, description (+15, -2) | D5.1 |
+  | `schemas/application-results.schema.json` | eight `$defs`: `branch`, `branch_page`, `branch_result` (D2.5), `solve_policy_registration`, `solve_policy_view` (D4.5), `grant_result`, `revoke_result`, `ambient_pressure_result` (D5.2), and the file description (+272, -2) | D2.5, D4.5, D5.2 |
+
+  No file lacks a justifying member. `schemas/registry.json` is not touched (no schema file is added).
+- **E-X06-24, catalogue check.** All twelve new `detail.code` values are in
+  `src/openflowsheet/messages/catalogue/refusals.yaml`; `tests/test_msg_coverage.py` (the scan of every code against
+  the catalogue, ADR 0058 C3) 8 passed; with `tests/test_msg_engine.py` (catalogue lint clean) and `tests/test_t07_store.py`, 108 passed.
