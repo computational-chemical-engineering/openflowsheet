@@ -15,7 +15,9 @@ import ast
 import copy
 import hashlib
 import json
+import math
 from collections.abc import Iterator
+from dataclasses import replace
 from pathlib import Path
 from typing import Any
 
@@ -24,8 +26,11 @@ from t07_corpus import CORPUS
 from t07_jobs_support import commit
 
 from openflowsheet.application.errors import ApplicationError
+from openflowsheet.application.job_requests import JobRequest, SolveBody
+from openflowsheet.application.jobs.model import TERMINAL_STATUSES
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.policy_types import ReplayPolicy
+from openflowsheet.application.revision_replay import reproduce_bundle
 from openflowsheet.application.solve_policy_registry import POLICY_DIR, artifact_id
 from openflowsheet.canonical import canonical_json
 from openflowsheet.orchestrator.policies import (
@@ -33,7 +38,12 @@ from openflowsheet.orchestrator.policies import (
     REGISTERED_POLICY_IDS,
     T06_REVISION_V2,
 )
-from openflowsheet.orchestrator.policy_validation import solve_policy_problems
+from openflowsheet.orchestrator.policy_validation import (
+    is_project_policy_id,
+    solve_policy_problems,
+)
+from openflowsheet.run.bundle import read_artifact, read_manifest, verify_bundle, write_bundle
+from openflowsheet.run.identity import r0_projection, r0_sha256
 from openflowsheet.run.manifest import policy_sha256
 from openflowsheet.verify.verdict import CheckPolicy
 
@@ -293,13 +303,6 @@ def test_e_x06_12_a_renamed_copy_solves_to_the_same_state(runs: dict[str, Any]) 
     assert json.loads(right["artifacts/solve-policy.json"]) == runs["document"]
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason="Q7 STOP (X06-WO3, reported to the design lane): run.bundle._cross_check_solve_path "
-    "resolves solve-path.json's policy_requested by name through the application registry, so "
-    "a project policy's bundle fails its integrity check (tampered: solve-path.json) and "
-    "reproduces inspected_archived_results/NOT_RUN instead of compatible_reproduction/MATCH",
-)
 def test_e_x06_13_the_copy_bundle_replays_without_the_project(
     runs: dict[str, Any], tmp_path: Path
 ) -> None:
@@ -316,19 +319,156 @@ def test_e_x06_13_the_copy_bundle_replays_without_the_project(
     assert copy_report["integrity"] == base["integrity"]
 
 
-def test_q7_the_bundle_check_resolves_the_requested_policy_by_name(runs: dict[str, Any]) -> None:
-    """The measured cause of E-X06-13's failure, pinned until the design lane rules (Q7):
-    `verify_bundle` marks the project policy's `solve-path.json` tampered, and only it."""
-    from openflowsheet.run.bundle import verify_bundle
-
+def test_q7_a_project_policy_bundle_verifies_on_its_own_document(runs: dict[str, Any]) -> None:
+    """X06 ruling R1-1 (T2): `verify_bundle` judges a `user.` request against the bundle's own
+    `solve-policy.json`, so `user.copy`'s bundle is intact, as `T06-revision-v2`'s is."""
     integrity = {name: verify_bundle(root).as_document() for name, root in runs["bundles"].items()}
-    assert integrity["T06-revision-v2"]["ok"] is True
-    assert integrity["user.copy"] == {
-        "ok": False,
-        "missing": [],
-        "tampered": ["solve-path.json"],
-        "unexpected": [],
+    assert integrity["user.copy"] == {"ok": True, "missing": [], "tampered": [], "unexpected": []}
+    assert integrity["user.copy"] == integrity["T06-revision-v2"]
+
+
+def _rewrite(directory: Path, target: Path, *, intact: bool = True, **changes: Any) -> Path:
+    """`tests/test_t07_w3a_revision_runs.py`'s forger: a copy of a bundle with artifacts replaced
+    (`name=document`, `None` drops one) and the index, `artifact_r0_sha256` and the manifest's
+    hashes recomputed (`manifest={...}` overrides manifest members)."""
+    manifest, _ = read_manifest(directory)
+    artifacts = {name: read_artifact(directory, name) for name in manifest.artifacts}
+    overrides = changes.pop("manifest", {})
+    for name, document in changes.items():
+        key = name.replace("_", "-") + ".json"
+        if document is None:
+            artifacts.pop(key, None)
+        else:
+            artifacts[key] = document
+    forged = replace(manifest, artifact_r0_sha256=r0_sha256(r0_projection(artifacts)), **overrides)
+    written = write_bundle(target, forged, artifacts)
+    assert verify_bundle(target).ok is intact
+    assert set(written.artifacts) == set(artifacts)
+    return target
+
+
+def _document_sha256(document: Any) -> str:
+    return hashlib.sha256(canonical_json(document)).hexdigest()
+
+
+def _forgeries(runs: dict[str, Any]) -> dict[str, tuple[Path, dict[str, Any]]]:
+    """X06 ruling R1-1 (T3): each forgery as `name: (source bundle, _rewrite's changes)`."""
+    source, named = runs["bundles"]["user.copy"], runs["bundles"]["T06-revision-v2"]
+    request = read_artifact(source, "solve-path.json")
+    policy = read_artifact(source, "solve-policy.json")
+    other = dict(policy, policy_id="user.other")
+    forgeries: dict[str, tuple[Path, dict[str, Any]]] = {
+        "F1 request renamed": (
+            source,
+            {"solve_path": dict(request, policy_requested="user.other")},
+        ),
+        "F2 document edited": (
+            source,
+            {"solve_policy": dict(policy, max_attempts=policy["max_attempts"] + 1)},
+        ),
+        "F3 document renamed": (
+            source,
+            {"solve_policy": other, "manifest": {"policy_sha256": _document_sha256(other)}},
+        ),
+        "F4 named bundle relabelled": (
+            named,
+            {
+                "solve_path": dict(
+                    read_artifact(named, "solve-path.json"), policy_requested="user.copy"
+                )
+            },
+        ),
+        "F5 document dropped": (source, {"solve_policy": None}),
+        "F8 unknown route": (source, {"solve_path": dict(request, solve_path="no_such_route")}),
     }
+    without_scales = {k: v for k, v in policy.items() if k != "scales"}
+    malformed = {
+        "list": [],
+        "empty": {},
+        "no scales": without_scales,
+        "recycle 5": dict(policy, recycle=5),
+        "residual_tolerances 5": dict(policy, residual_tolerances=5),
+    }
+    for label, document in malformed.items():
+        forgeries[f"F6 {label}"] = (source, {"solve_policy": document})
+    for policy_id in ("user.", "user.-x", "user.x\n", "user." + 65 * "a"):
+        coherent = dict(policy, policy_id=policy_id)
+        forgeries[f"F7 {policy_id!r}"] = (
+            source,
+            {
+                "solve_path": dict(request, policy_requested=policy_id),
+                "solve_policy": coherent,
+                "manifest": {"policy_id": policy_id, "policy_sha256": _document_sha256(coherent)},
+            },
+        )
+    return forgeries
+
+
+def test_q7_a_forged_project_policy_bundle_is_tampered(
+    runs: dict[str, Any], tmp_path: Path
+) -> None:
+    """X06 ruling R1-1 (T3): a `user.` request is `tampered` unless the route is known and the
+    bundle's own document is indexed, intact, rebuilds, carries the requested id and hashes to the
+    manifest's `policy_sha256`; an id outside the pattern (F7) is judged by the registered path.
+    Every forgery re-hashes the index and the manifest; none raises; F1 to F3 are never rerun."""
+    forgeries = _forgeries(runs)
+    assert len(forgeries) == 15
+    for index, (label, (source, changes)) in enumerate(sorted(forgeries.items())):
+        bundle = _rewrite(source, tmp_path / f"b{index}", intact=False, **changes)
+        assert verify_bundle(bundle).tampered == ("solve-path.json",), label
+        if label[:2] in {"F1", "F2", "F3"}:
+            result = reproduce_bundle(
+                bundle, rerun=True, rerun_directory=tmp_path / f"r{index}", run_id="r"
+            )
+            assert (result.report.verdict, result.rerun_manifest) == ("NOT_RUN", None), label
+
+
+def test_q7_limit_a_coherent_relabel_is_not_detected(runs: dict[str, Any], tmp_path: Path) -> None:
+    """X06 ruling R1-1 (T4), the stated limit: a `user.` id is bound only within its project
+    (ADR 0078 D4.4), so a bundle relabelled coherently (the request, the document and the
+    manifest's `policy_id` and `policy_sha256` rewritten together) verifies `ok`; replay reruns
+    the bundle's own document and stays the guard. Tightening this is a recorded decision."""
+    named = runs["bundles"]["T06-revision-v2"]
+    document = dict(read_artifact(named, "solve-policy.json"), policy_id="user.t06")
+    request = dict(read_artifact(named, "solve-path.json"), policy_requested="user.t06")
+    manifest = {"policy_id": "user.t06", "policy_sha256": _document_sha256(document)}
+    bundle = _rewrite(
+        named, tmp_path / "b", solve_path=request, solve_policy=document, manifest=manifest
+    )
+    assert verify_bundle(bundle).ok
+
+
+def test_q7_a_lowered_budget_run_verifies_and_reproduces(
+    runs: dict[str, Any], tmp_path: Path
+) -> None:
+    """X06 ruling R1-1 (T5): `user.copy` solved with `max_property_calls` one below its
+    document's. The run records the effective policy, so the manifest's hash is the lowered
+    document's; the bundle verifies `ok` and reproduces `MATCH` in a fresh project."""
+    application = runs["app"]
+    lowered = runs["document"]["max_property_calls"] - 1
+    revision = application.get_job(runs["results"]["user.copy"].job_id).request.body.revision_id
+    body = SolveBody(revision_id=revision, policy_id="user.copy", max_property_calls=lowered)
+    job = application.submit_job(JobRequest("solve", "lowered", body)).job
+    while job.status not in TERMINAL_STATUSES:
+        application.wait_job(job.job_id, timeout_s=math.inf)
+        job = application.get_job(job.job_id)
+    bundle = _bundle(application, job.job_id)
+    recorded = read_artifact(bundle, "solve-policy.json")
+    assert recorded == dict(runs["document"], max_property_calls=lowered)
+    assert read_manifest(bundle)[0].policy_sha256 == _document_sha256(recorded)
+    assert verify_bundle(bundle).ok
+    fresh = LocalApplication.create(tmp_path / "fresh")
+    try:
+        report = fresh.reproduce(bundle, ReplayPolicy(rerun=True)).as_document()
+    finally:
+        fresh.close()
+    assert (report["mode"], report["verdict"]) == ("compatible_reproduction", "MATCH")
+
+
+def test_s1_a_project_policy_id_is_matched_whole() -> None:
+    """X06 ruling R1-1, S1 (T6): `$` would accept a trailing newline under `match`."""
+    assert is_project_policy_id("user.x")
+    assert not is_project_policy_id("user.x\n")
 
 
 # ------------------------------------------------------------------------------ E-X06-14

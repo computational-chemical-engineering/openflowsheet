@@ -211,6 +211,11 @@ def _cross_check_solve_path(
     Only an indexed, present and intact file is judged, and an unknown route or policy id is
     itself a reason. A bundle without the file — every K05 bundle — is untouched.
 
+    A request for a project policy (a `user.` id, ADR 0078 D4.1, matched whole) names no
+    registered policy: it is judged against the bundle's own `solve-policy.json` alone
+    (`_project_policy_recorded`; X06 ruling R1-1, ADR 0078 R1, R-1074), never against a
+    project's store, and the route must still be known. Every other request is judged as above.
+
     The registry is `orchestrator.policies`' (ADR 0076 I-3), imported here, not at module level.
     """
     from dataclasses import replace  # noqa: PLC0415
@@ -219,6 +224,9 @@ def _cross_check_solve_path(
         INNER_ROUTE,
         ROUTE_DEFAULT_POLICY,
         resolve_policy,
+    )
+    from openflowsheet.orchestrator.policy_validation import (  # noqa: PLC0415
+        is_project_policy_id,
     )
     from openflowsheet.run.manifest import policy_sha256  # noqa: PLC0415
 
@@ -234,6 +242,12 @@ def _cross_check_solve_path(
     requested = recorded.get("policy_requested") if isinstance(recorded, Mapping) else None
     # M02 design note §4.4: `revision_coupled` resolves its default through its inner route.
     known = [path for path in (*ROUTE_DEFAULT_POLICY, *INNER_ROUTE) if path == route]
+    if isinstance(requested, str) and is_project_policy_id(requested):
+        if not (
+            known and _project_policy_recorded(directory, manifest, requested, missing, tampered)
+        ):
+            tampered.append(SOLVE_PATH_NAME)
+        return
     resolved = resolve_policy(requested, known[0]) if known and isinstance(requested, str) else None
     if resolved is None:
         tampered.append(SOLVE_PATH_NAME)
@@ -258,3 +272,31 @@ def _cross_check_solve_path(
             candidates.append(replace(resolved, max_property_calls=calls))
     if all(policy_sha256(candidate) != manifest.policy_sha256 for candidate in candidates):
         tampered.append(SOLVE_PATH_NAME)
+
+
+def _project_policy_recorded(
+    directory: Path, manifest: RunManifest, requested: str, missing: list[str], tampered: list[str]
+) -> bool:
+    """Whether the bundle's own `solve-policy.json` is the project policy `requested` names.
+
+    X06 ruling R1-1 (ADR 0078 R1, R-1074): the document is indexed, present and intact; it is
+    rebuilt by `SolvePolicy.from_document`; its `policy_id` is `requested`; and its hash is the
+    manifest's `policy_sha256`. There is one candidate: the run writes the effective policy, so a
+    budget lowered at admission (§8.3) is already in the document. A document that does not
+    rebuild, or does not hash, is a `False`, never an exception. A coherent substitution (the
+    document, the request and the manifest's hash rewritten together) is beyond this check;
+    replay reruns the bundle's own document, so a substitute that did not produce the archived
+    state reproduces as `MISMATCH`, never `MATCH`.
+    """
+    from openflowsheet.numerics.solve_record import SolvePolicy  # noqa: PLC0415
+    from openflowsheet.run.manifest import policy_sha256  # noqa: PLC0415
+
+    name = "solve-policy.json"
+    if name not in manifest.artifacts or name in missing or name in tampered:
+        return False
+    try:
+        candidate = SolvePolicy.from_document(read_artifact(directory, name))
+        recorded = policy_sha256(candidate)
+    except (ValueError, TypeError, KeyError, AttributeError):  # judged, never raised
+        return False
+    return candidate.policy_id == requested and recorded == manifest.policy_sha256

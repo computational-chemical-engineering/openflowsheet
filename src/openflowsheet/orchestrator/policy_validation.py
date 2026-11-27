@@ -81,8 +81,9 @@ class PolicyProblem(NamedTuple):
 
 
 def is_project_policy_id(policy_id: str) -> bool:
-    """D4.1: whether `policy_id` is a project policy's id (`user.` and the pattern)."""
-    return PROJECT_POLICY_ID.match(policy_id) is not None
+    """D4.1: whether `policy_id` is a project policy's id (`user.` and the pattern, matched whole:
+    `match` would let `$` accept a trailing newline; X06 ruling R1-1, S1)."""
+    return PROJECT_POLICY_ID.fullmatch(policy_id) is not None
 
 
 def _escape(token: str) -> str:
