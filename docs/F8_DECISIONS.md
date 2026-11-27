@@ -370,3 +370,14 @@ Amendment 12 members), `1b3b55f2` (tests, re-record tool, E-F8-1 expectation).
   `schemas/`, `src/openflowsheet/run/replay.py`, `catalogue/replay.yaml`, `scripts/m07a_rc.py` (c_13) and the WO1b,
   WO3 and WO5 entries above. Header "Proposed 2026-11-27; F8" (the ADR is Proposed). Reversible by: reverting this
   commit.
+- **DECISION F8-CO-2. Manifest rows for E-F8-7 and E-F8-9 use `result: not_applicable`** (the schema's enum has no
+  `not_in_scope`; the reason is in `value`). The inherited red `test_j16_...` (F2-WO4's v2 specification fixtures,
+  reproduced on the f2 head `a64f93fb`) is recorded as a `fail` check, not hidden and not fixed here (no change under
+  `tests/`). Reversible by: editing the manifest.
+- **STOP F8-CO-3 (for the orchestrator). The manifest moves the harvest size, and its fix is outside this brief.**
+  `tests/test_m07a_harvest.py::test_m07a_a50_the_harvest_size_is_the_quoted_one` measures (109, 1180, 150) against the
+  pinned (108, 1176, 147). F2's manifest commit (`2bba85c3`) closed the same test by adding rows to
+  `benchmarks/t08/support_envelope.yaml`, `docs/support-matrix.md` and `HARVEST_SIZE` in the test. The brief forbids
+  a change under `tests/`, and F2's `HARVEST_SIZE` (109, 1180, 151) will conflict with F8's at the merge. Left red;
+  the manifest passes `test_evidence_manifests.py`. Needs a ruling: add the harvest rows and the pin here, or at the
+  merge of F2 and F8 together.
