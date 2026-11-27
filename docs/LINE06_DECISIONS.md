@@ -257,3 +257,9 @@ Reversible by: <how>.` Package build decisions go in the package's own file (`do
   rerun); invariant sweep finds 0 per-platform records in the repository (vacuous; synthetic cases carry it). Four
   mutation controls fail as intended. Before it: DECISION F8-WO5-0 (X07a errata E-D7-1..5 folded into ADR 0067 D7,
   `369150d3`). Open for the Opus review: F8-WO5-4 says a solver-counter change did not move R0 for GP-C1.
+- 2026-11-27 **F8-WO5 Opus review judged PASS** (wp/F8 `a4b0ede1`, `opus-engineer`): no must-fix; three should-fix
+  fixed (selection test exact, loader refuses misnamed/malformed records, invariant reports a missing reference);
+  `tests/test_f8_platform_refs.py` 29 passed (rerun by the orchestrator); 178 passed on the F8/X07a/t07_w5e set; F0
+  PASS. R3: `r0_projection` is correct (last-event `residual_calls`, `jacobian_calls`, `factorizations` +1 each move
+  R0 on GP-C1; event 0 and property counters do not); no finding. R4: a v2-policy selection test added. For the F8
+  reviewer: selection does not re-check `reference_sha256`; departures' values are not checked against the records.
