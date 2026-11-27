@@ -157,3 +157,8 @@ Reversible by: <how>.` Package build decisions go in the package's own file (`do
   WO3b-1 (40th scalar `policy/admissibility_epsilon`, the ruling counted 39) goes to X06's reviewer batch; R-1075 text
   amended to say so. For WO5: E-X06-13 optimize half `not run` (no nlp extra). Code-health item S2: an
   AttributeError escapes `reproduce` on a named bundle (to file with code_health). X06-WO4 brief written, launched.
+- 2026-11-27: X06-WO4 stopped at the context cap (not a miss; incomplete): wp/X06 ac15a44a, code in a84e9b14, CLI
+  audit fixture a9038f7b, DECISIONs WO4-1..7, handoff "Where WO4 stopped". Q26 STOP (batched to X06 reviewer):
+  grant_capability limits/{default_wall_time_s,max_wall_time_s,max_active_jobs}, set_ambient_pressure value. Found:
+  render_error prints explain's "no message code" text when a message lacks its code prefix (WO2-WO4 carry it; check
+  in review). X06-WO4b (continuation) brief written, launched.
