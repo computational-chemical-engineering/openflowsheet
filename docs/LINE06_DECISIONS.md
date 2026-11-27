@@ -147,3 +147,7 @@ Reversible by: <how>.` Package build decisions go in the package's own file (`do
   Head wp/X06 c526de6a. Both touch replay identity / an R-088 exception, so not batched:
   DECISION: one fresh `architect` pass for both rulings now (brief docs/briefs/LINE06-X06-R1.md), then a small fix
   WO; X06-WO4 waits for it. Alternative: batch into X06's reviewer pass. Reversible by: none needed (advice only).
+- 2026-11-27: X06-R1 (architect) ruled, wp/X06 313907cd: Q7 -> a `user.` bundle judged on its own
+  solve-policy.json, store never consulted (R-1074); Q26 -> `policy/scales` admitted by full path, 39 scalars pinned
+  (R-1075). Both clarify Accepted ADR 0078; no user card (F3's R-1058 form). New find: `is_project_policy_id` needs
+  fullmatch. X06-WO3b brief written (docs/briefs/LINE06-X06-WO3b.md), launched on opus-engineer.

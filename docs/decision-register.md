@@ -20524,3 +20524,33 @@ link is renumbered c_11 and F2's c_12 in the second branch's merge commit.
 
 **Decision.** X06's tools (from WO2 on) are chain link c_12, onto c_10 on wp/X06 until the merge; the second branch to
 merge decomposes onto the first's (ADR 0078 D6; R-1072's merge-order rule).
+
+## R-1074: a `user.` bundle is judged against its own policy document (2026-11-27)
+
+| | |
+| --- | --- |
+| Date | 2026-11-27 |
+| Decided by | design lane (`architect`), X06 ruling round R1, clarifying ADR 0078 (Accepted, R-1071) |
+| Normative text | ADR 0078, section "X06 ruling round R1 applied" (added by X06-WO3b) |
+| Evidence | `docs/X06_DECISIONS.md` on wp/X06 `313907cd`, section R1-1 (Q7 measured: E-X06-13 failed at `c526de6a`) |
+| Affected packages | X06 |
+
+**Decision.** `verify_bundle` judges a `user.` request (D4.1, matched whole) against the bundle's own
+`solve-policy.json`, never the project store; every other request as before. A coherent substitution of a `user.`
+policy is beyond integrity; replay and the certificate stay the guard. Rejected: consulting the project store (the
+verdict would depend on the project).
+
+## R-1075: R-088 Q26 admits `register_solve_policy`'s `policy/scales` by full path (2026-11-27)
+
+| | |
+| --- | --- |
+| Date | 2026-11-27 |
+| Decided by | design lane (`architect`), X06 ruling round R1, clarifying ADR 0078 (Accepted, R-1071) |
+| Normative text | ADR 0078, section "X06 ruling round R1 applied" (added by X06-WO3b) |
+| Evidence | `docs/X06_DECISIONS.md` on wp/X06 `313907cd`, section R1-2 (`test_t07_q26_no_external_state` failed at `c526de6a`) |
+| Affected packages | X06 |
+
+**Decision.** `policy/scales` (registered quantity kind to positive constant) is the one numeric map R-088 Q26 admits
+in the `SolvePolicies` requests, by that full path only; the request's 39 numeric scalars are pinned by full path.
+Precedent: F3's `validate_record` `reactions/*/stoichiometry` (R-1058). Rejected: refusing `scales` in a user policy
+(would change ADR 0078 D4).
