@@ -55,7 +55,8 @@ item's first `effective_rights`; `rights_assessment_result` (the record assessed
 masked like the timestamps. X06 (ADR 0078 D2.5) adds `branch_result` (`create_branch` of
 `what-if` at the parent), `branch_page` (`list_branches`: `head` and `what-if`) and its first
 item, `branch`; X06-WO3 (D4.5) adds `solve_policy_registration` (`register_solve_policy` of
-`user.copy`, `T06-revision-v2` renamed) and `solve_policy_view` (`get_solve_policy` of it);
+`user.copy`, `T04-W12` renamed: the revision path's policy names values no committed fixture
+may carry, X06-CI1-2) and `solve_policy_view` (`get_solve_policy` of it);
 X06-WO4 (D5.2), with the operator's switch on, adds `ambient_pressure_result` (1 bar declared),
 `grant_result` (a `read` grant within `project grant`'s limits) and `revoke_result` (that grant
 revoked), `tests/x06_schema_support.administration_requests`. What a grant draws at random (its
@@ -361,8 +362,8 @@ def application_results_documents() -> dict[str, Any]:
             branches = call("list_branches", {})
             responses["branch_page"] = branches
             responses["branch"] = branches["items"][0]
-            # X06 (ADR 0078 D4.5): a renamed copy of the revision path's policy, registered.
-            for name, request in solve_policies_requests():
+            # X06 (ADR 0078 D4.5): a renamed copy of the legacy route's policy, registered.
+            for name, request in solve_policies_requests(base="T04-W12"):
                 key = "solve_policy_registration" if name == "register_solve_policy" else None
                 responses[key or "solve_policy_view"] = call(name, request)
             # X06 (ADR 0078 D5.2): the operator's switch on, then each administration write.

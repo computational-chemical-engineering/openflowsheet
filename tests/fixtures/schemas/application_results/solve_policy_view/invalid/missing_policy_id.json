@@ -8,8 +8,8 @@
       "derivative_path": "assembled_schur",
       "eta_inner": 1e-10,
       "globalization": {
-        "eo_core": "newton_refined",
-        "eo_recovery": "homotopy_or_sequential_restart",
+        "eo_core": "newton",
+        "eo_recovery": "homotopy",
         "eo_recovery_max_count": 1,
         "homotopy": {
           "corrector_max_iterations": 10,
@@ -55,7 +55,7 @@
       "max_iterations_per_attempt": 50,
       "max_property_calls": 10000,
       "merit": "scaled_residual_half_norm2",
-      "phase_contract": "T05b-phase-contract-v2",
+      "phase_contract": "T03-phase-contract-v1",
       "phase_wall_patience": 2,
       "policy_id": "user.copy",
       "recycle": {
@@ -82,6 +82,6 @@
       "step_halvings_max": 20
     },
     "origin": "project",
-    "policy_sha256": "c732a938dfba3988d81973e655c5fc8ac5869055d794cb0fb87f1400ee850ef1"
+    "policy_sha256": "13a243a9b1a2c1e0c1bb449055b860afcf8c7f25d15073402bd3ed23aa7e5bac"
   }
 }

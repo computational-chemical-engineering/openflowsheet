@@ -104,20 +104,26 @@ def branches_requests(revision_id: str) -> list[tuple[str, dict[str, Any]]]:
     ]
 
 
-def solve_policy_document(policy_id: str = "user.copy") -> dict[str, Any]:
-    """`T06-revision-v2`'s document with only `policy_id` changed (ADR 0078 E-X06-12)."""
-    from openflowsheet.orchestrator.policies import T06_REVISION_V2
+def solve_policy_document(
+    policy_id: str = "user.copy", *, base: str = "T06-revision-v2"
+) -> dict[str, Any]:
+    """The registered policy `base`'s document with only `policy_id` changed: by default
+    `T06-revision-v2`'s (ADR 0078 E-X06-12)."""
+    from openflowsheet.orchestrator.policies import APPLICATION_POLICIES
 
-    return {**T06_REVISION_V2.as_document(), "policy_id": policy_id}
+    return {**APPLICATION_POLICIES[base].as_document(), "policy_id": policy_id}
 
 
-def solve_policies_requests() -> list[tuple[str, dict[str, Any]]]:
+def solve_policies_requests(base: str = "T06-revision-v2") -> list[tuple[str, dict[str, Any]]]:
     """One succeeding request of each `SolvePolicies` operation (ADR 0078 D4.5): a copy of the
-    revision path's policy registered, then read."""
+    registered policy `base` (the revision path's by default) registered, then read. The committed
+    `application-results` fixtures copy `T04-W12` instead: the revision path's document names
+    values no committed fixture may carry (`test_t05b_literal`, `test_t06_f4_literals`,
+    `test_t06_w18_literal`; X06 decision X06-CI1-2)."""
     return [
         (
             "register_solve_policy",
-            {"policy": solve_policy_document(), "idempotency_key": "sp1"},
+            {"policy": solve_policy_document(base=base), "idempotency_key": "sp1"},
         ),
         ("get_solve_policy", {"policy_id": "user.copy"}),
     ]

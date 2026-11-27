@@ -572,3 +572,11 @@ Brief `docs/briefs/LINE06-X06-CI1.md`, build lane. The same ten tests failed on 
   --check` passes with v2's bytes `6b449911…` unchanged; `X06_SERVED_SHA256` `7792576e…` and the chain unchanged
   (`test_t08_w2_surface_digest`, `test_m07a_surface_chain` pass); the R4-G3 snapshots unchanged. Alternative: rename
   the two members (the ADR names them) or amend ADR 0025 (design lane). Reversible by: reverting the commit.
+- **DECISION X06-CI1-2. The `SolvePolicies` fixtures copy `T04-W12`, not `T06-revision-v2`.** The committed
+  `application_results/solve_policy_view` fixtures carried `T06-revision-v2`'s document, which names
+  `T05b-phase-contract-v2`, `homotopy_or_sequential_restart` and `newton_refined`; the guards `test_b06_*`,
+  `test_wo1_*` and `test_w18_*` forbid each in committed fixtures, with F0's archived outputs as their only exemption
+  (not applicable). The fixture generator now registers `T04-W12`'s document renamed `user.copy`
+  (`solve_policies_requests(base="T04-W12")`; the default stays the revision path's for the request corpora and
+  E-X06-12). `--write` changed exactly the four `solve_policy_*` fixtures. Alternative: a new exemption in the three
+  guards (no precedent). Reversible by: reverting the commit.
