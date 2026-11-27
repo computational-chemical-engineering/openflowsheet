@@ -307,3 +307,7 @@ Reversible by: <how>.` Package build decisions go in the package's own file (`do
   Orchestrator rerun: `test_f8_*` + harvest 165 passed. Not re-reviewed (the review's work order was followed as
   written). Full gate on 14409696 started in a detached worktree `.claude/worktrees/f8-gate` (summary
   `~/.cache/line06/f8-gate/gate-14409696.summary`). ADR 0067 acceptance + push card requested from hub.
+- 2026-11-27 **F2 gate PASS on 4b820b97** (21725 passed, 107 skipped, 3 xfailed, 1:31:05). Card `ofs-f2-push-ci`
+  executed: pushed origin wp/F2 = 4b820b97 (new branch). CI waiter: `~/.cache/line06/ci/f2-4b820b97.log`. Then on
+  wp/F2 (local, docs only, after the pushed head): stale D_11 in ADR 0019 Amendment 9 and `docs/interfaces-frozen.md`
+  corrected to `8eee5313...`, ADR 0062 Accepted there; tests reading them 522 passed. wp/F8 picks this up at its merge.
