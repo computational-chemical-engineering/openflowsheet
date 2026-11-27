@@ -388,3 +388,6 @@ addendum is needed (the closed partition audits names containing `sha256`).
 - **Q-WO5-c (ADR-F6). A flowing stream whose ṁ underflows to 0.0** (5e-324 of a molar component; dormancy is on the
   amounts, D4) has an energy row of rank 0 in ĥ that is not a zero-flow form. The probe raises
   `ProbeUnresolvedError` (tested) rather than choose; Q1.A5 asserts only that such a stream is flowing.
+- **Gate at `15e82c82`.** WO4's battery suites plus `tests/test_f2_probes.py`: 5,609 passed (5,596 + 13), 28 skipped,
+  3 xfailed, 0 failed; ruff, ruff format --check, `mypy src` clean; F0 PASS M1 50/50, M2-M5 61/61, M6 85/85, M7 52/52,
+  M8 105/105, M9 42/42 (`~/.cache/line06/f2wo5-final.log`). No `src/` file changed in WO5.
