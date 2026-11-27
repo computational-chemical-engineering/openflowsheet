@@ -1,0 +1,112 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/frankp/process-runtime/schemas/specification-v2.schema.json",
+  "title": "SpecificationV2",
+  "description": "DRAFT until ADR 0062 is Accepted (F2-WO4). ADR 0062 D10: the specification of a `ProcessRevision` v2 document. v1's fields (`specification.schema.json`, unchanged), with `target` either v1's `{object_type, object_id, path}` (the only form for instances and `nTP-v1` connections) or one of `{variable: <vid>}` (ADR 0062 D7), `{derived: <derived_quantity id>, version, stream: <connection id>, component?, phase?}`, `{energy: <connection id>}`, `{signal: <connection id>}`. `kind` must equal the target's quantity kind; a derived target is refused `construct_unavailable(derived:<id>, F4)` until ADR-F4/F5 build it. Those rules, and every reference, are the revision validator's (`openflowsheet.revision_v2.validate`).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "target", "kind", "unit", "tolerance", "role", "provenance"],
+  "oneOf": [
+    { "required": ["value"], "not": { "required": ["bounds"] } },
+    { "required": ["bounds"], "not": { "required": ["value"] } }
+  ],
+  "properties": {
+    "id": { "$ref": "#/$defs/uid" },
+    "target": { "$ref": "#/$defs/target" },
+    "kind": {
+      "$ref": "https://github.com/frankp/process-runtime/schemas/quantity.schema.json#/$defs/kind"
+    },
+    "unit": { "type": "string", "minLength": 1 },
+    "value": { "type": "number" },
+    "bounds": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "lower": { "type": ["number", "null"] },
+        "upper": { "type": ["number", "null"] }
+      },
+      "minProperties": 1
+    },
+    "tolerance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["absolute"],
+      "properties": {
+        "absolute": { "type": "number", "minimum": 0 },
+        "relative": { "type": "number", "minimum": 0 },
+        "scale": { "type": "number", "exclusiveMinimum": 0 }
+      }
+    },
+    "role": { "enum": ["fixed", "free", "decision"] },
+    "provenance": { "type": "string", "minLength": 1 },
+    "notes": { "type": "string" }
+  },
+  "$defs": {
+    "uid": {
+      "description": "A revision-local id (the v1 id pattern, ADR 0062 D11).",
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+    },
+    "target": {
+      "description": "ADR 0062 D10's five target forms; a probe endpoint (D9) names one of them too.",
+      "oneOf": [
+        { "$ref": "#/$defs/legacy_target" },
+        { "$ref": "#/$defs/variable_target" },
+        { "$ref": "#/$defs/derived_target" },
+        { "$ref": "#/$defs/energy_target" },
+        { "$ref": "#/$defs/signal_target" }
+      ]
+    },
+    "legacy_target": {
+      "description": "v1's target, unchanged (`specification.schema.json`).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["object_type", "object_id", "path"],
+      "properties": {
+        "object_type": { "enum": ["instance", "connection"] },
+        "object_id": { "type": "string", "minLength": 1 },
+        "path": { "type": "string", "minLength": 1 },
+        "component": { "type": ["string", "null"] }
+      }
+    },
+    "variable_target": {
+      "description": "A variable of a `mat-v1`, energy or signal connection by its rendered id (ADR 0062 D7).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["variable"],
+      "properties": { "variable": { "type": "string", "minLength": 1 } }
+    },
+    "derived_target": {
+      "description": "A derived quantity of a stream (ADR 0062 D5); `phase` is a phase or phase-set rendering (D6).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["derived", "version", "stream"],
+      "properties": {
+        "derived": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9_-]*(\\.[A-Za-z0-9][A-Za-z0-9_-]*)*$",
+          "maxLength": 128
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"
+        },
+        "stream": { "$ref": "#/$defs/uid" },
+        "component": { "$ref": "#/$defs/uid" },
+        "phase": { "type": "string", "minLength": 1 }
+      }
+    },
+    "energy_target": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["energy"],
+      "properties": { "energy": { "$ref": "#/$defs/uid" } }
+    },
+    "signal_target": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["signal"],
+      "properties": { "signal": { "$ref": "#/$defs/uid" } }
+    }
+  }
+}

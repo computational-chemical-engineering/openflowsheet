@@ -453,6 +453,270 @@
         }
       }
     },
+    "payload_attribute_kind": {
+      "description": "ADR 0062 D5 (F2-WO2): an attribute kind's scope, partition and class flags, quantity kind, parent kind and admissibility inequalities (Q6.R5; `[coefficient, term]` sums, checked with the allowance τ_mono). F1 refuses a kind whose index set holds a definitional identity (`attribute_redundant`). No built-in in 0.5; F2's three probes are test-only registrations.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "scope",
+        "partition",
+        "classed",
+        "quantity_kind",
+        "parent_kind",
+        "inequalities"
+      ],
+      "properties": {
+        "scope": {
+          "enum": [
+            "component",
+            "substream"
+          ]
+        },
+        "partition": {
+          "type": "boolean"
+        },
+        "classed": {
+          "type": "boolean"
+        },
+        "quantity_kind": {
+          "type": "string",
+          "minLength": 1
+        },
+        "parent_kind": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "inequalities": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "lhs",
+              "rhs",
+              "allowance"
+            ],
+            "properties": {
+              "lhs": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  ],
+                  "items": false,
+                  "minItems": 2
+                }
+              },
+              "rhs": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  ],
+                  "items": false,
+                  "minItems": 2
+                }
+              },
+              "allowance": {
+                "const": "tau_mono"
+              }
+            }
+          }
+        }
+      }
+    },
+    "payload_derived_quantity": {
+      "description": "ADR 0062 D5 (F2-WO2): a derived quantity's inputs, auxiliary state points, output, quantity kind, degeneracy condition and expression. `expression` is preview: in 0.5 and 0.6 only `builtin` is admitted (T, β, s_mass, h_molar, x[c], w[c], ρ, bubble and dew T and P, built by ADR-F4/F5). `output` is a vocabulary item or `builtin`.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "inputs",
+        "auxiliary_points",
+        "output",
+        "quantity_kind",
+        "degeneracy",
+        "expression"
+      ],
+      "properties": {
+        "inputs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "role",
+              "endpoint_kind"
+            ],
+            "properties": {
+              "role": {
+                "type": "string",
+                "minLength": 1
+              },
+              "endpoint_kind": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        },
+        "auxiliary_points": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "name",
+              "spec",
+              "candidates"
+            ],
+            "properties": {
+              "name": {
+                "type": "string",
+                "minLength": 1
+              },
+              "spec": {
+                "type": "array",
+                "minItems": 2,
+                "maxItems": 2,
+                "items": {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  ],
+                  "items": false,
+                  "minItems": 2
+                }
+              },
+              "candidates": {
+                "anyOf": [
+                  {
+                    "const": "method"
+                  },
+                  {
+                    "type": "array",
+                    "minItems": 1,
+                    "uniqueItems": true,
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "output": {
+          "anyOf": [
+            {
+              "const": "builtin"
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "vocabulary_item"
+              ],
+              "properties": {
+                "vocabulary_item": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            }
+          ]
+        },
+        "quantity_kind": {
+          "type": "string",
+          "minLength": 1
+        },
+        "degeneracy": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "expression": {
+          "const": "builtin"
+        }
+      }
+    },
+    "payload_kinetics_kind": {
+      "description": "ADR 0062 D5 (F2-WO2): a kinetics kind's core envelope; its rate expression is preview (in the revision's `reaction_sets[].kinetics` body).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "writes",
+        "indices"
+      ],
+      "properties": {
+        "writes": {
+          "const": "source_terms"
+        },
+        "indices": {
+          "const": "any_carried"
+        }
+      }
+    },
+    "payload_phase_family": {
+      "description": "ADR 0062 D6 (F2-WO2): a phase family is its id (`^[A-Z][A-Z0-9_]*$`; the built-ins VAPOR, LIQUID, FLUID, SOLID, in that registration order). Its vocabulary is the id; its semantics are ADR-F5's, so the payload is empty.",
+      "type": "object",
+      "additionalProperties": false
+    },
+    "payload_revision_section": {
+      "description": "ADR 0062 D5 (F2-WO2): a revision section's schema (the JSON Schema `$id` its body validates against) and why the section exists. Sections enter `content_hash`; a section namespace's content is preview.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "reason"
+      ],
+      "properties": {
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
     "names": {
       "description": "A list of distinct non-empty names, in the order their source gives them.",
       "type": "array",

@@ -1,0 +1,2 @@
+expect_error: is not valid under any of the given schemas
+document: {id: x, target: {derived: std.mass_fraction, stream: S1}, kind: mass_fraction, unit: "1", value: 0.5, tolerance: {absolute: 0.0}, role: fixed, provenance: fixture}

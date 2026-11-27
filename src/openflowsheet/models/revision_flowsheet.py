@@ -45,6 +45,7 @@ from openflowsheet.models import (
 )
 from openflowsheet.models.syn001 import PROVIDER_ID as SYN001_PROVIDER_ID
 from openflowsheet.models.syn001.flowsheet import MODEL_LABEL
+from openflowsheet.revision_v2.lower import LegacyProvider, LegacyProviders
 from openflowsheet.thermo import Phase, PropertyProvider, PropertyStatus, StreamState, pr_c1
 from openflowsheet.units import (
     CONVERSION_ROWS,
@@ -214,7 +215,16 @@ def component_basis(document: Mapping[str, Any]) -> ComponentBasis:
     """The basis `document`'s `component_set.record_source` selects (ADR 0034 D8, R-231; ADR 0050
     D1): the registry of S11 design §4.1, top to bottom by string equality, SYN-001's otherwise.
     A CoolProp revision whose components are not exactly one admitted fluid raises
-    `RevisionError("unsupported", "components_unsupported")`."""
+    `RevisionError("unsupported", "components_unsupported")`. A `schema_version` 2 document has no
+    `record_source` and is read as its lowering (`lowered_document`) first: given raw, it raises
+    `RevisionError("unsupported", "schema_invalid(/schema_version)")`, never SYN-001's basis
+    (F2 review N1)."""
+    if document.get("schema_version") == 2:
+        raise RevisionError(
+            "unsupported",
+            "schema_invalid(/schema_version)",
+            hint="a schema_version 2 document selects its basis as its lowering (lowered_document)",
+        )
     component_set = document.get("component_set") or {}
     source = component_set.get("record_source")
     if source == pr_c1.RECORDS_PATH:
@@ -242,6 +252,54 @@ def selectable_bases() -> tuple[ComponentBasis, ...]:
         WILSON_BASIS,
         *(_coolprop_basis(row) for row in table.FLUIDS),
     )
+
+
+def legacy_providers() -> LegacyProviders:
+    """ADR 0050 D1's provider selection, each provider with its native convention (ADR 0001 D5),
+    as `revision_v2.lower` takes it (F2 decisions WO6a-1, WO6b-1): the four registered record
+    sources by string equality, SYN-001's for every other source. The provider ids are the ones
+    `component_basis` selects; Wilson v2 reports its inner provider's convention, which for the
+    real records is `WILSON-IG-ref-v1`. Reads no file."""
+    from openflowsheet.thermo import coolprop_heos, iapws95, syn001, wilson_ig  # noqa: PLC0415
+
+    wilson = next(name for name, synthetic in wilson_ig.CONVENTIONS.items() if not synthetic)
+    return LegacyProviders(
+        {
+            pr_c1.RECORDS_PATH: LegacyProvider(pr_c1.PROVIDER_ID, pr_c1.REFERENCE_CONVENTION),
+            IAPWS95_RECORDS: LegacyProvider(_IAPWS95_ID, iapws95.REFERENCE_CONVENTION),
+            WILSON_RECORDS: LegacyProvider(_WILSON_ID, wilson),
+            COOLPROP_RECORDS: LegacyProvider(_COOLPROP_ID, coolprop_heos.REFERENCE_CONVENTION),
+        },
+        LegacyProvider(SYN001_BASIS.provider_id, syn001.REFERENCE_CONVENTION),
+    )
+
+
+def lowered_document(document: Mapping[str, Any]) -> Mapping[str, Any]:
+    """The v1 document a revision is read as (ADR 0062 D12, ADR 0002 D7.5): `document` itself,
+    the same object, unless its `schema_version` is 2; a v2 document's lowering
+    (`revision_v2.lower` on `legacy_providers()`) otherwise.
+
+    A v2 document the v2 schema refuses raises `RevisionError("unsupported",
+    "schema_invalid(<pointer>)")`; one `lower` refuses raises `RevisionError("unsupported",
+    "construct_unavailable(<construct>, <foundation>)")` naming the first refusal in `lower`'s
+    order, every refusal in the hint (F2 decision WO6b-2)."""
+    if document.get("schema_version") != 2:
+        return document
+    from openflowsheet.revision_v2 import (  # noqa: PLC0415
+        LoweringError,
+        RevisionV2Error,
+        lower,
+        parse,
+    )
+
+    try:
+        return lower(parse(document), legacy_providers())
+    except RevisionV2Error as error:
+        raise RevisionError("unsupported", str(error)) from error
+    except LoweringError as error:
+        first = error.refusals[0]
+        code = f"{first.code}({', '.join(first.params.values())})"
+        raise RevisionError("unsupported", code, hint=str(error)) from error
 
 
 #: R4: a connection's `phase_capability` as the declared phase of the ports it joins.
@@ -389,8 +447,11 @@ def parse_revision(
     `instance_targets` (model id -> the instance target paths that model takes, as a phrase) is
     the builder table's, handed in so that a refused instance target's hint can name what its
     model reads (ruling round 6, B2); without it that hint is `None`. It changes no code.
+
+    ADR 0062 D12: a `schema_version` 2 document is read as its lowering (`lowered_document`); a
+    v1 document goes to the untouched v1 reader as given.
     """
-    return _read(document, instance_targets)[0]
+    return _read(lowered_document(document), instance_targets)[0]
 
 
 def pin_specifications(document: Mapping[str, Any]) -> Mapping[str, tuple[str, ...]]:
@@ -399,7 +460,7 @@ def pin_specifications(document: Mapping[str, Any]) -> Mapping[str, tuple[str, .
     What a refusal names when a builder leaves a pin unconsumed: the user wrote a specification,
     not a column.
     """
-    return _read(document)[1]
+    return _read(lowered_document(document))[1]
 
 
 def _require_id(value: Any) -> str:

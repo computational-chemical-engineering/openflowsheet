@@ -49,6 +49,13 @@ LAYERS = [
     # F3's component data core (ADR 0061): v2 records, their identity and validation. Above the
     # registry, whose record types and correlation forms it validates by.
     "records",
+    # F2's material model (ADR 0062): the provider-level state types and phase ids. Below `thermo`,
+    # which re-exports them (D2), so it imports nothing of `thermo`.
+    "material",
+    # F2's v2 revisions (ADR 0062 D11, F2-WO4): parse, validate, canonical. Directly above
+    # `material`, whose definitions and layout it reads; below `application`, which dispatches
+    # to it.
+    "revision_v2",
 ]
 
 

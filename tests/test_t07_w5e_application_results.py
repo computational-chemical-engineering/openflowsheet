@@ -33,6 +33,7 @@ from urllib.parse import urldefrag, urljoin
 import pytest
 from conftest import REPO_ROOT, load_json
 from f1_schema_support import F1_OPERATIONS
+from f2_schema_support import F2_KINDS, F2_MOVED_OPERATIONS, without_f2
 from f3_schema_support import F3_OPERATIONS
 from jsonschema import Draft202012Validator
 from m02_schema_support import without_m02
@@ -329,6 +330,14 @@ SNAPSHOT_F3: dict[str, str | None] = {
     "validate_record": "eb6a1cfac1228e68222dea0d162a130ffd885746a821d28e74c89252863b5ac0",
     "assess_rights": "75d3f1093dd2a4e564d3e77763f5e2c4487f4f29bf147a0e68be192d524364ee",
 }
+#: F2 (ADR 0062 D1, F2-WO2b): WO1's 14 quantity kinds widen `quantity.schema.json`'s kind enum (and
+#: its description), which `model_registry_view`'s `specifications` reach. `list_models`' snapshot
+#: is re-taken over Amendment 2's `12d88245…`; with F2's additions removed
+#: (`tests/f2_schema_support.py`) it is that value again, and no other snapshot moves
+#: (`test_f2_without_its_additions_every_response_is_its_pre_f2_snapshot`).
+SNAPSHOT_F2: dict[str, str | None] = {
+    "list_models": "854fab3332da26b0f51e5f6cb113095238e2f8f3db52a61196e83c536de16541",
+}
 #: The rows later than X04, each with its own snapshot (F1's and F3's).
 LATER_ROWS = F1_OPERATIONS | F3_OPERATIONS
 
@@ -365,8 +374,10 @@ def test_r4_g3_every_resolved_response_schema_equals_the_snapshot() -> None:
         **SNAPSHOT_X04,
         **SNAPSHOT_F1,
         **SNAPSHOT_F3,
+        **SNAPSHOT_F2,
     }
     assert set(SNAPSHOT_F1) == F1_OPERATIONS
+    assert set(SNAPSHOT_F2) == F2_MOVED_OPERATIONS
     assert set(SNAPSHOT_F3) == F3_OPERATIONS
     assert SNAPSHOT_ST["get_stream_table"] == SNAPSHOT_AT_B13D556["get_artifact"]
     for operation in OPERATIONS.values():
@@ -393,7 +404,7 @@ def test_x04_without_its_additions_every_response_is_its_pre_x04_snapshot() -> N
     for name, operation in OPERATIONS.items():
         if name in LATER_ROWS:  # F1's (ADR 0060) and F3's (ADR 0061) rows postdate X04
             continue
-        resolved = resolved_response(operation)
+        resolved = without_f2(resolved_response(operation))  # F2's additions postdate X04
         assert _digest(without_x04(resolved)) == before[name], name
         if _digest(resolved) != before[name]:
             moved.append(name)
@@ -417,8 +428,8 @@ def test_opt_without_its_additions_every_response_is_its_pre_opt_snapshot() -> N
     for name, operation in OPERATIONS.items():
         if name in ST_OPERATIONS | LATER_ROWS:  # later rows, each with its own snapshot
             continue
-        # X04's additions (ADR 0075) postdate OPT: they are taken out first.
-        resolved = without_x04(resolved_response(operation))
+        # X04's (ADR 0075) and F2's (ADR 0062) additions postdate OPT: they are taken out first.
+        resolved = without_x04(without_f2(resolved_response(operation)))
         assert _digest(without_opt(resolved)) == before[name], name
         if _digest(resolved) != before[name]:
             moved.append(name)
@@ -445,7 +456,7 @@ def test_msg_g10_without_failure_every_response_is_its_pre_msg_snapshot() -> Non
             continue
         # X02's (ADR 0070) and OPT's (ADR 0071) additions postdate MSG: they are taken out
         # first, the later first.
-        resolved = without_x02(without_opt(without_x04(resolved_response(operation))))
+        resolved = without_x02(without_opt(without_x04(without_f2(resolved_response(operation)))))
         assert _digest(without_msg(resolved)) == before[name], name
         if _digest(resolved) != before[name]:
             moved.append(name)
@@ -469,12 +480,71 @@ def test_x02_without_warm_start_every_response_is_its_pre_x02_snapshot() -> None
     for name, operation in OPERATIONS.items():
         if name in ST_OPERATIONS | LATER_ROWS:  # later rows, each with its own snapshot
             continue
-        # OPT's (ADR 0071) and X04's (ADR 0075) additions postdate X02: they are taken out first.
-        resolved = without_opt(without_x04(resolved_response(operation)))
+        # OPT's (ADR 0071), X04's (ADR 0075) and F2's (ADR 0062) additions postdate X02: they are
+        # taken out first.
+        resolved = without_opt(without_x04(without_f2(resolved_response(operation))))
         assert _digest(without_x02(resolved)) == before[name], name
         if _digest(resolved) != before[name]:
             moved.append(name)
     assert sorted(moved) == sorted(SNAPSHOT_X02)
+
+
+def test_f2_without_its_additions_every_response_is_its_pre_f2_snapshot() -> None:
+    """R4-G3 for F2 (ADR 0062 D1): with F2's 14 kinds and their sentence removed, every resolved
+    response is its snapshot before F2 (F3's rows included), exactly the operations of
+    `SNAPSHOT_F2` moved, and in `list_models` exactly the two kind enums changed, each by exactly
+    F2's 14 kinds."""
+    before = {
+        **SNAPSHOT_AT_B13D556,
+        **SNAPSHOT_AMENDMENT_2,
+        **SNAPSHOT_AMENDMENT_3,
+        **SNAPSHOT_M02,
+        **SNAPSHOT_M04,
+        **SNAPSHOT_MSG,
+        **SNAPSHOT_MSG_EXPLAIN,
+        **SNAPSHOT_X02,
+        **SNAPSHOT_OPT,
+        **SNAPSHOT_ST,
+        **SNAPSHOT_X04,
+        **SNAPSHOT_F1,
+        **SNAPSHOT_F3,
+    }
+    assert set(before) == set(OPERATIONS)  # F2 adds no operation
+    moved = []
+    for name, operation in OPERATIONS.items():
+        resolved = resolved_response(operation)
+        assert _digest(without_f2(resolved)) == before[name], name
+        if _digest(resolved) != before[name]:
+            moved.append(name)
+    assert sorted(moved) == sorted(SNAPSHOT_F2)
+    resolved = resolved_response(OPERATIONS["list_models"])
+    enums = _kind_enums(resolved)
+    assert sorted(enums) == [
+        "/properties/models/items/properties/choices/items/properties/options/items/properties"
+        "/specifications/items/properties/kind",
+        "/properties/models/items/properties/pins/items/properties/specifications/items"
+        "/properties/kind",
+    ]
+    stripped = _kind_enums(without_f2(resolved))
+    assert sorted(stripped) == sorted(enums)
+    for path, enum in enums.items():
+        assert enum[: len(stripped[path])] == stripped[path]
+        assert tuple(enum[len(stripped[path]) :]) == F2_KINDS
+
+
+def _kind_enums(node: Any, path: str = "") -> dict[str, list[Any]]:
+    """Every enum of `node` that holds `molar_volume` (the quantity kind enum), by JSON path."""
+    found: dict[str, list[Any]] = {}
+    if isinstance(node, list):
+        for index, item in enumerate(node):
+            found |= _kind_enums(item, f"{path}/{index}")
+    elif isinstance(node, dict):
+        enum = node.get("enum")
+        if isinstance(enum, list) and "molar_volume" in enum:
+            found[path] = enum
+        for key, value in node.items():
+            found |= _kind_enums(value, f"{path}/{key}")
+    return found
 
 
 def test_g_r6_6_list_models_moved_only_by_the_approved_additive_member() -> None:

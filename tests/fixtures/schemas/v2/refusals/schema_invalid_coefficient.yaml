@@ -1,0 +1,5 @@
+# D11: a stoichiometric coefficient p/q with gcd(p, q) != 1 (a rule the schema cannot state).
+base: crystallizer
+changes:
+  - {op: replace, path: /reaction_sets/0/reactions/0/stoichiometry/NaCl, value: [-2, 2]}
+errors: [{code: schema_invalid, params: {pointer: /reaction_sets/0/reactions/0/stoichiometry/NaCl}}]

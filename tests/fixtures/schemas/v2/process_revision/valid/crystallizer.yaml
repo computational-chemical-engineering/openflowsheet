@@ -1,0 +1,99 @@
+# E-F2-2: every construct of ADR 0062 D9 to D11 in one v2 revision. Three connection kinds
+# (material: `mat-v1`; energy; signal), four endpoint kinds (port, probe, parameter,
+# specification), a `mat-v1` definition with `mixed` and `solid` substreams, a group basis (charged
+# groups), a classed attribute on a grid, a component dissolved in `mixed` with its crystals in
+# `solid` (Q8.A1), a reaction set, a section. Valid against tests/fixtures/schemas/v2/context.yaml.
+schema_version: 2
+revision_id: crystallizer-r1
+parent_revision: null
+title: Brine and syrup crystallizers
+convention: ELEMENTAL-ref-v1
+component_set:
+  components:
+    - {id: H2O, record: "1111111111111111111111111111111111111111111111111111111111111111"}
+    - {id: Na_p, record: "2222222222222222222222222222222222222222222222222222222222222222"}
+    - {id: Cl_m, record: "3333333333333333333333333333333333333333333333333333333333333333"}
+    - {id: NaCl, record: "4444444444444444444444444444444444444444444444444444444444444444"}
+    - {id: sucrose, record: "5555555555555555555555555555555555555555555555555555555555555555"}
+  parameter_sets: ["6666666666666666666666666666666666666666666666666666666666666666"]
+materials:
+  thermal_coordinate: h_mass
+  phase_order_keys: [H2O]
+  definitions:
+    - id: brine
+      template: mat-v1
+      thermal_coordinate: h_mass
+      substreams:
+        - id: liq
+          kind: mixed
+          components: [H2O, Na_p, Cl_m]
+          conserved_basis:
+            preset: null
+            species: [H2O, Na_p, Cl_m]
+            groups:
+              - {id: Na, content: {Na_p: 1}}
+              - {id: H2O, content: {H2O: 1}}
+              - {id: Cl, content: {Cl_m: 1}}
+            fast_reactions: null
+          grids: []
+          attributes: []
+        - id: cryst
+          kind: solid
+          components: [NaCl]
+          conserved_basis: {preset: "true"}
+          grids:
+            - {id: L, quantity_kind: dimensionless, edges: [0.0, 0.25, 0.5, 1.0]}
+          attributes:
+            - {kind: probe.moments, version: 1.0.0, components: [NaCl], grid: L}
+    - id: syrup
+      template: mat-v1
+      thermal_coordinate: h_mass
+      substreams:
+        - id: liq
+          kind: mixed
+          components: [H2O, sucrose]
+          conserved_basis: {preset: "true"}
+          grids: []
+          attributes: []
+        - id: cryst
+          kind: solid
+          components: [sucrose]
+          conserved_basis: {preset: "true"}
+          grids:
+            - {id: L, quantity_kind: dimensionless, edges: [0.0, 0.5, 1.0]}
+          attributes:
+            - {kind: probe.partition, version: 1.0.0, components: [sucrose], grid: L}
+            - {kind: probe.classes, version: 1.0.0, components: null, grid: L}
+reaction_sets:
+  - id: dissolution
+    reactions:
+      - id: r1
+        stoichiometry: {NaCl: [-1, 1], Na_p: [1, 1], Cl_m: [1, 1]}
+        scope: [liq, cryst]
+property_methods: {default: syn001-ideal, overrides: []}
+instances:
+  - {id: feed, model: {id: std.feed, version: 1.0.0, artifact_ref: null}, semantic_role: feed, parameters: {}, policy: {fidelity: nominal, validity: declared}}
+  - {id: feed2, model: {id: std.feed, version: 1.0.0, artifact_ref: null}, semantic_role: feed, parameters: {}, policy: {fidelity: nominal, validity: declared}}
+  - {id: feed3, model: {id: std.feed, version: 1.0.0, artifact_ref: null}, semantic_role: feed, parameters: {}, policy: {fidelity: nominal, validity: declared}}
+  - {id: cryst, model: {id: std.crystallizer, version: 1.0.0, artifact_ref: null}, semantic_role: separator, parameters: {}, policy: {fidelity: nominal, validity: declared}}
+  - {id: mix, model: {id: std.mixer, version: 1.0.0, artifact_ref: null}, semantic_role: mixer, parameters: {}, policy: {fidelity: nominal, validity: declared}}
+  - {id: sink, model: {id: std.sink, version: 1.0.0, artifact_ref: null}, semantic_role: product_sink, parameters: {}, policy: {fidelity: nominal, validity: declared}}
+  - {id: sink2, model: {id: std.sink, version: 1.0.0, artifact_ref: null}, semantic_role: product_sink, parameters: {}, policy: {fidelity: nominal, validity: declared}}
+  - {id: util, model: {id: std.heat_source, version: 1.0.0, artifact_ref: null}, semantic_role: utility, parameters: {}, policy: {fidelity: nominal, validity: declared}}
+  - {id: ctrl, model: {id: std.controller, version: 1.0.0, artifact_ref: null}, semantic_role: controller, parameters: {}, policy: {fidelity: nominal, validity: declared}}
+connections:
+  - {id: S1, kind: material, from: {instance: feed, port: out}, to: {instance: cryst, port: in}, definition: brine}
+  - {id: S5, kind: material, from: {instance: cryst, port: out}, to: {instance: sink, port: in}, definition: brine, notes: mother liquor and crystals}
+  - {id: S3, kind: material, from: {instance: feed2, port: out}, to: {instance: mix, port: in1}, definition: syrup}
+  - {id: S4, kind: material, from: {instance: feed3, port: out}, to: {instance: mix, port: in2}, definition: syrup}
+  - {id: S6, kind: material, from: {instance: mix, port: out}, to: {instance: sink2, port: in}, definition: syrup}
+  - {id: Q1, kind: energy, from: {instance: util, port: q}, to: {instance: cryst, port: heat}, definition: heat-v1}
+  - {id: C1, kind: signal, from: {probe: {variable: S1~P}}, to: {instance: cryst, parameter: P_set}, definition: signal-v1, quantity_kind: pressure}
+  - {id: C2, kind: signal, from: {instance: ctrl, port: out}, to: {specification: q_duty}, definition: signal-v1, quantity_kind: heat_rate}
+specifications:
+  - {id: f_water, target: {variable: "S1@liq~n[H2O]"}, kind: molar_flow, unit: mol/s, value: 10.0, tolerance: {absolute: 1.0e-9}, role: fixed, provenance: fixture}
+  - {id: q_duty, target: {energy: Q1}, kind: heat_rate, unit: W, value: 1000.0, tolerance: {absolute: 1.0e-6}, role: fixed, provenance: fixture}
+  - {id: p_signal, target: {signal: C1}, kind: pressure, unit: Pa, bounds: {lower: 100000.0}, tolerance: {absolute: 1.0}, role: free, provenance: fixture}
+sections:
+  x.notes: {schema: "https://example.invalid/schemas/x-notes.schema.json", body: {text: a section body}}
+provenance: {actor: fixture, operation: create, timestamp: "2026-11-27T00:00:00Z"}

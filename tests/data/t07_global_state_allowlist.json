@@ -54,8 +54,8 @@
       "file": "run/solution_state.py",
       "line": "@cache",
       "patterns": ["cache"],
-      "occurrences": 1,
-      "justification": "The solution-state schema's validator, from the packaged schema file (immutable for the process's life)."
+      "occurrences": 2,
+      "justification": "The solution-state schemas' validators (v1, and F2-WO6a's solution-state-v2, ADR 0062 D8), each from its packaged schema file (immutable for the process's life)."
     },
     {
       "file": "studies/surrogate/manifest.py",
@@ -308,6 +308,13 @@
       "patterns": ["cache"],
       "occurrences": 1,
       "justification": "F3 (ADR 0061 D7): nullary `_validator`, the record schema's Draft 2020-12 validator over `record_schema()` (packaged, immutable for the process's life; the schema holds only local references); never mutated, no job, request or store state."
+    },
+    {
+      "file": "revision_v2/lower.py",
+      "line": "@cache",
+      "patterns": ["cache"],
+      "occurrences": 3,
+      "justification": "F2-WO6a, F2-WO6c (ADR 0062 D12): three readers of the committed legacy index (package data, immutable for the process's life): `legacy_records` (record SHA-256 to file and id), `file_components` (a file's ids in position order) and `file_parameter_sets` (a file's parameter-set record SHA-256s in index order). Read only; no job, request, project or store state."
     }
   ]
 }

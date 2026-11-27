@@ -1,0 +1,11 @@
+# D11, revision-wide (F2 review ruling 2): an `nTP-v1` connection's coordinate is `T`, so an
+# `h_mass` revision refuses it, and the two legacy units it joins, each once.
+base: crystallizer
+changes:
+  - {op: add, path: /instances/-, value: {id: lfeed, model: {id: syn001.feed_source, version: 1.0.0, artifact_ref: null}, semantic_role: feed, parameters: {}, policy: {fidelity: nominal, validity: declared}}}
+  - {op: add, path: /instances/-, value: {id: lsink, model: {id: syn001.product_sink, version: 1.0.0, artifact_ref: null}, semantic_role: product_sink, parameters: {}, policy: {fidelity: nominal, validity: declared}}}
+  - {op: add, path: /connections/-, value: {id: S2, kind: material, from: {instance: lfeed, port: outlet}, to: {instance: lsink, port: inlet}, definition: nTP-v1, phase_capability: liquid}}
+errors:
+  - {code: thermal_coordinate_mismatch, params: {definition: nTP-v1}}
+  - {code: unit_coordinate_unsupported, params: {instance: lfeed, coordinate: h_mass}}
+  - {code: unit_coordinate_unsupported, params: {instance: lsink, coordinate: h_mass}}

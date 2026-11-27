@@ -1,0 +1,24 @@
+# Q3.A2 (d): the neutral reciprocal declaration {NaCl, KCl, Na2SO4, H2O}; valid, a notice.
+base: crystallizer
+changes:
+  - {op: add, path: /component_set/components/-, value: {id: K_p, record: "8888888888888888888888888888888888888888888888888888888888888888"}}
+  - {op: add, path: /component_set/components/-, value: {id: SO4_2m, record: "9999999999999999999999999999999999999999999999999999999999999999"}}
+  - op: replace
+    path: /materials/definitions/0/substreams/0
+    value:
+      id: liq
+      kind: mixed
+      components: [H2O, Na_p, Cl_m, K_p, SO4_2m]
+      conserved_basis:
+        preset: apparent
+        species: [H2O, Na_p, Cl_m, K_p, SO4_2m]
+        groups:
+          - {id: NaCl, content: {K_p: -1, Cl_m: 1}}
+          - {id: KCl, content: {K_p: 1}}
+          - {id: Na2SO4, content: {SO4_2m: 1}}
+          - {id: H2O, content: {H2O: 1}}
+        fast_reactions: null
+      grids: []
+      attributes: []
+errors: []
+notices: [{code: species_basis_not_monotone, params: {definition: brine, substream: liq}}]

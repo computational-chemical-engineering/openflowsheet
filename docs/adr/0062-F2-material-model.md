@@ -1,6 +1,9 @@
 # ADR 0062 — F2: material model, connection definitions, phase and variable ids, `ProcessRevision` v2
 
-**Status:** **Proposed, 2026-11-05.** Design wave W1, pass P2 (ADR 0057, R-928). Takes effect when Accepted after the W1
+**Status:** **Accepted, 2026-11-27** (the user, Decision Desk `ofs-f2-accept-adr0062` v2, choice A, signed
+2026-11-27T11:12:54Z: accepted as corrected before acceptance at wp/F2 a64f93fb: D12 per F2-R1, D2 PropertyRequest not
+widened, D11 h_mass revision-wide, E-F2-9 state_degenerate_in_definition and Q6.A2 registration half deferred to
+F5/F6). Proposed 2026-11-05. Design wave W1, pass P2 (ADR 0057, R-928). Takes effect when Accepted after the W1
 reviewer pass over ADRs 0062–0064; built in 0.5 on `wp/F2`. The core (D13) freezes at the end of W1 (R-929).
 **Author:** design lane (`architect`). **Brief:** `docs/roadmap/brief-architect-W1-P2.md`.
 **Refines:** `target-architecture.md` §2.1, §3 F2, §8. Departures are marked **[departure]** with their reason.
@@ -79,14 +82,14 @@ fixed-order sum over classes (ascending class index) before `n` is formed; provi
 declare the attribute read (ADR-F4). Attribute key: `<kind id>` (substream scope) or `<kind id>[<component>]`.
 
 `PhaseId(family: str, qualifier: str | None, ordinal: int)`, `PhaseSet = tuple[PhaseId, ...]` in canonical order (D6).
-Widened annotations only (no runtime change; legacy providers never receive the new types, ADR-F4's adapters convert):
-`PropertyRequest.state: StreamState | EvaluationState`; `PropertyRequest.phase: Phase | PhaseId`. **[departure]** from
-the note §8: `PropertyCapabilities`, `FlashResult` and `FlashRequest` are **not** widened (the fact above). v2
-capability fields live in ADR-F4's new `MethodDescription`; N-phase results in ADR-F5's `EquilibriumResult`; providers
-are asked TP flashes and phase evaluations only, and every other specification is solved by ADR-F5's service. The static
-`flash` token space (ADR 0060 D4) is `TP, PH, PS, TV, PBETA, TBETA`; only `TP` is a provider capability.
-`thermo/cache.py` keys an `EvaluationState` by n, T, P **and** `attributes`, and a `PhaseId` by its rendering (D6); a
-`StreamState` key is byte-unchanged (M6).
+**[departure]** `PropertyRequest` is not widened (F2 WO1-4: 51 strict-typing errors in the seven frozen legacy
+providers); a v2 evaluation request is ADR-F4's type; `thermo/cache.py` keys both state forms. (Corrected before
+acceptance by the F2 review, `docs/reviews/F2-review.md`.) **[departure]** from the note §8: `PropertyCapabilities`,
+`FlashResult` and `FlashRequest` are **not** widened (the fact above). v2 capability fields live in ADR-F4's new
+`MethodDescription`; N-phase results in ADR-F5's `EquilibriumResult`; providers are asked TP flashes and phase
+evaluations only, and every other specification is solved by ADR-F5's service. The static `flash` token space (ADR 0060
+D4) is `TP, PH, PS, TV, PBETA, TBETA`; only `TP` is a provider capability. `thermo/cache.py` keys an `EvaluationState`
+by n, T, P **and** `attributes`, and a `PhaseId` by its rendering (D6); a `StreamState` key is byte-unchanged (M6).
 
 ### D3. Connection definitions (F1 kind `connection_definition`; `schemas/connection-definition.schema.json`)
 
@@ -258,31 +261,48 @@ energy one `heat-v1` or `work-v1`; a signal one `signal-v1` with `quantity_kind`
 `content_hash` = v1's rule (`CONTENT_HASH_EXCLUDED` unchanged in name and members), applied to the v2 document.
 **Thermal coordinate** (note item 11): every material definition has the revision's coordinate
 (`thermal_coordinate_mismatch(<definition>)`); `h_mass` admits `std.*` units only
-(`unit_coordinate_unsupported(<instance>, h_mass)`); `T` admits `nTP-v1`, legacy and `std.*` units. **Port
-compatibility** (note item 12): one definition per connection, accepted by both endpoints
-(`definition_incompatible(<connection>, <instance>.<port>)`); generic transport units take one definition on all
-material ports unless the manifest declares subset fill (identical grids and bases, missing parts exact `+0.0`) or a
-declared map. Grids differ: `attribute_grid_mismatch`. **In 0.5** `property_methods.default` admits one legacy provider
-id and no overrides (v1's selection in v2).
+(`unit_coordinate_unsupported(<instance>, h_mass)`) (revision-wide: every instance `std.*`, no `nTP-v1` connection,
+whose coordinate is `T`; F2 review ruling 2); `T` admits `nTP-v1`, legacy and `std.*` units. **Port compatibility**
+(note item 12): one definition per connection, accepted by both endpoints (`definition_incompatible(<connection>,
+<instance>.<port>)`); generic transport units take one definition on all material ports unless the manifest declares
+subset fill (identical grids and bases, missing parts exact `+0.0`) or a declared map. Grids differ:
+`attribute_grid_mismatch`. **In 0.5** `property_methods.default` admits one legacy provider id and no overrides (v1's
+selection in v2).
 
 ### D12. Reading, lowering and operations (ADR 0019 Amendment 9)
 
 `parse_revision` dispatches on `schema_version`: 1 → the untouched v1 reader; 2 → `revision_v2.parse` (ADR 0002 D7.5:
-never read as the other). **Lowering** (`revision_v2/lower.py`): a v2 document is *v1-expressible* iff its convention is
-the legacy provider's native one, every material connection is `nTP-v1`, it has no energy or signal connection, reaction
-set, section, probe or parameter endpoint, and every component record carries `legacy.{profile, file}` from one file
-whose component list equals `component_set` in order (ADR 0061 D12). It lowers to the v1 document with `record_source` =
-that file and `component_mapping` the identity; anything else is refused `construct_unavailable(<construct>,
-<foundation>)`. Lowering is a field map. A connection with `definition: nTP-v1` becomes `state_definition: nTP-v1`,
-`component_mapping: revision_component_set`. `phase_capability`, `initialization_hint` and `notes` are copied.
-Specifications in v1's target form are copied. `convention`, `materials` and `property_methods` are dropped, after
-checking that `property_methods.default` is the provider ADR 0050 D1 assigns to `record_source` (else
-`construct_unavailable(property_methods, F4)`). **Raising** (`revision_v2/raise_v1.py`, test and tooling only) inverts
-the map, with `convention` = that provider's native convention. Amendment 9: `commit_change`, `preview_change`,
-`diff_revisions`, `validate_revision`, `check_admission` (ADR 0060 D11's revision form) and run submission accept v2
-documents; `ChangeSet` paths address v2 fields unchanged; results gain no field. `check_admission` adds F2's checks
-(thermal coordinate, port compatibility, solid roles, grids, basis validity, signal kinds) to
-`AdmissionReport.notices`/refusals.
+never read as the other). **Lowering** (`revision_v2/lower.py`): a v2 document is *v1-expressible* iff (a) its
+convention is the native one of the legacy provider ADR 0050 D1 assigns to its record source, and
+`property_methods.default` is that provider with no override; (b) `materials.thermal_coordinate` is `T`; (c) every
+material connection is `nTP-v1`, and it has no energy or signal connection, reaction set, section, probe or parameter
+endpoint, specification target outside v1's form, connection `phase_assertion`, instance `template` or `references`, or
+`semantic_role` outside v1's vocabulary; (d) its component set is legacy: every component record is the legacy component
+record (ADR 0061 D12) of one file, under the component's own id there, in any order and for any subset of that file's
+components (as v1's `record_source` binds them), and `parameter_sets` lists exactly that file's legacy parameter-set
+records, in the legacy index's order. The criterion stands without `validate`. Such a document lowers to the v1 document
+with `record_source` = that file and `components` = the set's ids in the set's order (ADR 0001 D2.1); anything else is
+refused with every construct found, once each, as `construct_unavailable(<construct>, <foundation>)`: `convention:<id>`,
+`property_methods`, `component:<id>`, `component_set` (records of two files), `parameter_sets`, `derived:<id>` (F4);
+`phase_assertion:<connection>` (F5); `thermal_coordinate:<coordinate>`, `definition:<id>`, `energy:<c>`, `signal:<c>`,
+`probe:<c>`, `parameter:<instance>.<parameter>`, `reaction_set:<id>`, `section:<namespace>`, `target:<specification>`,
+`semantic_role:<role>`, `template:<instance>`, `references:<instance>` (F6). `convention`, `property_methods` and
+`parameter_sets` are checked only when the component set names one file. Lowering is a field map. A connection with
+`definition: nTP-v1` becomes `state_definition: nTP-v1`, `component_mapping: revision_component_set`.
+`phase_capability`, `initialization_hint` and `notes` are copied. Instances and specifications in v1's target form are
+copied. `convention`, `materials` (whatever its definitions and `phase_order_keys` hold: no `nTP-v1` connection reads
+them) and `property_methods` are dropped. A field v1 has no counterpart for lowers only in its content-free form, absent
+when optional and empty when required: admitting a construct later moves no byte of a document accepted now, and giving
+a dropped one meaning later would. Lowering does not anticipate the v1 binder: a lowered document the binder refuses is
+refused as its v1 twin is. **Raising** (`revision_v2/raise_v1.py`, test and tooling only) inverts the map, with
+`convention` = that provider's native convention, `materials` = `{thermal_coordinate: T, definitions: []}` and
+`parameter_sets` = the file's legacy parameter-set records. (Corrected before acceptance by design-lane ruling F2-R1,
+`docs/F2_DECISIONS.md`: the literal one-file criterion was stricter than v1 (it refused `SYN-001-T06-STA04` and every
+CoolProp revision), raised `s10` documents did not state the parameter set their run uses, and the binder lowers without
+`validate`.) Amendment 9: `commit_change`, `preview_change`, `diff_revisions`, `validate_revision`, `check_admission`
+(ADR 0060 D11's revision form) and run submission accept v2 documents; `ChangeSet` paths address v2 fields unchanged;
+results gain no field. `check_admission` adds F2's checks (thermal coordinate, port compatibility, solid roles, grids,
+basis validity, signal kinds) to `AdmissionReport.notices`/refusals.
 
 ### D13. Core at the end of W1, and preview
 

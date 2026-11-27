@@ -1,0 +1,5 @@
+# D10: a variable target no connection renders.
+base: crystallizer
+changes:
+  - {op: replace, path: /specifications/0/target, value: {variable: "S9@liq~n[H2O]"}}
+errors: [{code: specification_target_unknown, params: {specification: f_water}}]

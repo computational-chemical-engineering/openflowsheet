@@ -1,0 +1,4 @@
+# D11: `phase_capability` only on `nTP-v1` connections.
+expect_error: "'nTP-v1' was expected"
+base: crystallizer
+changes: [{op: add, path: /connections/0/phase_capability, value: liquid}]

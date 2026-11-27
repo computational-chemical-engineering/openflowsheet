@@ -1,0 +1,2 @@
+expect_error: is not valid under any of the given schemas
+document: {id: x, target: {energy: Q1}, kind: heat_rate, unit: W, value: 1.0, bounds: {lower: 0.0}, tolerance: {absolute: 0.0}, role: fixed, provenance: fixture}

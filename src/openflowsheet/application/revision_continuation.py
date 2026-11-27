@@ -41,6 +41,7 @@ from openflowsheet.application.revision_binding import RevisionBinding, bind_rev
 from openflowsheet.application.revision_edits import ELEMENT_MEMBERS, element_diff
 from openflowsheet.application.revisions import CONTENT_HASH_EXCLUDED
 from openflowsheet.canonical import canonical_json
+from openflowsheet.models.revision_flowsheet import RevisionError, lowered_document
 from openflowsheet.numerics.solve_record import SolvePolicy
 from openflowsheet.orchestrator.execution import declaration_identity
 from openflowsheet.orchestrator.revision_continuation import (
@@ -425,8 +426,15 @@ def find_source(
         )
         revision = store.get_revision(connection, source_revision_id)
     assert revision is not None, source_revision_id
+    source_document: Mapping[str, Any] = revision.as_document()
+    # ADR 0062 D8: a v2 ancestor is read as its lowering, as the target is (`jobs/runner.py`).
+    # One that does not lower keeps its stored form, which A2 refuses `source_binding(...)`.
+    try:
+        source_document = lowered_document(source_document)
+    except RevisionError:
+        pass
     return assemble(
-        revision.as_document(),
+        source_document,
         _read_json(root / relpath),
         _read_json(root / certificate_path) if certificate_path is not None else None,
         target_document,

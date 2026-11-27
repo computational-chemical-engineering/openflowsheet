@@ -77,9 +77,23 @@
         "dimensionless",
         "molar_mass",
         "molar_heat_capacity",
-        "molar_volume"
+        "molar_volume",
+        "specific_enthalpy",
+        "specific_entropy",
+        "specific_volume",
+        "specific_heat_capacity",
+        "molar_entropy",
+        "segment_molar_flow",
+        "segment_molar_mass",
+        "segment_molar_enthalpy",
+        "segment_molar_entropy",
+        "segment_molar_heat_capacity",
+        "segment_molar_volume",
+        "enthalpy_flow",
+        "mass_fraction",
+        "number_flow"
       ],
-      "description": "ADR 0001 D1.3, plus `molar_mass` for ComponentRecord.molecular_weight and the two kinds `molar_heat_capacity` and `molar_volume` that the SYN-001 ComponentRecord parameters c_p and v_i need; the latter two are a P01 addition awaiting Fable's confirmation (docs/progress.md, 'Opus -> Fable, P01 handoff'). `temperature` and `temperature_difference` share a dimension and are not interchangeable."
+      "description": "ADR 0001 D1.3, plus `molar_mass` for ComponentRecord.molecular_weight and the two kinds `molar_heat_capacity` and `molar_volume` that the SYN-001 ComponentRecord parameters c_p and v_i need; the latter two are a P01 addition awaiting Fable's confirmation (docs/progress.md, 'Opus -> Fable, P01 handoff'). `temperature` and `temperature_difference` share a dimension and are not interchangeable. The last 14 are ADR 0062 D1's (F2-WO1)."
     }
   }
 }

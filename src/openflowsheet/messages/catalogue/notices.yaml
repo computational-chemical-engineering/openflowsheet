@@ -49,3 +49,20 @@ entries:
     action: "Nothing needs fixing if the stream is meant to be idle. If it should carry material, check the specifications and splits upstream of {stream}."
     examples:
       - params: {stream: S7}
+
+  # ADR 0062 (F2-WO4): a recorded limitation of a conserved basis (Q3.R1 (iii)); prose in F2-WO7.
+  - code: species_basis_not_monotone
+    family: notice
+    kind: notice
+    complete: true
+    title: A conserved basis is not monotone
+    args: [definition, substream]
+    params:
+      definition: {type: text, label: material definition}
+      substream: {type: text, label: substream}
+    summary: "The conserved basis of substream {substream!raw} in definition {definition!raw} is not monotone."
+    why: "A conserved basis is monotone when each group's content can be made non-negative by adding a multiple of the species charges; then a physical, electroneutral feed always has non-negative group amounts. With a basis that is not, a physical feed can have a negative group amount, which is refused as an invalid state ('group_amount_negative'). The document is accepted; this limitation is recorded."
+    action: "Nothing needs fixing if the limitation is acceptable. To remove it, choose group contents that are non-negative (up to a multiple of the charges)."
+    see_also: [species_basis_incompatible, species_basis_redundant]
+    examples:
+      - params: {definition: aqueous, substream: liquid}

@@ -94,6 +94,21 @@ _KIND_DIMENSIONS: Final[dict[str, Dimension]] = {
     # dimension check. Escalated to Fable in docs/progress.md ("Opus -> Fable, P01 handoff").
     "molar_heat_capacity": (2, 1, -2, -1, -1, 0, 0),
     "molar_volume": (3, 0, 0, 0, -1, 0, 0),
+    # ADR 0062 D1 (F2-WO1).
+    "specific_enthalpy": (2, 0, -2, 0, 0, 0, 0),
+    "specific_entropy": (2, 0, -2, -1, 0, 0, 0),
+    "specific_volume": (3, -1, 0, 0, 0, 0, 0),
+    "specific_heat_capacity": (2, 0, -2, -1, 0, 0, 0),
+    "molar_entropy": (2, 1, -2, -1, -1, 0, 0),
+    "segment_molar_flow": (0, 0, -1, 0, 1, 0, 0),
+    "segment_molar_mass": (0, 1, 0, 0, -1, 0, 0),
+    "segment_molar_enthalpy": (2, 1, -2, 0, -1, 0, 0),
+    "segment_molar_entropy": (2, 1, -2, -1, -1, 0, 0),
+    "segment_molar_heat_capacity": (2, 1, -2, -1, -1, 0, 0),
+    "segment_molar_volume": (3, 0, 0, 0, -1, 0, 0),
+    "enthalpy_flow": (2, 1, -3, 0, 0, 0, 0),
+    "mass_fraction": (0, 0, 0, 0, 0, 0, 0),
+    "number_flow": (0, 0, -1, 0, 0, 0, 0),
 }
 
 _KIND_SI_UNITS: Final[dict[str, str]] = {
@@ -110,6 +125,20 @@ _KIND_SI_UNITS: Final[dict[str, str]] = {
     "molar_mass": "kg/mol",
     "molar_heat_capacity": "J/(mol K)",
     "molar_volume": "m3/mol",
+    "specific_enthalpy": "J/kg",
+    "specific_entropy": "J/(kg K)",
+    "specific_volume": "m3/kg",
+    "specific_heat_capacity": "J/(kg K)",
+    "molar_entropy": "J/(mol K)",
+    "segment_molar_flow": "mol/s",
+    "segment_molar_mass": "kg/mol",
+    "segment_molar_enthalpy": "J/mol",
+    "segment_molar_entropy": "J/(mol K)",
+    "segment_molar_heat_capacity": "J/(mol K)",
+    "segment_molar_volume": "m3/mol",
+    "enthalpy_flow": "W",
+    "mass_fraction": "1",
+    "number_flow": "1/s",
 }
 
 _KIND_LOWER_BOUNDS_EXCLUSIVE: Final[dict[str, float | None]] = {
@@ -126,6 +155,20 @@ _KIND_LOWER_BOUNDS_EXCLUSIVE: Final[dict[str, float | None]] = {
     "molar_mass": 0.0,
     "molar_heat_capacity": None,
     "molar_volume": 0.0,
+    "specific_enthalpy": None,
+    "specific_entropy": None,
+    "specific_volume": None,
+    "specific_heat_capacity": None,
+    "molar_entropy": None,
+    "segment_molar_flow": None,
+    "segment_molar_mass": 0.0,
+    "segment_molar_enthalpy": None,
+    "segment_molar_entropy": None,
+    "segment_molar_heat_capacity": None,
+    "segment_molar_volume": None,
+    "enthalpy_flow": None,
+    "mass_fraction": None,
+    "number_flow": None,
 }
 
 KINDS: Final[Mapping[str, Dimension]] = MappingProxyType(_KIND_DIMENSIONS)

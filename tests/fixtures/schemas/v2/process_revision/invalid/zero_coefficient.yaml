@@ -1,0 +1,4 @@
+# D11: a zero coefficient is omitted, never written.
+expect_error: "should not be valid under {'const': 0}"
+base: crystallizer
+changes: [{op: replace, path: /reaction_sets/0/reactions/0/stoichiometry/NaCl, value: [0, 1]}]

@@ -39,6 +39,7 @@ from conftest import REPO_ROOT
 
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.model_signatures import MODEL_BASES
+from openflowsheet.material.definitions import TEMPLATES
 from openflowsheet.models.revision_flowsheet import selectable_bases
 from openflowsheet.registry import (
     ExtensionPackage,
@@ -498,7 +499,8 @@ def test_e_f1_4_a_crlf_copy_hashes_the_same(registry: Registry, tmp_path: Path) 
 def test_the_generator_check_is_clean(capsys: pytest.CaptureFixture[str]) -> None:
     assert registry_builtin.main(["--check"]) == 0
     (line,) = capsys.readouterr().out.splitlines()
-    assert line.startswith("registry_builtin --check: clean, 49 descriptors in 3 tables")
+    # 49 in 3 tables until F2-WO2 added `material.json` (ADR 0062: 4 templates, 4 phase families).
+    assert line.startswith("registry_builtin --check: clean, 57 descriptors in 4 tables")
 
 
 def test_the_generator_check_reports_a_changed_table_by_pointer(
@@ -566,10 +568,13 @@ def test_default_registry_is_built_once_and_closed(registry: Registry) -> None:
     assert all(found is first for found in seen) and len(seen) == 8
     assert first.closed
     # The process registry holds every built-in table (F1-WO3: `core.json` too), the legacy one
-    # unchanged, and no extension in this environment.
-    assert first.descriptors(("unit_model", "property_method", "connection_definition")) == (
-        registry.descriptors(("unit_model", "property_method", "connection_definition"))
-    )
+    # unchanged, and no extension in this environment. F2-WO2 (ADR 0062 D3): `material.json`'s
+    # four connection-definition templates sit beside the legacy rows.
+    kinds = ("unit_model", "property_method", "connection_definition")
+    held = first.descriptors(kinds)
+    legacy_part = tuple(entry for entry in held if entry.id not in TEMPLATES)
+    assert legacy_part == registry.descriptors(kinds)
+    assert sorted(entry.id for entry in held if entry.id in TEMPLATES) == sorted(TEMPLATES)
     assert isinstance(first.resolve("unit_model", "syn001.tp_flash"), Registered)
     with pytest.raises(RuntimeError, match="registry_closed"):
         first.register(first.resolve("unit_model", "syn001.tp_flash"))

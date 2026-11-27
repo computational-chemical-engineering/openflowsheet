@@ -44,7 +44,7 @@ from openflowsheet.assessment.spec import load_assessment
 from openflowsheet.assessment.views import view_of
 from openflowsheet.canonical import canonical_json, document_sha256
 from openflowsheet.compile.casadi_backend import TwinEvaluationError
-from openflowsheet.models.revision_flowsheet import si_unit
+from openflowsheet.models.revision_flowsheet import lowered_document, si_unit
 from openflowsheet.numerics.solve_record import SolvePolicy
 from openflowsheet.run.manifest import policy_sha256
 from openflowsheet.studies.nlp.boundary import PHASE_BOUNDARY_FORM
@@ -200,7 +200,11 @@ def optimize_revision(
     at the job's remaining wall time; `None` (or a `None` answer) leaves the request's.
 
     The stages after static readiness are methods of `_OptimizationRun`: `start_phase`,
-    `solve` and `report_and_record`; every exit goes through its `finish`."""
+    `solve` and `report_and_record`; every exit goes through its `finish`.
+
+    A v2 `document` is optimised as its lowering (ADR 0062 D8, D12), so every artifact and every
+    identity is the v1 run's (F2 decision WO7-3)."""
+    document = lowered_document(document)
     check = check or (lambda: None)
     progress = progress or (lambda stage, info: None)
     parsed = OptimizationRequest.of(request)

@@ -1,0 +1,5 @@
+# D10, Q7.A1: a segment-molar specification on a molar amount (no method map in 0.6).
+base: crystallizer
+changes:
+  - {op: replace, path: /specifications/0/kind, value: segment_molar_flow}
+errors: [{code: quantity_kind_mismatch, params: {specification: f_water}}]

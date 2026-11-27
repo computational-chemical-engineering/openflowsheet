@@ -337,8 +337,9 @@ jobs:
           python-version: "3.13"
 
       - name: Install the comparator's dependencies
-        # `run.compare` imports `canonical` (numpy) since ADR 0025 W2 (`a12ec2b`); RC F4.
-        run: python -m pip install -c requirements.lock pyyaml numpy
+        # `run.compare` imports `canonical` (numpy) since ADR 0025 W2 (`a12ec2b`); RC F4. Since F2 it
+        # also imports `material.definitions`, which validates with jsonschema (DECISION F2-CI1-2).
+        run: python -m pip install -c requirements.lock pyyaml numpy jsonschema
 
       - name: Compare the structural identity across platforms
         run: |

@@ -1,0 +1,61 @@
+# F2-WO4: the validation context the v2 fixtures are checked against (test facts, not records).
+# Components: amount basis, molar mass (kg/mol; null for `kg`), charge. Masses of the ions and of
+# water are F2-WO2's synthetic test constants (docs/derivations/scripts/f2_basis_reference.json).
+components:
+  H2O: {amount_basis: mol, molar_mass: 0.018015, charge: 0}
+  Na_p: {amount_basis: mol, molar_mass: 0.022989220700090934, charge: 1}
+  Cl_m: {amount_basis: mol, molar_mass: 0.035450548579909064, charge: -1}
+  NaCl: {amount_basis: mol, molar_mass: 0.05843976928, charge: 0}
+  sucrose: {amount_basis: mol, molar_mass: 0.3422965, charge: 0}
+  coal: {amount_basis: kg, molar_mass: null, charge: 0}
+  K_p: {amount_basis: mol, molar_mass: 0.039097751420090934, charge: 1}
+  SO4_2m: {amount_basis: mol, molar_mass: 0.09605709715981813, charge: -2}
+  # 5e-7 relative above Na_p + Cl_m: Q3.R7's 4-epsilon check reports it.
+  NaClaq: {amount_basis: mol, molar_mass: 0.0584398, charge: 0}
+  sorbent: {amount_basis: kg, molar_mass: null, charge: 0}
+# Attribute kinds (ADR 0062 D5 payloads): the test-only probe kinds of tests/test_f2_vid_layout.py.
+attribute_kinds:
+  probe.partition: {scope: component, partition: true, classed: true, quantity_kind: molar_flow}
+  probe.classes: {scope: substream, partition: false, classed: true, quantity_kind: number_flow}
+  probe.moments: {scope: component, partition: false, classed: true, quantity_kind: number_flow}
+  probe.scalar: {scope: substream, partition: false, classed: false, quantity_kind: mass_fraction}
+  probe.each: {scope: component, partition: false, classed: false, quantity_kind: number_flow}
+# Models: ports (kind, direction, accepted templates, signal kind), manipulable parameters.
+models:
+  std.feed:
+    ports: {out: {kind: material, direction: outlet, definitions: [mat-v1]}}
+  std.crystallizer:
+    ports:
+      in: {kind: material, direction: inlet, definitions: [mat-v1]}
+      out: {kind: material, direction: outlet, definitions: [mat-v1]}
+      heat: {kind: energy, direction: inlet, definitions: [heat-v1]}
+    manipulable: {P_set: pressure, h_set: molar_enthalpy}
+  legacy.crystallizer:
+    ports:
+      in: {kind: material, direction: inlet, definitions: [mat-v1]}
+      out: {kind: material, direction: outlet, definitions: [mat-v1]}
+      heat: {kind: energy, direction: inlet, definitions: [heat-v1]}
+    manipulable: {P_set: pressure}
+  std.sink:
+    ports: {in: {kind: material, direction: inlet, definitions: [mat-v1]}}
+  std.mixer:
+    one_definition: true
+    ports:
+      in1: {kind: material, direction: inlet, definitions: [mat-v1]}
+      in2: {kind: material, direction: inlet, definitions: [mat-v1]}
+      out: {kind: material, direction: outlet, definitions: [mat-v1]}
+  std.heat_source:
+    ports: {q: {kind: energy, direction: outlet, definitions: [heat-v1]}}
+  std.controller:
+    ports:
+      out: {kind: signal, direction: outlet, definitions: [signal-v1], quantity_kind: heat_rate}
+  syn001.feed_source:
+    ports: {outlet: {kind: material, direction: outlet, definitions: [nTP-v1]}}
+  syn001.product_sink:
+    ports: {inlet: {kind: material, direction: inlet, definitions: [nTP-v1]}}
+providers: [syn001-ideal]
+conventions: []
+# Q8.R7: components a property method confines to a phase model; Q8.R1: equilibrium-solid
+# candidates of `mixed` (ice).
+confined: [sorbent]
+solid_candidates: [H2O]

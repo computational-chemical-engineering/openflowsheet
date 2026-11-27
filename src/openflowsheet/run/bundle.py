@@ -171,8 +171,15 @@ def _cross_check_solution_state(
 
     Only a file that is indexed, present and intact is judged; the certificate it is judged
     against is the parsed `solution-certificate.json` when that is indexed, present and intact,
-    else `None` (a state with no certificate is itself a reason)."""
-    from openflowsheet.run.solution_state import NAME, inconsistencies
+    else `None` (a state with no certificate is itself a reason). A `solution-state-v2` document
+    (ADR 0062 D8; only a v2-compiled run writes one) is judged by `inconsistencies_v2`, every
+    other by `inconsistencies` (F2-WO6b)."""
+    from openflowsheet.run.solution_state import (
+        NAME,
+        SCHEMA_VERSION_V2,
+        inconsistencies,
+        inconsistencies_v2,
+    )
 
     if NAME not in index or NAME in missing or NAME in tampered:
         return
@@ -192,7 +199,12 @@ def _cross_check_solution_state(
     except ValueError:  # bytes that hash as indexed but are not JSON
         tampered.append(NAME)
         return
-    if inconsistencies(state, certificate if isinstance(certificate, Mapping) else None):
+    judge = (
+        inconsistencies_v2
+        if isinstance(state, Mapping) and state.get("schema_version") == SCHEMA_VERSION_V2
+        else inconsistencies
+    )
+    if judge(state, certificate if isinstance(certificate, Mapping) else None):
         tampered.append(NAME)
 
 

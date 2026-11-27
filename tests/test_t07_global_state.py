@@ -136,11 +136,13 @@ def test_g20_every_hit_is_allowlisted_and_every_entry_is_hit() -> None:
     # (studies/nlp/request.py); F1's extension-descriptor validators (registry/descriptor.py) and
     # its process registry's one `global` line (registry/__init__.py, `default_registry`); F3's
     # six nullary readers of package data (records: the record schema and its validator, the
-    # repository rights register, the legacy profiles and committed index, its record SHAs).
+    # repository rights register, the legacy profiles and committed index, its record SHAs);
+    # F2-WO6a's three (the `solution-state-v2` validator; lowering's two legacy-index readers);
+    # F2-WO6c's one (lowering's `file_parameter_sets`).
     per_line = Counter(hit for hits, count in found.values() for hit in hits for _ in range(count))
     assert per_line == Counter(
         {
-            "cache": 46,
+            "cache": 50,
             "np.random": 3,
             "random": 1,
             "ContextVar": 2,

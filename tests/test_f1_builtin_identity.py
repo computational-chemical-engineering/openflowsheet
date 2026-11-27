@@ -80,7 +80,8 @@ def _tables_from(data: dict[str, bytes]) -> dict[str, list[dict[str, object]]]:
 def test_sf_8_the_committed_tables_have_the_recorded_digest() -> None:
     data = discovery._builtin_bytes()
     schema = discovery.descriptor_schema_bytes()
-    assert set(data) == {"core", "legacy", "records"}  # `records`: F3-WO1 (ADR 0061)
+    # `records`: F3-WO1 (ADR 0061); `material`: F2-WO2 (ADR 0062)
+    assert set(data) == {"core", "legacy", "material", "records"}
     for name, table in data.items():
         line = (
             f"{name}\n{hashlib.sha256(table).hexdigest()}\n{hashlib.sha256(schema).hexdigest()}\n"
@@ -120,7 +121,7 @@ def test_sf_8_a_tampered_built_in_table_is_still_caught(monkeypatch: pytest.Monk
     monkeypatch.setattr(discovery, "_builtin_bytes", lambda: dict(tampered))
     tables, prevalidated = discovery.checked_builtin_tables()
     assert tables["legacy"][0]["title"] == 7
-    assert prevalidated == frozenset({"core", "records"})
+    assert prevalidated == frozenset({"core", "material", "records"})
     with pytest.raises(RegistryBuildError) as raised:
         Registry.build(builtin_tables=tables, prevalidated=prevalidated)
     assert raised.value.reason.code == "extension_invalid"
@@ -137,7 +138,7 @@ def test_sf_8_a_reformatted_table_is_validated_in_full_and_keeps_its_identity(
     data["legacy"] = json.dumps(json.loads(data["legacy"].decode("utf-8")), indent=1).encode()
     monkeypatch.setattr(discovery, "_builtin_bytes", lambda: dict(data))
     tables, prevalidated = discovery.checked_builtin_tables()
-    assert prevalidated == frozenset({"core", "records"})
+    assert prevalidated == frozenset({"core", "material", "records"})
     registry = Registry.build(builtin_tables=tables, prevalidated=prevalidated)
     assert registry.registry_sha256 == _committed()
 
