@@ -43,22 +43,19 @@ the ADR acceptances of card `ofs-line06-adr-clause`; X06's exits.
 Parallelism: at most two agents. F2 first; D1 runs beside F2 once the X06 scope card is answered; F8-WO1 can start
 once F2-WO4 is on wp/F2 (F8 branches from wp/F2's head, merges after F2).
 
-## Next action (2026-11-27 21:40; NO agent of this session is running)
+## Next action (2026-11-27 23:20; NO agent of this session is running)
 
 Background jobs (they survive the reset; their notices arrive in the new context):
 1. **F2 MERGED** into main `f1fdda2b` (card ofs-f2-merge A, executed); F0 PASS; main pushed. Worktree removed.
-2. **X06**: CI green at 73b3a83d; X06-FR0 PASS (wp/X06 `9f020edd` = merge of wp/F2 80cdcfb3; D_12 `ba4b5ce5...`
-   onto F2's D_11). **Full gate running** on 9f020edd in detached worktree `.claude/worktrees/x06-gate`, PID 512899
-   (setsid), summary `~/.cache/line06/x06-gate/gate-9f020edd.summary`, log `.../gate-9f020edd.log`. A waiter prints it; else check
-   the summary file on wake (about 21:35 + 1.5 h). main is already merged into wp/X06 (`7a4dcde7`, docs only). On PASS: push wp/X06
-   7a4dcde7, CI waiter (`~/.cache/line06/ci/wait_runs.sh wp/X06 <sha>`), on green the X06 merge card. On FAIL: grep the log, fix.
+2. **X06**: full gate PASS at 9f020edd (21886 passed, 107 skipped, 3 xfailed; log `~/.cache/line06/x06-gate/gate-9f020edd.log`).
+   wp/X06 `7a4dcde7` (= 9f020edd + main, docs only) **pushed 2026-11-27 23:15, CI running**. Waiter
+   `~/.cache/line06/ci/wait_runs.sh wp/X06 7a4dcde7bb5a1fd8864d3988b040dc061bd9781e` writes
+   `~/.cache/line06/ci/x06-7a4dcde7.log` (one line per run; the waiter needs the FULL sha). If the waiter is gone, run it
+   again. On all green: X06 merge card (DECISION-REQUEST to hub; ADR 0078 already Accepted), merge, F0 on main, push main,
+   delete worktree x06. On red: `gh run view <id> --log-failed | grep`, fix.
 3. **F8**: CI at d0bc2996 FAILED only Windows 4 tests (test-side path spelling); fixed F8-CI2 on local wp/F8 `50b3af17`,
-   not pushed. F8 merges after F2 and X06: then merge main into wp/F8 (re-chain c_13 onto X06's c_12, an
-   opus-engineer work order like X06-FR0), gate, push, CI, merge card.
-
-Open item for the F2 merge card: ADR 0019 Amendment 9's heading still says "Proposed 2026-11-27" on wp/F2 while ADR
-0062 is Accepted; whether card `ofs-f2-accept-adr0062` covered it is not recorded. Ask on the F2 merge card (option
-text: mark Amendment 9 Accepted with ADR 0062 in the merge).
+   not pushed. After the X06 merge: launch opus-engineer on brief `docs/briefs/LINE06-F8-FR1.md` (fill in MAIN_SHA;
+   trial merge conflicts 15 files), then full gate in a detached worktree, push, CI, merge card.
 
 **Merge order into main:** whichever of F2 / X06 is green first merges first (merge card each). The second
 re-decomposes its surface chain onto the first's digest (R-1072/R-1073: X06's c_12 `D_12` vs F2's c_11 `D_11`

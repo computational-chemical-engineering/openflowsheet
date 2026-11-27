@@ -375,3 +375,9 @@ Reversible by: <how>.` Package build decisions go in the package's own file (`do
   `9f020edd` (running) stands for the push of 7a4dcde7, since the diff 9f020edd..7a4dcde7 is docs only; the tests that
   read the changed docs ran: 371 passed, 1 skipped (7 files). Alternative: a second 1.5 h gate on 7a4dcde7.
   Reversible by: running it before the push.
+
+## 2026-11-27 23:20 X06 gate PASS, pushed
+
+- X06 full gate at `9f020edd`: GATE PASS, 21886 passed, 107 skipped, 225 deselected, 3 xfailed (1:29:47). wp/X06
+  `7a4dcde7` pushed for CI. F8-FR1 brief written (`3a371a10`), trial merge of wp/X06 into wp/F8: 15 conflicts, base
+  `80cdcfb3`. The F2 merge card's open item (ADR 0019 Amendment 9 status) closed by merge `f1fdda2b`.
