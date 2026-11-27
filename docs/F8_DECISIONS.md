@@ -152,3 +152,61 @@ decompositions strip F8 first).
 - ruff check, ruff format --check (1348 files), mypy `src` (368 files): clean.
 - Left over: ADR 0019's Amendment 12 pointer paragraph (as F2's Amendment 9 one); `ReplayReport`/`ReplayMode` in
   Python and D5's `decision_comparison` (TX) are WO3's and TX's.
+
+## F8-WO2 (bundle writer v2, test-only factory), 2026-11-27
+
+Brief `docs/briefs/LINE06-F8-WO2.md`. Files: `src/openflowsheet/run/bundle_v2.py` (new),
+`tests/f8_bundle_v2_support.py` (new, the factory), `tests/test_f8_bundle_v2.py` (new). `run/bundle.py`
+is untouched (D3).
+
+- **DECISION F8-WO2-1. The factory derives a v1 revision's lock and `extensions_used` itself (test-only).**
+  A v1 run resolves nothing through the registry (`usage()` records an empty set for TH-C1, GP-C1 and
+  SYN-001-nominal, measured), and no `src/` function maps a v1 revision to ADR 0060 D8's references or to
+  a lock. The factory takes: components = `component_set.components` in revision order, each the record
+  of that id in the legacy file `record_source` names (committed legacy index); parameter sets = every
+  `parameter_set` record of that file (`build_lock` checks D5's matching); methods = one row, the
+  revision's provider (`component_basis(...).provider_id`); references = each instance's `unit_model`,
+  that `property_method`, `connection_definition nTP-v1`, `record_type component` (and `parameter_set`
+  when the lock holds one), `data_source legacy-yaml`, each at its highest registered version. The real
+  derivation belongs to the v2 compile (F6/F8-WO6) and WO3's usage cross-check. Alternative: the
+  `usage()` set (empty for v1 runs). Revertible by editing `tests/f8_bundle_v2_support.py` only.
+- **DECISION F8-WO2-2. The `methods` row's substream is `mixed`** (the id v2 fixtures give the one mixed
+  substream of an `nTP-v1` material). A v1 revision names no substream. Test-only (`SUBSTREAM`).
+- **DECISION F8-WO2-3. The writer refuses, never overwrites, a manifest whose `data_lock_sha256` or
+  `environment.registry` disagrees with the lock and snapshot it is given (`BundleError`)**, and refuses a
+  caller artifact that takes a D3 name. `data_lock_sha256` is R0 and the run's, so a silent fix would
+  change identity at write time; the `artifacts` index is still built from the bytes written, as in v1.
+  `run-evidence.json` (D6) is not written: F8-WO4's (out of 0.6).
+- **DECISION F8-WO2-4. E-F8-3's referenced records come from the test's own project register.** Every
+  corpus source is `permitted` in the repository register (the `legacy.s10` seed `unknown` is overridden
+  by the later row "NOTICE Wilson block", 2026-10-29), so no corpus case references a record. Before
+  GP-C1 is recorded, `RecordStore.append_rights` adds record-scoped project rows (D11's first precedence
+  row) to the test's in-memory project store: `refused` for `S10-wilson-ig-real-v1`'s source, `unknown`
+  for C2H5OH's. The bundle then embeds CH3OH and H2O and references the set and C2H5OH. The re-assessment
+  test flips them (set and C2H5OH `permitted`, H2O `refused`) in a fresh stack and rewrites; a second
+  test appends a whole-source `refused` repository row for TH-C1's `legacy.s05`. Alternative: edit the
+  package register (shipped data; not the test's to change).
+- **Note F8-WO2-5. `verify_bundle` (v2) reuses `run/bundle.py`'s private cross-checks**
+  (`_cross_check_solution_state`, `_cross_check_solve_path`) for the v1 artifacts a v2 bundle carries;
+  D3 keeps `bundle.py` untouched, so they are imported, not moved. It adds D3's checks: the lock and the
+  snapshot hash to the manifest's values, the index names exactly the lock's records, the record files are
+  exactly the embedded entries and each hashes to its own SHA (a forger who rebuilds the index and both
+  self-hashes is still caught; tested).
+- **Note F8-WO2-6. For WO3.** The v1 `read_manifest` fails on a v2 manifest with `TypeError` at
+  `Environment(registry=...)`, before its unknown-member `BundleError`; D5's dispatch must test
+  `bundle_format` before calling it (pinned by `test_the_v1_reader_does_not_read_a_v2_bundle`).
+
+### F8-WO2 gate numbers (SMM-TR09, 2026-11-27)
+
+Commits `da02b48a` (`run/bundle_v2.py`), `5e11abb9` (factory and tests).
+- F0 (`scripts/corpus_identity.py --check`, own detached worktree at `5e11abb9`): PASS, M1 50/50, M2-M5 61/61,
+  M6 85/85, M7 52/52, M8 105/105, M9 42/42.
+- `tests/test_f8_bundle_v2.py` 21 passed (E-F8-2: 9 incl. the two-case parametrisation; E-F8-3: 7; writer 2;
+  E-F8-10 2; D4 no-network 1). Mutation controls (not committed): embedding forced `True` fails 3 E-F8-3
+  tests; dropping the record-name hash check fails the forged-index test; dropping `_cross_check_v2` fails 3
+  E-F8-2 tests.
+- Battery (`test_f8_bundle_v2` 21, `test_f8_manifest_v2` 34, `test_k05_replay` 30, the 62 surface files,
+  `test_v03_semantic_roles` 20, `test_f3_lock_rights` 16, `test_package_imports` 24): 2467 passed, 28 skipped,
+  3 failed (the three v03 reds, WO1-10). No served digest moved (surface suites green, no re-pin).
+- ruff check, ruff format --check (1351 files), mypy `src` (369 files): clean.
+- Left over: `run-evidence.json` (D6, WO4); replay of a v2 bundle and the dispatch (WO3).
