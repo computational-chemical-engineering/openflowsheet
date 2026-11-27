@@ -171,3 +171,15 @@ Reversible by: <how>.` Package build decisions go in the package's own file (`do
   Incident: F2-WO4 and X06-WO4b shared the prior session's scratchpad; X06-WO4b warned to re-run any result from
   battery.sh/pytest.log/f0.log there. Rule for briefs from now: logs under ~/.cache/line06/<wo>/.
   F2-WO5 brief written (docs/briefs/LINE06-F2-WO5.md), launched.
+- 2026-11-27: F2-WO5 judged PASS, wp/F2 f4c5cd7a (no src change): E-F2-4 13 tests (worst conservation 3.39e-16;
+  Q6.A5 worst deficit 6.27e-16; O-9 worst moment deficit 4.86e-14, margin 20.6x to tau_mono 1e-12, above 10x);
+  Q7.A2 and E-F2-6 on 300+ probe states bitwise; battery 5609 passed 0 failed; F0 PASS. Spot-check:
+  test_f2_probes 13 passed. To F2's ruling batch: Q-WO5-a (Q6.A2 registration half untestable: no lambda1 field,
+  no F1 check) -> recorded partial; Q-WO5-b (`validate.py` one_definition_rules compares definition ids, refuses
+  equal-bodied distinct ids as attribute_grid_mismatch; possible src defect); Q-WO5-c (underflowed flowing stream,
+  for ADR-F6); WO5-1 (probe kind scopes swapped in WO3/WO4 test data). Process: run.sh PIDs are invisible to kill -0
+  from another shell; wait on the log line.
+- DECISION: F2-WO6 split into WO6a (lower/raise, solution-state-v2 writer, r0_projection for v2, E-F2-3 library half,
+  E-F2-10, a dispatch map for WO6b) and WO6b (Amendment 9 application dispatch, run submission, E-F2-3 run half, ADR
+  0019 pointer, interfaces-frozen). Alternative: one WO (would exceed the 150k cap). Reversible by: merging briefs.
+  F2-WO6a brief written; launched once F2-WO5's own background run in the f2 worktree has ended.
