@@ -190,3 +190,8 @@ Reversible by: <how>.` Package build decisions go in the package's own file (`do
   ruff, mypy clean; bundle gate 63/60/b42b1ec439d1683c; F0 PASS. For the reviewer: WO4b-1 removed
   test_u08_no_operation_administers_policies (D5 reverses it; WO2-9 precedent); WO4b-2 E-X06-16 on operator-written
   policy files. Test isolation defect (_pin_threads leaks env) -> X06-WO5 item 7. X06-WO5 brief written (Sonnet).
+- 2026-11-27: X06-WO5 judged PASS, wp/X06 020b7b72 (manifest at a657d29d, status tested): surface one process 3318
+  passed, 2 failed (exactly Q26 and the description-review gate), 3 xfailed; F0 PASS; ruff clean; E-X06-23 store id
+  t07-store-v1, three schemas changed, each justified; E-X06-24 12 codes catalogued. WO5-1 fixed _pin_threads in
+  three tests. All X06 WOs done. X06 reviewer brief written (docs/briefs/X06-reviewer.md) with the ruling batch;
+  reviewer launched.
