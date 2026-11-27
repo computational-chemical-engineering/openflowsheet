@@ -1,0 +1,56 @@
+{
+  "taken_at": "4ca7ce3c",
+  "what": "ADR 0078 E-X06-21: the audit rows of project init, grant, ambient set, ambient clear and revoke as the operator CLI writes them before X06-WO4; at removed, request_sha256 given as the index of the step after which the policy hashes to it",
+  "rows": [
+    {
+      "seq": 1,
+      "principal_id": "local-owner",
+      "capability_id": "local-owner",
+      "operation": "project_init",
+      "outcome": "allowed",
+      "code": null,
+      "effect": "project:cli-audit",
+      "request_sha256_is_the_policy_hash_after": 0
+    },
+    {
+      "seq": 2,
+      "principal_id": "local-owner",
+      "capability_id": "local-owner",
+      "operation": "project_grant",
+      "outcome": "allowed",
+      "code": null,
+      "effect": "grant:cap-a",
+      "request_sha256_is_the_policy_hash_after": 1
+    },
+    {
+      "seq": 3,
+      "principal_id": "local-owner",
+      "capability_id": "local-owner",
+      "operation": "project_ambient",
+      "outcome": "allowed",
+      "code": null,
+      "effect": "ambient:100000.0",
+      "request_sha256_is_the_policy_hash_after": 2
+    },
+    {
+      "seq": 4,
+      "principal_id": "local-owner",
+      "capability_id": "local-owner",
+      "operation": "project_ambient",
+      "outcome": "allowed",
+      "code": null,
+      "effect": "ambient:cleared",
+      "request_sha256_is_the_policy_hash_after": 1
+    },
+    {
+      "seq": 5,
+      "principal_id": "local-owner",
+      "capability_id": "local-owner",
+      "operation": "project_revoke",
+      "outcome": "allowed",
+      "code": null,
+      "effect": "revoke:cap-a",
+      "request_sha256_is_the_policy_hash_after": 0
+    }
+  ]
+}
