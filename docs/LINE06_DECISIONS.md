@@ -183,3 +183,10 @@ Reversible by: <how>.` Package build decisions go in the package's own file (`do
   E-F2-10, a dispatch map for WO6b) and WO6b (Amendment 9 application dispatch, run submission, E-F2-3 run half, ADR
   0019 pointer, interfaces-frozen). Alternative: one WO (would exceed the 150k cap). Reversible by: merging briefs.
   F2-WO6a brief written; launched once F2-WO5's own background run in the f2 worktree has ended.
+- 2026-11-27: X06-WO4b judged PASS, wp/X06 af8a6c32: test_x06_administration 15 passed (E-X06-16..21; spot-check
+  rerun 15 passed); E-X06-22 X06_SERVED_SHA256 = D_12 = d0f0c8b7..., without_x06 = f7ec3c94...; surface 2375 passed,
+  2 failed (Q26 STOP: set_ambient_pressure value, grant_capability limits/{max_wall_time_s,max_active_jobs,
+  default_wall_time_s}; description-review gate: 11 texts, 22 open reviews), x06/MSG/doc pages 276 passed 3 xfailed;
+  ruff, mypy clean; bundle gate 63/60/b42b1ec439d1683c; F0 PASS. For the reviewer: WO4b-1 removed
+  test_u08_no_operation_administers_policies (D5 reverses it; WO2-9 precedent); WO4b-2 E-X06-16 on operator-written
+  policy files. Test isolation defect (_pin_threads leaks env) -> X06-WO5 item 7. X06-WO5 brief written (Sonnet).
