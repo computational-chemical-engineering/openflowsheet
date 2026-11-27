@@ -241,3 +241,4 @@ Reversible by: <how>.` Package build decisions go in the package's own file (`do
   | `job_operation: run`, `run_kind`, `documents` (ADR 0066 D10/D11) | absent: ADR 0066 is 0.8. WO1 defines the manifest members as optional schema members only; no 0.6 run fills them |
 
   Resolved: 0 open rows. Note for the F8 briefs: in 0.6 no production run writes a v2 bundle (v2-compiled runs come with F6/WO6, 0.7); WO2's test-only factory is the only writer, so E-F8-2..6 run on factory bundles.
+- 2026-11-27: F2-WO6c judged PASS at 2d19b5f8 (orchestrator rerun: test_f2_lowering + test_f2_amendment9 220 passed, test_t07_global_state 3 passed; F0 PASS all nine). Raised s10 v2 content_hash moves logged by the engineer (unpinned). F2-WO7 briefed (Sonnet; check_admission.md re-pin kept out, goes with the reviewer pass).
