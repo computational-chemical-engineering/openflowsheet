@@ -279,8 +279,8 @@ def check_a20(envelope: Mapping[str, Any], facts: Mapping[str, Any] | None = Non
     ):
         problems.append(
             "A20: spec §9 registers 20 operations (39 with ADR 0019 A3.3, ADR 0058 D7, ADR 0068, "
-            "ADR 0060 D11, ADR 0061 D13 and ADR 0078 D2.5, D4.5, D5.2) and 13 models (30 with S11's "
-            "column and seven "
+            "ADR 0060 D11, ADR 0061 D13 and ADR 0078 D2.5, D4.5, D5.2) and 13 models "
+            "(30 with S11's column and seven "
             "thermal.* models, M02's eight C1 models and M04's surrogate)"
         )
     return problems

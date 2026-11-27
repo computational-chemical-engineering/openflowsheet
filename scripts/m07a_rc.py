@@ -86,11 +86,12 @@ function, a registered digest and Frank's carry extended to name it):
   ChangeSet's optional `branch` member wherever the ChangeSet is served, and the two description
   texts it changed (`commit_change.md`, `preview_change.md`, restored from their pre-X06 copies),
   stripped by `tests/x06_schema_support.py`'s `without_x06`; `D_12` = `d0f0c8b7…`, measured at
-  X06-WO4 on `wp/X06` (`7e8393a5…` at X06-WO2, `4a80f77f…` at X06-WO3; `tests/test_t08_w2_surface_digest.py`'s
-  `X06_SERVED_SHA256`). On `wp/X06` it decomposes onto c_10 (F3): F2's c_11 (R-1072) is not on
-  the branch, and whichever of the two merges second decomposes onto the first's. Its nine new
-  files are pinned at their own hashes (`X06_FILE_SHA256`); item 4 judges the two changed texts
-  in their pre-X06 form (`texts_before_links`).
+  X06-WO4 on `wp/X06` (`7e8393a5…` at X06-WO2, `4a80f77f…` at X06-WO3;
+  `tests/test_t08_w2_surface_digest.py`'s `X06_SERVED_SHA256`). On `wp/X06` it decomposes onto
+  c_10 (F3): F2's c_11 (R-1072) is not on the branch, and whichever of the two merges second
+  decomposes onto the first's. Its nine new files are pinned at their own hashes
+  (`X06_FILE_SHA256`); item 4 judges the two changed texts in their pre-X06 form
+  (`texts_before_links`).
 
 The released 0.2.0a1 ran the two-link chain (its committed record at `C_α²`); a re-run of the
 alpha's step 8 uses this script at the tag.
@@ -499,8 +500,8 @@ def texts_before_links(texts: Mapping[str, str]) -> dict[str, str]:
     c_6's two files (OPT) in their pre-OPT form, c_8's two (X04) in their pre-X04 form and c_12's
     two (X06) in their pre-X06 form. The other links changed no existing text (MSG's c_4 added
     `explain.md`, ST's c_7 `get_stream_table.md`, F1's c_9 `list_capabilities.md` and
-    `check_admission.md`, F3's c_10 five `Records` files, X06's c_12 nine files (`Branches`, `SolvePolicies`, `Administration`), each
-    pinned at its own hash)."""
+    `check_admission.md`, F3's c_10 five `Records` files, X06's c_12 nine files (`Branches`,
+    `SolvePolicies`, `Administration`), each pinned at its own hash)."""
     t08_rc._tests_on_path()
     from opt_schema_support import OPT_DESCRIPTIONS, pre_opt_text  # noqa: PLC0415
     from x04_schema_support import X04_DESCRIPTIONS, pre_x04_text  # noqa: PLC0415
@@ -520,7 +521,8 @@ def description_problems(texts: Mapping[str, str]) -> list[str]:
     """§5.3 item 4 on `texts` (operation name -> description file): one line per failure. The
     tools are `v17-c2`'s 17, MSG's `explain` (c_4), ST's `get_stream_table` (c_7), F1's
     `list_capabilities` and `check_admission` (c_9), F3's five `Records` tools (c_10) and X06's
-    nine tools (c_12: `Branches`, `SolvePolicies`, `Administration`), each file at its pinned hash."""
+    nine tools (c_12: `Branches`, `SolvePolicies`, `Administration`), each file at its pinned
+    hash."""
     problems: list[str] = []
     pinned = {
         **V17_C2_FILE_SHA256,

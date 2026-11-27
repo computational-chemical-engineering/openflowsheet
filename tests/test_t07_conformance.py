@@ -29,9 +29,10 @@ members that are clock readings or host facts (`stable`): §11.6's list (`record
 `elapsed_seconds` — by the validation report's `provenance.timestamp`, and by the random part of
 the `auto:<uuid4>` key an in-process `solve` or `reproduce` draws for its job (with that job's
 `request_sha256`, which hashes it), and by what an in-band grant draws (its token, every
-`token_sha256`, the grant's `policy_sha256`; ADR 0078 D5.4, `stable_administration`). Each extension is a clock or a random draw of the method,
-which `dispatch` makes the same way; none is something a transport adds. Two relations loosen
-the comparison, each for a stated reason, never for a transport's convenience:
+`token_sha256`, the grant's `policy_sha256`; ADR 0078 D5.4, `stable_administration`). Each
+extension is a clock or a random draw of the method, which `dispatch` makes the same way; none
+is something a transport adds. Two relations loosen the comparison, each for a stated reason,
+never for a transport's convenience:
 
 - `live`: a response that reads a job while a process worker may be moving it (a first submit:
   `queued` or `running`; a cancel of a running job: `running` or already `cancelled`). The
