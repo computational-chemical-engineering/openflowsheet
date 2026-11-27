@@ -36,8 +36,13 @@ from openflowsheet.run.bundle import BundleIntegrity, read_artifact, read_manife
 from openflowsheet.run.compare import CURRENT_POLICY_ID, KNOWN_POLICY_IDS, differences
 from openflowsheet.run.lock import TEMPLATES
 from openflowsheet.run.manifest import Environment, environment
+from openflowsheet.run.manifest_v2 import refuse_reserved_mode
 
-ReplayMode = Literal["exact_replay", "compatible_reproduction", "inspected_archived_results"]
+#: Amendment 12 (ADR 0067 D8) adds `forced_replay`, reserved: a report in it is refused
+#: `construct_unavailable(forced_replay, TX)` until F8-WO7 builds it with TX.
+ReplayMode = Literal[
+    "exact_replay", "compatible_reproduction", "inspected_archived_results", "forced_replay"
+]
 ReplayVerdict = Literal["MATCH", "MISMATCH", "NOT_RUN"]
 
 #: D4: the platforms a bundle may be *reproduced* on rather than merely inspected. Plan §4.2
@@ -71,9 +76,17 @@ class ReplayReport:
     differences: tuple[str, ...] = ()
     bitwise_floats: bool | None = None
     verdict_changed_near_threshold: tuple[str, ...] = ()
+    #: Amendment 12 (ADR 0067 D5 steps 5 and 6): a v2 bundle's registry comparison and data
+    #: availability. `None`, and absent from the document, for a v1 bundle, whose report keeps
+    #: its bytes.
+    registry_comparison: Mapping[str, Any] | None = None
+    data_availability: Mapping[str, Any] | None = None
+
+    def __post_init__(self) -> None:
+        refuse_reserved_mode({"mode": self.mode})
 
     def as_document(self) -> dict[str, Any]:
-        return {
+        document = {
             "mode": self.mode,
             "verdict": self.verdict,
             "integrity": self.integrity.as_document(),
@@ -84,6 +97,11 @@ class ReplayReport:
             "bitwise_floats": self.bitwise_floats,
             "verdict_changed_near_threshold": list(self.verdict_changed_near_threshold),
         }
+        if self.registry_comparison is not None:
+            document["registry_comparison"] = dict(self.registry_comparison)
+        if self.data_availability is not None:
+            document["data_availability"] = dict(self.data_availability)
+        return document
 
 
 def decide_mode(recorded: Environment, current: Environment) -> tuple[ReplayMode, tuple[str, ...]]:
@@ -225,6 +243,12 @@ def replay(
     parts that happened to survive is the injected-false-success shape in a different costume.
     """
     directory = Path(directory)
+    # ADR 0067 D5 step 2: a manifest with `bundle_format` is D5's (`replay_v2` builds on this
+    # module, so it is imported here); one without reads on as v1, unchanged.
+    from openflowsheet.run import replay_v2  # noqa: PLC0415
+
+    if replay_v2.bundle_format(directory) is not None:
+        return replay_v2.replay_v2(directory, rerun, current=current)
     integrity = verify_bundle(directory)
     manifest, _ = read_manifest(directory)
     here = current if current is not None else environment()
