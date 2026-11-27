@@ -8,10 +8,10 @@ worktrees. Budget about 150k.
 
 ## The task
 
-Merge wp/F2's final head `6913c4a0` into wp/F8 with a merge commit (`git merge --no-ff wp/F2`), resolving every
+Merge wp/F2's head `4b820b97` into wp/F8 with a merge commit (`git merge --no-ff wp/F2`), resolving every
 conflict so that both packages' work stands. wp/F8 branched from wp/F2 at `df796cc2`; since then wp/F2 gained the F2
 review fix round (F2-WO8: templates, catalogue, served D_11 moved `9a4b4eb3` -> `8eee5313`, F2's manifest and harvest
-rows, HARVEST_SIZE (109, 1180, 151)) and the j16 fixture fix (`6913c4a0`). Known conflict points (state file and
+rows, HARVEST_SIZE (109, 1180, 151)) the j16 fixture fix (`6913c4a0`), ADR 0062 Accepted (`831d6f26`), the human review of `check_admission.md` (`8edbbaee`) and `scripts/w5_identity.py` holding `material.json` (`4b820b97`; on the merged tree `w5_identity.py sets --check` must PASS and `tests/test_s19_w5_gate.py` pass). Known conflict points (state file and
 F8_DECISIONS):
 1. **Surface chain c_13** (`scripts/m07a_rc.py`, `tests/test_m07a_surface_chain.py`,
    `tests/test_t07_w5e_application_results.py`, `tests/test_t08_w2_surface_digest.py`, R-1076; DECISIONs F8-WO1b-*,
@@ -36,6 +36,6 @@ Merge commit on wp/F8 (plus any follow-up commits, named paths). At the merged h
 M6 85/85, M7 52/52, M8 105/105, M9 42/42); `tests/test_f2_*`, `tests/test_f8_*`, `tests/test_k05_replay.py`,
 `tests/test_x07a_*`, `tests/test_msg_*`, `tests/test_t07_*`, `tests/test_t08_w2_*`, `tests/test_m07a_*`,
 `tests/test_adr_0002_a1_integers.py`, `tests/test_v03_semantic_roles.py`, `tests/test_evidence_manifests.py`,
-`tests/test_t08_w2_support_envelope.py` pass (report counts per group; any red is named with its cause); ruff, ruff
+`tests/test_t08_w2_support_envelope.py`, `tests/test_s19_w5_gate.py`, `tests/test_t08_w2_description_reviews.py` pass (report counts per group; any red is named with its cause); ruff, ruff
 format --check, mypy src clean. Do not push. No background job of yours running when you report. Report in 200-300
 words: the merge commit, conflicts and how each was resolved, the digests old -> new, HARVEST_SIZE, the test counts.
