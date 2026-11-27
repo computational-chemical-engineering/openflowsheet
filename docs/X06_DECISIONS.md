@@ -571,7 +571,9 @@ Brief `docs/briefs/LINE06-X06-CI1.md`, build lane. The same ten tests failed on 
   `exact_sha256` (each preimage is a solve-policy document's canonical bytes). Measured: `t08_numerical_policy.py
   --check` passes with v2's bytes `6b449911…` unchanged; `X06_SERVED_SHA256` `7792576e…` and the chain unchanged
   (`test_t08_w2_surface_digest`, `test_m07a_surface_chain` pass); the R4-G3 snapshots unchanged. Alternative: rename
-  the two members (the ADR names them) or amend ADR 0025 (design lane). Reversible by: reverting the commit.
+  the two members (the ADR names them) or amend ADR 0025 (design lane). Reversible by: reverting the commit. The
+  full gate then failed only `test_the_m05_addendum_is_audited_after_m02s_and_its_partition_holds`, which pins the
+  audit order: `x06` added after `f3`, as F1 and F3 each did.
 - **DECISION X06-CI1-2. The `SolvePolicies` fixtures copy `T04-W12`, not `T06-revision-v2`.** The committed
   `application_results/solve_policy_view` fixtures carried `T06-revision-v2`'s document, which names
   `T05b-phase-contract-v2`, `homotopy_or_sequential_restart` and `newton_refined`; the guards `test_b06_*`,
