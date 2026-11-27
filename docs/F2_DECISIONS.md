@@ -448,3 +448,9 @@ Files: `src/openflowsheet/revision_v2/{lower,raise_v1}.py`, `tests/f2/legacy_pro
   registrations (`tests/test_m05_study_record.py`'s ADDENDA order, `tests/test_t07_global_state.py`
   count and allowlist). Alternative: list the name in v2's own `exact_sha256` (moves a registered
   policy's bytes).
+- **Gate at `7ce12c23`.** WO5's battery suites plus `tests/test_f2_lowering.py` (93) and
+  `tests/test_f2_solution_state_v2.py` (35): 5,737 passed (5,609 + 128), 28 skipped, 3 xfailed, 0
+  failed; ruff, ruff format --check, `mypy src` clean; F0 PASS M1 50/50, M2-M5 61/61, M6 85/85,
+  M7 52/52, M8 105/105, M9 42/42 (`~/.cache/line06/f2wo6a-final2.log`). E-F2-3 library half:
+  59/59 corpus revisions (M1's 50 + F0's 9 basis cases) raise and lower to their canonical bytes.
+  Left for WO6b: the dispatch map above; `LegacyProviders` in the application.
