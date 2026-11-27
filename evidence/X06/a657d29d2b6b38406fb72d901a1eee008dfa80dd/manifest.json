@@ -1,0 +1,117 @@
+{
+  "work_package": "X06",
+  "commit": "a657d29d2b6b38406fb72d901a1eee008dfa80dd",
+  "requirements": [],
+  "status": "tested",
+  "inputs": {
+    "case_id": "ADR 0078 (Accepted 2026-11-26, the user, Decision Desk ofs-x06-accept-adr0078; R-1071); ADR 0019 Amendment 18 (Proposed); build decisions docs/X06_DECISIONS.md; work orders docs/briefs/LINE06-X06-WO*.md; surface c_12, D_12 d0f0c8b71d30e17cd3296107203a78dfdf235d4133a640de88a487c5a411db9f (R-1073); without_x06 f7ec3c94233d30506ec2082a13c4e54d57bd540e43e97fdf877b1e3c75fed467",
+    "case_hash": "e21f9556aa30cd27dfa471fe218320b81536ef19df5484d8f74120e4cd5a113c",
+    "environment_lock_hash": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+  },
+  "commands": [
+    {
+      "cmd": "PYTHONPATH=src .venv/bin/python -m pytest -q -p no:cacheprovider tests/test_x06_*.py tests/test_t07_*.py tests/test_t08_w2_*.py tests/test_m07a_surface_chain.py tests/test_msg_*.py tests/test_doc_pages*.py tests/test_evidence_manifests.py, one process, at a657d29d: 2 failed, 3318 passed, 47 skipped, 3 xfailed in 1446.53 s. The two failures are test_t07_q26.py::test_t07_q26_no_external_state and test_t08_w2_description_reviews.py::test_every_description_is_reviewed_by_both_lanes (see checks)",
+      "cwd": ".claude/worktrees/x06",
+      "exit_code": 1
+    },
+    {
+      "cmd": "PYTHONPATH=src .venv/bin/python scripts/corpus_identity.py --check at a657d29d: F0 PASS: M1 50/50, M2 61/61, M3 61/61, M4 61/61, M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 42/42",
+      "cwd": ".claude/worktrees/x06",
+      "exit_code": 0
+    },
+    {
+      "cmd": ".venv/bin/ruff check . (All checks passed!); .venv/bin/ruff format --check . (1330 files already formatted), at a657d29d",
+      "cwd": ".claude/worktrees/x06",
+      "exit_code": 0
+    },
+    {
+      "cmd": "PYTHONPATH=src .venv/bin/python -m pytest -q -p no:cacheprovider tests/test_t07_w5e_application_results.py tests/test_x06_solve_policies.py tests/test_t07_w3e_solution_state.py tests/test_t07_adr0008_jobs.py at 29bd191e: 160 passed (the isolation fix, X06-WO5 item 7; git status shows no fixture changed)",
+      "cwd": ".claude/worktrees/x06",
+      "exit_code": 0
+    },
+    {
+      "cmd": "PYTHONPATH=src .venv/bin/python scripts/doc_pages.py --check: generated pages: up to date; tests/test_msg_coverage.py tests/test_msg_engine.py tests/test_t07_store.py: 108 passed (E-X06-23 store schema t07-store-v1, E-X06-24 catalogue scan)",
+      "cwd": ".claude/worktrees/x06",
+      "exit_code": 0
+    },
+    {
+      "cmd": "E-X06-13, optimize half: NOT RUN on this host (no nlp extra installed); the solve half is covered by tests/test_x06_solve_policies.py",
+      "cwd": ".claude/worktrees/x06",
+      "exit_code": 0
+    }
+  ],
+  "checks": [
+    {
+      "id": "X06.E-X06-1-21",
+      "description": "tests/test_x06_mcp_http.py, test_x06_branches*.py, test_x06_solve_policies.py, test_x06_administration.py and the conformance suite's six clients (E-X06-1 to E-X06-21), as run in the surface battery",
+      "result": "pass",
+      "value": "all passed in the battery; the optimize half of E-X06-13 not run (limitations)"
+    },
+    {
+      "id": "X06.E-X06-22",
+      "description": "served-interface digest: X06_SERVED_SHA256 pinned; without_x06 gives F3's digest; the bijection test passes",
+      "result": "pass",
+      "value": "d0f0c8b71d30e17cd3296107203a78dfdf235d4133a640de88a487c5a411db9f (35 tools); without X06's additions f7ec3c94, chain link c_12 (R-1073)"
+    },
+    {
+      "id": "X06.E-X06-23",
+      "description": "store schema id unchanged and every changed schema file justified by an ADR 0078 member",
+      "result": "pass",
+      "value": "STORE_SCHEMA is t07-store-v1; schemas/ changes: change-set (D2.4), project-policy (D5.1), application-results (D2.5, D4.5, D5.2); table in docs/X06_DECISIONS.md"
+    },
+    {
+      "id": "X06.E-X06-24",
+      "description": "catalogue check (ADR 0058 C3): every new detail.code has an entry",
+      "result": "pass",
+      "value": "12 codes in refusals.yaml; tests/test_msg_coverage.py 8 passed"
+    },
+    {
+      "id": "X06.F0",
+      "description": "scripts/corpus_identity.py --check",
+      "result": "pass",
+      "value": "M1 50/50, M2-M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 42/42"
+    },
+    {
+      "id": "X06.Q26",
+      "description": "tests/test_t07_q26.py::test_t07_q26_no_external_state (R-088 Q26)",
+      "result": "fail",
+      "value": "FAILING on four new numeric request members pending a design-lane ruling: set_ambient_pressure value; grant_capability limits/max_wall_time_s, limits/max_active_jobs, limits/default_wall_time_s (docs/X06_DECISIONS.md, STOP at WO4)"
+    },
+    {
+      "id": "X06.DESCRIPTION-REVIEWS",
+      "description": "tests/test_t08_w2_description_reviews.py::test_every_description_is_reviewed_by_both_lanes",
+      "result": "fail",
+      "value": "FAILING by design until the reviews are recorded: 11 texts (commit_change, preview_change, list_branches, create_branch, delete_branch, register_solve_policy, get_solve_policy, get_policy, grant_capability, revoke_capability, set_ambient_pressure), 22 open reviews (design lane and human for each)"
+    },
+    {
+      "id": "X06.E-X06-13-OPTIMIZE",
+      "description": "E-X06-13 optimize half (a project policy under an optimize job's solve body)",
+      "result": "not_applicable",
+      "value": "NOT RUN: the nlp extra is not installed on this host; recorded here because the result enum has no 'not run'"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "docs/adr/0078-X06-application-capabilities.md",
+      "sha256": "e21f9556aa30cd27dfa471fe218320b81536ef19df5484d8f74120e4cd5a113c",
+      "description": "ADR 0078, Accepted"
+    },
+    {
+      "path": "docs/X06_DECISIONS.md",
+      "sha256": "68d6c2fe5da09189937056a9d84e0e5b67a658593114495706975b1a3a00e14f",
+      "description": "X06 build decisions, WO1 to WO5, the Q26 STOP and the schema justification table"
+    }
+  ],
+  "limitations": [
+    "Evidence class: software verification of four application capabilities (MCP over HTTP, branches, project solve policies, in-band administration) against ADR 0078's exit tests. Status is tested. No CI run is recorded: the branch has not been pushed (LINE06 rules). No reviewed status is claimed by the build lane.",
+    "FAILING, pending a design-lane ruling: tests/test_t07_q26.py::test_t07_q26_no_external_state reports four numeric request members (set_ambient_pressure value; grant_capability limits/max_wall_time_s, limits/max_active_jobs, limits/default_wall_time_s).",
+    "FAILING by design until the reviews are recorded: test_every_description_is_reviewed_by_both_lanes, 11 texts, 22 open reviews (design lane and human).",
+    "NOT RUN: the optimize half of E-X06-13 (no nlp extra on this host).",
+    "ADR 0078 D3: job resume is deferred to F7 D14 (0.8); nothing is built for it.",
+    "The evidence-manifest schema has no 'not run' result; the optimize half of E-X06-13 is recorded as not_applicable with the reason in its value and here."
+  ],
+  "review": {
+    "numerical": "pending",
+    "process_model": "pending"
+  }
+}
