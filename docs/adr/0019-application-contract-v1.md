@@ -283,6 +283,32 @@ Amendment 8 is decided in ADR 0061 D13 (F3-WO5b); this paragraph points at it. A
   it is F1's `e2c44b6b…` (R-1030) exactly. The surface link is c_10, R-1051 (`F3_SERVED_SHA256` in
   `tests/test_t08_w2_surface_digest.py`). No other R4-G3 response moves.
 
+## Amendment 9 (Proposed 2026-11-27; F2) — pointer to ADR 0062
+
+Amendment 9 is decided in ADR 0062 D12 (D8 for runs; F2-WO6b); this paragraph points at it. Additive; no method,
+parameter or result field changes, and nothing a v1 document is read, stored, hashed or run as changes:
+
+- **v2 documents accepted.** `commit_change`, `preview_change`, `diff_revisions`, `validate`, `check_admission`'s draft
+  form (ADR 0060 D11) and run submission (`solve`) accept a `ProcessRevision` with `schema_version: 2`
+  (`process-revision-v2.schema.json`, D11). `parse_revision` dispatches on `schema_version`: 1 to the untouched v1
+  reader, 2 to `revision_v2.parse`, never one read as the other (ADR 0002 D7.5). `ChangeSet` paths address v2 fields
+  unchanged. A stored v2 revision's `content_hash` is `revision_v2.content_hash` (v1's rule over D3's normal form).
+- **Read and run as its lowering.** A v1-expressible v2 document (D12's criterion) is read by every binder, the
+  validator's later stages, the verifier and the stream table as its lowered v1 document; a run of it is the v1 run of
+  that document in every artifact (`revision.json`, `solution-state.json` and `artifact_r0_sha256` included), and the
+  run's record (`RunResult.revision_id`, `revision_content_sha256`) names the v2 revision (D8). `verify_bundle` judges
+  a `solution-state-v2` (written only by a v2-compiled run, ADR-F6) by its own consistency rule.
+- **Refusals, existing codes only.** `validate` reports a v2 document the v2 schema refuses as `SCHEMA-01`
+  `schema_invalid(<pointer>)`, and one F2's rules or the lowering refuse as `SCHEMA-01` with every refusal
+  (`construct_unavailable(<construct>, <foundation>)` and ADR 0062's codes); a run has no route, both binders
+  refusing with the lowering's refusal. `check_admission` refuses a v2 draft `invalid_request` at the v2 schema's
+  pointer or `revision_unsupported` (`detail.unbound`, `detail.hint`), and adds F2's notices to `notices`. D5's
+  `ApiError` and `API_EXIT_CODES` are unchanged.
+- **Not unchanged:** the served MCP tool list, by F2's kinds in `list_models` (D1), now `9a4b4eb3…` (chain link c_11
+  of `scripts/m07a_rc.py`, R-1072; `F2_SERVED_SHA256` in `tests/test_t08_w2_surface_digest.py`); with F2's additions
+  removed (`tests/f2_schema_support.py`) it is F3's `f7ec3c94…` exactly. `check_admission`'s description still names
+  a `schema_version 1` draft (F2 decision WO6b-6).
+
 ## Amendment 13 (Accepted 2026-11-08 by Frank, with ADR 0068; Proposed 2026-11-06; ST) — pointer to ADR 0068
 
 Amendment 13 is decided in ADR 0068; this paragraph points at it (ST design note §6.1, §7).

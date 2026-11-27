@@ -559,3 +559,52 @@ to every instance of an `h_mass` revision (fact-free design call): default, no `
 and subset component sets lower; a legacy file's parameter set is stated; preview and new-role fields are refused;
 thermal coordinate T." (3) `s10`'s set names all three components, so a subset `s10` document states a set wider than
 its components (F4's design): default, F4 admits a parameter set whose components are a superset of the set's.
+
+## F2-WO6b (v2 dispatch in the application, run submission), 2026-11-27
+
+Files: `models/revision_flowsheet.py` (`legacy_providers`, `lowered_document`, `parse_revision`),
+`application/{revision_binding,binding,stream_table,revision_run,revisions,validation,capabilities}.py`,
+`application/jobs/runner.py`, `verify/certificate.py`, `studies/nlp/boundary.py`, `run/bundle.py`;
+`tests/test_f2_amendment9.py`; ADR 0019 Amendment 9; `docs/interfaces-frozen.md` (F2 paragraph). Built on
+`6f81897e`/`90f46174` (WO6a-2, WO6a-3 as committed); F2-R1's corrections come with F2-WO6c.
+
+- **DECISION WO6b-1. `LegacyProviders` is built in `models.revision_flowsheet.legacy_providers()`**, not in
+  `application` (map row 14 said the application): `parse_revision` (models, row 1), the verifier (row 5) and the
+  NLP boundary (row 6) sit below `application` and must lower. `models` holds the registry (`component_basis`) and
+  sits above `thermo`, whose constants give the conventions; the function reads no file and is not cached. A test
+  holds it equal to `tests/f2/legacy_providers.py` (built independently). Alternative: build in the application and
+  pass it down (a new parameter on `parse_revision` and every reader). Reversible by moving the function.
+- **DECISION WO6b-2. A reader's v2 refusal.** `lowered_document` returns a v1 document itself (the same object, so
+  every v1 path is byte-for-byte the old one) and lowers a v2 one; the v2 schema's refusal raises
+  `RevisionError("unsupported", "schema_invalid(<pointer>)")`, a lowering refusal `RevisionError("unsupported",
+  "<first construct_unavailable>", hint=<all>)`. Binders return it as `Unbound`; `select_route` returns `NoRoute`
+  with it as both binders' refusal; `bind_route` returns it.
+- **DECISION WO6b-3. `validate` of a v2 document**: `SCHEMA-01` applies `process-revision-v2.schema.json`; then
+  `revision_v2.validate` (context: WO6b-4) and the lowering; any refusal gives the schema-only `INVALID` report with
+  every refusal, sorted and rendered `code(params)`, in `SCHEMA-01`'s message; otherwise every later stage reads the
+  lowered document. The validator's notices are not in the report (no field; `check_admission` carries them).
+  Measured: 49 of M1's 50 raised revisions give a report equal to the v1 document's; `SYN-001-T06-STR06` (a
+  specification naming component `D`, outside the set) is refused at `SCHEMA-01` `component_unknown(D)` where v1
+  reports COMP-03; both `INVALID`.
+- **DECISION WO6b-4. `revision_context`** (the `ValidationContext` "from the stores"): a component whose record is a
+  legacy component record, with its file's basis molar mass, `mol`, charge 0 (a non-legacy record is left out: the
+  lowering refuses it `component:<id>`, F4); the registry's `attribute_kind` descriptors (none built in); every
+  `MODEL_SIGNATURES` model, a port taking its `state_definition` (`nTP-v1`); the legacy providers and conventions;
+  `confined`, `solid_candidates` and `manipulable` empty (F4 to F6). Alternative: components from the project's F3
+  record store (F4's).
+- **DECISION WO6b-5. `check_admission`, v2 draft**: the v2 schema's refusal is `invalid_request` at
+  `/revision<pointer>`; F2's errors and the lowering's refusals, sorted, refuse `revision_unsupported` with the first
+  in `detail.unbound` (`unsupported(<code(params)>)`) and all in `detail.hint`; the validator's notices join the
+  report's `notices`; the pairs are the lowered draft's. A v1 document labelled `schema_version: 2` (F1's E-F1-10
+  third draft request) is now `invalid_request` at the v2 schema's pointer, not `revision_unsupported`.
+- **DECISION WO6b-6. `check_admission.md` not changed.** It still says `{"revision": <schema_version 1
+  document>}`. Changing it moves the served digest (`F2_SERVED_SHA256`, chain link c_11) and voids both reviews of
+  the text (`REVIEW.json`); left for one surface re-pin with F2's `reviewer` pass. Proposed text: `<schema_version 1
+  or 2 document>` (1,493 characters, under the 1,500 limit).
+- **DECISION WO6b-7. "The run manifest's revision reference" (D8)** is read as the run's record:
+  `RunResult.revision_id` and `revision_content_sha256` (the stored v2 revision's, `revision_v2.content_hash`).
+  `RunManifest` has no revision field and gains none (Migration proof); `revision.json` holds the lowered v1
+  document, so the bundle is the v1 run's byte for byte. Route selection, binding, `run_revision_session` and the job
+  runner each lower (idempotent).
+- **Not done.** The optimization job (`optimize_revision`) on a v2 revision is not tested (Amendment 9 names run
+  submission; its binder path lowers, untested). WO7: the `check_admission` description (WO6b-6).
