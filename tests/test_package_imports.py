@@ -53,7 +53,8 @@ LAYERS = [
     # which re-exports them (D2), so it imports nothing of `thermo`.
     "material",
     # F2's v2 revisions (ADR 0062 D11, F2-WO4): parse, validate, canonical. Directly above
-    # `material`, whose definitions and layout it reads; below `application`, which dispatches to it.
+    # `material`, whose definitions and layout it reads; below `application`, which dispatches
+    # to it.
     "revision_v2",
 ]
 
