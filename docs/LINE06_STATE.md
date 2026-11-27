@@ -45,14 +45,21 @@ orchestrator's WO7-4 fix: `optimize_revision` lowers), ADR 0062 D12 replaced (df
 (committed part; STOPs 8 and 9 -> R-1076, F8's surface link c_13). Heads: wp/F2 `39244e80` (manifest
 `evidence/F2/a3081770.../manifest.json`, `tested`), wp/F8 `1b7e1b51`, wp/X06 `487609e7`.
 
-**Running:** (1) `opus-engineer` F2-WO8, the F2 review's fix round (`docs/briefs/LINE06-F2-WO8.md`, wp/F2 from
-`39244e80`, log `~/.cache/line06/f2-wo8/`; review `docs/reviews/F2-review.md`, 05dd3392); (2) `opus-engineer` F8-WO3
-(`docs/briefs/LINE06-F8-WO3.md`, wp/F8 from `886113ea`, log `~/.cache/line06/f8-wo3/`). F8-WO1b, WO2 done (PASS). If this session dies: check `git log` and
-`git status` in both worktrees, processes by `/proc/<pid>/cwd`; judge on the brief's acceptance.
+**Running:** `opus-engineer` F8-WO3 (`docs/briefs/LINE06-F8-WO3.md`, wp/F8 from `886113ea`, log
+`~/.cache/line06/f8-wo3/`); the wp/X06 CI waiter (below). F8-WO1b, WO2 done (PASS). If this session dies: check
+`git log`/`git status` in `.claude/worktrees/f8`, processes by `/proc/<pid>/cwd`; judge on the brief's acceptance.
 
-On F2-WO8: judge; apply the ADR 0062 text edits (D2 per WO1-4, D11's h_mass clause per review item 2; D12 is done);
-then the ADR 0062 acceptance card via hub with the review's line ("What needs the user"), and a human-review card for
-the new `check_admission.md` text (its REVIEW.json human status is `pending`); push wp/F2 for CI only after both.
+**F2:** WO1-WO8 done and judged; review fixes in; ADR 0062 D2/D11/D12 edited (wp/F2 `a64f93fb`). Cards requested from
+hub: `ofs-f2-accept-adr0062` (A action: "Mark ADR 0062 Accepted as corrected before acceptance at wp/F2 a64f93fb (D12
+per F2-R1, D2 PropertyRequest not widened, D11 h_mass revision-wide, E-F2-9 state_degenerate_in_definition and Q6.A2
+registration half deferred to F5/F6), then push wp/F2 for CI.") and `ofs-f2-check-admission-human` (A action: "Record
+the user's human review as reviewed for check_admission.md at SHA-256
+f111234f5e1ec6027056cf638d40f3776570fade25207919f32ddd49affb0eea (wp/F2 a64f93fb), in REVIEW.json."). On both
+VERIFIED: set ADR 0062 Status Accepted (date, card id), record the review, run tests/test_t08_w2_description_reviews.py,
+write `executed`, push wp/F2 (gh credential helper, RULES l.36), CI waiter, then the merge card. Merge order with X06:
+the second to merge decomposes onto the first's served digest (R-1072). F8 re-decomposes c_13 onto F2's new D_11
+`8eee5313…` when it merges wp/F2's head.
+
 On F8-WO3: judge (E-F8-1, -4, -5, -6; the step-7 premise DECISION), then WO5 (Sonnet, Opus review; E-F8-8), close-out (ADR 0019
 Amendment 12 pointer, manifest). wp/F8 merges wp/F2's final head and re-decomposes c_13 onto F2's new D_11.
 
