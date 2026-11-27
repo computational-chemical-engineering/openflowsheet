@@ -622,3 +622,47 @@ Brief `docs/briefs/LINE06-X06-CI1.md`, build lane. The same ten tests failed on 
   where the server extra is absent; with it installed they are still walked). Checked: clean venv with the default
   install (starlette and anyio absent) 1 passed; main venv (extra installed) the file 12 passed. Alternative: lazy
   imports inside `mcp_http`. Reversible by: reverting the commit.
+
+## X06-FR0 (merge wp/F2 `80cdcfb3` into wp/X06), 2026-11-27
+
+Brief `docs/briefs/LINE06-X06-FR0.md` (on `main`). Merge commit `1e340ac4` (`git merge --no-ff 80cdcfb3`, base
+`d00f659a`). Seventeen conflicts, as the trial merge listed; everything else merged clean (the decision register and
+ADR 0019 among them; ADR 0019's amendment status lines are left as each side has them).
+
+- **DECISION X06-FR0-1. c_12 is recomputed onto F2-WO8's D_11 (R-1072/R-1073: F2 merges first, the second decomposes
+  onto the first; chain order c_11 then c_12 kept, no renumbering).** Measured on the merged tree (served from the
+  worktree's `src`): `D_12` `7792576ea51caff3dcde62cb8df9f199ea6f00381ee31ba0bae0ea6f1233f04a` ->
+  `ba4b5ce59af4ac4c1e5d29f157ccd5d6308cc0a6282f0dc3434fc3b5cf88db62`; `strip_x06` gives
+  `8eee5313e1dff685ed3f5c7a60c6aa8fb7fea31d8fcd5c8ac608eac9450f304a` (F2's head D_11) exactly, `strip_f2` of that
+  `f7ec3c94…` (D_10) exactly. Between served and `strip_x06` the nine X06 tools are added and only `commit_change`,
+  `preview_change` and `get_job_result` differ, as before the merge. Followers: `X06_SERVED_SHA256`, the c_12 `Link`
+  and docstring in `scripts/m07a_rc.py`, ADR 0019 Amendment 18's pointer paragraph (not its status line). R4-G3 and
+  the `list_models` snapshots: no value moved; the decompositions take X06 out before F2 (`without_f2(without_x06(…))`
+  in t07, M02, M04), X06's pre-X06 dict now includes `SNAPSHOT_F2`, and F2's R4-G3 test skips X06's rows and strips
+  X06 first. Reversible by: reverting the merge.
+- **DECISION X06-FR0-2. Where both sides appended (refusal catalogue, `interfaces-frozen.md`, numerical-policy
+  addenda, envelope rows), F2's comes first, then X06's (merge order, as F8-FR0-3).** `ADDENDA` audits `… f3, f2,
+  x06` (`tests/test_m05_study_record.py` pins it). In `tests/test_m07a_surface_chain.py` every link tuple gains `L11`
+  and each control's passing-prefix count grows by one (as F8-FR0); F2's c_11 tests read `strip_x06(served)` and its
+  text-restoring control also undoes X06's two texts (else they would be named besides `check_admission`). No
+  assertion is relaxed. Reversible by: reverting the merge.
+- **DECISION X06-FR0-3. `jobs/runner.py`: F2's one change moves into X06's `_resolve` stage.** X06 (X06-CI1 item 5,
+  `a15bcd55`) extracted the `resolve` stage into `_Body._resolve` (route, policies, weakening refusal, `_Resolved`; solve only);
+  F2 (ADR 0062 D8, D12) added `document = dict(lowered_document(document))` after the route is selected. The line
+  sits in `_resolve` right after `state.selected = route`, so binding, warm start, continuation and the bundle read
+  the lowered v1 document as on `wp/F2`. The optimize path (`_policies`, `revision.as_document()`) is untouched by
+  either side. Reversible by: reverting the merge.
+- Catalogue (`doc_pages.py` rewrote `docs-site/messages/refusals.md`; `msg_catalogue.py check` PASS, 464 entries):
+  X06 `0be6166f…` / F2 `3af0a794…` -> `41dc5421b32ac11db57354dacbaf74ac2d738ac75195bb9e831f91a8fd85905b` in the two
+  `message_entry` fixtures (`t07_schema_fixtures.py --write`; no other fixture written).
+- Harvest: `HARVEST_SIZE` (110, 1184, 152) = (108, 1176, 147) + F2's (1, 4, 4) + X06's (1, 4, 1), measured by
+  `tests/test_m07a_harvest.py` (5 passed); `docs/support-matrix.md` re-emitted (`t08_support_matrix.py --emit`).
+
+### X06-FR0 gate numbers (SMM-TR09, at `1e340ac4`)
+
+- F0: PASS, M1 50/50, M2-M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 42/42. `w5_identity.py sets --check` PASS.
+- `test_f2_*` 564 passed (1 deselected by the opt-in marker); `test_x06_*` 95 (1 deselected); `test_msg_*` 186
+  (3 xfailed); `test_t07_*` 2205 (28 skipped); `test_t08_w2_*` 139; `test_m07a_*` 239; `test_m02_schemas` +
+  `test_m04_study_job` + `test_m05_study_record` 244; `test_k05_replay` 30; `test_v03_semantic_roles` 22;
+  `test_evidence_manifests` + `test_s19_w5_gate` + `test_adr_0002_a1_integers` 808 (19 skipped). 0 failed.
+- ruff check, ruff format --check (1360 files), mypy `src` (375 files): clean. Logs `~/.cache/line06/x06-fr0/`.
