@@ -205,7 +205,8 @@ def verify_bundle(directory: Path) -> BundleIntegrity:
             missing.append(name)
         elif file_sha256(path) != recorded:
             tampered.append(name)
-    present = {str(path.relative_to(root)) for path in root.rglob("*") if path.is_file()}
+    # The index names files with "/" on every OS (`records/<sha>.json`), so the listing does too.
+    present = {path.relative_to(root).as_posix() for path in root.rglob("*") if path.is_file()}
     unexpected = sorted(present - set(manifest.artifacts))
 
     _cross_check_solution_state(directory, manifest.artifacts, missing, tampered)

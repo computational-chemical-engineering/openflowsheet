@@ -56,6 +56,7 @@ from openflowsheet.run.bundle import ARTIFACT_DIR, MANIFEST_NAME, read_artifact
 from openflowsheet.run.manifest import Environment
 from openflowsheet.run.manifest_v2 import ReplayModeRefusedError
 from openflowsheet.run.replay import (
+    REGISTERED_PLATFORMS,
     ReplayReport,
     Rerun,
     decide_mode,
@@ -597,6 +598,11 @@ def test_d5_another_platform_and_a_changed_built_in_rerun_as_a_compatible_reprod
 ) -> None:
     """Review F8 S2 (a): step 4's compatible reproduction stays one when a used built-in also
     changed; the reasons are the environment's, then step 5's; the rerun is compared."""
+    recorded = _environment(plain)
+    if (recorded.architecture, recorded.os_name) not in REGISTERED_PLATFORMS:
+        # The bundle is recorded on this host; a compatible reproduction needs both sides on a
+        # registered platform (Linux x86_64 and aarch64 legs run it). DECISION F8-CI1-2.
+        pytest.skip(f"recorded on {recorded.architecture}/{recorded.os_name}, not registered")
     key = _used(plain, "unit_model")
     registry = edited_registry({key: {"self_sha256": "0" * 64}})
     current = _other_platform(plain)

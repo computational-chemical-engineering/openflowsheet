@@ -535,3 +535,16 @@ the working tree, run, and reverted (not committed).
   measured by `test_m07a_harvest` with the new manifest: (110, 1184, 154) -> (110, 1184, 153) (one non-pass check
   fewer). With the manifest present: `test_m07a_harvest` + `test_evidence_manifests` +
   `test_t08_w2_support_envelope`: 723 passed, 19 skipped.
+- 2026-11-27 **F8 CI failed** (run 46014961220 at `14409696`): Linux x86/arm and default-install green. Windows 47
+  failed + 10 errors: 6 are F2's (fixed by F2-CI1), the rest because `verify_bundle` listed the files under
+  `artifacts/` with "\" (`records\<sha>.json`) against an index that names them with "/", so every v2 bundle failed
+  its integrity check. macOS 2 (and Windows the same 2): `test_d5_another_platform_and_a_changed_built_in_...`
+  records on the host and needs both sides on a registered platform. `identity`: F2's jsonschema (F2-CI1-2). Fix
+  round F8-CI1 by the orchestrator:
+  - DECISION F8-CI1-1: `bundle_v2.verify_bundle` and `replay_v2`'s unsupported-format integrity list the present
+    files with `as_posix()` (POSIX unchanged: `str()` and `as_posix()` agree there). v1 `bundle.py:136` keeps `str()`
+    (v1 bundles are flat). Alternative: normalise the index to the OS separator (would change the identity bytes).
+  - DECISION F8-CI1-2: that D5 test skips where the host's (architecture, OS) is not in `REGISTERED_PLATFORMS`; the
+    Linux x86_64 and aarch64 legs run it. Alternative: record the bundle under a forged Linux environment (more
+    machinery for the same check). Reversible by: reverting the commit.
+  - wp/F2 `80cdcfb3` (F2-CI1) merged into wp/F8 for the Windows E-F2-3 path and the identity job.

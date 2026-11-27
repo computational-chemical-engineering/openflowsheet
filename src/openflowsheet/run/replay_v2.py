@@ -212,7 +212,8 @@ def _unsupported(directory: Path, value: str | None, here: Environment) -> Repla
         for name, sha in indexed.items()
         if (root / name).is_file() and file_sha256(root / name) != sha
     )
-    present = {str(path.relative_to(root)) for path in root.rglob("*") if path.is_file()}
+    # The index names files with "/" on every OS (`records/<sha>.json`), so the listing does too.
+    present = {path.relative_to(root).as_posix() for path in root.rglob("*") if path.is_file()}
     unexpected = sorted(present - set(indexed))
     integrity = BundleIntegrity(
         ok=not (missing or tampered or unexpected),
