@@ -86,6 +86,10 @@ DEF_OF_OPERATION: dict[str, str] = {
     # ADR 0078 D4.5 (X06)
     "register_solve_policy": "solve_policy_registration",
     "get_solve_policy": "solve_policy_view",
+    # ADR 0078 D5.2 (X06); `get_policy`'s response is `project-policy.schema.json`, published
+    "grant_capability": "grant_result",
+    "revoke_capability": "revoke_result",
+    "set_ambient_pressure": "ambient_pressure_result",
 }
 #: `revision_summary`, `audit_record` and `capability_descriptor` are pages' items, each its own
 #: `$def`. F3's `effective_rights`, `rights_row` and `record_finding` are its responses' parts.
@@ -345,6 +349,9 @@ SNAPSHOT_F3: dict[str, str | None] = {
 #: earlier value again (`test_x06_without_its_additions_every_response_is_its_pre_x06_snapshot`).
 #: X06-WO3 (D4.5) adds the two `SolvePolicies` rows (`solve_policy_registration`,
 #: `solve_policy_view`, which embeds `solve-policy.schema.json`); no earlier row moved.
+#: X06-WO4 (D5.2) adds the four `Administration` rows (`get_policy` is the published
+#: `project-policy.schema.json`, with its optional `administration`; `grant_result`,
+#: `revoke_result`, `ambient_pressure_result`); no earlier row moved.
 SNAPSHOT_X06: dict[str, str | None] = {
     "submit_job": "37062a2659f7d42d53c863f3c36e14105c6459086cafa47a3a4dc206bcaca93d",
     "get_job": "e93cc75b9fceebc21d7be6bac868709a67edbc37db9a01567a3f1f253b44bbcf",
@@ -357,6 +364,10 @@ SNAPSHOT_X06: dict[str, str | None] = {
     "delete_branch": "a138701b640a4ffe3a0e9feac58ca3d9a397ffb3a4b93601fde4ddeb02e59cb7",
     "register_solve_policy": "4a3a5b104fcce374826c09e6c8dc66da9f28c49310308e35c76184ffdc889379",
     "get_solve_policy": "528b6090c542396444ad87474a81f91be98599d875aedd85d3cd52be7b23a6fd",
+    "get_policy": "e3711772737d88f9e205fdd24efeccce97d937e7d87a211097064c7c1e24b9cd",
+    "grant_capability": "0cd20320de39f482cc88e7881b844eede4f6112ab6416e7d68bac140e7aa21e0",
+    "revoke_capability": "52cdce3fa0d494e325ef4e47dda796b063223ae2ea30efdec553a774073b9266",
+    "set_ambient_pressure": "5b6096106719fded803e7821c938273bbcf3a01d6965d47d889656a7b0ff6678",
 }
 #: The rows later than X04, each with its own snapshot (F1's, F3's and X06's).
 LATER_ROWS = F1_OPERATIONS | F3_OPERATIONS | X06_OPERATIONS
@@ -379,7 +390,7 @@ def _without_specifications(schema: Any) -> Any:
 
 def test_r4_g3_every_resolved_response_schema_equals_the_snapshot() -> None:
     measured = {name: _digest(resolved_response(op)) for name, op in OPERATIONS.items()}
-    assert len(measured) == 35
+    assert len(measured) == 39
     assert measured == {
         **SNAPSHOT_AT_B13D556,
         **SNAPSHOT_AMENDMENT_2,

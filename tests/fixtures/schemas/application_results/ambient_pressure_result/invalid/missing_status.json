@@ -1,0 +1,7 @@
+{
+  "expect_error": "'status' is a required property",
+  "document": {
+    "ambient_pressure_pa": 100000.0,
+    "policy_sha256": "ebb1e35b6ed40c63bdd18ad65eaadee53e342bb1c55363c10658cb5b94472797"
+  }
+}

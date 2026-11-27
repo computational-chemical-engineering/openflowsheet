@@ -152,9 +152,11 @@ def administration_requests() -> list[tuple[str, dict[str, Any]]]:
 def stable_administration(document: Any) -> Any:
     """`document` with what a grant draws at random replaced by placeholders: a `prt_` token,
     every `token_sha256`, and a `grant_result`'s `policy_sha256` (the hash of a policy holding
-    the new token's hash). Two projects granting the same request differ in these alone."""
+    the new token's hash; a grant result is the object with both `capability` and `token`, so
+    one lacking its `status` is one too). Two projects granting the same request differ in these
+    alone."""
     if isinstance(document, dict):
-        grant = document.get("status") in ("granted", "replayed") and "capability" in document
+        grant = {"capability", "token"} <= set(document)
         out = {
             key: (
                 "<random>"
