@@ -40,6 +40,7 @@ from openflowsheet.models.revision_flowsheet import (
     RevisionError,
     canonical_components,
     convert_specification,
+    lowered_document,
     read_parameter,
 )
 from openflowsheet.units import UnitConversion, read_number
@@ -567,6 +568,11 @@ def bind_revision_or_reason(document: Mapping[str, Any]) -> Binding | Unbound:
     pointer = first_noncanonical(document)
     if pointer is not None:
         return Unbound("unsupported", f"document_not_canonical({pointer})")
+    # ADR 0062 D12: a v2 document is bound as its lowering, as the revision binder binds it.
+    try:
+        document = lowered_document(document)
+    except RevisionError as error:
+        return Unbound(error.kind, error.code, hint=error.hint)
 
     from openflowsheet.models.syn001.flowsheet import WIRING
 

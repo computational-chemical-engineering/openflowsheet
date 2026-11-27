@@ -1,0 +1,5 @@
+# D9: a parameter sink the manifest does not declare manipulable.
+base: crystallizer
+changes:
+  - {op: replace, path: /connections/6/to/parameter, value: T_set}
+errors: [{code: parameter_not_manipulable, params: {instance: cryst, parameter: T_set}}]

@@ -1,0 +1,5 @@
+# D10: a derived target before ADR-F4/F5 builds it.
+base: crystallizer
+changes:
+  - {op: add, path: /specifications/-, value: {id: w_water, target: {derived: std.mass_fraction, version: 1.0.0, stream: S1, component: H2O}, kind: mass_fraction, unit: "1", value: 0.9, tolerance: {absolute: 1.0e-9}, role: fixed, provenance: fixture}}
+errors: [{code: construct_unavailable, params: {construct: "derived:std.mass_fraction", foundation: F4}}]

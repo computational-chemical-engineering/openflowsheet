@@ -1,0 +1,2 @@
+# A valid v2 specification (F2-WO4). Flow style: this comment keeps load_document on the YAML path.
+{id: t_legacy, target: {object_type: connection, object_id: S2, path: T, component: null}, kind: temperature, unit: K, value: 300.0, tolerance: {absolute: 1.0e-9, relative: 1.0e-12, scale: 300.0}, role: fixed, provenance: fixture, notes: v1's form}

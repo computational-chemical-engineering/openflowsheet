@@ -1,0 +1,21 @@
+# D11, Q6.R4: a generic transport unit (the mixer) fed one definition on two grids.
+base: crystallizer
+changes:
+  - op: add
+    path: /materials/definitions/-
+    value:
+      id: syrup2
+      template: mat-v1
+      thermal_coordinate: h_mass
+      substreams:
+        - {id: liq, kind: mixed, components: [H2O, sucrose], conserved_basis: {preset: "true"}, grids: [], attributes: []}
+        - id: cryst
+          kind: solid
+          components: [sucrose]
+          conserved_basis: {preset: "true"}
+          grids: [{id: L, quantity_kind: dimensionless, edges: [0.0, 0.4, 1.0]}]
+          attributes:
+            - {kind: probe.partition, version: 1.0.0, components: [sucrose], grid: L}
+            - {kind: probe.classes, version: 1.0.0, components: null, grid: L}
+  - {op: replace, path: /connections/3/definition, value: syrup2}
+errors: [{code: attribute_grid_mismatch, params: {connection: S4, port: mix.in2}}]

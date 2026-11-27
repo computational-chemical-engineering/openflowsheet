@@ -81,15 +81,24 @@ first (`without_f3`, `tests/f3_schema_support.py`) the list is F1's served diges
 exactly (`test_f3s_surface_move_decomposes_onto_f1s`), and every decomposition below holds as
 before.
 
+**F2 (ADR 0062 D1) widens it again, additively** — ADR 0062 D1's 14 quantity kinds at the end of
+`quantity.schema.json`'s kind enum, and one sentence of its description, served in `list_models`'
+`outputSchema`, and F2-WO8 widens `check_admission.md`'s draft form to `<schema_version 1 or 2
+document>` (the F2 review's ruling 3) — so the served digest moves to `F2_SERVED_SHA256`. With F2's
+additions removed and that text restored first (`without_f2`, `tests/f2_schema_support.py`) the
+list is F3's served digest `f7ec3c94…`
+exactly (`test_f2s_surface_move_decomposes_onto_f3s`), and every decomposition below holds as
+before.
+
 **X06 (ADR 0078 D6, ADR 0019 Amendment 18; R-1073) widens it again, additively** — from X06-WO2
 the three tools of the protocol `Branches`, the ChangeSet's optional `branch` member wherever the
 ChangeSet is served, and the `branch` sentence in `commit_change.md` and `preview_change.md`; from
 X06-WO3 the two tools of `SolvePolicies` and from X06-WO4 the four of `Administration` — so
 the served digest moves to `X06_SERVED_SHA256`. With X06's additions removed and the two texts
 restored from their pre-X06 copies first (`without_x06`, `tests/x06_schema_support.py`) the list
-is F3's served digest `f7ec3c94…` exactly (`test_x06s_surface_move_decomposes_onto_f3s`), and
-every decomposition below holds as before. Whichever of X06 and F2 merges second decomposes onto
-the first's (ADR 0078 D6).
+is F2's served digest `8eee5313…` exactly (`test_x06s_surface_move_decomposes_onto_f2s`), and
+every decomposition below holds as before. F2 merges first, so X06 decomposes onto F2's (ADR 0078
+D6, R-1072/R-1073; X06-FR0).
 """
 
 from __future__ import annotations
@@ -102,6 +111,7 @@ from typing import Any
 import pytest
 from conftest import REPO_ROOT, load_yaml
 from f1_schema_support import F1_OPERATIONS, without_f1
+from f2_schema_support import F2_DESCRIPTIONS, F2_KIND_NOTE, F2_KINDS, pre_f2_text, without_f2
 from f3_schema_support import F3_OPERATIONS, without_f3
 from m02_schema_support import without_m02
 from m04_schema_support import without_m04
@@ -169,12 +179,17 @@ F1_SERVED_SHA256 = "e2c44b6b9c2a7f5689ed4f2fd96b6e9804d1a63e60a5c620d29b5b5d594b
 #: items' `at`; C11: the design lane's edits to four texts; `scripts/m07a_rc.py`'s `D_10`).
 #: Without them it is `F1_SERVED_SHA256` (c_10).
 F3_SERVED_SHA256 = "f7ec3c94233d30506ec2082a13c4e54d57bd540e43e97fdf877b1e3c75fed467"
+#: F2 (ADR 0062 D1): the served digest with D1's 14 quantity kinds in `list_models`' output schema
+#: over F3's list, measured at F2-WO2b on `wp/F2` (WO1 moved it; WO2 left it where WO1 did), and
+#: re-taken at F2-WO8 for `check_admission.md`'s new text (`9a4b4eb3…` before). Without them it
+#: is `F3_SERVED_SHA256`.
+F2_SERVED_SHA256 = "8eee5313e1dff685ed3f5c7a60c6aa8fb7fea31d8fcd5c8ac608eac9450f304a"
 #: X06 (ADR 0078 D6, R-1073): the served digest with X06-WO2's branches, X06-WO3's solve
-#: policies and X06-WO4's administration over F3's list, measured at the X06 fix round on
+#: policies and X06-WO4's administration over F2's list, measured at the X06 fix round on
 #: `wp/X06` with the review's three text edits (`scripts/m07a_rc.py`'s `D_12`; `4a80f77f…` at
-#: X06-WO3, `d0f0c8b7…` at X06-WO4).
-#: Without them, with the two texts restored, it is `F3_SERVED_SHA256` (c_12 onto c_10 on `wp/X06`).
-X06_SERVED_SHA256 = "7792576ea51caff3dcde62cb8df9f199ea6f00381ee31ba0bae0ea6f1233f04a"
+#: X06-WO3, `d0f0c8b7…` at X06-WO4), and re-taken at X06-FR0 over F2-WO8's list (`7792576e…`
+#: before). Without them, with the two texts restored, it is `F2_SERVED_SHA256` (c_12 onto c_11).
+X06_SERVED_SHA256 = "ba4b5ce59af4ac4c1e5d29f157ccd5d6308cc0a6282f0dc3434fc3b5cf88db62"
 #: The files N1 and N2 changed; the only difference from `v17-c2`'s served texts.
 CHANGED = ("commit_change", "validate")
 #: Each description's SHA-256 as `v17-c2` served it: the table of
@@ -211,16 +226,23 @@ def _tools(mcp: ModuleType) -> list[dict[str, Any]]:
 
 
 def _before_x06(mcp: ModuleType) -> list[dict[str, Any]]:
-    """The served tool list without X06's additions (`without_x06`), F3's list."""
+    """The served tool list without X06's additions (`without_x06`), F2's list."""
     stripped = without_x06(_tools(mcp))
     assert isinstance(stripped, list)
     return stripped
 
 
+def _before_f2(mcp: ModuleType) -> list[dict[str, Any]]:
+    """The served tool list without X06's additions and F2's 14 kinds (`without_f2`), F3's list."""
+    stripped = without_f2(_before_x06(mcp))
+    assert isinstance(stripped, list)
+    return stripped
+
+
 def _before_f3(mcp: ModuleType) -> list[dict[str, Any]]:
-    """The served tool list without X06's additions and F3's five tools (`without_f3`), F1's
-    list."""
-    stripped = without_f3(_before_x06(mcp))
+    """The served tool list without X06's additions, F2's kinds and F3's five tools (`without_f3`),
+    F1's list."""
+    stripped = without_f3(_before_f2(mcp))
     assert isinstance(stripped, list)
     return stripped
 
@@ -329,9 +351,11 @@ def test_m02s_surface_move_decomposes_onto_the_base(mcp: ModuleType) -> None:
 
 def _pre_opt_file(name: str) -> str:
     """Operation `name`'s description file, OPT's two in their pre-OPT form, X04's two in their
-    pre-X04 form and X06's two in their pre-X06 form."""
+    pre-X04 form, F2's one in its pre-F2 form and X06's two in their pre-X06 form."""
     if name in X06_DESCRIPTIONS:
         return pre_x06_text(name)
+    if name in F2_DESCRIPTIONS:
+        return pre_f2_text(name)
     if name in X04_DESCRIPTIONS:
         return pre_x04_text(name)
     if name in OPT_DESCRIPTIONS:
@@ -340,13 +364,14 @@ def _pre_opt_file(name: str) -> str:
 
 
 def test_the_served_files_differ_from_v17_c2_in_exactly_the_two_reviewed_files() -> None:
-    """Before OPT's two texts and X04's two (restored from their pre-OPT and pre-X04 copies), the
-    files differ from `v17-c2`'s in exactly R-133's two; OPT and X04 changed exactly their two."""
+    """Before OPT's two texts, X04's two and F2's one (restored from their pre-OPT, pre-X04 and
+    pre-F2 copies), the files differ from `v17-c2`'s in exactly R-133's two; OPT and X04 changed
+    exactly their two, F2 its one."""
     assert sorted(V17_C2_FILE_SHA256) == PRE_MSG_MCP_OPERATIONS
     served = {name: _sha256(_pre_opt_file(name)) for name in PRE_MSG_MCP_OPERATIONS}
     files = {name: (DESCRIPTIONS / f"{name}.md").read_text("utf-8") for name in MCP_OPERATIONS}
     assert sorted(n for n in MCP_OPERATIONS if files[n] != _pre_opt_file(n)) == sorted(
-        {*OPT_DESCRIPTIONS, *X04_DESCRIPTIONS, *X06_DESCRIPTIONS}
+        {*OPT_DESCRIPTIONS, *X04_DESCRIPTIONS, *F2_DESCRIPTIONS, *X06_DESCRIPTIONS}
     )
     changed = sorted(
         name for name in PRE_MSG_MCP_OPERATIONS if served[name] != V17_C2_FILE_SHA256[name]
@@ -504,8 +529,9 @@ def test_x04s_surface_move_decomposes_onto_sts(mcp: ModuleType) -> None:
 def test_f1s_surface_move_decomposes_onto_x04s(mcp: ModuleType) -> None:
     """F1 (ADR 0060 D11, R-1030): the served list is `F1_SERVED_SHA256`; minus F1's two tools it is
     X04's (`X04_SERVED_SHA256`, which decomposes onto ST's and the earlier lists above). F1 added
-    `list_capabilities` and `check_admission`, each served from its file, and moved no other tool
-    at all: name, description, input or output schema."""
+    `list_capabilities` and `check_admission`, each served from its file (`check_admission`'s in
+    its pre-F2 form: F2-WO8 changed it), and moved no other tool at all: name, description, input
+    or output schema."""
     served = _before_f3(mcp)  # F3's tools postdate F1
     stripped = without_f1(served)
     assert _digest(served) == F1_SERVED_SHA256
@@ -514,7 +540,9 @@ def test_f1s_surface_move_decomposes_onto_x04s(mcp: ModuleType) -> None:
     assert sorted(t["name"] for t in added) == ["check_admission", "list_capabilities"]
     assert [t for t in served if t not in added] == stripped
     for tool in added:
-        assert tool["description"] == (DESCRIPTIONS / f"{tool['name']}.md").read_text("utf-8")
+        name = tool["name"]
+        expected = pre_f2_text(name) if name in F2_DESCRIPTIONS else None
+        assert tool["description"] == (expected or (DESCRIPTIONS / f"{name}.md").read_text("utf-8"))
 
 
 def test_f3s_surface_move_decomposes_onto_f1s(mcp: ModuleType) -> None:
@@ -522,7 +550,7 @@ def test_f3s_surface_move_decomposes_onto_f1s(mcp: ModuleType) -> None:
     is F1's (`F1_SERVED_SHA256`, which decomposes onto X04's and the earlier lists above). F3
     added the five `Records` tools, each served from its file, and moved no other tool at all:
     name, description, input or output schema."""
-    served = _before_x06(mcp)  # X06's additions postdate F3
+    served = _before_f2(mcp)  # F2's and X06's additions postdate F3
     stripped = without_f3(served)
     assert _digest(served) == F3_SERVED_SHA256
     assert _digest(stripped) == F1_SERVED_SHA256
@@ -533,10 +561,61 @@ def test_f3s_surface_move_decomposes_onto_f1s(mcp: ModuleType) -> None:
         assert tool["description"] == (DESCRIPTIONS / f"{tool['name']}.md").read_text("utf-8")
 
 
-def test_x06s_surface_move_decomposes_onto_f3s(mcp: ModuleType) -> None:
+def test_f2s_surface_move_decomposes_onto_f3s(mcp: ModuleType) -> None:
+    """F2 (ADR 0062 D1): the served list is `F2_SERVED_SHA256`; minus F2's 14 kinds it is F3's
+    (`F3_SERVED_SHA256`, which decomposes onto F1's and the earlier lists above). F2 added no tool
+    and changed no tool's name; it changed one description text, `check_admission`'s (F2-WO8,
+    restored from its pre-F2 copy by the strip), and moved `list_models` in exactly its two kind
+    enums (pins' and choice options' `specifications`), each by exactly the 14 kinds and the
+    description's one sentence."""
+    served = _before_x06(mcp)  # X06's additions postdate F2
+    stripped = without_f2(served)
+    assert _digest(served) == F2_SERVED_SHA256
+    assert _digest(stripped) == F3_SERVED_SHA256
+    assert [t["name"] for t in served] == [t["name"] for t in stripped]
+    moved = [(t, u) for t, u in zip(served, stripped, strict=True) if t != u]
+    admission = OPERATIONS["check_admission"].mcp_tool
+    assert sorted(t["name"] for t, _ in moved) == sorted(
+        [OPERATIONS["list_models"].mcp_tool, admission]
+    )
+    ((text, text_before),) = [(t, u) for t, u in moved if t["name"] == admission]
+    assert {**text, "description": text_before["description"]} == text_before
+    assert text_before["description"] == pre_f2_text("check_admission")
+    assert text["description"] == text_before["description"].replace(
+        "<schema_version 1 document>", "<schema_version 1 or 2 document>"
+    )
+    ((tool, before),) = [(t, u) for t, u in moved if t["name"] != admission]
+    assert tool["inputSchema"] == before["inputSchema"]
+    pins = ("pins", "items", "properties", "specifications")
+    options = ("choices", "items", "properties", "options", "items", "properties", "specifications")
+    for path in (pins, options):
+        kind, kind_before = (_at(t["outputSchema"], path) for t in (tool, before))
+        assert kind["enum"] == [*kind_before["enum"], *F2_KINDS]
+        assert kind["description"] == kind_before["description"] + F2_KIND_NOTE
+        # Nothing else in the kind's schema moved.
+        assert {k: v for k, v in kind.items() if k not in ("enum", "description")} == {
+            k: v for k, v in kind_before.items() if k not in ("enum", "description")
+        }
+    # With the two kinds put back, the tool is F3's exactly: nothing else in it moved.
+    for path in (pins, options):
+        _at(tool["outputSchema"], path).update(_at(before["outputSchema"], path))
+    assert tool == before
+
+
+def _at(schema: dict[str, Any], path: tuple[str, ...]) -> dict[str, Any]:
+    """The `kind` property schema of the `specifications` items at `path` under `models`' items."""
+    node: Any = schema["properties"]["models"]["items"]["properties"]
+    for key in path:
+        node = node[key]
+    kind = node["items"]["properties"]["kind"]
+    assert isinstance(kind, dict)
+    return kind
+
+
+def test_x06s_surface_move_decomposes_onto_f2s(mcp: ModuleType) -> None:
     """X06 (ADR 0078 D6, R-1073; E-X06-22): the served list is `X06_SERVED_SHA256`; minus X06's
-    additions, with its two texts restored, it is F3's (`F3_SERVED_SHA256`, which decomposes onto
-    F1's and the earlier lists above). X06-WO2 added the three `Branches` tools after F3's and
+    additions, with its two texts restored, it is F2's (`F2_SERVED_SHA256`, which decomposes onto
+    F3's and the earlier lists above). X06-WO2 added the three `Branches` tools after F3's and
     X06-WO3 the two `SolvePolicies` tools after them and X06-WO4 the four `Administration` tools
     after those, each served from its file; the tools that
     moved are the two that serve the ChangeSet as a request (`commit_change`, `preview_change`:
@@ -545,7 +624,7 @@ def test_x06s_surface_move_decomposes_onto_f3s(mcp: ModuleType) -> None:
     served = _tools(mcp)
     stripped = without_x06(served)
     assert _digest(served) == X06_SERVED_SHA256
-    assert _digest(stripped) == F3_SERVED_SHA256
+    assert _digest(stripped) == F2_SERVED_SHA256
     names = [t["name"] for t in served]
     added = [t for t in served if t["name"] in {OPERATIONS[n].mcp_tool for n in X06_OPERATIONS}]
     x06_tools = [

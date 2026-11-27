@@ -1,0 +1,5 @@
+# Q7.A4: a mass-specific enthalpy (2,0,-2,...) wired into a molar enthalpy parameter.
+base: crystallizer
+changes:
+  - {op: add, path: /connections/-, value: {id: C3, kind: signal, from: {probe: {variable: S1~h}}, to: {instance: cryst, parameter: h_set}, definition: signal-v1, quantity_kind: specific_enthalpy}}
+errors: [{code: signal_kind_mismatch, params: {connection: C3}}]

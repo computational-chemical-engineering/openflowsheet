@@ -48,6 +48,13 @@ from typing import Literal, Protocol, runtime_checkable
 
 from openflowsheet.compiled import EvaluationContext, PhaseSignature
 
+# ADR 0062 D2: the provider-level types live in `openflowsheet.material`, below this layer, and are
+# re-exported here; `StreamState` is `material.state`'s, byte for byte as K02 wrote it here.
+from openflowsheet.material.phase_id import PhaseId as PhaseId
+from openflowsheet.material.phase_id import PhaseSet as PhaseSet
+from openflowsheet.material.state import EvaluationState as EvaluationState
+from openflowsheet.material.state import StreamState as StreamState
+
 #: What a provider was asked for and whether it could answer. There is deliberately no value
 #: meaning "answered by extrapolating beyond the declared domain": blueprint §6.1 makes the domain
 #: part of the public contract, so leaving it is reported, never absorbed.
@@ -99,34 +106,6 @@ class PropertyCapabilities:
     thread_safety: Literal["thread_safe", "not_thread_safe"]
     #: What the provider cannot do, in words a caller can act on.
     numerical_limitations: tuple[str, ...]
-
-
-@dataclass(frozen=True)
-class StreamState:
-    """A material stream in the `nTP-v1` state definition (ADR 0001 D2.1).
-
-    `n` is component molar flows in `components` order, mol/s; `T` is absolute temperature in K;
-    `P` is pressure in Pa. Nothing derived is stored: total flow, mole fractions, mass flow and
-    enthalpy flow are computed, and mole fractions only where the total flow is positive
-    (D2.2, D3.2).
-    """
-
-    n: tuple[float, ...]
-    temperature: float
-    pressure: float
-
-    @property
-    def total_flow(self) -> float:
-        return sum(self.n)
-
-    @property
-    def is_dormant(self) -> bool:
-        """Exact IEEE zero after signed-zero normalization (ADR 0001 D3.1).
-
-        Exact, not "small": a stream with 1e-30 mol/s of everything has a defined composition and a
-        dormant one does not, and a tolerance here would silently move the boundary between them.
-        """
-        return self.total_flow == 0.0
 
 
 @dataclass(frozen=True)

@@ -5,10 +5,10 @@ Expectations come from the ADR's rules: the leaf paths are read from the schema 
 own walker (not the normaliser's), the anchors from an oracle that transcribes D6, and each D7 row
 from the rule it names. The three fixtures under `tests/fixtures/records/` are maximal: together
 they reach every leaf of `schemas/record-v2.schema.json` (the `assay` payload is preview and has
-none). The component fixture carries entropies, so it is refused `record_unit_invalid` at its
-three `s` Constants until ADR-F2 registers `molar_entropy` (ADR 0061 risk 6); the segment-basis
-fixture is refused `amount_basis_unsupported(segment_mol)` (risk 4). E-F3-3 is a property of the
-identity function, so it hashes the normalised projection whether or not step 6 refuses.
+none). All three register since ADR 0062 D1 (F2-WO1) registered `molar_entropy` (ADR 0061 risk
+6) and `segment_molar_mass` and admitted the `segment_mol` and `kg` bases (risk 4, Q2.A10 (b)).
+E-F3-3 is a property of the identity function, so it hashes the normalised projection whether or
+not step 6 refuses.
 """
 
 from __future__ import annotations
@@ -190,23 +190,22 @@ def test_e_f3_3_the_fixtures_reach_every_leaf_of_the_schema() -> None:
     assert ("volatile", "request", "query", "*", "1") in LEAVES  # the walker reads prefixItems
 
 
-def test_e_f3_3_the_fixtures_are_refused_only_as_the_adr_says() -> None:
-    """The parameter set is accepted; the component only for its entropies (risk 6); the segment
-    record for its basis and its unregistered kind (risk 4)."""
-    accepted = identify(_fixture("parameter-set-maximal"))
-    assert (accepted.errors, accepted.findings) == ((), ())
-    assert accepted.record_sha256 == _sha(_fixture("parameter-set-maximal"))
-    component = identify(_fixture("component-maximal"))
-    assert _codes(component.errors) == [
-        ("record_unit_invalid", {"entry": at})
-        for at in ("/formation/0/s", "/formation/1/s", "/transitions/0/s")
-    ]
+def test_e_f3_3_the_fixtures_register_since_adr_0062_d1() -> None:
+    """F2-WO1 flips this test: the component fixture's entropies have their kind (risk 6), and the
+    segment record its basis and `segment_molar_mass` (risk 4); before, the component was refused
+    `record_unit_invalid` at its three `s` Constants and the segment record
+    `amount_basis_unsupported(segment_mol)`. The segment record, on a basis other than `mol` with
+    nothing phase-tagged, has no anchor (D6 step 4 is `mol` only)."""
+    for name in ("parameter-set-maximal", "component-maximal", "component-segment"):
+        outcome = identify(_fixture(name))
+        assert outcome.errors == (), name
+        assert outcome.record_sha256 == _sha(_fixture(name)), name
+    assert identify(_fixture("parameter-set-maximal")).findings == ()
+    assert identify(_fixture("component-maximal")).findings == ()
     segment = identify(_fixture("component-segment"))
-    assert {code for code, _ in _codes(segment.errors)} == {
-        "amount_basis_unsupported",
-        "record_unit_invalid",
-    }
-    assert ("amount_basis_unsupported", {"basis": "segment_mol"}) in _codes(segment.errors)
+    undetermined = ("anchor_undetermined", {"component": segment.record["id"]})
+    assert _codes(segment.findings) == [undetermined]
+    assert segment.record["anchor_phase"] is None
 
 
 @pytest.mark.parametrize("name", MAXIMAL)
@@ -569,6 +568,30 @@ def _formation(phase: str) -> dict[str, Any]:
     }
 
 
+#: (h kind, unit), (s kind, unit) per amount basis: ADR 0062 D1's kinds (F2 decision WO1-9).
+BASIS_FORMATION_KINDS = {
+    "mol": (("molar_enthalpy", "J/mol"), ("molar_entropy", "J/(mol K)")),
+    "segment_mol": (("segment_molar_enthalpy", "J/mol"), ("segment_molar_entropy", "J/(mol K)")),
+    "kg": (("specific_enthalpy", "J/kg"), ("specific_entropy", "J/(kg K)")),
+}
+
+
+@pytest.mark.parametrize("basis", BASIS_FORMATION_KINDS)
+def test_d7_formation_kinds_follow_the_amount_basis(basis: str) -> None:
+    """D3: Δf h° and s° are per unit amount, so of the basis's kind; the kinds of another basis
+    are `record_unit_invalid` at `h` and at `s` (F2-WO1, decision WO1-9)."""
+    for other, ((h_kind, h_unit), (s_kind, s_unit)) in BASIS_FORMATION_KINDS.items():
+        document = _anchor_record(0, basis, ["ig"], [])
+        if basis == "segment_mol":
+            document["molar_mass"]["kind"] = "segment_molar_mass"
+        formation = document["formation"][0]
+        formation["h"].update(kind=h_kind, unit=h_unit)
+        formation["s"] = {**formation["h"], "value": 100.0, "kind": s_kind, "unit": s_unit}
+        outcome = identify(document)
+        refused = [("record_unit_invalid", {"entry": f"/formation/0/{p}"}) for p in ("h", "s")]
+        assert _codes(outcome.errors) == ([] if other == basis else refused), (basis, other)
+
+
 # -- E-F3-13 (synthetic part) ---------------------------------------------------------------------
 
 
@@ -675,12 +698,15 @@ def test_e_f3_13_a_defaulted_ig_is_the_record_that_states_ig() -> None:
     assert defaulted.record_sha256 == stated.record_sha256 is not None
 
 
-def test_e_f3_13_kg_has_no_anchor_and_is_refused_until_adr_f2() -> None:
+def test_e_f3_13_kg_has_no_anchor_and_registers_since_adr_f2() -> None:
+    """E-F3-13 and Q2.A10 (b), the `kg` branch: D6 gives `null` and `anchor_undetermined`; since
+    ADR 0062 D1 (F2-WO1) the record registers (before, `amount_basis_unsupported(kg)`)."""
     outcome = identify(_anchor_record(0, "kg", [], []))
     assert outcome.record["anchor_phase"] is None
     assert _codes(outcome.findings) == [("anchor_undetermined", {"component": "M"})]
-    assert _codes(outcome.errors) == [("amount_basis_unsupported", {"basis": "kg"})]
-    assert outcome.record_sha256 is None
+    assert outcome.errors == ()
+    assert outcome.record_sha256 == _sha(_anchor_record(0, "kg", [], []))
+    _assert_idempotent(outcome)
 
 
 @pytest.mark.parametrize(

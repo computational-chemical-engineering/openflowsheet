@@ -1,0 +1,6 @@
+# D11, revision-wide (F2 review ruling 2): in an `h_mass` revision every instance is a `std.*`
+# unit, whatever it connects to; here a legacy feed with no connection.
+base: crystallizer
+changes:
+  - {op: add, path: /instances/-, value: {id: lfeed, model: {id: syn001.feed_source, version: 1.0.0, artifact_ref: null}, semantic_role: feed, parameters: {}, policy: {fidelity: nominal, validity: declared}}}
+errors: [{code: unit_coordinate_unsupported, params: {instance: lfeed, coordinate: h_mass}}]

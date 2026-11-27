@@ -78,6 +78,14 @@ function, a registered digest and Frank's carry extended to name it):
   `validate_record`'s report items `at` (`153b892e…`) and whose C11 applied the design lane's
   edits to four of the five texts (`tests/test_t08_w2_surface_digest.py`'s `F3_SERVED_SHA256`).
   F3 changed no existing text; its five files are pinned at their own hashes (`F3_FILE_SHA256`).
+- c_11, R-1072 (ADR 0062 D1, ADR 0019 Amendment 9): F2's 14 quantity kinds, appended to the kind
+  enum that `list_models`' `outputSchema` serves at its two `specifications` places, and the
+  sentence F2-WO1 added to that enum's description, stripped by `tests/f2_schema_support.py`'s
+  `without_f2`, and the one description text F2-WO8 changed (`check_admission.md`, the F2
+  review's ruling 3: `<schema_version 1 or 2 document>`), restored from its pre-F2 copy by the
+  same strip; `D_11` = `8eee5313…`, measured at F2-WO8 on `wp/F2`
+  (`tests/test_t08_w2_surface_digest.py`'s `F2_SERVED_SHA256`). F2 adds no tool; item 4 judges
+  `check_admission.md` in its pre-F2 form (`texts_before_links`), at F1's pinned hash.
 - c_12, R-1073 (ADR 0078 D6, ADR 0019 Amendment 18): X06's branches (X06-WO2, D2) and solve
   policies (X06-WO3, D4) — the three tools of the protocol `Branches` (`list_branches`,
   `create_branch`, `delete_branch`) and the two of `SolvePolicies` (`register_solve_policy`,
@@ -85,14 +93,14 @@ function, a registered digest and Frank's carry extended to name it):
   `grant_capability`, `revoke_capability`, `set_ambient_pressure`), the
   ChangeSet's optional `branch` member wherever the ChangeSet is served, and the two description
   texts it changed (`commit_change.md`, `preview_change.md`, restored from their pre-X06 copies),
-  stripped by `tests/x06_schema_support.py`'s `without_x06`; `D_12` = `7792576e…`, measured at
+  stripped by `tests/x06_schema_support.py`'s `without_x06`; `D_12` = `ba4b5ce5…`, measured at
   the X06 fix round on `wp/X06`, the review's three text edits (`7e8393a5…` at X06-WO2,
   `4a80f77f…` at X06-WO3, `d0f0c8b7…` at X06-WO4;
-  `tests/test_t08_w2_surface_digest.py`'s `X06_SERVED_SHA256`). On `wp/X06` it decomposes onto
-  c_10 (F3): F2's c_11 (R-1072) is not on the branch, and whichever of the two merges second
-  decomposes onto the first's. Its nine new files are pinned at their own hashes
-  (`X06_FILE_SHA256`); item 4 judges the two changed texts in their pre-X06 form
-  (`texts_before_links`).
+  `tests/test_t08_w2_surface_digest.py`'s `X06_SERVED_SHA256`), and re-taken at X06-FR0 on
+  `wp/X06` after the merge of `wp/F2`'s F2-WO8 (`7792576e…` before). F2 merges first, so c_12
+  decomposes onto F2's c_11 (R-1072, R-1073: the second to merge decomposes onto the first's).
+  Its nine new files are pinned at their own hashes (`X06_FILE_SHA256`); item 4 judges the two
+  changed texts in their pre-X06 form (`texts_before_links`).
 
 The released 0.2.0a1 ran the two-link chain (its committed record at `C_α²`); a re-run of the
 alpha's step 8 uses this script at the tag.
@@ -323,6 +331,17 @@ def strip_f3(tools: Tools) -> Tools:
     return stripped
 
 
+def strip_f2(tools: Tools) -> Tools:
+    """s_11 (R-1072): `tools` without F2's 14 kinds and their sentence, with the one description
+    text F2 changed (`check_admission`) restored (`f2_schema_support.without_f2`)."""
+    t08_rc._tests_on_path()
+    from f2_schema_support import without_f2  # noqa: PLC0415
+
+    stripped = without_f2(copy.deepcopy(tools))
+    assert isinstance(stripped, list)
+    return stripped
+
+
 def strip_x06(tools: Tools) -> Tools:
     """s_12 (R-1073): `tools` without X06's additions (`x06_schema_support.without_x06`), with the
     two description texts X06 changed restored."""
@@ -407,10 +426,16 @@ LINKS: Final = (
         "f7ec3c94233d30506ec2082a13c4e54d57bd540e43e97fdf877b1e3c75fed467",
     ),
     Link(
+        "c_11",
+        "R-1072",
+        strip_f2,
+        "8eee5313e1dff685ed3f5c7a60c6aa8fb7fea31d8fcd5c8ac608eac9450f304a",
+    ),
+    Link(
         "c_12",
         "R-1073",
         strip_x06,
-        "7792576ea51caff3dcde62cb8df9f199ea6f00381ee31ba0bae0ea6f1233f04a",
+        "ba4b5ce59af4ac4c1e5d29f157ccd5d6308cc0a6282f0dc3434fc3b5cf88db62",
     ),
 )
 
@@ -498,12 +523,14 @@ def description_texts() -> dict[str, str]:
 
 def texts_before_links(texts: Mapping[str, str]) -> dict[str, str]:
     """`texts` (operation name -> description file) with every link's description change undone:
-    c_6's two files (OPT) in their pre-OPT form, c_8's two (X04) in their pre-X04 form and c_12's
-    two (X06) in their pre-X06 form. The other links changed no existing text (MSG's c_4 added
-    `explain.md`, ST's c_7 `get_stream_table.md`, F1's c_9 `list_capabilities.md` and
-    `check_admission.md`, F3's c_10 five `Records` files, X06's c_12 nine files (`Branches`,
-    `SolvePolicies`, `Administration`), each pinned at its own hash)."""
+    c_6's two files (OPT) in their pre-OPT form, c_8's two (X04) in their pre-X04 form, c_11's
+    one (F2, `check_admission.md`) in its pre-F2 form and c_12's two (X06) in their pre-X06 form.
+    The other links changed no existing text (MSG's c_4 added `explain.md`, ST's c_7
+    `get_stream_table.md`, F1's c_9 `list_capabilities.md` and `check_admission.md`, F3's c_10
+    five `Records` files, X06's c_12 nine files (`Branches`, `SolvePolicies`, `Administration`),
+    each pinned at its own hash; F2's c_11 added none)."""
     t08_rc._tests_on_path()
+    from f2_schema_support import F2_DESCRIPTIONS, pre_f2_text  # noqa: PLC0415
     from opt_schema_support import OPT_DESCRIPTIONS, pre_opt_text  # noqa: PLC0415
     from x04_schema_support import X04_DESCRIPTIONS, pre_x04_text  # noqa: PLC0415
     from x06_schema_support import X06_DESCRIPTIONS, pre_x06_text  # noqa: PLC0415
@@ -511,6 +538,8 @@ def texts_before_links(texts: Mapping[str, str]) -> dict[str, str]:
     def before(name: str, text: str) -> str:
         if name in X06_DESCRIPTIONS:
             return pre_x06_text(name)
+        if name in F2_DESCRIPTIONS:
+            return pre_f2_text(name)
         if name in X04_DESCRIPTIONS:
             return pre_x04_text(name)
         return pre_opt_text(name) if name in OPT_DESCRIPTIONS else text

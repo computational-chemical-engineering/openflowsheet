@@ -58,6 +58,14 @@ PAYLOAD_DEFS: Final[Mapping[str, str]] = MappingProxyType(
         "record_type": "payload_record_type",
         "correlation_form": "payload_correlation_form",
         "data_source": "payload_data_source",
+        # ADR 0062 D5, D6 (F2-WO2) installs the payload envelopes of five of its kinds. The kinds
+        # stay out of `CORE_KINDS` while the ADR is Proposed ("per ADR-F2": `preview` until it is
+        # Accepted), so their descriptors are validated and `preview`.
+        "attribute_kind": "payload_attribute_kind",
+        "derived_quantity": "payload_derived_quantity",
+        "kinetics_kind": "payload_kinetics_kind",
+        "phase_family": "payload_phase_family",
+        "revision_section": "payload_revision_section",
     }
 )
 #: ADR 0061 D1: built-in descriptors of a core kind whose payload is still `preview`, by (kind, id).

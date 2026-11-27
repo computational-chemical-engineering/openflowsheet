@@ -20,6 +20,7 @@ from typing import Any
 import pytest
 from conftest import REPO_ROOT, load_json, load_yaml
 from f1_schema_support import F1_OPERATIONS
+from f2_schema_support import without_f2
 from f3_schema_support import F3_OPERATIONS
 from jsonschema import Draft202012Validator
 from m02_schema_support import without_m02
@@ -273,11 +274,15 @@ def test_g1c_without_m02s_additions_every_response_is_its_pre_m02_snapshot() -> 
         if name in MSG_OPERATIONS | ST_OPERATIONS | F1_OPERATIONS | F3_OPERATIONS | X06_OPERATIONS:
             continue
         # M04's (ADR 0037 D6), MSG's (ADR 0058), X02's (ADR 0070), OPT's (ADR 0071, ADR 0019
-        # Amendment 16), X04's (ADR 0075, Amendment 17) and X06's (ADR 0078, Amendment 18)
-        # additions are taken out first, the later first: they postdate this snapshot.
+        # Amendment 16), X04's (ADR 0075, Amendment 17), F2's (ADR 0062 D1) and X06's (ADR 0078,
+        # Amendment 18) additions are taken out first, the later first: they postdate this snapshot.
         resolved = without_m04(
             without_msg(
-                without_x02(without_opt(without_x04(without_x06(r4.resolved_response(operation)))))
+                without_x02(
+                    without_opt(
+                        without_x04(without_f2(without_x06(r4.resolved_response(operation))))
+                    )
+                )
             )
         )
         assert r4._digest(without_m02(resolved)) == before[name], name

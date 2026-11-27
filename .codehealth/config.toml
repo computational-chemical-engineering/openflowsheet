@@ -266,6 +266,10 @@ order = [
     # from records, so this one module of `records` sits above `thermo`.
     "openflowsheet.records.legacy_views",
     "openflowsheet.thermo",
+    # ADR 0062 D11 (F2-WO4): v2 revisions (parse, validate, canonical), above `material`.
+    "openflowsheet.revision_v2",
+    # ADR 0062 D2 (F2-WO1): the provider-level state types, re-exported by `thermo`.
+    "openflowsheet.material",
     "openflowsheet.graph",
     "openflowsheet.numerics",
     "openflowsheet.compile",

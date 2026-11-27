@@ -140,6 +140,7 @@ from openflowsheet.application.store_records import ArtifactRow, ArtifactTableSi
 from openflowsheet.canonical import canonical_json, file_sha256
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models.lifted import AdmissibilityRefusal
+from openflowsheet.models.revision_flowsheet import lowered_document
 from openflowsheet.numerics.solve_record import SolvePolicy, Trace
 from openflowsheet.orchestrator.policy_validation import is_project_policy_id
 from openflowsheet.orchestrator.warm_start import EXPLICIT, WARM_START_SOURCE, WarmStartCandidate
@@ -704,6 +705,10 @@ class _Body:
                 state.run,
             )
         state.selected = route
+        # ADR 0062 D8, D12: a v2 revision runs as its lowering (it lowers: it was routed), so
+        # the warm start, the continuation and the bundle read the v1 document; the run's
+        # record keeps the v2 revision's id and content hash.
+        document = dict(lowered_document(document))
         resolved = _policies(store, self.context.root, route, body)
         if isinstance(resolved, WorkerResult):
             return resolved

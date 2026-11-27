@@ -1,0 +1,377 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/frankp/process-runtime/schemas/process-revision-v2.schema.json",
+  "title": "ProcessRevisionV2",
+  "description": "DRAFT until ADR 0062 is Accepted (F2-WO4). ADR 0062 D11: a `ProcessRevision` with `schema_version: 2`, read by `openflowsheet.revision_v2` and never as v1 (ADR 0002 D7.5). v1's identity fields; a `convention`; a `component_set` of record SHAs (ADR 0061), no `record_source` and no `component_mapping`; `materials` (the `mat-v1` definition instances of ADR 0062 D3, each with a revision-local id); `reaction_sets`; `property_methods` (preview); `instances`; `connections` of three kinds with four endpoint kinds (D9); `specifications` (`specification-v2.schema.json`, D10); `sections`. Every member except `content_hash`, `title` and `description` is required, so one revision has one spelling. Preview (R-929): `property_methods`, `phase_assertion`, `template`, kinetics bodies, section bodies. Rules a JSON Schema cannot state (references, thermal coordinate, port compatibility, solid roles, grids, conserved bases, signal kinds, specification kinds) are the validator's, with ADR 0062's typed codes. `content_hash` is v1's rule (ADR 0002 D4, `CONTENT_HASH_EXCLUDED` unchanged) over the canonical document.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "revision_id",
+    "parent_revision",
+    "convention",
+    "component_set",
+    "materials",
+    "reaction_sets",
+    "property_methods",
+    "instances",
+    "connections",
+    "specifications",
+    "sections",
+    "provenance"
+  ],
+  "properties": {
+    "schema_version": { "type": "integer", "const": 2 },
+    "revision_id": { "type": "string", "minLength": 1 },
+    "parent_revision": { "type": ["string", "null"] },
+    "content_hash": { "type": ["string", "null"], "pattern": "^[0-9a-f]{64}$" },
+    "title": { "type": "string", "minLength": 1 },
+    "description": { "type": "string" },
+    "convention": {
+      "description": "`ELEMENTAL-ref-v1` or a provider's native convention id (`interfaces-frozen.md` §3; ADR-F4 extends).",
+      "type": "string",
+      "minLength": 1
+    },
+    "component_set": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["components", "parameter_sets"],
+      "properties": {
+        "components": {
+          "description": "Array order is the canonical component order (ADR 0001 D2.1).",
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "record"],
+            "properties": {
+              "id": { "$ref": "#/$defs/uid" },
+              "record": { "$ref": "#/$defs/sha" }
+            }
+          }
+        },
+        "parameter_sets": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/sha" } }
+      }
+    },
+    "materials": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["thermal_coordinate", "definitions"],
+      "properties": {
+        "thermal_coordinate": { "enum": ["h_mass", "T"] },
+        "definitions": { "type": "array", "items": { "$ref": "#/$defs/material_definition" } },
+        "phase_order_keys": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/uid" } }
+      }
+    },
+    "reaction_sets": { "type": "array", "items": { "$ref": "#/$defs/reaction_set" } },
+    "property_methods": {
+      "description": "Preview (ADR-F4). In 0.5 and 0.6 `default` is one legacy provider id and `overrides` is empty.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["default", "overrides"],
+      "properties": {
+        "default": {},
+        "overrides": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["instance", "method_set"],
+            "properties": {
+              "instance": { "$ref": "#/$defs/uid" },
+              "side": { "type": "string", "minLength": 1 },
+              "method_set": {}
+            }
+          }
+        }
+      }
+    },
+    "instances": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "model", "semantic_role", "parameters", "policy"],
+        "properties": {
+          "id": { "$ref": "#/$defs/uid" },
+          "model": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "version", "artifact_ref"],
+            "properties": {
+              "id": { "type": "string", "minLength": 1 },
+              "version": { "type": "string", "minLength": 1 },
+              "artifact_ref": { "type": ["string", "null"] }
+            }
+          },
+          "semantic_role": {
+            "description": "v1's vocabulary plus ADR 0062 D11's four (ADR-F6 owns it).",
+            "enum": [
+              "feed",
+              "product_sink",
+              "mixer",
+              "heater",
+              "flash",
+              "splitter",
+              "reactor",
+              "separator",
+              "valve",
+              "pump",
+              "heat_exchanger",
+              "compressor",
+              "turbine",
+              "other",
+              "utility",
+              "controller",
+              "shaft",
+              "relief_device"
+            ]
+          },
+          "parameters": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "https://github.com/frankp/process-runtime/schemas/quantity.schema.json"
+            }
+          },
+          "references": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+          "template": { "description": "Preview (ADR-F6)." },
+          "policy": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["fidelity", "validity"],
+            "properties": {
+              "fidelity": { "type": "string", "minLength": 1 },
+              "validity": { "type": "string", "minLength": 1 }
+            }
+          }
+        }
+      }
+    },
+    "connections": { "type": "array", "items": { "$ref": "#/$defs/connection" } },
+    "specifications": {
+      "type": "array",
+      "items": {
+        "$ref": "https://github.com/frankp/process-runtime/schemas/specification-v2.schema.json"
+      }
+    },
+    "sections": {
+      "description": "ADR 0062 D5: per namespace, the `$id` of the schema its body validates against (a registered `revision_section`) and the body (preview).",
+      "type": "object",
+      "propertyNames": { "$ref": "#/$defs/f1_id" },
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["schema", "body"],
+        "properties": { "schema": { "type": "string", "minLength": 1 }, "body": {} }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["actor", "operation", "timestamp"],
+      "properties": {
+        "actor": { "type": "string", "minLength": 1 },
+        "operation": { "type": "string", "minLength": 1 },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "source_references": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "artifact_hashes": {
+          "type": "object",
+          "additionalProperties": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+        },
+        "notes": { "type": "string" }
+      }
+    }
+  },
+  "$defs": {
+    "uid": {
+      "description": "A revision-local id (the v1 id pattern, ADR 0062 D11).",
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+    },
+    "f1_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z][A-Za-z0-9_-]*(\\.[A-Za-z0-9][A-Za-z0-9_-]*)*$",
+      "maxLength": 128
+    },
+    "sha": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "material_definition": {
+      "description": "A `mat-v1` instance (`connection-definition.schema.json`) with its revision-local id beside it; the id is in no identity preimage (ADR 0062 D3).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "template", "thermal_coordinate", "substreams"],
+      "properties": {
+        "id": { "$ref": "#/$defs/uid" },
+        "template": { "const": "mat-v1" },
+        "thermal_coordinate": { "enum": ["h_mass", "T"] },
+        "substreams": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "https://github.com/frankp/process-runtime/schemas/connection-definition.schema.json#/$defs/substream"
+          }
+        }
+      }
+    },
+    "coefficient": {
+      "description": "A stoichiometric coefficient p/q: integers, q > 0, p != 0 (a zero is omitted); gcd(p, q) = 1 is the validator's.",
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "prefixItems": [
+        { "type": "integer", "not": { "const": 0 } },
+        { "type": "integer", "minimum": 1 }
+      ]
+    },
+    "reaction_set": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "reactions"],
+      "properties": {
+        "id": { "$ref": "#/$defs/uid" },
+        "reactions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "stoichiometry", "scope"],
+            "properties": {
+              "id": { "$ref": "#/$defs/uid" },
+              "stoichiometry": {
+                "type": "object",
+                "minProperties": 1,
+                "propertyNames": { "$ref": "#/$defs/uid" },
+                "additionalProperties": { "$ref": "#/$defs/coefficient" }
+              },
+              "scope": {
+                "type": "array",
+                "minItems": 1,
+                "uniqueItems": true,
+                "items": { "$ref": "#/$defs/uid" }
+              }
+            }
+          }
+        },
+        "kinetics": {
+          "description": "The envelope is core, the body preview (ADR 0062 D5).",
+          "type": "object",
+          "required": ["kind", "version"],
+          "properties": {
+            "kind": { "$ref": "#/$defs/f1_id" },
+            "version": { "type": "string", "minLength": 1 }
+          }
+        }
+      }
+    },
+    "port_endpoint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["instance", "port"],
+      "properties": {
+        "instance": { "$ref": "#/$defs/uid" },
+        "port": { "type": "string", "minLength": 1 }
+      }
+    },
+    "probe_endpoint": {
+      "description": "A signal source only (ADR 0062 D9); the target is a D10 target.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["probe"],
+      "properties": {
+        "probe": {
+          "$ref": "https://github.com/frankp/process-runtime/schemas/specification-v2.schema.json#/$defs/target"
+        }
+      }
+    },
+    "parameter_endpoint": {
+      "description": "A signal sink only; the manifest declares the parameter manipulable (ADR 0062 D9).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["instance", "parameter"],
+      "properties": {
+        "instance": { "$ref": "#/$defs/uid" },
+        "parameter": { "type": "string", "minLength": 1 }
+      }
+    },
+    "specification_endpoint": {
+      "description": "A signal sink only: the specification's row reads the signal in place of its value (ADR 0065 D10).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["specification"],
+      "properties": { "specification": { "$ref": "#/$defs/uid" } }
+    },
+    "connection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "kind", "from", "to", "definition"],
+      "properties": {
+        "id": { "$ref": "#/$defs/uid" },
+        "kind": { "enum": ["material", "energy", "signal"] },
+        "from": {
+          "oneOf": [{ "$ref": "#/$defs/port_endpoint" }, { "$ref": "#/$defs/probe_endpoint" }]
+        },
+        "to": {
+          "oneOf": [
+            { "$ref": "#/$defs/port_endpoint" },
+            { "$ref": "#/$defs/parameter_endpoint" },
+            { "$ref": "#/$defs/specification_endpoint" }
+          ]
+        },
+        "definition": {
+          "description": "material: a `materials.definitions` id or `nTP-v1`; energy: `heat-v1` or `work-v1`; signal: `signal-v1`.",
+          "$ref": "#/$defs/uid"
+        },
+        "quantity_kind": {
+          "$ref": "https://github.com/frankp/process-runtime/schemas/quantity.schema.json#/$defs/kind"
+        },
+        "phase_assertion": { "description": "Preview (ADR-F5)." },
+        "initialization_hint": {
+          "type": ["object", "null"],
+          "additionalProperties": {
+            "$ref": "https://github.com/frankp/process-runtime/schemas/quantity.schema.json"
+          }
+        },
+        "phase_capability": { "enum": ["liquid", "vapor", "vapor_liquid"] },
+        "notes": { "type": "string" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "kind": { "const": "material" } } },
+          "then": {
+            "properties": {
+              "definition": { "not": { "enum": ["heat-v1", "work-v1", "signal-v1"] } }
+            },
+            "not": { "required": ["quantity_kind"] }
+          }
+        },
+        {
+          "if": { "properties": { "kind": { "const": "energy" } } },
+          "then": {
+            "properties": { "definition": { "enum": ["heat-v1", "work-v1"] } },
+            "not": { "required": ["quantity_kind"] }
+          }
+        },
+        {
+          "if": { "properties": { "kind": { "const": "signal" } } },
+          "then": {
+            "properties": { "definition": { "const": "signal-v1" } },
+            "required": ["quantity_kind"]
+          },
+          "else": {
+            "properties": {
+              "from": { "$ref": "#/$defs/port_endpoint" },
+              "to": { "$ref": "#/$defs/port_endpoint" }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": ["phase_capability"]
+          },
+          "then": { "properties": { "definition": { "const": "nTP-v1" } } }
+        }
+      ]
+    }
+  }
+}

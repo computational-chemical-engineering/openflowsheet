@@ -1,0 +1,5 @@
+# ADR 0062 D3: (kind, components) is unique within a substream.
+base: crystallizer
+changes:
+  - {op: add, path: /materials/definitions/0/substreams/1/attributes/-, value: {kind: probe.moments, version: 1.0.0, components: [NaCl], grid: L}}
+errors: [{code: attribute_redundant, params: {definition: brine, substream: cryst, kind: probe.moments}}]

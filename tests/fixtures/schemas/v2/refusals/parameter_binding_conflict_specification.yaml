@@ -1,0 +1,5 @@
+# D9 (ADR 0065 D10): a specification sink read by two signals.
+base: crystallizer
+changes:
+  - {op: add, path: /connections/-, value: {id: C4, kind: signal, from: {probe: {energy: Q1}}, to: {specification: q_duty}, definition: signal-v1, quantity_kind: heat_rate}}
+errors: [{code: parameter_binding_conflict, params: {target: "specification:q_duty"}}]

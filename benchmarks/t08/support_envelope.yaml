@@ -10045,6 +10045,58 @@ harvest:
   class: P
   to: []
   note: 'release-candidate item: step 18 (release_gate.py --line 0.5 --rc C) is judged from its output in the build log (R-914, RP §6.8)'
+- manifest: evidence/F2/fb75c409d6aa4ef171b1dfa9a2572836ccf27f28/manifest.json
+  item: limitations[0]
+  sha256: fb8967ccf18c704abbc31615ed80666a02146561474f41d45376d438e41297c6
+  class: P
+  to: []
+  note: 'provenance note: software verification of the F2 material model; tested by local runs at fb75c409, no CI run, not reviewed'
+- manifest: evidence/F2/fb75c409d6aa4ef171b1dfa9a2572836ccf27f28/manifest.json
+  item: limitations[1]
+  sha256: 9b66486c0f81a82a60fc1421f9a48673e02cd10b4f06395c4a6a9eeb7f7352d2
+  class: P
+  to: []
+  note: 'process note: three partial exits recorded as unsupported checks, each closed by a later package (F4, F5/F6, X19/X20)'
+- manifest: evidence/F2/fb75c409d6aa4ef171b1dfa9a2572836ccf27f28/manifest.json
+  item: limitations[2]
+  sha256: c0f9fb5bdb065ca3751d6c46784833fcabaf73fa5e091b552f4bde78c69e5584
+  class: P
+  to: []
+  note: 'process note: the human review of check_admission.md and the ADR 0062 acceptance card wait for the user'
+- manifest: evidence/F2/fb75c409d6aa4ef171b1dfa9a2572836ccf27f28/manifest.json
+  item: limitations[3]
+  sha256: 14a2a715ef83263d7cc1764adaaf7b9c26447477eea9af9b23b73468d3a85fa7
+  class: P
+  to: []
+  note: 'process note: digests moved by the F2 review fix round (templates, catalogue, served D_11); F0 unmoved'
+- manifest: evidence/F2/fb75c409d6aa4ef171b1dfa9a2572836ccf27f28/manifest.json
+  item: checks[4]
+  check_id: F2.E-F2-4.Q6-A2-registration
+  sha256: 3b9f9c43b433568488ebc9f0efed04dd04bdb623fbb9409ae848e98a24a2e5df
+  class: P
+  to: []
+  note: 'process note: Q6.A2 registration half not testable on D5 payload (Q-WO5-a); closes with X19/X20'
+- manifest: evidence/F2/fb75c409d6aa4ef171b1dfa9a2572836ccf27f28/manifest.json
+  item: checks[9]
+  check_id: F2.E-F2-8.Q7-A1-map
+  sha256: 463f1d2890536c791c3d10d982a898bc63294a1bab1e1e3b2e7b49b85663740e
+  class: P
+  to: []
+  note: 'process note: declared maps are ADR-F4''s; closes with F4'
+- manifest: evidence/F2/fb75c409d6aa4ef171b1dfa9a2572836ccf27f28/manifest.json
+  item: checks[11]
+  check_id: F2.E-F2-9.state_degenerate_in_definition
+  sha256: 084830d8ec89859b6d178fd77bf8f234b94f1d229b2112a461615fb64691e5b3
+  class: P
+  to: []
+  note: 'process note: needs a property evaluation at a T state point (WO4-9); closes with F5/F6'
+- manifest: evidence/F2/fb75c409d6aa4ef171b1dfa9a2572836ccf27f28/manifest.json
+  item: checks[17]
+  check_id: F2.DESCRIPTION-REVIEW
+  sha256: de6a3ca60e626513a17e5e1d5da96880dd1f15848e4de5a71f0bb07501d014f9
+  class: P
+  to: []
+  note: 'process note: the human review of check_admission.md is the user''s (REVIEW.json pending)'
 - manifest: evidence/X06/1a2782d1a9e8c79d21692d20ce9872e391e10931/manifest.json
   item: limitations[0]
   sha256: baa43247848b85ce1b6051a12448b2fba8d8a8b46c40b9e7f8cf64c3d68afafe

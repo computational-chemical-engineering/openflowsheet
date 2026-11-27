@@ -69,7 +69,8 @@ def r0_projection(artifacts: Mapping[str, Any]) -> dict[str, Any]:
     events and their last solver counters (`_event_r0`, `_solver_counters`), the certificate
     (`_certificate_r0`), the structural report, the execution plan, the solve path with its
     warm start (`_add_warm_start_r0`) and revision continuation (`_revision_continuation_r0`), the
-    solution state's ids, and the failure bundle (`_failure_r0`).
+    solution state's ids (with, for `solution-state-v2` only, its layout and state points, ADR
+    0062 D8), and the failure bundle (`_failure_r0`).
     """
     projection: dict[str, Any] = {}
 
@@ -117,6 +118,12 @@ def r0_projection(artifacts: Mapping[str, Any]) -> dict[str, Any]:
     solution_state = artifacts.get("solution-state.json")
     if isinstance(solution_state, dict):
         projection["solution_state"] = {"variable_ids": list(solution_state["variable_ids"])}
+        # ADR 0062 D8: a v2-compiled run's layout (definition SHAs included) and state-point
+        # signatures, floats-free. `solution-state-v2` documents only; a v1 one is as above. A
+        # member a malformed v2 document lacks projects as None (the cross-check reports it).
+        if solution_state.get("schema_version") == "solution-state-v2":
+            for member in ("material_layout", "state_points"):
+                projection["solution_state"][member] = solution_state.get(member)
 
     bundle = artifacts.get("failure-bundle.json")
     if isinstance(bundle, dict):

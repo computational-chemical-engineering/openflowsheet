@@ -106,7 +106,10 @@ def test_a_v2_record_d2_refuses_keeps_its_errors() -> None:
     record = {**_legacy("m01")[0], "charge": 1, "amount_basis": "kg"}
     (outcome,) = import_user_file("record-v2-json", json.dumps(record), retrieved_at=AT)
     assert outcome.record_sha256 is None
-    assert ("amount_basis_unsupported", {"basis": "kg"}) in _codes(outcome)
+    # F2-WO1 admits `kg` (ADR 0062 D1): the basis itself is no longer refused, its rules are.
+    charged = ("amount_basis_invalid", {"component": "H2", "rule": "charge_nonzero"})
+    assert charged in _codes(outcome)
+    assert all(code != "amount_basis_unsupported" for code, _ in _codes(outcome))
 
 
 @pytest.mark.parametrize(

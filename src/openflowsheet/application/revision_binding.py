@@ -88,6 +88,7 @@ from openflowsheet.models.revision_flowsheet import (
     RevisionError,
     RevisionFlowsheet,
     configuration_sha256,
+    lowered_document,
     parse_revision,
     pin_specifications,
     selectable_bases,
@@ -543,7 +544,10 @@ def bind_revision_flowsheet(
     if pointer is not None:
         return Unbound("unsupported", f"document_not_canonical({pointer})")
 
+    # ADR 0062 D12: a v2 document is bound as its lowering, which the binding then holds (its
+    # `revision_sha256` included), so that the verifier reads what the binder read.
     try:
+        document = lowered_document(document)
         view = parse_revision(document, _INSTANCE_TARGETS)
         sources = pin_specifications(document)
     except RevisionError as error:

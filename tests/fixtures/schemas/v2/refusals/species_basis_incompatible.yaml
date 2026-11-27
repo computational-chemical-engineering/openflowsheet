@@ -1,0 +1,6 @@
+# Q3.R1 (i): a fast reaction that does not conserve the charged groups (A R != 0).
+base: crystallizer
+changes:
+  - {op: add, path: /reaction_sets/-, value: {id: speciation, reactions: [{id: w, stoichiometry: {Na_p: [1, 1], Cl_m: [1, 1], H2O: [-1, 1]}, scope: [liq]}]}}
+  - {op: replace, path: /materials/definitions/0/substreams/0/conserved_basis/fast_reactions, value: speciation}
+errors: [{code: species_basis_incompatible, params: {definition: brine, substream: liq}}]

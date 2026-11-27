@@ -1,0 +1,4 @@
+# D11: an energy connection's definition is heat-v1 or work-v1.
+expect_error: "'signal-v1' is not one of ['heat-v1', 'work-v1']"
+base: crystallizer
+changes: [{op: replace, path: /connections/5/definition, value: signal-v1}]

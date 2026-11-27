@@ -1,0 +1,180 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/frankp/process-runtime/schemas/connection-definition.schema.json",
+  "title": "ConnectionDefinition",
+  "description": "DRAFT until ADR 0062 is Accepted (F2-WO2). ADR 0062 D3: one connection-definition instance, a template id with the template's parameters beside it, every object closed. Templates: `nTP-v1` (none; the legacy definition), `mat-v1` (`thermal_coordinate`, `substreams`), `heat-v1` and `work-v1` (none), `signal-v1` (`quantity_kind`). Identity (`openflowsheet.material.definitions.definition_sha256`) is the document SHA of `{template: [id, version, descriptor_sha256], body}`, the body being the normalised instance without `template` (groups by id, attributes by (kind, components), component lists as given). Rules a JSON Schema cannot state (one `mixed` substream at most, unique ids, components in the revision's order, strictly increasing grid edges, the conserved basis against its fast reactions, attribute kinds and grids) are the revision validator's (F2-WO4).",
+  "oneOf": [
+    { "$ref": "#/$defs/ntp_v1" },
+    { "$ref": "#/$defs/mat_v1" },
+    { "$ref": "#/$defs/heat_v1" },
+    { "$ref": "#/$defs/work_v1" },
+    { "$ref": "#/$defs/signal_v1" }
+  ],
+  "$defs": {
+    "uid": {
+      "description": "A revision-local id (the v1 id pattern, ADR 0062 D11).",
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+    },
+    "component_id": {
+      "description": "A component id of the revision's component set.",
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+    },
+    "f1_id": {
+      "description": "An F1 descriptor id (ADR 0060 D2).",
+      "type": "string",
+      "pattern": "^[A-Za-z][A-Za-z0-9_-]*(\\.[A-Za-z0-9][A-Za-z0-9_-]*)*$",
+      "maxLength": 128
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"
+    },
+    "quantity_kind": {
+      "$ref": "https://github.com/frankp/process-runtime/schemas/quantity.schema.json#/$defs/kind"
+    },
+    "ntp_v1": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["template"],
+      "properties": { "template": { "const": "nTP-v1" } }
+    },
+    "heat_v1": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["template"],
+      "properties": { "template": { "const": "heat-v1" } }
+    },
+    "work_v1": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["template"],
+      "properties": { "template": { "const": "work-v1" } }
+    },
+    "signal_v1": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["template", "quantity_kind"],
+      "properties": {
+        "template": { "const": "signal-v1" },
+        "quantity_kind": { "$ref": "#/$defs/quantity_kind" }
+      }
+    },
+    "mat_v1": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["template", "thermal_coordinate", "substreams"],
+      "properties": {
+        "template": { "const": "mat-v1" },
+        "thermal_coordinate": { "enum": ["h_mass", "T"] },
+        "substreams": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/substream" }
+        }
+      }
+    },
+    "substream": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "kind", "components", "conserved_basis", "grids", "attributes"],
+      "properties": {
+        "id": { "$ref": "#/$defs/uid" },
+        "kind": { "enum": ["mixed", "solid", "nonconventional"] },
+        "components": {
+          "description": "A subsequence of the component set's order.",
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/component_id" }
+        },
+        "conserved_basis": {
+          "oneOf": [{ "$ref": "#/$defs/true_basis" }, { "$ref": "#/$defs/group_basis" }]
+        },
+        "grids": { "type": "array", "items": { "$ref": "#/$defs/grid" } },
+        "attributes": { "type": "array", "items": { "$ref": "#/$defs/attribute" } }
+      }
+    },
+    "true_basis": {
+      "description": "Q3.R2's true preset: A = I, R = the empty set.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["preset"],
+      "properties": { "preset": { "const": "true" } }
+    },
+    "group_basis": {
+      "description": "Q3.R1: groups over true species with integer content (A_gs = units of g in species s; a zero is omitted), relative to a reaction set's fast reactions.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["preset", "species", "groups", "fast_reactions"],
+      "properties": {
+        "preset": { "enum": ["apparent", null] },
+        "species": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/component_id" }
+        },
+        "groups": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "content"],
+            "properties": {
+              "id": { "$ref": "#/$defs/uid" },
+              "content": {
+                "type": "object",
+                "minProperties": 1,
+                "propertyNames": { "$ref": "#/$defs/component_id" },
+                "additionalProperties": { "type": "integer", "not": { "const": 0 } }
+              }
+            }
+          }
+        },
+        "fast_reactions": {
+          "description": "A reaction-set id of the revision, or null (R = the empty set).",
+          "oneOf": [{ "$ref": "#/$defs/uid" }, { "type": "null" }]
+        }
+      }
+    },
+    "grid": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "quantity_kind", "edges"],
+      "properties": {
+        "id": { "$ref": "#/$defs/uid" },
+        "quantity_kind": { "$ref": "#/$defs/quantity_kind" },
+        "edges": {
+          "description": "Strictly increasing (the validator's rule).",
+          "type": "array",
+          "minItems": 2,
+          "items": { "type": "number" }
+        }
+      }
+    },
+    "attribute": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "version", "components", "grid"],
+      "properties": {
+        "kind": { "$ref": "#/$defs/f1_id" },
+        "version": { "$ref": "#/$defs/version" },
+        "components": {
+          "oneOf": [
+            {
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": { "$ref": "#/$defs/component_id" }
+            },
+            { "type": "null" }
+          ]
+        },
+        "grid": { "oneOf": [{ "$ref": "#/$defs/uid" }, { "type": "null" }] }
+      }
+    }
+  }
+}

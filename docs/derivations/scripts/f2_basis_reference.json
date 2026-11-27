@@ -1,0 +1,1296 @@
+{
+  "bases": {
+    "a2a_nacl_apparent": {
+      "charges": [
+        1,
+        -1,
+        0
+      ],
+      "content": [
+        [
+          1,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          1
+        ]
+      ],
+      "group_masses": {
+        "deciding_species": [
+          "Na_p",
+          "Cl_m",
+          "H2O"
+        ],
+        "group_masses": [
+          0.05843976928,
+          0.018015
+        ],
+        "inconsistent": [],
+        "mu": -0.035450548579909064,
+        "worst_deficit_in_epsilon_scale": 0.0
+      },
+      "groups": [
+        "NaCl",
+        "H2O"
+      ],
+      "masses": [
+        0.022989220700090934,
+        0.035450548579909064,
+        0.018015
+      ],
+      "reaction_names": [],
+      "reactions": [],
+      "species": [
+        "Na_p",
+        "Cl_m",
+        "H2O"
+      ],
+      "verdict": {
+        "full_row_rank": true,
+        "invariant_dimension": 0,
+        "invariants_fixed": true,
+        "monotone": true,
+        "reactions_conserve_groups": true
+      }
+    },
+    "a2b_nacl_solid": {
+      "charges": [
+        1,
+        -1,
+        0,
+        0
+      ],
+      "content": [
+        [
+          1,
+          0,
+          1,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          1
+        ]
+      ],
+      "group_masses": {
+        "deciding_species": [
+          "Na_p",
+          "Cl_m",
+          "H2O"
+        ],
+        "group_masses": [
+          0.05843976928,
+          0.018015
+        ],
+        "inconsistent": [],
+        "mu": -0.035450548579909064,
+        "worst_deficit_in_epsilon_scale": 0.0
+      },
+      "groups": [
+        "NaCl",
+        "H2O"
+      ],
+      "masses": [
+        0.022989220700090934,
+        0.035450548579909064,
+        0.05843976928,
+        0.018015
+      ],
+      "reaction_names": [
+        "NaCl_dissolution"
+      ],
+      "reactions": [
+        [
+          1,
+          1,
+          -1,
+          0
+        ]
+      ],
+      "species": [
+        "Na_p",
+        "Cl_m",
+        "NaCl",
+        "H2O"
+      ],
+      "verdict": {
+        "full_row_rank": true,
+        "invariant_dimension": 1,
+        "invariants_fixed": true,
+        "monotone": true,
+        "reactions_conserve_groups": true
+      }
+    },
+    "a2b_nacl_solid_no_dissolution": {
+      "charges": [
+        1,
+        -1,
+        0,
+        0
+      ],
+      "content": [
+        [
+          1,
+          0,
+          1,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          1
+        ]
+      ],
+      "group_masses": {
+        "deciding_species": [
+          "Na_p",
+          "Cl_m",
+          "H2O"
+        ],
+        "group_masses": [
+          0.05843976928,
+          0.018015
+        ],
+        "inconsistent": [],
+        "mu": -0.035450548579909064,
+        "worst_deficit_in_epsilon_scale": 0.0
+      },
+      "groups": [
+        "NaCl",
+        "H2O"
+      ],
+      "masses": [
+        0.022989220700090934,
+        0.035450548579909064,
+        0.05843976928,
+        0.018015
+      ],
+      "reaction_names": [],
+      "reactions": [],
+      "species": [
+        "Na_p",
+        "Cl_m",
+        "NaCl",
+        "H2O"
+      ],
+      "verdict": {
+        "full_row_rank": true,
+        "invariant_dimension": 1,
+        "invariants_fixed": false,
+        "monotone": true,
+        "reactions_conserve_groups": true
+      }
+    },
+    "a2c_mea": {
+      "charges": [
+        0,
+        1,
+        -1,
+        0,
+        -1,
+        -2,
+        0,
+        1,
+        -1
+      ],
+      "content": [
+        [
+          1,
+          1,
+          1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          1,
+          1,
+          1,
+          1,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          1,
+          1,
+          1,
+          1,
+          1
+        ]
+      ],
+      "group_masses": {
+        "deciding_species": [
+          "MEA",
+          "MEAH_p",
+          "MEACOO_m",
+          "HCO3_m"
+        ],
+        "group_masses": [
+          0.061084,
+          0.044009,
+          0.018014999999999996
+        ],
+        "inconsistent": [],
+        "mu": 0.0010074514200909337,
+        "worst_deficit_in_epsilon_scale": 0.4336663891201777
+      },
+      "groups": [
+        "MEA",
+        "CO2",
+        "H2O"
+      ],
+      "masses": [
+        0.061084,
+        0.06209145142009093,
+        0.10408554857990907,
+        0.044009,
+        0.06101654857990906,
+        0.06000909715981813,
+        0.018015,
+        0.019022451420090934,
+        0.017007548579909066
+      ],
+      "reaction_names": [
+        "water",
+        "mea_protonation",
+        "co2_hydration",
+        "bicarbonate",
+        "carbamate"
+      ],
+      "reactions": [
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          -2,
+          1,
+          1
+        ],
+        [
+          -1,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          -1,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          -1,
+          1,
+          0,
+          -2,
+          1,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          -1,
+          1,
+          -1,
+          1,
+          0
+        ],
+        [
+          -1,
+          0,
+          1,
+          0,
+          -1,
+          0,
+          1,
+          0,
+          0
+        ]
+      ],
+      "species": [
+        "MEA",
+        "MEAH_p",
+        "MEACOO_m",
+        "CO2",
+        "HCO3_m",
+        "CO3_2m",
+        "H2O",
+        "H3O_p",
+        "OH_m"
+      ],
+      "verdict": {
+        "full_row_rank": true,
+        "invariant_dimension": 5,
+        "invariants_fixed": true,
+        "monotone": true,
+        "reactions_conserve_groups": true
+      }
+    },
+    "a2c_mea_no_carbamate": {
+      "charges": [
+        0,
+        1,
+        -1,
+        0,
+        -1,
+        -2,
+        0,
+        1,
+        -1
+      ],
+      "content": [
+        [
+          1,
+          1,
+          1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          1,
+          1,
+          1,
+          1,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          1,
+          1,
+          1,
+          1,
+          1
+        ]
+      ],
+      "group_masses": {
+        "deciding_species": [
+          "MEA",
+          "MEAH_p",
+          "MEACOO_m",
+          "HCO3_m"
+        ],
+        "group_masses": [
+          0.061084,
+          0.044009,
+          0.018014999999999996
+        ],
+        "inconsistent": [],
+        "mu": 0.0010074514200909337,
+        "worst_deficit_in_epsilon_scale": 0.4336663891201777
+      },
+      "groups": [
+        "MEA",
+        "CO2",
+        "H2O"
+      ],
+      "masses": [
+        0.061084,
+        0.06209145142009093,
+        0.10408554857990907,
+        0.044009,
+        0.06101654857990906,
+        0.06000909715981813,
+        0.018015,
+        0.019022451420090934,
+        0.017007548579909066
+      ],
+      "reaction_names": [
+        "water",
+        "mea_protonation",
+        "co2_hydration",
+        "bicarbonate"
+      ],
+      "reactions": [
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          -2,
+          1,
+          1
+        ],
+        [
+          -1,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          -1,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          -1,
+          1,
+          0,
+          -2,
+          1,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          -1,
+          1,
+          -1,
+          1,
+          0
+        ]
+      ],
+      "species": [
+        "MEA",
+        "MEAH_p",
+        "MEACOO_m",
+        "CO2",
+        "HCO3_m",
+        "CO3_2m",
+        "H2O",
+        "H3O_p",
+        "OH_m"
+      ],
+      "verdict": {
+        "full_row_rank": true,
+        "invariant_dimension": 5,
+        "invariants_fixed": false,
+        "monotone": true,
+        "reactions_conserve_groups": true
+      }
+    },
+    "a2d_charged_groups": {
+      "charges": [
+        1,
+        1,
+        -1,
+        -2,
+        0
+      ],
+      "content": [
+        [
+          1,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          1,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          1,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          1,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          1
+        ]
+      ],
+      "group_masses": {
+        "deciding_species": [
+          "Na_p",
+          "K_p",
+          "Cl_m",
+          "SO4_2m",
+          "H2O"
+        ],
+        "group_masses": [
+          0.022989220700090934,
+          0.039097751420090934,
+          0.035450548579909064,
+          0.09605709715981813,
+          0.018015
+        ],
+        "inconsistent": [],
+        "mu": 0.0,
+        "worst_deficit_in_epsilon_scale": 0.0
+      },
+      "groups": [
+        "Na_p",
+        "K_p",
+        "Cl_m",
+        "SO4_2m",
+        "H2O"
+      ],
+      "masses": [
+        0.022989220700090934,
+        0.039097751420090934,
+        0.035450548579909064,
+        0.09605709715981813,
+        0.018015
+      ],
+      "reaction_names": [],
+      "reactions": [],
+      "species": [
+        "Na_p",
+        "K_p",
+        "Cl_m",
+        "SO4_2m",
+        "H2O"
+      ],
+      "verdict": {
+        "full_row_rank": true,
+        "invariant_dimension": 0,
+        "invariants_fixed": true,
+        "monotone": true,
+        "reactions_conserve_groups": true
+      }
+    },
+    "a2d_neutral_reciprocal": {
+      "charges": [
+        1,
+        1,
+        -1,
+        -2,
+        0
+      ],
+      "content": [
+        [
+          0,
+          -1,
+          1,
+          0,
+          0
+        ],
+        [
+          0,
+          1,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          1,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          1
+        ]
+      ],
+      "group_masses": {
+        "deciding_species": [
+          "Na_p",
+          "K_p",
+          "Cl_m",
+          "SO4_2m",
+          "H2O"
+        ],
+        "group_masses": [
+          0.05843976928,
+          0.0745483,
+          0.14203553856,
+          0.018015
+        ],
+        "inconsistent": [],
+        "mu": 0.022989220700090934,
+        "worst_deficit_in_epsilon_scale": 0.0
+      },
+      "groups": [
+        "NaCl",
+        "KCl",
+        "Na2SO4",
+        "H2O"
+      ],
+      "masses": [
+        0.022989220700090934,
+        0.039097751420090934,
+        0.035450548579909064,
+        0.09605709715981813,
+        0.018015
+      ],
+      "reaction_names": [],
+      "reactions": [],
+      "species": [
+        "Na_p",
+        "K_p",
+        "Cl_m",
+        "SO4_2m",
+        "H2O"
+      ],
+      "verdict": {
+        "full_row_rank": true,
+        "invariant_dimension": 0,
+        "invariants_fixed": true,
+        "monotone": false,
+        "reactions_conserve_groups": true
+      }
+    },
+    "a6c_ab_lumped": {
+      "charges": [
+        0,
+        0,
+        0
+      ],
+      "content": [
+        [
+          1,
+          1,
+          0
+        ],
+        [
+          0,
+          0,
+          1
+        ]
+      ],
+      "group_masses": {
+        "deciding_species": [
+          "A",
+          "W"
+        ],
+        "group_masses": [
+          0.012011,
+          0.018015
+        ],
+        "inconsistent": [],
+        "mu": 0.0,
+        "worst_deficit_in_epsilon_scale": 0.0
+      },
+      "groups": [
+        "AB",
+        "W"
+      ],
+      "masses": [
+        0.012011,
+        0.012011,
+        0.018015
+      ],
+      "reaction_names": [
+        "A_to_B"
+      ],
+      "reactions": [
+        [
+          -1,
+          1,
+          0
+        ]
+      ],
+      "species": [
+        "A",
+        "B",
+        "W"
+      ],
+      "verdict": {
+        "full_row_rank": true,
+        "invariant_dimension": 1,
+        "invariants_fixed": true,
+        "monotone": true,
+        "reactions_conserve_groups": true
+      }
+    },
+    "a6c_true": {
+      "charges": [
+        0,
+        0,
+        0
+      ],
+      "content": [
+        [
+          1,
+          0,
+          0
+        ],
+        [
+          0,
+          1,
+          0
+        ],
+        [
+          0,
+          0,
+          1
+        ]
+      ],
+      "group_masses": {
+        "deciding_species": [
+          "A",
+          "B",
+          "W"
+        ],
+        "group_masses": [
+          0.012011,
+          0.012011,
+          0.018015
+        ],
+        "inconsistent": [],
+        "mu": 0.0,
+        "worst_deficit_in_epsilon_scale": 0.0
+      },
+      "groups": [
+        "A",
+        "B",
+        "W"
+      ],
+      "masses": [
+        0.012011,
+        0.012011,
+        0.018015
+      ],
+      "reaction_names": [],
+      "reactions": [],
+      "species": [
+        "A",
+        "B",
+        "W"
+      ],
+      "verdict": {
+        "full_row_rank": true,
+        "invariant_dimension": 0,
+        "invariants_fixed": true,
+        "monotone": true,
+        "reactions_conserve_groups": true
+      }
+    },
+    "a6d_mea_no_carbamate_species": {
+      "charges": [
+        0,
+        1,
+        0,
+        -1,
+        -2,
+        0,
+        1,
+        -1
+      ],
+      "content": [
+        [
+          1,
+          1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          1,
+          1,
+          1,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          1,
+          1,
+          1,
+          1,
+          1
+        ]
+      ],
+      "group_masses": {
+        "deciding_species": [
+          "MEA",
+          "MEAH_p",
+          "CO2",
+          "HCO3_m"
+        ],
+        "group_masses": [
+          0.061084,
+          0.044009,
+          0.018014999999999996
+        ],
+        "inconsistent": [],
+        "mu": 0.0010074514200909337,
+        "worst_deficit_in_epsilon_scale": 0.4336663891201777
+      },
+      "groups": [
+        "MEA",
+        "CO2",
+        "H2O"
+      ],
+      "masses": [
+        0.061084,
+        0.06209145142009093,
+        0.044009,
+        0.06101654857990906,
+        0.06000909715981813,
+        0.018015,
+        0.019022451420090934,
+        0.017007548579909066
+      ],
+      "reaction_names": [
+        "water",
+        "mea_protonation",
+        "co2_hydration",
+        "bicarbonate"
+      ],
+      "reactions": [
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          -2,
+          1,
+          1
+        ],
+        [
+          -1,
+          1,
+          0,
+          0,
+          0,
+          1,
+          -1,
+          0
+        ],
+        [
+          0,
+          0,
+          -1,
+          1,
+          0,
+          -2,
+          1,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          -1,
+          1,
+          -1,
+          1,
+          0
+        ]
+      ],
+      "species": [
+        "MEA",
+        "MEAH_p",
+        "CO2",
+        "HCO3_m",
+        "CO3_2m",
+        "H2O",
+        "H3O_p",
+        "OH_m"
+      ],
+      "verdict": {
+        "full_row_rank": true,
+        "invariant_dimension": 4,
+        "invariants_fixed": true,
+        "monotone": true,
+        "reactions_conserve_groups": true
+      }
+    },
+    "a6e_nacl_true": {
+      "charges": [
+        1,
+        -1,
+        0
+      ],
+      "content": [
+        [
+          1,
+          0,
+          0
+        ],
+        [
+          0,
+          1,
+          0
+        ],
+        [
+          0,
+          0,
+          1
+        ]
+      ],
+      "group_masses": {
+        "deciding_species": [
+          "Na_p",
+          "Cl_m",
+          "H2O"
+        ],
+        "group_masses": [
+          0.022989220700090934,
+          0.035450548579909064,
+          0.018015
+        ],
+        "inconsistent": [],
+        "mu": 0.0,
+        "worst_deficit_in_epsilon_scale": 0.0
+      },
+      "groups": [
+        "Na_p",
+        "Cl_m",
+        "H2O"
+      ],
+      "masses": [
+        0.022989220700090934,
+        0.035450548579909064,
+        0.018015
+      ],
+      "reaction_names": [],
+      "reactions": [],
+      "species": [
+        "Na_p",
+        "Cl_m",
+        "H2O"
+      ],
+      "verdict": {
+        "full_row_rank": true,
+        "invariant_dimension": 0,
+        "invariants_fixed": true,
+        "monotone": true,
+        "reactions_conserve_groups": true
+      }
+    }
+  },
+  "boundaries": {
+    "a": {
+      "consumer": "a2a_nacl_apparent",
+      "former_rule_admitted": false,
+      "new_rule": {
+        "admitted": true,
+        "conversion": [
+          [
+            1,
+            0
+          ],
+          [
+            0,
+            1
+          ]
+        ],
+        "limitations": [
+          [
+            "solid_candidate_dropped",
+            "SOLID(NaCl)"
+          ]
+        ],
+        "projection": [
+          [
+            "NaCl",
+            [
+              1,
+              1,
+              0
+            ]
+          ]
+        ]
+      },
+      "producer": "a2b_nacl_solid",
+      "solid_candidates": {
+        "NaCl": "SOLID(NaCl)"
+      }
+    },
+    "b": {
+      "consumer": "a2b_nacl_solid",
+      "former_rule_admitted": true,
+      "new_rule": {
+        "admitted": true,
+        "conversion": [
+          [
+            1,
+            0
+          ],
+          [
+            0,
+            1
+          ]
+        ],
+        "limitations": [],
+        "projection": []
+      },
+      "producer": "a2a_nacl_apparent",
+      "solid_candidates": {}
+    },
+    "c": {
+      "consumer": "a6c_true",
+      "former_rule_admitted": false,
+      "new_rule": {
+        "admitted": false,
+        "projection": [],
+        "reason": "no C solves C A = A′ Π"
+      },
+      "producer": "a6c_ab_lumped",
+      "solid_candidates": {}
+    },
+    "c_reverse": {
+      "consumer": "a6c_ab_lumped",
+      "former_rule_admitted": true,
+      "new_rule": {
+        "admitted": true,
+        "conversion": [
+          [
+            1,
+            1,
+            0
+          ],
+          [
+            0,
+            0,
+            1
+          ]
+        ],
+        "limitations": [],
+        "projection": []
+      },
+      "producer": "a6c_true",
+      "solid_candidates": {}
+    },
+    "d": {
+      "consumer": "a6d_mea_no_carbamate_species",
+      "former_rule_admitted": false,
+      "new_rule": {
+        "admitted": true,
+        "conversion": [
+          [
+            1,
+            0,
+            0
+          ],
+          [
+            0,
+            1,
+            0
+          ],
+          [
+            0,
+            0,
+            1
+          ]
+        ],
+        "limitations": [
+          [
+            "species_dropped",
+            "MEACOO_m"
+          ]
+        ],
+        "projection": [
+          [
+            "MEACOO_m",
+            [
+              1,
+              0,
+              0,
+              1,
+              0,
+              -1,
+              0,
+              0
+            ]
+          ]
+        ]
+      },
+      "producer": "a2c_mea",
+      "solid_candidates": {}
+    },
+    "e": {
+      "consumer": "a2a_nacl_apparent",
+      "former_rule_admitted": true,
+      "new_rule": {
+        "admitted": true,
+        "conversion": [
+          [
+            1,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            1
+          ]
+        ],
+        "limitations": [],
+        "projection": []
+      },
+      "producer": "a6e_nacl_true",
+      "solid_candidates": {}
+    }
+  },
+  "claims": [
+    "Q3.A2 a2a_nacl_apparent: (i), (ii), (iii), dim = (True, True, True, 0)",
+    "a2a_nacl_apparent: A has full row rank (Q3.R7)",
+    "a2a_nacl_apparent: every species meets Q3.R7's 4ε bound",
+    "Q3.A2 a2b_nacl_solid: (i), (ii), (iii), dim = (True, True, True, 1)",
+    "a2b_nacl_solid: A has full row rank (Q3.R7)",
+    "a2b_nacl_solid: every species meets Q3.R7's 4ε bound",
+    "Q3.A2 a2b_nacl_solid_no_dissolution: (i), (ii), (iii), dim = (True, False, True, 1)",
+    "a2b_nacl_solid_no_dissolution: A has full row rank (Q3.R7)",
+    "a2b_nacl_solid_no_dissolution: every species meets Q3.R7's 4ε bound",
+    "Q3.A2 a2c_mea: (i), (ii), (iii), dim = (True, True, True, 5)",
+    "a2c_mea: A has full row rank (Q3.R7)",
+    "a2c_mea: every species meets Q3.R7's 4ε bound",
+    "Q3.A2 a2c_mea_no_carbamate: (i), (ii), (iii), dim = (True, False, True, 5)",
+    "a2c_mea_no_carbamate: A has full row rank (Q3.R7)",
+    "a2c_mea_no_carbamate: every species meets Q3.R7's 4ε bound",
+    "Q3.A2 a2d_neutral_reciprocal: (i), (ii), (iii), dim = (True, True, False, 0)",
+    "a2d_neutral_reciprocal: A has full row rank (Q3.R7)",
+    "a2d_neutral_reciprocal: every species meets Q3.R7's 4ε bound",
+    "Q3.A2 a2d_charged_groups: (i), (ii), (iii), dim = (True, True, True, 0)",
+    "a2d_charged_groups: A has full row rank (Q3.R7)",
+    "a2d_charged_groups: every species meets Q3.R7's 4ε bound",
+    "Q3.A6 basis a6c_ab_lumped is valid on its own (Q3.R1)",
+    "a6c_ab_lumped: A has full row rank (Q3.R7)",
+    "a6c_ab_lumped: every species meets Q3.R7's 4ε bound",
+    "Q3.A6 basis a6c_true is valid on its own (Q3.R1)",
+    "a6c_true: A has full row rank (Q3.R7)",
+    "a6c_true: every species meets Q3.R7's 4ε bound",
+    "Q3.A6 basis a6d_mea_no_carbamate_species is valid on its own (Q3.R1)",
+    "a6d_mea_no_carbamate_species: A has full row rank (Q3.R7)",
+    "a6d_mea_no_carbamate_species: every species meets Q3.R7's 4ε bound",
+    "Q3.A6 basis a6e_nacl_true is valid on its own (Q3.R1)",
+    "a6e_nacl_true: A has full row rank (Q3.R7)",
+    "a6e_nacl_true: every species meets Q3.R7's 4ε bound",
+    "Q3 argument: M_NaCl = M_Na+ + M_Cl-, μ = -M_Cl- (each rounded once)",
+    "Q3.A2 (b) with Na+ off by the electron mass: NaCl reported",
+    "Q3.A3's state is electroneutral",
+    "Q3.A3: the neutral reciprocal declaration gives b_NaCl < 0",
+    "Q3.A3: the charged groups give b >= 0",
+    "Π is stated for exactly the dropped species ['NaCl']",
+    "Q3.A6 (a): the new rule admits",
+    "Q3.A6 (a): C = [[1, 0], [0, 1]]",
+    "Q3.A6 (a): limitations [['solid_candidate_dropped', 'SOLID(NaCl)']]",
+    "Q3.A6 (a) control: the former rule refuses",
+    "Π is stated for exactly the dropped species []",
+    "Q3.A6 (b): the new rule admits",
+    "Q3.A6 (b): C = [[1, 0], [0, 1]]",
+    "Q3.A6 (b): limitations []",
+    "Q3.A6 (b) control: the former rule admits",
+    "Π is stated for exactly the dropped species []",
+    "Q3.A6 (c): the new rule refuses",
+    "Q3.A6 (c) control: the former rule refuses",
+    "Π is stated for exactly the dropped species []",
+    "Q3.A6 (c_reverse): the new rule admits",
+    "Q3.A6 (c_reverse): C = [[1, 1, 0], [0, 0, 1]]",
+    "Q3.A6 (c_reverse): limitations []",
+    "Q3.A6 (c_reverse) control: the former rule admits",
+    "Π is stated for exactly the dropped species ['MEACOO_m']",
+    "Q3.A6 (d): the new rule admits",
+    "Q3.A6 (d): C = [[1, 0, 0], [0, 1, 0], [0, 0, 1]]",
+    "Q3.A6 (d): limitations [['species_dropped', 'MEACOO_m']]",
+    "Q3.A6 (d) control: the former rule refuses",
+    "Π is stated for exactly the dropped species []",
+    "Q3.A6 (e): the new rule admits",
+    "Q3.A6 (e): C = [[1, 0, 0], [0, 0, 1]]",
+    "Q3.A6 (e): limitations []",
+    "Q3.A6 (e) control: the former rule admits",
+    "control: the rules agree on (b), (c), (e) and differ on (a), (d)"
+  ],
+  "description": "Reference for E-F2-7 (ADR 0062): foundation rulings Q3.A1-A3 and Q3.A6, in exact arithmetic.",
+  "electron_mass_control": {
+    "group_masses": {
+      "deciding_species": [
+        "Na_p",
+        "Cl_m",
+        "H2O"
+      ],
+      "group_masses": [
+        0.058440317859909066,
+        0.018015
+      ],
+      "inconsistent": [
+        "NaCl"
+      ],
+      "mu": -0.035450548579909064,
+      "worst_deficit_in_epsilon_scale": 21137768926.41374
+    },
+    "masses": [
+      0.02298976928,
+      0.035450548579909064,
+      0.05843976928,
+      0.018015
+    ]
+  },
+  "negative_decomposition": {
+    "charged_amounts": [
+      "1/10",
+      "2",
+      "1/10",
+      "1",
+      "10"
+    ],
+    "neutral_amounts": [
+      "-19/10",
+      "2",
+      "1",
+      "10"
+    ],
+    "neutral_negative_groups": [
+      "NaCl"
+    ],
+    "state": [
+      "1/10",
+      "2",
+      "1/10",
+      "1",
+      "10"
+    ]
+  }
+}

@@ -1,0 +1,5 @@
+# D11: in 0.5 and 0.6 `property_methods` admits one legacy provider and no overrides.
+base: crystallizer
+changes:
+  - {op: replace, path: /property_methods/overrides, value: [{instance: cryst, method_set: electrolyte}]}
+errors: [{code: construct_unavailable, params: {construct: property_methods, foundation: F4}}]

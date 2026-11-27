@@ -1,0 +1,5 @@
+# ADR 0062 D3: a `nonconventional` substream holds only `kg`-basis components.
+base: crystallizer
+changes:
+  - {op: add, path: /materials/definitions/0/substreams/-, value: {id: nc, kind: nonconventional, components: [sucrose], conserved_basis: {preset: "true"}, grids: [], attributes: []}}
+errors: [{code: amount_basis_mismatch, params: {component: sucrose}}]

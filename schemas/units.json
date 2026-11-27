@@ -90,6 +90,90 @@
       "si_unit": "m3/mol",
       "lower_bound_exclusive": 0.0,
       "notes": "ADDED IN P01 BEYOND THE ADR 0001 D1.3 ENUMERATION, pending Fable's confirmation (docs/progress.md, 'Opus -> Fable, P01 handoff'). The SYN-001 ComponentRecord parameter v_i cannot be expressed with a registered kind otherwise. Dimension-only, no new arithmetic rule."
+    },
+    "specific_enthalpy": {
+      "dimension": [2, 0, -2, 0, 0, 0, 0],
+      "si_unit": "J/kg",
+      "lower_bound_exclusive": null,
+      "notes": "Enthalpy per kg (ĥ); h of a `kg`-basis component (ADR 0062 D1, Q7.A4)."
+    },
+    "specific_entropy": {
+      "dimension": [2, 0, -2, -1, 0, 0, 0],
+      "si_unit": "J/(kg K)",
+      "lower_bound_exclusive": null,
+      "notes": "Entropy per kg (ŝ); s of a `kg`-basis component (ADR 0062 D1)."
+    },
+    "specific_volume": {
+      "dimension": [3, -1, 0, 0, 0, 0, 0],
+      "si_unit": "m3/kg",
+      "lower_bound_exclusive": null,
+      "notes": "Volume per kg (v̂): the Q4.R3 FLUID key and TV specifications (ADR 0062 D1)."
+    },
+    "specific_heat_capacity": {
+      "dimension": [2, 0, -2, -1, 0, 0, 0],
+      "si_unit": "J/(kg K)",
+      "lower_bound_exclusive": null,
+      "notes": "cp of a `kg`-basis component (ADR 0062 D1, ADR 0063 D1). Shares a dimension with specific_entropy and is a distinct kind."
+    },
+    "molar_entropy": {
+      "dimension": [2, 1, -2, -1, -1, 0, 0],
+      "si_unit": "J/(mol K)",
+      "lower_bound_exclusive": null,
+      "notes": "s and s° per mol (ADR 0062 D1; ADR 0061 risk 6). Shares a dimension with molar_heat_capacity and is a distinct kind."
+    },
+    "segment_molar_flow": {
+      "dimension": [0, 0, -1, 0, 1, 0, 0],
+      "si_unit": "mol/s",
+      "lower_bound_exclusive": null,
+      "notes": "Amounts of a `segment_mol`-basis component (ADR 0062 D1, Q7.R3). Shares a dimension with molar_flow and is a distinct kind."
+    },
+    "segment_molar_mass": {
+      "dimension": [0, 1, 0, 0, -1, 0, 0],
+      "si_unit": "kg/mol",
+      "lower_bound_exclusive": 0.0,
+      "notes": "M per segment type (ADR 0062 D1, Q7.R2): the `molar_mass` of a `segment_mol` record. Strictly positive, as molar_mass."
+    },
+    "segment_molar_enthalpy": {
+      "dimension": [2, 1, -2, 0, -1, 0, 0],
+      "si_unit": "J/mol",
+      "lower_bound_exclusive": null,
+      "notes": "h and Δf h° per segment-mol (ADR 0062 D1; ADR 0061 risk 4)."
+    },
+    "segment_molar_entropy": {
+      "dimension": [2, 1, -2, -1, -1, 0, 0],
+      "si_unit": "J/(mol K)",
+      "lower_bound_exclusive": null,
+      "notes": "s and s° per segment-mol (ADR 0062 D1)."
+    },
+    "segment_molar_heat_capacity": {
+      "dimension": [2, 1, -2, -1, -1, 0, 0],
+      "si_unit": "J/(mol K)",
+      "lower_bound_exclusive": null,
+      "notes": "cp per segment-mol (ADR 0062 D1, ADR 0063 D1)."
+    },
+    "segment_molar_volume": {
+      "dimension": [3, 0, 0, 0, -1, 0, 0],
+      "si_unit": "m3/mol",
+      "lower_bound_exclusive": null,
+      "notes": "v per segment-mol (ADR 0062 D1, ADR 0063 D1)."
+    },
+    "enthalpy_flow": {
+      "dimension": [2, 1, -3, 0, 0, 0, 0],
+      "si_unit": "W",
+      "lower_bound_exclusive": null,
+      "notes": "Ḣ (ADR 0062 D1). Shares a dimension with heat_rate and power and is distinct from both."
+    },
+    "mass_fraction": {
+      "dimension": [0, 0, 0, 0, 0, 0, 0],
+      "si_unit": "1",
+      "lower_bound_exclusive": null,
+      "notes": "w[c], the composition common to every amount basis (ADR 0062 D1, Q7.R3). Defined only where the mass flow is positive."
+    },
+    "number_flow": {
+      "dimension": [0, 0, -1, 0, 0, 0, 0],
+      "si_unit": "1/s",
+      "lower_bound_exclusive": null,
+      "notes": "Particle numbers, counts per class (ADR 0062 D1)."
     }
   }
 }

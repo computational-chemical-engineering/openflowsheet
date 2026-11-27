@@ -191,6 +191,10 @@ def measure_facts(root: Path, legacy: Path | None, core: Path | None) -> Facts:
     records = getattr(registry_builtin, "RECORDS_TABLE", None)
     if records is not None:
         held["records"] = records
+    # F2 (ADR 0062): likewise material.json, the connection definitions and phase families.
+    material = getattr(registry_builtin, "MATERIAL_TABLE", None)
+    if material is not None:
+        held["material"] = material
     implementation: dict[str, list[str]] = {}
     for name, path in held.items():
         for row in json.loads(Path(path).read_text(encoding="utf-8")):

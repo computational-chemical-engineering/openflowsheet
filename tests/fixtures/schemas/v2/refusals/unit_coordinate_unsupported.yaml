@@ -1,0 +1,5 @@
+# D11: `h_mass` admits `std.*` units only.
+base: crystallizer
+changes:
+  - {op: replace, path: /instances/3/model/id, value: legacy.crystallizer}
+errors: [{code: unit_coordinate_unsupported, params: {instance: cryst, coordinate: h_mass}}]

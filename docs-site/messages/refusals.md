@@ -638,6 +638,29 @@ The component H2O breaks the amount-basis rule molar_mass_absent.
   Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#amount_basis_invalid
 ```
 
+<a id="amount_basis_mismatch"></a>
+
+## `amount_basis_mismatch`: A component's amount basis does not fit where it is used
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+- **Summary:** The amount basis of component &lt;component&gt; does not fit its use.
+- **Why:** A 'nonconventional' substream holds only components counted in kilograms (amount basis 'kg'), and a specification of a molar kind cannot target an amount counted in kilograms (Q7.R5).
+- **Do:** Use a component whose amount basis fits the substream, or specify &lt;component&gt; by a mass kind.
+- **Parameters:** `component` (text)
+- **See also:** [`quantity_kind_mismatch`](#quantity_kind_mismatch)
+
+Example:
+
+```text
+The amount basis of component coal does not fit its use.
+  Why:     A 'nonconventional' substream holds only components counted in kilograms (amount basis 'kg'), and a specification of a molar kind cannot target an amount counted in kilograms (Q7.R5).
+  Do:      Use a component whose amount basis fits the substream, or specify coal by a mass kind.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    amount_basis_mismatch (openflowsheet explain amount_basis_mismatch)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#amount_basis_mismatch
+```
+
 <a id="amount_basis_unsupported"></a>
 
 ## `amount_basis_unsupported`: Records on this amount basis cannot be stored yet
@@ -681,6 +704,75 @@ The anchor phase s:ice-Ih of component H2O is not allowed.
   Kind:    Input problem: something in the flowsheet or the request needs to change.
   Code:    anchor_phase_invalid (openflowsheet explain anchor_phase_invalid)
   Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#anchor_phase_invalid
+```
+
+<a id="attribute_grid_mismatch"></a>
+
+## `attribute_grid_mismatch`: An attribute or a port does not match its grid
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+- **Summary:** The grids do not match: attribute &lt;kind&gt; of substream &lt;substream&gt; in definition &lt;definition&gt;: the definition of connection &lt;connection&gt; at port &lt;port&gt;.
+- **Why:** A classed attribute needs the grid of its own substream, and an unclassed attribute takes none. A generic transport unit takes one definition on all its material ports, so two definitions that differ only in the edges of a grid cannot meet at one unit.
+- **Do:** Name a grid of the substream for each classed attribute and none for the others, or give all the material ports of the unit the same grid edges.
+- **Parameters:** `definition` (text, optional), `substream` (text, optional), `kind` (text, optional), `connection` (text, optional), `port` (text, optional)
+- **See also:** [`definition_incompatible`](#definition_incompatible), [`attribute_redundant`](#attribute_redundant)
+
+Example:
+
+```text
+The grids do not match: attribute psd of substream solid in definition slurry.
+  Why:     A classed attribute needs the grid of its own substream, and an unclassed attribute takes none. A generic transport unit takes one definition on all its material ports, so two definitions that differ only in the edges of a grid cannot meet at one unit.
+  Do:      Name a grid of the substream for each classed attribute and none for the others, or give all the material ports of the unit the same grid edges.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    attribute_grid_mismatch (openflowsheet explain attribute_grid_mismatch)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#attribute_grid_mismatch
+```
+
+<a id="attribute_on_zero_parent"></a>
+
+## `attribute_on_zero_parent`: An attribute is nonzero where its parent amount is zero
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+- **Summary:** Attribute &lt;kind&gt; of substream &lt;substream&gt; on connection &lt;connection&gt; has a nonzero value, but the amount it belongs to is zero.
+- **Why:** An attribute describes the material of its substream (a distribution over the amount, for example). Where that amount is zero there is no material to describe, so a nonzero attribute value is not a state.
+- **Do:** Set attribute &lt;kind&gt; to zero on &lt;connection&gt;, or give the substream a nonzero amount.
+- **Parameters:** `connection` (text), `substream` (text), `kind` (text)
+- **See also:** [`attribute_redundant`](#attribute_redundant)
+
+Example:
+
+```text
+Attribute psd of substream solid on connection C1 has a nonzero value, but the amount it belongs to is zero.
+  Why:     An attribute describes the material of its substream (a distribution over the amount, for example). Where that amount is zero there is no material to describe, so a nonzero attribute value is not a state.
+  Do:      Set attribute psd to zero on C1, or give the substream a nonzero amount.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    attribute_on_zero_parent (openflowsheet explain attribute_on_zero_parent)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#attribute_on_zero_parent
+```
+
+<a id="attribute_redundant"></a>
+
+## `attribute_redundant`: An attribute is declared twice
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+- **Summary:** Attribute &lt;kind&gt; of substream &lt;substream&gt; in definition &lt;definition&gt; is declared more than once, or names a component that another partition attribute already covers.
+- **Why:** A substream carries each attribute kind once for the same components, and a component belongs to at most one partition attribute. A repeat would carry the same distribution twice.
+- **Do:** Remove the repeated attribute &lt;kind&gt; from &lt;substream&gt;, or take the component out of one of the partition attributes.
+- **Parameters:** `definition` (text), `substream` (text), `kind` (text)
+- **See also:** [`attribute_grid_mismatch`](#attribute_grid_mismatch), [`attribute_on_zero_parent`](#attribute_on_zero_parent)
+
+Example:
+
+```text
+Attribute psd of substream solid in definition slurry is declared more than once, or names a component that another partition attribute already covers.
+  Why:     A substream carries each attribute kind once for the same components, and a component belongs to at most one partition attribute. A repeat would carry the same distribution twice.
+  Do:      Remove the repeated attribute psd from solid, or take the component out of one of the partition attributes.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    attribute_redundant (openflowsheet explain attribute_redundant)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#attribute_redundant
 ```
 
 <a id="basis_mismatch"></a>
@@ -1003,6 +1095,30 @@ The key C2H6O matches more than one stored record.
 
 - **Summary:** Refused: connection kind unsupported.
 
+<a id="construct_unavailable"></a>
+
+## `construct_unavailable`: A construct of the document is not available yet
+
+**Kind:** Not supported in this version: a limitation of OpenFlowsheet, not an error in your flowsheet.
+
+- **Summary:** &lt;construct&gt; is not available in this version; it needs foundation &lt;foundation&gt;.
+- **Why:** The document format names some constructs (a convention other than the legacy provider's native one, property methods beyond that provider, a derived target, an energy or signal connection, …) that a later foundation implements. This version refuses them rather than ignoring them.
+- **Do:** Remove &lt;construct&gt; from the document, or wait for the version that provides foundation &lt;foundation&gt;.
+- **Parameters:** `construct` (text), `foundation` (text)
+- **Not supported:** missing capability: the construct named, which foundation {foundation!raw} provides
+- **See also:** [`revision_unsupported`](api-errors.md#revision_unsupported)
+
+Example:
+
+```text
+property_methods is not available in this version; it needs foundation F4.
+  Why:     The document format names some constructs (a convention other than the legacy provider's native one, property methods beyond that provider, a derived target, an energy or signal connection, …) that a later foundation implements. This version refuses them rather than ignoring them.
+  Do:      Remove property_methods from the document, or wait for the version that provides foundation F4.
+  Kind:    Not supported in this version: a limitation of OpenFlowsheet, not an error in your flowsheet.
+  Code:    construct_unavailable (openflowsheet explain construct_unavailable)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#construct_unavailable
+```
+
 <a id="continuation_level"></a>
 
 ## `continuation_level`: Continuation level
@@ -1088,6 +1204,29 @@ The record 0f4c2e6a9b1d3c5e7f80a2b4c6d8e0f1a3b5c7d9e1f3a5b7c9d1e3f5a7b9c1d3 is n
 *No plain-language explanation is written yet; the summary is the technical one.*
 
 - **Summary:** Refused: declaration mismatch.
+
+<a id="definition_incompatible"></a>
+
+## `definition_incompatible`: A connection's definition does not fit the port
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+- **Summary:** The definition of connection &lt;connection&gt; is not one that port &lt;port&gt; accepts.
+- **Why:** A port lists the definitions it accepts, and a generic transport unit takes one definition on all its material ports. A connection whose definition is not among them cannot join the port.
+- **Do:** Give connection &lt;connection&gt; a definition that port &lt;port&gt; accepts, or use the same definition on all the material ports of the unit.
+- **Parameters:** `connection` (text), `port` (text)
+- **See also:** [`attribute_grid_mismatch`](#attribute_grid_mismatch), [`signal_kind_mismatch`](#signal_kind_mismatch)
+
+Example:
+
+```text
+The definition of connection C1 is not one that port inlet accepts.
+  Why:     A port lists the definitions it accepts, and a generic transport unit takes one definition on all its material ports. A connection whose definition is not among them cannot join the port.
+  Do:      Give connection C1 a definition that port inlet accepts, or use the same definition on all the material ports of the unit.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    definition_incompatible (openflowsheet explain definition_incompatible)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#definition_incompatible
+```
 
 <a id="dependency_missing"></a>
 
@@ -1409,6 +1548,29 @@ The property_method pr-lib-v1 is registered and listed, but this version cannot 
 
 - **Summary:** Refused: failure bundle unmapped.
 
+<a id="feed_not_electroneutral"></a>
+
+## `feed_not_electroneutral`: A feed is not electroneutral
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+- **Summary:** The feed of substream &lt;substream&gt; on connection &lt;connection&gt; is not electroneutral.
+- **Why:** When the species of a substream carry charge, a feed must satisfy the charge balance: the charge-weighted sum of its group amounts must vanish to within a relative tolerance of 1e-12. A feed that does not would put net charge into the flowsheet.
+- **Do:** Adjust the feed of &lt;connection&gt; so that the positive and negative charges balance, for example by adding the counter-ion.
+- **Parameters:** `connection` (text), `substream` (text)
+- **See also:** [`group_amount_negative`](#group_amount_negative)
+
+Example:
+
+```text
+The feed of substream liquid on connection C1 is not electroneutral.
+  Why:     When the species of a substream carry charge, a feed must satisfy the charge balance: the charge-weighted sum of its group amounts must vanish to within a relative tolerance of 1e-12. A feed that does not would put net charge into the flowsheet.
+  Do:      Adjust the feed of C1 so that the positive and negative charges balance, for example by adding the counter-ion.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    feed_not_electroneutral (openflowsheet explain feed_not_electroneutral)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#feed_not_electroneutral
+```
+
 <a id="flash_failed"></a>
 
 ## `flash_failed`: The phase split of a stream could not be computed
@@ -1474,6 +1636,29 @@ The grant asks for more than this credential holds.
   Kind:    Input problem: something in the flowsheet or the request needs to change.
   Code:    grant_exceeds_caller, in forbidden (openflowsheet explain grant_exceeds_caller)
   Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#grant_exceeds_caller
+```
+
+<a id="group_amount_negative"></a>
+
+## `group_amount_negative`: A group amount is negative
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+- **Summary:** The amount of group &lt;group&gt; of substream &lt;substream&gt; on connection &lt;connection&gt; is negative.
+- **Why:** Under a group basis the state carries one amount per group, and an amount below zero describes no material. It is refused, never clipped to zero.
+- **Do:** Give the feed of &lt;connection&gt; a non-negative amount for group &lt;group&gt;, or check the specifications that set it.
+- **Parameters:** `connection` (text), `substream` (text), `group` (text)
+- **See also:** [`feed_not_electroneutral`](#feed_not_electroneutral)
+
+Example:
+
+```text
+The amount of group TOTAL_C of substream liquid on connection C1 is negative.
+  Why:     Under a group basis the state carries one amount per group, and an amount below zero describes no material. It is refused, never clipped to zero.
+  Do:      Give the feed of C1 a non-negative amount for group TOTAL_C, or check the specifications that set it.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    group_amount_negative (openflowsheet explain group_amount_negative)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#group_amount_negative
 ```
 
 <a id="homotopy_stalled"></a>
@@ -2088,6 +2273,29 @@ The solve stopped: no step along its search direction reduced the error.
   Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#out_of_domain
 ```
 
+<a id="parameter_binding_conflict"></a>
+
+## `parameter_binding_conflict`: A parameter is bound more than once
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+- **Summary:** Target &lt;target&gt; is bound more than once.
+- **Why:** A parameter or specification takes its value from one source. Two bindings (a specification and a signal, or two signals) would set it twice.
+- **Do:** Remove all but one binding of &lt;target&gt;.
+- **Parameters:** `target` (text)
+- **See also:** [`parameter_not_manipulable`](#parameter_not_manipulable)
+
+Example:
+
+```text
+Target H1.duty is bound more than once.
+  Why:     A parameter or specification takes its value from one source. Two bindings (a specification and a signal, or two signals) would set it twice.
+  Do:      Remove all but one binding of H1.duty.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    parameter_binding_conflict (openflowsheet explain parameter_binding_conflict)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#parameter_binding_conflict
+```
+
 <a id="parameter_kind_unsupported"></a>
 
 ## `parameter_kind_unsupported`: Parameter kind unsupported
@@ -2107,6 +2315,29 @@ The solve stopped: no step along its search direction reduced the error.
 *No plain-language explanation is written yet; the summary is the technical one.*
 
 - **Summary:** Refused: parameter missing.
+
+<a id="parameter_not_manipulable"></a>
+
+## `parameter_not_manipulable`: A parameter is not one a signal may set
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+- **Summary:** Parameter &lt;parameter&gt; of unit &lt;instance&gt; cannot be set by a signal.
+- **Why:** A signal may drive only a parameter that the unit's model declares manipulable. Other parameters are fixed in the document.
+- **Do:** Bind the signal to a manipulable parameter of &lt;instance&gt;, or fix &lt;parameter&gt; in the document.
+- **Parameters:** `instance` (text), `parameter` (text)
+- **See also:** [`parameter_binding_conflict`](#parameter_binding_conflict), [`signal_kind_mismatch`](#signal_kind_mismatch)
+
+Example:
+
+```text
+Parameter duty of unit H1 cannot be set by a signal.
+  Why:     A signal may drive only a parameter that the unit's model declares manipulable. Other parameters are fixed in the document.
+  Do:      Bind the signal to a manipulable parameter of H1, or fix duty in the document.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    parameter_not_manipulable (openflowsheet explain parameter_not_manipulable)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#parameter_not_manipulable
+```
 
 <a id="parameter_quantity_invalid"></a>
 
@@ -2683,6 +2914,29 @@ The provenance of the value at /molar_mass has no origin, or names a source the 
 
 - **Summary:** Refused: ptc mapping invalid.
 
+<a id="quantity_kind_mismatch"></a>
+
+## `quantity_kind_mismatch`: A specification's kind does not match its target
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+- **Summary:** The kind of specification &lt;specification&gt; does not match the quantity kind of its target.
+- **Why:** A specification fixes a value of the kind its target has (a temperature for a temperature, a molar flow for a molar flow). Another kind would fix the target in the wrong units.
+- **Do:** Change the kind of &lt;specification&gt; to the target's, or point it at a target of the kind it states.
+- **Parameters:** `specification` (text)
+- **See also:** [`amount_basis_mismatch`](#amount_basis_mismatch), [`signal_kind_mismatch`](#signal_kind_mismatch)
+
+Example:
+
+```text
+The kind of specification SP1 does not match the quantity kind of its target.
+  Why:     A specification fixes a value of the kind its target has (a temperature for a temperature, a molar flow for a molar flow). Another kind would fix the target in the wrong units.
+  Do:      Change the kind of SP1 to the target's, or point it at a target of the kind it states.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    quantity_kind_mismatch (openflowsheet explain quantity_kind_mismatch)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#quantity_kind_mismatch
+```
+
 <a id="rate_not_finite"></a>
 
 ## `rate_not_finite`: Rate not finite
@@ -3025,6 +3279,29 @@ The file acme/units/mixer.py of extension acme.slurry-mixer cannot be read, so i
   Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#self_hash_unavailable
 ```
 
+<a id="signal_kind_mismatch"></a>
+
+## `signal_kind_mismatch`: A signal's quantity kind does not match its endpoints
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+- **Summary:** The quantity kind of signal &lt;connection&gt; does not match the quantity at one of its ends.
+- **Why:** A signal carries one quantity kind. Its source (a port or a probe), its sink (a parameter or a specification) and its own declared kind must all agree, or the value would be read in the wrong units.
+- **Do:** Change the quantity kind of &lt;connection&gt;, or connect it to a probe, parameter or specification of the same kind.
+- **Parameters:** `connection` (text)
+- **See also:** [`parameter_not_manipulable`](#parameter_not_manipulable), [`quantity_kind_mismatch`](#quantity_kind_mismatch)
+
+Example:
+
+```text
+The quantity kind of signal S1 does not match the quantity at one of its ends.
+  Why:     A signal carries one quantity kind. Its source (a port or a probe), its sink (a parameter or a specification) and its own declared kind must all agree, or the value would be read in the wrong units.
+  Do:      Change the quantity kind of S1, or connect it to a probe, parameter or specification of the same kind.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    signal_kind_mismatch (openflowsheet explain signal_kind_mismatch)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#signal_kind_mismatch
+```
+
 <a id="single_phase_admissible"></a>
 
 ## `single_phase_admissible`: Single phase admissible
@@ -3034,6 +3311,29 @@ The file acme/units/mixer.py of extension acme.slurry-mixer cannot be read, so i
 *No plain-language explanation is written yet; the summary is the technical one.*
 
 - **Summary:** Refused: single phase admissible.
+
+<a id="solid_role_conflict"></a>
+
+## `solid_role_conflict`: A component is given a role that conflicts with its solid role
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+- **Summary:** Component &lt;component&gt; is placed in a substream whose role conflicts with the role it already has.
+- **Why:** A component sits in one substream, or in one 'mixed' and one 'solid' substream (dissolved and particulate). A component the property method confines to a phase model, or forms as an equilibrium solid, is carried in 'mixed', where equilibrium decides its phase: it cannot also sit in a 'solid' substream, and it takes no attribute.
+- **Do:** Place &lt;component&gt; in one substream (or one 'mixed' plus one 'solid' if it is not confined), and remove its attributes in 'mixed'.
+- **Parameters:** `component` (text)
+- **See also:** [`species_basis_incompatible`](#species_basis_incompatible)
+
+Example:
+
+```text
+Component CaCO3 is placed in a substream whose role conflicts with the role it already has.
+  Why:     A component sits in one substream, or in one 'mixed' and one 'solid' substream (dissolved and particulate). A component the property method confines to a phase model, or forms as an equilibrium solid, is carried in 'mixed', where equilibrium decides its phase: it cannot also sit in a 'solid' substream, and it takes no attribute.
+  Do:      Place CaCO3 in one substream (or one 'mixed' plus one 'solid' if it is not confined), and remove its attributes in 'mixed'.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    solid_role_conflict (openflowsheet explain solid_role_conflict)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#solid_role_conflict
+```
 
 <a id="solve_policy_id_invalid"></a>
 
@@ -3132,6 +3432,52 @@ This project has registered no solve policy.
   Kind:    Input problem: something in the flowsheet or the request needs to change.
   Code:    solve_policy_not_found, in not_found (openflowsheet explain solve_policy_not_found)
   Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#solve_policy_not_found
+```
+
+<a id="species_basis_incompatible"></a>
+
+## `species_basis_incompatible`: The groups of a conserved basis do not fit the species and reactions
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+- **Summary:** The conserved basis of substream &lt;substream&gt; in definition &lt;definition&gt; does not fit its species and fast reactions.
+- **Why:** The groups must count what the fast reactions leave unchanged: every fast reaction must conserve every group, and the groups together with the reactions must fix every invariant of the species (the charge among them). A basis that fails either test cannot represent the substream.
+- **Do:** Check the group contents against the species and the fast reaction set of &lt;substream&gt;: each reaction must leave every group amount unchanged, and the groups must fix every quantity the fast reactions conserve (elements and charge among them).
+- **Parameters:** `definition` (text), `substream` (text)
+- **See also:** [`species_basis_redundant`](#species_basis_redundant), [`species_basis_not_monotone`](notices.md#species_basis_not_monotone)
+
+Example:
+
+```text
+The conserved basis of substream liquid in definition aqueous does not fit its species and fast reactions.
+  Why:     The groups must count what the fast reactions leave unchanged: every fast reaction must conserve every group, and the groups together with the reactions must fix every invariant of the species (the charge among them). A basis that fails either test cannot represent the substream.
+  Do:      Check the group contents against the species and the fast reaction set of liquid: each reaction must leave every group amount unchanged, and the groups must fix every quantity the fast reactions conserve (elements and charge among them).
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    species_basis_incompatible (openflowsheet explain species_basis_incompatible)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#species_basis_incompatible
+```
+
+<a id="species_basis_redundant"></a>
+
+## `species_basis_redundant`: The groups of a conserved basis are not independent
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+- **Summary:** The conserved basis of substream &lt;substream&gt; in definition &lt;definition&gt; has groups that are not independent.
+- **Why:** A conserved basis carries one amount per group. The group contents must form a matrix of full row rank: when one group is a combination of the others, the same amount is carried twice and the state is not determined.
+- **Do:** Remove the redundant group from the conserved basis of &lt;substream&gt;, or change the group contents so that every group counts something the others do not.
+- **Parameters:** `definition` (text), `substream` (text)
+- **See also:** [`species_basis_incompatible`](#species_basis_incompatible), [`species_basis_not_monotone`](notices.md#species_basis_not_monotone)
+
+Example:
+
+```text
+The conserved basis of substream liquid in definition aqueous has groups that are not independent.
+  Why:     A conserved basis carries one amount per group. The group contents must form a matrix of full row rank: when one group is a combination of the others, the same amount is carried twice and the state is not determined.
+  Do:      Remove the redundant group from the conserved basis of liquid, or change the group contents so that every group counts something the others do not.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    species_basis_redundant (openflowsheet explain species_basis_redundant)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#species_basis_redundant
 ```
 
 <a id="specification_conflict"></a>
@@ -3581,6 +3927,52 @@ A change is checked for the task "simulation" only; this version cannot check it
 *No plain-language explanation is written yet; the summary is the technical one.*
 
 - **Summary:** Refused: terminal refinement.
+
+<a id="thermal_coordinate_mismatch"></a>
+
+## `thermal_coordinate_mismatch`: A definition uses another thermal coordinate than the document
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+- **Summary:** Definition &lt;definition&gt; uses a thermal coordinate that differs from the one the document declares.
+- **Why:** The document declares one thermal coordinate ('h_mass' or 'T') and every material definition uses it; an 'nTP-v1' connection's coordinate is 'T'.
+- **Do:** Set the thermal coordinate of &lt;definition&gt; to the document's, or change the document's coordinate and every definition with it.
+- **Parameters:** `definition` (text)
+- **See also:** [`unit_coordinate_unsupported`](#unit_coordinate_unsupported)
+
+Example:
+
+```text
+Definition aqueous uses a thermal coordinate that differs from the one the document declares.
+  Why:     The document declares one thermal coordinate ('h_mass' or 'T') and every material definition uses it; an 'nTP-v1' connection's coordinate is 'T'.
+  Do:      Set the thermal coordinate of aqueous to the document's, or change the document's coordinate and every definition with it.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    thermal_coordinate_mismatch (openflowsheet explain thermal_coordinate_mismatch)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#thermal_coordinate_mismatch
+```
+
+<a id="unit_coordinate_unsupported"></a>
+
+## `unit_coordinate_unsupported`: A unit does not support the thermal coordinate
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+- **Summary:** Unit &lt;instance&gt; does not support the thermal coordinate &lt;coordinate&gt;.
+- **Why:** In a revision whose thermal coordinate is 'h_mass', every unit must be a standard ('std.*') unit.
+- **Do:** Use the thermal coordinate 'T', or replace &lt;instance&gt; by a standard ('std.*') unit.
+- **Parameters:** `instance` (text), `coordinate` (text)
+- **See also:** [`thermal_coordinate_mismatch`](#thermal_coordinate_mismatch)
+
+Example:
+
+```text
+Unit R1 does not support the thermal coordinate h_mass.
+  Why:     In a revision whose thermal coordinate is 'h_mass', every unit must be a standard ('std.*') unit.
+  Do:      Use the thermal coordinate 'T', or replace R1 by a standard ('std.*') unit.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    unit_coordinate_unsupported (openflowsheet explain unit_coordinate_unsupported)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#unit_coordinate_unsupported
+```
 
 <a id="unknown_specification"></a>
 

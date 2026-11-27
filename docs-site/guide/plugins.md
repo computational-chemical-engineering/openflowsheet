@@ -176,14 +176,19 @@ $ openflowsheet explain demo.feed_too_wet
 
 ## Kinds in this release
 
-Four kinds have a payload schema for plugins in this release: `message_entries`, `record_type`,
-`correlation_form` and `data_source` (ADR 0061 installs the last three). A plugin descriptor of
-one of them is registered as `core`, with one exception: a `record_type` whose payload has
+Nine kinds have a payload schema for plugins in this release: `message_entries`, `record_type`,
+`correlation_form`, `data_source`, `attribute_kind`, `derived_quantity`, `kinetics_kind`,
+`phase_family` and `revision_section` (ADR 0061 installs `record_type`, `correlation_form` and
+`data_source`; ADR 0062, still Proposed, the last five). A plugin descriptor of one of the first
+four is registered as `core`, with one exception: a `record_type` whose payload has
 `payload_schema: null` is `preview`; a `record_type` naming a `payload_schema` (`{package, path,
 sha256}`) is `core`, and a `sha256` that is wrong, or names a file that cannot be read, quarantines
 the package with [`extension_invalid`](../messages/refusals.md#extension_invalid) at
 `/payload/payload_schema/sha256`. Registered `record_type` and `correlation_form` descriptors are
-read by record validation. Every other kind is accepted with a payload checked only to be an
+read by record validation. A plugin descriptor of one of the last five must satisfy its payload
+schema (a payload it refuses quarantines the package with
+[`extension_invalid`](../messages/refusals.md#extension_invalid)) and is registered `preview` until
+ADR 0062 is Accepted. Every other kind is accepted with a payload checked only to be an
 object, registered with the stability `preview`, and flagged
 [`preview_kind`](../messages/notices.md#preview_kind) wherever it is used. That includes
 `unit_model`, `property_method` and `connection_definition` (their plugin form is the v2 form,
