@@ -368,10 +368,14 @@ entries:
     complete: true
     review: false
     title: A reaction's molar masses do not balance
-    args: [reaction]
-    params: {reaction: {type: text, label: reaction}}
-    summary: "The molar masses of the components of reaction {reaction!raw} do not balance to within the rounding of the stored values."
-    why: "A balanced reaction conserves mass, so the sum of the stoichiometric coefficients times the molar masses is zero up to the rounding of the stored numbers: at most four times the double-precision machine epsilon of the sum of their magnitudes. A larger sum usually means the component records take their molar masses from different atomic-weight tables. The reaction is not refused; a mass balance over it carries this imbalance."
+    params:
+      reaction: {type: text, optional: true, label: reaction}
+      definition: {type: text, optional: true, label: material definition}
+      substream: {type: text, optional: true, label: substream}
+      species: {type: text, optional: true, label: species}
+    summary: "The molar masses do not balance to within the rounding of the stored values[: components of reaction {reaction!raw}][: species {species!raw} in substream {substream!raw} of definition {definition!raw}]."
+    why: "A balanced reaction conserves mass, so the sum of the stoichiometric coefficients times the molar masses is zero up to the rounding of the stored numbers: at most four times the double-precision machine epsilon of the sum of their magnitudes. A larger sum usually means the component records take their molar masses from different atomic-weight tables. The reaction is not refused; a mass balance over it carries this imbalance. The same holds for a species of a group basis: its record molar mass must equal the content-weighted sum of its groups' molar masses plus the charge term (Q3.R7), to the same bound, and the notice names the species that does not."
     action: "Use component records whose molar masses come from one atomic-weight table, or accept the stated imbalance."
     examples:
       - params: {reaction: water_formation}
+      - params: {definition: aqueous, substream: liquid, species: HCO3}

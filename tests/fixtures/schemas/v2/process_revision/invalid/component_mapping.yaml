@@ -1,4 +1,4 @@
 # D11: no `component_mapping` on a connection.
 expect_error: Additional properties are not allowed ('component_mapping' was unexpected)
-base: crystallizer
-changes: [{op: add, path: /connections/5/component_mapping, value: revision_component_set}]
+base: legacy_only
+changes: [{op: add, path: /connections/0/component_mapping, value: revision_component_set}]

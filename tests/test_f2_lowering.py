@@ -35,6 +35,7 @@ from openflowsheet.revision_v2.lower import (
     LegacyProviders,
     LoweringError,
     file_components,
+    file_parameter_sets,
     legacy_records,
     lower,
 )
@@ -140,6 +141,36 @@ def test_a_stated_content_hash_names_its_own_document() -> None:
     assert raised["content_hash"] == content_hash(raised) != original["content_hash"]
     lowered = lower(parse(raised), _providers())
     assert canonical_json(lowered) == canonical_json(original)
+
+
+def test_an_initialization_hint_raises_and_lowers_to_its_bytes() -> None:
+    """F2 review S8: no corpus revision carries `initialization_hint`, which enters `content_hash`
+    and `revision.json`. Set on a corpus connection, it raises, lowers to the same canonical bytes
+    and v1 hash, and a stated `content_hash` round-trips with the hint present."""
+    original = CORPUS_REVISIONS[BASE]()
+    guess = {
+        "value": 360.0,
+        "unit": "K",
+        "dimension": [0, 0, 0, 1, 0, 0, 0],
+        "kind": "temperature",
+        "meaning": "A guess of the stream temperature",
+        "role": "free",
+    }
+    original["connections"][1]["initialization_hint"] = {"T": guess}
+    validate_document("process-revision.schema.json", original)
+    without = CORPUS_REVISIONS[BASE]()
+    assert v1_content_hash(original) != v1_content_hash(without)
+    original["content_hash"] = v1_content_hash(original)
+    raised = raise_v1(original, _providers())
+    assert raised["connections"][1]["initialization_hint"] == {"T": guess}
+    assert raised["content_hash"] == content_hash(raised)
+    hintless = copy.deepcopy(raised)
+    del hintless["connections"][1]["initialization_hint"]
+    assert content_hash(hintless) != raised["content_hash"]
+    lowered = lower(parse(raised), _providers())
+    validate_document("process-revision.schema.json", lowered)
+    assert canonical_json(lowered) == canonical_json(original)
+    assert v1_content_hash(lowered) == v1_content_hash(original) == original["content_hash"]
 
 
 def test_raise_refuses_a_document_outside_the_inverse() -> None:
@@ -386,10 +417,58 @@ def test_refused_phase_assertion() -> None:
     assert _refusals(document) == _unavailable((f"phase_assertion:{connection['id']}", "F5"))
 
 
-def test_refused_parameter_sets() -> None:
+#: The legacy index's one parameter-set record of `benchmarks/s10/records.yaml` (ADR 0061 D12).
+S10_SET = "S10-wilson-ig-real-v1"
+
+
+def _s10_set() -> str:
+    from openflowsheet.records.importers.legacy import committed_index  # noqa: PLC0415
+
+    (entry,) = (e for e in committed_index()["files"] if e["path"] == "benchmarks/s10/records.yaml")
+    (record,) = (r for r in entry["records"] if r["record_type"] == "parameter_set")
+    assert record["id"] == S10_SET
+    return str(record["sha256"])
+
+
+def test_raised_s10_document_states_the_file_parameter_set() -> None:
+    """F2-R1: a raised `s10` document states the one parameter set its Wilson run reads; the
+    raised SYN-001 base states none (its file has none)."""
+    assert _raised("GP-C1")["component_set"]["parameter_sets"] == [_s10_set()]
+    assert file_parameter_sets("benchmarks/s10/records.yaml") == (_s10_set(),)
+    assert _raised()["component_set"]["parameter_sets"] == []
+    assert file_parameter_sets("benchmarks/syn001/components.yaml") == ()
+
+
+def test_refused_parameter_sets_other_than_the_file() -> None:
+    """F2-R1: `parameter_sets` must be the file's legacy parameter-set records, no more, no less."""
+    gp = _raised("GP-C1")
+    gp["component_set"]["parameter_sets"] = []
+    assert _refusals(gp) == _unavailable(("parameter_sets", "F4"))
+    for stated in ([_s10_set()], ["0" * 64]):
+        document = _raised()
+        document["component_set"]["parameter_sets"] = stated
+        assert _refusals(document) == _unavailable(("parameter_sets", "F4"))
+
+
+def test_parameter_sets_are_not_checked_for_two_files() -> None:
+    """F2-R1 / WO4-6: with records of two files, only the component refusals."""
     document = _raised()
-    document["component_set"]["parameter_sets"] = ["0" * 64]
-    assert _refusals(document) == _unavailable(("parameter_sets", "F4"))
+    document["component_set"]["parameter_sets"] = [_s10_set()]
+    water = next(
+        sha
+        for sha, record in legacy_records().items()
+        if record == ("benchmarks/s05/components.yaml", "H2O")
+    )
+    document["component_set"]["components"].append({"id": "H2O", "record": water})
+    assert _refusals(document) == _unavailable(("component_set", "F4"))
+
+
+def test_refused_thermal_coordinate_other_than_t() -> None:
+    """F2-R1, D12 (b): `h_mass` is refused by lowering itself (the binder lowers without
+    `validate`)."""
+    document = _raised()
+    document["materials"]["thermal_coordinate"] = "h_mass"
+    assert _refusals(document) == _unavailable(("thermal_coordinate:h_mass", "F6"))
 
 
 def test_materials_are_dropped_whatever_they_hold() -> None:

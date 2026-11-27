@@ -83,8 +83,10 @@ before.
 
 **F2 (ADR 0062 D1) widens it again, additively** — ADR 0062 D1's 14 quantity kinds at the end of
 `quantity.schema.json`'s kind enum, and one sentence of its description, served in `list_models`'
-`outputSchema` — so the served digest moves to `F2_SERVED_SHA256`. With F2's additions removed
-first (`without_f2`, `tests/f2_schema_support.py`) the list is F3's served digest `f7ec3c94…`
+`outputSchema`, and F2-WO8 widens `check_admission.md`'s draft form to `<schema_version 1 or 2
+document>` (the F2 review's ruling 3) — so the served digest moves to `F2_SERVED_SHA256`. With F2's
+additions removed and that text restored first (`without_f2`, `tests/f2_schema_support.py`) the
+list is F3's served digest `f7ec3c94…`
 exactly (`test_f2s_surface_move_decomposes_onto_f3s`), and every decomposition below holds as
 before.
 
@@ -93,7 +95,7 @@ report's reserved mode `forced_replay` and its two optional members `registry_co
 `data_availability`, served in `get_job_result`'s `outputSchema` (D3's artifact kinds do not reach
 the served list: MCP serves J5's consumer reading, the enum opened) — so the served digest moves
 to `F8_SERVED_SHA256`. With F8's additions removed first (`without_f8`,
-`tests/f8_schema_support.py`) the list is F2's served digest `9a4b4eb3…` exactly
+`tests/f8_schema_support.py`) the list is F2's served digest `8eee5313…` exactly
 (`test_f8s_surface_move_decomposes_onto_f2s`), and every decomposition below holds as before.
 """
 
@@ -107,7 +109,7 @@ from typing import Any
 import pytest
 from conftest import REPO_ROOT, load_yaml
 from f1_schema_support import F1_OPERATIONS, without_f1
-from f2_schema_support import F2_KIND_NOTE, F2_KINDS, without_f2
+from f2_schema_support import F2_DESCRIPTIONS, F2_KIND_NOTE, F2_KINDS, pre_f2_text, without_f2
 from f3_schema_support import F3_OPERATIONS, without_f3
 from f8_schema_support import F8_REPLAY_MODE, F8_REPORT_MEMBERS, without_f8
 from m02_schema_support import without_m02
@@ -171,13 +173,15 @@ F1_SERVED_SHA256 = "e2c44b6b9c2a7f5689ed4f2fd96b6e9804d1a63e60a5c620d29b5b5d594b
 #: Without them it is `F1_SERVED_SHA256` (c_10).
 F3_SERVED_SHA256 = "f7ec3c94233d30506ec2082a13c4e54d57bd540e43e97fdf877b1e3c75fed467"
 #: F2 (ADR 0062 D1): the served digest with D1's 14 quantity kinds in `list_models`' output schema
-#: over F3's list, measured at F2-WO2b on `wp/F2` (WO1 moved it; WO2 left it where WO1 did).
-#: Without them it is `F3_SERVED_SHA256`.
-F2_SERVED_SHA256 = "9a4b4eb3bd9f28e68e25828d8796bec73e8feb49aa6e12b80df0d43f990442a1"
+#: over F3's list, measured at F2-WO2b on `wp/F2` (WO1 moved it; WO2 left it where WO1 did), and
+#: re-taken at F2-WO8 for `check_admission.md`'s new text (`9a4b4eb3…` before). Without them it
+#: is `F3_SERVED_SHA256`.
+F2_SERVED_SHA256 = "8eee5313e1dff685ed3f5c7a60c6aa8fb7fea31d8fcd5c8ac608eac9450f304a"
 #: F8 (ADR 0067 D5, R-1076): the served digest with the replay report's reserved mode and its two
-#: members in `get_job_result`'s output schema over F2's list, measured at F8-WO1b on `wp/F8`
-#: (`scripts/m07a_rc.py`'s `D_13`). Without them it is `F2_SERVED_SHA256` (c_13).
-F8_SERVED_SHA256 = "c11d38778d2f8aba8240a6a2b5ee9d9e1e7b93c5c6fae4cc40ca82177cb50ddd"
+#: members in `get_job_result`'s output schema over F2's list, measured at F8-WO1b on `wp/F8` and
+#: re-taken at F8-FR0 over F2-WO8's list (`c11d3877…` before; `scripts/m07a_rc.py`'s `D_13`).
+#: Without them it is `F2_SERVED_SHA256` (c_13).
+F8_SERVED_SHA256 = "3571c5c3f57abe2a4ecb3e93970cb95cc8ce7856259f832aa78a2dcbcff7c10c"
 #: The files N1 and N2 changed; the only difference from `v17-c2`'s served texts.
 CHANGED = ("commit_change", "validate")
 #: Each description's SHA-256 as `v17-c2` served it: the table of
@@ -337,8 +341,10 @@ def test_m02s_surface_move_decomposes_onto_the_base(mcp: ModuleType) -> None:
 
 
 def _pre_opt_file(name: str) -> str:
-    """Operation `name`'s description file, OPT's two in their pre-OPT form and X04's two in their
-    pre-X04 form."""
+    """Operation `name`'s description file, OPT's two in their pre-OPT form, X04's two in their
+    pre-X04 form and F2's one in its pre-F2 form."""
+    if name in F2_DESCRIPTIONS:
+        return pre_f2_text(name)
     if name in X04_DESCRIPTIONS:
         return pre_x04_text(name)
     if name in OPT_DESCRIPTIONS:
@@ -347,13 +353,14 @@ def _pre_opt_file(name: str) -> str:
 
 
 def test_the_served_files_differ_from_v17_c2_in_exactly_the_two_reviewed_files() -> None:
-    """Before OPT's two texts and X04's two (restored from their pre-OPT and pre-X04 copies), the
-    files differ from `v17-c2`'s in exactly R-133's two; OPT and X04 changed exactly their two."""
+    """Before OPT's two texts, X04's two and F2's one (restored from their pre-OPT, pre-X04 and
+    pre-F2 copies), the files differ from `v17-c2`'s in exactly R-133's two; OPT and X04 changed
+    exactly their two, F2 its one."""
     assert sorted(V17_C2_FILE_SHA256) == PRE_MSG_MCP_OPERATIONS
     served = {name: _sha256(_pre_opt_file(name)) for name in PRE_MSG_MCP_OPERATIONS}
     files = {name: (DESCRIPTIONS / f"{name}.md").read_text("utf-8") for name in MCP_OPERATIONS}
     assert sorted(n for n in MCP_OPERATIONS if files[n] != _pre_opt_file(n)) == sorted(
-        {*OPT_DESCRIPTIONS, *X04_DESCRIPTIONS}
+        {*OPT_DESCRIPTIONS, *X04_DESCRIPTIONS, *F2_DESCRIPTIONS}
     )
     changed = sorted(
         name for name in PRE_MSG_MCP_OPERATIONS if served[name] != V17_C2_FILE_SHA256[name]
@@ -511,8 +518,9 @@ def test_x04s_surface_move_decomposes_onto_sts(mcp: ModuleType) -> None:
 def test_f1s_surface_move_decomposes_onto_x04s(mcp: ModuleType) -> None:
     """F1 (ADR 0060 D11, R-1030): the served list is `F1_SERVED_SHA256`; minus F1's two tools it is
     X04's (`X04_SERVED_SHA256`, which decomposes onto ST's and the earlier lists above). F1 added
-    `list_capabilities` and `check_admission`, each served from its file, and moved no other tool
-    at all: name, description, input or output schema."""
+    `list_capabilities` and `check_admission`, each served from its file (`check_admission`'s in
+    its pre-F2 form: F2-WO8 changed it), and moved no other tool at all: name, description, input
+    or output schema."""
     served = _before_f3(mcp)  # F3's tools postdate F1
     stripped = without_f1(served)
     assert _digest(served) == F1_SERVED_SHA256
@@ -521,7 +529,9 @@ def test_f1s_surface_move_decomposes_onto_x04s(mcp: ModuleType) -> None:
     assert sorted(t["name"] for t in added) == ["check_admission", "list_capabilities"]
     assert [t for t in served if t not in added] == stripped
     for tool in added:
-        assert tool["description"] == (DESCRIPTIONS / f"{tool['name']}.md").read_text("utf-8")
+        name = tool["name"]
+        expected = pre_f2_text(name) if name in F2_DESCRIPTIONS else None
+        assert tool["description"] == (expected or (DESCRIPTIONS / f"{name}.md").read_text("utf-8"))
 
 
 def test_f3s_surface_move_decomposes_onto_f1s(mcp: ModuleType) -> None:
@@ -543,19 +553,27 @@ def test_f3s_surface_move_decomposes_onto_f1s(mcp: ModuleType) -> None:
 def test_f2s_surface_move_decomposes_onto_f3s(mcp: ModuleType) -> None:
     """F2 (ADR 0062 D1): the served list is `F2_SERVED_SHA256`; minus F2's 14 kinds it is F3's
     (`F3_SERVED_SHA256`, which decomposes onto F1's and the earlier lists above). F2 added no tool
-    and changed no tool's name or description text; the one tool that moved is `list_models`, in
-    exactly its two kind enums (pins' and choice options' `specifications`), each by exactly the
-    14 kinds and the description's one sentence."""
+    and changed no tool's name; it changed one description text, `check_admission`'s (F2-WO8,
+    restored from its pre-F2 copy by the strip), and moved `list_models` in exactly its two kind
+    enums (pins' and choice options' `specifications`), each by exactly the 14 kinds and the
+    description's one sentence."""
     served = _before_f8(mcp)  # F8's additions postdate F2
     stripped = without_f2(served)
     assert _digest(served) == F2_SERVED_SHA256
     assert _digest(stripped) == F3_SERVED_SHA256
-    assert [(t["name"], t["description"]) for t in served] == [
-        (t["name"], t["description"]) for t in stripped
-    ]
+    assert [t["name"] for t in served] == [t["name"] for t in stripped]
     moved = [(t, u) for t, u in zip(served, stripped, strict=True) if t != u]
-    assert [t["name"] for t, _ in moved] == [OPERATIONS["list_models"].mcp_tool]
-    ((tool, before),) = moved
+    admission = OPERATIONS["check_admission"].mcp_tool
+    assert sorted(t["name"] for t, _ in moved) == sorted(
+        [OPERATIONS["list_models"].mcp_tool, admission]
+    )
+    ((text, text_before),) = [(t, u) for t, u in moved if t["name"] == admission]
+    assert {**text, "description": text_before["description"]} == text_before
+    assert text_before["description"] == pre_f2_text("check_admission")
+    assert text["description"] == text_before["description"].replace(
+        "<schema_version 1 document>", "<schema_version 1 or 2 document>"
+    )
+    ((tool, before),) = [(t, u) for t, u in moved if t["name"] != admission]
     assert tool["inputSchema"] == before["inputSchema"]
     pins = ("pins", "items", "properties", "specifications")
     options = ("choices", "items", "properties", "options", "items", "properties", "specifications")

@@ -332,9 +332,9 @@ replay report is read, stored, hashed or replayed as changes:
 - **Unchanged:** every v1 manifest, bundle and replay report: the 0.3.0 bundles replay with the same mode, verdict and
   reasons and a byte-identical report (E-F8-1), and v1-path runs write no new member (E-F8-10).
 - **Not unchanged:** the served MCP tool list, by the replay report's mode and two members in `get_job_result`'s
-  `outputSchema` (D3's artifact kinds do not reach it: MCP serves the kind enum opened), now `c11d3877…` (chain link
+  `outputSchema` (D3's artifact kinds do not reach it: MCP serves the kind enum opened), now `3571c5c3…` (chain link
   c_13 of `scripts/m07a_rc.py`, R-1076; `F8_SERVED_SHA256` in `tests/test_t08_w2_surface_digest.py`); with F8's
-  additions removed (`tests/f8_schema_support.py`) it is F2's `9a4b4eb3…` exactly.
+  additions removed (`tests/f8_schema_support.py`) it is F2's `8eee5313…` exactly.
 
 ## Amendment 13 (Accepted 2026-11-08 by Frank, with ADR 0068; Proposed 2026-11-06; ST) — pointer to ADR 0068
 

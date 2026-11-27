@@ -1,5 +1,7 @@
-# D11: an `nTP-v1` connection into a port that accepts `mat-v1` only.
-base: crystallizer
+# D11: an `nTP-v1` connection into a port that accepts `mat-v1` only (a `T` revision: in an
+# `h_mass` revision an `nTP-v1` connection is `thermal_coordinate_mismatch` first).
+base: legacy_only
 changes:
-  - {op: replace, path: /connections/5/to, value: {instance: cryst, port: in}}
-errors: [{code: definition_incompatible, params: {connection: S2, port: cryst.in}}]
+  - {op: add, path: /instances/-, value: {id: sink, model: {id: std.sink, version: 1.0.0, artifact_ref: null}, semantic_role: product_sink, parameters: {}, policy: {fidelity: nominal, validity: declared}}}
+  - {op: replace, path: /connections/0/to, value: {instance: sink, port: in}}
+errors: [{code: definition_incompatible, params: {connection: S2, port: sink.in}}]

@@ -350,7 +350,9 @@ def test_opt_control_c_6_restores_the_texts_only_with_the_strip(
     served: list[dict[str, Any]],
 ) -> None:
     """A c_6 that strips the schema members but leaves OPT's two description texts fails at c_6;
-    item 4 on the served texts with only X04's two undone names exactly those two files."""
+    item 4 on the served texts with only X04's two and F2's one undone names exactly those two
+    files."""
+    from f2_schema_support import F2_DESCRIPTIONS, pre_f2_text
     from opt_schema_support import OPT_DESCRIPTIONS, _without
     from x04_schema_support import X04_DESCRIPTIONS, pre_x04_text
 
@@ -372,7 +374,11 @@ def test_opt_control_c_6_restores_the_texts_only_with_the_strip(
     rows = m07a_rc.chain(served, links)
     assert all(row["pass"] for row in rows[:3])
     assert m07a_rc.first_failure(rows) == "c_6 (R-960)"
-    texts = m07a_rc.description_texts() | {name: pre_x04_text(name) for name in X04_DESCRIPTIONS}
+    texts = (
+        m07a_rc.description_texts()
+        | {name: pre_x04_text(name) for name in X04_DESCRIPTIONS}
+        | {name: pre_f2_text(name) for name in F2_DESCRIPTIONS}
+    )
     problems = m07a_rc.description_problems(texts)
     assert sorted(p.split(".md:")[0] for p in problems) == sorted(OPT_DESCRIPTIONS)
 
@@ -459,9 +465,10 @@ def test_x04_the_changed_descriptions_are_pinned_at_their_recorded_hash() -> Non
         assert record["operations"][name]["sha256"] == found
     before = m07a_rc.texts_before_links(texts)
     undone = sorted(name for name in texts if before[name] != texts[name])
+    from f2_schema_support import F2_DESCRIPTIONS
     from opt_schema_support import OPT_DESCRIPTIONS
 
-    assert undone == sorted({*X04_DESCRIPTIONS, *OPT_DESCRIPTIONS})
+    assert undone == sorted({*X04_DESCRIPTIONS, *OPT_DESCRIPTIONS, *F2_DESCRIPTIONS})
     assert m07a_rc.description_problems(before) == []
 
 
@@ -485,7 +492,9 @@ def test_x04_control_c_8_restores_the_texts_only_with_the_strip(
     served: list[dict[str, Any]],
 ) -> None:
     """A c_8 that strips the schema members but leaves X04's two description texts fails at c_8;
-    item 4 on the served texts with only OPT's two undone names exactly X04's two files."""
+    item 4 on the served texts with only OPT's two and F2's one undone names exactly X04's two
+    files."""
+    from f2_schema_support import F2_DESCRIPTIONS, pre_f2_text
     from opt_schema_support import OPT_DESCRIPTIONS, pre_opt_text
     from x04_schema_support import X04_DESCRIPTIONS, _without
 
@@ -501,7 +510,11 @@ def test_x04_control_c_8_restores_the_texts_only_with_the_strip(
     rows = m07a_rc.chain(served, links)
     assert rows[0]["pass"]
     assert m07a_rc.first_failure(rows) == "c_8 (R-1010)"
-    texts = m07a_rc.description_texts() | {name: pre_opt_text(name) for name in OPT_DESCRIPTIONS}
+    texts = (
+        m07a_rc.description_texts()
+        | {name: pre_opt_text(name) for name in OPT_DESCRIPTIONS}
+        | {name: pre_f2_text(name) for name in F2_DESCRIPTIONS}
+    )
     problems = m07a_rc.description_problems(texts)
     assert sorted(p.split(".md:")[0] for p in problems) == sorted(X04_DESCRIPTIONS)
 
@@ -527,10 +540,16 @@ def test_f1_link_c_9_is_f1s_strip_and_digest(served: list[dict[str, Any]]) -> No
 
 def test_f1_the_added_descriptions_are_pinned_at_their_recorded_hash() -> None:
     """§5.3 item 4 with c_9 (R-1030): F1's two texts are pinned at the hashes `REVIEW.json`
-    records, and one byte of either changed is caught as F1's."""
+    recorded at F1's merge (`check_admission.md`'s is its pre-F2 copy's: F2's c_11 changed the
+    file), and one byte of either changed is caught as F1's."""
+    from f2_schema_support import F2_DESCRIPTIONS, pre_f2_text
+
     review = json.loads((m07a_rc.DESCRIPTIONS / "REVIEW.json").read_text("utf-8"))
     for name, sha256 in m07a_rc.F1_FILE_SHA256.items():
-        assert review["operations"][name]["sha256"] == sha256
+        if name in F2_DESCRIPTIONS:
+            assert hashlib.sha256(pre_f2_text(name).encode("utf-8")).hexdigest() == sha256
+        else:
+            assert review["operations"][name]["sha256"] == sha256
     for name in m07a_rc.F1_FILE_SHA256:
         texts = m07a_rc.texts_before_links(m07a_rc.description_texts())
         texts[name] = texts[name].replace(".", ",", 1)
@@ -600,7 +619,8 @@ def test_f3_control_c_10_left_in_place(served: list[dict[str, Any]]) -> None:
 
 def test_f2_link_c_11_is_f2s_strip_and_digest(served: list[dict[str, Any]]) -> None:
     """c_11 (R-1072, ADR 0062 D1, ADR 0019 Amendment 9): `without_f2` is the strip, `D_11` the
-    served digest the surface-digest test registers (F2-WO2b), `D_10` is what the strip leaves,
+    served digest the surface-digest test registers (F2-WO2b, re-taken at F2-WO8), `D_10` is what
+    the strip leaves,
     and R-1072's register entry carries both (R-457's form)."""
     import test_t08_w2_surface_digest as surface
     from f2_schema_support import without_f2
@@ -655,3 +675,44 @@ def test_f8_control_c_13_left_in_place(served: list[dict[str, Any]]) -> None:
     rows = m07a_rc.chain(served, links)
     assert rows[0]["pass"]
     assert m07a_rc.first_failure(rows) == "c_13 (R-1076)"
+
+
+def test_f2_the_changed_description_is_pinned_at_its_recorded_hash() -> None:
+    """§5.3 item 4 with c_11 (R-1072): F2's one text (`check_admission.md`, F2-WO8) is the file
+    `REVIEW.json` records, and `texts_before_links` restores its pre-F2 copy, at F1's pin."""
+    from f2_schema_support import F2_DESCRIPTIONS, pre_f2_text
+
+    record = json.loads((REPO_ROOT / REVIEW).read_text(encoding="utf-8"))
+    texts = m07a_rc.description_texts()
+    for name in F2_DESCRIPTIONS:
+        found = hashlib.sha256(texts[name].encode("utf-8")).hexdigest()
+        assert record["operations"][name]["sha256"] == found
+        assert m07a_rc.texts_before_links(texts)[name] == pre_f2_text(name)
+    assert m07a_rc.description_problems(m07a_rc.texts_before_links(texts)) == []
+
+
+def test_f2_control_c_11_restores_the_text_only_with_the_strip(
+    served: list[dict[str, Any]],
+) -> None:
+    """A c_11 that strips F2's kinds but leaves `check_admission`'s text fails at c_11; item 4 on
+    the served texts with only OPT's and X04's undone names exactly that file."""
+    from f2_schema_support import _without
+    from opt_schema_support import OPT_DESCRIPTIONS, pre_opt_text
+    from x04_schema_support import X04_DESCRIPTIONS, pre_x04_text
+
+    assert_the_unmodified_list_passes(served)
+    links = (
+        *m07a_rc.LINKS[:10],
+        m07a_rc.Link("c_11", "R-1072", _without, L10.digest),
+        L11,
+    )
+    rows = m07a_rc.chain(served, links)
+    assert rows[0]["pass"]
+    assert m07a_rc.first_failure(rows) == "c_11 (R-1072)"
+    texts = (
+        m07a_rc.description_texts()
+        | {name: pre_opt_text(name) for name in OPT_DESCRIPTIONS}
+        | {name: pre_x04_text(name) for name in X04_DESCRIPTIONS}
+    )
+    problems = m07a_rc.description_problems(texts)
+    assert [p.split(".md:")[0] for p in problems] == ["check_admission"]

@@ -447,21 +447,12 @@ def _v2_stage(
     (`construct_unavailable`), sorted, in `SCHEMA-01`'s message (F2 decision WO6b-3). The
     validator's notices are not reported here: the report has no field for them, and
     `check_admission` reports them."""
-    from openflowsheet.models.revision_flowsheet import legacy_providers
-    from openflowsheet.revision_v2 import LoweringError, lower, parse
-    from openflowsheet.revision_v2 import validate as v2_validate
+    from openflowsheet.revision_v2 import parse
 
-    revision = parse(document)
-    errors, _ = v2_validate(revision, revision_context(revision))
-    refusals: list[Coded] = list(errors)
-    try:
-        lowered = lower(revision, legacy_providers())
-    except LoweringError as error:
-        refusals += error.refusals
-    if not refusals:
+    lowered, refusals, _ = v2_admission(parse(document))
+    if lowered is not None:
         return lowered
-    unique = {coded.sort_key(): coded for coded in refusals}
-    rendered = [rendered_coded(unique[key]) for key in sorted(unique)]
+    rendered = [rendered_coded(coded) for coded in refusals]
     return ValidationReport(
         revision_id=_revision_id(document),
         task=task,
@@ -479,6 +470,41 @@ def _v2_stage(
         structural_counts_absent_reason="the revision is not well formed",
         provenance={"produced_by": SCHEMA_ONLY_PRODUCED_BY, "timestamp": now()},
     )
+
+
+def v2_admission(
+    revision: RevisionV2,
+) -> tuple[Mapping[str, Any] | None, tuple[Coded, ...], tuple[Coded, ...]]:
+    """ADR 0062 D12 for a parsed v2 `revision`: `(lowering, refusals, notices)`. The refusals are
+    F2's errors (`revision_v2.validate` against `revision_context`) and the lowering's
+    `construct_unavailable`, unique and sorted; the lowering is `None` when there is any. One
+    fault, one refusal (F2 decision WO4-6, F2 review S6): a component whose record this build
+    cannot serve is left out of `revision_context`, so the validator's `component_unknown(c)` is
+    dropped where the lowering reports `construct_unavailable(component:c, F4)`."""
+    from openflowsheet.models.revision_flowsheet import legacy_providers
+    from openflowsheet.revision_v2 import LoweringError, lower
+    from openflowsheet.revision_v2 import validate as v2_validate
+
+    errors, notices = v2_validate(revision, revision_context(revision))
+    lowered: Mapping[str, Any] | None = None
+    unavailable: list[Coded] = []
+    try:
+        lowered = lower(revision, legacy_providers())
+    except LoweringError as error:
+        unavailable = list(error.refusals)
+    constructs = {(coded.params["construct"], coded.params["foundation"]) for coded in unavailable}
+    refusals = [
+        coded
+        for coded in errors
+        if not (
+            coded.code == "component_unknown"
+            and (f"component:{coded.params['component']}", "F4") in constructs
+        )
+    ] + unavailable
+    if not refusals:
+        return lowered, (), notices
+    unique = {coded.sort_key(): coded for coded in refusals}
+    return None, tuple(unique[key] for key in sorted(unique)), notices
 
 
 def rendered_coded(coded: Coded) -> str:

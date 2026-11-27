@@ -54,6 +54,15 @@ entries:
   - code: species_basis_not_monotone
     family: notice
     kind: notice
-    complete: false
-    title: Species basis not monotone
-    summary: 'Notice: species basis not monotone.'
+    complete: true
+    title: A conserved basis is not monotone
+    args: [definition, substream]
+    params:
+      definition: {type: text, label: material definition}
+      substream: {type: text, label: substream}
+    summary: "The conserved basis of substream {substream!raw} in definition {definition!raw} is not monotone."
+    why: "A conserved basis is monotone when each group's content can be made non-negative by adding a multiple of the species charges; then a physical, electroneutral feed always has non-negative group amounts. With a basis that is not, a physical feed can have a negative group amount, which is refused as an invalid state ('group_amount_negative'). The document is accepted; this limitation is recorded."
+    action: "Nothing needs fixing if the limitation is acceptable. To remove it, choose group contents that are non-negative (up to a multiple of the charges)."
+    see_also: [species_basis_incompatible, species_basis_redundant]
+    examples:
+      - params: {definition: aqueous, substream: liquid}

@@ -81,18 +81,20 @@ function, a registered digest and Frank's carry extended to name it):
 - c_11, R-1072 (ADR 0062 D1, ADR 0019 Amendment 9): F2's 14 quantity kinds, appended to the kind
   enum that `list_models`' `outputSchema` serves at its two `specifications` places, and the
   sentence F2-WO1 added to that enum's description, stripped by `tests/f2_schema_support.py`'s
-  `without_f2`; `D_11` = `9a4b4eb3…`, measured at F2-WO2b on `wp/F2`
-  (`tests/test_t08_w2_surface_digest.py`'s `F2_SERVED_SHA256`). F2 adds no tool and changes no
-  description text, so item 4 is unchanged by it.
+  `without_f2`, and the one description text F2-WO8 changed (`check_admission.md`, the F2
+  review's ruling 3: `<schema_version 1 or 2 document>`), restored from its pre-F2 copy by the
+  same strip; `D_11` = `8eee5313…`, measured at F2-WO8 on `wp/F2`
+  (`tests/test_t08_w2_surface_digest.py`'s `F2_SERVED_SHA256`). F2 adds no tool; item 4 judges
+  `check_admission.md` in its pre-F2 form (`texts_before_links`), at F1's pinned hash.
 - c_13, R-1076 (ADR 0067 D5, ADR 0019 Amendment 12): F8's replay-report additions, the reserved
   mode `forced_replay` and the two optional members `registry_comparison` and
   `data_availability`, served in `get_job_result`'s `outputSchema` (D3's artifact kinds move only
   R4-G3 snapshots: MCP serves the kind enum opened), stripped by `tests/f8_schema_support.py`'s
-  `without_f8`; `D_13` = `c11d3877…`, measured at F8-WO1b on `wp/F8`
-  (`tests/test_t08_w2_surface_digest.py`'s `F8_SERVED_SHA256`). On `wp/F8`, which branches from
-  `wp/F2`, it decomposes onto F2's c_11 (X06's c_12 is not on the branch; R-1072's merge-order
-  rule renumbers the links when the branches merge). F8 adds no tool and changes no description
-  text, so item 4 is unchanged by it.
+  `without_f8`; `D_13` = `3571c5c3…`, measured at F8-FR0 on `wp/F8` after the merge of `wp/F2`'s
+  F2-WO8 (`tests/test_t08_w2_surface_digest.py`'s `F8_SERVED_SHA256`). On `wp/F8`, which branches
+  from `wp/F2`, it decomposes onto F2's c_11 (X06's c_12 is not on the branch; R-1072's
+  merge-order rule renumbers the links when the branches merge). F8 adds no tool and changes no
+  description text, so item 4 is unchanged by it.
 
 The released 0.2.0a1 ran the two-link chain (its committed record at `C_α²`); a re-run of the
 alpha's step 8 uses this script at the tag.
@@ -310,8 +312,8 @@ def strip_f3(tools: Tools) -> Tools:
 
 
 def strip_f2(tools: Tools) -> Tools:
-    """s_11 (R-1072): `tools` without F2's 14 kinds and their sentence
-    (`f2_schema_support.without_f2`)."""
+    """s_11 (R-1072): `tools` without F2's 14 kinds and their sentence, with the one description
+    text F2 changed (`check_admission`) restored (`f2_schema_support.without_f2`)."""
     t08_rc._tests_on_path()
     from f2_schema_support import without_f2  # noqa: PLC0415
 
@@ -407,13 +409,13 @@ LINKS: Final = (
         "c_11",
         "R-1072",
         strip_f2,
-        "9a4b4eb3bd9f28e68e25828d8796bec73e8feb49aa6e12b80df0d43f990442a1",
+        "8eee5313e1dff685ed3f5c7a60c6aa8fb7fea31d8fcd5c8ac608eac9450f304a",
     ),
     Link(
         "c_13",
         "R-1076",
         strip_f8,
-        "c11d38778d2f8aba8240a6a2b5ee9d9e1e7b93c5c6fae4cc40ca82177cb50ddd",
+        "3571c5c3f57abe2a4ecb3e93970cb95cc8ce7856259f832aa78a2dcbcff7c10c",
     ),
 )
 
@@ -501,16 +503,19 @@ def description_texts() -> dict[str, str]:
 
 def texts_before_links(texts: Mapping[str, str]) -> dict[str, str]:
     """`texts` (operation name -> description file) with every link's description change undone:
-    c_6's two files (OPT) in their pre-OPT form and c_8's two (X04) in their pre-X04 form. The
-    other links changed no existing text (MSG's c_4 added `explain.md`, ST's c_7
-    `get_stream_table.md`, F1's c_9 `list_capabilities.md` and `check_admission.md`, F3's c_10
-    five `Records` files, each pinned at its own hash; F2's c_11 and F8's c_13 changed no file and
-    added none)."""
+    c_6's two files (OPT) in their pre-OPT form, c_8's two (X04) in their pre-X04 form and c_11's
+    one (F2, `check_admission.md`) in its pre-F2 form. The other links changed no existing text
+    (MSG's c_4 added `explain.md`, ST's c_7 `get_stream_table.md`, F1's c_9
+    `list_capabilities.md` and `check_admission.md`, F3's c_10 five `Records` files, each pinned
+    at its own hash; F2's c_11 added none; F8's c_13 changed no file and added none)."""
     t08_rc._tests_on_path()
+    from f2_schema_support import F2_DESCRIPTIONS, pre_f2_text  # noqa: PLC0415
     from opt_schema_support import OPT_DESCRIPTIONS, pre_opt_text  # noqa: PLC0415
     from x04_schema_support import X04_DESCRIPTIONS, pre_x04_text  # noqa: PLC0415
 
     def before(name: str, text: str) -> str:
+        if name in F2_DESCRIPTIONS:
+            return pre_f2_text(name)
         if name in X04_DESCRIPTIONS:
             return pre_x04_text(name)
         return pre_opt_text(name) if name in OPT_DESCRIPTIONS else text

@@ -434,25 +434,31 @@ class _Checker:
                     and port.quantity_kind != connection["quantity_kind"]
                 ):
                     self.errors.append(_coded("signal_kind_mismatch", connection=cid))
-                definition = self.definitions.get(connection["definition"])
-                instance = connection[end]["instance"]
-                model_id: str = self.instances[instance]["model"]["id"]
-                if (
-                    definition is not None
-                    and definition["thermal_coordinate"] == "h_mass"
-                    and not model_id.startswith("std.")
-                ):
-                    self.errors.append(
-                        _coded(
-                            "unit_coordinate_unsupported", instance=instance, coordinate="h_mass"
-                        )
-                    )
         self.one_definition_rules()
+
+    def coordinate_rules(self) -> None:
+        """D11, revision-wide (F2 review ruling 2): in an `h_mass` revision every instance is a
+        standard (`std.*`) unit, whatever it connects to, and no material connection is
+        `nTP-v1`, whose coordinate is `T` (D3)."""
+        if self.document["materials"]["thermal_coordinate"] != "h_mass":
+            return
+        for instance in self.document["instances"]:
+            if not str(instance["model"]["id"]).startswith("std."):
+                self.errors.append(
+                    _coded(
+                        "unit_coordinate_unsupported", instance=instance["id"], coordinate="h_mass"
+                    )
+                )
+        for connection in self.document["connections"]:
+            if connection["kind"] == "material" and connection.get("definition") == "nTP-v1":
+                self.errors.append(_coded("thermal_coordinate_mismatch", definition="nTP-v1"))
 
     def one_definition_rules(self) -> None:
         """D11: a generic transport unit takes one definition on all its material ports; two that
         differ only in grid edges are `attribute_grid_mismatch`, any other difference
-        `definition_incompatible` (subset fill and declared maps are ADR-F6's)."""
+        `definition_incompatible` (subset fill and declared maps are ADR-F6's). Definitions are
+        compared by normalised body, not id: D3 makes the body (its SHA) the identity, so two ids
+        with equal bodies are one definition (F2 review S2)."""
         for instance in self.instances.values():
             model = self.context.models.get(instance["model"]["id"])
             if model is None or not model.one_definition:
@@ -467,8 +473,14 @@ class _Checker:
             if not ends:
                 continue
             first = ends[0][0]["definition"]
+            body = _body(self.definitions.get(first))
             for connection, end in ends[1:]:
                 if connection["definition"] == first:
+                    continue
+                if (
+                    body is not None
+                    and _body(self.definitions.get(connection["definition"])) == body
+                ):
                     continue
                 params = {"connection": connection["id"], "port": _port_name(connection[end])}
                 same_but_grids = _without_edges(self.definitions.get(first)) == _without_edges(
@@ -613,10 +625,17 @@ class _Checker:
                 self.errors.append(_coded("parameter_binding_conflict", target=target))
 
 
-def _without_edges(definition: Mapping[str, Any] | None) -> Any:
+def _body(definition: Mapping[str, Any] | None) -> dict[str, Any] | None:
+    """A declared definition's normal form without its `id` (D3); `None` for none declared."""
     if definition is None:
         return None
-    normal = normalise_instance({k: v for k, v in definition.items() if k != "id"})
+    return normalise_instance({k: v for k, v in definition.items() if k != "id"})
+
+
+def _without_edges(definition: Mapping[str, Any] | None) -> Any:
+    normal = _body(definition)
+    if normal is None:
+        return None
     for substream in normal["substreams"]:
         for grid in substream["grids"]:
             grid["edges"] = None
@@ -637,6 +656,7 @@ def validate(
     checker.methods()
     checker.reactions()
     checker.definition_rules()
+    checker.coordinate_rules()
     checker.connection_rules()
     variables = checker.variables()
     checker.specification_rules(variables)

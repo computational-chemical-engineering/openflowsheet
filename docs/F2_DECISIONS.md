@@ -615,3 +615,220 @@ Files: `models/revision_flowsheet.py` (`legacy_providers`, `lowered_document`, `
   pin version 3 as `revision_unsupported` and a v1 body labelled 2 as `invalid_request` (WO6b-5), and that file with
   `tests/test_f2_amendment9.py` passes 249/249 at the next commit. E-F2-3 run half: 56/56 (47 `g8` + 9 basis cases;
   the 5 `k05` are not revision documents; the 3 M1 revisions without a run route as their v1 documents).
+
+## F2-WO6c (ruling F2-R1's two amendments), 2026-11-27
+
+Files: `revision_v2/{lower,raise_v1}.py`, `tests/test_f2_lowering.py`, `tests/data/t07_global_state_allowlist.json`,
+`tests/test_t07_global_state.py`. Commit `fa97cddd`.
+
+- **DECISION WO6c-1. `file_parameter_sets(path)` returns record SHA-256s** (the v2 schema's `parameter_sets` items are
+  `sha`), in the order the legacy index entry lists them (a `parameter_set` record has no `position`); `()` for a file
+  with none or a path the index does not hold. `s10`: `S10-wilson-ig-real-v1` (`6634ea27...`); `s10-verification`:
+  `S10-verification-v1` (`c13d5aaa...`); the other five files: none.
+- **DECISION WO6c-2. `thermal_coordinate` is checked unconditionally** (with the other D11 fields in `_unclassified`),
+  not only when the component set names one file: D12 gates only `convention`, `property_methods` and
+  `parameter_sets`. `parameter_sets` moved into the one-file check with the convention and methods (`_one_file`).
+- **DECISION WO6c-3. G20 registers the new cache** (WO6a's `7ce12c23` pattern): `revision_v2/lower.py` `@cache`
+  occurrences 2 -> 3, the total `cache` pin 49 -> 50.
+- **Raised `s10` v2 `content_hash` moves** (unreleased test data; no test pinned them, so nothing re-pinned): GP-C1
+  `d4120e66` -> `61ec8610`, GP-C2 `b3e711f7` -> `82e9821e`, GP-C3 `f0937d32` -> `03054252`, GP-M1 `9a365d08` ->
+  `42d173ec`, GP-M2 `4e5551e0` -> `8848a951`. Their lowered v1 bytes are unchanged (library half 59/59).
+- **Gate** (`~/.cache/line06/f2-wo6c/acc.log`): `tests/test_f2_lowering.py` 96 passed (93 - 1 + 4);
+  `tests/test_f2_amendment9.py` 124 passed (E-F2-3 run half 56/56 inside); `tests/test_f2_revision_v2.py` 107;
+  `tests/test_f1_draft_admission.py` 125; surface suites 2320 passed, 1 failed, 28 skipped, the failure G20's
+  (WO6c-3), then `test_t07_global_state.py` + lowering 99/99 after the fix; F0 PASS M1 50/50, M2-M5 61/61, M6 85/85,
+  M7 52/52, M8 105/105, M9 42/42; ruff, ruff format --check, `mypy src` (367 files) clean. No served digest moved.
+
+## F2-WO7 (close-out), 2026-11-27
+
+- **DECISION WO7-1. Catalogue prose for the 18 WO4 entries** (WO4-16): each of the 17 refusals and
+  `species_basis_not_monotone` has the complete style's fields (title, args, params, summary, why, action, see_also,
+  example) and `complete: true`; kinds unchanged (`construct_unavailable` stays `input`, no `gap`: the entry was
+  filed so by WO4, and a kind change moves no digest the gate reads but is a design-lane call). Params are the
+  emit sites' (`revision_v2/validate.py`, `lower.py`, `material/layout.py`). `attribute_grid_mismatch` takes two
+  parameter sets, all optional: `definition, substream, kind` (the validator, `layout.py`) or `connection, port`
+  (D11's one-definition rule). `scripts/doc_pages.py` re-emitted `docs-site/messages/{refusals,notices}.md`.
+  Reason text is derived from the emitting code and ADR 0062 D3/D9/D10/D11/D12, the ADR having no per-code meaning
+  table; **design-lane read of the wording wanted** with the F2 `reviewer` pass. Isolated in one commit.
+- **DECISION WO7-2. `molar_mass_inconsistent` reconciled** (`records.yaml`): `reaction` (F3) and `definition,
+  substream, species` (F2 basis notice) are all optional params, the summary has one bracketed clause for each
+  emitter, `why` gains a sentence on the species case, and a second example is added. Neither emitter dropped.
+- **Catalogue digest re-pin** `2b227092...` -> `b6c8f517c53ed8ef8775acdc37502d455e89a866dcb76eb488f7f9c105f7fff9`
+  in `tests/fixtures/schemas/application_results/message_entry/{valid/phase_regime_mismatch,invalid/missing_code}.json`
+  (as WO4-16; no served digest, no F0 check reads it).
+- **DECISION WO7-3. Optimization on a v2 revision: a finding, test `xfail(strict=True)`.** OPT-A2's revision raised
+  with `raise_v1`, optimized with `optimize_revision` as the v1 document is: the optimum is equal (status
+  `KKT_POINT_VERIFIED`, `candidate.decisions` equal), but identity is not: `revision.json` of every start's bundles and
+  the record's `revision-document.json` are the v2 document (6,954 -> 7,090 bytes, `schema_version: 2`), so the
+  `run_id`s (`opt-0a386745fbc1331b-*` -> `opt-9937eb4484b2794a-*`) and `optimization_sha256` differ. D8 says a lowered
+  run is a v1 run in every artifact. Cause: neither `optimize_revision` nor the `optimize` job
+  (`application/jobs/runner.py` `optimize`, which calls `optimize_revision` on the stored document) lowers; the `solve`
+  job does (runner.py `lowered_document`, WO6b-7). **Not fixed (no `src/` change in WO7); orchestrator to decide**
+  whether to lower in `optimize` (the fix is one `lowered_document` call there, and the record's input document
+  `revision-document.json` then holds the v1 form) or to rule the optimization record's v2 input identity as is.
+  Test: `tests/test_f2_amendment9.py` (`nlp` marker; run by `scripts/m03_nlp_check.sh --no-inventory`), xfails at
+  the `run_ids` assertion; with `--runxfail` the optimum assertion before it passes.
+- **DECISION WO7-4 (orchestrator, 2026-11-27). WO7-3 fixed: `optimize_revision` lowers.** D8 settles it (a lowered
+  run is a v1 run in every artifact), so no ruling is needed: `studies/nlp/revision.py` `optimize_revision` calls
+  `lowered_document` at its entry, as `run_revision_session` does (WO6b-7); the `optimize` job reaches it through that
+  entry. The strict xfail is removed. `scripts/m03_nlp_check.sh --no-inventory <main>/.venv-nlp
+  <main>/.reference-downloads/m03-ipopt -- tests/test_f2_amendment9.py tests/test_opt_job_nlp.py`: 7 passed;
+  `tests/test_f2_amendment9.py tests/test_t07_global_state.py`: 127 passed.
+- **Open (found by F8-WO1, reproduced on wp/F2 at 9d2fbe6c):** `tests/test_v03_semantic_roles.py` a29, a31_a, a31_b
+  fail (3 failed, 17 passed): a29's corpus now picks up the v2 fixtures (`crystallizer.yaml` fails the v1 checks);
+  a31_a finds `revision_v2/lower.py` naming a role; a31_b differs on binding outcome. Fix work order F2-WO7b.
+
+## F2-WO8 (the F2 review's fix round), 2026-11-27 (brief `docs/briefs/LINE06-F2-WO8.md`, spec `docs/reviews/F2-review.md`)
+
+- **DECISION WO8-1 (M1). `find_source` lowers the ancestor.** `application/revision_continuation.py` `find_source`
+  passes `lowered_document(revision.as_document())` to `assemble`; on `RevisionError` it keeps the stored document,
+  so A2 still refuses `source_binding(...)` (no v1 twin). Test `test_m1_a_raised_lineage_continues_as_its_v1_lineage`
+  (`tests/test_f2_amendment9.py`): NET-02 split 0.5 under `default`, child 0.95 under `RRC-revision-v1`, committed
+  as v1 documents and as raised ones; both `solve-path.json` byte-equal, `artifact_r0_sha256` equal, member `taken`.
+  Without the fix the test fails at the child's `solve-path.json` (measured).
+- **DECISION WO8-2 (M2, ruling item 1). V03 a29, a31_a, a31_b changed as ruled; the code stays.**
+  `tests/test_v03_semantic_roles.py`: a29 judges a `schema_version` 2 document by
+  `schema_errors("process-revision-v2.schema.json", ...)`, with the ruling's reason in `_a29_failures`'s docstring;
+  control `test_a29_control_v2_role_outside_the_enum_fails` (crystallizer, `instances/0` role `purge_sink`, error
+  pointer `/instances/0/semantic_role`). a31_a: `naming == [revision_v2/lower.py]`, an AST check that every
+  `"semantic_role"` constant lies in `_unclassified` and that its two uses are the `not in V1_ROLES` compare and one
+  f-string (the construct). a31_b: over documents whose roles all lie in `V1_ROLES`; reading of "raised v2 documents
+  count": v2 documents of the corpus are not filtered out (`legacy_only.yaml` is compared; asserted), no raised
+  copies are added. Control `test_a31_b_control_a_d11_role_moves_only_its_refusal`: the binder bounds an `Unbound`
+  hint to `HINT_LIMIT` = 512 code points (the crystallizer's hint is 889), which cuts the two hints at different
+  entries, so the control lifts `binding_common.HINT_LIMIT` (monkeypatch) and compares the whole hint; removing the
+  `construct_unavailable(semantic_role:*)` entries then gives an equal outcome. 22 passed.
+- **DECISION WO8-3 (S3, ruling item 2). D11's `h_mass` rule revision-wide.** `revision_v2/validate.py`
+  `coordinate_rules` (run after `definition_rules`): in an `h_mass` revision each instance whose model id is not
+  `std.*` is `unit_coordinate_unsupported(<instance>, h_mass)` once, connected or not, and each material connection
+  with `definition: nTP-v1` is `thermal_coordinate_mismatch(nTP-v1)` (param `definition`, as the per-definition
+  code). The per-end check in `connection_rules` is removed. `crystallizer.yaml` drops `lfeed`, `lsink`, `S2` and
+  the spec `t_legacy` that targeted `S2`. New refusal fixtures `unit_coordinate_unsupported_unconnected.yaml` (one
+  unconnected legacy feed) and `thermal_coordinate_mismatch_ntp.yaml` (the dropped trio: three errors). Index shifts
+  in fixtures based on the crystallizer: `parameter_not_manipulable` 7->6, `signal_kind_mismatch` 8->7,
+  `energy_definition` 6->5, `signal_without_kind` 8->7, `probe_sink` 7->6 (the same connections as before).
+  `definition_incompatible.yaml` and `invalid/component_mapping.yaml` addressed `S2`, the only `nTP-v1` connection;
+  both now take `legacy_only` as base (a `T` revision; `definition_incompatible` adds a `std.sink` and points `S2`
+  at `sink.in`), keeping their subject. `tests/test_f2_*.py` + V03: 581 passed, 1 deselected.
+- **DECISION WO8-4 (S1, WO4-15 changed). `MaterialLayout.thermal_substreams(x, c) -> tuple[str, ...]`** replaces
+  `temperature_substream`: the flowing substreams in instance order, `()` when dormant; T solves
+  ṁĥ = Σ_s ṁ_s ĥ_s(T, P) over them jointly (Q8.R6); Q8.A4 is the singleton case. The test's both-flowing row
+  expects `("liq", "cryst")`; the two singleton rows keep the stub T check. No other caller existed.
+- **DECISION WO8-5 (S2, Q-WO5-b a defect). The one-definition rule compares normalised bodies.**
+  `revision_v2/validate.py` `one_definition_rules`: two ends whose declared definitions have equal normalised bodies
+  (`normalise_instance` without `id`, helper `_body`, shared with `_without_edges`) are one definition; an undeclared
+  definition (`None`) never equals by body. `tests/test_f2_probes.py` Q6.A4 test: `probe` and `probe2` with equal
+  bodies (attributes listed in reverse, which the normal form sorts back) admitted `((), ())`; without the fix it
+  fails (measured). `test_f2_probes.py` + `test_f2_revision_v2.py`: 122 passed.
+  (WO8-1 follow-up commit: `source_document: Mapping[str, Any]` annotation, which mypy required.)
+- **DECISION WO8-6 (S6). One fault, one refusal: shared helper `application/validation.py` `v2_admission`**
+  returns `(lowering | None, refusals, notices)`; `_v2_stage` and `capabilities._lowered_draft` both call it. It
+  drops the validator's `component_unknown(c)` wherever the lowering reports `construct_unavailable(component:c,
+  F4)`; nothing else changes (unique, sorted, rendered as before). Test
+  `test_s6_one_fault_one_refusal_for_a_component_this_build_cannot_serve` (`tests/test_f2_amendment9.py`) on
+  `legacy_only.yaml` through `validate` and `check_admission`: `construct_unavailable(component:H2O, F4);
+  construct_unavailable(property_methods, F4)` (the fixture's `syn001-ideal` is not this build's provider id, a
+  separate fault); without the fix it fails (measured).
+- **DECISION WO8-7 (S4, WO2-7 changed). A template's `instance_schema.sha256` hashes its grammar closure.**
+  `scripts/registry_builtin.py` `instance_schema_sha256(schema, pointer)`: `document_sha256` of
+  `{"schema": <sub-schema at pointer>, "$defs": {<each local $defs member reached by $ref, transitively>}}` with every
+  `description` keyword removed (a member *named* `description` under `properties`/`patternProperties`/`$defs`/
+  `dependentSchemas` is kept; `const`/`enum`/`default`/`examples` values are data, untouched). Engineering choices
+  (the closure's two-member shape; an external `$ref`, here `quantity.schema.json#/$defs/kind`, is hashed as its URI
+  and not followed, as the ruling names local `$defs` only). Regenerated with `--write` (`--check` clean). Moved:
+  `instance_schema.sha256` `41bbfca0…` (all four) -> heat-v1 `e9f98a4e…`, mat-v1 `0a6c9295…`, signal-v1 `fa3fa982…`,
+  work-v1 `a98d6c08…` (file order of `material.json`); descriptor SHAs (`tests/test_f2_definitions.py` PINNED):
+  mat-v1 `7d05658d…` -> `938323c0cf7cf69f4d2d446c7cd95fcc8d965408a24a64711d66b9428b47afbb`, heat-v1 `e6b71628…` ->
+  `257ff6cd1106baca8d8e9ef20aee6c6e1b079882a93a17de6525c777d90c5109`, work-v1 `d987e197…` ->
+  `1ed307d6bcad6e6dced3da59530beeb36cd1eb9352b642d61a7748536b59b10b`, signal-v1 `ae61cfa1…` ->
+  `487068d918e767e08c7509162cbfd5d8a5f7e7f60bbf1d4f6b8e0a8bbacf5d33`; `tables.sha256` material row `98354b4b…` ->
+  `504bd862d38894aa44a0586acaf3deb7b2f35eace83d295d787af3cc1dc1f23d`; E-F1-5 `registry_sha256`
+  (`tests/fixtures/registry/builtin-sha256.txt`) `844d9ba7…` -> `1b7db34e39229654a2155069f505267d4d42f687b67de18aaec8f6c2422362e5`.
+  nTP-v1 (legacy table) unchanged. New test `test_a_template_hashes_its_grammar_closure_not_the_file` (descriptions and
+  another template's grammar do not move mat-v1's hash, its `substream` grammar does). `tests/test_f1_*.py` +
+  `tests/test_f2_*.py`: 853 passed; surface digest/chain/list_models subset green (no served digest moved).
+- **DECISION WO8-8 (S5, ruling item 4). Catalogue prose and `construct_unavailable`'s kind.** Edits as ruled in
+  `messages/catalogue/{refusals,notices,records}.yaml`: `solid_role_conflict` (why, action),
+  `species_basis_redundant` (rank of the group contents alone), `amount_basis_mismatch`, `thermal_coordinate_mismatch`,
+  `unit_coordinate_unsupported` (why, action), `construct_unavailable` (why; kind `input` -> `not_supported`, `gap:
+  {limitation: null, capability: "the construct named, which foundation {foundation!raw} provides"}`),
+  `species_basis_not_monotone` (why, action), `signal_kind_mismatch` ("a port or a probe"),
+  `species_basis_incompatible` (action), `molar_mass_inconsistent` (species clause). Two formatting adaptations,
+  content unchanged: the ruling's backtick code spans are written as single-quoted spans ('mixed', 'h_mass',
+  'std.*', 'nTP-v1', 'group_amount_negative', ...), because catalogue prose is plain text and the jargon lint
+  (`messages/lint.py`) exempts only quoted segments (a bare snake_case token fails it); `{component}` and
+  `{foundation}` are written `{component!raw}`, `{foundation!raw}`, the catalogue's placeholder form. The ruling's
+  citations "(Q7.R5)" and "(Q3.R7)" are kept as written; **for the orchestrator**: no other catalogue entry cites an
+  ADR item in user text, so they may be dropped at the next edit. `scripts/doc_pages.py` re-emitted
+  `docs-site/messages/{refusals,notices}.md`. Catalogue digest re-pin `b6c8f517…` ->
+  `3af0a7942f036766be58caf97ef7409d3906602118e966809fcd9cea0497bc34` in the two `message_entry` fixtures (no served
+  digest, no F0 check reads it). `tests/test_msg_*.py` + `tests/test_doc_pages.py`: 189 passed, 3 xfailed; the
+  `message_entry`/`application_results` users: 191 passed.
+- **DECISION WO8-9 (ruling item 3). `check_admission.md` widened; the served-digest move registered as X04's.**
+  The one edit `<schema_version 1 document>` -> `<schema_version 1 or 2 document>` (1,493 characters, SHA-256
+  `f111234f5e1ec6027056cf638d40f3776570fade25207919f32ddd49affb0eea`; was 1,488, `e758eeb6…`). The pre-F2 copy is
+  `tests/fixtures/f2/pre_f2_descriptions/check_admission.md` (at F1's pin `e758eeb6…`); `tests/f2_schema_support.py`
+  gains `F2_DESCRIPTIONS`, `pre_f2_text`, and `without_f2` restores the text on a served tool list (X04's pattern;
+  the kind strip is now `_without`). `scripts/m07a_rc.py`: c_11's `D_11` and `texts_before_links` undo F2's text,
+  so item 4 judges it at F1's pin. `F2_SERVED_SHA256` / `D_11`
+  `9a4b4eb3bd9f28e68e25828d8796bec73e8feb49aa6e12b80df0d43f990442a1` ->
+  `8eee5313e1dff685ed3f5c7a60c6aa8fb7fea31d8fcd5c8ac608eac9450f304a` (`strip_f2` leaves D_10 `f7ec3c94…` exactly).
+  R-1072's Evidence row re-taken (both digests). `REVIEW.json` `check_admission`: `sha256`, `characters` 1493, the
+  design-lane review `reviewed` citing `docs/reviews/F2-review.md` (ruling 3), the human review `pending` (the
+  user's). Tests adjusted where they asserted "F2 changed no text": `test_f2s_surface_move_decomposes_onto_f3s`
+  (two tools moved; `check_admission` by its description only), `test_f1s_surface_move_decomposes_onto_x04s`,
+  `test_the_served_files_differ_from_v17_c2_...`, and in `tests/test_m07a_surface_chain.py` the OPT/X04 text
+  controls, `test_x04_the_changed_descriptions_...`, `test_f1_the_added_descriptions_...` (F1's pin is the pre-F2
+  copy's, ST's precedent); new `test_f2_the_changed_description_is_pinned_at_its_recorded_hash` and
+  `test_f2_control_c_11_restores_the_text_only_with_the_strip`. Surface suites: 177 passed, 3 failed: the expected
+  `test_every_description_is_reviewed_by_both_lanes` (`check_admission: human pending`), the v17 file test (fixed
+  after, 13 passed), and `test_a21_every_item_is_classified_once_and_resolves` (WO7's manifest `a3081770…`
+  limitations unmapped in `benchmarks/t08/support_envelope.yaml`; pre-existing, closed with item 12's manifest).
+- **DECISION WO8-10 (S7, S8). The CoolProp run half and the `initialization_hint` test.** S7:
+  `test_f2_r1_a_coolprop_one_fluid_revision_runs_as_its_v1_run` (`tests/test_f2_amendment9.py`), gated by
+  `s07_coolprop_support.require_coolprop()` (the repo's CoolProp marker: skips without CoolProp 8.0.0, fails under
+  `OPENFLOWSHEET_REQUIRE_COOLPROP=1` as CI's `check` job sets): S11's `TH-C2` (one S07 fluid, R134a,
+  `coolprop-heos-v1`; the corpus's one-fluid CoolProp revision) raised and solved by `corpus_identity.solve` as the
+  v1 document is: the manifest identity fields, artifact index, state hashes and `solution-state.json` bytes equal;
+  outcome `CONVERGED`. 1 passed locally (CoolProp 8.0.0 in `.venv`). S8:
+  `test_an_initialization_hint_raises_and_lowers_to_its_bytes` (`tests/test_f2_lowering.py`): a `T` guess on NET-02's
+  second connection moves the v1 hash, survives `raise_v1`, the raised `content_hash` is `content_hash(raised)` and
+  moves without the hint, and the lowering has the original's canonical bytes and v1 hash. 1 passed.
+- **DECISION WO8-11 (N1). `component_basis` refuses a raw `schema_version` 2 document**:
+  `RevisionError("unsupported", "schema_invalid(/schema_version)", hint=...)`. The review names no code; this one is
+  already registered (`schema_invalid`, the pointer form `lowered_document` raises for a v2 schema refusal), so the
+  catalogue does not move. Alternative: a new code (catalogue entry, digest re-pin). Reversible by this commit alone.
+  Test `test_n1_component_basis_refuses_a_raw_v2_document` (`tests/test_f2_amendment9.py`), with the lowering
+  selecting the v1 document's basis. `test_f2_amendment9.py` + `test_f2_lowering.py`: 225 passed, 1 deselected.
+- **DECISION WO8-12 (S9, close).** New manifest `evidence/F2/fb75c409d6aa4ef171b1dfa9a2572836ccf27f28/manifest.json`
+  (`tested`, review pending), replacing WO7's `a3081770…` (removed, as F1/F3 moved theirs). The manifest schema's
+  `result` enum has no `partial`, so each partial exit is a passing check for the built part plus an `unsupported`
+  check naming the reason and the closing package: `E-F2-4.Q6-A2-registration` (X19/X20), `E-F2-8.Q7-A1-map` (F4),
+  `E-F2-9.state_degenerate_in_definition` (F5/F6); E-F2-9 reads 19 of 20; the stale WO7-3 sentence is gone. The
+  pending human review of `check_admission` is recorded as check `F2.DESCRIPTION-REVIEW` = `fail` (a failed gate
+  stays failed), and `F2.SURFACE` names its two failures. Harvest (`benchmarks/t08/support_envelope.yaml`): 4
+  limitations and the 4 non-pass checks, class P; `HARVEST_SIZE` (108, 1176, 147) -> (109, 1180, 151); matrix
+  re-emitted. WO7's manifest had no harvest rows, so
+  `test_a21_every_item_is_classified_once_and_resolves` failed from 9d2fbe6c on; it passes with these rows.
+  Battery at `fb75c409` (logs `~/.cache/line06/f2-wo8/`): `tests/test_f2_*.py` 564 passed, 1 deselected (CoolProp
+  test ran); V03 22 passed; surface 2321 passed, 28 skipped, 2 failed (the expected human review of
+  `check_admission`, and A21 before the harvest rows); MSG 186 passed, 3 xfailed; nlp (`test_f2_amendment9.py`,
+  `test_opt_job_nlp.py`) 7 passed; F0 PASS M1 50/50, M2-M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 42/42;
+  ruff clean, 1345 files formatted, mypy clean (367 files).
+
+- **DECISION F2-J16 (orchestrator, 2026-11-27). `tests/test_adr_0002_a1_integers.py::test_j16_...` was red on wp/F2
+  (green on main): F2-WO4's four valid flow-style fixtures under `tests/fixtures/schemas/v2/specification/valid/`
+  begin with `{`, so `load_document` parses them as JSON and raises `JSONDecodeError`, which `_fixture_documents` does
+  not catch. Found by the F8 close-out gate (STOP F8-CO-3). Fix: a leading YAML comment line in each of the four
+  files; content unchanged; the test is not touched.** After: `test_adr_0002_a1_integers.py` +
+  `test_f2_revision_v2.py` 175 passed; F0 PASS (M1 50/50, M2-M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 42/42).
+  Alternative: catch `JSONDecodeError` in the test (a weaker check). Reversible by: reverting this commit.
+- **ADR 0062 Accepted, 2026-11-27** (Decision Desk `ofs-f2-accept-adr0062` v2, choice A, VERIFIED). The card's push
+  of 6913c4a0 was conditional on the local full gate on 6913c4a0 passing; it failed (2 failed, 21723 passed:
+  `test_t08_w2_description_reviews` (check_admission.md, waits for card `ofs-f2-check-admission-human`) and
+  `test_s19_w5_gate::test_s2_the_real_chain_passes_a_comment_edited_tier_3_step` (S19 W5 S2: F2's connection
+  definitions absent from the held implementation sets)), so wp/F2 was NOT pushed.
+- **DECISION F2-S2 (orchestrator, 2026-11-27). `scripts/w5_identity.py` `measure_facts` holds F2's `material.json`
+  beside F3's `records.json`** (same `getattr` pattern), so S2 compares the table F2 added: before, `sets --check`
+  failed S2 with the five material rows "held None, generated []"; after, `sets --check` PASS and
+  `tests/test_s19_w5_gate.py` 63 passed. Alternative: treat a missing row as an empty set (would hide a missing table).

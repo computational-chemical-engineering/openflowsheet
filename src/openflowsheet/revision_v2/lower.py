@@ -1,40 +1,39 @@
-"""Lowering a v1-expressible v2 revision to its v1 document (ADR 0062 D12).
+"""Lowering a v1-expressible v2 revision to its v1 document (ADR 0062 D12, as corrected by F2-R1).
 
-A v2 document is *v1-expressible* iff its convention is the legacy provider's native one, every
-material connection is `nTP-v1`, it has no energy or signal connection, reaction set, section, probe
-or parameter endpoint, and every component record is a legacy record (ADR 0061 D12) of one file,
-named by its id there (F2 decision WO6a-2: D12's "whose component list equals `component_set` in
-order" is read as the lowered `components` being the set's ids in its order, which admits a permuted
-set, as v1 does, and CoolProp's one fluid of 123). `lower` maps it field by field to the v1 document
-the untouched v1 path compiles: `component_set` becomes `{record_source: that file, components: the
-ids in order}`; a connection's `definition: nTP-v1` becomes `state_definition: nTP-v1`,
-`component_mapping: revision_component_set`, with `phase_capability`, `initialization_hint` and
-`notes` copied; instances, specifications in v1's target form and the provenance are copied;
-`convention`, `materials`, `property_methods`, `reaction_sets` and `sections` are dropped, after
-checking that `property_methods.default` is the provider ADR 0050 D1 assigns to the file and that
-there are no overrides. A document's `content_hash`, when it carries one, is recomputed for the v1
-document by v1's rule (the field names its own document; it is outside the hash either way).
+D12: a v2 document is *v1-expressible* iff (a) its convention is the native one of the legacy
+provider ADR 0050 D1 assigns to its record source, and `property_methods.default` is that provider
+with no override; (b) `materials.thermal_coordinate` is `T`; (c) every material connection is
+`nTP-v1`, and it has no energy or signal connection, reaction set, section, probe or parameter
+endpoint, specification target outside v1's form, connection `phase_assertion`, instance
+`template` or `references`, or `semantic_role` outside v1's vocabulary; (d) its component set is
+legacy: every component record is the legacy component record (ADR 0061 D12) of one file, under
+the component's own id there, in any order and for any subset of that file's components (as v1's
+`record_source` binds them), and `parameter_sets` lists exactly that file's legacy parameter-set
+records, in the legacy index's order. The criterion stands without `validate`. Such a document
+lowers to the v1 document with `record_source` = that file and `components` = the set's ids in
+the set's order (ADR 0001 D2.1); anything else is refused with every construct found, once each,
+as `construct_unavailable(<construct>, <foundation>)`: `convention:<id>`, `property_methods`,
+`component:<id>`, `component_set` (records of two files), `parameter_sets`, `derived:<id>` (F4);
+`phase_assertion:<connection>` (F5); `thermal_coordinate:<coordinate>`, `definition:<id>`,
+`energy:<c>`, `signal:<c>`, `probe:<c>`, `parameter:<instance>.<parameter>`, `reaction_set:<id>`,
+`section:<namespace>`, `target:<specification>`, `semantic_role:<role>`, `template:<instance>`,
+`references:<instance>` (F6). `convention`, `property_methods` and `parameter_sets` are checked
+only when the component set names one file. Lowering is a field map. A connection with
+`definition: nTP-v1` becomes `state_definition: nTP-v1`, `component_mapping:
+revision_component_set`. `phase_capability`, `initialization_hint` and `notes` are copied.
+Instances and specifications in v1's target form are copied. `convention`, `materials` (whatever
+its definitions and `phase_order_keys` hold: no `nTP-v1` connection reads them) and
+`property_methods` are dropped. A field v1 has no counterpart for lowers only in its content-free
+form, absent when optional and empty when required: admitting a construct later moves no byte of
+a document accepted now, and giving a dropped one meaning later would. Lowering does not
+anticipate the v1 binder: a lowered document the binder refuses is refused as its v1 twin is.
 
-Anything else is refused with every `construct_unavailable(<construct>, <foundation>)` found,
-sorted as `validate` sorts (`LoweringError.refusals`). The constructs and their foundations:
-`convention:<id>` and `property_methods` (F4, as `validate` names them), `component:<id>` (a
-record that is not a legacy component record of that id) and `component_set` (records of more
-than one file), F4; `definition:<id>` (a material definition other than `nTP-v1`), `energy:<c>`,
-`signal:<c>`, `probe:<c>` and `parameter:<instance>.<parameter>` (D9), `reaction_set:<id>`,
-`section:<namespace>` and `target:<specification>` (a v2 target form), F6; `derived:<id>` (D10),
-F4. Whether a refusal is reported once per fault follows F2 decision WO4-6: the convention and the
-property methods are checked only when the component set names one file.
-
-D11 fields D12 does not classify, and v1 has no field for, are refused too (F2 decision WO6a-3):
-`semantic_role:<role>` for ADR 0062 D11's four roles outside v1's vocabulary (`utility`,
-`controller`, `shaft`, `relief_device`; ADR-F6 owns it), `template:<instance>` and
-`references:<instance>` (F6), `phase_assertion:<connection>` (F5) and a non-empty
-`parameter_sets` (`parameter_sets`, F4). `materials` is dropped as D12 says, whatever it holds: a
-valid document whose connections are all `nTP-v1` uses none of its definitions.
-
-`lower` reads the document as parsed; the validator's refusals (`validate`) come first. The legacy
-records are the committed legacy index's (`records.importers.legacy.committed_index`); the
-provider selection is the caller's `LegacyProviders` (F2 decision WO6a-1).
+Here: the refusals are sorted as `validate` sorts them (`LoweringError.refusals`). A document's
+`content_hash`, when it carries one, is recomputed for the v1 document by v1's rule (the field
+names its own document; it is outside the hash either way). `lower` reads the document as parsed.
+The legacy records, component and parameter-set, are the committed legacy index's
+(`records.importers.legacy.committed_index`); the provider selection is the caller's
+`LegacyProviders` (F2 decision WO6a-1).
 """
 
 from __future__ import annotations
@@ -58,6 +57,7 @@ __all__ = [
     "LegacyRecord",
     "LoweringError",
     "file_components",
+    "file_parameter_sets",
     "legacy_records",
     "lower",
 ]
@@ -156,13 +156,30 @@ def file_components(path: str) -> tuple[str, ...]:
     return ()
 
 
-def _methods(document: Mapping[str, Any], provider: LegacyProvider, refusals: list[Coded]) -> None:
+@cache
+def file_parameter_sets(path: str) -> tuple[str, ...]:
+    """The record SHA-256s of legacy file `path`'s parameter-set records (ADR 0061 D12), in the
+    legacy index's order; `()` for a file with none or a path the legacy index does not hold."""
+    for entry in committed_index()["files"]:
+        if entry["path"] == path:
+            return tuple(
+                r["sha256"] for r in entry["records"] if r["record_type"] == "parameter_set"
+            )
+    return ()
+
+
+def _one_file(
+    document: Mapping[str, Any], source: str, provider: LegacyProvider, refusals: list[Coded]
+) -> None:
+    """D12 (a) and (d)'s parameter sets, checked only when the component set names one file."""
     convention = document["convention"]
     if convention != provider.convention:
         refusals.append(_refused(f"convention:{convention}", "F4"))
     methods = document["property_methods"]
     if methods["overrides"] or methods["default"] != provider.provider:
         refusals.append(_refused("property_methods", "F4"))
+    if document["component_set"]["parameter_sets"] != list(file_parameter_sets(source)):
+        refusals.append(_refused("parameter_sets", "F4"))
 
 
 #: v1's `semantic_role` vocabulary (`process-revision.schema.json`); D11 adds four to it.
@@ -187,7 +204,10 @@ V1_ROLES: Final = frozenset(
 
 
 def _unclassified(document: Mapping[str, Any], refusals: list[Coded]) -> None:
-    """D11's fields D12 does not classify and v1 has no field for (F2 decision WO6a-3)."""
+    """D11's fields v1 has no field for (F2 decision WO6a-3, ruling F2-R1)."""
+    coordinate = document["materials"]["thermal_coordinate"]
+    if coordinate != "T":
+        refusals.append(_refused(f"thermal_coordinate:{coordinate}", "F6"))
     for instance in document["instances"]:
         if instance["semantic_role"] not in V1_ROLES:
             refusals.append(_refused(f"semantic_role:{instance['semantic_role']}", "F6"))
@@ -197,8 +217,6 @@ def _unclassified(document: Mapping[str, Any], refusals: list[Coded]) -> None:
     for connection in document["connections"]:
         if "phase_assertion" in connection:
             refusals.append(_refused(f"phase_assertion:{connection['id']}", "F5"))
-    if document["component_set"]["parameter_sets"]:
-        refusals.append(_refused("parameter_sets", "F4"))
 
 
 def _structure(document: Mapping[str, Any], refusals: list[Coded]) -> None:
@@ -247,7 +265,7 @@ def lower(revision: RevisionV2, providers: LegacyProviders) -> dict[str, Any]:
     source = _record_source(document, source_refusals)
     refusals += source_refusals
     if source is not None:
-        _methods(document, providers.select(source), refusals)
+        _one_file(document, source, providers.select(source), refusals)
     if refusals or source is None:
         raise LoweringError(refusals)
     lowered: dict[str, Any] = {

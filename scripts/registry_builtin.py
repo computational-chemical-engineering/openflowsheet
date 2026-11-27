@@ -607,20 +607,86 @@ MATERIAL_STATUS: Final = "implemented"
 DEFINITION_SCHEMA_PATH: Final = "_data/schemas/connection-definition.schema.json"
 
 
+#: JSON Schema keywords whose members are names, not keywords: a member named `description`
+#: there is a schema, which `_without_descriptions` keeps.
+_NAMED_MEMBERS: Final = frozenset({"properties", "patternProperties", "$defs", "dependentSchemas"})
+
+
+#: JSON Schema keywords whose values are instance data, kept as they are.
+_VALUE_MEMBERS: Final = frozenset({"const", "enum", "default", "examples"})
+
+
+def _without_descriptions(node: Any, *, names: bool = False) -> Any:
+    """`node` with every `description` keyword removed (annotations, not grammar)."""
+    if isinstance(node, dict):
+        return {
+            key: (
+                value
+                if key in _VALUE_MEMBERS and not names
+                else _without_descriptions(value, names=key in _NAMED_MEMBERS and not names)
+            )
+            for key, value in node.items()
+            if names or key != "description"
+        }
+    if isinstance(node, list):
+        return [_without_descriptions(item) for item in node]
+    return node
+
+
+def _local_refs(node: Any) -> Iterable[str]:
+    """The `#/$defs/<name>` names `node` references, in document order."""
+    if isinstance(node, dict):
+        for key, value in node.items():
+            if key == "$ref" and isinstance(value, str) and value.startswith("#/$defs/"):
+                yield value.removeprefix("#/$defs/")
+            else:
+                yield from _local_refs(value)
+    elif isinstance(node, list):
+        for item in node:
+            yield from _local_refs(item)
+
+
+def instance_schema_sha256(schema: Mapping[str, Any], pointer: str) -> str:
+    """ADR 0062 D3, D13 (F2 review S4): the identity of a template's instance grammar,
+    `document_sha256` of `{"schema": <the sub-schema at pointer>, "$defs": {<each $defs member
+    it reaches by local $ref, transitively, by name>}}`, every `description` keyword removed.
+    It moves when that grammar moves, not when a description or another template's grammar
+    does. A `$ref` to another file is hashed as its URI (not followed)."""
+    from openflowsheet.canonical import document_sha256
+
+    node: Any = schema
+    for token in pointer.removeprefix("/").split("/"):
+        node = node[token.replace("~1", "/").replace("~0", "~")]
+    definitions = schema.get("$defs", {})
+    reached: set[str] = set()
+    pending = [node]
+    while pending:
+        for name in _local_refs(pending.pop()):
+            if name not in reached:
+                reached.add(name)
+                pending.append(definitions[name])
+    closure = {
+        "schema": node,
+        "$defs": {name: definitions[name] for name in sorted(reached)},
+    }
+    return document_sha256(_without_descriptions(closure))
+
+
 def material() -> list[dict[str, Any]]:
     """ADR 0062's built-in connection-definition templates (D3) and phase families (D6)."""
     from openflowsheet.material.definitions import TEMPLATES
     from openflowsheet.material.phase_id import FAMILIES
-    from openflowsheet.registry.selfhash import file_sha
 
-    sha = file_sha(SOURCE, f"openflowsheet/{DEFINITION_SCHEMA_PATH}")
+    grammar = json.loads(
+        (SOURCE / "openflowsheet" / DEFINITION_SCHEMA_PATH).read_text(encoding="utf-8")
+    )
     found = []
     for name, template in TEMPLATES.items():
         schema = {
             "package": "openflowsheet",
             "path": DEFINITION_SCHEMA_PATH,
             "pointer": template.pointer,
-            "sha256": sha,
+            "sha256": instance_schema_sha256(grammar, template.pointer),
         }
         found.append(
             _descriptor(

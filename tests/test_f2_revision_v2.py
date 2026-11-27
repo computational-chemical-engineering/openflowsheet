@@ -453,9 +453,10 @@ def test_e_f2_8_q8_a2_no_solid_candidate_for_a_solid_substream_component() -> No
     assert mixed_solid_candidates(brine, ["NaCl", "Na_p", "H2O"]) == ("Na_p", "H2O")
 
 
-def test_e_f2_8_q8_a4_temperature_comes_from_the_flowing_substream() -> None:
+def test_e_f2_8_q8_a4_temperature_comes_from_the_flowing_substreams() -> None:
     """Q8.A4 with a stub model per substream, T(ĥ) = ĥ / c_p: `mixed` dormant and `solid`
-    flowing takes the solid's T; the reverse takes `mixed`'s; a dormant stream has none."""
+    flowing takes the solid's T; the reverse takes `mixed`'s; both flowing fix T jointly
+    (Q8.R6, F2 review S1), so both are named in instance order; a dormant stream has none."""
     revision = parse((V2 / "process_revision" / "valid" / "crystallizer.yaml").read_text())
     layout, ids = _layout(revision)
     stub = {"liq": lambda h: h / 4180.0, "cryst": lambda h: h / 1250.0}
@@ -469,11 +470,12 @@ def test_e_f2_8_q8_a4_temperature_comes_from_the_flowing_substream() -> None:
                 values[vid] = solid
         return [values.get(vid, 0.0) for vid in ids]
 
-    for liquid, solid, expected in ((0.0, 2.0, "cryst"), (3.0, 0.0, "liq"), (3.0, 2.0, "liq")):
-        found = layout.temperature_substream(state(liquid, solid), "S3")
+    for liquid, solid, expected in ((0.0, 2.0, "cryst"), (3.0, 0.0, "liq")):
+        (found,) = layout.thermal_substreams(state(liquid, solid), "S3")
         assert found == expected
         assert stub[found](418_000.0) == {"liq": 100.0, "cryst": 334.4}[found]
-    assert layout.temperature_substream(state(0.0, -0.0), "S3") is None
+    assert layout.thermal_substreams(state(3.0, 2.0), "S3") == ("liq", "cryst")
+    assert layout.thermal_substreams(state(0.0, -0.0), "S3") == ()
 
 
 def _independent_masses(instance: Mapping[str, Any], facts: MaterialFacts) -> list[float]:

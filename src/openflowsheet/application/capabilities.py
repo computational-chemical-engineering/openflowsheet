@@ -316,9 +316,8 @@ def _lowered_draft(revision: Mapping[str, Any]) -> tuple[Mapping[str, Any], tupl
     `invalid_request` at its pointer; F2's errors and the lowering's `construct_unavailable` refuse
     it `revision_unsupported`, the first in `detail.unbound`, all of them in `detail.hint`, sorted
     (F2 decision WO6b-5)."""
-    from openflowsheet.application.validation import rendered_coded, revision_context
-    from openflowsheet.models.revision_flowsheet import legacy_providers
-    from openflowsheet.revision_v2 import LoweringError, RevisionV2Error, lower, parse, validate
+    from openflowsheet.application.validation import rendered_coded, v2_admission
+    from openflowsheet.revision_v2 import RevisionV2Error, parse
 
     try:
         parsed = parse(revision)
@@ -326,15 +325,9 @@ def _lowered_draft(revision: Mapping[str, Any]) -> tuple[Mapping[str, Any], tupl
         pointer = error.coded.params["pointer"]
         message = f"the v2 revision schema refuses {pointer or '/'}"
         raise _unreadable(f"/revision{pointer}", message) from error
-    errors, notices = validate(parsed, revision_context(parsed))
-    refusals = list(errors)
-    try:
-        lowered = lower(parsed, legacy_providers())
-    except LoweringError as error:
-        refusals += error.refusals
-    if refusals:
-        unique = {coded.sort_key(): coded for coded in refusals}
-        rendered = [rendered_coded(unique[key]) for key in sorted(unique)]
+    lowered, refusals, notices = v2_admission(parsed)
+    if lowered is None:
+        rendered = [rendered_coded(coded) for coded in refusals]
         raise api_error(
             "revision_unsupported",
             "the v2 revision is refused by ADR 0062's rules or does not lower to v1",

@@ -405,6 +405,11 @@ def test_q6_a4_a_grid_mismatch_is_refused_and_the_same_grid_admitted() -> None:
     other = definition((0.0, 1e-4, 2e-4, 6e-4, 1e-3))
     # The same grid: every port on the one definition (F2 decision WO5-4 on a second id).
     assert _validate(_revision({"probe": DEFINITION})) == ((), ())
+    # Two ids with equal bodies are one definition (D3: the SHA is the identity; F2 review S2).
+    twin = copy.deepcopy(DEFINITION)
+    twin["substreams"][1]["attributes"].reverse()  # the normal form sorts them back
+    assert twin != DEFINITION
+    assert _validate(_revision({"probe": DEFINITION, "probe2": twin}, "probe2")) == ((), ())
     refused, _ = _validate(_revision({"probe": DEFINITION, "probe2": other}, "probe2"))
     assert refused == (Coded("attribute_grid_mismatch", {"connection": "S2", "port": "mix.in2"}),)
     # The grid is in the definition's SHA, so a probe mixer refuses the inlet too.

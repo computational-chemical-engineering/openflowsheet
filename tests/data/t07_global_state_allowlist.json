@@ -313,8 +313,8 @@
       "file": "revision_v2/lower.py",
       "line": "@cache",
       "patterns": ["cache"],
-      "occurrences": 2,
-      "justification": "F2-WO6a (ADR 0062 D12): two readers of the committed legacy index (package data, immutable for the process's life): `legacy_records` (record SHA-256 to file and id) and `file_components` (a file's ids in position order). Read only; no job, request, project or store state."
+      "occurrences": 3,
+      "justification": "F2-WO6a, F2-WO6c (ADR 0062 D12): three readers of the committed legacy index (package data, immutable for the process's life): `legacy_records` (record SHA-256 to file and id), `file_components` (a file's ids in position order) and `file_parameter_sets` (a file's parameter-set record SHA-256s in index order). Read only; no job, request, project or store state."
     }
   ]
 }
