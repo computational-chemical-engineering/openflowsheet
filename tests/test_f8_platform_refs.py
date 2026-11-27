@@ -8,7 +8,10 @@ Mutation controls (run by hand, not committed; each makes the named tests fail):
   `test_fake_platform_*`);
 - invariant: `invariant_problems` skips the R0 comparison (`test_invariant_reports_changed_r0`),
   or the `reference_sha256` comparison (`test_invariant_reports_stale_reference_sha`);
-- refusals: `load_platform_record` skips its self-hash check (`test_refusal_bad_self_hash`).
+- refusals: `load_platform_record` skips its self-hash check (`test_refusal_bad_self_hash`),
+  its file-name check (`test_refusal_file_name_not_the_case`) or its departure value checks
+  (`test_refusal_malformed_departure`); `invariant_problems` skips the missing-reference guard
+  (`test_invariant_reports_a_missing_reference_record`).
 """
 
 from __future__ import annotations
@@ -23,8 +26,10 @@ import pytest
 from conftest import REPO_ROOT
 from f8_bundle_v2_support import legacy_stack, record_v2
 
+from openflowsheet.application.revision_replay import declared_kinds
+from openflowsheet.application.revision_run import select_route
 from openflowsheet.run import platform_refs, replay
-from openflowsheet.run.compare import V1_POLICY_ID, differences
+from openflowsheet.run.compare import CURRENT_POLICY_ID, V1_POLICY_ID, differences
 from openflowsheet.run.platform_refs import (
     PLATFORM_IDS,
     REFERENCE_PLATFORM,
@@ -86,6 +91,13 @@ def _moved(artifacts: dict[str, Any]) -> tuple[dict[str, Any], str, float, float
 
 def _write(path: Path, document: Any) -> None:
     path.write_text(json.dumps(document), encoding="utf-8")
+
+
+def _departure(case_path: Path) -> dict[str, Any]:
+    """The one departure row of the case's `linux-aarch64` record."""
+    record = json.loads(platform_record_path(case_path, AARCH64).read_text(encoding="utf-8"))
+    row: dict[str, Any] = record["departures"][0]
+    return row
 
 
 def _platform_document(
@@ -165,10 +177,17 @@ def test_selection_reference_platform_uses_the_reference(
     case: tuple[Path, dict[str, Any]],
 ) -> None:
     case_path, moved = case
+    reference = platform_refs.record_artifacts(json.loads(case_path.read_text(encoding="utf-8")))
+    assert compare_to_reference(
+        case_path, dict(reference), REFERENCE_PLATFORM, policy_id=V1_POLICY_ID
+    ) == ([], []), "control: the reference agrees with itself"
     found, notices = compare_to_reference(
         case_path, moved, REFERENCE_PLATFORM, policy_id=V1_POLICY_ID
     )
-    assert found, "the moved float must be a difference against the reference record"
+    row = _departure(case_path)
+    # The one difference is the moved float, at its path, with its value.
+    assert len(found) == 1, found
+    assert row["path"].replace("/", ".") in found[0] and repr(row["platform_value"]) in found[0]
     assert notices == []
     assert select_reference(case_path, REFERENCE_PLATFORM)[1] is None
 
@@ -178,7 +197,28 @@ def test_selection_other_platform_without_record_uses_the_reference(
 ) -> None:
     case_path, moved = case
     found, notices = compare_to_reference(case_path, moved, "macos-arm64", policy_id=V1_POLICY_ID)
-    assert found and notices == []
+    assert len(found) == 1 and notices == []
+
+
+def test_selection_under_the_v2_policy(case: tuple[Path, dict[str, Any]]) -> None:
+    """The same selection under `T08-numerical-policy-v2`, with the route's declared kinds (as
+    RC step 5 compares, `f8_bundle_v2_support.rerun_v2`)."""
+    case_path, moved = case
+    reference = platform_refs.record_artifacts(json.loads(case_path.read_text(encoding="utf-8")))
+    route = select_route(reference["revision.json"])
+    kinds = declared_kinds(route.binding.spec)  # type: ignore[union-attr]
+    assert kinds
+    found, notices = compare_to_reference(
+        case_path, moved, AARCH64, policy_id=CURRENT_POLICY_ID, variable_kinds=kinds
+    )
+    assert found == []
+    assert [(n.code, dict(n.params)) for n in notices] == [
+        ("platform_reference_used", {"platform": AARCH64})
+    ]
+    found, notices = compare_to_reference(
+        case_path, moved, REFERENCE_PLATFORM, policy_id=CURRENT_POLICY_ID, variable_kinds=kinds
+    )
+    assert len(found) == 1 and CURRENT_POLICY_ID in found[0] and notices == []
 
 
 def test_fake_platform_uses_its_record(
@@ -190,13 +230,16 @@ def test_fake_platform_uses_its_record(
         replay, "REGISTERED_PLATFORMS", replay.REGISTERED_PLATFORMS | {("fake", "Fakeos")}
     )
     assert "fake-arch" in registered_platform_ids()
+    # Before the fake platform has a record of its own, it is compared with the reference.
+    found, notices = compare_to_reference(case_path, moved, "fake-arch", policy_id=V1_POLICY_ID)
+    assert len(found) == 1 and notices == []
     document = json.loads(platform_record_path(case_path, AARCH64).read_text(encoding="utf-8"))
     document["platform"] = "fake-arch"
     document["self_sha256"] = self_sha256(document)
     _write(platform_record_path(case_path, "fake-arch"), document)
 
     reference = platform_refs.record_artifacts(json.loads(case_path.read_text(encoding="utf-8")))
-    assert differences(moved, reference, policy_id=V1_POLICY_ID)
+    assert len(differences(moved, reference, policy_id=V1_POLICY_ID)) == 1
     found, notices = compare_to_reference(case_path, moved, "fake-arch", policy_id=V1_POLICY_ID)
     assert found == []
     assert [(n.code, dict(n.params)) for n in notices] == [
@@ -221,15 +264,33 @@ def test_invariant_synthetic_case_is_clean(case: tuple[Path, dict[str, Any]]) ->
     assert invariant_problems(case_path) == []
 
 
-def test_invariant_reports_changed_r0(case: tuple[Path, dict[str, Any]]) -> None:
+def _rename_inner_row(artifacts: dict[str, Any]) -> None:
+    artifacts["solve-plan.json"]["inner_row_ids"][0] += "x"
+
+
+def _count_one_more_residual(artifacts: dict[str, Any]) -> None:
+    # The last event's: the projection carries the final cumulative counters (F8-WO5-R3).
+    artifacts["solve-events.json"][-1]["counters"]["residual_calls"] += 1
+
+
+@pytest.mark.parametrize("change", [_rename_inner_row, _count_one_more_residual])
+def test_invariant_reports_changed_r0(case: tuple[Path, dict[str, Any]], change: Any) -> None:
     case_path, _ = case
     path = platform_record_path(case_path, AARCH64)
     document = json.loads(path.read_text(encoding="utf-8"))
-    document["artifacts"]["solve-plan.json"]["inner_row_ids"][0] += "x"
+    change(document["artifacts"])
     document["self_sha256"] = self_sha256(document)
     _write(path, document)
     problems = invariant_problems(case_path)
     assert len(problems) == 1 and "R0 projection differs" in problems[0]
+
+
+def test_invariant_reports_a_missing_reference_record(case: tuple[Path, dict[str, Any]]) -> None:
+    case_path, _ = case
+    case_path.unlink()
+    assert all_cases([case_path.parent]) == [case_path]
+    problems = invariant_problems(case_path)
+    assert len(problems) == 1 and "without their reference record" in problems[0]
 
 
 def test_invariant_reports_stale_reference_sha(case: tuple[Path, dict[str, Any]]) -> None:
@@ -266,8 +327,21 @@ def test_refusal_wrong_format(case: tuple[Path, dict[str, Any]]) -> None:
         load_platform_record(path)
 
 
-def test_refusal_unregistered_platform(case: tuple[Path, dict[str, Any]]) -> None:
-    path = _edited(case, lambda d: d.update(platform="macos-arm64"))
+def test_load_ignores_line_endings_and_layout(case: tuple[Path, dict[str, Any]]) -> None:
+    """ADR 0060 D3: the self-hash is over canonical JSON, so an indented CRLF file loads."""
+    case_path, _ = case
+    path = platform_record_path(case_path, AARCH64)
+    document = json.loads(path.read_text(encoding="utf-8"))
+    path.write_bytes(json.dumps(document, indent=2).replace("\n", "\r\n").encode("utf-8"))
+    assert b"\r\n" in path.read_bytes()
+    assert load_platform_record(path) == document
+
+
+@pytest.mark.parametrize("unregistered", ["macos-arm64", "solaris-sparc"])
+def test_refusal_unregistered_platform(
+    case: tuple[Path, dict[str, Any]], unregistered: str
+) -> None:
+    path = _edited(case, lambda d: d.update(platform=unregistered))
     with pytest.raises(ValueError, match="unregistered platform"):
         load_platform_record(path)
 
@@ -281,6 +355,29 @@ def test_refusal_reference_platform(case: tuple[Path, dict[str, Any]]) -> None:
 def test_refusal_bad_self_hash(case: tuple[Path, dict[str, Any]]) -> None:
     path = _edited(case, lambda d: d.update(case="other"), rehash=False)
     with pytest.raises(ValueError, match="bad self_sha256"):
+        load_platform_record(path)
+
+
+def test_refusal_file_name_not_the_case(case: tuple[Path, dict[str, Any]]) -> None:
+    path = _edited(case, lambda d: d.update(case="GP-C2"))
+    with pytest.raises(ValueError, match="must be named"):
+        load_platform_record(path)
+
+
+@pytest.mark.parametrize(
+    ("member", "value", "rule"),
+    [
+        ("bound", 0.0, "bound positive"),
+        ("platform_value", "1.0", "must be numbers"),
+        ("reference_value", None, "must be numbers"),
+        ("near_threshold", 0, "near_threshold must be a boolean"),
+    ],
+)
+def test_refusal_malformed_departure(
+    case: tuple[Path, dict[str, Any]], member: str, value: Any, rule: str
+) -> None:
+    path = _edited(case, lambda d: d["departures"][0].update({member: value}))
+    with pytest.raises(ValueError, match=rule):
         load_platform_record(path)
 
 

@@ -88,6 +88,12 @@ def _load(path: Path) -> Any:
     return json.loads(Path(path).read_text(encoding="utf-8"))
 
 
+def _real(value: Any) -> bool:
+    """A JSON number (a bool is not one; a non-finite one already failed the self-hash, whose
+    canonical JSON has no spelling for it)."""
+    return isinstance(value, int | float) and not isinstance(value, bool)
+
+
 def load_platform_record(path: Path) -> dict[str, Any]:
     """The per-platform record at `path`, validated; `ValueError` names the rule it breaks."""
     document = _load(path)
@@ -98,7 +104,7 @@ def load_platform_record(path: Path) -> dict[str, Any]:
     where = document["platform"]
     if where == REFERENCE_PLATFORM:
         raise ValueError(f"{path}: the reference platform {where!r} takes no per-platform record")
-    if where not in registered_platform_ids():
+    if not isinstance(where, str) or where not in registered_platform_ids():
         raise ValueError(
             f"{path}: unregistered platform {where!r}: a beyond-policy float there is a "
             "platform-difference row, never a reference record (ADR 0067 D7)"
@@ -107,6 +113,13 @@ def load_platform_record(path: Path) -> dict[str, Any]:
         raise ValueError(f"{path}: reference_platform must be {REFERENCE_PLATFORM!r}")
     if document["self_sha256"] != self_sha256(document):
         raise ValueError(f"{path}: bad self_sha256")
+    if (
+        not isinstance(document["case"], str)
+        or Path(path).name != f"{document['case']}.{where}.json"
+    ):
+        raise ValueError(
+            f"{path}: the file must be named <case>.<platform>.json for its case and platform"
+        )
     rows = document["departures"]
     if not isinstance(rows, list) or not rows:
         raise ValueError(f"{path}: departures must be a non-empty list")
@@ -116,6 +129,13 @@ def load_platform_record(path: Path) -> dict[str, Any]:
     for row in rows:
         if set(row) != _DEPARTURE_MEMBERS:
             raise ValueError(f"{path}: a departure's members must be {sorted(_DEPARTURE_MEMBERS)}")
+        numbers = ("reference_value", "platform_value", "bound", "ratio")
+        if not all(_real(row[name]) for name in numbers) or not row["bound"] > 0:
+            raise ValueError(
+                f"{path}: departure {row['path']!r}: values must be numbers, the bound positive"
+            )
+        if not isinstance(row["near_threshold"], bool):
+            raise ValueError(f"{path}: departure {row['path']!r}: near_threshold must be a boolean")
         ratio = row["ratio"]
         if not ratio > 1:
             raise ValueError(f"{path}: departure {row['path']!r}: ratio {ratio} must exceed 1")
@@ -156,6 +176,8 @@ def compare_to_reference(
 
 def invariant_problems(case_path: Path) -> list[str]:
     """ADR 0067 D7's invariant over one case's per-platform records."""
+    if not Path(case_path).is_file():
+        return [f"{case_path}: per-platform records without their reference record"]
     reference = _load(case_path)
     reference_sha = record_sha256(reference)
     reference_r0 = canonical_json(r0_projection(record_artifacts(reference)))
