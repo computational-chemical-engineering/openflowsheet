@@ -44,12 +44,14 @@ Judged PASS since the morning (details: `docs/LINE06_DECISIONS.md`): F2-R1, F2-W
 (`docs/reviews/F2-review.md`) and F2-WO8; F8-WO1 (+WO1b, R-1076 c_13), F8-WO2, F8-WO3. Heads: wp/F2 `6913c4a0` (j16 fixture fix on a64f93fb)
 (manifest `evidence/F2/fb75c409.../manifest.json`, `tested`), wp/F8 `25e5ed36`, wp/X06 `1b9561a3` (pushed).
 
-**Running (2026-11-27):** full local gate on wp/F2 `6913c4a0` (`scripts/gate.sh`, log
-`~/.cache/line06/f2-j16/gate-6913c4a0.log`; if lost, rerun it in `.claude/worktrees/f2` with the main .venv PATH and
-PYTHONPATH=src). Card `ofs-f2-accept-adr0062` is v2; its A text: "Mark ADR 0062 Accepted as corrected before
-acceptance at wp/F2 a64f93fb (D12 per F2-R1, D2 PropertyRequest not widened, D11 h_mass revision-wide, E-F2-9
-state_degenerate_in_definition and Q6.A2 registration half deferred to F5/F6), then push wp/F2 at 6913c4a0 (a64f93fb
-plus the test-fixture fix 6913c4a0, DECISION F2-J16) for CI, only if the local gate on 6913c4a0 passes."
+**Running (2026-11-27, afternoon):** (1) F2 full gate on wp/F2 `4b820b97` (nohup; summary
+`~/.cache/line06/f2-j16/gate-4b820b97.summary`, log `gate-4b820b97.log`; a background waiter prints it). F2 cards both
+executed: ADR 0062 Accepted (`831d6f26`), check_admission review recorded (`8edbbaee`); push of 6913c4a0 withheld
+(its gate failed). Requested from hub: a new card "Push wp/F2 at 4b820b97 for CI, only if the local full gate on
+4b820b97 passes." On VERIFIED + gate PASS: push, waiter `~/.cache/line06/ci/wait_runs.sh wp/F2 <sha>`, merge card on
+green. (2) F8-FR0 `opus-engineer` (merge wp/F2 4b820b97 into wp/F8; brief `docs/briefs/LINE06-F8-FR0.md`). Then
+F8-FR (`docs/briefs/LINE06-F8-FR.md`). (3) X06-CI1 `opus-engineer` (see X06 below). Codehealth diff is informational,
+not a push gate (LINE06_DECISIONS 2026-11-27).
 
 **X06:** CI run 45962988409 at `1b9561a3` FAILED (11 tests + codehealth; see LINE06_DECISIONS). Running: X06-CI1
 `opus-engineer` in `.claude/worktrees/x06` (brief `docs/briefs/LINE06-X06-CI1.md`, logs `~/.cache/line06/x06-ci1/`).
