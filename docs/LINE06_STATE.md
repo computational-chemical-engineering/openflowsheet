@@ -44,7 +44,12 @@ Judged PASS since the morning (details: `docs/LINE06_DECISIONS.md`): F2-R1, F2-W
 (`docs/reviews/F2-review.md`) and F2-WO8; F8-WO1 (+WO1b, R-1076 c_13), F8-WO2, F8-WO3. Heads: wp/F2 `a64f93fb`
 (manifest `evidence/F2/fb75c409.../manifest.json`, `tested`), wp/F8 `25e5ed36`, wp/X06 `1b9561a3` (pushed).
 
-**Next (F8):** write `docs/briefs/LINE06-F8-WO5.md` (ADR 0067 D7 per-platform reference records, `run/platform_refs.py`,
+**Running (2026-11-27):** F8-WO5 `sonnet-implementer` on wp/F8 from `369150d3` (brief `docs/briefs/LINE06-F8-WO5.md`;
+X07a errata E-D7-1..5 folded into ADR 0067 D7, DECISION F8-WO5-0; logs `~/.cache/line06/f8-wo5/`). If the session
+died: check `git -C .claude/worktrees/f8 log` and status, judge on the brief's acceptance. Then an `opus-engineer`
+review of the WO5 diff.
+
+**Was next (F8):** write `docs/briefs/LINE06-F8-WO5.md` (ADR 0067 D7 per-platform reference records, `run/platform_refs.py`,
 invariant test; E-F8-8; Sonnet `sonnet-implementer`, then an Opus `opus-engineer` review of its diff, per the WO table).
 Read D7 (`docs/adr/0067-F8-identity-replay-evidence.md` line ~152), risk 5 (reuse ADR 0025's layout if it exists; X07a
 `tests/test_x07a_*`), `docs/F8_DECISIONS.md`. Then F8 close-out (ADR 0019 Amendment 12 pointer paragraph, evidence
