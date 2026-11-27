@@ -319,6 +319,71 @@ def test_e_x06_13_the_copy_bundle_replays_without_the_project(
     assert copy_report["integrity"] == base["integrity"]
 
 
+OPT = ROOT / "benchmarks" / "opt"
+
+
+@pytest.mark.nlp
+def test_e_x06_13_an_optimize_record_under_a_project_policy_replays_without_the_project(
+    tmp_path: Path,
+) -> None:
+    """E-X06-13, the `optimize` half (X06 review S3): OPT-A2 optimized with its solve body
+    naming `T06-revision-v2` (what `default` resolves to on the revision route) and naming
+    `user.copy` (that document with only `policy_id` changed); each record reproduces in a fresh
+    project where no policy is registered, with the same replay verdict and integrity. Needs the
+    `nlp` extra: run in the audited environment (`scripts/m03_nlp_check.sh`)."""
+    pytest.importorskip("pyomo")
+    pytest.importorskip("cyipopt")
+    from openflowsheet.application.store import JOBS_DIR
+    from openflowsheet.application.transaction_types import Change, Edit
+
+    expected = json.loads((OPT / "expected.json").read_bytes())
+    flowsheet = json.loads(
+        (OPT / "flowsheets" / f"{expected['flowsheets']['OPT-A2']}.json").read_bytes()
+    )
+    request = json.loads((OPT / "requests" / "OPT-A2.json").read_bytes())
+    document = copy_of("user.copy")
+    records: dict[str, Path] = {}
+    statuses: dict[str, str] = {}
+    with LocalApplication.create(tmp_path / "p", project_id="x06-optimize") as application:
+        edits = tuple(Edit("set", (key,), value) for key, value in flowsheet.items())
+        revision_id = application.commit_change(Change(edits=edits), None, "seed").revision_id
+        application.register_solve_policy(policy=document, idempotency_key="copy")
+        for policy_id in ("T06-revision-v2", "user.copy"):
+            body = {"revision_id": revision_id, "request": request, "policy_id": policy_id}
+            job = application.submit_job(
+                JobRequest.from_document(
+                    {"operation": "optimize", "idempotency_key": policy_id, "body": body}
+                )
+            ).job
+            while job.status not in TERMINAL_STATUSES:
+                application.wait_job(job.job_id, timeout_s=math.inf)
+                job = application.get_job(job.job_id)
+            assert (job.status, job.error) == ("completed", None), job
+            optimization = application.get_job_result(job.job_id).optimization
+            assert optimization is not None
+            statuses[policy_id] = optimization["status"]
+            records[policy_id] = application.files_root / JOBS_DIR / job.job_id / "optimization"
+    # The copy's start bundles record the copy, by document and hash.
+    starts = sorted(records["user.copy"].glob("starts/*/start"))
+    assert starts
+    for bundle in starts:
+        assert read_artifact(bundle, "solve-policy.json") == document
+        assert read_manifest(bundle)[0].policy_sha256 == _document_sha256(document)
+    assert statuses["user.copy"] == statuses["T06-revision-v2"] == "KKT_POINT_VERIFIED"
+    fresh = LocalApplication.create(tmp_path / "fresh")
+    try:
+        reports = {
+            name: fresh.reproduce(record, ReplayPolicy(rerun=True)).as_document()
+            for name, record in records.items()
+        }
+    finally:
+        fresh.close()
+    base, copy_report = reports["T06-revision-v2"], reports["user.copy"]
+    assert (copy_report["mode"], copy_report["verdict"]) == (base["mode"], base["verdict"])
+    assert copy_report["integrity"] == base["integrity"]
+    assert base["verdict"] == "MATCH", base
+
+
 def test_q7_a_project_policy_bundle_verifies_on_its_own_document(runs: dict[str, Any]) -> None:
     """X06 ruling R1-1 (T2): `verify_bundle` judges a `user.` request against the bundle's own
     `solve-policy.json`, so `user.copy`'s bundle is intact, as `T06-revision-v2`'s is."""
