@@ -28,7 +28,8 @@ members that are clock readings or host facts (`stable`): §11.6's list (`record
 `size_bytes` of `run_manifest` and `replay_bundle` references, whose bytes hold `started_at` and
 `elapsed_seconds` — by the validation report's `provenance.timestamp`, and by the random part of
 the `auto:<uuid4>` key an in-process `solve` or `reproduce` draws for its job (with that job's
-`request_sha256`, which hashes it). Each extension is a clock or a random draw of the method,
+`request_sha256`, which hashes it), and by what an in-band grant draws (its token, every
+`token_sha256`, the grant's `policy_sha256`; ADR 0078 D5.4, `stable_administration`). Each extension is a clock or a random draw of the method,
 which `dispatch` makes the same way; none is something a transport adds. Two relations loosen
 the comparison, each for a stated reason, never for a transport's convenience:
 
@@ -95,9 +96,13 @@ from t07_transport_support import (
     dispatched,
     inject_newer_producers_job,
 )
-from x06_schema_support import solve_policy_document
+from x06_schema_support import (
+    ADMINISTERED_CAPABILITY,
+    solve_policy_document,
+    stable_administration,
+)
 
-from openflowsheet.application.authz import OPERATION_RIGHTS, grant, revoke
+from openflowsheet.application.authz import OPERATION_RIGHTS, grant, revoke, set_administration
 from openflowsheet.application.jobs.executor import COMPUTE_LOCK
 from openflowsheet.application.jobs.worker import PAUSE_AT_STAGE_VARIABLE, PAUSED_FILE
 from openflowsheet.application.local import LocalApplication
@@ -169,8 +174,13 @@ pytestmark = pytest.mark.filterwarnings(
 
 
 def stable(document: Any) -> Any:
-    """`document` without its clock readings and host facts (§11.6's list, extended), and
-    without the random part of an in-process `solve`'s or `reproduce`'s `auto:` key."""
+    """`document` without its clock readings and host facts (§11.6's list, extended), without
+    the random part of an in-process `solve`'s or `reproduce`'s `auto:` key, and with what an
+    in-band grant draws at random masked (`stable_administration`)."""
+    return _stable(stable_administration(document))
+
+
+def _stable(document: Any) -> Any:
     if isinstance(document, dict):
         drop = VOLATILE
         if document.get("kind") in CLOCKED_REFS and "artifact_id" in document:
@@ -180,9 +190,9 @@ def stable(document: Any) -> Any:
             # §4.2: the method draws the key (`auto:<uuid4>`); the job's request hash covers it.
             document = {**document, "request": {**request, "idempotency_key": AUTO}}
             drop = drop | {"request_sha256"}
-        return {k: stable(v) for k, v in document.items() if k not in drop}
+        return {k: _stable(v) for k, v in document.items() if k not in drop}
     if isinstance(document, list):
-        return [stable(item) for item in document]
+        return [_stable(item) for item in document]
     return document
 
 
@@ -390,6 +400,7 @@ class Scenario:
         self.ok("structure", "inspect_structure", {"revision_id": rev2, "depth": 2})
         self._branches(rev2)
         self._solve_policies()
+        self._administration()
 
         # Refusals that create nothing.
         self.step("no job", "get_job", {"job_id": "job-999999"})
@@ -563,6 +574,41 @@ class Scenario:
         self.step("benchmark policy", "get_solve_policy", {"policy_id": "T02-eo"})
         self.step("no such policy", "get_solve_policy", {"policy_id": "user.absent"})
 
+    def _administration(self) -> None:
+        """ADR 0078 D5 (X06-WO4), the project's switch on (`runs`): the policy read; the ambient
+        pressure declared (and the declaration replayed); a grant within the caller made (and
+        replayed with its token null, and refused as `capability_exists` under a new key);
+        revoked (and refused once gone); the ambient pressure cleared. The policy ends as it
+        began but for the declaration's absence, which it began with. Every operation needs
+        `policy`: the local owner holds it, the grant does not (`forbidden`)."""
+        assert self.step("policy in force", "get_policy", {}) is not None
+        ambient = {"value": 1.0, "unit": "bar", "idempotency_key": "a1"}
+        self.step("ambient", "set_ambient_pressure", ambient)
+        self.step("ambient replayed", "set_ambient_pressure", ambient)
+        grant = {
+            "principal_id": "x06-delegate",
+            "rights": ["read"],
+            "limits": {"default_wall_time_s": 60, "max_wall_time_s": 60, "max_active_jobs": 1},
+            "capability_id": ADMINISTERED_CAPABILITY,
+            "idempotency_key": "a2",
+        }
+        granted = self.step("grant", "grant_capability", grant)
+        replayed = self.step("grant replayed", "grant_capability", grant)
+        if not self.client.grant:
+            assert granted["status"] == "granted" and granted["token"].startswith("prt_")
+            assert (replayed["status"], replayed["token"]) == ("replayed", None)
+        self.step("grant exists", "grant_capability", {**grant, "idempotency_key": "a3"})
+        revoke = {"capability_id": ADMINISTERED_CAPABILITY, "idempotency_key": "a4"}
+        self.step("revoke", "revoke_capability", revoke)
+        self.step("revoke gone", "revoke_capability", {**revoke, "idempotency_key": "a5"})
+        cleared = {"value": None, "idempotency_key": "a6"}
+        self.step("ambient cleared", "set_ambient_pressure", cleared)
+        refusals = {"grant exists": "invalid_request", "revoke gone": "not_found"}
+        for step in self.steps[-9:]:
+            refused = step.outcome[1]["code"] if step.outcome[0] else None
+            expected = "forbidden" if self.client.grant else refusals.get(step.label)
+            assert refused == expected, step
+
     def _branches(self, base: str) -> None:
         """ADR 0078 D2 (X06-WO2): a branch created at `base` (and the create replayed, and refused
         as a conflict and for the reserved name), previewed on, committed on (and the commit
@@ -692,6 +738,7 @@ def runs(tmp_path_factory: pytest.TempPathFactory) -> dict[str, Run]:
         limits=LIMITS,
         capability_id=CAPABILITY,
     )
+    set_administration(template, True)  # ADR 0078 D5.1: the operator's switch, on every client
     policy = (template / POLICY_NAME).read_bytes()
     shared = root / "shared"
     shared.mkdir()

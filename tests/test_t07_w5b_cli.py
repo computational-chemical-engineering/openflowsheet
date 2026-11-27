@@ -49,8 +49,14 @@ from t07_jobs_support import lifecycle_violations
 from t08_d1_substitution import d1_str05_reversed_message
 from t08_rename_substitution import record_process_runtime, renamed_back_cli_text
 from t08_v2_substitution import CLI_STRUCTURAL_SUBSTITUTION, record_v1, v2_reversed_cli_text
-from x06_schema_support import branches_requests, solve_policies_requests
+from x06_schema_support import (
+    administration_requests,
+    branches_requests,
+    solve_policies_requests,
+    stable_administration,
+)
 
+from openflowsheet.application.authz import set_administration
 from openflowsheet.application.cli import API_EXIT_CODES, TOKEN_FILE_VARIABLE, main
 from openflowsheet.application.job_requests import JobRequest, SolveBody
 from openflowsheet.application.local import LocalApplication
@@ -420,6 +426,7 @@ def scenario(revision_id: str, job_id: str, bundle: Path) -> list[tuple[str, dic
         *records_requests(user_record_sha256()),  # ADR 0061 D13 (F3)
         *branches_requests(revision_id),  # ADR 0078 D2.5 (X06)
         *solve_policies_requests(),  # ADR 0078 D4.5 (X06)
+        *administration_requests(),  # ADR 0078 D5.2 (X06); the test switches it on
         ("artifact_bytes", {"artifact_id": state}),
     ]
 
@@ -431,7 +438,12 @@ def api(project: Path, name: str, request: Any, *extra: str) -> tuple[int, str, 
 def clockless(document: Any) -> Any:
     """`document` without its clock readings and the digests of the bytes that hold them, and
     without the random part of an in-process `solve`'s or `reproduce`'s `auto:` key where an
-    audit row shows it (ADR 0019 Amendment 3), with the request hash that covers it."""
+    audit row shows it (ADR 0019 Amendment 3), with the request hash that covers it; and with what
+    an in-band grant draws at random masked (ADR 0078 D5.4, `stable_administration`)."""
+    return _clockless(stable_administration(document))
+
+
+def _clockless(document: Any) -> Any:
     if isinstance(document, dict):
         removed = CLOCK_MEMBERS | CLOCKED_DIGESTS
         if document.get("kind") in CLOCKED_ARTIFACTS:
@@ -439,9 +451,9 @@ def clockless(document: Any) -> Any:
         if str(document.get("idempotency_key")).startswith("auto:") and "seq" in document:
             document = {**document, "idempotency_key": "auto:"}
             removed |= {"request_sha256"}
-        return {k: clockless(v) for k, v in document.items() if k not in removed}
+        return {k: _clockless(v) for k, v in document.items() if k not in removed}
     if isinstance(document, list):
-        return [clockless(item) for item in document]
+        return [_clockless(item) for item in document]
     return document
 
 
@@ -453,6 +465,8 @@ def test_every_cli_operation_through_api_equals_dispatch(tmp_path: Path) -> None
     seeds = {seed(by_cli), seed(by_dispatch)}
     assert len(seeds) == 1, seeds
     revision_id, job_id = seeds.pop()
+    for project in (by_cli, by_dispatch):  # ADR 0078 D5.1: the operator's switch
+        set_administration(project, True)
     bundle = tmp_path / "outside"
     shutil.copytree(by_cli / "jobs" / job_id / "bundle", bundle)
     requests = scenario(revision_id, job_id, bundle)
