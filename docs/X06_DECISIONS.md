@@ -615,3 +615,10 @@ Brief `docs/briefs/LINE06-X06-CI1.md`, build lane. The same ten tests failed on 
   `write_stream_table` (formerly `_`-prefixed in `cli.py`) use nothing of the CLI's own; `command_streams` calls
   them as `cli_streams.*`. Alternative: split the `project` command group (needs `_human_text` shared). Reversible
   by: reverting the commit.
+- 2026-11-27 **X06 CI failed** (run 46014554722 at `a514896c`): only `default-install` red (all four check legs,
+  identity, codehealth, Site green). `tests/test_m03_nlp_isolation.py::test_the_default_modules_import_no_nlp_library`
+  imported `application.bindings.mcp_http` (imports anyio, mcp, starlette at module level) without the `server` extra.
+  Fix X06-CI2 by the orchestrator: DECISION X06-CI2-1: `mcp_http` joins `SERVER_BINDINGS` (the modules skipped only
+  where the server extra is absent; with it installed they are still walked). Checked: clean venv with the default
+  install (starlette and anyio absent) 1 passed; main venv (extra installed) the file 12 passed. Alternative: lazy
+  imports inside `mcp_http`. Reversible by: reverting the commit.
