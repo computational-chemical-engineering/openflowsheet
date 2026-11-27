@@ -34,8 +34,8 @@ from openflowsheet.application.job_records import (
     _replay_report_build,
 )
 from openflowsheet.application.job_requests import JobRequest, ReproduceBody, SolveBody
+from openflowsheet.application.jobs.artifact_rows import bundle_rows, record_rows
 from openflowsheet.application.jobs.model import JOB_STATUSES, TERMINAL_STATUSES, JobStatus
-from openflowsheet.application.jobs.runner import bundle_rows, record_rows
 from openflowsheet.application.policy_types import CapabilityReference, ReplayPolicy
 from openflowsheet.application.revision_run import Route, select_route
 from openflowsheet.application.revision_service import RevisionService, encode_cursor

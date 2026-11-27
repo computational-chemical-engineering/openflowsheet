@@ -110,6 +110,7 @@ from openflowsheet.application.job_requests import (
     SurrogateStudyBody,
     WarmStartDeclaration,
 )
+from openflowsheet.application.jobs.artifact_rows import KIND_OF_FILE, bundle_rows
 from openflowsheet.application.jobs.interrupt import CancelReason, JobInterrupted
 from openflowsheet.application.jobs.model import (
     ARTIFACT_FILE_NAMES,
@@ -136,15 +137,14 @@ from openflowsheet.application.revision_run import (
 )
 from openflowsheet.application.store import JOBS_DIR, ProjectStore
 from openflowsheet.application.store_records import ArtifactRow, ArtifactTableSink
-from openflowsheet.canonical import canonical_json, directory_hash, file_sha256
+from openflowsheet.canonical import canonical_json, file_sha256
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models.lifted import AdmissibilityRefusal
 from openflowsheet.numerics.solve_record import SolvePolicy, Trace
 from openflowsheet.orchestrator.policy_validation import is_project_policy_id
 from openflowsheet.orchestrator.warm_start import EXPLICIT, WARM_START_SOURCE, WarmStartCandidate
-from openflowsheet.run.bundle import ARTIFACT_DIR, MANIFEST_NAME, BundleError, read_artifact
+from openflowsheet.run.bundle import MANIFEST_NAME, BundleError, read_artifact
 from openflowsheet.run.manifest import RunManifest, policy_sha256
-from openflowsheet.studies.nlp.replay import MANIFEST as OPTIMIZATION_MANIFEST
 from openflowsheet.studies.nlp.replay import is_optimization_record, replay_optimization
 from openflowsheet.studies.surrogate.iterations import predecessors as iteration_predecessors
 from openflowsheet.studies.surrogate.plan import REGISTERED_PLANS, PlanRefusedError
@@ -179,10 +179,6 @@ SURROGATE_STUDY_STAGES: Final[tuple[str, ...]] = ("resolve", "study", "record")
 OPTIMIZE_STAGES: Final[tuple[str, ...]] = ("resolve", "starts", "optimize", "record")
 #: An `optimize` job's record directory under the job's, and its artifact id prefix.
 OPTIMIZATION_DIR: Final[str] = "optimization"
-#: §5.4: the producer kind of each fixed file name.
-KIND_OF_FILE: Final[Mapping[str, str]] = {
-    name: kind for kind, name in ARTIFACT_FILE_NAMES.items() if name is not None
-}
 PARTIAL_TRACE: Final[str] = ARTIFACT_FILE_NAMES["partial_solve_trace"] or ""
 REPLAY_REPORT: Final[str] = ARTIFACT_FILE_NAMES["replay_report"] or ""
 CERTIFICATE: Final[str] = ARTIFACT_FILE_NAMES["solution_certificate"] or ""
@@ -461,79 +457,6 @@ def _typed_end(
     assert isinstance(error, SolutionStateMismatchError)
     # Ruling round 2 F1.1: a producer defect, escalated to the design lane; no bundle.
     return _failed(_error("internal_error", error.code, reason=error.code, **where), run)
-
-
-def bundle_rows(
-    root: Path, directory: Path, bundle_id: str, job_id: str | None, *, producer: bool
-) -> tuple[ArtifactRow, list[ArtifactRow]]:
-    """The bundle's own row and its members' (`<bundle id>/<file>`), for `artifacts` (§5.4).
-
-    `producer` is this code's own bundle, where a file name outside §5.4's table is a defect
-    (`ValueError`); an imported bundle's unknown files are simply not registered.
-    """
-    members: list[ArtifactRow] = []
-    files = [directory / MANIFEST_NAME]
-    artifacts = directory / ARTIFACT_DIR
-    if artifacts.is_dir():
-        files.extend(sorted(path for path in artifacts.iterdir() if path.is_file()))
-    for path in files:
-        kind = KIND_OF_FILE.get(path.name)
-        if kind is None:
-            if producer:
-                raise ValueError(f"producer defect: {path.name!r} has no artifact kind (§5.4)")
-            continue
-        members.append(
-            ArtifactRow(
-                artifact_id=f"{bundle_id}/{path.name}",
-                job_id=job_id,
-                kind=kind,
-                name=path.name,
-                sha256=file_sha256(path),
-                size_bytes=path.stat().st_size,
-                relpath=path.relative_to(root).as_posix(),
-                parent_artifact_id=bundle_id,
-            )
-        )
-    size = sum(path.stat().st_size for path in directory.rglob("*") if path.is_file())
-    bundle = ArtifactRow(
-        artifact_id=bundle_id,
-        job_id=job_id,
-        kind="replay_bundle",
-        name=directory.name,
-        sha256=directory_hash(directory),
-        size_bytes=size,
-        relpath=directory.relative_to(root).as_posix(),
-    )
-    return bundle, members
-
-
-def record_rows(
-    root: Path, directory: Path, record_id: str, job_id: str | None
-) -> tuple[ArtifactRow, list[ArtifactRow]]:
-    """An imported optimisation record's row and its manifest's (OPT design §4.9): the record is
-    a `replay_bundle` (what `reproduce` takes; `reproduce` dispatches on its manifest's format),
-    its member `<record id>/optimization-manifest.json` an `optimization_manifest`."""
-    path = directory / OPTIMIZATION_MANIFEST
-    manifest = ArtifactRow(
-        artifact_id=f"{record_id}/{OPTIMIZATION_MANIFEST}",
-        job_id=job_id,
-        kind="optimization_manifest",
-        name=OPTIMIZATION_MANIFEST,
-        sha256=file_sha256(path),
-        size_bytes=path.stat().st_size,
-        relpath=path.relative_to(root).as_posix(),
-        parent_artifact_id=record_id,
-    )
-    record = ArtifactRow(
-        artifact_id=record_id,
-        job_id=job_id,
-        kind="replay_bundle",
-        name=directory.name,
-        sha256=directory_hash(directory),
-        size_bytes=sum(item.stat().st_size for item in directory.rglob("*") if item.is_file()),
-        relpath=directory.relative_to(root).as_posix(),
-    )
-    return record, [manifest]
 
 
 class _Body:
