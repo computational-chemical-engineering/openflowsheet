@@ -335,3 +335,8 @@ Reversible by: <how>.` Package build decisions go in the package's own file (`do
 - 2026-11-27 16:30 **X06 CI FAILED** at `a514896c` (run 46014554722): only `default-install` (mcp_http imported
   without the server extra in the isolation test). Fix X06-CI2 on wp/X06 `73b3a83d` (DECISION X06-CI2-1); checked in
   a default-install venv (1 passed) and the main venv (12 passed); full gate on 73b3a83d running before the push.
+- 2026-11-27 17:40 **F8 CI FAILED** at `14409696` (run 46014961220): Windows 47 + 10 errors (6 F2-inherited; the rest
+  v2 bundle integrity: present files listed with "\" against a "/" index), macOS 2 (D5 other-platform test on an
+  unregistered host), identity (F2-inherited). Fix F8-CI1 on wp/F8 `9ba3c5fa` (DECISIONS F8-CI1-1/2) and merge of wp/F2
+  `80cdcfb3` -> `d0bc2996`; touched tests (f8 replay/bundle v2, f2 amendment9) 219 passed; full gate running.
+  Noted: ADR 0019 Amendment 9 heading "Proposed" on wp/F2 although ADR 0062 Accepted; to ask on the F2 merge card.
