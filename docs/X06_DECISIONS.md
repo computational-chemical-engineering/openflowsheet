@@ -508,3 +508,51 @@ Items 1 to 4 and 6 are documents (`docs/interfaces-frozen.md`, ADR 0019 Amendmen
 - **E-X06-24, catalogue check.** All twelve new `detail.code` values are in
   `src/openflowsheet/messages/catalogue/refusals.yaml`; `tests/test_msg_coverage.py` (the scan of every code against
   the catalogue, ADR 0058 C3) 8 passed; with `tests/test_msg_engine.py` (catalogue lint clean) and `tests/test_t07_store.py`, 108 passed.
+
+
+## X06-fix1 (the X06 review's fix round), 2026-11-27
+
+Work order: `docs/reviews/X06-review.md` (on `main`, `3f457172`), "Fix-round work order" items 1 to 8, as ruled.
+Logs `~/.cache/line06/x06fix1/`.
+
+| item | finding / ruling | commit | check |
+|---|---|---|---|
+| 1 | M1, ruling 6: `bindings.http.serve` and `bindings.web.serve` deleted; loopback test on `serving.serve_http` | `9dd91c21` | `grep -n "^def serve(" src/openflowsheet/application/bindings/*.py`: empty |
+| 2 | M2, ruling 4: interfaces row names MCP over HTTP; U08 re-scoped; vacuous test removed; matrix regenerated | `6cd229ed` | `test_u08_no_operation_installs_publishes_or_sets_executor_or_switch` passes; `t08_support_matrix.py --check` clean |
+| 3 | ruling 1: `ADMINISTRATION_SCALARS` | `ce0d0b39` | `tests/test_t07_q26.py` 6 passed |
+| 4 | ruling 2: three text edits; REVIEW.json; digests re-pinned | `f48004ac`, `eec13345` | hashes `b5b0dea1…` (1497), `8c5fe94f…` (1352), `a246826c…` (1429) equal the review's; served `7792576e…`; `without_x06` still `f7ec3c94…` |
+| 5 | S1: caller and switch judged under the write | `a866a4f0` | hook test, 8 cases pass; all 8 fail without the fix |
+| 6 | S2: E-X06-18 grants once per carrier | `dbdabf64` | passes; a DEBUG log of the MCP result (not committed) fails it |
+| 7 | S3: E-X06-13's `optimize` half | `1a2782d1` | `.venv-nlp`, `scripts/m03_nlp_check.sh --no-inventory`: 1 passed |
+| 8 | close: battery, manifest, harvest | this section's commit | below |
+
+- **DECISION fix1-1. `apps/web/js/routes.js` regenerated (`da5a55b1`).** `test_m06_static_scan.py::
+  test_the_route_table_is_generated_from_the_http_rows` was red at `020b7b72` (X06's operations and `commit_change`'s
+  `branch` not in the shell's route table; not in the WO battery's file list). `scripts/m06_web_routes.py --write`,
+  nothing else. Alternative: leave it for the merge CI to catch. Reversible by: reverting `da5a55b1`.
+- **DECISION fix1-2. U08's absent names gain `create_project`.** Ruling 4 names five operation names and the row
+  claims "project creation"; `create_project` is added to the test's list so the row's claim has a check. A stronger
+  check, nothing relaxed. Reversible by: dropping the name in `tests/test_t08_w2_unsupported.py`.
+- **DECISION fix1-3. S1's caller lookup is `ServiceCore.caller_in(policy)`**, `caller()`'s loop on a given policy;
+  `caller()` keeps its behaviour and message (`UNAUTHENTICATED_MESSAGE`). The in-transaction refusals are the
+  pre-transaction ones: `unauthenticated` (no detail code), `unsupported administration_disabled`,
+  `forbidden grant_exceeds_caller` / `revoke_exceeds_caller`. The pre-transaction checks stay (an early refusal
+  costs no transaction). Reversible by: reverting `a866a4f0`.
+- **DECISION fix1-4. E-X06-13's `optimize` half is `nlp`-marked as well as `importorskip`-guarded**, like every
+  Ipopt test (`pyproject.toml` deselects `nlp` by default; `scripts/m03_nlp_check.sh` is where they run). Measured in
+  `.venv-nlp`: both records `KKT_POINT_VERIFIED`; reproduce (rerun) in a fresh project `MATCH` for both, same mode and
+  integrity; the copy's start bundles record `user.copy`'s document and hash. The inventory was not re-taken
+  (`--no-inventory`).
+- **The WO5 manifest moves.** `evidence/X06/a657d29d…/manifest.json` (committed in `020b7b72` without harvest rows:
+  A21 and A50 red at `020b7b72`, both seen in this round's battery) is replaced by `evidence/X06/1a2782d1…/
+  manifest.json`, its 4 limitations and 1 non-pass check harvested as `P`; `HARVEST_SIZE` (108, 1176, 147) ->
+  (109, 1180, 148).
+- **Battery at `1a2782d1`** (one process: `tests/test_x06_*.py tests/test_t07_*.py tests/test_t08_w2_*.py
+  tests/test_m07a_surface_chain.py tests/test_msg_*.py tests/test_doc_pages*.py tests/test_evidence_manifests.py
+  tests/test_m06_static_scan.py tests/test_m06_http_contract.py tests/test_m07a_harvest.py`): 3398 passed, 47 skipped,
+  1 deselected, 3 xfailed, 3 failed: the description-review gate (exactly the eleven human reviews) and A21/A50 (the
+  unharvested WO5 manifest; fixed by the manifest commit). ruff clean; format 1330 files formatted; `mypy src` clean
+  (360 files); bundle gate 63, 60, `b42b1ec439d1683c`; `doc_pages.py --check` up to date; F0 PASS: M1 50/50, M2-M5
+  61/61, M6 85/85, M7 52/52, M8 105/105, M9 42/42.
+- **Not done:** N1 to N5 (notes, no action ruled); ruling 5's optional committed policy fixture; ruling 9
+  (code-health batch). The human review of the eleven texts and the merge card are the user's.

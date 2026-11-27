@@ -10045,3 +10045,34 @@ harvest:
   class: P
   to: []
   note: 'release-candidate item: step 18 (release_gate.py --line 0.5 --rc C) is judged from its output in the build log (R-914, RP §6.8)'
+- manifest: evidence/X06/1a2782d1a9e8c79d21692d20ce9872e391e10931/manifest.json
+  item: limitations[0]
+  sha256: baa43247848b85ce1b6051a12448b2fba8d8a8b46c40b9e7f8cf64c3d68afafe
+  class: P
+  to: []
+  note: 'provenance note: software verification of the four X06 capabilities after the design-lane review''s fix round; tested, no CI run recorded, not reviewed'
+- manifest: evidence/X06/1a2782d1a9e8c79d21692d20ce9872e391e10931/manifest.json
+  item: limitations[1]
+  sha256: 1a08d5d9c0298c4e0ff9a14a0aa4ec48eafd2265dc124fd4d9cc651b23e80cb6
+  class: P
+  to: []
+  note: 'process note: review records; the eleven human description reviews are the user''s (REVIEW.json), the expected red until recorded'
+- manifest: evidence/X06/1a2782d1a9e8c79d21692d20ce9872e391e10931/manifest.json
+  item: limitations[2]
+  sha256: 35105caaaf5541aecec27dd954710498abe62e49831f7d19be4c04253c517464
+  class: P
+  to: []
+  note: 'provenance note: E-X06-13''s optimize half ran in the audited NLP environment only (nlp-marked, outside the default gate and CI)'
+- manifest: evidence/X06/1a2782d1a9e8c79d21692d20ce9872e391e10931/manifest.json
+  item: limitations[3]
+  sha256: de3d62f48df67209ef97d81ffe29d5f5558deedc30239b478cd0ea63c8ca3341
+  class: P
+  to: []
+  note: 'process note: ADR 0078 D3, job resume deferred to F7 D14 (0.8)'
+- manifest: evidence/X06/1a2782d1a9e8c79d21692d20ce9872e391e10931/manifest.json
+  item: checks[8]
+  check_id: X06.DESCRIPTION-REVIEWS
+  sha256: 242247ace44362d9268a90fa8f30c6b8b6a360161e30ed1b3979f1a0dc697017
+  class: P
+  to: []
+  note: 'process note: the human review of the eleven X06 description texts is the user''s; the expected red until recorded'
