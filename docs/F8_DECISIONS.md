@@ -510,3 +510,10 @@ the working tree, run, and reverted (not committed).
   (`test_f8_without_its_additions_every_response_is_its_pre_f8_snapshot`), no other moves. "D5's other codes" reads
   "ADR 0067's other new codes". Text only; `test_t07_w5e_application_results` + `test_f1_draft_admission` (both read
   the ADR): 164 passed.
+- **DECISION F8-FR-1 (item 8; review ruling 2). ADR 0067's WO6 row carries ruling 2's obligations, marked as an edit
+  before acceptance:** E-F8-2 on real v2 runs; E-F8-4's embedded clause with a v2-compiled rerun that reads
+  `served_stack` while the local store lacks the record; E-F8-6's first clause on a non-empty usage set; the
+  application's `reproduce` of a v2 bundle reruns through `served_stack` with the project's store (WO3-8) and a
+  `RerunV2` (WO3-5), replacing M2's interim refusal. Placed in the Acceptance cell. The ADR is Proposed; the
+  acceptance card lists this edit with the D7 fold (WO5-0) and the WO5 row's obligation (item 6). Reversible by:
+  reverting this commit.
