@@ -1,0 +1,190 @@
+"""Per-platform reference records (ADR 0067 D7; F8-WO5, exit E-F8-8).
+
+R0 is identical on every registered platform. A reference case is one record file
+`<dir>/<case>.json` (the reference platform's, `{"artifacts": {...}, ...}`); only where a float
+exceeds the numerical policy on another registered platform, a per-platform record
+`<dir>/<case>.<platform-id>.json` lies beside it. The comparator uses the current platform's
+record if one exists, else the reference's, and reports `platform_reference_used(<platform>)`.
+The invariant (`invariant_problems`) is that a per-platform record's R0 projection is the
+reference's and that it was made against the reference record it names.
+"""
+
+from __future__ import annotations
+
+import hashlib
+import json
+import platform
+from collections.abc import Iterable, Mapping
+from pathlib import Path
+from typing import Any, Final
+
+from openflowsheet.canonical import canonical_json
+from openflowsheet.registry.tokens import Coded
+from openflowsheet.run import replay
+from openflowsheet.run.compare import differences
+from openflowsheet.run.identity import r0_projection
+
+#: ADR 0060 D2's platform vocabulary, keyed by `(platform.machine(), platform.system())`.
+PLATFORM_IDS: dict[tuple[str, str], str] = {
+    ("x86_64", "Linux"): "linux-x86_64",
+    ("aarch64", "Linux"): "linux-aarch64",
+    ("arm64", "Darwin"): "macos-arm64",
+    ("AMD64", "Windows"): "windows-x86_64",
+}
+REFERENCE_PLATFORM: Final = "linux-x86_64"
+FORMAT: Final = "openflowsheet-platform-reference-v1"
+_MEMBERS: Final = frozenset(
+    {
+        "platform_reference_format",
+        "case",
+        "platform",
+        "reference_platform",
+        "reference_sha256",
+        "departures",
+        "artifacts",
+        "self_sha256",
+    }
+)
+_DEPARTURE_MEMBERS: Final = frozenset(
+    {"path", "reference_value", "platform_value", "bound", "ratio", "near_threshold"}
+)
+
+
+def current_platform() -> str | None:
+    """This process's platform id, or `None` when its (machine, system) is unmapped."""
+    return PLATFORM_IDS.get((platform.machine(), platform.system()))
+
+
+def registered_platform_ids() -> frozenset[str]:
+    """The registered platforms (`run.replay.REGISTERED_PLATFORMS`) as ids."""
+    return frozenset(
+        PLATFORM_IDS[pair] for pair in replay.REGISTERED_PLATFORMS if pair in PLATFORM_IDS
+    )
+
+
+def platform_record_path(case_path: Path, platform_id: str) -> Path:
+    """`<dir>/<case>.<platform-id>.json` for the reference record `<dir>/<case>.json`."""
+    case_path = Path(case_path)
+    return case_path.with_name(f"{case_path.stem}.{platform_id}.json")
+
+
+def record_artifacts(record: Mapping[str, Any]) -> Mapping[str, Any]:
+    """The artifacts of a reference or per-platform record (the one accessor, F8-WO5-1)."""
+    return record["artifacts"]  # type: ignore[no-any-return]
+
+
+def record_sha256(record: Mapping[str, Any]) -> str:
+    """SHA-256 of a record's canonical JSON (line endings do not matter, ADR 0060 D3)."""
+    return hashlib.sha256(canonical_json(record)).hexdigest()
+
+
+def self_sha256(document: Mapping[str, Any]) -> str:
+    """The document's hash over its canonical JSON without `self_sha256`."""
+    body = {name: value for name, value in document.items() if name != "self_sha256"}
+    return record_sha256(body)
+
+
+def _load(path: Path) -> Any:
+    return json.loads(Path(path).read_text(encoding="utf-8"))
+
+
+def load_platform_record(path: Path) -> dict[str, Any]:
+    """The per-platform record at `path`, validated; `ValueError` names the rule it breaks."""
+    document = _load(path)
+    if not isinstance(document, dict) or document.get("platform_reference_format") != FORMAT:
+        raise ValueError(f"{path}: wrong format: platform_reference_format must be {FORMAT!r}")
+    if set(document) != _MEMBERS:
+        raise ValueError(f"{path}: members must be exactly {sorted(_MEMBERS)}")
+    where = document["platform"]
+    if where == REFERENCE_PLATFORM:
+        raise ValueError(f"{path}: the reference platform {where!r} takes no per-platform record")
+    if where not in registered_platform_ids():
+        raise ValueError(
+            f"{path}: unregistered platform {where!r}: a beyond-policy float there is a "
+            "platform-difference row, never a reference record (ADR 0067 D7)"
+        )
+    if document["reference_platform"] != REFERENCE_PLATFORM:
+        raise ValueError(f"{path}: reference_platform must be {REFERENCE_PLATFORM!r}")
+    if document["self_sha256"] != self_sha256(document):
+        raise ValueError(f"{path}: bad self_sha256")
+    rows = document["departures"]
+    if not isinstance(rows, list) or not rows:
+        raise ValueError(f"{path}: departures must be a non-empty list")
+    paths = [row.get("path") if isinstance(row, dict) else None for row in rows]
+    if any(not isinstance(item, str) for item in paths) or paths != sorted(paths):  # type: ignore[type-var]
+        raise ValueError(f"{path}: departures must be sorted by path")
+    for row in rows:
+        if set(row) != _DEPARTURE_MEMBERS:
+            raise ValueError(f"{path}: a departure's members must be {sorted(_DEPARTURE_MEMBERS)}")
+        ratio = row["ratio"]
+        if not ratio > 1:
+            raise ValueError(f"{path}: departure {row['path']!r}: ratio {ratio} must exceed 1")
+        expected = abs(row["platform_value"] - row["reference_value"]) / row["bound"]
+        if abs(ratio - expected) > 1e-12 * abs(expected):
+            raise ValueError(
+                f"{path}: departure {row['path']!r}: ratio {ratio} is not |platform - reference| "
+                f"/ bound = {expected}"
+            )
+    return document
+
+
+def select_reference(case_path: Path, platform_id: str) -> tuple[Mapping[str, Any], str | None]:
+    """The artifacts to compare against, and the platform id if a per-platform record gave them."""
+    per_platform = platform_record_path(case_path, platform_id)
+    if per_platform.is_file():
+        return record_artifacts(load_platform_record(per_platform)), platform_id
+    return record_artifacts(_load(case_path)), None
+
+
+def compare_to_reference(
+    case_path: Path,
+    emitted_artifacts: Mapping[str, Any],
+    platform_id: str,
+    *,
+    policy_id: str,
+    variable_kinds: Mapping[str, str] | None = None,
+) -> tuple[list[str], list[Coded]]:
+    """`run.compare.differences` against the selected record, and the notice when it is
+    a per-platform one."""
+    selected, used = select_reference(case_path, platform_id)
+    found = differences(
+        emitted_artifacts, selected, policy_id=policy_id, variable_kinds=variable_kinds
+    )
+    notices = [] if used is None else [Coded("platform_reference_used", {"platform": used})]
+    return found, notices
+
+
+def invariant_problems(case_path: Path) -> list[str]:
+    """ADR 0067 D7's invariant over one case's per-platform records."""
+    reference = _load(case_path)
+    reference_sha = record_sha256(reference)
+    reference_r0 = canonical_json(r0_projection(record_artifacts(reference)))
+    problems: list[str] = []
+    for platform_id in sorted(PLATFORM_IDS.values()):
+        path = platform_record_path(case_path, platform_id)
+        if not path.is_file():
+            continue
+        try:
+            record = load_platform_record(path)
+        except ValueError as error:
+            problems.append(str(error))
+            continue
+        if record["reference_sha256"] != reference_sha:
+            problems.append(f"{path}: reference_sha256 is not the reference record's")
+        if canonical_json(r0_projection(record_artifacts(record))) != reference_r0:
+            problems.append(f"{path}: R0 projection differs from the reference record's")
+    return problems
+
+
+def all_cases(roots: Iterable[Path]) -> list[Path]:
+    """The reference record path of every per-platform record (known platform id) under `roots`."""
+    ids = sorted(set(PLATFORM_IDS.values()))
+    found: set[Path] = set()
+    for root in roots:
+        root = Path(root)
+        if not root.is_dir():
+            continue
+        for platform_id in ids:
+            for path in root.rglob(f"*.{platform_id}.json"):
+                found.add(path.with_name(path.name.removesuffix(f".{platform_id}.json") + ".json"))
+    return sorted(found)
