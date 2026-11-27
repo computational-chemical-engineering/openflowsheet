@@ -45,15 +45,15 @@ orchestrator's WO7-4 fix: `optimize_revision` lowers), ADR 0062 D12 replaced (df
 (committed part; STOPs 8 and 9 -> R-1076, F8's surface link c_13). Heads: wp/F2 `39244e80` (manifest
 `evidence/F2/a3081770.../manifest.json`, `tested`), wp/F8 `1b7e1b51`, wp/X06 `487609e7`.
 
-**Running:** (1) `reviewer` on `docs/briefs/F2-reviewer.md` (reads wp/F2; commits only `docs/reviews/F2-review.md` on
-main; log `~/.cache/line06/f2rev/`); (2) `opus-engineer` F8-WO1b (`docs/briefs/LINE06-F8-WO1b.md`, wp/F8, log
-`~/.cache/line06/f8-wo1b/`). If this session dies: check `git log` on main and in `.claude/worktrees/f8`, processes by
-`/proc/<pid>/cwd`; judge on the brief's acceptance.
+**Running:** (1) `opus-engineer` F2-WO8, the F2 review's fix round (`docs/briefs/LINE06-F2-WO8.md`, wp/F2 from
+`39244e80`, log `~/.cache/line06/f2-wo8/`; review `docs/reviews/F2-review.md`, 05dd3392); (2) `opus-engineer` F8-WO1b
+(`docs/briefs/LINE06-F8-WO1b.md`, wp/F8, log `~/.cache/line06/f8-wo1b/`). If this session dies: check `git log` and
+`git status` in both worktrees, processes by `/proc/<pid>/cwd`; judge on the brief's acceptance.
 
-On the F2 review: write the fix-round brief from its work order (Opus, wp/F2; includes the v03 A29/A31 ruling, the
-`check_admission.md` re-pin with its c_11 surface move, catalogue corrections); then refresh the manifest, then the
-ADR 0062 acceptance card via hub (with F2-R1's line, open item (2) of the R1 section, and any line the reviewer
-names). On F8-WO1b: judge; mirror R-1076's evidence cell to main; then F8-WO2 brief (bundle writer, test-only
+On F2-WO8: judge; apply the ADR 0062 text edits (D2 per WO1-4, D11's h_mass clause per review item 2; D12 is done);
+then the ADR 0062 acceptance card via hub with the review's line ("What needs the user"), and a human-review card for
+the new `check_admission.md` text (its REVIEW.json human status is `pending`); push wp/F2 for CI only after both.
+On F8-WO1b: judge; mirror R-1076's evidence cell to main; then F8-WO2 brief (bundle writer, test-only
 factory; E-F8-2, E-F8-3), WO3, WO5; wp/F8 merges wp/F2's later head before its own merge.
 
 **Waiting on the user:** card `ofs-x06-descriptions-human` (filed by hub, open; texts in
