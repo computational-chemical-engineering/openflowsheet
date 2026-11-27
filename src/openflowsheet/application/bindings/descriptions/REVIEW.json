@@ -1,5 +1,5 @@
 {
-  "description": "T07 design note §11.3 (W6c, gate G15). The SHA-256 of each MCP tool description as served (the file's UTF-8 bytes) and its length in characters (at most 1500). A changed text changes its hash and fails G15 until this record is updated, which voids any review of the old text. Reviews: the design lane's (status pending_design_review until it reviews this exact hash) and the human review, Frank's, recorded separately (§17 F4; status pending). No agent marks a review done on its own work.",
+  "description": "T07 design note \u00a711.3 (W6c, gate G15). The SHA-256 of each MCP tool description as served (the file's UTF-8 bytes) and its length in characters (at most 1500). A changed text changes its hash and fails G15 until this record is updated, which voids any review of the old text. Reviews: the design lane's (status pending_design_review until it reviews this exact hash) and the human review, Frank's, recorded separately (\u00a717 F4; status pending). No agent marks a review done on its own work.",
   "operations": {
     "cancel_job": {
       "tool": "cancel_job",
@@ -49,9 +49,9 @@
       "reviews": [
         {
           "review_kind": "design-lane",
-          "status": "pending_design_review",
-          "reviewed_by": null,
-          "reviewed_at": null
+          "status": "reviewed",
+          "reviewed_by": "reviewer (design lane), docs/reviews/X06-review.md ruling 2 (approved with edits, applied in f48004ac; review at 3f457172 on main)",
+          "reviewed_at": "2026-11-27"
         },
         {
           "review_kind": "human",
@@ -349,9 +349,9 @@
       "reviews": [
         {
           "review_kind": "design-lane",
-          "status": "pending_design_review",
-          "reviewed_by": null,
-          "reviewed_at": null
+          "status": "reviewed",
+          "reviewed_by": "reviewer (design lane), docs/reviews/X06-review.md ruling 2 (approved with edits, applied in f48004ac; review at 3f457172 on main)",
+          "reviewed_at": "2026-11-27"
         },
         {
           "review_kind": "human",
@@ -529,9 +529,9 @@
       "reviews": [
         {
           "review_kind": "design-lane",
-          "status": "pending_design_review",
-          "reviewed_by": null,
-          "reviewed_at": null
+          "status": "reviewed",
+          "reviewed_by": "reviewer (design lane), docs/reviews/X06-review.md ruling 2 (approved as it stands; review at 3f457172 on main)",
+          "reviewed_at": "2026-11-27"
         },
         {
           "review_kind": "human",
@@ -549,9 +549,9 @@
       "reviews": [
         {
           "review_kind": "design-lane",
-          "status": "pending_design_review",
-          "reviewed_by": null,
-          "reviewed_at": null
+          "status": "reviewed",
+          "reviewed_by": "reviewer (design lane), docs/reviews/X06-review.md ruling 2 (approved as it stands; review at 3f457172 on main)",
+          "reviewed_at": "2026-11-27"
         },
         {
           "review_kind": "human",
@@ -569,9 +569,9 @@
       "reviews": [
         {
           "review_kind": "design-lane",
-          "status": "pending_design_review",
-          "reviewed_by": null,
-          "reviewed_at": null
+          "status": "reviewed",
+          "reviewed_by": "reviewer (design lane), docs/reviews/X06-review.md ruling 2 (approved as it stands; review at 3f457172 on main)",
+          "reviewed_at": "2026-11-27"
         },
         {
           "review_kind": "human",
@@ -589,9 +589,9 @@
       "reviews": [
         {
           "review_kind": "design-lane",
-          "status": "pending_design_review",
-          "reviewed_by": null,
-          "reviewed_at": null
+          "status": "reviewed",
+          "reviewed_by": "reviewer (design lane), docs/reviews/X06-review.md ruling 2 (approved with edits, applied in f48004ac; review at 3f457172 on main)",
+          "reviewed_at": "2026-11-27"
         },
         {
           "review_kind": "human",
@@ -609,9 +609,9 @@
       "reviews": [
         {
           "review_kind": "design-lane",
-          "status": "pending_design_review",
-          "reviewed_by": null,
-          "reviewed_at": null
+          "status": "reviewed",
+          "reviewed_by": "reviewer (design lane), docs/reviews/X06-review.md ruling 2 (approved as it stands; review at 3f457172 on main)",
+          "reviewed_at": "2026-11-27"
         },
         {
           "review_kind": "human",
@@ -629,9 +629,9 @@
       "reviews": [
         {
           "review_kind": "design-lane",
-          "status": "pending_design_review",
-          "reviewed_by": null,
-          "reviewed_at": null
+          "status": "reviewed",
+          "reviewed_by": "reviewer (design lane), docs/reviews/X06-review.md ruling 2 (approved as it stands; review at 3f457172 on main)",
+          "reviewed_at": "2026-11-27"
         },
         {
           "review_kind": "human",
@@ -649,9 +649,9 @@
       "reviews": [
         {
           "review_kind": "design-lane",
-          "status": "pending_design_review",
-          "reviewed_by": null,
-          "reviewed_at": null
+          "status": "reviewed",
+          "reviewed_by": "reviewer (design lane), docs/reviews/X06-review.md ruling 2 (approved as it stands; review at 3f457172 on main)",
+          "reviewed_at": "2026-11-27"
         },
         {
           "review_kind": "human",
@@ -669,9 +669,9 @@
       "reviews": [
         {
           "review_kind": "design-lane",
-          "status": "pending_design_review",
-          "reviewed_by": null,
-          "reviewed_at": null
+          "status": "reviewed",
+          "reviewed_by": "reviewer (design lane), docs/reviews/X06-review.md ruling 2 (approved as it stands; review at 3f457172 on main)",
+          "reviewed_at": "2026-11-27"
         },
         {
           "review_kind": "human",
@@ -689,9 +689,9 @@
       "reviews": [
         {
           "review_kind": "design-lane",
-          "status": "pending_design_review",
-          "reviewed_by": null,
-          "reviewed_at": null
+          "status": "reviewed",
+          "reviewed_by": "reviewer (design lane), docs/reviews/X06-review.md ruling 2 (approved as it stands; review at 3f457172 on main)",
+          "reviewed_at": "2026-11-27"
         },
         {
           "review_kind": "human",

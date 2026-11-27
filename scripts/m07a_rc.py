@@ -182,7 +182,7 @@ F3_FILE_SHA256: Final = {
 }
 #: c_12 (R-1073, ADR 0078 D2.5, D4.5, D5.2): the three tools X06-WO2 added, the two of X06-WO3
 #: and the four of X06-WO4, their files pinned as F3's are.
-#: Their reviews (design lane; Frank's) are pending in `REVIEW.json`.
+#: `REVIEW.json`: the design lane's reviews recorded (X06 review ruling 2); the human ones pending.
 X06_FILE_SHA256: Final = {
     "create_branch": "c5a5108a87a6eb0a36cf3c3e3a828c702728ac37f5f6381b94c07143302199a6",
     "delete_branch": "0220874b57aecf2be3314c72b9558ab027c2ccf9155360e18750b77884abba3c",
