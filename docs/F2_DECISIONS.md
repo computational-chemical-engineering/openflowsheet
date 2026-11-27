@@ -698,3 +698,15 @@ Files: `revision_v2/{lower,raise_v1}.py`, `tests/test_f2_lowering.py`, `tests/da
   hint to `HINT_LIMIT` = 512 code points (the crystallizer's hint is 889), which cuts the two hints at different
   entries, so the control lifts `binding_common.HINT_LIMIT` (monkeypatch) and compares the whole hint; removing the
   `construct_unavailable(semantic_role:*)` entries then gives an equal outcome. 22 passed.
+- **DECISION WO8-3 (S3, ruling item 2). D11's `h_mass` rule revision-wide.** `revision_v2/validate.py`
+  `coordinate_rules` (run after `definition_rules`): in an `h_mass` revision each instance whose model id is not
+  `std.*` is `unit_coordinate_unsupported(<instance>, h_mass)` once, connected or not, and each material connection
+  with `definition: nTP-v1` is `thermal_coordinate_mismatch(nTP-v1)` (param `definition`, as the per-definition
+  code). The per-end check in `connection_rules` is removed. `crystallizer.yaml` drops `lfeed`, `lsink`, `S2` and
+  the spec `t_legacy` that targeted `S2`. New refusal fixtures `unit_coordinate_unsupported_unconnected.yaml` (one
+  unconnected legacy feed) and `thermal_coordinate_mismatch_ntp.yaml` (the dropped trio: three errors). Index shifts
+  in fixtures based on the crystallizer: `parameter_not_manipulable` 7->6, `signal_kind_mismatch` 8->7,
+  `energy_definition` 6->5, `signal_without_kind` 8->7, `probe_sink` 7->6 (the same connections as before).
+  `definition_incompatible.yaml` and `invalid/component_mapping.yaml` addressed `S2`, the only `nTP-v1` connection;
+  both now take `legacy_only` as base (a `T` revision; `definition_incompatible` adds a `std.sink` and points `S2`
+  at `sink.in`), keeping their subject. `tests/test_f2_*.py` + V03: 581 passed, 1 deselected.

@@ -434,20 +434,24 @@ class _Checker:
                     and port.quantity_kind != connection["quantity_kind"]
                 ):
                     self.errors.append(_coded("signal_kind_mismatch", connection=cid))
-                definition = self.definitions.get(connection["definition"])
-                instance = connection[end]["instance"]
-                model_id: str = self.instances[instance]["model"]["id"]
-                if (
-                    definition is not None
-                    and definition["thermal_coordinate"] == "h_mass"
-                    and not model_id.startswith("std.")
-                ):
-                    self.errors.append(
-                        _coded(
-                            "unit_coordinate_unsupported", instance=instance, coordinate="h_mass"
-                        )
-                    )
         self.one_definition_rules()
+
+    def coordinate_rules(self) -> None:
+        """D11, revision-wide (F2 review ruling 2): in an `h_mass` revision every instance is a
+        standard (`std.*`) unit, whatever it connects to, and no material connection is
+        `nTP-v1`, whose coordinate is `T` (D3)."""
+        if self.document["materials"]["thermal_coordinate"] != "h_mass":
+            return
+        for instance in self.document["instances"]:
+            if not str(instance["model"]["id"]).startswith("std."):
+                self.errors.append(
+                    _coded(
+                        "unit_coordinate_unsupported", instance=instance["id"], coordinate="h_mass"
+                    )
+                )
+        for connection in self.document["connections"]:
+            if connection["kind"] == "material" and connection.get("definition") == "nTP-v1":
+                self.errors.append(_coded("thermal_coordinate_mismatch", definition="nTP-v1"))
 
     def one_definition_rules(self) -> None:
         """D11: a generic transport unit takes one definition on all its material ports; two that
@@ -637,6 +641,7 @@ def validate(
     checker.methods()
     checker.reactions()
     checker.definition_rules()
+    checker.coordinate_rules()
     checker.connection_rules()
     variables = checker.variables()
     checker.specification_rules(variables)
