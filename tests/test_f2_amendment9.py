@@ -397,12 +397,6 @@ def test_rows_10_11_12_commit_preview_diff_and_run_a_v2_revision() -> None:
 
 
 @pytest.mark.nlp
-@pytest.mark.xfail(
-    strict=True,
-    reason="WO7 finding: optimize_revision (and the optimize job, which does not lower, runner.py "
-    "`optimize`) writes the v2 document into the record and every start's bundle, so the bundles "
-    "are not the v1 run's (ADR 0062 D8): run ids and revision.json differ; the optimum is equal",
-)
 def test_the_optimization_of_a_raised_revision_is_the_optimization_of_its_v1_document(
     tmp_path: Path,
 ) -> None:

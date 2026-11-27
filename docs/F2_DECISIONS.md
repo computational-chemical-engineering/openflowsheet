@@ -668,3 +668,12 @@ Files: `revision_v2/{lower,raise_v1}.py`, `tests/test_f2_lowering.py`, `tests/da
   `revision-document.json` then holds the v1 form) or to rule the optimization record's v2 input identity as is.
   Test: `tests/test_f2_amendment9.py` (`nlp` marker; run by `scripts/m03_nlp_check.sh --no-inventory`), xfails at
   the `run_ids` assertion; with `--runxfail` the optimum assertion before it passes.
+- **DECISION WO7-4 (orchestrator, 2026-11-27). WO7-3 fixed: `optimize_revision` lowers.** D8 settles it (a lowered
+  run is a v1 run in every artifact), so no ruling is needed: `studies/nlp/revision.py` `optimize_revision` calls
+  `lowered_document` at its entry, as `run_revision_session` does (WO6b-7); the `optimize` job reaches it through that
+  entry. The strict xfail is removed. `scripts/m03_nlp_check.sh --no-inventory <main>/.venv-nlp
+  <main>/.reference-downloads/m03-ipopt -- tests/test_f2_amendment9.py tests/test_opt_job_nlp.py`: 7 passed;
+  `tests/test_f2_amendment9.py tests/test_t07_global_state.py`: 127 passed.
+- **Open (found by F8-WO1, reproduced on wp/F2 at 9d2fbe6c):** `tests/test_v03_semantic_roles.py` a29, a31_a, a31_b
+  fail (3 failed, 17 passed): a29's corpus now picks up the v2 fixtures (`crystallizer.yaml` fails the v1 checks);
+  a31_a finds `revision_v2/lower.py` naming a role; a31_b differs on binding outcome. Fix work order F2-WO7b.
