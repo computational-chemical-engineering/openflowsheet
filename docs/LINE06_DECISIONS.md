@@ -195,3 +195,10 @@ Reversible by: <how>.` Package build decisions go in the package's own file (`do
   t07-store-v1, three schemas changed, each justified; E-X06-24 12 codes catalogued. WO5-1 fixed _pin_threads in
   three tests. All X06 WOs done. X06 reviewer brief written (docs/briefs/X06-reviewer.md) with the ruling batch;
   reviewer launched.
+- 2026-11-27: X06 reviewer pass (docs/reviews/X06-review.md, main 3f457172): not ready; M1 remote-refusal bypass
+  (unused `bindings.http.serve` / `bindings.web.serve` serve in-band writes without `serving_remote`; confirmed
+  http.py:456 exists), M2 envelope still says MCP over HTTP unsupported; S1 TOCTOU in in-band writes, S2 token-leak
+  test REST only, S3 E-X06-13 optimize half has no test. Rulings: Q26 four scalars admitted by full path; 8 texts
+  approved, 3 with exact edits; WO3b-1 keep; WO4b-1 change (restore U08 test re-scoped); WO4b-2, WO1 stateless,
+  WO2-4, WO5-1 keep; serve functions removed; render_error -> code health. No Accepted ADR decision changed.
+  X06-fix1 brief written (S3 to run in .venv-nlp), launched.
