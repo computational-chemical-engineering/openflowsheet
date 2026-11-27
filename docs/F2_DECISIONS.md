@@ -608,3 +608,10 @@ Files: `models/revision_flowsheet.py` (`legacy_providers`, `lowered_document`, `
   runner each lower (idempotent).
 - **Not done.** The optimization job (`optimize_revision`) on a v2 revision is not tested (Amendment 9 names run
   submission; its binder path lowers, untested). WO7: the `check_admission` description (WO6b-6).
+- **Gate.** At `ea0c1efd`: WO5's battery suites plus `tests/test_f2_amendment9.py` (124): 5,859 passed, 2 failed,
+  28 skipped, 2 deselected, 3 xfailed; ruff, ruff format --check, `mypy src` clean; F0 PASS M1 50/50, M2-M5 61/61,
+  M6 85/85, M7 52/52, M8 105/105, M9 42/42 (`~/.cache/line06/f2wo6b-final.log`). The 2 failures were F1's pins of
+  the pre-Amendment-9 rule "schema_version 2 is `revision_unsupported`" (`tests/test_f1_draft_admission.py`); they now
+  pin version 3 as `revision_unsupported` and a v1 body labelled 2 as `invalid_request` (WO6b-5), and that file with
+  `tests/test_f2_amendment9.py` passes 249/249 at the next commit. E-F2-3 run half: 56/56 (47 `g8` + 9 basis cases;
+  the 5 `k05` are not revision documents; the 3 M1 revisions without a run route as their v1 documents).

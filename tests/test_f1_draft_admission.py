@@ -242,8 +242,14 @@ def test_a_revision_it_cannot_read_is_invalid_request_at_the_member(
 
 
 def test_a_later_schema_version_is_revision_unsupported() -> None:
-    document = _refused(_with("schema_version", 2))
+    """A version after 2 is `revision_unsupported`. Since F2-WO6b (ADR 0019 Amendment 9) a
+    `schema_version` 2 draft is read by the v2 schema: a v1 body labelled 2 is `invalid_request`
+    at the v2 schema's pointer (F2 decision WO6b-5)."""
+    document = _refused(_with("schema_version", 3))
     assert document["code"] == "revision_unsupported"
+    document = _refused(_with("schema_version", 2))
+    assert document["code"] == "invalid_request"
+    assert document["detail"]["pointer"].startswith("/revision")
 
 
 def test_components_the_basis_refuses_are_the_binders_refusal() -> None:
@@ -304,7 +310,7 @@ def test_the_cli_convenience_prints_the_operations_document(tmp_path: Path) -> N
         expected = dispatch(app, "check_admission", {"revision": revision})
     assert code == 0 and expected["admitted"] is False
     assert out.getvalue()[:-1].encode("utf-8") == canonical_json(expected)
-    path.write_text(json.dumps({**revision, "schema_version": 2}), encoding="utf-8")
+    path.write_text(json.dumps({**revision, "schema_version": 3}), encoding="utf-8")
     with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
         code = main(["admission", "--revision", str(path)])
     assert code == API_EXIT_CODES["revision_unsupported"]
