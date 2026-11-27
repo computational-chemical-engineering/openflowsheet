@@ -265,7 +265,10 @@ fixtures, `tests/f8_bundle_v2_support.py`, `tests/test_f8_replay_v2.py` (new), `
   `data_unavailable` and `store_object_corrupt`. `platform_reference_used` (WO5), `record_referenced`,
   `forced_replay_divergence`, `not_rechecked`, `cache_bypassed` are left to the work orders that emit them.
 - **Note F8-WO3-11. `bundle_v2._cross_check_v2` (WO2) raised `KeyError` on a lock without D10's members; it now
-  reports the lock tampered** (`d16da4f0`), so step 1 never raises on a tampered archive.
+  reports the lock tampered** (`d16da4f0`). *Corrected by F8-FR item 1 (review F8 M1):* that did not make step 1
+  raise-free; a records index or lock that does not parse, or an index not of D3's shape, still raised
+  (`JSONDecodeError`, `AttributeError`, `KeyError`). Since F8-FR item 1 both are parsed under `try` and shape-checked,
+  and step 1 reports them tampered.
 - **Note F8-WO3-12. Re-record tool:** `f8_bundle_v2_support.rerecord(bundle, directory, local, registry=...)` reruns
   a registered v2 case's recorded revision (`V2_CASES`) and writes a new v2 bundle with the bundle's own lock, its
   records served from the bundle first, under the given registry. Tested: after a built-in changed on purpose the
@@ -423,3 +426,18 @@ Brief `docs/briefs/LINE06-F8-FR0.md`. Merge commit `b3d73fce` (`git merge --no-f
   `test_adr_0002_a1_integers` + `test_evidence_manifests` + `test_s19_w5_gate` 808 (19 skipped);
   `test_v03_semantic_roles` 22 passed (the three WO1-10 reds are gone with F2's fixes). 0 failed.
 - ruff check, ruff format --check (1356 files), mypy `src` (371 files): clean.
+
+## F8-FR (the F8 review fix round, `docs/reviews/F8-review.md` work order F8-FR), 2026-11-27
+
+Brief `docs/briefs/LINE06-F8-FR.md`. Logs under `~/.cache/line06/f8-fr/`. Each mutation control below was applied to
+the working tree, run, and reverted (not committed).
+
+- **Item 1 (M1). `bundle_v2._cross_check_v2` parses the records index and the lock under `try`** and requires the
+  index to be an object whose `records` is a list of objects, each with a string `sha256` and a boolean `embedded`
+  (`_index_entries`); a failure appends the file to `tampered` and returns. An index without `records` is now
+  tampered (it was read as empty); no writer emits one. Test
+  `test_a_malformed_v2_document_is_reported_tampered_not_raised`, four tampers (index not JSON, index `[]`, index
+  `{"records":[{}]}`, lock not JSON) x two cases through `run.replay.replay`: 8 passed, each
+  `inspected_archived_results` / `NOT_RUN`, `FAILED_INTEGRITY` first, the file in `integrity.tampered`. Control: the
+  test against the unfixed `bundle_v2.py` (HEAD `00d094c0`): 8 of 8 fail (KILLED). `test_f8_*`: 130 passed.
+

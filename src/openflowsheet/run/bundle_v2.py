@@ -250,14 +250,15 @@ def _cross_check_v2(
         return
     if not lock_path.is_file():
         return
-    index = json.loads(index_path.read_text(encoding="utf-8"))
-    lock = json.loads(lock_path.read_text(encoding="utf-8"))
-    entries = index.get("records", [])
+    # The two documents are read as data a forger wrote: a file that does not parse, or does not
+    # have D3's and D10's shape, is reported tampered (D5 step 1 reports, it does not raise).
+    entries = _index_entries(index_path)
+    if entries is None:
+        tampered.append(RECORDS_INDEX_NAME)
+        return
     try:
-        locked = list(locked_records(lock))
-    except (KeyError, TypeError):
-        # A lock without D10's members is tampered (its hash check above has said so); the
-        # check reports, it does not raise.
+        locked = list(locked_records(json.loads(lock_path.read_text(encoding="utf-8"))))
+    except (KeyError, TypeError, ValueError):
         tampered.append(DATA_LOCK_NAME)
         return
     if [entry["sha256"] for entry in entries] != locked:
@@ -272,3 +273,24 @@ def _cross_check_v2(
             missing.append(name)
         elif file_sha256(path) != name.removeprefix(f"{RECORDS_DIR}/").removesuffix(".json"):
             tampered.append(name)
+
+
+def _index_entries(path: Path) -> list[Mapping[str, Any]] | None:
+    """The `records` of the records index at `path` when it is D3's shape (an object whose
+    `records` is a list of objects, each with a string `sha256` and a boolean `embedded`), else
+    `None`."""
+    try:
+        index = json.loads(path.read_text(encoding="utf-8"))
+    except ValueError:
+        return None
+    entries = index.get("records") if isinstance(index, dict) else None
+    if not isinstance(entries, list):
+        return None
+    for entry in entries:
+        if not (
+            isinstance(entry, dict)
+            and isinstance(entry.get("sha256"), str)
+            and isinstance(entry.get("embedded"), bool)
+        ):
+            return None
+    return entries

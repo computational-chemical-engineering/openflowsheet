@@ -272,6 +272,31 @@ def test_a_failed_integrity_check_reruns_nothing(
     assert report.differences == ()
 
 
+@pytest.mark.parametrize(
+    ("name", "text"),
+    [
+        (bundle_v2.RECORDS_INDEX_NAME, "not json"),
+        (bundle_v2.RECORDS_INDEX_NAME, "[]"),
+        (bundle_v2.RECORDS_INDEX_NAME, '{"records": [{}]}'),
+        (bundle_v2.DATA_LOCK_NAME, "not json"),
+    ],
+    ids=["index-not-json", "index-a-list", "index-entry-empty", "lock-not-json"],
+)
+def test_a_malformed_v2_document_is_reported_tampered_not_raised(
+    plain: Recorded, tmp_path: Path, name: str, text: str
+) -> None:
+    """Review F8 M1: D5 step 1 reports a tampered lock or records index; it does not raise on
+    one that does not parse or does not have D3's shape."""
+    directory = tmp_path / "bundle"
+    shutil.copytree(plain.v2, directory)
+    (directory / ARTIFACT_DIR / name).write_text(text, encoding="utf-8")
+    report = _valid(replay(directory, None, current=_environment(plain)))
+    assert (report.mode, report.verdict) == ("inspected_archived_results", "NOT_RUN")
+    assert report.reasons[0] == FAILED_INTEGRITY
+    assert not report.integrity.ok
+    assert name in report.integrity.tampered
+
+
 # ------------------------------------------------------------------------------------- E-F8-4
 
 
