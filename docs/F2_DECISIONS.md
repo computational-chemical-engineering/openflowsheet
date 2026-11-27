@@ -656,3 +656,15 @@ Files: `revision_v2/{lower,raise_v1}.py`, `tests/test_f2_lowering.py`, `tests/da
 - **Catalogue digest re-pin** `2b227092...` -> `b6c8f517c53ed8ef8775acdc37502d455e89a866dcb76eb488f7f9c105f7fff9`
   in `tests/fixtures/schemas/application_results/message_entry/{valid/phase_regime_mismatch,invalid/missing_code}.json`
   (as WO4-16; no served digest, no F0 check reads it).
+- **DECISION WO7-3. Optimization on a v2 revision: a finding, test `xfail(strict=True)`.** OPT-A2's revision raised
+  with `raise_v1`, optimized with `optimize_revision` as the v1 document is: the optimum is equal (status
+  `KKT_POINT_VERIFIED`, `candidate.decisions` equal), but identity is not: `revision.json` of every start's bundles and
+  the record's `revision-document.json` are the v2 document (6,954 -> 7,090 bytes, `schema_version: 2`), so the
+  `run_id`s (`opt-0a386745fbc1331b-*` -> `opt-9937eb4484b2794a-*`) and `optimization_sha256` differ. D8 says a lowered
+  run is a v1 run in every artifact. Cause: neither `optimize_revision` nor the `optimize` job
+  (`application/jobs/runner.py` `optimize`, which calls `optimize_revision` on the stored document) lowers; the `solve`
+  job does (runner.py `lowered_document`, WO6b-7). **Not fixed (no `src/` change in WO7); orchestrator to decide**
+  whether to lower in `optimize` (the fix is one `lowered_document` call there, and the record's input document
+  `revision-document.json` then holds the v1 form) or to rule the optimization record's v2 input identity as is.
+  Test: `tests/test_f2_amendment9.py` (`nlp` marker; run by `scripts/m03_nlp_check.sh --no-inventory`), xfails at
+  the `run_ids` assertion; with `--runxfail` the optimum assertion before it passes.

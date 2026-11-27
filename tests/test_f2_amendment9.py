@@ -394,3 +394,60 @@ def test_rows_10_11_12_commit_preview_diff_and_run_a_v2_revision() -> None:
         v1 = app.solve(first, "default")
     # The job's run is the v1 run: the same structural identity (D8).
     assert (result.structural_sha256, result.solve_path) == (v1.structural_sha256, v1.solve_path)
+
+
+@pytest.mark.nlp
+@pytest.mark.xfail(
+    strict=True,
+    reason="WO7 finding: optimize_revision (and the optimize job, which does not lower, runner.py "
+    "`optimize`) writes the v2 document into the record and every start's bundle, so the bundles "
+    "are not the v1 run's (ADR 0062 D8): run ids and revision.json differ; the optimum is equal",
+)
+def test_the_optimization_of_a_raised_revision_is_the_optimization_of_its_v1_document(
+    tmp_path: Path,
+) -> None:
+    """OPT-A2's revision raised to v2 optimizes to the v1 document's optimum (the report's status,
+    decisions and objective), and, by D8, with the v1 run's identity: the same run ids and the
+    same `revision.json` in every start's bundles."""
+    from openflowsheet.application.revision_routes import REVISION_ROUTES
+    from openflowsheet.orchestrator.policies import DEFAULT_POLICY_ID, resolve_policy
+    from openflowsheet.studies.nlp.revision import optimize_revision
+    from openflowsheet.verify.verdict import CheckPolicy
+
+    opt = ROOT / "benchmarks" / "opt"
+    flowsheet = json.loads((opt / "expected.json").read_bytes())["flowsheets"]["OPT-A2"]
+    document = json.loads((opt / "flowsheets" / f"{flowsheet}.json").read_bytes())
+    request = json.loads((opt / "requests" / "OPT-A2.json").read_bytes())
+    policy = resolve_policy(DEFAULT_POLICY_ID, "revision_eo")
+    assert policy is not None
+    raised = _raised(copy.deepcopy(document))
+    assert raised["schema_version"] == 2
+
+    def optimum(name: str, revision: dict[str, Any]) -> tuple[dict[str, Any], dict[str, bytes]]:
+        outcome = optimize_revision(
+            revision,
+            request,
+            directory=tmp_path / name,
+            solve_policy=policy,
+            check_policy=CheckPolicy(),
+            routes=REVISION_ROUTES,
+        )
+        assert outcome.record_dir is not None
+        assert outcome.report.status == "KKT_POINT_VERIFIED"
+        record = outcome.record_dir
+        bundles = {
+            path.relative_to(record).as_posix(): path.read_bytes()
+            for path in sorted(record.rglob("revision.json"))
+        }
+        manifests = {
+            path.parent.relative_to(record).as_posix(): json.loads(path.read_bytes())["run_id"]
+            for path in sorted(record.rglob("run-manifest.json"))
+        }
+        report = outcome.report.as_document()
+        found = {"candidate": report["candidate"]["decisions"], "run_ids": manifests}
+        return found, bundles
+
+    (found1, files1), (found2, files2) = optimum("v1", document), optimum("v2", raised)
+    assert found2["candidate"] == found1["candidate"]
+    assert found2["run_ids"] == found1["run_ids"]
+    assert files2 == files1
