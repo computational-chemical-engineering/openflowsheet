@@ -456,7 +456,9 @@ class _Checker:
     def one_definition_rules(self) -> None:
         """D11: a generic transport unit takes one definition on all its material ports; two that
         differ only in grid edges are `attribute_grid_mismatch`, any other difference
-        `definition_incompatible` (subset fill and declared maps are ADR-F6's)."""
+        `definition_incompatible` (subset fill and declared maps are ADR-F6's). Definitions are
+        compared by normalised body, not id: D3 makes the body (its SHA) the identity, so two ids
+        with equal bodies are one definition (F2 review S2)."""
         for instance in self.instances.values():
             model = self.context.models.get(instance["model"]["id"])
             if model is None or not model.one_definition:
@@ -471,8 +473,14 @@ class _Checker:
             if not ends:
                 continue
             first = ends[0][0]["definition"]
+            body = _body(self.definitions.get(first))
             for connection, end in ends[1:]:
                 if connection["definition"] == first:
+                    continue
+                if (
+                    body is not None
+                    and _body(self.definitions.get(connection["definition"])) == body
+                ):
                     continue
                 params = {"connection": connection["id"], "port": _port_name(connection[end])}
                 same_but_grids = _without_edges(self.definitions.get(first)) == _without_edges(
@@ -617,10 +625,17 @@ class _Checker:
                 self.errors.append(_coded("parameter_binding_conflict", target=target))
 
 
-def _without_edges(definition: Mapping[str, Any] | None) -> Any:
+def _body(definition: Mapping[str, Any] | None) -> dict[str, Any] | None:
+    """A declared definition's normal form without its `id` (D3); `None` for none declared."""
     if definition is None:
         return None
-    normal = normalise_instance({k: v for k, v in definition.items() if k != "id"})
+    return normalise_instance({k: v for k, v in definition.items() if k != "id"})
+
+
+def _without_edges(definition: Mapping[str, Any] | None) -> Any:
+    normal = _body(definition)
+    if normal is None:
+        return None
     for substream in normal["substreams"]:
         for grid in substream["grids"]:
             grid["edges"] = None

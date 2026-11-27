@@ -714,3 +714,9 @@ Files: `revision_v2/{lower,raise_v1}.py`, `tests/test_f2_lowering.py`, `tests/da
   `temperature_substream`: the flowing substreams in instance order, `()` when dormant; T solves
   ṁĥ = Σ_s ṁ_s ĥ_s(T, P) over them jointly (Q8.R6); Q8.A4 is the singleton case. The test's both-flowing row
   expects `("liq", "cryst")`; the two singleton rows keep the stub T check. No other caller existed.
+- **DECISION WO8-5 (S2, Q-WO5-b a defect). The one-definition rule compares normalised bodies.**
+  `revision_v2/validate.py` `one_definition_rules`: two ends whose declared definitions have equal normalised bodies
+  (`normalise_instance` without `id`, helper `_body`, shared with `_without_edges`) are one definition; an undeclared
+  definition (`None`) never equals by body. `tests/test_f2_probes.py` Q6.A4 test: `probe` and `probe2` with equal
+  bodies (attributes listed in reverse, which the normal form sorts back) admitted `((), ())`; without the fix it
+  fails (measured). `test_f2_probes.py` + `test_f2_revision_v2.py`: 122 passed.
