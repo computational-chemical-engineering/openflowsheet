@@ -483,3 +483,8 @@ the working tree, run, and reverted (not committed).
   (KILLED; the review's (c) as written has no environment reason, so the platform variant is what kills it);
   `mode == "exact_replay" and` dropped from the changed-built-in rule: 2 fail, (b) both cases (KILLED). Before this
   item both mutations survived the file (measured: the pre-item file, 64 passed under each).
+- **Item 5 (S3). `test_e_f8_6_the_usage_set_is_within_extensions_used` asserts `plain_rerun.usage == ()`**, with a
+  comment naming F8-WO6: E-F8-6's first clause holds vacuously on this line (the factory's reruns of v1 revisions
+  record an empty usage set, GP-C1 and TH-C1), and the undeclared-use control
+  (`test_e_f8_6_a_hidden_resolve_is_extension_use_undeclared`, usage non-empty there) is the evidence. The test
+  fails when real v2 runs arrive. E-F8-6 tests: 6 passed. The manifest's E-F8-6 row says so (item 9).

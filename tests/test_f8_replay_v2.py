@@ -677,6 +677,11 @@ def test_e_f8_6_the_usage_set_is_within_extensions_used(
     assert plain_rerun.usage is not None
     declared = {row[:3] for row in plain.manifest.extensions_used}
     assert set(plain_rerun.usage) <= declared
+    # Review F8 S3: the clause holds vacuously on this line. The factory's reruns are of v1
+    # revisions, whose binder resolves nothing through the registry, so the usage set is empty;
+    # the hidden-resolve control below is the evidence. Real v2 runs (F8-WO6) make it non-empty,
+    # and this assertion then fails so the clause is judged for real.
+    assert plain_rerun.usage == ()
     assert not any("extension_use_undeclared" in entry for entry in baseline.differences)
 
 
