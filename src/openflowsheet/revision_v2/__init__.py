@@ -5,8 +5,10 @@ This layer was introduced by package F2 (ADR 0062, work order F2-WO4). A v2 docu
 reader. `parse` reads and schema-checks a document (`schemas/process-revision-v2.schema.json`,
 with `specification-v2.schema.json`), `validate` applies the rules a schema cannot state with
 ADR 0062's typed codes, and `canonical` gives the normal form and the `content_hash` (v1's rule,
-ADR 0002 D4). Lowering to v1 and the operations dispatch are F2-WO6's. It sits directly above
-`material`, whose definitions and layout it reads, and imports nothing of `thermo` or above.
+ADR 0002 D4). `lower` maps a v1-expressible document to its v1 document (D12; F2-WO6a), and
+`raise_v1` (test and tooling only, not re-exported) inverts it; the operations dispatch is
+F2-WO6b's. It sits directly above `material`, whose definitions and layout it reads, and imports
+nothing of `thermo` or above.
 """
 
 from __future__ import annotations
@@ -16,6 +18,12 @@ from openflowsheet.revision_v2.canonical import (
     canonical_bytes,
     canonical_document,
     content_hash,
+)
+from openflowsheet.revision_v2.lower import (
+    LegacyProvider,
+    LegacyProviders,
+    LoweringError,
+    lower,
 )
 from openflowsheet.revision_v2.parse import RevisionV2, RevisionV2Error, parse
 from openflowsheet.revision_v2.validate import (
@@ -29,6 +37,9 @@ from openflowsheet.revision_v2.validate import (
 
 __all__ = [
     "CONTENT_HASH_EXCLUDED",
+    "LegacyProvider",
+    "LegacyProviders",
+    "LoweringError",
     "ModelFacts",
     "PortFacts",
     "RevisionV2",
@@ -37,6 +48,7 @@ __all__ = [
     "canonical_bytes",
     "canonical_document",
     "content_hash",
+    "lower",
     "mixed_solid_candidates",
     "parse",
     "state_refusals",
