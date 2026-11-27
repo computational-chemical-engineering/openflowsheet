@@ -44,15 +44,18 @@ Judged PASS since the morning (details: `docs/LINE06_DECISIONS.md`): F2-R1, F2-W
 (`docs/reviews/F2-review.md`) and F2-WO8; F8-WO1 (+WO1b, R-1076 c_13), F8-WO2, F8-WO3. Heads: wp/F2 `6913c4a0` (j16 fixture fix on a64f93fb)
 (manifest `evidence/F2/fb75c409.../manifest.json`, `tested`), wp/F8 `25e5ed36`, wp/X06 `1b9561a3` (pushed).
 
-**Running (2026-11-27):** (1) the F8 `reviewer` pass (brief `docs/briefs/F8-reviewer.md`, wp/F8 `5406f812`,
-deliverable `docs/reviews/F8-review.md` committed on main); then a fix round (one Opus engineer) and the ADR 0067
-acceptance card. (2) Full local gate on wp/F2 `6913c4a0` (`scripts/gate.sh`, log
+**Running (2026-11-27):** full local gate on wp/F2 `6913c4a0` (`scripts/gate.sh`, log
 `~/.cache/line06/f2-j16/gate-6913c4a0.log`; if lost, rerun it in `.claude/worktrees/f2` with the main .venv PATH and
-PYTHONPATH=src). Card `ofs-f2-accept-adr0062` is now v2; its A text: "Mark ADR 0062 Accepted as corrected before
+PYTHONPATH=src). Card `ofs-f2-accept-adr0062` is v2; its A text: "Mark ADR 0062 Accepted as corrected before
 acceptance at wp/F2 a64f93fb (D12 per F2-R1, D2 PropertyRequest not widened, D11 h_mass revision-wide, E-F2-9
 state_degenerate_in_definition and Q6.A2 registration half deferred to F5/F6), then push wp/F2 at 6913c4a0 (a64f93fb
-plus the test-fixture fix 6913c4a0, DECISION F2-J16) for CI, only if the local gate on 6913c4a0 passes." F8 done
-through close-out (`5406f812`); at the F2-into-F8 merge recompute `HARVEST_SIZE` to (110, 1184, 154) (F8-CO-4).
+plus the test-fixture fix 6913c4a0, DECISION F2-J16) for CI, only if the local gate on 6913c4a0 passes."
+
+**F8 next:** review done (`docs/reviews/F8-review.md`, main `6636a8a8`: M1, M2, S1-S6; not ready until F8-FR). On the
+gate passing (F2's head final): launch `opus-engineer` with `docs/briefs/LINE06-F8-FR0.md` (merge wp/F2 into wp/F8,
+c_13 onto D_11 `8eee5313`, catalogue re-pin, HARVEST_SIZE from the run), judge, then `docs/briefs/LINE06-F8-FR.md`
+(the nine review items, one Opus engineer), judge, then the ADR 0067 acceptance card via hub (edits before acceptance:
+D7 fold F8-WO5-0, WO6 row per ruling 2, optionally N7). If the gate fails: fix on wp/F2 first, update FR0's head.
 
 **Was next (F8):** write `docs/briefs/LINE06-F8-WO5.md` (ADR 0067 D7 per-platform reference records, `run/platform_refs.py`,
 invariant test; E-F8-8; Sonnet `sonnet-implementer`, then an Opus `opus-engineer` review of its diff, per the WO table).
