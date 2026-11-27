@@ -225,3 +225,4 @@ Reversible by: <how>.` Package build decisions go in the package's own file (`do
   WO after the ruling.
 
 - 2026-11-27: resumed after self-reset; launched architect F2-R1 (D12 rulings) and opus-engineer F2-WO6b in .claude/worktrees/f2 (logs ~/.cache/line06/f2-r1, f2-wo6b). Card ofs-x06-descriptions-human still open.
+- 2026-11-27: F2-R1 judged PASS (2781db50 touches only docs/F2_DECISIONS.md; rulings WO6a-2 keep, WO6a-3 keep + parameter_sets/thermal_coordinate amendments, WO6a-4 confirmed). Fix WO F2-WO6c briefed (docs/briefs/LINE06-F2-WO6c.md), launches after WO6b. D12 text to apply to ADR 0062 after WO6b (F2_DECISIONS.md "D12 text to apply"). ADR 0062 card gets the R1 line (open item 2); validate/h_mass to the F2 reviewer (item 1).
