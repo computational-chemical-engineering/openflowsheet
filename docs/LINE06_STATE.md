@@ -46,15 +46,14 @@ orchestrator's WO7-4 fix: `optimize_revision` lowers), ADR 0062 D12 replaced (df
 `evidence/F2/a3081770.../manifest.json`, `tested`), wp/F8 `1b7e1b51`, wp/X06 `487609e7`.
 
 **Running:** (1) `opus-engineer` F2-WO8, the F2 review's fix round (`docs/briefs/LINE06-F2-WO8.md`, wp/F2 from
-`39244e80`, log `~/.cache/line06/f2-wo8/`; review `docs/reviews/F2-review.md`, 05dd3392); (2) `opus-engineer` F8-WO2
-(`docs/briefs/LINE06-F8-WO2.md`, wp/F8 from `ddac950f`, log `~/.cache/line06/f8-wo2/`). F8-WO1b done (PASS). If this session dies: check `git log` and
+`39244e80`, log `~/.cache/line06/f2-wo8/`; review `docs/reviews/F2-review.md`, 05dd3392); (2) `opus-engineer` F8-WO3
+(`docs/briefs/LINE06-F8-WO3.md`, wp/F8 from `886113ea`, log `~/.cache/line06/f8-wo3/`). F8-WO1b, WO2 done (PASS). If this session dies: check `git log` and
 `git status` in both worktrees, processes by `/proc/<pid>/cwd`; judge on the brief's acceptance.
 
 On F2-WO8: judge; apply the ADR 0062 text edits (D2 per WO1-4, D11's h_mass clause per review item 2; D12 is done);
 then the ADR 0062 acceptance card via hub with the review's line ("What needs the user"), and a human-review card for
 the new `check_admission.md` text (its REVIEW.json human status is `pending`); push wp/F2 for CI only after both.
-On F8-WO2: judge (E-F8-2, E-F8-3, F0); then F8-WO3 brief (replay: dispatch in `run/replay.py`, `run/replay_v2.py`,
-usage cross-check, re-record tool; E-F8-1, -4, -5, -6), then WO5 (Sonnet, Opus review; E-F8-8), close-out (ADR 0019
+On F8-WO3: judge (E-F8-1, -4, -5, -6; the step-7 premise DECISION), then WO5 (Sonnet, Opus review; E-F8-8), close-out (ADR 0019
 Amendment 12 pointer, manifest). wp/F8 merges wp/F2's final head and re-decomposes c_13 onto F2's new D_11.
 
 **X06:** card `ofs-x06-descriptions-human` VERIFIED A and executed; review recorded (wp/X06 `1b9561a3`), pushed.
