@@ -1,6 +1,10 @@
 # ADR 0067 — F8: identity, replay and evidence v2 (data lock in bundles, registry comparison, evidence classes, decision records)
 
-**Status:** **Proposed, 2026-11-05.** Design wave W1, pass P3 (ADR 0057, R-928). Takes effect when Accepted after the W1
+**Status:** **Accepted, 2026-11-27** (the user, Decision Desk `ofs-f8-accept-adr0067`, choice A, signed
+2026-11-27T12:53:40Z: accepted as corrected before acceptance at wp/F8 14409696: D7 with the X07a errata E-D7-1 to
+E-D7-5 folded in; the WO5 row's obligation for the first real per-platform record; the WO6 row gains the served-stack
+rerun, E-F8-6 on a real usage set and the application-level obligations; with ADR 0019 Amendment 12). Proposed
+2026-11-05. Design wave W1, pass P3 (ADR 0057, R-928). Takes effect when Accepted after the W1
 P3 reviewer pass over ADRs 0065–0067. Built in 0.5 (bundle, data lock, registry comparison: F8-WO1–WO3), 0.6
 (evidence report, per-platform records, v2-compiled wiring: WO4–WO6) and 0.7 with TX (decision records and
 `forced_replay`: WO7). The core (D12) freezes at the end of W1.

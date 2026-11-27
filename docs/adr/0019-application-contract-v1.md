@@ -309,7 +309,7 @@ parameter or result field changes, and nothing a v1 document is read, stored, ha
   removed (`tests/f2_schema_support.py`) it is F3's `f7ec3c94…` exactly. `check_admission`'s description still names
   a `schema_version 1` draft (F2 decision WO6b-6).
 
-## Amendment 12 (Proposed 2026-11-27; F8) — pointer to ADR 0067
+## Amendment 12 (Accepted 2026-11-27 by the user, with ADR 0067; Proposed 2026-11-27; F8) — pointer to ADR 0067
 
 Amendment 12 is decided in ADR 0067 D2, D5; this paragraph points at it. Additive; nothing a v1 manifest, bundle or
 replay report is read, stored, hashed or replayed as changes:
