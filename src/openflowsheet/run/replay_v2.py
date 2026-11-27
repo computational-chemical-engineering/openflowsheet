@@ -199,9 +199,12 @@ def replay_v2(
 def _unsupported(directory: Path, value: str | None, here: Environment) -> ReplayReport:
     """Step 2's refusal of a format this build does not read. Its layout is unknown, so step 1
     re-hashes only what every format's manifest indexes: each file under `artifacts/` against
-    the `artifacts` map (DECISION F8-WO3-3)."""
+    the `artifacts` map (DECISION F8-WO3-3); an `artifacts` member that is not an object indexes
+    nothing. A failed check is listed first, as D5 accumulates reasons in step order (F8-FR item
+    3)."""
     document = json.loads((directory / MANIFEST_NAME).read_text(encoding="utf-8"))
-    indexed = document.get("artifacts") or {}
+    artifacts = document.get("artifacts")
+    indexed: dict[str, Any] = artifacts if isinstance(artifacts, dict) else {}
     root = directory / ARTIFACT_DIR
     missing = sorted(name for name in indexed if not (root / name).is_file())
     tampered = sorted(
@@ -225,7 +228,7 @@ def _unsupported(directory: Path, value: str | None, here: Environment) -> Repla
         integrity=integrity,
         recorded_environment=dict(recorded) if isinstance(recorded, dict) else {},
         current_environment=here.as_document(),
-        reasons=(reason,),
+        reasons=(reason,) if integrity.ok else (FAILED_INTEGRITY, reason),
     )
 
 

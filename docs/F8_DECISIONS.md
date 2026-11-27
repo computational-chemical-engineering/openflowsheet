@@ -239,6 +239,9 @@ fixtures, `tests/f8_bundle_v2_support.py`, `tests/test_f8_replay_v2.py` (new), `
   files counted); report: `inspected_archived_results` / `NOT_RUN`, the one reason
   `bundle_format_unsupported(<value>)`, the raw recorded `environment`, no Amendment 12 member. The v2 reader refuses
   any other value, so its `verify_bundle` cannot run. Alternative: integrity "not checked" (`ok: false`).
+  *Amended by F8-FR item 3 (review F8 S1):* when that check fails the reasons are
+  `(FAILED_INTEGRITY, bundle_format_unsupported(<value>))`, step 1's first as D5 accumulates them; an `artifacts`
+  member that is not an object indexes nothing (every file `unexpected`).
 - **DECISION F8-WO3-4. "A changed built-in of the running distribution" is a used row whose current registry entry
   has `origin: builtin`** (the recorded origin is not consulted). Alternative: built-in on both sides.
 - **DECISION F8-WO3-5. A rerun without a usage set (a plain `Rerun`) does not match:** `differences` gets
@@ -461,3 +464,9 @@ the working tree, run, and reverted (not committed).
   `TypeError: Environment.__init__() got an unexpected keyword argument 'registry'` (KILLED); `cli.py` at HEAD: the 4
   CLI cases fail (KILLED). `test_t07_w5b_cli`, `test_k06_application`, `test_k05_replay`, `test_f8_replay_v2`: 119
   passed.
+- **Item 3 (S1). `replay_v2._unsupported` lists `FAILED_INTEGRITY` before `bundle_format_unsupported(<value>)` when
+  its integrity check fails, and reads a non-object `artifacts` as empty** (WO3-3 amended above). Test
+  `test_an_unknown_format_lists_a_failed_integrity_check_first` (x two cases): a `-v3` copy with a garbage
+  `solution-state.json` (tampered), with `artifacts` a list, with `artifacts` a string: 6 passed. Controls: reasons
+  left `(reason,)`: 6 of 6 fail (KILLED); the guard back to `artifacts or {}`: the list and string cases, 4 of 6,
+  fail with `AttributeError` (KILLED). `test_f8_replay_v2`: 64 passed.

@@ -323,6 +323,34 @@ def test_the_cli_refuses_to_inspect_an_unknown_format(
     assert "bundle_format_unsupported(openflowsheet-bundle-v3)" in captured.err
 
 
+@pytest.mark.parametrize(
+    "artifacts", [None, ["solution-state.json"], "x"], ids=["kept", "a-list", "a-string"]
+)
+def test_an_unknown_format_lists_a_failed_integrity_check_first(
+    plain: Recorded, tmp_path: Path, artifacts: Any
+) -> None:
+    """Review F8 S1: step 1 comes before step 2, so a `-v3` bundle that fails its integrity check
+    is reported with `FAILED_INTEGRITY` before `bundle_format_unsupported`. An `artifacts` member
+    that is not an object indexes nothing: every file is unexpected."""
+    directory = _reformatted(plain.v2, tmp_path / "bundle", "x-v3")
+    if artifacts is None:
+        (directory / ARTIFACT_DIR / "solution-state.json").write_text("garbage", encoding="utf-8")
+    else:
+        path = directory / MANIFEST_NAME
+        document = json.loads(path.read_text(encoding="utf-8"))
+        document["artifacts"] = artifacts
+        path.write_text(json.dumps(document), encoding="utf-8")
+    report = _valid(replay(directory, None, current=_environment(plain)))
+    assert (report.mode, report.verdict) == ("inspected_archived_results", "NOT_RUN")
+    assert report.reasons == (FAILED_INTEGRITY, "bundle_format_unsupported(x-v3)")
+    assert not report.integrity.ok
+    if artifacts is None:
+        assert report.integrity.tampered == ("solution-state.json",)
+    else:
+        assert report.integrity.missing == report.integrity.tampered == ()
+        assert "solution-state.json" in report.integrity.unexpected
+
+
 def test_a_failed_integrity_check_reruns_nothing(
     plain: Recorded, plain_rerun: RerunV2, tmp_path: Path
 ) -> None:
