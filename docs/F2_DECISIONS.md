@@ -764,3 +764,23 @@ Files: `revision_v2/{lower,raise_v1}.py`, `tests/test_f2_lowering.py`, `tests/da
   `3af0a7942f036766be58caf97ef7409d3906602118e966809fcd9cea0497bc34` in the two `message_entry` fixtures (no served
   digest, no F0 check reads it). `tests/test_msg_*.py` + `tests/test_doc_pages.py`: 189 passed, 3 xfailed; the
   `message_entry`/`application_results` users: 191 passed.
+- **DECISION WO8-9 (ruling item 3). `check_admission.md` widened; the served-digest move registered as X04's.**
+  The one edit `<schema_version 1 document>` -> `<schema_version 1 or 2 document>` (1,493 characters, SHA-256
+  `f111234f5e1ec6027056cf638d40f3776570fade25207919f32ddd49affb0eea`; was 1,488, `e758eeb6…`). The pre-F2 copy is
+  `tests/fixtures/f2/pre_f2_descriptions/check_admission.md` (at F1's pin `e758eeb6…`); `tests/f2_schema_support.py`
+  gains `F2_DESCRIPTIONS`, `pre_f2_text`, and `without_f2` restores the text on a served tool list (X04's pattern;
+  the kind strip is now `_without`). `scripts/m07a_rc.py`: c_11's `D_11` and `texts_before_links` undo F2's text,
+  so item 4 judges it at F1's pin. `F2_SERVED_SHA256` / `D_11`
+  `9a4b4eb3bd9f28e68e25828d8796bec73e8feb49aa6e12b80df0d43f990442a1` ->
+  `8eee5313e1dff685ed3f5c7a60c6aa8fb7fea31d8fcd5c8ac608eac9450f304a` (`strip_f2` leaves D_10 `f7ec3c94…` exactly).
+  R-1072's Evidence row re-taken (both digests). `REVIEW.json` `check_admission`: `sha256`, `characters` 1493, the
+  design-lane review `reviewed` citing `docs/reviews/F2-review.md` (ruling 3), the human review `pending` (the
+  user's). Tests adjusted where they asserted "F2 changed no text": `test_f2s_surface_move_decomposes_onto_f3s`
+  (two tools moved; `check_admission` by its description only), `test_f1s_surface_move_decomposes_onto_x04s`,
+  `test_the_served_files_differ_from_v17_c2_...`, and in `tests/test_m07a_surface_chain.py` the OPT/X04 text
+  controls, `test_x04_the_changed_descriptions_...`, `test_f1_the_added_descriptions_...` (F1's pin is the pre-F2
+  copy's, ST's precedent); new `test_f2_the_changed_description_is_pinned_at_its_recorded_hash` and
+  `test_f2_control_c_11_restores_the_text_only_with_the_strip`. Surface suites: 177 passed, 3 failed: the expected
+  `test_every_description_is_reviewed_by_both_lanes` (`check_admission: human pending`), the v17 file test (fixed
+  after, 13 passed), and `test_a21_every_item_is_classified_once_and_resolves` (WO7's manifest `a3081770…`
+  limitations unmapped in `benchmarks/t08/support_envelope.yaml`; pre-existing, closed with item 12's manifest).

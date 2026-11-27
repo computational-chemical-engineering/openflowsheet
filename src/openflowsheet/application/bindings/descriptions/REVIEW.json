@@ -24,20 +24,20 @@
     "check_admission": {
       "tool": "check_admission",
       "file": "check_admission.md",
-      "sha256": "e758eeb60054cb4dbc200a0106d5919edd8e3ede618a58e46345bda509d03a65",
-      "characters": 1488,
+      "sha256": "f111234f5e1ec6027056cf638d40f3776570fade25207919f32ddd49affb0eea",
+      "characters": 1493,
       "reviews": [
         {
           "review_kind": "design-lane",
           "status": "reviewed",
-          "reviewed_by": "reviewer (design lane), docs/reviews/F1-review.md (approved with edits, applied in de11ec84)",
-          "reviewed_at": "2026-11-11"
+          "reviewed_by": "reviewer (design lane), docs/reviews/F2-review.md (ruling 3: approved as proposed)",
+          "reviewed_at": "2026-11-27"
         },
         {
           "review_kind": "human",
-          "status": "reviewed",
-          "reviewed_by": "Frank Peters",
-          "reviewed_at": "2026-11-11"
+          "status": "pending",
+          "reviewed_by": null,
+          "reviewed_at": null
         }
       ]
     },

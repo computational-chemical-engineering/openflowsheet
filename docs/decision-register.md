@@ -20481,7 +20481,7 @@ amendment and a second migration; the W1 design (the v2 core frozen at W1's end,
 | Date | 2026-11-26 |
 | Decided by | orchestrator (LINE06), build lane; the link's content follows the c_4 to c_10 pattern of `scripts/m07a_rc.py` |
 | Normative text | ADR 0062 D1 (the 14 quantity kinds), ADR 0019 Amendment 9 (pointer, F2-WO6) |
-| Evidence | F2-WO3 on wp/F2: the served MCP tool list digests to `9a4b4eb3bd9f28e68e25828d8796bec73e8feb49aa6e12b80df0d43f990442a1` (D_11 = `F2_SERVED_SHA256`); `strip_f2` (`without_f2`, `tests/f2_schema_support.py`) leaves `f7ec3c94233d30506ec2082a13c4e54d57bd540e43e97fdf877b1e3c75fed467` = D_10 exactly, and the chain holds down to R-133's `D_0` (`tests/test_m07a_surface_chain.py`, `test_f2_link_c_11_is_f2s_strip_and_digest`, `test_f2_control_c_11_left_in_place`) |
+| Evidence | F2-WO3 on wp/F2, re-taken at F2-WO8 (the F2 review's ruling 3 widened `check_admission.md` to `<schema_version 1 or 2 document>`; D_11 was `9a4b4eb3bd9f28e68e25828d8796bec73e8feb49aa6e12b80df0d43f990442a1`): the served MCP tool list digests to `8eee5313e1dff685ed3f5c7a60c6aa8fb7fea31d8fcd5c8ac608eac9450f304a` (D_11 = `F2_SERVED_SHA256`); `strip_f2` (`without_f2`, `tests/f2_schema_support.py`, which also restores `check_admission`'s pre-F2 text) leaves `f7ec3c94233d30506ec2082a13c4e54d57bd540e43e97fdf877b1e3c75fed467` = D_10 exactly, and the chain holds down to R-133's `D_0` (`tests/test_m07a_surface_chain.py`, `test_f2_link_c_11_is_f2s_strip_and_digest`, `test_f2_control_c_11_left_in_place`) |
 | Affected packages | F2; X06 (its link is c_12, R-1073) |
 
 **Decision.** F2's move of the served surface (the kind enum in `list_models` and the served tools, registered by
