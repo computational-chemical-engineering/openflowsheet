@@ -330,6 +330,34 @@ def test_row_7_validate_refuses_by_the_v2_schema_and_by_lowering() -> None:
     assert "construct_unavailable(" in check.message
 
 
+def test_s6_one_fault_one_refusal_for_a_component_this_build_cannot_serve() -> None:
+    """F2 review S6 (WO4-6): `legacy_only.yaml` declares `H2O` with a record no legacy file
+    holds. The lowering refuses it `construct_unavailable(component:H2O, F4)`; the validator's
+    `component_unknown(H2O)` (the record is left out of `revision_context`) is not reported
+    beside it, in `validate` nor in `check_admission`."""
+    import yaml  # noqa: PLC0415
+
+    from openflowsheet.application.errors import ApplicationError  # noqa: PLC0415
+    from openflowsheet.application.local import LocalApplication  # noqa: PLC0415
+    from openflowsheet.application.validation import validate  # noqa: PLC0415
+
+    path = ROOT / "tests/fixtures/schemas/v2/process_revision/valid/legacy_only.yaml"
+    document = yaml.safe_load(path.read_text(encoding="utf-8"))
+    # The fixture's `syn001-ideal` is not this build's provider id: a second, separate fault.
+    expected = (
+        "construct_unavailable(component:H2O, F4); construct_unavailable(property_methods, F4)"
+    )
+    (check,) = validate(document, now=_now).checks
+    assert (check.id, check.result) == ("SCHEMA-01", "FAIL")
+    assert check.message == expected
+    with LocalApplication.in_memory() as app, pytest.raises(ApplicationError) as caught:
+        app.check_admission(revision=document)
+    error = caught.value.error
+    assert error.code == "revision_unsupported"
+    assert error.detail["unbound"] == "unsupported(construct_unavailable(component:H2O, F4))"
+    assert error.detail["hint"] == expected
+
+
 def test_rows_8_9_check_admission_admits_a_v2_draft_as_its_lowering() -> None:
     """Rows 8 and 9: the draft form reads a v2 revision; its pairs are the v1 draft's."""
     from openflowsheet.application.local import LocalApplication  # noqa: PLC0415

@@ -720,3 +720,12 @@ Files: `revision_v2/{lower,raise_v1}.py`, `tests/test_f2_lowering.py`, `tests/da
   definition (`None`) never equals by body. `tests/test_f2_probes.py` Q6.A4 test: `probe` and `probe2` with equal
   bodies (attributes listed in reverse, which the normal form sorts back) admitted `((), ())`; without the fix it
   fails (measured). `test_f2_probes.py` + `test_f2_revision_v2.py`: 122 passed.
+  (WO8-1 follow-up commit: `source_document: Mapping[str, Any]` annotation, which mypy required.)
+- **DECISION WO8-6 (S6). One fault, one refusal: shared helper `application/validation.py` `v2_admission`**
+  returns `(lowering | None, refusals, notices)`; `_v2_stage` and `capabilities._lowered_draft` both call it. It
+  drops the validator's `component_unknown(c)` wherever the lowering reports `construct_unavailable(component:c,
+  F4)`; nothing else changes (unique, sorted, rendered as before). Test
+  `test_s6_one_fault_one_refusal_for_a_component_this_build_cannot_serve` (`tests/test_f2_amendment9.py`) on
+  `legacy_only.yaml` through `validate` and `check_admission`: `construct_unavailable(component:H2O, F4);
+  construct_unavailable(property_methods, F4)` (the fixture's `syn001-ideal` is not this build's provider id, a
+  separate fault); without the fix it fails (measured).
