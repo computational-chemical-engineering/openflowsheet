@@ -20554,3 +20554,19 @@ verdict would depend on the project).
 in the `SolvePolicies` requests, by that full path only; the request's numeric scalars are pinned by full path (40: the ruling counted 39; X06-WO3b DECISION WO3b-1 adds `policy/admissibility_epsilon`, open for the reviewer).
 Precedent: F3's `validate_record` `reactions/*/stoichiometry` (R-1058). Rejected: refusing `scales` in a user policy
 (would change ADR 0078 D4).
+
+## R-1076: F8's surface link c_13 (2026-11-27, reserved)
+
+| | |
+| --- | --- |
+| Date | 2026-11-27 |
+| Decided by | orchestrator (LINE06), build lane; the link's content follows the c_4 to c_12 pattern of `scripts/m07a_rc.py` |
+| Normative text | ADR 0067 D3 (artifact kinds in `job.schema.json`), D5 (`ReplayReport` Amendment 12: `forced_replay` in `mode`, `registry_comparison`, `data_availability`) |
+| Evidence | to come: `tests/test_m07a_surface_chain.py` and `tests/test_t07_w5e_application_results.py` green on wp/F8 with `strip_f8` / `without_f8`; probes in `docs/F8_DECISIONS.md` STOP F8-WO1-8 (39 of 85 surface tests move) and F8-WO1-9 (7 R4-G3 snapshots move; MCP digest unmoved) |
+| Affected packages | F8; F2 (R-1072), X06 (R-1073) |
+
+**Decision.** F8's moves of the served surface (the replay-report members and the job artifact kinds) are one chain
+link, c_13, with `strip_f8` (chain) and `without_f8` (the R4-G3 snapshot decompositions) taking F8's additions out.
+On wp/F8, which branches from wp/F2, c_13 decomposes onto F2's c_11 until the merges. R-1072's merge-order rule
+holds: links are renumbered in the order their branches merge into `main`, and the later branch decomposes onto the
+earlier one's digest in its merge commit. F8 merges after F2 (LINE06 order).
