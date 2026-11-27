@@ -391,3 +391,24 @@ addendum is needed (the closed partition audits names containing `sha256`).
 - **Gate at `15e82c82`.** WO4's battery suites plus `tests/test_f2_probes.py`: 5,609 passed (5,596 + 13), 28 skipped,
   3 xfailed, 0 failed; ruff, ruff format --check, `mypy src` clean; F0 PASS M1 50/50, M2-M5 61/61, M6 85/85, M7 52/52,
   M8 105/105, M9 42/42 (`~/.cache/line06/f2wo5-final.log`). No `src/` file changed in WO5.
+
+## F2-WO6a (lowering, raising, `solution-state-v2`), 2026-11-27
+
+Files: `src/openflowsheet/revision_v2/{lower,raise_v1}.py`, `tests/f2/legacy_providers.py`,
+`tests/test_f2_lowering.py`.
+
+- **DECISION WO6a-1. Provider selection is a caller-supplied `LegacyProviders`** (ADR 0050 D1's
+  registered record sources by string equality, SYN-001's otherwise; each with its provider id and
+  native convention). `revision_v2` sits below `models` and `thermo`, which hold the registry
+  (`models.revision_flowsheet.component_basis`) and the conventions; WO4-1's pattern. The legacy
+  records are read from the committed legacy index (`records` is below `revision_v2`).
+  `tests/f2/legacy_providers.py` builds it from `component_basis` and the providers' constants;
+  WO6b builds the same in the application. Alternative: a copy of the table in `revision_v2`
+  pinned by a test (WO4-2's pattern).
+- **DECISION WO6a-2 (design-lane question). D12's "one file whose component list equals
+  `component_set` in order"** is read as: every record is a legacy component record of one file,
+  under its id there; the lowered `components` are the set's ids in its order. As written, it
+  refuses the corpus's `SYN-001-T06-STA04` (components C, A, B: a permutation v1 binds, T06 §8.6),
+  so E-F2-3's "every corpus revision" fails 58/59 (measured at `fa81bdcf`), and it refuses every
+  CoolProp revision (one fluid of the S07 file's 123). Isolated in one commit; reverting it
+  restores the literal reading (`component_set` refused, F4).

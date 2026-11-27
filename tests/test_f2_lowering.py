@@ -66,8 +66,6 @@ def _corpus() -> dict[str, Callable[[], dict[str, Any]]]:
 
 
 CORPUS_REVISIONS = _corpus()
-#: The corpus revisions D12's criterion, as written, does not admit: a permuted component set.
-NOT_EXPRESSIBLE = frozenset({"SYN-001-T06-STA04"})
 
 
 @cache
@@ -102,7 +100,7 @@ def test_e_f2_3_corpus_is_m1_and_the_run_set() -> None:
     assert len(CORPUS_REVISIONS) == 59
 
 
-@pytest.mark.parametrize("name", sorted(set(CORPUS_REVISIONS) - NOT_EXPRESSIBLE))
+@pytest.mark.parametrize("name", sorted(CORPUS_REVISIONS))
 def test_e_f2_3_corpus_revision_raises_and_lowers_to_its_bytes(name: str) -> None:
     """E-F2-3 (library half): raise, parse as v2, lower; the same canonical bytes and v1 hash."""
     original = CORPUS_REVISIONS[name]()
@@ -215,17 +213,25 @@ def test_refused_component_set_of_two_files() -> None:
     assert _refusals(document) == _unavailable(("component_set", "F4"))
 
 
-def test_refused_permuted_component_set() -> None:
-    """D12 as written: the file's component list equals `component_set` in order."""
+def test_a_permuted_component_set_lowers_in_its_order() -> None:
+    """F2 decision WO6a-2: the set's ids in its order, as the corpus's `SYN-001-T06-STA04` (C, A, B)
+    declares them; and CoolProp's one fluid of the 123 the S07 file holds."""
     assert file_components("benchmarks/syn001/components.yaml") == ("A", "B", "C")
-    document = _raised()
-    components = document["component_set"]["components"]
-    components.insert(0, components.pop())
-    assert _refusals(document) == _unavailable(("component_set", "F4"))
-    for name in NOT_EXPRESSIBLE:
-        assert _refusals(raise_v1(CORPUS_REVISIONS[name](), _providers())) == _unavailable(
-            ("component_set", "F4")
-        )
+    permuted = CORPUS_REVISIONS["SYN-001-T06-STA04"]()
+    assert permuted["component_set"]["components"] == ["C", "A", "B"]
+    lowered = lower(parse(raise_v1(permuted, _providers())), _providers())
+    assert lowered["component_set"]["components"] == ["C", "A", "B"]
+    fluids = file_components("benchmarks/s07/components.yaml")
+    assert len(fluids) == 123
+    one = CORPUS_REVISIONS[BASE]()
+    one["component_set"] = {
+        "record_source": "benchmarks/s07/components.yaml",
+        "components": [fluids[5]],
+    }
+    raised = raise_v1(one, _providers())
+    assert raised["property_methods"]["default"] == "coolprop-heos-v1"
+    assert raised["convention"] == "COOLPROP-DEF-ref-v1"
+    assert canonical_json(lower(parse(raised), _providers())) == canonical_json(one)
 
 
 def _crystallizer() -> dict[str, Any]:

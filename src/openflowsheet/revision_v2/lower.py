@@ -1,23 +1,25 @@
 """Lowering a v1-expressible v2 revision to its v1 document (ADR 0062 D12).
 
 A v2 document is *v1-expressible* iff its convention is the legacy provider's native one, every
-material connection is `nTP-v1`, it has no energy or signal connection, reaction set, section,
-probe or parameter endpoint, and every component record is a legacy record (ADR 0061 D12) of one
-file whose component list equals `component_set` in order. `lower` maps it field by field to the v1 document the untouched v1 path compiles:
-`component_set` becomes `{record_source: that file, components: the ids in order}`; a
-connection's `definition: nTP-v1` becomes `state_definition: nTP-v1`, `component_mapping:
-revision_component_set`, with `phase_capability`, `initialization_hint` and `notes` copied;
-instances, specifications in v1's target form and the provenance are copied; `convention`,
-`materials`, `property_methods`, `reaction_sets` and `sections` are dropped, after checking that
-`property_methods.default` is the provider ADR 0050 D1 assigns to the file and that there are no
-overrides. A document's `content_hash`, when it carries one, is recomputed for the v1 document by
-v1's rule (the field names its own document; it is outside the hash either way).
+material connection is `nTP-v1`, it has no energy or signal connection, reaction set, section, probe
+or parameter endpoint, and every component record is a legacy record (ADR 0061 D12) of one file,
+named by its id there (F2 decision WO6a-2: D12's "whose component list equals `component_set` in
+order" is read as the lowered `components` being the set's ids in its order, which admits a permuted
+set, as v1 does, and CoolProp's one fluid of 123). `lower` maps it field by field to the v1 document
+the untouched v1 path compiles: `component_set` becomes `{record_source: that file, components: the
+ids in order}`; a connection's `definition: nTP-v1` becomes `state_definition: nTP-v1`,
+`component_mapping: revision_component_set`, with `phase_capability`, `initialization_hint` and
+`notes` copied; instances, specifications in v1's target form and the provenance are copied;
+`convention`, `materials`, `property_methods`, `reaction_sets` and `sections` are dropped, after
+checking that `property_methods.default` is the provider ADR 0050 D1 assigns to the file and that
+there are no overrides. A document's `content_hash`, when it carries one, is recomputed for the v1
+document by v1's rule (the field names its own document; it is outside the hash either way).
 
 Anything else is refused with every `construct_unavailable(<construct>, <foundation>)` found,
 sorted as `validate` sorts (`LoweringError.refusals`). The constructs and their foundations:
 `convention:<id>` and `property_methods` (F4, as `validate` names them), `component:<id>` (a
 record that is not a legacy component record of that id) and `component_set` (records of more
-than one file, or a file whose component list is not `component_set`'s), F4; `definition:<id>` (a material definition other than `nTP-v1`), `energy:<c>`,
+than one file), F4; `definition:<id>` (a material definition other than `nTP-v1`), `energy:<c>`,
 `signal:<c>`, `probe:<c>` and `parameter:<instance>.<parameter>` (D9), `reaction_set:<id>`,
 `section:<namespace>` and `target:<specification>` (a v2 target form), F6; `derived:<id>` (D10),
 F4. Whether a refusal is reported once per fault follows F2 decision WO4-6: the convention and the
@@ -130,10 +132,6 @@ def _record_source(document: Mapping[str, Any], refusals: list[Coded]) -> str | 
     if refusals or not files:
         return None
     (source,) = files
-    components = [c["id"] for c in document["component_set"]["components"]]
-    if file_components(source) != tuple(components):
-        refusals.append(_refused("component_set", "F4"))
-        return None
     return source
 
 
