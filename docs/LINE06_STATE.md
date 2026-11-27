@@ -44,14 +44,16 @@ Judged PASS since the morning (details: `docs/LINE06_DECISIONS.md`): F2-R1, F2-W
 (`docs/reviews/F2-review.md`) and F2-WO8; F8-WO1 (+WO1b, R-1076 c_13), F8-WO2, F8-WO3. Heads: wp/F2 `6913c4a0` (j16 fixture fix on a64f93fb)
 (manifest `evidence/F2/fb75c409.../manifest.json`, `tested`), wp/F8 `25e5ed36`, wp/X06 `1b9561a3` (pushed).
 
-**Running (2026-11-27, afternoon):** (1) F2 full gate on wp/F2 `4b820b97` (nohup; summary
-`~/.cache/line06/f2-j16/gate-4b820b97.summary`, log `gate-4b820b97.log`; a background waiter prints it). F2 cards both
-executed: ADR 0062 Accepted (`831d6f26`), check_admission review recorded (`8edbbaee`); push of 6913c4a0 withheld
-(its gate failed). Requested from hub: a new card "Push wp/F2 at 4b820b97 for CI, only if the local full gate on
-4b820b97 passes." On VERIFIED + gate PASS: push, waiter `~/.cache/line06/ci/wait_runs.sh wp/F2 <sha>`, merge card on
-green. (2) F8-FR0 `opus-engineer` (merge wp/F2 4b820b97 into wp/F8; brief `docs/briefs/LINE06-F8-FR0.md`). Then
-F8-FR (`docs/briefs/LINE06-F8-FR.md`). (3) X06-CI1 `opus-engineer` (see X06 below). Codehealth diff is informational,
-not a push gate (LINE06_DECISIONS 2026-11-27).
+**Running (2026-11-27, 13:40):**
+- F2: full gate on wp/F2 `4b820b97` (summary `~/.cache/line06/f2-j16/gate-4b820b97.summary`). Card `ofs-f2-push-ci` A
+  VERIFIED: on gate PASS, `git push origin 4b820b97:refs/heads/wp/F2` (with the gh credential helper), CI waiter
+  `~/.cache/line06/ci/wait_runs.sh wp/F2 <full sha>`, write `executed`. Then fix stale D_11 `9a4b4eb3` in ADR 0019
+  Amendment 9 (l.307) and `docs/interfaces-frozen.md:114` on wp/F2 (docs, local, no push).
+- F8: all WOs + review fix round done (wp/F8 `14409696`, contains wp/F2 4b820b97). Full gate in detached worktree
+  `.claude/worktrees/f8-gate` (summary `~/.cache/line06/f8-gate/gate-14409696.summary`; remove the worktree after).
+  ADR 0067 card requested from hub (A: accept as corrected + push 14409696 if the gate passes). Merges after F2.
+- X06: X06-CI1 `opus-engineer` running its second full gate in `.claude/worktrees/x06-gate` (head `a514896c`;
+  first gate: 1 failed, fixed). Judge on its report.
 
 **X06:** CI run 45962988409 at `1b9561a3` FAILED (11 tests + codehealth; see LINE06_DECISIONS). Running: X06-CI1
 `opus-engineer` in `.claude/worktrees/x06` (brief `docs/briefs/LINE06-X06-CI1.md`, logs `~/.cache/line06/x06-ci1/`).
