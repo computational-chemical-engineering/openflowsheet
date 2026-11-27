@@ -800,3 +800,18 @@ Files: `revision_v2/{lower,raise_v1}.py`, `tests/test_f2_lowering.py`, `tests/da
   catalogue does not move. Alternative: a new code (catalogue entry, digest re-pin). Reversible by this commit alone.
   Test `test_n1_component_basis_refuses_a_raw_v2_document` (`tests/test_f2_amendment9.py`), with the lowering
   selecting the v1 document's basis. `test_f2_amendment9.py` + `test_f2_lowering.py`: 225 passed, 1 deselected.
+- **DECISION WO8-12 (S9, close).** New manifest `evidence/F2/fb75c409d6aa4ef171b1dfa9a2572836ccf27f28/manifest.json`
+  (`tested`, review pending), replacing WO7's `a3081770…` (removed, as F1/F3 moved theirs). The manifest schema's
+  `result` enum has no `partial`, so each partial exit is a passing check for the built part plus an `unsupported`
+  check naming the reason and the closing package: `E-F2-4.Q6-A2-registration` (X19/X20), `E-F2-8.Q7-A1-map` (F4),
+  `E-F2-9.state_degenerate_in_definition` (F5/F6); E-F2-9 reads 19 of 20; the stale WO7-3 sentence is gone. The
+  pending human review of `check_admission` is recorded as check `F2.DESCRIPTION-REVIEW` = `fail` (a failed gate
+  stays failed), and `F2.SURFACE` names its two failures. Harvest (`benchmarks/t08/support_envelope.yaml`): 4
+  limitations and the 4 non-pass checks, class P; `HARVEST_SIZE` (108, 1176, 147) -> (109, 1180, 151); matrix
+  re-emitted. WO7's manifest had no harvest rows, so
+  `test_a21_every_item_is_classified_once_and_resolves` failed from 9d2fbe6c on; it passes with these rows.
+  Battery at `fb75c409` (logs `~/.cache/line06/f2-wo8/`): `tests/test_f2_*.py` 564 passed, 1 deselected (CoolProp
+  test ran); V03 22 passed; surface 2321 passed, 28 skipped, 2 failed (the expected human review of
+  `check_admission`, and A21 before the harvest rows); MSG 186 passed, 3 xfailed; nlp (`test_f2_amendment9.py`,
+  `test_opt_job_nlp.py`) 7 passed; F0 PASS M1 50/50, M2-M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 42/42;
+  ruff clean, 1345 files formatted, mypy clean (367 files).

@@ -1,0 +1,185 @@
+{
+  "work_package": "F2",
+  "commit": "fb75c409d6aa4ef171b1dfa9a2572836ccf27f28",
+  "requirements": [],
+  "status": "tested",
+  "inputs": {
+    "case_id": "ADR 0062 (Proposed; ruling F2-R1 applied) exit tests E-F2-1 to E-F2-10; build decisions docs/F2_DECISIONS.md WO1 to WO8; work orders F2-WO1 to F2-WO8 (docs/briefs/LINE06-F2-WO*.md); review docs/reviews/F2-review.md (on main)",
+    "case_hash": "b84c5de8a4c32e491f7f46fea0293d6627a046695b9b834d11a3e09325bede4d",
+    "environment_lock_hash": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+  },
+  "commands": [
+    {
+      "cmd": "PYTHONPATH=src .venv/bin/python -m pytest -q -p no:cacheprovider tests/test_f2_*.py (9 files): 564 passed, 1 deselected, 1 warning in 89.15s (0:01:29)",
+      "cwd": ".claude/worktrees/f2",
+      "exit_code": 0
+    },
+    {
+      "cmd": "PYTHONPATH=src .venv/bin/python -m pytest -q -p no:cacheprovider tests/test_v03_semantic_roles.py: 22 passed in 29.08s",
+      "cwd": ".claude/worktrees/f2",
+      "exit_code": 0
+    },
+    {
+      "cmd": "PYTHONPATH=src .venv/bin/python -m pytest -q -p no:cacheprovider tests/test_t07_*.py tests/test_t08_w2_*.py tests/test_m07a_surface_chain.py: 2 failed, 2321 passed, 28 skipped in 1368.71s (0:22:48)",
+      "cwd": ".claude/worktrees/f2",
+      "exit_code": 1
+    },
+    {
+      "cmd": "PYTHONPATH=src .venv/bin/python -m pytest -q -p no:cacheprovider tests/test_msg_*.py: 186 passed, 3 xfailed in 42.67s",
+      "cwd": ".claude/worktrees/f2",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/m03_nlp_check.sh --no-inventory /home/eajfpeters/Code/OpenFlowsheet/.venv-nlp /home/eajfpeters/Code/OpenFlowsheet/.reference-downloads/m03-ipopt -- tests/test_f2_amendment9.py tests/test_opt_job_nlp.py: 7 passed, 128 deselected; === m03_nlp_check.sh: PASSED ===",
+      "cwd": ".claude/worktrees/f2",
+      "exit_code": 0
+    },
+    {
+      "cmd": "PYTHONPATH=src .venv/bin/python scripts/corpus_identity.py --check --log ~/.cache/line06/f2-wo8/f0-detail.log: F0 PASS: M1 50/50, M2 61/61, M3 61/61, M4 61/61, M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 42/42 (log /home/eajfpeters/.cache/line06/f2-wo8/f0-detail.log)",
+      "cwd": ".claude/worktrees/f2",
+      "exit_code": 0
+    },
+    {
+      "cmd": ".venv/bin/ruff check . (All checks passed!); .venv/bin/ruff format --check . (1345 files already formatted); PYTHONPATH=src .venv/bin/mypy src (Success: no issues found in 367 source files)",
+      "cwd": ".claude/worktrees/f2",
+      "exit_code": 0
+    },
+    {
+      "cmd": "PYTHONPATH=src .venv/bin/python -m pytest --collect-only -q tests/test_f2_*.py, per file (all collected tests passed in the f2 step): amendment9 128 (1 deselected), basis 41, definitions 61, lowering 97, material_types 44, probes 13, revision_v2 109, solution_state_v2 35, vid_layout 36",
+      "cwd": ".claude/worktrees/f2",
+      "exit_code": 0
+    }
+  ],
+  "checks": [
+    {
+      "id": "F2.E-F2-1",
+      "description": "Q1.A8: every corpus stream round-trips EvaluationState bitwise (test_e_f2_1_every_corpus_stream_round_trips_bitwise, test_e_f2_1_signed_zero_and_subnormals_survive_the_round_trip)",
+      "result": "pass",
+      "value": "tests/test_f2_material_types.py 44 passed"
+    },
+    {
+      "id": "F2.E-F2-2",
+      "description": "round trips: parse, canonical, parse is a fixed point; content_hash stable under reordering and moved by every core field (tests/test_f2_revision_v2.py::test_e_f2_2_*, tests/test_f2_definitions.py, tests/test_f2_lowering.py large fixture)",
+      "result": "pass",
+      "value": "test_f2_revision_v2.py 109 passed; test_f2_definitions.py 61 passed"
+    },
+    {
+      "id": "F2.E-F2-3",
+      "description": "lowering: corpus v1 revisions raise and lower to the same content_hash (library half, tests/test_f2_lowering.py::test_e_f2_3_*) and each raised document submitted as a run writes the v1 bundle, r0 and solution-state bytes (run half, tests/test_f2_amendment9.py::test_e_f2_3_*, 56/56 runs: 47 g8 + 9 basis); non-expressible constructs refused construct_unavailable; a raised two-revision lineage continues as its v1 lineage (F2 review M1); a CoolProp one-fluid revision (TH-C2) runs as its v1 run (F2-R1 R1-1 run half, CoolProp gate); an initialization_hint lowers to its bytes (S8)",
+      "result": "pass",
+      "value": "test_f2_lowering.py 97 passed; test_f2_amendment9.py 128 passed, 1 deselected (nlp-marked one by the nlp step)"
+    },
+    {
+      "id": "F2.E-F2-4",
+      "description": "Q1.A5 and Q6.A1, Q6.A3 to A5 and Q6.A2's sum half on the probe flowsheets, O-9 worst moment deficit; Q6.A4 admits two ids with equal bodies (F2 review S2) (tests/test_f2_probes.py)",
+      "result": "pass",
+      "value": "test_f2_probes.py 13 passed"
+    },
+    {
+      "id": "F2.E-F2-4.Q6-A2-registration",
+      "description": "Q6.A2's registration half: not testable as written on D5's payload (Q-WO5-a); the deciding payload field comes with the first attribute kind that needs it (X19/X20, ADR 0062 risk 2); the substitute tests stand (F2 review ruling 5)",
+      "result": "unsupported",
+      "value": "closes with X19/X20 (first polymer attribute kinds)"
+    },
+    {
+      "id": "F2.E-F2-5",
+      "description": "ids: 10^4 generated structures, phase ids (tests/test_f2_material_types.py::test_e_f2_5_phase_ids_render_injectively_and_parse_back) and variable ids (tests/test_f2_vid_layout.py::test_e_f2_5_variable_ids_render_injectively_and_parse_back)",
+      "result": "pass",
+      "value": "test_f2_material_types.py 44 passed; test_f2_vid_layout.py 36 passed"
+    },
+    {
+      "id": "F2.E-F2-6",
+      "description": "layout equals the independently built state on every probe and fixture state; no id parsing in src/ (tests/test_f2_vid_layout.py::test_e_f2_6_*, tests/test_f2_probes.py::test_q7_a2_and_e_f2_6_on_the_probe_states, tests/test_f2_revision_v2.py::test_e_f2_6_the_fixtures_states_read_as_built_from_their_definitions)",
+      "result": "pass",
+      "value": "test_f2_vid_layout.py 36 passed; test_f2_probes.py 13 passed; test_f2_revision_v2.py 109 passed"
+    },
+    {
+      "id": "F2.E-F2-7",
+      "description": "Q3.A1 to A3, A6 in exact arithmetic with M_g per case (tests/test_f2_basis.py::test_q3_a*, test_q3_r7_*)",
+      "result": "pass",
+      "value": "test_f2_basis.py 41 passed"
+    },
+    {
+      "id": "F2.E-F2-8",
+      "description": "Q7.A1's refusal half, A2, A4, A5; Q8.A1, A2, A4 (thermal_substreams, F2 review S1), A6 (tests/test_f2_revision_v2.py::test_e_f2_8_*)",
+      "result": "pass",
+      "value": "test_f2_revision_v2.py 109 passed"
+    },
+    {
+      "id": "F2.E-F2-8.Q7-A1-map",
+      "description": "Q7.A1's 'admitted through a declared map' half: declared maps are ADR-F4's (F2 decision WO4-7, D10 strict; F2 review ruling 5)",
+      "result": "unsupported",
+      "value": "closes with F4"
+    },
+    {
+      "id": "F2.E-F2-9",
+      "description": "19 of the catalogue table's 20 codes: one fixture per code, each refused with exactly that code and params (tests/test_f2_revision_v2.py::test_e_f2_9_*), including the revision-wide h_mass rule's two fixtures (F2 review S3); every code has a complete catalogue entry (tests/test_msg_coverage.py; prose per the F2 review's ruling 4)",
+      "result": "pass",
+      "value": "test_f2_revision_v2.py 109 passed; test_msg_*.py 186 passed, 3 xfailed in 42.67s"
+    },
+    {
+      "id": "F2.E-F2-9.state_degenerate_in_definition",
+      "description": "the 20th code, state_degenerate_in_definition, is not built: it needs a property evaluation at a T state point (F2 decision WO4-9, kept by the F2 review's ruling 5)",
+      "result": "unsupported",
+      "value": "closes with ADR-F5/F6 (F5, F6)"
+    },
+    {
+      "id": "F2.E-F2-10",
+      "description": "solution-state-v2 round trip and schema; legacy runs keep solution-state-v1 bytes (tests/test_f2_solution_state_v2.py::test_e_f2_10_*; M4 in F0)",
+      "result": "pass",
+      "value": "test_f2_solution_state_v2.py 35 passed; F0 M4 61/61"
+    },
+    {
+      "id": "F2.F0",
+      "description": "F0 identity check at the head",
+      "result": "pass",
+      "value": "F0 PASS: M1 50/50, M2 61/61, M3 61/61, M4 61/61, M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 42/42 (log /home/eajfpeters/.cache/line06/f2-wo8/f0-detail.log)"
+    },
+    {
+      "id": "F2.AMENDMENT9-OPT",
+      "description": "optimization on a raised v2 revision is the optimization of its v1 document (DECISION WO7-4: optimize_revision lowers)",
+      "result": "pass",
+      "value": "nlp step: 7 passed, 128 deselected; === m03_nlp_check.sh: PASSED ==="
+    },
+    {
+      "id": "F2.V03",
+      "description": "V03 A28 to A31 with the F2 review's ruling 1 (a29, a31_a, a31_b and two controls)",
+      "result": "pass",
+      "value": "22 passed in 29.08s"
+    },
+    {
+      "id": "F2.SURFACE",
+      "description": "surface suites (t07, t08_w2, m07a chain): served digest D_11 re-taken for check_admission.md (ruling 3); every test but the human-review check, which F2.DESCRIPTION-REVIEW records",
+      "result": "pass",
+      "value": "at the head: 2 failed, 2321 passed, 28 skipped in 1368.71s (0:22:48); the 2 failures: test_every_description_is_reviewed_by_both_lanes (F2.DESCRIPTION-REVIEW) and test_a21_every_item_is_classified_once_and_resolves (the previous manifest had no harvest rows; this manifest's commit adds them and the test passes there)"
+    },
+    {
+      "id": "F2.DESCRIPTION-REVIEW",
+      "description": "both reviews of every MCP description (tests/test_t08_w2_description_reviews.py::test_every_description_is_reviewed_by_both_lanes)",
+      "result": "fail",
+      "value": "check_admission: human pending (the new text of the F2 review's ruling 3 awaits the user's review; the design-lane review is recorded)"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "docs/adr/0062-F2-material-model.md",
+      "sha256": "b84c5de8a4c32e491f7f46fea0293d6627a046695b9b834d11a3e09325bede4d",
+      "description": "ADR 0062 (Proposed; built as written, LINE06 rules) with D12 per ruling F2-R1"
+    },
+    {
+      "path": "docs/F2_DECISIONS.md",
+      "sha256": "004bc74fca78eeb8331ea0aa632276d94f7a746881531b2625feaf27cb0cca7e",
+      "description": "F2 build decisions WO1 to WO8"
+    }
+  ],
+  "limitations": [
+    "Evidence class: software verification of the F2 material model against independent expectations (exact arithmetic, bitwise round trips, corpus identity, lineage identity). Status is tested at this head by local runs; no CI run has judged it (LINE06 rules: pushes only when CI must judge). Not reviewed: the F2 reviewer's fix round (F2-WO8) is built; the design lane's spot-check and the user's acceptance of ADR 0062 are pending.",
+    "Partial exits, recorded as unsupported checks: E-F2-9 covers 19 of 20 codes (state_degenerate_in_definition closes with ADR-F5/F6); E-F2-4's Q6.A2 registration half is not testable on D5's payload (closes with X19/X20); E-F2-8's Q7.A1 declared-map half closes with F4.",
+    "Open for the user: the human review of check_admission.md's new text (REVIEW.json human status pending; tests/test_t08_w2_description_reviews.py::test_every_description_is_reviewed_by_both_lanes red until then) and the ADR 0062 acceptance card. The ADR 0062 text edits (D12 per F2-R1, D2 per WO1-4, item 2's clause) are the orchestrator's.",
+    "Moved digests (F2_DECISIONS.md WO8-7 to WO8-9): the four material template descriptor SHAs, tables.sha256 and E-F1-5's registry_sha256 (S4); the message catalogue digest (S5); the served digest D_11 = F2_SERVED_SHA256 8eee5313... (ruling 3). F0 did not move."
+  ],
+  "review": {
+    "numerical": "pending",
+    "process_model": "pending"
+  }
+}
