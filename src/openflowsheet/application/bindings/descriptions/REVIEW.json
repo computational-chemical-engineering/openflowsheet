@@ -55,9 +55,9 @@
         },
         {
           "review_kind": "human",
-          "status": "pending",
-          "reviewed_by": null,
-          "reviewed_at": null
+          "status": "reviewed",
+          "reviewed_by": "the user, Decision Desk ofs-x06-descriptions-human",
+          "reviewed_at": "2026-11-27"
         }
       ]
     },
@@ -355,9 +355,9 @@
         },
         {
           "review_kind": "human",
-          "status": "pending",
-          "reviewed_by": null,
-          "reviewed_at": null
+          "status": "reviewed",
+          "reviewed_by": "the user, Decision Desk ofs-x06-descriptions-human",
+          "reviewed_at": "2026-11-27"
         }
       ]
     },
@@ -535,9 +535,9 @@
         },
         {
           "review_kind": "human",
-          "status": "pending",
-          "reviewed_by": null,
-          "reviewed_at": null
+          "status": "reviewed",
+          "reviewed_by": "the user, Decision Desk ofs-x06-descriptions-human",
+          "reviewed_at": "2026-11-27"
         }
       ]
     },
@@ -555,9 +555,9 @@
         },
         {
           "review_kind": "human",
-          "status": "pending",
-          "reviewed_by": null,
-          "reviewed_at": null
+          "status": "reviewed",
+          "reviewed_by": "the user, Decision Desk ofs-x06-descriptions-human",
+          "reviewed_at": "2026-11-27"
         }
       ]
     },
@@ -575,9 +575,9 @@
         },
         {
           "review_kind": "human",
-          "status": "pending",
-          "reviewed_by": null,
-          "reviewed_at": null
+          "status": "reviewed",
+          "reviewed_by": "the user, Decision Desk ofs-x06-descriptions-human",
+          "reviewed_at": "2026-11-27"
         }
       ]
     },
@@ -595,9 +595,9 @@
         },
         {
           "review_kind": "human",
-          "status": "pending",
-          "reviewed_by": null,
-          "reviewed_at": null
+          "status": "reviewed",
+          "reviewed_by": "the user, Decision Desk ofs-x06-descriptions-human",
+          "reviewed_at": "2026-11-27"
         }
       ]
     },
@@ -615,9 +615,9 @@
         },
         {
           "review_kind": "human",
-          "status": "pending",
-          "reviewed_by": null,
-          "reviewed_at": null
+          "status": "reviewed",
+          "reviewed_by": "the user, Decision Desk ofs-x06-descriptions-human",
+          "reviewed_at": "2026-11-27"
         }
       ]
     },
@@ -635,9 +635,9 @@
         },
         {
           "review_kind": "human",
-          "status": "pending",
-          "reviewed_by": null,
-          "reviewed_at": null
+          "status": "reviewed",
+          "reviewed_by": "the user, Decision Desk ofs-x06-descriptions-human",
+          "reviewed_at": "2026-11-27"
         }
       ]
     },
@@ -655,9 +655,9 @@
         },
         {
           "review_kind": "human",
-          "status": "pending",
-          "reviewed_by": null,
-          "reviewed_at": null
+          "status": "reviewed",
+          "reviewed_by": "the user, Decision Desk ofs-x06-descriptions-human",
+          "reviewed_at": "2026-11-27"
         }
       ]
     },
@@ -675,9 +675,9 @@
         },
         {
           "review_kind": "human",
-          "status": "pending",
-          "reviewed_by": null,
-          "reviewed_at": null
+          "status": "reviewed",
+          "reviewed_by": "the user, Decision Desk ofs-x06-descriptions-human",
+          "reviewed_at": "2026-11-27"
         }
       ]
     },
@@ -695,9 +695,9 @@
         },
         {
           "review_kind": "human",
-          "status": "pending",
-          "reviewed_by": null,
-          "reviewed_at": null
+          "status": "reviewed",
+          "reviewed_by": "the user, Decision Desk ofs-x06-descriptions-human",
+          "reviewed_at": "2026-11-27"
         }
       ]
     }
