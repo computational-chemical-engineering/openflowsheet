@@ -162,3 +162,12 @@ Reversible by: <how>.` Package build decisions go in the package's own file (`do
   grant_capability limits/{default_wall_time_s,max_wall_time_s,max_active_jobs}, set_ambient_pressure value. Found:
   render_error prints explain's "no message code" text when a message lacks its code prefix (WO2-WO4 carry it; check
   in review). X06-WO4b (continuation) brief written, launched.
+- 2026-11-27: F2-WO4 judged PASS with one recorded exception, wp/F2 d14e7ce7: E-F2-2 pass; E-F2-8 pass; E-F2-9
+  19 of 20 codes (`state_degenerate_in_definition` needs F5/F6 property evaluation, WO4-9; named in the coverage
+  test) -> recorded as a partial miss, to F2's ruling batch; battery 5596 passed, 0 failed; F0 PASS. Orchestrator
+  spot-check: test_f2_revision_v2 107 passed, F0 PASS (same counts). Design-lane items for F2's batch: WO4-7 (D10 vs
+  Q7.R5, mass input on a mol amount refused), WO4-8 (Q8.A6's code), WO4-9, WO4-15 (which substream fixes T).
+  WO4-16: 18 minimal catalogue entries added ahead of WO7 (doc pages and two message_entry digests re-pinned).
+  Incident: F2-WO4 and X06-WO4b shared the prior session's scratchpad; X06-WO4b warned to re-run any result from
+  battery.sh/pytest.log/f0.log there. Rule for briefs from now: logs under ~/.cache/line06/<wo>/.
+  F2-WO5 brief written (docs/briefs/LINE06-F2-WO5.md), launched.
