@@ -33,8 +33,9 @@ def test_every_description_is_reviewed_by_both_lanes() -> None:
     # ADR 0061 D13: five more, `search_records`, `get_record`, `register_record`,
     # `validate_record` and `assess_rights`; ADR 0078 D2.5: three more, `list_branches`,
     # `create_branch` and `delete_branch`; D4.5: two more, `register_solve_policy` and
-    # `get_solve_policy`
-    assert len(MCP_OPERATIONS) == 31
+    # `get_solve_policy`; D5.2: four more, `get_policy`, `grant_capability`, `revoke_capability`
+    # and `set_ambient_pressure`
+    assert len(MCP_OPERATIONS) == 35
     assert sorted(record["operations"]) == MCP_OPERATIONS
 
     open_items: list[str] = []

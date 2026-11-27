@@ -473,4 +473,11 @@ Commits: `ad7f28b7` (R4-G3 rows, `$defs`, fixtures), `822d1362` (surface move, s
   or the reviewer: scope the pins (monkeypatch) in the generator's callers.
 - **E-X06-17 generated pairs:** 1000, seed 20261127, 471 granted, 529 refused; `delegation_refusal` is `None` iff
   D5.3's rule holds (asserted both ways).
+- **Review gate count.** `test_every_description_is_reviewed_by_both_lanes` pinned 31 MCP operations and so failed on
+  the count; it reads 35 now and fails only on the open reviews: 22 items, design-lane and human for each of eleven
+  texts (`commit_change`, `preview_change`, `list_branches`, `create_branch`, `delete_branch`, `register_solve_policy`,
+  `get_solve_policy`, `get_policy`, `grant_capability`, `revoke_capability`, `set_ambient_pressure`).
+- **Final battery at `c2164962`** (logs `~/.cache/line06/x06wo4b/`): surface suites 2375 passed, 28 skipped, 2 failed
+  (the Q26 STOP and the review gate); `test_x06_*` + MSG + doc pages 276 passed, 3 xfailed; ruff, format, mypy clean;
+  bundle gate 63, 60, `b42b1ec439d1683c`; F0 PASS (M1 50/50, M2-M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 42/42).
 
