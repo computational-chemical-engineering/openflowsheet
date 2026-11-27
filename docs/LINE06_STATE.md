@@ -53,9 +53,8 @@ plus the test-fixture fix 6913c4a0, DECISION F2-J16) for CI, only if the local g
 
 **X06:** CI run 45962988409 at `1b9561a3` FAILED (11 tests + codehealth; see LINE06_DECISIONS). Running: X06-CI1
 `opus-engineer` in `.claude/worktrees/x06` (brief `docs/briefs/LINE06-X06-CI1.md`, logs `~/.cache/line06/x06-ci1/`).
-On PASS (full gate + codehealth diff + F0): push wp/X06 (re-push of a pushed branch for CI; the earlier push was
-already authorised by card ofs-x06-descriptions-human? NO: check; if no card covers a re-push, ask hub), waiter, then
-the merge card. New rule: full local gate and `codehealth diff --base origin/main` pass before any package push.
+On PASS (full gate + codehealth diff + F0): push wp/X06 (a wp/ branch push for CI is in the orchestrator's lane per
+the skill's merge order; only merges, ADRs and release steps wait for the user), waiter, then the merge card. New rule: full local gate and `codehealth diff --base origin/main` pass before any package push.
 
 **F8 next:** review done (`docs/reviews/F8-review.md`, main `6636a8a8`: M1, M2, S1-S6; not ready until F8-FR). On the
 gate passing (F2's head final): launch `opus-engineer` with `docs/briefs/LINE06-F8-FR0.md` (merge wp/F2 into wp/F8,
