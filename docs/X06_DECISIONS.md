@@ -377,3 +377,61 @@ evidence this section's measurements; affected package X06.
   commit. Alternative: leave the pin at 39, and `test_t07_q26_no_external_state` stays red. Reversible by: reverting
   that commit. For the design lane's single review pass.
 
+
+## X06-WO4 (in-band administration, D5), 2026-11-27: part 1 (stopped at the context cap)
+
+Commits: `a9038f7b` (E-X06-21 fixture `tests/fixtures/x06/pre_wo4_cli_audit.json`, taken at `4ca7ce3c`), `a84e9b14`
+(the code). Files: `policy_types.py` (switch, `GrantResult`, `RevokeResult`, `AmbientPressureResult`),
+`schemas/project-policy.schema.json` (`administration`), `authz.py`, `administration_service.py`, `service_core.py`,
+`serving.py`, `cli.py`, `contract.py` (`Administration`), `operations.py`, `local.py`, four description texts (pending
+in `REVIEW.json`), three `$defs`, six catalogue entries, layers.
+
+- **DECISION WO4-1. The switch's form.** `administration: {in_band: {const: true}}`; off is absence only (a written
+  `false` is refused, as an unsorted `rights` list is: one document per policy). Alternative: accept `false` as off.
+- **DECISION WO4-2. `change_policy` gains `connection=None`.** D5.5's signature plus one keyword: given, the write
+  runs inside the caller's transaction (the in-band service, whose ledger row shares it); absent, it opens
+  `store.writing()` (the CLI). `request_sha256=None` means "the updated policy's hash" (the CLI's form, which it cannot
+  know before `apply`). The CLI's rows equal the fixture (checked by script; the test is still to write).
+- **DECISION WO4-3. Order inside a write.** D5.3's switch, remote and delegation refusals before the ledger lookup;
+  `capability_exists`, `capability_not_found`, `revoke_exceeds_caller` inside the transaction after it, so a replay of
+  a grant with a fixed `capability_id` is `replayed`, not `capability_exists`. Only effects are audited `allowed` and
+  ledgered (as WO3-5); a replay writes nothing.
+- **DECISION WO4-4. `set_ambient_pressure`.** `unit` a bounded string judged by `ambient_pressure_pa` (so a gauge or
+  unknown unit is `ambient_pressure_invalid(unit)` as on the CLI), Pa when absent; `value: null` with a `unit` is
+  `invalid_request` at `/unit` (the CLI's `--clear` takes no unit). Result `$def` named `ambient_pressure_result`.
+- **DECISION WO4-5. Messages lead with the code** (`administration_disabled: …`), as WO2/WO3 do: `render_error` reads
+  the chain from the message, so a refusal without it renders as its bare API code.
+- **DECISION WO4-6. `serving_remote`.** `serve_http(owner: LocalApplication, …)` sets `owner.serving_remote = not
+  is_loopback(host)` before composing; `authenticated` views copy the core afterwards and share it. Stdio and
+  in-process never set it.
+- **DECISION WO4-7. Cross-project comparisons of a grant.** `x06_schema_support.stable_administration` replaces the
+  random parts (a `prt_` token, every `token_sha256`, a grant result's `policy_sha256`) by a placeholder; nothing else.
+
+### STOP (R-088 Q26; for the design lane, not pinned)
+
+`test_t07_q26_no_external_state` reports four new numeric request members, as the test prints them: `max_wall_time_s`,
+`default_wall_time_s`, `max_active_jobs` (all three under `grant_capability`'s `limits/`) and `value`
+(`set_ambient_pressure`). They are a grant's budget ceilings and a display-only declaration, not model inputs.
+
+### Where WO4 stopped (next engineer: start here)
+
+Green at `a84e9b14`: `test_t07_w5a_operations.py`, `test_t07_authz.py`, `test_t07_w6a_http.py` (admin steps are
+`forbidden` on both sides: the principal lacks `policy`), `test_t07_w6b_mcp.py` (21 passed), ruff, format, mypy,
+`doc_pages --check`. To do, in order:
+1. `tests/test_t07_w5e_application_results.py`: the three new `$defs` in its list, `SNAPSHOT_X06` rows for the four
+   tools, response fixtures (`scripts/t07_schema_fixtures.py`) for `grant_result`, `revoke_result`,
+   `ambient_pressure_result`.
+2. The surface move: re-pin `X06_SERVED_SHA256` (`tests/test_t08_w2_surface_digest.py`, the decomposition test's tool
+   list gains the four), `scripts/m07a_rc.py` c_12 (`D_12`, `X06_FILE_SHA256` gains the four texts, the tool-count
+   text), the support envelope (`benchmarks/t08/support_envelope.yaml`, 39 operations, A20) and
+   `docs/support-matrix.md` (`scripts/t08_support_matrix.py`), the two `message_entry` fixtures' catalogue sha256.
+3. Conformance (`tests/test_t07_conformance.py`): switch the project's administration on and run
+   `administration_requests()` on all six clients with a principal holding `policy` (or as refusals); the CLI G14
+   scenario (`tests/test_t07_w5b_cli.py`).
+4. `tests/test_x06_administration.py`: E-X06-16 (switch off: each write `unsupported administration_disabled`, file
+   bytes unchanged, one `refused` row; every committed policy fixture round-trips to its `policy_sha256`), E-X06-17
+   (case table; 1000 random (caller, request) pairs through `delegation_refusal`), E-X06-18 (token on the next REST,
+   MCP stdio and MCP HTTP call; replay `token: null`; no `prt_` in `project.sqlite3`, its WAL, the policy file, logs),
+   E-X06-19, E-X06-20 (in-band revoke; 10 concurrent grants plus one CLI grant), E-X06-21 (one `allowed` row per write;
+   the CLI fixture).
+5. The surface suites, `test_x06_*`, MSG and doc-page tests; the bundle gate (63, 60, `b42b1ec439d1683c`); F0.
