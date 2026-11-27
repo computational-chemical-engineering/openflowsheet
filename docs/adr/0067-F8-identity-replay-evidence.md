@@ -149,9 +149,11 @@ untouched by review status. The run's report is its `RunResult` plus `run-eviden
 `EntryRead = (component, entry, record_sha256, validity: {variable: (lo, hi)})`, determined from the composed method's
 phase models and the point's active phases at the converged state; the evidence writer judges extrapolation from it.
 
-### D7. Per-platform reference records (ADR 0025's pattern; X07a)
+### D7. Per-platform reference records (after ADR 0025's classification step; F8-WO5)
 
-R0 is identical on every registered platform (the platform ids of ADR 0060 D2). A registered reference case holds one
+R0 is identical on every registered platform (ADR 0007 D3.3's registered set, as amended; ids spelled in ADR 0060
+D2's vocabulary: `linux-x86_64` = (x86_64, Linux), `linux-aarch64` = (aarch64, Linux), `macos-arm64` = (arm64,
+Darwin), `windows-x86_64` = (AMD64, Windows), as `platform.machine()` and `platform.system()` report them). A registered reference case holds one
 record per reference platform (`linux-x86_64`) and, only where a float exceeds the numerical policy on another
 platform, a per-platform record beside it (`<case>.<platform>.json`, unless ADR 0025's existing layout already names
 one: then that layout). The comparator uses the current platform's record if one exists, else the reference platform's,
@@ -159,6 +161,20 @@ and reports `platform_reference_used(<platform>)`. Invariant (a test over every 
 per-platform records of a case are identical; a per-platform record states the float, the policy bound and the
 near-threshold flags that make an R0 discrepancy attributable (ADR 0007 D2.4). Self-hashes do not depend on line
 endings (ADR 0060 D3).
+
+A per-platform record is made only for a quantity shown to be correctly classified under the policy. ADR 0025's remedy
+for the aarch64 excess was reclassification on every platform; a float that exceeds the policy because the comparison
+misclassifies it is fixed in the comparison, on every platform. Open question 5 is closed by fact: ADR 0025 has no
+per-platform layout, so D7's naming applies.
+
+Per-platform records exist only for registered platforms. On an unregistered platform a beyond-policy float is a
+platform-difference row (X07a ruling, P3c): evidence toward a registration, never a reference record.
+
+A bitwise expectation (a refactor or inertness baseline, a byte golden) never takes a per-platform record. It is judged
+on the platforms where it was recorded or measured bit-identical (X07a ruling, P2).
+
+*(Errata E-D7-1 to E-D7-5 of the X07a ruling, `docs/X07a-platform-ruling.md` section 5.2, folded in before acceptance,
+2026-11-27, LINE06, DECISION F8-WO5-0.)*
 
 ### D8. Decision records and `forced_replay` (designed here; TX builds)
 
@@ -284,7 +300,7 @@ in 0.5; WO4 and WO6 go with F4 and F6 to the line after 0.6; WO7 stays in TX. Th
 | 2 | **F8-WO2** (0.5) Bundle writer | `run/bundle_v2.py`; embedding via ADR 0061 D11; test-only v2 bundle factory (a corpus case rerun and recorded as v2) | E-F8-2, E-F8-3 | no | Opus |
 | 3 | **F8-WO3** (0.5) Replay | dispatch in `run/replay.py`; `run/replay_v2.py`; usage cross-check; a re-record tool for registered v2 cases | E-F8-1, -4, -5, -6 | no | Opus |
 | 4 | **F8-WO4** (0.6, after F4-WO4) Evidence | `run/evidence.py`; reads the F4 hook (ADR 0063 D7, built by F4-WO4) | E-F8-7 | no | Opus |
-| 5 | **F8-WO5** (0.6, with X07a) Platform records | `run/platform_refs.py`; invariant test | E-F8-8 | no | Sonnet, Opus review |
+| 5 | **F8-WO5** (0.6, or with the first platform registration under ADR 0007 Amendment 3, whichever is first) Platform records | `run/platform_refs.py`; invariant test | E-F8-8 | no | Sonnet, Opus review |
 | 6 | **F8-WO6** (0.6, after F6-WO4) Wiring | v2-compiled runs write bundle v2; a merge prerequisite of `wp/F6` | E-F8-2 on real v2 runs | no | Opus |
 | 7 | **F8-WO7** (0.7, in TX) Decision records, `forced_replay`, exchange records | `run/decisions.py`; route hooks | E-F8-9; Q9.A9 | no | Opus |
 
@@ -296,7 +312,7 @@ in 0.5; WO4 and WO6 go with F4 and F6 to the line after 0.6; WO7 stays in TX. Th
    non-R0 certificate member.
 3. **Redistribution** (Frank, R-706). *Default:* reference only unless every source is `permitted`.
 4. **Stale assessments in `records-index.json`** (none structural). *Default:* informational; replay re-resolves.
-5. **ADR 0025's existing per-platform layout** (fact). *Default:* reuse it if it exists; else D7's naming.
+5. **ADR 0025's existing per-platform layout** (fact). *Closed (E-D7-2):* none exists; D7's naming applies.
 6. **X01 rest owns the ADR 0052 amendment** (preference). *Default:* D11; reversible by moving D11 into an ADR-F8
    amendment before X01 rest starts.
 

@@ -296,3 +296,13 @@ Amendment 12 members), `1b3b55f2` (tests, re-record tool, E-F8-1 expectation).
 - ruff check, ruff format --check (1354 files), mypy `src` (370 files): clean.
 - Left over: a rerun that reads the served stack (v2-compiled documents, F8-WO6); the ADR's other new codes (their
   work orders); ADR 0019's Amendment 12 pointer paragraph (from WO1b).
+
+## F8-WO5 (orchestrator, 2026-11-27)
+
+- **DECISION F8-WO5-0 (orchestrator). The X07a ruling's ADR 0067 D7 errata E-D7-1 to E-D7-5
+  (`docs/X07a-platform-ruling.md` section 5.2, "fold in before ADR 0067 is accepted") are folded into D7, the build
+  table row 5 and open question 5 before WO5 is briefed.** Consequences for WO5: platform ids are ADR 0060 D2's
+  spelling of ADR 0007 D3.3's registered set (`REGISTERED_PLATFORMS`, `run/replay.py:61`); a per-platform record exists
+  only for a registered platform other than the reference `linux-x86_64`; there is no ADR 0025 layout, so
+  `<case>.<platform>.json`. Goes on the ADR 0067 acceptance card as an edit before acceptance. Alternative: brief WO5 on
+  the unamended text. Reversible by: reverting this docs commit.
