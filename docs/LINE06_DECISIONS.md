@@ -202,3 +202,12 @@ Reversible by: <how>.` Package build decisions go in the package's own file (`do
   approved, 3 with exact edits; WO3b-1 keep; WO4b-1 change (restore U08 test re-scoped); WO4b-2, WO1 stateless,
   WO2-4, WO5-1 keep; serve functions removed; render_error -> code health. No Accepted ADR decision changed.
   X06-fix1 brief written (S3 to run in .venv-nlp), launched.
+- 2026-11-27: X06-fix1 judged (wp/X06 487609e7), pending the orchestrator's battery rerun: items 1-7 done (M1 serve
+  functions deleted; M2 envelope/U08 re-scoped, ruling 4 test restored; Q26 6 passed; three text edits at the
+  review's hashes, design-lane reviews recorded, human pending; S1 caller re-resolved in the transaction, 8 hook
+  cases; S2 per-carrier grant; S3 optimize half run in .venv-nlp: 1 passed, KKT_POINT_VERIFIED, MATCH). New served
+  digest 7792576e...; without_x06 f7ec3c94...; bundle gate unchanged; F0 PASS. Engineer's battery at 1a2782d1 had
+  two extra failures (A21, A50, from WO5's manifest lacking harvest rows), fixed in 487609e7 but not re-run in full:
+  orchestrator reruns surface suites + F0 at 487609e7 (log ~/.cache/line06/x06-fix1-battery.log).
+- DECISION-REQUEST to hub: card for the user's review of the 11 X06 description texts at their hashes
+  (docs/reviews/X06-descriptions-for-user.md). CI and the merge card follow it (the review gate is red until then).
