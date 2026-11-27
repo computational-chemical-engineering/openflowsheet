@@ -79,14 +79,14 @@ fixed-order sum over classes (ascending class index) before `n` is formed; provi
 declare the attribute read (ADR-F4). Attribute key: `<kind id>` (substream scope) or `<kind id>[<component>]`.
 
 `PhaseId(family: str, qualifier: str | None, ordinal: int)`, `PhaseSet = tuple[PhaseId, ...]` in canonical order (D6).
-Widened annotations only (no runtime change; legacy providers never receive the new types, ADR-F4's adapters convert):
-`PropertyRequest.state: StreamState | EvaluationState`; `PropertyRequest.phase: Phase | PhaseId`. **[departure]** from
-the note §8: `PropertyCapabilities`, `FlashResult` and `FlashRequest` are **not** widened (the fact above). v2
-capability fields live in ADR-F4's new `MethodDescription`; N-phase results in ADR-F5's `EquilibriumResult`; providers
-are asked TP flashes and phase evaluations only, and every other specification is solved by ADR-F5's service. The static
-`flash` token space (ADR 0060 D4) is `TP, PH, PS, TV, PBETA, TBETA`; only `TP` is a provider capability.
-`thermo/cache.py` keys an `EvaluationState` by n, T, P **and** `attributes`, and a `PhaseId` by its rendering (D6); a
-`StreamState` key is byte-unchanged (M6).
+**[departure]** `PropertyRequest` is not widened (F2 WO1-4: 51 strict-typing errors in the seven frozen legacy
+providers); a v2 evaluation request is ADR-F4's type; `thermo/cache.py` keys both state forms. (Corrected before
+acceptance by the F2 review, `docs/reviews/F2-review.md`.) **[departure]** from the note §8: `PropertyCapabilities`,
+`FlashResult` and `FlashRequest` are **not** widened (the fact above). v2 capability fields live in ADR-F4's new
+`MethodDescription`; N-phase results in ADR-F5's `EquilibriumResult`; providers are asked TP flashes and phase
+evaluations only, and every other specification is solved by ADR-F5's service. The static `flash` token space (ADR 0060
+D4) is `TP, PH, PS, TV, PBETA, TBETA`; only `TP` is a provider capability. `thermo/cache.py` keys an `EvaluationState`
+by n, T, P **and** `attributes`, and a `PhaseId` by its rendering (D6); a `StreamState` key is byte-unchanged (M6).
 
 ### D3. Connection definitions (F1 kind `connection_definition`; `schemas/connection-definition.schema.json`)
 
@@ -258,12 +258,13 @@ energy one `heat-v1` or `work-v1`; a signal one `signal-v1` with `quantity_kind`
 `content_hash` = v1's rule (`CONTENT_HASH_EXCLUDED` unchanged in name and members), applied to the v2 document.
 **Thermal coordinate** (note item 11): every material definition has the revision's coordinate
 (`thermal_coordinate_mismatch(<definition>)`); `h_mass` admits `std.*` units only
-(`unit_coordinate_unsupported(<instance>, h_mass)`); `T` admits `nTP-v1`, legacy and `std.*` units. **Port
-compatibility** (note item 12): one definition per connection, accepted by both endpoints
-(`definition_incompatible(<connection>, <instance>.<port>)`); generic transport units take one definition on all
-material ports unless the manifest declares subset fill (identical grids and bases, missing parts exact `+0.0`) or a
-declared map. Grids differ: `attribute_grid_mismatch`. **In 0.5** `property_methods.default` admits one legacy provider
-id and no overrides (v1's selection in v2).
+(`unit_coordinate_unsupported(<instance>, h_mass)`) (revision-wide: every instance `std.*`, no `nTP-v1` connection,
+whose coordinate is `T`; F2 review ruling 2); `T` admits `nTP-v1`, legacy and `std.*` units. **Port compatibility**
+(note item 12): one definition per connection, accepted by both endpoints (`definition_incompatible(<connection>,
+<instance>.<port>)`); generic transport units take one definition on all material ports unless the manifest declares
+subset fill (identical grids and bases, missing parts exact `+0.0`) or a declared map. Grids differ:
+`attribute_grid_mismatch`. **In 0.5** `property_methods.default` admits one legacy provider id and no overrides (v1's
+selection in v2).
 
 ### D12. Reading, lowering and operations (ADR 0019 Amendment 9)
 
