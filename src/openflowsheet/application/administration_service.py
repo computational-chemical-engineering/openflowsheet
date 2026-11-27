@@ -210,9 +210,11 @@ class AdministrationService:
             try:
                 pressure = ambient_pressure_pa(value, "Pa" if unit is None else unit)
             except StoreError as error:
+                # MSG §3.8: a coded error's machine message is `args[0]`; its `str()` is the
+                # layered text of the `python` surface, which is no document's message.
                 self._core.refuse(
                     "invalid_request",
-                    str(error),
+                    str(error.args[0]),
                     operation=operation,
                     request_sha256=request_sha256,
                     code=error.code,
