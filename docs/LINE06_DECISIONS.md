@@ -281,3 +281,13 @@ Reversible by: <how>.` Package build decisions go in the package's own file (`do
   when the local gate on 6913c4a0 ends PASS, push wp/F2 at exactly 6913c4a0, start the CI waiter, then commit ADR 0062
   Status Accepted on wp/F2 (local, docs only, after the pushed head), then write `executed`. If the gate fails: no
   push; report to hub; `executed` records the partial result.
+- 2026-11-27 **Rule amended (orchestrator): the codehealth diff does not gate a push.** CI's `codehealth` job is
+  `continue-on-error: true` (informational, `.github/workflows/ci.yml:385-408`) and reads origin/main's
+  `.codehealth/config.toml`, so a package that adds packages to the layer contract shows them as violations until it
+  merges (F2: 11 `repo-layers` violations for `material`/`revision_v2`, which F2's own config places). The full local
+  gate still gates every push. Codehealth findings are recorded and go to `code_health`: F2 `application/validation.py`
+  large_file (nloc 1003); debt 171 -> 422 over F2's touched files. X06-CI1's refactors already made stay if its gate passes.
+- 2026-11-27 Card `ofs-f2-check-admission-human` VERIFIED (A) and executed: review recorded on wp/F2 `8edbbaee`.
+  Card `ofs-f2-accept-adr0062` executed PARTIAL: ADR 0062 Accepted on wp/F2 `831d6f26`; push withheld (gate on
+  6913c4a0: 2 failed). F2 fixes since: `8edbbaee` (description review), `4b820b97` (w5_identity S2, DECISION F2-S2).
+  Full gate on `4b820b97` running (log `~/.cache/line06/f2-j16/gate-4b820b97.log`, summary `.summary`).
