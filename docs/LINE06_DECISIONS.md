@@ -270,3 +270,10 @@ Reversible by: <how>.` Package build decisions go in the package's own file (`do
   wp/F2 (green on main): F2-WO4's flow-style fixtures; fixed on wp/F2 `6913c4a0` (DECISION F2-J16; F0 PASS). Hub
   amended card `ofs-f2-accept-adr0062` (v2): push wp/F2 at 6913c4a0 only if the local gate on it passes. Full local
   gate on 6913c4a0 started (log `~/.cache/line06/f2-j16/gate-6913c4a0.log`). F8 reviewer brief `docs/briefs/F8-reviewer.md`.
+- 2026-11-27 **X06 CI failed** (run 45962988409 at `1b9561a3`, every check leg, default-install, codehealth, identity;
+  Site green): 11 tests (sha256 partition names, literal guards, M02/M04 decompositions vs `list_branches`, q7 replay
+  mode) and the codehealth diff (debt 59.30 -> 99.20, six smells). Fix order `docs/briefs/LINE06-X06-CI1.md`
+  (opus-engineer). **DECISION (orchestrator): before any further push of a package branch, the full local gate
+  (`scripts/gate.sh`) and `codehealth diff --base origin/main` pass on its head.** Reason: gate-by-risk let 11 reds
+  through to a 2.5 h four-leg CI run. Alternative: per-risk only (the rule as written). Reversible by: dropping the
+  step; it costs compute, not tokens.
