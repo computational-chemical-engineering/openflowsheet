@@ -211,3 +211,8 @@ Reversible by: <how>.` Package build decisions go in the package's own file (`do
   orchestrator reruns surface suites + F0 at 487609e7 (log ~/.cache/line06/x06-fix1-battery.log).
 - DECISION-REQUEST to hub: card for the user's review of the 11 X06 description texts at their hashes
   (docs/reviews/X06-descriptions-for-user.md). CI and the merge card follow it (the review gate is red until then).
+- 2026-11-27: X06-fix1 judged PASS on the orchestrator's rerun at wp/X06 487609e7: surface suites + doc pages +
+  evidence manifests in one process 3333 passed, 47 skipped, 1 deselected (nlp-marked), 3 xfailed, 1 failed (only
+  the description-review gate, the user's 11 items); F0 PASS (M1 50/50 ... M9 42/42). Card
+  ofs-x06-descriptions-human filed by hub (open). Next for X06: on VERIFIED A, record the human reviews in REVIEW.json,
+  rerun that test, push wp/X06 for CI, merge card.
