@@ -44,7 +44,7 @@ from openflowsheet.orchestrator.policy_validation import (
 )
 from openflowsheet.run.bundle import read_artifact, read_manifest, verify_bundle, write_bundle
 from openflowsheet.run.identity import r0_projection, r0_sha256
-from openflowsheet.run.manifest import policy_sha256
+from openflowsheet.run.manifest import environment, policy_sha256
 from openflowsheet.verify.verdict import CheckPolicy
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -508,7 +508,8 @@ def test_q7_a_lowered_budget_run_verifies_and_reproduces(
 ) -> None:
     """X06 ruling R1-1 (T5): `user.copy` solved with `max_property_calls` one below its
     document's. The run records the effective policy, so the manifest's hash is the lowered
-    document's; the bundle verifies `ok` and reproduces `MATCH` in a fresh project."""
+    document's; the bundle verifies `ok` and reproduces `MATCH` in a fresh project, in the mode
+    `decide_mode`'s rule gives for this process (X06 decision X06-CI1-4)."""
     application = runs["app"]
     lowered = runs["document"]["max_property_calls"] - 1
     revision = application.get_job(runs["results"]["user.copy"].job_id).request.body.revision_id
@@ -527,7 +528,14 @@ def test_q7_a_lowered_budget_run_verifies_and_reproduces(
         report = fresh.reproduce(bundle, ReplayPolicy(rerun=True)).as_document()
     finally:
         fresh.close()
-    assert (report["mode"], report["verdict"]) == ("compatible_reproduction", "MATCH")
+    # Recorded and reproduced in one process: identity and BLAS version are equal, so ADR 0007
+    # Amendment 3 gives `exact_replay` when the thread pins are known (CI pins them) and the
+    # unset-pins rung gives `compatible_reproduction` when they are not.
+    recorded, here = read_manifest(bundle)[0].environment, environment()
+    assert recorded.identity() == here.identity() and recorded.same_blas_version(here)
+    pinned = recorded.threads_known() and here.threads_known() and recorded.same_threads(here)
+    mode = "exact_replay" if pinned else "compatible_reproduction"
+    assert (report["mode"], report["verdict"]) == (mode, "MATCH")
 
 
 def test_s1_a_project_policy_id_is_matched_whole() -> None:

@@ -583,3 +583,10 @@ Brief `docs/briefs/LINE06-X06-CI1.md`, build lane. The same ten tests failed on 
 - **Item 3 (no decision).** `test_g1c_*` (M02) and `test_a42_*` (M04) skip `X06_OPERATIONS` and take `without_x06`
   out first, as they do F1's, F3's and X04's: the six job rows X06 moved (the candidate ChangeSet's `branch`) then
   decompose onto their snapshots.
+- **DECISION X06-CI1-4. Q7's expected replay mode follows `decide_mode`'s inputs.** Cause measured: CI sets
+  `OPENBLAS_NUM_THREADS`, `OMP_NUM_THREADS` and `MKL_NUM_THREADS` to 1 (`ci.yml`), so both sides know equal pins and
+  ADR 0007 Amendment 3 gives `exact_replay`; the local runs left them unset, so the unset-pins rung gave
+  `compatible_reproduction`. The test at `1b9561a3` with the three pins set fails locally exactly as CI did
+  (`('exact_replay', 'MATCH')`), and passes unset. The test now asserts equal identity and BLAS version and expects
+  `exact_replay` when the pins are known and equal on both sides, else `compatible_reproduction`; it passes both
+  ways. Alternative: pin the threads in the test. Reversible by: reverting the commit.
