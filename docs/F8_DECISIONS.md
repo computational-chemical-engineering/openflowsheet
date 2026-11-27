@@ -90,3 +90,65 @@ Commits `6209110b` (NON_STRUCTURAL), `a236a064` (schemas, addendum; WO1-1, WO1-2
   `test_m05_study_record` 211, `test_m07_journey` 111, `test_package_imports` 24, `test_v03_semantic_roles` 20):
   2936 passed, 28 skipped, 3 failed (the v03 reds only). No served digest moved.
 - ruff check, ruff format --check (1347 files), mypy `src` (368 files): clean.
+
+## F8-WO1b (STOPs F8-WO1-8 and F8-WO1-9 built as surface link c_13, R-1076), 2026-11-27
+
+Brief `docs/briefs/LINE06-F8-WO1b.md`. Files: `schemas/{replay-report,job}.schema.json`,
+`src/openflowsheet/application/jobs/model.py`, `tests/f8_schema_support.py` (new), `scripts/m07a_rc.py`,
+`tests/test_{m07a_surface_chain,t07_w5e_application_results,t08_w2_surface_digest}.py`, `docs/decision-register.md`
+(R-1076 only).
+
+- **DECISION F8-WO1b-1. `exchange_record`'s file name is `None` (named per instance), as `record` and
+  `decision_record`.** ADR 0067 D10 names no file. Alternative: `exchange-record.json`. Revertible by one line in
+  `ARTIFACT_FILE_NAMES`; file names enter no schema and no digest.
+- **DECISION F8-WO1b-2. D3's seven kinds are appended at the end of `artifact_ref.kind` and `ArtifactKind`, in D3's
+  order (`data_lock`, `registry_snapshot`, `records_index`, `record`, `run_evidence`, `decision_record`,
+  `exchange_record`); `forced_replay` is appended at the end of `mode`'s enum.** The additive F2 pattern
+  (`without_f2` cuts an enum's tail). The enum's and the report's descriptions are unchanged. Alternative: sorted
+  insertion (would break the tail-cut decomposition).
+- **DECISION F8-WO1b-3. `registry_comparison` and `data_availability` are bare `$ref`s by absolute URI,
+  `https://github.com/frankp/process-runtime/schemas/bundle-v2.schema.json#/$defs/<name>`.** `replay-report`'s `$id`
+  has the other base (`raw.githubusercontent.com/.../clearsheet/main/schemas/`), so the relative
+  `bundle-v2.schema.json#/$defs/...` the brief names would resolve to an id no schema has. Neither is in `required`
+  (D5: absent for v1 bundles). D5's `decision_comparison` (TX) is not added. Python `ReplayReport` and
+  `ReplayMode` are untouched (WO1-6; WO3 dispatches). Alternative: a relative `$ref` after moving one `$id` (moves
+  every digest that resolves either schema).
+- **DECISION F8-WO1b-4. R-1076's entry is not on wp/F8 (branched before it landed on `main`): main's text is copied
+  after R-1072 with only its Evidence cell filled**, so `test_f8_link_c_13_is_f8s_strip_and_digest` reads it as the
+  c_11 test reads R-1072. At the merge into `main`, keep main's entry in place with this Evidence cell (the register
+  will conflict on its tail). Alternative: no register check in the c_13 test.
+- **Note F8-WO1b-5.** `without_f8` recognises a replay report by its member `verdict_changed_near_threshold` (no
+  other schema has it) and drops the two members; it cuts `forced_replay` only from the exact four-value mode enum
+  and the seven kinds only from an enum that ends in them. On the served list only `get_job_result`'s
+  `replay_report` moves; the job kinds reach R4-G3 alone (MCP serves the kind enum opened, J5).
+- **Note F8-WO1b-6.** `jobs/runner.py`'s `KIND_OF_FILE` now also maps `data-lock.json`, `registry-snapshot.json`,
+  `records-index.json` and `run-evidence.json`; no v1 bundle or job directory holds these names, so no v1 import or
+  producer path changes. WO2's writer relies on it.
+- **Note F8-WO1b-7.** `tests/test_m07a_surface_chain.py`'s positional controls count one more passing row before
+  each inner link (c_13 is now the first item-2 row); the c_11 control carries `L11` so that it fails at c_11's strip,
+  not at item 1. F2's decompositions in the three surface tests now strip F8 first (`without_f8`, `strip_f8`).
+
+### F8-WO1b gate numbers (SMM-TR09, 2026-11-27)
+
+Commits `f2ab3db3` (schemas, `ArtifactKind`, `without_f8`, c_13, re-pins, R-1076 entry), `9cefd000` (M02's and M04's
+decompositions strip F8 first).
+- Served MCP digest: F2's `9a4b4eb3…` -> `F8_SERVED_SHA256` `c11d38778d2f8aba8240a6a2b5ee9d9e1e7b93c5c6fae4cc40ca82177cb50ddd`
+  (`D_13`); `without_f8(served)` = `9a4b4eb3bd9f28e6…` exactly; only `get_job_result` moved.
+- R4-G3 re-pins (`SNAPSHOT_F8`, old -> new; `without_f8` returns each to its old value exactly):
+  `solve` `e7f66229…` -> `c1689978…`; `reproduce` `8e62572a…` (b13d556) -> `2251b1df…`; `submit_job` `9a6b2d26…` ->
+  `2821206f…`; `get_job` and `cancel_job` `8d01b63a…` -> `8026df21…`; `list_jobs` `c7bb7114…` -> `44153df8…`;
+  `list_job_events` `751ec851…` (OPT) -> `899d4dab…`; `wait_job` `fd16741d…` -> `75137a9d…`; `get_job_result`
+  `866c3ca9…` -> `bddb2dd5…`. Old values are X04's unless marked.
+- F0 (`scripts/corpus_identity.py --check`, own detached worktree at `f2ab3db3`): PASS, M1 50/50, M2-M5 61/61, M6
+  85/85, M7 52/52, M8 105/105, M9 42/42.
+- Surface suites (`test_t07_*`, `test_t08_w2_*`, `test_m07a_surface_chain`; 62 files): 2325 passed, 28 skipped, 0
+  failed. Per file: `test_m07a_surface_chain` 36, `test_t07_w5e_application_results` 39, `test_t08_w2_surface_digest`
+  14, `test_t07_types` 113, `test_t07_w1f_followup` 11.
+- `test_f8_manifest_v2` 34, `test_k05_replay` 30, `test_k05_schemas` 14, `test_m02_schemas` 23, `test_m04_study_job`
+  10; 26 files touching job or replay schemas: 634 passed, 4 failed before `9cefd000` (the three v03 reds, WO1-10;
+  `test_m04_study_job::test_a42`, fixed by `9cefd000`); 8 digest-dependent files (`test_f1_operations`,
+  `test_f3_operations`, `test_m02_schemas`, `test_m04_study_job`, `test_m07_v0_2_gate`, `test_m07_rc_records`,
+  `test_rel_ci_release_rc`, `test_t08_w4_rc`): 314 passed.
+- ruff check, ruff format --check (1348 files), mypy `src` (368 files): clean.
+- Left over: ADR 0019's Amendment 12 pointer paragraph (as F2's Amendment 9 one); `ReplayReport`/`ReplayMode` in
+  Python and D5's `decision_comparison` (TX) are WO3's and TX's.

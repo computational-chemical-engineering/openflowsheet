@@ -20496,7 +20496,7 @@ link is renumbered c_11 and F2's c_12 in the second branch's merge commit.
 | Date | 2026-11-27 |
 | Decided by | orchestrator (LINE06), build lane; the link's content follows the c_4 to c_12 pattern of `scripts/m07a_rc.py` |
 | Normative text | ADR 0067 D3 (artifact kinds in `job.schema.json`), D5 (`ReplayReport` Amendment 12: `forced_replay` in `mode`, `registry_comparison`, `data_availability`) |
-| Evidence | F8-WO1b on wp/F8 (`docs/F8_DECISIONS.md`, F8-WO1b gate numbers): `tests/test_m07a_surface_chain.py` green with `strip_f8`; `D_13` = `F8_SERVED_SHA256` = `c11d38778d2f8aba8240a6a2b5ee9d9e1e7b93c5c6fae4cc40ca82177cb50ddd`, decomposing onto c_11 `9a4b4eb3bd9f28e68e25828d8796bec73e8feb49aa6e12b80df0d43f990442a1` (F2); only `get_job_result`'s served replay report moved. `tests/test_t07_w5e_application_results.py` green: 9 R4-G3 snapshots re-pinned (`SNAPSHOT_F8`: `solve`, `reproduce`, the seven job operations), each returned to its pre-F8 value by `without_f8` |
+| Evidence | F8-WO1b on wp/F8 (`f2ab3db3`, `9cefd000`; `docs/F8_DECISIONS.md`, F8-WO1b gate numbers): `tests/test_m07a_surface_chain.py` 36 passed with `strip_f8`; `D_13` = `F8_SERVED_SHA256` = `c11d38778d2f8aba8240a6a2b5ee9d9e1e7b93c5c6fae4cc40ca82177cb50ddd`, decomposing onto c_11 `9a4b4eb3bd9f28e68e25828d8796bec73e8feb49aa6e12b80df0d43f990442a1` (F2); only `get_job_result`'s served replay report moved. `tests/test_t07_w5e_application_results.py` 39 passed: 9 R4-G3 snapshots re-pinned (`SNAPSHOT_F8`: `solve`, `reproduce`, the seven job operations), each returned to its pre-F8 value by `without_f8`; F0 PASS |
 | Affected packages | F8; F2 (R-1072), X06 (R-1073) |
 
 **Decision.** F8's moves of the served surface (the replay-report members and the job artifact kinds) are one chain
