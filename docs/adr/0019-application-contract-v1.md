@@ -304,10 +304,10 @@ parameter or result field changes, and nothing a v1 document is read, stored, ha
   refusing with the lowering's refusal. `check_admission` refuses a v2 draft `invalid_request` at the v2 schema's
   pointer or `revision_unsupported` (`detail.unbound`, `detail.hint`), and adds F2's notices to `notices`. D5's
   `ApiError` and `API_EXIT_CODES` are unchanged.
-- **Not unchanged:** the served MCP tool list, by F2's kinds in `list_models` (D1), now `9a4b4eb3…` (chain link c_11
-  of `scripts/m07a_rc.py`, R-1072; `F2_SERVED_SHA256` in `tests/test_t08_w2_surface_digest.py`); with F2's additions
-  removed (`tests/f2_schema_support.py`) it is F3's `f7ec3c94…` exactly. `check_admission`'s description still names
-  a `schema_version 1` draft (F2 decision WO6b-6).
+- **Not unchanged:** the served MCP tool list, by F2's kinds in `list_models` (D1) and `check_admission`'s description
+  widened to a `schema_version` 1 or 2 document (F2 review ruling 3, F2-WO8), now `8eee5313…` (chain link c_11 of
+  `scripts/m07a_rc.py`, R-1072; `F2_SERVED_SHA256` in `tests/test_t08_w2_surface_digest.py`; `9a4b4eb3…` before
+  F2-WO8); with F2's additions removed (`tests/f2_schema_support.py`) it is F3's `f7ec3c94…` exactly.
 
 ## Amendment 13 (Accepted 2026-11-08 by Frank, with ADR 0068; Proposed 2026-11-06; ST) — pointer to ADR 0068
 
