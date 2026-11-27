@@ -9,11 +9,13 @@ Procedure: `.claude/skills/line06/SKILL.md`. Host SMM-TR09 (`ref-x86-64`); orche
 Amendment 3. Line acceptance: a v2 revision with store-pinned records solves on the legacy route on all three OSes;
 the ADR acceptances of card `ofs-line06-adr-clause`; X06's exits.
 
-## Position (2026-11-27, 15:45)
+## Position (2026-11-27, 16:05)
 
 - All three packages built, reviewed and fixed; nothing merged into `main` yet. `main` local, last pushed `4c7d3d6a`.
-- **F2** (ADR 0062 **Accepted**): origin wp/F2 = `4b820b97` (full gate PASS 21725 passed). Local wp/F2 = `2757eb37`
-  (one docs commit after: stale D_11 corrected). CI running.
+- **F2** (ADR 0062 **Accepted**): CI at origin `4b820b97` FAILED (run 46003226499): Windows 6 tests (":" in an E-F2-3
+  scratch path) and `identity` (no jsonschema in the job). Fix F2-CI1 on local wp/F2 `80cdcfb3` (after `2757eb37`);
+  full gate on it running (detached worktree `.claude/worktrees/f2-gate`, PID in `~/.cache/line06/f2-ci1/gate.pid`,
+  summary `~/.cache/line06/f2-ci1/gate-80cdcfb3.summary`).
 - **F8** (ADR 0067 + ADR 0019 Amendment 12 **Accepted**): local wp/F8 = `4daff37f` (contains wp/F2 4b820b97, review
   fix round F8-FR, manifest `evidence/F8/18676313.../manifest.json` tested). Card `ofs-f8-accept-adr0067` VERIFIED,
   `executed`; full gate PASS 21895 passed; origin wp/F8 = `14409696`, CI running. Merges after F2.
@@ -42,18 +44,17 @@ once F2-WO4 is on wp/F2 (F8 branches from wp/F2's head, merges after F2).
 ## Next action (2026-11-27 14:20, written for a self-reset; NO agent of this session is running)
 
 Background jobs (they survive the reset; their notices arrive in the new context):
-1. **F2 CI waiter**: `~/.cache/line06/ci/wait_runs.sh wp/F2 4b820b97ee0fa0ab95da9a387a0a0cbefd90644c`, log
-   `~/.cache/line06/ci/f2-4b820b97.log`. On all legs `success` (check jobs with `gh run view <id> --json jobs`;
-   `codehealth` is informational): DECISION-REQUEST to hub for the F2 merge card (A: "Merge wp/F2 at 2757eb37 into
-   main with a merge commit, run F0 on main, push main." B: "Do not merge F2 yet."; say "recommendation", not "hub
-   recommendation"; note 2757eb37 = pushed 4b820b97 + one docs commit). On failure: grep the failed log
-   (`gh run view <id> --log-failed > file`), fix order to an opus-engineer.
+1. **F2 gate at 80cdcfb3** (F2-CI1). On `GATE PASS`: push
+   `git -c credential.helper= -c credential.helper='!gh auth git-credential' push origin 80cdcfb3:refs/heads/wp/F2`
+   (orchestrator's push; ADR 0062 card already executed), CI waiter (log `~/.cache/line06/ci/f2-80cdcfb3.log`),
+   `git worktree remove .claude/worktrees/f2-gate`. On all legs green: F2 merge card (A: "Merge wp/F2 at 80cdcfb3
+   into main with a merge commit, run F0 on main, push main." B: "Do not merge F2 yet."). On FAIL: no push, fix.
 2. **X06 CI waiter**: same script for `wp/X06 a514896c0dca95a436626f8ce67eb477855b6f18`, log
    `~/.cache/line06/ci/x06-a514896c.log`. On green: X06 merge card via hub. Mention on the card for design-lane
    notice: DECISION X06-CI1-1 (new addendum `benchmarks/x06/numerical_policy_external.yaml` classifies
    `expected_sha256`/`actual_sha256` exact; R-1032 precedent).
 3. **F8 CI waiter**: same script for `wp/F8 14409696d814565ae037f16ceed948ebba1e7577`, log
-   `~/.cache/line06/ci/f8-14409696.log`. On green: F8 waits for F2's merge (see merge order); no card yet. On failure:
+   `~/.cache/line06/ci/f8-14409696.log`. Expect the same two F2 failures (it holds wp/F2 4b820b97); judge only F8-specific reds. F8 waits for F2's merge. On failure:
    fix order as for F2.
 
 **Merge order into main:** whichever of F2 / X06 is green first merges first (merge card each). The second

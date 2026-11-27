@@ -328,3 +328,7 @@ Reversible by: <how>.` Package build decisions go in the package's own file (`do
   3 xfailed` (1:39:56; log `~/.cache/line06/f8-gate/gate-14409696.log`). Pushed exactly `14409696` to origin wp/F8
   (card `ofs-f8-accept-adr0067`); `executed` written (card version 3). Worktree `.claude/worktrees/f8-gate` removed.
   F8 CI waiter: log `~/.cache/line06/ci/f8-14409696.log`.
+- 2026-11-27 16:05 **F2 CI FAILED** at `4b820b97` (run 46003226499): Windows 6 of 18278 (WinError 123, ":" in a
+  test scratch path), `identity` (ModuleNotFoundError jsonschema), codehealth (informational). Fix F2-CI1 by the
+  orchestrator on wp/F2 `80cdcfb3` (DECISIONS F2-CI1-1/2 in `docs/F2_DECISIONS.md`); touched test file 128 passed;
+  full gate on 80cdcfb3 running before the push. wp/F8 CI at 14409696 carries the same two F2 causes.
