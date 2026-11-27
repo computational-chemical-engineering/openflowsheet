@@ -49,10 +49,10 @@ wp/F2 `f4c5cd7a`, wp/X06 `020b7b72` (manifest `evidence/X06/a657d29d.../manifest
    `solution-state-v2`, `r0_projection` for v2, a "WO6b dispatch map" in `docs/F2_DECISIONS.md`. On report: judge on
    the brief's acceptance, spot-check one test file and F0, then write and launch F2-WO6b (Amendment 9 dispatch per
    the map, run submission, E-F2-3 run half, ADR 0019 Amendment 9 pointer, `interfaces-frozen.md`).
-2. X06 reviewer (brief `docs/briefs/X06-reviewer.md`, deliverable `docs/reviews/X06-review.md` on main): on report,
-   brief one Opus fix round on wp/X06 (apply rulings, record design-lane description reviews in `REVIEW.json` at the
-   reviewed hashes, Q26 entries). Then: a DECISION-REQUEST to hub for the user's review of the 11 description texts
-   (gate T08.A18, the "human" review kind; list each text with its hash), then push wp/X06 for CI, then the merge card.
+2. X06-fix1 (`opus-engineer`, brief `docs/briefs/LINE06-X06-fix1.md`, logs `~/.cache/line06/x06fix1/`): the
+   X06 review's 8-item work order (`docs/reviews/X06-review.md`, main 3f457172). On report: judge, spot-check
+   `tests/test_t07_q26.py` and F0; then a DECISION-REQUEST to hub for the user's review of the 11 description texts
+   (T08.A18 "human" kind; each text with its post-fix hash from `REVIEW.json`), push wp/X06 for CI, the merge card.
 
 Then F2: WO6b, WO7 close-out (Sonnet; catalogue prose for WO4-16's 18 entries), F2 reviewer with the ruling batch
 (WO1-4, WO1-1, WO1-9, M = 1 for kg, WO2-1, WO2-7, WO3-6, WO4-7, WO4-8, WO4-9, WO4-15, Q-WO5-a, Q-WO5-b, Q-WO5-c,
