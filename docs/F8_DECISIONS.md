@@ -210,3 +210,89 @@ Commits `da02b48a` (`run/bundle_v2.py`), `5e11abb9` (factory and tests).
   3 failed (the three v03 reds, WO1-10). No served digest moved (surface suites green, no re-pin).
 - ruff check, ruff format --check (1351 files), mypy `src` (369 files): clean.
 - Left over: `run-evidence.json` (D6, WO4); replay of a v2 bundle and the dispatch (WO3).
+
+## F8-WO3 (replay of a v2 bundle), 2026-11-27
+
+Brief `docs/briefs/LINE06-F8-WO3.md`. Files: `src/openflowsheet/run/{replay,replay_v2,bundle_v2}.py`,
+`src/openflowsheet/messages/catalogue/replay.yaml` (new), `docs-site/messages/refusals.md`, the two `message_entry`
+fixtures, `tests/f8_bundle_v2_support.py`, `tests/test_f8_replay_v2.py` (new), `scripts/f8_v1_replay_reports.py` (new),
+`tests/fixtures/f8/v1-replay-reports.json` (new).
+
+- **DECISION F8-WO3-1 (the step-7 premise). D5 is met as written for the factory's bundles; the rerun provably does
+  not need the embedded records.** Measured: the recorded revision (GP-C1, TH-C1) is a v1 document; its binder reads
+  the packaged legacy YAML its `component_set.record_source` names and consults no record store, and `usage()` records
+  nothing during the rerun (empty set, both cases). Step 7's order is built (`replay_v2.served_stack`: the embedded
+  records, identity rule re-applied, before the local project and legacy stores) and handed to callers (`rerecord`
+  writes through it); a v1 rerun does not read it. That it needs nothing else is shown by
+  `test_e_f8_4_the_rerun_reads_the_records_the_bundle_embeds`: for every record the lock names, the shipped legacy
+  files as imported (`LegacyStore(available_records)`, F3-WO3's drift-checked import) hold the same bytes as the
+  bundle's `records/<sha>.json`, so the rerun reads exactly the locked data. E-F8-4's "embedded, the replay runs and
+  matches" is a replay with a local store holding no record: step 6 resolves every SHA from the bundle (GP-C1
+  embedded 4, TH-C1 1, from_store 0), the rerun runs, `exact_replay` / `MATCH`. Not exercisable in 0.6: a rerun whose
+  binder reads the served stack (a v2-compiled document; F6, F8-WO6). **Design-lane question** (with the package's
+  ruling round): accept this reading, or require WO6 to add a rerun that reads the served stack.
+- **DECISION F8-WO3-2. `extension_use_undeclared(<kind>, <id>)` is listed in `differences`, not `reasons`**, so the
+  verdict follows from the comparison as every other step-7 finding does. D5 names the code and the verdict, not the
+  member. Alternative: `reasons` plus a forced `MISMATCH`.
+- **DECISION F8-WO3-3. An unknown `bundle_format` is checked before the v2 reader runs, and step 1 for it re-hashes
+  only what every format indexes** (each file under `artifacts/` against the manifest's `artifacts` map; unexpected
+  files counted); report: `inspected_archived_results` / `NOT_RUN`, the one reason
+  `bundle_format_unsupported(<value>)`, the raw recorded `environment`, no Amendment 12 member. The v2 reader refuses
+  any other value, so its `verify_bundle` cannot run. Alternative: integrity "not checked" (`ok: false`).
+- **DECISION F8-WO3-4. "A changed built-in of the running distribution" is a used row whose current registry entry
+  has `origin: builtin`** (the recorded origin is not consulted). Alternative: built-in on both sides.
+- **DECISION F8-WO3-5. A rerun without a usage set (a plain `Rerun`) does not match:** `differences` gets
+  `replay_v2.NO_USAGE`. Step 7's cross-check cannot be skipped silently. `RerunV2(Rerun)` adds `usage`; `Rerun` and the
+  v1 path are untouched. As in v1 the rerun is the caller's, made before `replay` is called.
+- **DECISION F8-WO3-6. E-F8-5's test-only registry is `edited_registry`**: a shallow copy of the process registry
+  whose `_entries` map has named descriptors replaced by `dataclasses.replace` (`self_sha256` `0…0`; plus
+  `origin: installed` for the non-built-in case) or removed (`extension_unavailable`); `snapshot()` and
+  `registry_sha256` then follow from the copy. `replay_v2` compares the recorded rows with `registry.snapshot()` only.
+- **DECISION F8-WO3-7. Reasons accumulate in D5's step order** (integrity, policy, environment, extensions in
+  `extensions_used` order, data by SHA); steps 3 to 6 are all evaluated before the decision, so every reason is listed.
+  An unknown policy is `NOT_RUN` as in v1. `no rerun was supplied` is appended as v1 does. A changed built-in turns
+  an `exact_replay` into `compatible_reproduction`; any other mode stays.
+- **DECISION F8-WO3-8. The local store `replay_v2` resolves from, when the caller names none, is an empty project
+  store over the installation's legacy records** (`LegacyStore(available_records)`); `run.replay.replay`'s dispatch
+  uses this default. Alternative: a project store argument on `replay` (changes the v1 signature).
+- **DECISION F8-WO3-9. `ReplayMode` gains `forced_replay` and `ReplayReport.__post_init__` refuses it**
+  (`refuse_reserved_mode`, WO1-6); `registry_comparison` and `data_availability` are optional members, absent from a
+  v1 report's document. The comparison loop of `run.replay` is reused by `replay_v2` through its private helpers
+  (`_as_recorded`, `_verdict_drift`, `_is_verdict_only`); the v1 loop is not refactored (the brief's one dispatch).
+- **DECISION F8-WO3-10. Catalogue: the four codes WO3 emits, in a new `catalogue/replay.yaml`, all `refusal`,
+  `complete: true`:** `bundle_format_unsupported` (`not_supported`, gap), `extension_unavailable` and
+  `extension_changed` (`input`), `extension_use_undeclared` (`bug`, as the ADR marks it). Step 6 reuses
+  `data_unavailable` and `store_object_corrupt`. `platform_reference_used` (WO5), `record_referenced`,
+  `forced_replay_divergence`, `not_rechecked`, `cache_bypassed` are left to the work orders that emit them.
+- **Note F8-WO3-11. `bundle_v2._cross_check_v2` (WO2) raised `KeyError` on a lock without D10's members; it now
+  reports the lock tampered** (`d16da4f0`), so step 1 never raises on a tampered archive.
+- **Note F8-WO3-12. Re-record tool:** `f8_bundle_v2_support.rerecord(bundle, directory, local, registry=...)` reruns
+  a registered v2 case's recorded revision (`V2_CASES`) and writes a new v2 bundle with the bundle's own lock, its
+  records served from the bundle first, under the given registry. Tested: after a built-in changed on purpose the
+  old bundle replays `compatible_reproduction` with `extension_changed`, the re-recorded one `exact_replay` / `MATCH`
+  with the same `data_lock_sha256` and `artifact_r0_sha256` (its `structural_sha256` moves with `extensions_used`).
+
+### F8-WO3 gate numbers (SMM-TR09, 2026-11-27)
+
+Commits `d16da4f0` (integrity fix), `a9534610` (catalogue, doc page, digest re-pin), `a269aabc` (`replay_v2.py`, dispatch,
+Amendment 12 members), `1b3b55f2` (tests, re-record tool, E-F8-1 expectation).
+- E-F8-1 expectation: computed at `ddac950f` (detached worktree; `run/{replay,bundle,compare,identity}.py` identical to
+  the branch point `df796cc2`) with `scripts/f8_v1_replay_reports.py`: 52 bundles x 4 scenarios (inspect: 52
+  `exact_replay`/`NOT_RUN`; self: 8 `MATCH`, 44 `MISMATCH`; other_platform: `compatible_reproduction` 8/44;
+  changed_lock: 52 `inspected_archived_results`/`NOT_RUN`); `--check` at the head: PASS, 0 reports moved.
+- Catalogue digest re-pin (the two `message_entry` fixtures, `t07_schema_fixtures.py --write`): `2b22709239d0c823…`
+  -> `4ca46ea400613968f4f9c2efac2bf198ba6c5668a0a0a4ea4b35509c0c5db76d`. No other fixture or served digest moved.
+  `msg_catalogue.py check`: PASS, 456 entries, G1/G2 0 missing.
+- F0 (own detached worktree at `1b3b55f2`): PASS, M1 50/50, M2-M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 42/42.
+- `tests/test_f8_replay_v2.py` 38 passed (two cases where parametrised). Mutation controls (not committed), each
+  KILLED: E-F8-1 a v1 report gains `data_availability: null` (2 fail); E-F8-4 SHAs walked in reverse (1), embedded
+  records not resolved from the bundle (5); E-F8-5 every changed extension treated as built-in (2), unused differences
+  not counted (2); E-F8-6 usage cross-check skipped (4); an unknown format read as v2 (2).
+- Battery (`test_f8_*` 93, `test_k05_replay` 30, the MSG suites, the surface suites, `test_v03_semantic_roles`,
+  `test_doc_pages`, `test_t08_adr0025`, `test_opt_replay`, `test_m02_wo10_coupled`, `test_m02_experiment_job`,
+  `test_m04_study_job`, `test_m07_journey`, `test_k05_schemas`, `test_x04_messages`, `test_x07a_*`, `test_x05_lock`,
+  `test_f1_operations`, `test_f3_operations`, `test_package_imports`): 3081 passed, 28 skipped, 3 xfailed, 3 failed
+  (the three v03 reds, WO1-10).
+- ruff check, ruff format --check (1354 files), mypy `src` (370 files): clean.
+- Left over: a rerun that reads the served stack (v2-compiled documents, F8-WO6); the ADR's other new codes (their
+  work orders); ADR 0019's Amendment 12 pointer paragraph (from WO1b).
