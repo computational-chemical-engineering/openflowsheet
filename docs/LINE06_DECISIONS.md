@@ -366,3 +366,12 @@ Reversible by: <how>.` Package build decisions go in the package's own file (`do
 - 2026-11-27 **F8 CI FAILED** at `d0bc2996` (run 46047518103): only Windows, 4 of 18445 (test-side `str(relative_to)`
   artifact names). Fix F8-CI2 by the orchestrator on wp/F8 `50b3af17` (DECISION F8-CI2-1; two files 91 passed).
   Not pushed: F8 next merges main after F2 and X06 (chain c_13 onto X06's c_12), then gate, push, CI.
+- 2026-11-27 Card `ofs-f2-merge` (A) **VERIFIED** (signed 21:19:04Z, key 032ee0a5ae620a90). **F2 merged into main**:
+  merge commit `f1fdda2b` (register conflict: main's R-1071, R-1073..R-1076 kept, wp/F2's R-1072 evidence row
+  taken; ADR 0019 Amendment 9 heading Accepted with ADR 0062). Precondition: `git diff --name-only d00f659a main --
+  src tests schemas` = 0 files. F0 PASS on f1fdda2b (all nine). Pushed main `4c7d3d6a..f1fdda2b`. `executed` written
+  (card version 3). Worktree `.claude/worktrees/f2` removed (clean at 80cdcfb3); origin wp/F2 left in place.
+- 2026-11-27 wp/X06 merged main f1fdda2b -> `7a4dcde7` (50 files, all under docs/). DECISION: the full gate on
+  `9f020edd` (running) stands for the push of 7a4dcde7, since the diff 9f020edd..7a4dcde7 is docs only; the tests that
+  read the changed docs ran: 371 passed, 1 skipped (7 files). Alternative: a second 1.5 h gate on 7a4dcde7.
+  Reversible by: running it before the push.
