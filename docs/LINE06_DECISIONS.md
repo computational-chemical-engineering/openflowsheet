@@ -226,3 +226,18 @@ Reversible by: <how>.` Package build decisions go in the package's own file (`do
 
 - 2026-11-27: resumed after self-reset; launched architect F2-R1 (D12 rulings) and opus-engineer F2-WO6b in .claude/worktrees/f2 (logs ~/.cache/line06/f2-r1, f2-wo6b). Card ofs-x06-descriptions-human still open.
 - 2026-11-27: F2-R1 judged PASS (2781db50 touches only docs/F2_DECISIONS.md; rulings WO6a-2 keep, WO6a-3 keep + parameter_sets/thermal_coordinate amendments, WO6a-4 confirmed). Fix WO F2-WO6c briefed (docs/briefs/LINE06-F2-WO6c.md), launches after WO6b. D12 text to apply to ADR 0062 after WO6b (F2_DECISIONS.md "D12 text to apply"). ADR 0062 card gets the R1 line (open item 2); validate/h_mass to the F2 reviewer (item 1).
+- 2026-11-27: F2-WO6b judged PASS at b417eae3 (orchestrator rerun: tests/test_f2_amendment9.py + test_f1_draft_admission.py 249 passed; F0 PASS M1 50/50, M2-M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 42/42). For WO7: check_admission description re-pin (WO6b-6), an optimization-job-on-v2 test. ADR 0062 D12 replaced per F2-R1 (wp/F2 df796cc2). F2-WO6c launched (opus-engineer, log ~/.cache/line06/f2-wo6c).
+- 2026-11-27: P8, F8 premise check on wp/F2 at df796cc2 (ADR 0067 D1-D7, WO1-WO3, WO5):
+
+  | Named | Status |
+  | --- | --- |
+  | `run/bundle.py`, `run/replay.py`, `run/identity.py`, `run/manifest.py` (`NON_STRUCTURAL` l.65, `verify_bundle`) | exist |
+  | `run/{manifest_v2,bundle_v2,replay_v2,platform_refs}.py`; schemas `records-index`, `run-evidence` | absent, to be created by WO1-WO3, WO5 (as designed) |
+  | schemas `run-manifest`, `replay-report`, `data-lock`, `registry-snapshot` | exist |
+  | ADR 0060 D10 snapshot: `registry/snapshot.py` `snapshot_document`, `registry_sha256`; `Registry.snapshot`, `extensions_used` (l.681), `usage()` (l.824) | exist |
+  | ADR 0061 D11 embedding: `records/rights.py` `embeddable` (l.215); `RecordStore.object_bytes/record/add` | exist |
+  | catalogue `data_unavailable`, `store_object_corrupt` | exist; F8 codes (`bundle_format_unsupported`, `extension_*`, `platform_reference_used`, `record_referenced`, ...) absent, WO1-WO3 add them |
+  | `MaterialModel.entries_read`, `EntryRead` (D6) | absent: F4-WO4 builds it; consumer F8-WO4 is out of 0.6. Not needed |
+  | `job_operation: run`, `run_kind`, `documents` (ADR 0066 D10/D11) | absent: ADR 0066 is 0.8. WO1 defines the manifest members as optional schema members only; no 0.6 run fills them |
+
+  Resolved: 0 open rows. Note for the F8 briefs: in 0.6 no production run writes a v2 bundle (v2-compiled runs come with F6/WO6, 0.7); WO2's test-only factory is the only writer, so E-F8-2..6 run on factory bundles.
