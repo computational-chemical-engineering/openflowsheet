@@ -283,7 +283,7 @@ Amendment 8 is decided in ADR 0061 D13 (F3-WO5b); this paragraph points at it. A
   it is F1's `e2c44b6b…` (R-1030) exactly. The surface link is c_10, R-1051 (`F3_SERVED_SHA256` in
   `tests/test_t08_w2_surface_digest.py`). No other R4-G3 response moves.
 
-## Amendment 9 (Proposed 2026-11-27; F2) — pointer to ADR 0062
+## Amendment 9 (Accepted 2026-11-27 with ADR 0062, Decision Desk `ofs-f2-merge`; proposed 2026-11-27; F2) — pointer to ADR 0062
 
 Amendment 9 is decided in ADR 0062 D12 (D8 for runs; F2-WO6b); this paragraph points at it. Additive; no method,
 parameter or result field changes, and nothing a v1 document is read, stored, hashed or run as changes:

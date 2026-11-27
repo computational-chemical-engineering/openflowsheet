@@ -1050,7 +1050,7 @@ on the named open items (§6). OPT is the optimiser on revision flowsheets; RRC 
 | X10 gaps | F6, X10 inventory | `std.*` and the matrix |
 | X01 rest | F1 | |
 | X11 rest | F3, F4 | |
-| X06 | — | resume of long jobs through F7 |
+| X06 | — | resume via F7 D14 (0.8, ADR 0078 Q1); the rest in 0.6 |
 | X07a | — | CI legs; platform layer |
 | X07b | X07a, F8 | `nlp` and reactor environments on three OSes |
 | X08 | F6 | decanter and extraction on `std.*` |

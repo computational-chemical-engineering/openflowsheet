@@ -65,17 +65,19 @@ Format: **package**: what it delivers · needs first · design pass.
 - **F8**: identity and replay v2, work orders WO1 to WO3 (manifest, bundle v2, replay) and WO5 (platform records) ·
   F2, F3, X07a · architect (W1, ADR 0067). WO4 (evidence, after F4-WO4) and WO6 (wiring, after F6-WO4) go with F4 and
   F6; WO7 stays in TX.
-- **X06**: MCP over HTTP, branches, job resume, further solve policies, policy administration · nothing · architect
-  (ADR 0078, to be written; scope on card `ofs-line06-x06-scope`).
+- **X06**: MCP over HTTP, branches, further solve policies, policy administration · nothing · architect
+  (ADR 0078 Accepted, `ofs-x06-accept-adr0078`; designed on ADR 0056 row 8 in full, card `ofs-line06-x06-scope`; job
+  resume moved to F7 D14 in 0.8, the ADR's Q1; MCP clients send a static bearer, OAuth later, `ofs-x06-mcp-clients`).
 - *Line acceptance:* a v2 revision with store-pinned records solves on the legacy route on all three OSes (from 0.5,
-  R-1065); ADR 0062, ADR 0067 and ADR 0078 Accepted (default of card `ofs-line06-adr-clause`; before it, the clause
-  read "ADR-F1 to ADR-F8 Accepted", from 0.5, `ofs-rel050-q-f1`); X06's exits.
+  R-1065); ADR 0062, ADR 0067 and ADR 0078 Accepted (card `ofs-line06-adr-clause`, choice A, signed
+  2026-11-26T20:39:05Z; before it the clause read "ADR-F1 to ADR-F8 Accepted", from 0.5, `ofs-rel050-q-f1`); X06's
+  exits.
 
-### After 0.6: multiphase core and generic units
+### 0.7: multiphase core and generic units
 
-*(Left 0.6 on 2026-11-26, R-1070. The line they form is card `ofs-line06-rest`: default a new 0.7 with each later line
-one up and 1.0 unchanged; alternative, joined with dynamics in 0.7. Until the answer, the headings below keep their
-numbers.)*
+*(Left 0.6 on 2026-11-26, R-1070, and form this new line: Decision Desk card `ofs-line06-rest`, choice A, signed
+2026-11-26T20:39:40Z. Dynamics, the design toolkit and batch/relief/synthesis/electrolytes each move one line up; 1.0
+is unchanged.)*
 
 - **X01 selectability**: library-only providers and units become selectable · F2, F4, F6 · none. *(from 0.5, R-1065)*
 - **F4**: property methods and thermo interface · F2, F3 · architect (W1).
@@ -88,20 +90,24 @@ numbers.)*
 - **X17**: viscosity, conductivity, diffusivity · F4 · specifier.
 - **X11 rest**: data fetchers, regression, estimation flagged as estimated · F3, F4 · specifier.
 - **PrISMa**: adsorption isotherms as an equilibrium phase · F5 · specifier.
-- *Line acceptance:* ADR 0063 to 0066 Accepted (default of `ofs-line06-adr-clause`); Seider's vinyl chloride process
+- *Line acceptance:* ADR 0063 (F4), ADR 0064 (F5) and ADR 0065 (F6) Accepted (card `ofs-line06-adr-clause`, choice A);
+  Seider's vinyl chloride process
   against its Table 2.7; the textbook turbine with no declared phases; a VLLE decanter; a complete coverage matrix;
   `std.*` proved equivalent to the legacy units; the preview parts of the v2 schema frozen.
 
-### 0.7: dynamics
+### 0.8: dynamics
 
-- **F7**: problem layer v2 · F6 · architect (W1).
+*(Was 0.7 until 2026-11-26; card `ofs-line06-rest`, choice A.)*
+
+- **F7**: problem layer v2, including job resume from checkpoints (ADR 0066 D14; from X06, ADR 0078 Q1) · F6 ·
+  architect (W1).
 - **TX**: transient simulation with controllers and co-simulation · F7, F8 · architect and specifier.
 - **X13**: Gibbs and kinetic reactors · F6 · specifier.
 - **X07b**: optimisation and reactor environments on three OSes · X07a, F8 · none.
-- *Line acceptance:* a flash drum with a phase-change event and a PI level loop; a co-simulated unit; a Gibbs reactor;
+- *Line acceptance:* ADR 0066 (F7) Accepted (card `ofs-line06-adr-clause`, choice A); a flash drum with a phase-change event and a PI level loop; a co-simulated unit; a Gibbs reactor;
   the integrator agrees with IDAS on the registered set.
 
-### 0.8: design toolkit
+### 0.9: design toolkit
 
 - **X12**: sizing, costing, utilities, profitability · F6 · specifier.
 - **X14**: rigorous exchangers, pinch targets · F6, X17 · architect.
@@ -112,7 +118,7 @@ numbers.)*
 - *Line acceptance:* a costed flowsheet with utilities and a steam-heated exchanger, shown as a PFD; a rate-based
   absorber; an assay-based preheat train.
 
-### 0.9: batch, relief, synthesis, electrolytes
+### 0.10: batch, relief, synthesis, electrolytes
 
 - **X25**: batch recipes · TX · architect.
 - **X26**: relief, blowdown, relief sizing · TX · specifier.
@@ -133,7 +139,7 @@ numbers.)*
 - **W1, during 0.4.** A short specifier pass rules on the five open items (the conserved-basis boundary, the enthalpy
   anchor, EOS phase families, two dynamic-holdup questions). Then architect passes P1 (F1, F3), P2 (F2, F4, F5) and P3
   (F6, F7, F8), with one reviewer pass per ADR set. The v2 core schema freezes when W1 ends.
-- **After W1, one line ahead:** during 0.5 the 0.6 packages are designed, during 0.6 the 0.7 packages, and so on.
+- **After W1, one line ahead:** during 0.5 the 0.6 packages are designed, during 0.6 the 0.7 packages, and so on. (0.7's foundations F4 to F6 were designed in W1.)
 - At most two design agents at a time; one design pass and one reviewer pass per package.
 
 ## Gates
@@ -146,7 +152,7 @@ numbers.)*
   must name the missing capability.
 - **Equivalence** (F6). `std.*` must match the legacy units on the same physical quantities, first on the old state
   variables, then on the new ones.
-- **Freeze points.** The v2 core at the end of W1; the method, phase-assertion and template slots at the end of the multiphase-core line (0.6 before R-1070).
+- **Freeze points.** The v2 core at the end of W1; the method, phase-assertion and template slots at the end of 0.7 (0.6 before R-1070).
 - **Package gates:** the integrator against IDAS (TX), LOA against enumeration (X24), F6 scaling, F4 batching.
 - **Always:** the full gate before a merge to `main`, and CI green on both architectures (CLAUDE.md).
 
@@ -165,7 +171,7 @@ the full scope (R-927).
   follows, recorded as an ADR; rate-based columns and dynamics could slip.
 - **The optimisation stack missing on Windows or macOS** (X07a). OPT and X24 would move behind X07b, or a pip-only
   route would be added.
-- **Frank prefers the design toolkit before dynamics.** Swap 0.7 and 0.8; nothing breaks.
+- **Frank prefers the design toolkit before dynamics.** Swap 0.8 and 0.9; nothing breaks.
 - **A package design finds a structure the sketches missed.** An additive ADR if possible; otherwise a new decision
   before the freeze point it touches.
 - **Foundations taking longer than expected.** Only packages that fix no core structure may move earlier.

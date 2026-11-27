@@ -87,7 +87,7 @@ the store; no code to author.
 0.6 F4, F5, F6 and the multiphase packages, closing with Seider VCM; 0.7 F7, TX, X13, X07b; 0.8 the design toolkit; 0.9
 batch, relief, synthesis and electrolytes; 1.0 solids, polymers and P&ID. MSG before X04 stands (Frank). ADR 0056's
 release lines are subordinate to this order. *(Amended 2026-11-20, Frank, R-1065: 0.5 is X07a, F1, F3 and X01's plugin docs; F2, F8, X06
-and X01's selectability move to the head of 0.6. See "Amendment 1" below. Amended 2026-11-22, Frank: "ADR-F1 to ADR-F8 Accepted" moves to 0.6; see "Amendment 2". Amended 2026-11-26, the user: 0.6 is F2, F8 (WO1 to WO3, WO5) and X06; see "Amendment 3".)* FB-04 (1) is dropped as a 0.4 legacy fix; F5 and `std.turbine` solve it.
+and X01's selectability move to the head of 0.6. See "Amendment 1" below. Amended 2026-11-22, Frank: "ADR-F1 to ADR-F8 Accepted" moves to 0.6; see "Amendment 2". Amended 2026-11-26, the user: 0.6 is F2, F8 (WO1 to WO3, WO5) and X06; F4 to F6 and the packages on them form a new 0.7 and dynamics, the design toolkit and batch/relief/synthesis/electrolytes move to 0.8, 0.9 and 0.10; see "Amendment 3".)* FB-04 (1) is dropped as a 0.4 legacy fix; F5 and `std.turbine` solve it.
 
 **D7 — Open items, each with a proposed default.** The specifier rules on the first four at the start of W1, and each
 gates the foundation ADR named; the fifth does not gate, since ADR-F6 takes its default and X14's specification
@@ -145,8 +145,16 @@ carries the same change. Decision: the user in chat, 2026-11-26: "let's go for 0
 **Reason.** 0.6 as planned held about 80 work orders (6 to 9 weeks). F2 and F8 are the one record migration of
 Amendment 1 and need none of F4 to F6: v2 documents lower to the legacy route (ADR 0062 D8). X06 needs no foundation.
 
+**Settled on the Decision Desk (2026-11-26, all choice A, verified with `decision_desk_verify.py`).**
+`ofs-line06-rest` (signed 20:39:40Z): "Amend ADR 0057 D6 and roadmap.md: the packages under 'After 0.6' form a new 0.7
+line 'multiphase core and generic units'; dynamics moves to 0.8, the design toolkit to 0.9,
+batch/relief/synthesis/electrolytes to 0.10; 1.0 unchanged." `ofs-line06-adr-clause` (20:39:05Z): "Amend ADR 0057 D6
+and roadmap.md: the 0.6 line acceptance requires ADR 0062 (F2), ADR 0067 (F8) and ADR 0078 (X06) Accepted; ADRs 0063
+to 0066 move to the line that builds F4 to F7." (0063 to 0065 to 0.7, 0066 to 0.8.) `ofs-line06-x06-scope`
+(20:39:22Z): X06's architect pass designs ADR 0056 row 8 in full and in its order.
+
 **Unchanged.** The foundation order (F2 before F4, F8 after F2 and F3), the W1 designs, Amendment 1's one-migration
-rule for F2 and F8 (they ship together), and every line after the one the moved packages join.
+rule for F2 and F8 (they ship together), and 1.0.
 
 ## Existing ADRs this amends, and the ADR that carries each amendment
 
