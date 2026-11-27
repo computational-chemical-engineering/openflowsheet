@@ -14,6 +14,7 @@
 from __future__ import annotations
 
 import copy
+import json
 import sys
 from collections.abc import Callable
 from functools import cache
@@ -30,6 +31,7 @@ from openflowsheet.messages.catalogue import CATALOGUE
 from openflowsheet.registry.tokens import Coded
 from openflowsheet.revision_v2 import content_hash, parse
 from openflowsheet.revision_v2.lower import (
+    V1_ROLES,
     LegacyProviders,
     LoweringError,
     file_components,
@@ -351,6 +353,51 @@ def test_refused_variable_target() -> None:
     specification = document["specifications"][0]
     specification["target"] = {"variable": "S1~T"}
     assert _refusals(document) == _unavailable((f"target:{specification['id']}", "F6"))
+
+
+# -- D11 fields D12 does not classify (F2 decision WO6a-3) -------------------------------------
+
+
+def test_v1_roles_are_the_v1_schema_vocabulary() -> None:
+    schema = json.loads((ROOT / "schemas" / "process-revision.schema.json").read_text("utf-8"))
+    roles = schema["properties"]["instances"]["items"]["properties"]["semantic_role"]["enum"]
+    assert set(roles) == V1_ROLES
+
+
+@pytest.mark.parametrize("role", ["utility", "controller", "shaft", "relief_device"])
+def test_refused_semantic_role_outside_v1(role: str) -> None:
+    document = _raised()
+    document["instances"][0]["semantic_role"] = role
+    assert _refusals(document) == _unavailable((f"semantic_role:{role}", "F6"))
+
+
+@pytest.mark.parametrize("key", ["template", "references"])
+def test_refused_instance_preview_field(key: str) -> None:
+    document = _raised()
+    instance = document["instances"][0]
+    instance[key] = [] if key == "references" else {"id": "t"}
+    assert _refusals(document) == _unavailable((f"{key}:{instance['id']}", "F6"))
+
+
+def test_refused_phase_assertion() -> None:
+    document = _raised()
+    connection = document["connections"][0]
+    connection["phase_assertion"] = "LIQUID"
+    assert _refusals(document) == _unavailable((f"phase_assertion:{connection['id']}", "F5"))
+
+
+def test_refused_parameter_sets() -> None:
+    document = _raised()
+    document["component_set"]["parameter_sets"] = ["0" * 64]
+    assert _refusals(document) == _unavailable(("parameter_sets", "F4"))
+
+
+def test_materials_are_dropped_whatever_they_hold() -> None:
+    """D12: `materials` is dropped; with no `mat-v1` connection none of it reaches a v1 run."""
+    document = _raised()
+    document["materials"]["phase_order_keys"] = ["B"]
+    lowered = lower(parse(document), _providers())
+    assert canonical_json(lowered) == canonical_json(CORPUS_REVISIONS[BASE]())
 
 
 def test_the_crystallizer_fixture_is_refused_construct_by_construct() -> None:

@@ -25,6 +25,13 @@ than one file), F4; `definition:<id>` (a material definition other than `nTP-v1`
 F4. Whether a refusal is reported once per fault follows F2 decision WO4-6: the convention and the
 property methods are checked only when the component set names one file.
 
+D11 fields D12 does not classify, and v1 has no field for, are refused too (F2 decision WO6a-3):
+`semantic_role:<role>` for ADR 0062 D11's four roles outside v1's vocabulary (`utility`,
+`controller`, `shaft`, `relief_device`; ADR-F6 owns it), `template:<instance>` and
+`references:<instance>` (F6), `phase_assertion:<connection>` (F5) and a non-empty
+`parameter_sets` (`parameter_sets`, F4). `materials` is dropped as D12 says, whatever it holds: a
+valid document whose connections are all `nTP-v1` uses none of its definitions.
+
 `lower` reads the document as parsed; the validator's refusals (`validate`) come first. The legacy
 records are the committed legacy index's (`records.importers.legacy.committed_index`); the
 provider selection is the caller's `LegacyProviders` (F2 decision WO6a-1).
@@ -158,6 +165,42 @@ def _methods(document: Mapping[str, Any], provider: LegacyProvider, refusals: li
         refusals.append(_refused("property_methods", "F4"))
 
 
+#: v1's `semantic_role` vocabulary (`process-revision.schema.json`); D11 adds four to it.
+V1_ROLES: Final = frozenset(
+    {
+        "feed",
+        "product_sink",
+        "mixer",
+        "heater",
+        "flash",
+        "splitter",
+        "reactor",
+        "separator",
+        "valve",
+        "pump",
+        "heat_exchanger",
+        "compressor",
+        "turbine",
+        "other",
+    }
+)
+
+
+def _unclassified(document: Mapping[str, Any], refusals: list[Coded]) -> None:
+    """D11's fields D12 does not classify and v1 has no field for (F2 decision WO6a-3)."""
+    for instance in document["instances"]:
+        if instance["semantic_role"] not in V1_ROLES:
+            refusals.append(_refused(f"semantic_role:{instance['semantic_role']}", "F6"))
+        for key in ("template", "references"):
+            if key in instance:
+                refusals.append(_refused(f"{key}:{instance['id']}", "F6"))
+    for connection in document["connections"]:
+        if "phase_assertion" in connection:
+            refusals.append(_refused(f"phase_assertion:{connection['id']}", "F5"))
+    if document["component_set"]["parameter_sets"]:
+        refusals.append(_refused("parameter_sets", "F4"))
+
+
 def _structure(document: Mapping[str, Any], refusals: list[Coded]) -> None:
     """D12's constructs a v1 document has no field for."""
     for reaction_set in document["reaction_sets"]:
@@ -199,6 +242,7 @@ def lower(revision: RevisionV2, providers: LegacyProviders) -> dict[str, Any]:
     document = revision.document
     refusals: list[Coded] = []
     _structure(document, refusals)
+    _unclassified(document, refusals)
     source_refusals: list[Coded] = []
     source = _record_source(document, source_refusals)
     refusals += source_refusals

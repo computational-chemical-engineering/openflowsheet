@@ -412,3 +412,11 @@ Files: `src/openflowsheet/revision_v2/{lower,raise_v1}.py`, `tests/f2/legacy_pro
   so E-F2-3's "every corpus revision" fails 58/59 (measured at `fa81bdcf`), and it refuses every
   CoolProp revision (one fluid of the S07 file's 123). Isolated in one commit; reverting it
   restores the literal reading (`component_set` refused, F4).
+- **DECISION WO6a-3 (design-lane question; STOP class "a construct D12 does not classify").** D11
+  fields D12 neither maps nor lists, and v1 has no field for, are refused, not dropped:
+  `semantic_role:<role>` for D11's four new roles (F6, which owns the vocabulary),
+  `template:<instance>`, `references:<instance>` (F6), `phase_assertion:<connection>` (F5), a
+  non-empty `parameter_sets` (F4). Refusing now and admitting later moves no byte (WO4-7's
+  argument). `materials` is dropped whatever it holds, as D12 says (`phase_order_keys` included).
+  Construct spellings follow `validate`'s `kind:id` (`convention:<id>`, `derived:<id>`).
+  Isolated in one commit. *Needs:* a ruling per field (refuse, or drop when empty).
