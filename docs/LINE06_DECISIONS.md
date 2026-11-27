@@ -291,3 +291,7 @@ Reversible by: <how>.` Package build decisions go in the package's own file (`do
   Card `ofs-f2-accept-adr0062` executed PARTIAL: ADR 0062 Accepted on wp/F2 `831d6f26`; push withheld (gate on
   6913c4a0: 2 failed). F2 fixes since: `8edbbaee` (description review), `4b820b97` (w5_identity S2, DECISION F2-S2).
   Full gate on `4b820b97` running (log `~/.cache/line06/f2-j16/gate-4b820b97.log`, summary `.summary`).
+- 2026-11-27 Card `ofs-f2-push-ci` (A) **VERIFIED** (signed 11:40:07Z, key 032ee0a5ae620a90): "Push wp/F2 at 4b820b97
+  for CI, only if the local full gate on 4b820b97 passes." Waiting for the gate (summary
+  `~/.cache/line06/f2-j16/gate-4b820b97.summary`); on PASS push exactly 4b820b97 (`git push origin 4b820b97:refs/heads/wp/F2`
+  even if wp/F2 has moved), CI waiter, then `executed`.
