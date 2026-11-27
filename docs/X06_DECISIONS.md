@@ -413,7 +413,7 @@ in `REVIEW.json`), three `$defs`, six catalogue entries, layers.
 `default_wall_time_s`, `max_active_jobs` (all three under `grant_capability`'s `limits/`) and `value`
 (`set_ambient_pressure`). They are a grant's budget ceilings and a display-only declaration, not model inputs.
 
-### Where WO4 stopped (next engineer: start here)
+### Where WO4 stopped (done by X06-WO4b, below)
 
 Green at `a84e9b14`: `test_t07_w5a_operations.py`, `test_t07_authz.py`, `test_t07_w6a_http.py` (admin steps are
 `forbidden` on both sides: the principal lacks `policy`), `test_t07_w6b_mcp.py` (21 passed), ruff, format, mypy,
@@ -435,3 +435,42 @@ Green at `a84e9b14`: `test_t07_w5a_operations.py`, `test_t07_authz.py`, `test_t0
    E-X06-19, E-X06-20 (in-band revoke; 10 concurrent grants plus one CLI grant), E-X06-21 (one `allowed` row per write;
    the CLI fixture).
 5. The surface suites, `test_x06_*`, MSG and doc-page tests; the bundle gate (63, 60, `b42b1ec439d1683c`); F0.
+
+## X06-WO4b (WO4 finished), 2026-11-27
+
+Commits: `ad7f28b7` (R4-G3 rows, `$defs`, fixtures), `822d1362` (surface move, support envelope), `a8e2a5bf`
+(conformance, CLI G14), `86e31d44` (`tests/test_x06_administration.py`), `6c540e5a` (MSG fix), `81243506` (E501).
+
+- **Surface.** `X06_SERVED_SHA256` = c_12's `D_12` = `d0f0c8b7…` (35 tools; `4a80f77f…` at WO3); `without_x06` still
+  gives F3's `f7ec3c94…`. `X06_FILE_SHA256` pins the four texts. R4-G3: `SNAPSHOT_X06` gains the four rows
+  (`get_policy` `e3711772…`, `grant_capability` `0cd20320…`, `revoke_capability` `52cdce3f…`, `set_ambient_pressure`
+  `5b609610…`); no earlier row moved. Envelope: 39 operations (A20), the `Administration` protocol in the
+  interfaces row; `docs/support-matrix.md` regenerated.
+- **DECISION WO4b-1. U08 follows the lifted limitation** (WO2-9's precedent): U08 no longer names in-band policy
+  administration, and `test_u08_no_operation_administers_policies` goes with it (its premise is what R-110's lift for
+  D5 reverses). Alternative: keep the test (it passes: no operation has its five names). Reversible by: reverting
+  `822d1362`'s two hunks.
+- **DECISION WO4b-2. E-X06-16's "every committed policy fixture".** The repository commits no `project-policy.json`
+  (X04 A11 found the same). The test takes the policies the operator commands write (init, two grants, one with
+  expiry and note, an ambient declaration): each re-serializes to its bytes and `policy_sha256`, has no
+  `administration`, gains that member alone when switched on and its bytes back when off. Alternative: commit policy
+  fixture files. Reversible by: adding them to the test.
+- **DECISION WO4b-3. Masking a grant's random draws.** `stable_administration` now recognises a grant result as an
+  object holding both `capability` and `token` (was: `status` granted/replayed), so the `missing_status` invalid
+  fixture is masked too; the fixture generator's `stable`, the conformance `stable` and the CLI test's `clockless`
+  apply it first. Inert on every earlier fixture (none has a `token` member; measured: all regenerate `same`).
+- **DECISION WO4b-4. Conformance.** The template policy carries the switch; `_administration` runs nine steps after
+  `_solve_policies` (read; ambient set and replay; grant, replay with `token` null, `capability_exists`; revoke,
+  `capability_not_found`; ambient cleared). The local owner succeeds; the grant clients hold no `policy` and are
+  `forbidden` on all nine (as `assess_rights`, F3 WO5b-7). The policy ends as it began.
+- **Fix (MSG).** `set_ambient_pressure` put a coded `StoreError`'s `str()` (the layered text) in its ApiError;
+  `test_no_handler_turns_a_layered_error_into_a_document_by_str` caught it. Now `args[0]`, the machine message.
+- **Found, pre-existing (not fixed).** `tests/test_x06_solve_policies.py::test_q7_a_lowered_budget_run_verifies_and_
+  reproduces` fails when run in one process after `tests/test_t07_w5e_application_results.py::test_the_fixtures_are_
+  what_real_responses_emit_today`: `t07_schema_fixtures._pin_threads` sets the thread pins in `os.environ` for the
+  rest of the process, so the reproduce is `exact_replay`, not `compatible_reproduction`. Reproduced at `4ca7ce3c`
+  with those two tests alone (1 failed, 1 passed); passes alone and with `tests/test_x06_*.py` (87 passed). For WO5
+  or the reviewer: scope the pins (monkeypatch) in the generator's callers.
+- **E-X06-17 generated pairs:** 1000, seed 20261127, 471 granted, 529 refused; `delegation_refusal` is `None` iff
+  D5.3's rule holds (asserted both ways).
+
