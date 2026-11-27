@@ -306,3 +306,22 @@ Amendment 12 members), `1b3b55f2` (tests, re-record tool, E-F8-1 expectation).
   only for a registered platform other than the reference `linux-x86_64`; there is no ADR 0025 layout, so
   `<case>.<platform>.json`. Goes on the ADR 0067 acceptance card as an edit before acceptance. Alternative: brief WO5 on
   the unamended text. Reversible by: reverting this docs commit.
+
+## F8-WO5 (per-platform reference records, ADR 0067 D7, exit E-F8-8)
+
+- **DECISION F8-WO5-1. Reference record accessor:** no reference-shaped record with per-platform siblings exists in the
+  repository (`tests/fixtures`, `benchmarks`: the sweep finds 0 cases; the only `"artifacts"` carriers are M06 store
+  exports, a different shape). The brief's shape `{"artifacts": {...}, ...}` is taken as written; one accessor,
+  `platform_refs.record_artifacts`, is the only place that names the key. Reversible by: changing that function.
+- **DECISION F8-WO5-2. Notice parameter name:** `platform_reference_used` has one parameter, `platform` (type `text`),
+  rendered `platform_reference_used(<id>)` by `replay_v2.coded_reason`. Family `notice`, kind `notice` (as the entries
+  of `notices.yaml`), in `replay.yaml` after the WO3 entries; doc page `docs-site/messages/notices.md`.
+- **DECISION F8-WO5-3. Tests use the v1 policy id (`V1_POLICY_ID`):** v2 policy refuses a solution state without
+  `variable_kinds`; the selection logic is policy-independent, and the moved float differs under v1.
+- **DECISION F8-WO5-4. R0 mutation in the invariant test is an id** (`solve-plan.json` `inner_row_ids[0]`): a solver
+  counter change is not R0 (only `counters` listed by `_solver_counters` are, and GP-C1's change did not move it).
+- Catalogue digest re-pin (the two `message_entry` fixtures, `t07_schema_fixtures.py --write`):
+  `4ca46ea400613968f4f9c2efac2bf198ba6c5668a0a0a4ea4b35509c0c5db76d` ->
+  `bbdcfb51ae0d95785f91507b1596fefa5753e6c6ab55ad7b49147afd92516d0d`. No other fixture or served digest moved.
+- Mutation controls (not committed), each KILLED: `select_reference` ignoring the record (2 fail); invariant skipping
+  R0 (1); invariant skipping `reference_sha256` (1); loader skipping the self-hash check (1).
