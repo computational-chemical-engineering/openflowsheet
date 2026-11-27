@@ -332,3 +332,6 @@ Reversible by: <how>.` Package build decisions go in the package's own file (`do
   test scratch path), `identity` (ModuleNotFoundError jsonschema), codehealth (informational). Fix F2-CI1 by the
   orchestrator on wp/F2 `80cdcfb3` (DECISIONS F2-CI1-1/2 in `docs/F2_DECISIONS.md`); touched test file 128 passed;
   full gate on 80cdcfb3 running before the push. wp/F8 CI at 14409696 carries the same two F2 causes.
+- 2026-11-27 16:30 **X06 CI FAILED** at `a514896c` (run 46014554722): only `default-install` (mcp_http imported
+  without the server extra in the isolation test). Fix X06-CI2 on wp/X06 `73b3a83d` (DECISION X06-CI2-1); checked in
+  a default-install venv (1 passed) and the main venv (12 passed); full gate on 73b3a83d running before the push.

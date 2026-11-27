@@ -9,7 +9,7 @@ Procedure: `.claude/skills/line06/SKILL.md`. Host SMM-TR09 (`ref-x86-64`); orche
 Amendment 3. Line acceptance: a v2 revision with store-pinned records solves on the legacy route on all three OSes;
 the ADR acceptances of card `ofs-line06-adr-clause`; X06's exits.
 
-## Position (2026-11-27, 16:05)
+## Position (2026-11-27, 16:30)
 
 - All three packages built, reviewed and fixed; nothing merged into `main` yet. `main` local, last pushed `4c7d3d6a`.
 - **F2** (ADR 0062 **Accepted**): CI at origin `4b820b97` FAILED (run 46003226499): Windows 6 tests (":" in an E-F2-3
@@ -19,7 +19,10 @@ the ADR acceptances of card `ofs-line06-adr-clause`; X06's exits.
 - **F8** (ADR 0067 + ADR 0019 Amendment 12 **Accepted**): local wp/F8 = `4daff37f` (contains wp/F2 4b820b97, review
   fix round F8-FR, manifest `evidence/F8/18676313.../manifest.json` tested). Card `ofs-f8-accept-adr0067` VERIFIED,
   `executed`; full gate PASS 21895 passed; origin wp/F8 = `14409696`, CI running. Merges after F2.
-- **X06** (ADR 0078 Accepted): origin wp/X06 = `a514896c` (X06-CI1 fixes; full gate PASS 21303 passed). CI running.
+- **X06** (ADR 0078 Accepted): CI at origin `a514896c` FAILED only `default-install` (run 46014554722; all check legs,
+  identity green): `mcp_http` missing from the isolation test's server-extra list. Fix X06-CI2 on local wp/X06
+  `73b3a83d`; full gate running (worktree `.claude/worktrees/x06-gate`, PID `~/.cache/line06/x06-ci2/gate.pid`,
+  summary `~/.cache/line06/x06-ci2/gate-73b3a83d.summary`).
 - `release/lines/0.6.json` DRAFT (LINE06-L0); release campaign not started.
 
 ## Order and gates (pass criteria fixed before the run; the orchestrator judges each, a miss is recorded as a miss)
@@ -49,10 +52,10 @@ Background jobs (they survive the reset; their notices arrive in the new context
    (orchestrator's push; ADR 0062 card already executed), CI waiter (log `~/.cache/line06/ci/f2-80cdcfb3.log`),
    `git worktree remove .claude/worktrees/f2-gate`. On all legs green: F2 merge card (A: "Merge wp/F2 at 80cdcfb3
    into main with a merge commit, run F0 on main, push main." B: "Do not merge F2 yet."). On FAIL: no push, fix.
-2. **X06 CI waiter**: same script for `wp/X06 a514896c0dca95a436626f8ce67eb477855b6f18`, log
-   `~/.cache/line06/ci/x06-a514896c.log`. On green: X06 merge card via hub. Mention on the card for design-lane
-   notice: DECISION X06-CI1-1 (new addendum `benchmarks/x06/numerical_policy_external.yaml` classifies
-   `expected_sha256`/`actual_sha256` exact; R-1032 precedent).
+2. **X06 gate at 73b3a83d** (X06-CI2). On `GATE PASS`: push `73b3a83d:refs/heads/wp/X06` (same command form as F2),
+   CI waiter (log `~/.cache/line06/ci/x06-73b3a83d.log`), remove the gate worktree. On all legs green: X06 merge card
+   (A: "Merge wp/X06 at 73b3a83d into main with a merge commit, run F0 on main, push main." B: "Do not merge X06
+   yet."); mention DECISION X06-CI1-1 on it for design-lane notice.
 3. **F8 CI waiter**: same script for `wp/F8 14409696d814565ae037f16ceed948ebba1e7577`, log
    `~/.cache/line06/ci/f8-14409696.log`. Expect the same two F2 failures (it holds wp/F2 4b820b97); judge only F8-specific reds. F8 waits for F2's merge. On failure:
    fix order as for F2.
