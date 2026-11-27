@@ -556,3 +556,19 @@ Logs `~/.cache/line06/x06fix1/`.
   61/61, M6 85/85, M7 52/52, M8 105/105, M9 42/42.
 - **Not done:** N1 to N5 (notes, no action ruled); ruling 5's optional committed policy fixture; ruling 9
   (code-health batch). The human review of the eleven texts and the merge card are the user's.
+
+## X06-CI1 (CI run 45962988409 at `1b9561a3` failed on every leg), 2026-11-27
+
+Brief `docs/briefs/LINE06-X06-CI1.md`, build lane. The same ten tests failed on the four `check` legs and in
+`default-install`; per-risk local runs had not run them. Runs: `PATH=<main>/.venv/bin:$PATH PYTHONPATH=src`.
+
+- **DECISION X06-CI1-1. The `SolvePolicies` responses move to `schemas/solve-policy-results.schema.json`.** A1(d)
+  failed: `expected_sha256` and `actual_sha256` (D4.5's `conflict`) were declared in `application-results`, a schema
+  in v2's domain, and classified nowhere. R-1032's structure, as F3-WO5b did for `record-results`: the two `$defs`
+  `solve_policy_registration` and `solve_policy_view` move verbatim to the new schema, `application-results` keeps
+  each as a bare `$ref`, `schemas/registry.json` gains the name, and a new addendum
+  `benchmarks/x06/numerical_policy_external.yaml` (audited after F3's) lists the schema and classifies the two names
+  `exact_sha256` (each preimage is a solve-policy document's canonical bytes). Measured: `t08_numerical_policy.py
+  --check` passes with v2's bytes `6b449911…` unchanged; `X06_SERVED_SHA256` `7792576e…` and the chain unchanged
+  (`test_t08_w2_surface_digest`, `test_m07a_surface_chain` pass); the R4-G3 snapshots unchanged. Alternative: rename
+  the two members (the ADR names them) or amend ADR 0025 (design lane). Reversible by: reverting the commit.

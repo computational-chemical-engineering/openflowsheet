@@ -65,6 +65,8 @@ ADDENDA: Final = (
     ROOT / "benchmarks" / "f1" / "numerical_policy_external.yaml",
     # F3 (ADR 0061): the v2 record schema.
     ROOT / "benchmarks" / "f3" / "numerical_policy_external.yaml",
+    # X06 (ADR 0078 D4.5): the `SolvePolicies` responses (X06 decision X06-CI1-1).
+    ROOT / "benchmarks" / "x06" / "numerical_policy_external.yaml",
 )
 #: M04: the addendum that classifies the M04 schemas' digests, beside M02's.
 SURROGATE: Final = ROOT / "benchmarks" / "m04" / "numerical_policy_surrogate.yaml"

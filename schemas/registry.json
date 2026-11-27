@@ -41,6 +41,7 @@
   "solution-state.schema.json",
   "solve-event.schema.json",
   "solve-plan.schema.json",
+  "solve-policy-results.schema.json",
   "solve-policy.schema.json",
   "specification.schema.json",
   "stream-table.schema.json",

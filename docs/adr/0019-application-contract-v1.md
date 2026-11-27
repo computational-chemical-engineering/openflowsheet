@@ -369,7 +369,9 @@ schema stays `t07-store-v1`:
 - **Members and `$defs`.** `change-set.schema.json` gains the optional `branch` and the `$def` `branch_name` (D2.4);
   `project-policy.schema.json` the optional `administration: {in_band: true}` (D5.1);
   `application-results.schema.json` the `$defs` `branch`, `branch_page`, `branch_result`,
-  `solve_policy_registration`, `solve_policy_view`, `grant_result`, `revoke_result` and `ambient_pressure_result`.
+  `solve_policy_registration`, `solve_policy_view`, `grant_result`, `revoke_result` and `ambient_pressure_result`;
+  the two `SolvePolicies` `$defs` are bare `$ref`s into the new `solve-policy-results.schema.json` (R-1032's
+  structure; X06 decision X06-CI1-1).
 - **Refusals.** No `ApiError` code is added (the enum stays closed). New `detail.code` values, each with a catalogue
   entry: `origin_refused`, `branch_name_reserved`, `branch_not_found`, `solve_policy_id_invalid`,
   `solve_policy_invalid`, `solve_policy_not_found`, `administration_disabled`, `administration_remote_refused`,
