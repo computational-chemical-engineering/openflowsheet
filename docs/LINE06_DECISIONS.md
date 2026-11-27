@@ -315,3 +315,12 @@ Reversible by: <how>.` Package build decisions go in the package's own file (`do
   0019 Amendment 12 marked Accepted on wp/F8 `4daff37f` (local, after 14409696). Push of exactly 14409696 waits for
   the F8 gate (summary `~/.cache/line06/f8-gate/gate-14409696.summary`; background waiter prints it); then
   `executed`.
+- 2026-11-27 **X06-CI1 judged PASS** (wp/X06 `f294bb4e..a514896c`, 13 commits, opus-engineer, about 311k tokens,
+  twice the budget): full gate `GATE PASS a514896c: 21303 passed, 107 skipped, 3 xfailed`; codehealth diff PASS
+  (debt 61.30 -> 59.40); F0 PASS; `X06_SERVED_SHA256` `7792576e...` unchanged (no digest pin changed in the diff;
+  the brief's `d0f0c8b7` was a stale WO4 value). Causes: (1) new `*_sha256` names, classified exact in a new addendum
+  `benchmarks/x06/numerical_policy_external.yaml` with the two `$defs` moved to `schemas/solve-policy-results.schema.json`
+  (R-1032 / F3 precedent; FOR DESIGN-LANE NOTICE at the merge card); (2) fixtures copied a guarded policy; (3)
+  decompositions lacked `without_x06`; (4) CI pins threads to 1 -> `exact_replay` (Amendment 3), the test now follows
+  `decide_mode`; (5) refactors, no behaviour change; (6) identity job downstream of the check legs. Pushed origin
+  wp/X06 = a514896c (orchestrator lane, as the first X06 push); CI waiter `~/.cache/line06/ci/x06-a514896c.log`.
