@@ -301,3 +301,9 @@ Reversible by: <how>.` Package build decisions go in the package's own file (`do
   HARVEST_SIZE (110, 1184, 154) measured; F0 PASS; all listed suites 0 failed; v03 reds gone. Orchestrator rerun:
   surface chain + digest + harvest 57 passed. Leftover (F2 docs, after F2's gate): ADR 0019 Amendment 9 (l.307) and
   `docs/interfaces-frozen.md:114` still name the old D_11 `9a4b4eb3...`.
+- 2026-11-27 **F8-FR judged PASS** (wp/F8 `0c995c97..14409696`, opus-engineer, 9 commits): M1 and M2 fixed with
+  tests (8 and 12; controls killed), S1-S6, Amendment 12 text, WO6 row (F8-FR-1), manifest re-taken at `18676313`
+  (tested), HARVEST_SIZE (110, 1184, 153) measured; battery 13/13 steps exit 0; F0 PASS; no served digest moved.
+  Orchestrator rerun: `test_f8_*` + harvest 165 passed. Not re-reviewed (the review's work order was followed as
+  written). Full gate on 14409696 started in a detached worktree `.claude/worktrees/f8-gate` (summary
+  `~/.cache/line06/f8-gate/gate-14409696.summary`). ADR 0067 acceptance + push card requested from hub.
