@@ -197,10 +197,12 @@ OPT_REQUEST_SCALARS = frozenset(
     }
 )
 #: X06 (ADR 0078 D4.3(d), D4.5; ADR 0078, section 'X06 ruling round R1 applied'; R-1075): a
-#: registered solve policy's scalars (path below the request's `policy/`), and nowhere else.
+#: registered solve policy's scalars (path below the request's `policy/`), and nowhere else. The
+#: ruling lists 39; `admissibility_epsilon`, measured as the 40th, is X06 DECISION WO3b-1.
 SOLVE_POLICY_PREFIXES = {"register_solve_policy": "policy/"}
 SOLVE_POLICY_SCALARS = frozenset(
     {
+        "admissibility_epsilon",
         "armijo_c",
         "eta_inner",
         "linear_residual_threshold",

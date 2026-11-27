@@ -366,3 +366,14 @@ request against the bundle's own policy document, never the project store (X06 R
 `register_solve_policy`'s `policy/scales` map, by full path (X06 R1-2)". Both: decided by the design lane
 (`architect`), X06 ruling round R1, clarifying ADR 0078 (Accepted, R-1071); normative text the ADR section above;
 evidence this section's measurements; affected package X06.
+
+## X06-WO3b (rulings R1 applied), 2026-11-27
+
+- **DECISION WO3b-1. The 40th scalar.** R1-2 lists 39 numeric scalars below `register_solve_policy`'s `policy/`;
+  `_findings()` measures 40, at `c526de6a` and at `313907cd` alike (neither the scanner nor
+  `schemas/solve-policy.schema.json` changed between them): the listed 39 and `policy/admissibility_epsilon` (a
+  top-level `number`, `exclusiveMinimum: 0`, registered value `1e-12`, read by the region solver's admissibility
+  test; a constant, not an iterate). Pinned as the 40th, and the ADR 0078 R1 section's "39" reads "40", both in one
+  commit. Alternative: leave the pin at 39, and `test_t07_q26_no_external_state` stays red. Reversible by: reverting
+  that commit. For the design lane's single review pass.
+
