@@ -33,6 +33,7 @@ from openflowsheet.models.revision_flowsheet import (
     RevisionError,
     RevisionView,
     component_basis,
+    lowered_document,
     parse_revision,
 )
 from openflowsheet.models.syn001.pump import work_id
@@ -259,7 +260,9 @@ def _inputs(
     # The report reads no pin, so the revision is read without its specifications, as the legacy
     # binder reads it (`application.binding`): a `free` or `guess` specification of a legacy-route
     # revision is not refused, and nothing the report reads depends on one.
+    # ADR 0062 D12: a v2 revision is read as its lowering, as the binder read it.
     try:
+        revision = lowered_document(revision)
         view = parse_revision({**revision, "specifications": []})
         basis = component_basis(revision)
     except RevisionError as error:

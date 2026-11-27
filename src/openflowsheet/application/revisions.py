@@ -49,7 +49,15 @@ class RevisionConflictError(RevisionError):
 
 
 def content_hash(document: Mapping[str, Any]) -> str:
-    """ADR 0002 D4's canonical JSON over the semantic content, excluding the description."""
+    """ADR 0002 D4's canonical JSON over the semantic content, excluding the description.
+
+    A `schema_version` 2 document's is `revision_v2.content_hash` (ADR 0062 D11, ADR 0019
+    Amendment 9): the same rule over its normal form, in which each material definition is in
+    D3's normal form (F2 decision WO4-3)."""
+    if document.get("schema_version") == 2:
+        from openflowsheet.revision_v2 import content_hash as v2_content_hash  # noqa: PLC0415
+
+        return v2_content_hash(document)
     content = {key: value for key, value in document.items() if key not in CONTENT_HASH_EXCLUDED}
     return hashlib.sha256(canonical_json(content)).hexdigest()
 

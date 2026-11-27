@@ -399,6 +399,7 @@ def verify_revision(
     from openflowsheet.models.revision_flowsheet import (
         RevisionError,
         component_basis,
+        lowered_document,
         parse_revision,
     )
     from openflowsheet.orchestrator.splits import lifted_splits, split_owners
@@ -409,7 +410,9 @@ def verify_revision(
     _require_converged(result)
     # M02 design note §14.2 B15: the fresh provider of the revision's basis (the basis
     # `parse_revision` reads into `view.basis`), from the verifier's own table.
+    # ADR 0062 D12: a v2 revision is read as its lowering, which is what the binder read.
     try:
+        revision = lowered_document(revision)
         revision_basis = component_basis(revision)
     except RevisionError as error:
         raise VerifierError(f"revision_unreadable({error.code})") from error

@@ -70,6 +70,7 @@ from openflowsheet.graph.analysis import analyse, analyse_declaration
 from openflowsheet.graph.report import StructuralReport
 from openflowsheet.graph.trace import Declaration, StructureUnavailableError, trace_declaration
 from openflowsheet.messages import audit
+from openflowsheet.models.revision_flowsheet import RevisionError, lowered_document
 from openflowsheet.numerics.solve_record import SolvePlan, SolvePolicy, Trace
 from openflowsheet.orchestrator.execution import (
     ExecutionPlan,
@@ -212,7 +213,16 @@ def select_route(
     `unsupported(legacy_route_not_admitted(<code>))`, beside the refusal `legacy_admission`
     reports. The route's reason stays the revision binder's refusal. A pure function of the
     document and of `surrogates`, the project's SurrogateManifest resolver (M04 spec §8.2); each
-    binder reads its own copy."""
+    binder reads its own copy.
+
+    ADR 0062 D12 (ADR 0019 Amendment 9): a `schema_version` 2 document is routed as its lowering;
+    one that does not lower has no route, both binders refusing with the lowering's refusal.
+    """
+    try:
+        document = lowered_document(document)
+    except RevisionError as error:
+        refused = Unbound(error.kind, error.code, hint=error.hint)
+        return NoRoute(refused, refused)
     revision = bind_revision_flowsheet(copy.deepcopy(dict(document)), surrogates=surrogates)
     if isinstance(revision, RevisionBinding):
         return Route(_revision_path(revision), revision)
@@ -242,7 +252,13 @@ def bind_route(
     """The named route's binder only (R2.5: a rerun follows the recorded route and never
     re-routes). On `legacy_eo` the route's reason is the revision binder's refusal, as
     `select_route` records it, or `None` when that binder binds (a route taken by request). On
-    `revision_coupled` the binding must have an external unit."""
+    `revision_coupled` the binding must have an external unit. A `schema_version` 2 document is
+    bound as its lowering (ADR 0062 D12).
+    """
+    try:
+        document = lowered_document(document)
+    except RevisionError as error:
+        return Unbound(error.kind, error.code, hint=error.hint)
     revision = bind_revision_flowsheet(copy.deepcopy(dict(document)), surrogates=surrogates)
     if solve_path == "revision_eo":
         return Route("revision_eo", revision) if isinstance(revision, RevisionBinding) else revision
@@ -788,7 +804,13 @@ def run_revision_session(
     gains the member `revision_continuation` iff the policy names the revision continuation on
     `revision_eo`, whether or not edge 3 fired, and without a source it records
     `absent(not_supplied)`.
+
+    ADR 0062 D8, D12 (ADR 0019 Amendment 9): a `schema_version` 2 `document` is solved and
+    written as its lowering (`lowered_document`), so every artifact, `revision.json` included, is
+    the v1 run's of the lowered document; the v2 revision is referenced by the run's record
+    (`RunResult.revision_id`, `revision_content_sha256`), not by the bundle.
     """
+    document = lowered_document(document)
     started = started_now()
     clock = time.monotonic()
     result = solve_route(

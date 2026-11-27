@@ -103,10 +103,16 @@ def certificate_target(
 ) -> CertificateTarget:
     """`verify_revision`'s target and zero-flow tuple at `state` (`verify/certificate.py`), from
     the binding's declaration and the revision's own reading of itself, and their assembly."""
-    from openflowsheet.models.revision_flowsheet import component_basis, parse_revision
+    from openflowsheet.models.revision_flowsheet import (
+        component_basis,
+        lowered_document,
+        parse_revision,
+    )
     from openflowsheet.orchestrator.splits import lifted_splits, split_owners
     from openflowsheet.verify.zero_flow import dormant_outlets, zero_flow_splits
 
+    # ADR 0062 D12: a v2 revision is read as its lowering, which is what the binder read.
+    revision = lowered_document(revision)
     fresh = fresh_provider(component_basis(revision))
     compiled = compile_problem(binding.spec)
     target = BoundDeclaration(
