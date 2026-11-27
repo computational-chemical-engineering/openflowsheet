@@ -1,0 +1,5 @@
+# Q3.R1 (iii): a state whose group amount is negative is an invalid trial state, never clipped.
+base: crystallizer
+errors: []
+state: {connection: S1, feed: false, values: {"S1@liq~n[Na]": -1.0}}
+state_refusals: [{code: group_amount_negative, params: {connection: S1, substream: liq, group: Na}}]

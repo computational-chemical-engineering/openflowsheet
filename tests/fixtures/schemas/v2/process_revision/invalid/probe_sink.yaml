@@ -1,0 +1,4 @@
+# D9: a probe is a signal source only.
+expect_error: is not valid under any of the given schemas
+base: crystallizer
+changes: [{op: replace, path: /connections/7/to, value: {probe: {variable: S1~P}}}]

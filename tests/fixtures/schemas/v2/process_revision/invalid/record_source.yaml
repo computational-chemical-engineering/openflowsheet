@@ -1,0 +1,4 @@
+# D11: no `record_source` (records are named by SHA).
+expect_error: Additional properties are not allowed ('record_source' was unexpected)
+base: crystallizer
+changes: [{op: add, path: /component_set/record_source, value: syn001-components.yaml}]

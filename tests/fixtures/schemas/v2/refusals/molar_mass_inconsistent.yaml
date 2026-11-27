@@ -1,0 +1,22 @@
+# Q3.R7, Q7.A3: an ion pair NaClaq whose record mass is 5e-7 relative off Na_p + Cl_m; a notice.
+base: crystallizer
+changes:
+  - {op: add, path: /component_set/components/-, value: {id: NaClaq, record: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}}
+  - {op: add, path: /reaction_sets/-, value: {id: pairing, reactions: [{id: p1, stoichiometry: {Na_p: [-1, 1], Cl_m: [-1, 1], NaClaq: [1, 1]}, scope: [liq]}]}}
+  - op: replace
+    path: /materials/definitions/0/substreams/0
+    value:
+      id: liq
+      kind: mixed
+      components: [H2O, Na_p, Cl_m, NaClaq]
+      conserved_basis:
+        preset: apparent
+        species: [H2O, Na_p, Cl_m, NaClaq]
+        groups:
+          - {id: H2O, content: {H2O: 1}}
+          - {id: NaCl, content: {Na_p: 1, Cl_m: 1, NaClaq: 2}}
+        fast_reactions: pairing
+      grids: []
+      attributes: []
+errors: []
+notices: [{code: molar_mass_inconsistent, params: {definition: brine, substream: liq, species: NaClaq}}]

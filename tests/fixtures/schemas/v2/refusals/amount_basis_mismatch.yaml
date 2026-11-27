@@ -1,0 +1,7 @@
+# Q7.R5, Q7.A5: a molar input for a `kg` component (coal).
+base: crystallizer
+changes:
+  - {op: add, path: /component_set/components/-, value: {id: coal, record: "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"}}
+  - {op: add, path: /materials/definitions/0/substreams/-, value: {id: nc, kind: nonconventional, components: [coal], conserved_basis: {preset: "true"}, grids: [], attributes: []}}
+  - {op: add, path: /specifications/-, value: {id: coal_feed, target: {variable: "S1@nc~n[coal]"}, kind: molar_flow, unit: mol/s, value: 1.0, tolerance: {absolute: 1.0e-9}, role: fixed, provenance: fixture}}
+errors: [{code: amount_basis_mismatch, params: {component: coal}}]

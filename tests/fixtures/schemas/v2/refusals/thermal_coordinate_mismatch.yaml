@@ -1,0 +1,5 @@
+# D11: every material definition has the revision's thermal coordinate.
+base: crystallizer
+changes:
+  - {op: replace, path: /materials/definitions/1/thermal_coordinate, value: T}
+errors: [{code: thermal_coordinate_mismatch, params: {definition: syrup}}]

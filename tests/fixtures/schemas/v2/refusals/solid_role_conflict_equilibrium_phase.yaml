@@ -1,0 +1,5 @@
+# Q8.A6 (Q8.R4): an attribute on a `mixed` component the method forms an equilibrium solid of (ice).
+base: crystallizer
+changes:
+  - {op: add, path: /materials/definitions/1/substreams/0/attributes/-, value: {kind: probe.each, version: 1.0.0, components: [H2O], grid: null}}
+errors: [{code: solid_role_conflict, params: {component: H2O}}]

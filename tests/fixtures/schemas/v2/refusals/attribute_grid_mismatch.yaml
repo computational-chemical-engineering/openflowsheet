@@ -1,0 +1,5 @@
+# Q6.R4: a classed attribute names no grid of its substream.
+base: crystallizer
+changes:
+  - {op: replace, path: /materials/definitions/1/substreams/1/attributes/0/grid, value: M}
+errors: [{code: attribute_grid_mismatch, params: {definition: syrup, substream: cryst, kind: probe.partition}}]

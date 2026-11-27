@@ -1,0 +1,1 @@
+{id: f_water, target: {variable: "S1@liq~n[H2O]"}, kind: molar_flow, unit: mol/s, value: 10.0, tolerance: {absolute: 1.0e-9}, role: fixed, provenance: fixture}

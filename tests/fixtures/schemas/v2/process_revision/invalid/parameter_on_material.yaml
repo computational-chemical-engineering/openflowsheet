@@ -1,0 +1,4 @@
+# D9: a parameter endpoint ends a signal connection only.
+expect_error: "'port' is a required property"
+base: crystallizer
+changes: [{op: replace, path: /connections/0/to, value: {instance: cryst, parameter: P_set}}]

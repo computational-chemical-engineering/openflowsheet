@@ -1,0 +1,4 @@
+# D11: a signal connection carries its quantity kind.
+expect_error: "'quantity_kind' is a required property"
+base: crystallizer
+changes: [{op: remove, path: /connections/8/quantity_kind}]

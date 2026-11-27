@@ -1,0 +1,5 @@
+# D4, Q6.R3: a non-zero attribute on a dormant parent (NaCl crystals at zero amount).
+base: crystallizer
+errors: []
+state: {connection: S1, feed: false, values: {"S1@cryst~n[NaCl]": 0.0}}
+state_refusals: [{code: attribute_on_zero_parent, params: {connection: S1, substream: cryst, kind: probe.classes}}]

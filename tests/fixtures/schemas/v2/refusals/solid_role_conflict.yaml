@@ -1,0 +1,5 @@
+# Q8.R2, Q8.A1: NaCl in two solid substreams of one definition.
+base: crystallizer
+changes:
+  - {op: add, path: /materials/definitions/0/substreams/-, value: {id: cryst2, kind: solid, components: [NaCl], conserved_basis: {preset: "true"}, grids: [], attributes: []}}
+errors: [{code: solid_role_conflict, params: {component: NaCl}}]

@@ -1,0 +1,5 @@
+# D9: a parameter bound by a signal and pinned by a specification.
+base: crystallizer
+changes:
+  - {op: add, path: /specifications/-, value: {id: p_pin, target: {object_type: instance, object_id: cryst, path: parameters.P_set}, kind: pressure, unit: Pa, value: 100000.0, tolerance: {absolute: 1.0}, role: fixed, provenance: fixture}}
+errors: [{code: parameter_binding_conflict, params: {target: cryst.P_set}}]

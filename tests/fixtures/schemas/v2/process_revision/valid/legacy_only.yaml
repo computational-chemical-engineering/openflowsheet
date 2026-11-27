@@ -1,0 +1,22 @@
+# E-F2-2: the smallest v2 revision: one `nTP-v1` connection between legacy units, a v1-form
+# specification, no definitions, reactions or sections.
+schema_version: 2
+revision_id: legacy-r1
+parent_revision: null
+convention: ELEMENTAL-ref-v1
+component_set:
+  components:
+    - {id: H2O, record: "1111111111111111111111111111111111111111111111111111111111111111"}
+  parameter_sets: []
+materials: {thermal_coordinate: T, definitions: []}
+reaction_sets: []
+property_methods: {default: syn001-ideal, overrides: []}
+instances:
+  - {id: lfeed, model: {id: syn001.feed_source, version: 1.0.0, artifact_ref: null}, semantic_role: feed, parameters: {}, policy: {fidelity: nominal, validity: declared}}
+  - {id: lsink, model: {id: syn001.product_sink, version: 1.0.0, artifact_ref: null}, semantic_role: product_sink, parameters: {}, policy: {fidelity: nominal, validity: declared}}
+connections:
+  - {id: S2, kind: material, from: {instance: lfeed, port: outlet}, to: {instance: lsink, port: inlet}, definition: nTP-v1}
+specifications:
+  - {id: t_legacy, target: {object_type: connection, object_id: S2, path: T}, kind: temperature, unit: K, value: 300.0, tolerance: {absolute: 1.0e-9}, role: fixed, provenance: fixture}
+sections: {}
+provenance: {actor: fixture, operation: create, timestamp: "2026-11-27T00:00:00Z"}

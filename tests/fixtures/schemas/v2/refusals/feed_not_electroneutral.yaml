@@ -1,0 +1,5 @@
+# Q3.R4, Q3.A4: a charged-group feed with Na 1, Cl 0.9 (residual 5e-2 relative > 1e-12).
+base: crystallizer
+errors: []
+state: {connection: S1, feed: true, values: {"S1@liq~n[Cl]": 0.9}}
+state_refusals: [{code: feed_not_electroneutral, params: {connection: S1, substream: liq}}]

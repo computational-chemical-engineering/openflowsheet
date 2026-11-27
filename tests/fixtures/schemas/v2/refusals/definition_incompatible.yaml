@@ -1,0 +1,5 @@
+# D11: an `nTP-v1` connection into a port that accepts `mat-v1` only.
+base: crystallizer
+changes:
+  - {op: replace, path: /connections/5/to, value: {instance: cryst, port: in}}
+errors: [{code: definition_incompatible, params: {connection: S2, port: cryst.in}}]

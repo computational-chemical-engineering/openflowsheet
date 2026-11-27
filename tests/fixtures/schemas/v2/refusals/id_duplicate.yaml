@@ -1,0 +1,5 @@
+# Structural: two connections with one id.
+base: crystallizer
+changes:
+  - {op: replace, path: /connections/1/id, value: S1}
+errors: [{code: id_duplicate, params: {id: S1}}]

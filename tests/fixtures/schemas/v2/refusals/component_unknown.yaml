@@ -1,0 +1,5 @@
+# Structural: a substream names a component outside the component set.
+base: crystallizer
+changes:
+  - {op: replace, path: /materials/definitions/1/substreams/0/components, value: [H2O, sucrose, ethanol]}
+errors: [{code: component_unknown, params: {component: ethanol}}]

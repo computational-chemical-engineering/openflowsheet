@@ -1,0 +1,1 @@
+{id: w_water, target: {derived: std.mass_fraction, version: 1.0.0, stream: S1, component: H2O, phase: LIQUID}, kind: mass_fraction, unit: "1", bounds: {upper: 0.95}, tolerance: {absolute: 1.0e-9}, role: free, provenance: fixture}

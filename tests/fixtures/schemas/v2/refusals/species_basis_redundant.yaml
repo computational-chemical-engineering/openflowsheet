@@ -1,0 +1,5 @@
+# Q3.R7: a fourth group, Na_p + Cl_m, makes A rank-deficient.
+base: crystallizer
+changes:
+  - {op: add, path: /materials/definitions/0/substreams/0/conserved_basis/groups/-, value: {id: salt, content: {Na_p: 1, Cl_m: 1}}}
+errors: [{code: species_basis_redundant, params: {definition: brine, substream: liq}}]

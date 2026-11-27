@@ -1,0 +1,6 @@
+# Q8.R2, Q8.R7: a component a method confines to a phase model (the sorbent) in a solid substream.
+base: crystallizer
+changes:
+  - {op: add, path: /component_set/components/-, value: {id: sorbent, record: "7777777777777777777777777777777777777777777777777777777777777777"}}
+  - {op: add, path: /materials/definitions/0/substreams/-, value: {id: bed, kind: solid, components: [sorbent], conserved_basis: {preset: "true"}, grids: [], attributes: []}}
+errors: [{code: solid_role_conflict, params: {component: sorbent}}]
