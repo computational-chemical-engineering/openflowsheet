@@ -10027,3 +10027,48 @@ harvest:
   class: P
   to: []
   note: 'release-candidate item: step 18 (release_gate.py --line 0.5 --rc C) is judged from its output in the build log (R-914, RP §6.8)'
+- manifest: evidence/F8/32981fb3f62f0324edc2c9f311c8c4dbe9dad768/manifest.json
+  item: limitations[0]
+  sha256: 558404fd1df8c7b1f910708e666eba7171e218acc56b690125af36545c316096
+  class: P
+  to: []
+  note: 'provenance note: software verification of F8 (bundle and manifest v2, replay v2, per-platform records) on the test-only v2 bundle factory; local runs at 32981fb3, no CI run, not reviewed'
+- manifest: evidence/F8/32981fb3f62f0324edc2c9f311c8c4dbe9dad768/manifest.json
+  item: limitations[1]
+  sha256: e05e3ca9a21c2311f426255d4802bf48ab209d514d13524647232b1177777eda
+  class: P
+  to: []
+  note: 'process note: E-F8-7 (WO4, with F4) and E-F8-9 (WO7, with TX) are not in the 0.6 line; v2-compiled runs write no v2 bundle until WO6'
+- manifest: evidence/F8/32981fb3f62f0324edc2c9f311c8c4dbe9dad768/manifest.json
+  item: limitations[2]
+  sha256: 7ffcc9404c1e9fab99d56b055f63bd8d87431f295fb4d770f5e83e2f14520cf7
+  class: P
+  to: []
+  note: 'process note: inherited red test_j16 from wp/F2 fixtures; fixed on wp/F2 (6913c4a0, DECISION F2-J16), cleared when wp/F2 is merged into wp/F8'
+- manifest: evidence/F8/32981fb3f62f0324edc2c9f311c8c4dbe9dad768/manifest.json
+  item: limitations[3]
+  sha256: 7b56baa544c96790f6d3c1d0b8b9b355336e5c236aed0ce5b309d5b264f6a945
+  class: P
+  to: []
+  note: 'process note: the manifest commit follows the head its commands ran at; harvest rows and pin added after (F8-CO-3)'
+- manifest: evidence/F8/32981fb3f62f0324edc2c9f311c8c4dbe9dad768/manifest.json
+  item: checks[8]
+  check_id: F8.E-F8-7
+  sha256: b8b02757e9c409a11c7759ef624e804fc65e34aaf1b7f99ea169f45e4577c1de
+  class: P
+  to: []
+  note: 'process note: evidence report, F8-WO4, built with F4 in 0.7 (R-1070)'
+- manifest: evidence/F8/32981fb3f62f0324edc2c9f311c8c4dbe9dad768/manifest.json
+  item: checks[9]
+  check_id: F8.E-F8-9
+  sha256: 97bd74600dddf689cbb99d7eaf7bd6a383dbc181ab60e7a61ae952014261562f
+  class: P
+  to: []
+  note: 'process note: forced_replay, F8-WO7, built with TX'
+- manifest: evidence/F8/32981fb3f62f0324edc2c9f311c8c4dbe9dad768/manifest.json
+  item: checks[12]
+  check_id: F8.INHERITED-RED
+  sha256: d288f28a42d7220d84720ce8b436f1f0f8cf3926a8aeeac4088497ebd34d5d03
+  class: P
+  to: []
+  note: 'process note: test_j16 red inherited from wp/F2; fixed there (6913c4a0); clears at the F2-into-F8 merge'

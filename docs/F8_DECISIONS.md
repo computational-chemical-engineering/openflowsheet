@@ -381,3 +381,10 @@ Amendment 12 members), `1b3b55f2` (tests, re-record tool, E-F8-1 expectation).
   a change under `tests/`, and F2's `HARVEST_SIZE` (109, 1180, 151) will conflict with F8's at the merge. Left red;
   the manifest passes `test_evidence_manifests.py`. Needs a ruling: add the harvest rows and the pin here, or at the
   merge of F2 and F8 together.
+- **DECISION F8-CO-4 (orchestrator; resolves STOP F8-CO-3). The harvest rows and pin are added now on wp/F8**, as F2
+  did at `2bba85c3`, because CI judges the branch: 7 rows (class P) in `benchmarks/t08/support_envelope.yaml`,
+  `docs/support-matrix.md` re-emitted (`t08_support_matrix.py --emit`, `--check` 0 problems), `HARVEST_SIZE`
+  (108, 1176, 147) -> (109, 1180, 150). At the F2-into-F8 merge the pin is recomputed: F2's (1, 4, 4) plus F8's
+  (1, 4, 3) over (108, 1176, 147) gives (110, 1184, 154). harvest + envelope + evidence tests: 717 passed, 19 skipped.
+  The inherited red (`test_j16`) is fixed on wp/F2 (`6913c4a0`, DECISION F2-J16). Alternative: defer the rows to the
+  joint merge (rejected: wp/F8 would be red in CI). The brief's "no change under tests/" was the orchestrator's gap.
