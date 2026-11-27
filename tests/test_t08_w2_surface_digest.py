@@ -170,10 +170,11 @@ F1_SERVED_SHA256 = "e2c44b6b9c2a7f5689ed4f2fd96b6e9804d1a63e60a5c620d29b5b5d594b
 #: Without them it is `F1_SERVED_SHA256` (c_10).
 F3_SERVED_SHA256 = "f7ec3c94233d30506ec2082a13c4e54d57bd540e43e97fdf877b1e3c75fed467"
 #: X06 (ADR 0078 D6, R-1073): the served digest with X06-WO2's branches, X06-WO3's solve
-#: policies and X06-WO4's administration over F3's list, measured at X06-WO4 on `wp/X06`
-#: (`scripts/m07a_rc.py`'s `D_12`; `4a80f77f…` at X06-WO3).
+#: policies and X06-WO4's administration over F3's list, measured at the X06 fix round on
+#: `wp/X06` with the review's three text edits (`scripts/m07a_rc.py`'s `D_12`; `4a80f77f…` at
+#: X06-WO3, `d0f0c8b7…` at X06-WO4).
 #: Without them, with the two texts restored, it is `F3_SERVED_SHA256` (c_12 onto c_10 on `wp/X06`).
-X06_SERVED_SHA256 = "d0f0c8b71d30e17cd3296107203a78dfdf235d4133a640de88a487c5a411db9f"
+X06_SERVED_SHA256 = "7792576ea51caff3dcde62cb8df9f199ea6f00381ee31ba0bae0ea6f1233f04a"
 #: The files N1 and N2 changed; the only difference from `v17-c2`'s served texts.
 CHANGED = ("commit_change", "validate")
 #: Each description's SHA-256 as `v17-c2` served it: the table of

@@ -85,8 +85,9 @@ function, a registered digest and Frank's carry extended to name it):
   `grant_capability`, `revoke_capability`, `set_ambient_pressure`), the
   ChangeSet's optional `branch` member wherever the ChangeSet is served, and the two description
   texts it changed (`commit_change.md`, `preview_change.md`, restored from their pre-X06 copies),
-  stripped by `tests/x06_schema_support.py`'s `without_x06`; `D_12` = `d0f0c8b7…`, measured at
-  X06-WO4 on `wp/X06` (`7e8393a5…` at X06-WO2, `4a80f77f…` at X06-WO3;
+  stripped by `tests/x06_schema_support.py`'s `without_x06`; `D_12` = `7792576e…`, measured at
+  the X06 fix round on `wp/X06`, the review's three text edits (`7e8393a5…` at X06-WO2,
+  `4a80f77f…` at X06-WO3, `d0f0c8b7…` at X06-WO4;
   `tests/test_t08_w2_surface_digest.py`'s `X06_SERVED_SHA256`). On `wp/X06` it decomposes onto
   c_10 (F3): F2's c_11 (R-1072) is not on the branch, and whichever of the two merges second
   decomposes onto the first's. Its nine new files are pinned at their own hashes
@@ -187,7 +188,7 @@ X06_FILE_SHA256: Final = {
     "delete_branch": "0220874b57aecf2be3314c72b9558ab027c2ccf9155360e18750b77884abba3c",
     "list_branches": "73b23d6b7c8e6b4ae3aef988de477945c1c0c63647fb3aff9a03a18b78b3083f",
     "get_solve_policy": "d471d3547aff611b701ba26a38402205109ac30ce4eb81f3ba2313f7de8b185a",
-    "register_solve_policy": "b44285ee509954656550a7b1ec91c7131909aec966858e922a3062ee76d034b6",
+    "register_solve_policy": "a246826c9c6df511e33f7679b459b52ab825f916dbedb3a4cbd7f2abda61ce7c",
     "get_policy": "e323b09a047aa5bea6929806657d9fad13e67da762258a1109969a8229bdca74",
     "grant_capability": "c85ad53d684ee83f63dd20e8b4c534bb8c0f7a049db21faa5bf314ca58e8e87f",
     "revoke_capability": "a2b603410c53121a938b1a1473400df1b022c8092cd646d6aa07d3e88b660194",
@@ -409,7 +410,7 @@ LINKS: Final = (
         "c_12",
         "R-1073",
         strip_x06,
-        "d0f0c8b71d30e17cd3296107203a78dfdf235d4133a640de88a487c5a411db9f",
+        "7792576ea51caff3dcde62cb8df9f199ea6f00381ee31ba0bae0ea6f1233f04a",
     ),
 )
 

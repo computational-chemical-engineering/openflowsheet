@@ -377,6 +377,6 @@ schema stays `t07-store-v1`:
 - **Not added:** job resume (D3: deferred to F7 D14, 0.8); the ADR 0078 D4 offering of the seven benchmark-registered
   policies.
 - **Not unchanged:** the served MCP tool list, widened by the nine tools and two description texts
-  (`commit_change.md`, `preview_change.md`), now `d0f0c8b7…` (chain link c_12 of
+  (`commit_change.md`, `preview_change.md`), now `7792576e…` (chain link c_12 of
   `scripts/m07a_rc.py`, R-1073; `X06_SERVED_SHA256` in `tests/test_t08_w2_surface_digest.py`); with X06's additions
   removed (`tests/x06_schema_support.py`, `without_x06`) it is F3's `f7ec3c94…` exactly.

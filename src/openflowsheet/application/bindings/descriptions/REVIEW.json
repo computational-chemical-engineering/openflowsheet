@@ -44,8 +44,8 @@
     "commit_change": {
       "tool": "commit_change",
       "file": "commit_change.md",
-      "sha256": "c768f1d0e54b8ec4377300df2f37cddd7ae42cad75069ea601b766498ce9f772",
-      "characters": 1499,
+      "sha256": "b5b0dea1bdb46f635d77ba9b6c5009bc73f8b1a94a828168b1e89344f68fd359",
+      "characters": 1497,
       "reviews": [
         {
           "review_kind": "design-lane",
@@ -344,8 +344,8 @@
     "preview_change": {
       "tool": "preview_change",
       "file": "preview_change.md",
-      "sha256": "e035f1878282f888608f8567aaea723cefe51e8813dc5a614ab5711aa0ae780f",
-      "characters": 1338,
+      "sha256": "8c5fe94f0e21a858719211a373c10d64f3618d31c2ff908c4859f44b5bf9adf8",
+      "characters": 1352,
       "reviews": [
         {
           "review_kind": "design-lane",
@@ -584,8 +584,8 @@
     "register_solve_policy": {
       "tool": "register_solve_policy",
       "file": "register_solve_policy.md",
-      "sha256": "b44285ee509954656550a7b1ec91c7131909aec966858e922a3062ee76d034b6",
-      "characters": 1363,
+      "sha256": "a246826c9c6df511e33f7679b459b52ab825f916dbedb3a4cbd7f2abda61ce7c",
+      "characters": 1429,
       "reviews": [
         {
           "review_kind": "design-lane",
