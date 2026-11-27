@@ -1867,8 +1867,8 @@ entries:
     params:
       component: {type: text, label: component}
     summary: "Component {component!raw} is placed in a substream whose role conflicts with the role it already has."
-    why: "A component is either carried as a conventional species or as a solid. It may sit in one substream, or in one mixed and one solid substream together; a component that is confined to an equilibrium (a solid candidate) cannot also be a free species of a mixed substream or take an attribute there."
-    action: "Place {component!raw} in one substream, or in one mixed and one solid substream, and remove the attributes that conflict with its solid role."
+    why: "A component sits in one substream, or in one 'mixed' and one 'solid' substream (dissolved and particulate). A component the property method confines to a phase model, or forms as an equilibrium solid, is carried in 'mixed', where equilibrium decides its phase: it cannot also sit in a 'solid' substream, and it takes no attribute."
+    action: "Place {component!raw} in one substream (or one 'mixed' plus one 'solid' if it is not confined), and remove its attributes in 'mixed'."
     see_also: [species_basis_incompatible]
     examples:
       - params: {component: CaCO3}
@@ -1882,7 +1882,7 @@ entries:
       definition: {type: text, label: material definition}
       substream: {type: text, label: substream}
     summary: "The conserved basis of substream {substream!raw} in definition {definition!raw} has groups that are not independent."
-    why: "A conserved basis carries one amount per group, and the group contents together with the fast reactions must give a matrix of full row rank. When one group is a combination of the others, the same amount is carried twice and the state is not determined."
+    why: "A conserved basis carries one amount per group. The group contents must form a matrix of full row rank: when one group is a combination of the others, the same amount is carried twice and the state is not determined."
     action: "Remove the redundant group from the conserved basis of {substream!raw}, or change the group contents so that every group counts something the others do not."
     see_also: [species_basis_incompatible, species_basis_not_monotone]
     examples:
@@ -1898,7 +1898,7 @@ entries:
       substream: {type: text, label: substream}
     summary: "The conserved basis of substream {substream!raw} in definition {definition!raw} does not fit its species and fast reactions."
     why: "The groups must count what the fast reactions leave unchanged: every fast reaction must conserve every group, and the groups together with the reactions must fix every invariant of the species (the charge among them). A basis that fails either test cannot represent the substream."
-    action: "Check the group contents against the species and the fast reaction set of {substream!raw}: each reaction must leave every group amount unchanged, and the groups must fix the elements and the charge."
+    action: "Check the group contents against the species and the fast reaction set of {substream!raw}: each reaction must leave every group amount unchanged, and the groups must fix every quantity the fast reactions conserve (elements and charge among them)."
     see_also: [species_basis_redundant, species_basis_not_monotone]
     examples:
       - params: {definition: aqueous, substream: liquid}
@@ -1991,7 +1991,7 @@ entries:
     params:
       component: {type: text, label: component}
     summary: "The amount basis of component {component!raw} does not fit its use."
-    why: "A nonconventional substream counts its components in kilograms, and a conventional one in moles. A specification of a molar kind cannot target the amount of a component that is counted in kilograms."
+    why: "A 'nonconventional' substream holds only components counted in kilograms (amount basis 'kg'), and a specification of a molar kind cannot target an amount counted in kilograms (Q7.R5)."
     action: "Use a component whose amount basis fits the substream, or specify {component!raw} by a mass kind."
     see_also: [quantity_kind_mismatch]
     examples:
@@ -2005,7 +2005,7 @@ entries:
     params:
       definition: {type: text, label: material definition}
     summary: "Definition {definition!raw} uses a thermal coordinate that differs from the one the document declares."
-    why: "The document declares one thermal coordinate for all its materials (the enthalpy per mole or per mass). Every definition must use it, because a connection carries one state per coordinate."
+    why: "The document declares one thermal coordinate ('h_mass' or 'T') and every material definition uses it; an 'nTP-v1' connection's coordinate is 'T'."
     action: "Set the thermal coordinate of {definition!raw} to the document's, or change the document's coordinate and every definition with it."
     see_also: [unit_coordinate_unsupported]
     examples:
@@ -2020,8 +2020,8 @@ entries:
       instance: {type: text, label: unit}
       coordinate: {type: text, label: thermal coordinate}
     summary: "Unit {instance!raw} does not support the thermal coordinate {coordinate!raw}."
-    why: "Only the standard units take the mass-based enthalpy coordinate. A connection to any other unit that uses it is refused, because that unit computes in the coordinate (n, T, P) or the legacy form."
-    action: "Use the molar thermal coordinate for the material ports of {instance!raw}, or replace the unit by a standard one."
+    why: "In a revision whose thermal coordinate is 'h_mass', every unit must be a standard ('std.*') unit."
+    action: "Use the thermal coordinate 'T', or replace {instance!raw} by a standard ('std.*') unit."
     see_also: [thermal_coordinate_mismatch]
     examples:
       - params: {instance: R1, coordinate: h_mass}
@@ -2049,7 +2049,7 @@ entries:
     params:
       connection: {type: text, label: connection}
     summary: "The quantity kind of signal {connection!raw} does not match the quantity at one of its ends."
-    why: "A signal carries one quantity kind. Its source (a probe), its sink (a parameter or a specification) and its own declared kind must all agree, or the value would be read in the wrong units."
+    why: "A signal carries one quantity kind. Its source (a port or a probe), its sink (a parameter or a specification) and its own declared kind must all agree, or the value would be read in the wrong units."
     action: "Change the quantity kind of {connection!raw}, or connect it to a probe, parameter or specification of the same kind."
     see_also: [parameter_not_manipulable, quantity_kind_mismatch]
     examples:
@@ -2085,7 +2085,7 @@ entries:
       - params: {target: H1.duty}
   - code: construct_unavailable
     family: refusal
-    kind: input
+    kind: not_supported
     complete: true
     title: A construct of the document is not available yet
     args: [construct, foundation]
@@ -2093,8 +2093,9 @@ entries:
       construct: {type: text, label: construct}
       foundation: {type: text, label: foundation}
     summary: "{construct!raw} is not available in this version; it needs foundation {foundation!raw}."
-    why: "The document format names some constructs (a convention other than the elemental one, property methods beyond one legacy provider, a derived target) that a later foundation implements. This version refuses them rather than ignoring them."
+    why: "The document format names some constructs (a convention other than the legacy provider's native one, property methods beyond that provider, a derived target, an energy or signal connection, …) that a later foundation implements. This version refuses them rather than ignoring them."
     action: "Remove {construct!raw} from the document, or wait for the version that provides foundation {foundation!raw}."
+    gap: {limitation: null, capability: "the construct named, which foundation {foundation!raw} provides"}
     see_also: [revision_unsupported]
     examples:
       - params: {construct: property_methods, foundation: F4}

@@ -61,8 +61,8 @@ entries:
       definition: {type: text, label: material definition}
       substream: {type: text, label: substream}
     summary: "The conserved basis of substream {substream!raw} in definition {definition!raw} is not monotone."
-    why: "A conserved basis is monotone when moving material between groups never needs a negative coefficient. With a basis that is not, a state whose group amounts are all non-negative can still map to a negative species amount, and a conversion between bases may be refused at a boundary. The document is accepted; this limitation is recorded."
-    action: "Nothing needs fixing if the limitation is acceptable. To remove it, choose groups whose conversion to the species has non-negative coefficients."
+    why: "A conserved basis is monotone when each group's content can be made non-negative by adding a multiple of the species charges; then a physical, electroneutral feed always has non-negative group amounts. With a basis that is not, a physical feed can have a negative group amount, which is refused as an invalid state ('group_amount_negative'). The document is accepted; this limitation is recorded."
+    action: "Nothing needs fixing if the limitation is acceptable. To remove it, choose group contents that are non-negative (up to a multiple of the charges)."
     see_also: [species_basis_incompatible, species_basis_redundant]
     examples:
       - params: {definition: aqueous, substream: liquid}

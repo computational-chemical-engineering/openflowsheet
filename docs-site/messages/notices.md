@@ -144,7 +144,7 @@ The value at /entries/1 was fitted or generated, but its input data are not iden
 **Kind:** Notice: not a failure.
 
 - **Summary:** The molar masses do not balance to within the rounding of the stored values: components of reaction &lt;reaction&gt;: species &lt;species&gt; in substream &lt;substream&gt; of definition &lt;definition&gt;.
-- **Why:** A balanced reaction conserves mass, so the sum of the stoichiometric coefficients times the molar masses is zero up to the rounding of the stored numbers: at most four times the double-precision machine epsilon of the sum of their magnitudes. A larger sum usually means the component records take their molar masses from different atomic-weight tables. The reaction is not refused; a mass balance over it carries this imbalance. The same holds for a species of a group basis: its record molar mass must equal the molar masses of the groups it is built from, to the same bound, and the notice names the species that does not.
+- **Why:** A balanced reaction conserves mass, so the sum of the stoichiometric coefficients times the molar masses is zero up to the rounding of the stored numbers: at most four times the double-precision machine epsilon of the sum of their magnitudes. A larger sum usually means the component records take their molar masses from different atomic-weight tables. The reaction is not refused; a mass balance over it carries this imbalance. The same holds for a species of a group basis: its record molar mass must equal the content-weighted sum of its groups' molar masses plus the charge term (Q3.R7), to the same bound, and the notice names the species that does not.
 - **Do:** Use component records whose molar masses come from one atomic-weight table, or accept the stated imbalance.
 - **Parameters:** `reaction` (text, optional), `definition` (text, optional), `substream` (text, optional), `species` (text, optional)
 
@@ -152,7 +152,7 @@ Example:
 
 ```text
 The molar masses do not balance to within the rounding of the stored values: components of reaction water_formation.
-  Why:     A balanced reaction conserves mass, so the sum of the stoichiometric coefficients times the molar masses is zero up to the rounding of the stored numbers: at most four times the double-precision machine epsilon of the sum of their magnitudes. A larger sum usually means the component records take their molar masses from different atomic-weight tables. The reaction is not refused; a mass balance over it carries this imbalance. The same holds for a species of a group basis: its record molar mass must equal the molar masses of the groups it is built from, to the same bound, and the notice names the species that does not.
+  Why:     A balanced reaction conserves mass, so the sum of the stoichiometric coefficients times the molar masses is zero up to the rounding of the stored numbers: at most four times the double-precision machine epsilon of the sum of their magnitudes. A larger sum usually means the component records take their molar masses from different atomic-weight tables. The reaction is not refused; a mass balance over it carries this imbalance. The same holds for a species of a group basis: its record molar mass must equal the content-weighted sum of its groups' molar masses plus the charge term (Q3.R7), to the same bound, and the notice names the species that does not.
   Do:      Use component records whose molar masses come from one atomic-weight table, or accept the stated imbalance.
   Kind:    Notice: not a failure.
   Code:    molar_mass_inconsistent (openflowsheet explain molar_mass_inconsistent)
@@ -163,7 +163,7 @@ Example:
 
 ```text
 The molar masses do not balance to within the rounding of the stored values: species HCO3 in substream liquid of definition aqueous.
-  Why:     A balanced reaction conserves mass, so the sum of the stoichiometric coefficients times the molar masses is zero up to the rounding of the stored numbers: at most four times the double-precision machine epsilon of the sum of their magnitudes. A larger sum usually means the component records take their molar masses from different atomic-weight tables. The reaction is not refused; a mass balance over it carries this imbalance. The same holds for a species of a group basis: its record molar mass must equal the molar masses of the groups it is built from, to the same bound, and the notice names the species that does not.
+  Why:     A balanced reaction conserves mass, so the sum of the stoichiometric coefficients times the molar masses is zero up to the rounding of the stored numbers: at most four times the double-precision machine epsilon of the sum of their magnitudes. A larger sum usually means the component records take their molar masses from different atomic-weight tables. The reaction is not refused; a mass balance over it carries this imbalance. The same holds for a species of a group basis: its record molar mass must equal the content-weighted sum of its groups' molar masses plus the charge term (Q3.R7), to the same bound, and the notice names the species that does not.
   Do:      Use component records whose molar masses come from one atomic-weight table, or accept the stated imbalance.
   Kind:    Notice: not a failure.
   Code:    molar_mass_inconsistent (openflowsheet explain molar_mass_inconsistent)
@@ -221,8 +221,8 @@ The element balance of reaction cracking was not checked, because component NBP_
 **Kind:** Notice: not a failure.
 
 - **Summary:** The conserved basis of substream &lt;substream&gt; in definition &lt;definition&gt; is not monotone.
-- **Why:** A conserved basis is monotone when moving material between groups never needs a negative coefficient. With a basis that is not, a state whose group amounts are all non-negative can still map to a negative species amount, and a conversion between bases may be refused at a boundary. The document is accepted; this limitation is recorded.
-- **Do:** Nothing needs fixing if the limitation is acceptable. To remove it, choose groups whose conversion to the species has non-negative coefficients.
+- **Why:** A conserved basis is monotone when each group's content can be made non-negative by adding a multiple of the species charges; then a physical, electroneutral feed always has non-negative group amounts. With a basis that is not, a physical feed can have a negative group amount, which is refused as an invalid state ('group_amount_negative'). The document is accepted; this limitation is recorded.
+- **Do:** Nothing needs fixing if the limitation is acceptable. To remove it, choose group contents that are non-negative (up to a multiple of the charges).
 - **Parameters:** `definition` (text), `substream` (text)
 - **See also:** [`species_basis_incompatible`](refusals.md#species_basis_incompatible), [`species_basis_redundant`](refusals.md#species_basis_redundant)
 
@@ -230,8 +230,8 @@ Example:
 
 ```text
 The conserved basis of substream liquid in definition aqueous is not monotone.
-  Why:     A conserved basis is monotone when moving material between groups never needs a negative coefficient. With a basis that is not, a state whose group amounts are all non-negative can still map to a negative species amount, and a conversion between bases may be refused at a boundary. The document is accepted; this limitation is recorded.
-  Do:      Nothing needs fixing if the limitation is acceptable. To remove it, choose groups whose conversion to the species has non-negative coefficients.
+  Why:     A conserved basis is monotone when each group's content can be made non-negative by adding a multiple of the species charges; then a physical, electroneutral feed always has non-negative group amounts. With a basis that is not, a physical feed can have a negative group amount, which is refused as an invalid state ('group_amount_negative'). The document is accepted; this limitation is recorded.
+  Do:      Nothing needs fixing if the limitation is acceptable. To remove it, choose group contents that are non-negative (up to a multiple of the charges).
   Kind:    Notice: not a failure.
   Code:    species_basis_not_monotone (openflowsheet explain species_basis_not_monotone)
   Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/notices/#species_basis_not_monotone

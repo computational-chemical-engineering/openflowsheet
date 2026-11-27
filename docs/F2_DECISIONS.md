@@ -747,3 +747,20 @@ Files: `revision_v2/{lower,raise_v1}.py`, `tests/test_f2_lowering.py`, `tests/da
   nTP-v1 (legacy table) unchanged. New test `test_a_template_hashes_its_grammar_closure_not_the_file` (descriptions and
   another template's grammar do not move mat-v1's hash, its `substream` grammar does). `tests/test_f1_*.py` +
   `tests/test_f2_*.py`: 853 passed; surface digest/chain/list_models subset green (no served digest moved).
+- **DECISION WO8-8 (S5, ruling item 4). Catalogue prose and `construct_unavailable`'s kind.** Edits as ruled in
+  `messages/catalogue/{refusals,notices,records}.yaml`: `solid_role_conflict` (why, action),
+  `species_basis_redundant` (rank of the group contents alone), `amount_basis_mismatch`, `thermal_coordinate_mismatch`,
+  `unit_coordinate_unsupported` (why, action), `construct_unavailable` (why; kind `input` -> `not_supported`, `gap:
+  {limitation: null, capability: "the construct named, which foundation {foundation!raw} provides"}`),
+  `species_basis_not_monotone` (why, action), `signal_kind_mismatch` ("a port or a probe"),
+  `species_basis_incompatible` (action), `molar_mass_inconsistent` (species clause). Two formatting adaptations,
+  content unchanged: the ruling's backtick code spans are written as single-quoted spans ('mixed', 'h_mass',
+  'std.*', 'nTP-v1', 'group_amount_negative', ...), because catalogue prose is plain text and the jargon lint
+  (`messages/lint.py`) exempts only quoted segments (a bare snake_case token fails it); `{component}` and
+  `{foundation}` are written `{component!raw}`, `{foundation!raw}`, the catalogue's placeholder form. The ruling's
+  citations "(Q7.R5)" and "(Q3.R7)" are kept as written; **for the orchestrator**: no other catalogue entry cites an
+  ADR item in user text, so they may be dropped at the next edit. `scripts/doc_pages.py` re-emitted
+  `docs-site/messages/{refusals,notices}.md`. Catalogue digest re-pin `b6c8f517…` ->
+  `3af0a7942f036766be58caf97ef7409d3906602118e966809fcd9cea0497bc34` in the two `message_entry` fixtures (no served
+  digest, no F0 check reads it). `tests/test_msg_*.py` + `tests/test_doc_pages.py`: 189 passed, 3 xfailed; the
+  `message_entry`/`application_results` users: 191 passed.

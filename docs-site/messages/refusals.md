@@ -601,7 +601,7 @@ The component H2O breaks the amount-basis rule molar_mass_absent.
 **Kind:** Input problem: something in the flowsheet or the request needs to change.
 
 - **Summary:** The amount basis of component &lt;component&gt; does not fit its use.
-- **Why:** A nonconventional substream counts its components in kilograms, and a conventional one in moles. A specification of a molar kind cannot target the amount of a component that is counted in kilograms.
+- **Why:** A 'nonconventional' substream holds only components counted in kilograms (amount basis 'kg'), and a specification of a molar kind cannot target an amount counted in kilograms (Q7.R5).
 - **Do:** Use a component whose amount basis fits the substream, or specify &lt;component&gt; by a mass kind.
 - **Parameters:** `component` (text)
 - **See also:** [`quantity_kind_mismatch`](#quantity_kind_mismatch)
@@ -610,7 +610,7 @@ Example:
 
 ```text
 The amount basis of component coal does not fit its use.
-  Why:     A nonconventional substream counts its components in kilograms, and a conventional one in moles. A specification of a molar kind cannot target the amount of a component that is counted in kilograms.
+  Why:     A 'nonconventional' substream holds only components counted in kilograms (amount basis 'kg'), and a specification of a molar kind cannot target an amount counted in kilograms (Q7.R5).
   Do:      Use a component whose amount basis fits the substream, or specify coal by a mass kind.
   Kind:    Input problem: something in the flowsheet or the request needs to change.
   Code:    amount_basis_mismatch (openflowsheet explain amount_basis_mismatch)
@@ -934,21 +934,22 @@ The key C2H6O matches more than one stored record.
 
 ## `construct_unavailable`: A construct of the document is not available yet
 
-**Kind:** Input problem: something in the flowsheet or the request needs to change.
+**Kind:** Not supported in this version: a limitation of OpenFlowsheet, not an error in your flowsheet.
 
 - **Summary:** &lt;construct&gt; is not available in this version; it needs foundation &lt;foundation&gt;.
-- **Why:** The document format names some constructs (a convention other than the elemental one, property methods beyond one legacy provider, a derived target) that a later foundation implements. This version refuses them rather than ignoring them.
+- **Why:** The document format names some constructs (a convention other than the legacy provider's native one, property methods beyond that provider, a derived target, an energy or signal connection, …) that a later foundation implements. This version refuses them rather than ignoring them.
 - **Do:** Remove &lt;construct&gt; from the document, or wait for the version that provides foundation &lt;foundation&gt;.
 - **Parameters:** `construct` (text), `foundation` (text)
+- **Not supported:** missing capability: the construct named, which foundation {foundation!raw} provides
 - **See also:** [`revision_unsupported`](api-errors.md#revision_unsupported)
 
 Example:
 
 ```text
 property_methods is not available in this version; it needs foundation F4.
-  Why:     The document format names some constructs (a convention other than the elemental one, property methods beyond one legacy provider, a derived target) that a later foundation implements. This version refuses them rather than ignoring them.
+  Why:     The document format names some constructs (a convention other than the legacy provider's native one, property methods beyond that provider, a derived target, an energy or signal connection, …) that a later foundation implements. This version refuses them rather than ignoring them.
   Do:      Remove property_methods from the document, or wait for the version that provides foundation F4.
-  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Kind:    Not supported in this version: a limitation of OpenFlowsheet, not an error in your flowsheet.
   Code:    construct_unavailable (openflowsheet explain construct_unavailable)
   Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#construct_unavailable
 ```
@@ -3045,7 +3046,7 @@ The file acme/units/mixer.py of extension acme.slurry-mixer cannot be read, so i
 **Kind:** Input problem: something in the flowsheet or the request needs to change.
 
 - **Summary:** The quantity kind of signal &lt;connection&gt; does not match the quantity at one of its ends.
-- **Why:** A signal carries one quantity kind. Its source (a probe), its sink (a parameter or a specification) and its own declared kind must all agree, or the value would be read in the wrong units.
+- **Why:** A signal carries one quantity kind. Its source (a port or a probe), its sink (a parameter or a specification) and its own declared kind must all agree, or the value would be read in the wrong units.
 - **Do:** Change the quantity kind of &lt;connection&gt;, or connect it to a probe, parameter or specification of the same kind.
 - **Parameters:** `connection` (text)
 - **See also:** [`parameter_not_manipulable`](#parameter_not_manipulable), [`quantity_kind_mismatch`](#quantity_kind_mismatch)
@@ -3054,7 +3055,7 @@ Example:
 
 ```text
 The quantity kind of signal S1 does not match the quantity at one of its ends.
-  Why:     A signal carries one quantity kind. Its source (a probe), its sink (a parameter or a specification) and its own declared kind must all agree, or the value would be read in the wrong units.
+  Why:     A signal carries one quantity kind. Its source (a port or a probe), its sink (a parameter or a specification) and its own declared kind must all agree, or the value would be read in the wrong units.
   Do:      Change the quantity kind of S1, or connect it to a probe, parameter or specification of the same kind.
   Kind:    Input problem: something in the flowsheet or the request needs to change.
   Code:    signal_kind_mismatch (openflowsheet explain signal_kind_mismatch)
@@ -3078,8 +3079,8 @@ The quantity kind of signal S1 does not match the quantity at one of its ends.
 **Kind:** Input problem: something in the flowsheet or the request needs to change.
 
 - **Summary:** Component &lt;component&gt; is placed in a substream whose role conflicts with the role it already has.
-- **Why:** A component is either carried as a conventional species or as a solid. It may sit in one substream, or in one mixed and one solid substream together; a component that is confined to an equilibrium (a solid candidate) cannot also be a free species of a mixed substream or take an attribute there.
-- **Do:** Place &lt;component&gt; in one substream, or in one mixed and one solid substream, and remove the attributes that conflict with its solid role.
+- **Why:** A component sits in one substream, or in one 'mixed' and one 'solid' substream (dissolved and particulate). A component the property method confines to a phase model, or forms as an equilibrium solid, is carried in 'mixed', where equilibrium decides its phase: it cannot also sit in a 'solid' substream, and it takes no attribute.
+- **Do:** Place &lt;component&gt; in one substream (or one 'mixed' plus one 'solid' if it is not confined), and remove its attributes in 'mixed'.
 - **Parameters:** `component` (text)
 - **See also:** [`species_basis_incompatible`](#species_basis_incompatible)
 
@@ -3087,8 +3088,8 @@ Example:
 
 ```text
 Component CaCO3 is placed in a substream whose role conflicts with the role it already has.
-  Why:     A component is either carried as a conventional species or as a solid. It may sit in one substream, or in one mixed and one solid substream together; a component that is confined to an equilibrium (a solid candidate) cannot also be a free species of a mixed substream or take an attribute there.
-  Do:      Place CaCO3 in one substream, or in one mixed and one solid substream, and remove the attributes that conflict with its solid role.
+  Why:     A component sits in one substream, or in one 'mixed' and one 'solid' substream (dissolved and particulate). A component the property method confines to a phase model, or forms as an equilibrium solid, is carried in 'mixed', where equilibrium decides its phase: it cannot also sit in a 'solid' substream, and it takes no attribute.
+  Do:      Place CaCO3 in one substream (or one 'mixed' plus one 'solid' if it is not confined), and remove its attributes in 'mixed'.
   Kind:    Input problem: something in the flowsheet or the request needs to change.
   Code:    solid_role_conflict (openflowsheet explain solid_role_conflict)
   Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#solid_role_conflict
@@ -3102,7 +3103,7 @@ Component CaCO3 is placed in a substream whose role conflicts with the role it a
 
 - **Summary:** The conserved basis of substream &lt;substream&gt; in definition &lt;definition&gt; does not fit its species and fast reactions.
 - **Why:** The groups must count what the fast reactions leave unchanged: every fast reaction must conserve every group, and the groups together with the reactions must fix every invariant of the species (the charge among them). A basis that fails either test cannot represent the substream.
-- **Do:** Check the group contents against the species and the fast reaction set of &lt;substream&gt;: each reaction must leave every group amount unchanged, and the groups must fix the elements and the charge.
+- **Do:** Check the group contents against the species and the fast reaction set of &lt;substream&gt;: each reaction must leave every group amount unchanged, and the groups must fix every quantity the fast reactions conserve (elements and charge among them).
 - **Parameters:** `definition` (text), `substream` (text)
 - **See also:** [`species_basis_redundant`](#species_basis_redundant), [`species_basis_not_monotone`](notices.md#species_basis_not_monotone)
 
@@ -3111,7 +3112,7 @@ Example:
 ```text
 The conserved basis of substream liquid in definition aqueous does not fit its species and fast reactions.
   Why:     The groups must count what the fast reactions leave unchanged: every fast reaction must conserve every group, and the groups together with the reactions must fix every invariant of the species (the charge among them). A basis that fails either test cannot represent the substream.
-  Do:      Check the group contents against the species and the fast reaction set of liquid: each reaction must leave every group amount unchanged, and the groups must fix the elements and the charge.
+  Do:      Check the group contents against the species and the fast reaction set of liquid: each reaction must leave every group amount unchanged, and the groups must fix every quantity the fast reactions conserve (elements and charge among them).
   Kind:    Input problem: something in the flowsheet or the request needs to change.
   Code:    species_basis_incompatible (openflowsheet explain species_basis_incompatible)
   Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#species_basis_incompatible
@@ -3124,7 +3125,7 @@ The conserved basis of substream liquid in definition aqueous does not fit its s
 **Kind:** Input problem: something in the flowsheet or the request needs to change.
 
 - **Summary:** The conserved basis of substream &lt;substream&gt; in definition &lt;definition&gt; has groups that are not independent.
-- **Why:** A conserved basis carries one amount per group, and the group contents together with the fast reactions must give a matrix of full row rank. When one group is a combination of the others, the same amount is carried twice and the state is not determined.
+- **Why:** A conserved basis carries one amount per group. The group contents must form a matrix of full row rank: when one group is a combination of the others, the same amount is carried twice and the state is not determined.
 - **Do:** Remove the redundant group from the conserved basis of &lt;substream&gt;, or change the group contents so that every group counts something the others do not.
 - **Parameters:** `definition` (text), `substream` (text)
 - **See also:** [`species_basis_incompatible`](#species_basis_incompatible), [`species_basis_not_monotone`](notices.md#species_basis_not_monotone)
@@ -3133,7 +3134,7 @@ Example:
 
 ```text
 The conserved basis of substream liquid in definition aqueous has groups that are not independent.
-  Why:     A conserved basis carries one amount per group, and the group contents together with the fast reactions must give a matrix of full row rank. When one group is a combination of the others, the same amount is carried twice and the state is not determined.
+  Why:     A conserved basis carries one amount per group. The group contents must form a matrix of full row rank: when one group is a combination of the others, the same amount is carried twice and the state is not determined.
   Do:      Remove the redundant group from the conserved basis of liquid, or change the group contents so that every group counts something the others do not.
   Kind:    Input problem: something in the flowsheet or the request needs to change.
   Code:    species_basis_redundant (openflowsheet explain species_basis_redundant)
@@ -3595,7 +3596,7 @@ A change is checked for the task "simulation" only; this version cannot check it
 **Kind:** Input problem: something in the flowsheet or the request needs to change.
 
 - **Summary:** Definition &lt;definition&gt; uses a thermal coordinate that differs from the one the document declares.
-- **Why:** The document declares one thermal coordinate for all its materials (the enthalpy per mole or per mass). Every definition must use it, because a connection carries one state per coordinate.
+- **Why:** The document declares one thermal coordinate ('h_mass' or 'T') and every material definition uses it; an 'nTP-v1' connection's coordinate is 'T'.
 - **Do:** Set the thermal coordinate of &lt;definition&gt; to the document's, or change the document's coordinate and every definition with it.
 - **Parameters:** `definition` (text)
 - **See also:** [`unit_coordinate_unsupported`](#unit_coordinate_unsupported)
@@ -3604,7 +3605,7 @@ Example:
 
 ```text
 Definition aqueous uses a thermal coordinate that differs from the one the document declares.
-  Why:     The document declares one thermal coordinate for all its materials (the enthalpy per mole or per mass). Every definition must use it, because a connection carries one state per coordinate.
+  Why:     The document declares one thermal coordinate ('h_mass' or 'T') and every material definition uses it; an 'nTP-v1' connection's coordinate is 'T'.
   Do:      Set the thermal coordinate of aqueous to the document's, or change the document's coordinate and every definition with it.
   Kind:    Input problem: something in the flowsheet or the request needs to change.
   Code:    thermal_coordinate_mismatch (openflowsheet explain thermal_coordinate_mismatch)
@@ -3618,8 +3619,8 @@ Definition aqueous uses a thermal coordinate that differs from the one the docum
 **Kind:** Input problem: something in the flowsheet or the request needs to change.
 
 - **Summary:** Unit &lt;instance&gt; does not support the thermal coordinate &lt;coordinate&gt;.
-- **Why:** Only the standard units take the mass-based enthalpy coordinate. A connection to any other unit that uses it is refused, because that unit computes in the coordinate (n, T, P) or the legacy form.
-- **Do:** Use the molar thermal coordinate for the material ports of &lt;instance&gt;, or replace the unit by a standard one.
+- **Why:** In a revision whose thermal coordinate is 'h_mass', every unit must be a standard ('std.*') unit.
+- **Do:** Use the thermal coordinate 'T', or replace &lt;instance&gt; by a standard ('std.*') unit.
 - **Parameters:** `instance` (text), `coordinate` (text)
 - **See also:** [`thermal_coordinate_mismatch`](#thermal_coordinate_mismatch)
 
@@ -3627,8 +3628,8 @@ Example:
 
 ```text
 Unit R1 does not support the thermal coordinate h_mass.
-  Why:     Only the standard units take the mass-based enthalpy coordinate. A connection to any other unit that uses it is refused, because that unit computes in the coordinate (n, T, P) or the legacy form.
-  Do:      Use the molar thermal coordinate for the material ports of R1, or replace the unit by a standard one.
+  Why:     In a revision whose thermal coordinate is 'h_mass', every unit must be a standard ('std.*') unit.
+  Do:      Use the thermal coordinate 'T', or replace R1 by a standard ('std.*') unit.
   Kind:    Input problem: something in the flowsheet or the request needs to change.
   Code:    unit_coordinate_unsupported (openflowsheet explain unit_coordinate_unsupported)
   Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#unit_coordinate_unsupported
