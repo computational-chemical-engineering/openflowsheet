@@ -62,6 +62,10 @@ THREAD_VARIABLES: Final[tuple[str, ...]] = (
 #:
 #: A changed dependency is still detected, and earlier: `decide_mode` compares lock hashes
 #: before anything runs (D4), which is where G05's first clause actually lives.
+#:
+#: `bundle_format` (ADR 0067 D2, F8-WO1) names the reader a bundle needs, not what ran; only a v2
+#: manifest (`run/manifest_v2.py`) carries it, so a v1 manifest's structural document and hash
+#: are what they were.
 NON_STRUCTURAL: Final[frozenset[str]] = frozenset(
     {
         "run_id",
@@ -71,6 +75,7 @@ NON_STRUCTURAL: Final[frozenset[str]] = frozenset(
         "hostname",
         "environment",
         "artifacts",
+        "bundle_format",
     }
 )
 
