@@ -2,11 +2,12 @@
 
 - **A28** the frozen revision schema's enum is the eleven frozen values followed by `compressor`,
   `turbine` and `other`; its `$id` and `schema_version` do not move (ADR 0054 D1).
-- **A29** every document of §9.4's corpus passes the schema stage; a role V17 c1's agents wrote
-  (`purge_sink`) still fails it.
+- **A29** every document of §9.4's corpus passes the schema stage (a `schema_version` 2 document:
+  the v2 schema); a role V17 c1's agents wrote (`purge_sink`) still fails it, in v1 and in v2.
 - **A30** `tests/semantic_roles.py` is Table R, every corpus instance of a bound model carries its
   row's role, and the five S11 builders take it from there.
-- **A31** nothing under `src/` reads the role: binding a corpus document with every role set to
+- **A31** nothing under `src/` reads the role but the lowering's vocabulary check (ADR 0062 D12 (c),
+  F2-R1): binding a corpus document whose roles lie in v1's fourteen with every role set to
   `other` gives the same outcome, compared as S11's identity recorder compares one.
 
 The corpus, Table R and the nine cases are **real records** (the committed files and the
@@ -34,6 +35,8 @@ from openflowsheet.application.model_signatures import MODEL_SIGNATURES
 from openflowsheet.application.revision_binding import bind_revision_flowsheet
 from openflowsheet.application.validation import validate
 from openflowsheet.canonical import document_sha256
+from openflowsheet.revision_v2.lower import V1_ROLES
+from openflowsheet.schema_check import schema_errors
 
 sys.path.insert(0, str(REPO_ROOT / "scripts"))
 import s11_identity_recorder  # noqa: E402
@@ -161,8 +164,24 @@ def _schema_failures(document: Document) -> list[str]:
     ]
 
 
+#: The v2 revision schema (ADR 0062 D11), and the crystallizer fixture, which is valid against it.
+SCHEMA_V2 = "process-revision-v2.schema.json"
+CRYSTALLIZER = "tests/fixtures/schemas/v2/process_revision/valid/crystallizer.yaml"
+
+
+def _a29_failures(document: Document) -> list[str]:
+    """A v1 document's `SCHEMA-01` failures under `validate`; a `schema_version` 2 document's
+    errors against the v2 schema. For a v2 document Amendment 9 puts F2's rules and the
+    lowering, both evaluated against this build's stores, into `SCHEMA-01`; the v2 fixtures are
+    valid against `tests/fixtures/schemas/v2/context.yaml`, not those stores, and A29's subject is
+    the role enum of the document's own schema (ADR 0002 D7.5)."""
+    if document.get("schema_version") == 2:
+        return schema_errors(SCHEMA_V2, document)
+    return _schema_failures(document)
+
+
 def test_a29_no_corpus_document_fails_the_schema() -> None:
-    failing = {path: _schema_failures(document) for path, document in CORPUS.items()}
+    failing = {path: _a29_failures(document) for path, document in CORPUS.items()}
     assert {path: messages for path, messages in failing.items() if messages} == {}
 
 
@@ -173,6 +192,15 @@ def test_a29_control_a_role_outside_the_enum_fails() -> None:
     messages = _schema_failures(document)
     assert messages
     assert messages[0].startswith("schema_invalid(/instances/1/semantic_role)"), messages
+
+
+def test_a29_control_v2_role_outside_the_enum_fails() -> None:
+    """Constructed: the crystallizer with its first instance's role set to `purge_sink`."""
+    document = copy.deepcopy(CORPUS[CRYSTALLIZER])
+    document["instances"][0]["semantic_role"] = "purge_sink"
+    errors = _a29_failures(document)
+    assert errors
+    assert errors[0].startswith("/instances/0/semantic_role: "), errors
 
 
 # -- A30 ------------------------------------------------------------------------------------------
@@ -283,13 +311,62 @@ def test_a30_d_control_a_literal_other_is_seen() -> None:
 # -- A31 ------------------------------------------------------------------------------------------
 
 
+LOWER = "src/openflowsheet/revision_v2/lower.py"
+
+
+def _role_uses(tree: ast.AST) -> Iterator[tuple[ast.AST, ast.Constant]]:
+    """Every `"semantic_role"` constant under `tree`, with its parent node."""
+    for parent in ast.walk(tree):
+        for child in ast.iter_child_nodes(parent):
+            if isinstance(child, ast.Constant) and child.value == "semantic_role":
+                yield parent, child
+
+
 def test_a31_a_no_source_file_names_the_role() -> None:
+    """Only the lowering names the role, and only in `_unclassified`, whose one use of it is the
+    `not in V1_ROLES` vocabulary test and the refusal's construct string (ADR 0062 D12 (c),
+    ruling F2-R1)."""
     naming = [
         path.relative_to(REPO_ROOT).as_posix()
         for path in sorted((REPO_ROOT / "src" / "openflowsheet").rglob("*.py"))
         if "semantic_role" in path.read_text(encoding="utf-8")
     ]
-    assert naming == []
+    assert naming == [LOWER]
+    module = ast.parse((REPO_ROOT / LOWER).read_text(encoding="utf-8"))
+    (unclassified,) = [
+        node
+        for node in module.body
+        if isinstance(node, ast.FunctionDef) and node.name == "_unclassified"
+    ]
+    inside = {id(node) for node in ast.walk(unclassified)}
+    assert all(id(constant) in inside for _, constant in _role_uses(module))
+    tested = refused = 0
+    for subscript in (node for node in ast.walk(unclassified) if isinstance(node, ast.Subscript)):
+        if not (
+            isinstance(subscript.slice, ast.Constant) and subscript.slice.value == "semantic_role"
+        ):
+            continue
+        compares = [
+            node
+            for node in ast.walk(unclassified)
+            if isinstance(node, ast.Compare) and node.left is subscript
+        ]
+        formatted = [
+            node
+            for node in ast.walk(unclassified)
+            if isinstance(node, ast.FormattedValue) and node.value is subscript
+        ]
+        if compares:
+            ((compare,),) = (compares,)
+            assert [type(op) for op in compare.ops] == [ast.NotIn]
+            assert [ast.unparse(c) for c in compare.comparators] == ["V1_ROLES"]
+            tested += 1
+        else:
+            assert len(formatted) == 1, ast.unparse(subscript)
+            refused += 1
+    assert (tested, refused) == (1, 1)
+    # Every `"semantic_role"` constant is one of those two subscripts' keys.
+    assert sum(1 for _ in _role_uses(unclassified)) == 2
 
 
 def _sha256(document: Document) -> str | None:
@@ -315,13 +392,44 @@ def _all_other(document: Document) -> Document:
     return altered
 
 
+def _v1_roles(document: Document) -> bool:
+    """Whether every role `document` declares lies in v1's fourteen (`lower.V1_ROLES`)."""
+    return all(
+        instance.get("semantic_role", "other") in V1_ROLES for instance in _instances(document)
+    )
+
+
 def test_a31_b_the_role_does_not_move_a_binding_outcome() -> None:
+    """Over the documents whose roles lie in v1's fourteen, v2 documents included: ADR 0062
+    D12 (c) refuses the others at admission, as the v1 enum does, and A29 covers that."""
+    compared = {path: document for path, document in CORPUS.items() if _v1_roles(document)}
+    assert any(document.get("schema_version") == 2 for document in compared.values())
     differing = [
         path
-        for path, document in CORPUS.items()
+        for path, document in compared.items()
         if _outcome(document) != _outcome(_all_other(document))
     ]
     assert differing == []
+
+
+def test_a31_b_control_a_d11_role_moves_only_its_refusal(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Constructed: the crystallizer (D11 roles `controller`, `utility`) and its all-`other`
+    copy give equal outcomes once the `construct_unavailable(semantic_role:<role>, F6)` entries
+    are removed from the first one's hint. The hint is compared whole: `HINT_LIMIT` lifted, as
+    the 512-code-point bound would cut the two hints at different entries."""
+    from openflowsheet.application import binding_common  # noqa: PLC0415
+
+    monkeypatch.setattr(binding_common, "HINT_LIMIT", 1 << 20)
+    document = CORPUS[CRYSTALLIZER]
+    assert not _v1_roles(document)
+    first, other = _outcome(document), _outcome(_all_other(document))
+    assert first[:2] == ("unbound", "unsupported")
+    entries = first[4].split("; ")
+    kept = [
+        entry for entry in entries if not entry.startswith("construct_unavailable(semantic_role:")
+    ]
+    assert len(kept) < len(entries)
+    assert (*first[:4], "; ".join(kept)) == other
 
 
 def _nudge(

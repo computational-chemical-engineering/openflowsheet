@@ -686,3 +686,15 @@ Files: `revision_v2/{lower,raise_v1}.py`, `tests/test_f2_lowering.py`, `tests/da
   (`tests/test_f2_amendment9.py`): NET-02 split 0.5 under `default`, child 0.95 under `RRC-revision-v1`, committed
   as v1 documents and as raised ones; both `solve-path.json` byte-equal, `artifact_r0_sha256` equal, member `taken`.
   Without the fix the test fails at the child's `solve-path.json` (measured).
+- **DECISION WO8-2 (M2, ruling item 1). V03 a29, a31_a, a31_b changed as ruled; the code stays.**
+  `tests/test_v03_semantic_roles.py`: a29 judges a `schema_version` 2 document by
+  `schema_errors("process-revision-v2.schema.json", ...)`, with the ruling's reason in `_a29_failures`'s docstring;
+  control `test_a29_control_v2_role_outside_the_enum_fails` (crystallizer, `instances/0` role `purge_sink`, error
+  pointer `/instances/0/semantic_role`). a31_a: `naming == [revision_v2/lower.py]`, an AST check that every
+  `"semantic_role"` constant lies in `_unclassified` and that its two uses are the `not in V1_ROLES` compare and one
+  f-string (the construct). a31_b: over documents whose roles all lie in `V1_ROLES`; reading of "raised v2 documents
+  count": v2 documents of the corpus are not filtered out (`legacy_only.yaml` is compared; asserted), no raised
+  copies are added. Control `test_a31_b_control_a_d11_role_moves_only_its_refusal`: the binder bounds an `Unbound`
+  hint to `HINT_LIMIT` = 512 code points (the crystallizer's hint is 889), which cuts the two hints at different
+  entries, so the control lifts `binding_common.HINT_LIMIT` (monkeypatch) and compares the whole hint; removing the
+  `construct_unavailable(semantic_role:*)` entries then gives an equal outcome. 22 passed.
