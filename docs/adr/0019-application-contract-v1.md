@@ -309,6 +309,33 @@ parameter or result field changes, and nothing a v1 document is read, stored, ha
   removed (`tests/f2_schema_support.py`) it is F3's `f7ec3c94…` exactly. `check_admission`'s description still names
   a `schema_version 1` draft (F2 decision WO6b-6).
 
+## Amendment 12 (Proposed 2026-11-27; F8) — pointer to ADR 0067
+
+Amendment 12 is decided in ADR 0067 D2, D5; this paragraph points at it. Additive; nothing a v1 manifest, bundle or
+replay report is read, stored, hashed or replayed as changes:
+
+- **`ReplayReport`** gains two optional members, `registry_comparison` and `data_availability` (`$ref`s of
+  `bundle-v2.schema.json`; written only by the replay of a v2 bundle, absent from a v1 report's document), and
+  `ReplayMode` the value `forced_replay`. `forced_replay` is reserved, not built: `ReplayReport.__post_init__` refuses
+  it `construct_unavailable(forced_replay, TX)` until F8-WO7 builds it with TX (F8 decision WO3-9; WO1-6).
+- **Schemas touched.** `replay-report` (the two members, the mode value); `run-manifest` (the optional members
+  `bundle_format`, `data_lock_sha256`, `extensions_used`, `run_kind`, `documents` and `environment.registry`, by
+  `$ref` to the new `bundle-v2.schema.json`; the object is closed by `unevaluatedProperties` where it was by
+  `additionalProperties: false`); `records-index` and `run-evidence`, new and registered (`schemas/registry.json`);
+  `job` (`artifact_ref.kind` gains D3's seven kinds `data_lock`, `registry_snapshot`, `records_index`, `record`,
+  `run_evidence`, `decision_record`, `exchange_record`, appended at the end).
+- **Catalogue.** `catalogue/replay.yaml`, new: `bundle_format_unsupported`, `extension_unavailable`,
+  `extension_changed`, `extension_use_undeclared` (F8 decision WO3-10) and the notice `platform_reference_used` (WO5-2);
+  doc pages `docs-site/messages/refusals.md`, `notices.md`. D5's other codes (`record_referenced`,
+  `forced_replay_divergence`, `not_rechecked`, `cache_bypassed`) are left to the work orders that emit them.
+  D5's `ApiError` and `API_EXIT_CODES` are unchanged.
+- **Unchanged:** every v1 manifest, bundle and replay report: the 0.3.0 bundles replay with the same mode, verdict and
+  reasons and a byte-identical report (E-F8-1), and v1-path runs write no new member (E-F8-10).
+- **Not unchanged:** the served MCP tool list, by the replay report's mode and two members in `get_job_result`'s
+  `outputSchema` (D3's artifact kinds do not reach it: MCP serves the kind enum opened), now `c11d3877…` (chain link
+  c_13 of `scripts/m07a_rc.py`, R-1076; `F8_SERVED_SHA256` in `tests/test_t08_w2_surface_digest.py`); with F8's
+  additions removed (`tests/f8_schema_support.py`) it is F2's `9a4b4eb3…` exactly.
+
 ## Amendment 13 (Accepted 2026-11-08 by Frank, with ADR 0068; Proposed 2026-11-06; ST) — pointer to ADR 0068
 
 Amendment 13 is decided in ADR 0068; this paragraph points at it (ST design note §6.1, §7).

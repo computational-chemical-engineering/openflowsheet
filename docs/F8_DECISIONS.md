@@ -362,3 +362,11 @@ Amendment 12 members), `1b3b55f2` (tests, re-record tool, E-F8-1 expectation).
   between a re-record and the next sweep); (b) no check that a departure's `reference_value` and `platform_value` are
   the values at its `path` in the two records (the path syntax is unspecified); (c) `registered_platform_ids()` drops a
   registered pair missing from `PLATFORM_IDS` silently (fail-safe: such a platform's records are refused).
+
+## F8 close-out (ADR 0067 WO1 to WO3, WO5; 2026-11-27)
+
+- **DECISION F8-CO-1. ADR 0019 Amendment 12 pointer paragraph written** (the item left over since WO1b), placed between
+  Amendments 9 and 13 (numeric order), in the style of Amendment 13 and F2's Amendment 9. Every fact is from
+  `schemas/`, `src/openflowsheet/run/replay.py`, `catalogue/replay.yaml`, `scripts/m07a_rc.py` (c_13) and the WO1b,
+  WO3 and WO5 entries above. Header "Proposed 2026-11-27; F8" (the ADR is Proposed). Reversible by: reverting this
+  commit.
