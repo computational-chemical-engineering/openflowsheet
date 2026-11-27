@@ -439,3 +439,12 @@ Files: `src/openflowsheet/revision_v2/{lower,raise_v1}.py`, `tests/f2/legacy_pro
 | 12 | `application/revision_run.py:205` `select_route`, `:754` `run_revision_session` | no route (rows 2, 3) | run submission of v2 (E-F2-3 run half: the lowered run's artifacts byte-identical, manifest revision ref v2) |
 | 13 | `run/bundle.py:175`, `:195` `verify_bundle` | a `solution-state-v2` fails `inconsistencies` (v1 schema) | dispatch to `inconsistencies_v2` on `schema_version` (only v2-compiled runs write v2, ADR-F6; lowered runs write v1) |
 | 14 | `LegacyProviders` | built in tests only (`tests/f2/legacy_providers.py`, WO6a-1) | build it in the application from `component_basis` and the providers' conventions |
+- **DECISION WO6a-4. `definition_sha256` is classified exact** in a new addendum
+  `benchmarks/f2/numerical_policy_external.yaml` (`solution-state-v2.schema.json`; F3's pattern,
+  audited after F3's): its preimage is a canonical document (D3), never a solved value.
+  `state_sha256` keeps v2's class (float digest). The battery at `9233a9d1` failed 3 tests on the
+  new schema and caches (the closed `sha256` partition; the global-state allowlist, `cache` 46 ->
+  49: the v2 validator, `legacy_records`, `file_components`); fixed in one commit with the
+  registrations (`tests/test_m05_study_record.py`'s ADDENDA order, `tests/test_t07_global_state.py`
+  count and allowlist). Alternative: list the name in v2's own `exact_sha256` (moves a registered
+  policy's bytes).

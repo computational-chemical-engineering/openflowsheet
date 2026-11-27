@@ -1,0 +1,18 @@
+# F2 (ADR 0062 D8; ADR 0025 D2.3): the `sha256`-bearing property names that F2's
+# `solution-state-v2` schema adds. A separate table beside F3's, so that the registered numerical
+# policies keep their ids and their contents (M02's precedent; F2 decision WO6a-4 in
+# `docs/F2_DECISIONS.md`).
+#
+# Read by `scripts/t08_numerical_policy.py --check` (the closed partition of `sha256` names, one
+# addendum after another). `state_sha256` keeps the class v2's lists give it (a float digest); the
+# file's values are a solved state, judged as `solution-state-v1`'s are: the table carries no
+# `rules`.
+numerical_policy_external:
+  id: F2-numerical-policy-external-v1
+  schemas:
+  - solution-state-v2.schema.json
+  # An exact digest (ADR 0007 D1, digest row; ADR 0025 D2): its preimage is a canonical document.
+  # - `definition_sha256`: a connection definition's SHA (ADR 0062 D3, `document_sha256` of the
+  #   template triple and the normalised instance), R0 in `material_layout` (D8).
+  exact_sha256:
+  - definition_sha256
