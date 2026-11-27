@@ -13,9 +13,8 @@ the ADR acceptances of card `ofs-line06-adr-clause`; X06's exits.
 
 - All three packages built, reviewed and fixed; nothing merged into `main` yet. `main` local, last pushed `4c7d3d6a`.
 - **F2** (ADR 0062 **Accepted**): CI at origin `4b820b97` FAILED (run 46003226499): Windows 6 tests (":" in an E-F2-3
-  scratch path) and `identity` (no jsonschema in the job). Fix F2-CI1 on local wp/F2 `80cdcfb3` (after `2757eb37`);
-  full gate on it running (detached worktree `.claude/worktrees/f2-gate`, PID in `~/.cache/line06/f2-ci1/gate.pid`,
-  summary `~/.cache/line06/f2-ci1/gate-80cdcfb3.summary`).
+  scratch path) and `identity` (no jsonschema in the job). Fix F2-CI1 at `80cdcfb3`: gate PASS 21725 passed,
+  pushed to origin wp/F2, CI running.
 - **F8** (ADR 0067 + ADR 0019 Amendment 12 **Accepted**, card executed): CI at origin `14409696` FAILED (run
   46014961220): F2's two causes, Windows bundle integrity ("\" vs "/" in the present-file listing) and the D5
   other-platform test on unregistered hosts (macOS, Windows). Fix F8-CI1 + merge of wp/F2 80cdcfb3 on local wp/F8
@@ -49,11 +48,9 @@ once F2-WO4 is on wp/F2 (F8 branches from wp/F2's head, merges after F2).
 ## Next action (2026-11-27 14:20, written for a self-reset; NO agent of this session is running)
 
 Background jobs (they survive the reset; their notices arrive in the new context):
-1. **F2 gate at 80cdcfb3** (F2-CI1). On `GATE PASS`: push
-   `git -c credential.helper= -c credential.helper='!gh auth git-credential' push origin 80cdcfb3:refs/heads/wp/F2`
-   (orchestrator's push; ADR 0062 card already executed), CI waiter (log `~/.cache/line06/ci/f2-80cdcfb3.log`),
-   `git worktree remove .claude/worktrees/f2-gate`. On all legs green: F2 merge card (A: "Merge wp/F2 at 80cdcfb3
-   into main with a merge commit, run F0 on main, push main." B: "Do not merge F2 yet."). On FAIL: no push, fix.
+1. **F2 CI waiter** at `80cdcfb3` (gate PASS 21725 passed; pushed), log `~/.cache/line06/ci/f2-80cdcfb3.log`. On all
+   legs green: F2 merge card (A: "Merge wp/F2 at 80cdcfb3 into main with a merge commit, marking ADR 0019 Amendment 9
+   Accepted with ADR 0062 in the merge commit, run F0 on main, push main." B: "Do not merge F2 yet."). On failure: fix.
 2. **X06 gate at 73b3a83d** (X06-CI2). On `GATE PASS`: push `73b3a83d:refs/heads/wp/X06` (same command form as F2),
    CI waiter (log `~/.cache/line06/ci/x06-73b3a83d.log`), remove the gate worktree. On all legs green: X06 merge card
    (A: "Merge wp/X06 at 73b3a83d into main with a merge commit, run F0 on main, push main." B: "Do not merge X06

@@ -340,3 +340,5 @@ Reversible by: <how>.` Package build decisions go in the package's own file (`do
   unregistered host), identity (F2-inherited). Fix F8-CI1 on wp/F8 `9ba3c5fa` (DECISIONS F8-CI1-1/2) and merge of wp/F2
   `80cdcfb3` -> `d0bc2996`; touched tests (f8 replay/bundle v2, f2 amendment9) 219 passed; full gate running.
   Noted: ADR 0019 Amendment 9 heading "Proposed" on wp/F2 although ADR 0062 Accepted; to ask on the F2 merge card.
+- 2026-11-27 F2 gate PASS at `80cdcfb3` (21725 passed, 107 skipped, 3 xfailed, 1:31:27); pushed `4b820b97..80cdcfb3`
+  to origin wp/F2; CI waiter log `~/.cache/line06/ci/f2-80cdcfb3.log`.
