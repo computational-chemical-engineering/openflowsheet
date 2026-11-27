@@ -350,3 +350,9 @@ Reversible by: <how>.` Package build decisions go in the package's own file (`do
   codehealth red, informational). DECISION-REQUEST `ofs-f2-merge` sent to hub (A: merge + ADR 0019 Amendment 9
   Accepted; B: merge, Amendment 9 Proposed; C: do not merge). main..80cdcfb3: main's 82 commits since the merge base
   touch no src, tests or schemas.
+- 2026-11-27 **X06 CI green at 73b3a83d** (run 46044426797: four check legs, default-install, identity, codehealth
+  `success`). DECISION: X06's re-chain onto F2 starts now, before `ofs-f2-merge` is signed: X06-FR0 merges wp/F2
+  `80cdcfb3` into wp/X06 (trial merge: 17 conflicted files, incl. jobs/runner.py, refusals catalogue, chain tests).
+  Alternative: wait for the sign-off. Reversible by: `git -C .claude/worktrees/x06 reset --hard 73b3a83d` (local only).
+  Brief `docs/briefs/LINE06-X06-FR0.md`; opus-engineer. Chain order note: c_13 (F8) decomposes onto c_12 (X06) only
+  if X06 merges before F8; otherwise renumber at the later merge.
