@@ -50,6 +50,14 @@ ADR 0061's form `{id, stoichiometry: {component key: ν}}`: the coefficients are
 charge and molar-mass balance, nothing is stored and nothing is solved. One numeric map is allowed
 by full path and only there, `validate_record`'s `reactions/*/stoichiometry`.
 
+**X06 (ADR 0078 D4.3(d), D4.5; the exception to R-088 Q26 is ADR 0078, section 'X06 ruling round
+R1 applied'; R-1075).** `register_solve_policy`'s `policy` is a whole solve-policy document
+(D4.5): limits, step and globalization constants, tolerances, nothing taken from an iterate.
+One numeric map is allowed by full path and only there, `policy/scales`: its keys are the
+registered quantity kinds (checked at registration, D4.3(d)) and its values strictly positive
+constants, the shape and key domain of `check_tolerances`. The document's scalars are pinned by
+full path below `policy/` (`SOLVE_POLICY_SCALARS`).
+
 **(ii) The forged bundle through every transport that reaches reproduce.** A bundle of a run that
 did not converge (`SYN-001-A02-352-vapor-guess-410`, `HOMOTOPY_STALLED`), forged to carry the
 `VERIFIED` certificate of a run that did (`SYN-001-A02-360`), with a consistent index and
@@ -188,12 +196,60 @@ OPT_REQUEST_SCALARS = frozenset(
         "starts/halton",
     }
 )
+#: X06 (ADR 0078 D4.3(d), D4.5; ADR 0078, section 'X06 ruling round R1 applied'; R-1075): a
+#: registered solve policy's scalars (path below the request's `policy/`), and nowhere else.
+SOLVE_POLICY_PREFIXES = {"register_solve_policy": "policy/"}
+SOLVE_POLICY_SCALARS = frozenset(
+    {
+        "armijo_c",
+        "eta_inner",
+        "linear_residual_threshold",
+        "max_attempts",
+        "max_iterations_per_attempt",
+        "max_property_calls",
+        "phase_wall_patience",
+        "stagnation_ratio",
+        "stagnation_window",
+        "step_halvings_max",
+        "globalization/eo_recovery_max_count",
+        "globalization/homotopy/corrector_max_iterations",
+        "globalization/homotopy/growth",
+        "globalization/homotopy/max_lambda_trials",
+        "globalization/ptc/gamma_max",
+        "globalization/ptc/gamma_min",
+        "globalization/ptc/max_steps_per_attempt",
+        "globalization/ptc/phi_floor",
+        "globalization/ptc/residence_time_s",
+        "globalization/ptc/retries_max",
+        "globalization/ptc/retry_shrink",
+        "globalization/ptc/tau_initial_s",
+        "globalization/ptc/tau_max_s",
+        "globalization/ptc/tau_min_s",
+        "recycle/beta",
+        "recycle/beta_substitution",
+        "recycle/beta_substitution_oscillating",
+        "recycle/coefficient_max",
+        "recycle/condition_max",
+        "recycle/depth_max",
+        "recycle/max_iterations_per_attempt",
+        "recycle/max_restarts",
+        "recycle/oscillation_window",
+        "recycle/stagnation_ratio",
+        "recycle/stagnation_window",
+        "recycle/step_halvings_max",
+        "residual_tolerances/*/absolute",
+        "residual_tolerances/*/relative",
+        "residual_tolerances/*/scale",
+    }
+)
 #: F3 (ADR 0061 D7; ADR 0061, section 'F3 ruling round 2 applied: fix round 3'; R-1058): a
-#: reaction's stoichiometry, checked by `validate_record`, never solved.
+#: reaction's stoichiometry, checked by `validate_record`, never solved. X06 (R-1075): a
+#: registered solve policy's `scales`, a map of registered quantity kind to a positive constant.
 ALLOWED_BY_PATH = frozenset(
     {
         ("submit_job", "body/inlet/n", "array"),
         ("validate_record", "reactions/*/stoichiometry", "map"),
+        ("register_solve_policy", "policy/scales", "map"),
     }
     | {
         (operation, prefix + path, kind)
@@ -370,10 +426,17 @@ def test_t07_q26_no_external_state() -> None:
             p[len(prefix) :] for o, p in every_scalar if o == operation and p.startswith(prefix)
         }
         assert found == OPT_REQUEST_SCALARS, (operation, found ^ OPT_REQUEST_SCALARS)
+    # X06 (R-1075): a registered solve policy's scalars, pinned by full path below `policy/`.
+    for operation, prefix in SOLVE_POLICY_PREFIXES.items():
+        found = {
+            p[len(prefix) :] for o, p in every_scalar if o == operation and p.startswith(prefix)
+        }
+        assert found == SOLVE_POLICY_SCALARS, (operation, found ^ SOLVE_POLICY_SCALARS)
     scalars = {
         (o, path)
         for o, path in every_scalar
         if not path.startswith(OPT_REQUEST_PREFIXES.get(o, "\0"))
+        and not path.startswith(SOLVE_POLICY_PREFIXES.get(o, "\0"))
     }
     names = {path.split("/")[-1] for _, path in scalars}
     assert names == {
