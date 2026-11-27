@@ -351,3 +351,40 @@ addendum is needed (the closed partition audits names containing `sha256`).
   (`tests/test_f2_*.py` 288 passed before and after). `test_f2_definitions.py` (normalisation only, no kind facts)
   and the render example of `test_f2_vid_layout.py` keep their spellings. Alternative: a second payload under the
   same id in `tests/f2/probes.py` (two meanings of one kind id in one suite). Isolated in one commit.
+- **Built.** `tests/f2/probes.py` (the three kinds' D5 payloads and layout facts; a `Flowsheet` of one `mat-v1`
+  definition, `liq` mixed A, B, P with λ0, λ2 of P and `cryst` solid C as a size partition with counts per class;
+  feed, mixer <= 8 inlets, splitter, heater in (n, ĥ, P); `conservation`, `admissible`, `deficit`),
+  `tests/test_f2_probes.py` (13 tests). Measured (`~/.cache/line06/f2wo5/measure.py`): **Q6.A1** worst relative
+  conservation 3.39e-16 (1.53 ε) over 1,200 random mixers (1-8 inlets), splitters (2-4 outlets) and remixes, 29x
+  below 1e-14; a 1e-3 split-fraction error reads 1.00e-3. **Q1.A5** the flowing outlet's ĥ with and without the
+  dormant feed: bitwise equal. **Q6.A5** 1,188 monodisperse feeds, 8-inlet mixtures and splits: all admitted, 227
+  fail the strict test, worst deficit 6.27e-16 (<= τ_mono/100 = 1e-14). **O-9** with the recycle of loop gain 100:
+  worst deficit 4.86e-14 (≈ 219 ε, on the recycle's iterates), margin to τ_mono **20.6x** (>= 10x, no amendment);
+  fixed points reached bitwise in at most 3,295 iterations. **Q7.A2, E-F2-6** on 300+ probe states (the Q1.A5 sheet,
+  40 random sheets, the invalid trials): layout read = probe state = independent build, bitwise; ṁ bitwise.
+- **DECISION WO5-2. `probe.moments` holds λ0 and λ2 as classes 1 and 2 of a two-class `order` grid** (edges
+  `[0, 1, 2]`, `dimensionless`): D3 gives a component-scoped kind one value per (component, class), and Q6 names one
+  kind for both moments. Inequality terms (D5 leaves their grammar open): `n` the parent amount (λ1), `a[k]` class k,
+  `x*y` a product; `parent_kind: null` on all three. Alternative: two kinds (λ0, λ2). Test-only, `tests/f2/probes.py`.
+- **DECISION WO5-3. Probe rows.** Mixer `P_out = min P_k`, energy row solved as `ĥ = Σ(ṁ_k ĥ_k)/ṁ_out`; splitter
+  outlets by fraction but the last, which takes the balance; heater duty-specified, `ĥ = (ṁ ĥ_in + Q)/ṁ`; a dormant
+  heater needs `Q = +0.0`; a dormant feed's ĥ is `+0.0`. Derived `T` is listed only for a dormant stream (null,
+  `zero_flow`): a flowing one needs a property call. Test-only.
+- **DECISION WO5-4. O-9's "recycle of loop gain 100"** = recycle fraction `1 - 1/100` of a probe splitter back into
+  the feed's mixer, iterated by successive substitution from a dormant tear to a bitwise fixed point of the recycle,
+  per monodisperse feed of DP x amount (14 loops); the deficit is the worst over every iterate's three streams.
+  Alternative: the converged state only (smaller worst value).
+- **Q-WO5-a (design lane). Q6.A2's registration half is not testable as written.** "Registering `probe.partition`
+  together with its parent's amount, or a polymer kind with λ1, is refused `attribute_redundant`": D3's layout
+  cannot carry a partitioned component's parent at all (tested: C has class slots only), and the D5 payload has no
+  field that names λ1 or another index identity, so F1 cannot refuse such a kind at registration (`src/` has no
+  such check). Tested instead: the partition alone admitted, a second partition on its component refused
+  `attribute_redundant`, the parent sum bitwise reproducible. *Needs:* the payload field (or rule) F1 decides it on.
+- **Q-WO5-b (STOP candidate, design lane). A second definition id with an equal body is refused
+  `attribute_grid_mismatch`.** `validate.py` `one_definition_rules` compares definition ids; two ids whose bodies
+  (and SHAs) are equal, on a `std.mixer`, report `attribute_grid_mismatch(S2, mix.in2)` although the grids are
+  identical. D3 makes the SHA the identity ("equal definitions ... share a SHA"). Not changed (a `src/` change); the
+  Q6.A4 "same grid admitted" case uses one id. *Default if ruled a defect:* compare bodies (or SHAs), admit equal ones.
+- **Q-WO5-c (ADR-F6). A flowing stream whose ṁ underflows to 0.0** (5e-324 of a molar component; dormancy is on the
+  amounts, D4) has an energy row of rank 0 in ĥ that is not a zero-flow form. The probe raises
+  `ProbeUnresolvedError` (tested) rather than choose; Q1.A5 asserts only that such a stream is flowing.
