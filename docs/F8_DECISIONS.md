@@ -504,3 +504,9 @@ the working tree, run, and reverted (not committed).
 - **Obligation F8-FR-S5(b)(ii) (for the first real per-platform record, not built now):** the record departs from the
   reference beyond the policy only at its `departures`; checking it needs the record to name its policy. Recorded in
   ADR 0067's WO5 row as an edit before acceptance.
+- **Item 7 (S4). ADR 0019 Amendment 12's "Not unchanged" states its R4-G3 effect** as the sibling amendments do: nine
+  responses move (`SNAPSHOT_F8`, re-pinned at F8-WO1b: `solve`, `reproduce`, `submit_job`, `get_job`, `cancel_job`,
+  `list_jobs`, `list_job_events`, `wait_job`, `get_job_result`), `without_f8` returns each to its prior pin exactly
+  (`test_f8_without_its_additions_every_response_is_its_pre_f8_snapshot`), no other moves. "D5's other codes" reads
+  "ADR 0067's other new codes". Text only; `test_t07_w5e_application_results` + `test_f1_draft_admission` (both read
+  the ADR): 164 passed.

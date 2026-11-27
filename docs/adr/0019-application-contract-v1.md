@@ -326,7 +326,7 @@ replay report is read, stored, hashed or replayed as changes:
   `run_evidence`, `decision_record`, `exchange_record`, appended at the end).
 - **Catalogue.** `catalogue/replay.yaml`, new: `bundle_format_unsupported`, `extension_unavailable`,
   `extension_changed`, `extension_use_undeclared` (F8 decision WO3-10) and the notice `platform_reference_used` (WO5-2);
-  doc pages `docs-site/messages/refusals.md`, `notices.md`. D5's other codes (`record_referenced`,
+  doc pages `docs-site/messages/refusals.md`, `notices.md`. ADR 0067's other new codes (`record_referenced`,
   `forced_replay_divergence`, `not_rechecked`, `cache_bypassed`) are left to the work orders that emit them.
   D5's `ApiError` and `API_EXIT_CODES` are unchanged.
 - **Unchanged:** every v1 manifest, bundle and replay report: the 0.3.0 bundles replay with the same mode, verdict and
@@ -334,7 +334,11 @@ replay report is read, stored, hashed or replayed as changes:
 - **Not unchanged:** the served MCP tool list, by the replay report's mode and two members in `get_job_result`'s
   `outputSchema` (D3's artifact kinds do not reach it: MCP serves the kind enum opened), now `3571c5c3…` (chain link
   c_13 of `scripts/m07a_rc.py`, R-1076; `F8_SERVED_SHA256` in `tests/test_t08_w2_surface_digest.py`); with F8's
-  additions removed (`tests/f8_schema_support.py`) it is F2's `8eee5313…` exactly.
+  additions removed (`tests/f8_schema_support.py`) it is F2's `8eee5313…` exactly. Nine R4-G3 responses move
+  (`SNAPSHOT_F8` in `tests/test_t07_w5e_application_results.py`, re-pinned at F8-WO1b): `solve`, `reproduce`,
+  `submit_job`, `get_job`, `cancel_job`, `list_jobs`, `list_job_events`, `wait_job` and `get_job_result`, by the
+  report's mode and two members and by D3's seven artifact kinds; with F8's additions removed (`without_f8`) each is
+  its prior pin exactly. No other R4-G3 response moves.
 
 ## Amendment 13 (Accepted 2026-11-08 by Frank, with ADR 0068; Proposed 2026-11-06; ST) — pointer to ADR 0068
 
