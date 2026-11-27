@@ -38,28 +38,40 @@ the ADR acceptances of card `ofs-line06-adr-clause`; X06's exits.
 Parallelism: at most two agents. F2 first; D1 runs beside F2 once the X06 scope card is answered; F8-WO1 can start
 once F2-WO4 is on wp/F2 (F8 branches from wp/F2's head, merges after F2).
 
-## Next action (2026-11-27, written while two agents run)
+## Next action (2026-11-27, written for a self-reset; NO agent and NO job of this campaign is running)
 
-Done and judged (details: `docs/LINE06_DECISIONS.md`): F2-WO1 to WO5 (WO4: E-F2-9 19/20 recorded; WO5 Q6.A2
-registration half untestable, recorded); X06-WO1 to WO5 incl. R1 rulings (R-1074, R-1075), WO3b, WO4b. Heads:
-wp/F2 `f4c5cd7a`, wp/X06 `020b7b72` (manifest `evidence/X06/a657d29d.../manifest.json`, `tested`).
+Done and judged (details: `docs/LINE06_DECISIONS.md`, grep it): F2-WO1 to WO6a; X06-WO1 to WO5, R1 rulings
+(R-1074, R-1075), the X06 review (`docs/reviews/X06-review.md`) and X06-fix1 (orchestrator rerun at 487609e7: 3333
+passed, only the description-review gate red; F0 PASS). Heads: wp/F2 `f9a415f1`, wp/X06 `487609e7` (manifest
+`evidence/X06/1a2782d1.../manifest.json`, `tested`).
 
-**Running agents** (completion notices reach this session; a new context after a reset does not know them):
-1. F2-WO6a (`opus-engineer`, brief `docs/briefs/LINE06-F2-WO6a.md`, logs `~/.cache/line06/f2wo6a/`): lower/raise,
-   `solution-state-v2`, `r0_projection` for v2, a "WO6b dispatch map" in `docs/F2_DECISIONS.md`. On report: judge on
-   the brief's acceptance, spot-check one test file and F0, then write and launch F2-WO6b (Amendment 9 dispatch per
-   the map, run submission, E-F2-3 run half, ADR 0019 Amendment 9 pointer, `interfaces-frozen.md`).
-2. X06-fix1 (`opus-engineer`, brief `docs/briefs/LINE06-X06-fix1.md`, logs `~/.cache/line06/x06fix1/`): the
-   X06 review's 8-item work order (`docs/reviews/X06-review.md`, main 3f457172). On report: judge, spot-check
-   `tests/test_t07_q26.py` and F0; then a DECISION-REQUEST to hub for the user's review of the 11 description texts
-   (T08.A18 "human" kind; each text with its post-fix hash from `REVIEW.json`), push wp/X06 for CI, the merge card.
+**Launch at once (two agents, the limit):**
+1. `architect` on `docs/briefs/LINE06-F2-R1.md` (D12 rulings WO6a-2, WO6a-3; commits only `docs/F2_DECISIONS.md`).
+2. `opus-engineer` on `docs/briefs/LINE06-F2-WO6b.md` (application dispatch per the 14-row map, run submission,
+   E-F2-3 run half, ADR 0019 Amendment 9 pointer, interfaces-frozen).
+Each prompt: the brief path, `docs/LINE06_RULES.md`, the worktree, its own log dir, "Do not spawn sub-agents
+yourself", "make sure no background job of yours runs before you report", report 200-300 words.
 
-Then F2: WO6b, WO7 close-out (Sonnet; catalogue prose for WO4-16's 18 entries), F2 reviewer with the ruling batch
+**Waiting on the user:** card `ofs-x06-descriptions-human` (filed by hub, open; texts in
+`docs/reviews/X06-descriptions-for-user.md`). Hub rings when signed. Then: fetch the card (ArtifactData `get`
+collection `decisions` and `list` collection `keys`, same `out_dir` D), run
+`python3 ~/.claude/tools/decision_desk_verify.py D ofs-x06-descriptions-human --action "<the signed option's text>"`;
+on VERIFIED A: record `human` `reviewed` (reviewed_by "the user, Decision Desk ofs-x06-descriptions-human",
+reviewed_at the date) for the 11 texts in wp/X06's `REVIEW.json` at the listed hashes (one commit), run
+`tests/test_t08_w2_description_reviews.py` (must pass), write `executed` on the card, push wp/X06 (CI must judge it;
+poll `gh run` every 300 s at most), then on CI green on all legs a merge card via hub. Option B: apply the user's
+edits, fresh design-lane review of each edited text, then record.
+
+Then F2: on WO6b's report judge it (spot-check one test file and F0); apply F2-R1's D12 text to ADR 0062 and any fix
+WO; WO7 close-out (Sonnet; catalogue prose for WO4-16's 18 entries; manifest), F2 reviewer with the ruling batch
 (WO1-4, WO1-1, WO1-9, M = 1 for kg, WO2-1, WO2-7, WO3-6, WO4-7, WO4-8, WO4-9, WO4-15, Q-WO5-a, Q-WO5-b, Q-WO5-c,
-WO5-1), the ADR 0062 acceptance card. F8 branches from wp/F2 after WO6b. At F2's merge: the register-block conflict
-(WO3-1). Code health to file: S2 (AttributeError escapes `reproduce` on a named bundle).
-Process rules learned: every brief gives the engineer its own log dir under `~/.cache/line06/<wo>/`; wait on log
-lines, not `kill -0` (run.sh's setsid PID is invisible from other shells).
+WO5-1, WO6a-4), the ADR 0062 acceptance card. F8 branches from wp/F2 after WO6b. At F2's merge: the register-block
+conflict (WO3-1) and the surface-chain order with X06 (R-1072/R-1073: the second to merge decomposes onto the
+first's digest). Code health to file with `code_health`: S2 (AttributeError escapes `reproduce` on a named bundle),
+`render_error` without a code prefix (X06 review ruling 9).
+Process rules: every brief gives the engineer its own log dir `~/.cache/line06/<wo>/`; wait on log lines, not
+`kill -0`; an agent "waiting on its own background work" after its report may hold a stale watcher: check the
+worktree for its processes (`/proc/<pid>/cwd`), then TaskStop it.
 
 ## Decisions settled (Decision Desk, 2026-11-26, each choice A, VERIFIED, `executed` written)
 
@@ -71,6 +83,7 @@ lines, not `kill -0` (run.sh's setsid PID is invisible from other shells).
 
 - `ofs-x06-accept-adr0078` (A, VERIFIED, executed): ADR 0078 accepted as written at dcbab9b7 with Q1-Q3, Q5, Q6 defaults.
 - `ofs-x06-mcp-clients` (A, VERIFIED, executed): static bearer only in 0.6; OAuth later.
+- `ofs-x06-descriptions-human`: OPEN (filed 2026-11-27).
 
 ## Open decisions (later, not yet requested)
 
