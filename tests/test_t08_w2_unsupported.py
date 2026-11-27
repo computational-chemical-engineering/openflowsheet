@@ -15,9 +15,13 @@ cover; each test asserts what the code does today and nothing more.
   `_prepare` (unchanged).
 - **U06** — ADR 0008 D1: a time-varying specification is not representable; a profile value or a
   time member is `SCHEMA-01` `INVALID`.
-- **U08** (R-110) — MCP over HTTP: no `/v1/` operation route serves it (ADR 0019 D4). X06 lifted
-  R-110 for branches (ADR 0078 D2) and in-band policy administration (D5): their U08 tests are
-  gone with the limitation.
+- **U08** (R-110; X06 review ruling 4) — no operation installs, publishes, creates a project, or
+  sets the executor or the administration switch (ADR 0078 does not establish them; the switch is
+  the operator's), and no request schema reachable from `OPERATIONS` has a member that would. X06
+  lifted R-110 for branches (ADR 0078 D2), in-band policy administration within a capability (D5)
+  and MCP over HTTP (D1, `/mcp` of `serve-http`; X06 review M2): their U08 tests are gone with
+  the limitation, `test_u08_mcp_is_not_served_over_http` among them (it read only `OPERATIONS`'
+  routes, never the served application).
 - **U13** — ADR 0006 D1: no mode-B artifact (container, installer, wheelhouse) is tracked.
 - **U14** — no CRAFTS / OpenIDAES-450 comparison is registered or shipped.
 """
@@ -46,6 +50,7 @@ from openflowsheet.models.revision_flowsheet import (
     canonical_components,
     component_basis,
 )
+from openflowsheet.schema_check import SCHEMA_DIR
 from openflowsheet.thermo import pr_c1
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -180,12 +185,69 @@ def test_u06_a_time_member_is_a_schema_refusal() -> None:
     _schema_refusal(document, "time")
 
 
-def test_u08_mcp_is_not_served_over_http() -> None:
-    """Every HTTP route is a `/v1/` operation route; no MCP endpoint exists on HTTP (R-110)."""
-    routes = [row.http for row in OPERATIONS.values() if row.http is not None]
-    assert routes
-    assert all(path.startswith("/v1/") for _, path in routes)
-    assert not any("mcp" in path.lower() for _, path in routes)
+#: Operations ADR 0078 does not establish (X06 review ruling 4); `create_project` added for the
+#: row's "project creation".
+U08_ABSENT_OPERATIONS = (
+    "install",
+    "publish",
+    "set_policy",
+    "register_policy",
+    "policy",
+    "create_project",
+)
+#: Request members that would set what only the operator sets.
+U08_ABSENT_MEMBERS = frozenset({"executor", "administration", "in_band"})
+
+
+def _schema_documents() -> dict[str, Any]:
+    documents: dict[str, Any] = {}
+    for path in sorted(SCHEMA_DIR.glob("*.schema.json")):
+        document = json.loads(path.read_text(encoding="utf-8"))
+        documents[document["$id"]] = document
+    return documents
+
+
+def _reachable_members(schema: Any, documents: dict[str, Any]) -> set[str]:
+    """Every `properties` member name at any depth of `schema`, following each `$ref` (to another
+    published schema or a pointer within one) once."""
+    names: set[str] = set()
+    followed: set[tuple[str, str]] = set()
+    stack: list[tuple[Any, str]] = [(schema, "")]
+    while stack:
+        node, base = stack.pop()
+        if isinstance(node, list):
+            stack.extend((item, base) for item in node)
+            continue
+        if not isinstance(node, dict):
+            continue
+        reference = node.get("$ref")
+        if isinstance(reference, str):
+            uri, _, fragment = reference.partition("#")
+            uri = uri or base
+            if (uri, fragment) not in followed:
+                followed.add((uri, fragment))
+                target = documents[uri]
+                for part in filter(None, fragment.split("/")):
+                    target = target[part.replace("~1", "/").replace("~0", "~")]
+                stack.append((target, uri))
+        members = node.get("properties")
+        if isinstance(members, dict):
+            names |= set(members)
+        stack.extend((value, base) for key, value in node.items() if key != "$ref")
+    return names
+
+
+def test_u08_no_operation_installs_publishes_or_sets_executor_or_switch() -> None:
+    """No operation installs, publishes, creates a project or administers policies outside a
+    capability, and no request reachable from `OPERATIONS` carries an `executor`,
+    `administration` or `in_band` member at any depth (ADR 0078 does not establish them)."""
+    assert not set(U08_ABSENT_OPERATIONS) & set(OPERATIONS)
+    documents = _schema_documents()
+    reachable: set[str] = set()
+    for row in OPERATIONS.values():
+        reachable |= _reachable_members(row.request_schema, documents)
+    assert {"branch", "limits", "revision_id"} <= reachable  # the walk reaches nested members
+    assert not reachable & U08_ABSENT_MEMBERS
 
 
 def _tracked() -> list[str]:

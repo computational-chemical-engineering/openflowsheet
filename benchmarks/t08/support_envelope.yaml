@@ -291,7 +291,8 @@ axes:
   - id: interfaces
     title: Interfaces
     statement: >-
-      Python (`LocalApplication`), CLI, HTTP (`/v1`) and MCP over stdio; the thirty-nine operations
+      Python (`LocalApplication`), CLI, HTTP (`/v1`), and MCP over stdio and over streamable HTTP at
+      `/mcp` of `serve-http` (ADR 0078 D1); the thirty-nine operations
       of `OPERATIONS`, each on the transports listed (`explain`, ADR 0058 D7, reads the message catalogue
       only; `get_stream_table`, ADR 0068, computes a finished run's stream table from its bundle and
       stores nothing; `list_capabilities` and `check_admission`, ADR 0060 D11, read the extension
@@ -352,6 +353,7 @@ axes:
       - check:T07.G14
       - check:T07.D15(b)
       - tests/test_m06_http_contract.py::test_g2_every_ui_operation_answers_schema_valid_over_http
+      - tests/test_x06_mcp_http.py::test_e_x06_2_tools_list_over_http_is_stdios_and_the_registered_digest
       - doc:docs/adr/0019-application-contract-v1.md
       - doc:docs/web-shell.md
 
@@ -489,14 +491,17 @@ unsupported:
 
   - id: U08
     capability: >-
-      Resume, MCP over HTTP, the benchmark-registered solve policies that are not offered
+      Resume, the benchmark-registered solve policies that are not offered, in-band install,
+      publish, executor settings, the administration switch and project creation
     outcome: >-
       R-110: a resume request is outside the job-operation enum and refused by the request schema;
-      no HTTP route serves MCP; a registered policy that is not offered is `unsupported`, an
-      unknown id `not_found`.
+      a registered policy that is not offered is `unsupported`, an unknown id `not_found`; no
+      operation installs, publishes, creates a project or sets the executor or the administration
+      switch, and no request of any operation carries such a member (ADR 0078 does not establish
+      them; the switch stays the operator's).
     evidence:
       - tests/test_t07_adr0008_jobs.py::test_c_an_operation_outside_the_enum_is_refused[solve_resume]
-      - tests/test_t08_w2_unsupported.py::test_u08_mcp_is_not_served_over_http
+      - tests/test_t08_w2_unsupported.py::test_u08_no_operation_installs_publishes_or_sets_executor_or_switch
       - tests/test_t07_b3_policies.py::test_a_registered_policy_not_offered_is_refused_unsupported
       - tests/test_t07_b3_policies.py::test_an_unknown_policy_stays_not_found
       - doc:docs/decision-register.md §R-110
