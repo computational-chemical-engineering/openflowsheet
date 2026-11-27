@@ -832,3 +832,14 @@ Files: `revision_v2/{lower,raise_v1}.py`, `tests/test_f2_lowering.py`, `tests/da
   beside F3's `records.json`** (same `getattr` pattern), so S2 compares the table F2 added: before, `sets --check`
   failed S2 with the five material rows "held None, generated []"; after, `sets --check` PASS and
   `tests/test_s19_w5_gate.py` 63 passed. Alternative: treat a missing row as an empty set (would hide a missing table).
+- 2026-11-27 **F2 CI failed** (run 46003226499 at `4b820b97`): Linux x86/arm and macOS green; Windows 6 failed of 18278
+  (`test_e_f2_3_raised_run_writes_the_v1_bundle[g8/T05b:*]`, WinError 123); `identity` failed
+  (`ModuleNotFoundError: jsonschema`); `codehealth` failed (informational). Fix round F2-CI1 by the orchestrator (two
+  lines, test and CI only, no numerics):
+  - DECISION F2-CI1-1: the E-F2-3 scratch directory replaces ":" in the case name by "_" (56 names stay distinct).
+    Alternative: hash the key. Reversible by: reverting the commit.
+  - DECISION F2-CI1-2: the identity job installs `jsonschema` (a runtime dependency, `pyproject.toml:22`), because
+    `run.compare` -> `run.solution_state` -> `material.definitions` -> `schema_check` imports it since F2. Checked in a
+    clean venv with pyyaml numpy jsonschema: `import openflowsheet.run.compare` OK. Alternative: a lazy import in
+    `schema_check`. Reversible by: reverting the commit.
+  - `tests/test_f2_amendment9.py` locally: 128 passed.
