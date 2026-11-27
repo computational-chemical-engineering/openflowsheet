@@ -454,3 +454,108 @@ Files: `src/openflowsheet/revision_v2/{lower,raise_v1}.py`, `tests/f2/legacy_pro
   M7 52/52, M8 105/105, M9 42/42 (`~/.cache/line06/f2wo6a-final2.log`). E-F2-3 library half:
   59/59 corpus revisions (M1's 50 + F0's 9 basis cases) raise and lower to their canonical bytes.
   Left for WO6b: the dispatch map above; `LegacyProviders` in the application.
+
+## Design-lane rulings R1 (D12), 2026-11-27 (brief `docs/briefs/LINE06-F2-R1.md`)
+
+**R1-1 (WO6a-2), the one-file criterion. Ruling: the engineer's reading; keep `6f81897e`.** Criterion: every
+component record is the legacy component record (ADR 0061 D12) of one file F, under the component's own id there, in
+any order and for any subset of F's components; the lowered `components` are the set's ids in the set's order.
+Reason: v1's `{record_source, components}` carries its own ordered list, and the v1 binder takes a permutation (T06
+§8.6) and a subset (CoolProp's one fluid of 123), so F's order holds nothing lowering needs. The literal text is
+stricter than v1: "v1-expressible" would exclude v1 documents, and ADR 0062 risk 1 allows excluding a corpus revision
+from E-F2-3 only by a ruling; this ruling corrects the criterion instead. Byte identity (D8) holds by construction: the
+binder reads a v2 document as `lower(parse(d))` and hands the result to the untouched v1 path, and that result has the
+original's canonical bytes and v1 `content_hash` (59/59 at `7ce12c23`, STA04 included); the only artifact field that
+sees the v2 document is the manifest's revision reference. Tests: (library, exist)
+`test_e_f2_3_corpus_revision_raises_and_lowers_to_its_bytes[SYN-001-T06-STA04]` and
+`test_a_permuted_component_set_lowers_in_its_order` (lowered `components` C, A, B, not the file's order: falsifies a
+re-sorting lowering); (run, WO6b) E-F2-3's run half over the 59 asserts D8 in full: every bundle artifact of the
+raised v2 run byte-identical to the corpus v1 run's, except the manifest's revision reference, which is the v2
+`revision_id` and `content_hash`. STA04 and the five `s10` GP cases are in the 59. Add one CoolProp one-fluid `s07`
+revision: library half always, run half under the CoolProp extra (CI runs it).
+
+**R1-2 (WO6a-3), fields D12 does not classify. Ruling: keep `90f46174`, with two amendments (fix work order F2-WO6c
+below).** Rule: a field v1 has no counterpart for lowers only in its content-free form (absent when optional, empty
+when required); any other form is refused. Refusing now and admitting later moves no byte of an accepted document;
+dropping now and giving the field meaning later would change what an accepted document computes.
+
+| Field | Ruling | `construct_unavailable` |
+| --- | --- | --- |
+| `semantic_role` `utility`, `controller`, `shaft`, `relief_device` | refuse (v1's 14 roles are copied) | `semantic_role:<role>`, once per role, F6 |
+| instance `template` (preview) | refuse when present, any value (`null` included) | `template:<instance>`, F6 |
+| instance `references` | refuse when present, `[]` included (whether `[]` means absent is F6's to define) | `references:<instance>`, F6 |
+| connection `phase_assertion` (preview) | refuse when present, any value | `phase_assertion:<connection>`, F5 |
+| `component_set.parameter_sets` | **changed:** must equal F's legacy parameter-set records in the legacy index's order (`s10`, `s10-verification`: one each; the other five files: none), else refuse; checked only when the component set names one file (WO4-6's pattern) | `parameter_sets`, F4 |
+| `materials.definitions`, `phase_order_keys` | drop whatever they hold: no `nTP-v1` connection reads a definition; the keys order phases within a family (D6 leaves that to F5), and an `nTP-v1` connection has at most one phase per family (v1's `phase_capability`) | none |
+| `materials.thermal_coordinate` | **new:** must be `T`, else refuse | `thermal_coordinate:<coordinate>`, F6 |
+
+Why `parameter_sets` changes: the five corpus `s10` revisions (GP-C1, GP-C2, GP-C3, GP-M1, GP-M2) run the Wilson
+provider, which reads the file's `wilson_lambda` block; ADR 0061 D12 imports that block as the file's legacy parameter
+set. Raised with `parameter_sets: []`, the v2 document states no parameter set while its lowered run uses one, and the
+document that states it is refused. D8's fingerprint departure rests on "the problem is identical", so the v2 document
+must state the problem it runs as. v1's `record_source` names the whole file; its inverse is the named components'
+records plus the file's parameter sets. The 59/59 library identity is unchanged (lowering drops the stated set); only
+the five raised `s10` documents gain one SHA. Why `thermal_coordinate`: WO6b's binder lowers without `validate`, and
+`validate` checks `unit_coordinate_unsupported` per `h_mass` `mat-v1` definition only, so a document with
+`thermal_coordinate: h_mass` and only `nTP-v1` connections passes both today and would run in T. D11: `T` admits
+`nTP-v1`; `h_mass` admits `std.*` units only. Lowering checks it itself, so its criterion stands without `validate`.
+
+**R1-3 (WO6a-4): confirmed; keep `7ce12c23`.** `definition_sha256`'s preimage is a canonical input document (D3),
+never a solved value: exact, in the F2 addendum (F3's pattern), which moves no registered policy byte.
+
+**D12 text to apply** (the orchestrator replaces D12 from "**Lowering**" to the end of the "**Raising**" sentence; the
+Amendment 9 part stays; D13 is unchanged and freezes this criterion):
+
+> **Lowering** (`revision_v2/lower.py`): a v2 document is *v1-expressible* iff (a) its convention is the native one of
+> the legacy provider ADR 0050 D1 assigns to its record source, and `property_methods.default` is that provider with
+> no override; (b) `materials.thermal_coordinate` is `T`; (c) every material connection is `nTP-v1`, and it has no
+> energy or signal connection, reaction set, section, probe or parameter endpoint, specification target outside v1's
+> form, connection `phase_assertion`, instance `template` or `references`, or `semantic_role` outside v1's vocabulary;
+> (d) its component set is legacy: every component record is the legacy component record (ADR 0061 D12) of one file,
+> under the component's own id there, in any order and for any subset of that file's components (as v1's
+> `record_source` binds them), and `parameter_sets` lists exactly that file's legacy parameter-set records, in the
+> legacy index's order. The criterion stands without `validate`. Such a document lowers to the v1 document with
+> `record_source` = that file and `components` = the set's ids in the set's order (ADR 0001 D2.1); anything else is
+> refused with every construct found, once each, as `construct_unavailable(<construct>, <foundation>)`:
+> `convention:<id>`, `property_methods`, `component:<id>`, `component_set` (records of two files), `parameter_sets`,
+> `derived:<id>` (F4); `phase_assertion:<connection>` (F5); `thermal_coordinate:<coordinate>`, `definition:<id>`,
+> `energy:<c>`, `signal:<c>`, `probe:<c>`, `parameter:<instance>.<parameter>`, `reaction_set:<id>`,
+> `section:<namespace>`, `target:<specification>`, `semantic_role:<role>`, `template:<instance>`,
+> `references:<instance>` (F6). `convention`, `property_methods` and `parameter_sets` are checked only when the
+> component set names one file. Lowering is a field map. A connection with `definition: nTP-v1` becomes
+> `state_definition: nTP-v1`, `component_mapping: revision_component_set`. `phase_capability`, `initialization_hint`
+> and `notes` are copied. Instances and specifications in v1's target form are copied. `convention`, `materials`
+> (whatever its definitions and `phase_order_keys` hold: no `nTP-v1` connection reads them) and `property_methods` are
+> dropped. A field v1 has no counterpart for lowers only in its content-free form, absent when optional and empty when
+> required: admitting a construct later moves no byte of a document accepted now, and giving a dropped one meaning
+> later would. Lowering does not anticipate the v1 binder: a lowered document the binder refuses is refused as its v1
+> twin is. **Raising** (`revision_v2/raise_v1.py`, test and tooling only) inverts the map, with `convention` = that
+> provider's native convention, `materials` = `{thermal_coordinate: T, definitions: []}` and `parameter_sets` = the
+> file's legacy parameter-set records.
+
+Reason line for the ADR edit: "Corrected before acceptance by design-lane ruling F2-R1 (`docs/F2_DECISIONS.md`): the
+literal one-file criterion was stricter than v1 (it refused `SYN-001-T06-STA04` and every CoolProp revision), raised
+`s10` documents did not state the parameter set their run uses, and the binder lowers without `validate`."
+
+**Fix work order F2-WO6c** (Opus; after WO6b commits, in `wp/F2`; files `revision_v2/{lower,raise_v1}.py`,
+`tests/test_f2_lowering.py`, this log):
+1. `lower.py`: `file_parameter_sets(path) -> tuple[str, ...]`, the `parameter_set` records of the legacy index entry
+   with that path, in index order. When the component set names one file F, refuse `parameter_sets` (F4) unless
+   `component_set.parameter_sets == list(file_parameter_sets(F))`; drop the unconditional non-empty check. Refuse
+   `thermal_coordinate:<c>` (F6) unless `materials.thermal_coordinate == "T"`. Module docstring = the D12 text.
+2. `raise_v1.py`: `parameter_sets = list(file_parameter_sets(record_source))`.
+3. Tests: raised GP-C1 states exactly the legacy index's one `s10` set; the raised syn001 base states none; GP-C1 with
+   `[]` and the base with the `s10` set or `["0" * 64]` are refused `parameter_sets`; a two-file component set with a
+   non-empty `parameter_sets` gives only the component refusals; the base with `thermal_coordinate: h_mass` is refused
+   `thermal_coordinate:h_mass`; E-F2-3 library half stays 59/59.
+Acceptance: `tests/test_f2_lowering.py` and WO6b's E-F2-3 run half pass; surface suites and F0 PASS; ruff, format,
+mypy clean. A pinned v2 `content_hash` of a raised `s10` document may move (unreleased test data: re-pin and log it);
+any served digest or F0 move is a stop.
+
+**Open, with defaults.** (1) `validate` applies D11's "`h_mass` admits `std.*` units only" per `h_mass` definition, not
+to every instance of an `h_mass` revision (fact-free design call): default, no `validate` change in F2; the F2
+`reviewer` pass rules on it (check the valid `crystallizer` fixture first). (2) The user's ADR 0062 acceptance card
+(the user's sign-off): default, one line: "D12's lowering criterion corrected before acceptance (F2-R1): v1's permuted
+and subset component sets lower; a legacy file's parameter set is stated; preview and new-role fields are refused;
+thermal coordinate T." (3) `s10`'s set names all three components, so a subset `s10` document states a set wider than
+its components (F4's design): default, F4 admits a parameter set whose components are a superset of the set's.
