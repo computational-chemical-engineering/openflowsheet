@@ -41,9 +41,7 @@ from openflowsheet.application.authz import (
     new_capability,
     revoke_refusal,
 )
-from openflowsheet.application.documents import validate_inline
 from openflowsheet.application.errors import ApiErrorCode
-from openflowsheet.application.operations import OPERATIONS
 from openflowsheet.application.policy_types import (
     AmbientPressureResult,
     CapabilityReference,
@@ -55,14 +53,40 @@ from openflowsheet.application.policy_types import (
 )
 from openflowsheet.application.service_core import UNAUTHENTICATED_MESSAGE, ServiceCore
 from openflowsheet.application.store_records import LedgerRow, StoreError
-from openflowsheet.canonical import document_sha256, first_noncanonical
-from openflowsheet.schema_check import DocumentSchemaError
+from openflowsheet.canonical import document_sha256
 
 #: D5.3's first refusal, before and inside the write transaction.
 _DISABLED_MESSAGE = (
     "administration_disabled: in-band policy administration is off for this project; "
     "its operator switches it on with `openflowsheet project administration on`"
 )
+
+
+def _adding(
+    requested: CapabilityReference, capability: CapabilityReference
+) -> Callable[[ProjectPolicy, CapabilityReference], tuple[ProjectPolicy, str]]:
+    """`grant_capability`'s change to the policy read under the write transaction: the grant
+    judged again against the caller as that policy states it, then `capability` added under an
+    id no capability holds."""
+
+    def add(policy: ProjectPolicy, current: CapabilityReference) -> tuple[ProjectPolicy, str]:
+        refused = delegation_refusal(current, requested)
+        if refused is not None:
+            raise _RefusedError(
+                "forbidden",
+                f"grant_exceeds_caller: {refused}",
+                {"code": "grant_exceeds_caller"},
+            )
+        if any(c.capability_id == capability.capability_id for c in policy.capabilities):
+            raise _RefusedError(
+                "invalid_request",
+                f"capability_exists: capability {capability.capability_id!r} already exists",
+                {"code": "capability_exists", "capability_id": capability.capability_id},
+            )
+        updated = replace(policy, capabilities=(*policy.capabilities, capability))
+        return updated, f"grant:{capability.capability_id}"
+
+    return add
 
 
 class _RefusedError(Exception):
@@ -148,26 +172,10 @@ class AdministrationService:
         except (PolicyAdministrationError, ValueError) as error:
             self._invalid(operation, request_sha256, str(error), "")
 
-        def add(policy: ProjectPolicy, current: CapabilityReference) -> tuple[ProjectPolicy, str]:
-            refused = delegation_refusal(current, requested)
-            if refused is not None:
-                raise _RefusedError(
-                    "forbidden",
-                    f"grant_exceeds_caller: {refused}",
-                    {"code": "grant_exceeds_caller"},
-                )
-            if any(c.capability_id == capability.capability_id for c in policy.capabilities):
-                raise _RefusedError(
-                    "invalid_request",
-                    f"capability_exists: capability {capability.capability_id!r} already exists",
-                    {"code": "capability_exists", "capability_id": capability.capability_id},
-                )
-            updated = replace(policy, capabilities=(*policy.capabilities, capability))
-            return updated, f"grant:{capability.capability_id}"
-
         def result(updated: ProjectPolicy) -> GrantResult:
             return GrantResult("granted", capability, None, updated.policy_sha256)
 
+        add = _adding(requested, capability)
         prior, done = self._write(operation, idempotency_key, request_sha256, caller, add, result)
         if prior is not None:
             original = GrantResult._build(prior.result)
@@ -387,19 +395,5 @@ class AdministrationService:
         )
 
     def _checked(self, name: str, request: Mapping[str, Any]) -> None:
-        """`dispatch`'s steps 1 and 2 for a Python caller: the canonical form, then the request
-        schema; a refusal is audited and raised."""
-        at = first_noncanonical(request)
-        if at is not None:
-            self._core.refuse(
-                "document_not_canonical",
-                "a value has no canonical JSON form",
-                operation=name,
-                pointer=at,
-            )
-        try:
-            validate_inline(name, OPERATIONS[name].request_schema, request)
-        except DocumentSchemaError as error:
-            self._core.refuse(
-                "invalid_request", error.message, operation=name, pointer=error.pointer
-            )
+        """`ServiceCore.check_request`."""
+        self._core.check_request(name, request)

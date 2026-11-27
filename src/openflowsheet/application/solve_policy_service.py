@@ -21,9 +21,8 @@ from collections.abc import Mapping
 from typing import Any
 
 from openflowsheet.application.admission import policy_id_refusal
-from openflowsheet.application.documents import validate_inline
 from openflowsheet.application.inspection_types import SolvePolicyRegistration, SolvePolicyView
-from openflowsheet.application.operations import OPERATIONS
+from openflowsheet.application.policy_types import CapabilityReference
 from openflowsheet.application.service_core import ServiceCore
 from openflowsheet.application.solve_policy_registry import (
     ARTIFACT_PREFIX,
@@ -33,15 +32,14 @@ from openflowsheet.application.solve_policy_registry import (
     load,
     registered_rows,
 )
-from openflowsheet.application.store_records import AuditEntry
-from openflowsheet.canonical import canonical_json, document_sha256, first_noncanonical
+from openflowsheet.application.store_records import LedgerRow
+from openflowsheet.canonical import canonical_json, document_sha256
 from openflowsheet.numerics.solve_record import SolvePolicy
 from openflowsheet.orchestrator.policies import APPLICATION_POLICIES
 from openflowsheet.orchestrator.policy_validation import (
     is_project_policy_id,
     solve_policy_problems,
 )
-from openflowsheet.schema_check import DocumentSchemaError
 
 
 class SolvePolicyService:
@@ -73,46 +71,7 @@ class SolvePolicyService:
                 **detail,
             )
         policy_id = str(policy["policy_id"])
-        data = canonical_json(policy)
-        sha256 = hashlib.sha256(data).hexdigest()
-        store = self._core.store
-        result: SolvePolicyRegistration
-        with store.writing() as connection:
-            prior = store.ledger_lookup(connection, caller.principal_id, operation, idempotency_key)
-            bound = store.artifact_in(connection, artifact_id(policy_id))
-            if prior is not None:
-                pass
-            elif bound is not None and bound.sha256 == sha256:
-                result = SolvePolicyRegistration("exists", policy_id, sha256)
-            elif bound is not None:
-                result = SolvePolicyRegistration(
-                    "conflict",
-                    policy_id,
-                    bound.sha256,
-                    {"expected_sha256": sha256, "actual_sha256": bound.sha256},
-                )
-            else:
-                bind(connection, self._core.files_root, policy_id, data)
-                result = SolvePolicyRegistration("registered", policy_id, sha256)
-                store.ledger_insert(
-                    connection,
-                    caller.principal_id,
-                    operation,
-                    idempotency_key,
-                    request_sha256,
-                    result.as_document(),
-                )
-                store.audit(
-                    connection,
-                    AuditEntry(
-                        principal_id=caller.principal_id,
-                        capability_id=caller.capability_id,
-                        operation=operation,
-                        outcome="allowed",
-                        request_sha256=request_sha256,
-                        effect=f"solve_policy:{policy_id}:registered",
-                    ),
-                )
+        prior, result = self._bind(caller, policy_id, policy, idempotency_key, request_sha256)
         if prior is not None:
             if prior.request_sha256 != request_sha256:
                 self._core.refuse(
@@ -127,6 +86,7 @@ class SolvePolicyService:
             return SolvePolicyRegistration(
                 "replayed", original.policy_id, original.policy_sha256, original.conflict
             )
+        assert result is not None
         return result
 
     def get_solve_policy(self, *, policy_id: str) -> SolvePolicyView:
@@ -173,6 +133,49 @@ class SolvePolicyService:
 
     # ------------------------------------------------------------------------------ helpers
 
+    def _bind(
+        self,
+        caller: CapabilityReference,
+        policy_id: str,
+        policy: Mapping[str, Any],
+        idempotency_key: str,
+        request_sha256: str,
+    ) -> tuple[LedgerRow | None, SolvePolicyRegistration | None]:
+        """D4.4 under the ledger, in one write transaction: the prior row of the same key
+        (nothing written), else the registration's result; `registered` writes the policy, its
+        ledger row and its `allowed` audit row there."""
+        operation = "register_solve_policy"
+        data = canonical_json(policy)
+        sha256 = hashlib.sha256(data).hexdigest()
+        store = self._core.store
+        with store.writing() as connection:
+            prior = store.ledger_lookup(connection, caller.principal_id, operation, idempotency_key)
+            bound = store.artifact_in(connection, artifact_id(policy_id))
+            if prior is not None:
+                return prior, None
+            if bound is not None and bound.sha256 == sha256:
+                return None, SolvePolicyRegistration("exists", policy_id, sha256)
+            if bound is not None:
+                return None, SolvePolicyRegistration(
+                    "conflict",
+                    policy_id,
+                    bound.sha256,
+                    {"expected_sha256": sha256, "actual_sha256": bound.sha256},
+                )
+            bind(connection, self._core.files_root, policy_id, data)
+            result = SolvePolicyRegistration("registered", policy_id, sha256)
+            store.ledger_insert(
+                connection,
+                caller.principal_id,
+                operation,
+                idempotency_key,
+                request_sha256,
+                result.as_document(),
+            )
+            effect = f"solve_policy:{policy_id}:registered"
+            self._core.audit_allowed(connection, caller, operation, request_sha256, effect)
+            return None, result
+
     def _project_policies(self, operation: str, policy_id: str) -> Mapping[str, SolvePolicy]:
         if not is_project_policy_id(policy_id):
             return {}
@@ -187,20 +190,7 @@ class SolvePolicyService:
             )
 
     def _checked(self, name: str, request: Mapping[str, Any]) -> None:
-        """`dispatch`'s steps 1 and 2 for a Python caller: the canonical form, then the request
-        schema; a refusal is audited and raised."""
-        present = {key: value for key, value in request.items() if value is not None}
-        at = first_noncanonical(present)
-        if at is not None:
-            self._core.refuse(
-                "document_not_canonical",
-                "a value has no canonical JSON form",
-                operation=name,
-                pointer=at,
-            )
-        try:
-            validate_inline(name, OPERATIONS[name].request_schema, present)
-        except DocumentSchemaError as error:
-            self._core.refuse(
-                "invalid_request", error.message, operation=name, pointer=error.pointer
-            )
+        """`ServiceCore.check_request` over the members given."""
+        self._core.check_request(
+            name, {key: value for key, value in request.items() if value is not None}
+        )

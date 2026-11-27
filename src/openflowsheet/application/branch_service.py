@@ -20,19 +20,15 @@ import base64
 import binascii
 import json
 import sqlite3
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from typing import Any, Final, NoReturn
 
 from openflowsheet.application.contract import Page
-from openflowsheet.application.documents import validate_inline
-from openflowsheet.application.operations import OPERATIONS
-from openflowsheet.application.policy_types import CapabilityReference
 from openflowsheet.application.service_core import ServiceCore
 from openflowsheet.application.store import BRANCH_PREFIX, HEAD
-from openflowsheet.application.store_records import AuditEntry, LedgerRow
+from openflowsheet.application.store_records import LedgerRow
 from openflowsheet.application.transaction_types import HEAD_REF, Branch, BranchResult
-from openflowsheet.canonical import canonical_json, document_sha256, first_noncanonical
-from openflowsheet.schema_check import DocumentSchemaError
+from openflowsheet.canonical import canonical_json, document_sha256
 
 #: ADR 0078 D2.3: `detail.code` of `head` given as a branch name (`invalid_request`).
 BRANCH_NAME_RESERVED: Final = "branch_name_reserved"
@@ -75,27 +71,17 @@ class BranchService:
     def create_branch(self, *, name: str, revision_id: str, idempotency_key: str) -> BranchResult:
         operation = "create_branch"
         request = {"name": name, "revision_id": revision_id, "idempotency_key": idempotency_key}
-        self._checked(operation, request)
-        caller = self._core.authorize(operation)
-        self._unreserved(operation, name)
-        request_sha256 = document_sha256(request)
-        store = self._core.store
-        ref = BRANCH_PREFIX + name
-        result: BranchResult | None = None
-        prior: LedgerRow | None = None
-        known = True
-        with store.writing() as connection:
-            prior = store.ledger_lookup(connection, caller.principal_id, operation, idempotency_key)
-            tip = store.ref(connection, ref)
-            known = store.get_revision(connection, revision_id) is not None
-            if prior is None and tip is not None:
-                result = BranchResult("conflict", name, tip, {"expected": None, "actual": tip})
-            elif prior is None and known:
-                store.set_ref(connection, ref, revision_id)
-                result = BranchResult("created", name, revision_id)
-                self._record(connection, caller, operation, idempotency_key, request_sha256, result)
-        if prior is not None:
-            return self._replayed(operation, prior, request_sha256)
+
+        def decide(connection: sqlite3.Connection, tip: str | None) -> BranchResult | None:
+            if tip is not None:
+                return BranchResult("conflict", name, tip, {"expected": None, "actual": tip})
+            store = self._core.store
+            if store.get_revision(connection, revision_id) is None:
+                return None
+            store.set_ref(connection, BRANCH_PREFIX + name, revision_id)
+            return BranchResult("created", name, revision_id)
+
+        result = self._write(operation, request, decide)
         if result is None:
             self._core.refuse(
                 "not_found",
@@ -115,27 +101,18 @@ class BranchService:
             "expected_revision": expected_revision,
             "idempotency_key": idempotency_key,
         }
-        self._checked(operation, request)
-        caller = self._core.authorize(operation)
-        self._unreserved(operation, name)
-        request_sha256 = document_sha256(request)
-        store = self._core.store
-        ref = BRANCH_PREFIX + name
-        result: BranchResult | None = None
-        prior: LedgerRow | None = None
-        with store.writing() as connection:
-            prior = store.ledger_lookup(connection, caller.principal_id, operation, idempotency_key)
-            tip = store.ref(connection, ref)
-            if prior is None and tip is not None and tip != expected_revision:
-                result = BranchResult(
+
+        def decide(connection: sqlite3.Connection, tip: str | None) -> BranchResult | None:
+            if tip is None:
+                return None
+            if tip != expected_revision:
+                return BranchResult(
                     "conflict", name, tip, {"expected": expected_revision, "actual": tip}
                 )
-            elif prior is None and tip is not None:
-                store.delete_ref(connection, ref)
-                result = BranchResult("deleted", name, None)
-                self._record(connection, caller, operation, idempotency_key, request_sha256, result)
-        if prior is not None:
-            return self._replayed(operation, prior, request_sha256)
+            self._core.store.delete_ref(connection, BRANCH_PREFIX + name)
+            return BranchResult("deleted", name, None)
+
+        result = self._write(operation, request, decide)
         if result is None:
             self._core.refuse(
                 "not_found",
@@ -149,25 +126,52 @@ class BranchService:
 
     # ------------------------------------------------------------------------------ helpers
 
+    def _write(
+        self,
+        operation: str,
+        request: Mapping[str, str],
+        decide: Callable[[sqlite3.Connection, str | None], BranchResult | None],
+    ) -> BranchResult | None:
+        """A branch write: the request checked, the caller authorized, the name judged, then
+        the ledger lookup and, for a new key, `decide` on the branch's tip, in one write
+        transaction; a `created` or `deleted` result writes its ledger row and its `allowed`
+        audit row there. Returns the replayed result of a used key, `decide`'s result, or
+        `None` (the caller's `not_found`)."""
+        self._checked(operation, request)
+        caller = self._core.authorize(operation)
+        name = request["name"]
+        self._unreserved(operation, name)
+        request_sha256 = document_sha256(request)
+        store = self._core.store
+        result: BranchResult | None = None
+        with store.writing() as connection:
+            prior = store.ledger_lookup(
+                connection, caller.principal_id, operation, request["idempotency_key"]
+            )
+            if prior is None:
+                result = decide(connection, store.ref(connection, BRANCH_PREFIX + name))
+            if result is not None and result.status != "conflict":
+                store.ledger_insert(
+                    connection,
+                    caller.principal_id,
+                    operation,
+                    request["idempotency_key"],
+                    request_sha256,
+                    result.as_document(),
+                )
+                verb = "created" if result.status == "created" else "deleted"
+                effect = f"branch:{result.name}:{verb}"
+                self._core.audit_allowed(connection, caller, operation, request_sha256, effect)
+        if prior is not None:
+            return self._replayed(operation, prior, request_sha256)
+        return result
+
     def _checked(self, name: str, request: Mapping[str, Any]) -> None:
-        """`dispatch`'s steps 1 and 2 for a Python caller: the canonical form, then the request
-        schema, over the members given (an argument left at its default is not a member); a
-        refusal is audited and raised."""
-        present = {key: value for key, value in request.items() if value is not None}
-        at = first_noncanonical(present)
-        if at is not None:
-            self._core.refuse(
-                "document_not_canonical",
-                "a value has no canonical JSON form",
-                operation=name,
-                pointer=at,
-            )
-        try:
-            validate_inline(name, OPERATIONS[name].request_schema, present)
-        except DocumentSchemaError as error:
-            self._core.refuse(
-                "invalid_request", error.message, operation=name, pointer=error.pointer
-            )
+        """`ServiceCore.check_request` over the members given (an argument left at its default
+        is not a member)."""
+        self._core.check_request(
+            name, {key: value for key, value in request.items() if value is not None}
+        )
 
     def _unreserved(self, operation: str, name: str) -> None:
         """D2.3: `head` names the main line and is never a branch's name."""
@@ -198,38 +202,6 @@ class BranchService:
                 pointer="/cursor",
             )
         return after
-
-    def _record(
-        self,
-        connection: sqlite3.Connection,
-        caller: CapabilityReference,
-        operation: str,
-        idempotency_key: str,
-        request_sha256: str,
-        result: BranchResult,
-    ) -> None:
-        """The ledger row and the `allowed` audit row of a write, in its transaction."""
-        store = self._core.store
-        store.ledger_insert(
-            connection,
-            caller.principal_id,
-            operation,
-            idempotency_key,
-            request_sha256,
-            result.as_document(),
-        )
-        verb = "created" if result.status == "created" else "deleted"
-        store.audit(
-            connection,
-            AuditEntry(
-                principal_id=caller.principal_id,
-                capability_id=caller.capability_id,
-                operation=operation,
-                outcome="allowed",
-                request_sha256=request_sha256,
-                effect=f"branch:{result.name}:{verb}",
-            ),
-        )
 
     def _replayed(self, operation: str, prior: LedgerRow, request_sha256: str) -> BranchResult:
         """ADR 0019 D3: the original result, `replayed`; another request under the key is
