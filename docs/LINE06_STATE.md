@@ -91,7 +91,7 @@ worktree for its processes (`/proc/<pid>/cwd`), then TaskStop it.
 
 - `ofs-x06-accept-adr0078` (A, VERIFIED, executed): ADR 0078 accepted as written at dcbab9b7 with Q1-Q3, Q5, Q6 defaults.
 - `ofs-x06-mcp-clients` (A, VERIFIED, executed): static bearer only in 0.6; OAuth later.
-- `ofs-x06-descriptions-human`: OPEN (filed 2026-11-27).
+- `ofs-x06-descriptions-human` (A, VERIFIED, executed 2026-11-27): the 11 texts human-reviewed (wp/X06 1b9561a3).
 
 ## Open decisions (later, not yet requested)
 
