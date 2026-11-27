@@ -250,3 +250,10 @@ Reversible by: <how>.` Package build decisions go in the package's own file (`do
 - 2026-11-27: F8-WO2 judged PASS at 886113ea (orchestrator: test_f8_bundle_v2 + manifest_v2 55 passed; F0 PASS). Factory cases GP-C1, TH-C1; E-F8-3 referenced records via the test-only project rights rows (WO2-4). F8-WO3 briefed (step-7 premise check: rerun of a v1 document does not read the store).
 - 2026-11-27: F2-WO8 judged PASS at 2bba85c3 (orchestrator: test_f2_* + V03 + surface chain 622 passed; F0 PASS). D_11 moved 9a4b4eb3 -> 8eee5313 (item 9; strip_f2 -> D_10 f7ec3c94). ADR 0062 D2 and D11 edited per the review (wp/F2 a64f93fb). DECISION-REQUESTs to hub: ofs-f2-accept-adr0062 (A: accept as corrected, push wp/F2) and ofs-f2-check-admission-human (A: record human review at f111234f).
 - 2026-11-27: F8-WO3 judged PASS at 25e5ed36 (orchestrator: test_f8_replay_v2 + k05_replay + t07_w5e 107 passed; F0 PASS). E-F8-1: 52 bundles byte-identical vs pre-F8 reports at ddac950f (tests/fixtures/f8/v1-replay-reports.json). Step-7 premise DECISION F8-WO3-1 (not STOP): a v1 rerun reads packaged YAML; served_stack serves embedded records first but has no v1 consumer; flagged for the F8 reviewer. Catalogue digest on wp/F8 2b227092 -> 4ca46ea4 (wp/F2 moved it to 3af0a794: conflict at the F2 merge into wp/F8; re-pin then). Ruling batch for the F8 reviewer: WO1-1, WO3-1 to WO3-10.
+
+- 2026-11-27 **F8-WO5 judged PASS** (wp/F8 `dcf4b89f`, `sonnet-implementer`): `tests/test_f8_platform_refs.py` 19
+  passed (rerun by the orchestrator), battery 2674 passed / 28 skipped / 3 xfailed, F0 PASS (50/50, 61/61, 85/85,
+  52/52, 105/105, 42/42), lint clean; catalogue digest `4ca46ea4...` -> `bbdcfb51...` (t07 w5e + doc pages 42 passed on
+  rerun); invariant sweep finds 0 per-platform records in the repository (vacuous; synthetic cases carry it). Four
+  mutation controls fail as intended. Before it: DECISION F8-WO5-0 (X07a errata E-D7-1..5 folded into ADR 0067 D7,
+  `369150d3`). Open for the Opus review: F8-WO5-4 says a solver-counter change did not move R0 for GP-C1.
