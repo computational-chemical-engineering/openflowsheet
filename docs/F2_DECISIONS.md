@@ -240,3 +240,101 @@ Files: `src/openflowsheet/material/{basis,definitions}.py`, `schemas/connection-
   and `tests/test_m04_study_job.py::test_a42_...` likewise: both decompositions lacked `without_f2` (WO2b covered
   t07/t08/m07a). Both now take F2's additions out first, the later first; nothing relaxed. Sweep of M0x, MSG, X0x,
   OPT, ST suites after the fix: 4,390 passed, 0 failed.
+
+## F2-WO4 (`ProcessRevision` v2, `Specification` v2), 2026-11-27
+
+Files: `schemas/{process-revision-v2,specification-v2}.schema.json` (+ `registry.json`),
+`src/openflowsheet/revision_v2/{__init__,parse,validate,canonical}.py`, `src/openflowsheet/material/layout.py`
+(`draft_connection`, `LayoutRefusalError`, `temperature_substream`), `tests/fixtures/schemas/v2/` (context, 2 valid, 9
+invalid revisions, 7 specifications, 30 refusal fixtures), `tests/test_f2_revision_v2.py`, layer registrations
+(`tests/test_package_imports.py`, `.codehealth/config.toml`). No sha256-named member is added, so no numerical-policy
+addendum is needed (the closed partition audits names containing `sha256`).
+
+- **DECISION WO4-1. The validator reads a caller-supplied `ValidationContext`**: component facts by component id
+  (`material.layout.ComponentFacts`), attribute-kind payloads, per model id its ports (`PortFacts`: kind, direction,
+  accepted templates, signal kind), manipulable parameters (name -> quantity kind) and `one_definition` (D11's generic
+  transport unit), the legacy providers and native conventions, the components a method confines (Q8.R7) and its
+  equilibrium-solid candidates (Q8.R1). WO6 builds it from the record store, the registry and the manifests.
+  Alternative: the validator reads the stores itself (it would sit above `models` and `application`).
+- **DECISION WO4-2. Layer and hash rule.** `revision_v2` sits directly above `material` (below `thermo`), so it
+  cannot import `application.revisions`; `CONTENT_HASH_EXCLUDED` is repeated in `revision_v2.canonical` with the same
+  name and members, a test holds it equal to v1's and `content_hash(d) == application.revisions.content_hash(
+  canonical_document(d))` (WO3's `legacy_variable_id` precedent). Alternative: move the v1 function to a low module.
+- **DECISION WO4-3. Canonical form and `content_hash`.** The normal form normalises each `materials.definitions` entry
+  by D3 (`normalise_instance`; groups by id, attributes by (kind, components)); every other list keeps its order.
+  `content_hash` is v1's rule over the normal form, so two spellings of one definition share it. Alternative: the
+  hash of the document as given (group order would then move it).
+- **DECISION WO4-4. Codes outside ADR 0062's table.** Structural faults take existing catalogue codes:
+  `id_duplicate(id)`, `component_unknown(component)`, `instance_missing(instance)`, `model_unsupported(instance,
+  model)`, `port_unsupported(instance, port)`, `connection_kind_unsupported(connection, port)`,
+  `port_direction_conflict(connection, port)`, `specification_target_unknown(specification)`,
+  `capability_unknown(kind)` (an unregistered attribute kind). A D3/D11 rule with no code is
+  `schema_invalid(pointer)`: two `mixed` substreams, grid edges not increasing, gcd(p, q) != 1, components not a
+  subsequence of the set's order, a reaction component outside its scope, a group basis whose species are not its
+  substream's components, an attribute's scope against its `components`, a partition on a group basis, a reference to
+  a missing definition or reaction set. Param names (the catalogue entries are WO7's): definition-level codes
+  `{definition, substream[, kind | species]}`, state-level `{connection, substream[, kind | group]}`, port-level
+  `{connection, port}` with port `<instance>.<port>`, `unit_coordinate_unsupported{instance, coordinate}`,
+  `construct_unavailable{construct, foundation}`, `parameter_binding_conflict{target}`.
+- **DECISION WO4-5. Schema readings.** Every member is required except `content_hash`, `title`, `description` (one
+  spelling; WO2-6's precedent): `reaction_sets: []`, `sections: {}`, `materials.definitions: []`,
+  `property_methods.overrides: []`. `materials.definitions` holds `mat-v1` instances only (D11: energy and signal
+  connections name templates). Preview members are untyped (`property_methods.default`, `method_set`, `template`,
+  `phase_assertion`, section `body`); `references` is a list of strings; `kinetics` is an open object with `kind` and
+  `version`. Endpoint positions are the schema's: a probe only in `from`, a parameter or specification only in `to`,
+  both only on a signal connection; `quantity_kind` only (and always) on a signal connection.
+- **DECISION WO4-6. One fault, one refusal.** A variable target that does not resolve because its connection's
+  definition is refused (no ids can be rendered) is not reported a second time.
+- **DECISION WO4-7. Specification kind: D10 strict.** A specification's `kind` must equal its target's (D10), else
+  `quantity_kind_mismatch(specification)`; a molar kind on a `kg` component's amount is
+  `amount_basis_mismatch(component)` (Q7.R5, Q7.A5). Q7.R5 also says a mass input for a `mol` component "is converted
+  at validation"; D10 refuses it. **Design-lane question** (D10 against Q7.R5); default: D10 (refusing now and admitting
+  later moves no byte).
+- **DECISION WO4-8. Solid roles.** `solid_role_conflict(component)` for a component in two substreams other than
+  `mixed` plus `solid` (two solids, `mixed` plus `nonconventional`), a solid-substream component the method confines
+  (Q8.R2), and (Q8.A6) an attribute in `mixed` on a confined component or an equilibrium-solid candidate (Q8.R4: an
+  equilibrium phase carries no attribute). Q8.A2's definition-level part is `mixed_solid_candidates` (a method's
+  candidates minus the solid-substream components). **Design-lane question**: Q8.A6's code (none is named).
+- **DECISION WO4-9. `state_degenerate_in_definition` is not built.** Q1.R5 decides it at a state point of a
+  `T`-coordinate definition (degenerate in T), which needs a property evaluation (ADR-F5/F6). E-F2-9 covers the other
+  19 codes; the coverage test names the exception.
+- **DECISION WO4-10. State-level codes** (`state_refusals(revision, context, layout, x, connection, feed=)`):
+  `attribute_on_zero_parent` (a component-scoped attribute's parent is its component's carried slots, a
+  substream-scoped one's the substream), `group_amount_negative` (group bases), `feed_not_electroneutral` when a charge
+  row ζ exists and |Σ ζ b| > 1e-12 Σ |ζ| b (Q3.A4's bound, `math.fsum`). Which connections are feeds is the caller's.
+- **DECISION WO4-11. Basis results.** (i) or (ii) failing is `species_basis_incompatible(definition, substream)`
+  (WO2's open default, at the definition level), rank `species_basis_redundant`; (iii) is the notice
+  `species_basis_not_monotone` (`BasisCheck.valid` excludes it, Q3.R1) and Q3.R7's miss the notice
+  `molar_mass_inconsistent` (validation class, as `records.reactions` reports it).
+- **DECISION WO4-12. Bindings.** `parameter_binding_conflict` when a parameter is bound by more than one of: a signal
+  sink, a v1-form specification on `parameters.<p>`; or a specification sink by two signals. D9's "time input" does
+  not exist yet (ADR-F7). A signal's kind is checked against its port's `quantity_kind`, a probe target's kind, a
+  parameter's manipulable kind and a specification sink's `kind`.
+- **DECISION WO4-13. Port compatibility by template.** A port accepts templates; `definition_incompatible` when the
+  connection's is not among them. "`h_mass` admits `std.*` units only" reads the model id prefix `std.`. A
+  `one_definition` unit fed two definitions: `attribute_grid_mismatch(connection, port)` when they differ only in
+  grid edges, else `definition_incompatible`; subset fill and declared maps are ADR-F6's.
+- **DECISION WO4-14. Convention and methods.** A convention other than `ELEMENTAL-ref-v1` or a context native one is
+  `construct_unavailable(convention:<id>, F4)`; `property_methods` other than one known legacy provider and no
+  overrides is `construct_unavailable(property_methods, F4)` (D11's 0.5 rule).
+- **DECISION WO4-15. Q8.A4's T rule** (`MaterialLayout.temperature_substream`): `mixed` when it flows, else the first
+  flowing substream in instance order, `None` for a dormant stream. **Design-lane confirmation** wanted (Q8.R6 says
+  "fixed by the flowing substreams" without an order).
+- **E-F2-8 readings.** Q7.A1: with no method map in 0.6 (derived targets refused), the row-level check is a
+  specification's kind against its target's; the "admitted through a declared map" half waits for F4. Q7.A2 on the
+  fixtures' states (bitwise, 2 connections x 20 states x 2 fixtures and more); WO5's probes add its probe streams.
+- **WO3-6, typed.** `LayoutRefusalError(ValueError)` carries `coded` for a classed attribute without its substream's
+  grid (`attribute_grid_mismatch`) and a component in two partition attributes (`attribute_redundant`), equal to the
+  validator's refusal for the same definition (tested); the layout's other refusals stay `ValueError`.
+- **DECISION WO4-16. Minimal catalogue entries now, prose in WO7.** MSG-G2 (`test_msg_coverage`, E-F1-10,
+  E-F3-11) requires an entry for every code the scan finds in `src/`; the battery after the first WO4 commits failed
+  those 3 tests on 8 scanned codes. Each code the validator emits that had no entry gets an entry in the style of
+  `schema_invalid` (`complete: false`, title and one-line summary; 17 refusals in `refusals.yaml`,
+  `species_basis_not_monotone` in `notices.yaml`), and `scripts/doc_pages.py` re-emits `docs-site/messages/
+  {refusals,notices}.md`. Alternative: allow-list the codes in `scan-allow.yaml` (whose lines are tokens that are not
+  codes: a relaxed check, refused). `state_degenerate_in_definition` (not emitted) gets none. The existing
+  `molar_mass_inconsistent` entry (F3: `args: [reaction]`) does not declare the basis notice's params
+  (`definition, substream, species`): WO7 reconciles it. Isolated in one commit.
+- **Left for WO5/WO6/WO7.** Section bodies against registered `revision_section` schemas, `construct_unavailable(...,
+  F6)` at binding, the context from the stores and `definition_sha256` per connection (`connection_inputs` takes them):
+  WO6. Catalogue entries of the new codes: WO7.
