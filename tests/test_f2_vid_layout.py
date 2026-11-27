@@ -199,8 +199,8 @@ def test_d7_ntp_v1_keeps_todays_ids() -> None:
 
 KINDS = {
     "probe.partition": AttributeKind("component", True, True, "molar_flow"),
-    "probe.moments": AttributeKind("substream", False, True, "number_flow"),
-    "probe.classes": AttributeKind("component", False, True, "number_flow"),
+    "probe.classes": AttributeKind("substream", False, True, "number_flow"),
+    "probe.moments": AttributeKind("component", False, True, "number_flow"),
     "probe.scalar": AttributeKind("substream", False, False, "mass_fraction"),
     "probe.each": AttributeKind("component", False, False, "number_flow"),
 }
@@ -255,9 +255,9 @@ def _substream(
                 _attribute("probe.partition", rng.sample(components, 1), rng.choice(["g1", "n"]))
             )
     if rng.random() < 0.5:
-        attributes.append(_attribute("probe.moments", None, "g1"))
+        attributes.append(_attribute("probe.classes", None, "g1"))
     if rng.random() < 0.5:
-        attributes.append(_attribute("probe.classes", rng.sample(components, len(components)), "n"))
+        attributes.append(_attribute("probe.moments", rng.sample(components, len(components)), "n"))
     if rng.random() < 0.5:
         attributes.append(_attribute("probe.scalar", None, None))
     if rng.random() < 0.5:

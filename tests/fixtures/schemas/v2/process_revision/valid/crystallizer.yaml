@@ -44,7 +44,7 @@ materials:
           grids:
             - {id: L, quantity_kind: dimensionless, edges: [0.0, 0.25, 0.5, 1.0]}
           attributes:
-            - {kind: probe.classes, version: 1.0.0, components: [NaCl], grid: L}
+            - {kind: probe.moments, version: 1.0.0, components: [NaCl], grid: L}
     - id: syrup
       template: mat-v1
       thermal_coordinate: h_mass
@@ -63,7 +63,7 @@ materials:
             - {id: L, quantity_kind: dimensionless, edges: [0.0, 0.5, 1.0]}
           attributes:
             - {kind: probe.partition, version: 1.0.0, components: [sucrose], grid: L}
-            - {kind: probe.moments, version: 1.0.0, components: null, grid: L}
+            - {kind: probe.classes, version: 1.0.0, components: null, grid: L}
 reaction_sets:
   - id: dissolution
     reactions:

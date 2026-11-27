@@ -16,6 +16,6 @@ changes:
           grids: [{id: L, quantity_kind: dimensionless, edges: [0.0, 0.4, 1.0]}]
           attributes:
             - {kind: probe.partition, version: 1.0.0, components: [sucrose], grid: L}
-            - {kind: probe.moments, version: 1.0.0, components: null, grid: L}
+            - {kind: probe.classes, version: 1.0.0, components: null, grid: L}
   - {op: replace, path: /connections/3/definition, value: syrup2}
 errors: [{code: attribute_grid_mismatch, params: {connection: S4, port: mix.in2}}]

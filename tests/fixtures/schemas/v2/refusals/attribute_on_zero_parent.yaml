@@ -2,4 +2,4 @@
 base: crystallizer
 errors: []
 state: {connection: S1, feed: false, values: {"S1@cryst~n[NaCl]": 0.0}}
-state_refusals: [{code: attribute_on_zero_parent, params: {connection: S1, substream: cryst, kind: probe.classes}}]
+state_refusals: [{code: attribute_on_zero_parent, params: {connection: S1, substream: cryst, kind: probe.moments}}]

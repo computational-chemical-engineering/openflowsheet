@@ -16,8 +16,8 @@ components:
 # Attribute kinds (ADR 0062 D5 payloads): the test-only probe kinds of tests/test_f2_vid_layout.py.
 attribute_kinds:
   probe.partition: {scope: component, partition: true, classed: true, quantity_kind: molar_flow}
-  probe.moments: {scope: substream, partition: false, classed: true, quantity_kind: number_flow}
-  probe.classes: {scope: component, partition: false, classed: true, quantity_kind: number_flow}
+  probe.classes: {scope: substream, partition: false, classed: true, quantity_kind: number_flow}
+  probe.moments: {scope: component, partition: false, classed: true, quantity_kind: number_flow}
   probe.scalar: {scope: substream, partition: false, classed: false, quantity_kind: mass_fraction}
   probe.each: {scope: component, partition: false, classed: false, quantity_kind: number_flow}
 # Models: ports (kind, direction, accepted templates, signal kind), manipulable parameters.

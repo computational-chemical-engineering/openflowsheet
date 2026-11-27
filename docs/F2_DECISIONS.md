@@ -340,3 +340,14 @@ addendum is needed (the closed partition audits names containing `sha256`).
 - **Left for WO5/WO6/WO7.** Section bodies against registered `revision_section` schemas, `construct_unavailable(...,
   F6)` at binding, the context from the stores and `definition_sha256` per connection (`connection_inputs` takes them):
   WO6. Catalogue entries of the new codes: WO7.
+
+## F2-WO5 (probes, E-F2-4), 2026-11-27
+
+- **DECISION WO5-1. The probe kinds' scopes as Q6 names them (test data only).** Q6 ("Probes"): `probe.moments`
+  component-scoped, non-partition; `probe.classes` substream-scoped, non-partition counts on a grid. WO3's `KINDS`
+  and WO4's `context.yaml` had the two names on each other's payload (`probe.moments` substream-scoped,
+  `probe.classes` component-scoped). The two names are swapped in the test data (`context.yaml`, `crystallizer.yaml`,
+  three refusal fixtures, `test_f2_vid_layout.py`'s `KINDS` and generator); shapes, counts and verdicts are unchanged
+  (`tests/test_f2_*.py` 288 passed before and after). `test_f2_definitions.py` (normalisation only, no kind facts)
+  and the render example of `test_f2_vid_layout.py` keep their spellings. Alternative: a second payload under the
+  same id in `tests/f2/probes.py` (two meanings of one kind id in one suite). Isolated in one commit.
