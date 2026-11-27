@@ -677,3 +677,12 @@ Files: `revision_v2/{lower,raise_v1}.py`, `tests/test_f2_lowering.py`, `tests/da
 - **Open (found by F8-WO1, reproduced on wp/F2 at 9d2fbe6c):** `tests/test_v03_semantic_roles.py` a29, a31_a, a31_b
   fail (3 failed, 17 passed): a29's corpus now picks up the v2 fixtures (`crystallizer.yaml` fails the v1 checks);
   a31_a finds `revision_v2/lower.py` naming a role; a31_b differs on binding outcome. Fix work order F2-WO7b.
+
+## F2-WO8 (the F2 review's fix round), 2026-11-27 (brief `docs/briefs/LINE06-F2-WO8.md`, spec `docs/reviews/F2-review.md`)
+
+- **DECISION WO8-1 (M1). `find_source` lowers the ancestor.** `application/revision_continuation.py` `find_source`
+  passes `lowered_document(revision.as_document())` to `assemble`; on `RevisionError` it keeps the stored document,
+  so A2 still refuses `source_binding(...)` (no v1 twin). Test `test_m1_a_raised_lineage_continues_as_its_v1_lineage`
+  (`tests/test_f2_amendment9.py`): NET-02 split 0.5 under `default`, child 0.95 under `RRC-revision-v1`, committed
+  as v1 documents and as raised ones; both `solve-path.json` byte-equal, `artifact_r0_sha256` equal, member `taken`.
+  Without the fix the test fails at the child's `solve-path.json` (measured).

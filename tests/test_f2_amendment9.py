@@ -445,3 +445,54 @@ def test_the_optimization_of_a_raised_revision_is_the_optimization_of_its_v1_doc
     assert found2["candidate"] == found1["candidate"]
     assert found2["run_ids"] == found1["run_ids"]
     assert files2 == files1
+
+
+def _lineage_bundles(root: Path, raised: bool) -> tuple[bytes, bytes, str]:
+    """RRC's N1 lineage in a store (`tests/test_rrc_application.py`): NET-02 at split 0.5 solved
+    under `default`, then its child at 0.95 under `RRC-revision-v1`, which continues from the
+    ancestor; committed as the v1 documents or as their raised forms. The ancestor's and the
+    child's `solve-path.json` bytes and the child's `artifact_r0_sha256`."""
+    from t07_jobs_support import commit  # noqa: PLC0415
+
+    from openflowsheet.application.job_requests import JobRequest, SolveBody  # noqa: PLC0415
+    from openflowsheet.application.local import LocalApplication  # noqa: PLC0415
+    from openflowsheet.run.bundle import MANIFEST_NAME  # noqa: PLC0415
+
+    def document(split: float) -> dict[str, Any]:
+        found = _base()
+        unit = next(i for i in found["instances"] if i["id"] == "U-SPLIT")
+        unit["parameters"]["split_fraction"]["value"] = split
+        if raised:
+            found = _raised(found)
+        for key in ("revision_id", "parent_revision"):
+            found.pop(key, None)
+        return found
+
+    with LocalApplication.create(root / "lineage", project_id="f2-wo8-lineage") as app:
+        directories = []
+        for count, (split, policy_id) in enumerate(((0.5, "default"), (0.95, "RRC-revision-v1"))):
+            revision_id = commit(app, document(split))
+            request = JobRequest("solve", f"f2-wo8-{count}", SolveBody(revision_id, policy_id))
+            job = app.submit_job(request).job
+            assert job.status == "completed", (job.status, job.error)
+            directories.append(app.files_root / "jobs" / job.job_id / "bundle")
+        ancestor, child = directories
+        manifest = json.loads((child / MANIFEST_NAME).read_bytes())
+        return (
+            (ancestor / "artifacts" / "solve-path.json").read_bytes(),
+            (child / "artifacts" / "solve-path.json").read_bytes(),
+            manifest["artifact_r0_sha256"],
+        )
+
+
+def test_m1_a_raised_lineage_continues_as_its_v1_lineage(tmp_path: Path) -> None:
+    """F2 review M1 (D8): revision continuation reads a v2 ancestor as its lowering, so a
+    two-revision lineage committed as raised documents writes the v1 lineage's `solve-path.json`
+    byte for byte (the `revision_continuation` member `taken`, its `source_document` the v1
+    document) and the same `artifact_r0_sha256`."""
+    v1 = _lineage_bundles(tmp_path / "v1", raised=False)
+    v2 = _lineage_bundles(tmp_path / "v2", raised=True)
+    member = json.loads(v1[1])["revision_continuation"]
+    assert (member["status"], member["reason"]) == ("taken", None)
+    assert member["source_document"]["schema_version"] == 1
+    assert v2 == v1
