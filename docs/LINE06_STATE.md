@@ -38,30 +38,28 @@ the ADR acceptances of card `ofs-line06-adr-clause`; X06's exits.
 Parallelism: at most two agents. F2 first; D1 runs beside F2 once the X06 scope card is answered; F8-WO1 can start
 once F2-WO4 is on wp/F2 (F8 branches from wp/F2's head, merges after F2).
 
-## Next action (written for a self-reset, 2026-11-27; no agent running)
+## Next action (2026-11-27, written while two agents run)
 
-Done and judged: D1, F2-WO1 (miss fixed by WO2b), F2-WO2, F2-WO2b, X06-WO1, X06-WO2 (log). ADR 0078 **Accepted**
-(status line on wp/X06 `7ca42a0e`). Heads: wp/F2 `41177bcf` (WO3 reported), wp/X06 `7ca42a0e`.
+Done and judged (details: `docs/LINE06_DECISIONS.md`): F2-WO1 to WO5 (WO4: E-F2-9 19/20 recorded; WO5 Q6.A2
+registration half untestable, recorded); X06-WO1 to WO5 incl. R1 rulings (R-1074, R-1075), WO3b, WO4b. Heads:
+wp/F2 `f4c5cd7a`, wp/X06 `020b7b72` (manifest `evidence/X06/a657d29d.../manifest.json`, `tested`).
 
-**Two detached jobs are running** (their completion notices arrive in the new context; each prints one line):
-1. `battery-f2-wo3`: the named suites plus F0 on the f2 worktree at `41177bcf` (script: session scratchpad
-   `battery_f2.sh`; log `~/.cache/line06/battery-f2-wo3.log`, read only by `tail`). PASS = pytest 0 failed and the
-   last line `F0 PASS: M1 50/50, M2 61/61, M3 61/61, M4 61/61, M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 42/42`.
-   On PASS: log "F2-WO3 judged PASS" and launch `opus-engineer` on `docs/briefs/LINE06-F2-WO4.md`. On FAIL: grep the
-   log for FAILED, log the miss, brief a fix order.
-2. `f0-x06-wo2`: F0 on wp/X06 at `7ca42a0e` (log `~/.cache/line06/f0-x06-wo2.log`). On PASS (same counts): launch
-   `opus-engineer` on `docs/briefs/LINE06-X06-WO3.md`. On FAIL: stop and log.
-If a notice is missed: `tail -3 ~/.cache/line06/<name>.log`, and `cat ~/.cache/line06/<name>.pid` + `ps -p` to see
-whether it still runs.
+**Running agents** (completion notices reach this session; a new context after a reset does not know them):
+1. F2-WO6a (`opus-engineer`, brief `docs/briefs/LINE06-F2-WO6a.md`, logs `~/.cache/line06/f2wo6a/`): lower/raise,
+   `solution-state-v2`, `r0_projection` for v2, a "WO6b dispatch map" in `docs/F2_DECISIONS.md`. On report: judge on
+   the brief's acceptance, spot-check one test file and F0, then write and launch F2-WO6b (Amendment 9 dispatch per
+   the map, run submission, E-F2-3 run half, ADR 0019 Amendment 9 pointer, `interfaces-frozen.md`).
+2. X06 reviewer (brief `docs/briefs/X06-reviewer.md`, deliverable `docs/reviews/X06-review.md` on main): on report,
+   brief one Opus fix round on wp/X06 (apply rulings, record design-lane description reviews in `REVIEW.json` at the
+   reviewed hashes, Q26 entries). Then: a DECISION-REQUEST to hub for the user's review of the 11 description texts
+   (gate T08.A18, the "human" review kind; list each text with its hash), then push wp/X06 for CI, then the merge card.
 
-Then, per report: `git -C <worktree> status`, ListAgents, judge on the brief's acceptance (surface suites included),
-re-run F0 on the branch, log. Remaining F2: WO4, WO5 (probes), WO6 (lowering, ADR 0019 Amendment 9 pointer; locate
-"dispatch in the application layer" by recon first), WO7 close-out, then F2's `reviewer` pass with the ruling batch
-(WO1-4, WO1-1, WO1-9, M = 1 for kg, WO2-1, WO2-7, WO3-6), then the ADR 0062 acceptance card. Remaining X06: WO3,
-WO4 (administration), WO5 close-out, `reviewer` pass (rulings: WO1-1 unused serve functions, stateless tools/call
-without initialize, WO2-4 commit re-prepare, WO2-7), then one card for the user's review of every new or changed
-MCP description text (gate T08.A18), then the merge card. At F2's merge: the register-block conflict (WO3-1). F8
-starts after F2-WO4 and WO6 (branch from wp/F2).
+Then F2: WO6b, WO7 close-out (Sonnet; catalogue prose for WO4-16's 18 entries), F2 reviewer with the ruling batch
+(WO1-4, WO1-1, WO1-9, M = 1 for kg, WO2-1, WO2-7, WO3-6, WO4-7, WO4-8, WO4-9, WO4-15, Q-WO5-a, Q-WO5-b, Q-WO5-c,
+WO5-1), the ADR 0062 acceptance card. F8 branches from wp/F2 after WO6b. At F2's merge: the register-block conflict
+(WO3-1). Code health to file: S2 (AttributeError escapes `reproduce` on a named bundle).
+Process rules learned: every brief gives the engineer its own log dir under `~/.cache/line06/<wo>/`; wait on log
+lines, not `kill -0` (run.sh's setsid PID is invisible from other shells).
 
 ## Decisions settled (Decision Desk, 2026-11-26, each choice A, VERIFIED, `executed` written)
 
