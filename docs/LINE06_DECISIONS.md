@@ -216,3 +216,10 @@ Reversible by: <how>.` Package build decisions go in the package's own file (`do
   the description-review gate, the user's 11 items); F0 PASS (M1 50/50 ... M9 42/42). Card
   ofs-x06-descriptions-human filed by hub (open). Next for X06: on VERIFIED A, record the human reviews in REVIEW.json,
   rerun that test, push wp/X06 for CI, merge card.
+- 2026-11-27: F2-WO6a judged PASS, wp/F2 f9a415f1: E-F2-3 library half 59/59 (M1's 50 + F0's 9 basis cases),
+  construct refusals 93 tests; E-F2-10 35 tests; battery 5737 passed 0 failed; F0 PASS. Spot-check: both new files
+  128 passed. WO6a-2 (D12 component-order reading; literal reading refuses STA04 and every CoolProp revision) and
+  WO6a-3 (unclassified D11 fields refused) touch D12, frozen core (D13): not batched.
+  DECISION: one fresh architect ruling pass F2-R1 now (brief docs/briefs/LINE06-F2-R1.md) beside F2-WO6b (brief
+  docs/briefs/LINE06-F2-WO6b.md), which builds on the current reading. Alternative: hold WO6b. Reversible by: a fix
+  WO after the ruling.
