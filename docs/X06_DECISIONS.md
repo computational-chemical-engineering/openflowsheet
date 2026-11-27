@@ -590,3 +590,26 @@ Brief `docs/briefs/LINE06-X06-CI1.md`, build lane. The same ten tests failed on 
   (`('exact_replay', 'MATCH')`), and passes unset. The test now asserts equal identity and BLAS version and expects
   `exact_replay` when the pins are known and equal on both sides, else `compatible_reproduction`; it passes both
   ways. Alternative: pin the threads in the test. Reversible by: reverting the commit.
+- **Item 5, codehealth (no numerics; every change a refactor without behaviour change).** At `9894f9e2`
+  `codehealth diff --base origin/main --head HEAD` failed: debt 59.30 -> 99.20 and six new file smells. The debt rise
+  was X06's: `commit_change` +12.2 (cognitive 25), `_cross_check_solve_path` +5, `_first_difference` +4, the
+  runner's `solve`/`optimize` +2.7, and eleven new parameters past five, most of them in frozen signatures
+  (`grant_capability` on the contract, the facade and the service) that stay. Changes: `ServiceCore.check_request`
+  and `audit_allowed` replace four copies of `_checked` (branches, solve policies, administration, records) and the
+  write paths' audit rows; `BranchService._write` holds create's and delete's one transaction shape;
+  `SolvePolicyService._bind` the registration's transaction; `commit_change` splits into `_moved` (one rule for the
+  snapshot and the lock), `_attempt` and `_commit` over a `_CommitContext`; `_cross_check_solve_path` into `_intact`,
+  `_route_and_request` and `_lowered`; `_first_difference` over `_paired`; the runner's `resolve` stage into
+  `_resolve`, `_policies` and `_weakening_refused` (shared by `solve` and `optimize`), its typed-end state in
+  `_SolveState`; `_adding` out of `grant_capability`; `_cursor_ordinal` out of `decode_cursor`; one
+  `_ARTIFACT_SELECT` for the store's four artifact queries (byte-equal SQL). Result at the worktree: `DIFF PASS`,
+  30 touched files, debt 61.30 -> 59.40 (records_service, now touched, adds 2.00 to both sides).
+- **DECISION X06-CI1-5. `bundle_rows`, `record_rows` and `KIND_OF_FILE` move verbatim to `jobs/artifact_rows.py`.**
+  `jobs/runner.py` was a new `large_file` (1002 > 1000). The three are the artifact-row builders `JobService` also
+  imports; the runner imports them from the new home. Alternative: trim the runner in place. Reversible by:
+  reverting the commit.
+- **DECISION X06-CI1-6. The `streams` command's four helpers move to `application/cli_streams.py`.** `cli.py` was a
+  new `large_file` (1008). `stream_table_refusal`, `bundle_display_units`, `stream_table_request` and
+  `write_stream_table` (formerly `_`-prefixed in `cli.py`) use nothing of the CLI's own; `command_streams` calls
+  them as `cli_streams.*`. Alternative: split the `project` command group (needs `_human_text` shared). Reversible
+  by: reverting the commit.
