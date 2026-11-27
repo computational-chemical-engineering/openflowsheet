@@ -84,6 +84,11 @@ BRANCH_PREFIX: Final[str] = "branches/"
 #: The first row name past every `BRANCH_PREFIX` row in bytewise order (`/` + 1 is `0`).
 _BRANCH_END: Final[str] = "branches0"
 ACTIVE_STATUSES: Final[tuple[str, ...]] = ("queued", "running")
+#: An `artifacts` row's columns in `ArtifactRow`'s order, before a `WHERE` clause.
+_ARTIFACT_SELECT: Final[str] = (
+    "SELECT artifact_id, job_id, kind, name, sha256, size_bytes, relpath, parent_artifact_id"
+    " FROM artifacts"
+)
 
 _TABLES: Final[tuple[str, ...]] = (
     "CREATE TABLE meta (key TEXT PRIMARY KEY, value TEXT NOT NULL)",
@@ -956,21 +961,14 @@ class ProjectStore:
 
     def artifact(self, artifact_id: str) -> ArtifactRow | None:
         with self.reading() as connection:
-            row = connection.execute(
-                "SELECT artifact_id, job_id, kind, name, sha256, size_bytes, relpath,"
-                " parent_artifact_id FROM artifacts WHERE artifact_id = ?",
-                (artifact_id,),
-            ).fetchone()
-        return None if row is None else ArtifactRow(*row)
+            return self.artifact_in(connection, artifact_id)
 
     @staticmethod
     def artifact_in(connection: sqlite3.Connection, artifact_id: str) -> ArtifactRow | None:
         """`artifact` inside the caller's transaction (ADR 0078 D4.4: a write-once id is read
         and bound in one write transaction)."""
         row = connection.execute(
-            "SELECT artifact_id, job_id, kind, name, sha256, size_bytes, relpath,"
-            " parent_artifact_id FROM artifacts WHERE artifact_id = ?",
-            (artifact_id,),
+            _ARTIFACT_SELECT + " WHERE artifact_id = ?", (artifact_id,)
         ).fetchone()
         return None if row is None else ArtifactRow(*row)
 
@@ -979,8 +977,7 @@ class ProjectStore:
         iteration's admission reads, spec §18 A1.2)."""
         with self.reading() as connection:
             rows = connection.execute(
-                "SELECT artifact_id, job_id, kind, name, sha256, size_bytes, relpath,"
-                " parent_artifact_id FROM artifacts WHERE kind = ? ORDER BY artifact_id",
+                _ARTIFACT_SELECT + " WHERE kind = ? ORDER BY artifact_id",
                 (kind,),
             ).fetchall()
         return [ArtifactRow(*row) for row in rows]
@@ -989,9 +986,7 @@ class ProjectStore:
         """The registered members of a bundle, in id order."""
         with self.reading() as connection:
             rows = connection.execute(
-                "SELECT artifact_id, job_id, kind, name, sha256, size_bytes, relpath,"
-                " parent_artifact_id FROM artifacts WHERE parent_artifact_id = ?"
-                " ORDER BY artifact_id",
+                _ARTIFACT_SELECT + " WHERE parent_artifact_id = ? ORDER BY artifact_id",
                 (parent_artifact_id,),
             ).fetchall()
         return [ArtifactRow(*row) for row in rows]
