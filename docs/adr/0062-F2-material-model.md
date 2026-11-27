@@ -268,21 +268,37 @@ id and no overrides (v1's selection in v2).
 ### D12. Reading, lowering and operations (ADR 0019 Amendment 9)
 
 `parse_revision` dispatches on `schema_version`: 1 → the untouched v1 reader; 2 → `revision_v2.parse` (ADR 0002 D7.5:
-never read as the other). **Lowering** (`revision_v2/lower.py`): a v2 document is *v1-expressible* iff its convention is
-the legacy provider's native one, every material connection is `nTP-v1`, it has no energy or signal connection, reaction
-set, section, probe or parameter endpoint, and every component record carries `legacy.{profile, file}` from one file
-whose component list equals `component_set` in order (ADR 0061 D12). It lowers to the v1 document with `record_source` =
-that file and `component_mapping` the identity; anything else is refused `construct_unavailable(<construct>,
-<foundation>)`. Lowering is a field map. A connection with `definition: nTP-v1` becomes `state_definition: nTP-v1`,
-`component_mapping: revision_component_set`. `phase_capability`, `initialization_hint` and `notes` are copied.
-Specifications in v1's target form are copied. `convention`, `materials` and `property_methods` are dropped, after
-checking that `property_methods.default` is the provider ADR 0050 D1 assigns to `record_source` (else
-`construct_unavailable(property_methods, F4)`). **Raising** (`revision_v2/raise_v1.py`, test and tooling only) inverts
-the map, with `convention` = that provider's native convention. Amendment 9: `commit_change`, `preview_change`,
-`diff_revisions`, `validate_revision`, `check_admission` (ADR 0060 D11's revision form) and run submission accept v2
-documents; `ChangeSet` paths address v2 fields unchanged; results gain no field. `check_admission` adds F2's checks
-(thermal coordinate, port compatibility, solid roles, grids, basis validity, signal kinds) to
-`AdmissionReport.notices`/refusals.
+never read as the other). **Lowering** (`revision_v2/lower.py`): a v2 document is *v1-expressible* iff (a) its
+convention is the native one of the legacy provider ADR 0050 D1 assigns to its record source, and
+`property_methods.default` is that provider with no override; (b) `materials.thermal_coordinate` is `T`; (c) every
+material connection is `nTP-v1`, and it has no energy or signal connection, reaction set, section, probe or parameter
+endpoint, specification target outside v1's form, connection `phase_assertion`, instance `template` or `references`, or
+`semantic_role` outside v1's vocabulary; (d) its component set is legacy: every component record is the legacy component
+record (ADR 0061 D12) of one file, under the component's own id there, in any order and for any subset of that file's
+components (as v1's `record_source` binds them), and `parameter_sets` lists exactly that file's legacy parameter-set
+records, in the legacy index's order. The criterion stands without `validate`. Such a document lowers to the v1 document
+with `record_source` = that file and `components` = the set's ids in the set's order (ADR 0001 D2.1); anything else is
+refused with every construct found, once each, as `construct_unavailable(<construct>, <foundation>)`: `convention:<id>`,
+`property_methods`, `component:<id>`, `component_set` (records of two files), `parameter_sets`, `derived:<id>` (F4);
+`phase_assertion:<connection>` (F5); `thermal_coordinate:<coordinate>`, `definition:<id>`, `energy:<c>`, `signal:<c>`,
+`probe:<c>`, `parameter:<instance>.<parameter>`, `reaction_set:<id>`, `section:<namespace>`, `target:<specification>`,
+`semantic_role:<role>`, `template:<instance>`, `references:<instance>` (F6). `convention`, `property_methods` and
+`parameter_sets` are checked only when the component set names one file. Lowering is a field map. A connection with
+`definition: nTP-v1` becomes `state_definition: nTP-v1`, `component_mapping: revision_component_set`.
+`phase_capability`, `initialization_hint` and `notes` are copied. Instances and specifications in v1's target form are
+copied. `convention`, `materials` (whatever its definitions and `phase_order_keys` hold: no `nTP-v1` connection reads
+them) and `property_methods` are dropped. A field v1 has no counterpart for lowers only in its content-free form, absent
+when optional and empty when required: admitting a construct later moves no byte of a document accepted now, and giving
+a dropped one meaning later would. Lowering does not anticipate the v1 binder: a lowered document the binder refuses is
+refused as its v1 twin is. **Raising** (`revision_v2/raise_v1.py`, test and tooling only) inverts the map, with
+`convention` = that provider's native convention, `materials` = `{thermal_coordinate: T, definitions: []}` and
+`parameter_sets` = the file's legacy parameter-set records. (Corrected before acceptance by design-lane ruling F2-R1,
+`docs/F2_DECISIONS.md`: the literal one-file criterion was stricter than v1 (it refused `SYN-001-T06-STA04` and every
+CoolProp revision), raised `s10` documents did not state the parameter set their run uses, and the binder lowers without
+`validate`.) Amendment 9: `commit_change`, `preview_change`, `diff_revisions`, `validate_revision`, `check_admission`
+(ADR 0060 D11's revision form) and run submission accept v2 documents; `ChangeSet` paths address v2 fields unchanged;
+results gain no field. `check_admission` adds F2's checks (thermal coordinate, port compatibility, solid roles, grids,
+basis validity, signal kinds) to `AdmissionReport.notices`/refusals.
 
 ### D13. Core at the end of W1, and preview
 
