@@ -710,3 +710,7 @@ Files: `revision_v2/{lower,raise_v1}.py`, `tests/test_f2_lowering.py`, `tests/da
   `definition_incompatible.yaml` and `invalid/component_mapping.yaml` addressed `S2`, the only `nTP-v1` connection;
   both now take `legacy_only` as base (a `T` revision; `definition_incompatible` adds a `std.sink` and points `S2`
   at `sink.in`), keeping their subject. `tests/test_f2_*.py` + V03: 581 passed, 1 deselected.
+- **DECISION WO8-4 (S1, WO4-15 changed). `MaterialLayout.thermal_substreams(x, c) -> tuple[str, ...]`** replaces
+  `temperature_substream`: the flowing substreams in instance order, `()` when dormant; T solves
+  ṁĥ = Σ_s ṁ_s ĥ_s(T, P) over them jointly (Q8.R6); Q8.A4 is the singleton case. The test's both-flowing row
+  expects `("liq", "cryst")`; the two singleton rows keep the stub T check. No other caller existed.

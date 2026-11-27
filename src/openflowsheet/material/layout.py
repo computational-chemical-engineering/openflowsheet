@@ -442,21 +442,14 @@ class MaterialLayout:
             float(x[slots[-1].variable_index]),
         )
 
-    def temperature_substream(self, x: Vector, connection: str) -> str | None:
-        """The substream whose model fixes `connection`'s T in `x` (Q8.R5, R6; E-F2-8's Q8.A4):
-        `mixed` when it flows, else the first flowing substream in instance order; `None` when the
-        stream is dormant (its T is undefined, D4). Substreams share `ĥ` and `P`, so one flowing
-        substream's T(ĥ, P) is the stream's."""
-        layout = self._connections[connection]
+    def thermal_substreams(self, x: Vector, connection: str) -> tuple[str, ...]:
+        """The substreams whose models fix `connection`'s T in `x` (Q8.R5, R6; E-F2-8's Q8.A4):
+        the flowing substreams in instance order, `()` when the stream is dormant (its T is
+        undefined, D4). D3 carries one `h` per connection, the mass-weighted mean, so T solves
+        ṁĥ = Σ_s ṁ_s ĥ_s(T, P) over these jointly (Q8.R6: "fixed by the flowing substreams");
+        Q8.A4 is the case of one."""
         state = self.state(x, connection)
-        flowing = [
-            (placed.kind, found.substream)
-            for placed, found in zip(layout.substreams, state.substreams, strict=True)
-            if not found.is_dormant
-        ]
-        mixed = [substream for kind, substream in flowing if kind == "mixed"]
-        ordered = mixed + [substream for _, substream in flowing]
-        return ordered[0] if ordered else None
+        return tuple(found.substream for found in state.substreams if not found.is_dormant)
 
     def value(self, x: Vector, connection: str) -> float:
         """The one value of an energy or signal connection in `x` (`~Q`, `~W`, `~s`)."""
