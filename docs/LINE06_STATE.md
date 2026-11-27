@@ -9,14 +9,14 @@ Procedure: `.claude/skills/line06/SKILL.md`. Host SMM-TR09 (`ref-x86-64`); orche
 Amendment 3. Line acceptance: a v2 revision with store-pinned records solves on the legacy route on all three OSes;
 the ADR acceptances of card `ofs-line06-adr-clause`; X06's exits.
 
-## Position (2026-11-27, 14:20)
+## Position (2026-11-27, 15:45)
 
 - All three packages built, reviewed and fixed; nothing merged into `main` yet. `main` local, last pushed `4c7d3d6a`.
 - **F2** (ADR 0062 **Accepted**): origin wp/F2 = `4b820b97` (full gate PASS 21725 passed). Local wp/F2 = `2757eb37`
   (one docs commit after: stale D_11 corrected). CI running.
 - **F8** (ADR 0067 + ADR 0019 Amendment 12 **Accepted**): local wp/F8 = `4daff37f` (contains wp/F2 4b820b97, review
-  fix round F8-FR, manifest `evidence/F8/18676313.../manifest.json` tested). Card `ofs-f8-accept-adr0067` VERIFIED;
-  push of exactly `14409696` waits for its full gate. Merges after F2.
+  fix round F8-FR, manifest `evidence/F8/18676313.../manifest.json` tested). Card `ofs-f8-accept-adr0067` VERIFIED,
+  `executed`; full gate PASS 21895 passed; origin wp/F8 = `14409696`, CI running. Merges after F2.
 - **X06** (ADR 0078 Accepted): origin wp/X06 = `a514896c` (X06-CI1 fixes; full gate PASS 21303 passed). CI running.
 - `release/lines/0.6.json` DRAFT (LINE06-L0); release campaign not started.
 
@@ -52,12 +52,9 @@ Background jobs (they survive the reset; their notices arrive in the new context
    `~/.cache/line06/ci/x06-a514896c.log`. On green: X06 merge card via hub. Mention on the card for design-lane
    notice: DECISION X06-CI1-1 (new addendum `benchmarks/x06/numerical_policy_external.yaml` classifies
    `expected_sha256`/`actual_sha256` exact; R-1032 precedent).
-3. **F8 full gate**: nohup in detached worktree `.claude/worktrees/f8-gate` at `14409696`; summary
-   `~/.cache/line06/f8-gate/gate-14409696.summary` (a background waiter prints it). On `GATE PASS`: push
-   `git -c credential.helper= -c credential.helper='!gh auth git-credential' push origin 14409696:refs/heads/wp/F8`,
-   CI waiter, write `executed` on card `ofs-f8-accept-adr0067` (ArtifactData update, current version 2 or later;
-   re-read first). On FAIL: no push, tell hub, `executed` PARTIAL (ADR accepted `4daff37f`, push withheld). Then
-   `git worktree remove .claude/worktrees/f8-gate`.
+3. **F8 CI waiter**: same script for `wp/F8 14409696d814565ae037f16ceed948ebba1e7577`, log
+   `~/.cache/line06/ci/f8-14409696.log`. On green: F8 waits for F2's merge (see merge order); no card yet. On failure:
+   fix order as for F2.
 
 **Merge order into main:** whichever of F2 / X06 is green first merges first (merge card each). The second
 re-decomposes its surface chain onto the first's digest (R-1072/R-1073: X06's c_12 `D_12` vs F2's c_11 `D_11`

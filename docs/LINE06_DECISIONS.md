@@ -324,3 +324,7 @@ Reversible by: <how>.` Package build decisions go in the package's own file (`do
   decompositions lacked `without_x06`; (4) CI pins threads to 1 -> `exact_replay` (Amendment 3), the test now follows
   `decide_mode`; (5) refactors, no behaviour change; (6) identity job downstream of the check legs. Pushed origin
   wp/X06 = a514896c (orchestrator lane, as the first X06 push); CI waiter `~/.cache/line06/ci/x06-a514896c.log`.
+- 2026-11-27 15:45 **F8 gate PASS** at `14409696`: `GATE PASS 14409696: 21895 passed, 107 skipped, 224 deselected,
+  3 xfailed` (1:39:56; log `~/.cache/line06/f8-gate/gate-14409696.log`). Pushed exactly `14409696` to origin wp/F8
+  (card `ofs-f8-accept-adr0067`); `executed` written (card version 3). Worktree `.claude/worktrees/f8-gate` removed.
+  F8 CI waiter: log `~/.cache/line06/ci/f8-14409696.log`.
