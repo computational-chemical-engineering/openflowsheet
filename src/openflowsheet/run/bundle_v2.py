@@ -253,7 +253,14 @@ def _cross_check_v2(
     index = json.loads(index_path.read_text(encoding="utf-8"))
     lock = json.loads(lock_path.read_text(encoding="utf-8"))
     entries = index.get("records", [])
-    if [entry["sha256"] for entry in entries] != list(locked_records(lock)):
+    try:
+        locked = list(locked_records(lock))
+    except (KeyError, TypeError):
+        # A lock without D10's members is tampered (its hash check above has said so); the
+        # check reports, it does not raise.
+        tampered.append(DATA_LOCK_NAME)
+        return
+    if [entry["sha256"] for entry in entries] != locked:
         tampered.append(RECORDS_INDEX_NAME)
     embedded = {record_name(entry["sha256"]) for entry in entries if entry["embedded"]}
     stored = {name for name in manifest.artifacts if name.startswith(f"{RECORDS_DIR}/")}
