@@ -514,6 +514,50 @@ The specific reasons a request, a revision, a solve or a project is refused, nam
 
 - **Summary:** Refused: active set cycling.
 
+<a id="administration_disabled"></a>
+
+## `administration_disabled`: In-band policy administration that is off for this project
+
+**Kind:** Not supported in this version: a limitation of OpenFlowsheet, not an error in your flowsheet.
+
+- **Summary:** In-band policy administration is off for this project.
+- **Why:** Changing grants or the ambient pressure through the application is off unless the project's operator switches it on, so that an existing grant holding the policy right does not silently gain the power to mint credentials. get_policy reads the policy in any case.
+- **Do:** Ask the project's operator to run openflowsheet project administration on, or to make the change with openflowsheet project grant, revoke or ambient.
+- **Not supported:** missing capability: in-band policy writes in a project whose operator has not switched them on
+
+Example:
+
+```text
+In-band policy administration is off for this project.
+  Why:     Changing grants or the ambient pressure through the application is off unless the project's operator switches it on, so that an existing grant holding the policy right does not silently gain the power to mint credentials. get_policy reads the policy in any case.
+  Do:      Ask the project's operator to run openflowsheet project administration on, or to make the change with openflowsheet project grant, revoke or ambient.
+  Kind:    Not supported in this version: a limitation of OpenFlowsheet, not an error in your flowsheet.
+  Code:    administration_disabled, in unsupported (openflowsheet explain administration_disabled)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#administration_disabled
+```
+
+<a id="administration_remote_refused"></a>
+
+## `administration_remote_refused`: An in-band policy write on a server bound beyond loopback
+
+**Kind:** Not supported in this version: a limitation of OpenFlowsheet, not an error in your flowsheet.
+
+- **Summary:** This server binds a non-loopback interface, and in-band policy writes are refused on it.
+- **Why:** The server has no TLS, so a bearer token crosses the network in clear text. A policy token sniffed there could mint credentials that outlive its own revocation, so grants, revocations and the ambient pressure change only through a server bound to loopback.
+- **Do:** Make the change through a server bound to loopback (a TLS proxy may forward to one), or ask the operator to use openflowsheet project grant, revoke or ambient.
+- **Not supported:** missing capability: in-band policy writes on a server bound beyond loopback, which has no TLS
+
+Example:
+
+```text
+This server binds a non-loopback interface, and in-band policy writes are refused on it.
+  Why:     The server has no TLS, so a bearer token crosses the network in clear text. A policy token sniffed there could mint credentials that outlive its own revocation, so grants, revocations and the ambient pressure change only through a server bound to loopback.
+  Do:      Make the change through a server bound to loopback (a TLS proxy may forward to one), or ask the operator to use openflowsheet project grant, revoke or ambient.
+  Kind:    Not supported in this version: a limitation of OpenFlowsheet, not an error in your flowsheet.
+  Code:    administration_remote_refused, in unsupported (openflowsheet explain administration_remote_refused)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#administration_remote_refused
+```
+
 <a id="ambient_pressure_invalid"></a>
 
 ## `ambient_pressure_invalid`: An ambient pressure that cannot be declared
@@ -734,6 +778,39 @@ The project has no branch.
   Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#branch_not_found
 ```
 
+<a id="capability_exists"></a>
+
+## `capability_exists`: A capability id the project policy already holds
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+- **Summary:** The project policy already holds a grant &lt;capability_id&gt;.
+- **Why:** A capability id names one grant. A new grant under an existing id would make it ambiguous which grant a revocation or an audit row means.
+- **Do:** Choose another capability_id, or leave it out and one is generated.
+- **Parameters:** `capability_id` (text, optional)
+
+Example:
+
+```text
+The project policy already holds a grant cap-agent.
+  Why:     A capability id names one grant. A new grant under an existing id would make it ambiguous which grant a revocation or an audit row means.
+  Do:      Choose another capability_id, or leave it out and one is generated.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    capability_exists, in invalid_request (openflowsheet explain capability_exists)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#capability_exists
+```
+
+Example:
+
+```text
+The project policy already holds a grant.
+  Why:     A capability id names one grant. A new grant under an existing id would make it ambiguous which grant a revocation or an audit row means.
+  Do:      Choose another capability_id, or leave it out and one is generated.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    capability_exists, in invalid_request (openflowsheet explain capability_exists)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#capability_exists
+```
+
 <a id="capability_missing"></a>
 
 ## `capability_missing`: The unit model cannot be used with this property method
@@ -756,6 +833,39 @@ Unit model thermal.heater is not admitted with property method pr-lib-v1: nothin
   Kind:    Not supported in this version: a limitation of OpenFlowsheet, not an error in your flowsheet.
   Code:    capability_missing (openflowsheet explain capability_missing)
   Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#capability_missing
+```
+
+<a id="capability_not_found"></a>
+
+## `capability_not_found`: A capability id the project policy does not hold
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+- **Summary:** The project policy holds no grant &lt;capability_id&gt;.
+- **Why:** The id names no grant in the project policy now: it was never granted, it was revoked already, or it belongs to another project.
+- **Do:** Read the grants with get_policy and use one of their capability_id values.
+- **Parameters:** `capability_id` (text, optional)
+
+Example:
+
+```text
+The project policy holds no grant cap-agent.
+  Why:     The id names no grant in the project policy now: it was never granted, it was revoked already, or it belongs to another project.
+  Do:      Read the grants with get_policy and use one of their capability_id values.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    capability_not_found, in not_found (openflowsheet explain capability_not_found)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#capability_not_found
+```
+
+Example:
+
+```text
+The project policy holds no grant.
+  Why:     The id names no grant in the project policy now: it was never granted, it was revoked already, or it belongs to another project.
+  Do:      Read the grants with get_policy and use one of their capability_id values.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    capability_not_found, in not_found (openflowsheet explain capability_not_found)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#capability_not_found
 ```
 
 <a id="capability_unknown"></a>
@@ -1343,6 +1453,27 @@ The formula of component CH3OH does not match its elemental composition.
   Kind:    Input problem: something in the flowsheet or the request needs to change.
   Code:    formula_elements_invalid (openflowsheet explain formula_elements_invalid)
   Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#formula_elements_invalid
+```
+
+<a id="grant_exceeds_caller"></a>
+
+## `grant_exceeds_caller`: A grant beyond the caller's own
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+- **Summary:** The grant asks for more than this credential holds.
+- **Why:** A credential may grant only what it holds itself: rights it has, a max_wall_time_s and max_active_jobs at most its own when it is limited, and an expiry no later than its own when it expires. The local owner cannot be granted.
+- **Do:** Ask for fewer rights, give limits and an expiry within your own, or ask the project's operator to make the grant.
+
+Example:
+
+```text
+The grant asks for more than this credential holds.
+  Why:     A credential may grant only what it holds itself: rights it has, a max_wall_time_s and max_active_jobs at most its own when it is limited, and an expiry no later than its own when it expires. The local owner cannot be granted.
+  Do:      Ask for fewer rights, give limits and an expiry within your own, or ask the project's operator to make the grant.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    grant_exceeds_caller, in forbidden (openflowsheet explain grant_exceeds_caller)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#grant_exceeds_caller
 ```
 
 <a id="homotopy_stalled"></a>
@@ -2840,6 +2971,27 @@ The prefix legacy. and the member legacy are reserved for the records that come 
 *No plain-language explanation is written yet; the summary is the technical one.*
 
 - **Summary:** Refused: revision unreadable.
+
+<a id="revoke_exceeds_caller"></a>
+
+## `revoke_exceeds_caller`: A revoke of a grant holding a right the caller lacks
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+- **Summary:** The grant to revoke holds a right this credential does not hold.
+- **Why:** A credential may revoke only grants whose rights are all its own, so that a lesser credential cannot remove a more privileged one. Revoking one's own grant is allowed.
+- **Do:** Ask the project's operator to revoke it with openflowsheet project revoke.
+
+Example:
+
+```text
+The grant to revoke holds a right this credential does not hold.
+  Why:     A credential may revoke only grants whose rights are all its own, so that a lesser credential cannot remove a more privileged one. Revoking one's own grant is allowed.
+  Do:      Ask the project's operator to revoke it with openflowsheet project revoke.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    revoke_exceeds_caller, in forbidden (openflowsheet explain revoke_exceeds_caller)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#revoke_exceeds_caller
+```
 
 <a id="schema_invalid"></a>
 

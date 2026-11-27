@@ -37,7 +37,11 @@ from conftest import REPO_ROOT
 from f3_schema_support import records_requests, user_record_sha256
 from msg_support import machine_detail
 from t07_corpus import CORPUS
-from x06_schema_support import branches_requests, solve_policies_requests
+from x06_schema_support import (
+    administration_requests,
+    branches_requests,
+    solve_policies_requests,
+)
 
 from openflowsheet.application.authz import grant, new_token, revoke
 from openflowsheet.application.errors import API_ERROR_HTTP_STATUS, ApplicationError
@@ -364,6 +368,9 @@ def _scenario(call: Call, raw: Callable[[str, bytes], tuple[int, Any]]) -> list[
         step(name, request)
     for name, request in solve_policies_requests():  # ADR 0078 D4.5 (X06)
         step(name, request)
+    # ADR 0078 D5.2 (X06): the principal lacks `policy`, so each is `forbidden` on both sides.
+    for name, request in administration_requests():
+        step(name, request)
     # Refusals a transport can reach.
     step("get_job", {"job_id": "job-999999"})  # 404
     step("explain", {"code": "phase_regim_mismatch"})  # 404, with suggestions
@@ -412,8 +419,8 @@ def test_g14_every_http_operation_equals_dispatch_as_the_same_principal(
         served_names = {n for n, row in OPERATIONS.items() if "http" in row.transports}
         # 19 with ADR 0019 Amendment 3's `list_audit`, 20 with ADR 0058 D7's `explain`, 21 with
         # ADR 0068's `get_stream_table`, 23 with ADR 0060 D11's two, 28 with ADR 0061 D13's five,
-        # 31 with ADR 0078 D2.5's three, 33 with D4.5's two.
-        assert len(served_names) == 33
+        # 31 with ADR 0078 D2.5's three, 33 with D4.5's two, 37 with D5.2's four.
+        assert len(served_names) == 37
         for index, ((status, document), (want_status, want)) in enumerate(
             zip(got, expected, strict=True)
         ):

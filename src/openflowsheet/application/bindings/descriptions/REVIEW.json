@@ -620,6 +620,86 @@
           "reviewed_at": null
         }
       ]
+    },
+    "get_policy": {
+      "tool": "get_policy",
+      "file": "get_policy.md",
+      "sha256": "e323b09a047aa5bea6929806657d9fad13e67da762258a1109969a8229bdca74",
+      "characters": 508,
+      "reviews": [
+        {
+          "review_kind": "design-lane",
+          "status": "pending_design_review",
+          "reviewed_by": null,
+          "reviewed_at": null
+        },
+        {
+          "review_kind": "human",
+          "status": "pending",
+          "reviewed_by": null,
+          "reviewed_at": null
+        }
+      ]
+    },
+    "grant_capability": {
+      "tool": "grant_capability",
+      "file": "grant_capability.md",
+      "sha256": "c85ad53d684ee83f63dd20e8b4c534bb8c0f7a049db21faa5bf314ca58e8e87f",
+      "characters": 1419,
+      "reviews": [
+        {
+          "review_kind": "design-lane",
+          "status": "pending_design_review",
+          "reviewed_by": null,
+          "reviewed_at": null
+        },
+        {
+          "review_kind": "human",
+          "status": "pending",
+          "reviewed_by": null,
+          "reviewed_at": null
+        }
+      ]
+    },
+    "revoke_capability": {
+      "tool": "revoke_capability",
+      "file": "revoke_capability.md",
+      "sha256": "a2b603410c53121a938b1a1473400df1b022c8092cd646d6aa07d3e88b660194",
+      "characters": 822,
+      "reviews": [
+        {
+          "review_kind": "design-lane",
+          "status": "pending_design_review",
+          "reviewed_by": null,
+          "reviewed_at": null
+        },
+        {
+          "review_kind": "human",
+          "status": "pending",
+          "reviewed_by": null,
+          "reviewed_at": null
+        }
+      ]
+    },
+    "set_ambient_pressure": {
+      "tool": "set_ambient_pressure",
+      "file": "set_ambient_pressure.md",
+      "sha256": "e48673d10cadd0de650e8d25aad857fc17936abca9bdecab1242d54e89b96573",
+      "characters": 996,
+      "reviews": [
+        {
+          "review_kind": "design-lane",
+          "status": "pending_design_review",
+          "reviewed_by": null,
+          "reviewed_at": null
+        },
+        {
+          "review_kind": "human",
+          "status": "pending",
+          "reviewed_by": null,
+          "reviewed_at": null
+        }
+      ]
     }
   }
 }

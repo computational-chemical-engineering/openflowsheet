@@ -17,7 +17,8 @@ effect on the next call. The token itself is never printed or logged.
 port: the REST routes (`bindings.http.create_app`), with `--ui` the diagnostic web shell
 (`bindings.web.create_web_app`), and MCP over streamable HTTP at `/mcp` (`bindings.mcp_http`,
 behind its guard, with the REST body limit and the origins of the bound host). Every request
-presents its bearer token; there is no start-up credential.
+presents its bearer token; there is no start-up credential. A server bound beyond loopback marks
+its owner `serving_remote`, which refuses the in-band policy writes (ADR 0078 D5.3).
 
 Jobs run under the process executor (§9.1): each in its own freshly spawned worker, whose
 stdout and stderr go to its `worker.log`.
@@ -144,7 +145,7 @@ def http_application(owner: Owner, *, host: str, port: int, ui: bool = False) ->
 
 
 def serve_http(
-    owner: Owner,
+    owner: LocalApplication,
     *,
     host: str,
     port: int,
@@ -157,9 +158,12 @@ def serve_http(
     interrupted.
 
     The caller opens the owner (`LocalApplication.open(project, executor="process")`) and closes
-    it once this returns.
+    it once this returns. Before anything is served the owner is marked `serving_remote` when
+    `host` is not loopback, so its in-band policy writes are refused (ADR 0078 D5.3).
     """
     from openflowsheet.application.bindings import http
+
+    owner.serving_remote = not http.is_loopback(host)
 
     application = http_application(owner, host=host, port=port, ui=ui)
     if ui and (http.is_loopback(host) or allow_remote):

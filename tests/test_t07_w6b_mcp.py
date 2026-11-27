@@ -51,7 +51,11 @@ from t07_mcp_support import (
     in_session,
     project_with_grant,
 )
-from x06_schema_support import branches_requests, solve_policies_requests
+from x06_schema_support import (
+    administration_requests,
+    branches_requests,
+    solve_policies_requests,
+)
 
 from openflowsheet.application.authz import revoke
 from openflowsheet.application.documents import validate_inline
@@ -288,6 +292,9 @@ async def _scenario(session: Session, direct: LocalApplication, record: Transcri
     for name, request in solve_policies_requests():
         relation = "equal" if name == "get_solve_policy" else "replay"
         await pair(name, name, request, relation)
+    # ADR 0078 D5.2 (X06): the principal lacks `policy`; both refusals are equal.
+    for name, request in administration_requests():
+        await pair(name, name, request)
 
     solve = {"operation": "solve", "idempotency_key": "w6b-solve", "body": {"revision_id": second}}
     error, submitted = await call(session, "submit_job", solve)
@@ -488,6 +495,11 @@ def test_g14_refusals_reach_mcp_as_tool_errors_with_the_api_error(transcript: Tr
         "no job's table": "not_found",  # `get_stream_table` (ADR 0068)
         "no such unit": "not_found",  # `check_admission` (ADR 0060 D11)
         "no policy": "forbidden",  # `assess_rights` (ADR 0061 D13)
+        # ADR 0078 D5.2 (X06): the session's principal lacks `policy`
+        "get_policy": "forbidden",
+        "grant_capability": "forbidden",
+        "revoke_capability": "forbidden",
+        "set_ambient_pressure": "forbidden",
         "no record": "not_found",  # `get_record` (ADR 0061 D13)
         "key reused": "idempotency_key_reused",
         "non-canonical": "document_not_canonical",

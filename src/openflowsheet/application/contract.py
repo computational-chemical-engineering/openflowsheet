@@ -35,7 +35,13 @@ if TYPE_CHECKING:
     from openflowsheet.application.job_records import Job, JobEvent, JobResult, RunResult
     from openflowsheet.application.job_requests import JobRequest
     from openflowsheet.application.jobs.model import JobStatus
-    from openflowsheet.application.policy_types import ReplayPolicy
+    from openflowsheet.application.policy_types import (
+        AmbientPressureResult,
+        GrantResult,
+        ProjectPolicy,
+        ReplayPolicy,
+        RevokeResult,
+    )
     from openflowsheet.application.record_types import (
         RecordPage,
         RecordRegistrationResult,
@@ -315,3 +321,31 @@ class SolvePolicies(Protocol):
     ) -> SolvePolicyRegistration: ...
 
     def get_solve_policy(self, *, policy_id: str) -> SolvePolicyView: ...
+
+
+class Administration(Protocol):
+    """ADR 0078 D5 (ADR 0019 Amendment 18): in-band policy administration, right `policy`.
+    `get_policy` reads the policy in force. The three writes need the project operator's switch
+    (`openflowsheet project administration on`), are refused on a server bound beyond loopback,
+    and never grant more than the caller holds; each is audited and ledgered, and a grant's
+    token is returned once, never stored."""
+
+    def get_policy(self) -> ProjectPolicy: ...
+
+    def grant_capability(
+        self,
+        *,
+        principal_id: str,
+        idempotency_key: str,
+        rights: Sequence[str] | None = None,
+        limits: Mapping[str, Any] | None = None,
+        expires_at: str | None = None,
+        note: str | None = None,
+        capability_id: str | None = None,
+    ) -> GrantResult: ...
+
+    def revoke_capability(self, *, capability_id: str, idempotency_key: str) -> RevokeResult: ...
+
+    def set_ambient_pressure(
+        self, *, value: float | None, idempotency_key: str, unit: str | None = None
+    ) -> AmbientPressureResult: ...

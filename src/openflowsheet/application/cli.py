@@ -472,6 +472,21 @@ def command_project_ambient(arguments: argparse.Namespace) -> int:
     return 0
 
 
+def command_project_administration(arguments: argparse.Namespace) -> int:
+    """ADR 0078 D5.1: switch in-band policy administration on or off for the project; audited
+    as `project_administration`. Only the operator sets it; no operation does."""
+    from openflowsheet.application.authz import set_administration
+    from openflowsheet.application.store_records import StoreError
+
+    try:
+        state = set_administration(Path(arguments.project), arguments.state == "on")
+    except (ValueError, StoreError) as error:
+        print(_human_text(error), file=sys.stderr)
+        return 2
+    print(f"in-band administration {'on' if state else 'off'}")
+    return 0
+
+
 def _cli_float(text: str) -> float:
     """A command-line number as Python reads it (`nan` and `inf` included: the caller refuses
     them by name, as an out-of-range value, rather than as a malformed one)."""
@@ -1134,8 +1149,8 @@ def _add_run_parsers(commands: argparse._SubParsersAction[argparse.ArgumentParse
 
 
 def _add_project_parser(commands: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
-    """`project init|grant|revoke|ambient`: a project directory, its capability grants and its
-    ambient pressure."""
+    """`project init|grant|revoke|ambient|administration`: a project directory, its capability
+    grants, its ambient pressure and its switch for in-band administration."""
     project_command = commands.add_parser(
         "project",
         help="create a project and administer its capability grants and ambient pressure",
@@ -1187,6 +1202,14 @@ def _add_project_parser(commands: argparse._SubParsersAction[argparse.ArgumentPa
         "--clear", action="store_true", help="remove the declared ambient pressure"
     )
     ambient_command.set_defaults(handler=command_project_ambient)
+
+    administration_command = project_commands.add_parser(
+        "administration",
+        help="switch in-band policy administration (the Administration operations) on or off",
+    )
+    administration_command.add_argument("state", choices=("on", "off"))
+    administration_command.add_argument("--project", required=True, help="the project directory")
+    administration_command.set_defaults(handler=command_project_administration)
 
 
 def _add_api_parser(commands: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:

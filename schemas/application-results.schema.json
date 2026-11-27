@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/frankp/process-runtime/schemas/application-results.schema.json",
   "title": "ApplicationResults",
-  "description": "T07 design note §11.3–§11.4 and ruling round 4 (W5a-Q2); ADR 0019 Amendment 1. The response shapes of the JobControl and Inspection operations in `OPERATIONS` that have no published schema of their own, one `$def` each, named in snake_case after the Python result type (`types.py`, `contract.py`), a page `<item>_page`. The members are those `operations.py` stated at `9b541df`, moved unchanged. Every string and key of a response is bounded (§10.4) before it is carried. `job`, `job-event`, `job_result`, `run-result`, `transaction-result`, `validation-report` and `replay-report` stay in their own schemas, referenced from here. ADR 0060 D11 (ADR 0019 Amendment 7) adds `capability_page` (its items `capability_descriptor`) and `admission_report`. ADR 0078 D2.5 (ADR 0019 Amendment 18) adds `branch_page` (its items `branch`) and `branch_result`; ADR 0078 D4.5 adds `solve_policy_registration` and `solve_policy_view`.",
+  "description": "T07 design note §11.3–§11.4 and ruling round 4 (W5a-Q2); ADR 0019 Amendment 1. The response shapes of the JobControl and Inspection operations in `OPERATIONS` that have no published schema of their own, one `$def` each, named in snake_case after the Python result type (`types.py`, `contract.py`), a page `<item>_page`. The members are those `operations.py` stated at `9b541df`, moved unchanged. Every string and key of a response is bounded (§10.4) before it is carried. `job`, `job-event`, `job_result`, `run-result`, `transaction-result`, `validation-report` and `replay-report` stay in their own schemas, referenced from here. ADR 0060 D11 (ADR 0019 Amendment 7) adds `capability_page` (its items `capability_descriptor`) and `admission_report`. ADR 0078 D2.5 (ADR 0019 Amendment 18) adds `branch_page` (its items `branch`) and `branch_result`; ADR 0078 D4.5 adds `solve_policy_registration` and `solve_policy_view`; ADR 0078 D5.2 adds `grant_result`, `revoke_result` and `ambient_pressure_result`.",
   "$defs": {
     "submit_result": {
       "type": "object",
@@ -1393,6 +1393,98 @@
         },
         "document": {
           "$ref": "https://github.com/frankp/process-runtime/schemas/solve-policy.schema.json"
+        }
+      }
+    },
+    "grant_result": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "capability",
+        "token",
+        "policy_sha256"
+      ],
+      "description": "ADR 0078 D5.2, D5.4: `grant_capability`'s result. `granted`: the grant is in the policy, whose new hash is `policy_sha256`, and `token` is its bearer token (`prt_` and 43 base64url characters), shown in this response only; the project stores only its SHA-256 (`capability.token_sha256`). `replayed`: the original result of the same request under the same key, `token` null.",
+      "properties": {
+        "status": {
+          "enum": [
+            "granted",
+            "replayed"
+          ]
+        },
+        "capability": {
+          "$ref": "https://github.com/frankp/process-runtime/schemas/capability-reference.schema.json"
+        },
+        "token": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^prt_[A-Za-z0-9_-]{43}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "policy_sha256": {
+          "$ref": "https://github.com/frankp/process-runtime/schemas/job.schema.json#/$defs/sha256"
+        }
+      }
+    },
+    "revoke_result": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "capability",
+        "policy_sha256"
+      ],
+      "description": "ADR 0078 D5.2: `revoke_capability`'s result. `revoked`: the grant `capability` is no longer in the policy, whose new hash is `policy_sha256`, and its token fails on its next call; `replayed`: the original result of the same request under the same key.",
+      "properties": {
+        "status": {
+          "enum": [
+            "revoked",
+            "replayed"
+          ]
+        },
+        "capability": {
+          "$ref": "https://github.com/frankp/process-runtime/schemas/capability-reference.schema.json"
+        },
+        "policy_sha256": {
+          "$ref": "https://github.com/frankp/process-runtime/schemas/job.schema.json#/$defs/sha256"
+        }
+      }
+    },
+    "ambient_pressure_result": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "ambient_pressure_pa",
+        "policy_sha256"
+      ],
+      "description": "ADR 0078 D5.2: `set_ambient_pressure`'s result. `set`: the project's declared ambient pressure is now `ambient_pressure_pa` (Pa, absolute), or none when null, and the policy's new hash is `policy_sha256`; `replayed`: the original result of the same request under the same key.",
+      "properties": {
+        "status": {
+          "enum": [
+            "set",
+            "replayed"
+          ]
+        },
+        "ambient_pressure_pa": {
+          "anyOf": [
+            {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "policy_sha256": {
+          "$ref": "https://github.com/frankp/process-runtime/schemas/job.schema.json#/$defs/sha256"
         }
       }
     }

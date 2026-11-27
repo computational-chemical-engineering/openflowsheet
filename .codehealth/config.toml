@@ -183,6 +183,7 @@ order = [
     "openflowsheet.application.inspection_service",
     "openflowsheet.application.records_service",
     "openflowsheet.application.branch_service",
+    "openflowsheet.application.administration_service",
     "openflowsheet.application.solve_policy_service",
     "openflowsheet.application.service_core",
     # services
@@ -341,6 +342,7 @@ to = [
     "openflowsheet.application.inspection_service",
     "openflowsheet.application.records_service",
     "openflowsheet.application.branch_service",
+    "openflowsheet.application.administration_service",
     "openflowsheet.application.solve_policy_service",
     "openflowsheet.application.solve_policy_registry",
     "openflowsheet.application.service_core",

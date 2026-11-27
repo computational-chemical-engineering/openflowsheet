@@ -6,7 +6,9 @@ returned with the same members taken out, copied). From X06-WO2 (branches, D2) t
 
 - the three tools of the protocol `Branches`, `list_branches`, `create_branch` and
   `delete_branch`, and from X06-WO3 (solve policies, D4) the two of `SolvePolicies`,
-  `register_solve_policy` and `get_solve_policy` (`X06_OPERATIONS`);
+  `register_solve_policy` and `get_solve_policy`, and from X06-WO4 (administration, D5) the
+  four of `Administration`, `get_policy`, `grant_capability`, `revoke_capability` and
+  `set_ambient_pressure` (`X06_OPERATIONS`);
 - the optional `branch` member of the ChangeSet (`change-set.schema.json`), wherever the ChangeSet
   is served: `commit_change`'s and `preview_change`'s `inputSchema` and the optimization
   report's `candidate.change_set` in `get_job_result`'s `outputSchema` (an object schema whose
@@ -26,7 +28,8 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Final
 
-#: The operations X06 added (ADR 0078 D2.5, D4.5): their rows, and their MCP tools, are new.
+#: The operations X06 added (ADR 0078 D2.5, D4.5, D5.2): their rows, and their MCP tools, are
+#: new.
 X06_OPERATIONS: Final = frozenset(
     {
         "list_branches",
@@ -34,6 +37,10 @@ X06_OPERATIONS: Final = frozenset(
         "delete_branch",
         "register_solve_policy",
         "get_solve_policy",
+        "get_policy",
+        "grant_capability",
+        "revoke_capability",
+        "set_ambient_pressure",
     }
 )
 #: The description files X06 changed (operation name -> MCP tool name) and their pre-X06 copies.
@@ -114,3 +121,54 @@ def solve_policies_requests() -> list[tuple[str, dict[str, Any]]]:
         ),
         ("get_solve_policy", {"policy_id": "user.copy"}),
     ]
+
+
+#: ADR 0078 D5.2: the grant `administration_requests` makes and revokes.
+ADMINISTERED_CAPABILITY: Final = "cap-x06-delegate"
+
+
+def administration_requests() -> list[tuple[str, dict[str, Any]]]:
+    """One succeeding request of each `Administration` operation (ADR 0078 D5.2), for a caller
+    holding `read` and `policy` with at most `project grant`'s limits and no expiry, in a
+    project whose operator switched in-band administration on: the policy read, the ambient
+    pressure declared, a `read` grant within the limits made, then revoked."""
+    return [
+        ("get_policy", {}),
+        ("set_ambient_pressure", {"value": 1.0, "unit": "bar", "idempotency_key": "ad1"}),
+        (
+            "grant_capability",
+            {
+                "principal_id": "x06-delegate",
+                "rights": ["read"],
+                "limits": {"default_wall_time_s": 60, "max_wall_time_s": 60, "max_active_jobs": 1},
+                "capability_id": ADMINISTERED_CAPABILITY,
+                "idempotency_key": "ad2",
+            },
+        ),
+        ("revoke_capability", {"capability_id": ADMINISTERED_CAPABILITY, "idempotency_key": "ad3"}),
+    ]
+
+
+def stable_administration(document: Any) -> Any:
+    """`document` with what a grant draws at random replaced by placeholders: a `prt_` token,
+    every `token_sha256`, and a `grant_result`'s `policy_sha256` (the hash of a policy holding
+    the new token's hash). Two projects granting the same request differ in these alone."""
+    if isinstance(document, dict):
+        grant = document.get("status") in ("granted", "replayed") and "capability" in document
+        out = {
+            key: (
+                "<random>"
+                if key == "token_sha256"
+                and value is not None
+                or key == "token"
+                and isinstance(value, str)
+                or key == "policy_sha256"
+                and grant
+                else stable_administration(value)
+            )
+            for key, value in document.items()
+        }
+        return out
+    if isinstance(document, list):
+        return [stable_administration(item) for item in document]
+    return document

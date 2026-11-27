@@ -69,6 +69,10 @@ class ServiceCore:
         self._scratch: tempfile.TemporaryDirectory[str] | None = None
         #: ADR 0061 D8, D11: the record stack and, in its project store, the project register.
         self.records: StoreStack = record_stack(store.directory)
+        #: ADR 0078 D5.3: the serving process binds a non-loopback interface (`serve-http`
+        #: sets it before serving); in-band policy writes are then refused. Stdio and
+        #: in-process callers are local. `acting_as` views share it.
+        self.serving_remote = False
 
     def acting_as(self, capability: CapabilityReference) -> ServiceCore:
         """This core acting as `capability`: the same store, policy, executor and owner."""

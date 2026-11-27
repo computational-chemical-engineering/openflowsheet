@@ -91,6 +91,11 @@ EXPECTED_RIGHT = {
     # ADR 0078 D4.5 (X06): project solve policies
     "register_solve_policy": "draft",
     "get_solve_policy": "read",
+    # ADR 0078 D5.2 (X06): in-band policy administration
+    "get_policy": "policy",
+    "grant_capability": "policy",
+    "revoke_capability": "policy",
+    "set_ambient_pressure": "policy",
     "artifact_bytes": "read",
 }
 SUBSETS = [
@@ -140,13 +145,14 @@ def test_the_table_names_exactly_the_twenty_operations() -> None:
     """The 19 protocol methods and `artifact_bytes` (§4.1, §4.3; G11), ADR 0019 Amendment 3's
     `list_audit`, ADR 0058 D7's `explain`, ADR 0068's `get_stream_table`, ADR 0060 D11's
     `list_capabilities` and `check_admission`, ADR 0061 D13's five `Records` operations, ADR
-    0078 D2.5's three `Branches` operations and D4.5's two `SolvePolicies` operations: 35."""
+    0078 D2.5's three `Branches` operations, D4.5's two `SolvePolicies` operations and D5.2's four
+    `Administration` operations: 39."""
     assert dict(OPERATION_RIGHTS) == EXPECTED_RIGHT
     assert len(SUBSETS) == 64
 
 
 def test_g11_the_decision_matrix_equals_the_table() -> None:
-    """64 right subsets × 35 operations (and `cancel_job` of another's job, and `list_audit` of
+    """64 right subsets × 39 operations (and `cancel_job` of another's job, and `list_audit` of
     another's or all principals' rows, ADR 0019 Amendment 3) — every cell."""
     cells = 0
     for rights in SUBSETS:
@@ -165,7 +171,7 @@ def test_g11_the_decision_matrix_equals_the_table() -> None:
         everyone = authorize(cap, "list_audit", None)
         assert everyone.allowed == others.allowed, "all principals' rows are others' rows"
     # with `explain`, `get_stream_table`, ADR 0060 D11's two and ADR 0061 D13's five
-    assert cells == 64 * 35
+    assert cells == 64 * 39
 
 
 def test_g11_an_unknown_operation_and_an_expired_capability_are_refused() -> None:

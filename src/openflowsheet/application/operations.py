@@ -4,11 +4,11 @@
 `JobControl`'s seven, `Inspection`'s thirteen (`list_audit` is ADR 0019 Amendment 3's, `explain`
 ADR 0058 D7's, `get_stream_table` ADR 0068's, `list_capabilities` and `check_admission` ADR 0060
 D11's), `Records`' five (ADR 0061 D13, ADR 0019 Amendment 8), `Branches`' three (ADR 0078 D2,
-ADR 0019 Amendment 18), `SolvePolicies`' two (ADR 0078 D4) — and `artifact_bytes`, the raw
-export. A row names its method, the right it needs, its request and response schemas, its HTTP
-verb and path, its MCP tool, the transports that carry it and its tool description. Python
-(through `dispatch`), the CLI, HTTP and MCP read this table and nothing else, and add nothing to
-what it says.
+ADR 0019 Amendment 18), `SolvePolicies`' two (ADR 0078 D4), `Administration`'s four (ADR 0078
+D5) — and `artifact_bytes`, the raw export. A row names its method, the right it needs, its
+request and response schemas, its HTTP verb and path, its MCP tool, the transports that carry it
+and its tool description. Python (through `dispatch`), the CLI, HTTP and MCP read this table and
+nothing else, and add nothing to what it says.
 
 `dispatch(app, name, request)` does, in this order:
 
@@ -45,6 +45,7 @@ from functools import cache
 from typing import Any, Final, Literal, Protocol
 
 from openflowsheet.application.contract import (
+    Administration,
     Application,
     Branches,
     Inspection,
@@ -80,8 +81,17 @@ TRANSPORT_WAIT_CAP_S: Final[float] = 30.0
 MAX_EVENT_PAGE: Final[int] = 500
 
 
-class Dispatchable(Application, JobControl, Inspection, Records, Branches, SolvePolicies, Protocol):
-    """What `dispatch` calls: the six protocols, the raw export, and the audit of a refusal
+class Dispatchable(
+    Application,
+    JobControl,
+    Inspection,
+    Records,
+    Branches,
+    SolvePolicies,
+    Administration,
+    Protocol,
+):
+    """What `dispatch` calls: the seven protocols, the raw export, and the audit of a refusal
     made before a method was reached (`LocalApplication`)."""
 
     def artifact_bytes(self, artifact_id: str) -> bytes: ...
@@ -187,6 +197,26 @@ PREVIEW_REQUEST: Final = _object(
 )
 #: ADR 0078 D2.3: a branch's public name.
 BRANCH_NAME: Final = _ref("change-set.schema.json#/$defs/branch_name")
+
+
+def _grant_member(name: str) -> dict[str, str]:
+    return _ref(f"capability-reference.schema.json#/properties/{name}")
+
+
+#: ADR 0078 D5.2: `grant_capability`'s request; an absent member takes `project grant`'s default.
+GRANT_REQUEST: Final = _object(
+    {"principal_id": _grant_member("principal_id"), "idempotency_key": ID},
+    {
+        name: _grant_member(name)
+        for name in ("rights", "limits", "expires_at", "note", "capability_id")
+    },
+)
+#: ADR 0078 D5.2: `set_ambient_pressure`'s request: a value in `unit` (Pa when absent; the
+#: units `project ambient` takes, judged as it judges them), or null to clear the declaration.
+AMBIENT_REQUEST: Final = _object(
+    {"value": {"type": ["number", "null"]}, "idempotency_key": ID},
+    {"unit": {"type": "string", "minLength": 1, "maxLength": 32}},
+)
 
 
 def _result(name: str) -> dict[str, str]:
@@ -813,6 +843,47 @@ OPERATIONS: Final[Mapping[str, Operation]] = {
             _result("solve_policy_view"),
             ("GET", "/v1/solve-policies/{policy_id}"),
             decode=_members("policy_id"),
+        ),
+        # Administration: ADR 0078 D5.2 (X06, ADR 0019 Amendment 18), in-band policy administration
+        _row(
+            "get_policy",
+            "policy",
+            _object({}),
+            _ref("project-policy.schema.json"),
+            ("GET", "/v1/policy"),
+            decode=_members(),
+        ),
+        _row(
+            "grant_capability",
+            "policy",
+            GRANT_REQUEST,
+            _result("grant_result"),
+            ("POST", "/v1/policy/grants"),
+            decode=_decode_keyed(
+                "grant_capability",
+                "principal_id",
+                "rights",
+                "limits",
+                "expires_at",
+                "note",
+                "capability_id",
+            ),
+        ),
+        _row(
+            "revoke_capability",
+            "policy",
+            _object({"capability_id": ID, "idempotency_key": ID}),
+            _result("revoke_result"),
+            ("POST", "/v1/policy/grants/{capability_id}/revoke"),
+            decode=_decode_keyed("revoke_capability", "capability_id"),
+        ),
+        _row(
+            "set_ambient_pressure",
+            "policy",
+            AMBIENT_REQUEST,
+            _result("ambient_pressure_result"),
+            ("POST", "/v1/policy/ambient-pressure"),
+            decode=_decode_keyed("set_ambient_pressure", "value", "unit"),
         ),
         # The raw export (Python, CLI, HTTP; never MCP)
         _row(
