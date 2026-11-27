@@ -58,6 +58,13 @@ registered quantity kinds (checked at registration, D4.3(d)) and its values stri
 constants, the shape and key domain of `check_tolerances`. The document's scalars are pinned by
 full path below `policy/` (`SOLVE_POLICY_SCALARS`).
 
+**X06 administration (ADR 0078 D5.2; X06 review ruling 1).** `grant_capability`'s
+`limits/default_wall_time_s`, `limits/max_wall_time_s` and `limits/max_active_jobs` are a grant's
+budget ceilings, the kind of `budgets/wall_time_s`, bounded by the caller's own (D5.3);
+`set_ambient_pressure`'s `value` is a declaration only the gauge display units read (ADR 0075 D6),
+never a run, a certificate or a replay. None is a matrix, a map or a state. They are pinned by full
+path (`ADMINISTRATION_SCALARS`) and kept out of the name inventory.
+
 **(ii) The forged bundle through every transport that reaches reproduce.** A bundle of a run that
 did not converge (`SYN-001-A02-352-vapor-guess-410`, `HOMOTOPY_STALLED`), forged to carry the
 `VERIFIED` certificate of a run that did (`SYN-001-A02-360`), with a consistent index and
@@ -242,6 +249,16 @@ SOLVE_POLICY_SCALARS = frozenset(
         "residual_tolerances/*/absolute",
         "residual_tolerances/*/relative",
         "residual_tolerances/*/scale",
+    }
+)
+#: X06 (ADR 0078 D5.2; X06 review ruling 1): the in-band administration requests' numeric
+#: scalars, by full path: a grant's budget ceilings and a display-only ambient declaration.
+ADMINISTRATION_SCALARS = frozenset(
+    {
+        ("grant_capability", "limits/default_wall_time_s"),
+        ("grant_capability", "limits/max_wall_time_s"),
+        ("grant_capability", "limits/max_active_jobs"),
+        ("set_ambient_pressure", "value"),
     }
 )
 #: F3 (ADR 0061 D7; ADR 0061, section 'F3 ruling round 2 applied: fix round 3'; R-1058): a
@@ -440,6 +457,9 @@ def test_t07_q26_no_external_state() -> None:
         if not path.startswith(OPT_REQUEST_PREFIXES.get(o, "\0"))
         and not path.startswith(SOLVE_POLICY_PREFIXES.get(o, "\0"))
     }
+    operations = {operation for operation, _ in ADMINISTRATION_SCALARS}
+    assert {s for s in scalars if s[0] in operations} == ADMINISTRATION_SCALARS
+    scalars -= ADMINISTRATION_SCALARS
     names = {path.split("/")[-1] for _, path in scalars}
     assert names == {
         "wall_time_s",  # under `budgets`
