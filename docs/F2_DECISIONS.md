@@ -334,7 +334,9 @@ addendum is needed (the closed partition audits names containing `sha256`).
   {refusals,notices}.md`. Alternative: allow-list the codes in `scan-allow.yaml` (whose lines are tokens that are not
   codes: a relaxed check, refused). `state_degenerate_in_definition` (not emitted) gets none. The existing
   `molar_mass_inconsistent` entry (F3: `args: [reaction]`) does not declare the basis notice's params
-  (`definition, substream, species`): WO7 reconciles it. Isolated in one commit.
+  (`definition, substream, species`): WO7 reconciles it. Isolated in one commit. The catalogue digest moves
+  (`9ac09855…` -> `2b227092…`), so the two `message_entry` fixtures of `test_t07_w5e_application_results.py` that
+  carry it are re-pinned, as F3-WO5a did (`7e7d4f3d`); no served digest and no F0 check reads it (F0 PASS after).
 - **Left for WO5/WO6/WO7.** Section bodies against registered `revision_section` schemas, `construct_unavailable(...,
   F6)` at binding, the context from the stores and `definition_sha256` per connection (`connection_inputs` takes them):
   WO6. Catalogue entries of the new codes: WO7.
