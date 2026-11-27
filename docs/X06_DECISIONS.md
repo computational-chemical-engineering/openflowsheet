@@ -197,3 +197,172 @@ exception recorded as F3's was.
 - **DECISION WO3-10. Reachable codes.** `get_solve_policy` of `T02-eo` makes `unsupported` reachable over MCP (stdio
   and HTTP), so the conformance `REACHABLE` table gives all six clients `unsupported`. The CLI's G14 scenario runs
   `solve_policies_requests()` too.
+
+## Design-lane rulings R1 (`architect`, 2026-11-27; brief `docs/briefs/LINE06-X06-R1.md`)
+
+Two stops of X06-WO3: Q7 and R-088 Q26. Both rulings are clarifications of ADR 0078 as Accepted (R-1071): no decision
+of the ADR is edited and no user card is needed (F3's form, R-1058). The orchestrator appends the ADR section and the
+two register rows at the end of this section; the build lane implements R1-1 and R1-2 in one work order, with the
+standing surface suites and F0 (LINE06_RULES).
+
+### R1-1 (Q7): a `user.` request is judged against the bundle's own policy document
+
+**Finding.** The stop is real and the diagnosis right: `run/bundle.py:237` resolves `policy_requested` through the
+release's registry, which holds no `user.` id. ADR 0078's context ("never by id lookup") is true of replay
+(`revision_replay.py:189-194`) and missed this integrity cross-check (T07 W3-Q4). D4.2 and E-X06-13, as Accepted,
+require a project policy's bundle to verify and replay in a fresh project, so the check changes for `user.` ids and
+for nothing else.
+
+**Ruling: the proposal is sound, with the precisions below.** The rule in `_cross_check_solve_path` (everything up to
+`known`, and the whole non-`user.` branch, unchanged byte for byte):
+
+1. If `requested` is a `str` and `is_project_policy_id(requested)` (D4.1; lazy import from
+   `orchestrator.policy_validation`, which `repo-layers` places below `run`), this branch alone judges the request
+   and the function returns at its end. `solve-path.json` goes to `tampered` unless all of:
+   a. the route is `known` (today's test);
+   b. `solve-policy.json` is in the index and in neither `missing` nor `tampered`;
+   c. `candidate = SolvePolicy.from_document(read_artifact(directory, "solve-policy.json"))` succeeds; any of
+      `ValueError, TypeError, KeyError, AttributeError` counts as failure, judged and never raised (`AttributeError`
+      is reachable: `"residual_tolerances": 5` fails at `.items()`);
+   d. `candidate.policy_id == requested`;
+   e. `policy_sha256(candidate) == manifest.policy_sha256`.
+   There is **one candidate**, not two. `solve-policy.json` is the effective policy: `revision_run.py:870` writes
+   `policy.as_document()` of the policy after admission step 6's `replace(policy, max_property_calls=...)`, so a
+   lowered budget is already in it. The relation "lowered, never raised" needs the project's registered ceiling and
+   is not checked.
+2. **S1, a build-lane bug fixed in the same work order.** `is_project_policy_id` uses `PROJECT_POLICY_ID.match`, and
+   the pattern ends in `$`, which in Python also matches before a trailing newline: `"user.x\n"` passes as a project
+   id today (registration, admission, runner, and this new branch). Use `fullmatch`. No released byte moves: the
+   string was refused before X06 and is refused after the fix by today's unknown-id path.
+
+**What the check still detects**, against a forger who rewrites artifacts and recomputes the index and both manifest
+hashes (`_rewrite`'s model): a request naming another id than the document (`solve-path.json` renamed alone); a
+document whose content or id no longer hashes to the manifest's `policy_sha256`; a missing, unindexed or unreadable
+document; a malformed or pattern-violating id; an unknown route; a named bundle relabelled `user.` in
+`solve-path.json` alone. **What it does not detect, by construction:** a coherent substitution, the document, the
+request and the manifest's `policy_sha256` rewritten together (for instance a `T06-revision-v2` bundle relabelled
+`user.t06` throughout). A registered name is pinned to its content by the release's registry; a `user.` id is
+project-scoped and bound once only within its project (D4.4), so no anchor exists outside the bundle. This is no
+regression (no genuine `user.` bundle existed before X06) and no loss of acceptance safety: the verifier reads no
+solve policy (D4.2, E-X06-14), and `reproduce` reruns the bundle's own document, so a substituted policy that did not
+produce the archived state gives `MISMATCH`, never `MATCH`.
+
+**The project store is deliberately not consulted.** (i) `verify_bundle(directory)` is a function of the bundle and
+the release's code; a store lookup would give one bundle different integrity in different projects, against
+E-X06-13 ("in a fresh project ... with the same replay verdict"). (ii) One `user.` id legitimately names different
+bytes in different projects; a store comparison would call a genuine imported bundle tampered. (iii) `run` is below
+`application` in `repo-layers`, and the registry lives in `application`. A difference between a bundle's policy and
+the importing project's policy of the same id is information, not tampering; reporting it is outside 0.6 (default:
+not reported).
+
+**No existing verdict and no F0 value moves.** The new branch is entered only on a `user.` request. No committed
+bundle carries one (`git grep` outside `docs/`: none; the 53 committed `solve-path.json` name `default` or a
+registered id), and every release before X06 refused such ids at admission, so no genuine bundle anywhere does.
+Measured at `c526de6a` with the script below: 63 committed bundles, 60 `ok`, the other 3 the W26 raw web fixtures
+whose artifacts are not committed (`missing`), digest `b42b1ec439d1683c`. Gate: the same three values after the
+change.
+
+```python
+# from the worktree root, PYTHONPATH=src
+import hashlib, json, subprocess; from pathlib import Path
+from openflowsheet.run.bundle import verify_bundle
+files = subprocess.run(["git", "ls-files"], capture_output=True, text=True).stdout.split()
+dirs = sorted(str(Path(f).parent) for f in files if f.endswith("run-manifest.json"))
+docs = {d: verify_bundle(Path(d)).as_document() for d in dirs}
+print(len(docs), sum(v["ok"] for v in docs.values()),
+      hashlib.sha256(json.dumps(docs, sort_keys=True).encode()).hexdigest()[:16])  # 63 60 b42b1ec439d1683c
+```
+
+**Tests** (`tests/test_x06_solve_policies.py` unless named):
+- T1 E-X06-13 (solve half): the `xfail` removed; passes as written. Should it still fail for another reason, that is
+  a new by-name path: STOP and report, as Q7.
+- T2 `test_q7_the_bundle_check_resolves_the_requested_policy_by_name` is replaced by
+  `test_q7_a_project_policy_bundle_verifies_on_its_own_document`: `user.copy`'s integrity is
+  `{ok: true, missing: [], tampered: [], unexpected: []}` and equals `T06-revision-v2`'s.
+- T3 forged `user.` bundles, each built with full re-hash (W3a's `_rewrite`, `intact=False`; import or copy it), each
+  `verify_bundle(b).tampered == ("solve-path.json",)`, and for F1 to F3 `reproduce(rerun=True)` `NOT_RUN` with no rerun
+  manifest. F1: request `user.other`, document untouched. F2: document `max_attempts + 1`, manifest hash untouched.
+  F3: document `policy_id: user.other` with the manifest hash recomputed, request `user.copy`. F4: the
+  `T06-revision-v2` bundle with only its request set to `user.copy`. F5: `solve-policy.json` dropped. F6: documents
+  `[]`, `{}`, one without `scales`, `"recycle": 5`, `"residual_tolerances": 5` (manifest hash untouched), each judged,
+  none raised. F7: requests `"user."`, `"user.-x"`, `"user.x\n"`, `"user." + 65 * "a"`, each coherent (document id and
+  manifest hash rewritten to match), so the pattern alone decides. F8: `solve_path: "no_such_route"`.
+- T4 `test_q7_limit_a_coherent_relabel_is_not_detected`: the `T06-revision-v2` bundle relabelled `user.t06` in the
+  request, the document and the manifest (`policy_id`, `policy_sha256`) verifies `ok`; the docstring cites this
+  ruling. It pins the stated limit, so tightening it later is a recorded decision.
+- T5 a genuine lowered run: `user.copy` solved with `max_property_calls` one below the document's; the manifest hash
+  is the lowered document's, the bundle verifies `ok` and reproduces `MATCH` in a fresh project.
+- T6 `is_project_policy_id("user.x\n") is False` (S1). `tests/test_t07_w3a_revision_runs.py`'s W3-Q4 tests pass
+  unchanged.
+- E-X06-13's `optimize` half runs where the `nlp` extra is installed; until it has run, the evidence manifest records
+  it `not run`, never passed.
+
+**S2, recorded only (not X06's).** For a *named* bundle whose `solve-policy.json` is malformed under a coherent index,
+W3-Q4 reads only `max_property_calls`, integrity is `ok`, and `revision_replay._recorded_policies` (catching
+`ValueError, TypeError, KeyError`) lets `AttributeError` from `"residual_tolerances": 5` escape `reproduce`: a forged
+bundle raises instead of giving `NOT_RUN`. Default: not fixed in X06 (outside D4; it touches the named path); the
+orchestrator files it for the next code-health batch.
+
+### R1-2 (R-088 Q26): `register_solve_policy`'s `policy/scales` is admitted by full path
+
+**The claim, checked.** `SolvePolicy.scales` is declared, written and read back only in `numerics/solve_record.py`
+(lines 678, 717, 752). No solver, verifier or study module reads it: the other `scales` in `src/` are the compiled
+problem's row and column scales (from `numerics/scaling.py`'s registered nominals), the NLP closure's, the coupling
+block's and the surrogate score's. The offered policies carry `scales: {}` (`orchestrator/policies.py:75, 91`; the
+others are `replace`s of `T06-revision-v2`).
+
+**Ruling: grant by full path; do not refuse `scales`.** The grant rests on the map's shape, not on its being unread
+today. Its keys are a closed registry (`QUANTITY_KINDS`, checked at registration by D4.3(d), tested by E-X06-11c),
+its values strictly positive constants (schema `exclusiveMinimum: 0`), never taken from an iterate (ADR 0001 D3.5).
+At most |QUANTITY_KINDS| per-kind constants cannot carry a per-variable state or a matrix; the map has the shape and
+key domain of `check_tolerances`, which §13 admits by name. Refusing it is not implementable without an ADR change:
+D4.1 keeps `solve-policy.schema.json` unchanged and D4.5 makes the request the whole document, so the static scan would
+still find the map (a runtime refusal is invisible to it), and Q6's route to variants (`get_solve_policy`, edit,
+`register_solve_policy`) needs every member accepted. If a later package makes the solver read `SolvePolicy.scales`,
+the values still only steer the search, and acceptance stays with `CheckPolicy` (D4.2); that package re-examines this
+row.
+
+**A second finding the measurement did not reach.** Admitting the map alone leaves the test red at its next
+assertion: the request also carries 39 numeric scalars (measured at `c526de6a` with the test's own `_findings()`),
+which the pinned scalar-name inventory does not list. The exception has two halves, as OPT's (D-58) had:
+- `ALLOWED_BY_PATH` gains `("register_solve_policy", "policy/scales", "map")`.
+- `SOLVE_POLICY_PREFIXES = {"register_solve_policy": "policy/"}` and `SOLVE_POLICY_SCALARS`, exactly these 39 paths
+  below that prefix, asserted equal as `OPT_REQUEST_SCALARS` is and excluded from the `names` inventory the same way:
+  `armijo_c`, `eta_inner`, `linear_residual_threshold`, `max_attempts`, `max_iterations_per_attempt`,
+  `max_property_calls`, `phase_wall_patience`, `stagnation_ratio`, `stagnation_window`, `step_halvings_max`;
+  `globalization/eo_recovery_max_count`; `globalization/homotopy/` `corrector_max_iterations`, `growth`,
+  `max_lambda_trials`; `globalization/ptc/` `gamma_max`, `gamma_min`, `max_steps_per_attempt`, `phi_floor`,
+  `residence_time_s`, `retries_max`, `retry_shrink`, `tau_initial_s`, `tau_max_s`, `tau_min_s`; `recycle/` `beta`,
+  `beta_substitution`, `beta_substitution_oscillating`, `coefficient_max`, `condition_max`, `depth_max`,
+  `max_iterations_per_attempt`, `max_restarts`, `oscillation_window`, `stagnation_ratio`, `stagnation_window`,
+  `step_halvings_max`; `residual_tolerances/*/` `absolute`, `relative`, `scale`.
+- No untyped member is added and `get_solve_policy` adds no finding (measured).
+- The module docstring gains a paragraph in F3's form citing ADR 0078 D4.3(d) and D4.5, the ADR section below and the
+  register row.
+
+**Tests.** `tests/test_t07_q26.py`: 6 passed (today 1 failed, 5 passed). E-X06-11c refuses an unregistered key under
+`/scales` with `solve_policy_invalid` at that pointer (confirm the walk reaches it; add the case if not).
+
+**Recording.** Within ADR 0078 D4 as written: D4.5 and D4.3(d) already decide that the operation accepts `scales`
+keyed by registered kinds; the exception names a consequence. F3's form: an appended ADR section and a register row;
+no user card.
+
+### Text the orchestrator applies (not in this commit)
+
+ADR 0078, appended after its last section:
+
+> ## X06 ruling round R1 applied (`docs/X06_DECISIONS.md`, "Design-lane rulings R1", 2026-11-27)
+>
+> Status stays Accepted (R-1071). Two clarifications, recorded in the decision register; no section above is edited
+> and nothing accepted is changed.
+>
+> | Of | Clarification | Register |
+> | --- | --- | --- |
+> | D4.2, E-X06-13; T07 W3-Q4 | A bundle whose `solve-path.json` requests a `user.` id (D4.1, matched whole) is judged against its own `solve-policy.json`: the route known; the document indexed, intact and rebuilt; its `policy_id` equal to the request; its `policy_sha256` equal to the manifest's. The project store is never consulted. Every other request is judged as before. A coherent substitution of a `user.` policy is beyond integrity; replay and the certificate stay the guard. | R-Q7 |
+> | D4.3(d), D4.5; R-088 Q26 | `register_solve_policy`'s `policy/scales`, a map of registered quantity kind to a positive constant, is the one numeric map R-088 Q26 admits in the `SolvePolicies` requests, by that full path and only there; the request's 39 numeric scalars are pinned by full path (`tests/test_t07_q26.py`). | R-Q26 |
+
+Register rows (R-Q7 and R-Q26 stand for the next two free numbers on `main`): R-Q7 "`verify_bundle` judges a `user.`
+request against the bundle's own policy document, never the project store (X06 R1-1)"; R-Q26 "R-088 Q26 admits
+`register_solve_policy`'s `policy/scales` map, by full path (X06 R1-2)". Both: decided by the design lane
+(`architect`), X06 ruling round R1, clarifying ADR 0078 (Accepted, R-1071); normative text the ADR section above;
+evidence this section's measurements; affected package X06.
