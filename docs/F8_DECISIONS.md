@@ -388,3 +388,38 @@ Amendment 12 members), `1b3b55f2` (tests, re-record tool, E-F8-1 expectation).
   (1, 4, 3) over (108, 1176, 147) gives (110, 1184, 154). harvest + envelope + evidence tests: 717 passed, 19 skipped.
   The inherited red (`test_j16`) is fixed on wp/F2 (`6913c4a0`, DECISION F2-J16). Alternative: defer the rows to the
   joint merge (rejected: wp/F8 would be red in CI). The brief's "no change under tests/" was the orchestrator's gap.
+
+## F8-FR0 (merge wp/F2 `4b820b97` into wp/F8), 2026-11-27
+
+Brief `docs/briefs/LINE06-F8-FR0.md`. Merge commit `b3d73fce` (`git merge --no-ff wp/F2`). Eight conflicts:
+`scripts/m07a_rc.py`, `tests/test_m07a_surface_chain.py`, `tests/test_t08_w2_surface_digest.py`,
+`tests/test_m07a_harvest.py`, `benchmarks/t08/support_envelope.yaml`, `docs/support-matrix.md` and the two
+`message_entry` fixtures. `docs/decision-register.md` and the catalogue YAMLs merged without conflict.
+
+- **DECISION F8-FR0-1. c_13 is recomputed onto F2-WO8's D_11 (R-1072/R-1073: the second to merge decomposes onto
+  the first).** Measured on the merged tree: served `D_13` `c11d38778d2f8aba8240a6a2b5ee9d9e1e7b93c5c6fae4cc40ca82177cb50ddd`
+  -> `3571c5c3f57abe2a4ecb3e93970cb95cc8ce7856259f832aa78a2dcbcff7c10c`; `strip_f8` gives
+  `8eee5313e1dff685ed3f5c7a60c6aa8fb7fea31d8fcd5c8ac608eac9450f304a` (F2's head D_11) exactly, `strip_f2` of that
+  `f7ec3c94…` (D_10) exactly; only `get_job_result` differs between served and `strip_f8`. No R4-G3 snapshot moved
+  (`test_t07_w5e_application_results` 39 passed unchanged). Followers: `F8_SERVED_SHA256`, the c_13 `Link`, R-1076's
+  Evidence cell (re-take note, both D_11s), ADR 0019 Amendment 12's pointer paragraph, `tests/f8_schema_support.py`'s
+  docstring. Reversible by: reverting the merge.
+- **DECISION F8-FR0-2. Both sides of each prose conflict are kept;** F2's test
+  `test_f2_control_c_11_restores_the_text_only_with_the_strip` gets `L11` appended to its link tuple (c_13 is the
+  outermost link on wp/F8, as Note F8-WO1b-7 did for the c_11 control) and F2's surface-digest test reads
+  `_before_f8(mcp)`. No assertion is relaxed.
+- **DECISION F8-FR0-3. Harvest rows: F2's, then F8's, at the envelope's tail.** `HARVEST_SIZE` (110, 1184, 154),
+  measured by `tests/test_m07a_harvest.py` (5 passed) and equal to the sum; `docs/support-matrix.md` re-emitted
+  (`t08_support_matrix.py --emit`): 1338 items, 73 manifests.
+- Catalogue digest (`doc_pages.py` up to date; `msg_catalogue.py check` PASS, 457 entries): F2 `3af0a794…` / F8
+  `bbdcfb51…` -> `43687c797072dc4516f6416f309d86f9c10a763a38b38a709d45f3bd97f2f004` in the two `message_entry`
+  fixtures (`t07_schema_fixtures.py --write`; no other fixture written).
+
+### F8-FR0 gate numbers (SMM-TR09, at `b3d73fce`)
+
+- F0: PASS, M1 50/50, M2-M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 42/42. `w5_identity.py sets --check` PASS.
+- `test_f2_*` 564 passed (1 deselected by the opt-in marker); `test_f8_*` 122; `test_k05_replay` 30; `test_x07a_*` 18;
+  `test_msg_*` 186 (3 xfailed); `test_t07_*` 2144 (28 skipped); `test_t08_w2_*` 145; `test_m07a_*` 238;
+  `test_adr_0002_a1_integers` + `test_evidence_manifests` + `test_s19_w5_gate` 808 (19 skipped);
+  `test_v03_semantic_roles` 22 passed (the three WO1-10 reds are gone with F2's fixes). 0 failed.
+- ruff check, ruff format --check (1356 files), mypy `src` (371 files): clean.
