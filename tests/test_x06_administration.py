@@ -28,6 +28,7 @@ import json
 import logging
 import random
 from collections.abc import Awaitable, Callable
+from dataclasses import replace
 from pathlib import Path
 from typing import Any
 
@@ -51,6 +52,7 @@ from openflowsheet.application.policy_types import (
     RIGHTS,
     CapabilityReference,
     Limits,
+    ProjectPolicy,
 )
 from openflowsheet.application.serving import token_capability
 from openflowsheet.application.store import DATABASE_NAME, POLICY_NAME
@@ -717,3 +719,97 @@ def test_e_x06_21_the_operator_cli_rows_keep_their_form(
         got = {k: v for k, v in row.items() if k not in ("at", "request_sha256")}
         assert got == want
         assert row["request_sha256"] == hashes[after], row
+
+
+# ========================================================== X06 review S1: judged under the write
+
+
+def _revoked(policy: ProjectPolicy) -> ProjectPolicy:
+    """The administrator's capability revoked (by the operator, committed first)."""
+    kept = tuple(c for c in policy.capabilities if c.capability_id != ADMIN_CAPABILITY)
+    return replace(policy, capabilities=kept)
+
+
+def _switched_off(policy: ProjectPolicy) -> ProjectPolicy:
+    return replace(policy, administration_in_band=False)
+
+
+def _without_draft(policy: ProjectPolicy) -> ProjectPolicy:
+    """The administrator's capability, same id and token, without `draft`: a caller the
+    delegation and revoke rules must judge as the policy under the write states it."""
+    narrowed = tuple(
+        replace(c, rights=tuple(r for r in c.rights if r != "draft"))
+        if c.capability_id == ADMIN_CAPABILITY
+        else c
+        for c in policy.capabilities
+    )
+    return replace(policy, capabilities=narrowed)
+
+
+#: (operation, request, the change committed between check and write, code, detail code)
+S1_CASES = [
+    ("grant", "grant_capability", _revoked, "unauthenticated", None),
+    ("grant", "grant_capability", _switched_off, "unsupported", "administration_disabled"),
+    ("grant", "grant_capability", _without_draft, "forbidden", "grant_exceeds_caller"),
+    ("revoke", "revoke_capability", _revoked, "unauthenticated", None),
+    ("revoke", "revoke_capability", _switched_off, "unsupported", "administration_disabled"),
+    ("revoke", "revoke_capability", _without_draft, "forbidden", "revoke_exceeds_caller"),
+    ("ambient", "set_ambient_pressure", _revoked, "unauthenticated", None),
+    ("ambient", "set_ambient_pressure", _switched_off, "unsupported", "administration_disabled"),
+]
+S1_REQUESTS: dict[str, dict[str, Any]] = {
+    "grant": a_grant("cap-s1", "s1", rights=["draft", "read"], expires_at=None),
+    "revoke": {"capability_id": "cap-s1-target", "idempotency_key": "s1"},
+    "ambient": {"value": 1.0, "unit": "bar", "idempotency_key": "s1"},
+}
+
+
+@pytest.mark.parametrize(
+    ("kind", "name", "change", "code", "detail"),
+    S1_CASES,
+    ids=[f"{name}-{change.__name__.strip('_')}" for _, name, change, _, _ in S1_CASES],
+)
+def test_x06_s1_a_policy_change_between_check_and_write_is_judged(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    kind: str,
+    name: str,
+    change: Callable[[ProjectPolicy], ProjectPolicy],
+    code: str,
+    detail: str | None,
+) -> None:
+    """X06 review S1: a revocation of the caller, the switch turned off, or a caller narrowed,
+    committed after the write's checks and before its transaction, refuses the write inside the
+    transaction: the policy file keeps the bytes the change left, no ledger row, no grant."""
+    from openflowsheet.application import administration_service
+
+    directory, admin, _ = make_project(tmp_path)
+    # The revoke's target holds `draft`, which the narrowed administrator lacks.
+    grant(
+        directory, principal_id="agent-s1", rights=("draft", "read"), capability_id="cap-s1-target"
+    )
+    policy_file = directory / POLICY_NAME
+    real = administration_service.change_policy
+    left: list[bytes] = []
+
+    def committed_first(*args: Any, **kwargs: Any) -> ProjectPolicy:
+        changed = policy_file_bytes(change(read_policy(policy_file)))
+        policy_file.write_bytes(changed)
+        left.append(changed)
+        return real(*args, **kwargs)
+
+    monkeypatch.setattr(administration_service, "change_policy", committed_first)
+    with LocalApplication.open(directory, capability=admin) as owner:
+        error, document = dispatched(owner, name, S1_REQUESTS[kind])
+        with owner.store.reading() as connection:
+            ledger = owner.store.ledger_lookup(connection, ADMIN, name, "s1")
+    assert error and document["code"] == code, document
+    assert document.get("detail", {}).get("code") == detail, document
+    assert len(left) == 1 and policy_file.read_bytes() == left[0]
+    assert ledger is None
+    ids = {c.capability_id for c in read_policy(policy_file).capabilities}
+    assert "cap-s1" not in ids
+    if change is not _revoked:
+        assert {ADMIN_CAPABILITY, "cap-s1-target"} <= ids
+    rows = [r for r in audit(directory) if r["operation"] == name]
+    assert [(r["outcome"], r["code"]) for r in rows] == [("refused", code)]

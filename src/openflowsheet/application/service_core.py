@@ -23,7 +23,7 @@ from openflowsheet.application.errors import ApiError, ApiErrorCode, Application
 from openflowsheet.application.jobs.executor import InlineExecutor, ProcessExecutor
 from openflowsheet.application.jobs.runner import RunContext
 from openflowsheet.application.model_builders import SurrogateResolver
-from openflowsheet.application.policy_types import CapabilityReference
+from openflowsheet.application.policy_types import CapabilityReference, ProjectPolicy
 from openflowsheet.application.store import ProjectStore
 from openflowsheet.application.store_records import AuditEntry
 from openflowsheet.records.importers.legacy import available_records
@@ -33,6 +33,10 @@ from openflowsheet.records.store import RecordStore
 #: ADR 0061 D8: the legacy store, one per process: it imports the available legacy files at its
 #: first access (F3 decision WO5b-2).
 LEGACY_STORE: Final = LegacyStore(available_records)
+#: The refusal of a caller whose capability the policy no longer holds.
+UNAUTHENTICATED_MESSAGE: Final = (
+    "this capability is not in the project policy (revoked or never granted)"
+)
 
 
 def record_stack(directory: Path | None) -> StoreStack:
@@ -128,20 +132,24 @@ class ServiceCore:
 
     def caller(self, operation: str) -> CapabilityReference:
         """The caller's capability as the current policy states it; 401 if it is gone."""
+        caller = self.caller_in(self.policy.current())
+        if caller is None:
+            return self.refuse("unauthenticated", UNAUTHENTICATED_MESSAGE, operation=operation)
+        return caller
+
+    def caller_in(self, policy: ProjectPolicy) -> CapabilityReference | None:
+        """The caller's capability as `policy` states it, by `(capability_id, token_sha256)`;
+        `LOCAL_OWNER` for the local owner; `None` if `policy` does not hold it."""
         if self._capability is None:
             return LOCAL_OWNER
-        for capability in self.policy.current().capabilities:
+        for capability in policy.capabilities:
             if (
                 capability.capability_id == self._capability.capability_id
                 and capability.token_sha256 == self._capability.token_sha256
                 and capability.token_sha256 is not None
             ):
                 return capability
-        return self.refuse(
-            "unauthenticated",
-            "this capability is not in the project policy (revoked or never granted)",
-            operation=operation,
-        )
+        return None
 
     def authorize(
         self,

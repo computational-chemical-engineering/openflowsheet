@@ -10,6 +10,12 @@ non-loopback interface (`administration_remote_refused`), then by the delegation
 existing `capability_id` is `capability_exists`, a revoke's unknown one `capability_not_found`
 and a target holding a right the caller lacks `revoke_exceeds_caller`.
 
+The caller and the switch are judged again inside the write transaction, on the policy
+`change_policy` read under it (X06 review S1): the caller re-resolved there by
+`(capability_id, token_sha256)` (`unauthenticated` if a revocation committed first), the switch
+(`administration_disabled` if it was turned off first), and the delegation and revoke rules
+against that caller. A write therefore never commits on a policy that no longer allows it.
+
 A write is `authz.change_policy` inside the transaction that also holds its ledger row (ADR 0019
 D3, scope `(principal, operation, key)`): one `allowed` audit row naming the caller, one ledger
 row, one atomic replace of the policy file, all or none. A grant's token is in its response only:
@@ -47,10 +53,16 @@ from openflowsheet.application.policy_types import (
     RevokeResult,
     Right,
 )
-from openflowsheet.application.service_core import ServiceCore
+from openflowsheet.application.service_core import UNAUTHENTICATED_MESSAGE, ServiceCore
 from openflowsheet.application.store_records import LedgerRow, StoreError
 from openflowsheet.canonical import document_sha256, first_noncanonical
 from openflowsheet.schema_check import DocumentSchemaError
+
+#: D5.3's first refusal, before and inside the write transaction.
+_DISABLED_MESSAGE = (
+    "administration_disabled: in-band policy administration is off for this project; "
+    "its operator switches it on with `openflowsheet project administration on`"
+)
 
 
 class _RefusedError(Exception):
@@ -136,7 +148,14 @@ class AdministrationService:
         except (PolicyAdministrationError, ValueError) as error:
             self._invalid(operation, request_sha256, str(error), "")
 
-        def add(policy: ProjectPolicy) -> tuple[ProjectPolicy, str]:
+        def add(policy: ProjectPolicy, current: CapabilityReference) -> tuple[ProjectPolicy, str]:
+            refused = delegation_refusal(current, requested)
+            if refused is not None:
+                raise _RefusedError(
+                    "forbidden",
+                    f"grant_exceeds_caller: {refused}",
+                    {"code": "grant_exceeds_caller"},
+                )
             if any(c.capability_id == capability.capability_id for c in policy.capabilities):
                 raise _RefusedError(
                     "invalid_request",
@@ -163,7 +182,9 @@ class AdministrationService:
         caller = self._core.caller(operation)
         removed: list[CapabilityReference] = []
 
-        def remove(policy: ProjectPolicy) -> tuple[ProjectPolicy, str]:
+        def remove(
+            policy: ProjectPolicy, current: CapabilityReference
+        ) -> tuple[ProjectPolicy, str]:
             found = [c for c in policy.capabilities if c.capability_id == capability_id]
             if not found:
                 raise _RefusedError(
@@ -171,7 +192,7 @@ class AdministrationService:
                     f"capability_not_found: no capability {capability_id!r} to revoke",
                     {"code": "capability_not_found", "capability_id": capability_id},
                 )
-            refused = revoke_refusal(caller, found[0])
+            refused = revoke_refusal(current, found[0])
             if refused is not None:
                 raise _RefusedError(
                     "forbidden",
@@ -224,8 +245,15 @@ class AdministrationService:
         def result(updated: ProjectPolicy) -> AmbientPressureResult:
             return AmbientPressureResult("set", pressure, updated.policy_sha256)
 
+        change = ambient_change(pressure)
+
+        def declare(
+            policy: ProjectPolicy, current: CapabilityReference
+        ) -> tuple[ProjectPolicy, str]:
+            return change(policy)
+
         prior, done = self._write(
-            operation, idempotency_key, request_sha256, caller, ambient_change(pressure), result
+            operation, idempotency_key, request_sha256, caller, declare, result
         )
         if prior is not None:
             original = AmbientPressureResult._build(prior.result)
@@ -251,8 +279,7 @@ class AdministrationService:
         if not self._core.policy.current().administration_in_band:
             self._core.refuse(
                 "unsupported",
-                "administration_disabled: in-band policy administration is off for this project; "
-                "its operator switches it on with `openflowsheet project administration on`",
+                _DISABLED_MESSAGE,
                 operation=operation,
                 request_sha256=request_sha256,
                 code="administration_disabled",
@@ -274,12 +301,19 @@ class AdministrationService:
         idempotency_key: str,
         request_sha256: str,
         caller: CapabilityReference,
-        apply: Callable[[ProjectPolicy], tuple[ProjectPolicy, str]],
+        apply: Callable[[ProjectPolicy, CapabilityReference], tuple[ProjectPolicy, str]],
         result: Callable[[ProjectPolicy], Any],
     ) -> tuple[LedgerRow | None, Any]:
         """The ledger lookup, then `change_policy` and the ledger row, in one write transaction.
-        Returns the prior ledger row of the same key (nothing written), or the new result."""
+        Returns the prior ledger row of the same key (nothing written), or the new result.
+
+        `apply` is given the policy read under the transaction and the caller as that policy
+        states it, after `_judged` refused a caller it no longer holds or a switch turned off."""
         store = self._core.store
+
+        def judged(policy: ProjectPolicy) -> tuple[ProjectPolicy, str]:
+            return apply(policy, self._judged(policy))
+
         # An in-memory project's policy is static, its switch off: no write reaches here.
         assert store.directory is not None
         done: Any = None
@@ -294,7 +328,7 @@ class AdministrationService:
                             store,
                             store.directory,
                             operation,
-                            apply,
+                            judged,
                             actor=caller,
                             request_sha256=request_sha256,
                             connection=connection,
@@ -330,6 +364,18 @@ class AdministrationService:
                 original_request_sha256=prior.request_sha256,
             )
         return prior, done
+
+    def _judged(self, policy: ProjectPolicy) -> CapabilityReference:
+        """The caller as `policy` (read under the write transaction) states it, with the switch
+        judged there too (X06 review S1); a refusal rolls the transaction back."""
+        current = self._core.caller_in(policy)
+        if current is None:
+            raise _RefusedError("unauthenticated", UNAUTHENTICATED_MESSAGE, {})
+        if not policy.administration_in_band:
+            raise _RefusedError(
+                "unsupported", _DISABLED_MESSAGE, {"code": "administration_disabled"}
+            )
+        return current
 
     def _invalid(self, operation: str, request_sha256: str, message: str, pointer: str) -> NoReturn:
         self._core.refuse(
