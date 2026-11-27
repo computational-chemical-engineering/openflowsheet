@@ -638,3 +638,21 @@ Files: `revision_v2/{lower,raise_v1}.py`, `tests/test_f2_lowering.py`, `tests/da
   `tests/test_f1_draft_admission.py` 125; surface suites 2320 passed, 1 failed, 28 skipped, the failure G20's
   (WO6c-3), then `test_t07_global_state.py` + lowering 99/99 after the fix; F0 PASS M1 50/50, M2-M5 61/61, M6 85/85,
   M7 52/52, M8 105/105, M9 42/42; ruff, ruff format --check, `mypy src` (367 files) clean. No served digest moved.
+
+## F2-WO7 (close-out), 2026-11-27
+
+- **DECISION WO7-1. Catalogue prose for the 18 WO4 entries** (WO4-16): each of the 17 refusals and
+  `species_basis_not_monotone` has the complete style's fields (title, args, params, summary, why, action, see_also,
+  example) and `complete: true`; kinds unchanged (`construct_unavailable` stays `input`, no `gap`: the entry was
+  filed so by WO4, and a kind change moves no digest the gate reads but is a design-lane call). Params are the
+  emit sites' (`revision_v2/validate.py`, `lower.py`, `material/layout.py`). `attribute_grid_mismatch` takes two
+  parameter sets, all optional: `definition, substream, kind` (the validator, `layout.py`) or `connection, port`
+  (D11's one-definition rule). `scripts/doc_pages.py` re-emitted `docs-site/messages/{refusals,notices}.md`.
+  Reason text is derived from the emitting code and ADR 0062 D3/D9/D10/D11/D12, the ADR having no per-code meaning
+  table; **design-lane read of the wording wanted** with the F2 `reviewer` pass. Isolated in one commit.
+- **DECISION WO7-2. `molar_mass_inconsistent` reconciled** (`records.yaml`): `reaction` (F3) and `definition,
+  substream, species` (F2 basis notice) are all optional params, the summary has one bracketed clause for each
+  emitter, `why` gains a sentence on the species case, and a second example is added. Neither emitter dropped.
+- **Catalogue digest re-pin** `2b227092...` -> `b6c8f517c53ed8ef8775acdc37502d455e89a866dcb76eb488f7f9c105f7fff9`
+  in `tests/fixtures/schemas/application_results/message_entry/{valid/phase_regime_mismatch,invalid/missing_code}.json`
+  (as WO4-16; no served digest, no F0 check reads it).

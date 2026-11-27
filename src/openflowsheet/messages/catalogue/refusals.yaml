@@ -1861,102 +1861,254 @@ entries:
   - code: solid_role_conflict
     family: refusal
     kind: input
-    complete: false
-    title: Solid role conflict
-    summary: 'Refused: solid role conflict.'
+    complete: true
+    title: A component is given a role that conflicts with its solid role
+    args: [component]
+    params:
+      component: {type: text, label: component}
+    summary: "Component {component!raw} is placed in a substream whose role conflicts with the role it already has."
+    why: "A component is either carried as a conventional species or as a solid. It may sit in one substream, or in one mixed and one solid substream together; a component that is confined to an equilibrium (a solid candidate) cannot also be a free species of a mixed substream or take an attribute there."
+    action: "Place {component!raw} in one substream, or in one mixed and one solid substream, and remove the attributes that conflict with its solid role."
+    see_also: [species_basis_incompatible]
+    examples:
+      - params: {component: CaCO3}
   - code: species_basis_redundant
     family: refusal
     kind: input
-    complete: false
-    title: Species basis redundant
-    summary: 'Refused: species basis redundant.'
+    complete: true
+    title: The groups of a conserved basis are not independent
+    args: [definition, substream]
+    params:
+      definition: {type: text, label: material definition}
+      substream: {type: text, label: substream}
+    summary: "The conserved basis of substream {substream!raw} in definition {definition!raw} has groups that are not independent."
+    why: "A conserved basis carries one amount per group, and the group contents together with the fast reactions must give a matrix of full row rank. When one group is a combination of the others, the same amount is carried twice and the state is not determined."
+    action: "Remove the redundant group from the conserved basis of {substream!raw}, or change the group contents so that every group counts something the others do not."
+    see_also: [species_basis_incompatible, species_basis_not_monotone]
+    examples:
+      - params: {definition: aqueous, substream: liquid}
   - code: species_basis_incompatible
     family: refusal
     kind: input
-    complete: false
-    title: Species basis incompatible
-    summary: 'Refused: species basis incompatible.'
+    complete: true
+    title: The groups of a conserved basis do not fit the species and reactions
+    args: [definition, substream]
+    params:
+      definition: {type: text, label: material definition}
+      substream: {type: text, label: substream}
+    summary: "The conserved basis of substream {substream!raw} in definition {definition!raw} does not fit its species and fast reactions."
+    why: "The groups must count what the fast reactions leave unchanged: every fast reaction must conserve every group, and the groups together with the reactions must fix every invariant of the species (the charge among them). A basis that fails either test cannot represent the substream."
+    action: "Check the group contents against the species and the fast reaction set of {substream!raw}: each reaction must leave every group amount unchanged, and the groups must fix the elements and the charge."
+    see_also: [species_basis_redundant, species_basis_not_monotone]
+    examples:
+      - params: {definition: aqueous, substream: liquid}
   - code: group_amount_negative
     family: refusal
     kind: input
-    complete: false
-    title: Group amount negative
-    summary: 'Refused: group amount negative.'
+    complete: true
+    title: A group amount is negative
+    args: [connection, substream, group]
+    params:
+      connection: {type: text, label: connection}
+      substream: {type: text, label: substream}
+      group: {type: text, label: group}
+    summary: "The amount of group {group!raw} of substream {substream!raw} on connection {connection!raw} is negative."
+    why: "Under a group basis the state carries one amount per group, and an amount below zero describes no material. It is refused, never clipped to zero."
+    action: "Give the feed of {connection!raw} a non-negative amount for group {group!raw}, or check the specifications that set it."
+    see_also: [feed_not_electroneutral]
+    examples:
+      - params: {connection: C1, substream: liquid, group: TOTAL_C}
   - code: feed_not_electroneutral
     family: refusal
     kind: input
-    complete: false
-    title: Feed not electroneutral
-    summary: 'Refused: feed not electroneutral.'
+    complete: true
+    title: A feed is not electroneutral
+    args: [connection, substream]
+    params:
+      connection: {type: text, label: connection}
+      substream: {type: text, label: substream}
+    summary: "The feed of substream {substream!raw} on connection {connection!raw} is not electroneutral."
+    why: "When the species of a substream carry charge, a feed must satisfy the charge balance: the charge-weighted sum of its group amounts must vanish to within a relative tolerance of 1e-12. A feed that does not would put net charge into the flowsheet."
+    action: "Adjust the feed of {connection!raw} so that the positive and negative charges balance, for example by adding the counter-ion."
+    see_also: [group_amount_negative]
+    examples:
+      - params: {connection: C1, substream: liquid}
   - code: attribute_redundant
     family: refusal
     kind: input
-    complete: false
-    title: Attribute redundant
-    summary: 'Refused: attribute redundant.'
+    complete: true
+    title: An attribute is declared twice
+    args: [definition, substream, kind]
+    params:
+      definition: {type: text, label: material definition}
+      substream: {type: text, label: substream}
+      kind: {type: text, label: attribute kind}
+    summary: "Attribute {kind!raw} of substream {substream!raw} in definition {definition!raw} is declared more than once, or names a component that another partition attribute already covers."
+    why: "A substream carries each attribute kind once for the same components, and a component belongs to at most one partition attribute. A repeat would carry the same distribution twice."
+    action: "Remove the repeated attribute {kind!raw} from {substream!raw}, or take the component out of one of the partition attributes."
+    see_also: [attribute_grid_mismatch, attribute_on_zero_parent]
+    examples:
+      - params: {definition: slurry, substream: solid, kind: psd}
   - code: attribute_grid_mismatch
     family: refusal
     kind: input
-    complete: false
-    title: Attribute grid mismatch
-    summary: 'Refused: attribute grid mismatch.'
+    complete: true
+    title: An attribute or a port does not match its grid
+    params:
+      definition: {type: text, label: material definition, optional: true}
+      substream: {type: text, label: substream, optional: true}
+      kind: {type: text, label: attribute kind, optional: true}
+      connection: {type: text, label: connection, optional: true}
+      port: {type: text, label: port, optional: true}
+    summary: "The grids do not match[: attribute {kind!raw} of substream {substream!raw} in definition {definition!raw}][: the definition of connection {connection!raw} at port {port!raw}]."
+    why: "A classed attribute needs the grid of its own substream, and an unclassed attribute takes none. A generic transport unit takes one definition on all its material ports, so two definitions that differ only in the edges of a grid cannot meet at one unit."
+    action: "Name a grid of the substream for each classed attribute and none for the others, or give all the material ports of the unit the same grid edges."
+    see_also: [definition_incompatible, attribute_redundant]
+    examples:
+      - params: {definition: slurry, substream: solid, kind: psd}
   - code: attribute_on_zero_parent
     family: refusal
     kind: input
-    complete: false
-    title: Attribute on zero parent
-    summary: 'Refused: attribute on zero parent.'
+    complete: true
+    title: An attribute is nonzero where its parent amount is zero
+    args: [connection, substream, kind]
+    params:
+      connection: {type: text, label: connection}
+      substream: {type: text, label: substream}
+      kind: {type: text, label: attribute kind}
+    summary: "Attribute {kind!raw} of substream {substream!raw} on connection {connection!raw} has a nonzero value, but the amount it belongs to is zero."
+    why: "An attribute describes the material of its substream (a distribution over the amount, for example). Where that amount is zero there is no material to describe, so a nonzero attribute value is not a state."
+    action: "Set attribute {kind!raw} to zero on {connection!raw}, or give the substream a nonzero amount."
+    see_also: [attribute_redundant]
+    examples:
+      - params: {connection: C1, substream: solid, kind: psd}
   - code: amount_basis_mismatch
     family: refusal
     kind: input
-    complete: false
-    title: Amount basis mismatch
-    summary: 'Refused: amount basis mismatch.'
+    complete: true
+    title: A component's amount basis does not fit where it is used
+    args: [component]
+    params:
+      component: {type: text, label: component}
+    summary: "The amount basis of component {component!raw} does not fit its use."
+    why: "A nonconventional substream counts its components in kilograms, and a conventional one in moles. A specification of a molar kind cannot target the amount of a component that is counted in kilograms."
+    action: "Use a component whose amount basis fits the substream, or specify {component!raw} by a mass kind."
+    see_also: [quantity_kind_mismatch]
+    examples:
+      - params: {component: coal}
   - code: thermal_coordinate_mismatch
     family: refusal
     kind: input
-    complete: false
-    title: Thermal coordinate mismatch
-    summary: 'Refused: thermal coordinate mismatch.'
+    complete: true
+    title: A definition uses another thermal coordinate than the document
+    args: [definition]
+    params:
+      definition: {type: text, label: material definition}
+    summary: "Definition {definition!raw} uses a thermal coordinate that differs from the one the document declares."
+    why: "The document declares one thermal coordinate for all its materials (the enthalpy per mole or per mass). Every definition must use it, because a connection carries one state per coordinate."
+    action: "Set the thermal coordinate of {definition!raw} to the document's, or change the document's coordinate and every definition with it."
+    see_also: [unit_coordinate_unsupported]
+    examples:
+      - params: {definition: aqueous}
   - code: unit_coordinate_unsupported
     family: refusal
     kind: input
-    complete: false
-    title: Unit coordinate unsupported
-    summary: 'Refused: unit coordinate unsupported.'
+    complete: true
+    title: A unit does not support the thermal coordinate
+    args: [instance, coordinate]
+    params:
+      instance: {type: text, label: unit}
+      coordinate: {type: text, label: thermal coordinate}
+    summary: "Unit {instance!raw} does not support the thermal coordinate {coordinate!raw}."
+    why: "Only the standard units take the mass-based enthalpy coordinate. A connection to any other unit that uses it is refused, because that unit computes in the coordinate (n, T, P) or the legacy form."
+    action: "Use the molar thermal coordinate for the material ports of {instance!raw}, or replace the unit by a standard one."
+    see_also: [thermal_coordinate_mismatch]
+    examples:
+      - params: {instance: R1, coordinate: h_mass}
   - code: definition_incompatible
     family: refusal
     kind: input
-    complete: false
-    title: Definition incompatible
-    summary: 'Refused: definition incompatible.'
+    complete: true
+    title: A connection's definition does not fit the port
+    args: [connection, port]
+    params:
+      connection: {type: text, label: connection}
+      port: {type: text, label: port}
+    summary: "The definition of connection {connection!raw} is not one that port {port!raw} accepts."
+    why: "A port lists the definitions it accepts, and a generic transport unit takes one definition on all its material ports. A connection whose definition is not among them cannot join the port."
+    action: "Give connection {connection!raw} a definition that port {port!raw} accepts, or use the same definition on all the material ports of the unit."
+    see_also: [attribute_grid_mismatch, signal_kind_mismatch]
+    examples:
+      - params: {connection: C1, port: inlet}
   - code: signal_kind_mismatch
     family: refusal
     kind: input
-    complete: false
-    title: Signal kind mismatch
-    summary: 'Refused: signal kind mismatch.'
+    complete: true
+    title: A signal's quantity kind does not match its endpoints
+    args: [connection]
+    params:
+      connection: {type: text, label: connection}
+    summary: "The quantity kind of signal {connection!raw} does not match the quantity at one of its ends."
+    why: "A signal carries one quantity kind. Its source (a probe), its sink (a parameter or a specification) and its own declared kind must all agree, or the value would be read in the wrong units."
+    action: "Change the quantity kind of {connection!raw}, or connect it to a probe, parameter or specification of the same kind."
+    see_also: [parameter_not_manipulable, quantity_kind_mismatch]
+    examples:
+      - params: {connection: S1}
   - code: parameter_not_manipulable
     family: refusal
     kind: input
-    complete: false
-    title: Parameter not manipulable
-    summary: 'Refused: parameter not manipulable.'
+    complete: true
+    title: A parameter is not one a signal may set
+    args: [instance, parameter]
+    params:
+      instance: {type: text, label: unit}
+      parameter: {type: text, label: parameter}
+    summary: "Parameter {parameter!raw} of unit {instance!raw} cannot be set by a signal."
+    why: "A signal may drive only a parameter that the unit's model declares manipulable. Other parameters are fixed in the document."
+    action: "Bind the signal to a manipulable parameter of {instance!raw}, or fix {parameter!raw} in the document."
+    see_also: [parameter_binding_conflict, signal_kind_mismatch]
+    examples:
+      - params: {instance: H1, parameter: duty}
   - code: parameter_binding_conflict
     family: refusal
     kind: input
-    complete: false
-    title: Parameter binding conflict
-    summary: 'Refused: parameter binding conflict.'
+    complete: true
+    title: A parameter is bound more than once
+    args: [target]
+    params:
+      target: {type: text, label: target}
+    summary: "Target {target!raw} is bound more than once."
+    why: "A parameter or specification takes its value from one source. Two bindings (a specification and a signal, or two signals) would set it twice."
+    action: "Remove all but one binding of {target!raw}."
+    see_also: [parameter_not_manipulable]
+    examples:
+      - params: {target: H1.duty}
   - code: construct_unavailable
     family: refusal
     kind: input
-    complete: false
-    title: Construct unavailable
-    summary: 'Refused: construct unavailable.'
+    complete: true
+    title: A construct of the document is not available yet
+    args: [construct, foundation]
+    params:
+      construct: {type: text, label: construct}
+      foundation: {type: text, label: foundation}
+    summary: "{construct!raw} is not available in this version; it needs foundation {foundation!raw}."
+    why: "The document format names some constructs (a convention other than the elemental one, property methods beyond one legacy provider, a derived target) that a later foundation implements. This version refuses them rather than ignoring them."
+    action: "Remove {construct!raw} from the document, or wait for the version that provides foundation {foundation!raw}."
+    see_also: [revision_unsupported]
+    examples:
+      - params: {construct: property_methods, foundation: F4}
   - code: quantity_kind_mismatch
     family: refusal
     kind: input
-    complete: false
-    title: Quantity kind mismatch
-    summary: 'Refused: quantity kind mismatch.'
+    complete: true
+    title: A specification's kind does not match its target
+    args: [specification]
+    params:
+      specification: {type: text, label: specification}
+    summary: "The kind of specification {specification!raw} does not match the quantity kind of its target."
+    why: "A specification fixes a value of the kind its target has (a temperature for a temperature, a molar flow for a molar flow). Another kind would fix the target in the wrong units."
+    action: "Change the kind of {specification!raw} to the target's, or point it at a target of the kind it states."
+    see_also: [amount_basis_mismatch, signal_kind_mismatch]
+    examples:
+      - params: {specification: SP1}
