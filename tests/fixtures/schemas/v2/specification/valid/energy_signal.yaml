@@ -1,1 +1,2 @@
+# A valid v2 specification (F2-WO4). Flow style: this comment keeps load_document on the YAML path.
 {id: q_duty, target: {energy: Q1}, kind: heat_rate, unit: W, value: 1000.0, tolerance: {absolute: 1.0e-6}, role: decision, provenance: fixture}

@@ -815,3 +815,11 @@ Files: `revision_v2/{lower,raise_v1}.py`, `tests/test_f2_lowering.py`, `tests/da
   `check_admission`, and A21 before the harvest rows); MSG 186 passed, 3 xfailed; nlp (`test_f2_amendment9.py`,
   `test_opt_job_nlp.py`) 7 passed; F0 PASS M1 50/50, M2-M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 42/42;
   ruff clean, 1345 files formatted, mypy clean (367 files).
+
+- **DECISION F2-J16 (orchestrator, 2026-11-27). `tests/test_adr_0002_a1_integers.py::test_j16_...` was red on wp/F2
+  (green on main): F2-WO4's four valid flow-style fixtures under `tests/fixtures/schemas/v2/specification/valid/`
+  begin with `{`, so `load_document` parses them as JSON and raises `JSONDecodeError`, which `_fixture_documents` does
+  not catch. Found by the F8 close-out gate (STOP F8-CO-3). Fix: a leading YAML comment line in each of the four
+  files; content unchanged; the test is not touched.** After: `test_adr_0002_a1_integers.py` +
+  `test_f2_revision_v2.py` 175 passed; F0 PASS (M1 50/50, M2-M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 42/42).
+  Alternative: catch `JSONDecodeError` in the test (a weaker check). Reversible by: reverting this commit.
