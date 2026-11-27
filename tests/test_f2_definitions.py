@@ -46,16 +46,16 @@ PINNED: dict[tuple[str, str], str] = {
         "d0a6d025db17189521068be4fca6814ef3f6b1a09382aa9794f504302f77cc1e"
     ),
     ("connection_definition", "mat-v1"): (
-        "7d05658de6941ae67bef1bc5f23a89fe26f70ca6f1ff2f05223944bfca23e025"
+        "938323c0cf7cf69f4d2d446c7cd95fcc8d965408a24a64711d66b9428b47afbb"
     ),
     ("connection_definition", "heat-v1"): (
-        "e6b7162867fcc3116e85550f496076fbd0d567eed549c8272ae10898d7683ae9"
+        "257ff6cd1106baca8d8e9ef20aee6c6e1b079882a93a17de6525c777d90c5109"
     ),
     ("connection_definition", "work-v1"): (
-        "d987e1973ff5712103f4a3a78dccf2e424eafd2b6a780929de66dbede6add7dd"
+        "1ed307d6bcad6e6dced3da59530beeb36cd1eb9352b642d61a7748536b59b10b"
     ),
     ("connection_definition", "signal-v1"): (
-        "ae61cfa1ae8564ba12f853481a2eb2484a629c7de05a86e14f22d8c471eb705c"
+        "487068d918e767e08c7509162cbfd5d8a5f7e7f60bbf1d4f6b8e0a8bbacf5d33"
     ),
     ("phase_family", "VAPOR"): "1b3085f71df33b2b1e410d15c3e4e277ab472eaa6d8a0fb8eaa2cd8acae06ff7",
     ("phase_family", "LIQUID"): "20d0ccc6fa07c42571afcd71b26025b309cf36df797b1907c4e4db442418ed13",
@@ -154,6 +154,41 @@ def test_a_template_names_its_instance_grammar() -> None:
             "_data/schemas/connection-definition.schema.json",
             template.pointer,
         )
+
+
+def test_a_template_hashes_its_grammar_closure_not_the_file() -> None:
+    """F2 review S4 (D3, D13): `instance_schema.sha256` is the closure of the template's
+    sub-schema over the local `$defs` it reaches, descriptions removed: a description edit does
+    not move it, another template's grammar does not move it, its own grammar does."""
+    import json  # noqa: PLC0415
+    import sys  # noqa: PLC0415
+
+    from conftest import REPO_ROOT  # noqa: PLC0415
+
+    sys.path.insert(0, str(REPO_ROOT / "scripts"))
+    from registry_builtin import instance_schema_sha256  # noqa: PLC0415
+
+    path = (
+        REPO_ROOT
+        / "src"
+        / "openflowsheet"
+        / "_data"
+        / "schemas"
+        / "connection-definition.schema.json"
+    )
+    grammar = json.loads(path.read_text(encoding="utf-8"))
+    for name, template in TEMPLATES.items():
+        named = _builtins()[("connection_definition", name)]["payload"]["instance_schema"]
+        assert named["sha256"] == instance_schema_sha256(grammar, template.pointer)
+    mat = TEMPLATES["mat-v1"].pointer
+    held = instance_schema_sha256(grammar, mat)
+    edited = copy.deepcopy(grammar)
+    edited["description"] = "another description"
+    edited["$defs"]["substream"]["description"] = "another description"
+    edited["$defs"]["heat_v1"]["additionalProperties"] = True
+    assert instance_schema_sha256(edited, mat) == held
+    edited["$defs"]["substream"]["additionalProperties"] = True
+    assert instance_schema_sha256(edited, mat) != held
 
 
 def test_the_built_ins_are_registered_and_preview_while_adr_0062_is_proposed() -> None:

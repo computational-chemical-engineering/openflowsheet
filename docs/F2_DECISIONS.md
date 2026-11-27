@@ -729,3 +729,21 @@ Files: `revision_v2/{lower,raise_v1}.py`, `tests/test_f2_lowering.py`, `tests/da
   `legacy_only.yaml` through `validate` and `check_admission`: `construct_unavailable(component:H2O, F4);
   construct_unavailable(property_methods, F4)` (the fixture's `syn001-ideal` is not this build's provider id, a
   separate fault); without the fix it fails (measured).
+- **DECISION WO8-7 (S4, WO2-7 changed). A template's `instance_schema.sha256` hashes its grammar closure.**
+  `scripts/registry_builtin.py` `instance_schema_sha256(schema, pointer)`: `document_sha256` of
+  `{"schema": <sub-schema at pointer>, "$defs": {<each local $defs member reached by $ref, transitively>}}` with every
+  `description` keyword removed (a member *named* `description` under `properties`/`patternProperties`/`$defs`/
+  `dependentSchemas` is kept; `const`/`enum`/`default`/`examples` values are data, untouched). Engineering choices
+  (the closure's two-member shape; an external `$ref`, here `quantity.schema.json#/$defs/kind`, is hashed as its URI
+  and not followed, as the ruling names local `$defs` only). Regenerated with `--write` (`--check` clean). Moved:
+  `instance_schema.sha256` `41bbfca0…` (all four) -> heat-v1 `e9f98a4e…`, mat-v1 `0a6c9295…`, signal-v1 `fa3fa982…`,
+  work-v1 `a98d6c08…` (file order of `material.json`); descriptor SHAs (`tests/test_f2_definitions.py` PINNED):
+  mat-v1 `7d05658d…` -> `938323c0cf7cf69f4d2d446c7cd95fcc8d965408a24a64711d66b9428b47afbb`, heat-v1 `e6b71628…` ->
+  `257ff6cd1106baca8d8e9ef20aee6c6e1b079882a93a17de6525c777d90c5109`, work-v1 `d987e197…` ->
+  `1ed307d6bcad6e6dced3da59530beeb36cd1eb9352b642d61a7748536b59b10b`, signal-v1 `ae61cfa1…` ->
+  `487068d918e767e08c7509162cbfd5d8a5f7e7f60bbf1d4f6b8e0a8bbacf5d33`; `tables.sha256` material row `98354b4b…` ->
+  `504bd862d38894aa44a0586acaf3deb7b2f35eace83d295d787af3cc1dc1f23d`; E-F1-5 `registry_sha256`
+  (`tests/fixtures/registry/builtin-sha256.txt`) `844d9ba7…` -> `1b7db34e39229654a2155069f505267d4d42f687b67de18aaec8f6c2422362e5`.
+  nTP-v1 (legacy table) unchanged. New test `test_a_template_hashes_its_grammar_closure_not_the_file` (descriptions and
+  another template's grammar do not move mat-v1's hash, its `substream` grammar does). `tests/test_f1_*.py` +
+  `tests/test_f2_*.py`: 853 passed; surface digest/chain/list_models subset green (no served digest moved).
