@@ -51,7 +51,7 @@ arrive in this context.
    ofs-x06-merge; ADR 0019 Amendment 12 already Accepted, so no amendment option). On VERIFIED: merge wp/F8 into main
    (merge commit), F0 (`scripts/corpus_identity.py --check`), push main, delete worktree f8. On red: `--log-failed`,
    fix on wp/F8 (opus-engineer brief), gate, push.
-2. **After the F8 merge:** merge main into wp/REL060; loader check (0067 then passes); push wp/REL060 for CI (release
+2. **After the F8 merge:** merge main into wp/REL060; loader check (0067 then passes); full local gate in a detached worktree; push wp/REL060 for CI (release
    scripts and tests changed); on green, merge card `ofs-rel060-merge` (wp/REL060 into main). Then K3 per the rel050
    skill order (`.claude/skills/rel050/SKILL.md`; `.git/codehealth/briefs/REL050-K3.md` is 0.5's K3 brief), J, C, RC
    steps 1-17 (items WHEEL-F2 and F2-THREE-OS run at step 17), verdict, step 18, message 1 (no claim-set change;
