@@ -47,14 +47,10 @@ once F2-WO4 is on wp/F2 (F8 branches from wp/F2's head, merges after F2).
 
 Background jobs (they survive the reset; their notices arrive in the new context):
 1. **F2 MERGED** into main `f1fdda2b` (card ofs-f2-merge A, executed); F0 PASS; main pushed. Worktree removed.
-2. **X06**: full gate PASS at 9f020edd (21886 passed, 107 skipped, 3 xfailed; log `~/.cache/line06/x06-gate/gate-9f020edd.log`).
-   wp/X06 `7a4dcde7` (= 9f020edd + main, docs only) **pushed 2026-11-27 23:15, CI running**. Waiter
-   `~/.cache/line06/ci/wait_runs.sh wp/X06 7a4dcde7bb5a1fd8864d3988b040dc061bd9781e` writes
-   `~/.cache/line06/ci/x06-7a4dcde7.log` (one line per run; the waiter needs the FULL sha). If the waiter is gone, run it
-   again. On all green: X06 merge card (DECISION-REQUEST to hub; ADR 0078 already Accepted), merge, F0 on main, push main,
-   delete worktree x06. On red: `gh run view <id> --log-failed | grep`, fix.
+2. **X06**: gate PASS at 9f020edd; **CI green at 7a4dcde7** (run 46075265235, all legs). Merge waits for card
+   `ofs-x06-merge` (item 4). After the merge: F0 on main, push main, delete worktree x06.
 3. **F8**: F8-FR1 PASS (wp/F8 `b7f99d18` = F8 + wp/X06 7a4dcde7; D_13 `de241b22...` onto X06's D_12). **Full gate running**
-   on b7f99d18 in detached worktree `.claude/worktrees/f8-gate`, PID 790030 (setsid), summary
+   on b7f99d18 in detached worktree `.claude/worktrees/f8-gate`, PID 790054 (`scripts/gate.sh`), summary
    `~/.cache/line06/f8-gate/gate-b7f99d18.summary`. On PASS: remove the gate worktree; after the X06 merge, merge main
    (docs only on top of 7a4dcde7) into wp/F8, push, CI waiter (full sha), F8 merge card. On FAIL: grep the log, fix.
 4. **Card `ofs-x06-merge`** open on the Decision Desk (action texts in LINE06_DECISIONS 2026-11-28). Hub rings on

@@ -398,5 +398,5 @@ Reversible by: <how>.` Package build decisions go in the package's own file (`do
   brief's (110, 1184, 155) was the orchestrator's arithmetic error (F8 adds (1, 4, 2), not (0, 0, 3)).
   test_x06_mcp_http E-X06-2 adapted to pin F8_SERVED and decompose to X06_SERVED. F0 PASS; all groups 0 failed.
   Orchestrator spot check: chain + t07 w5e + t08 surface digest + harvest + x06_mcp_http 134 passed.
-  Full gate on b7f99d18 in detached worktree `.claude/worktrees/f8-gate`, PID 790030, summary
+  Full gate on b7f99d18 in detached worktree `.claude/worktrees/f8-gate`, PID 790054 (790030 was pgrep itself), summary
   `~/.cache/line06/f8-gate/gate-b7f99d18.summary`.
