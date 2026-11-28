@@ -453,3 +453,15 @@ Reversible by: <how>.` Package build decisions go in the package's own file (`do
   `.claude/worktrees/f8cyc`, from d3846b8d), brief `docs/briefs/LINE06-F8-CYC.md`, opus-engineer. Under A it merges into
   wp/REL060 after the F8 merge; under B wp/F8 fast-forwards to it. Alternative: wait for the card. Reversible by:
   `git worktree remove .claude/worktrees/f8cyc && git branch -D wp/F8-cycle` (local only).
+- 2026-11-28 **F8-CYC judged PASS** (opus-engineer, ~144k tokens, 85 min): wp/F8-cycle `befa9e60` (F8-CYC-1: new leaf
+  `run/replay_rules.py`; `replay.py` keeps `replay()` and re-exports the 7 public names via `__all__`) and `d04439c6`
+  (F8-CYC-2: the artifact-comparison loop F8-WO3 copied into `replay_v2._compared` lives once as
+  `replay_rules._compare_artifacts(..., *, as_recorded)`; each caller passes its own `_as_recorded` so the R-148
+  monkeypatch seam `tests/t08_v2_substitution.py:81` keeps working). F0 PASS (nine); surface suites 2387 passed 0
+  failed; replay tests 355 passed; ruff/mypy clean; `codehealth arch` 0 cycles 0 violations. Orchestrator spot check:
+  `codehealth diff --base 9532829b --head d04439c6` = only `FAIL debt 19.30 -> 48.00` (F8's own: platform_refs 23,
+  bundle_v2 9); no cycle edge, no smell; tree clean, stash list empty (the engineer's brief `git stash` left nothing).
+  `__module__` of ReplayReport/Rerun now `run.replay_rules`; no digest, fixture or message moved. Local mkdocs strict
+  fails at the notebook step on both heads (CI Site judges).
+  DECISION: keep F8-CYC-2 (brief asked one commit; the split alone created a duplication smell, nloc 113, 14% > 10%).
+  Alternative: revert d04439c6 and carry the smell. Reversible by: `git revert d04439c6`.
