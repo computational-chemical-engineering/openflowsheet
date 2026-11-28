@@ -9,19 +9,12 @@ Procedure: `.claude/skills/line06/SKILL.md`. Host SMM-TR09 (`ref-x86-64`); orche
 Amendment 3. Line acceptance: a v2 revision with store-pinned records solves on the legacy route on all three OSes;
 the ADR acceptances of card `ofs-line06-adr-clause`; X06's exits.
 
-## Position (2026-11-27, 17:40)
+## Position (2026-11-28, 02:25)
 
-- All three packages built, reviewed and fixed; nothing merged into `main` yet. `main` local, last pushed `4c7d3d6a`.
-- **F2** (ADR 0062 **Accepted**): CI at origin `4b820b97` FAILED (run 46003226499): Windows 6 tests (":" in an E-F2-3
-  scratch path) and `identity` (no jsonschema in the job). Fix F2-CI1 at `80cdcfb3`: gate PASS 21725 passed,
-  pushed to origin wp/F2, CI running.
-- **F8** (ADR 0067 + ADR 0019 Amendment 12 **Accepted**, card executed): CI at origin `14409696` FAILED (run
-  46014961220): F2's two causes, Windows bundle integrity ("\" vs "/" in the present-file listing) and the D5
-  other-platform test on unregistered hosts (macOS, Windows). Fix F8-CI1 + merge of wp/F2 80cdcfb3 on local wp/F8
-  `d0bc2996`; touched tests 219 passed; gate PASS 21895 passed; pushed, CI running. Merges after F2.
-- **X06** (ADR 0078 Accepted): CI at origin `a514896c` FAILED only `default-install` (run 46014554722; all check legs,
-  identity green): `mcp_http` missing from the isolation test's server-extra list. Fix X06-CI2 at `73b3a83d`: gate PASS 21303
-  passed, pushed to origin wp/X06, CI running.
+- **F2** merged (`f1fdda2b`, ADR 0062 and ADR 0019 Amendment 9 Accepted). **X06** merged (`9532829b`, ADR 0078 and
+  ADR 0019 Amendment 18 Accepted). main pushed at `9532829b`.
+- **F8** (ADR 0067 + ADR 0019 Amendment 12 Accepted): reviewed and fixed; CI fixes F8-CI1, F8-CI2 in; re-chained onto
+  X06 (F8-FR1, wp/F8 `b7f99d18`, D_13 `de241b22...`). Full gate running; then main, push, CI, merge card.
 - `release/lines/0.6.json` DRAFT (LINE06-L0); release campaign not started.
 
 ## Order and gates (pass criteria fixed before the run; the orchestrator judges each, a miss is recorded as a miss)
@@ -43,28 +36,15 @@ the ADR acceptances of card `ofs-line06-adr-clause`; X06's exits.
 Parallelism: at most two agents. F2 first; D1 runs beside F2 once the X06 scope card is answered; F8-WO1 can start
 once F2-WO4 is on wp/F2 (F8 branches from wp/F2's head, merges after F2).
 
-## Next action (2026-11-27 21:40; NO agent of this session is running)
+## Next action (2026-11-28 02:25; NO agent of this session is running)
 
 Background jobs (they survive the reset; their notices arrive in the new context):
-1. **F2 CI GREEN** at `80cdcfb3` (run 46041020889, all legs; codehealth informational). Merge card `ofs-f2-merge`
-   requested from hub 2026-11-27 ~19:50; on VERIFIED do the chosen action. Filed (open); verbatim action texts for the verifier:
-   A: "Merge wp/F2 at 80cdcfb3 into main with a merge commit that also marks ADR 0019 Amendment 9 Accepted with ADR 0062; run F0 on the merge commit and push main only if F0 passes and main's commits since the merge base still touch no src, tests or schemas; otherwise push nothing."
-   B: "Merge wp/F2 at 80cdcfb3 into main with a merge commit, leaving ADR 0019 Amendment 9 Proposed; run F0 on the merge commit and push main only if F0 passes and main's commits since the merge base still touch no src, tests or schemas; otherwise push nothing."
-   C: "Do not merge F2 yet; nothing is pushed." Hub rings on sign-off. (Former waiter text:) F2 CI waiter at `80cdcfb3` (gate PASS 21725 passed; pushed), log `~/.cache/line06/ci/f2-80cdcfb3.log`. On all
-   legs green: F2 merge card (A: "Merge wp/F2 at 80cdcfb3 into main with a merge commit, marking ADR 0019 Amendment 9
-   Accepted with ADR 0062 in the merge commit, run F0 on main, push main." B: "Do not merge F2 yet."). On failure: fix.
-2. **X06**: CI green at 73b3a83d; X06-FR0 PASS (wp/X06 `9f020edd` = merge of wp/F2 80cdcfb3; D_12 `ba4b5ce5...`
-   onto F2's D_11). **Full gate running** on 9f020edd in detached worktree `.claude/worktrees/x06-gate`, PID 512899
-   (setsid), summary `~/.cache/line06/x06-gate/gate-9f020edd.summary`, log `.../gate-9f020edd.log`. A waiter prints it; else check
-   the summary file on wake (about 21:35 + 1.5 h). On PASS and after F2's merge into main: merge main into wp/X06
-   (expect trivial: F2 already in), push wp/X06, CI waiter, X06 merge card. On FAIL: grep the log, fix.
-3. **F8**: CI at d0bc2996 FAILED only Windows 4 tests (test-side path spelling); fixed F8-CI2 on local wp/F8 `50b3af17`,
-   not pushed. F8 merges after F2 and X06: then merge main into wp/F8 (re-chain c_13 onto X06's c_12, an
-   opus-engineer work order like X06-FR0), gate, push, CI, merge card.
-
-Open item for the F2 merge card: ADR 0019 Amendment 9's heading still says "Proposed 2026-11-27" on wp/F2 while ADR
-0062 is Accepted; whether card `ofs-f2-accept-adr0062` covered it is not recorded. Ask on the F2 merge card (option
-text: mark Amendment 9 Accepted with ADR 0062 in the merge).
+1. **F2 MERGED** into main `f1fdda2b` (card ofs-f2-merge A, executed); F0 PASS; main pushed. Worktree removed.
+2. **X06 MERGED** into main `9532829b` (card ofs-x06-merge A, executed); F0 PASS; main pushed. Worktree removed.
+3. **F8**: F8-FR1 PASS (wp/F8 `b7f99d18` = F8 + wp/X06 7a4dcde7; D_13 `de241b22...` onto X06's D_12). **Full gate running**
+   on b7f99d18 in detached worktree `.claude/worktrees/f8-gate`, PID 790054 (`scripts/gate.sh`), summary
+   `~/.cache/line06/f8-gate/gate-b7f99d18.summary`. On PASS: remove the gate worktree; merge main `9532829b`
+   (docs only on top of 7a4dcde7) into wp/F8, push, CI waiter (full sha), F8 merge card. On FAIL: grep the log, fix.
 
 **Merge order into main:** whichever of F2 / X06 is green first merges first (merge card each). The second
 re-decomposes its surface chain onto the first's digest (R-1072/R-1073: X06's c_12 `D_12` vs F2's c_11 `D_11`

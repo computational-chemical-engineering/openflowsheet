@@ -409,11 +409,11 @@ hashed changes (D11):
   `tests/test_t08_w2_surface_digest.py`); with X04's additions removed (`tests/x04_schema_support.py`) it is ST's
   `553b7612…` (R-1000) exactly. Nine R4-G3 responses move (`SNAPSHOT_X04`); stripped, each is its earlier snapshot.
 
-## Amendment 18 (Proposed; X06) — pointer to ADR 0078
+## Amendment 18 (Accepted 2026-11-28 with ADR 0078, Decision Desk `ofs-x06-merge`; proposed 2026-11-27; X06) — pointer to ADR 0078
 
 Amendment 18 is decided in ADR 0078 (D1, D2, D4, D5, D6; exit tests E-X06-1 to E-X06-24); this paragraph points at
-it. The ADR is Accepted (2026-11-26, the user, Decision Desk `ofs-x06-accept-adr0078`); this amendment is Proposed
-until the X06 merge card. Additive; no `required` list changes, nothing stored or hashed changes, and the store
+it. The ADR is Accepted (2026-11-26, the user, Decision Desk `ofs-x06-accept-adr0078`); this amendment is Accepted
+with the X06 merge (Decision Desk `ofs-x06-merge`, 2026-11-28). Additive; no `required` list changes, nothing stored or hashed changes, and the store
 schema stays `t07-store-v1`:
 
 - **Three sibling protocols**, nine operations, each on all four transports: `Branches` (`list_branches`,

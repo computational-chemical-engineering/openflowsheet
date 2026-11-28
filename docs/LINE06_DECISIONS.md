@@ -366,3 +366,42 @@ Reversible by: <how>.` Package build decisions go in the package's own file (`do
 - 2026-11-27 **F8 CI FAILED** at `d0bc2996` (run 46047518103): only Windows, 4 of 18445 (test-side `str(relative_to)`
   artifact names). Fix F8-CI2 by the orchestrator on wp/F8 `50b3af17` (DECISION F8-CI2-1; two files 91 passed).
   Not pushed: F8 next merges main after F2 and X06 (chain c_13 onto X06's c_12), then gate, push, CI.
+- 2026-11-27 Card `ofs-f2-merge` (A) **VERIFIED** (signed 21:19:04Z, key 032ee0a5ae620a90). **F2 merged into main**:
+  merge commit `f1fdda2b` (register conflict: main's R-1071, R-1073..R-1076 kept, wp/F2's R-1072 evidence row
+  taken; ADR 0019 Amendment 9 heading Accepted with ADR 0062). Precondition: `git diff --name-only d00f659a main --
+  src tests schemas` = 0 files. F0 PASS on f1fdda2b (all nine). Pushed main `4c7d3d6a..f1fdda2b`. `executed` written
+  (card version 3). Worktree `.claude/worktrees/f2` removed (clean at 80cdcfb3); origin wp/F2 left in place.
+- 2026-11-27 wp/X06 merged main f1fdda2b -> `7a4dcde7` (50 files, all under docs/). DECISION: the full gate on
+  `9f020edd` (running) stands for the push of 7a4dcde7, since the diff 9f020edd..7a4dcde7 is docs only; the tests that
+  read the changed docs ran: 371 passed, 1 skipped (7 files). Alternative: a second 1.5 h gate on 7a4dcde7.
+  Reversible by: running it before the push.
+
+## 2026-11-27 23:20 X06 gate PASS, pushed
+
+- X06 full gate at `9f020edd`: GATE PASS, 21886 passed, 107 skipped, 225 deselected, 3 xfailed (1:29:47). wp/X06
+  `7a4dcde7` pushed for CI. F8-FR1 brief written (`3a371a10`), trial merge of wp/X06 into wp/F8: 15 conflicts, base
+  `80cdcfb3`. The F2 merge card's open item (ADR 0019 Amendment 9 status) closed by merge `f1fdda2b`.
+- 2026-11-28 01:30 **X06 CI green at 7a4dcde7** (run 46075265235: four check legs, default-install, identity,
+  codehealth `success`; Site 46075265291 success). DECISION-REQUEST `ofs-x06-merge` sent to hub (A: merge + ADR 0019
+  Amendment 18 Accepted; B: merge, Amendment 18 Proposed; C: do not merge). DECISION: F8-FR1 starts now, before the
+  card is signed: it merges wp/X06 `7a4dcde7` into wp/F8 (main on top later, docs only). Alternative: wait for the
+  sign-off. Reversible by: `git -C .claude/worktrees/f8 reset --hard 50b3af17` (local only). opus-engineer.
+- 2026-11-28 Card `ofs-x06-merge` filed by hub (open). Verbatim action texts for the verifier:
+  A: "Merge wp/X06 at 7a4dcde7 into main with a merge commit that also marks ADR 0019 Amendment 18 Accepted with ADR 0078; run F0 on the merge commit and push main only if F0 passes and main's commits since the merge base still touch no src, tests or schemas; otherwise push nothing."
+  B: "Merge wp/X06 at 7a4dcde7 into main with a merge commit, leaving ADR 0019 Amendment 18 Proposed; run F0 on the merge commit and push main only if F0 passes and main's commits since the merge base still touch no src, tests or schemas; otherwise push nothing."
+  C: "Do not merge wp/X06 now; nothing is pushed."
+- 2026-11-28 **F8-FR1 judged PASS** (opus-engineer, ~172k tokens, 29 min): wp/F8 merge `448be495` of wp/X06 7a4dcde7
+  (15 conflicts, both sides kept) + `b7f99d18` gate numbers. D_13 `3571c5c3...` -> `de241b22b436...`; strip_f8 =
+  X06's D_12 `ba4b5ce5...` exactly, then F2's `8eee5313...`, then `f7ec3c94...`. SNAPSHOT_F8's six job rows re-pinned
+  (both packages move them; each returns exactly to X06's pin under without_f8; DECISION F8-FR1-2, accepted as a
+  snapshot decomposition). Catalogue -> `430780d5...` (469 entries). HARVEST_SIZE (111, 1188, 154) measured; the
+  brief's (110, 1184, 155) was the orchestrator's arithmetic error (F8 adds (1, 4, 2), not (0, 0, 3)).
+  test_x06_mcp_http E-X06-2 adapted to pin F8_SERVED and decompose to X06_SERVED. F0 PASS; all groups 0 failed.
+  Orchestrator spot check: chain + t07 w5e + t08 surface digest + harvest + x06_mcp_http 134 passed.
+  Full gate on b7f99d18 in detached worktree `.claude/worktrees/f8-gate`, PID 790054 (790030 was pgrep itself), summary
+  `~/.cache/line06/f8-gate/gate-b7f99d18.summary`.
+- 2026-11-28 Card `ofs-x06-merge` (A) **VERIFIED** (signed 00:59:02Z, key 032ee0a5ae620a90). **X06 merged into main**:
+  merge commit `9532829b` (no conflicts; ADR 0019 Amendment 18 heading and pointer paragraph Accepted with ADR 0078).
+  Precondition: main's commits since the merge base touch 0 files under src, tests, schemas. F0 PASS on 9532829b
+  (all nine). Pushed main `f1fdda2b..9532829b`. `executed` written (card version 3). Worktree `.claude/worktrees/x06`
+  removed (clean at 7a4dcde7); origin wp/X06 left in place.
