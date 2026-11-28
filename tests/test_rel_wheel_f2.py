@@ -249,8 +249,15 @@ def test_control_d_the_refusal_string_altered(probes: dict[str, dict[str, Any]],
 
 
 def test_control_e_n_with_t_is_admitted(probes: dict[str, dict[str, Any]]) -> None:
-    assert probes["e"]["refusal"]["N"] == {"admitted": "AdmissionReport"}
+    assert probes["e"]["refusal"]["N"] == {"admitted": True}
     assert _only_failing(_findings(probes["e"], probes["checkout"])) == {"refusal"}
+
+
+def test_a_base_v2_not_admitted_fails_exactly_refusal(probes: dict[str, dict[str, Any]]) -> None:
+    # R-REV F-1: a report that says `admitted: false` is not the base's v2 being admitted.
+    installed, checkout = _passing(probes)
+    installed["refusal"]["v2"] = {"admitted": False}
+    assert _only_failing(_findings(installed, checkout)) == {"refusal"}
 
 
 @pytest.mark.parametrize(
