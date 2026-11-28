@@ -610,3 +610,58 @@ lines are left as each side has them). Logs `~/.cache/line06/f8-fr1/`.
   `test_v03_semantic_roles` 52; `test_evidence_manifests` + `test_s19_w5_gate` + `test_adr_0002_a1_integers` 814
   (19 skipped). 0 failed.
 - ruff check, ruff format --check (1371 files), mypy `src` (379 files): clean. Logs `~/.cache/line06/f8-fr1/b/`.
+
+## F8-CYC (CI codehealth diff, run 46098069377: import cycle run.replay <-> run.replay_v2), 2026-11-28
+
+- **DECISION F8-CYC-1. The v1 replay rules move to a new leaf, `run/replay_rules.py`.** CI's codehealth diff on
+  `d3846b8d` (base main `9532829b`) reported the cycle `run.replay -> run.replay_v2` (the lazy import in `replay()`'s
+  D5 step 2 dispatch) and `run.replay_v2 -> run.replay` (its reuse of v1's rules); the standing rule is 0 cycles.
+  Moved verbatim, code and comments, from `run/replay.py` to `run/replay_rules.py`: `ReplayMode`, `ReplayVerdict`,
+  `REGISTERED_PLATFORMS`, `ReplayReport`, `decide_mode` with its three rung helpers (`_alike_and_pinned`,
+  `_unverified_lock_reason`, `_unset_thread_pins_reason`), `Rerun`, `_as_recorded`, `unknown_policy_reason`,
+  `_verdict_drift`, `_is_verdict_only`. The leaf imports `run.bundle`, `run.compare`, `run.lock`, `run.manifest`,
+  `run.manifest_v2`, neither replay module (layer `openflowsheet.run`, as before). `run/replay.py` keeps `replay()` and
+  re-exports the seven public names (listed in a new `__all__`, the `numerics/ptc.py` idiom) and imports back the
+  three private helpers `replay()` calls, so every import path (`run.replay.ReplayReport`, `.decide_mode`,
+  `.REGISTERED_PLATFORMS`, `._as_recorded`) keeps working; `replay_v2` now imports `run.replay_rules`. The dispatch
+  stays a function-level import so that importing `run.replay` stays as light as before. `platform_refs` is
+  unchanged (`platform_refs -> replay -> replay_v2 -> replay_rules`, no edge back). The suggested shape was taken; no
+  smaller one removes the edge without moving `replay()` off its public path.
+  - `__module__` of `ReplayReport` and `Rerun` (and the moved functions) is now `openflowsheet.run.replay_rules`.
+    No digest, schema, fixture or message depends on it: F0, the surface suites (served-interface, `list_models` and
+    chain digests) and every replay test pass unchanged, nothing re-pinned. `docs-site/api/replay.md`'s
+    `::: openflowsheet.run.replay.ReplayReport` resolves through griffe as an alias of
+    `openflowsheet.run.replay_rules.ReplayReport` (checked with `griffe.load`; a full local `mkdocs build --strict`
+    fails at HEAD and here alike on the notebook kernel's import path, so the site build is CI's).
+  - Reversible by: reverting the F8-CYC commit.
+
+### F8-CYC gate numbers (SMM-TR09, logs `~/.cache/line06/f8cyc-*.log`)
+
+- F0: PASS, M1 50/50, M2-M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 42/42.
+- Surface suites (`test_t07_*`, `test_t08_w2_*`, `test_m07a_surface_chain`): 2387 passed, 28 skipped, 0 failed.
+- Replay tests (`grep -rlE 'run\.replay|run import replay|replay_v2|platform_refs' tests`): 305 passed, 0 failed.
+- ruff check, ruff format --check, mypy on the three touched modules: clean.
+- **DECISION F8-CYC-2. The comparison loop both replays carried becomes `replay_rules._compare_artifacts`.** With the
+  cycle gone, codehealth diff failed on `run/replay.py: new file smell(s) duplication (nloc 113)`: `replay()`'s
+  artifact loop and S4 check were copied in `replay_v2._compared` (16 duplicated lines each side since F8-WO3),
+  which F8-CYC-1's split concentrated into 113 nloc (14.2% > the 10% threshold; the "concentrated, not added" note
+  does not apply because the 32 lines are new against main). The loop moves verbatim, comments included, into
+  `_compare_artifacts(directory, names, rerun, policy_id, *, as_recorded)`; `replay()` passes
+  `sorted(manifest.artifacts)` (the set it walked and checked before), `replay_v2` `_v1_artifacts(...)` (sorted, as
+  before). `as_recorded` is passed by each caller from its own module: R-148's v1-recording substitution
+  (`tests/t08_v2_substitution.py:81`) patches `run.replay._as_recorded`, and a first cut that called
+  `replay_rules._as_recorded` directly failed `test_t07_identity::test_with_v1_recorded_the_document_minus_t07_is_the_registered_one`
+  and `test_t07_w5b_cli::test_r148_with_v1_recorded_the_commands_print_the_v1_pins` (AttributeError); passing the
+  name keeps that seam exactly where it was (v1 patched, v2 bound at import, as before). Duplicated lines over the
+  three files: 32 -> 0. Alternative: drop this commit and carry the duplication smell (or a file-level allow) into
+  CI. Reversible by: reverting the F8-CYC-2 commit (F8-CYC-1 stands alone).
+
+### F8-CYC-2 gate numbers (SMM-TR09, at the F8-CYC-2 tree; logs `~/.cache/line06/f8cyc3-*.log`)
+
+- F0: PASS, M1 50/50, M2-M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 42/42.
+- Surface suites: 2387 passed, 28 skipped, 0 failed. Replay tests (the brief's grep plus `t08_v2_substitution`
+  users): 355 passed, 0 failed. ruff check, ruff format --check, mypy on the three modules: clean.
+- `codehealth diff --base 9532829b --head 1f963813`: no import cycle edge, no layer violation, no file smell;
+  `codehealth arch`: 0 violations, 0 cycles. The one remaining FAIL is F8's debt over touched files, 19.30 -> 48.00
+  (was 54.60 at `d3846b8d`; `run/replay.py` 7.3 -> 0.0, `replay_rules.py` 2.0, `replay_v2.py` 2.0, the rest is F8's
+  `platform_refs.py` 23.0, `bundle_v2.py` 9.0 and others, untouched here).
