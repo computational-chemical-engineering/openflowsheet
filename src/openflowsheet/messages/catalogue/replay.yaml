@@ -1,0 +1,88 @@
+# F8, replay of a v2 bundle (ADR 0067 D5, "New catalogue codes"; F8-WO3): the reasons D5's steps
+# 2, 5 and 7 add to a replay report. Params are strings. Emitter: `run/replay_v2.py`, which writes
+# each as `<code>(<param>, …)` in the report's `reasons` (steps 2, 5) or `differences` (step 7).
+# Step 6 reuses F3's `data_unavailable` and `store_object_corrupt` (records.yaml). The ADR's other
+# new codes are emitted by later work orders and are catalogued with them.
+catalogue: openflowsheet-messages-v1
+namespace: null
+entries:
+  # D5 step 2: the manifest names a bundle format this version cannot read.
+  - code: bundle_format_unsupported
+    family: refusal
+    kind: not_supported
+    complete: true
+    title: The bundle is in a format this version cannot replay
+    args: [value]
+    params: {value: {type: text, label: bundle format}}
+    summary: "The bundle's format is {value!raw}, which this version of OpenFlowsheet cannot read, so it was inspected and not re-run."
+    why: "A replay bundle names its format in its manifest. A format this version does not know may lay out its records, its registry and its results differently, so its results cannot be compared with a rerun. Only the bundle's file hashes were checked."
+    action: "Replay the bundle with the OpenFlowsheet version that wrote it, or a later one that reads its format."
+    gap: {limitation: null, capability: "reading this bundle format"}
+    examples:
+      - params: {value: openflowsheet-bundle-v3}
+
+  # D5 step 5: an extension the run used is not registered here.
+  - code: extension_unavailable
+    family: refusal
+    kind: input
+    complete: true
+    title: An extension the run used is not installed here
+    args: [kind, id, version]
+    params:
+      kind:    {type: text, label: extension kind}
+      id:      {type: text, label: extension id}
+      version: {type: text, label: extension version}
+    summary: "The run used the {kind!raw} {id!raw} version {version!raw}, which is not registered in this installation, so the bundle was inspected and not re-run."
+    why: "A bundle records every extension its run used, with the hashes of its descriptor and code. A replay reruns the run only when each of them is registered here, because a run without one of its extensions is a different run."
+    action: "Install the extension at the version the bundle records and replay again; the bundle's registry snapshot names its distribution."
+    see_also: [extension_changed]
+    examples:
+      - params: {kind: unit_model, id: acme.flash, version: 1.2.0}
+
+  # D5 step 5: an extension the run used is registered with other descriptor or code hashes.
+  - code: extension_changed
+    family: refusal
+    kind: input
+    complete: true
+    title: An extension the run used has changed
+    args: [kind, id, version]
+    params:
+      kind:    {type: text, label: extension kind}
+      id:      {type: text, label: extension id}
+      version: {type: text, label: extension version}
+    summary: "The {kind!raw} {id!raw} version {version!raw} registered here differs from the one the run used: its descriptor or its code has another hash."
+    why: "A bundle records the hashes of the descriptor and the code of every extension its run used. When an installed extension's differ, a rerun would not run the same code. A built-in of this OpenFlowsheet version is rerun anyway and compared, as a compatible reproduction, so that a recorded case stays a regression check across versions; any other extension stops the replay, which then only inspects the bundle."
+    action: "To replay exactly, install the extension's recorded version; for a built-in, use the OpenFlowsheet version that wrote the bundle. Otherwise read the comparison as a check across versions."
+    see_also: [extension_unavailable]
+    examples:
+      - params: {kind: unit_model, id: mixer, version: 1.0.0}
+
+  # D5 step 7: the rerun resolved an extension the recorded run does not declare.
+  - code: extension_use_undeclared
+    family: refusal
+    kind: bug
+    complete: true
+    title: The rerun used an extension the bundle does not record
+    args: [kind, id]
+    params:
+      kind: {type: text, label: extension kind}
+      id:   {type: text, label: extension id}
+    summary: "The rerun used the {kind!raw} {id!raw}, which the bundle's list of extensions used does not hold, so the replay does not match."
+    why: "A bundle's list of extensions used is part of the run's identity: it is derived from the run's documents when the run is recorded. During a rerun, every extension the registry hands out is recorded, and each must be on that list. One that is not means the recorded identity missed a dependency of the run, which is a defect and never noise."
+    action: "Report it with the bundle: the run depends on an extension its identity does not name."
+    examples:
+      - params: {kind: property_method, id: pr-c1}
+
+  # D7 (F8-WO5): the comparison used a per-platform reference record, not the reference platform's.
+  - code: platform_reference_used
+    family: notice
+    kind: notice
+    complete: true
+    title: The comparison used this platform's own reference record
+    args: [platform]
+    params: {platform: {type: text, label: platform}}
+    summary: "The result was compared with the reference record made for {platform!raw}, not the reference platform's."
+    why: "A reference case holds one record for the reference platform. Where a float exceeds the numerical policy on another registered platform, a per-platform record sits beside it; it has the same R0 projection and states the floats, the policy bound and the near-threshold flags that account for the difference. The comparison used that record because this platform has one."
+    action: "None. The notice only says which record the comparison was made against."
+    examples:
+      - params: {platform: linux-aarch64}

@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/frankp/process-runtime/schemas/records-index.schema.json",
+  "title": "RecordsIndex",
+  "description": "DRAFT until ADR 0067 is Accepted (F8-WO1). ADR 0067 D3: `artifacts/records-index.json` of a v2 bundle, one entry per record SHA the data lock names, sorted by SHA. `embedded` says whether the record's canonical bytes travel as `artifacts/records/<sha>.json` (D4: every source `permitted`) or by reference only. The assessments are those in force when the bundle was written, for audit only (risk 4): outside every identity (D6, D9).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "records"
+  ],
+  "properties": {
+    "records": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "sha256",
+          "embedded",
+          "sources"
+        ],
+        "properties": {
+          "sha256": {
+            "$ref": "#/$defs/sha256"
+          },
+          "embedded": {
+            "type": "boolean"
+          },
+          "sources": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "source_id",
+                "source_sha256",
+                "assessment",
+                "conditions"
+              ],
+              "properties": {
+                "source_id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "source_sha256": {
+                  "$ref": "#/$defs/sha256"
+                },
+                "assessment": {
+                  "$ref": "https://github.com/frankp/process-runtime/schemas/record-results.schema.json#/$defs/effective_rights/properties/assessment"
+                },
+                "conditions": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  }
+}

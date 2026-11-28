@@ -2,9 +2,8 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://raw.githubusercontent.com/computational-chemical-engineering/clearsheet/main/schemas/run-manifest.schema.json",
   "title": "RunManifest",
-  "description": "K05, blueprint \u00a78.3 and Appendix A. What ran, in what, and what it is comparable with. `structural_sha256` covers ids, policies and outcomes only \u2014 never the environment, never the artifact index, never timing. R0 promises structural artifacts identical *on supported platforms*, so an identity that moved with the platform would be promising something else; it is measured equal on x86-64 and aarch64. The environment is provenance (ADR 0007 D6), recorded so that a within-policy difference is attributable. `manifest_sha256` is the integrity hash over the whole document, because identity and integrity are two questions.",
+  "description": "K05, blueprint \u00a78.3 and Appendix A. What ran, in what, and what it is comparable with. `structural_sha256` covers ids, policies and outcomes only \u2014 never the environment, never the artifact index, never timing. R0 promises structural artifacts identical *on supported platforms*, so an identity that moved with the platform would be promising something else; it is measured equal on x86-64 and aarch64. The environment is provenance (ADR 0007 D6), recorded so that a within-policy difference is attributable. `manifest_sha256` is the integrity hash over the whole document, because identity and integrity are two questions. ADR 0067 D2 (F8-WO1, draft until the ADR is Accepted): a v2 run's optional members `bundle_format` (non-structural), `data_lock_sha256`, `extensions_used`, `run_kind`, `documents` (structural) and `environment.registry` (non-structural), defined in `bundle-v2.schema.json`; a v1-path run carries none of them. `data_lock_sha256` joins by `allOf`, so the object is closed by `unevaluatedProperties`.",
   "type": "object",
-  "additionalProperties": false,
   "required": [
     "run_id",
     "parent_run_id",
@@ -27,6 +26,11 @@
     "manifest_sha256",
     "policy_sha256",
     "artifact_r0_sha256"
+  ],
+  "allOf": [
+    {
+      "$ref": "https://github.com/frankp/process-runtime/schemas/bundle-v2.schema.json#/$defs/data_lock"
+    }
   ],
   "properties": {
     "run_id": {
@@ -126,6 +130,9 @@
         "superlu_options_ref": {
           "type": "string",
           "minLength": 1
+        },
+        "registry": {
+          "$ref": "https://github.com/frankp/process-runtime/schemas/bundle-v2.schema.json#/$defs/environment_registry"
         }
       }
     },
@@ -194,6 +201,19 @@
       "type": "string",
       "pattern": "^[0-9a-f]{64}$",
       "description": "The digest of the R0 projection of this run's artifacts (`run/identity.py`): the plan's structure, the event sequence with its kinds and outcomes, the certificate's check ids and results, the solver counters, and no floats. Without it the identity covered what the run was *called* and not what it did. Conditional under ADR 0007 D2.4, which is why the projection also carries each check's near-threshold flag."
+    },
+    "bundle_format": {
+      "$ref": "https://github.com/frankp/process-runtime/schemas/bundle-v2.schema.json#/$defs/bundle_format"
+    },
+    "extensions_used": {
+      "$ref": "https://github.com/frankp/process-runtime/schemas/bundle-v2.schema.json#/$defs/extensions_used"
+    },
+    "run_kind": {
+      "$ref": "https://github.com/frankp/process-runtime/schemas/bundle-v2.schema.json#/$defs/run_kind"
+    },
+    "documents": {
+      "$ref": "https://github.com/frankp/process-runtime/schemas/bundle-v2.schema.json#/$defs/documents"
     }
-  }
+  },
+  "unevaluatedProperties": false
 }

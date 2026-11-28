@@ -1,0 +1,25 @@
+# F8 (ADR 0067 D2, D3, D5, D6; ADR 0025 D2.3): the `sha256`-bearing property names that F8's schemas
+# add. A separate table beside F2's, so that the registered numerical policies keep their ids and
+# their contents (M02's precedent; F8 decision WO1-2 in `docs/F8_DECISIONS.md`). The members that
+# `run-manifest.schema.json` gains reach `bundle-v2.schema.json` by `$ref` (R-1032's structure).
+#
+# Read by `scripts/t08_numerical_policy.py --check` (the closed partition of `sha256` names, one
+# addendum after another). The documents hold digests and counts, never solved values: the table
+# carries no `rules`.
+numerical_policy_external:
+  id: F8-numerical-policy-external-v1
+  schemas:
+  - bundle-v2.schema.json
+  - records-index.schema.json
+  - run-evidence.schema.json
+  # An exact digest (ADR 0007 D1, digest row; ADR 0025 D2): each preimage is a canonical document.
+  # `registry_sha256` (F1's table), `sha256` (v2's) and `source_sha256` (F3's) keep their classes.
+  # - `data_lock_sha256`: ADR 0061 D10's SHA of a run's data lock (D2), R0.
+  # - `snapshot_sha256`: the SHA of the run's registry snapshot document (D2, D3).
+  # - `recorded_registry_sha256`, `current_registry_sha256`: ADR 0060 D10's `registry_sha256` of
+  #   the recorded and of the replaying registry (D5, `registry_comparison`).
+  exact_sha256:
+  - data_lock_sha256
+  - snapshot_sha256
+  - recorded_registry_sha256
+  - current_registry_sha256

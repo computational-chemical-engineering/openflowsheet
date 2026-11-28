@@ -1,0 +1,114 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/frankp/process-runtime/schemas/run-evidence.schema.json",
+  "title": "RunEvidence",
+  "description": "DRAFT until ADR 0067 is Accepted (F8-WO1: the envelope). ADR 0067 D6: `artifacts/run-evidence.json` of a v2 run, its evidence by class: verification, validation, optimality, the extensions it used, and evidence notices (which never enter the certificate). Outside every identity: not in `r0_projection`, not in `structural_sha256`, not in a certificate check (D6, D9). The members of a validation entry and of an extension row are F8-WO4's (built with F4-WO4); this envelope holds them as objects.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "evidence_format",
+    "verification",
+    "validation",
+    "optimality",
+    "extensions",
+    "notices"
+  ],
+  "properties": {
+    "evidence_format": {
+      "const": "openflowsheet-run-evidence-v1"
+    },
+    "verification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "certificate",
+        "verification_status"
+      ],
+      "properties": {
+        "certificate": {
+          "description": "The certificate's artifact name, or null for a run without one.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "verification_status": {
+          "enum": [
+            "VERIFIED",
+            "RELAXED",
+            "UNVERIFIED",
+            "FAILED",
+            null
+          ]
+        }
+      }
+    },
+    "validation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "entries"
+      ],
+      "properties": {
+        "entries": {
+          "description": "Each (component, entry) the composition read, once, judged at the converged state (Q9.R6). Members: F8-WO4.",
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "optimality": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "claim",
+        "basis"
+      ],
+      "properties": {
+        "claim": {
+          "enum": [
+            "none",
+            "local",
+            "global"
+          ]
+        },
+        "basis": {
+          "type": "string"
+        }
+      }
+    },
+    "extensions": {
+      "description": "One row per entry of the manifest's `extensions_used` with its evidence fields (ADR 0060 D9). Members: F8-WO4.",
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "notices": {
+      "description": "Evidence notices (`extension_unreviewed`, `preview_kind`), as catalogued codes and their params.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "code",
+          "params"
+        ],
+        "properties": {
+          "code": {
+            "type": "string",
+            "minLength": 1
+          },
+          "params": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}

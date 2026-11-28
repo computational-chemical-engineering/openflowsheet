@@ -101,6 +101,15 @@ function, a registered digest and Frank's carry extended to name it):
   decomposes onto F2's c_11 (R-1072, R-1073: the second to merge decomposes onto the first's).
   Its nine new files are pinned at their own hashes (`X06_FILE_SHA256`); item 4 judges the two
   changed texts in their pre-X06 form (`texts_before_links`).
+- c_13, R-1076 (ADR 0067 D5, ADR 0019 Amendment 12): F8's replay-report additions, the reserved
+  mode `forced_replay` and the two optional members `registry_comparison` and
+  `data_availability`, served in `get_job_result`'s `outputSchema` (D3's artifact kinds move only
+  R4-G3 snapshots: MCP serves the kind enum opened), stripped by `tests/f8_schema_support.py`'s
+  `without_f8`; `D_13` = `de241b22…`, re-taken at F8-FR1 on `wp/F8` after the merge of `wp/X06`
+  (`3571c5c3…` at F8-FR0 after `wp/F2`'s F2-WO8, `c11d3877…` before;
+  `tests/test_t08_w2_surface_digest.py`'s `F8_SERVED_SHA256`). F2 and X06 merge first, so c_13
+  decomposes onto X06's c_12 (R-1072, R-1073: the third to merge decomposes onto the second's).
+  F8 adds no tool and changes no description text, so item 4 is unchanged by it.
 
 The released 0.2.0a1 ran the two-link chain (its committed record at `C_α²`); a re-run of the
 alpha's step 8 uses this script at the tag.
@@ -353,6 +362,17 @@ def strip_x06(tools: Tools) -> Tools:
     return stripped
 
 
+def strip_f8(tools: Tools) -> Tools:
+    """s_13 (R-1076): `tools` without F8's replay-report mode and members
+    (`f8_schema_support.without_f8`)."""
+    t08_rc._tests_on_path()
+    from f8_schema_support import without_f8  # noqa: PLC0415
+
+    stripped = without_f8(copy.deepcopy(tools))
+    assert isinstance(stripped, list)
+    return stripped
+
+
 @dataclass(frozen=True)
 class Link:
     """One registered surface change c_k: its register entry, its strip function s_k, and the
@@ -436,6 +456,12 @@ LINKS: Final = (
         "R-1073",
         strip_x06,
         "ba4b5ce59af4ac4c1e5d29f157ccd5d6308cc0a6282f0dc3434fc3b5cf88db62",
+    ),
+    Link(
+        "c_13",
+        "R-1076",
+        strip_f8,
+        "de241b22b43681d81d4afc02a2250ddef684b83fb258e9ae491bc8fee2c7fd94",
     ),
 )
 
@@ -528,7 +554,7 @@ def texts_before_links(texts: Mapping[str, str]) -> dict[str, str]:
     The other links changed no existing text (MSG's c_4 added `explain.md`, ST's c_7
     `get_stream_table.md`, F1's c_9 `list_capabilities.md` and `check_admission.md`, F3's c_10
     five `Records` files, X06's c_12 nine files (`Branches`, `SolvePolicies`, `Administration`),
-    each pinned at its own hash; F2's c_11 added none)."""
+    each pinned at its own hash; F2's c_11 added none; F8's c_13 changed no file and added none)."""
     t08_rc._tests_on_path()
     from f2_schema_support import F2_DESCRIPTIONS, pre_f2_text  # noqa: PLC0415
     from opt_schema_support import OPT_DESCRIPTIONS, pre_opt_text  # noqa: PLC0415

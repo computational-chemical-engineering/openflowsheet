@@ -124,7 +124,9 @@ def test_timing_is_recorded_and_never_hashed(bundle: tuple[Path, Any]) -> None:
         # The two self-hashes are derived from the document, not part of it.
         if k not in ("structural_sha256", "manifest_sha256")
     }
-    assert set(full) - set(structural) == NON_STRUCTURAL
+    # `bundle_format` is a v2 manifest's member (ADR 0067 D2); a v1 manifest never carries it.
+    assert "bundle_format" not in full
+    assert set(full) - set(structural) == NON_STRUCTURAL - {"bundle_format"}
     for excluded in NON_STRUCTURAL:
         assert excluded not in structural, excluded
 

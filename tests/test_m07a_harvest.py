@@ -115,7 +115,12 @@ T08_MANIFEST = "evidence/T08/67c66d98587f23bd7dfe8da28a8facccc92da21e/manifest.j
 #: F2's manifest (`fb75c40…`, `tested`, 4 and 4) moves it on `wp/F2` (F2-WO8).
 #: X06's tested manifest (`1a2782d…`, 4 limitations, 1 non-pass check) moves it on `wp/X06`.
 #: X06-FR0 adds F2's (1, 4, 4) and X06's (1, 4, 1) to (108, 1176, 147) on `wp/X06` after the merge.
-HARVEST_SIZE = (110, 1184, 152)
+#: F8's manifest (`32981fb…`, `tested`, 4 and 3) moves it on `wp/F8` (F8-CO); the merge of `wp/F2`
+#: into `wp/F8` (F8-FR0) holds both.
+#: F8's manifest re-taken at the merge head (F8-FR item 9; `1867631…`, `tested`, 4 and 2; the
+#: `32981fb…` one moves, as F2's and F3's did): measured (110, 1184, 153).
+#: F8-FR1 (the merge of `wp/X06` into `wp/F8`) adds F8's (1, 4, 2) to X06-FR0's (110, 1184, 152).
+HARVEST_SIZE = (111, 1188, 154)
 #: The 0.2.0 release candidate C′ (M07 spec §25, R-485).
 C_PRIME = "ce993651ce37c1343e771b276160bd6623e43500"
 #: The commit tagged v0.2.0.

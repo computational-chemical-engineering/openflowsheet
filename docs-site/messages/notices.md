@@ -170,6 +170,28 @@ The molar masses do not balance to within the rounding of the stored values: spe
   Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/notices/#molar_mass_inconsistent
 ```
 
+<a id="platform_reference_used"></a>
+
+## `platform_reference_used`: The comparison used this platform's own reference record
+
+**Kind:** Notice: not a failure.
+
+- **Summary:** The result was compared with the reference record made for &lt;platform&gt;, not the reference platform's.
+- **Why:** A reference case holds one record for the reference platform. Where a float exceeds the numerical policy on another registered platform, a per-platform record sits beside it; it has the same R0 projection and states the floats, the policy bound and the near-threshold flags that account for the difference. The comparison used that record because this platform has one.
+- **Do:** None. The notice only says which record the comparison was made against.
+- **Parameters:** `platform` (text)
+
+Example:
+
+```text
+The result was compared with the reference record made for linux-aarch64, not the reference platform's.
+  Why:     A reference case holds one record for the reference platform. Where a float exceeds the numerical policy on another registered platform, a per-platform record sits beside it; it has the same R0 projection and states the floats, the policy bound and the near-threshold flags that account for the difference. The comparison used that record because this platform has one.
+  Do:      None. The notice only says which record the comparison was made against.
+  Kind:    Notice: not a failure.
+  Code:    platform_reference_used (openflowsheet explain platform_reference_used)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/notices/#platform_reference_used
+```
+
 <a id="preview_kind"></a>
 
 ## `preview_kind`: A result used an extension of a kind still in preview

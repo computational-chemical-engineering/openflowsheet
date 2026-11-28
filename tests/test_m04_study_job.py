@@ -26,6 +26,7 @@ import pytest
 from f1_schema_support import F1_OPERATIONS
 from f2_schema_support import without_f2
 from f3_schema_support import F3_OPERATIONS
+from f8_schema_support import without_f8
 from m04_schema_support import without_m04
 from msg_schema_support import MSG_OPERATIONS, without_msg
 from opt_schema_support import without_opt
@@ -296,11 +297,15 @@ def test_a42_m04s_responses_decompose_onto_m02s_snapshots() -> None:
         if name in MSG_OPERATIONS | ST_OPERATIONS | F1_OPERATIONS | F3_OPERATIONS | X06_OPERATIONS:
             continue
         # MSG's (ADR 0058), X02's (ADR 0070), OPT's (ADR 0071), X04's (ADR 0075), F2's (ADR 0062
-        # D1) and X06's (ADR 0078) additions postdate M04: they are taken out first,
-        # the later first.
+        # D1), X06's (ADR 0078) and F8's (ADR 0067 D3, D5) additions postdate M04: they are taken
+        # out first, the later first.
         resolved = without_msg(
             without_x02(
-                without_opt(without_x04(without_f2(without_x06(r4.resolved_response(operation)))))
+                without_opt(
+                    without_x04(
+                        without_f2(without_x06(without_f8(r4.resolved_response(operation))))
+                    )
+                )
             )
         )
         assert r4._digest(without_m04(resolved)) == before[name], name
