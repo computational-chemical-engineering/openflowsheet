@@ -422,3 +422,8 @@ Reversible by: <how>.` Package build decisions go in the package's own file (`do
   run 46041020889 through the pure function: 57 cases per leg on all four legs, all passed, set digest `0afd81d3...`
   equal everywhere. Strict readings: TO-1 needs `completed` (spec); TO-2's hash vs step 1 only on legs step 1 recorded
   (Linux). Merge into wp/REL060 after R-WV ends.
+- 2026-11-28 ~05:00 **LINE06-R-WV PASS** (opus-engineer, ~133k; wp/REL060 `3d658b91`, `bb4ee987`): `wheel_data_check.py
+  --f2`, real run `wheel data check (F2): PASS`; r0 equal to F0's M3 `414fba51...` and `6e6ab158...` (orchestrator
+  checked in corpus.json); 127 passed; F0 PASS. Readings R-WV-1..4 in `docs/REL060_DECISIONS.md`. wp/REL060-to merged
+  into wp/REL060 (`2b42556e`), worktree removed; `tests/test_rel*.py` 332 passed. R-REV (reviewer, RP 13(3)) launched,
+  brief `docs/briefs/LINE06-R-REV.md` on wp/REL060.
