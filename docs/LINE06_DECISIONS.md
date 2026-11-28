@@ -386,3 +386,7 @@ Reversible by: <how>.` Package build decisions go in the package's own file (`do
   Amendment 18 Accepted; B: merge, Amendment 18 Proposed; C: do not merge). DECISION: F8-FR1 starts now, before the
   card is signed: it merges wp/X06 `7a4dcde7` into wp/F8 (main on top later, docs only). Alternative: wait for the
   sign-off. Reversible by: `git -C .claude/worktrees/f8 reset --hard 50b3af17` (local only). opus-engineer.
+- 2026-11-28 Card `ofs-x06-merge` filed by hub (open). Verbatim action texts for the verifier:
+  A: "Merge wp/X06 at 7a4dcde7 into main with a merge commit that also marks ADR 0019 Amendment 18 Accepted with ADR 0078; run F0 on the merge commit and push main only if F0 passes and main's commits since the merge base still touch no src, tests or schemas; otherwise push nothing."
+  B: "Merge wp/X06 at 7a4dcde7 into main with a merge commit, leaving ADR 0019 Amendment 18 Proposed; run F0 on the merge commit and push main only if F0 passes and main's commits since the merge base still touch no src, tests or schemas; otherwise push nothing."
+  C: "Do not merge wp/X06 now; nothing is pushed."
