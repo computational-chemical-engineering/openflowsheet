@@ -50,17 +50,10 @@ def _sha(data: bytes) -> str:
 
 
 def _step1(junit: dict[str, dict[str, bytes] | None], run_id: int = 7) -> dict:
-    files = {
-        f"junit-{leg}": {n: _sha(d) for n, d in found.items()}
-        for leg, found in junit.items()
-        if found and leg in ("x86_64", "aarch64")
-    }
-    return {
-        "checks": [
-            {"id": "s1.push_run", "result": "pass", "run_id": run_id},
-            {"id": "s1.junit", "result": "pass", "files": files},
-        ]
-    }
+    # The record step 1 writes (R-REV F-2): built by `step1_checks`, not by hand.
+    run = {"databaseId": run_id, "status": "completed", "jobs": []}
+    legs = {leg: found for leg, found in junit.items() if leg in ("x86_64", "aarch64")}
+    return {"checks": release_rc.step1_checks(run, legs, {})}
 
 
 def _fixture(**overrides: dict[str, bytes] | None):
@@ -87,6 +80,8 @@ def _failed(checks) -> set[str]:
 def test_to6_passing_case() -> None:
     checks, body = _run(_fixture())
     assert _failed(checks) == set()
+    junit = [c for c in checks if c["id"] == "legs.junit"][0]
+    assert junit["compared_with_step1"] == ["x86_64", "aarch64"]
     assert len({d for d in body["set_sha256"].values()}) == 1
     assert body["matched"]["x86_64"][RUN_CASE]["count"] == len(PARAMS)
     assert body["matched"]["x86_64"][COUNT_CASE]["count"] == 1  # the other classname is not matched

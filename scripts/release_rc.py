@@ -338,6 +338,7 @@ def junit_cases_checks(
     hashes: dict[str, dict[str, str]] = {}
     absent: list[str] = []
     mismatched: list[str] = []
+    compared: list[str] = []
     for leg in legs:
         found = junit.get(leg)
         if not found or "pytest.xml" not in found:
@@ -345,14 +346,17 @@ def junit_cases_checks(
             continue
         hashes[leg] = {name: sha256(data) for name, data in sorted(found.items())}
         step1_hash = (recorded.get(f"junit-{leg}") or {}).get("pytest.xml")
-        if step1_hash is not None and step1_hash != hashes[leg]["pytest.xml"]:
-            mismatched.append(leg)
+        if step1_hash is not None:
+            compared.append(leg)
+            if step1_hash != hashes[leg]["pytest.xml"]:
+                mismatched.append(leg)
     _check(
         checks,
         "legs.junit",
         not absent and not mismatched,
         absent=absent,
         differs_from_step1=mismatched,
+        compared_with_step1=compared,
         files=hashes,
     )
     matched: dict[str, dict[str, list[str]]] = {}
