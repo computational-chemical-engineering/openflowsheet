@@ -277,6 +277,152 @@ def step1(rc: Path, commit: str) -> int:
     )
 
 
+# -- step 17: `junit-cases`, rc item F2-THREE-OS (REL060 D-3, TO-1 to TO-6) ------------------------
+
+
+def _case_selector(case: str) -> tuple[str, str]:
+    """`--case F::T` as (classname, test name): F with `/` read as `.` and `.py` dropped."""
+    file, separator, name = case.partition("::")
+    if not separator or not file or not name:
+        raise ValueError(f"--case {case!r}: not <file>::<test>")
+    return file.removesuffix(".py").replace("/", "."), name
+
+
+def junit_matches(xml: bytes, case: str) -> tuple[list[str], list[str]]:
+    """TO-3 and TO-4: the sorted names of the testcases matching `case` (`classname` is F, `name` is
+    T or starts with `T[`), and the names of those with a `failure`, `error` or `skipped` child."""
+    classname, test = _case_selector(case)
+    names: list[str] = []
+    bad: list[str] = []
+    for node in ElementTree.fromstring(xml).iter("testcase"):
+        name = node.get("name", "")
+        if node.get("classname") != classname or not (name == test or name.startswith(f"{test}[")):
+            continue
+        names.append(name)
+        if any(child.tag in ("failure", "error", "skipped") for child in node):
+            bad.append(name)
+    return sorted(names), sorted(bad)
+
+
+def _names_sha256(names: Sequence[str]) -> str:
+    return sha256("\n".join(names).encode("utf-8"))
+
+
+def junit_cases_checks(
+    *,
+    selected: Mapping[str, Any] | None,
+    step1_record: Mapping[str, Any] | None,
+    junit: Mapping[str, Mapping[str, bytes] | None],
+    legs: Sequence[str],
+    cases: Sequence[str],
+) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    """TO-1 to TO-5 over the push run at C (`selected`, from `push_run`), step 1's record and each
+    leg's downloaded junit (name to bytes, `None` when the artifact is absent); and the body of
+    `junit-cases.json`. All comparisons are exact."""
+    checks: list[dict[str, Any]] = []
+    step1_checks_ = {entry.get("id"): entry for entry in (step1_record or {}).get("checks", [])}
+    judged = step1_checks_.get("s1.push_run", {}).get("run_id")
+    run_id = None if selected is None else int(selected["databaseId"])
+    _check(
+        checks,
+        "legs.push_run",
+        selected is not None
+        and selected.get("status") == "completed"
+        and judged is not None
+        and int(judged) == run_id,
+        run_id=run_id,
+        status=None if selected is None else selected.get("status"),
+        step1_run_id=judged,
+    )
+    recorded = step1_checks_.get("s1.junit", {}).get("files") or {}
+    hashes: dict[str, dict[str, str]] = {}
+    absent: list[str] = []
+    mismatched: list[str] = []
+    for leg in legs:
+        found = junit.get(leg)
+        if not found or "pytest.xml" not in found:
+            absent.append(leg)
+            continue
+        hashes[leg] = {name: sha256(data) for name, data in sorted(found.items())}
+        step1_hash = (recorded.get(f"junit-{leg}") or {}).get("pytest.xml")
+        if step1_hash is not None and step1_hash != hashes[leg]["pytest.xml"]:
+            mismatched.append(leg)
+    _check(
+        checks,
+        "legs.junit",
+        not absent and not mismatched,
+        absent=absent,
+        differs_from_step1=mismatched,
+        files=hashes,
+    )
+    matched: dict[str, dict[str, list[str]]] = {}
+    failing: dict[str, list[str]] = {}
+    for leg in legs:
+        found = junit.get(leg) or {}
+        if "pytest.xml" not in found:
+            continue
+        matched[leg] = {}
+        for case in cases:
+            names, bad = junit_matches(found["pytest.xml"], case)
+            matched[leg][case] = names
+            failing.setdefault(leg, []).extend(f"{case}: {name}" for name in bad)
+    empty = [
+        f"{leg}: {case}" for leg in legs for case in cases if not matched.get(leg, {}).get(case)
+    ]
+    _check(checks, "legs.cases", bool(matched) and not empty, unmatched=empty)
+    _check(
+        checks,
+        "legs.passed",
+        bool(matched) and not any(failing.values()),
+        failing={leg: names for leg, names in failing.items() if names},
+    )
+    per_leg = {
+        leg: sorted(name for names in by_case.values() for name in names)
+        for leg, by_case in matched.items()
+    }
+    digests = {leg: _names_sha256(names) for leg, names in per_leg.items()}
+    _check(
+        checks,
+        "legs.same_set",
+        len(per_leg) == len(legs)
+        and len({tuple(names) for names in per_leg.values()}) == 1
+        and len(set(digests.values())) == 1,
+        names_sha256=digests,
+    )
+    body = {
+        "run_id": run_id,
+        "legs": list(legs),
+        "cases": list(cases),
+        "files_sha256": hashes,
+        "matched": {
+            leg: {
+                case: {"count": len(names), "names_sha256": _names_sha256(names)}
+                for case, names in by_case.items()
+            }
+            for leg, by_case in matched.items()
+        },
+        "set_sha256": digests,
+    }
+    return checks, body
+
+
+def junit_cases(rc: Path, commit: str, item: str, legs: Sequence[str], cases: Sequence[str]) -> int:
+    out = rc / "step17" / item
+    step1_file = rc / "step1" / "rc-step1.json"
+    step1_record = (
+        json.loads(step1_file.read_text(encoding="utf-8")) if step1_file.is_file() else None
+    )
+    selected = push_run(_gh_runs(commit), commit)
+    junit: dict[str, dict[str, bytes] | None] = dict.fromkeys(legs)
+    if selected is not None:
+        for leg in legs:
+            junit[leg] = _gh_junit(int(selected["databaseId"]), leg, out)
+    checks, body = junit_cases_checks(
+        selected=selected, step1_record=step1_record, junit=junit, legs=legs, cases=cases
+    )
+    return _finish(out / "junit-cases.json", f"junit cases ({item})", checks, id=item, **body)
+
+
 # -- step 17: the line's items (§6.7) --------------------------------------------------------------
 
 
@@ -511,6 +657,12 @@ def main(argv: Sequence[str] | None = None) -> int:
     commands = parser.add_subparsers(dest="command", required=True)
     surface = commands.add_parser("surface", help="step 8: m07a_rc.py surface, unchanged")
     surface.add_argument("--out", type=Path, required=True)
+    cases = commands.add_parser("junit-cases", help="step 17 item: named junit cases on the legs")
+    cases.add_argument("--commit", required=True, help="C; the checkout must be at it")
+    cases.add_argument("--rc", type=Path, required=True, help="the RC record directory")
+    cases.add_argument("--id", required=True, help="the item id")
+    cases.add_argument("--legs", required=True, help="comma-separated artifact suffixes")
+    cases.add_argument("--case", action="append", default=[], help="<file>::<test>, repeatable")
     for name in ("step1", "items", "local", "record", "ci", "records"):
         sub = commands.add_parser(name)
         if name == "record":
@@ -551,6 +703,18 @@ def main(argv: Sequence[str] | None = None) -> int:
     if head != arguments.commit:
         print(f"refused: {ROOT} is at {head}, not at {arguments.commit}", file=sys.stderr)
         return 2
+    if arguments.command == "junit-cases":
+        legs = [leg for leg in arguments.legs.split(",") if leg]
+        try:
+            for case in arguments.case:
+                _case_selector(case)
+        except ValueError as error:
+            print(f"refused: {error}", file=sys.stderr)
+            return 2
+        if not legs or len(set(legs)) != len(legs) or not arguments.case:
+            print("refused: --legs and --case must be non-empty, legs distinct", file=sys.stderr)
+            return 2
+        return junit_cases(arguments.rc, head, arguments.id, legs, arguments.case)
     if arguments.command == "step1":
         return step1(arguments.rc, head)
     if arguments.command in ("ci", "items") and arguments.ci_run is not None:
