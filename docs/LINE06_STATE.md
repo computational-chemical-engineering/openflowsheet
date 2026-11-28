@@ -40,11 +40,9 @@ the ADR acceptances of card `ofs-line06-adr-clause`; X06's exits.
 Parallelism: at most two agents. F2 first; D1 runs beside F2 once the X06 scope card is answered; F8-WO1 can start
 once F2-WO4 is on wp/F2 (F8 branches from wp/F2's head, merges after F2).
 
-## Next action (2026-11-28 ~07:45; NO agent of this session is running)
+## Next action (2026-11-28 ~09:10; NO agent of this session is running)
 
-Running: full gate on d04439c6 in detached worktree `.claude/worktrees/f8cyc-gate`, PID 1185667, summary via
-`~/.cache/line06/f8cyc/gate-d04439c6.log` (one line), full log `~/.cache/line06/f8cyc/gate-d04439c6.full.log`.
-When it ends: log the result in LINE06_DECISIONS; on FAIL `grep -nE 'FAILED|ERROR'` the full log, brief a fix.
+Gate on d04439c6 **PASS** (09:10, 22056 passed; LINE06_DECISIONS 09:10). No job running.
 
 1. **Card `ofs-f8-merge`** (hub rings on sign-off). Verify with the exact text of the signed option
    (`python3 ~/.claude/tools/decision_desk_verify.py D ofs-f8-merge --action "<text>"`; ArtifactData get `decisions`,

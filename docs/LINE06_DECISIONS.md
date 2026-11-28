@@ -465,3 +465,9 @@ Reversible by: <how>.` Package build decisions go in the package's own file (`do
   fails at the notebook step on both heads (CI Site judges).
   DECISION: keep F8-CYC-2 (brief asked one commit; the split alone created a duplication smell, nloc 113, 14% > 10%).
   Alternative: revert d04439c6 and carry the smell. Reversible by: `git revert d04439c6`.
+
+## 2026-11-28 09:10, F8-CYC gate
+
+- Full gate on d04439c6 (wp/F8-cycle, detached worktree f8cyc-gate): **GATE PASS**, 22056 passed, 107 skipped,
+  225 deselected, 3 xfailed in 1:29:13 (log `~/.cache/line06/f8cyc/gate-d04439c6.full.log`). Option B of
+  `ofs-f8-merge` is now ready to push without another gate. Card still open (unanswered at 09:10).
