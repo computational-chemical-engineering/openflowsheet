@@ -61,8 +61,8 @@ from openflowsheet.run.manifest import Environment, environment
 from openflowsheet.run.manifest_v2 import BUNDLE_FORMAT, ExtensionRow, RunManifestV2
 
 # v1's comparison rules apply unchanged to the v1 artifacts a v2 bundle carries (D5 step 7: "as
-# ADR 0007 D4"); `run/replay.py` keeps them, so they are reused, not copied.
-from openflowsheet.run.replay import (
+# ADR 0007 D4"); `run/replay_rules.py` keeps them, so they are reused, not copied.
+from openflowsheet.run.replay_rules import (
     ReplayMode,
     ReplayReport,
     ReplayVerdict,

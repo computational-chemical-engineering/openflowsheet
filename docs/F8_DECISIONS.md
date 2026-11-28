@@ -610,3 +610,34 @@ lines are left as each side has them). Logs `~/.cache/line06/f8-fr1/`.
   `test_v03_semantic_roles` 52; `test_evidence_manifests` + `test_s19_w5_gate` + `test_adr_0002_a1_integers` 814
   (19 skipped). 0 failed.
 - ruff check, ruff format --check (1371 files), mypy `src` (379 files): clean. Logs `~/.cache/line06/f8-fr1/b/`.
+
+## F8-CYC (CI codehealth diff, run 46098069377: import cycle run.replay <-> run.replay_v2), 2026-11-28
+
+- **DECISION F8-CYC-1. The v1 replay rules move to a new leaf, `run/replay_rules.py`.** CI's codehealth diff on
+  `d3846b8d` (base main `9532829b`) reported the cycle `run.replay -> run.replay_v2` (the lazy import in `replay()`'s
+  D5 step 2 dispatch) and `run.replay_v2 -> run.replay` (its reuse of v1's rules); the standing rule is 0 cycles.
+  Moved verbatim, code and comments, from `run/replay.py` to `run/replay_rules.py`: `ReplayMode`, `ReplayVerdict`,
+  `REGISTERED_PLATFORMS`, `ReplayReport`, `decide_mode` with its three rung helpers (`_alike_and_pinned`,
+  `_unverified_lock_reason`, `_unset_thread_pins_reason`), `Rerun`, `_as_recorded`, `unknown_policy_reason`,
+  `_verdict_drift`, `_is_verdict_only`. The leaf imports `run.bundle`, `run.compare`, `run.lock`, `run.manifest`,
+  `run.manifest_v2`, neither replay module (layer `openflowsheet.run`, as before). `run/replay.py` keeps `replay()` and
+  re-exports the seven public names (listed in a new `__all__`, the `numerics/ptc.py` idiom) and imports back the
+  three private helpers `replay()` calls, so every import path (`run.replay.ReplayReport`, `.decide_mode`,
+  `.REGISTERED_PLATFORMS`, `._as_recorded`) keeps working; `replay_v2` now imports `run.replay_rules`. The dispatch
+  stays a function-level import so that importing `run.replay` stays as light as before. `platform_refs` is
+  unchanged (`platform_refs -> replay -> replay_v2 -> replay_rules`, no edge back). The suggested shape was taken; no
+  smaller one removes the edge without moving `replay()` off its public path.
+  - `__module__` of `ReplayReport` and `Rerun` (and the moved functions) is now `openflowsheet.run.replay_rules`.
+    No digest, schema, fixture or message depends on it: F0, the surface suites (served-interface, `list_models` and
+    chain digests) and every replay test pass unchanged, nothing re-pinned. `docs-site/api/replay.md`'s
+    `::: openflowsheet.run.replay.ReplayReport` resolves through griffe as an alias of
+    `openflowsheet.run.replay_rules.ReplayReport` (checked with `griffe.load`; a full local `mkdocs build --strict`
+    fails at HEAD and here alike on the notebook kernel's import path, so the site build is CI's).
+  - Reversible by: reverting the F8-CYC commit.
+
+### F8-CYC gate numbers (SMM-TR09, logs `~/.cache/line06/f8cyc-*.log`)
+
+- F0: PASS, M1 50/50, M2-M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 42/42.
+- Surface suites (`test_t07_*`, `test_t08_w2_*`, `test_m07a_surface_chain`): 2387 passed, 28 skipped, 0 failed.
+- Replay tests (`grep -rlE 'run\.replay|run import replay|replay_v2|platform_refs' tests`): 305 passed, 0 failed.
+- ruff check, ruff format --check, mypy on the three touched modules: clean.
