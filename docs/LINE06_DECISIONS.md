@@ -433,3 +433,7 @@ Reversible by: <how>.` Package build decisions go in the package's own file (`do
   counts in the F2-THREE-OS argv (`=56`, `=1`, measured on all four legs of 46041020889). Alternative: accept D-3 as
   written, relying on four-leg equality. Reversible by: dropping the `=N` suffixes from the line file. Fix round R-FIX
   (sonnet-implementer, F-1, F-2, F-3, N-1) launched.
+- 2026-11-28 ~05:35 **LINE06-R-FIX PASS** (sonnet-implementer, ~81k; wp/REL060 `ddf883ed` F-1, `d8e9fcab` F-2,
+  `8cfe1e61` F-3 + N-1): orchestrator re-run `tests/test_rel*.py` 338 passed; line file F2-THREE-OS `--case ...=56`,
+  `=1`; loader `[]` (engineer). Real `--f2` re-run after F-1 started (log `~/.cache/line06/rel060/wv-<sha>.log`).
+  F8 CI 46098069377: `codehealth` failed (informational, as at F2's 46041020889), four check legs still running.
