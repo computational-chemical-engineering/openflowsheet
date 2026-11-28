@@ -408,3 +408,6 @@ Reversible by: <how>.` Package build decisions go in the package's own file (`do
 - 2026-11-28 03:30 **F8 gate PASS at b7f99d18** (22056 passed, 107 skipped, 225 deselected, 3 xfailed, 1:30:12; log
   `~/.cache/line06/f8-gate/gate-b7f99d18.log`). wp/F8 merged main `9532829b` -> `d3846b8d` (4 files, docs only; the
   gate stands for it). Pushed `d0bc2996..d3846b8d`; CI waiter log `~/.cache/line06/ci/f8-d3846b8d.log`.
+- 2026-11-28 03:45 DECISION: start LINE06-L1 (specifier) while F8's CI runs -> yes, in worktree `rel060` on
+  `wp/REL060` (from main 259bda86 + brief `docs/briefs/LINE06-L1.md`). Alternative: wait for the F8 merge (~2.5 h).
+  Reversible by: rerunning the F8-dependent part of the note if CI changes what F8 ships.
