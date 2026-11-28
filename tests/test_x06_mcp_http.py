@@ -419,7 +419,10 @@ def test_q9_the_sdks_stateless_answers_execute_nothing(
 def test_e_x06_2_tools_list_over_http_is_stdios_and_the_registered_digest(
     project: Project, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
+    import copy
+
     import test_t08_w2_surface_digest as surface
+    from f8_schema_support import without_f8
     from t07_mcp_support import in_session
 
     from benchmarks.t07.v17 import harness
@@ -443,8 +446,11 @@ def test_e_x06_2_tools_list_over_http_is_stdios_and_the_registered_digest(
     stdio = [tool.model_dump(mode="json", by_alias=True, exclude_none=True) for tool in over_stdio]
     assert canonical_json(over_http) == canonical_json(stdio)
     digest = hashlib.sha256(canonical_json(over_http)).hexdigest()
-    # The registered served digest (D6; X06-WO2's `X06_SERVED_SHA256`).
-    assert digest == harness.tool_descriptions_sha256() == surface.X06_SERVED_SHA256
+    # The registered served digest (D6; X06-WO2's `X06_SERVED_SHA256`), with F8's additions taken
+    # out first: F8 merges after X06 (R-1076, c_13 onto c_12; F8-FR1).
+    assert digest == harness.tool_descriptions_sha256() == surface.F8_SERVED_SHA256
+    before_f8 = without_f8(copy.deepcopy(over_http))
+    assert hashlib.sha256(canonical_json(before_f8)).hexdigest() == surface.X06_SERVED_SHA256
 
 
 # ========================================================= E-X06-4: callers isolated per request

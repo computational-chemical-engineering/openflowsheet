@@ -243,11 +243,21 @@ def command_inspect(arguments: argparse.Namespace) -> int:
     """G06: what a run was, what was checked, what was found, what was **not** claimed. The
     certificate's and the failure bundle's sections, each printed when the bundle holds that
     artifact, come from `_print_certificate_section` and `_print_failure_section`."""
-    from openflowsheet.run.bundle import read_artifact, read_manifest, verify_bundle
+    from openflowsheet.run import bundle, bundle_v2
+    from openflowsheet.run.bundle import read_artifact
+    from openflowsheet.run.manifest_v2 import BUNDLE_FORMAT
+    from openflowsheet.run.replay_v2 import bundle_format
 
     directory = Path(arguments.bundle)
-    manifest, _ = read_manifest(directory)
-    integrity = verify_bundle(directory)
+    # ADR 0067 D5 step 2: a v2 bundle is read by the v2 reader (its manifest is a `RunManifest`);
+    # any other `bundle_format` is one this build cannot read (review F8 M2).
+    value = bundle_format(directory)
+    if value is not None and value != BUNDLE_FORMAT:
+        print(_bundle_format_unsupported_text(value), file=sys.stderr)
+        return 1
+    reader = bundle if value is None else bundle_v2
+    manifest, _ = reader.read_manifest(directory)
+    integrity = reader.verify_bundle(directory)
 
     print("=== run")
     print(f"  id                {manifest.run_id}")
@@ -273,6 +283,18 @@ def command_inspect(arguments: argparse.Namespace) -> int:
         outcome = f" -> {event['outcome']}" if event.get("outcome") else ""
         print(f"  {event['sequence']:>3}  {event['kind']:<16} attempt {event['attempt']}{outcome}")
     return 0 if integrity.ok else 1
+
+
+def _bundle_format_unsupported_text(value: str) -> str:
+    """MSG §3.7: the layered text (surface `cli`) of `bundle_format_unsupported(<value>)`."""
+    from openflowsheet.messages.render import RenderContext, render_code
+    from openflowsheet.messages.text import format_text
+    from openflowsheet.registry.tokens import Coded
+    from openflowsheet.run.replay_v2 import coded_reason
+
+    coded = Coded("bundle_format_unsupported", {"value": value})
+    explanation = render_code(coded.code, coded.params, context=RenderContext(surface="cli"))
+    return format_text(explanation, coded_reason(coded))
 
 
 def _print_certificate_section(directory: Path) -> None:

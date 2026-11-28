@@ -1,0 +1,171 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/frankp/process-runtime/schemas/bundle-v2.schema.json",
+  "title": "BundleV2Members",
+  "description": "DRAFT until ADR 0067 is Accepted (F8-WO1). The members ADR 0067 adds to a v2 run's records: `RunManifest`'s (D2) and `ReplayReport`'s (D5, ADR 0019 Amendment 12). `run-manifest.schema.json` reaches each by a `$ref`, so that the `sha256` names they declare live in a schema F8's numerical-policy addendum covers and ADR 0025 D2.3's partition holds with v2's data unchanged (R-1032's structure). Every member is optional in the documents that use it; a v1-path run carries none of them (D1).",
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "bundle_format": {
+      "description": "D2: its presence selects D5's reader. Non-structural (`NON_STRUCTURAL`).",
+      "const": "openflowsheet-bundle-v2"
+    },
+    "data_lock": {
+      "description": "D2: `data_lock_sha256`, ADR 0061 D10's SHA of the run's data lock (`artifacts/data-lock.json` hashes to it, D3). Structural, R0. A fragment of the manifest's top level, joined by `allOf`.",
+      "type": "object",
+      "properties": {
+        "data_lock_sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "extensions_used": {
+      "description": "D2: ADR 0060 D8's extensions used, derived from the run's documents, built-ins included: one `[kind, id, version, descriptor_sha256, self_sha256]` row per descriptor, sorted by (kind, id, version key), each at most once (`run.manifest_v2.extensions_used_rows`). Structural, R0, top level (D2's departure from ADR 0060 D9).",
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "$ref": "https://github.com/frankp/process-runtime/schemas/extension-descriptor.schema.json#/properties/kind"
+          },
+          {
+            "$ref": "https://github.com/frankp/process-runtime/schemas/extension-descriptor.schema.json#/$defs/id"
+          },
+          {
+            "$ref": "https://github.com/frankp/process-runtime/schemas/extension-descriptor.schema.json#/properties/version"
+          },
+          {
+            "$ref": "#/$defs/sha256"
+          },
+          {
+            "$ref": "#/$defs/sha256"
+          }
+        ],
+        "minItems": 5,
+        "items": false
+      }
+    },
+    "run_kind": {
+      "description": "D2, ADR 0066 D11: the run kind of a `run` job, `[id, version]`. Structural, R0. Nothing in 0.6 writes it.",
+      "type": "array",
+      "prefixItems": [
+        {
+          "$ref": "https://github.com/frankp/process-runtime/schemas/extension-descriptor.schema.json#/$defs/id"
+        },
+        {
+          "$ref": "https://github.com/frankp/process-runtime/schemas/extension-descriptor.schema.json#/properties/version"
+        }
+      ],
+      "minItems": 2,
+      "items": false
+    },
+    "documents": {
+      "description": "D2, ADR 0066 D11: a `run` job's documents, `{<role>: sha256}`. Structural, R0. Nothing in 0.6 writes it.",
+      "type": "object",
+      "propertyNames": {
+        "minLength": 1
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/sha256"
+      }
+    },
+    "environment_registry": {
+      "description": "D2: `environment.registry`, the registry the run saw: ADR 0060 D10's `registry_sha256` and the SHA of its snapshot document (`artifacts/registry-snapshot.json`, D3). Non-structural (in `environment`).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "registry_sha256",
+        "snapshot_sha256"
+      ],
+      "properties": {
+        "registry_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "snapshot_sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "registry_comparison": {
+      "description": "D5 step 5 (Amendment 12): the recorded and the current registry, the used extensions that changed or are missing (`[kind, id, version]`), and how many descriptors the run did not use differ.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "recorded_registry_sha256",
+        "current_registry_sha256",
+        "changed",
+        "missing",
+        "unused_differences"
+      ],
+      "properties": {
+        "recorded_registry_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "current_registry_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "changed": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/extension_reference"
+          }
+        },
+        "missing": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/extension_reference"
+          }
+        },
+        "unused_differences": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "extension_reference": {
+      "type": "array",
+      "prefixItems": [
+        {
+          "$ref": "https://github.com/frankp/process-runtime/schemas/extension-descriptor.schema.json#/properties/kind"
+        },
+        {
+          "$ref": "https://github.com/frankp/process-runtime/schemas/extension-descriptor.schema.json#/$defs/id"
+        },
+        {
+          "$ref": "https://github.com/frankp/process-runtime/schemas/extension-descriptor.schema.json#/properties/version"
+        }
+      ],
+      "minItems": 3,
+      "items": false
+    },
+    "data_availability": {
+      "description": "D5 step 6 (Amendment 12): how many of the lock's records came from the bundle and from the local store, and the SHAs that resolved from neither, sorted.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "embedded",
+        "from_store",
+        "missing"
+      ],
+      "properties": {
+        "embedded": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "from_store": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "missing": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/sha256"
+          }
+        }
+      }
+    }
+  }
+}

@@ -49,7 +49,7 @@ EndingReason = Literal[
 #: experiment records, the coupled route's bundle member and the replacement report by M02
 #: (ADR 0033 D9, ADR 0034 D6, ADR 0035), additively; a surrogate study's two records by M04
 #: (ADR 0037 D6), additively; an optimisation record's members by OPT (ADR 0071, OPT design
-#: §4.10), additively.
+#: §4.10), additively; a v2 bundle's members by F8 (ADR 0067 D3, R-1076), additively.
 ArtifactKind = Literal[
     "solve_trace",
     "solve_plan",
@@ -80,6 +80,13 @@ ArtifactKind = Literal[
     "optimizer_record",
     "candidate_revision",
     "candidate_verification",
+    "data_lock",
+    "registry_snapshot",
+    "records_index",
+    "record",
+    "run_evidence",
+    "decision_record",
+    "exchange_record",
 ]
 
 JOB_OPERATIONS: Final[tuple[str, ...]] = get_args(JobOperation)
@@ -162,6 +169,16 @@ ARTIFACT_FILE_NAMES: Final[Mapping[str, str | None]] = {
     "optimizer_record": "optimizer.json",
     "candidate_revision": "candidate-revision.json",
     "candidate_verification": "verification.json",
+    #: ADR 0067 D3: a v2 bundle's members under `artifacts/`. An embedded record is
+    #: `records/<record sha>.json` and a decision record lives under `decision-records/` (D8):
+    #: named per instance. ADR 0067 D10 names no file for an exchange record: per instance too.
+    "data_lock": "data-lock.json",
+    "registry_snapshot": "registry-snapshot.json",
+    "records_index": "records-index.json",
+    "record": None,
+    "run_evidence": "run-evidence.json",
+    "decision_record": None,
+    "exchange_record": None,
 }
 
 

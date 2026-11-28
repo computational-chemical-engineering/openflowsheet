@@ -231,9 +231,12 @@ def test_a11_a_missing_lock_path_is_f1_naming_the_path(tmp_path: Path) -> None:
 
 def test_a12_the_environment_document_keeps_its_eight_keys() -> None:
     schema = json.loads((REPO_ROOT / "schemas/run-manifest.schema.json").read_text("utf-8"))
-    keys = schema["properties"]["environment"]["properties"]
+    environment_schema = schema["properties"]["environment"]
+    # ADR 0067 D2 (F8-WO1): `registry` is a v2 manifest's optional member, never a v1 one's.
+    keys = set(environment_schema["properties"]) - {"registry"}
+    assert "registry" not in environment_schema["required"]
     here = environment()
-    assert sorted(here.as_document()) == sorted(keys)
+    assert sorted(here.as_document()) == sorted(keys) == sorted(environment_schema["required"])
     assert len(keys) == 8
     findings = ("numpy is 2.2.5, the lock pins 2.2.4",)
     a, b = replace(here, lock_findings=()), replace(here, lock_findings=findings)

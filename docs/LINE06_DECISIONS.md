@@ -411,3 +411,63 @@ Reversible by: <how>.` Package build decisions go in the package's own file (`do
 - 2026-11-28 03:45 DECISION: start LINE06-L1 (specifier) while F8's CI runs -> yes, in worktree `rel060` on
   `wp/REL060` (from main 259bda86 + brief `docs/briefs/LINE06-L1.md`). Alternative: wait for the F8 merge (~2.5 h).
   Reversible by: rerunning the F8-dependent part of the note if CI changes what F8 ships.
+- 2026-11-28 ~04:10 **LINE06-L1 PASS** (specifier, ~304k; wp/REL060 `8046530e`): 0.6.json finalised, note
+  `docs/briefs/REL060-line-0.6.md`. Orchestrator spot-check: `load_line('0.6')` raises nothing, `tree_problems` = []
+  at 8046530e. New rc items WHEEL-F2 (`wheel_data_check.py --f2`, WV-1..6) and F2-THREE-OS (`release_rc.py
+  junit-cases`, TO-1..6; this is L3, no CI job needed). required_adrs gains 0019. No claim-set change. Q-L1, Q-B1..B2,
+  Q-D1..D3 defaults stand. Work orders R-WV (opus-engineer, rel060) and R-TO (sonnet-implementer, rel060-to on
+  wp/REL060-to) launched.
+- 2026-11-28 ~04:20 **LINE06-R-TO PASS** (sonnet-implementer, ~76k; wp/REL060-to `22febee4`): `release_rc.py
+  junit-cases`, 12 tests, six controls each failing its named check; orchestrator re-run 113 passed. Live read of F2's
+  run 46041020889 through the pure function: 57 cases per leg on all four legs, all passed, set digest `0afd81d3...`
+  equal everywhere. Strict readings: TO-1 needs `completed` (spec); TO-2's hash vs step 1 only on legs step 1 recorded
+  (Linux). Merge into wp/REL060 after R-WV ends.
+- 2026-11-28 ~05:00 **LINE06-R-WV PASS** (opus-engineer, ~133k; wp/REL060 `3d658b91`, `bb4ee987`): `wheel_data_check.py
+  --f2`, real run `wheel data check (F2): PASS`; r0 equal to F0's M3 `414fba51...` and `6e6ab158...` (orchestrator
+  checked in corpus.json); 127 passed; F0 PASS. Readings R-WV-1..4 in `docs/REL060_DECISIONS.md`. wp/REL060-to merged
+  into wp/REL060 (`2b42556e`), worktree removed; `tests/test_rel*.py` 332 passed. R-REV (reviewer, RP 13(3)) launched,
+  brief `docs/briefs/LINE06-R-REV.md` on wp/REL060.
+- 2026-11-28 ~05:20 **LINE06-R-REV** (reviewer, ~135k; `docs/reviews/REL060-machinery.md`, wp/REL060 `995ebf74`):
+  merge after F-1 (WV-5's "base v2 admitted" unchecked: `_admission` records the class name only). F-2 (TO-2 step-1
+  comparison skips silently on key mismatch), F-3 (run-case count not pinned), N-1..N-5. DECISION: F-3 -> pin exact
+  counts in the F2-THREE-OS argv (`=56`, `=1`, measured on all four legs of 46041020889). Alternative: accept D-3 as
+  written, relying on four-leg equality. Reversible by: dropping the `=N` suffixes from the line file. Fix round R-FIX
+  (sonnet-implementer, F-1, F-2, F-3, N-1) launched.
+- 2026-11-28 ~05:35 **LINE06-R-FIX PASS** (sonnet-implementer, ~81k; wp/REL060 `ddf883ed` F-1, `d8e9fcab` F-2,
+  `8cfe1e61` F-3 + N-1): orchestrator re-run `tests/test_rel*.py` 338 passed; line file F2-THREE-OS `--case ...=56`,
+  `=1`; loader `[]` (engineer). Real `--f2` re-run after F-1 started (log `~/.cache/line06/rel060/wv-<sha>.log`).
+  F8 CI 46098069377: `codehealth` failed (informational, as at F2's 46041020889), four check legs still running.
+- 2026-11-28 06:12 **F8 CI green at d3846b8d** (run 46098069377: check on ubuntu-latest, ubuntu-24.04-arm,
+  macos-latest, windows-latest, default-install, identity `success`; Site 46098069407 success). codehealth (informational)
+  failed: NEW import cycle run.replay <-> run.replay_v2 (replay.py:248 lazy v2 dispatch; replay_v2.py:65), debt over
+  touched files 19.30 -> 54.60 (platform_refs.py 23, bundle_v2.py 9, replay.py 7.3 -> 8.6, replay_v2.py 2). The F8
+  review did not name the cycle. DECISION-REQUEST `ofs-f8-merge` to hub; card filed (open). Verbatim action texts:
+  A: "Merge wp/F8 at d3846b8d into main with a merge commit; run F0 on the merge commit and push main only if F0 passes and main's commits since the merge base still touch no src, tests or schemas; otherwise push nothing. The import cycle run.replay <-> run.replay_v2 is then removed in a follow-up commit, which reaches main only after REL060's full gate and CI pass on it and before the 0.6.0 release."
+  B: "Do not merge wp/F8 now; first remove the import cycle run.replay <-> run.replay_v2 on wp/F8, run the full local gate and CI on the new head, then file a new merge card; nothing is pushed to main."
+  C: "Do not merge wp/F8 now; nothing is pushed."
+  Orchestrator recommends A (saves a gate + CI round); hub's view on the card: B (0-cycles rule).
+- 2026-11-28 Code-health items sent to session code_health: it takes none (no tool defect; the cycle and large_file are
+  real findings; items S2 reproduce AttributeError, render_error without code prefix, REL060 N-2..N-5 belong in
+  OpenFlowsheet's own backlog).
+- 2026-11-28 DECISION: the cycle fix starts now, before the card is signed, on local branch `wp/F8-cycle` (worktree
+  `.claude/worktrees/f8cyc`, from d3846b8d), brief `docs/briefs/LINE06-F8-CYC.md`, opus-engineer. Under A it merges into
+  wp/REL060 after the F8 merge; under B wp/F8 fast-forwards to it. Alternative: wait for the card. Reversible by:
+  `git worktree remove .claude/worktrees/f8cyc && git branch -D wp/F8-cycle` (local only).
+- 2026-11-28 **F8-CYC judged PASS** (opus-engineer, ~144k tokens, 85 min): wp/F8-cycle `befa9e60` (F8-CYC-1: new leaf
+  `run/replay_rules.py`; `replay.py` keeps `replay()` and re-exports the 7 public names via `__all__`) and `d04439c6`
+  (F8-CYC-2: the artifact-comparison loop F8-WO3 copied into `replay_v2._compared` lives once as
+  `replay_rules._compare_artifacts(..., *, as_recorded)`; each caller passes its own `_as_recorded` so the R-148
+  monkeypatch seam `tests/t08_v2_substitution.py:81` keeps working). F0 PASS (nine); surface suites 2387 passed 0
+  failed; replay tests 355 passed; ruff/mypy clean; `codehealth arch` 0 cycles 0 violations. Orchestrator spot check:
+  `codehealth diff --base 9532829b --head d04439c6` = only `FAIL debt 19.30 -> 48.00` (F8's own: platform_refs 23,
+  bundle_v2 9); no cycle edge, no smell; tree clean, stash list empty (the engineer's brief `git stash` left nothing).
+  `__module__` of ReplayReport/Rerun now `run.replay_rules`; no digest, fixture or message moved. Local mkdocs strict
+  fails at the notebook step on both heads (CI Site judges).
+  DECISION: keep F8-CYC-2 (brief asked one commit; the split alone created a duplication smell, nloc 113, 14% > 10%).
+  Alternative: revert d04439c6 and carry the smell. Reversible by: `git revert d04439c6`.
+
+## 2026-11-28 09:10, F8-CYC gate
+
+- Full gate on d04439c6 (wp/F8-cycle, detached worktree f8cyc-gate): **GATE PASS**, 22056 passed, 107 skipped,
+  225 deselected, 3 xfailed in 1:29:13 (log `~/.cache/line06/f8cyc/gate-d04439c6.full.log`). Option B of
+  `ofs-f8-merge` is now ready to push without another gate. Card still open (unanswered at 09:10).

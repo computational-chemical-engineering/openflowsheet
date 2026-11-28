@@ -21,7 +21,8 @@
       "enum": [
         "exact_replay",
         "compatible_reproduction",
-        "inspected_archived_results"
+        "inspected_archived_results",
+        "forced_replay"
       ]
     },
     "verdict": {
@@ -94,6 +95,12 @@
       "items": {
         "type": "string"
       }
+    },
+    "registry_comparison": {
+      "$ref": "https://github.com/frankp/process-runtime/schemas/bundle-v2.schema.json#/$defs/registry_comparison"
+    },
+    "data_availability": {
+      "$ref": "https://github.com/frankp/process-runtime/schemas/bundle-v2.schema.json#/$defs/data_availability"
     }
   }
 }

@@ -40,11 +40,14 @@ from openflowsheet.application.revision_run import (
 from openflowsheet.canonical import document_sha256
 from openflowsheet.numerics.solve_record import SolvePolicy
 from openflowsheet.orchestrator.warm_start import WarmStartCandidate
+from openflowsheet.registry.tokens import Coded
 from openflowsheet.resources import packaged
 from openflowsheet.run.bundle import read_artifact, read_manifest, verify_bundle
 from openflowsheet.run.compare import KNOWN_POLICY_IDS
 from openflowsheet.run.manifest import RunManifest, environment, policy_sha256
+from openflowsheet.run.manifest_v2 import BUNDLE_FORMAT
 from openflowsheet.run.replay import ReplayReport, Rerun, decide_mode, replay
+from openflowsheet.run.replay_v2 import bundle_format, coded_reason
 from openflowsheet.thermo.pr_c1 import PrC1Provider
 from openflowsheet.verify.verdict import CheckPolicy
 
@@ -117,6 +120,12 @@ def declared_kinds(*specs: Any) -> dict[str, str]:
 
 
 # -- reproduce (§12.3 "Rerun", R2.5) -----------------------------------------------------------
+
+#: Why a v2 bundle (ADR 0067) is inspected and not re-run: its rerun reads the bundle's served
+#: record stack, which F8-WO6 wires (DECISION F8-FR-2; review F8 M2).
+V2_RERUN_UNAVAILABLE: Final = coded_reason(
+    Coded("construct_unavailable", {"construct": "v2 bundle rerun", "foundation": "F8-WO6"})
+)
 
 
 @dataclass(frozen=True)
@@ -309,6 +318,13 @@ def _rerunnable_manifest(directory: Path, rerun: bool, at: Stage) -> RunManifest
     if not rerun:
         at("compare")
         return Reproduction(_inspected(directory))
+    if (value := bundle_format(directory)) is not None:
+        # ADR 0067 D5: a manifest with `bundle_format` is not the v1 reader's. A v2 bundle is
+        # inspected until F8-WO6 wires its rerun (DECISION F8-FR-2); any other value is already
+        # `bundle_format_unsupported` in the report (D5 step 2).
+        at("compare")
+        reason = V2_RERUN_UNAVAILABLE if value == BUNDLE_FORMAT else None
+        return Reproduction(_inspected(directory, reason))
     if not verify_bundle(directory).ok:
         at("compare")
         return Reproduction(replay(directory, None))

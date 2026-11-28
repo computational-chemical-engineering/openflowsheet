@@ -870,6 +870,29 @@ The project has no branch.
   Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#branch_not_found
 ```
 
+<a id="bundle_format_unsupported"></a>
+
+## `bundle_format_unsupported`: The bundle is in a format this version cannot replay
+
+**Kind:** Not supported in this version: a limitation of OpenFlowsheet, not an error in your flowsheet.
+
+- **Summary:** The bundle's format is &lt;value&gt;, which this version of OpenFlowsheet cannot read, so it was inspected and not re-run.
+- **Why:** A replay bundle names its format in its manifest. A format this version does not know may lay out its records, its registry and its results differently, so its results cannot be compared with a rerun. Only the bundle's file hashes were checked.
+- **Do:** Replay the bundle with the OpenFlowsheet version that wrote it, or a later one that reads its format.
+- **Parameters:** `value` (text)
+- **Not supported:** missing capability: reading this bundle format
+
+Example:
+
+```text
+The bundle's format is openflowsheet-bundle-v3, which this version of OpenFlowsheet cannot read, so it was inspected and not re-run.
+  Why:     A replay bundle names its format in its manifest. A format this version does not know may lay out its records, its registry and its results differently, so its results cannot be compared with a rerun. Only the bundle's file hashes were checked.
+  Do:      Replay the bundle with the OpenFlowsheet version that wrote it, or a later one that reads its format.
+  Kind:    Not supported in this version: a limitation of OpenFlowsheet, not an error in your flowsheet.
+  Code:    bundle_format_unsupported (openflowsheet explain bundle_format_unsupported)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#bundle_format_unsupported
+```
+
 <a id="capability_exists"></a>
 
 ## `capability_exists`: A capability id the project policy already holds
@@ -1430,6 +1453,29 @@ The energy balance of unit 'X1' (external.coupled) is not given: the solution's 
 
 - **Summary:** Refused: exchanger specification.
 
+<a id="extension_changed"></a>
+
+## `extension_changed`: An extension the run used has changed
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+- **Summary:** The &lt;kind&gt; &lt;id&gt; version &lt;version&gt; registered here differs from the one the run used: its descriptor or its code has another hash.
+- **Why:** A bundle records the hashes of the descriptor and the code of every extension its run used. When an installed extension's differ, a rerun would not run the same code. A built-in of this OpenFlowsheet version is rerun anyway and compared, as a compatible reproduction, so that a recorded case stays a regression check across versions; any other extension stops the replay, which then only inspects the bundle.
+- **Do:** To replay exactly, install the extension's recorded version; for a built-in, use the OpenFlowsheet version that wrote the bundle. Otherwise read the comparison as a check across versions.
+- **Parameters:** `kind` (text), `id` (text), `version` (text)
+- **See also:** [`extension_unavailable`](#extension_unavailable)
+
+Example:
+
+```text
+The unit_model mixer version 1.0.0 registered here differs from the one the run used: its descriptor or its code has another hash.
+  Why:     A bundle records the hashes of the descriptor and the code of every extension its run used. When an installed extension's differ, a rerun would not run the same code. A built-in of this OpenFlowsheet version is rerun anyway and compared, as a compatible reproduction, so that a recorded case stays a regression check across versions; any other extension stops the replay, which then only inspects the bundle.
+  Do:      To replay exactly, install the extension's recorded version; for a built-in, use the OpenFlowsheet version that wrote the bundle. Otherwise read the comparison as a check across versions.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    extension_changed (openflowsheet explain extension_changed)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#extension_changed
+```
+
 <a id="extension_invalid"></a>
 
 ## `extension_invalid`: An extension package does not match the descriptor format
@@ -1472,6 +1518,51 @@ The entry point acme could not be loaded, or raised an error, so its extension i
   Kind:    Input problem: something in the flowsheet or the request needs to change.
   Code:    extension_load_failed (openflowsheet explain extension_load_failed)
   Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#extension_load_failed
+```
+
+<a id="extension_unavailable"></a>
+
+## `extension_unavailable`: An extension the run used is not installed here
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+- **Summary:** The run used the &lt;kind&gt; &lt;id&gt; version &lt;version&gt;, which is not registered in this installation, so the bundle was inspected and not re-run.
+- **Why:** A bundle records every extension its run used, with the hashes of its descriptor and code. A replay reruns the run only when each of them is registered here, because a run without one of its extensions is a different run.
+- **Do:** Install the extension at the version the bundle records and replay again; the bundle's registry snapshot names its distribution.
+- **Parameters:** `kind` (text), `id` (text), `version` (text)
+- **See also:** [`extension_changed`](#extension_changed)
+
+Example:
+
+```text
+The run used the unit_model acme.flash version 1.2.0, which is not registered in this installation, so the bundle was inspected and not re-run.
+  Why:     A bundle records every extension its run used, with the hashes of its descriptor and code. A replay reruns the run only when each of them is registered here, because a run without one of its extensions is a different run.
+  Do:      Install the extension at the version the bundle records and replay again; the bundle's registry snapshot names its distribution.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    extension_unavailable (openflowsheet explain extension_unavailable)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#extension_unavailable
+```
+
+<a id="extension_use_undeclared"></a>
+
+## `extension_use_undeclared`: The rerun used an extension the bundle does not record
+
+**Kind:** Internal error in OpenFlowsheet: please report it.
+
+- **Summary:** The rerun used the &lt;kind&gt; &lt;id&gt;, which the bundle's list of extensions used does not hold, so the replay does not match.
+- **Why:** A bundle's list of extensions used is part of the run's identity: it is derived from the run's documents when the run is recorded. During a rerun, every extension the registry hands out is recorded, and each must be on that list. One that is not means the recorded identity missed a dependency of the run, which is a defect and never noise.
+- **Do:** Report it with the bundle: the run depends on an extension its identity does not name.
+- **Parameters:** `kind` (text), `id` (text)
+
+Example:
+
+```text
+The rerun used the property_method pr-c1, which the bundle's list of extensions used does not hold, so the replay does not match.
+  Why:     A bundle's list of extensions used is part of the run's identity: it is derived from the run's documents when the run is recorded. During a rerun, every extension the registry hands out is recorded, and each must be on that list. One that is not means the recorded identity missed a dependency of the run, which is a defect and never noise.
+  Do:      Report it with the bundle: the run depends on an extension its identity does not name.
+  Kind:    Internal error in OpenFlowsheet: please report it.
+  Code:    extension_use_undeclared (openflowsheet explain extension_use_undeclared)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#extension_use_undeclared
 ```
 
 <a id="external_refused"></a>

@@ -99,6 +99,14 @@ restored from their pre-X06 copies first (`without_x06`, `tests/x06_schema_suppo
 is F2's served digest `8eee5313…` exactly (`test_x06s_surface_move_decomposes_onto_f2s`), and
 every decomposition below holds as before. F2 merges first, so X06 decomposes onto F2's (ADR 0078
 D6, R-1072/R-1073; X06-FR0).
+**F8 (ADR 0067 D5, ADR 0019 Amendment 12; R-1076) widens it again, additively** — the replay
+report's reserved mode `forced_replay` and its two optional members `registry_comparison` and
+`data_availability`, served in `get_job_result`'s `outputSchema` (D3's artifact kinds do not reach
+the served list: MCP serves J5's consumer reading, the enum opened) — so the served digest moves
+to `F8_SERVED_SHA256`. With F8's additions removed first (`without_f8`,
+`tests/f8_schema_support.py`) the list is X06's served digest `ba4b5ce5…` exactly
+(`test_f8s_surface_move_decomposes_onto_x06s`), and every decomposition below holds as before.
+F2 and X06 merge first, so F8 decomposes onto X06's (R-1072/R-1073; F8-FR1).
 """
 
 from __future__ import annotations
@@ -113,6 +121,7 @@ from conftest import REPO_ROOT, load_yaml
 from f1_schema_support import F1_OPERATIONS, without_f1
 from f2_schema_support import F2_DESCRIPTIONS, F2_KIND_NOTE, F2_KINDS, pre_f2_text, without_f2
 from f3_schema_support import F3_OPERATIONS, without_f3
+from f8_schema_support import F8_REPLAY_MODE, F8_REPORT_MEMBERS, without_f8
 from m02_schema_support import without_m02
 from m04_schema_support import without_m04
 from msg_schema_support import MSG_OPERATIONS, without_msg
@@ -190,6 +199,12 @@ F2_SERVED_SHA256 = "8eee5313e1dff685ed3f5c7a60c6aa8fb7fea31d8fcd5c8ac608eac9450f
 #: X06-WO3, `d0f0c8b7…` at X06-WO4), and re-taken at X06-FR0 over F2-WO8's list (`7792576e…`
 #: before). Without them, with the two texts restored, it is `F2_SERVED_SHA256` (c_12 onto c_11).
 X06_SERVED_SHA256 = "ba4b5ce59af4ac4c1e5d29f157ccd5d6308cc0a6282f0dc3434fc3b5cf88db62"
+#: F8 (ADR 0067 D5, R-1076): the served digest with the replay report's reserved mode and its two
+#: members in `get_job_result`'s output schema over X06's list, measured at F8-WO1b on `wp/F8`,
+#: re-taken at F8-FR0 over F2-WO8's list (`c11d3877…` before) and at F8-FR1 over X06's list
+#: (`3571c5c3…` before; `scripts/m07a_rc.py`'s `D_13`). Without them it is `X06_SERVED_SHA256`
+#: (c_13 onto c_12).
+F8_SERVED_SHA256 = "de241b22b43681d81d4afc02a2250ddef684b83fb258e9ae491bc8fee2c7fd94"
 #: The files N1 and N2 changed; the only difference from `v17-c2`'s served texts.
 CHANGED = ("commit_change", "validate")
 #: Each description's SHA-256 as `v17-c2` served it: the table of
@@ -225,15 +240,23 @@ def _tools(mcp: ModuleType) -> list[dict[str, Any]]:
     return [tool.model_dump(mode="json", exclude_none=True) for tool in mcp.tools()]
 
 
+def _before_f8(mcp: ModuleType) -> list[dict[str, Any]]:
+    """The served tool list without F8's replay-report additions (`without_f8`), X06's list."""
+    stripped = without_f8(_tools(mcp))
+    assert isinstance(stripped, list)
+    return stripped
+
+
 def _before_x06(mcp: ModuleType) -> list[dict[str, Any]]:
-    """The served tool list without X06's additions (`without_x06`), F2's list."""
-    stripped = without_x06(_tools(mcp))
+    """The served tool list without F8's and X06's additions (`without_x06`), F2's list."""
+    stripped = without_x06(_before_f8(mcp))
     assert isinstance(stripped, list)
     return stripped
 
 
 def _before_f2(mcp: ModuleType) -> list[dict[str, Any]]:
-    """The served tool list without X06's additions and F2's 14 kinds (`without_f2`), F3's list."""
+    """The served tool list without F8's and X06's additions and F2's 14 kinds (`without_f2`),
+    F3's list."""
     stripped = without_f2(_before_x06(mcp))
     assert isinstance(stripped, list)
     return stripped
@@ -568,7 +591,7 @@ def test_f2s_surface_move_decomposes_onto_f3s(mcp: ModuleType) -> None:
     restored from its pre-F2 copy by the strip), and moved `list_models` in exactly its two kind
     enums (pins' and choice options' `specifications`), each by exactly the 14 kinds and the
     description's one sentence."""
-    served = _before_x06(mcp)  # X06's additions postdate F2
+    served = _before_x06(mcp)  # X06's and F8's additions postdate F2
     stripped = without_f2(served)
     assert _digest(served) == F2_SERVED_SHA256
     assert _digest(stripped) == F3_SERVED_SHA256
@@ -602,6 +625,39 @@ def test_f2s_surface_move_decomposes_onto_f3s(mcp: ModuleType) -> None:
     assert tool == before
 
 
+def test_f8s_surface_move_decomposes_onto_x06s(mcp: ModuleType) -> None:
+    """F8 (ADR 0067 D5, R-1076): the served list is `F8_SERVED_SHA256`; minus F8's additions it is
+    X06's (`X06_SERVED_SHA256`, which decomposes onto F2's and the earlier lists above; F8-FR1:
+    F2 and X06 merge first, R-1072/R-1073). F8 added no
+    tool and changed no tool's name or description text; the one tool that moved is
+    `get_job_result`, in exactly its replay report: `mode` by the one reserved value and the
+    properties by the two optional members, nothing else."""
+    served = _tools(mcp)
+    stripped = without_f8(served)
+    assert _digest(served) == F8_SERVED_SHA256
+    assert _digest(stripped) == X06_SERVED_SHA256
+    assert [(t["name"], t["description"]) for t in served] == [
+        (t["name"], t["description"]) for t in stripped
+    ]
+    moved = [(t, u) for t, u in zip(served, stripped, strict=True) if t != u]
+    assert [t["name"] for t, _ in moved] == [OPERATIONS["get_job_result"].mcp_tool]
+    ((tool, before),) = moved
+    assert tool["inputSchema"] == before["inputSchema"]
+    (report,) = tool["outputSchema"]["properties"]["replay_report"]["anyOf"][:1]
+    (report_before,) = before["outputSchema"]["properties"]["replay_report"]["anyOf"][:1]
+    assert report["properties"]["mode"]["enum"] == [
+        *report_before["properties"]["mode"]["enum"],
+        F8_REPLAY_MODE,
+    ]
+    assert sorted(set(report["properties"]) - set(report_before["properties"])) == sorted(
+        F8_REPORT_MEMBERS
+    )
+    assert report["required"] == report_before["required"]  # both members optional
+    # With the report put back, the tool is X06's exactly: nothing else in it moved.
+    tool["outputSchema"]["properties"]["replay_report"]["anyOf"][0] = report_before
+    assert tool == before
+
+
 def _at(schema: dict[str, Any], path: tuple[str, ...]) -> dict[str, Any]:
     """The `kind` property schema of the `specifications` items at `path` under `models`' items."""
     node: Any = schema["properties"]["models"]["items"]["properties"]
@@ -620,8 +676,8 @@ def test_x06s_surface_move_decomposes_onto_f2s(mcp: ModuleType) -> None:
     after those, each served from its file; the tools that
     moved are the two that serve the ChangeSet as a request (`commit_change`, `preview_change`:
     the `branch` member and the text) and `get_job_result` (the optimization report's candidate
-    ChangeSet), and nothing else moved."""
-    served = _tools(mcp)
+    ChangeSet), and nothing else moved. F8's additions postdate X06 (F8-FR1)."""
+    served = _before_f8(mcp)
     stripped = without_x06(served)
     assert _digest(served) == X06_SERVED_SHA256
     assert _digest(stripped) == F2_SERVED_SHA256
