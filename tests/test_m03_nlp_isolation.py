@@ -34,7 +34,7 @@ NLP_ADAPTER_MODULES = (
 #: `default-install` job) exactly these are skipped; any other import failure fails the test, and
 #: where the extra is installed they are walked like every other module.
 SERVER_BINDINGS = tuple(
-    f"openflowsheet.application.bindings.{name}" for name in ("http", "mcp", "web")
+    f"openflowsheet.application.bindings.{name}" for name in ("http", "mcp", "mcp_http", "web")
 )
 AUDIT = REPO_ROOT / "docs" / "m03-ipopt-audit.md"
 INVENTORY = REPO_ROOT / "benchmarks" / "m03" / "ipopt-inventory-x86_64.json"

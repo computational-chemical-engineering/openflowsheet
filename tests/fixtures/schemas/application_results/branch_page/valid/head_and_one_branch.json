@@ -1,0 +1,13 @@
+{
+  "items": [
+    {
+      "name": "head",
+      "revision_id": "syn001-edited"
+    },
+    {
+      "name": "what-if",
+      "revision_id": "syn001-nominal"
+    }
+  ],
+  "next_cursor": null
+}

@@ -67,6 +67,8 @@ ADDENDA: Final = (
     ROOT / "benchmarks" / "f3" / "numerical_policy_external.yaml",
     # F2 (ADR 0062 D8): `solution-state-v2` (F2 decision WO6a-4).
     ROOT / "benchmarks" / "f2" / "numerical_policy_external.yaml",
+    # X06 (ADR 0078 D4.5): the `SolvePolicies` responses (X06 decision X06-CI1-1).
+    ROOT / "benchmarks" / "x06" / "numerical_policy_external.yaml",
     # F8 (ADR 0067 D2, D3, D5, D6): the v2 bundle's members and documents (F8 decision WO1-2).
     ROOT / "benchmarks" / "f8" / "numerical_policy_external.yaml",
 )

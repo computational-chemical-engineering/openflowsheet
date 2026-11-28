@@ -514,6 +514,50 @@ The specific reasons a request, a revision, a solve or a project is refused, nam
 
 - **Summary:** Refused: active set cycling.
 
+<a id="administration_disabled"></a>
+
+## `administration_disabled`: In-band policy administration that is off for this project
+
+**Kind:** Not supported in this version: a limitation of OpenFlowsheet, not an error in your flowsheet.
+
+- **Summary:** In-band policy administration is off for this project.
+- **Why:** Changing grants or the ambient pressure through the application is off unless the project's operator switches it on, so that an existing grant holding the policy right does not silently gain the power to mint credentials. get_policy reads the policy in any case.
+- **Do:** Ask the project's operator to run openflowsheet project administration on, or to make the change with openflowsheet project grant, revoke or ambient.
+- **Not supported:** missing capability: in-band policy writes in a project whose operator has not switched them on
+
+Example:
+
+```text
+In-band policy administration is off for this project.
+  Why:     Changing grants or the ambient pressure through the application is off unless the project's operator switches it on, so that an existing grant holding the policy right does not silently gain the power to mint credentials. get_policy reads the policy in any case.
+  Do:      Ask the project's operator to run openflowsheet project administration on, or to make the change with openflowsheet project grant, revoke or ambient.
+  Kind:    Not supported in this version: a limitation of OpenFlowsheet, not an error in your flowsheet.
+  Code:    administration_disabled, in unsupported (openflowsheet explain administration_disabled)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#administration_disabled
+```
+
+<a id="administration_remote_refused"></a>
+
+## `administration_remote_refused`: An in-band policy write on a server bound beyond loopback
+
+**Kind:** Not supported in this version: a limitation of OpenFlowsheet, not an error in your flowsheet.
+
+- **Summary:** This server binds a non-loopback interface, and in-band policy writes are refused on it.
+- **Why:** The server has no TLS, so a bearer token crosses the network in clear text. A policy token sniffed there could mint credentials that outlive its own revocation, so grants, revocations and the ambient pressure change only through a server bound to loopback.
+- **Do:** Make the change through a server bound to loopback (a TLS proxy may forward to one), or ask the operator to use openflowsheet project grant, revoke or ambient.
+- **Not supported:** missing capability: in-band policy writes on a server bound beyond loopback, which has no TLS
+
+Example:
+
+```text
+This server binds a non-loopback interface, and in-band policy writes are refused on it.
+  Why:     The server has no TLS, so a bearer token crosses the network in clear text. A policy token sniffed there could mint credentials that outlive its own revocation, so grants, revocations and the ambient pressure change only through a server bound to loopback.
+  Do:      Make the change through a server bound to loopback (a TLS proxy may forward to one), or ask the operator to use openflowsheet project grant, revoke or ambient.
+  Kind:    Not supported in this version: a limitation of OpenFlowsheet, not an error in your flowsheet.
+  Code:    administration_remote_refused, in unsupported (openflowsheet explain administration_remote_refused)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#administration_remote_refused
+```
+
 <a id="ambient_pressure_invalid"></a>
 
 ## `ambient_pressure_invalid`: An ambient pressure that cannot be declared
@@ -771,6 +815,61 @@ Attribute psd of substream solid in definition slurry is declared more than once
 
 - **Summary:** Refused: block energy refused.
 
+<a id="branch_name_reserved"></a>
+
+## `branch_name_reserved`: The name head given to a branch
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+- **Summary:** The name head is reserved for the project's main line, so no branch can have it.
+- **Why:** A project keeps its main line under the name head; a branch is a second name for a line of revisions next to it. Creating or deleting a branch called head would replace or remove the main line, so the name is refused.
+- **Do:** Choose another name for the branch. To work on the main line, leave out the branch, or give head as the branch of a change.
+- **Parameters:** `name` (text, optional)
+
+Example:
+
+```text
+The name head is reserved for the project's main line, so no branch can have it.
+  Why:     A project keeps its main line under the name head; a branch is a second name for a line of revisions next to it. Creating or deleting a branch called head would replace or remove the main line, so the name is refused.
+  Do:      Choose another name for the branch. To work on the main line, leave out the branch, or give head as the branch of a change.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    branch_name_reserved, in invalid_request (openflowsheet explain branch_name_reserved)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#branch_name_reserved
+```
+
+<a id="branch_not_found"></a>
+
+## `branch_not_found`: A branch the project does not hold
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+- **Summary:** The project has no branch &lt;name&gt;.
+- **Why:** A change on a branch, its preview and a branch deletion each name an existing branch. This name is not one of them: it was never created, or it was deleted since.
+- **Do:** List the project's branches with list_branches and use one of their names, or create the branch from a revision with create_branch first.
+- **Parameters:** `name` (text, optional)
+
+Example:
+
+```text
+The project has no branch what-if.
+  Why:     A change on a branch, its preview and a branch deletion each name an existing branch. This name is not one of them: it was never created, or it was deleted since.
+  Do:      List the project's branches with list_branches and use one of their names, or create the branch from a revision with create_branch first.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    branch_not_found, in not_found (openflowsheet explain branch_not_found)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#branch_not_found
+```
+
+Example:
+
+```text
+The project has no branch.
+  Why:     A change on a branch, its preview and a branch deletion each name an existing branch. This name is not one of them: it was never created, or it was deleted since.
+  Do:      List the project's branches with list_branches and use one of their names, or create the branch from a revision with create_branch first.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    branch_not_found, in not_found (openflowsheet explain branch_not_found)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#branch_not_found
+```
+
 <a id="bundle_format_unsupported"></a>
 
 ## `bundle_format_unsupported`: The bundle is in a format this version cannot replay
@@ -792,6 +891,39 @@ The bundle's format is openflowsheet-bundle-v3, which this version of OpenFlowsh
   Kind:    Not supported in this version: a limitation of OpenFlowsheet, not an error in your flowsheet.
   Code:    bundle_format_unsupported (openflowsheet explain bundle_format_unsupported)
   Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#bundle_format_unsupported
+```
+
+<a id="capability_exists"></a>
+
+## `capability_exists`: A capability id the project policy already holds
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+- **Summary:** The project policy already holds a grant &lt;capability_id&gt;.
+- **Why:** A capability id names one grant. A new grant under an existing id would make it ambiguous which grant a revocation or an audit row means.
+- **Do:** Choose another capability_id, or leave it out and one is generated.
+- **Parameters:** `capability_id` (text, optional)
+
+Example:
+
+```text
+The project policy already holds a grant cap-agent.
+  Why:     A capability id names one grant. A new grant under an existing id would make it ambiguous which grant a revocation or an audit row means.
+  Do:      Choose another capability_id, or leave it out and one is generated.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    capability_exists, in invalid_request (openflowsheet explain capability_exists)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#capability_exists
+```
+
+Example:
+
+```text
+The project policy already holds a grant.
+  Why:     A capability id names one grant. A new grant under an existing id would make it ambiguous which grant a revocation or an audit row means.
+  Do:      Choose another capability_id, or leave it out and one is generated.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    capability_exists, in invalid_request (openflowsheet explain capability_exists)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#capability_exists
 ```
 
 <a id="capability_missing"></a>
@@ -816,6 +948,39 @@ Unit model thermal.heater is not admitted with property method pr-lib-v1: nothin
   Kind:    Not supported in this version: a limitation of OpenFlowsheet, not an error in your flowsheet.
   Code:    capability_missing (openflowsheet explain capability_missing)
   Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#capability_missing
+```
+
+<a id="capability_not_found"></a>
+
+## `capability_not_found`: A capability id the project policy does not hold
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+- **Summary:** The project policy holds no grant &lt;capability_id&gt;.
+- **Why:** The id names no grant in the project policy now: it was never granted, it was revoked already, or it belongs to another project.
+- **Do:** Read the grants with get_policy and use one of their capability_id values.
+- **Parameters:** `capability_id` (text, optional)
+
+Example:
+
+```text
+The project policy holds no grant cap-agent.
+  Why:     The id names no grant in the project policy now: it was never granted, it was revoked already, or it belongs to another project.
+  Do:      Read the grants with get_policy and use one of their capability_id values.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    capability_not_found, in not_found (openflowsheet explain capability_not_found)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#capability_not_found
+```
+
+Example:
+
+```text
+The project policy holds no grant.
+  Why:     The id names no grant in the project policy now: it was never granted, it was revoked already, or it belongs to another project.
+  Do:      Read the grants with get_policy and use one of their capability_id values.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    capability_not_found, in not_found (openflowsheet explain capability_not_found)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#capability_not_found
 ```
 
 <a id="capability_unknown"></a>
@@ -1543,6 +1708,27 @@ The formula of component CH3OH does not match its elemental composition.
   Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#formula_elements_invalid
 ```
 
+<a id="grant_exceeds_caller"></a>
+
+## `grant_exceeds_caller`: A grant beyond the caller's own
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+- **Summary:** The grant asks for more than this credential holds.
+- **Why:** A credential may grant only what it holds itself: rights it has, a max_wall_time_s and max_active_jobs at most its own when it is limited, and an expiry no later than its own when it expires. The local owner cannot be granted.
+- **Do:** Ask for fewer rights, give limits and an expiry within your own, or ask the project's operator to make the grant.
+
+Example:
+
+```text
+The grant asks for more than this credential holds.
+  Why:     A credential may grant only what it holds itself: rights it has, a max_wall_time_s and max_active_jobs at most its own when it is limited, and an expiry no later than its own when it expires. The local owner cannot be granted.
+  Do:      Ask for fewer rights, give limits and an expiry within your own, or ask the project's operator to make the grant.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    grant_exceeds_caller, in forbidden (openflowsheet explain grant_exceeds_caller)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#grant_exceeds_caller
+```
+
 <a id="group_amount_negative"></a>
 
 ## `group_amount_negative`: A group amount is negative
@@ -2108,6 +2294,39 @@ Directory 'plant' is not a project: it holds no project database.
 *No plain-language explanation is written yet; the summary is the technical one.*
 
 - **Summary:** Refused: opening not settled.
+
+<a id="origin_refused"></a>
+
+## `origin_refused`: A request to /mcp from a web page of another origin
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+- **Summary:** The request to /mcp was refused: it came from a web page at &lt;origin&gt; that this server does not serve.
+- **Why:** A browser names the origin of the page that sends a request. The /mcp endpoint accepts requests from the origins of the address it is served on and from programs that name no origin (MCP clients), and refuses the rest, so that a page of another site cannot reach the server through a browser.
+- **Do:** Connect an MCP client program to /mcp with the Authorization: Bearer header configured; a web page of another origin cannot use this server.
+- **Parameters:** `origin` (text, optional)
+
+Example:
+
+```text
+The request to /mcp was refused: it came from a web page at http://elsewhere.example that this server does not serve.
+  Why:     A browser names the origin of the page that sends a request. The /mcp endpoint accepts requests from the origins of the address it is served on and from programs that name no origin (MCP clients), and refuses the rest, so that a page of another site cannot reach the server through a browser.
+  Do:      Connect an MCP client program to /mcp with the Authorization: Bearer header configured; a web page of another origin cannot use this server.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    origin_refused, in forbidden (openflowsheet explain origin_refused)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#origin_refused
+```
+
+Example:
+
+```text
+The request to /mcp was refused: it came from a web page that this server does not serve.
+  Why:     A browser names the origin of the page that sends a request. The /mcp endpoint accepts requests from the origins of the address it is served on and from programs that name no origin (MCP clients), and refuses the rest, so that a page of another site cannot reach the server through a browser.
+  Do:      Connect an MCP client program to /mcp with the Authorization: Bearer header configured; a web page of another origin cannot use this server.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    origin_refused, in forbidden (openflowsheet explain origin_refused)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#origin_refused
+```
 
 <a id="out_of_domain"></a>
 
@@ -3098,6 +3317,27 @@ The prefix legacy. and the member legacy are reserved for the records that come 
 
 - **Summary:** Refused: revision unreadable.
 
+<a id="revoke_exceeds_caller"></a>
+
+## `revoke_exceeds_caller`: A revoke of a grant holding a right the caller lacks
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+- **Summary:** The grant to revoke holds a right this credential does not hold.
+- **Why:** A credential may revoke only grants whose rights are all its own, so that a lesser credential cannot remove a more privileged one. Revoking one's own grant is allowed.
+- **Do:** Ask the project's operator to revoke it with openflowsheet project revoke.
+
+Example:
+
+```text
+The grant to revoke holds a right this credential does not hold.
+  Why:     A credential may revoke only grants whose rights are all its own, so that a lesser credential cannot remove a more privileged one. Revoking one's own grant is allowed.
+  Do:      Ask the project's operator to revoke it with openflowsheet project revoke.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    revoke_exceeds_caller, in forbidden (openflowsheet explain revoke_exceeds_caller)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#revoke_exceeds_caller
+```
+
 <a id="schema_invalid"></a>
 
 ## `schema_invalid`: Schema invalid
@@ -3184,6 +3424,105 @@ Component CaCO3 is placed in a substream whose role conflicts with the role it a
   Kind:    Input problem: something in the flowsheet or the request needs to change.
   Code:    solid_role_conflict (openflowsheet explain solid_role_conflict)
   Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#solid_role_conflict
+```
+
+<a id="solve_policy_id_invalid"></a>
+
+## `solve_policy_id_invalid`: A project solve policy's id outside the user namespace
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+- **Summary:** A solve policy registered in a project needs an id of the form user.&lt;name&gt;; see &lt;pointer&gt;.
+- **Why:** The project's own solve policies are kept apart from the offered ones by their ids: each starts with user., then a letter or digit, then up to 63 letters, digits, underscores, dots or hyphens. An id without that prefix could be mistaken for an offered or benchmark policy.
+- **Do:** Give the policy an id such as user.my-variant and register it again.
+- **Parameters:** `pointer` (text, optional)
+
+Example:
+
+```text
+A solve policy registered in a project needs an id of the form user.<name>; see /policy/policy_id.
+  Why:     The project's own solve policies are kept apart from the offered ones by their ids: each starts with user., then a letter or digit, then up to 63 letters, digits, underscores, dots or hyphens. An id without that prefix could be mistaken for an offered or benchmark policy.
+  Do:      Give the policy an id such as user.my-variant and register it again.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    solve_policy_id_invalid, in invalid_request (openflowsheet explain solve_policy_id_invalid)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#solve_policy_id_invalid
+```
+
+Example:
+
+```text
+A solve policy registered in a project needs an id of the form user.<name>.
+  Why:     The project's own solve policies are kept apart from the offered ones by their ids: each starts with user., then a letter or digit, then up to 63 letters, digits, underscores, dots or hyphens. An id without that prefix could be mistaken for an offered or benchmark policy.
+  Do:      Give the policy an id such as user.my-variant and register it again.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    solve_policy_id_invalid, in invalid_request (openflowsheet explain solve_policy_id_invalid)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#solve_policy_id_invalid
+```
+
+<a id="solve_policy_invalid"></a>
+
+## `solve_policy_invalid`: A solve policy member the solver would not read as written
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+- **Summary:** A member of the solve policy is not one the solver reads as written: &lt;pointer&gt;.
+- **Why:** A solve policy is checked when it is registered, so that a job never fails on it later. Each member must survive the solver's own reading unchanged, and each open value (an initializer, the linear solver, a quantity kind of a tolerance or scale, the recycle policy) must be one the solver knows. A tear set names one flowsheet's streams, so a project policy carries none.
+- **Do:** Start from get_solve_policy of an offered policy, change only the members you need to values the solver registers, and register the document again.
+- **Parameters:** `pointer` (text, optional)
+
+Example:
+
+```text
+A member of the solve policy is not one the solver reads as written: /policy/initializer_chain/0.
+  Why:     A solve policy is checked when it is registered, so that a job never fails on it later. Each member must survive the solver's own reading unchanged, and each open value (an initializer, the linear solver, a quantity kind of a tolerance or scale, the recycle policy) must be one the solver knows. A tear set names one flowsheet's streams, so a project policy carries none.
+  Do:      Start from get_solve_policy of an offered policy, change only the members you need to values the solver registers, and register the document again.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    solve_policy_invalid, in invalid_request (openflowsheet explain solve_policy_invalid)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#solve_policy_invalid
+```
+
+Example:
+
+```text
+A member of the solve policy is not one the solver reads as written.
+  Why:     A solve policy is checked when it is registered, so that a job never fails on it later. Each member must survive the solver's own reading unchanged, and each open value (an initializer, the linear solver, a quantity kind of a tolerance or scale, the recycle policy) must be one the solver knows. A tear set names one flowsheet's streams, so a project policy carries none.
+  Do:      Start from get_solve_policy of an offered policy, change only the members you need to values the solver registers, and register the document again.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    solve_policy_invalid, in invalid_request (openflowsheet explain solve_policy_invalid)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#solve_policy_invalid
+```
+
+<a id="solve_policy_not_found"></a>
+
+## `solve_policy_not_found`: A project solve policy the project has not registered
+
+**Kind:** Input problem: something in the flowsheet or the request needs to change.
+
+- **Summary:** This project has registered no solve policy &lt;policy_id&gt;.
+- **Why:** An id that starts with user. names a solve policy registered in this project. None is registered under this id: it was never registered here, or it was registered in another project.
+- **Do:** Read the registered ids in get_project's solve_policies, or register the policy with register_solve_policy first.
+- **Parameters:** `policy_id` (text, optional)
+
+Example:
+
+```text
+This project has registered no solve policy user.my-variant.
+  Why:     An id that starts with user. names a solve policy registered in this project. None is registered under this id: it was never registered here, or it was registered in another project.
+  Do:      Read the registered ids in get_project's solve_policies, or register the policy with register_solve_policy first.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    solve_policy_not_found, in not_found (openflowsheet explain solve_policy_not_found)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#solve_policy_not_found
+```
+
+Example:
+
+```text
+This project has registered no solve policy.
+  Why:     An id that starts with user. names a solve policy registered in this project. None is registered under this id: it was never registered here, or it was registered in another project.
+  Do:      Read the registered ids in get_project's solve_policies, or register the policy with register_solve_policy first.
+  Kind:    Input problem: something in the flowsheet or the request needs to change.
+  Code:    solve_policy_not_found, in not_found (openflowsheet explain solve_policy_not_found)
+  Docs:    https://computational-chemical-engineering.github.io/openflowsheet/messages/refusals/#solve_policy_not_found
 ```
 
 <a id="species_basis_incompatible"></a>

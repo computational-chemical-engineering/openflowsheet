@@ -1,0 +1,8 @@
+{
+  "expect_error": "'status' is a required property",
+  "document": {
+    "conflict": null,
+    "policy_id": "user.copy",
+    "policy_sha256": "13a243a9b1a2c1e0c1bb449055b860afcf8c7f25d15073402bd3ed23aa7e5bac"
+  }
+}

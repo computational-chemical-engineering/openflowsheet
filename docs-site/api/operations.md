@@ -38,6 +38,15 @@ repository's `schemas/` directory.
 | `register_record` | draft | python, cli, http, mcp | `POST /v1/records` | `register_record` |
 | `validate_record` | read | python, cli, http, mcp | `POST /v1/records/validate` | `validate_record` |
 | `assess_rights` | policy | python, cli, http, mcp | `POST /v1/records/rights` | `assess_rights` |
+| `list_branches` | read | python, cli, http, mcp | `GET /v1/branches` | `list_branches` |
+| `create_branch` | draft | python, cli, http, mcp | `POST /v1/branches` | `create_branch` |
+| `delete_branch` | draft | python, cli, http, mcp | `POST /v1/branches/{name}/delete` | `delete_branch` |
+| `register_solve_policy` | draft | python, cli, http, mcp | `POST /v1/solve-policies` | `register_solve_policy` |
+| `get_solve_policy` | read | python, cli, http, mcp | `GET /v1/solve-policies/{policy_id}` | `get_solve_policy` |
+| `get_policy` | policy | python, cli, http, mcp | `GET /v1/policy` | `get_policy` |
+| `grant_capability` | policy | python, cli, http, mcp | `POST /v1/policy/grants` | `grant_capability` |
+| `revoke_capability` | policy | python, cli, http, mcp | `POST /v1/policy/grants/{capability_id}/revoke` | `revoke_capability` |
+| `set_ambient_pressure` | policy | python, cli, http, mcp | `POST /v1/policy/ambient-pressure` | `set_ambient_pressure` |
 | `artifact_bytes` | read | python, cli, http | `GET /v1/artifacts/{artifact_id}/raw` | — |
 
 ::: openflowsheet.application.operations.dispatch

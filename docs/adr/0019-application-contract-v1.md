@@ -283,7 +283,7 @@ Amendment 8 is decided in ADR 0061 D13 (F3-WO5b); this paragraph points at it. A
   it is F1's `e2c44b6b…` (R-1030) exactly. The surface link is c_10, R-1051 (`F3_SERVED_SHA256` in
   `tests/test_t08_w2_surface_digest.py`). No other R4-G3 response moves.
 
-## Amendment 9 (Proposed 2026-11-27; F2) — pointer to ADR 0062
+## Amendment 9 (Accepted 2026-11-27 with ADR 0062, Decision Desk `ofs-f2-merge`; proposed 2026-11-27; F2) — pointer to ADR 0062
 
 Amendment 9 is decided in ADR 0062 D12 (D8 for runs; F2-WO6b); this paragraph points at it. Additive; no method,
 parameter or result field changes, and nothing a v1 document is read, stored, hashed or run as changes:
@@ -332,10 +332,11 @@ replay report is read, stored, hashed or replayed as changes:
 - **Unchanged:** every v1 manifest, bundle and replay report: the 0.3.0 bundles replay with the same mode, verdict and
   reasons and a byte-identical report (E-F8-1), and v1-path runs write no new member (E-F8-10).
 - **Not unchanged:** the served MCP tool list, by the replay report's mode and two members in `get_job_result`'s
-  `outputSchema` (D3's artifact kinds do not reach it: MCP serves the kind enum opened), now `3571c5c3…` (chain link
+  `outputSchema` (D3's artifact kinds do not reach it: MCP serves the kind enum opened), now `de241b22…` (chain link
   c_13 of `scripts/m07a_rc.py`, R-1076; `F8_SERVED_SHA256` in `tests/test_t08_w2_surface_digest.py`); with F8's
-  additions removed (`tests/f8_schema_support.py`) it is F2's `8eee5313…` exactly. Nine R4-G3 responses move
-  (`SNAPSHOT_F8` in `tests/test_t07_w5e_application_results.py`, re-pinned at F8-WO1b): `solve`, `reproduce`,
+  additions removed (`tests/f8_schema_support.py`) it is X06's `ba4b5ce5…` exactly (F2 and X06 merge first; F8-FR1).
+  Nine R4-G3 responses move (`SNAPSHOT_F8` in `tests/test_t07_w5e_application_results.py`, re-pinned at F8-WO1b and,
+  for the six job rows X06 also moves, at F8-FR1): `solve`, `reproduce`,
   `submit_job`, `get_job`, `cancel_job`, `list_jobs`, `list_job_events`, `wait_job` and `get_job_result`, by the
   report's mode and two members and by D3's seven artifact kinds; with F8's additions removed (`without_f8`) each is
   its prior pin exactly. No other R4-G3 response moves.
@@ -407,3 +408,36 @@ hashed changes (D11):
   description texts), now `6be1c002…` (chain link c_8 of `scripts/m07a_rc.py`, R-1010; `X04_SERVED_SHA256` in
   `tests/test_t08_w2_surface_digest.py`); with X04's additions removed (`tests/x04_schema_support.py`) it is ST's
   `553b7612…` (R-1000) exactly. Nine R4-G3 responses move (`SNAPSHOT_X04`); stripped, each is its earlier snapshot.
+
+## Amendment 18 (Proposed; X06) — pointer to ADR 0078
+
+Amendment 18 is decided in ADR 0078 (D1, D2, D4, D5, D6; exit tests E-X06-1 to E-X06-24); this paragraph points at
+it. The ADR is Accepted (2026-11-26, the user, Decision Desk `ofs-x06-accept-adr0078`); this amendment is Proposed
+until the X06 merge card. Additive; no `required` list changes, nothing stored or hashed changes, and the store
+schema stays `t07-store-v1`:
+
+- **Three sibling protocols**, nine operations, each on all four transports: `Branches` (`list_branches`,
+  `create_branch`, `delete_branch`; D2.5), `SolvePolicies` (`register_solve_policy`, `get_solve_policy`; D4.5) and
+  `Administration` (`get_policy`, `grant_capability`, `revoke_capability`, `set_ambient_pressure`; D5.2). Rights
+  `read` and `draft` for the first two; `policy` for the third, whose three writes also need the operator's switch
+  (D5.1). D4's "no in-band `policy` operation" is replaced by D5; in-band `install` and `publish` stay excluded.
+- **MCP over streamable HTTP (D1).** The MCP transport gains a second carrier: `serve-http` serves `/mcp`
+  (stateless, JSON responses, bearer per request). The `Transport` literal gains no value and the tool list is the
+  same object on both carriers.
+- **Members and `$defs`.** `change-set.schema.json` gains the optional `branch` and the `$def` `branch_name` (D2.4);
+  `project-policy.schema.json` the optional `administration: {in_band: true}` (D5.1);
+  `application-results.schema.json` the `$defs` `branch`, `branch_page`, `branch_result`,
+  `solve_policy_registration`, `solve_policy_view`, `grant_result`, `revoke_result` and `ambient_pressure_result`;
+  the two `SolvePolicies` `$defs` are bare `$ref`s into the new `solve-policy-results.schema.json` (R-1032's
+  structure; X06 decision X06-CI1-1).
+- **Refusals.** No `ApiError` code is added (the enum stays closed). New `detail.code` values, each with a catalogue
+  entry: `origin_refused`, `branch_name_reserved`, `branch_not_found`, `solve_policy_id_invalid`,
+  `solve_policy_invalid`, `solve_policy_not_found`, `administration_disabled`, `administration_remote_refused`,
+  `grant_exceeds_caller`, `revoke_exceeds_caller`, `capability_not_found`, `capability_exists`.
+- **Not added:** job resume (D3: deferred to F7 D14, 0.8); the ADR 0078 D4 offering of the seven benchmark-registered
+  policies.
+- **Not unchanged:** the served MCP tool list, widened by the nine tools and two description texts
+  (`commit_change.md`, `preview_change.md`), now `ba4b5ce5…` (chain link c_12 of
+  `scripts/m07a_rc.py`, R-1073; `X06_SERVED_SHA256` in `tests/test_t08_w2_surface_digest.py`; `7792576e…` before
+  X06-FR0 merged F2); with X06's additions removed (`tests/x06_schema_support.py`, `without_x06`) it is F2's
+  `8eee5313…` exactly (F2 merges first, R-1072/R-1073).

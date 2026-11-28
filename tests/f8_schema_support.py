@@ -20,10 +20,10 @@ of the artifact kind, the enum opened. F8 adds no operation, no tool and no desc
 from every replay-report object schema the two members, from every mode enum that ends in
 `forced_replay` that value, and from every kind enum that ends in the seven kinds those values.
 Any other node is returned as it is, copied. What remains must equal the surface as the previous
-link left it: on `wp/F8`, which branches from `wp/F2`, the served list is F2's `8eee5313…`
-(`F2_SERVED_SHA256`, `scripts/m07a_rc.py` link c_11), and each moved R4-G3 snapshot is its value
-before F8 (`SNAPSHOT_F8`'s rows). `without_f8` composes with the other `without_*` functions: it
-touches no member they remove.
+link left it: F2 and X06 merge before F8 (R-1072/R-1073; F8-FR1), so the served list is X06's
+`ba4b5ce5…` (`X06_SERVED_SHA256`, `scripts/m07a_rc.py` link c_12), and each moved R4-G3 snapshot
+is its value before F8 (`SNAPSHOT_F8`'s rows). `without_f8` composes with the other `without_*`
+functions: it touches no member they remove.
 """
 
 from __future__ import annotations

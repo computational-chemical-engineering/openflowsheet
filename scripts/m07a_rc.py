@@ -86,15 +86,30 @@ function, a registered digest and Frank's carry extended to name it):
   same strip; `D_11` = `8eee5313…`, measured at F2-WO8 on `wp/F2`
   (`tests/test_t08_w2_surface_digest.py`'s `F2_SERVED_SHA256`). F2 adds no tool; item 4 judges
   `check_admission.md` in its pre-F2 form (`texts_before_links`), at F1's pinned hash.
+- c_12, R-1073 (ADR 0078 D6, ADR 0019 Amendment 18): X06's branches (X06-WO2, D2) and solve
+  policies (X06-WO3, D4) — the three tools of the protocol `Branches` (`list_branches`,
+  `create_branch`, `delete_branch`) and the two of `SolvePolicies` (`register_solve_policy`,
+  `get_solve_policy`) and, from X06-WO4 (D5), the four of `Administration` (`get_policy`,
+  `grant_capability`, `revoke_capability`, `set_ambient_pressure`), the
+  ChangeSet's optional `branch` member wherever the ChangeSet is served, and the two description
+  texts it changed (`commit_change.md`, `preview_change.md`, restored from their pre-X06 copies),
+  stripped by `tests/x06_schema_support.py`'s `without_x06`; `D_12` = `ba4b5ce5…`, measured at
+  the X06 fix round on `wp/X06`, the review's three text edits (`7e8393a5…` at X06-WO2,
+  `4a80f77f…` at X06-WO3, `d0f0c8b7…` at X06-WO4;
+  `tests/test_t08_w2_surface_digest.py`'s `X06_SERVED_SHA256`), and re-taken at X06-FR0 on
+  `wp/X06` after the merge of `wp/F2`'s F2-WO8 (`7792576e…` before). F2 merges first, so c_12
+  decomposes onto F2's c_11 (R-1072, R-1073: the second to merge decomposes onto the first's).
+  Its nine new files are pinned at their own hashes (`X06_FILE_SHA256`); item 4 judges the two
+  changed texts in their pre-X06 form (`texts_before_links`).
 - c_13, R-1076 (ADR 0067 D5, ADR 0019 Amendment 12): F8's replay-report additions, the reserved
   mode `forced_replay` and the two optional members `registry_comparison` and
   `data_availability`, served in `get_job_result`'s `outputSchema` (D3's artifact kinds move only
   R4-G3 snapshots: MCP serves the kind enum opened), stripped by `tests/f8_schema_support.py`'s
-  `without_f8`; `D_13` = `3571c5c3…`, measured at F8-FR0 on `wp/F8` after the merge of `wp/F2`'s
-  F2-WO8 (`tests/test_t08_w2_surface_digest.py`'s `F8_SERVED_SHA256`). On `wp/F8`, which branches
-  from `wp/F2`, it decomposes onto F2's c_11 (X06's c_12 is not on the branch; R-1072's
-  merge-order rule renumbers the links when the branches merge). F8 adds no tool and changes no
-  description text, so item 4 is unchanged by it.
+  `without_f8`; `D_13` = `de241b22…`, re-taken at F8-FR1 on `wp/F8` after the merge of `wp/X06`
+  (`3571c5c3…` at F8-FR0 after `wp/F2`'s F2-WO8, `c11d3877…` before;
+  `tests/test_t08_w2_surface_digest.py`'s `F8_SERVED_SHA256`). F2 and X06 merge first, so c_13
+  decomposes onto X06's c_12 (R-1072, R-1073: the third to merge decomposes onto the second's).
+  F8 adds no tool and changes no description text, so item 4 is unchanged by it.
 
 The released 0.2.0a1 ran the two-link chain (its committed record at `C_α²`); a re-run of the
 alpha's step 8 uses this script at the tag.
@@ -181,6 +196,20 @@ F3_FILE_SHA256: Final = {
     "register_record": "de9cb3b51546e2a35836dd67771fbb439ab57a84a34655ad4ec87db881aedc20",
     "search_records": "3e9067682714ce53c370d643c345f920fa3f22755abf2a604485202437b9059d",
     "validate_record": "7661ac4dbef2a2c9c881c2d35eab35b2393dfec0265689e2c45315a1447fb502",
+}
+#: c_12 (R-1073, ADR 0078 D2.5, D4.5, D5.2): the three tools X06-WO2 added, the two of X06-WO3
+#: and the four of X06-WO4, their files pinned as F3's are.
+#: `REVIEW.json`: the design lane's reviews recorded (X06 review ruling 2); the human ones pending.
+X06_FILE_SHA256: Final = {
+    "create_branch": "c5a5108a87a6eb0a36cf3c3e3a828c702728ac37f5f6381b94c07143302199a6",
+    "delete_branch": "0220874b57aecf2be3314c72b9558ab027c2ccf9155360e18750b77884abba3c",
+    "list_branches": "73b23d6b7c8e6b4ae3aef988de477945c1c0c63647fb3aff9a03a18b78b3083f",
+    "get_solve_policy": "d471d3547aff611b701ba26a38402205109ac30ce4eb81f3ba2313f7de8b185a",
+    "register_solve_policy": "a246826c9c6df511e33f7679b459b52ab825f916dbedb3a4cbd7f2abda61ce7c",
+    "get_policy": "e323b09a047aa5bea6929806657d9fad13e67da762258a1109969a8229bdca74",
+    "grant_capability": "c85ad53d684ee83f63dd20e8b4c534bb8c0f7a049db21faa5bf314ca58e8e87f",
+    "revoke_capability": "a2b603410c53121a938b1a1473400df1b022c8092cd646d6aa07d3e88b660194",
+    "set_ambient_pressure": "e48673d10cadd0de650e8d25aad857fc17936abca9bdecab1242d54e89b96573",
 }
 #: The two changed files as R-133 carried them: their reviewed hashes in `REVIEW.json` as v0.1.0
 #: released it (`PUBLIC_ROOT`).
@@ -322,6 +351,17 @@ def strip_f2(tools: Tools) -> Tools:
     return stripped
 
 
+def strip_x06(tools: Tools) -> Tools:
+    """s_12 (R-1073): `tools` without X06's additions (`x06_schema_support.without_x06`), with the
+    two description texts X06 changed restored."""
+    t08_rc._tests_on_path()
+    from x06_schema_support import without_x06  # noqa: PLC0415
+
+    stripped = without_x06(copy.deepcopy(tools))
+    assert isinstance(stripped, list)
+    return stripped
+
+
 def strip_f8(tools: Tools) -> Tools:
     """s_13 (R-1076): `tools` without F8's replay-report mode and members
     (`f8_schema_support.without_f8`)."""
@@ -412,10 +452,16 @@ LINKS: Final = (
         "8eee5313e1dff685ed3f5c7a60c6aa8fb7fea31d8fcd5c8ac608eac9450f304a",
     ),
     Link(
+        "c_12",
+        "R-1073",
+        strip_x06,
+        "ba4b5ce59af4ac4c1e5d29f157ccd5d6308cc0a6282f0dc3434fc3b5cf88db62",
+    ),
+    Link(
         "c_13",
         "R-1076",
         strip_f8,
-        "3571c5c3f57abe2a4ecb3e93970cb95cc8ce7856259f832aa78a2dcbcff7c10c",
+        "de241b22b43681d81d4afc02a2250ddef684b83fb258e9ae491bc8fee2c7fd94",
     ),
 )
 
@@ -503,17 +549,21 @@ def description_texts() -> dict[str, str]:
 
 def texts_before_links(texts: Mapping[str, str]) -> dict[str, str]:
     """`texts` (operation name -> description file) with every link's description change undone:
-    c_6's two files (OPT) in their pre-OPT form, c_8's two (X04) in their pre-X04 form and c_11's
-    one (F2, `check_admission.md`) in its pre-F2 form. The other links changed no existing text
-    (MSG's c_4 added `explain.md`, ST's c_7 `get_stream_table.md`, F1's c_9
-    `list_capabilities.md` and `check_admission.md`, F3's c_10 five `Records` files, each pinned
-    at its own hash; F2's c_11 added none; F8's c_13 changed no file and added none)."""
+    c_6's two files (OPT) in their pre-OPT form, c_8's two (X04) in their pre-X04 form, c_11's
+    one (F2, `check_admission.md`) in its pre-F2 form and c_12's two (X06) in their pre-X06 form.
+    The other links changed no existing text (MSG's c_4 added `explain.md`, ST's c_7
+    `get_stream_table.md`, F1's c_9 `list_capabilities.md` and `check_admission.md`, F3's c_10
+    five `Records` files, X06's c_12 nine files (`Branches`, `SolvePolicies`, `Administration`),
+    each pinned at its own hash; F2's c_11 added none; F8's c_13 changed no file and added none)."""
     t08_rc._tests_on_path()
     from f2_schema_support import F2_DESCRIPTIONS, pre_f2_text  # noqa: PLC0415
     from opt_schema_support import OPT_DESCRIPTIONS, pre_opt_text  # noqa: PLC0415
     from x04_schema_support import X04_DESCRIPTIONS, pre_x04_text  # noqa: PLC0415
+    from x06_schema_support import X06_DESCRIPTIONS, pre_x06_text  # noqa: PLC0415
 
     def before(name: str, text: str) -> str:
+        if name in X06_DESCRIPTIONS:
+            return pre_x06_text(name)
         if name in F2_DESCRIPTIONS:
             return pre_f2_text(name)
         if name in X04_DESCRIPTIONS:
@@ -526,8 +576,9 @@ def texts_before_links(texts: Mapping[str, str]) -> dict[str, str]:
 def description_problems(texts: Mapping[str, str]) -> list[str]:
     """§5.3 item 4 on `texts` (operation name -> description file): one line per failure. The
     tools are `v17-c2`'s 17, MSG's `explain` (c_4), ST's `get_stream_table` (c_7), F1's
-    `list_capabilities` and `check_admission` (c_9) and F3's five `Records` tools (c_10), each
-    file at its pinned hash."""
+    `list_capabilities` and `check_admission` (c_9), F3's five `Records` tools (c_10) and X06's
+    nine tools (c_12: `Branches`, `SolvePolicies`, `Administration`), each file at its pinned
+    hash."""
     problems: list[str] = []
     pinned = {
         **V17_C2_FILE_SHA256,
@@ -535,11 +586,13 @@ def description_problems(texts: Mapping[str, str]) -> list[str]:
         **ST_FILE_SHA256,
         **F1_FILE_SHA256,
         **F3_FILE_SHA256,
+        **X06_FILE_SHA256,
     }
     if sorted(texts) != sorted(pinned):
         problems.append(
             f"tools {sorted(texts)} are not v17-c2's 17, MSG's explain, ST's get_stream_table, "
-            "F1's list_capabilities and check_admission and F3's five Records tools"
+            "F1's list_capabilities and check_admission, F3's five Records tools and X06's three "
+            "Branches, two SolvePolicies and four Administration tools"
         )
     for name in sorted(set(texts) & set(pinned)):
         if name in CHANGED:
@@ -552,6 +605,8 @@ def description_problems(texts: Mapping[str, str]) -> list[str]:
             expected, source = F1_FILE_SHA256[name], "F1's"
         elif name in F3_FILE_SHA256:
             expected, source = F3_FILE_SHA256[name], "F3's"
+        elif name in X06_FILE_SHA256:
+            expected, source = X06_FILE_SHA256[name], "X06's"
         else:
             expected, source = V17_C2_FILE_SHA256[name], "v17-c2's"
         found = hashlib.sha256(texts[name].encode("utf-8")).hexdigest()

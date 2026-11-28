@@ -31,6 +31,7 @@ from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal, Self
 
+from openflowsheet.application.administration_service import AdministrationService
 from openflowsheet.application.artifact_service import (
     STREAM_TABLE_DEPTH,
     ArtifactService,
@@ -41,6 +42,7 @@ from openflowsheet.application.authz import (
     StaticPolicy,
     authenticate,
 )
+from openflowsheet.application.branch_service import BranchService
 from openflowsheet.application.contract import Page, Projection
 from openflowsheet.application.errors import ApiErrorCode, api_error
 from openflowsheet.application.inspection_service import InspectionService
@@ -54,6 +56,8 @@ from openflowsheet.application.inspection_types import (
     ModelRegistryView,
     ProjectSummary,
     RevisionSummary,
+    SolvePolicyRegistration,
+    SolvePolicyView,
     SubmitResult,
 )
 from openflowsheet.application.job_records import (
@@ -69,10 +73,13 @@ from openflowsheet.application.job_service import JobService
 from openflowsheet.application.jobs.executor import InlineExecutor, ProcessExecutor
 from openflowsheet.application.jobs.model import JobStatus
 from openflowsheet.application.policy_types import (
+    AmbientPressureResult,
     CapabilityReference,
     ExecutorSettings,
+    GrantResult,
     ProjectPolicy,
     ReplayPolicy,
+    RevokeResult,
 )
 from openflowsheet.application.projection import (
     DEFAULT_DEPTH,
@@ -88,6 +95,7 @@ from openflowsheet.application.record_types import (
 from openflowsheet.application.records_service import RecordsService
 from openflowsheet.application.revision_service import RevisionService
 from openflowsheet.application.service_core import ServiceCore
+from openflowsheet.application.solve_policy_service import SolvePolicyService
 from openflowsheet.application.store import (
     ProjectStore,
 )
@@ -95,7 +103,13 @@ from openflowsheet.application.store_records import (
     StoreError,
     coded_store_error,
 )
-from openflowsheet.application.transaction_types import Change, SemanticDiff, TransactionResult
+from openflowsheet.application.transaction_types import (
+    Branch,
+    BranchResult,
+    Change,
+    SemanticDiff,
+    TransactionResult,
+)
 from openflowsheet.application.validation_report import Task, ValidationReport
 from openflowsheet.application.validation_service import ValidationService
 from openflowsheet.registry import default_registry
@@ -135,13 +149,21 @@ class LocalApplication:
     def _bind(self, core: ServiceCore) -> None:
         """The services over `core` (`__init__`; `authenticated`, with a core of its own)."""
         self._core = core
-        self._inspection = InspectionService(core)
+        self._policies = SolvePolicyService(core)
+        self._inspection = InspectionService(core, self._policies)
         self._revisions = RevisionService(core, self._inspection)
         self._artifacts = ArtifactService(core, self._revisions)
-        self._validation = ValidationService(core, self._revisions)
+        self._validation = ValidationService(core, self._revisions, self._policies)
         self._records = RecordsService(core)
+        self._branches = BranchService(core)
+        self._administration = AdministrationService(core)
         self._jobs = JobService(
-            core, self._inspection, self._revisions, self._artifacts, self._validation
+            core,
+            self._inspection,
+            self._revisions,
+            self._artifacts,
+            self._validation,
+            self._policies,
         )
 
     # ------------------------------------------------------------------------- construction
@@ -351,6 +373,17 @@ class LocalApplication:
         project's scratch directory."""
         return self._core.files_root
 
+    @property
+    def serving_remote(self) -> bool:
+        """ADR 0078 D5.3: this owner is served on a non-loopback interface (`serve_http` sets
+        it before serving), so the in-band policy writes are refused. Views made by
+        `authenticated` afterwards share it."""
+        return self._core.serving_remote
+
+    @serving_remote.setter
+    def serving_remote(self, remote: bool) -> None:
+        self._core.serving_remote = remote
+
     # -------------------------------------------------------------------- Application (frozen)
 
     def validate(
@@ -398,9 +431,11 @@ class LocalApplication:
         Parameters
         ----------
         change
-            The edits to apply to the head (`Change`), with its optional new revision id.
+            The edits to apply to the head (`Change`), with its optional new revision id; with
+            `branch`, to that branch's tip, which the commit moves instead (ADR 0078 D2.4).
         expected_revision
-            The head the change was written against; `None` for a project's first revision.
+            The head (or the branch's tip) the change was written against; `None` for a
+            project's first revision (on `head` only).
         idempotency_key
             A key of the caller's choosing: the same key with the same request returns the
             first result (`replayed`) and never commits twice.
@@ -797,6 +832,115 @@ class LocalApplication:
             assessment=assessment,
             basis=basis,
             conditions=conditions,
+        )
+
+    # ------------------------------------------------ Branches (ADR 0078 D2, Amendment 18)
+
+    def list_branches(self, *, cursor: str | None = None, limit: int = 50) -> Page[Branch]:
+        """ADR 0078 D2.5: the project's refs, `head` first when it exists, then the branches by
+        name in bytewise ascending order, each with the revision it points at. `read`."""
+        return self._branches.list_branches(cursor=cursor, limit=limit)
+
+    def create_branch(self, *, name: str, revision_id: str, idempotency_key: str) -> BranchResult:
+        """ADR 0078 D2.5: a branch `name` pointing at the stored revision `revision_id`. `draft`;
+        audited. Returned: `created`, `replayed` (same key, same request) or `conflict` (the name
+        exists; `conflict.actual` is its tip). Raised: `head` as the name
+        (`branch_name_reserved`), an unknown revision (`not_found`), a key reused with another
+        request."""
+        return self._branches.create_branch(
+            name=name, revision_id=revision_id, idempotency_key=idempotency_key
+        )
+
+    def delete_branch(
+        self, *, name: str, expected_revision: str, idempotency_key: str
+    ) -> BranchResult:
+        """ADR 0078 D2.5: delete branch `name` if its tip is `expected_revision`; its revisions
+        stay. `draft`; audited. Returned: `deleted`, `replayed` or `conflict` (another tip, in
+        `conflict.actual`). Raised: `head` as the name (`branch_name_reserved`), an unknown
+        branch (`not_found`, `branch_not_found`), a key reused with another request."""
+        return self._branches.delete_branch(
+            name=name, expected_revision=expected_revision, idempotency_key=idempotency_key
+        )
+
+    # ------------------------------------------ SolvePolicies (ADR 0078 D4, Amendment 18)
+
+    def register_solve_policy(
+        self, *, policy: Mapping[str, Any], idempotency_key: str
+    ) -> SolvePolicyRegistration:
+        """ADR 0078 D4.5: bind the `user.` id of the solve-policy document `policy` to its
+        canonical bytes, once. `draft`; audited. Returned: `registered`, `exists` (the id is
+        bound to these bytes), `conflict` (to others; both hashes in `conflict`) or `replayed`
+        (same key, same request). Raised: a schema error, an id outside `user.…`
+        (`solve_policy_id_invalid`) or a member the solver would not read as written
+        (`solve_policy_invalid`), each `invalid_request` at its pointer; a key reused with
+        another request."""
+        return self._policies.register_solve_policy(policy=policy, idempotency_key=idempotency_key)
+
+    def get_solve_policy(self, *, policy_id: str) -> SolvePolicyView:
+        """ADR 0078 D4.5: an offered (`builtin`) or registered (`project`) solve policy and
+        its document. `read`. Raised: a benchmark-registered name that is not offered
+        (`unsupported`), any other id (`not_found`), as admission refuses them."""
+        return self._policies.get_solve_policy(policy_id=policy_id)
+
+    # ------------------------------------------ Administration (ADR 0078 D5, Amendment 18)
+
+    def get_policy(self) -> ProjectPolicy:
+        """ADR 0078 D5.2: the project policy in force, as `project-policy.json` stores it (token
+        hashes included; no token). `policy`; allowed whether or not in-band administration is
+        on."""
+        return self._administration.get_policy()
+
+    def grant_capability(
+        self,
+        *,
+        principal_id: str,
+        idempotency_key: str,
+        rights: Sequence[str] | None = None,
+        limits: Mapping[str, Any] | None = None,
+        expires_at: str | None = None,
+        note: str | None = None,
+        capability_id: str | None = None,
+    ) -> GrantResult:
+        """ADR 0078 D5.2-D5.4: add a grant, as `openflowsheet project grant` does (an absent
+        member takes its default), and return it with its bearer token, shown here once and
+        never stored (a replay returns `token` null). `policy`; audited and ledgered.
+
+        Raised, in this order: in-band administration off (`unsupported`,
+        `administration_disabled`); a server bound beyond loopback (`unsupported`,
+        `administration_remote_refused`); a grant beyond the caller's rights, limits or expiry,
+        or naming the local owner (`forbidden`, `grant_exceeds_caller`); an existing
+        `capability_id` (`invalid_request`, `capability_exists`); a key reused with another
+        request."""
+        return self._administration.grant_capability(
+            principal_id=principal_id,
+            idempotency_key=idempotency_key,
+            rights=rights,
+            limits=limits,
+            expires_at=expires_at,
+            note=note,
+            capability_id=capability_id,
+        )
+
+    def revoke_capability(self, *, capability_id: str, idempotency_key: str) -> RevokeResult:
+        """ADR 0078 D5.2-D5.3: remove a grant; it fails on its next call. `policy`; audited and
+        ledgered. Revoking one's own grant is allowed. Raised: as `grant_capability`'s first
+        two; an unknown id (`not_found`, `capability_not_found`); a grant holding a right the
+        caller lacks (`forbidden`, `revoke_exceeds_caller`); a key reused with another
+        request."""
+        return self._administration.revoke_capability(
+            capability_id=capability_id, idempotency_key=idempotency_key
+        )
+
+    def set_ambient_pressure(
+        self, *, value: float | None, idempotency_key: str, unit: str | None = None
+    ) -> AmbientPressureResult:
+        """ADR 0078 D5.2: declare the project's ambient pressure, `value` in `unit` (Pa when
+        absent; the units `openflowsheet project ambient` takes), or clear it (`value` null).
+        `policy`; audited and ledgered. Raised: as `grant_capability`'s first two; a refused
+        value or unit (`invalid_request`, `ambient_pressure_invalid`); a key reused with another
+        request."""
+        return self._administration.set_ambient_pressure(
+            value=value, idempotency_key=idempotency_key, unit=unit
         )
 
     def artifact_bytes(self, artifact_id: str) -> bytes:

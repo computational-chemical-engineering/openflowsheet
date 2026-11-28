@@ -19,6 +19,7 @@ from openflowsheet.application.job_requests import JobRequest, SolveBody
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.policy_types import LOCAL_OWNER_PRINCIPAL
 from openflowsheet.application.revisions import Revision
+from openflowsheet.application.store import HEAD
 from openflowsheet.application.store_records import IdempotencyKeyReusedError
 from openflowsheet.application.transaction_types import Change, Edit
 
@@ -82,6 +83,7 @@ def crash_mid_commit(directory: str, document: dict[str, Any]) -> None:
         store.commit_revision(
             connection,
             Revision(revision_id="rev-crash", document=document, parent_revision=None),
+            ref=HEAD,
             principal_id=application.principal_id,
             capability_id=LOCAL_OWNER_PRINCIPAL,
             policy_sha256=POLICY_SHA256,

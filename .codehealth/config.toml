@@ -182,6 +182,9 @@ order = [
     "openflowsheet.application.revision_service",
     "openflowsheet.application.inspection_service",
     "openflowsheet.application.records_service",
+    "openflowsheet.application.branch_service",
+    "openflowsheet.application.administration_service",
+    "openflowsheet.application.solve_policy_service",
     "openflowsheet.application.service_core",
     # services
     "openflowsheet.application.jobs.executor",
@@ -211,6 +214,7 @@ order = [
     "openflowsheet.application.thermal_binding",
     "openflowsheet.application.model_signatures",
     # persistence
+    "openflowsheet.application.solve_policy_registry",
     "openflowsheet.application.authz",
     "openflowsheet.application.store",
     "openflowsheet.application.store_records",
@@ -341,6 +345,10 @@ to = [
     "openflowsheet.application.revision_service",
     "openflowsheet.application.inspection_service",
     "openflowsheet.application.records_service",
+    "openflowsheet.application.branch_service",
+    "openflowsheet.application.administration_service",
+    "openflowsheet.application.solve_policy_service",
+    "openflowsheet.application.solve_policy_registry",
     "openflowsheet.application.service_core",
 ]
 reason = "bindings/__init__.py: each binding reads operations.OPERATIONS, goes through operations.dispatch and adds nothing (T07 design note 11.6)"

@@ -1,0 +1,22 @@
+{
+  "expect_error": "'status' is a required property",
+  "document": {
+    "capability": {
+      "capability_id": "cap-x06-delegate",
+      "expires_at": null,
+      "limits": {
+        "default_wall_time_s": 60,
+        "max_active_jobs": 1,
+        "max_wall_time_s": 60
+      },
+      "note": "",
+      "principal_id": "x06-delegate",
+      "rights": [
+        "read"
+      ],
+      "token_sha256": "ef72a327a983a1de68566e67214d60c132730b48c05cf3fa3da801c5081b7f15"
+    },
+    "policy_sha256": "8747fd8d77def2c62db4747178eeab9830bcf55121d2dd0d18d074593e7f32e7",
+    "token": "prt_6zgObV9xsUxyKOCxZm5DxxkS2Il8-DO18KStPo38DFs"
+  }
+}

@@ -1,12 +1,12 @@
-Commit edits as one new revision, applied whole or not at all, and move the project head to it.
+Commit edits as one new revision, applied whole or not at all, and move the head to it.
 
-Arguments: "edits" (each {"operation": "set" | "remove" | "append", "path": [keys and indexes], "value"}), "expected_revision" (the head id; null for the first), "idempotency_key" (yours; "auto:" is refused), and optionally "new_revision_id", "restore_from", "task" and "author" (a label, not authority).
+Arguments: "edits" (each {"operation": "set" | "remove" | "append", "path": [keys and indexes], "value"}), "expected_revision" (the head or branch tip; null for the first), "idempotency_key" (yours; "auto:" is refused), optionally "new_revision_id", "restore_from", "task", "author" (a label, not authority), "branch".
 
-Effect: a new revision and a moved head, only on status "committed". Right needed: draft.
+Effect: a new revision and a moved head, or only the "branch" moved, on status "committed" only. Right needed: draft.
 
-Status "replayed": same key and edits, the original result. "conflict" (the head is not expected_revision) and "rejected" (a bad path or id, or a non-canonical value) write nothing. The same key with other edits is refused idempotency_key_reused. A committed result carries the validation report and a semantic diff.
+Status "replayed": same key and edits, the original result. "conflict" (the tip is not expected_revision) and "rejected" (a bad path or id, or a non-canonical value) write nothing. The key with other edits is refused idempotency_key_reused. A commit returns its validation and semantic diff.
 
-It never solves or verifies; a committed revision can be DRAFT or INVALID. preview_change tries edits without writing.
+It never solves or verifies; a commit can be DRAFT or INVALID. preview_change tries edits without writing.
 
 Specification targets (object_type path: kind, SI unit; pins):
 - connection state.n + component: molar_flow, mol/s; that component's flow

@@ -34,6 +34,7 @@ from st_schema_support import ST_OPERATIONS
 from t07_jobs_support import lifecycle_violations, response_schema_violations
 from x02_schema_support import without_x02
 from x04_schema_support import without_x04
+from x06_schema_support import X06_OPERATIONS, without_x06
 
 from openflowsheet.adapters import variants
 from openflowsheet.application.errors import ApplicationError
@@ -291,15 +292,20 @@ def test_a42_m04s_responses_decompose_onto_m02s_snapshots() -> None:
     }
     moved = []
     for name, operation in OPERATIONS.items():
-        # MSG's `explain` row (ADR 0058 D7) and ST's `get_stream_table` row (ADR 0068) postdate M04.
-        if name in MSG_OPERATIONS | ST_OPERATIONS | F1_OPERATIONS | F3_OPERATIONS:
+        # MSG's `explain` row (ADR 0058 D7), ST's `get_stream_table` row (ADR 0068) and F1's, F3's
+        # and X06's (ADR 0078) rows postdate M04.
+        if name in MSG_OPERATIONS | ST_OPERATIONS | F1_OPERATIONS | F3_OPERATIONS | X06_OPERATIONS:
             continue
-        # MSG's (ADR 0058), X02's (ADR 0070), OPT's (ADR 0071), X04's (ADR 0075), F2's (ADR
-        # 0062 D1) and F8's (ADR 0067 D3, D5) additions postdate M04: they are taken out first,
-        # the later first.
+        # MSG's (ADR 0058), X02's (ADR 0070), OPT's (ADR 0071), X04's (ADR 0075), F2's (ADR 0062
+        # D1), X06's (ADR 0078) and F8's (ADR 0067 D3, D5) additions postdate M04: they are taken
+        # out first, the later first.
         resolved = without_msg(
             without_x02(
-                without_opt(without_x04(without_f2(without_f8(r4.resolved_response(operation)))))
+                without_opt(
+                    without_x04(
+                        without_f2(without_x06(without_f8(r4.resolved_response(operation))))
+                    )
+                )
             )
         )
         assert r4._digest(without_m04(resolved)) == before[name], name

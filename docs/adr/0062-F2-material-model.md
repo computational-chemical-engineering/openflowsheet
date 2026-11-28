@@ -370,7 +370,7 @@ M6's recorded cache-key digests unchanged.
 ## Work orders (`wp/F2`; after F1-WO2 and F3-WO1 are on `main`; at most two engineers at a time)
 
 *(Line note, 2026-11-26, R-1070, ADR 0057 Amendment 3: F2 is built and released in 0.6 with F8 WO1 to WO3 and WO5;
-"v2 documents in 0.5" below reads "in 0.6"; F4 to F6 follow in the next line.)*
+"v2 documents in 0.5" below reads "in 0.6"; F4 to F6 follow in 0.7.)*
 
 | # | WO | Content and files | Acceptance | Identity | Lane |
 | --- | --- | --- | --- | --- | --- |

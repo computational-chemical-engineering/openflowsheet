@@ -2706,7 +2706,7 @@ FQ1 (R-1016: inputs unchanged in 0.4).
 
 ## R-110 — v0.1 excludes resume, branches, in-band policy administration, MCP over HTTP and further solve policies, each reported explicitly unsupported
 
-**Lifted as policy (Frank, 2026-11-01; R-925, ADR 0056): package X06.** The behaviour below stays until that package lands.
+**Lifted as policy (Frank, 2026-11-01; R-925, ADR 0056): package X06.** The behaviour below stays until that package lands. *(Status 2026-11-26, R-1071, ADR 0078 Accepted: lifted by X06 for MCP over HTTP, branches, further solve policies and in-band administration; resume stands until F7 D14, 0.8.)*
 
 | | |
 | --- | --- |
@@ -20460,10 +20460,11 @@ records solves on the legacy route on all three OSes". The rest of the planned 0
 gaps, X09, X08, X17, X11 rest, PrISMa, F8-WO4 and WO6, and the acceptance clauses Seider VCM, the turbine with no
 declared phases, the VLLE decanter, the coverage matrix, `std.*` equivalence and the preview freeze) leaves 0.6.
 
-**Open, on the Decision Desk (defaults in brackets):** where the packages that leave go (`ofs-line06-rest`: [a new
-0.7 line, later lines one up]); which ADR acceptances the 0.6 line keeps (`ofs-line06-adr-clause`: [ADR 0062, ADR 0067
-and X06's ADR; 0063 to 0066 move with the packages that build them]); X06's scope for its architect pass
-(`ofs-line06-x06-scope`: [ADR 0056 row 8 in full, in its order]).
+**Settled on the Decision Desk, 2026-11-26, each choice A (verified):** the packages that leave form a new 0.7
+"multiphase core and generic units", and dynamics, the design toolkit and batch/relief/synthesis/electrolytes move to
+0.8, 0.9 and 0.10, 1.0 unchanged (`ofs-line06-rest`); the 0.6 line acceptance requires ADR 0062, 0067 and 0078
+Accepted, 0063 to 0065 move to 0.7 and 0066 to 0.8 (`ofs-line06-adr-clause`); X06's architect pass designs ADR 0056
+row 8 in full, in its order (`ofs-line06-x06-scope`). ADR 0057 Amendment 3 records the action texts.
 
 **Why.** 0.6 as planned was about twice 0.5's planned size. F2 and F8 are the one record migration of R-1065 and stand
 without F4 to F6 (v2 documents lower to the legacy route); X06 is independent of the foundations.
@@ -20473,6 +20474,28 @@ and has the clearest user value (remote agents over MCP); leaving it out saves l
 
 **Risk accepted.** F4 to F6 are built after F2's v2 records ship. A change they need in those records is an ADR 0062
 amendment and a second migration; the W1 design (the v2 core frozen at W1's end, R-928) is what keeps that unlikely.
+
+## R-1071: X06 application capabilities, ADR 0078 (2026-11-26, Accepted 2026-11-26)
+
+| | |
+| --- | --- |
+| Date | 2026-11-26 |
+| Decided by | design lane (`architect`, LINE06 D1); **accepted by the user**, Decision Desk `ofs-x06-accept-adr0078`, choice A, signed 2026-11-26T23:14:33Z ("Accept ADR 0078 as written at dcbab9b7 with its defaults"); Q4: `ofs-x06-mcp-clients`, choice A, signed 23:15:29Z ("Static bearer header only in 0.6 (Claude Code and SDK clients); OAuth (RFC 9728 metadata and an authorization server) is a later package.") |
+| Normative text | `docs/adr/0078-X06-application-capabilities.md` (on wp/X06, `dcbab9b7`) |
+| Evidence | to come: E-X06-1 to E-X06-24 |
+| Affected packages | X06 (0.6); F7 (0.8, D14 takes job resume if Q1 is accepted); R-110 |
+
+**Decision (proposed).** MCP over streamable HTTP at `/mcp` on `serve-http` (stateless mode of the pinned mcp 1.30.0,
+bearer checked per request, Origin rule, 413 on oversize; D1); branches as rows of the store's existing `refs` table,
+an optional `branch` member of a ChangeSet outside the request hash when absent or `head`, three operations (D2);
+job resume deferred to F7 D14 in 0.8 (D3); project-registered immutable `user.*` solve policies (D4); in-band policy
+administration, off by default behind an operator switch, no escalation, writes refused beyond loopback (D5). No
+stored record, run identity or store schema changes. Five work orders (WO1 to WO4 Opus, WO5 Sonnet).
+
+**Settled by the user (both cards above):** Q1 resume deferred to F7 D14 (0.8); Q2 administration off by default behind a
+per-project operator switch; Q3 administration writes refused beyond loopback, no override in 0.6; Q4 static bearer
+only, OAuth later; Q5 `draft` right to register a solve policy; Q6 the seven benchmark-registered policies stay
+`unsupported`.
 
 ## R-1072: F2's surface link c_11 in the v0.2 surface chain (2026-11-26, reserved)
 
@@ -20489,6 +20512,49 @@ F2-WO2b, `7b2a995c`) is chain link c_11: `strip_f2` takes F2's additions out and
 **Merge order:** links are numbered in the order the surface moved (F2 first); if X06 merges into `main` first, its
 link is renumbered c_11 and F2's c_12 in the second branch's merge commit.
 
+## R-1073: X06's surface link c_12 (2026-11-26, reserved)
+
+| | |
+| --- | --- |
+| Date | 2026-11-26 |
+| Decided by | orchestrator (LINE06), build lane |
+| Normative text | ADR 0078 D6, ADR 0019 Amendment 18 (pointer, X06-WO5) |
+| Evidence | X06-WO2 (`2213296b` on wp/X06): `tests/test_m07a_surface_chain.py` 37 passed with `strip_x06`; `D_12` = `X06_SERVED_SHA256` = `7e8393a55d8f45e5e44c21f33b4c91389130c882fa80cb47887621a891aa236e`, decomposing onto c_10 `f7ec3c94…` (F3) |
+| Affected packages | X06; F2 (R-1072) |
+
+**Decision.** X06's tools (from WO2 on) are chain link c_12, onto c_10 on wp/X06 until the merge; the second branch to
+merge decomposes onto the first's (ADR 0078 D6; R-1072's merge-order rule).
+
+## R-1074: a `user.` bundle is judged against its own policy document (2026-11-27)
+
+| | |
+| --- | --- |
+| Date | 2026-11-27 |
+| Decided by | design lane (`architect`), X06 ruling round R1, clarifying ADR 0078 (Accepted, R-1071) |
+| Normative text | ADR 0078, section "X06 ruling round R1 applied" (added by X06-WO3b) |
+| Evidence | `docs/X06_DECISIONS.md` on wp/X06 `313907cd`, section R1-1 (Q7 measured: E-X06-13 failed at `c526de6a`) |
+| Affected packages | X06 |
+
+**Decision.** `verify_bundle` judges a `user.` request (D4.1, matched whole) against the bundle's own
+`solve-policy.json`, never the project store; every other request as before. A coherent substitution of a `user.`
+policy is beyond integrity; replay and the certificate stay the guard. Rejected: consulting the project store (the
+verdict would depend on the project).
+
+## R-1075: R-088 Q26 admits `register_solve_policy`'s `policy/scales` by full path (2026-11-27)
+
+| | |
+| --- | --- |
+| Date | 2026-11-27 |
+| Decided by | design lane (`architect`), X06 ruling round R1, clarifying ADR 0078 (Accepted, R-1071) |
+| Normative text | ADR 0078, section "X06 ruling round R1 applied" (added by X06-WO3b) |
+| Evidence | `docs/X06_DECISIONS.md` on wp/X06 `313907cd`, section R1-2 (`test_t07_q26_no_external_state` failed at `c526de6a`) |
+| Affected packages | X06 |
+
+**Decision.** `policy/scales` (registered quantity kind to positive constant) is the one numeric map R-088 Q26 admits
+in the `SolvePolicies` requests, by that full path only; the request's numeric scalars are pinned by full path (40: the ruling counted 39; X06-WO3b DECISION WO3b-1 adds `policy/admissibility_epsilon`, open for the reviewer).
+Precedent: F3's `validate_record` `reactions/*/stoichiometry` (R-1058). Rejected: refusing `scales` in a user policy
+(would change ADR 0078 D4).
+
 ## R-1076: F8's surface link c_13 (2026-11-27, reserved)
 
 | | |
@@ -20496,7 +20562,7 @@ link is renumbered c_11 and F2's c_12 in the second branch's merge commit.
 | Date | 2026-11-27 |
 | Decided by | orchestrator (LINE06), build lane; the link's content follows the c_4 to c_12 pattern of `scripts/m07a_rc.py` |
 | Normative text | ADR 0067 D3 (artifact kinds in `job.schema.json`), D5 (`ReplayReport` Amendment 12: `forced_replay` in `mode`, `registry_comparison`, `data_availability`) |
-| Evidence | F8-WO1b on wp/F8 (`f2ab3db3`, `9cefd000`; `docs/F8_DECISIONS.md`, F8-WO1b gate numbers), re-taken at F8-FR0 (the merge of wp/F2's F2-WO8, whose D_11 moved `9a4b4eb3bd9f28e68e25828d8796bec73e8feb49aa6e12b80df0d43f990442a1` -> `8eee5313…`; D_13 was `c11d38778d2f8aba8240a6a2b5ee9d9e1e7b93c5c6fae4cc40ca82177cb50ddd`): `tests/test_m07a_surface_chain.py` passes with `strip_f8`; `D_13` = `F8_SERVED_SHA256` = `3571c5c3f57abe2a4ecb3e93970cb95cc8ce7856259f832aa78a2dcbcff7c10c`, decomposing onto c_11 `8eee5313e1dff685ed3f5c7a60c6aa8fb7fea31d8fcd5c8ac608eac9450f304a` (F2) exactly; only `get_job_result`'s served replay report moved. `tests/test_t07_w5e_application_results.py` 39 passed: 9 R4-G3 snapshots re-pinned (`SNAPSHOT_F8`: `solve`, `reproduce`, the seven job operations), each returned to its pre-F8 value by `without_f8`; F0 PASS |
+| Evidence | F8-WO1b on wp/F8 (`f2ab3db3`, `9cefd000`; `docs/F8_DECISIONS.md`, F8-WO1b gate numbers), re-taken at F8-FR0 (the merge of wp/F2's F2-WO8, whose D_11 moved `9a4b4eb3bd9f28e68e25828d8796bec73e8feb49aa6e12b80df0d43f990442a1` -> `8eee5313…`; D_13 was `c11d38778d2f8aba8240a6a2b5ee9d9e1e7b93c5c6fae4cc40ca82177cb50ddd`, then `3571c5c3f57abe2a4ecb3e93970cb95cc8ce7856259f832aa78a2dcbcff7c10c` onto F2's c_11) and at F8-FR1 (the merge of wp/X06 `7a4dcde7`; F2 and X06 merge first, R-1072/R-1073): `tests/test_m07a_surface_chain.py` passes with `strip_f8`; `D_13` = `F8_SERVED_SHA256` = `de241b22b43681d81d4afc02a2250ddef684b83fb258e9ae491bc8fee2c7fd94`, decomposing onto c_12 `ba4b5ce59af4ac4c1e5d29f157ccd5d6308cc0a6282f0dc3434fc3b5cf88db62` (X06) exactly; only `get_job_result`'s served replay report moved. `tests/test_t07_w5e_application_results.py`: 9 R4-G3 snapshots re-pinned (`SNAPSHOT_F8`: `solve`, `reproduce`, the seven job operations; the six X06 also moves re-taken at F8-FR1), each returned to its pre-F8 value (X06's where X06 moved it) by `without_f8`; F0 PASS |
 | Affected packages | F8; F2 (R-1072), X06 (R-1073) |
 
 **Decision.** F8's moves of the served surface (the replay-report members and the job artifact kinds) are one chain

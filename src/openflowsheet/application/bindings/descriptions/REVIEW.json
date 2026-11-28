@@ -1,5 +1,5 @@
 {
-  "description": "T07 design note §11.3 (W6c, gate G15). The SHA-256 of each MCP tool description as served (the file's UTF-8 bytes) and its length in characters (at most 1500). A changed text changes its hash and fails G15 until this record is updated, which voids any review of the old text. Reviews: the design lane's (status pending_design_review until it reviews this exact hash) and the human review, Frank's, recorded separately (§17 F4; status pending). No agent marks a review done on its own work.",
+  "description": "T07 design note \u00a711.3 (W6c, gate G15). The SHA-256 of each MCP tool description as served (the file's UTF-8 bytes) and its length in characters (at most 1500). A changed text changes its hash and fails G15 until this record is updated, which voids any review of the old text. Reviews: the design lane's (status pending_design_review until it reviews this exact hash) and the human review, Frank's, recorded separately (\u00a717 F4; status pending). No agent marks a review done on its own work.",
   "operations": {
     "cancel_job": {
       "tool": "cancel_job",
@@ -44,20 +44,20 @@
     "commit_change": {
       "tool": "commit_change",
       "file": "commit_change.md",
-      "sha256": "fd7ff7a808c6f0dbd3af2a45eb5b62c83c7e104a1ef433fc96a6fbbc6a05dd32",
-      "characters": 1500,
+      "sha256": "b5b0dea1bdb46f635d77ba9b6c5009bc73f8b1a94a828168b1e89344f68fd359",
+      "characters": 1497,
       "reviews": [
         {
           "review_kind": "design-lane",
           "status": "reviewed",
-          "reviewed_by": "reviewer (design lane), docs/reviews/T08-description-review.md",
-          "reviewed_at": "2026-10-01"
+          "reviewed_by": "reviewer (design lane), docs/reviews/X06-review.md ruling 2 (approved with edits, applied in f48004ac; review at 3f457172 on main)",
+          "reviewed_at": "2026-11-27"
         },
         {
           "review_kind": "human",
           "status": "reviewed",
-          "reviewed_by": "Frank Peters",
-          "reviewed_at": "2026-10-01"
+          "reviewed_by": "the user, Decision Desk ofs-x06-descriptions-human",
+          "reviewed_at": "2026-11-27"
         }
       ]
     },
@@ -344,20 +344,20 @@
     "preview_change": {
       "tool": "preview_change",
       "file": "preview_change.md",
-      "sha256": "a90d23555bc367af9f91e62704f7f4bc3e5a41d386f99d36a65a89cb7e70b701",
-      "characters": 1280,
+      "sha256": "8c5fe94f0e21a858719211a373c10d64f3618d31c2ff908c4859f44b5bf9adf8",
+      "characters": 1352,
       "reviews": [
         {
           "review_kind": "design-lane",
           "status": "reviewed",
-          "reviewed_by": "reviewer (design lane), docs/reviews/T08-description-review.md",
-          "reviewed_at": "2026-10-01"
+          "reviewed_by": "reviewer (design lane), docs/reviews/X06-review.md ruling 2 (approved with edits, applied in f48004ac; review at 3f457172 on main)",
+          "reviewed_at": "2026-11-27"
         },
         {
           "review_kind": "human",
           "status": "reviewed",
-          "reviewed_by": "Frank Peters",
-          "reviewed_at": "2026-09-29"
+          "reviewed_by": "the user, Decision Desk ofs-x06-descriptions-human",
+          "reviewed_at": "2026-11-27"
         }
       ]
     },
@@ -518,6 +518,186 @@
           "status": "reviewed",
           "reviewed_by": "Frank Peters",
           "reviewed_at": "2026-11-18"
+        }
+      ]
+    },
+    "list_branches": {
+      "tool": "list_branches",
+      "file": "list_branches.md",
+      "sha256": "73b23d6b7c8e6b4ae3aef988de477945c1c0c63647fb3aff9a03a18b78b3083f",
+      "characters": 715,
+      "reviews": [
+        {
+          "review_kind": "design-lane",
+          "status": "reviewed",
+          "reviewed_by": "reviewer (design lane), docs/reviews/X06-review.md ruling 2 (approved as it stands; review at 3f457172 on main)",
+          "reviewed_at": "2026-11-27"
+        },
+        {
+          "review_kind": "human",
+          "status": "reviewed",
+          "reviewed_by": "the user, Decision Desk ofs-x06-descriptions-human",
+          "reviewed_at": "2026-11-27"
+        }
+      ]
+    },
+    "create_branch": {
+      "tool": "create_branch",
+      "file": "create_branch.md",
+      "sha256": "c5a5108a87a6eb0a36cf3c3e3a828c702728ac37f5f6381b94c07143302199a6",
+      "characters": 1102,
+      "reviews": [
+        {
+          "review_kind": "design-lane",
+          "status": "reviewed",
+          "reviewed_by": "reviewer (design lane), docs/reviews/X06-review.md ruling 2 (approved as it stands; review at 3f457172 on main)",
+          "reviewed_at": "2026-11-27"
+        },
+        {
+          "review_kind": "human",
+          "status": "reviewed",
+          "reviewed_by": "the user, Decision Desk ofs-x06-descriptions-human",
+          "reviewed_at": "2026-11-27"
+        }
+      ]
+    },
+    "delete_branch": {
+      "tool": "delete_branch",
+      "file": "delete_branch.md",
+      "sha256": "0220874b57aecf2be3314c72b9558ab027c2ccf9155360e18750b77884abba3c",
+      "characters": 824,
+      "reviews": [
+        {
+          "review_kind": "design-lane",
+          "status": "reviewed",
+          "reviewed_by": "reviewer (design lane), docs/reviews/X06-review.md ruling 2 (approved as it stands; review at 3f457172 on main)",
+          "reviewed_at": "2026-11-27"
+        },
+        {
+          "review_kind": "human",
+          "status": "reviewed",
+          "reviewed_by": "the user, Decision Desk ofs-x06-descriptions-human",
+          "reviewed_at": "2026-11-27"
+        }
+      ]
+    },
+    "register_solve_policy": {
+      "tool": "register_solve_policy",
+      "file": "register_solve_policy.md",
+      "sha256": "a246826c9c6df511e33f7679b459b52ab825f916dbedb3a4cbd7f2abda61ce7c",
+      "characters": 1429,
+      "reviews": [
+        {
+          "review_kind": "design-lane",
+          "status": "reviewed",
+          "reviewed_by": "reviewer (design lane), docs/reviews/X06-review.md ruling 2 (approved with edits, applied in f48004ac; review at 3f457172 on main)",
+          "reviewed_at": "2026-11-27"
+        },
+        {
+          "review_kind": "human",
+          "status": "reviewed",
+          "reviewed_by": "the user, Decision Desk ofs-x06-descriptions-human",
+          "reviewed_at": "2026-11-27"
+        }
+      ]
+    },
+    "get_solve_policy": {
+      "tool": "get_solve_policy",
+      "file": "get_solve_policy.md",
+      "sha256": "d471d3547aff611b701ba26a38402205109ac30ce4eb81f3ba2313f7de8b185a",
+      "characters": 690,
+      "reviews": [
+        {
+          "review_kind": "design-lane",
+          "status": "reviewed",
+          "reviewed_by": "reviewer (design lane), docs/reviews/X06-review.md ruling 2 (approved as it stands; review at 3f457172 on main)",
+          "reviewed_at": "2026-11-27"
+        },
+        {
+          "review_kind": "human",
+          "status": "reviewed",
+          "reviewed_by": "the user, Decision Desk ofs-x06-descriptions-human",
+          "reviewed_at": "2026-11-27"
+        }
+      ]
+    },
+    "get_policy": {
+      "tool": "get_policy",
+      "file": "get_policy.md",
+      "sha256": "e323b09a047aa5bea6929806657d9fad13e67da762258a1109969a8229bdca74",
+      "characters": 508,
+      "reviews": [
+        {
+          "review_kind": "design-lane",
+          "status": "reviewed",
+          "reviewed_by": "reviewer (design lane), docs/reviews/X06-review.md ruling 2 (approved as it stands; review at 3f457172 on main)",
+          "reviewed_at": "2026-11-27"
+        },
+        {
+          "review_kind": "human",
+          "status": "reviewed",
+          "reviewed_by": "the user, Decision Desk ofs-x06-descriptions-human",
+          "reviewed_at": "2026-11-27"
+        }
+      ]
+    },
+    "grant_capability": {
+      "tool": "grant_capability",
+      "file": "grant_capability.md",
+      "sha256": "c85ad53d684ee83f63dd20e8b4c534bb8c0f7a049db21faa5bf314ca58e8e87f",
+      "characters": 1419,
+      "reviews": [
+        {
+          "review_kind": "design-lane",
+          "status": "reviewed",
+          "reviewed_by": "reviewer (design lane), docs/reviews/X06-review.md ruling 2 (approved as it stands; review at 3f457172 on main)",
+          "reviewed_at": "2026-11-27"
+        },
+        {
+          "review_kind": "human",
+          "status": "reviewed",
+          "reviewed_by": "the user, Decision Desk ofs-x06-descriptions-human",
+          "reviewed_at": "2026-11-27"
+        }
+      ]
+    },
+    "revoke_capability": {
+      "tool": "revoke_capability",
+      "file": "revoke_capability.md",
+      "sha256": "a2b603410c53121a938b1a1473400df1b022c8092cd646d6aa07d3e88b660194",
+      "characters": 822,
+      "reviews": [
+        {
+          "review_kind": "design-lane",
+          "status": "reviewed",
+          "reviewed_by": "reviewer (design lane), docs/reviews/X06-review.md ruling 2 (approved as it stands; review at 3f457172 on main)",
+          "reviewed_at": "2026-11-27"
+        },
+        {
+          "review_kind": "human",
+          "status": "reviewed",
+          "reviewed_by": "the user, Decision Desk ofs-x06-descriptions-human",
+          "reviewed_at": "2026-11-27"
+        }
+      ]
+    },
+    "set_ambient_pressure": {
+      "tool": "set_ambient_pressure",
+      "file": "set_ambient_pressure.md",
+      "sha256": "e48673d10cadd0de650e8d25aad857fc17936abca9bdecab1242d54e89b96573",
+      "characters": 996,
+      "reviews": [
+        {
+          "review_kind": "design-lane",
+          "status": "reviewed",
+          "reviewed_by": "reviewer (design lane), docs/reviews/X06-review.md ruling 2 (approved as it stands; review at 3f457172 on main)",
+          "reviewed_at": "2026-11-27"
+        },
+        {
+          "review_kind": "human",
+          "status": "reviewed",
+          "reviewed_by": "the user, Decision Desk ofs-x06-descriptions-human",
+          "reviewed_at": "2026-11-27"
         }
       ]
     }

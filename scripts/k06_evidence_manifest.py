@@ -35,6 +35,7 @@ from openflowsheet.application.job_records import EffectiveBudgets  # noqa: E402
 from openflowsheet.application.job_requests import JobRequest, SolveBody  # noqa: E402
 from openflowsheet.application.local import LocalApplication  # noqa: E402
 from openflowsheet.application.revisions import Revision, content_hash  # noqa: E402
+from openflowsheet.application.store import HEAD  # noqa: E402
 from openflowsheet.application.transaction_types import (  # noqa: E402
     ChangeSet,
     Edit,
@@ -65,6 +66,7 @@ def measure_transactions() -> dict[str, Any]:
         store.commit_revision(
             connection,
             Revision(revision_id=nominal["revision_id"], document=nominal),
+            ref=HEAD,
             principal_id=app.principal_id,
             capability_id=app.capability_id,
             policy_sha256=policy_sha256,

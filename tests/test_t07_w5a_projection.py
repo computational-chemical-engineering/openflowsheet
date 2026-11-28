@@ -43,6 +43,7 @@ from openflowsheet.application.projection import (
     resolve,
 )
 from openflowsheet.application.revisions import Revision
+from openflowsheet.application.store import HEAD
 from openflowsheet.canonical import canonical_json, document_sha256
 
 #: §10.4's list, transcribed from the note (plus DEL, which is `Cc`, and the surrogates).
@@ -357,6 +358,7 @@ def corpus_app() -> Iterator[LocalApplication]:
             store.commit_revision(
                 connection,
                 Revision(revision_id=name, document=factory(), parent_revision=None),
+                ref=HEAD,
                 principal_id=application.principal_id,
                 capability_id=application.capability_id,
                 policy_sha256=application.policy.policy_sha256,

@@ -84,6 +84,7 @@ from typing import Any, Final, Self
 from openflowsheet.adapters import variants
 from openflowsheet.adapters.experiments.runner import ExperimentRunner
 from openflowsheet.adapters.experiments.store import ArtifactSink, ExperimentStore
+from openflowsheet.application import solve_policy_registry
 from openflowsheet.application.admission import (
     resolve_policies,
     stored_surrogate_manifests,
@@ -109,6 +110,7 @@ from openflowsheet.application.job_requests import (
     SurrogateStudyBody,
     WarmStartDeclaration,
 )
+from openflowsheet.application.jobs.artifact_rows import KIND_OF_FILE, bundle_rows
 from openflowsheet.application.jobs.interrupt import CancelReason, JobInterrupted
 from openflowsheet.application.jobs.model import (
     ARTIFACT_FILE_NAMES,
@@ -135,15 +137,15 @@ from openflowsheet.application.revision_run import (
 )
 from openflowsheet.application.store import JOBS_DIR, ProjectStore
 from openflowsheet.application.store_records import ArtifactRow, ArtifactTableSink
-from openflowsheet.canonical import canonical_json, directory_hash, file_sha256
+from openflowsheet.canonical import canonical_json, file_sha256
 from openflowsheet.compiled import EvaluationContext
 from openflowsheet.models.lifted import AdmissibilityRefusal
 from openflowsheet.models.revision_flowsheet import lowered_document
 from openflowsheet.numerics.solve_record import SolvePolicy, Trace
+from openflowsheet.orchestrator.policy_validation import is_project_policy_id
 from openflowsheet.orchestrator.warm_start import EXPLICIT, WARM_START_SOURCE, WarmStartCandidate
-from openflowsheet.run.bundle import ARTIFACT_DIR, MANIFEST_NAME, BundleError, read_artifact
+from openflowsheet.run.bundle import MANIFEST_NAME, BundleError, read_artifact
 from openflowsheet.run.manifest import RunManifest, policy_sha256
-from openflowsheet.studies.nlp.replay import MANIFEST as OPTIMIZATION_MANIFEST
 from openflowsheet.studies.nlp.replay import is_optimization_record, replay_optimization
 from openflowsheet.studies.surrogate.iterations import predecessors as iteration_predecessors
 from openflowsheet.studies.surrogate.plan import REGISTERED_PLANS, PlanRefusedError
@@ -151,6 +153,7 @@ from openflowsheet.studies.surrogate.study import run_study
 from openflowsheet.thermo import StreamState
 from openflowsheet.thermo.pr_c1 import PrC1Provider
 from openflowsheet.verify.checks import VerifierError
+from openflowsheet.verify.verdict import CheckPolicy
 
 __all__ = [
     "EXPERIMENT_STAGES",
@@ -178,10 +181,6 @@ SURROGATE_STUDY_STAGES: Final[tuple[str, ...]] = ("resolve", "study", "record")
 OPTIMIZE_STAGES: Final[tuple[str, ...]] = ("resolve", "starts", "optimize", "record")
 #: An `optimize` job's record directory under the job's, and its artifact id prefix.
 OPTIMIZATION_DIR: Final[str] = "optimization"
-#: §5.4: the producer kind of each fixed file name.
-KIND_OF_FILE: Final[Mapping[str, str]] = {
-    name: kind for kind, name in ARTIFACT_FILE_NAMES.items() if name is not None
-}
 PARTIAL_TRACE: Final[str] = ARTIFACT_FILE_NAMES["partial_solve_trace"] or ""
 REPLAY_REPORT: Final[str] = ARTIFACT_FILE_NAMES["replay_report"] or ""
 CERTIFICATE: Final[str] = ARTIFACT_FILE_NAMES["solution_certificate"] or ""
@@ -357,6 +356,27 @@ def declared_coupled_start(
     return start
 
 
+@dataclass
+class _SolveState:
+    """What a solve's typed end names, as far as the solve got: the run's summary once its
+    policies resolved, and the route once selected (then re-bound)."""
+
+    run: dict[str, Any] | None = None
+    selected: Route | None = None
+
+
+@dataclass(frozen=True)
+class _Resolved:
+    """A solve's `resolve` stage: the revision's document, its surrogates, the route and the
+    effective solve and check policies."""
+
+    document: dict[str, Any]
+    surrogates: SurrogateResolver
+    route: Route
+    policy: SolvePolicy
+    check_policy: CheckPolicy
+
+
 class _RecordingSink:
     """An `ArtifactSink` that forwards to the project's and keeps a reference to each record it
     made, in order: an experiment job's outputs (R-237)."""
@@ -403,6 +423,45 @@ def _failed(
     return WorkerResult(status="failed", reason=reason, interruption=None, error=error, run=run)
 
 
+def _project_policies(
+    store: ProjectStore, root: Path, policy_id: str
+) -> Mapping[str, SolvePolicy] | WorkerResult:
+    """ADR 0078 D4.6: the project's registered solve policies for re-resolving `policy_id` at
+    the `resolve` stage (read only for a project policy's id), or the job's end `store_error`
+    when a registration is damaged."""
+    if not is_project_policy_id(policy_id):
+        return {}
+    try:
+        return solve_policy_registry.load(store, root)
+    except solve_policy_registry.SolvePolicyStoreError as error:
+        return _failed(_error("internal_error", str(error)), None, "store_error")
+
+
+def _policies(
+    store: ProjectStore, root: Path, route: Route, body: SolveBody
+) -> tuple[SolvePolicy, CheckPolicy] | WorkerResult:
+    """A solve's effective solve and check policies on `route`, re-resolved at the `resolve`
+    stage (a project policy read from the store, ADR 0078 D4.6), or the job's end."""
+    project = _project_policies(store, root, body.policy_id)
+    if isinstance(project, WorkerResult):
+        return project
+    resolved = resolve_policies(route, body, project)
+    return _failed(resolved, None) if isinstance(resolved, ApiError) else resolved
+
+
+def _weakening_refused(check_policy: CheckPolicy) -> ApiError | None:
+    """Ruling round 1 R5: the worker's own assertion that nothing loosens verification; the
+    refusal, or `None`."""
+    if not check_policy.relaxations():
+        return None
+    kinds = sorted(item.detail["check"] for item in check_policy.relaxations())
+    return _error(
+        "verification_weakening_refused",
+        f"verification_weakening_refused({','.join(kinds)})",
+        kind=kinds[0],
+    )
+
+
 def _interrupted(interrupted: JobInterrupted, run: Mapping[str, Any] | None) -> WorkerResult:
     """§8.1: a cooperative stop is `timed_out` for the deadline, `cancelled` otherwise."""
     status: TerminalStatus = (
@@ -446,79 +505,6 @@ def _typed_end(
     assert isinstance(error, SolutionStateMismatchError)
     # Ruling round 2 F1.1: a producer defect, escalated to the design lane; no bundle.
     return _failed(_error("internal_error", error.code, reason=error.code, **where), run)
-
-
-def bundle_rows(
-    root: Path, directory: Path, bundle_id: str, job_id: str | None, *, producer: bool
-) -> tuple[ArtifactRow, list[ArtifactRow]]:
-    """The bundle's own row and its members' (`<bundle id>/<file>`), for `artifacts` (§5.4).
-
-    `producer` is this code's own bundle, where a file name outside §5.4's table is a defect
-    (`ValueError`); an imported bundle's unknown files are simply not registered.
-    """
-    members: list[ArtifactRow] = []
-    files = [directory / MANIFEST_NAME]
-    artifacts = directory / ARTIFACT_DIR
-    if artifacts.is_dir():
-        files.extend(sorted(path for path in artifacts.iterdir() if path.is_file()))
-    for path in files:
-        kind = KIND_OF_FILE.get(path.name)
-        if kind is None:
-            if producer:
-                raise ValueError(f"producer defect: {path.name!r} has no artifact kind (§5.4)")
-            continue
-        members.append(
-            ArtifactRow(
-                artifact_id=f"{bundle_id}/{path.name}",
-                job_id=job_id,
-                kind=kind,
-                name=path.name,
-                sha256=file_sha256(path),
-                size_bytes=path.stat().st_size,
-                relpath=path.relative_to(root).as_posix(),
-                parent_artifact_id=bundle_id,
-            )
-        )
-    size = sum(path.stat().st_size for path in directory.rglob("*") if path.is_file())
-    bundle = ArtifactRow(
-        artifact_id=bundle_id,
-        job_id=job_id,
-        kind="replay_bundle",
-        name=directory.name,
-        sha256=directory_hash(directory),
-        size_bytes=size,
-        relpath=directory.relative_to(root).as_posix(),
-    )
-    return bundle, members
-
-
-def record_rows(
-    root: Path, directory: Path, record_id: str, job_id: str | None
-) -> tuple[ArtifactRow, list[ArtifactRow]]:
-    """An imported optimisation record's row and its manifest's (OPT design §4.9): the record is
-    a `replay_bundle` (what `reproduce` takes; `reproduce` dispatches on its manifest's format),
-    its member `<record id>/optimization-manifest.json` an `optimization_manifest`."""
-    path = directory / OPTIMIZATION_MANIFEST
-    manifest = ArtifactRow(
-        artifact_id=f"{record_id}/{OPTIMIZATION_MANIFEST}",
-        job_id=job_id,
-        kind="optimization_manifest",
-        name=OPTIMIZATION_MANIFEST,
-        sha256=file_sha256(path),
-        size_bytes=path.stat().st_size,
-        relpath=path.relative_to(root).as_posix(),
-        parent_artifact_id=record_id,
-    )
-    record = ArtifactRow(
-        artifact_id=record_id,
-        job_id=job_id,
-        kind="replay_bundle",
-        name=directory.name,
-        sha256=directory_hash(directory),
-        size_bytes=sum(item.stat().st_size for item in directory.rglob("*") if item.is_file()),
-        relpath=directory.relative_to(root).as_posix(),
-    )
-    return record, [manifest]
 
 
 class _Body:
@@ -618,9 +604,9 @@ class _Body:
         self.stages = SOLVE_STAGES
         store = self.context.store
         trace = Trace()
-        run: dict[str, Any] | None = None
-        #: The route the solve runs on, once selected (and re-bound): named by a typed end.
-        selected: Route | None = None
+        #: The run's summary and the route the solve runs on, as far as it got: named by a
+        #: typed end.
+        state = _SolveState()
         #: `revision_coupled`'s experiment records, emitted as outputs as they are written (M02
         #: design note §4.4).
         sink = _RecordingSink(ArtifactTableSink(store))
@@ -635,68 +621,23 @@ class _Body:
             emitted = len(sink.refs)
 
         try:
-            self.at("resolve")
-            with store.reading() as connection:
-                revision = store.get_revision(connection, body.revision_id)
-            if revision is None:
-                return _failed(_error("not_found", "no such revision"), run)
-            document = revision.as_document()
-            # M04 spec §8.2: a surrogate's manifest resolves from this project's artifacts.
-            surrogates = surrogate_resolver(store, self.context.root)
-            route = select_route(document, surrogates=surrogates)
-            if not isinstance(route, Route):
-                return _failed(
-                    _error(
-                        "revision_unsupported",
-                        f"no solve route binds revision {body.revision_id!r}",
-                        unbound=route.reason,
-                        hint=route.hint,
-                    ),
-                    run,
-                )
-            selected = route
-            # ADR 0062 D8, D12: a v2 revision runs as its lowering (it lowers: it was routed), so
-            # the warm start, the continuation and the bundle read the v1 document; the run's
-            # record keeps the v2 revision's id and content hash.
-            document = dict(lowered_document(document))
-            resolved = resolve_policies(route, body)
-            if isinstance(resolved, ApiError):
-                return _failed(resolved, run)
-            policy, check_policy = resolved
-            run = {
-                "solve_path": route.solve_path,
-                "policy_id": policy.policy_id,
-                "policy_sha256": policy_sha256(policy),
-                "check_policy_sha256": check_policy.sha256,
-                "run_id": None,
-                "outcome": None,
-                "verification_status": None,
-                "structural_sha256": None,
-            }
-            # Ruling round 1 R5: the worker's own assertion that nothing loosens verification.
-            if check_policy.relaxations():
-                kinds = sorted(item.detail["check"] for item in check_policy.relaxations())
-                return _failed(
-                    _error(
-                        "verification_weakening_refused",
-                        f"verification_weakening_refused({','.join(kinds)})",
-                        kind=kinds[0],
-                    ),
-                    run,
-                )
-
+            resolved = self._resolve(body, state)
+            if isinstance(resolved, WorkerResult):
+                return resolved
+            document, surrogates, policy = resolved.document, resolved.surrogates, resolved.policy
             self.at("bind")
-            bound = bind_route(route.solve_path, document, surrogates=surrogates)
+            bound = bind_route(resolved.route.solve_path, document, surrogates=surrogates)
             if not isinstance(bound, Route):
                 return _failed(
                     _error(
                         "revision_unsupported",
-                        f"route {route.solve_path} no longer binds revision {body.revision_id!r}",
+                        f"route {resolved.route.solve_path} no longer binds revision "
+                        f"{body.revision_id!r}",
                         unbound=f"{bound.kind}({bound.detail})",
                     ),
-                    run,
+                    state.run,
                 )
-            selected = bound
+            state.selected = bound
             warm_start = self._warm_start(body, bound, policy)
             coupled_start = declared_coupled_start(self.context, body.warm_start, bound)
             continuation = self._continuation(body, bound, policy, document, surrogates)
@@ -710,7 +651,7 @@ class _Body:
                 directory,
                 run_id=f"run-{self.job.job_id}",
                 policy=policy,
-                check_policy=check_policy,
+                check_policy=resolved.check_policy,
                 policy_requested=body.policy_id,
                 trace=trace,
                 stage=self.at,
@@ -727,17 +668,65 @@ class _Body:
             try:
                 emit_records()
             except _FenceLost:
-                return _failed(_error("internal_error", "fence_lost"), run, "owner_lost")
+                return _failed(_error("internal_error", "fence_lost"), state.run, "owner_lost")
             self.partial_trace(trace)
-            return _interrupted(interrupted, run)
+            return _interrupted(interrupted, state.run)
         except KeyboardInterrupt:
             self.partial_trace(trace)
             raise
         except _TYPED_ENDS as error:
-            return _typed_end(error, run, selected)
+            return _typed_end(error, state.run, state.selected)
         except _FenceLost:
-            return _failed(_error("internal_error", "fence_lost"), run, "owner_lost")
-        return self._bundled_end(directory, manifest, run, diagnoses)
+            return _failed(_error("internal_error", "fence_lost"), state.run, "owner_lost")
+        return self._bundled_end(directory, manifest, state.run, diagnoses)
+
+    def _resolve(self, body: SolveBody, state: _SolveState) -> _Resolved | WorkerResult:
+        """The `resolve` stage: the stored revision, its route, the project's policies and the
+        effective solve and check policies, `state` filled as they are found (a typed end names
+        them); a refusal is the job's end."""
+        self.at("resolve")
+        store = self.context.store
+        with store.reading() as connection:
+            revision = store.get_revision(connection, body.revision_id)
+        if revision is None:
+            return _failed(_error("not_found", "no such revision"), state.run)
+        document = revision.as_document()
+        # M04 spec §8.2: a surrogate's manifest resolves from this project's artifacts.
+        surrogates = surrogate_resolver(store, self.context.root)
+        route = select_route(document, surrogates=surrogates)
+        if not isinstance(route, Route):
+            return _failed(
+                _error(
+                    "revision_unsupported",
+                    f"no solve route binds revision {body.revision_id!r}",
+                    unbound=route.reason,
+                    hint=route.hint,
+                ),
+                state.run,
+            )
+        state.selected = route
+        # ADR 0062 D8, D12: a v2 revision runs as its lowering (it lowers: it was routed), so
+        # the warm start, the continuation and the bundle read the v1 document; the run's
+        # record keeps the v2 revision's id and content hash.
+        document = dict(lowered_document(document))
+        resolved = _policies(store, self.context.root, route, body)
+        if isinstance(resolved, WorkerResult):
+            return resolved
+        policy, check_policy = resolved
+        state.run = {
+            "solve_path": route.solve_path,
+            "policy_id": policy.policy_id,
+            "policy_sha256": policy_sha256(policy),
+            "check_policy_sha256": check_policy.sha256,
+            "run_id": None,
+            "outcome": None,
+            "verification_status": None,
+            "structural_sha256": None,
+        }
+        refused = _weakening_refused(check_policy)
+        if refused is not None:
+            return _failed(refused, state.run)
+        return _Resolved(document, surrogates, route, policy, check_policy)
 
     def _warm_start(
         self, body: SolveBody, bound: Route, policy: SolvePolicy
@@ -1148,21 +1137,14 @@ class _Body:
                     ),
                     None,
                 )
-            resolved = resolve_policies(Route(ROUTE, None), body.solve_body())
-            if isinstance(resolved, ApiError):
-                return _failed(resolved, None)
+            resolved = _policies(store, self.context.root, Route(ROUTE, None), body.solve_body())
+            if isinstance(resolved, WorkerResult):
+                return resolved
             policy, check_policy = resolved
-            # Ruling round 1 R5, as `solve`: the worker's own assertion that nothing loosens.
-            if check_policy.relaxations():
-                kinds = sorted(item.detail["check"] for item in check_policy.relaxations())
-                return _failed(
-                    _error(
-                        "verification_weakening_refused",
-                        f"verification_weakening_refused({','.join(kinds)})",
-                        kind=kinds[0],
-                    ),
-                    None,
-                )
+            # Ruling round 1 R5, as `solve`.
+            refused = _weakening_refused(check_policy)
+            if refused is not None:
+                return _failed(refused, None)
             optimize_revision(
                 revision.as_document(),
                 body.request,

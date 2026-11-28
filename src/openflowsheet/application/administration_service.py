@@ -1,0 +1,399 @@
+"""The `Administration` operations (ADR 0078 D5, ADR 0019 Amendment 18): in-band policy
+administration, audited, off by default, never beyond the caller, never on a remote server.
+
+Every operation needs `policy` (`authz.OPERATION_RIGHTS`). `get_policy` reads the policy in force.
+The three writes (`grant_capability`, `revoke_capability`, `set_ambient_pressure`) are refused,
+after `authorize` allowed them and in this order (D5.3): when the project's operator has not
+switched in-band administration on (`administration_disabled`), when the serving process binds a
+non-loopback interface (`administration_remote_refused`), then by the delegation rule
+(`authz.delegation_refusal`, `grant_exceeds_caller`). Inside the write transaction a grant's
+existing `capability_id` is `capability_exists`, a revoke's unknown one `capability_not_found`
+and a target holding a right the caller lacks `revoke_exceeds_caller`.
+
+The caller and the switch are judged again inside the write transaction, on the policy
+`change_policy` read under it (X06 review S1): the caller re-resolved there by
+`(capability_id, token_sha256)` (`unauthenticated` if a revocation committed first), the switch
+(`administration_disabled` if it was turned off first), and the delegation and revoke rules
+against that caller. A write therefore never commits on a policy that no longer allows it.
+
+A write is `authz.change_policy` inside the transaction that also holds its ledger row (ADR 0019
+D3, scope `(principal, operation, key)`): one `allowed` audit row naming the caller, one ledger
+row, one atomic replace of the policy file, all or none. A grant's token is in its response only:
+the ledger keeps the result with `token` null, so a replay returns it null (D5.4).
+
+`LocalApplication` delegates the four operations here; their documentation is the facade's.
+"""
+
+from __future__ import annotations
+
+from collections.abc import Callable, Mapping, Sequence
+from dataclasses import replace
+from typing import Any, NoReturn
+
+from openflowsheet.application.authz import (
+    GRANT_DEFAULT_LIMITS,
+    GRANT_DEFAULT_RIGHTS,
+    PolicyAdministrationError,
+    ambient_change,
+    ambient_pressure_pa,
+    change_policy,
+    delegation_refusal,
+    new_capability,
+    revoke_refusal,
+)
+from openflowsheet.application.errors import ApiErrorCode
+from openflowsheet.application.policy_types import (
+    AmbientPressureResult,
+    CapabilityReference,
+    GrantResult,
+    Limits,
+    ProjectPolicy,
+    RevokeResult,
+    Right,
+)
+from openflowsheet.application.service_core import UNAUTHENTICATED_MESSAGE, ServiceCore
+from openflowsheet.application.store_records import LedgerRow, StoreError
+from openflowsheet.canonical import document_sha256
+
+#: D5.3's first refusal, before and inside the write transaction.
+_DISABLED_MESSAGE = (
+    "administration_disabled: in-band policy administration is off for this project; "
+    "its operator switches it on with `openflowsheet project administration on`"
+)
+
+
+def _adding(
+    requested: CapabilityReference, capability: CapabilityReference
+) -> Callable[[ProjectPolicy, CapabilityReference], tuple[ProjectPolicy, str]]:
+    """`grant_capability`'s change to the policy read under the write transaction: the grant
+    judged again against the caller as that policy states it, then `capability` added under an
+    id no capability holds."""
+
+    def add(policy: ProjectPolicy, current: CapabilityReference) -> tuple[ProjectPolicy, str]:
+        refused = delegation_refusal(current, requested)
+        if refused is not None:
+            raise _RefusedError(
+                "forbidden",
+                f"grant_exceeds_caller: {refused}",
+                {"code": "grant_exceeds_caller"},
+            )
+        if any(c.capability_id == capability.capability_id for c in policy.capabilities):
+            raise _RefusedError(
+                "invalid_request",
+                f"capability_exists: capability {capability.capability_id!r} already exists",
+                {"code": "capability_exists", "capability_id": capability.capability_id},
+            )
+        updated = replace(policy, capabilities=(*policy.capabilities, capability))
+        return updated, f"grant:{capability.capability_id}"
+
+    return add
+
+
+class _RefusedError(Exception):
+    """A refusal found inside the write transaction: it rolls back, then is audited and raised."""
+
+    def __init__(self, code: ApiErrorCode, message: str, detail: Mapping[str, Any]) -> None:
+        super().__init__(message)
+        self.code: ApiErrorCode = code
+        self.message = message
+        self.detail = detail
+
+
+class AdministrationService:
+    """The administration operations over one caller's `ServiceCore`. Each public method named
+    as an operation is the `LocalApplication` method of the same name, documented there."""
+
+    def __init__(self, core: ServiceCore) -> None:
+        self._core = core
+
+    def get_policy(self) -> ProjectPolicy:
+        operation = "get_policy"
+        self._checked(operation, {})
+        self._core.authorize(operation)
+        return self._core.policy.current()
+
+    def grant_capability(
+        self,
+        *,
+        principal_id: str,
+        idempotency_key: str,
+        rights: Sequence[str] | None = None,
+        limits: Mapping[str, Any] | None = None,
+        expires_at: str | None = None,
+        note: str | None = None,
+        capability_id: str | None = None,
+    ) -> GrantResult:
+        operation = "grant_capability"
+        request = {
+            "principal_id": principal_id,
+            "rights": None if rights is None else list(rights),
+            "limits": None if limits is None else dict(limits),
+            "expires_at": expires_at,
+            "note": note,
+            "capability_id": capability_id,
+            "idempotency_key": idempotency_key,
+        }
+        request_sha256 = self._admitted(operation, request)
+        caller = self._core.caller(operation)
+        wanted: tuple[Right, ...] = (
+            GRANT_DEFAULT_RIGHTS if rights is None else tuple(sorted(set(rights)))  # type: ignore[arg-type]
+        )
+        try:
+            granted_limits = GRANT_DEFAULT_LIMITS if limits is None else Limits._build(limits)
+        except ValueError as error:
+            self._invalid(operation, request_sha256, str(error), "/limits")
+        requested = CapabilityReference(
+            capability_id=capability_id if capability_id is not None else "cap-requested",
+            principal_id=principal_id,
+            rights=wanted,
+            token_sha256=None,
+            limits=granted_limits,
+            expires_at=expires_at,
+            note=note or "",
+        )
+        refused = delegation_refusal(caller, requested)
+        if refused is not None:
+            self._core.refuse(
+                "forbidden",
+                f"grant_exceeds_caller: {refused}",
+                operation=operation,
+                request_sha256=request_sha256,
+                code="grant_exceeds_caller",
+            )
+        try:
+            capability, token = new_capability(
+                principal_id=principal_id,
+                rights=wanted,
+                limits=granted_limits,
+                expires_at=expires_at,
+                note=note or "",
+                capability_id=capability_id,
+            )
+        except (PolicyAdministrationError, ValueError) as error:
+            self._invalid(operation, request_sha256, str(error), "")
+
+        def result(updated: ProjectPolicy) -> GrantResult:
+            return GrantResult("granted", capability, None, updated.policy_sha256)
+
+        add = _adding(requested, capability)
+        prior, done = self._write(operation, idempotency_key, request_sha256, caller, add, result)
+        if prior is not None:
+            original = GrantResult._build(prior.result)
+            return GrantResult("replayed", original.capability, None, original.policy_sha256)
+        assert isinstance(done, GrantResult)
+        return replace(done, token=token)
+
+    def revoke_capability(self, *, capability_id: str, idempotency_key: str) -> RevokeResult:
+        operation = "revoke_capability"
+        request = {"capability_id": capability_id, "idempotency_key": idempotency_key}
+        request_sha256 = self._admitted(operation, request)
+        caller = self._core.caller(operation)
+        removed: list[CapabilityReference] = []
+
+        def remove(
+            policy: ProjectPolicy, current: CapabilityReference
+        ) -> tuple[ProjectPolicy, str]:
+            found = [c for c in policy.capabilities if c.capability_id == capability_id]
+            if not found:
+                raise _RefusedError(
+                    "not_found",
+                    f"capability_not_found: no capability {capability_id!r} to revoke",
+                    {"code": "capability_not_found", "capability_id": capability_id},
+                )
+            refused = revoke_refusal(current, found[0])
+            if refused is not None:
+                raise _RefusedError(
+                    "forbidden",
+                    f"revoke_exceeds_caller: {refused}",
+                    {"code": "revoke_exceeds_caller"},
+                )
+            removed.append(found[0])
+            kept = tuple(c for c in policy.capabilities if c.capability_id != capability_id)
+            return replace(policy, capabilities=kept), f"revoke:{capability_id}"
+
+        def result(updated: ProjectPolicy) -> RevokeResult:
+            return RevokeResult("revoked", removed[0], updated.policy_sha256)
+
+        prior, done = self._write(
+            operation, idempotency_key, request_sha256, caller, remove, result
+        )
+        if prior is not None:
+            original = RevokeResult._build(prior.result)
+            return RevokeResult("replayed", original.capability, original.policy_sha256)
+        assert isinstance(done, RevokeResult)
+        return done
+
+    def set_ambient_pressure(
+        self, *, value: float | None, idempotency_key: str, unit: str | None = None
+    ) -> AmbientPressureResult:
+        operation = "set_ambient_pressure"
+        request = {"value": value, "unit": unit, "idempotency_key": idempotency_key}
+        request_sha256 = self._admitted(operation, request, nullable=("value",))
+        caller = self._core.caller(operation)
+        pressure: float | None = None
+        if value is None and unit is not None:
+            self._invalid(
+                operation, request_sha256, "a cleared ambient pressure takes no unit", "/unit"
+            )
+        if value is not None:
+            try:
+                pressure = ambient_pressure_pa(value, "Pa" if unit is None else unit)
+            except StoreError as error:
+                # MSG §3.8: a coded error's machine message is `args[0]`; its `str()` is the
+                # layered text of the `python` surface, which is no document's message.
+                self._core.refuse(
+                    "invalid_request",
+                    str(error.args[0]),
+                    operation=operation,
+                    request_sha256=request_sha256,
+                    code=error.code,
+                    **error.params,
+                )
+
+        def result(updated: ProjectPolicy) -> AmbientPressureResult:
+            return AmbientPressureResult("set", pressure, updated.policy_sha256)
+
+        change = ambient_change(pressure)
+
+        def declare(
+            policy: ProjectPolicy, current: CapabilityReference
+        ) -> tuple[ProjectPolicy, str]:
+            return change(policy)
+
+        prior, done = self._write(
+            operation, idempotency_key, request_sha256, caller, declare, result
+        )
+        if prior is not None:
+            original = AmbientPressureResult._build(prior.result)
+            return AmbientPressureResult(
+                "replayed", original.ambient_pressure_pa, original.policy_sha256
+            )
+        assert isinstance(done, AmbientPressureResult)
+        return done
+
+    # ------------------------------------------------------------------------------ helpers
+
+    def _admitted(
+        self, operation: str, request: Mapping[str, Any], *, nullable: tuple[str, ...] = ()
+    ) -> str:
+        """The request checked, the caller authorized and the switch and the binding judged
+        (D5.3's first two refusals); returns the request's hash."""
+        present = {
+            key: value for key, value in request.items() if value is not None or key in nullable
+        }
+        self._checked(operation, present)
+        request_sha256 = document_sha256(present)
+        self._core.authorize(operation, request_sha256=request_sha256)
+        if not self._core.policy.current().administration_in_band:
+            self._core.refuse(
+                "unsupported",
+                _DISABLED_MESSAGE,
+                operation=operation,
+                request_sha256=request_sha256,
+                code="administration_disabled",
+            )
+        if self._core.serving_remote:
+            self._core.refuse(
+                "unsupported",
+                "administration_remote_refused: this server binds a non-loopback interface "
+                "without TLS; in-band policy writes are refused on it",
+                operation=operation,
+                request_sha256=request_sha256,
+                code="administration_remote_refused",
+            )
+        return request_sha256
+
+    def _write(
+        self,
+        operation: str,
+        idempotency_key: str,
+        request_sha256: str,
+        caller: CapabilityReference,
+        apply: Callable[[ProjectPolicy, CapabilityReference], tuple[ProjectPolicy, str]],
+        result: Callable[[ProjectPolicy], Any],
+    ) -> tuple[LedgerRow | None, Any]:
+        """The ledger lookup, then `change_policy` and the ledger row, in one write transaction.
+        Returns the prior ledger row of the same key (nothing written), or the new result.
+
+        `apply` is given the policy read under the transaction and the caller as that policy
+        states it, after `_judged` refused a caller it no longer holds or a switch turned off."""
+        store = self._core.store
+
+        def judged(policy: ProjectPolicy) -> tuple[ProjectPolicy, str]:
+            return apply(policy, self._judged(policy))
+
+        # An in-memory project's policy is static, its switch off: no write reaches here.
+        assert store.directory is not None
+        done: Any = None
+        try:
+            with store.writing() as connection:
+                prior = store.ledger_lookup(
+                    connection, caller.principal_id, operation, idempotency_key
+                )
+                if prior is None:
+                    done = result(
+                        change_policy(
+                            store,
+                            store.directory,
+                            operation,
+                            judged,
+                            actor=caller,
+                            request_sha256=request_sha256,
+                            connection=connection,
+                        )
+                    )
+                    store.ledger_insert(
+                        connection,
+                        caller.principal_id,
+                        operation,
+                        idempotency_key,
+                        request_sha256,
+                        done.as_document(),
+                    )
+        except _RefusedError as refusal:
+            self._core.refuse(
+                refusal.code,
+                refusal.message,
+                operation=operation,
+                request_sha256=request_sha256,
+                **refusal.detail,
+            )
+        except PolicyAdministrationError as error:
+            self._core.refuse(
+                "internal_error", str(error), operation=operation, request_sha256=request_sha256
+            )
+        if prior is not None and prior.request_sha256 != request_sha256:
+            self._core.refuse(
+                "idempotency_key_reused",
+                "this idempotency key was used with a different request; use a new key for a new "
+                "request",
+                operation=operation,
+                request_sha256=request_sha256,
+                original_request_sha256=prior.request_sha256,
+            )
+        return prior, done
+
+    def _judged(self, policy: ProjectPolicy) -> CapabilityReference:
+        """The caller as `policy` (read under the write transaction) states it, with the switch
+        judged there too (X06 review S1); a refusal rolls the transaction back."""
+        current = self._core.caller_in(policy)
+        if current is None:
+            raise _RefusedError("unauthenticated", UNAUTHENTICATED_MESSAGE, {})
+        if not policy.administration_in_band:
+            raise _RefusedError(
+                "unsupported", _DISABLED_MESSAGE, {"code": "administration_disabled"}
+            )
+        return current
+
+    def _invalid(self, operation: str, request_sha256: str, message: str, pointer: str) -> NoReturn:
+        self._core.refuse(
+            "invalid_request",
+            message,
+            operation=operation,
+            request_sha256=request_sha256,
+            pointer=pointer,
+        )
+
+    def _checked(self, name: str, request: Mapping[str, Any]) -> None:
+        """`ServiceCore.check_request`."""
+        self._core.check_request(name, request)

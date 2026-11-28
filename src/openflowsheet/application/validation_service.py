@@ -36,6 +36,7 @@ from openflowsheet.application.job_requests import (
 from openflowsheet.application.policy_types import CapabilityReference
 from openflowsheet.application.revision_service import RevisionService
 from openflowsheet.application.service_core import ServiceCore
+from openflowsheet.application.solve_policy_service import SolvePolicyService
 from openflowsheet.application.structure_inspection import route_structure
 from openflowsheet.application.validation_report import Task, ValidationReport
 from openflowsheet.canonical import document_sha256
@@ -50,9 +51,12 @@ class ValidationService:
     explicitly (the defaults are the facade's). Public methods without a facade namesake serve the
     services above this one."""
 
-    def __init__(self, core: ServiceCore, revisions: RevisionService) -> None:
+    def __init__(
+        self, core: ServiceCore, revisions: RevisionService, policies: SolvePolicyService
+    ) -> None:
         self._core = core
         self._revisions = revisions
+        self._policies = policies
 
     def validate(
         self, revision_id: str, task: Task, optimization: Mapping[str, Any] | None
@@ -120,7 +124,7 @@ class ValidationService:
         body = request.body
         budgets: EffectiveBudgets | ApiError
         if isinstance(body, SolveBody):
-            budgets = self._solve_admission(body, request, caller, active)
+            budgets = self._solve_admission(body, request, caller, active, operation)
         elif isinstance(body, ExperimentBody):
             budgets = self._experiment_admission(body, request, caller, active)
         elif isinstance(body, SurrogateStudyBody):
@@ -134,7 +138,12 @@ class ValidationService:
         return budgets
 
     def _solve_admission(
-        self, body: SolveBody, request: JobRequest, caller: CapabilityReference, active: int
+        self,
+        body: SolveBody,
+        request: JobRequest,
+        caller: CapabilityReference,
+        active: int,
+        operation: str,
     ) -> EffectiveBudgets | ApiError:
         """`admit_solve` on the revision and the declared warm-start source as the store is at
         admission: the solve's budgets, or the refusal."""
@@ -153,6 +162,7 @@ class ValidationService:
             active_jobs=active,
             surrogates=self._core.surrogates(),
             warm_source_found=source is not None,
+            project_policies=self._policies.project_policies(operation, body.policy_id),
         )
         if isinstance(admission, ApiError):
             return admission

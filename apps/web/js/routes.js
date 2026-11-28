@@ -59,6 +59,7 @@ export const ROUTES = freeze({
   "commit_change": {
     "members": [
       "author",
+      "branch",
       "edits",
       "expected_revision",
       "idempotency_key",
@@ -68,6 +69,30 @@ export const ROUTES = freeze({
     ],
     "path": "/v1/changes",
     "path_params": [],
+    "right": "draft",
+    "verb": "POST"
+  },
+  "create_branch": {
+    "members": [
+      "idempotency_key",
+      "name",
+      "revision_id"
+    ],
+    "path": "/v1/branches",
+    "path_params": [],
+    "right": "draft",
+    "verb": "POST"
+  },
+  "delete_branch": {
+    "members": [
+      "expected_revision",
+      "idempotency_key",
+      "name"
+    ],
+    "path": "/v1/branches/{name}/delete",
+    "path_params": [
+      "name"
+    ],
     "right": "draft",
     "verb": "POST"
   },
@@ -133,6 +158,13 @@ export const ROUTES = freeze({
     "right": "read",
     "verb": "GET"
   },
+  "get_policy": {
+    "members": [],
+    "path": "/v1/policy",
+    "path_params": [],
+    "right": "policy",
+    "verb": "GET"
+  },
   "get_project": {
     "members": [],
     "path": "/v1/project",
@@ -164,6 +196,17 @@ export const ROUTES = freeze({
     "right": "read",
     "verb": "GET"
   },
+  "get_solve_policy": {
+    "members": [
+      "policy_id"
+    ],
+    "path": "/v1/solve-policies/{policy_id}",
+    "path_params": [
+      "policy_id"
+    ],
+    "right": "read",
+    "verb": "GET"
+  },
   "get_stream_table": {
     "members": [
       "cursor",
@@ -179,6 +222,21 @@ export const ROUTES = freeze({
     ],
     "right": "read",
     "verb": "GET"
+  },
+  "grant_capability": {
+    "members": [
+      "capability_id",
+      "expires_at",
+      "idempotency_key",
+      "limits",
+      "note",
+      "principal_id",
+      "rights"
+    ],
+    "path": "/v1/policy/grants",
+    "path_params": [],
+    "right": "policy",
+    "verb": "POST"
   },
   "inspect_structure": {
     "members": [
@@ -204,6 +262,16 @@ export const ROUTES = freeze({
       "principal_id"
     ],
     "path": "/v1/audit",
+    "path_params": [],
+    "right": "read",
+    "verb": "GET"
+  },
+  "list_branches": {
+    "members": [
+      "cursor",
+      "limit"
+    ],
+    "path": "/v1/branches",
     "path_params": [],
     "right": "read",
     "verb": "GET"
@@ -264,6 +332,7 @@ export const ROUTES = freeze({
   "preview_change": {
     "members": [
       "author",
+      "branch",
       "edits",
       "expected_revision",
       "new_revision_id",
@@ -286,6 +355,28 @@ export const ROUTES = freeze({
     "right": "draft",
     "verb": "POST"
   },
+  "register_solve_policy": {
+    "members": [
+      "idempotency_key",
+      "policy"
+    ],
+    "path": "/v1/solve-policies",
+    "path_params": [],
+    "right": "draft",
+    "verb": "POST"
+  },
+  "revoke_capability": {
+    "members": [
+      "capability_id",
+      "idempotency_key"
+    ],
+    "path": "/v1/policy/grants/{capability_id}/revoke",
+    "path_params": [
+      "capability_id"
+    ],
+    "right": "policy",
+    "verb": "POST"
+  },
   "search_records": {
     "members": [
       "cursor",
@@ -297,6 +388,17 @@ export const ROUTES = freeze({
     "path": "/v1/records/search",
     "path_params": [],
     "right": "read",
+    "verb": "POST"
+  },
+  "set_ambient_pressure": {
+    "members": [
+      "idempotency_key",
+      "unit",
+      "value"
+    ],
+    "path": "/v1/policy/ambient-pressure",
+    "path_params": [],
+    "right": "policy",
     "verb": "POST"
   },
   "submit_job": {

@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+### Added
+
+- X06 (ADR 0078; ADR 0019 Amendment 18, proposed): four application capabilities and nine operations.
+- MCP over streamable HTTP: `serve-http` serves the MCP tools at `/mcp`, stateless, with the bearer token checked on every request and a `403` for a foreign `Origin`.
+- Branches: `list_branches`, `create_branch`, `delete_branch` and an optional `branch` on `commit_change` and `preview_change`; a branch is a store ref, in no revision, and promotion is `restore_from`.
+- Project solve policies: `register_solve_policy` and `get_solve_policy` for immutable, validated `user.` policies, which a job names by id and a bundle replays without the project.
+- In-band administration: `get_policy`, `grant_capability`, `revoke_capability` and `set_ambient_pressure`, off until `openflowsheet project administration on`, refused on a non-loopback server, never over-granting the caller.
+- Not in 0.6: job resume, deferred to F7 D14 (ADR 0078 D3).
+
 ## v0.5.1 — released 2026-11-24
 
 *Notes at the release candidate C' = `ee934680d94879032b34ae8649baa31ff5a210c8` (RP §9.2 step 3; line `0.5`, gate set

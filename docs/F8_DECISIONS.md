@@ -558,3 +558,45 @@ the working tree, run, and reverted (not committed).
   `.as_posix()`; the forged record is written with `write_bytes` so Windows newline translation cannot change the
   bytes its name hashes. Linux: the two files 91 passed. All other legs (ubuntu x86/arm, macOS, default-install,
   identity) green on d0bc2996. Not pushed: wp/F8 next merges main after F2 (and X06), then gate, push, CI.
+
+## F8-FR1 (merge wp/X06 `7a4dcde7` into wp/F8), 2026-11-28
+
+Brief `docs/briefs/LINE06-F8-FR1.md` (on `main`). Merge commit: see `git log` (`git merge --no-ff 7a4dcde7`, base
+`80cdcfb3`). Fifteen conflicts, as the trial merge listed; everything else merged clean (ADR 0019's amendment status
+lines are left as each side has them). Logs `~/.cache/line06/f8-fr1/`.
+
+- **DECISION F8-FR1-1. c_13 is recomputed onto X06's D_12 (R-1072/R-1073: F2 and X06 merge first, F8 third
+  decomposes onto the second's; chain order c_11, c_12, c_13 kept, no renumbering).** Measured on the merged tree:
+  served `D_13` `3571c5c3f57abe2a4ecb3e93970cb95cc8ce7856259f832aa78a2dcbcff7c10c` ->
+  `de241b22b43681d81d4afc02a2250ddef684b83fb258e9ae491bc8fee2c7fd94`; `strip_f8` gives
+  `ba4b5ce59af4ac4c1e5d29f157ccd5d6308cc0a6282f0dc3434fc3b5cf88db62` (X06's D_12) exactly, `strip_x06` of that
+  `8eee5313…` (D_11) exactly, `strip_f2` of that `f7ec3c94…` (D_10) exactly; only `get_job_result` differs between
+  served and `strip_f8`. Followers: `F8_SERVED_SHA256`, the c_13 `Link` and docstring in `scripts/m07a_rc.py`,
+  R-1076's Evidence cell, ADR 0019 Amendment 12's pointer paragraph (not its status line), `tests/f8_schema_support.py`'s
+  docstring; `test_f8s_surface_move_decomposes_onto_f2s` is renamed `..._onto_x06s` (as X06-FR0 renamed its own).
+  Decompositions take F8 out first, then X06, then F2 (t07, M02, M04, the surface-digest helpers `_before_f8` ->
+  `_before_x06` -> `_before_f2`, the chain test's `before_*`). Reversible by: reverting the merge.
+- **DECISION F8-FR1-2. R4-G3: the six job rows both packages move are re-taken in `SNAPSHOT_F8`.** `submit_job`,
+  `get_job`, `cancel_job`, `list_jobs`, `wait_job` and `get_job_result` carry X06's candidate-ChangeSet `branch` and
+  F8's report members and artifact kinds, so neither side's pin is the merged value. Measured, each `without_f8` of the
+  merged response is X06's pin exactly: `submit_job` `2821206f…` -> `df781568…`, `get_job` and `cancel_job` `8026df21…`
+  -> `edb99372…`, `list_jobs` `44153df8…` -> `7360318d…`, `wait_job` `75137a9d…` -> `cbe7897d…`, `get_job_result`
+  `bddb2dd5…` -> `deab711d…`. `solve`, `reproduce`, `list_job_events` unchanged; no other row moved
+  (`SNAPSHOT_X06`, `SNAPSHOT_F2` unchanged). F8's pre-F8 dict now includes `SNAPSHOT_X06`; X06's R4-G3 test strips F8
+  first. This is the snapshot decomposition the brief names, not a new move: every re-taken value returns to a pinned
+  one under `without_f8`. Reversible by: reverting the merge.
+- **DECISION F8-FR1-3. Appends in merge order F2, X06, F8** (as X06-FR0-2): refusal catalogue, numerical-policy
+  `ADDENDA` (`… f2, x06, f8`, pinned in `tests/test_m05_study_record.py`), envelope rows, register rows (R-1073 to
+  R-1075 from X06 before F8's R-1076). In `tests/test_m07a_surface_chain.py` every link tuple gains `L12` and each
+  control's passing-prefix count grows by one; X06's c_12 link test and control read `strip_f8(served)` / gain `L12`.
+  `tests/test_x06_mcp_http.py::test_e_x06_2_…` (merged clean, red without this) now pins `F8_SERVED_SHA256` and
+  checks `without_f8` of the HTTP list is `X06_SERVED_SHA256`. No assertion is relaxed. Reversible by: reverting the
+  merge.
+- Catalogue (`doc_pages.py` rewrote `docs-site/messages/refusals.md`; `msg_catalogue.py check` PASS, 469 entries):
+  F8 `43687c79…` / X06 `41dc5421…` -> `430780d5bb11d8801710034af6df5b689b00c2cf717a9d13ea07a1ce202607ce` in the two
+  `message_entry` fixtures (`t07_schema_fixtures.py --write` wrote those two only).
+- Harvest: `HARVEST_SIZE` (111, 1188, 154) = X06-FR0's (110, 1184, 152) + F8's (1, 4, 2) (its re-taken manifest
+  `1867631…`, 4 limitations, 2 non-pass checks), measured by `tests/test_m07a_harvest.py` (5 passed). The brief's
+  expected (110, 1184, 155) took F8's increment as (0, 0, 3) from F8-FR0-3's numbers; F8-FR item 9 had since moved
+  F8's own size to (110, 1184, 153), and the manifest count adds too. `docs/support-matrix.md` re-emitted: 1342 items,
+  74 manifests.

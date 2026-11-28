@@ -150,6 +150,10 @@ class ProjectPolicy:
     #: only, never by a run. Absent from the document until declared, so an undeclaring
     #: project's file and `policy_sha256` are what they were before X04.
     ambient_pressure: float | None = None
+    #: ADR 0078 D5.1: the operator's switch for in-band administration. Off unless the document
+    #: carries `administration: {in_band: true}`; off is absent from the document, so every
+    #: policy written before X06 keeps its bytes and `policy_sha256`.
+    administration_in_band: bool = False
 
     def __post_init__(self) -> None:
         if self.ambient_pressure is not None and not (
@@ -183,12 +187,16 @@ class ProjectPolicy:
         return document_sha256(self.as_document())
 
     def as_document(self) -> dict[str, Any]:
-        return {
-            "schema_version": self.schema_version,
-            "project_id": self.project_id,
-            "capabilities": [capability.as_document() for capability in self.capabilities],
-            "executor": self.executor.as_document(),
-        } | ({} if self.ambient_pressure is None else {"ambient_pressure": self.ambient_pressure})
+        return (
+            {
+                "schema_version": self.schema_version,
+                "project_id": self.project_id,
+                "capabilities": [capability.as_document() for capability in self.capabilities],
+                "executor": self.executor.as_document(),
+            }
+            | ({} if self.ambient_pressure is None else {"ambient_pressure": self.ambient_pressure})
+            | ({"administration": {"in_band": True}} if self.administration_in_band else {})
+        )
 
     @classmethod
     def from_document(cls, document: Mapping[str, Any]) -> Self:
@@ -204,6 +212,7 @@ class ProjectPolicy:
                 ambient_pressure=(
                     None if d.get("ambient_pressure") is None else float(d["ambient_pressure"])
                 ),
+                administration_in_band="administration" in d,
             ),
             document,
         )
@@ -226,3 +235,87 @@ class ReplayPolicy:
         if set(document) != {"rerun"} or not isinstance(document["rerun"], bool):
             raise DocumentSchemaError("ReplayPolicy", "", "a replay policy is {rerun: boolean}")
         return cls(rerun=document["rerun"])
+
+
+# ========================================== in-band administration results (ADR 0078 D5.2)
+
+
+@dataclass(frozen=True)
+class GrantResult:
+    """ADR 0078 D5.2: `grant_capability`'s result. `token` is the new grant's bearer token, in
+    this response only: the ledger keeps the result with `token` null, so a replay (`replayed`)
+    returns it null (D5.4)."""
+
+    status: Literal["granted", "replayed"]
+    capability: CapabilityReference
+    token: str | None
+    policy_sha256: str
+
+    def as_document(self) -> dict[str, Any]:
+        return {
+            "status": self.status,
+            "capability": self.capability.as_document(),
+            "token": self.token,
+            "policy_sha256": self.policy_sha256,
+        }
+
+    @classmethod
+    def _build(cls, document: Mapping[str, Any]) -> Self:
+        """The inverse of `as_document`, unvalidated: for documents this code wrote itself."""
+        return cls(
+            status=document["status"],
+            capability=CapabilityReference._build(document["capability"]),
+            token=document["token"],
+            policy_sha256=document["policy_sha256"],
+        )
+
+
+@dataclass(frozen=True)
+class RevokeResult:
+    """ADR 0078 D5.2: `revoke_capability`'s result: the grant removed and the policy's new hash."""
+
+    status: Literal["revoked", "replayed"]
+    capability: CapabilityReference
+    policy_sha256: str
+
+    def as_document(self) -> dict[str, Any]:
+        return {
+            "status": self.status,
+            "capability": self.capability.as_document(),
+            "policy_sha256": self.policy_sha256,
+        }
+
+    @classmethod
+    def _build(cls, document: Mapping[str, Any]) -> Self:
+        """The inverse of `as_document`, unvalidated: for documents this code wrote itself."""
+        return cls(
+            status=document["status"],
+            capability=CapabilityReference._build(document["capability"]),
+            policy_sha256=document["policy_sha256"],
+        )
+
+
+@dataclass(frozen=True)
+class AmbientPressureResult:
+    """ADR 0078 D5.2: `set_ambient_pressure`'s result: the declared pressure in Pa (null when
+    cleared) and the policy's new hash."""
+
+    status: Literal["set", "replayed"]
+    ambient_pressure_pa: float | None
+    policy_sha256: str
+
+    def as_document(self) -> dict[str, Any]:
+        return {
+            "status": self.status,
+            "ambient_pressure_pa": self.ambient_pressure_pa,
+            "policy_sha256": self.policy_sha256,
+        }
+
+    @classmethod
+    def _build(cls, document: Mapping[str, Any]) -> Self:
+        """The inverse of `as_document`, unvalidated: for documents this code wrote itself."""
+        return cls(
+            status=document["status"],
+            ambient_pressure_pa=document["ambient_pressure_pa"],
+            policy_sha256=document["policy_sha256"],
+        )

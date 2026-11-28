@@ -24,6 +24,7 @@ from typing import Any
 import pytest
 from conftest import REPO_ROOT
 
+from openflowsheet.application import serving
 from openflowsheet.application.authz import grant
 from openflowsheet.application.cli import main
 from openflowsheet.application.local import LocalApplication
@@ -210,7 +211,7 @@ def test_ui_refuses_to_start_without_the_packaged_files(
     with pytest.raises(web.WebShellMissingError, match="index.html"):
         web.static_directory()
     called: list[Any] = []
-    monkeypatch.setattr(web, "serve", lambda *a, **k: called.append(a))
+    monkeypatch.setattr(serving, "serve_http", lambda *a, **k: called.append(a))
     code, out, err = run_cli(["serve-http", "--project", str(project), "--port", "0", "--ui"])
     assert (code, out, called) == (1, "", [])
     assert "serve-http: refused to start: the diagnostic web shell's files are missing" in err
@@ -222,8 +223,13 @@ def test_ui_serves_through_the_web_binding_and_without_it_the_http_one(
     project = tmp_path / "project"
     LocalApplication.create(project, project_id="m06-wo4").close()
     called: list[str] = []
-    monkeypatch.setattr(http, "serve", lambda owner, **options: called.append("http"))
-    monkeypatch.setattr(web, "serve", lambda owner, **options: called.append("web"))
+
+    def run(application: Any, **options: Any) -> None:
+        paths = {getattr(route, "path", None) for route in application.router.routes}
+        assert "/mcp" in paths  # ADR 0078 D1.1: MCP beside the API, with or without the shell
+        called.append("web" if web.MOUNT in paths else "http")
+
+    monkeypatch.setattr(http, "run", run)
     assert run_cli(["serve-http", "--project", str(project), "--port", "0"])[0] == 0
     assert run_cli(["serve-http", "--project", str(project), "--port", "0", "--ui"])[0] == 0
     assert called == ["http", "web"]
@@ -237,7 +243,7 @@ def test_without_ui_the_web_binding_is_not_imported(tmp_path: Path) -> None:
         "import sys\n"
         "from openflowsheet.application.bindings import http\n"
         "from openflowsheet.application import cli\n"
-        "http.serve = lambda owner, **options: None\n"
+        "http.run = lambda application, **options: None\n"
         f"assert cli.main(['serve-http', '--project', {str(project)!r}, '--port', '0']) == 0\n"
         "print('openflowsheet.application.bindings.web' in sys.modules)\n"
     )

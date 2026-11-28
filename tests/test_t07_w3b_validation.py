@@ -45,6 +45,7 @@ from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.revision_binding import RevisionBinding, bind_revision_flowsheet
 from openflowsheet.application.revision_run import NoRoute, Route, legacy_plan, select_route
 from openflowsheet.application.revisions import Revision
+from openflowsheet.application.store import HEAD
 from openflowsheet.application.transaction_types import Change, Edit
 from openflowsheet.application.validation import (
     FALLBACK_PRODUCED_BY,
@@ -471,6 +472,7 @@ def test_r3_every_transaction_result_validation_validates() -> None:
         store.commit_revision(
             connection,
             Revision(revision_id=revision["revision_id"], document=revision),
+            ref=HEAD,
             principal_id=app.principal_id,
             capability_id=app.capability_id,
             policy_sha256=app.policy.policy_sha256,

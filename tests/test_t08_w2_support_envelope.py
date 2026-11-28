@@ -62,8 +62,9 @@ def test_a20_the_axes_equal_the_code(envelope: dict[str, Any], facts: dict[str, 
     assert MATRIX.check_a20(envelope, facts) == []
     # Spec §9's 20, ADR 0019 Amendment 3's `list_audit`, ADR 0058 D7's `explain`, ADR 0068's
     # `get_stream_table`, ADR 0060 D11's `list_capabilities` and `check_admission`, and ADR 0061
-    # D13's five `Records` operations.
-    assert len(facts["operations"]) == 30
+    # D13's five `Records` operations, and ADR 0078 D2.5's three `Branches` operations and D4.5's
+    # two `SolvePolicies` operations and D5.2's four `Administration` operations.
+    assert len(facts["operations"]) == 39
     # Spec §9's 13 SYN-001 models, literal unchanged; M02's join adds the eight C1 models (R-280),
     # the stand-in synthetic only (R-280 (c)); W27 Amendment 3 adds M04's surrogate (R-301), which
     # has no variant, so it is not synthetic only. S11 binds S02's column (ADR 0050, R-810;
