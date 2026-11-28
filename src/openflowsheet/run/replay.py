@@ -29,8 +29,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from openflowsheet.run.bundle import read_artifact, read_manifest, verify_bundle
-from openflowsheet.run.compare import CURRENT_POLICY_ID, KNOWN_POLICY_IDS, differences
+from openflowsheet.run.bundle import read_manifest, verify_bundle
+from openflowsheet.run.compare import KNOWN_POLICY_IDS
 from openflowsheet.run.manifest import Environment, environment
 
 # F8: the v1 rules `replay_v2` reuses live in `run.replay_rules`, which imports neither replay
@@ -42,8 +42,8 @@ from openflowsheet.run.replay_rules import (
     ReplayVerdict,
     Rerun,
     _as_recorded,
+    _compare_artifacts,
     _is_verdict_only,
-    _verdict_drift,
     decide_mode,
     unknown_policy_reason,
 )
@@ -124,37 +124,9 @@ def replay(
             reasons=(*reasons, *(() if rerun is not None else ("no rerun was supplied",))),
         )
 
-    found: list[str] = []
-    bitwise = True
-    changed_near_threshold: list[str] = []
-    drifted: set[str] = set()
-    kinds = rerun.variable_kinds if policy_id == CURRENT_POLICY_ID else None
-    for name in sorted(manifest.artifacts):
-        archived = read_artifact(directory, name)
-        fresh = rerun.artifacts.get(name)
-        if fresh is None:
-            found.append(f"{name}: the rerun produced no such artifact")
-            continue
-        fresh, recorded_differently = _as_recorded(name, fresh, archived, policy_id)
-        found += recorded_differently
-        found += [
-            f"{name}{entry}"
-            for entry in differences(fresh, archived, policy_id=policy_id, variable_kinds=kinds)
-        ]
-        if fresh != archived:
-            bitwise = False
-        drift = _verdict_drift(name, fresh, archived)
-        changed_near_threshold += drift
-        if drift:
-            drifted.add(name)
-
-    # S4: the loop walks the *archive's* index, so an artifact the rerun produced and the
-    # archive lacks was never seen. Measured: a rerun carrying a failure bundle beside the
-    # certificate reported MATCH — which is exactly the "never both" case `run_session`
-    # forbids, arriving unnoticed.
-    for name in sorted(set(rerun.artifacts) - set(manifest.artifacts)):
-        found.append(f"{name}: the rerun produced an artifact the archive does not have")
-        bitwise = False
+    found, bitwise, changed_near_threshold, drifted = _compare_artifacts(
+        directory, sorted(manifest.artifacts), rerun, policy_id, as_recorded=_as_recorded
+    )
 
     # D2.4: a verdict that moved **while a near-threshold flag was present** is reported as a
     # match with the drift listed. It is the one place "match" and "same verdict" separate,

@@ -641,3 +641,27 @@ lines are left as each side has them). Logs `~/.cache/line06/f8-fr1/`.
 - Surface suites (`test_t07_*`, `test_t08_w2_*`, `test_m07a_surface_chain`): 2387 passed, 28 skipped, 0 failed.
 - Replay tests (`grep -rlE 'run\.replay|run import replay|replay_v2|platform_refs' tests`): 305 passed, 0 failed.
 - ruff check, ruff format --check, mypy on the three touched modules: clean.
+- **DECISION F8-CYC-2. The comparison loop both replays carried becomes `replay_rules._compare_artifacts`.** With the
+  cycle gone, codehealth diff failed on `run/replay.py: new file smell(s) duplication (nloc 113)`: `replay()`'s
+  artifact loop and S4 check were copied in `replay_v2._compared` (16 duplicated lines each side since F8-WO3),
+  which F8-CYC-1's split concentrated into 113 nloc (14.2% > the 10% threshold; the "concentrated, not added" note
+  does not apply because the 32 lines are new against main). The loop moves verbatim, comments included, into
+  `_compare_artifacts(directory, names, rerun, policy_id, *, as_recorded)`; `replay()` passes
+  `sorted(manifest.artifacts)` (the set it walked and checked before), `replay_v2` `_v1_artifacts(...)` (sorted, as
+  before). `as_recorded` is passed by each caller from its own module: R-148's v1-recording substitution
+  (`tests/t08_v2_substitution.py:81`) patches `run.replay._as_recorded`, and a first cut that called
+  `replay_rules._as_recorded` directly failed `test_t07_identity::test_with_v1_recorded_the_document_minus_t07_is_the_registered_one`
+  and `test_t07_w5b_cli::test_r148_with_v1_recorded_the_commands_print_the_v1_pins` (AttributeError); passing the
+  name keeps that seam exactly where it was (v1 patched, v2 bound at import, as before). Duplicated lines over the
+  three files: 32 -> 0. Alternative: drop this commit and carry the duplication smell (or a file-level allow) into
+  CI. Reversible by: reverting the F8-CYC-2 commit (F8-CYC-1 stands alone).
+
+### F8-CYC-2 gate numbers (SMM-TR09, at the F8-CYC-2 tree; logs `~/.cache/line06/f8cyc3-*.log`)
+
+- F0: PASS, M1 50/50, M2-M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 42/42.
+- Surface suites: 2387 passed, 28 skipped, 0 failed. Replay tests (the brief's grep plus `t08_v2_substitution`
+  users): 355 passed, 0 failed. ruff check, ruff format --check, mypy on the three modules: clean.
+- `codehealth diff --base 9532829b --head 1f963813`: no import cycle edge, no layer violation, no file smell;
+  `codehealth arch`: 0 violations, 0 cycles. The one remaining FAIL is F8's debt over touched files, 19.30 -> 48.00
+  (was 54.60 at `d3846b8d`; `run/replay.py` 7.3 -> 0.0, `replay_rules.py` 2.0, `replay_v2.py` 2.0, the rest is F8's
+  `platform_refs.py` 23.0, `bundle_v2.py` 9.0 and others, untouched here).

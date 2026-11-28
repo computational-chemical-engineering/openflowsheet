@@ -56,7 +56,7 @@ from openflowsheet.run.bundle_v2 import (
     record_name,
     verify_bundle,
 )
-from openflowsheet.run.compare import CURRENT_POLICY_ID, KNOWN_POLICY_IDS, differences
+from openflowsheet.run.compare import KNOWN_POLICY_IDS
 from openflowsheet.run.manifest import Environment, environment
 from openflowsheet.run.manifest_v2 import BUNDLE_FORMAT, ExtensionRow, RunManifestV2
 
@@ -68,8 +68,8 @@ from openflowsheet.run.replay_rules import (
     ReplayVerdict,
     Rerun,
     _as_recorded,
+    _compare_artifacts,
     _is_verdict_only,
-    _verdict_drift,
     decide_mode,
     unknown_policy_reason,
 )
@@ -363,34 +363,13 @@ def _compared(
     report: dict[str, Any],
 ) -> ReplayReport:
     """Step 7: `run.replay.replay`'s comparison over the v1 artifacts, then the usage check."""
-    policy_id = manifest.numerical_policy_id
-    names = _v1_artifacts(manifest.artifacts)
-    found: list[str] = []
-    bitwise = True
-    changed_near_threshold: list[str] = []
-    drifted: set[str] = set()
-    kinds = rerun.variable_kinds if policy_id == CURRENT_POLICY_ID else None
-    for name in names:
-        archived = read_artifact(directory, name)
-        fresh = rerun.artifacts.get(name)
-        if fresh is None:
-            found.append(f"{name}: the rerun produced no such artifact")
-            continue
-        fresh, recorded_differently = _as_recorded(name, fresh, archived, policy_id)
-        found += recorded_differently
-        found += [
-            f"{name}{entry}"
-            for entry in differences(fresh, archived, policy_id=policy_id, variable_kinds=kinds)
-        ]
-        if fresh != archived:
-            bitwise = False
-        drift = _verdict_drift(name, fresh, archived)
-        changed_near_threshold += drift
-        if drift:
-            drifted.add(name)
-    for name in sorted(set(rerun.artifacts) - set(names)):
-        found.append(f"{name}: the rerun produced an artifact the archive does not have")
-        bitwise = False
+    found, bitwise, changed_near_threshold, drifted = _compare_artifacts(
+        directory,
+        _v1_artifacts(manifest.artifacts),
+        rerun,
+        manifest.numerical_policy_id,
+        as_recorded=_as_recorded,
+    )
     found += _undeclared_use(manifest.extensions_used, rerun)
 
     real = [entry for entry in found if not _is_verdict_only(entry, drifted)]

@@ -3,17 +3,19 @@ comparison helpers (F8, the cycle `run.replay` <-> `run.replay_v2`).
 
 Split out of `run.replay`, whose docstring states the design, so that `run.replay_v2` reuses them
 without importing `run.replay`, which dispatches to it (ADR 0067 D5 step 2). `run.replay`
-re-exports every public name here and imports back the helpers its `replay` calls.
+re-exports every public name here and imports back the helpers its `replay` calls; both replays
+compare through `_compare_artifacts`.
 """
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any, Literal
 
-from openflowsheet.run.bundle import BundleIntegrity
-from openflowsheet.run.compare import CURRENT_POLICY_ID, KNOWN_POLICY_IDS
+from openflowsheet.run.bundle import BundleIntegrity, read_artifact
+from openflowsheet.run.compare import CURRENT_POLICY_ID, KNOWN_POLICY_IDS, differences
 from openflowsheet.run.lock import TEMPLATES
 from openflowsheet.run.manifest import Environment
 from openflowsheet.run.manifest_v2 import refuse_reserved_mode
@@ -208,6 +210,55 @@ class Rerun:
     #: that reran, from the compiled problem it solved — never inferred from a name. `None` when
     #: the rerun supplies none; v2 then refuses to compare a solution state (a difference).
     variable_kinds: Mapping[str, str] | None = None
+
+
+def _compare_artifacts(
+    directory: Path,
+    names: list[str],
+    rerun: Rerun,
+    policy_id: str,
+    *,
+    as_recorded: Callable[[str, Any, Any, str], tuple[Any, list[str]]],
+) -> tuple[list[str], bool, list[str], set[str]]:
+    """ADR 0007 D4's comparison of a rerun with the archived artifacts `names` (sorted) under the
+    policy the record names: the differences found, whether every artifact is bitwise equal, the
+    D2.4 drifts (`_verdict_drift`) and the names whose drift rule fired. `run.replay.replay`
+    compares a v1 bundle's index, `run.replay_v2` a v2 bundle's v1 artifacts.
+
+    `as_recorded` is `_as_recorded` as each caller's module names it: `run.replay` passes its own
+    name, which R-148's v1-recording substitution patches (`tests/t08_v2_substitution.py`)."""
+    found: list[str] = []
+    bitwise = True
+    changed_near_threshold: list[str] = []
+    drifted: set[str] = set()
+    kinds = rerun.variable_kinds if policy_id == CURRENT_POLICY_ID else None
+    for name in names:
+        archived = read_artifact(directory, name)
+        fresh = rerun.artifacts.get(name)
+        if fresh is None:
+            found.append(f"{name}: the rerun produced no such artifact")
+            continue
+        fresh, recorded_differently = as_recorded(name, fresh, archived, policy_id)
+        found += recorded_differently
+        found += [
+            f"{name}{entry}"
+            for entry in differences(fresh, archived, policy_id=policy_id, variable_kinds=kinds)
+        ]
+        if fresh != archived:
+            bitwise = False
+        drift = _verdict_drift(name, fresh, archived)
+        changed_near_threshold += drift
+        if drift:
+            drifted.add(name)
+
+    # S4: the loop walks the *archive's* index, so an artifact the rerun produced and the
+    # archive lacks was never seen. Measured: a rerun carrying a failure bundle beside the
+    # certificate reported MATCH — which is exactly the "never both" case `run_session`
+    # forbids, arriving unnoticed.
+    for name in sorted(set(rerun.artifacts) - set(names)):
+        found.append(f"{name}: the rerun produced an artifact the archive does not have")
+        bitwise = False
+    return found, bitwise, changed_near_threshold, drifted
 
 
 def _as_recorded(name: str, fresh: Any, archived: Any, policy_id: str) -> tuple[Any, list[str]]:
