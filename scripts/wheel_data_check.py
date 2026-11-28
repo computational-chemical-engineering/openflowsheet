@@ -45,13 +45,35 @@ ship broken and pass every other step.
   records `pagination did not end`, so a cursor that never ends fails the check instead of
   hanging it.
 
-    python scripts/wheel_data_check.py --commit C [--out DIR] [--f1-f3]
+With `--f2`, RC item `WHEEL-F2` (line 0.6's design note `docs/briefs/REL060-line-0.6.md` D-5):
+the installed package *uses* F2's data on the v2 route (its schemas, the legacy index the
+lowering reads), which neither a v1 solve nor a replay reaches. No floating point is compared.
+
+- `wheel.built` (WV-1): as above.
+- `f2.inputs`: the script writes, in the checkout at C, for each R of `F2_STATES` the v1 document
+  (`scripts/corpus_identity.py` `revision_document`) and its raised v2 document, and N, the raised
+  `g8/SYN-001-T06-NET02` with `materials.thermal_coordinate` `h_mass`; each raised document has
+  `schema_version` 2 and N differs from its source only at `/materials/thermal_coordinate`. The
+  SHA-256 of each document's canonical bytes is recorded. Both probes read these as data.
+- `f2.probes` (WV-2): as WF-2, both probes with `F2_THREADS` = 1 (each probe records them).
+- `f2.v2_runs_as_v1` (WV-3): on each side, each document committed in a fresh in-memory project
+  gives `committed` and `READY_FOR_SIMULATION`, its `default` solve `CONVERGED`, and the run
+  manifest's `artifact_r0_sha256` and `artifacts` of v2 equal v1's (ADR 0062 D8).
+- `f2.r0_registered` (WV-4): on each side, each R's v2 `artifact_r0_sha256` equals F0's
+  registered M3 of `benchmarks/f0/corpus.json` at C, read by `git show`, not through the code
+  under test.
+- `f2.refusal` (WV-5): on each side, `check_admission(revision=N)` raises `revision_unsupported`
+  with `detail.unbound` exactly `F2_REFUSAL`, and the base's v2 document is admitted.
+
+    python scripts/wheel_data_check.py --commit C [--out DIR] [--f1-f3 | --f2]
     <venv>/bin/python -I scripts/wheel_data_check.py probe --out J [--in-checkout] [--f1-f3]
+    <venv>/bin/python -I scripts/wheel_data_check.py probe --f2 --inputs I --out J [--in-checkout]
 
 The work directory is `--out`, or a temporary directory removed afterwards. The checks are
 printed one per line, then the document of findings as one JSON line, then
-`wheel data check: PASS|FAIL` (with `--f1-f3`, `wheel data check (F1, F3): PASS|FAIL`); with
-`--out`, the document is also `<out>/wheel-data-check.json` (`<out>/wheel-f1f3-check.json`).
+`wheel data check: PASS|FAIL` (with `--f1-f3`, `wheel data check (F1, F3): PASS|FAIL`; with
+`--f2`, `wheel data check (F2): PASS|FAIL`); with `--out`, the document is also
+`<out>/wheel-data-check.json` (`<out>/wheel-f1f3-check.json`, `<out>/wheel-f2-check.json`).
 Exit 0 iff every check passes, 1 otherwise, 2 when the checkout is not at C.
 
 The probe imports only the standard library and the installed `openflowsheet`, so this module
@@ -98,6 +120,15 @@ LEGACY_INDEX = Path("src/openflowsheet/records/legacy_index.json")
 HEX64 = re.compile("[0-9a-f]{64}")
 PAGE_LIMIT = 200
 PROBE_MAX_PAGES = 100
+#: WHEEL-F2: the states R (`<set>`, `<name>`) of WV-3 and WV-4, the base N is raised from, the
+#: pointer at which N differs from it, WV-5's refusal (ADR 0062 D12, F2 decision WO6b-5), the
+#: thread variables both probes run with (WV-2), and F0's registry, whose M3 is WV-4's expectation.
+F2_STATES = (("g8", "SYN-001-T06-NET02"), ("s11-gp", "GP-C1"))
+F2_BASE = "g8/SYN-001-T06-NET02"
+THERMAL_COORDINATE = "/materials/thermal_coordinate"
+F2_REFUSAL = "unsupported(construct_unavailable(thermal_coordinate:h_mass, F6))"
+F2_THREADS = ("OPENBLAS_NUM_THREADS", "OMP_NUM_THREADS", "MKL_NUM_THREADS")
+F0_REGISTRY = Path("benchmarks/f0/corpus.json")
 
 
 def sha256(data: bytes) -> str:
@@ -407,6 +438,225 @@ def f1f3_findings(
     }
 
 
+# -- WHEEL-F2 ------------------------------------------------------------------------------------
+
+
+def canonical(document: Any) -> bytes:
+    """A JSON document's canonical bytes: sorted keys, separators `,` `:`, UTF-8."""
+    text = json.dumps(document, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+    return text.encode("utf-8")
+
+
+def differences(a: Any, b: Any, pointer: str = "") -> list[str]:
+    """The JSON pointers at which `a` and `b` differ: a member present in one only, a list of
+    another length, or unequal values (the deepest pointer of each)."""
+    if isinstance(a, Mapping) and isinstance(b, Mapping):
+        found: list[str] = []
+        for key in sorted(set(a) | set(b)):
+            step = f"{pointer}/{str(key).replace('~', '~0').replace('/', '~1')}"
+            found += differences(a[key], b[key], step) if key in a and key in b else [step]
+        return found
+    if isinstance(a, list) and isinstance(b, list) and len(a) == len(b):
+        return [
+            p
+            for i, (x, y) in enumerate(zip(a, b, strict=True))
+            for p in differences(x, y, f"{pointer}/{i}")
+        ]
+    return [] if type(a) is type(b) and a == b else [pointer]
+
+
+def f2_inputs(coordinate: str = "h_mass") -> dict[str, Any]:
+    """The probes' inputs, built in the checkout: for each R of `F2_STATES` its v1 document and
+    the raised v2 document; and N, the base's v2 document with `materials.thermal_coordinate`
+    `coordinate` (`h_mass` for the item; a test's control builds it with `T`). Host side only."""
+    import copy  # noqa: PLC0415
+
+    import corpus_identity  # noqa: PLC0415
+
+    from openflowsheet.models.revision_flowsheet import legacy_providers  # noqa: PLC0415
+    from openflowsheet.revision_v2.raise_v1 import raise_v1  # noqa: PLC0415
+
+    revisions: dict[str, dict[str, Any]] = {}
+    for run_set, name in F2_STATES:
+        v1 = corpus_identity.revision_document(run_set, name)
+        revisions[f"{run_set}/{name}"] = {"v1": v1, "v2": raise_v1(v1, legacy_providers())}
+    refused = copy.deepcopy(revisions[F2_BASE]["v2"])
+    refused["materials"]["thermal_coordinate"] = coordinate
+    return {"revisions": revisions, "refused": refused}
+
+
+def inputs_findings(inputs: Mapping[str, Any]) -> dict[str, Any]:
+    """`f2.inputs`: the five documents' canonical SHA-256 (`<R>:v1`, `<R>:v2`, `N`), the pointers
+    at which N differs from the base's v2 document, and whether every raised document has
+    `schema_version` 2 and N differs only at `THERMAL_COORDINATE`, there `h_mass`."""
+    revisions = inputs["revisions"]
+    refused = inputs["refused"]
+    digests = {
+        f"{key}:{version}": sha256(canonical(revisions[key][version]))
+        for key in sorted(revisions)
+        for version in ("v1", "v2")
+    }
+    digests["N"] = sha256(canonical(refused))
+    differ = differences(revisions[F2_BASE]["v2"], refused)
+    raised = [revisions[key]["v2"] for key in revisions] + [refused]
+    ok = (
+        sorted(revisions) == sorted(f"{s}/{n}" for s, n in F2_STATES)
+        and all(document.get("schema_version") == 2 for document in raised)
+        and differ == [THERMAL_COORDINATE]
+        and refused["materials"]["thermal_coordinate"] == "h_mass"
+    )
+    return {"documents": digests, "differences": differ, "ok": ok}
+
+
+def registered_r0(registry_text: str) -> dict[str, Any]:
+    """WV-4's expectation: each R's `artifact_r0_sha256` of F0's M3 in `registry_text` (the
+    registry's bytes at C), or None where it holds none."""
+    measures = json.loads(registry_text).get("measures", {}).get("M3", {})
+    return {
+        f"{s}/{n}": measures.get(f"{s}/{n}", {}).get("artifact_r0_sha256") for s, n in F2_STATES
+    }
+
+
+def _committed_run(document: Mapping[str, Any]) -> dict[str, Any]:
+    """WV-3 for one document in a fresh in-memory project: commit its members other than
+    `revision_id` and `parent_revision` as one `Change`, solve with `default`, read the run
+    manifest. What raises is recorded by its type and message."""
+    from openflowsheet.application.local import LocalApplication  # noqa: PLC0415
+    from openflowsheet.application.transaction_types import Change, Edit  # noqa: PLC0415
+
+    body = {k: v for k, v in document.items() if k not in ("revision_id", "parent_revision")}
+    found: dict[str, Any] = {}
+    try:
+        with LocalApplication.in_memory() as application:
+            change = Change(edits=tuple(Edit("set", (key,), value) for key, value in body.items()))
+            committed = application.commit_change(change, None, "wheel-f2")
+            found["status"] = exact(committed.status)
+            validation = committed.validation
+            found["validation"] = exact(validation.status) if validation is not None else None
+            if committed.revision_id is None:
+                found["detail"] = str(committed)[:2000]
+                return found
+            result = application.solve(committed.revision_id, "default")
+            found["outcome"] = exact(result.outcome)
+            manifests = [output for output in result.outputs if output.kind == "run_manifest"]
+            found["run_manifests"] = len(manifests)
+            if len(manifests) == 1:
+                manifest = json.loads(application.artifact_bytes(manifests[0].artifact_id))
+                found["artifact_r0_sha256"] = manifest.get("artifact_r0_sha256")
+                found["artifacts"] = manifest.get("artifacts")
+    except Exception as error:  # noqa: BLE001 - WV-3 records what was raised
+        found["error"] = _raised(error)
+    return found
+
+
+def _admission(document: Mapping[str, Any]) -> dict[str, Any]:
+    """WV-5 for one document: `{"raised": {code, unbound}}` for an `ApplicationError`,
+    `{"admitted": <report type>}` when admitted, `{"error": …}` for anything else."""
+    from openflowsheet.application.errors import ApplicationError  # noqa: PLC0415
+    from openflowsheet.application.local import LocalApplication  # noqa: PLC0415
+
+    try:
+        with LocalApplication.in_memory() as application:
+            report = application.check_admission(revision=document)
+    except ApplicationError as error:
+        detail = error.error.detail
+        unbound = detail.get("unbound") if isinstance(detail, Mapping) else None
+        return {"raised": {"code": error.error.code, "unbound": unbound}}
+    except Exception as error:  # noqa: BLE001
+        return {"error": _raised(error)}
+    return {"admitted": type(report).__name__}
+
+
+def probe_f2(checkout: bool, inputs_path: Path) -> dict[str, Any]:
+    """WV-2 to WV-5's probe: the entry points of `EXTENSIONS_GROUP`, the thread variables, each
+    input document's committed run (WV-3) and the admission of N and of the base's v2 (WV-5)."""
+    import importlib.metadata  # noqa: PLC0415
+
+    import openflowsheet  # noqa: PLC0415
+
+    found: dict[str, Any] = {
+        "module_file": openflowsheet.__file__,
+        "version": openflowsheet.__version__,
+        "entry_points": sorted(
+            f"{point.name} = {point.value}"
+            for point in importlib.metadata.entry_points(group=EXTENSIONS_GROUP)
+        ),
+        "threads": {name: os.environ.get(name) for name in F2_THREADS},
+    }
+    if checkout and not Path(openflowsheet.__file__).resolve().is_relative_to(ROOT / "src"):
+        raise SystemExit(f"probe --in-checkout --f2: openflowsheet is not imported from {ROOT}")
+    inputs = json.loads(inputs_path.read_text(encoding="utf-8"))
+    found["runs"] = {
+        key: {version: _committed_run(pair[version]) for version in ("v1", "v2")}
+        for key, pair in sorted(inputs["revisions"].items())
+    }
+    found["refusal"] = {
+        "N": _admission(inputs["refused"]),
+        "v2": _admission(inputs["revisions"][F2_BASE]["v2"]),
+    }
+    return found
+
+
+def _ran(run: Mapping[str, Any]) -> bool:
+    """One document's WV-3 clauses: committed, ready, converged, a manifest with a 64-hex r0 and
+    a name-to-64-hex `artifacts` index that holds `solution-state.json`."""
+    artifacts = run.get("artifacts")
+    return (
+        run.get("status") == "committed"
+        and run.get("validation") == "READY_FOR_SIMULATION"
+        and run.get("outcome") == "CONVERGED"
+        and run.get("run_manifests") == 1
+        and isinstance(run.get("artifact_r0_sha256"), str)
+        and HEX64.fullmatch(run["artifact_r0_sha256"]) is not None
+        and isinstance(artifacts, dict)
+        and "solution-state.json" in artifacts
+        and all(isinstance(v, str) and HEX64.fullmatch(v) for v in artifacts.values())
+    )
+
+
+def f2_findings(
+    installed: Mapping[str, Any], checkout: Mapping[str, Any], registered: Mapping[str, Any]
+) -> dict[str, bool]:
+    """WV-2's probe clauses and WV-3 to WV-5 from the two probe documents and F0's registered
+    M3 (`registered_r0`)."""
+    sides = (installed, checkout)
+    keys = sorted(f"{s}/{n}" for s, n in F2_STATES)
+
+    def runs(side: Mapping[str, Any]) -> dict[str, Any]:
+        found = side.get("runs")
+        return found if isinstance(found, dict) and sorted(found) == keys else {}
+
+    def twin(side: Mapping[str, Any], key: str) -> bool:
+        pair = runs(side).get(key, {})
+        v1, v2 = pair.get("v1", {}), pair.get("v2", {})
+        return (
+            _ran(v1)
+            and _ran(v2)
+            and v2["artifact_r0_sha256"] == v1["artifact_r0_sha256"]
+            and v2["artifacts"] == v1["artifacts"]
+        )
+
+    def r0(side: Mapping[str, Any], key: str) -> Any:
+        return runs(side).get(key, {}).get("v2", {}).get("artifact_r0_sha256")
+
+    refused = {"raised": {"code": "revision_unsupported", "unbound": F2_REFUSAL}}
+    return {
+        "site_packages": "site-packages" in str(installed.get("module_file", "")),
+        "no_extensions": all(side.get("entry_points") == [] for side in sides),
+        "threads": all(side.get("threads") == dict.fromkeys(F2_THREADS, "1") for side in sides),
+        "v2_runs_as_v1": all(bool(runs(side)) and twin(side, k) for side in sides for k in keys),
+        "r0_registered": all(
+            isinstance(registered.get(k), str) and HEX64.fullmatch(registered[k]) for k in keys
+        )
+        and all(r0(side, k) == registered[k] for side in sides for k in keys),
+        "refusal": all(
+            side.get("refusal", {}).get("N") == refused
+            and set(side.get("refusal", {}).get("v2", {})) == {"admitted"}
+            for side in sides
+        ),
+    }
+
+
 # -- the item --------------------------------------------------------------------------------------
 
 
@@ -629,6 +879,124 @@ def run_f1f3_checks(commit: str, work: Path) -> tuple[list[dict[str, Any]], dict
     return checks, findings
 
 
+def run_f2_checks(commit: str, work: Path) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    """WHEEL-F2: build the wheel at `commit` into `work`, write the inputs in the checkout,
+    install the wheel into a fresh venv, run the F2 probe there and in the checkout, judge; the
+    checks and the findings."""
+    logs = work / "logs"
+    logs.mkdir(parents=True, exist_ok=True)
+    checks: list[dict[str, Any]] = []
+    wheel, _ = wheel_members(_built(commit, work, logs, checks))
+    inputs_path = work / "f2-inputs.json"
+    try:
+        inputs = f2_inputs()
+    except Exception as error:  # noqa: BLE001 - f2.inputs fails by name; the probes find no file
+        _check(checks, "f2.inputs", False, error=_raised(error))
+        documents: dict[str, str] = {}
+    else:
+        inputs_path.write_bytes(canonical(inputs))
+        said = inputs_findings(inputs)
+        documents = said["documents"]
+        _check(checks, "f2.inputs", said["ok"], **said)
+    installed_path = work / "f2-installed.json"
+    checkout_path = work / "f2-checkout.json"
+    probe_cwd = work / "probe-cwd"
+    probe_cwd.mkdir(exist_ok=True)
+    me = str(Path(__file__).resolve())
+    threads = dict.fromkeys(F2_THREADS, "1")
+    flags = ["probe", "--f2", "--inputs", str(inputs_path)]
+    exits: dict[str, int | None] = dict.fromkeys(("venv", "lock", "wheel", "probe", "checkout"))
+    python = _fresh_venv(work, wheel, logs, exits)
+    if exits["wheel"] == 0:
+        exits["probe"] = _run(
+            [str(python), "-I", me, *flags, "--out", str(installed_path)],
+            logs / "f2-probe.log",
+            cwd=probe_cwd,
+            **threads,
+        )
+    exits["checkout"] = _run(
+        [sys.executable, me, *flags, "--in-checkout", "--out", str(checkout_path)],
+        logs / "f2-checkout.log",
+        cwd=ROOT,
+        PYTHONPATH=str(ROOT / "src"),
+        **threads,
+    )
+    sides = {"installed": _json(installed_path), "checkout": _json(checkout_path)}
+    shown = subprocess.run(
+        ["git", "show", f"{commit}:{F0_REGISTRY.as_posix()}"],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    registered = registered_r0(shown.stdout if shown.returncode == 0 else "{}")
+    found = f2_findings(sides["installed"], sides["checkout"], registered)
+    _check(
+        checks,
+        "f2.probes",
+        all(code == 0 for code in exits.values())
+        and found["site_packages"]
+        and found["no_extensions"]
+        and found["threads"],
+        exits=exits,
+        module_file={side: doc.get("module_file") for side, doc in sides.items()},
+        entry_points={side: doc.get("entry_points") for side, doc in sides.items()},
+        threads={side: doc.get("threads") for side, doc in sides.items()},
+        probe_sha256={
+            side: sha256(path.read_bytes()) if path.exists() else None
+            for side, path in (("installed", installed_path), ("checkout", checkout_path))
+        },
+    )
+    runs = {side: doc.get("runs") or {} for side, doc in sides.items()}
+
+    def each(field: str) -> dict[str, Any]:
+        return {
+            side: {
+                key: {version: run.get(field) for version, run in pair.items()}
+                for key, pair in found_runs.items()
+            }
+            for side, found_runs in runs.items()
+        }
+
+    r0 = each("artifact_r0_sha256")
+    artifacts_sha256 = {
+        side: {
+            key: {
+                version: sha256(canonical(run["artifacts"])) if "artifacts" in run else None
+                for version, run in pair.items()
+            }
+            for key, pair in found_runs.items()
+        }
+        for side, found_runs in runs.items()
+    }
+    _check(
+        checks,
+        "f2.v2_runs_as_v1",
+        found["v2_runs_as_v1"],
+        r0=r0,
+        artifacts_sha256=artifacts_sha256,
+        status=each("status"),
+        validation=each("validation"),
+        outcome=each("outcome"),
+        error=each("error"),
+    )
+    _check(checks, "f2.r0_registered", found["r0_registered"], registered=registered, r0=r0)
+    refusal = {side: doc.get("refusal") for side, doc in sides.items()}
+    _check(checks, "f2.refusal", found["refusal"], expected=F2_REFUSAL, **refusal)
+    findings = {
+        "documents": documents,
+        "r0": r0,
+        "registered": registered,
+        "artifacts_sha256": artifacts_sha256,
+        "refusal": {
+            side: ((said or {}).get("N") or {}).get("raised", {}).get("unbound")
+            for side, said in refusal.items()
+        },
+        "wheel_sha256": sha256(wheel.read_bytes()) if wheel is not None else None,
+    }
+    return checks, findings
+
+
 def _head() -> str:
     return subprocess.run(
         ["git", "rev-parse", "HEAD"], cwd=ROOT, capture_output=True, text=True, check=True
@@ -643,14 +1011,21 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument(
         "--in-checkout", action="store_true", help="probe: the checkout's (c) answers only"
     )
-    parser.add_argument(
+    item = parser.add_mutually_exclusive_group()
+    item.add_argument(
         "--f1-f3", action="store_true", help="RC item WHEEL-F1-F3 (or its probe) instead"
     )
+    item.add_argument("--f2", action="store_true", help="RC item WHEEL-F2 (or its probe) instead")
+    parser.add_argument("--inputs", type=Path, help="probe --f2: the inputs the item wrote")
     arguments = parser.parse_args(argv)
     if arguments.mode == "probe":
         if arguments.out is None:
             parser.error("probe needs --out")
-        if arguments.f1_f3:
+        if arguments.f2:
+            if arguments.inputs is None:
+                parser.error("probe --f2 needs --inputs")
+            found = probe_f2(arguments.in_checkout, arguments.inputs)
+        elif arguments.f1_f3:
             found = probe_f1f3(arguments.in_checkout)
         else:
             found = probe(arguments.in_checkout)
@@ -665,7 +1040,16 @@ def main(argv: Sequence[str] | None = None) -> int:
     with tempfile.TemporaryDirectory(prefix="wheel-data-") as scratch:
         work = arguments.out or Path(scratch)
         work.mkdir(parents=True, exist_ok=True)
-        if arguments.f1_f3:
+        if arguments.f2:
+            checks, findings = run_f2_checks(head, work)
+            document = {
+                "format": "wheel-f2-check-v1",
+                "commit": head,
+                "findings": findings,
+                "checks": checks,
+            }
+            name, title = "wheel-f2-check.json", "wheel data check (F2)"
+        elif arguments.f1_f3:
             checks, findings = run_f1f3_checks(head, work)
             document = {
                 "format": "wheel-f1f3-check-v1",
