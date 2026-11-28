@@ -12,14 +12,14 @@
     "gate_set.packages",
     "gate_set.rc_record",
     "gate_set.required_adrs",
-    "gate_set.verdict_document"
+    "gate_set.verdict_document",
+    "rc_items"
   ],
   "_comment": [
-    "The 0.6 line (RP section 3; ADR 0057 Amendment 3, R-1070: F2, F8 WO1-WO3 and WO5, X06). DRAFT, LINE06-L0.",
-    "Drafted by the build lane from 0.5's line at the planning commit; the claim set, the clause and gates[*] are 0.5's.",
-    "Open until the release design pass (LINE06-L1, as REL050-L1 for 0.5): new rc_items for the F2/F8/X06 exits and the",
-    "three-OS v2 clause, the what-it-is-not phrases, required_adrs (0078 is X06's ADR, number reserved), the frank_items.",
-    "Proposals and reasons: docs/briefs/LINE06-line-0.6.md."
+    "The 0.6 line (RP section 3; R-1070, ADR 0057 Amendment 3: F2, F8 WO1-WO3 and WO5, X06). LINE06-L1, 2026-11-28.",
+    "The claim set, the clause and gates[*] are 0.5's unchanged. Why each changed field differs, what is carried, the",
+    "two new rc_items (WHEEL-F2; F2-THREE-OS, the line clause on four CI legs) and what 0.6 does not claim:",
+    "docs/briefs/REL060-line-0.6.md. Build-lane fields there are proposals (RP section 13)."
   ],
   "gate_set": {
     "name": "v0.6-gate-v1",
@@ -43,32 +43,12 @@
       "W26",
       "X31"
     ],
-    "not_claimed": [
-      "W27"
-    ],
+    "not_claimed": ["W27"],
     "clause": "\\b(?:V(?:1[1-9]|20)|W2[1-6]|X31) \\([a-z0-9]+\\)",
     "acceptances": "release/acceptances.md",
     "verdict_document": "docs/reviews/REL060-verdicts.md",
     "rc_record": "docs/REL060-rc-record.md",
-    "rc_steps": [
-      1,
-      2,
-      3,
-      4,
-      5,
-      6,
-      7,
-      8,
-      9,
-      10,
-      11,
-      12,
-      13,
-      14,
-      15,
-      16,
-      17
-    ],
+    "rc_steps": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17],
     "rc_last_step": 18,
     "evidence_package": "REL060",
     "packages": [
@@ -104,6 +84,7 @@
     "envelope_id": "v0.6-envelope-1",
     "required_adrs": [
       "0007",
+      "0019",
       "0022",
       "0026",
       "0027",
@@ -139,41 +120,15 @@
       "0077",
       "0078"
     ],
-    "frank_items": [
-      "Claim set",
-      "V17 carry",
-      "M02 N1",
-      "M03 N1",
-      "coolprop and lca licences"
-    ],
-    "rejudge_waits": [
-      [
-        "V13",
-        "V17 carry"
-      ],
-      [
-        "V17",
-        "V17 carry"
-      ],
-      [
-        "W21",
-        "M02 N1"
-      ],
-      [
-        "W24",
-        "M03 N1"
-      ]
-    ],
+    "frank_items": ["Claim set", "V17 carry", "M02 N1", "M03 N1", "coolprop and lca licences"],
+    "rejudge_waits": [["V13", "V17 carry"], ["V17", "V17 carry"], ["W21", "M02 N1"], ["W24", "M03 N1"]],
     "links_item": "V17 carry",
-    "specification_texts": [
-      "the standing release procedure",
-      "§6"
-    ]
+    "specification_texts": ["the standing release procedure", "§6"]
   },
   "changelog_what_it_is_not": [
     "numerical verification, not empirical validation",
     "no global optimality",
-    "the release is judged on Linux only, not on Windows or macOS",
+    "the release is judged on Linux only, except that v2 lowering is also judged on Windows and macOS",
     "bundles reproduce across platforms only between Linux x86-64 and aarch64",
     "the nlp and reactor environments and the coolprop extra are Linux only, and Windows refuses external models",
     "not a sandbox",
@@ -191,8 +146,12 @@
     "no CFD or Peclet refinement",
     "no external benchmark score",
     "v2 revision documents solve only on the legacy route",
-    "no F4 property methods, F5 phase equilibrium or std.* units",
-    "a plugin adds no unit model or property method that a solve uses"
+    "no solve reads the component record store",
+    "a plugin adds no unit model or property method that a solve uses",
+    "no F4 property methods, F5 phase equilibrium or F6 std.* unit models",
+    "no run writes a v2 bundle, and a v2 bundle is inspected, not rerun",
+    "no job resume, and no branch merge or rebase",
+    "no TLS or OAuth on the HTTP server"
   ],
   "gates": {
     "V11": {
@@ -204,12 +163,7 @@
         "tests/test_t08_*.py",
         "tests/test_m07a_*.py"
       ],
-      "rc": [
-        [
-          1,
-          "*"
-        ]
-      ],
+      "rc": [[1, "*"]],
       "criteria": [
         "docs/derivations/release-procedure.md",
         "docs/derivations/V02-alpha-release-spec.md",
@@ -218,17 +172,8 @@
       "documents": []
     },
     "V12": {
-      "tests": [
-        "tests/test_t05_*.py",
-        "tests/test_t05b_*.py",
-        "tests/test_t08_*.py"
-      ],
-      "rc": [
-        [
-          1,
-          "*"
-        ]
-      ],
+      "tests": ["tests/test_t05_*.py", "tests/test_t05b_*.py", "tests/test_t08_*.py"],
+      "rc": [[1, "*"]],
       "criteria": [
         "docs/derivations/release-procedure.md",
         "docs/derivations/V02-alpha-release-spec.md",
@@ -244,16 +189,7 @@
         "tests/test_t08_*.py",
         "tests/test_m07a_*.py"
       ],
-      "rc": [
-        [
-          1,
-          "*"
-        ],
-        [
-          8,
-          "*"
-        ]
-      ],
+      "rc": [[1, "*"], [8, "*"]],
       "criteria": [
         "docs/derivations/release-procedure.md",
         "docs/derivations/V02-alpha-release-spec.md",
@@ -262,51 +198,18 @@
       "documents": []
     },
     "V14": {
-      "tests": [
-        "tests/test_t02_*.py",
-        "tests/test_t04_*.py",
-        "tests/test_t08_*.py"
-      ],
-      "rc": [
-        [
-          1,
-          "*"
-        ],
-        [
-          17,
-          "PTC-R1"
-        ]
-      ],
+      "tests": ["tests/test_t02_*.py", "tests/test_t04_*.py", "tests/test_t08_*.py"],
+      "rc": [[1, "*"], [17, "PTC-R1"]],
       "criteria": [
         "docs/derivations/release-procedure.md",
         "docs/derivations/V02-alpha-release-spec.md",
         "docs/derivations/T08-release-spec.md"
       ],
-      "documents": [
-        "docs/reviews/T08-verdict-V14b.md",
-        "benchmarks/t08/ptc_r1"
-      ]
+      "documents": ["docs/reviews/T08-verdict-V14b.md", "benchmarks/t08/ptc_r1"]
     },
     "V15": {
-      "tests": [
-        "tests/test_t02_*.py",
-        "tests/test_t03_*.py",
-        "tests/test_t06_*.py"
-      ],
-      "rc": [
-        [
-          1,
-          "*"
-        ],
-        [
-          10,
-          "*"
-        ],
-        [
-          12,
-          "a41.*"
-        ]
-      ],
+      "tests": ["tests/test_t02_*.py", "tests/test_t03_*.py", "tests/test_t06_*.py"],
+      "rc": [[1, "*"], [10, "*"], [12, "a41.*"]],
       "criteria": [
         "docs/derivations/release-procedure.md",
         "docs/derivations/V02-alpha-release-spec.md",
@@ -315,124 +218,49 @@
       "documents": []
     },
     "V16": {
-      "tests": [
-        "tests/test_t06_*.py"
-      ],
-      "rc": [
-        [
-          7,
-          "a48.*"
-        ]
-      ],
+      "tests": ["tests/test_t06_*.py"],
+      "rc": [[7, "a48.*"]],
       "criteria": [
         "docs/derivations/release-procedure.md",
         "docs/derivations/V02-alpha-release-spec.md",
         "docs/derivations/T08-release-spec.md"
       ],
-      "documents": [
-        "docs/reviews/T06-verdicts.md"
-      ]
+      "documents": ["docs/reviews/T06-verdicts.md"]
     },
     "V17": {
-      "tests": [
-        "tests/test_m07a_*.py"
-      ],
-      "rc": [
-        [
-          8,
-          "*"
-        ]
-      ],
+      "tests": ["tests/test_m07a_*.py"],
+      "rc": [[8, "*"]],
       "criteria": [
         "docs/derivations/release-procedure.md",
         "docs/derivations/V02-alpha-release-spec.md",
         "docs/derivations/T08-release-spec.md"
       ],
-      "documents": [
-        "benchmarks/t07/v17/runs/v17-c2",
-        "tests/fixtures/t08/v17_c2_descriptions"
-      ]
+      "documents": ["benchmarks/t07/v17/runs/v17-c2", "tests/fixtures/t08/v17_c2_descriptions"]
     },
     "V18": {
-      "tests": [
-        "tests/test_t08_*.py",
-        "tests/test_x05_*.py"
-      ],
-      "rc": [
-        [
-          1,
-          "*"
-        ],
-        [
-          4,
-          "x05.*"
-        ],
-        [
-          9,
-          "*"
-        ],
-        [
-          10,
-          "*"
-        ],
-        [
-          17,
-          "MR12-coolprop"
-        ],
-        [
-          17,
-          "MR12-lca"
-        ]
-      ],
+      "tests": ["tests/test_t08_*.py", "tests/test_x05_*.py"],
+      "rc": [[1, "*"], [4, "x05.*"], [9, "*"], [10, "*"], [17, "MR12-coolprop"], [17, "MR12-lca"]],
       "criteria": [
         "docs/derivations/release-procedure.md",
         "docs/derivations/V02-alpha-release-spec.md",
         "docs/derivations/T08-release-spec.md",
         "docs/derivations/V03-release-spec.md"
       ],
-      "documents": [
-        "docs/s07-coolprop-licences.json",
-        "docs/e01-lca-licences.json"
-      ]
+      "documents": ["docs/s07-coolprop-licences.json", "docs/e01-lca-licences.json"]
     },
     "V19": {
-      "tests": [
-        "tests/test_t08_*.py"
-      ],
-      "rc": [
-        [
-          1,
-          "*"
-        ]
-      ],
+      "tests": ["tests/test_t08_*.py"],
+      "rc": [[1, "*"]],
       "criteria": [
         "docs/derivations/release-procedure.md",
         "docs/derivations/V02-alpha-release-spec.md",
         "docs/derivations/T08-release-spec.md"
       ],
-      "documents": [
-        "docs/v02-real-chemistry-dossier.md",
-        "benchmarks/t08/v19"
-      ]
+      "documents": ["docs/v02-real-chemistry-dossier.md", "benchmarks/t08/v19"]
     },
     "V20": {
-      "tests": [
-        "tests/test_t08_*.py"
-      ],
-      "rc": [
-        [
-          1,
-          "*"
-        ],
-        [
-          6,
-          "*"
-        ],
-        [
-          7,
-          "a47.*"
-        ]
-      ],
+      "tests": ["tests/test_t08_*.py"],
+      "rc": [[1, "*"], [6, "*"], [7, "a47.*"]],
       "criteria": [
         "docs/derivations/release-procedure.md",
         "docs/derivations/V02-alpha-release-spec.md",
@@ -441,40 +269,14 @@
       "documents": []
     },
     "W21": {
-      "tests": [
-        "tests/test_m02_*.py"
-      ],
-      "rc": [
-        [
-          12,
-          "*"
-        ]
-      ],
-      "criteria": [
-        "docs/derivations/release-procedure.md",
-        "docs/derivations/V02-alpha-release-spec.md"
-      ],
+      "tests": ["tests/test_m02_*.py"],
+      "rc": [[12, "*"]],
+      "criteria": ["docs/derivations/release-procedure.md", "docs/derivations/V02-alpha-release-spec.md"],
       "documents": []
     },
     "W22": {
-      "tests": [
-        "tests/test_m01_*.py",
-        "tests/test_m02_*.py"
-      ],
-      "rc": [
-        [
-          1,
-          "*"
-        ],
-        [
-          11,
-          "*"
-        ],
-        [
-          12,
-          "a41.g12"
-        ]
-      ],
+      "tests": ["tests/test_m01_*.py", "tests/test_m02_*.py"],
+      "rc": [[1, "*"], [11, "*"], [12, "a41.g12"]],
       "criteria": [
         "docs/derivations/release-procedure.md",
         "docs/derivations/V02-alpha-release-spec.md",
@@ -483,20 +285,8 @@
       "documents": []
     },
     "W23": {
-      "tests": [
-        "tests/test_m04_*.py",
-        "tests/test_evidence_manifests.py"
-      ],
-      "rc": [
-        [
-          1,
-          "*"
-        ],
-        [
-          13,
-          "*"
-        ]
-      ],
+      "tests": ["tests/test_m04_*.py", "tests/test_evidence_manifests.py"],
+      "rc": [[1, "*"], [13, "*"]],
       "criteria": [
         "docs/derivations/release-procedure.md",
         "docs/derivations/M07-spec.md",
@@ -505,60 +295,22 @@
       "documents": []
     },
     "W24": {
-      "tests": [
-        "tests/test_m03_*.py",
-        "tests/test_m05_*.py"
-      ],
-      "rc": [
-        [
-          14,
-          "*"
-        ]
-      ],
-      "criteria": [
-        "docs/derivations/release-procedure.md",
-        "docs/derivations/M07-spec.md"
-      ],
+      "tests": ["tests/test_m03_*.py", "tests/test_m05_*.py"],
+      "rc": [[14, "*"]],
+      "criteria": ["docs/derivations/release-procedure.md", "docs/derivations/M07-spec.md"],
       "documents": []
     },
     "W25": {
-      "tests": [
-        "tests/test_m07_*.py"
-      ],
-      "rc": [
-        [
-          15,
-          "*"
-        ]
-      ],
-      "criteria": [
-        "docs/derivations/release-procedure.md",
-        "docs/derivations/M07-spec.md"
-      ],
+      "tests": ["tests/test_m07_*.py"],
+      "rc": [[15, "*"]],
+      "criteria": ["docs/derivations/release-procedure.md", "docs/derivations/M07-spec.md"],
       "documents": []
     },
     "W26": {
-      "tests": [
-        "tests/test_m06_*.py",
-        "tests/web/*.test.mjs"
-      ],
-      "rc": [
-        [
-          1,
-          "*"
-        ],
-        [
-          16,
-          "*"
-        ]
-      ],
-      "criteria": [
-        "docs/derivations/release-procedure.md",
-        "docs/derivations/M07-spec.md"
-      ],
-      "documents": [
-        "benchmarks/m06/openidaes450/coverage.json"
-      ]
+      "tests": ["tests/test_m06_*.py", "tests/web/*.test.mjs"],
+      "rc": [[1, "*"], [16, "*"]],
+      "criteria": ["docs/derivations/release-procedure.md", "docs/derivations/M07-spec.md"],
+      "documents": ["benchmarks/m06/openidaes450/coverage.json"]
     },
     "X31": {
       "tests": [
@@ -569,20 +321,13 @@
         "tests/test_s09_*.py",
         "tests/test_s10c_*.py"
       ],
-      "rc": [
-        [
-          1,
-          "*"
-        ]
-      ],
+      "rc": [[1, "*"]],
       "criteria": [
         "docs/derivations/release-procedure.md",
         "docs/derivations/S03-spec.md",
         "docs/derivations/S09-spec.md"
       ],
-      "documents": [
-        "docs/reviews/S09-verdicts.md"
-      ]
+      "documents": ["docs/reviews/S09-verdicts.md"]
     }
   },
   "rc_items": [
@@ -591,11 +336,7 @@
       "assertion": "E01 G10 (E01.A48): a48_release_check() is pass, 0 unverified primary ranges (V03 17a)",
       "script": "scripts/e01_evidence_manifest.py",
       "where": "local:project",
-      "command": [
-        "python",
-        "scripts/e01_evidence_manifest.py",
-        "--a48-release-check"
-      ]
+      "command": ["python", "scripts/e01_evidence_manifest.py", "--a48-release-check"]
     },
     {
       "id": "S07-F8",
@@ -608,23 +349,14 @@
       "assertion": "MR-12, coolprop extra: G19's inventory of the extra's increment (R-624; V03 17c)",
       "script": "scripts/t07_licence_inventory.py",
       "where": "local:coolprop",
-      "command": [
-        "python",
-        "scripts/t07_licence_inventory.py",
-        "--extra",
-        "coolprop"
-      ]
+      "command": ["python", "scripts/t07_licence_inventory.py", "--extra", "coolprop"]
     },
     {
       "id": "MR12-lca",
       "assertion": "MR-12, lca extra: WO-B1/D04's licence inventory check, E01.A42 (R-900; V03 17c)",
       "script": "scripts/e01_d04_inventory.py",
       "where": "local:project",
-      "command": [
-        "python",
-        "scripts/e01_d04_inventory.py",
-        "--check"
-      ]
+      "command": ["python", "scripts/e01_d04_inventory.py", "--check"]
     },
     {
       "id": "E01-G5-lca",
@@ -667,24 +399,43 @@
       "assertion": "the wheel holds the ship set and E01's data; Wilson binds from it (V03.A17, A19)",
       "script": "scripts/wheel_data_check.py",
       "where": "local:project",
-      "command": [
-        "python",
-        "scripts/wheel_data_check.py",
-        "--commit",
-        "$C"
-      ]
+      "command": ["python", "scripts/wheel_data_check.py", "--commit", "$C"]
     },
     {
       "id": "WHEEL-F1-F3",
       "assertion": "F1's registry and F3's legacy record store answer from the installed wheel as from C: registry_sha256 equal; the legacy (id, record_sha256) pairs equal legacy_index.json's, all of them in the checkout and those of its package-data files in the wheel (ADR 0061 D8) (0.5 ships package data beyond 0.4.0's, RP 3.6 item 4; WF-1 to WF-5 of docs/briefs/REL050-line-0.5.md)",
       "script": "scripts/wheel_data_check.py",
       "where": "local:project",
+      "command": ["python", "scripts/wheel_data_check.py", "--commit", "$C", "--f1-f3"]
+    },
+    {
+      "id": "WHEEL-F2",
+      "assertion": "F2's v2 route answers from the installed wheel as from C: the raised twins of F0's g8/SYN-001-T06-NET02 and s11-gp/GP-C1 solve as their v1 runs (artifact index equal to the v1 run's, artifact_r0_sha256 F0's registered M3) and a non-expressible variant is refused unsupported(construct_unavailable(thermal_coordinate:h_mass, F6)) (0.6 ships package data that only the v2 route reads, RP 3.6 item 4; WV-1 to WV-6 of docs/briefs/REL060-line-0.6.md)",
+      "script": "scripts/wheel_data_check.py",
+      "where": "local:project",
+      "command": ["python", "scripts/wheel_data_check.py", "--commit", "$C", "--f2"]
+    },
+    {
+      "id": "F2-THREE-OS",
+      "assertion": "the 0.6 line clause (ADR 0057 Amendment 3, R-1070) at C: in the push run step 1 judged, the check job's junit on the Linux x86-64 and aarch64, Windows x86-64 and macOS arm64 legs holds the same non-empty set of E-F2-3 run-half cases and the run-set count case of tests/test_f2_amendment9.py, every one passed, none skipped (ADR 0062 D8, E-F2-3; TO-1 to TO-6 of docs/briefs/REL060-line-0.6.md)",
+      "script": "scripts/release_rc.py",
+      "where": "local:project",
       "command": [
         "python",
-        "scripts/wheel_data_check.py",
+        "scripts/release_rc.py",
+        "junit-cases",
         "--commit",
         "$C",
-        "--f1-f3"
+        "--rc",
+        "$RC_OUT",
+        "--id",
+        "F2-THREE-OS",
+        "--legs",
+        "x86_64,aarch64,Windows-X64,macOS-ARM64",
+        "--case",
+        "tests/test_f2_amendment9.py::test_e_f2_3_raised_run_writes_the_v1_bundle",
+        "--case",
+        "tests/test_f2_amendment9.py::test_e_f2_3_run_set_is_47_g8_and_9_basis_cases"
       ]
     },
     {
