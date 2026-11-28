@@ -52,7 +52,16 @@ F3 (ADR 0061 D13) adds the `Records` responses on one synthetic user record
 item's first `effective_rights`; `rights_assessment_result` (the record assessed `permitted`);
 `record_view` (the record, after the assessment) and its first row, `rights_row`;
 `record_validation_report` (the record with an empty `name`, refused). A rights row's `date` is
-masked like the timestamps.
+masked like the timestamps. X06 (ADR 0078 D2.5) adds `branch_result` (`create_branch` of
+`what-if` at the parent), `branch_page` (`list_branches`: `head` and `what-if`) and its first
+item, `branch`; X06-WO3 (D4.5) adds `solve_policy_registration` (`register_solve_policy` of
+`user.copy`, `T04-W12` renamed: the revision path's policy names values no committed fixture
+may carry, X06-CI1-2) and `solve_policy_view` (`get_solve_policy` of it);
+X06-WO4 (D5.2), with the operator's switch on, adds `ambient_pressure_result` (1 bar declared),
+`grant_result` (a `read` grant within `project grant`'s limits) and `revoke_result` (that grant
+revoked), `tests/x06_schema_support.administration_requests`. What a grant draws at random (its
+token, every `token_sha256`, the grant's `policy_sha256`) is masked
+(`x06_schema_support.stable_administration`).
 "Regenerates identically" is `stable` equality, as for the jobs
 (`tests/test_t07_w5e_application_results.py`).
 
@@ -78,7 +87,13 @@ sys.path.insert(0, str(ROOT / "tests"))
 import yaml  # noqa: E402
 from f3_schema_support import user_component  # noqa: E402
 from t07_jobs_support import cancel_while_queued, commit, lifecycle_violations  # noqa: E402
+from x06_schema_support import (  # noqa: E402
+    administration_requests,
+    solve_policies_requests,
+    stable_administration,
+)
 
+from openflowsheet.application.authz import set_administration  # noqa: E402
 from openflowsheet.application.errors import ApplicationError  # noqa: E402
 from openflowsheet.application.job_requests import (  # noqa: E402
     JobRequest,
@@ -146,6 +161,20 @@ RESULTS_VALID = {
     "record_view": "user_component_assessed",
     "rights_row": "project_record_row",
     "record_validation_report": "empty_name_refused",
+    "branch_result": "created_at_the_parent",
+    "branch_page": "head_and_one_branch",
+    "branch": "head",
+    "solve_policy_registration": "user_copy_registered",
+    "solve_policy_view": "user_copy",
+    "ambient_pressure_result": "one_bar_declared",
+    "grant_result": "read_grant_within_limits",
+    "revoke_result": "read_grant_revoked",
+}
+#: X06-WO4 (ADR 0078 D5.2): each `Administration` write's `$def`.
+ADMINISTRATION_RESULTS = {
+    "set_ambient_pressure": "ambient_pressure_result",
+    "grant_capability": "grant_result",
+    "revoke_capability": "revoke_result",
 }
 #: F1 (ADR 0060 D10, D11): members that follow the code, not the response's shape.
 REGISTRY_VOLATILE = frozenset({"registry_sha256", "self_sha256", "distribution_version"})
@@ -325,6 +354,25 @@ def application_results_documents() -> dict[str, Any]:
             responses["record_validation_report"] = call(
                 "validate_record", {"record": {**record, "name": ""}}
             )
+            # X06 (ADR 0078 D2.5): a branch at the parent, and the refs listed.
+            responses["branch_result"] = call(
+                "create_branch",
+                {"name": "what-if", "revision_id": parent, "idempotency_key": "fixture-branch"},
+            )
+            branches = call("list_branches", {})
+            responses["branch_page"] = branches
+            responses["branch"] = branches["items"][0]
+            # X06 (ADR 0078 D4.5): a renamed copy of the legacy route's policy, registered.
+            for name, request in solve_policies_requests(base="T04-W12"):
+                key = "solve_policy_registration" if name == "register_solve_policy" else None
+                responses[key or "solve_policy_view"] = call(name, request)
+            # X06 (ADR 0078 D5.2): the operator's switch on, then each administration write.
+            assert application.store.directory is not None
+            set_administration(application.store.directory, True)
+            for name, request in administration_requests():
+                response = call(name, request)
+                if name in ADMINISTRATION_RESULTS:
+                    responses[ADMINISTRATION_RESULTS[name]] = response
             violations = lifecycle_violations(application)
             if violations:
                 raise SystemExit(f"the fixture job breaks the lifecycle: {violations}")
@@ -381,7 +429,12 @@ def documents() -> dict[str, Any]:
 def stable(document: Any) -> Any:
     """`document` with the members that differ between generations masked: timestamps, the
     `sha256` and `size_bytes` of every artifact reference, and the registry's code-bound members
-    (`REGISTRY_VOLATILE`)."""
+    (`REGISTRY_VOLATILE`), and what an administration grant draws at random
+    (`stable_administration`)."""
+    return _stable(stable_administration(document))
+
+
+def _stable(document: Any) -> Any:
     if isinstance(document, dict):
         reference = {"kind", "artifact_id", "sha256", "size_bytes", "name"} == set(document)
         return {
@@ -389,11 +442,11 @@ def stable(document: Any) -> Any:
             if key in TIMESTAMPS
             or key in REGISTRY_VOLATILE
             or (reference and key in ("sha256", "size_bytes"))
-            else stable(value)
+            else _stable(value)
             for key, value in document.items()
         }
     if isinstance(document, list):
-        return [stable(item) for item in document]
+        return [_stable(item) for item in document]
     return document
 
 

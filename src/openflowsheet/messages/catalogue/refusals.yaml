@@ -2113,3 +2113,179 @@ entries:
     see_also: [amount_basis_mismatch, signal_kind_mismatch]
     examples:
       - params: {specification: SP1}
+  # X06 (ADR 0078 D1.5 (b)): MCP over streamable HTTP refuses a request a browser sent from a
+  # page of another origin (`forbidden`, before the credential is read).
+  - code: origin_refused
+    family: refusal
+    kind: input
+    complete: true
+    title: A request to /mcp from a web page of another origin
+    params:
+      origin: {type: text, optional: true, label: origin}
+    summary: "The request to /mcp was refused: it came from a web page[ at {origin!raw}] that this server does not serve."
+    why: "A browser names the origin of the page that sends a request. The /mcp endpoint accepts requests from the origins of the address it is served on and from programs that name no origin (MCP clients), and refuses the rest, so that a page of another site cannot reach the server through a browser."
+    action: "Connect an MCP client program to /mcp with the Authorization: Bearer header configured; a web page of another origin cannot use this server."
+    examples:
+      - chain: [forbidden, origin_refused]
+        params: {origin: "http://elsewhere.example"}
+      - chain: [forbidden, origin_refused]
+        params: {}
+  # X06 (ADR 0078 D2.3, D2.4): branches. `head` is the main line's name, never a branch's; a
+  # commit, preview or delete naming a branch the project does not hold is `not_found`.
+  - code: branch_name_reserved
+    family: refusal
+    kind: input
+    complete: true
+    title: The name head given to a branch
+    params:
+      name: {type: text, optional: true, label: name}
+    summary: "The name head is reserved for the project's main line, so no branch can have it."
+    why: "A project keeps its main line under the name head; a branch is a second name for a line of revisions next to it. Creating or deleting a branch called head would replace or remove the main line, so the name is refused."
+    action: "Choose another name for the branch. To work on the main line, leave out the branch, or give head as the branch of a change."
+    examples:
+      - chain: [invalid_request, branch_name_reserved]
+        params: {name: head}
+  - code: branch_not_found
+    family: refusal
+    kind: input
+    complete: true
+    title: A branch the project does not hold
+    params:
+      name: {type: text, optional: true, label: branch}
+    summary: "The project has no branch[ {name!raw}]."
+    why: "A change on a branch, its preview and a branch deletion each name an existing branch. This name is not one of them: it was never created, or it was deleted since."
+    action: "List the project's branches with list_branches and use one of their names, or create the branch from a revision with create_branch first."
+    examples:
+      - chain: [not_found, branch_not_found]
+        params: {name: what-if}
+      - chain: [not_found, branch_not_found]
+        params: {}
+  # X06 (ADR 0078 D4.3, D4.6): project solve policies. A policy is checked once, when it is
+  # registered; a job naming a `user.` id the project has not registered is `not_found`.
+  - code: solve_policy_id_invalid
+    family: refusal
+    kind: input
+    complete: true
+    title: A project solve policy's id outside the user namespace
+    params:
+      pointer: {type: text, optional: true, label: member}
+    summary: "A solve policy registered in a project needs an id of the form user.<name>[; see {pointer!raw}]."
+    why: "The project's own solve policies are kept apart from the offered ones by their ids: each starts with user., then a letter or digit, then up to 63 letters, digits, underscores, dots or hyphens. An id without that prefix could be mistaken for an offered or benchmark policy."
+    action: "Give the policy an id such as user.my-variant and register it again."
+    examples:
+      - chain: [invalid_request, solve_policy_id_invalid]
+        params: {pointer: /policy/policy_id}
+      - chain: [invalid_request, solve_policy_id_invalid]
+        params: {}
+  - code: solve_policy_invalid
+    family: refusal
+    kind: input
+    complete: true
+    title: A solve policy member the solver would not read as written
+    params:
+      pointer: {type: text, optional: true, label: member}
+    summary: "A member of the solve policy is not one the solver reads as written[: {pointer!raw}]."
+    why: "A solve policy is checked when it is registered, so that a job never fails on it later. Each member must survive the solver's own reading unchanged, and each open value (an initializer, the linear solver, a quantity kind of a tolerance or scale, the recycle policy) must be one the solver knows. A tear set names one flowsheet's streams, so a project policy carries none."
+    action: "Start from get_solve_policy of an offered policy, change only the members you need to values the solver registers, and register the document again."
+    examples:
+      - chain: [invalid_request, solve_policy_invalid]
+        params: {pointer: /policy/initializer_chain/0}
+      - chain: [invalid_request, solve_policy_invalid]
+        params: {}
+  - code: solve_policy_not_found
+    family: refusal
+    kind: input
+    complete: true
+    title: A project solve policy the project has not registered
+    params:
+      policy_id: {type: text, optional: true, label: policy}
+    summary: "This project has registered no solve policy[ {policy_id!raw}]."
+    why: "An id that starts with user. names a solve policy registered in this project. None is registered under this id: it was never registered here, or it was registered in another project."
+    action: "Read the registered ids in get_project's solve_policies, or register the policy with register_solve_policy first."
+    examples:
+      - chain: [not_found, solve_policy_not_found]
+        params: {policy_id: user.my-variant}
+      - chain: [not_found, solve_policy_not_found]
+        params: {}
+  # X06 (ADR 0078 D5): in-band policy administration. The operator switches it on per project;
+  # it is refused on a server bound beyond loopback, and a grant never exceeds its caller.
+  - code: administration_disabled
+    family: refusal
+    kind: not_supported
+    complete: true
+    title: In-band policy administration that is off for this project
+    params: {}
+    summary: "In-band policy administration is off for this project."
+    why: "Changing grants or the ambient pressure through the application is off unless the project's operator switches it on, so that an existing grant holding the policy right does not silently gain the power to mint credentials. get_policy reads the policy in any case."
+    action: "Ask the project's operator to run openflowsheet project administration on, or to make the change with openflowsheet project grant, revoke or ambient."
+    gap: {limitation: null, capability: "in-band policy writes in a project whose operator has not switched them on"}
+    examples:
+      - chain: [unsupported, administration_disabled]
+        params: {}
+  - code: administration_remote_refused
+    family: refusal
+    kind: not_supported
+    complete: true
+    title: An in-band policy write on a server bound beyond loopback
+    params: {}
+    summary: "This server binds a non-loopback interface, and in-band policy writes are refused on it."
+    why: "The server has no TLS, so a bearer token crosses the network in clear text. A policy token sniffed there could mint credentials that outlive its own revocation, so grants, revocations and the ambient pressure change only through a server bound to loopback."
+    action: "Make the change through a server bound to loopback (a TLS proxy may forward to one), or ask the operator to use openflowsheet project grant, revoke or ambient."
+    gap: {limitation: null, capability: "in-band policy writes on a server bound beyond loopback, which has no TLS"}
+    examples:
+      - chain: [unsupported, administration_remote_refused]
+        params: {}
+  - code: grant_exceeds_caller
+    family: refusal
+    kind: input
+    complete: true
+    title: A grant beyond the caller's own
+    params: {}
+    summary: "The grant asks for more than this credential holds."
+    why: "A credential may grant only what it holds itself: rights it has, a max_wall_time_s and max_active_jobs at most its own when it is limited, and an expiry no later than its own when it expires. The local owner cannot be granted."
+    action: "Ask for fewer rights, give limits and an expiry within your own, or ask the project's operator to make the grant."
+    examples:
+      - chain: [forbidden, grant_exceeds_caller]
+        params: {}
+  - code: revoke_exceeds_caller
+    family: refusal
+    kind: input
+    complete: true
+    title: A revoke of a grant holding a right the caller lacks
+    params: {}
+    summary: "The grant to revoke holds a right this credential does not hold."
+    why: "A credential may revoke only grants whose rights are all its own, so that a lesser credential cannot remove a more privileged one. Revoking one's own grant is allowed."
+    action: "Ask the project's operator to revoke it with openflowsheet project revoke."
+    examples:
+      - chain: [forbidden, revoke_exceeds_caller]
+        params: {}
+  - code: capability_not_found
+    family: refusal
+    kind: input
+    complete: true
+    title: A capability id the project policy does not hold
+    params:
+      capability_id: {type: text, optional: true, label: capability}
+    summary: "The project policy holds no grant[ {capability_id!raw}]."
+    why: "The id names no grant in the project policy now: it was never granted, it was revoked already, or it belongs to another project."
+    action: "Read the grants with get_policy and use one of their capability_id values."
+    examples:
+      - chain: [not_found, capability_not_found]
+        params: {capability_id: cap-agent}
+      - chain: [not_found, capability_not_found]
+        params: {}
+  - code: capability_exists
+    family: refusal
+    kind: input
+    complete: true
+    title: A capability id the project policy already holds
+    params:
+      capability_id: {type: text, optional: true, label: capability}
+    summary: "The project policy already holds a grant[ {capability_id!raw}]."
+    why: "A capability id names one grant. A new grant under an existing id would make it ambiguous which grant a revocation or an audit row means."
+    action: "Choose another capability_id, or leave it out and one is generated."
+    examples:
+      - chain: [invalid_request, capability_exists]
+        params: {capability_id: cap-agent}
+      - chain: [invalid_request, capability_exists]
+        params: {}

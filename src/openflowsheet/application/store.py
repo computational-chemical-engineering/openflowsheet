@@ -77,9 +77,18 @@ JOBS_DIR: Final[str] = "jobs"
 IMPORTS_DIR: Final[str] = "imports"
 #: §9.2: how long a writer waits for another's transaction before SQLite reports busy.
 BUSY_TIMEOUT_S: Final[float] = 30.0
-#: The one ref in v1 (§1: no branches).
+#: The main line's ref (§1). ADR 0078 D2.1: its row keeps this name and its meaning.
 HEAD: Final[str] = "head"
+#: ADR 0078 D2.1: a branch is the `refs` row named this prefix and the branch's public name.
+BRANCH_PREFIX: Final[str] = "branches/"
+#: The first row name past every `BRANCH_PREFIX` row in bytewise order (`/` + 1 is `0`).
+_BRANCH_END: Final[str] = "branches0"
 ACTIVE_STATUSES: Final[tuple[str, ...]] = ("queued", "running")
+#: An `artifacts` row's columns in `ArtifactRow`'s order, before a `WHERE` clause.
+_ARTIFACT_SELECT: Final[str] = (
+    "SELECT artifact_id, job_id, kind, name, sha256, size_bytes, relpath, parent_artifact_id"
+    " FROM artifacts"
+)
 
 _TABLES: Final[tuple[str, ...]] = (
     "CREATE TABLE meta (key TEXT PRIMARY KEY, value TEXT NOT NULL)",
@@ -286,8 +295,42 @@ class ProjectStore:
 
     @staticmethod
     def head(connection: sqlite3.Connection) -> str | None:
-        row = connection.execute("SELECT revision_id FROM refs WHERE name = ?", (HEAD,)).fetchone()
+        return ProjectStore.ref(connection, HEAD)
+
+    @staticmethod
+    def ref(connection: sqlite3.Connection, name: str) -> str | None:
+        """The revision the `refs` row `name` points at (`head`, or `branches/<name>`), or
+        `None` when there is no such row."""
+        row = connection.execute("SELECT revision_id FROM refs WHERE name = ?", (name,)).fetchone()
         return None if row is None else str(row[0])
+
+    @staticmethod
+    def set_ref(connection: sqlite3.Connection, name: str, revision_id: str) -> None:
+        """Point the `refs` row `name` at `revision_id`, creating the row, inside the caller's
+        write transaction."""
+        connection.execute(
+            "INSERT INTO refs (name, revision_id) VALUES (?, ?)"
+            " ON CONFLICT (name) DO UPDATE SET revision_id = excluded.revision_id",
+            (name, revision_id),
+        )
+
+    @staticmethod
+    def delete_ref(connection: sqlite3.Connection, name: str) -> None:
+        """Delete the `refs` row `name` (the revisions stay), inside the caller's write
+        transaction."""
+        connection.execute("DELETE FROM refs WHERE name = ?", (name,))
+
+    @staticmethod
+    def branch_rows(
+        connection: sqlite3.Connection, after: str | None, limit: int
+    ) -> tuple[tuple[str, str], ...]:
+        """ADR 0078 D2.5: at most `limit` branches as `(public name, tip)`, their names after
+        `after` (a public name; `None` from the first) in bytewise ascending order."""
+        rows = connection.execute(
+            "SELECT name, revision_id FROM refs WHERE name > ? AND name < ? ORDER BY name LIMIT ?",
+            (BRANCH_PREFIX + (after or ""), _BRANCH_END, limit),
+        ).fetchall()
+        return tuple((str(name)[len(BRANCH_PREFIX) :], str(tip)) for name, tip in rows)
 
     @staticmethod
     def get_revision(connection: sqlite3.Connection, revision_id: str) -> Revision | None:
@@ -352,8 +395,10 @@ class ProjectStore:
         principal_id: str,
         capability_id: str,
         policy_sha256: str,
+        ref: str,
     ) -> None:
-        """Insert `revision` and move the head to it, inside the caller's write transaction.
+        """Insert `revision` and move the `refs` row `ref` (`HEAD`, or a branch's row, ADR 0078
+        D2.4) to it, inside the caller's write transaction.
 
         `policy_sha256` is the project policy in force (§10.3: every transaction records it).
         """
@@ -375,11 +420,7 @@ class ProjectStore:
         )
         if self.test_hook_after_revision_insert is not None:
             self.test_hook_after_revision_insert()
-        connection.execute(
-            "INSERT INTO refs (name, revision_id) VALUES (?, ?)"
-            " ON CONFLICT (name) DO UPDATE SET revision_id = excluded.revision_id",
-            (HEAD, revision.revision_id),
-        )
+        self.set_ref(connection, ref, revision.revision_id)
 
     # -------------------------------------------------------------------------------- ledger
 
@@ -920,11 +961,15 @@ class ProjectStore:
 
     def artifact(self, artifact_id: str) -> ArtifactRow | None:
         with self.reading() as connection:
-            row = connection.execute(
-                "SELECT artifact_id, job_id, kind, name, sha256, size_bytes, relpath,"
-                " parent_artifact_id FROM artifacts WHERE artifact_id = ?",
-                (artifact_id,),
-            ).fetchone()
+            return self.artifact_in(connection, artifact_id)
+
+    @staticmethod
+    def artifact_in(connection: sqlite3.Connection, artifact_id: str) -> ArtifactRow | None:
+        """`artifact` inside the caller's transaction (ADR 0078 D4.4: a write-once id is read
+        and bound in one write transaction)."""
+        row = connection.execute(
+            _ARTIFACT_SELECT + " WHERE artifact_id = ?", (artifact_id,)
+        ).fetchone()
         return None if row is None else ArtifactRow(*row)
 
     def artifacts_of_kind(self, kind: str) -> list[ArtifactRow]:
@@ -932,8 +977,7 @@ class ProjectStore:
         iteration's admission reads, spec §18 A1.2)."""
         with self.reading() as connection:
             rows = connection.execute(
-                "SELECT artifact_id, job_id, kind, name, sha256, size_bytes, relpath,"
-                " parent_artifact_id FROM artifacts WHERE kind = ? ORDER BY artifact_id",
+                _ARTIFACT_SELECT + " WHERE kind = ? ORDER BY artifact_id",
                 (kind,),
             ).fetchall()
         return [ArtifactRow(*row) for row in rows]
@@ -942,9 +986,7 @@ class ProjectStore:
         """The registered members of a bundle, in id order."""
         with self.reading() as connection:
             rows = connection.execute(
-                "SELECT artifact_id, job_id, kind, name, sha256, size_bytes, relpath,"
-                " parent_artifact_id FROM artifacts WHERE parent_artifact_id = ?"
-                " ORDER BY artifact_id",
+                _ARTIFACT_SELECT + " WHERE parent_artifact_id = ? ORDER BY artifact_id",
                 (parent_artifact_id,),
             ).fetchall()
         return [ArtifactRow(*row) for row in rows]

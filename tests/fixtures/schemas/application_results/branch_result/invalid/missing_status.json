@@ -1,0 +1,8 @@
+{
+  "expect_error": "'status' is a required property",
+  "document": {
+    "conflict": null,
+    "name": "what-if",
+    "revision_id": "syn001-nominal"
+  }
+}

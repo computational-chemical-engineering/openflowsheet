@@ -22,9 +22,7 @@ from datetime import UTC, datetime
 from functools import cache
 from typing import Any, Final, NoReturn
 
-from openflowsheet.application.documents import validate_inline
 from openflowsheet.application.errors import ApiErrorCode
-from openflowsheet.application.operations import OPERATIONS
 from openflowsheet.application.record_types import (
     RecordPage,
     RecordRegistrationResult,
@@ -34,7 +32,7 @@ from openflowsheet.application.record_types import (
 )
 from openflowsheet.application.service_core import ServiceCore
 from openflowsheet.application.store_records import AuditEntry
-from openflowsheet.canonical import canonical_json, document_sha256, first_noncanonical
+from openflowsheet.canonical import canonical_json, document_sha256
 from openflowsheet.messages.catalogue import CATALOGUE
 from openflowsheet.records import resolve, rights
 from openflowsheet.records.identity import identify
@@ -45,7 +43,6 @@ from openflowsheet.records.reactions import check_reactions
 from openflowsheet.records.stack import StoreStack
 from openflowsheet.records.store import RecordStoreError
 from openflowsheet.registry.tokens import Coded
-from openflowsheet.schema_check import DocumentSchemaError
 
 #: A record refusal's `ApiError` code by its catalogue kind (F3 decision WO5b-1). Not named
 #: `*_CODES`: its keys are catalogue kinds, not codes (MSG-G2's scan reads such a table).
@@ -476,22 +473,8 @@ class RecordsService:
     # ------------------------------------------------------------------------------ helpers
 
     def _checked(self, name: str, request: Mapping[str, Any]) -> None:
-        """`dispatch`'s steps 1 and 2 for a Python caller: the canonical form, then the request
-        schema; a refusal is audited and raised."""
-        at = first_noncanonical(request)
-        if at is not None:
-            self._core.refuse(
-                "document_not_canonical",
-                "a value has no canonical JSON form",
-                operation=name,
-                pointer=at,
-            )
-        try:
-            validate_inline(name, OPERATIONS[name].request_schema, request)
-        except DocumentSchemaError as error:
-            self._core.refuse(
-                "invalid_request", error.message, operation=name, pointer=error.pointer
-            )
+        """`ServiceCore.check_request`."""
+        self._core.check_request(name, request)
 
     def _read(self, sha: str, name: str, at: str) -> Mapping[str, Any]:
         """Record `sha` through the stack; one no layer holds is `not_found` (D13), with the

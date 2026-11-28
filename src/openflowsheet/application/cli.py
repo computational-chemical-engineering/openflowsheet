@@ -36,8 +36,9 @@ bundle directory through `stream_table.from_bundle` — as `text`, `json` or `cs
 (and, with `--format json`, the projected `ApiError` document on stdout).
 
 **The servers** (§11.2, §10.2). `serve-http` opens the project with the process executor and
-serves it with `bindings.http.serve` until interrupted (with `--ui`, `bindings.web.serve`, which
-adds the diagnostic web shell at `/ui/`, M06); `serve-mcp` is `serving.serve_mcp`, over stdio.
+serves it with `serving.serve_http` until interrupted: the REST routes and MCP over streamable
+HTTP at `/mcp` (ADR 0078 D1), and with `--ui` the diagnostic web shell at `/ui/` (M06);
+`serve-mcp` is `serving.serve_mcp`, over stdio.
 Both need the `server` extra; without it, or when the project cannot be opened, or (`--ui`) when
 the shell's packaged files are missing, they refuse to start with exit 1 and the reason on stderr.
 """
@@ -62,7 +63,6 @@ from openflowsheet.registry import default_registry
 if TYPE_CHECKING:
     from openflowsheet.application.errors import ApiError
     from openflowsheet.application.local import LocalApplication
-    from openflowsheet.units.display import DisplayUnits
 
 #: §11.5: an `ApiError`'s exit code, 2–16 in §5.8's table order (`ApiErrorCode`'s order). 0 is a
 #: domain result; 1 is a call that was never made. argparse's own usage error is also 2.
@@ -471,6 +471,21 @@ def command_project_ambient(arguments: argparse.Namespace) -> int:
     return 0
 
 
+def command_project_administration(arguments: argparse.Namespace) -> int:
+    """ADR 0078 D5.1: switch in-band policy administration on or off for the project; audited
+    as `project_administration`. Only the operator sets it; no operation does."""
+    from openflowsheet.application.authz import set_administration
+    from openflowsheet.application.store_records import StoreError
+
+    try:
+        state = set_administration(Path(arguments.project), arguments.state == "on")
+    except (ValueError, StoreError) as error:
+        print(_human_text(error), file=sys.stderr)
+        return 2
+    print(f"in-band administration {'on' if state else 'off'}")
+    return 0
+
+
 def _cli_float(text: str) -> float:
     """A command-line number as Python reads it (`nan` and `inf` included: the caller refuses
     them by name, as an out-of-range value, rather than as a malformed one)."""
@@ -648,8 +663,9 @@ def _loopback(host: str) -> bool:
 
 def command_serve_http(arguments: argparse.Namespace) -> int:
     """§11.2: `serve-http --project DIR [--host 127.0.0.1] [--port 8765] [--allow-remote]
-    [--ui]`. `--ui` (M06, ADR 0030 D3) also serves the diagnostic web shell at `/ui/`
-    (`bindings.web`); without it nothing differs, and `bindings.web` is not even imported."""
+    [--ui]`, served by `serving.serve_http`: the REST routes and MCP at `/mcp` (ADR 0078 D1).
+    `--ui` (M06, ADR 0030 D3) also serves the diagnostic web shell at `/ui/` (`bindings.web`);
+    without it `bindings.web` is not even imported."""
     if not _loopback(arguments.host) and not arguments.allow_remote:
         print(
             f"--host {arguments.host} is not loopback: pass --allow-remote (there is no TLS in "
@@ -659,10 +675,11 @@ def command_serve_http(arguments: argparse.Namespace) -> int:
         return 2
     from openflowsheet.application.authz import PolicyRefusedError
     from openflowsheet.application.local import LocalApplication
+    from openflowsheet.application.serving import serve_http
     from openflowsheet.application.store_records import StoreError
 
     try:
-        from openflowsheet.application.bindings import http as binding
+        from openflowsheet.application.bindings import http, mcp_http  # noqa: F401
     except ImportError:
         print(
             "serve-http: refused to start: the HTTP server needs the `server` extra: "
@@ -670,7 +687,6 @@ def command_serve_http(arguments: argparse.Namespace) -> int:
             file=sys.stderr,
         )
         return 1
-    serve = binding.serve
     if arguments.ui:
         from openflowsheet.application.bindings import web
 
@@ -679,18 +695,18 @@ def command_serve_http(arguments: argparse.Namespace) -> int:
         except web.WebShellMissingError as error:
             print(f"serve-http: refused to start: {_human_text(error)}", file=sys.stderr)
             return 1
-        serve = web.serve
     try:
         application = LocalApplication.open(arguments.project, executor="process")
     except (StoreError, PolicyRefusedError) as error:
         print(f"serve-http: refused to start: {_human_text(error)}", file=sys.stderr)
         return 1
     with application:
-        serve(
+        serve_http(
             application,
             host=arguments.host,
             port=arguments.port,
             allow_remote=arguments.allow_remote,
+            ui=arguments.ui,
         )
     return 0
 
@@ -931,58 +947,15 @@ def _add_records_parser(commands: Any) -> None:
 STREAM_FORMATS: Final[tuple[str, ...]] = ("text", "json", "csv")
 
 
-def _stream_table_refusal(code: str, message: str, detail: Mapping[str, Any]) -> ApiError:
-    """A `StreamTableError` of a bundle directory as the `ApiError` it maps to (§6.1's codes); the
-    detail members a directory cannot give (`null`, D1-14) are left out."""
-    from openflowsheet.application.errors import api_error
-
-    given = {key: value for key, value in detail.items() if value is not None}
-    if code == "not_found":
-        return api_error("not_found", message, **given).error
-    if code == "unsupported":
-        return api_error("unsupported", message, **given).error
-    return api_error("internal_error", message, **given).error
-
-
-def _bundle_display_units(text: str) -> DisplayUnits | ApiError:
-    """`--display-units` of a bundle directory: the preference resolved without an ambient
-    pressure (a directory has no project; X04 decision D-8), or its refusal as the `ApiError`
-    `get_stream_table` raises for it (ADR 0075 D9). The request schema's bound on the member
-    (1 to 1024 characters) comes first and refuses as `dispatch` does (X04 review S4)."""
-    from openflowsheet.application.documents import validate_inline
-    from openflowsheet.application.errors import api_error
-    from openflowsheet.application.operations import OPERATIONS
-    from openflowsheet.schema_check import DocumentSchemaError
-    from openflowsheet.units.display import DisplayUnitsError, parse_display_units
-
-    operation = OPERATIONS["get_stream_table"]
-    member = {
-        "type": "object",
-        "properties": {"display_units": operation.request_schema["properties"]["display_units"]},
-    }
-    try:
-        validate_inline(operation.name, member, {"display_units": text})
-    except DocumentSchemaError as error:
-        return api_error("invalid_request", error.message, pointer=error.pointer).error
-    try:
-        return parse_display_units(text, None)
-    except DisplayUnitsError as error:
-        pointer = error.pointer
-        detail: dict[str, Any] = (
-            {"pointer": pointer} if pointer is not None else {"reason": error.message}
-        )
-        return api_error(error.api_error, error.message, **detail).error
-
-
 def command_streams(arguments: argparse.Namespace) -> int:
     """ST §6.3: a run's stream table as text, JSON or CSV — of a project's job
     (`--project DIR --job JOB_ID`) or of a bundle directory. Exit 0 with the table on stdout (or
     in `--output`); a refusal exits with its `ApiError` code's number (§11.5); 1 when the project
     cannot be opened; 2 for a usage error. `--display-units TEXT` (ADR 0075 D7.6) prints it in a
     display preference's units, resolved against the project's ambient pressure (a bundle
-    directory has none). A job's pages are fetched with `_stream_table_request`'s requests; the
-    table is printed by `_write_stream_table`."""
-    from openflowsheet.application import stream_table, stream_table_format
+    directory has none). A job's pages are fetched with `cli_streams.stream_table_request`'s
+    requests; the table is printed by `cli_streams.write_stream_table`."""
+    from openflowsheet.application import cli_streams, stream_table, stream_table_format
     from openflowsheet.application.authz import PolicyRefusedError
     from openflowsheet.application.errors import ApplicationError
     from openflowsheet.application.local import LocalApplication
@@ -1008,7 +981,7 @@ def command_streams(arguments: argparse.Namespace) -> int:
         with application:
 
             def fetch(pointer: str, depth: int, cursor: str | None, limit: int) -> Any:
-                request = _stream_table_request(arguments, pointer, depth, cursor, limit)
+                request = cli_streams.stream_table_request(arguments, pointer, depth, cursor, limit)
                 return dispatch(application, "get_stream_table", request)
 
             try:
@@ -1019,51 +992,15 @@ def command_streams(arguments: argparse.Namespace) -> int:
         try:
             document = stream_table.from_bundle(arguments.bundle)
         except stream_table.StreamTableError as error:
-            mapped = _stream_table_refusal(error.code, error.message, error.detail)
+            mapped = cli_streams.stream_table_refusal(error.code, error.message, error.detail)
             return _print_refusal(mapped, document=as_json)
         if arguments.display_units is not None:
-            units = _bundle_display_units(arguments.display_units)
+            units = cli_streams.bundle_display_units(arguments.display_units)
             if not isinstance(units, DisplayUnits):
                 return _print_refusal(units, document=as_json)
             document = stream_table.displayed(document, units)
-    _write_stream_table(document, arguments)
+    cli_streams.write_stream_table(document, arguments)
     return 0
-
-
-def _stream_table_request(
-    arguments: argparse.Namespace, pointer: str, depth: int, cursor: str | None, limit: int
-) -> dict[str, Any]:
-    """`streams`' `get_stream_table` request for one page of `--job`'s table: the job, pointer,
-    depth and limit, then the cursor when there is one and `--display-units` when given."""
-    request: dict[str, Any] = {
-        "job_id": arguments.job,
-        "pointer": pointer,
-        "depth": depth,
-        "limit": limit,
-    }
-    if cursor is not None:
-        request["cursor"] = cursor
-    if arguments.display_units is not None:
-        request["display_units"] = arguments.display_units
-    return request
-
-
-def _write_stream_table(document: dict[str, Any], arguments: argparse.Namespace) -> None:
-    """`streams`' output: the table rendered in `--format` (text, JSON or CSV), written to stdout,
-    or to the file `--output` names."""
-    from openflowsheet.application import stream_table_format
-
-    render = {
-        "text": stream_table_format.to_text,
-        "json": stream_table_format.to_json,
-        "csv": stream_table_format.to_csv,
-    }[arguments.format]
-    text = render(document)
-    if arguments.output is None:
-        sys.stdout.write(text)
-    else:
-        with open(arguments.output, "w", encoding="utf-8", newline="") as out:
-            out.write(text)
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -1132,8 +1069,8 @@ def _add_run_parsers(commands: argparse._SubParsersAction[argparse.ArgumentParse
 
 
 def _add_project_parser(commands: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
-    """`project init|grant|revoke|ambient`: a project directory, its capability grants and its
-    ambient pressure."""
+    """`project init|grant|revoke|ambient|administration`: a project directory, its capability
+    grants, its ambient pressure and its switch for in-band administration."""
     project_command = commands.add_parser(
         "project",
         help="create a project and administer its capability grants and ambient pressure",
@@ -1185,6 +1122,14 @@ def _add_project_parser(commands: argparse._SubParsersAction[argparse.ArgumentPa
         "--clear", action="store_true", help="remove the declared ambient pressure"
     )
     ambient_command.set_defaults(handler=command_project_ambient)
+
+    administration_command = project_commands.add_parser(
+        "administration",
+        help="switch in-band policy administration (the Administration operations) on or off",
+    )
+    administration_command.add_argument("state", choices=("on", "off"))
+    administration_command.add_argument("--project", required=True, help="the project directory")
+    administration_command.set_defaults(handler=command_project_administration)
 
 
 def _add_api_parser(commands: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
@@ -1298,7 +1243,9 @@ def _add_streams_parser(commands: argparse._SubParsersAction[argparse.ArgumentPa
 
 def _add_serve_parsers(commands: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
     """`serve-http` and `serve-mcp`: the project served over HTTP or MCP stdio."""
-    http_command = commands.add_parser("serve-http", help="serve the project over HTTP (§11.2)")
+    http_command = commands.add_parser(
+        "serve-http", help="serve the project over HTTP: the REST routes and MCP at /mcp (§11.2)"
+    )
     http_command.add_argument("--project", required=True, help="the project directory")
     http_command.add_argument("--host", default="127.0.0.1")
     http_command.add_argument("--port", type=int, default=8765)

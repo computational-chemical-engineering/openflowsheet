@@ -62,6 +62,10 @@
       "type": "string",
       "maxLength": 256,
       "default": "unknown"
+    },
+    "branch": {
+      "$ref": "#/$defs/branch_name",
+      "description": "ADR 0078 D2.4: the branch whose tip `expected_revision` names and whose ref the commit moves; absent or `\"head\"` is the main line. A request member only: no stored revision, bundle or record holds it. The normalized request omits it when absent or `\"head\"`, so a request without a branch keeps its `request_sha256`."
     }
   },
   "$defs": {
@@ -119,6 +123,11 @@
           "value"
         ]
       }
+    },
+    "branch_name": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]{0,63}$",
+      "description": "ADR 0078 D2.3: a branch's public name (no `/`); `head` names the main line and is reserved for it."
     }
   }
 }

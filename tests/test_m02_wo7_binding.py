@@ -213,6 +213,7 @@ def test_g6a_through_solve_admission() -> None:
         budgets=Budgets(),
         limits=Limits(default_wall_time_s=300, max_wall_time_s=1800, max_active_jobs=4),
         active_jobs=0,
+        project_policies={},
     )
     assert isinstance(error, ApiError)
     assert error.code == "revision_not_ready"

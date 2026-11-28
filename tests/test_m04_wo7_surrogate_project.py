@@ -24,6 +24,7 @@ from openflowsheet.application.errors import ApplicationError
 from openflowsheet.application.local import LocalApplication
 from openflowsheet.application.policy_types import LOCAL_OWNER_PRINCIPAL
 from openflowsheet.application.revisions import Revision
+from openflowsheet.application.store import HEAD
 from openflowsheet.application.transaction_types import Change, Edit
 from openflowsheet.canonical import document_sha256
 from openflowsheet.studies.surrogate import records
@@ -109,6 +110,7 @@ def test_without_the_manifest_in_the_project_the_surrogate_does_not_enter(
         app.store.commit_revision(
             connection,
             Revision(revision_id=revision_id, document=document, parent_revision=None),
+            ref=HEAD,
             principal_id=app.principal_id,
             capability_id=LOCAL_OWNER_PRINCIPAL,
             policy_sha256="0" * 64,

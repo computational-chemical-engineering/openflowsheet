@@ -36,6 +36,7 @@ from openflowsheet.application.model_signatures import (
 )
 from openflowsheet.application.projection import MAX_PAGE
 from openflowsheet.application.service_core import ServiceCore
+from openflowsheet.application.solve_policy_service import SolvePolicyService
 from openflowsheet.application.store import STORE_SCHEMA
 from openflowsheet.canonical import canonical_json
 from openflowsheet.orchestrator.policies import APPLICATION_POLICIES, DEFAULT_POLICY_ID
@@ -52,8 +53,9 @@ class InspectionService:
     explicitly (the defaults are the facade's). Public methods without a facade namesake serve the
     services above this one."""
 
-    def __init__(self, core: ServiceCore) -> None:
+    def __init__(self, core: ServiceCore, policies: SolvePolicyService) -> None:
         self._core = core
+        self._policies = policies
 
     def get_project(self) -> ProjectSummary:
         from openflowsheet import __version__
@@ -71,10 +73,12 @@ class InspectionService:
             head=head,
             revision_count=revision_count,
             job_counts=job_counts,
+            # ADR 0078 D4.5: the offered policies, then the project's by id.
             solve_policies=tuple(
                 (policy_id, policy_sha256(policy))
                 for policy_id, policy in sorted(APPLICATION_POLICIES.items())
-            ),
+            )
+            + self._policies.summaries(),
             default_policy_id=DEFAULT_POLICY_ID,
             principal_id=caller.principal_id,
             capability_id=caller.capability_id,

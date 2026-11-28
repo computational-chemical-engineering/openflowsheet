@@ -28,12 +28,20 @@ if TYPE_CHECKING:
         ModelRegistryView,
         ProjectSummary,
         RevisionSummary,
+        SolvePolicyRegistration,
+        SolvePolicyView,
         SubmitResult,
     )
     from openflowsheet.application.job_records import Job, JobEvent, JobResult, RunResult
     from openflowsheet.application.job_requests import JobRequest
     from openflowsheet.application.jobs.model import JobStatus
-    from openflowsheet.application.policy_types import ReplayPolicy
+    from openflowsheet.application.policy_types import (
+        AmbientPressureResult,
+        GrantResult,
+        ProjectPolicy,
+        ReplayPolicy,
+        RevokeResult,
+    )
     from openflowsheet.application.record_types import (
         RecordPage,
         RecordRegistrationResult,
@@ -41,7 +49,13 @@ if TYPE_CHECKING:
         RecordView,
         RightsAssessmentResult,
     )
-    from openflowsheet.application.transaction_types import Change, SemanticDiff, TransactionResult
+    from openflowsheet.application.transaction_types import (
+        Branch,
+        BranchResult,
+        Change,
+        SemanticDiff,
+        TransactionResult,
+    )
     from openflowsheet.application.validation_report import Task, ValidationReport
     from openflowsheet.run.replay import ReplayReport
 
@@ -274,3 +288,64 @@ class Records(Protocol):
         basis: str,
         conditions: str | None = None,
     ) -> RightsAssessmentResult: ...
+
+
+class Branches(Protocol):
+    """ADR 0078 D2 (ADR 0019 Amendment 18): named refs of the project store. A branch is a
+    name and the revision it points at; `head` is the main line and reserved. `list_branches`
+    lists `head` first, then the branches by name; `create_branch` and `delete_branch` are
+    idempotent by key and answer a stale or occupied ref with the domain result `conflict`. A
+    commit on a branch is `commit_change` with `Change.branch`; promoting it is `commit_change`
+    on `head` with `restore_from` its tip. No stored document names a branch (C7)."""
+
+    def list_branches(self, *, cursor: str | None = None, limit: int = 50) -> Page[Branch]: ...
+
+    def create_branch(
+        self, *, name: str, revision_id: str, idempotency_key: str
+    ) -> BranchResult: ...
+
+    def delete_branch(
+        self, *, name: str, expected_revision: str, idempotency_key: str
+    ) -> BranchResult: ...
+
+
+class SolvePolicies(Protocol):
+    """ADR 0078 D4 (ADR 0019 Amendment 18): project solve policies. A project registers a
+    solve-policy document under a `user.` id once (`draft`); the id is never re-bound, and a job
+    names it as it names an offered policy. Registration checks every member the schema leaves
+    open against the solver's registries, so an unknown value is refused there, never at run
+    time. A policy changes how the solver searches, never what the verifier accepts."""
+
+    def register_solve_policy(
+        self, *, policy: Mapping[str, Any], idempotency_key: str
+    ) -> SolvePolicyRegistration: ...
+
+    def get_solve_policy(self, *, policy_id: str) -> SolvePolicyView: ...
+
+
+class Administration(Protocol):
+    """ADR 0078 D5 (ADR 0019 Amendment 18): in-band policy administration, right `policy`.
+    `get_policy` reads the policy in force. The three writes need the project operator's switch
+    (`openflowsheet project administration on`), are refused on a server bound beyond loopback,
+    and never grant more than the caller holds; each is audited and ledgered, and a grant's
+    token is returned once, never stored."""
+
+    def get_policy(self) -> ProjectPolicy: ...
+
+    def grant_capability(
+        self,
+        *,
+        principal_id: str,
+        idempotency_key: str,
+        rights: Sequence[str] | None = None,
+        limits: Mapping[str, Any] | None = None,
+        expires_at: str | None = None,
+        note: str | None = None,
+        capability_id: str | None = None,
+    ) -> GrantResult: ...
+
+    def revoke_capability(self, *, capability_id: str, idempotency_key: str) -> RevokeResult: ...
+
+    def set_ambient_pressure(
+        self, *, value: float | None, idempotency_key: str, unit: str | None = None
+    ) -> AmbientPressureResult: ...

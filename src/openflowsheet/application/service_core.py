@@ -12,6 +12,7 @@ capability. The services hold a core and call only it and the services below the
 from __future__ import annotations
 
 import copy
+import sqlite3
 import tempfile
 from collections.abc import Mapping
 from pathlib import Path
@@ -19,20 +20,28 @@ from typing import Any, Final, NoReturn
 
 from openflowsheet.application.admission import surrogate_resolver
 from openflowsheet.application.authz import LOCAL_OWNER, PolicyFile, StaticPolicy, authorize
+from openflowsheet.application.documents import validate_inline
 from openflowsheet.application.errors import ApiError, ApiErrorCode, ApplicationError, api_error
 from openflowsheet.application.jobs.executor import InlineExecutor, ProcessExecutor
 from openflowsheet.application.jobs.runner import RunContext
 from openflowsheet.application.model_builders import SurrogateResolver
-from openflowsheet.application.policy_types import CapabilityReference
+from openflowsheet.application.operations import OPERATIONS
+from openflowsheet.application.policy_types import CapabilityReference, ProjectPolicy
 from openflowsheet.application.store import ProjectStore
 from openflowsheet.application.store_records import AuditEntry
+from openflowsheet.canonical import first_noncanonical
 from openflowsheet.records.importers.legacy import available_records
 from openflowsheet.records.stack import LegacyStore, StoreStack
 from openflowsheet.records.store import RecordStore
+from openflowsheet.schema_check import DocumentSchemaError
 
 #: ADR 0061 D8: the legacy store, one per process: it imports the available legacy files at its
 #: first access (F3 decision WO5b-2).
 LEGACY_STORE: Final = LegacyStore(available_records)
+#: The refusal of a caller whose capability the policy no longer holds.
+UNAUTHENTICATED_MESSAGE: Final = (
+    "this capability is not in the project policy (revoked or never granted)"
+)
 
 
 def record_stack(directory: Path | None) -> StoreStack:
@@ -69,6 +78,10 @@ class ServiceCore:
         self._scratch: tempfile.TemporaryDirectory[str] | None = None
         #: ADR 0061 D8, D11: the record stack and, in its project store, the project register.
         self.records: StoreStack = record_stack(store.directory)
+        #: ADR 0078 D5.3: the serving process binds a non-loopback interface (`serve-http`
+        #: sets it before serving); in-band policy writes are then refused. Stdio and
+        #: in-process callers are local. `acting_as` views share it.
+        self.serving_remote = False
 
     def acting_as(self, capability: CapabilityReference) -> ServiceCore:
         """This core acting as `capability`: the same store, policy, executor and owner."""
@@ -124,20 +137,24 @@ class ServiceCore:
 
     def caller(self, operation: str) -> CapabilityReference:
         """The caller's capability as the current policy states it; 401 if it is gone."""
+        caller = self.caller_in(self.policy.current())
+        if caller is None:
+            return self.refuse("unauthenticated", UNAUTHENTICATED_MESSAGE, operation=operation)
+        return caller
+
+    def caller_in(self, policy: ProjectPolicy) -> CapabilityReference | None:
+        """The caller's capability as `policy` states it, by `(capability_id, token_sha256)`;
+        `LOCAL_OWNER` for the local owner; `None` if `policy` does not hold it."""
         if self._capability is None:
             return LOCAL_OWNER
-        for capability in self.policy.current().capabilities:
+        for capability in policy.capabilities:
             if (
                 capability.capability_id == self._capability.capability_id
                 and capability.token_sha256 == self._capability.token_sha256
                 and capability.token_sha256 is not None
             ):
                 return capability
-        return self.refuse(
-            "unauthenticated",
-            "this capability is not in the project policy (revoked or never granted)",
-            operation=operation,
-        )
+        return None
 
     def authorize(
         self,
@@ -159,6 +176,45 @@ class ServiceCore:
                 required=list(decision.required),
             )
         return caller
+
+    def check_request(self, operation: str, request: Mapping[str, Any]) -> None:
+        """`dispatch`'s steps 1 and 2 for a Python caller (rule C1): the canonical form, then the
+        operation's request schema, over `request` as given; a refusal is audited and raised."""
+        at = first_noncanonical(request)
+        if at is not None:
+            self.refuse(
+                "document_not_canonical",
+                "a value has no canonical JSON form",
+                operation=operation,
+                pointer=at,
+            )
+        try:
+            validate_inline(operation, OPERATIONS[operation].request_schema, request)
+        except DocumentSchemaError as error:
+            self.refuse(
+                "invalid_request", error.message, operation=operation, pointer=error.pointer
+            )
+
+    def audit_allowed(
+        self,
+        connection: sqlite3.Connection,
+        caller: CapabilityReference,
+        operation: str,
+        request_sha256: str,
+        effect: str,
+    ) -> None:
+        """The `allowed` audit row of a write by `caller`, in the write's transaction."""
+        self.store.audit(
+            connection,
+            AuditEntry(
+                principal_id=caller.principal_id,
+                capability_id=caller.capability_id,
+                operation=operation,
+                outcome="allowed",
+                request_sha256=request_sha256,
+                effect=effect,
+            ),
+        )
 
     def refuse(
         self,

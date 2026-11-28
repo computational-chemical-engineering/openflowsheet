@@ -17,7 +17,9 @@ The steps, in order:
 4. `policy_id` is `"default"` or offered; a registered id that is not offered is `unsupported`
    (V17 spec F3), any other `not_found`; a (policy, route) pair listed in
    `POLICY_UNSUPPORTED_ON_ROUTE` is refused (R2.3; the list is empty — W3a measured no pair that
-   raises untyped, `docs/t07-measurements.md` W3a.4);
+   raises untyped, `docs/t07-measurements.md` W3a.4); a project policy's id (ADR 0078 D4.1,
+   `user.…`) names the project's registered policy of that id, else `not_found` with
+   `detail.code = solve_policy_not_found`;
 5. each `check_tolerances` value is at most the registered `KIND_TOLERANCE` value, else
    `verification_weakening_refused` naming the kind; an unknown kind is `invalid_request` (I3);
 6. `max_property_calls` is at most the resolved policy's, else `budget_exceeds_ceiling`;
@@ -83,6 +85,7 @@ from openflowsheet.orchestrator.policies import (
     SolvePath,
     resolve_policy,
 )
+from openflowsheet.orchestrator.policy_validation import is_project_policy_id
 from openflowsheet.studies.surrogate.iterations import StoredManifest
 from openflowsheet.studies.surrogate.iterations import predecessors as iteration_predecessors
 from openflowsheet.studies.surrogate.plan import PlanRefusedError
@@ -92,6 +95,7 @@ from openflowsheet.verify.verdict import REGISTERED_POLICY_ID, CheckPolicy
 
 __all__ = [
     "POLICY_UNSUPPORTED_ON_ROUTE",
+    "SOLVE_POLICY_NOT_FOUND",
     "SolveAdmission",
     "admit_budgets",
     "admit_experiment",
@@ -101,12 +105,15 @@ __all__ = [
     "surrogate_resolver",
     "admit_reproduce",
     "admit_solve",
+    "policy_id_refusal",
     "resolve_policies",
 ]
 
 #: R2.3: (policy id, route) pairs a named policy may not run on, each logged with the untyped
 #: error that put it here. Empty: no registered pair raised untyped over the corpus (W3a.4).
 POLICY_UNSUPPORTED_ON_ROUTE: Final[frozenset[tuple[str, SolvePath]]] = frozenset()
+#: ADR 0078 D4.6: `detail.code` of a project policy's id the project has not registered.
+SOLVE_POLICY_NOT_FOUND: Final = "solve_policy_not_found"
 
 
 @dataclass(frozen=True)
@@ -140,13 +147,15 @@ def admit_solve(
     active_jobs: int,
     surrogates: SurrogateResolver | None = None,
     warm_source_found: bool = False,
+    project_policies: Mapping[str, SolvePolicy],
 ) -> SolveAdmission | ApiError:
     """§5.3's semantic admission of `body` for the stored revision `document` (`None` when the
     store has no revision `revision_id`). `limits` are the caller's capability's; `active_jobs`
     counts the caller's queued and running jobs; `surrogates` resolves the project's
     SurrogateManifests for the binder (M04 spec §8.2, `surrogate_resolver`);
     `warm_source_found` says whether `body.warm_start.job_id` names a `solve` job of the project
-    that holds a solution state (the store's `solution_of_job`)."""
+    that holds a solution state (the store's `solution_of_job`); `project_policies` are the
+    project's registered solve policies by id (ADR 0078 D4.6, `solve_policy_registry.load`)."""
     # 1. The revision exists.
     if document is None:
         return _error("not_found", f"no revision {revision_id!r}", revision_id=revision_id)
@@ -171,7 +180,7 @@ def admit_solve(
         )
 
     # 4–6. The policies the solve runs under.
-    resolved = resolve_policies(route, body)
+    resolved = resolve_policies(route, body, project_policies)
     if isinstance(resolved, ApiError):
         return resolved
     policy, check_policy = resolved
@@ -227,29 +236,59 @@ def admit_warm_start(
     return None
 
 
-def resolve_policies(route: Route, body: SolveBody) -> tuple[SolvePolicy, CheckPolicy] | ApiError:
+def policy_id_refusal(
+    policy_id: str, project_policies: Mapping[str, SolvePolicy]
+) -> ApiError | None:
+    """§5.3 step 4's judgment of a requested id, or `None` when it names a policy: `"default"`,
+    an offered id, or a project policy's id (ADR 0078 D4.1) registered in `project_policies`.
+    A policy the registry registers but the contract does not offer is `unsupported` (V17 spec
+    F3; `v17-c1` B3: "no registered solve policy" was false for it); an unregistered project
+    policy's id is `not_found` with `detail.code = solve_policy_not_found`; any other id stays
+    `not_found`. Shared with `get_solve_policy`, which refuses as admission does."""
+    if policy_id == DEFAULT_POLICY_ID or policy_id in APPLICATION_POLICIES:
+        return None
+    if is_project_policy_id(policy_id):
+        if policy_id in project_policies:
+            return None
+        return ApiError(
+            code="not_found",
+            message=f"{SOLVE_POLICY_NOT_FOUND}: no solve policy {policy_id!r} is registered in "
+            "this project",
+            retryable=False,
+            detail={"code": SOLVE_POLICY_NOT_FOUND, "policy_id": policy_id},
+        )
+    if policy_id in REGISTERED_POLICY_IDS:
+        return _error(
+            "unsupported",
+            f"solve policy {policy_id!r} is registered but not offered in v0.1",
+            policy_id=policy_id,
+            offered=sorted(APPLICATION_POLICIES),
+        )
+    return _error(
+        "not_found",
+        f"no registered solve policy {policy_id!r}",
+        policy_id=policy_id,
+        registered=sorted(APPLICATION_POLICIES),
+    )
+
+
+def resolve_policies(
+    route: Route, body: SolveBody, project_policies: Mapping[str, SolvePolicy]
+) -> tuple[SolvePolicy, CheckPolicy] | ApiError:
     """§5.3 steps 4–6 on an admitted route: the effective solve policy and check policy of `body`,
     or the first refusal. Pure, and shared by admission and the job runner, which re-resolves a
-    job's request at its `resolve` stage (§6.4) rather than trusting a stored copy."""
-    # 4. The policy is `"default"` or registered, and not refused on this route. A policy the
-    # registry registers but the contract does not offer is `unsupported` (V17 spec F3; `v17-c1`
-    # B3: "no registered solve policy" was false for it); an unknown id stays `not_found`.
-    if body.policy_id != DEFAULT_POLICY_ID and body.policy_id not in APPLICATION_POLICIES:
-        if body.policy_id in REGISTERED_POLICY_IDS:
-            return _error(
-                "unsupported",
-                f"solve policy {body.policy_id!r} is registered but not offered in v0.1",
-                policy_id=body.policy_id,
-                offered=sorted(APPLICATION_POLICIES),
-            )
-        return _error(
-            "not_found",
-            f"no registered solve policy {body.policy_id!r}",
-            policy_id=body.policy_id,
-            registered=sorted(APPLICATION_POLICIES),
-        )
-    policy = resolve_policy(body.policy_id, route.solve_path)
-    assert policy is not None
+    job's request at its `resolve` stage (§6.4) rather than trusting a stored copy, each with the
+    project's registered policies (ADR 0078 D4.6)."""
+    # 4. The policy is `"default"`, offered or the project's, and not refused on this route.
+    refused = policy_id_refusal(body.policy_id, project_policies)
+    if refused is not None:
+        return refused
+    if is_project_policy_id(body.policy_id):
+        policy = project_policies[body.policy_id]
+    else:
+        resolved = resolve_policy(body.policy_id, route.solve_path)
+        assert resolved is not None
+        policy = resolved
     if (policy.policy_id, route.solve_path) in POLICY_UNSUPPORTED_ON_ROUTE:
         return _error(
             "unsupported",

@@ -51,6 +51,11 @@ from t07_mcp_support import (
     in_session,
     project_with_grant,
 )
+from x06_schema_support import (
+    administration_requests,
+    branches_requests,
+    solve_policies_requests,
+)
 
 from openflowsheet.application.authz import revoke
 from openflowsheet.application.documents import validate_inline
@@ -93,6 +98,8 @@ ALLOWED_THIRD_PARTY = {"mcp", "anyio", "starlette", "uvicorn"}
 #: through `openflowsheet.resources` (standard library only).
 ALLOWED_PER_MODULE = {
     "web.py": {"openflowsheet.application.bindings.http", "openflowsheet.resources"},
+    # ADR 0078 D1.7: MCP over streamable HTTP serves the stdio binding's server; never `http`.
+    "mcp_http.py": {"openflowsheet.application.bindings.mcp"},
 }
 
 
@@ -277,6 +284,17 @@ async def _scenario(session: Session, direct: LocalApplication, record: Transcri
     )
     await pair("diff", "diff_revisions", {"from_revision": revision, "to_revision": second})
     await pair("structure", "inspect_structure", {"revision_id": second, "depth": 2})
+    # ADR 0078 D2.5 (X06): the direct call replays the MCP call's create and delete.
+    for name, request in branches_requests(second):
+        relation = "equal" if name == "list_branches" else "replay"
+        await pair(name, name, request, relation)
+    # ADR 0078 D4.5 (X06): the direct call replays the MCP call's registration.
+    for name, request in solve_policies_requests():
+        relation = "equal" if name == "get_solve_policy" else "replay"
+        await pair(name, name, request, relation)
+    # ADR 0078 D5.2 (X06): the principal lacks `policy`; both refusals are equal.
+    for name, request in administration_requests():
+        await pair(name, name, request)
 
     solve = {"operation": "solve", "idempotency_key": "w6b-solve", "body": {"revision_id": second}}
     error, submitted = await call(session, "submit_job", solve)
@@ -421,7 +439,10 @@ def test_g14_every_mcp_operation_equals_dispatch_as_the_same_principal(
             created = [{**item, "created": False} for item in via_mcp["results"]]
             assert via_direct == {"results": created}, pair.label
         else:  # the direct call replays the effect the MCP call made
-            assert via_mcp["status"] == "committed" and via_direct["status"] == "replayed"
+            assert via_mcp["status"] in ("committed", "created", "deleted", "registered"), (
+                pair.label
+            )
+            assert via_direct["status"] == "replayed", pair.label
             assert via_mcp | {"status": "replayed"} == via_direct, pair.label
 
 
@@ -474,6 +495,11 @@ def test_g14_refusals_reach_mcp_as_tool_errors_with_the_api_error(transcript: Tr
         "no job's table": "not_found",  # `get_stream_table` (ADR 0068)
         "no such unit": "not_found",  # `check_admission` (ADR 0060 D11)
         "no policy": "forbidden",  # `assess_rights` (ADR 0061 D13)
+        # ADR 0078 D5.2 (X06): the session's principal lacks `policy`
+        "get_policy": "forbidden",
+        "grant_capability": "forbidden",
+        "revoke_capability": "forbidden",
+        "set_ambient_pressure": "forbidden",
         "no record": "not_found",  # `get_record` (ADR 0061 D13)
         "key reused": "idempotency_key_reused",
         "non-canonical": "document_not_canonical",
@@ -503,11 +529,15 @@ def test_every_effect_is_the_session_principals(transcript: Transcript) -> None:
     ]
     # The cancel of the ended job, over MCP and directly, changes nothing and is audited all the
     # same (ruling round 5, S10). A registration of a stored record is audited too (ADR 0061 D13).
+    # A branch's create and delete are audited once each: the direct calls replay them (ADR 0078).
     assert [row["operation"] for row in effects] == [
         "register_record",
         "register_record",
         "commit_change",
         "commit_change",
+        "create_branch",
+        "delete_branch",
+        "register_solve_policy",
         "submit_job",
         "cancel_job",
         "cancel_job",

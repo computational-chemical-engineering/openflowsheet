@@ -1,7 +1,7 @@
 """T07 W6e: the conformance suite — no transport adds anything to `dispatch` (§11.6 (3), G14).
 
 Design note `docs/design/T07-jobs-and-bindings.md` §11.6 (3), §16 G14. **One scenario**
-(`Scenario.run`) runs against five clients, each on a fresh project (same project id, same policy
+(`Scenario.run`) runs against six clients, each on a fresh project (same project id, same policy
 file, so ids, ordinals and every `policy_sha256` agree):
 
 | client | transport | executor | caller | compared with |
@@ -11,6 +11,7 @@ file, so ids, ordinals and every `policy_sha256` agree):
 | `PythonClient` (process) | `dispatch` on one owner | process | the grant | (reference) |
 | `HttpClient` | httpx `ASGITransport` | process | the grant (bearer) | Python (process) |
 | `McpClient` | the SDK's in-memory client session | process | the grant | Python (process) |
+| `McpHttpClient` | SDK streamable HTTP, `/mcp` | process | the grant (bearer) | Python (process) |
 
 **Why two references.** The CLI runs jobs inline only (W5b-Q1: a one-shot command closes its
 project, and closing a process executor ends its jobs), and each `api` call opens the project as
@@ -27,18 +28,21 @@ members that are clock readings or host facts (`stable`): §11.6's list (`record
 `size_bytes` of `run_manifest` and `replay_bundle` references, whose bytes hold `started_at` and
 `elapsed_seconds` — by the validation report's `provenance.timestamp`, and by the random part of
 the `auto:<uuid4>` key an in-process `solve` or `reproduce` draws for its job (with that job's
-`request_sha256`, which hashes it). Each extension is a clock or a random draw of the method,
-which `dispatch` makes the same way; none is something a transport adds. Two relations loosen
-the comparison, each for a stated reason, never for a transport's convenience:
+`request_sha256`, which hashes it), and by what an in-band grant draws (its token, every
+`token_sha256`, the grant's `policy_sha256`; ADR 0078 D5.4, `stable_administration`). Each
+extension is a clock or a random draw of the method, which `dispatch` makes the same way; none
+is something a transport adds. Two relations loosen the comparison, each for a stated reason,
+never for a transport's convenience:
 
 - `live`: a response that reads a job while a process worker may be moving it (a first submit:
   `queued` or `running`; a cancel of a running job: `running` or already `cancelled`). The
   members a running job changes (`status`, `progress`, `event_count`, `outputs`, `ending`,
   `error`) are compared in the job's final read instead, which is `equal`.
-- `code`: HTTP's refusal of a revoked credential. §10.2 has HTTP present its token on every
-  request, so a revoked token is refused by the transport before any method runs (401,
-  `unauthenticated`, its own message, not audited); in-process and over MCP the capability was
-  authenticated at open, and the method refuses it. The code and `retryable` must agree.
+- `code`: HTTP's refusal of a revoked credential, on the REST routes and on `/mcp` (ADR 0078
+  D1.5). §10.2 has HTTP present its token on every request, so a revoked token is refused by the
+  transport before any method runs (401, `unauthenticated`, its own message, not audited);
+  in-process and over MCP stdio the capability was authenticated at open, and the method refuses
+  it. The code and `retryable` must agree.
 
 **Scenarios**: every operation's success path; every `ApiError` code each transport can reach
 (`REACHABLE`); duplicate submit and commit, and key reuse; cancel of a queued job, of a running
@@ -80,13 +84,12 @@ from t07_jobs_support import PATIENCE_S, Pause, lifecycle_violations
 from t07_mcp_support import environment
 from t07_process_support import wait_until
 from t07_transport_support import (
-    ALL,
     NEWER_JOB,
-    SERVED,
     CliClient,
     Client,
     HttpClient,
     McpClient,
+    McpHttpClient,
     Outcome,
     PythonInline,
     PythonProcess,
@@ -94,8 +97,13 @@ from t07_transport_support import (
     dispatched,
     inject_newer_producers_job,
 )
+from x06_schema_support import (
+    ADMINISTERED_CAPABILITY,
+    solve_policy_document,
+    stable_administration,
+)
 
-from openflowsheet.application.authz import OPERATION_RIGHTS, grant, revoke
+from openflowsheet.application.authz import OPERATION_RIGHTS, grant, revoke, set_administration
 from openflowsheet.application.jobs.executor import COMPUTE_LOCK
 from openflowsheet.application.jobs.worker import PAUSE_AT_STAGE_VARIABLE, PAUSED_FILE
 from openflowsheet.application.local import LocalApplication
@@ -136,7 +144,9 @@ LIVE = frozenset({"status", "progress", "event_count", "outputs", "ending", "err
 #: `revision_unsupported` (G9: a READY corpus revision always has a route; W3c reaches it only by
 #: replacing `select_route`) and `internal_error` (a defect). Not reachable as the local owner
 #: (§10.2: all rights, no limits): `forbidden`, `unauthenticated`, `limit_exceeded`. MCP has no
-#: raw export, the one `unsupported` a request can reach.
+#: raw export, the one `unsupported` a request could reach before X06-WO3; `get_solve_policy` of
+#: a benchmark-registered name that is not offered (ADR 0078 D4.5, Q6) reaches it on every
+#: transport.
 _COMMON = {
     "invalid_request",
     "document_not_canonical",
@@ -153,7 +163,8 @@ REACHABLE = {
     "cli": _COMMON | {"unsupported"},
     "python-process": _COMMON | _GRANT | {"unsupported"},
     "http": _COMMON | _GRANT | {"unsupported"},
-    "mcp": _COMMON | _GRANT,
+    "mcp": _COMMON | _GRANT | {"unsupported"},
+    "mcp-http": _COMMON | _GRANT | {"unsupported"},
 }
 pytestmark = pytest.mark.filterwarnings(
     "ignore:Using `httpx` with `starlette.testclient` is deprecated"
@@ -164,8 +175,13 @@ pytestmark = pytest.mark.filterwarnings(
 
 
 def stable(document: Any) -> Any:
-    """`document` without its clock readings and host facts (§11.6's list, extended), and
-    without the random part of an in-process `solve`'s or `reproduce`'s `auto:` key."""
+    """`document` without its clock readings and host facts (§11.6's list, extended), without
+    the random part of an in-process `solve`'s or `reproduce`'s `auto:` key, and with what an
+    in-band grant draws at random masked (`stable_administration`)."""
+    return _stable(stable_administration(document))
+
+
+def _stable(document: Any) -> Any:
     if isinstance(document, dict):
         drop = VOLATILE
         if document.get("kind") in CLOCKED_REFS and "artifact_id" in document:
@@ -175,9 +191,9 @@ def stable(document: Any) -> Any:
             # §4.2: the method draws the key (`auto:<uuid4>`); the job's request hash covers it.
             document = {**document, "request": {**request, "idempotency_key": AUTO}}
             drop = drop | {"request_sha256"}
-        return {k: stable(v) for k, v in document.items() if k not in drop}
+        return {k: _stable(v) for k, v in document.items() if k not in drop}
     if isinstance(document, list):
-        return [stable(item) for item in document]
+        return [_stable(item) for item in document]
     return document
 
 
@@ -383,6 +399,9 @@ class Scenario:
         self.ok("revision array 2", "get_revision", {**view, "cursor": part["next_cursor"]})
         self.ok("diff", "diff_revisions", {"from_revision": rev1, "to_revision": rev3})
         self.ok("structure", "inspect_structure", {"revision_id": rev2, "depth": 2})
+        self._branches(rev2)
+        self._solve_policies()
+        self._administration()
 
         # Refusals that create nothing.
         self.step("no job", "get_job", {"job_id": "job-999999"})
@@ -409,6 +428,7 @@ class Scenario:
         self.step("weakening", "submit_job", solve("s-loose", check_tolerances={"molar_flow": 1.0}))
         self.step("call budget", "submit_job", solve("s-calls", max_property_calls=10**9))
         self.step("no policy", "submit_job", solve("s-policy", policy_id="no-such-policy"))
+        self.step("no project policy", "submit_job", solve("s-user", policy_id="user.absent"))
         if c.grant:
             wall = {**solve("s-wall"), "budgets": {"wall_time_s": 10.0**6}}
             self.step("wall budget", "submit_job", wall)
@@ -500,7 +520,7 @@ class Scenario:
         # A revoked grant is refused on its next call (§10.2).
         if c.grant:
             revoke(c.project, CAPABILITY)
-            relation = "code" if c.transport == "http" else "equal"
+            relation = "code" if c.transport in ("http", "mcp-http") else "equal"
             self.step("revoked", "get_project", {}, relation)
         return self.steps
 
@@ -530,6 +550,97 @@ class Scenario:
             else (assessed["row"]["sequence"] == 1)
         ), assessed
         self.ok("record rights", "get_record", {"record_sha256": sha})
+
+    def _solve_policies(self) -> None:
+        """ADR 0078 D4 (X06-WO3): a project policy registered (and the registration replayed,
+        found to exist and to conflict, and refused for its id and for an unregistered value),
+        then read, beside an offered policy, a benchmark name that is not offered and an
+        unknown id."""
+        policy = solve_policy_document("user.conformance")
+        register = {"policy": policy, "idempotency_key": "p1"}
+        assert self.ok("policy", "register_solve_policy", register)["status"] == "registered"
+        assert self.ok("policy replayed", "register_solve_policy", register)["status"] == "replayed"
+        again = {**register, "idempotency_key": "p2"}
+        assert self.ok("policy exists", "register_solve_policy", again)["status"] == "exists"
+        other = {"policy": {**policy, "max_attempts": 3}, "idempotency_key": "p3"}
+        assert self.ok("policy conflict", "register_solve_policy", other)["status"] == "conflict"
+        named = {"policy": {**policy, "policy_id": "mine"}, "idempotency_key": "p4"}
+        self.step("policy id", "register_solve_policy", named)
+        unknown = {**policy, "initializer_chain": ["user_guess"]}
+        self.step(
+            "policy value", "register_solve_policy", {"policy": unknown, "idempotency_key": "p5"}
+        )
+        self.ok("policy read", "get_solve_policy", {"policy_id": "user.conformance"})
+        self.ok("offered policy", "get_solve_policy", {"policy_id": "T06-revision-v2"})
+        self.step("benchmark policy", "get_solve_policy", {"policy_id": "T02-eo"})
+        self.step("no such policy", "get_solve_policy", {"policy_id": "user.absent"})
+
+    def _administration(self) -> None:
+        """ADR 0078 D5 (X06-WO4), the project's switch on (`runs`): the policy read; the ambient
+        pressure declared (and the declaration replayed); a grant within the caller made (and
+        replayed with its token null, and refused as `capability_exists` under a new key);
+        revoked (and refused once gone); the ambient pressure cleared. The policy ends as it
+        began but for the declaration's absence, which it began with. Every operation needs
+        `policy`: the local owner holds it, the grant does not (`forbidden`)."""
+        assert self.step("policy in force", "get_policy", {}) is not None
+        ambient = {"value": 1.0, "unit": "bar", "idempotency_key": "a1"}
+        self.step("ambient", "set_ambient_pressure", ambient)
+        self.step("ambient replayed", "set_ambient_pressure", ambient)
+        grant = {
+            "principal_id": "x06-delegate",
+            "rights": ["read"],
+            "limits": {"default_wall_time_s": 60, "max_wall_time_s": 60, "max_active_jobs": 1},
+            "capability_id": ADMINISTERED_CAPABILITY,
+            "idempotency_key": "a2",
+        }
+        granted = self.step("grant", "grant_capability", grant)
+        replayed = self.step("grant replayed", "grant_capability", grant)
+        if not self.client.grant:
+            assert granted["status"] == "granted" and granted["token"].startswith("prt_")
+            assert (replayed["status"], replayed["token"]) == ("replayed", None)
+        self.step("grant exists", "grant_capability", {**grant, "idempotency_key": "a3"})
+        revoke = {"capability_id": ADMINISTERED_CAPABILITY, "idempotency_key": "a4"}
+        self.step("revoke", "revoke_capability", revoke)
+        self.step("revoke gone", "revoke_capability", {**revoke, "idempotency_key": "a5"})
+        cleared = {"value": None, "idempotency_key": "a6"}
+        self.step("ambient cleared", "set_ambient_pressure", cleared)
+        refusals = {"grant exists": "invalid_request", "revoke gone": "not_found"}
+        for step in self.steps[-9:]:
+            refused = step.outcome[1]["code"] if step.outcome[0] else None
+            expected = "forbidden" if self.client.grant else refusals.get(step.label)
+            assert refused == expected, step
+
+    def _branches(self, base: str) -> None:
+        """ADR 0078 D2 (X06-WO2): a branch created at `base` (and the create replayed, and refused
+        as a conflict and for the reserved name), previewed on, committed on (and the commit
+        conflicted and refused for an unknown branch), listed over two pages, and deleted (and
+        the delete conflicted and refused once the branch is gone). The head does not move."""
+        create = {"name": "what-if", "revision_id": base, "idempotency_key": "b1"}
+        assert self.ok("branch", "create_branch", create)["status"] == "created"
+        assert self.ok("branch replayed", "create_branch", create)["status"] == "replayed"
+        again = {**create, "idempotency_key": "b2"}
+        assert self.ok("branch exists", "create_branch", again)["status"] == "conflict"
+        self.step(
+            "branch head", "create_branch", {**create, "name": "head", "idempotency_key": "b3"}
+        )
+        edit = [{"operation": "set", "path": ["description"], "value": "what-if"}]
+        on = {"edits": edit, "expected_revision": base, "branch": "what-if"}
+        self.ok("branch preview", "preview_change", on)
+        on = {**on, "idempotency_key": "b4"}
+        tip = self.ok("branch commit", "commit_change", on)["revision_id"]
+        stale = {**on, "idempotency_key": "b5"}
+        assert self.ok("branch stale", "commit_change", stale)["status"] == "conflict"
+        self.step(
+            "no branch", "commit_change", {**on, "idempotency_key": "b6", "branch": "nowhere"}
+        )
+        page = self.ok("branches 1", "list_branches", {"limit": 1})
+        assert page["next_cursor"] is not None
+        self.ok("branches 2", "list_branches", {"limit": 1, "cursor": page["next_cursor"]})
+        delete = {"name": "what-if", "expected_revision": base, "idempotency_key": "b7"}
+        assert self.ok("branch stale delete", "delete_branch", delete)["status"] == "conflict"
+        delete = {**delete, "expected_revision": tip, "idempotency_key": "b8"}
+        assert self.ok("branch delete", "delete_branch", delete)["status"] == "deleted"
+        self.step("branch gone", "delete_branch", {**delete, "idempotency_key": "b9"})
 
     def _cancel_under_the_process_executor(self, solve: Callable[..., dict[str, Any]]) -> None:
         """A paused worker (A), a queued job behind it (B, one worker slot), a third over the
@@ -600,6 +711,7 @@ class Scenario:
 @dataclass
 class Run:
     client: str
+    carries: frozenset[str]
     steps: list[Step]
     wall_s: float
     violations: dict[str, Any]
@@ -614,7 +726,7 @@ def _project(root: Path, name: str, policy: bytes) -> Path:
 
 @pytest.fixture(scope="module")
 def runs(tmp_path_factory: pytest.TempPathFactory) -> dict[str, Run]:
-    """The scenario on each of the five clients (module docstring), each on a fresh project."""
+    """The scenario on each of the six clients (module docstring), each on a fresh project."""
     pytest.importorskip("mcp")
     pytest.importorskip("httpx")
     root = tmp_path_factory.mktemp("conformance")
@@ -627,6 +739,7 @@ def runs(tmp_path_factory: pytest.TempPathFactory) -> dict[str, Run]:
         limits=LIMITS,
         capability_id=CAPABILITY,
     )
+    set_administration(template, True)  # ADR 0078 D5.1: the operator's switch, on every client
     policy = (template / POLICY_NAME).read_bytes()
     shared = root / "shared"
     shared.mkdir()
@@ -637,6 +750,7 @@ def runs(tmp_path_factory: pytest.TempPathFactory) -> dict[str, Run]:
         "python-process": lambda p: PythonProcess(p, capability),
         "http": lambda p: HttpClient(p, token),
         "mcp": lambda p: McpClient(p, capability),
+        "mcp-http": lambda p: McpHttpClient(p, token),
     }
     arm = InlineArm()
     done: dict[str, Run] = {}
@@ -654,12 +768,12 @@ def runs(tmp_path_factory: pytest.TempPathFactory) -> dict[str, Run]:
                 client.close()
             with LocalApplication.open(client.project) as app:
                 violations = {k: v for k, v in lifecycle_violations(app).items() if k != NEWER_JOB}
-            done[name] = Run(name, steps, time.monotonic() - began, violations)
+            done[name] = Run(name, client.carries, steps, time.monotonic() - began, violations)
         total = time.monotonic() - started
     timings = ", ".join(
         f"{run.client} {len(run.steps)} steps {run.wall_s:.1f} s" for run in done.values()
     )
-    print(f"\nT07 conformance: 5 scenario runs in {total:.1f} s wall ({timings})")
+    print(f"\nT07 conformance: {len(done)} scenario runs in {total:.1f} s wall ({timings})")
     return done
 
 
@@ -668,14 +782,19 @@ def runs(tmp_path_factory: pytest.TempPathFactory) -> dict[str, Run]:
 
 @pytest.mark.parametrize(
     ("transport", "reference"),
-    [("cli", "python-inline"), ("http", "python-process"), ("mcp", "python-process")],
+    [
+        ("cli", "python-inline"),
+        ("http", "python-process"),
+        ("mcp", "python-process"),
+        ("mcp-http", "python-process"),
+    ],
 )
 def test_g14_every_transport_equals_dispatch(
     runs: dict[str, Run], transport: str, reference: str
 ) -> None:
     """Every step, in order, equal to the reference's same step (module docstring)."""
     got, expected = runs[transport].steps, runs[reference].steps
-    carried = SERVED[transport]
+    carried = runs[transport].carries
     assert [s.label for s in got] == [s.label for s in expected if s.operation in carried]
     assert len({s.label for s in got}) == len(got)
     by_label = {s.label: s for s in expected}
@@ -711,8 +830,7 @@ def test_every_reachable_api_error_code_is_reached(runs: dict[str, Run], client:
 
 @pytest.mark.parametrize("client", sorted(REACHABLE))
 def test_every_carried_operation_succeeds_at_least_once(runs: dict[str, Run], client: str) -> None:
-    carried = {"python-inline": ALL, "python-process": SERVED["http"]}.get(client, None)
-    carried = carried if carried is not None else SERVED[client]
+    carried = runs[client].carries
     if client not in ("python-inline", "cli"):  # the grant lacks `policy` (F3 decision WO5b-7)
         carried = carried - {n for n in carried if OPERATION_RIGHTS[n] == "policy"}
     succeeded = {s.operation for s in runs[client].steps if not s.outcome[0]}
@@ -758,7 +876,7 @@ def test_the_cancellations_and_the_duplicates_behave(runs: dict[str, Run], clien
     assert (cancelled_ended["status"], cancelled_ended["cancel_requested"]) == ("completed", False)
 
 
-@pytest.mark.parametrize("client", ["cli", "http", "mcp"])
+@pytest.mark.parametrize("client", ["cli", "http", "mcp", "mcp-http"])
 def test_j5_d_every_transport_serves_the_newer_producers_job_whole(
     runs: dict[str, Run], client: str
 ) -> None:
@@ -780,7 +898,7 @@ def test_j5_d_every_transport_serves_the_newer_producers_job_whole(
 
 
 def test_the_budget_of_the_scenario_runs(runs: dict[str, Run]) -> None:
-    """§11.6: ≤ 120 s for the module on the reference host. The five scenario runs are the bulk;
+    """§11.6: ≤ 120 s for the module on the reference host. The six scenario runs are the bulk;
     they are held to it here, the smoke tests' share is in `--durations`."""
     total = sum(run.wall_s for run in runs.values())
     assert total <= 120.0, {run.client: round(run.wall_s, 1) for run in runs.values()}

@@ -354,3 +354,57 @@ class AdmissionReport:
             "pairs": [pair.as_document() for pair in self.pairs],
             "notices": [copy.deepcopy(dict(notice)) for notice in self.notices],
         }
+
+
+#: ADR 0078 D4.5: `register_solve_policy`'s statuses.
+SolvePolicyStatus = Literal["registered", "exists", "replayed", "conflict"]
+
+
+@dataclass(frozen=True)
+class SolvePolicyRegistration:
+    """ADR 0078 D4.5: `register_solve_policy`'s result. `exists`: the id is bound to these
+    bytes already; `conflict`: to others (`conflict` is `{expected_sha256, actual_sha256}`, the
+    request's and the stored hash), else `None`."""
+
+    status: SolvePolicyStatus
+    policy_id: str
+    policy_sha256: str
+    conflict: Mapping[str, str] | None = None
+
+    def as_document(self) -> dict[str, Any]:
+        return {
+            "status": self.status,
+            "policy_id": self.policy_id,
+            "policy_sha256": self.policy_sha256,
+            "conflict": dict(self.conflict) if self.conflict is not None else None,
+        }
+
+    @classmethod
+    def _build(cls, document: Mapping[str, Any]) -> Self:
+        """The inverse of `as_document`, unvalidated: for documents this code wrote itself."""
+        conflict = document["conflict"]
+        return cls(
+            status=document["status"],
+            policy_id=document["policy_id"],
+            policy_sha256=document["policy_sha256"],
+            conflict=dict(conflict) if conflict is not None else None,
+        )
+
+
+@dataclass(frozen=True)
+class SolvePolicyView:
+    """ADR 0078 D4.5: `get_solve_policy`'s result: an offered (`builtin`) or registered
+    (`project`) solve policy and its document."""
+
+    policy_id: str
+    policy_sha256: str
+    origin: Literal["builtin", "project"]
+    document: Mapping[str, Any]
+
+    def as_document(self) -> dict[str, Any]:
+        return {
+            "policy_id": self.policy_id,
+            "policy_sha256": self.policy_sha256,
+            "origin": self.origin,
+            "document": copy.deepcopy(dict(self.document)),
+        }

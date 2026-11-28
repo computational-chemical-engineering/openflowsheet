@@ -1,0 +1,181 @@
+{
+  "get_project": {
+    "ambient_pressure": null,
+    "capability_id": "local-owner",
+    "default_policy_id": "default",
+    "head": null,
+    "job_counts": {
+      "cancelled": 0,
+      "completed": 0,
+      "failed": 0,
+      "queued": 0,
+      "running": 0,
+      "timed_out": 0
+    },
+    "limits": {
+      "default_wall_time_s": null,
+      "max_active_jobs": null,
+      "max_wall_time_s": null
+    },
+    "principal_id": "local-owner",
+    "project_id": "x06-get-project",
+    "revision_count": 0,
+    "rights": [
+      "draft",
+      "execute",
+      "install",
+      "policy",
+      "publish",
+      "read"
+    ],
+    "server": {
+      "git_commit": null,
+      "package_version": "0.6.0.dev0",
+      "store_schema": "t07-store-v1"
+    },
+    "solve_policies": [
+      {
+        "policy_id": "RRC-revision-v1",
+        "policy_sha256": "ff2ff84f8172fca9cbfa86334f82f43eed1c0917d0c5c673ce6f1f73de915f19"
+      },
+      {
+        "policy_id": "T04-W12",
+        "policy_sha256": "1f7d11723fa25d19970a506a8429f55b8365f32c4881f0c4a1e39fcd9d10b6f5"
+      },
+      {
+        "policy_id": "T06-revision-v2",
+        "policy_sha256": "c03d7205fb445b4e3c0d2c5d712c04fc60fbb6bde1f8ff753c7cedffd61c66ab"
+      },
+      {
+        "policy_id": "T08-ptc-v1",
+        "policy_sha256": "aa0f1257a830645dbd09f680577e92ddfd0d8f327423d849f2adb64124a7045c"
+      },
+      {
+        "policy_id": "T08-warm-v1",
+        "policy_sha256": "32f484a150f61e2f62357e62c7daa4b4c1c450788abce1967da938fe7ad55795"
+      }
+    ]
+  },
+  "refusals": {
+    "SYN-001-K03": {
+      "code": "unsupported",
+      "detail": {
+        "offered": [
+          "RRC-revision-v1",
+          "T04-W12",
+          "T06-revision-v2",
+          "T08-ptc-v1",
+          "T08-warm-v1"
+        ],
+        "policy_id": "SYN-001-K03"
+      },
+      "message": "solve policy 'SYN-001-K03' is registered but not offered in v0.1",
+      "retryable": false
+    },
+    "T02-eo": {
+      "code": "unsupported",
+      "detail": {
+        "offered": [
+          "RRC-revision-v1",
+          "T04-W12",
+          "T06-revision-v2",
+          "T08-ptc-v1",
+          "T08-warm-v1"
+        ],
+        "policy_id": "T02-eo"
+      },
+      "message": "solve policy 'T02-eo' is registered but not offered in v0.1",
+      "retryable": false
+    },
+    "T04-HOM-01": {
+      "code": "unsupported",
+      "detail": {
+        "offered": [
+          "RRC-revision-v1",
+          "T04-W12",
+          "T06-revision-v2",
+          "T08-ptc-v1",
+          "T08-warm-v1"
+        ],
+        "policy_id": "T04-HOM-01"
+      },
+      "message": "solve policy 'T04-HOM-01' is registered but not offered in v0.1",
+      "retryable": false
+    },
+    "T04-HOM-01-edge-off": {
+      "code": "unsupported",
+      "detail": {
+        "offered": [
+          "RRC-revision-v1",
+          "T04-W12",
+          "T06-revision-v2",
+          "T08-ptc-v1",
+          "T08-warm-v1"
+        ],
+        "policy_id": "T04-HOM-01-edge-off"
+      },
+      "message": "solve policy 'T04-HOM-01-edge-off' is registered but not offered in v0.1",
+      "retryable": false
+    },
+    "T05-W13": {
+      "code": "unsupported",
+      "detail": {
+        "offered": [
+          "RRC-revision-v1",
+          "T04-W12",
+          "T06-revision-v2",
+          "T08-ptc-v1",
+          "T08-warm-v1"
+        ],
+        "policy_id": "T05-W13"
+      },
+      "message": "solve policy 'T05-W13' is registered but not offered in v0.1",
+      "retryable": false
+    },
+    "T05b-v2": {
+      "code": "unsupported",
+      "detail": {
+        "offered": [
+          "RRC-revision-v1",
+          "T04-W12",
+          "T06-revision-v2",
+          "T08-ptc-v1",
+          "T08-warm-v1"
+        ],
+        "policy_id": "T05b-v2"
+      },
+      "message": "solve policy 'T05b-v2' is registered but not offered in v0.1",
+      "retryable": false
+    },
+    "T06-revision-v1": {
+      "code": "unsupported",
+      "detail": {
+        "offered": [
+          "RRC-revision-v1",
+          "T04-W12",
+          "T06-revision-v2",
+          "T08-ptc-v1",
+          "T08-warm-v1"
+        ],
+        "policy_id": "T06-revision-v1"
+      },
+      "message": "solve policy 'T06-revision-v1' is registered but not offered in v0.1",
+      "retryable": false
+    },
+    "no-such-policy": {
+      "code": "not_found",
+      "detail": {
+        "policy_id": "no-such-policy",
+        "registered": [
+          "RRC-revision-v1",
+          "T04-W12",
+          "T06-revision-v2",
+          "T08-ptc-v1",
+          "T08-warm-v1"
+        ]
+      },
+      "message": "no registered solve policy 'no-such-policy'",
+      "retryable": false
+    }
+  }
+}

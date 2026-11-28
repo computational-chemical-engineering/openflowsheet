@@ -268,8 +268,8 @@ def shell(tmp_path_factory: pytest.TempPathFactory) -> Iterator[Shell]:
     assert BINARY is not None
     base = tmp_path_factory.mktemp("m06-browser")
     project = fixtures.build_fixture_project(base / "project")
-    # The process executor a server uses (`http.serve`), with the workers' test hooks, so a test
-    # can hold a real job at a stage boundary.
+    # The process executor a server uses (`serving.serve_http`), with the workers' test hooks, so a
+    # test can hold a real job at a stage boundary.
     owner = LocalApplication.open(project.path, executor=ProcessExecutor(test_hooks=True))
     recorder = Recorder(create_web_app(owner))
     port = _free_port()

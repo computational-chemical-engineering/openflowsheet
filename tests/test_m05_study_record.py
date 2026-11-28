@@ -1094,7 +1094,7 @@ def test_the_m05_addendum_is_audited_after_m02s_and_its_partition_holds() -> Non
     # and (ADR 0071, OPT D-22) OPT's after E01's; ST's after OPT's (ADR 0025 D2.3, ST review
     # ruling 6, 2026-11-08; merge order); F1's after ST's (ADR 0060, F1 build decision W1-15); F3's
     # after F1's (ADR 0061, F3 build decision WO1-2); F2's after F3's (ADR 0062 D8, F2 build
-    # decision WO6a-4).
+    # decision WO6a-4); X06's after F2's (ADR 0078, X06 decision X06-CI1-1; merge order).
     assert [path.parent.name for path in t08_numerical_policy.ADDENDA] == [
         "m02",
         "m05",
@@ -1104,6 +1104,7 @@ def test_the_m05_addendum_is_audited_after_m02s_and_its_partition_holds() -> Non
         "f1",
         "f3",
         "f2",
+        "x06",
     ]
     assert EXTERNAL_M05["id"] == "M05-numerical-policy-external-v1"
     assert EXTERNAL_M05["schemas"] == ["trust-region-study.schema.json"]

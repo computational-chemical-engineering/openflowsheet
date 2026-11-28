@@ -21,7 +21,6 @@ route and needs the bearer token (§7). There is no CORS here either.
 from __future__ import annotations
 
 import mimetypes
-import sys
 from pathlib import Path
 from types import MappingProxyType
 from typing import Final
@@ -35,12 +34,8 @@ from starlette.staticfiles import StaticFiles
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
 from openflowsheet.application.bindings.http import (
-    DEFAULT_HOST,
-    DEFAULT_PORT,
     Owner,
     create_app,
-    is_loopback,
-    run,
 )
 from openflowsheet.resources import packaged
 
@@ -49,7 +44,6 @@ __all__ = [
     "SHELL_HEADERS",
     "WebShellMissingError",
     "create_web_app",
-    "serve",
     "static_directory",
 ]
 
@@ -147,19 +141,3 @@ def create_web_app(owner: Owner, directory: Path | None = None) -> Starlette:
     ]
     application.add_middleware(_ShellHeaders)
     return application
-
-
-def serve(
-    owner: Owner,
-    *,
-    host: str = DEFAULT_HOST,
-    port: int = DEFAULT_PORT,
-    allow_remote: bool = False,
-    log_level: str = "info",
-) -> None:
-    """`serve-http --ui`'s body: `http.serve`'s rules (loopback unless `allow_remote`, the
-    no-TLS warning) over `create_web_app(owner)`, until interrupted."""
-    application = create_web_app(owner)
-    if is_loopback(host) or allow_remote:
-        print(f"openflowsheet: web shell at http://{host}:{port}{MOUNT}/", file=sys.stderr)
-    run(application, host=host, port=port, allow_remote=allow_remote, log_level=log_level)

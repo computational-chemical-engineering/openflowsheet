@@ -1,0 +1,121 @@
+{
+  "work_package": "X06",
+  "commit": "1a2782d1a9e8c79d21692d20ce9872e391e10931",
+  "requirements": [],
+  "status": "tested",
+  "inputs": {
+    "case_id": "ADR 0078 (Accepted 2026-11-26, the user, Decision Desk ofs-x06-accept-adr0078; R-1071); ADR 0019 Amendment 18 (Proposed); X06 review docs/reviews/X06-review.md (main 3f457172) and its fix round X06-fix1 (docs/briefs/LINE06-X06-fix1.md); build decisions docs/X06_DECISIONS.md; surface c_12, D_12 7792576ea51caff3dcde62cb8df9f199ea6f00381ee31ba0bae0ea6f1233f04a (R-1073); without_x06 f7ec3c94233d30506ec2082a13c4e54d57bd540e43e97fdf877b1e3c75fed467",
+    "case_hash": "e21f9556aa30cd27dfa471fe218320b81536ef19df5484d8f74120e4cd5a113c",
+    "environment_lock_hash": "ead4edf1ea3577287a7576d56a9e5db550e5a5be459dd634b10806fdc655b9c4"
+  },
+  "commands": [
+    {
+      "cmd": "PYTHONPATH=src .venv/bin/python -m pytest -q -p no:cacheprovider tests/test_x06_*.py tests/test_t07_*.py tests/test_t08_w2_*.py tests/test_m07a_surface_chain.py tests/test_msg_*.py tests/test_doc_pages*.py tests/test_evidence_manifests.py tests/test_m06_static_scan.py tests/test_m06_http_contract.py tests/test_m07a_harvest.py, one process, at 1a2782d1: 3 failed, 3398 passed, 47 skipped, 1 deselected, 3 xfailed in 1457.64 s. Failures: test_every_description_is_reviewed_by_both_lanes (the eleven human reviews, see checks) and test_a21_every_item_is_classified_once_and_resolves / test_m07a_a50_the_harvest_size_is_the_quoted_one (the WO5 manifest committed without harvest rows; this manifest replaces it with its rows, re-run below)",
+      "cwd": ".claude/worktrees/x06",
+      "exit_code": 1
+    },
+    {
+      "cmd": "PYTHONPATH=src .venv/bin/python scripts/corpus_identity.py --check at 1a2782d1: F0 PASS: M1 50/50, M2 61/61, M3 61/61, M4 61/61, M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 42/42",
+      "cwd": ".claude/worktrees/x06",
+      "exit_code": 0
+    },
+    {
+      "cmd": ".venv/bin/ruff check . (All checks passed!); .venv/bin/ruff format --check . (1330 files already formatted); .venv/bin/mypy src (no issues in 360 source files), at 1a2782d1",
+      "cwd": ".claude/worktrees/x06",
+      "exit_code": 0
+    },
+    {
+      "cmd": "bundle gate (docs/X06_DECISIONS.md, WO3b script) at 1a2782d1: 63 bundles, 60 ok, digest b42b1ec439d1683c",
+      "cwd": ".claude/worktrees/x06",
+      "exit_code": 0
+    },
+    {
+      "cmd": "PYTHONPATH=src .venv/bin/python scripts/doc_pages.py --check at 1a2782d1: generated pages: up to date",
+      "cwd": ".claude/worktrees/x06",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/m03_nlp_check.sh --no-inventory with the main checkout's .venv-nlp and .reference-downloads/m03-ipopt -- tests/test_x06_solve_policies.py -k e_x06_13 at 1a2782d1: 1 passed (E-X06-13 optimize half), m03_nlp_check.sh PASSED",
+      "cwd": ".claude/worktrees/x06",
+      "exit_code": 0
+    }
+  ],
+  "checks": [
+    {
+      "id": "X06.E-X06-1-21",
+      "description": "tests/test_x06_mcp_http.py, test_x06_branches*.py, test_x06_solve_policies.py, test_x06_administration.py and the conformance suite's six clients (E-X06-1 to E-X06-21), as run in the surface battery",
+      "result": "pass",
+      "value": "all passed in the battery at 1a2782d1, with the review's S1 hook test (8 cases) and S2's per-carrier E-X06-18"
+    },
+    {
+      "id": "X06.E-X06-13-OPTIMIZE",
+      "description": "E-X06-13 optimize half: OPT-A2 under T06-revision-v2 and under user.copy reproduces in a fresh project with the same verdict",
+      "result": "pass",
+      "value": "run in the audited NLP environment (.venv-nlp): both KKT_POINT_VERIFIED, both reproduce MATCH with equal integrity; nlp-marked, so not in the default gate or CI"
+    },
+    {
+      "id": "X06.E-X06-22",
+      "description": "served-interface digest: X06_SERVED_SHA256 pinned; without_x06 gives F3's digest; the bijection test passes",
+      "result": "pass",
+      "value": "7792576ea51caff3dcde62cb8df9f199ea6f00381ee31ba0bae0ea6f1233f04a (35 tools; d0f0c8b7 before the review's three text edits); without X06's additions f7ec3c94, chain link c_12 (R-1073)"
+    },
+    {
+      "id": "X06.E-X06-23",
+      "description": "store schema id unchanged and every changed schema file justified by an ADR 0078 member",
+      "result": "pass",
+      "value": "STORE_SCHEMA is t07-store-v1; schemas/ changes: change-set (D2.4), project-policy (D5.1), application-results (D2.5, D4.5, D5.2); table in docs/X06_DECISIONS.md"
+    },
+    {
+      "id": "X06.E-X06-24",
+      "description": "catalogue check (ADR 0058 C3): every new detail.code has an entry",
+      "result": "pass",
+      "value": "tests/test_msg_coverage.py passed in the battery"
+    },
+    {
+      "id": "X06.F0",
+      "description": "scripts/corpus_identity.py --check",
+      "result": "pass",
+      "value": "M1 50/50, M2-M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 42/42"
+    },
+    {
+      "id": "X06.Q26",
+      "description": "tests/test_t07_q26.py (R-088 Q26), with ADMINISTRATION_SCALARS (X06 review ruling 1)",
+      "result": "pass",
+      "value": "6 passed"
+    },
+    {
+      "id": "X06.BUNDLE-GATE",
+      "description": "every committed bundle verifies as before (WO3b gate)",
+      "result": "pass",
+      "value": "63 bundles, 60 ok, b42b1ec439d1683c"
+    },
+    {
+      "id": "X06.DESCRIPTION-REVIEWS",
+      "description": "tests/test_t08_w2_description_reviews.py::test_every_description_is_reviewed_by_both_lanes",
+      "result": "fail",
+      "value": "FAILING by design until the human reviews are recorded: 11 open items, the human review of commit_change, preview_change, list_branches, create_branch, delete_branch, register_solve_policy, get_solve_policy, get_policy, grant_capability, revoke_capability, set_ambient_pressure; the design-lane reviews are recorded (X06 review ruling 2)"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "docs/adr/0078-X06-application-capabilities.md",
+      "sha256": "e21f9556aa30cd27dfa471fe218320b81536ef19df5484d8f74120e4cd5a113c",
+      "description": "ADR 0078, Accepted"
+    },
+    {
+      "path": "docs/X06_DECISIONS.md",
+      "sha256": "dacde3dde8b1f4f1160b740562a15b521910299702c3fd26e042de670c230f9c",
+      "description": "X06 build decisions, WO1 to WO5 and the X06-fix1 section"
+    }
+  ],
+  "limitations": [
+    "Evidence class: software verification of four application capabilities (MCP over HTTP, branches, project solve policies, in-band administration) against ADR 0078's exit tests, after the design-lane review's fix round (docs/reviews/X06-review.md). Status is tested. No CI run is recorded: the branch has not been pushed (LINE06 rules). No reviewed status is claimed by the build lane.",
+    "FAILING by design until the user's human reviews are recorded: test_every_description_is_reviewed_by_both_lanes, 11 texts; their design-lane reviews are recorded in REVIEW.json.",
+    "E-X06-13's optimize half ran only in the audited NLP environment on this workstation (scripts/m03_nlp_check.sh --no-inventory, the inventory not re-taken); it is nlp-marked and does not run in the default gate or CI.",
+    "ADR 0078 D3: job resume is deferred to F7 D14 (0.8); nothing is built for it."
+  ],
+  "review": {
+    "numerical": "pending",
+    "process_model": "pending"
+  }
+}

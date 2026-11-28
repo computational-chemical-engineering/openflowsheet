@@ -24,6 +24,7 @@ amended; ADR 0019 Amendment 1; gates R4-G3 and R4-G4).
 from __future__ import annotations
 
 import hashlib
+import os
 import sys
 import tempfile
 from pathlib import Path
@@ -43,6 +44,7 @@ from opt_schema_support import without_opt
 from st_schema_support import ST_OPERATIONS
 from x02_schema_support import without_x02
 from x04_schema_support import without_x04
+from x06_schema_support import X06_OPERATIONS, without_x06
 
 from openflowsheet.application.operations import OPERATIONS, Operation
 from openflowsheet.canonical import canonical_json
@@ -79,6 +81,17 @@ DEF_OF_OPERATION: dict[str, str] = {
     "register_record": "record_registration_result",
     "validate_record": "record_validation_report",
     "assess_rights": "rights_assessment_result",
+    # ADR 0078 D2.5 (X06, ADR 0019 Amendment 18)
+    "list_branches": "branch_page",
+    "create_branch": "branch_result",
+    "delete_branch": "branch_result",
+    # ADR 0078 D4.5 (X06)
+    "register_solve_policy": "solve_policy_registration",
+    "get_solve_policy": "solve_policy_view",
+    # ADR 0078 D5.2 (X06); `get_policy`'s response is `project-policy.schema.json`, published
+    "grant_capability": "grant_result",
+    "revoke_capability": "revoke_result",
+    "set_ambient_pressure": "ambient_pressure_result",
 }
 #: `revision_summary`, `audit_record` and `capability_descriptor` are pages' items, each its own
 #: `$def`. F3's `effective_rights`, `rights_row` and `record_finding` are its responses' parts.
@@ -94,6 +107,7 @@ DEFS = frozenset(
         "effective_rights",
         "rights_row",
         "record_finding",
+        "branch",
     }
 )
 #: R4-G3: SHA-256 of `canonical_json` of each operation's fully resolved response schema, taken at
@@ -338,8 +352,35 @@ SNAPSHOT_F3: dict[str, str | None] = {
 SNAPSHOT_F2: dict[str, str | None] = {
     "list_models": "854fab3332da26b0f51e5f6cb113095238e2f8f3db52a61196e83c536de16541",
 }
-#: The rows later than X04, each with its own snapshot (F1's and F3's).
-LATER_ROWS = F1_OPERATIONS | F3_OPERATIONS
+#: X06 (ADR 0078 D2, ADR 0019 Amendment 18; R-1073): the protocol `Branches`, three new rows
+#: (`branch_page`, `branch_result`), and the six job rows whose resolved response embeds the
+#: optimization report's candidate ChangeSet, which gained the optional `branch` (D2.4). Taken at
+#: X06-WO2; with X06's additions removed (`tests/x06_schema_support.py`) each moved row is its
+#: earlier value again (`test_x06_without_its_additions_every_response_is_its_pre_x06_snapshot`).
+#: X06-WO3 (D4.5) adds the two `SolvePolicies` rows (`solve_policy_registration`,
+#: `solve_policy_view`, which embeds `solve-policy.schema.json`); no earlier row moved.
+#: X06-WO4 (D5.2) adds the four `Administration` rows (`get_policy` is the published
+#: `project-policy.schema.json`, with its optional `administration`; `grant_result`,
+#: `revoke_result`, `ambient_pressure_result`); no earlier row moved.
+SNAPSHOT_X06: dict[str, str | None] = {
+    "submit_job": "37062a2659f7d42d53c863f3c36e14105c6459086cafa47a3a4dc206bcaca93d",
+    "get_job": "e93cc75b9fceebc21d7be6bac868709a67edbc37db9a01567a3f1f253b44bbcf",
+    "list_jobs": "e3c7bb3eb7a008c21b88bcbe9736bb23c2eef6c75d9051be8f5acdf3d4ceb2ef",
+    "wait_job": "ac5026bdfc49359373c504f67e846f39b25af95bfb6a350b40b0f5cb6a094100",
+    "cancel_job": "e93cc75b9fceebc21d7be6bac868709a67edbc37db9a01567a3f1f253b44bbcf",
+    "get_job_result": "4d1095d2016aed0f8e677f59d6ac5ff75bd6703be628819f632b221e8b1bf1e4",
+    "list_branches": "b0986117381b92f6bee2e609a9afdece1fee48e7400110d8e1fd764f17f2a397",
+    "create_branch": "a138701b640a4ffe3a0e9feac58ca3d9a397ffb3a4b93601fde4ddeb02e59cb7",
+    "delete_branch": "a138701b640a4ffe3a0e9feac58ca3d9a397ffb3a4b93601fde4ddeb02e59cb7",
+    "register_solve_policy": "4a3a5b104fcce374826c09e6c8dc66da9f28c49310308e35c76184ffdc889379",
+    "get_solve_policy": "528b6090c542396444ad87474a81f91be98599d875aedd85d3cd52be7b23a6fd",
+    "get_policy": "e3711772737d88f9e205fdd24efeccce97d937e7d87a211097064c7c1e24b9cd",
+    "grant_capability": "0cd20320de39f482cc88e7881b844eede4f6112ab6416e7d68bac140e7aa21e0",
+    "revoke_capability": "52cdce3fa0d494e325ef4e47dda796b063223ae2ea30efdec553a774073b9266",
+    "set_ambient_pressure": "5b6096106719fded803e7821c938273bbcf3a01d6965d47d889656a7b0ff6678",
+}
+#: The rows later than X04, each with its own snapshot (F1's, F3's and X06's; F2 adds no row).
+LATER_ROWS = F1_OPERATIONS | F3_OPERATIONS | X06_OPERATIONS
 
 
 def _without_specifications(schema: Any) -> Any:
@@ -359,7 +400,7 @@ def _without_specifications(schema: Any) -> Any:
 
 def test_r4_g3_every_resolved_response_schema_equals_the_snapshot() -> None:
     measured = {name: _digest(resolved_response(op)) for name, op in OPERATIONS.items()}
-    assert len(measured) == 30
+    assert len(measured) == 39
     assert measured == {
         **SNAPSHOT_AT_B13D556,
         **SNAPSHOT_AMENDMENT_2,
@@ -375,13 +416,47 @@ def test_r4_g3_every_resolved_response_schema_equals_the_snapshot() -> None:
         **SNAPSHOT_F1,
         **SNAPSHOT_F3,
         **SNAPSHOT_F2,
+        **SNAPSHOT_X06,
     }
+    assert X06_OPERATIONS <= set(SNAPSHOT_X06)
     assert set(SNAPSHOT_F1) == F1_OPERATIONS
     assert set(SNAPSHOT_F2) == F2_MOVED_OPERATIONS
     assert set(SNAPSHOT_F3) == F3_OPERATIONS
     assert SNAPSHOT_ST["get_stream_table"] == SNAPSHOT_AT_B13D556["get_artifact"]
     for operation in OPERATIONS.values():
         assert "$ref" not in canonical_json(resolved_response(operation)).decode("utf-8")
+
+
+def test_x06_without_its_additions_every_response_is_its_pre_x06_snapshot() -> None:
+    """R4-G3 for X06 (ADR 0078 D6, R-1073): with X06's additions removed every resolved response
+    of an earlier row is its snapshot before X06, and exactly the rows of `SNAPSHOT_X06` moved
+    (its three new rows besides)."""
+    before = {
+        **SNAPSHOT_AT_B13D556,
+        **SNAPSHOT_AMENDMENT_2,
+        **SNAPSHOT_AMENDMENT_3,
+        **SNAPSHOT_M02,
+        **SNAPSHOT_M04,
+        **SNAPSHOT_MSG,
+        **SNAPSHOT_MSG_EXPLAIN,
+        **SNAPSHOT_X02,
+        **SNAPSHOT_OPT,
+        **SNAPSHOT_ST,
+        **SNAPSHOT_X04,
+        **SNAPSHOT_F1,
+        **SNAPSHOT_F3,
+        **SNAPSHOT_F2,  # F2 merges before X06 (R-1072/R-1073)
+    }
+    assert set(before) == set(OPERATIONS) - X06_OPERATIONS
+    moved = []
+    for name, operation in OPERATIONS.items():
+        if name in X06_OPERATIONS:
+            continue
+        resolved = resolved_response(operation)
+        assert _digest(without_x06(resolved)) == before[name], name
+        if _digest(resolved) != before[name]:
+            moved.append(name)
+    assert sorted(moved) == sorted(set(SNAPSHOT_X06) - X06_OPERATIONS)
 
 
 def test_x04_without_its_additions_every_response_is_its_pre_x04_snapshot() -> None:
@@ -404,7 +479,8 @@ def test_x04_without_its_additions_every_response_is_its_pre_x04_snapshot() -> N
     for name, operation in OPERATIONS.items():
         if name in LATER_ROWS:  # F1's (ADR 0060) and F3's (ADR 0061) rows postdate X04
             continue
-        resolved = without_f2(resolved_response(operation))  # F2's additions postdate X04
+        # F2's and X06's additions postdate X04
+        resolved = without_f2(without_x06(resolved_response(operation)))
         assert _digest(without_x04(resolved)) == before[name], name
         if _digest(resolved) != before[name]:
             moved.append(name)
@@ -428,8 +504,9 @@ def test_opt_without_its_additions_every_response_is_its_pre_opt_snapshot() -> N
     for name, operation in OPERATIONS.items():
         if name in ST_OPERATIONS | LATER_ROWS:  # later rows, each with its own snapshot
             continue
-        # X04's (ADR 0075) and F2's (ADR 0062) additions postdate OPT: they are taken out first.
-        resolved = without_x04(without_f2(resolved_response(operation)))
+        # X04's (ADR 0075), F2's (ADR 0062) and X06's (ADR 0078) additions postdate OPT: they are
+        # taken out first, the later first.
+        resolved = without_x04(without_f2(without_x06(resolved_response(operation))))
         assert _digest(without_opt(resolved)) == before[name], name
         if _digest(resolved) != before[name]:
             moved.append(name)
@@ -456,7 +533,9 @@ def test_msg_g10_without_failure_every_response_is_its_pre_msg_snapshot() -> Non
             continue
         # X02's (ADR 0070) and OPT's (ADR 0071) additions postdate MSG: they are taken out
         # first, the later first.
-        resolved = without_x02(without_opt(without_x04(without_f2(resolved_response(operation)))))
+        resolved = without_x02(
+            without_opt(without_x04(without_f2(without_x06(resolved_response(operation)))))
+        )
         assert _digest(without_msg(resolved)) == before[name], name
         if _digest(resolved) != before[name]:
             moved.append(name)
@@ -480,9 +559,9 @@ def test_x02_without_warm_start_every_response_is_its_pre_x02_snapshot() -> None
     for name, operation in OPERATIONS.items():
         if name in ST_OPERATIONS | LATER_ROWS:  # later rows, each with its own snapshot
             continue
-        # OPT's (ADR 0071), X04's (ADR 0075) and F2's (ADR 0062) additions postdate X02: they are
-        # taken out first.
-        resolved = without_opt(without_x04(without_f2(resolved_response(operation))))
+        # OPT's (ADR 0071), X04's (ADR 0075), F2's (ADR 0062) and X06's (ADR 0078) additions
+        # postdate X02: they are taken out first, the later first.
+        resolved = without_opt(without_x04(without_f2(without_x06(resolved_response(operation)))))
         assert _digest(without_x02(resolved)) == before[name], name
         if _digest(resolved) != before[name]:
             moved.append(name)
@@ -509,10 +588,13 @@ def test_f2_without_its_additions_every_response_is_its_pre_f2_snapshot() -> Non
         **SNAPSHOT_F1,
         **SNAPSHOT_F3,
     }
-    assert set(before) == set(OPERATIONS)  # F2 adds no operation
+    # F2 adds no operation; X06's rows postdate F2 (R-1072/R-1073), each with its own snapshot.
+    assert set(before) == set(OPERATIONS) - X06_OPERATIONS
     moved = []
     for name, operation in OPERATIONS.items():
-        resolved = resolved_response(operation)
+        if name in X06_OPERATIONS:
+            continue
+        resolved = without_x06(resolved_response(operation))  # X06's additions postdate F2
         assert _digest(without_f2(resolved)) == before[name], name
         if _digest(resolved) != before[name]:
             moved.append(name)
@@ -562,7 +644,11 @@ def test_g_r6_6_list_models_moved_only_by_the_approved_additive_member() -> None
             without_m02(
                 without_m04(
                     without_msg(
-                        without_x02(without_opt(without_x04(resolved_response(OPERATIONS[name]))))
+                        without_x02(
+                            without_opt(
+                                without_x04(without_x06(resolved_response(OPERATIONS[name])))
+                            )
+                        )
                     )
                 )
             )
@@ -575,6 +661,7 @@ def test_g_r6_6_list_models_moved_only_by_the_approved_additive_member() -> None
     assert sorted(set(OPERATIONS) - set(SNAPSHOT_AT_B13D556)) == sorted(
         ["check_admission", "explain", "get_stream_table", "list_audit", "list_capabilities"]
         + sorted(F3_OPERATIONS)
+        + sorted(X06_OPERATIONS)
     )
     # ADR 0019 Amendment 3 (A3.2) moves `diff_revisions` too; its own test below.
     assert moved == ["list_models", "diff_revisions"]
@@ -667,9 +754,12 @@ def test_r4_g3_every_def_has_a_valid_and_an_invalid_fixture(name: str) -> None:
         assert any(fixture["expect_error"] in error for error in errors), (path, errors)
 
 
-def test_the_fixtures_are_what_real_responses_emit_today() -> None:
+def test_the_fixtures_are_what_real_responses_emit_today(monkeypatch: pytest.MonkeyPatch) -> None:
     """R-015: regenerated from real responses, the fixtures are equal with the members that differ
     between generations masked (timestamps, output digests and sizes, the git commit)."""
+    # `_pin_threads` sets the pins for the rest of the process: set them here, undone at teardown.
+    for name in ("OPENBLAS_NUM_THREADS", "OMP_NUM_THREADS", "MKL_NUM_THREADS"):
+        monkeypatch.setenv(name, os.environ.get(name, "1"))
     sys.path.insert(0, str(REPO_ROOT / "scripts"))
     from t07_schema_fixtures import application_results_documents, stable
 

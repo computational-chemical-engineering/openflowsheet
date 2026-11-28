@@ -12,11 +12,13 @@ its SHA-256 is stored. `authenticate` compares that hash with every grant's in c
 never matches a grant whose `token_sha256` is null, which is how `LOCAL_OWNER` — all rights, no
 limits, null token — is unreachable from any transport (§10.2).
 
-**Policy.** `project-policy.json` is changed only by the operator's CLI (`project init`, `grant`,
-`revoke`, `ambient`), each an atomic replace plus an audit row. `PolicyFile` hot-reloads it on a
-changed `(st_mtime_ns, st_size, st_ino)`; a file that fails its schema is refused and never
-defaulted — the last valid policy stays in force and the refusal is logged, and with no valid
-policy at all nothing opens (§10.3).
+**Policy.** `project-policy.json` is changed by the operator's CLI (`project init`, `grant`,
+`revoke`, `ambient`, `administration`) and, where the operator switched in-band administration
+on, by the `Administration` operations (ADR 0078 D5), each an atomic replace plus an audit row
+(`change_policy`); an in-band grant never exceeds its caller (`delegation_refusal`). `PolicyFile`
+hot-reloads it on a changed `(st_mtime_ns, st_size, st_ino)`; a file that fails its schema is
+refused and never defaulted — the last valid policy stays in force and the refusal is logged, and
+with no valid policy at all nothing opens (§10.3).
 """
 
 from __future__ import annotations
@@ -29,6 +31,7 @@ import logging
 import math
 import re
 import secrets
+import sqlite3
 import threading
 from collections.abc import Callable, Iterable, Mapping
 from dataclasses import dataclass, replace
@@ -90,6 +93,18 @@ OPERATION_RIGHTS: Final[Mapping[str, Right]] = {
     "register_record": "draft",
     "validate_record": "read",
     "assess_rights": "policy",
+    # ADR 0078 D2.5 (X06, ADR 0019 Amendment 18): branches; a write moves only a named ref
+    "list_branches": "read",
+    "create_branch": "draft",
+    "delete_branch": "draft",
+    # ADR 0078 D4.5 (X06): project solve policies; registering needs `draft` (Q5)
+    "register_solve_policy": "draft",
+    "get_solve_policy": "read",
+    # ADR 0078 D5.2 (X06): in-band policy administration, behind the operator's switch
+    "get_policy": "policy",
+    "grant_capability": "policy",
+    "revoke_capability": "policy",
+    "set_ambient_pressure": "policy",
     # raw export (Python, CLI, HTTP)
     "artifact_bytes": "read",
 }
@@ -203,6 +218,55 @@ def authenticate(
     return found
 
 
+# ================================================================ delegation (ADR 0078 D5.3)
+
+#: ADR 0078 D5.3: the limits a delegated grant may not exceed (`default_wall_time_s` is bounded
+#: by its own `max_wall_time_s`, `Limits`' rule).
+DELEGATED_LIMITS: Final[tuple[str, ...]] = ("max_wall_time_s", "max_active_jobs")
+
+
+def delegation_refusal(caller: CapabilityReference, requested: CapabilityReference) -> str | None:
+    """ADR 0078 D5.3: why `caller` may not grant `requested`, or `None`. Pure and deny-only: it
+    can refuse a grant `authorize` allowed, never allow one.
+
+    The requested rights are a subset of the caller's; for each of `DELEGATED_LIMITS`, a caller
+    limit `L` needs a non-null requested limit `<= L`; a caller expiry `E` needs a non-null
+    requested expiry `<= E`; neither the principal nor the capability id is the local owner's.
+    """
+    if LOCAL_OWNER_PRINCIPAL in (requested.principal_id, requested.capability_id):
+        return f"{LOCAL_OWNER_PRINCIPAL!r} is the in-process owner and cannot be granted"
+    extra = sorted(set(requested.rights) - set(caller.rights))
+    if extra:
+        return f"the grant asks for the right(s) {', '.join(extra)}, which the caller does not hold"
+    for name in DELEGATED_LIMITS:
+        ceiling = getattr(caller.limits, name)
+        asked = getattr(requested.limits, name)
+        if ceiling is not None and (asked is None or asked > ceiling):
+            return (
+                f"the grant's {name} {asked!r} exceeds the caller's {ceiling!r} (a limited caller "
+                "grants only a limit at most its own)"
+            )
+    expiry = caller.expires_at
+    if expiry is not None and (requested.expires_at is None or requested.expires_at > expiry):
+        return (
+            f"the grant's expires_at {requested.expires_at!r} is later than the caller's "
+            f"{expiry!r} (an expiring caller grants only an expiry at most its own)"
+        )
+    return None
+
+
+def revoke_refusal(caller: CapabilityReference, target: CapabilityReference) -> str | None:
+    """ADR 0078 D5.3: why `caller` may not revoke `target`, or `None`: a revoke needs the
+    target's rights to be a subset of the caller's. Revoking oneself is allowed."""
+    extra = sorted(set(target.rights) - set(caller.rights))
+    if extra:
+        return (
+            f"capability {target.capability_id!r} holds the right(s) {', '.join(extra)}, which "
+            "the caller does not hold"
+        )
+    return None
+
+
 # ========================================================================= the policy file
 
 
@@ -284,34 +348,67 @@ class PolicyAdministrationError(ValueError):
 type PolicyChange = Callable[[ProjectPolicy], tuple[ProjectPolicy, CapabilityReference]]
 
 
-def _change_policy(
+def change_policy(
+    store: ProjectStore,
+    directory: Path,
+    operation: str,
+    apply: Callable[[ProjectPolicy], tuple[ProjectPolicy, str]],
+    *,
+    actor: CapabilityReference,
+    request_sha256: str | None,
+    connection: sqlite3.Connection | None = None,
+) -> ProjectPolicy:
+    """ADR 0078 D5.5: read-modify-write the policy under the store's write transaction, audited
+    in the same step, and return the updated policy. `apply` returns the updated policy and the
+    audit row's `effect`; the row is `allowed` and names `actor`'s principal and capability, its
+    `request_sha256` the given one, or the updated policy's hash when `None` (the CLI's form).
+
+    The transaction is `connection`'s when given (an in-band operation, whose ledger row shares
+    it), else one `store.writing()` opened here; concurrent writers serialize on its `BEGIN
+    IMMEDIATE`, so no update is lost."""
+    if connection is None:
+        with store.writing() as opened:
+            return change_policy(
+                store,
+                directory,
+                operation,
+                apply,
+                actor=actor,
+                request_sha256=request_sha256,
+                connection=opened,
+            )
+    path = directory / POLICY_NAME
+    try:
+        policy = read_policy(path)
+    except (OSError, ValueError) as error:
+        raise PolicyAdministrationError(
+            f"{path} is not a valid project policy; repair it before changing it ({error})"
+        ) from error
+    updated, effect = apply(policy)
+    atomic_write_bytes(path, policy_file_bytes(updated))
+    store.audit(
+        connection,
+        AuditEntry(
+            principal_id=actor.principal_id,
+            capability_id=actor.capability_id,
+            operation=operation,
+            outcome="allowed",
+            request_sha256=updated.policy_sha256 if request_sha256 is None else request_sha256,
+            effect=effect,
+        ),
+    )
+    return updated
+
+
+def _operator_change(
     directory: Path, operation: str, apply: Callable[[ProjectPolicy], tuple[ProjectPolicy, str]]
-) -> None:
-    """Read-modify-write the policy under the store's write lock, audited in the same step;
-    `apply` returns the updated policy and the audit row's `effect`."""
+) -> ProjectPolicy:
+    """The operator CLI's change: `change_policy` as `LOCAL_OWNER` on a store of its own."""
     store = ProjectStore.open(directory)
     try:
-        path = directory / POLICY_NAME
-        with store.writing() as connection:
-            try:
-                policy = read_policy(path)
-            except (OSError, ValueError) as error:
-                raise PolicyAdministrationError(
-                    f"{path} is not a valid project policy; repair it before changing it ({error})"
-                ) from error
-            updated, effect = apply(policy)
-            atomic_write_bytes(path, policy_file_bytes(updated))
-            store.audit(
-                connection,
-                AuditEntry(
-                    principal_id=LOCAL_OWNER_PRINCIPAL,
-                    capability_id=LOCAL_OWNER_PRINCIPAL,
-                    operation=operation,
-                    outcome="allowed",
-                    request_sha256=updated.policy_sha256,
-                    effect=effect,
-                ),
-            )
+        return change_policy(
+            store, directory, operation, apply, actor=LOCAL_OWNER, request_sha256=None
+        )
     finally:
         store.close()
 
@@ -327,7 +424,7 @@ def _administer(
         subjects.append(subject)
         return updated, f"{change}:{subject.capability_id}"
 
-    _change_policy(directory, operation, applied)
+    _operator_change(directory, operation, applied)
     return subjects[0]
 
 
@@ -342,6 +439,28 @@ def grant(
     capability_id: str | None = None,
 ) -> tuple[CapabilityReference, str]:
     """Add a grant; return it and its token, which is never stored and never shown again."""
+    capability, token = new_capability(
+        principal_id=principal_id,
+        rights=rights,
+        limits=limits,
+        expires_at=expires_at,
+        note=note,
+        capability_id=capability_id,
+    )
+    return _administer(Path(directory), "project_grant", "grant", adding(capability)), token
+
+
+def new_capability(
+    *,
+    principal_id: str,
+    rights: Iterable[str] = GRANT_DEFAULT_RIGHTS,
+    limits: Limits = GRANT_DEFAULT_LIMITS,
+    expires_at: str | None = None,
+    note: str = "",
+    capability_id: str | None = None,
+) -> tuple[CapabilityReference, str]:
+    """A grant not yet in any policy, and its fresh token: checked against the schema, the
+    rights and the reserved owner before anything is written (`PolicyAdministrationError`)."""
     wanted = sorted(set(rights))
     unknown = [right for right in wanted if right not in RIGHTS]
     if unknown:
@@ -362,6 +481,11 @@ def grant(
     )
     # Validates the ids, the timestamp and the note against the schema before anything is written.
     CapabilityReference.from_document(capability.as_document())
+    return capability, token
+
+
+def adding(capability: CapabilityReference) -> PolicyChange:
+    """The change that adds `capability`; an existing `capability_id` is refused."""
 
     def add(policy: ProjectPolicy) -> tuple[ProjectPolicy, CapabilityReference]:
         if any(c.capability_id == capability.capability_id for c in policy.capabilities):
@@ -370,11 +494,16 @@ def grant(
             )
         return replace(policy, capabilities=(*policy.capabilities, capability)), capability
 
-    return _administer(Path(directory), "project_grant", "grant", add), token
+    return add
 
 
 def revoke(directory: Path, capability_id: str) -> CapabilityReference:
     """Remove a grant. A server re-reads the policy on its next call, so it takes effect then."""
+    return _administer(Path(directory), "project_revoke", "revoke", removing(capability_id))
+
+
+def removing(capability_id: str) -> PolicyChange:
+    """The change that removes the grant `capability_id`; an unknown id is refused."""
 
     def remove(policy: ProjectPolicy) -> tuple[ProjectPolicy, CapabilityReference]:
         kept = tuple(c for c in policy.capabilities if c.capability_id != capability_id)
@@ -383,7 +512,7 @@ def revoke(directory: Path, capability_id: str) -> CapabilityReference:
         (removed,) = (c for c in policy.capabilities if c.capability_id == capability_id)
         return replace(policy, capabilities=kept), removed
 
-    return _administer(Path(directory), "project_revoke", "revoke", remove)
+    return remove
 
 
 # ================================================ the project's ambient pressure (ADR 0075 D6)
@@ -437,10 +566,35 @@ def set_ambient_pressure(directory: Path, pressure: float | None) -> float | Non
     `ambient_pressure_invalid(value)` and leaves the file unchanged. Returns what is declared."""
     if pressure is not None:
         pressure = _checked_ambient(float(pressure), repr(pressure), "Pa")
+    _operator_change(Path(directory), "project_ambient", ambient_change(pressure))
+    return pressure
+
+
+def ambient_change(pressure: float | None) -> Callable[[ProjectPolicy], tuple[ProjectPolicy, str]]:
+    """The change that declares `pressure` Pa (already checked) or clears it (`None`), its
+    effect `ambient:<value>` or `ambient:cleared`."""
 
     def apply(policy: ProjectPolicy) -> tuple[ProjectPolicy, str]:
         effect = "ambient:cleared" if pressure is None else f"ambient:{pressure!r}"
         return replace(policy, ambient_pressure=pressure), effect
 
-    _change_policy(Path(directory), "project_ambient", apply)
-    return pressure
+    return apply
+
+
+# ============================================== the in-band administration switch (ADR 0078 D5.1)
+
+
+def set_administration(directory: Path, in_band: bool) -> bool:
+    """ADR 0078 D5.1: switch in-band policy administration on or off for the project in
+    `directory`; an atomic replace of `project-policy.json` audited as `project_administration`
+    (effect `administration:on` or `administration:off`), as `grant`. Off removes the member, so
+    the file is again what it was before the switch was first turned on. Returns the state."""
+
+    def apply(policy: ProjectPolicy) -> tuple[ProjectPolicy, str]:
+        return (
+            replace(policy, administration_in_band=in_band),
+            f"administration:{'on' if in_band else 'off'}",
+        )
+
+    _operator_change(Path(directory), "project_administration", apply)
+    return in_band

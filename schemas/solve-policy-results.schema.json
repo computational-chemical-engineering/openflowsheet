@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/frankp/process-runtime/schemas/solve-policy-results.schema.json",
+  "title": "SolvePolicyResults",
+  "description": "ADR 0078 D4.5 (X06; ADR 0019 Amendment 18): the response shapes of the protocol `SolvePolicies` (`register_solve_policy`, `get_solve_policy`). `application-results.schema.json` reaches each by a bare `$ref` of the same name, so that the `sha256` names they declare (`expected_sha256`, `actual_sha256`) stay in X06's numerical-policy addendum and out of the v2 policy's domain (ADR 0025 D2.3; R-1032's structure; X06 decision X06-CI1-1).",
+  "$defs": {
+    "solve_policy_registration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "policy_id",
+        "policy_sha256",
+        "conflict"
+      ],
+      "description": "ADR 0078 D4.5: `register_solve_policy`'s result. `registered`: the id is now bound to the document's canonical bytes; `exists`: it was bound to these bytes already; `conflict`: to other bytes, both hashes in `conflict` (`expected_sha256` the request's, `actual_sha256` the stored one, which `policy_sha256` repeats); `replayed`: the original result of the same request under the same key. An id is never re-bound.",
+      "properties": {
+        "status": {
+          "enum": [
+            "registered",
+            "exists",
+            "replayed",
+            "conflict"
+          ]
+        },
+        "policy_id": {
+          "type": "string"
+        },
+        "policy_sha256": {
+          "$ref": "https://github.com/frankp/process-runtime/schemas/job.schema.json#/$defs/sha256"
+        },
+        "conflict": {
+          "anyOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "expected_sha256",
+                "actual_sha256"
+              ],
+              "properties": {
+                "expected_sha256": {
+                  "$ref": "https://github.com/frankp/process-runtime/schemas/job.schema.json#/$defs/sha256"
+                },
+                "actual_sha256": {
+                  "$ref": "https://github.com/frankp/process-runtime/schemas/job.schema.json#/$defs/sha256"
+                }
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "solve_policy_view": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "policy_id",
+        "policy_sha256",
+        "origin",
+        "document"
+      ],
+      "description": "ADR 0078 D4.5: `get_solve_policy`'s result: an offered (`builtin`) or project-registered (`project`) solve policy, its `policy_sha256` (the SHA-256 of the document's canonical bytes, as a run manifest records it) and the document.",
+      "properties": {
+        "policy_id": {
+          "type": "string"
+        },
+        "policy_sha256": {
+          "$ref": "https://github.com/frankp/process-runtime/schemas/job.schema.json#/$defs/sha256"
+        },
+        "origin": {
+          "enum": [
+            "builtin",
+            "project"
+          ]
+        },
+        "document": {
+          "$ref": "https://github.com/frankp/process-runtime/schemas/solve-policy.schema.json"
+        }
+      }
+    }
+  }
+}

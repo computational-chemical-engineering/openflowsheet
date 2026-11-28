@@ -58,6 +58,7 @@ def _admit(
         budgets=budgets or Budgets(),
         limits=limits,
         active_jobs=active_jobs,
+        project_policies={},
     )
 
 

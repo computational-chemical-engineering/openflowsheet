@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import json
 import math
+import os
 from pathlib import Path
 from typing import Any
 
@@ -73,9 +74,12 @@ def test_the_fixture_validates_round_trips_and_is_consistent() -> None:
     assert inconsistencies(fixture, {"target_state_sha256": fixture["state_sha256"]}) == ()
 
 
-def test_the_fixture_is_what_a_real_solve_emits_today() -> None:
+def test_the_fixture_is_what_a_real_solve_emits_today(monkeypatch: pytest.MonkeyPatch) -> None:
     """R-015, under ADR 0007 D2: the ids exactly; the values within the float policy; the digest
     shape-checked only (a state digest is a float in disguise, `run.compare`)."""
+    # `_pin_threads` sets the pins for the rest of the process: set them here, undone at teardown.
+    for name in ("OPENBLAS_NUM_THREADS", "OMP_NUM_THREADS", "MKL_NUM_THREADS"):
+        monkeypatch.setenv(name, os.environ.get(name, "1"))
     import sys
 
     sys.path.insert(0, str(REPO_ROOT / "scripts"))
