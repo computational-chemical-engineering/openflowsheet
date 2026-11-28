@@ -600,3 +600,13 @@ lines are left as each side has them). Logs `~/.cache/line06/f8-fr1/`.
   expected (110, 1184, 155) took F8's increment as (0, 0, 3) from F8-FR0-3's numbers; F8-FR item 9 had since moved
   F8's own size to (110, 1184, 153), and the manifest count adds too. `docs/support-matrix.md` re-emitted: 1342 items,
   74 manifests.
+
+### F8-FR1 gate numbers (SMM-TR09, at `448be495`)
+
+- F0: PASS, M1 50/50, M2-M5 61/61, M6 85/85, M7 52/52, M8 105/105, M9 42/42. `w5_identity.py sets --check` PASS.
+- `test_f8_*` 160 passed; `test_f2_*` 564 (1 deselected by the opt-in marker); `test_x06_*` 95 (1 deselected);
+  `test_msg_*` 186 (3 xfailed); `test_t07_*` 2206 (28 skipped); `test_t08_w2_*` 140; `test_m07a_*` 241;
+  `test_m02_schemas` + `test_m04_study_job` + `test_m05_study_record` 244; `test_k05_replay` +
+  `test_v03_semantic_roles` 52; `test_evidence_manifests` + `test_s19_w5_gate` + `test_adr_0002_a1_integers` 814
+  (19 skipped). 0 failed.
+- ruff check, ruff format --check (1371 files), mypy `src` (379 files): clean. Logs `~/.cache/line06/f8-fr1/b/`.
