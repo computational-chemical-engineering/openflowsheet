@@ -390,3 +390,13 @@ Reversible by: <how>.` Package build decisions go in the package's own file (`do
   A: "Merge wp/X06 at 7a4dcde7 into main with a merge commit that also marks ADR 0019 Amendment 18 Accepted with ADR 0078; run F0 on the merge commit and push main only if F0 passes and main's commits since the merge base still touch no src, tests or schemas; otherwise push nothing."
   B: "Merge wp/X06 at 7a4dcde7 into main with a merge commit, leaving ADR 0019 Amendment 18 Proposed; run F0 on the merge commit and push main only if F0 passes and main's commits since the merge base still touch no src, tests or schemas; otherwise push nothing."
   C: "Do not merge wp/X06 now; nothing is pushed."
+- 2026-11-28 **F8-FR1 judged PASS** (opus-engineer, ~172k tokens, 29 min): wp/F8 merge `448be495` of wp/X06 7a4dcde7
+  (15 conflicts, both sides kept) + `b7f99d18` gate numbers. D_13 `3571c5c3...` -> `de241b22b436...`; strip_f8 =
+  X06's D_12 `ba4b5ce5...` exactly, then F2's `8eee5313...`, then `f7ec3c94...`. SNAPSHOT_F8's six job rows re-pinned
+  (both packages move them; each returns exactly to X06's pin under without_f8; DECISION F8-FR1-2, accepted as a
+  snapshot decomposition). Catalogue -> `430780d5...` (469 entries). HARVEST_SIZE (111, 1188, 154) measured; the
+  brief's (110, 1184, 155) was the orchestrator's arithmetic error (F8 adds (1, 4, 2), not (0, 0, 3)).
+  test_x06_mcp_http E-X06-2 adapted to pin F8_SERVED and decompose to X06_SERVED. F0 PASS; all groups 0 failed.
+  Orchestrator spot check: chain + t07 w5e + t08 surface digest + harvest + x06_mcp_http 134 passed.
+  Full gate on b7f99d18 in detached worktree `.claude/worktrees/f8-gate`, PID 790030, summary
+  `~/.cache/line06/f8-gate/gate-b7f99d18.summary`.
