@@ -437,3 +437,19 @@ Reversible by: <how>.` Package build decisions go in the package's own file (`do
   `8cfe1e61` F-3 + N-1): orchestrator re-run `tests/test_rel*.py` 338 passed; line file F2-THREE-OS `--case ...=56`,
   `=1`; loader `[]` (engineer). Real `--f2` re-run after F-1 started (log `~/.cache/line06/rel060/wv-<sha>.log`).
   F8 CI 46098069377: `codehealth` failed (informational, as at F2's 46041020889), four check legs still running.
+- 2026-11-28 06:12 **F8 CI green at d3846b8d** (run 46098069377: check on ubuntu-latest, ubuntu-24.04-arm,
+  macos-latest, windows-latest, default-install, identity `success`; Site 46098069407 success). codehealth (informational)
+  failed: NEW import cycle run.replay <-> run.replay_v2 (replay.py:248 lazy v2 dispatch; replay_v2.py:65), debt over
+  touched files 19.30 -> 54.60 (platform_refs.py 23, bundle_v2.py 9, replay.py 7.3 -> 8.6, replay_v2.py 2). The F8
+  review did not name the cycle. DECISION-REQUEST `ofs-f8-merge` to hub; card filed (open). Verbatim action texts:
+  A: "Merge wp/F8 at d3846b8d into main with a merge commit; run F0 on the merge commit and push main only if F0 passes and main's commits since the merge base still touch no src, tests or schemas; otherwise push nothing. The import cycle run.replay <-> run.replay_v2 is then removed in a follow-up commit, which reaches main only after REL060's full gate and CI pass on it and before the 0.6.0 release."
+  B: "Do not merge wp/F8 now; first remove the import cycle run.replay <-> run.replay_v2 on wp/F8, run the full local gate and CI on the new head, then file a new merge card; nothing is pushed to main."
+  C: "Do not merge wp/F8 now; nothing is pushed."
+  Orchestrator recommends A (saves a gate + CI round); hub's view on the card: B (0-cycles rule).
+- 2026-11-28 Code-health items sent to session code_health: it takes none (no tool defect; the cycle and large_file are
+  real findings; items S2 reproduce AttributeError, render_error without code prefix, REL060 N-2..N-5 belong in
+  OpenFlowsheet's own backlog).
+- 2026-11-28 DECISION: the cycle fix starts now, before the card is signed, on local branch `wp/F8-cycle` (worktree
+  `.claude/worktrees/f8cyc`, from d3846b8d), brief `docs/briefs/LINE06-F8-CYC.md`, opus-engineer. Under A it merges into
+  wp/REL060 after the F8 merge; under B wp/F8 fast-forwards to it. Alternative: wait for the card. Reversible by:
+  `git worktree remove .claude/worktrees/f8cyc && git branch -D wp/F8-cycle` (local only).
