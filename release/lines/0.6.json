@@ -417,7 +417,7 @@
     },
     {
       "id": "F2-THREE-OS",
-      "assertion": "the 0.6 line clause (ADR 0057 Amendment 3, R-1070) at C: in the push run step 1 judged, the check job's junit on the Linux x86-64 and aarch64, Windows x86-64 and macOS arm64 legs holds the same non-empty set of E-F2-3 run-half cases and the run-set count case of tests/test_f2_amendment9.py, every one passed, none skipped (ADR 0062 D8, E-F2-3; TO-1 to TO-6 of docs/briefs/REL060-line-0.6.md)",
+      "assertion": "the 0.6 line clause (ADR 0057 Amendment 3, R-1070) at C: in the push run step 1 judged, the check job's junit on the Linux x86-64 and aarch64, Windows x86-64 and macOS arm64 legs holds the same non-empty set of E-F2-3 run-half cases and the run-set count case of tests/test_f2_amendment9.py, every one passed, none skipped, exactly 56 run cases and 1 count case on each leg (ADR 0062 D8, E-F2-3; TO-1 to TO-6 of docs/briefs/REL060-line-0.6.md)",
       "script": "scripts/release_rc.py",
       "where": "local:project",
       "command": [
@@ -433,9 +433,9 @@
         "--legs",
         "x86_64,aarch64,Windows-X64,macOS-ARM64",
         "--case",
-        "tests/test_f2_amendment9.py::test_e_f2_3_raised_run_writes_the_v1_bundle",
+        "tests/test_f2_amendment9.py::test_e_f2_3_raised_run_writes_the_v1_bundle=56",
         "--case",
-        "tests/test_f2_amendment9.py::test_e_f2_3_run_set_is_47_g8_and_9_basis_cases"
+        "tests/test_f2_amendment9.py::test_e_f2_3_run_set_is_47_g8_and_9_basis_cases=1"
       ]
     },
     {

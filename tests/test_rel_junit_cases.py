@@ -104,7 +104,25 @@ def test_to6_c_missing_parametrised_case_fails_same_set() -> None:
 
 def test_to6_d_case_matching_nothing_fails_cases() -> None:
     checks, _ = _run(_fixture(), cases=[*CASES, f"{FILE}::test_nothing"])
-    assert "legs.cases" in _failed(checks)
+    assert _failed(checks) == {"legs.cases"}
+
+
+def test_f3_pinned_counts_pass_when_equal() -> None:
+    pinned = [f"{RUN_CASE}={len(PARAMS)}", f"{COUNT_CASE}=1"]
+    checks, body = _run(_fixture(), cases=pinned)
+    assert _failed(checks) == set()
+    cases = [c for c in checks if c["id"] == "legs.cases"][0]
+    assert cases["counts"]["x86_64"] == {pinned[0]: len(PARAMS), pinned[1]: 1}
+    assert body["cases"] == pinned
+
+
+def test_f3_a_uniform_deselection_fails_the_pinned_count() -> None:
+    # every leg ran 2 of the 3 run cases: equal on all legs, so only the pin catches it
+    junit = _fixture(**{leg: {"pytest.xml": _xml(drop="g8-a")} for leg in LEGS})
+    checks, _ = _run(junit, cases=[f"{RUN_CASE}={len(PARAMS)}", COUNT_CASE])
+    assert _failed(checks) == {"legs.cases"}
+    unpinned, _ = _run(junit)
+    assert _failed(unpinned) == set()
 
 
 def test_to6_e_absent_artifact_fails_junit() -> None:
@@ -116,6 +134,25 @@ def test_to6_e_absent_artifact_fails_junit() -> None:
 def test_to6_f_other_run_id_fails_push_run() -> None:
     checks, _ = _run(_fixture(), run_id=8, step1_run=7)
     assert _failed(checks) == {"legs.push_run"}
+
+
+def test_n1_a_run_not_completed_fails_push_run() -> None:
+    checks, _ = release_rc.junit_cases_checks(
+        selected={"databaseId": 7, "status": "in_progress"},
+        step1_record=_step1(_fixture()),
+        junit=_fixture(),
+        legs=LEGS,
+        cases=CASES,
+    )
+    assert _failed(checks) == {"legs.push_run"}
+
+
+def test_f3_count_syntax(mocked: Path) -> None:
+    assert release_rc._case_count(f"{RUN_CASE}=56") == (RUN_CASE, 56)
+    assert release_rc._case_count(RUN_CASE) == (RUN_CASE, None)
+    assert release_rc._case_selector(f"{RUN_CASE}=56") == release_rc._case_selector(RUN_CASE)
+    for malformed in ("=0", "=x", "="):
+        assert release_rc.main([*_argv(mocked)[:-2], "--case", f"{COUNT_CASE}{malformed}"]) == 2
 
 
 def test_to1_absent_step1_record_or_run_fails() -> None:
@@ -189,3 +226,22 @@ def test_main_exits_2_off_c_and_on_malformed_arguments(mocked: Path) -> None:
     assert release_rc.main(_argv(mocked, commit="C1")) == 2
     bad = _argv(mocked)[:-1] + ["no-separator"]
     assert release_rc.main(bad) == 2
+
+
+def test_f3_the_line_file_item_argv_parses_with_the_count_form(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    line = json.loads((REPO_ROOT / "release" / "lines" / "0.6.json").read_text(encoding="utf-8"))
+    item = next(i for i in line["rc_items"] if i["id"] == "F2-THREE-OS")
+    argv = item["command"][item["command"].index("junit-cases") :]
+    argv = ["C0" if a == "$C" else "/rc" if a == "$RC_OUT" else a for a in argv]
+    cases = [a for prev, a in zip(argv, argv[1:], strict=False) if prev == "--case"]
+    assert [release_rc._case_count(c)[1] for c in cases] == [56, 1]
+    seen: list[list[str]] = []
+    monkeypatch.setattr(release_rc._t08_rc(), "git", lambda *a: "C0\n")
+    monkeypatch.setattr(
+        release_rc, "junit_cases", lambda rc, head, item, legs, cases: seen.append(list(cases)) or 0
+    )
+    assert release_rc.main(argv) == 0
+    assert seen == [cases]
+    assert "exactly 56 run cases and 1 count case" in item["assertion"]

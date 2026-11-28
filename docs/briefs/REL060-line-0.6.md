@@ -124,7 +124,9 @@ compared as strings, counts as integers; no floating point, so no tolerance):
   a file's SHA-256 (`s1.junit`, the Linux legs), the downloaded file's SHA-256 equals it.
 - **TO-3** `legs.cases`: for each `--case F::T` and each leg, the matched testcases are those whose `classname` is F
   with `/` read as `.` and `.py` dropped (`tests.test_f2_amendment9`) and whose `name` is T or starts with `T[`. At
-  least one matches per case per leg (no accidental zero).
+  least one matches per case per leg (no accidental zero). A `--case F::T=N` pins the count: a leg whose matched
+  count for that case is not N fails, and the counts are recorded; `F2-THREE-OS` pins 56 run cases and 1 count case
+  (measured on all four legs of run 46041020889; LINE06-R-REV F-3).
 - **TO-4** `legs.passed`: no matched testcase has a `failure`, `error` or `skipped` child.
 - **TO-5** `legs.same_set`: the sorted matched names are the same list on every leg; their SHA-256 (the names joined by
   `\n`, UTF-8) is recorded per leg.

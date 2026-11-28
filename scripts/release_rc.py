@@ -280,8 +280,19 @@ def step1(rc: Path, commit: str) -> int:
 # -- step 17: `junit-cases`, rc item F2-THREE-OS (REL060 D-3, TO-1 to TO-6) ------------------------
 
 
+def _case_count(case: str) -> tuple[str, int | None]:
+    """`--case F::T[=N]` as (`F::T`, N): N, if given, is a positive decimal integer (R-REV F-3)."""
+    spec, equals, count = case.rpartition("=") if "=" in case.partition("::")[2] else (case, "", "")
+    if not equals:
+        return case, None
+    if not (count.isascii() and count.isdecimal()) or int(count) < 1:
+        raise ValueError(f"--case {case!r}: the count after '=' is not a positive integer")
+    return spec, int(count)
+
+
 def _case_selector(case: str) -> tuple[str, str]:
-    """`--case F::T` as (classname, test name): F with `/` read as `.` and `.py` dropped."""
+    """`--case F::T[=N]` as (classname, test name): F with `/` read as `.` and `.py` dropped."""
+    case = _case_count(case)[0]
     file, separator, name = case.partition("::")
     if not separator or not file or not name:
         raise ValueError(f"--case {case!r}: not <file>::<test>")
@@ -373,7 +384,23 @@ def junit_cases_checks(
     empty = [
         f"{leg}: {case}" for leg in legs for case in cases if not matched.get(leg, {}).get(case)
     ]
-    _check(checks, "legs.cases", bool(matched) and not empty, unmatched=empty)
+    pinned = {case: _case_count(case)[1] for case in cases}
+    wrong = [
+        f"{leg}: {case}: {len(matched[leg][case])} != {count}"
+        for leg in matched
+        for case, count in pinned.items()
+        if count is not None and len(matched[leg][case]) != count
+    ]
+    _check(
+        checks,
+        "legs.cases",
+        bool(matched) and not empty and not wrong,
+        unmatched=empty,
+        count_mismatch=wrong,
+        counts={
+            leg: {case: len(names) for case, names in by.items()} for leg, by in matched.items()
+        },
+    )
     _check(
         checks,
         "legs.passed",
@@ -666,7 +693,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     cases.add_argument("--rc", type=Path, required=True, help="the RC record directory")
     cases.add_argument("--id", required=True, help="the item id")
     cases.add_argument("--legs", required=True, help="comma-separated artifact suffixes")
-    cases.add_argument("--case", action="append", default=[], help="<file>::<test>, repeatable")
+    cases.add_argument(
+        "--case", action="append", default=[], help="<file>::<test>[=<N>], repeatable"
+    )
     for name in ("step1", "items", "local", "record", "ci", "records"):
         sub = commands.add_parser(name)
         if name == "record":

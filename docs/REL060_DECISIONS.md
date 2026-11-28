@@ -26,3 +26,18 @@ alternative and how to reverse it. The design authority is `docs/briefs/REL060-l
   every `artifacts` value to be 64-hex**; N's admission is a pass only as `{"admitted": ...}`, any
   other exception than `ApplicationError` is recorded as an error and fails WV-5. These make the
   check stricter than D-5's words without adding a value D-5 does not name.
+
+## LINE06-R-FIX
+
+- **DECISION R-FIX-1 (F-1): WV-5 records `{"admitted": bool(report.admitted)}` and requires `{"admitted": True}` for the base's v2.**
+  An `AdmissionReport` with `admitted: false` is not an admission. Alternative: keep the type name. Reversible by
+  reverting `ddf883ed`.
+- **DECISION R-FIX-2 (F-2): the `junit-cases` tests build step 1's record with `step1_checks`, and `legs.junit` records
+  `compared_with_step1` (the legs whose step-1 hash was found and compared).** Alternative: leave the silent skip.
+  Reversible by reverting `d8e9fcab`.
+- **DECISION R-FIX-3 (F-3, orchestrator: pin): `--case <file>::<test>=<N>` pins the matched count on every leg**
+  (N a positive decimal integer, else exit 2); `legs.cases` fails on a leg whose count differs and records the counts.
+  `F2-THREE-OS` pins 56 and 1 (measured on all four legs of run 46041020889). Alternative: four-leg equality only.
+  Reversible by dropping `=N` from `release/lines/0.6.json` (the parser keeps the old form).
+- **DECISION R-FIX-4 (N-1): controls for a push run not `completed` (fails exactly `legs.push_run`) and control (d)
+  asserts `== {"legs.cases"}`.** Tests only. F-3 and N-1 share one commit (one test file).
