@@ -551,7 +551,8 @@ def _committed_run(document: Mapping[str, Any]) -> dict[str, Any]:
 
 def _admission(document: Mapping[str, Any]) -> dict[str, Any]:
     """WV-5 for one document: `{"raised": {code, unbound}}` for an `ApplicationError`,
-    `{"admitted": <report.admitted>}` when a report is returned, `{"error": …}` for anything else."""
+    `{"admitted": <report.admitted>}` when a report is returned, `{"error": …}` for anything
+    else."""
     from openflowsheet.application.errors import ApplicationError  # noqa: PLC0415
     from openflowsheet.application.local import LocalApplication  # noqa: PLC0415
 
@@ -923,7 +924,7 @@ def run_f2_checks(commit: str, work: Path) -> tuple[list[dict[str, Any]], dict[s
     )
     sides = {"installed": _json(installed_path), "checkout": _json(checkout_path)}
     shown = subprocess.run(
-        ["git", "show", f"{commit}:{F0_REGISTRY.as_posix()}"],
+        ["git", "show", f"{commit}:{F0_REGISTRY.as_posix()}", "--"],
         cwd=ROOT,
         capture_output=True,
         text=True,
