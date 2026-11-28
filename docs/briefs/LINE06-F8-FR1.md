@@ -9,9 +9,10 @@ Tests: `PATH=/home/eajfpeters/Code/OpenFlowsheet/.venv/bin:$PATH PYTHONPATH=src`
 
 ## The task
 
-F2 (`f1fdda2b`) and X06 are merged into `main`, so by R-1072/R-1073 F8 is the third and decomposes onto X06's digest.
-Merge `main` at `MAIN_SHA` (the orchestrator fills this in at launch) into wp/F8 with a merge commit
-(`git merge --no-ff MAIN_SHA`), resolving every conflict so that both sides' work stands. Merge base `80cdcfb3`
+F2 (`f1fdda2b`) is merged into `main` and X06 merges next, so by R-1072/R-1073 F8 is the third and decomposes onto X06's digest.
+Merge wp/X06's head `7a4dcde7` (CI green on every leg, run 46075265235; merge card `ofs-x06-merge` pending; the
+orchestrator merges main, docs only, on top later) into wp/F8 with a merge commit (`git merge --no-ff 7a4dcde7`),
+resolving every conflict so that both sides' work stands. Merge base `80cdcfb3`
 (wp/F2's head; main merged exactly that, so F2 itself brings no conflict). A trial merge against wp/X06 `7a4dcde7`
 conflicted in 15 files: `benchmarks/t08/support_envelope.yaml`, `docs-site/messages/refusals.md`,
 `docs/decision-register.md`, `docs/support-matrix.md`, `scripts/m07a_rc.py`, `scripts/t08_numerical_policy.py`, the two

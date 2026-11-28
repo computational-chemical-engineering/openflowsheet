@@ -381,3 +381,8 @@ Reversible by: <how>.` Package build decisions go in the package's own file (`do
 - X06 full gate at `9f020edd`: GATE PASS, 21886 passed, 107 skipped, 225 deselected, 3 xfailed (1:29:47). wp/X06
   `7a4dcde7` pushed for CI. F8-FR1 brief written (`3a371a10`), trial merge of wp/X06 into wp/F8: 15 conflicts, base
   `80cdcfb3`. The F2 merge card's open item (ADR 0019 Amendment 9 status) closed by merge `f1fdda2b`.
+- 2026-11-28 01:30 **X06 CI green at 7a4dcde7** (run 46075265235: four check legs, default-install, identity,
+  codehealth `success`; Site 46075265291 success). DECISION-REQUEST `ofs-x06-merge` sent to hub (A: merge + ADR 0019
+  Amendment 18 Accepted; B: merge, Amendment 18 Proposed; C: do not merge). DECISION: F8-FR1 starts now, before the
+  card is signed: it merges wp/X06 `7a4dcde7` into wp/F8 (main on top later, docs only). Alternative: wait for the
+  sign-off. Reversible by: `git -C .claude/worktrees/f8 reset --hard 50b3af17` (local only). opus-engineer.
