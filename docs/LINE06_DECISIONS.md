@@ -417,3 +417,8 @@ Reversible by: <how>.` Package build decisions go in the package's own file (`do
   junit-cases`, TO-1..6; this is L3, no CI job needed). required_adrs gains 0019. No claim-set change. Q-L1, Q-B1..B2,
   Q-D1..D3 defaults stand. Work orders R-WV (opus-engineer, rel060) and R-TO (sonnet-implementer, rel060-to on
   wp/REL060-to) launched.
+- 2026-11-28 ~04:20 **LINE06-R-TO PASS** (sonnet-implementer, ~76k; wp/REL060-to `22febee4`): `release_rc.py
+  junit-cases`, 12 tests, six controls each failing its named check; orchestrator re-run 113 passed. Live read of F2's
+  run 46041020889 through the pure function: 57 cases per leg on all four legs, all passed, set digest `0afd81d3...`
+  equal everywhere. Strict readings: TO-1 needs `completed` (spec); TO-2's hash vs step 1 only on legs step 1 recorded
+  (Linux). Merge into wp/REL060 after R-WV ends.
