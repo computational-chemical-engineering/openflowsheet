@@ -427,3 +427,9 @@ Reversible by: <how>.` Package build decisions go in the package's own file (`do
   checked in corpus.json); 127 passed; F0 PASS. Readings R-WV-1..4 in `docs/REL060_DECISIONS.md`. wp/REL060-to merged
   into wp/REL060 (`2b42556e`), worktree removed; `tests/test_rel*.py` 332 passed. R-REV (reviewer, RP 13(3)) launched,
   brief `docs/briefs/LINE06-R-REV.md` on wp/REL060.
+- 2026-11-28 ~05:20 **LINE06-R-REV** (reviewer, ~135k; `docs/reviews/REL060-machinery.md`, wp/REL060 `995ebf74`):
+  merge after F-1 (WV-5's "base v2 admitted" unchecked: `_admission` records the class name only). F-2 (TO-2 step-1
+  comparison skips silently on key mismatch), F-3 (run-case count not pinned), N-1..N-5. DECISION: F-3 -> pin exact
+  counts in the F2-THREE-OS argv (`=56`, `=1`, measured on all four legs of 46041020889). Alternative: accept D-3 as
+  written, relying on four-leg equality. Reversible by: dropping the `=N` suffixes from the line file. Fix round R-FIX
+  (sonnet-implementer, F-1, F-2, F-3, N-1) launched.
