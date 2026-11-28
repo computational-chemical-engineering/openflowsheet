@@ -9,13 +9,17 @@ Procedure: `.claude/skills/line06/SKILL.md`. Host SMM-TR09 (`ref-x86-64`); orche
 Amendment 3. Line acceptance: a v2 revision with store-pinned records solves on the legacy route on all three OSes;
 the ADR acceptances of card `ofs-line06-adr-clause`; X06's exits.
 
-## Position (2026-11-28, 02:25)
+## Position (2026-11-28, ~05:45)
 
-- **F2** merged (`f1fdda2b`, ADR 0062 and ADR 0019 Amendment 9 Accepted). **X06** merged (`9532829b`, ADR 0078 and
-  ADR 0019 Amendment 18 Accepted). main pushed at `9532829b`.
-- **F8** (ADR 0067 + ADR 0019 Amendment 12 Accepted): reviewed and fixed; CI fixes F8-CI1, F8-CI2 in; re-chained onto
-  X06 (F8-FR1, wp/F8 `b7f99d18`, D_13 `de241b22...`). Full gate PASS; pushed d3846b8d, CI running; then merge card.
-- `release/lines/0.6.json` DRAFT (LINE06-L0); release campaign not started.
+- **F2** merged (`f1fdda2b`). **X06** merged (`9532829b`). main pushed at `9532829b`; local main ahead (docs only).
+- **F8** (ADR 0067 + ADR 0019 Amendment 12 Accepted): full gate PASS; wp/F8 `d3846b8d` pushed, CI 46098069377
+  running (Site success; `codehealth` failed, informational as at F2; four check legs and default-install running).
+- **REL060 started early** (decision 03:45): worktree `.claude/worktrees/rel060`, branch `wp/REL060` (local, not
+  pushed). LINE06-L1 PASS (0.6.json final, note `docs/briefs/REL060-line-0.6.md`, no claim-set change). R-TO
+  (`release_rc.py junit-cases`, item F2-THREE-OS = L3) and R-WV (`wheel_data_check.py --f2`, item WHEEL-F2) PASS;
+  R-REV (RP 13(3) reviewer, `docs/reviews/REL060-machinery.md`) -> R-FIX PASS (F-1, F-2, F-3 pinned =56/=1, N-1).
+  `tests/test_rel*.py` 338 passed; real `--f2` re-run after F-1: PASS (log `~/.cache/line06/rel060/wv-*.log`).
+  Build decisions `docs/REL060_DECISIONS.md`. Q-L1, Q-B2, Q-D1, Q-D2 defaults stand.
 
 ## Order and gates (pass criteria fixed before the run; the orchestrator judges each, a miss is recorded as a miss)
 
@@ -36,30 +40,27 @@ the ADR acceptances of card `ofs-line06-adr-clause`; X06's exits.
 Parallelism: at most two agents. F2 first; D1 runs beside F2 once the X06 scope card is answered; F8-WO1 can start
 once F2-WO4 is on wp/F2 (F8 branches from wp/F2's head, merges after F2).
 
-## Next action (2026-11-28 03:30; NO agent of this session is running)
+## Next action (2026-11-28 ~05:45; NO agent of this session is running)
 
-Background jobs (they survive the reset; their notices arrive in the new context):
-1. **F2 MERGED** into main `f1fdda2b` (card ofs-f2-merge A, executed); F0 PASS; main pushed. Worktree removed.
-2. **X06 MERGED** into main `9532829b` (card ofs-x06-merge A, executed); F0 PASS; main pushed. Worktree removed.
-3. **F8**: gate PASS at b7f99d18 (22056 passed); wp/F8 `d3846b8d` (= b7f99d18 + main 9532829b, docs only) **pushed
-   2026-11-28 03:30, CI running**. Waiter `~/.cache/line06/ci/wait_runs.sh wp/F8 d3846b8dbbc58d01c5c5706c999d3834925f0fa7`
-   -> `~/.cache/line06/ci/f8-d3846b8d.log` (rerun it if gone). On all green: DECISION-REQUEST `ofs-f8-merge` to hub (as
-   ofs-x06-merge; ADR 0019 Amendment 12 already Accepted, so no amendment option), then merge, F0, push main, delete
-   worktree f8. On red: `gh run view <id> --log-failed | grep`, fix. Then L3 and REL060.
+Background: CI waiter `~/.cache/line06/ci/wait_runs.sh wp/F8 d3846b8dbbc58d01c5c5706c999d3834925f0fa7` (PID 896329)
+-> `~/.cache/line06/ci/f8-d3846b8d.log` (rerun it if gone). Its notice (and a second watcher's that cats that log) may
+arrive in this context.
 
-**Merge order into main:** whichever of F2 / X06 is green first merges first (merge card each). The second
-re-decomposes its surface chain onto the first's digest (R-1072/R-1073: X06's c_12 `D_12` vs F2's c_11 `D_11`
-`8eee5313`): that is an opus-engineer work order on the second branch, then its gate, push, CI, merge card. F8 merges
-after F2 (wp/F8 must first merge the final wp/F2 and main). After each merge: F0 on main
-(`scripts/corpus_identity.py --check`), push main, delete the worktree.
+1. **F8 CI ends.** Four check legs + default-install + identity `success` (codehealth informational; record what it
+   flagged: `gh run view 46098069377 --log-failed | grep`): DECISION-REQUEST `ofs-f8-merge` to hub (as
+   ofs-x06-merge; ADR 0019 Amendment 12 already Accepted, so no amendment option). On VERIFIED: merge wp/F8 into main
+   (merge commit), F0 (`scripts/corpus_identity.py --check`), push main, delete worktree f8. On red: `--log-failed`,
+   fix on wp/F8 (opus-engineer brief), gate, push.
+2. **After the F8 merge:** merge main into wp/REL060; loader check (0067 then passes); push wp/REL060 for CI (release
+   scripts and tests changed); on green, merge card `ofs-rel060-merge` (wp/REL060 into main). Then K3 per the rel050
+   skill order (`.claude/skills/rel050/SKILL.md`; `.git/codehealth/briefs/REL050-K3.md` is 0.5's K3 brief), J, C, RC
+   steps 1-17 (items WHEEL-F2 and F2-THREE-OS run at step 17), verdict, step 18, message 1 (no claim-set change;
+   predicted lapses V17 carry, V14 (b): note §9), dry run, dispatch, PyPI (each the user's card).
+3. Code health to file with `code_health` (from 2026-11-27): S2, `render_error` without code prefix, F2
+   `application/validation.py` large_file; plus R-REV notes N-2..N-5 (`docs/reviews/REL060-machinery.md`).
 
-**Rules learnt today** (LINE06_DECISIONS 2026-11-27): the full local gate (`scripts/gate.sh`, ~1.5 h, run in a
-detached worktree) passes before any package push; the codehealth diff is informational, not a push gate. Branch
-pushes for CI are the orchestrator's (a card only when the user's card bundles it). Code health to file with
-`code_health`: S2 (AttributeError on `reproduce` of a named bundle), `render_error` without a code prefix (X06
-review ruling 9), F2 `application/validation.py` large_file (nloc 1003).
-
-**After the three merges:** L3 (line clause on CI), then REL060 (rel050 skill order; `docs/briefs/LINE06-line-0.6.md`).
+**Rules learnt** (LINE06_DECISIONS 2026-11-27): the full local gate (`scripts/gate.sh`, ~1.5 h, detached worktree)
+passes before any package push; the codehealth diff is informational. Branch pushes for CI are the orchestrator's.
 
 ## Decisions settled (Decision Desk, 2026-11-26, each choice A, VERIFIED, `executed` written)
 
