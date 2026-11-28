@@ -405,3 +405,6 @@ Reversible by: <how>.` Package build decisions go in the package's own file (`do
   Precondition: main's commits since the merge base touch 0 files under src, tests, schemas. F0 PASS on 9532829b
   (all nine). Pushed main `f1fdda2b..9532829b`. `executed` written (card version 3). Worktree `.claude/worktrees/x06`
   removed (clean at 7a4dcde7); origin wp/X06 left in place.
+- 2026-11-28 03:30 **F8 gate PASS at b7f99d18** (22056 passed, 107 skipped, 225 deselected, 3 xfailed, 1:30:12; log
+  `~/.cache/line06/f8-gate/gate-b7f99d18.log`). wp/F8 merged main `9532829b` -> `d3846b8d` (4 files, docs only; the
+  gate stands for it). Pushed `d0bc2996..d3846b8d`; CI waiter log `~/.cache/line06/ci/f8-d3846b8d.log`.

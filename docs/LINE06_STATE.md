@@ -14,7 +14,7 @@ the ADR acceptances of card `ofs-line06-adr-clause`; X06's exits.
 - **F2** merged (`f1fdda2b`, ADR 0062 and ADR 0019 Amendment 9 Accepted). **X06** merged (`9532829b`, ADR 0078 and
   ADR 0019 Amendment 18 Accepted). main pushed at `9532829b`.
 - **F8** (ADR 0067 + ADR 0019 Amendment 12 Accepted): reviewed and fixed; CI fixes F8-CI1, F8-CI2 in; re-chained onto
-  X06 (F8-FR1, wp/F8 `b7f99d18`, D_13 `de241b22...`). Full gate running; then main, push, CI, merge card.
+  X06 (F8-FR1, wp/F8 `b7f99d18`, D_13 `de241b22...`). Full gate PASS; pushed d3846b8d, CI running; then merge card.
 - `release/lines/0.6.json` DRAFT (LINE06-L0); release campaign not started.
 
 ## Order and gates (pass criteria fixed before the run; the orchestrator judges each, a miss is recorded as a miss)
@@ -36,15 +36,16 @@ the ADR acceptances of card `ofs-line06-adr-clause`; X06's exits.
 Parallelism: at most two agents. F2 first; D1 runs beside F2 once the X06 scope card is answered; F8-WO1 can start
 once F2-WO4 is on wp/F2 (F8 branches from wp/F2's head, merges after F2).
 
-## Next action (2026-11-28 02:25; NO agent of this session is running)
+## Next action (2026-11-28 03:30; NO agent of this session is running)
 
 Background jobs (they survive the reset; their notices arrive in the new context):
 1. **F2 MERGED** into main `f1fdda2b` (card ofs-f2-merge A, executed); F0 PASS; main pushed. Worktree removed.
 2. **X06 MERGED** into main `9532829b` (card ofs-x06-merge A, executed); F0 PASS; main pushed. Worktree removed.
-3. **F8**: F8-FR1 PASS (wp/F8 `b7f99d18` = F8 + wp/X06 7a4dcde7; D_13 `de241b22...` onto X06's D_12). **Full gate running**
-   on b7f99d18 in detached worktree `.claude/worktrees/f8-gate`, PID 790054 (`scripts/gate.sh`), summary
-   `~/.cache/line06/f8-gate/gate-b7f99d18.summary`. On PASS: remove the gate worktree; merge main `9532829b`
-   (docs only on top of 7a4dcde7) into wp/F8, push, CI waiter (full sha), F8 merge card. On FAIL: grep the log, fix.
+3. **F8**: gate PASS at b7f99d18 (22056 passed); wp/F8 `d3846b8d` (= b7f99d18 + main 9532829b, docs only) **pushed
+   2026-11-28 03:30, CI running**. Waiter `~/.cache/line06/ci/wait_runs.sh wp/F8 d3846b8dbbc58d01c5c5706c999d3834925f0fa7`
+   -> `~/.cache/line06/ci/f8-d3846b8d.log` (rerun it if gone). On all green: DECISION-REQUEST `ofs-f8-merge` to hub (as
+   ofs-x06-merge; ADR 0019 Amendment 12 already Accepted, so no amendment option), then merge, F0, push main, delete
+   worktree f8. On red: `gh run view <id> --log-failed | grep`, fix. Then L3 and REL060.
 
 **Merge order into main:** whichever of F2 / X06 is green first merges first (merge card each). The second
 re-decomposes its surface chain onto the first's digest (R-1072/R-1073: X06's c_12 `D_12` vs F2's c_11 `D_11`
