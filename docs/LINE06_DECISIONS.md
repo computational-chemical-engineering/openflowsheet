@@ -411,3 +411,9 @@ Reversible by: <how>.` Package build decisions go in the package's own file (`do
 - 2026-11-28 03:45 DECISION: start LINE06-L1 (specifier) while F8's CI runs -> yes, in worktree `rel060` on
   `wp/REL060` (from main 259bda86 + brief `docs/briefs/LINE06-L1.md`). Alternative: wait for the F8 merge (~2.5 h).
   Reversible by: rerunning the F8-dependent part of the note if CI changes what F8 ships.
+- 2026-11-28 ~04:10 **LINE06-L1 PASS** (specifier, ~304k; wp/REL060 `8046530e`): 0.6.json finalised, note
+  `docs/briefs/REL060-line-0.6.md`. Orchestrator spot-check: `load_line('0.6')` raises nothing, `tree_problems` = []
+  at 8046530e. New rc items WHEEL-F2 (`wheel_data_check.py --f2`, WV-1..6) and F2-THREE-OS (`release_rc.py
+  junit-cases`, TO-1..6; this is L3, no CI job needed). required_adrs gains 0019. No claim-set change. Q-L1, Q-B1..B2,
+  Q-D1..D3 defaults stand. Work orders R-WV (opus-engineer, rel060) and R-TO (sonnet-implementer, rel060-to on
+  wp/REL060-to) launched.
