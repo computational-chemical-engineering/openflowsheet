@@ -9,19 +9,12 @@ Procedure: `.claude/skills/line06/SKILL.md`. Host SMM-TR09 (`ref-x86-64`); orche
 Amendment 3. Line acceptance: a v2 revision with store-pinned records solves on the legacy route on all three OSes;
 the ADR acceptances of card `ofs-line06-adr-clause`; X06's exits.
 
-## Position (2026-11-27, 17:40)
+## Position (2026-11-28, 02:25)
 
-- F2 (`f1fdda2b`) and X06 (`9532829b`) merged into `main` and pushed. F8 built, reviewed, re-chained onto X06; gate running.
-- **F2** (ADR 0062 **Accepted**): CI at origin `4b820b97` FAILED (run 46003226499): Windows 6 tests (":" in an E-F2-3
-  scratch path) and `identity` (no jsonschema in the job). Fix F2-CI1 at `80cdcfb3`: gate PASS 21725 passed,
-  pushed to origin wp/F2, CI running.
-- **F8** (ADR 0067 + ADR 0019 Amendment 12 **Accepted**, card executed): CI at origin `14409696` FAILED (run
-  46014961220): F2's two causes, Windows bundle integrity ("\" vs "/" in the present-file listing) and the D5
-  other-platform test on unregistered hosts (macOS, Windows). Fix F8-CI1 + merge of wp/F2 80cdcfb3 on local wp/F8
-  `d0bc2996`; touched tests 219 passed; gate PASS 21895 passed; pushed, CI running. Merges after F2.
-- **X06** (ADR 0078 Accepted): CI at origin `a514896c` FAILED only `default-install` (run 46014554722; all check legs,
-  identity green): `mcp_http` missing from the isolation test's server-extra list. Fix X06-CI2 at `73b3a83d`: gate PASS 21303
-  passed, pushed to origin wp/X06, CI running.
+- **F2** merged (`f1fdda2b`, ADR 0062 and ADR 0019 Amendment 9 Accepted). **X06** merged (`9532829b`, ADR 0078 and
+  ADR 0019 Amendment 18 Accepted). main pushed at `9532829b`.
+- **F8** (ADR 0067 + ADR 0019 Amendment 12 Accepted): reviewed and fixed; CI fixes F8-CI1, F8-CI2 in; re-chained onto
+  X06 (F8-FR1, wp/F8 `b7f99d18`, D_13 `de241b22...`). Full gate running; then main, push, CI, merge card.
 - `release/lines/0.6.json` DRAFT (LINE06-L0); release campaign not started.
 
 ## Order and gates (pass criteria fixed before the run; the orchestrator judges each, a miss is recorded as a miss)
