@@ -11,7 +11,7 @@ the ADR acceptances of card `ofs-line06-adr-clause`; X06's exits.
 
 ## Position (2026-11-27, 17:40)
 
-- F2 merged into `main` (`f1fdda2b`, pushed). X06 and F8 built, reviewed, fixed; not merged. `main` local, last pushed `4c7d3d6a`.
+- F2 (`f1fdda2b`) and X06 (`9532829b`) merged into `main` and pushed. F8 built, reviewed, re-chained onto X06; gate running.
 - **F2** (ADR 0062 **Accepted**): CI at origin `4b820b97` FAILED (run 46003226499): Windows 6 tests (":" in an E-F2-3
   scratch path) and `identity` (no jsonschema in the job). Fix F2-CI1 at `80cdcfb3`: gate PASS 21725 passed,
   pushed to origin wp/F2, CI running.
@@ -43,18 +43,15 @@ the ADR acceptances of card `ofs-line06-adr-clause`; X06's exits.
 Parallelism: at most two agents. F2 first; D1 runs beside F2 once the X06 scope card is answered; F8-WO1 can start
 once F2-WO4 is on wp/F2 (F8 branches from wp/F2's head, merges after F2).
 
-## Next action (2026-11-28 02:10; NO agent of this session is running)
+## Next action (2026-11-28 02:25; NO agent of this session is running)
 
 Background jobs (they survive the reset; their notices arrive in the new context):
 1. **F2 MERGED** into main `f1fdda2b` (card ofs-f2-merge A, executed); F0 PASS; main pushed. Worktree removed.
-2. **X06**: gate PASS at 9f020edd; **CI green at 7a4dcde7** (run 46075265235, all legs). Merge waits for card
-   `ofs-x06-merge` (item 4). After the merge: F0 on main, push main, delete worktree x06.
+2. **X06 MERGED** into main `9532829b` (card ofs-x06-merge A, executed); F0 PASS; main pushed. Worktree removed.
 3. **F8**: F8-FR1 PASS (wp/F8 `b7f99d18` = F8 + wp/X06 7a4dcde7; D_13 `de241b22...` onto X06's D_12). **Full gate running**
    on b7f99d18 in detached worktree `.claude/worktrees/f8-gate`, PID 790054 (`scripts/gate.sh`), summary
-   `~/.cache/line06/f8-gate/gate-b7f99d18.summary`. On PASS: remove the gate worktree; after the X06 merge, merge main
+   `~/.cache/line06/f8-gate/gate-b7f99d18.summary`. On PASS: remove the gate worktree; merge main `9532829b`
    (docs only on top of 7a4dcde7) into wp/F8, push, CI waiter (full sha), F8 merge card. On FAIL: grep the log, fix.
-4. **Card `ofs-x06-merge`** open on the Decision Desk (action texts in LINE06_DECISIONS 2026-11-28). Hub rings on
-   sign-off: verify (ArtifactData get + keys, `decision_desk_verify.py`), act only on VERIFIED, write `executed`.
 
 **Merge order into main:** whichever of F2 / X06 is green first merges first (merge card each). The second
 re-decomposes its surface chain onto the first's digest (R-1072/R-1073: X06's c_12 `D_12` vs F2's c_11 `D_11`

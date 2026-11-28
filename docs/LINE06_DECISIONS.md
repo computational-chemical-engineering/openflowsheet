@@ -400,3 +400,8 @@ Reversible by: <how>.` Package build decisions go in the package's own file (`do
   Orchestrator spot check: chain + t07 w5e + t08 surface digest + harvest + x06_mcp_http 134 passed.
   Full gate on b7f99d18 in detached worktree `.claude/worktrees/f8-gate`, PID 790054 (790030 was pgrep itself), summary
   `~/.cache/line06/f8-gate/gate-b7f99d18.summary`.
+- 2026-11-28 Card `ofs-x06-merge` (A) **VERIFIED** (signed 00:59:02Z, key 032ee0a5ae620a90). **X06 merged into main**:
+  merge commit `9532829b` (no conflicts; ADR 0019 Amendment 18 heading and pointer paragraph Accepted with ADR 0078).
+  Precondition: main's commits since the merge base touch 0 files under src, tests, schemas. F0 PASS on 9532829b
+  (all nine). Pushed main `f1fdda2b..9532829b`. `executed` written (card version 3). Worktree `.claude/worktrees/x06`
+  removed (clean at 7a4dcde7); origin wp/X06 left in place.
